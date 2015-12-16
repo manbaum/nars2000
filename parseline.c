@@ -4086,6 +4086,8 @@ PARSELINE_SCAN1:
             // If lftSynObj is neither soIDX nor soSRBK, ...
             if (lftSynObj NE soIDX          // LFTSYNOBJ NE IDX
              && lftSynObj NE soSRBK         // LFTSYNOBJ NE SRBK
+             && lftSynObj NE soSYNR         // LFTSYNOBJ NE SYNR
+             && lftSynObj NE soVALR         // LFTSYNOBJ NE VALR
              && lftBndStr < rhtBndStr)      // LBIND < RBIND
                 goto PARSELINE_REDUCE;
             else

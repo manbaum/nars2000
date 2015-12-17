@@ -1702,7 +1702,8 @@ typedef struct tagOPTIONFLAGS
          bViewStatusBar      :1,    // 00400000:  ...      Status Bar is displayed
          bDefDispFcnLineNums :1,    // 00800000:  ...      Display function line #s
          bDispMPSuf:1,       :1,    // 01000000:  ...      Display multi-precision numbers with suffix 'x' or 'v'
-                             :7;    // FE000000:  Available bits
+         bAllowNeg0          :1,    // 02000000:  ...      Allow -0
+                             :6;    // FC000000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 // N.B.:  Whenever changing the above struct (OPTIONFLAGS),
@@ -1731,6 +1732,7 @@ OPTIONFLAGS OptionFlags
     DEF_VIEWSTATUSBAR,
     DEF_DISPFCNLINENUMS,
     DEF_DISPMPSUF,
+    DEF_ALLOWNEG0,
    }
 #endif
 ;
@@ -2247,7 +2249,7 @@ APLVFP mpfMinInt                // Minimum signed integer -2*63
 EXTERN
 PNNUMTYPE aNumTypePromote[PN_NUMTYPE_LENGTH][PN_NUMTYPE_LENGTH];
 
-typedef void (*PN_ACTION)(LPPN_YYSTYPE);
+typedef void (*PN_ACTION)    (LPPN_YYSTYPE, LPPNLOCALVARS);
 
 EXTERN
 PN_ACTION aNumTypeAction [PN_NUMTYPE_LENGTH][PN_NUMTYPE_LENGTH];

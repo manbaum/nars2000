@@ -1450,9 +1450,11 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbNum); lpMemNum = NULL;
 
-                    // If it's a scalar global numeric, ...
+                    // If it's a scalar global numeric,
+                    //   but not a Numeric Scalar token, ...
                     if (IsScalar (aplRankNum)
-                     && IsGlbNum (aplTypeNum))
+                     && IsGlbNum (aplTypeNum)
+                     && lpYYToken->tkToken.tkFlags.TknType NE TKT_NUMSCALAR)
                     {
                         // Decrement the refcnt as we're making a copy of the value, not reusing it
                         FreeResultGlobalVar (MakePtrTypeGlb (hGlbNum)); hGlbNum = NULL;
@@ -1595,9 +1597,11 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbNum); lpMemNum = NULL;
 
-                    // If it's a scalar global numeric, ...
+                    // If it's a scalar global numeric,
+                    //   but not a Numeric Scalar token, ...
                     if (IsScalar (aplRankNum)
-                     && IsGlbNum (aplTypeNum))
+                     && IsGlbNum (aplTypeNum)
+                     && lpYYToken->tkToken.tkFlags.TknType NE TKT_NUMSCALAR)
                     {
                         // Decrement the refcnt as we're making a copy of the value, not reusing it
                         FreeResultGlobalVar (MakePtrTypeGlb (hGlbNum)); hGlbNum = NULL;

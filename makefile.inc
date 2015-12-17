@@ -476,6 +476,7 @@ $(O)crash.obj:          $(@B).c         $(CRASH_DEP)
 !if "$(DEBUG)" == "0"
 $(O)crashserver.obj:    $(@B).cpp       $(CRASHSERVER_DEP)
 !endif
+$(O)cr_proc.obj:        $(@B).c         $(CR_PROC_DEP)
 $(O)cs_proc.obj:        $(@B).c         $(CS_PROC_DEP)
 $(O)customize.obj:      $(@B).c         $(CUSTOMIZE_DEP)
 $(O)debug.obj:          $(@B).c         $(DEBUG_DEP)

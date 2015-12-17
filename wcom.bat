@@ -26,6 +26,7 @@ Set MAKEPRO=%NARSROOT%makepro.php
 if not defined ORIGPATH Set ORIGPATH=%PATH%
 
 Set MS_DIR=%NARSROOT%msieve^\
+Set MPC_DIR=%NARSROOT%mpc^\
 Set MPIR_DIR=%NARSROOT%mpir^\
 Set MPFR_DIR=%NARSROOT%mpfr^\
 Set GSL_DIR=%NARSROOT%gsl^\
@@ -61,4 +62,4 @@ Set _NT_SYMBOL_PATH=srv*C:\Symbols*http://msdl.microsoft.com/download/symbols
 Set SDK_INC=%SDK%include^\
 Set INCLUDE=%MSVC%include;%SDK_INC%um;%SDK_INC%shared;%SDK_INC%ucrt;%SDK_INC%winrt
 
-if /i "%2" == "start" start V:\Common7\IDE\WDExpress.exe NARS2000.sln /useenv
+if /i "%2" == "start" start V:\Common7\IDE\WDExpress.exe .\NARS2000.sln /useenv

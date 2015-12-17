@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -178,6 +178,7 @@
 #undef  mpz_size
 
 #undef  mpq_canonicalize
+#undef  mpq_clear
 
 #undef  mpq_set
 #undef  mpq_set_z
@@ -424,6 +425,7 @@
 #define mpz_size                mpiz_size
 
 #define mpq_canonicalize        mpiq_canonicalize
+#define mpq_clear               mpiq_clear
 
 #define mpq_set                 mpiq_set
 #define mpq_set_z               mpiq_set_z

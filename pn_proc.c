@@ -32,6 +32,242 @@
 
 
 //***************************************************************************
+//  $PN_actIDENT
+//***************************************************************************
+
+void PN_actIDENT
+    (LPPN_YYSTYPE  lpSrc,
+     LPPNLOCALVARS lppnLocalVars)
+
+{
+} // End PN_actIDENT
+
+
+//***************************************************************************
+//  $PN_actUNK
+//***************************************************************************
+
+void PN_actUNK
+    (LPPN_YYSTYPE  lpSrc,
+     LPPNLOCALVARS lppnLocalVars)
+
+{
+    DbgStop ();
+} // End PN_actUNK
+
+
+//***************************************************************************
+//  $PN_actBOOL_FLT
+//***************************************************************************
+
+void PN_actBOOL_FLT
+    (LPPN_YYSTYPE  lpSrc,
+     LPPNLOCALVARS lppnLocalVars)
+
+{
+    // Convert the value from BOOL to FLT
+    lpSrc->at.aplFloat = (APLFLOAT) lpSrc->at.aplInteger;
+
+    lpSrc->chType = PN_NUMTYPE_FLT;
+} // End PN_actBOOL_FLT
+
+
+//***************************************************************************
+//  $PN_actBOOL_RAT
+//***************************************************************************
+
+void PN_actBOOL_RAT
+    (LPPN_YYSTYPE  lpSrc,
+     LPPNLOCALVARS lppnLocalVars)
+
+{
+    // Convert the value from BOOL to RAT
+    mpq_init_set_sx (&lpSrc->at.aplRat, lpSrc->at.aplInteger, 1);
+
+    lpSrc->chType = PN_NUMTYPE_RAT;
+} // End PN_actBOOL_RAT
+
+
+//***************************************************************************
+//  $PN_actBOOL_VFP
+//***************************************************************************
+
+void PN_actBOOL_VFP
+    (LPPN_YYSTYPE  lpSrc,
+     LPPNLOCALVARS lppnLocalVars)
+
+{
+    // Convert the value from BOOL to VFP
+    mpfr_init_set_sx (&lpSrc->at.aplVfp, lpSrc->at.aplInteger, MPFR_RNDN);
+
+    lpSrc->chType = PN_NUMTYPE_VFP;
+} // End PN_actBOOL_VFP
+
+
+//***************************************************************************
+//  $PN_actINT_FLT
+//***************************************************************************
+
+void PN_actINT_FLT
+    (LPPN_YYSTYPE  lpSrc,
+     LPPNLOCALVARS lppnLocalVars)
+
+{
+    // Convert the value from INT to FLT
+    lpSrc->at.aplFloat = (APLFLOAT) lpSrc->at.aplInteger;
+
+    lpSrc->chType = PN_NUMTYPE_FLT;
+} // End PN_actINT_FLT
+
+
+//***************************************************************************
+//  $PN_actINT_RAT
+//***************************************************************************
+
+void PN_actINT_RAT
+    (LPPN_YYSTYPE  lpSrc,
+     LPPNLOCALVARS lppnLocalVars)
+
+{
+    // Convert the value from INT to RAT
+    mpq_init_set_sx (&lpSrc->at.aplRat, lpSrc->at.aplInteger, 1);
+
+    lpSrc->chType = PN_NUMTYPE_RAT;
+} // End PN_actINT_RAT
+
+
+//***************************************************************************
+//  $PN_actINT_VFP
+//***************************************************************************
+
+void PN_actINT_VFP
+    (LPPN_YYSTYPE  lpSrc,
+     LPPNLOCALVARS lppnLocalVars)
+
+{
+    // Convert the value from INT to VFP
+    mpfr_init_set_sx (&lpSrc->at.aplVfp, lpSrc->at.aplInteger, MPFR_RNDN);
+
+    lpSrc->chType = PN_NUMTYPE_VFP;
+} // End PN_actINT_VFP
+
+
+//***************************************************************************
+//  $PN_actFLT_VFP
+//***************************************************************************
+
+void PN_actFLT_VFP
+    (LPPN_YYSTYPE  lpSrc,
+     LPPNLOCALVARS lppnLocalVars)
+
+{
+    // Initialize to 0
+    mpfr_init0 (&lpSrc->at.aplVfp);
+
+    // In order to preserve the precision of the floating point number,
+    //   we rescan it as a VFP number
+    // Convert the string to a VFP number
+    mpfr_set_str (&lpSrc->at.aplVfp, &lppnLocalVars->lpszStart[lpSrc->uNumStart], 10, MPFR_RNDN);
+
+    lpSrc->chType = PN_NUMTYPE_VFP;
+} // End PN_actFLT_VFP
+
+
+//***************************************************************************
+//  $PN_actRAT_VFP
+//***************************************************************************
+
+void PN_actRAT_VFP
+    (LPPN_YYSTYPE  lpSrc,
+     LPPNLOCALVARS lppnLocalVars)
+
+{
+    APLVFP aplVfp = {0};
+
+    // Convert the value from RAT to VFP
+    mpfr_init_set_q  (&aplVfp, &lpSrc->at.aplRat, MPFR_RNDN);
+
+    Myq_clear (&lpSrc->at.aplRat);
+
+    lpSrc->at.aplVfp = aplVfp;
+
+    lpSrc->chType = PN_NUMTYPE_VFP;
+} // End PN_actRAT_VFP
+
+
+#define PN_MAT                                                                                                                           \
+{/*     BOOL          INT          FLT          HC2          HC4          HC8          RAT          VFP         INIT     */              \
+   {M(BOOL,BOOL),M(BOOL,INT ),M(BOOL,FLT ),M(BOOL,HC2 ),M(BOOL,HC4 ),M(BOOL,HC8 ),M(BOOL,RAT ),M(BOOL,VFP ),M(BOOL,BOOL)},   /* BOOL */  \
+   {M(INT ,INT ),M(INT ,INT ),M(INT ,FLT ),M(INT ,HC2 ),M(INT ,HC4 ),M(INT ,HC8 ),M(INT ,RAT ),M(INT ,VFP ),M(INT ,INT )},   /* INT  */  \
+   {M(FLT ,FLT ),M(FLT ,FLT ),M(FLT ,FLT ),M(FLT ,HC2 ),M(FLT ,HC4 ),M(FLT ,HC8 ),M(FLT ,VFP ),M(FLT ,VFP ),M(FLT ,FLT )},   /* FLT  */  \
+   {M(HC2 ,HC2 ),M(HC2 ,HC2 ),M(HC2 ,HC2 ),M(HC2 ,HC2 ),M(HC2 ,HC4 ),M(HC2 ,HC8 ),M(HC2 ,HC2 ),M(HC2 ,HC2 ),M(HC2 ,HC2 )},   /* HC2  */  \
+   {M(HC4 ,HC4 ),M(HC4 ,HC4 ),M(HC4 ,HC4 ),M(HC4 ,HC4 ),M(HC4 ,HC4 ),M(HC4 ,HC8 ),M(HC4 ,HC4 ),M(HC4 ,HC4 ),M(HC4 ,HC4 )},   /* HC4  */  \
+   {M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 ),M(HC8 ,HC8 )},   /* HC8  */  \
+   {M(RAT ,RAT ),M(RAT ,RAT ),M(RAT ,VFP ),M(RAT ,HC2 ),M(RAT ,HC4 ),M(RAT ,HC8 ),M(RAT ,RAT ),M(RAT ,VFP ),M(RAT ,RAT )},   /* RAT  */  \
+   {M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,HC2 ),M(VFP ,HC4 ),M(VFP ,HC8 ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP )},   /* VFP  */  \
+   {M(INIT,BOOL),M(INIT,INT ),M(INIT,FLT ),M(INIT,HC2 ),M(INIT,HC4 ),M(INIT,HC8 ),M(INIT,RAT ),M(INIT,VFP ),M(INIT,INIT)},   /* INIT */  \
+};
+// PN_NUMTYPE_xxx promotion result matrix
+PNNUMTYPE aNumTypePromote[PN_NUMTYPE_LENGTH][PN_NUMTYPE_LENGTH] =
+#define M(a,b)  PN_NUMTYPE_##b
+PN_MAT;
+#undef  M
+
+#define PN_actBOOL_BOOL     PN_actIDENT
+#define PN_actBOOL_INT      PN_actIDENT
+////ine PN_actBOOL_FLT      NULL
+#define PN_actBOOL_HC2      PN_actUNK
+#define PN_actBOOL_HC4      PN_actUNK
+#define PN_actBOOL_HC8      PN_actUNK
+
+#define PN_actINT_INT       PN_actIDENT
+////ine PN_actINT_FLT       NULL
+#define PN_actINT_HC2       PN_actUNK
+#define PN_actINT_HC4       PN_actUNK
+#define PN_actINT_HC8       PN_actUNK
+
+#define PN_actFLT_FLT       PN_actIDENT
+#define PN_actFLT_HC2       PN_actUNK
+#define PN_actFLT_HC4       PN_actUNK
+#define PN_actFLT_HC8       PN_actUNK
+
+#define PN_actHC2_HC2       PN_actIDENT
+#define PN_actHC2_HC4       PN_actUNK
+#define PN_actHC2_HC8       PN_actUNK
+
+#define PN_actHC4_HC4       PN_actIDENT
+#define PN_actHC4_HC8       PN_actUNK
+
+#define PN_actHC8_HC8       PN_actIDENT
+
+#define PN_actRAT_RAT       PN_actIDENT
+#define PN_actRAT_HC2       PN_actUNK
+#define PN_actRAT_HC4       PN_actUNK
+#define PN_actRAT_HC8       PN_actUNK
+
+#define PN_actVFP_VFP       PN_actIDENT
+#define PN_actVFP_HC2       PN_actUNK
+#define PN_actVFP_HC4       PN_actUNK
+#define PN_actVFP_HC8       PN_actUNK
+
+#define PN_actINIT_BOOL     PN_actUNK
+#define PN_actINIT_INT      PN_actUNK
+#define PN_actINIT_FLT      PN_actUNK
+#define PN_actINIT_HC2      PN_actUNK
+#define PN_actINIT_HC4      PN_actUNK
+#define PN_actINIT_HC8      PN_actUNK
+#define PN_actINIT_RAT      PN_actUNK
+#define PN_actINIT_VFP      PN_actUNK
+#define PN_actINIT_INIT     PN_actUNK
+
+// PN_NUMTYPE_xxx promotion action matrix
+PN_ACTION aNumTypeAction [PN_NUMTYPE_LENGTH][PN_NUMTYPE_LENGTH] =
+#define M(a,b)  PN_act##a##_##b
+PN_MAT;
+#undef  M
+
+
+//***************************************************************************
 //  $PN_NumAcc
 //
 //  Accumulate another digit into the number
@@ -288,15 +524,94 @@ void PN_ChrAcc
 
 
 //***************************************************************************
+//  $PN_MakeRatPoint
+//
+//  Merge the numerator and denominator to form a number
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PN_MakeRatPoint"
+#else
+#define APPEND_NAME
+#endif
+
+LPPN_YYSTYPE PN_MakeRatPoint
+    (LPPN_YYSTYPE  lpYYNum,             // Ptr to The numerator part
+     LPPN_YYSTYPE  lpYYDen,             // Ptr to The denominator part (may be NULL)
+     LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
+
+{
+    size_t      numLen;                 // # chars in number
+    PNNUMTYPE   chType;                 // The numeric type (see PNNUMTYPE)
+    char        chZap;                  // Zapped char
+    CR_RETCODES crRetCode;              // Return code
+
+    // Get the numeric type
+    chType = (lppnLocalVars->chComType EQ PN_NUMTYPE_INIT) ? PN_NUMTYPE_RAT : lppnLocalVars->chComType;
+
+    // Get the length of the number
+    numLen = strspn (&lppnLocalVars->lpszStart[lpYYNum->uNumStart], OVERBAR1_STR INFINITY1_STR ".0123456789eEr/");
+
+    // Initialize to 0/1
+    mpq_init (&lpYYNum->at.aplRat);
+
+    // Save and zap the next char
+    chZap = lppnLocalVars->lpszStart[numLen + lpYYNum->uNumStart];
+            lppnLocalVars->lpszStart[numLen + lpYYNum->uNumStart] = AC_EOS;
+
+    crRetCode =
+      mpq_set_str2 (&lpYYNum->at.aplRat,
+                    &lppnLocalVars->lpszStart[lpYYNum->uNumStart],
+                     10);
+    // Restore the zapped char
+    lppnLocalVars->lpszStart[numLen + lpYYNum->uNumStart] = chZap;
+
+    // Change the type to RAT
+    lpYYNum->chType = PN_NUMTYPE_RAT;
+
+    // Split cases based upon the return code
+    switch (crRetCode)
+    {
+        case CR_SUCCESS:
+            break;
+
+        case CR_SYNTAX_ERROR:
+            // Save the error message
+            ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
+
+            // Mark as in error
+            lpYYNum = NULL;
+
+            break;
+
+        case CR_DOMAIN_ERROR:
+            // Save the error message
+            ErrorMessageIndirect (ERRMSG_DOMAIN_ERROR APPEND_NAME);
+
+            // Mark as in error
+            lpYYNum = NULL;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    return lpYYNum;
+} // End PN_MakeRatPoint
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $PN_MakeBasePoint
 //
 //  Merge the base and alphaint part to form a number
 //***************************************************************************
 
 LPPN_YYSTYPE PN_MakeBasePoint
-    (LPPNLOCALVARS lppnLocalVars,       // Ptr to local pnLocalVars
-     LPPN_YYSTYPE  lpYYBase,            // The base part
-     LPPN_YYSTYPE  lpYYAlphaInt)        // The AlphaInt part
+    (LPPN_YYSTYPE  lpYYBase,            // The base part
+     LPPN_YYSTYPE  lpYYAlphaInt,        // The AlphaInt part
+     LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
 
 {
     UINT      uLen,                     // Length of lpszAlphaInt
@@ -588,9 +903,9 @@ LPPN_YYSTYPE PN_MakeBasePoint
 //***************************************************************************
 
 LPPN_YYSTYPE PN_MakeEulerPoint
-    (LPPNLOCALVARS lppnLocalVars,       // Ptr to local pnLocalVars
-     LPPN_YYSTYPE  lpYYMultiplier,      // The multiplier part
-     LPPN_YYSTYPE  lpYYExponent)        // The exponent part
+    (LPPN_YYSTYPE  lpYYMultiplier,      // The multiplier part
+     LPPN_YYSTYPE  lpYYExponent,        // The exponent part
+     LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
 
 {
     PNNUMTYPE pnTypeRes;
@@ -622,12 +937,12 @@ LPPN_YYSTYPE PN_MakeEulerPoint
     // If the multiplier must be promoted, ...
     if (pnTypeRes NE lpYYMultiplier->chType
      && aNumTypeAction[lpYYMultiplier->chType][pnTypeRes] NE NULL)
-        (*aNumTypeAction[lpYYMultiplier->chType][pnTypeRes]) (lpYYMultiplier);
+        (*aNumTypeAction[lpYYMultiplier->chType][pnTypeRes]) (lpYYMultiplier, lppnLocalVars);
 
     // If the exponent must be promoted, ...
     if (pnTypeRes NE lpYYExponent->chType
      && aNumTypeAction[lpYYExponent->chType  ][pnTypeRes] NE NULL)
-        (*aNumTypeAction[lpYYExponent->chType  ][pnTypeRes]) (lpYYExponent);
+        (*aNumTypeAction[lpYYExponent->chType  ][pnTypeRes]) (lpYYExponent, lppnLocalVars);
 
     // Set the result type
     lpYYMultiplier->chType =
@@ -678,13 +993,6 @@ LPPN_YYSTYPE PN_MakeEulerPoint
             break;
         } // End PN_NUMTYPE_VFP
 
-        case PN_NUMTYPE_HC2:
-        case PN_NUMTYPE_HC4:
-        case PN_NUMTYPE_HC8:
-            // ***FINISHME***
-
-            break;
-
         defstop
             break;
     } // End SWITCH
@@ -700,9 +1008,9 @@ LPPN_YYSTYPE PN_MakeEulerPoint
 //***************************************************************************
 
 LPPN_YYSTYPE PN_MakeExpPoint
-    (LPPNLOCALVARS lppnLocalVars,       // Ptr to local pnLocalVars
-     LPPN_YYSTYPE  lpYYArg,             // The mantissa part
-     LPPN_YYSTYPE  lpYYExponent)        // The exponent part
+    (LPPN_YYSTYPE  lpYYArg,             // The mantissa part
+     LPPN_YYSTYPE  lpYYExponent,        // The exponent part
+     LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
 
 {
     UINT    uNumAcc;                    // Starting offset
@@ -711,6 +1019,11 @@ LPPN_YYSTYPE PN_MakeExpPoint
 #ifdef DEBUG_FMT
     WCHAR   wszTemp[512];
 #endif
+    LPCHAR  lpszNumAccum;               // Ptr to next byte
+
+    // Initialize the starting offset
+    uNumAcc = lpYYArg->uNumAcc;
+    lpszNumAccum = &lppnLocalVars->lpszNumAccum[0];
 
     // If there's been a YYERROR, ...
     if (lppnLocalVars->bYYERROR)
@@ -718,9 +1031,6 @@ LPPN_YYSTYPE PN_MakeExpPoint
 
     // Terminate the (Exponent) argument
     PN_NumAcc (lppnLocalVars, '\0');
-
-    // Initialize the starting offset
-    uNumAcc = lpYYArg->uNumAcc;
 
     // If this is not a RAT, ...
     if (lppnLocalVars->chComType NE PN_NUMTYPE_RAT)
@@ -734,7 +1044,7 @@ LPPN_YYSTYPE PN_MakeExpPoint
 
         case PN_NUMTYPE_RAT:
             // Convert the exponent to a rational number
-            mpz_init_set_str (&aplMpiExp , &lppnLocalVars->lpszNumAccum[lpYYExponent->uNumAcc], 10);
+            mpz_init_set_str (&aplMpiExp , &lpszNumAccum[lpYYExponent->uNumAcc], 10);
 
             // Check the exponent for sign
             iExpSgn = mpz_sgn (&aplMpiExp);
@@ -749,14 +1059,14 @@ LPPN_YYSTYPE PN_MakeExpPoint
                 Myz_clear (&aplMpiExp);
 
                 // Set to +/- infinity
-                mpq_set_inf (&lpYYArg->at.aplRat, (lppnLocalVars->lpszNumAccum[lpYYArg->uNumAcc] EQ '-') ? -1 : 1);
+                mpq_set_inf (&lpYYArg->at.aplRat, (lpszNumAccum[uNumAcc] EQ '-') ? -1 : 1);
             } else
             {
                 // Create 10 * exp
                 mpz_ui_pow_ui (&aplMpiExp, 10, mpz_get_ui (&aplMpiExp));
 
                 // Convert the multiplier to a rational number
-                mpz_init_set_str (&aplMpiMult, &lppnLocalVars->lpszNumAccum[lpYYArg->uNumAcc], 10);
+                mpz_init_set_str (&aplMpiMult, &lpszNumAccum[uNumAcc], 10);
 
                 // If the exponent sign is negative, ...
                 if (iExpSgn < 0)
@@ -796,7 +1106,7 @@ LPPN_YYSTYPE PN_MakeExpPoint
 
         case PN_NUMTYPE_VFP:
             // Convert the string to a VFP number
-            mpfr_init_set_str (&lpYYArg->at.aplVfp, &lppnLocalVars->lpszStart[lppnLocalVars->uNumIni], 10, MPFR_RNDN);
+            mpfr_init_set_str (&lpYYArg->at.aplVfp, &lppnLocalVars->lpszStart[lpYYArg->uNumAcc], 10, MPFR_RNDN);
 
             // Change the type to VFP
             lpYYArg->chType = PN_NUMTYPE_VFP;
@@ -806,7 +1116,7 @@ LPPN_YYSTYPE PN_MakeExpPoint
         case PN_NUMTYPE_FLT:
         case PN_NUMTYPE_INIT:
             // Use David Gay's routines
-            lpYYArg->at.aplFloat = MyStrtod (&lppnLocalVars->lpszNumAccum[uNumAcc], NULL);
+            lpYYArg->at.aplFloat = MyStrtod (&lpszNumAccum[uNumAcc], NULL);
 
             // Change the type to float
             lpYYArg->chType = PN_NUMTYPE_FLT;
@@ -830,9 +1140,9 @@ LPPN_YYSTYPE PN_MakeExpPoint
 //***************************************************************************
 
 LPPN_YYSTYPE PN_MakePiPoint
-    (LPPNLOCALVARS lppnLocalVars,       // Ptr to local pnLocalVars
-     LPPN_YYSTYPE  lpYYMultiplier,      // The multiplier part
-     LPPN_YYSTYPE  lpYYExponent)        // The exponent part
+    (LPPN_YYSTYPE  lpYYMultiplier,      // The multiplier part
+     LPPN_YYSTYPE  lpYYExponent,        // The exponent part
+     LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
 
 {
     PNNUMTYPE pnTypeRes;
@@ -847,16 +1157,20 @@ LPPN_YYSTYPE PN_MakePiPoint
         // Promote the multiplier and exponent to a common format
         pnTypeRes = aNumTypePromote[lpYYMultiplier->chType][lpYYExponent->chType];
 
-        // If the result is BOOL/INT, ...
-        if (pnTypeRes EQ PN_NUMTYPE_BOOL
-         || pnTypeRes EQ PN_NUMTYPE_INT)
+        // If the result is BOOL, ...
+        if (IsPNBoolType (pnTypeRes))
             // Make it FLT
             pnTypeRes = PN_NUMTYPE_FLT;
-
+        else
+        // If the result is INT, ...
+        if (IsPNIntType (pnTypeRes))
+            // Make it FLT
+            pnTypeRes++;
+        else
         // If the result is RAT, ...
-        if (pnTypeRes EQ PN_NUMTYPE_RAT)
+        if (IsPNRatType (pnTypeRes))
             // Make it VFP
-            pnTypeRes = PN_NUMTYPE_VFP;
+            pnTypeRes++;
     } else
         // Use common type
         pnTypeRes = lppnLocalVars->chComType;
@@ -864,12 +1178,12 @@ LPPN_YYSTYPE PN_MakePiPoint
     // If the multiplier must be promoted, ...
     if (pnTypeRes NE lpYYMultiplier->chType
      && aNumTypeAction[lpYYMultiplier->chType][pnTypeRes] NE NULL)
-        (*aNumTypeAction[lpYYMultiplier->chType][pnTypeRes]) (lpYYMultiplier);
+        (*aNumTypeAction[lpYYMultiplier->chType][pnTypeRes]) (lpYYMultiplier, lppnLocalVars);
 
     // If the exponent must be promoted, ...
     if (pnTypeRes NE lpYYExponent->chType
      && aNumTypeAction[lpYYExponent->chType  ][pnTypeRes] NE NULL)
-        (*aNumTypeAction[lpYYExponent->chType  ][pnTypeRes]) (lpYYExponent);
+        (*aNumTypeAction[lpYYExponent->chType  ][pnTypeRes]) (lpYYExponent, lppnLocalVars);
 
     // Set the result type
     lpYYMultiplier->chType =
@@ -878,13 +1192,13 @@ LPPN_YYSTYPE PN_MakePiPoint
     // Split cases based upon the numeric type
     switch (pnTypeRes)
     {
-        case PN_NUMTYPE_BOOL:
-        case PN_NUMTYPE_INT:
-            // The result is Multiplier x (o1) * Exponent
-            lpYYMultiplier->at.aplFloat *= pow (FloatPi, (APLFLOAT) lpYYExponent->at.aplInteger);
-
-            break;
-
+////////case PN_NUMTYPE_BOOL:
+////////case PN_NUMTYPE_INT:
+////////    // The result is Multiplier x (o1) * Exponent
+////////    lpYYMultiplier->at.aplFloat *= pow (FloatPi, (APLFLOAT) lpYYExponent->at.aplInteger);
+////////
+////////    break;
+////////
         case PN_NUMTYPE_FLT:
             // The result is Multiplier x (o1) * Exponent
             lpYYMultiplier->at.aplFloat *= pow (FloatPi, lpYYExponent->at.aplFloat);
@@ -911,13 +1225,6 @@ LPPN_YYSTYPE PN_MakePiPoint
             break;
         } // End PN_NUMTYPE_VFP
 
-        case PN_NUMTYPE_HC2:
-        case PN_NUMTYPE_HC4:
-        case PN_NUMTYPE_HC8:
-            // ***FINISHME***
-
-            break;
-
         defstop
             break;
     } // End SWITCH
@@ -933,9 +1240,9 @@ LPPN_YYSTYPE PN_MakePiPoint
 //***************************************************************************
 
 LPPN_YYSTYPE PN_MakeVfpPoint
-    (LPPNLOCALVARS lppnLocalVars,       // Ptr to local pnLocalVars
-     LPPN_YYSTYPE  lpYYArg,             // The mantissa part
-     LPPN_YYSTYPE  lpYYExponent)        // The exponent part (may be NULL)
+    (LPPN_YYSTYPE  lpYYArg,             // The mantissa part
+     LPPN_YYSTYPE  lpYYExponent,        // The exponent part (may be NULL)
+     LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
 
 {
     UINT      uNumAcc,                  // Starting offset
@@ -944,6 +1251,11 @@ LPPN_YYSTYPE PN_MakeVfpPoint
               uLen;                     // # accumulated chars
     mp_prec_t uOldPrec,                 // Old precision
               uNewPrec;                 // # significant bits
+    LPCHAR    lpszNumAccum;             // Ptr to next byte
+
+    // Initialize the starting offset
+    uNumAcc = lpYYArg->uNumAcc;
+    lpszNumAccum = &lppnLocalVars->lpszNumAccum[0];
 
     // If there's been a YYERROR, ...
     if (lppnLocalVars->bYYERROR)
@@ -952,15 +1264,12 @@ LPPN_YYSTYPE PN_MakeVfpPoint
     Assert (lppnLocalVars->chComType EQ PN_NUMTYPE_INIT
          || lppnLocalVars->chComType EQ PN_NUMTYPE_VFP);
 
-    // Initialize the starting offset
-    uNumAcc = lpYYArg->uNumAcc;
-
     // Get # accumulated chars
-    uLen = lstrlen (&lppnLocalVars->lpszNumAccum[uNumAcc]);
+    uLen = lstrlen (&lpszNumAccum[uNumAcc]);
 
     // Calculate the # significant digits in the number
     for (uDig = uArg = 0; uArg < uLen; uArg++)
-    if (isdigit (lppnLocalVars->lpszNumAccum[uNumAcc + uArg]))
+    if (isdigit (lpszNumAccum[uNumAcc + uArg]))
         uDig++;
 
     // Convert the # significant digits to # significant bits
@@ -973,7 +1282,7 @@ LPPN_YYSTYPE PN_MakeVfpPoint
     // If present, ...
     if (lpYYExponent)
         // Insert the exponent separator
-        lppnLocalVars->lpszNumAccum[lpYYExponent->uNumAcc - 1] = 'e';
+        lpszNumAccum[lpYYExponent->uNumAcc - 1] = 'e';
 
     // Get and save the current precision
     uOldPrec = mpfr_get_default_prec ();
@@ -982,7 +1291,7 @@ LPPN_YYSTYPE PN_MakeVfpPoint
     mpfr_set_default_prec (max (uNewPrec, uOldPrec));
 
     // Use MPFR routine
-    mpfr_init_set_str (&lpYYArg->at.aplVfp, &lppnLocalVars->lpszNumAccum[uNumAcc], 10, MPFR_RNDN);
+    mpfr_init_set_str (&lpYYArg->at.aplVfp, &lpszNumAccum[uNumAcc], 10, MPFR_RNDN);
 
     // Restore the default precision
     mpfr_set_default_prec (uOldPrec);
@@ -990,6 +1299,7 @@ LPPN_YYSTYPE PN_MakeVfpPoint
     // Change the type to VFP
     lpYYArg->chType = PN_NUMTYPE_VFP;
 
+    // Return as the result
     return lpYYArg;
 } // End PN_MakeVfpPoint
 
@@ -1111,8 +1421,12 @@ UBOOL PN_VectorAcc
 //// && (strncmp (lpStart,              INFINITY1_STR, uNumLen) NE 0)   //      {inf} is FLT, not INT
         ;
 
+    // Izit expressible as a rational?
+    lppnVector[lppnLocalVars->uGlbVectorCurLen].bRat =
+      (strspn (lpStart, OVERBAR1_STR INFINITY1_STR "0123456789xrJijkl") EQ uNumLen);
+
     // Set the new initial point
-    lppnLocalVars->uNumIni = lppnLocalVars->uNumCur;
+    lppnLocalVars->uNumIni += uNumLen;
 
     // Count in another item
     lppnLocalVars->uGlbVectorCurLen++;
@@ -1145,22 +1459,23 @@ WSFULL_EXIT:
 #endif
 
 UBOOL PN_VectorRes
-    (LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
+    (LPPNLOCALVARS lppnLocalVars)           // Ptr to local pnLocalVars
 
 {
-    UINT        uCnt,                   // Loop counter
-                uRes;                   // ...
-    UBOOL       bRet = FALSE;           // TRUE iff the result is valid
-    LPPN_VECTOR lppnVector;             // Ptr to accumulated vector
-    APLSTYPE    aplTypeRes;             // Result storage type
-    APLNELM     aplNELMRes;             // ...    NELM
-    APLRANK     aplRankRes;             // ...    rank
-    APLUINT     ByteRes;                // # bytes in the string vector
-    LPVOID      lpMemRes = NULL;        // Ptr to result global memory
-    PNLOCALVARS pnLocalVars = {0};      // PN Local vars
-    PNNUMTYPE   chType;                 // The bInteger numeric type (see PNNUMTYPE)
-    PN_YYSTYPE  pnType = {0};           // PN_YYSTYPE stack element
-    UBOOL       bPass1;                 // TRUE iff pass 1
+    UINT              uCnt,                 // Loop counter
+                      uRes;                 // ...
+    UBOOL             bRet = FALSE;         // TRUE iff the result is valid
+    LPPN_VECTOR       lppnVector;           // Ptr to accumulated vector
+    APLSTYPE          aplTypeRes;           // Result storage type
+    APLNELM           aplNELMRes;           // ...    NELM
+    APLRANK           aplRankRes;           // ...    rank
+    APLUINT           ByteRes;              // # bytes in the string vector
+    LPVOID            lpMemRes;             // Ptr to result global memory
+    PNLOCALVARS       pnLocalVars = {0};    // PN Local vars
+    PNNUMTYPE         chType,               // The bInteger numeric type (see PNNUMTYPE)
+                      chComType;            // Common ...
+    PN_YYSTYPE        pnType = {0};         // PN_YYSTYPE stack element
+    UBOOL             bPass1;               // TRUE iff pass 1
 
     // Lock the memory to get a ptr to it
     lppnVector = MyGlobalLock (lppnLocalVars->hGlbVector);
@@ -1177,7 +1492,8 @@ UBOOL PN_VectorRes
     if (bPass1)
     {
         // Initialize the starting datatype
-        chType                   =
+        chType                    =
+        chComType                =
         lppnLocalVars->chComType = PN_NUMTYPE_INIT;
 
         // Scan all items to determine a common datatype
@@ -1185,16 +1501,21 @@ UBOOL PN_VectorRes
         {
             if (lppnVector[uCnt].bInteger
              && IsPnNumTypeFlt (lppnVector[uCnt].chType))
-                chType = aNumTypePromote[chType][PN_NUMTYPE_INT         ];
+                chType = aNumTypePromote[chType][PN_NUMTYPE_INT];
+            else
+            if (lppnVector[uCnt].bRat
+             && IsPnNumTypeFlt (lppnVector[uCnt].chType))
+                chType = aNumTypePromote[chType][PN_NUMTYPE_RAT];
             else
                 chType = aNumTypePromote[chType][lppnVector[uCnt].chType];
             lppnLocalVars->chComType = aNumTypePromote[lppnLocalVars->chComType][lppnVector[uCnt].chType];
+                           chComType = aNumTypePromote[               chComType][                 chType];
         } // End FOR
 
-        // If the bInteger type is Rational, ...
-        if (IsPnNumTypeRat (chType))
+        // If the bInteger/bRat common type is Rational, ...
+        if (IsPnNumTypeRat (chComType))
             // Use that type so that 111...111 1r2 111...111 comes out as Rational
-            lppnLocalVars->chComType = chType;
+            lppnLocalVars->chComType = chComType;
 
         // Translate the datatype to an array storage type
         aplTypeRes = TranslatePnTypeToArrayType (lppnLocalVars->chComType);
@@ -1215,9 +1536,9 @@ UBOOL PN_VectorRes
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (lppnLocalVars->hGlbRes);
+        lppnLocalVars->lpMemHdrRes = MyGlobalLock (lppnLocalVars->hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        lppnLocalVars->lpMemHdrRes
         // Fill in the header
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = aplTypeRes;
@@ -1234,10 +1555,10 @@ UBOOL PN_VectorRes
         // If it's not a scalar, ...
         if (!IsScalar (aplRankRes))
             // Save the dimension
-            *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
+            *VarArrayBaseToDim (lppnLocalVars->lpMemHdrRes) = aplNELMRes;
 
         // Skip over the header and dimensions to the data
-        lpMemRes = VarArrayDataFmBase (lpMemRes);
+        lpMemRes = VarArrayDataFmBase (lppnLocalVars->lpMemHdrRes);
 
         // Save common values
         pnLocalVars.lpszAlphaInt  = lppnLocalVars->lpszAlphaInt;
@@ -1248,16 +1569,27 @@ UBOOL PN_VectorRes
         // Convert all items to a common datatype (lppnLocalVars->chComType)
         for (uCnt = uRes = 0; uCnt < aplNELMRes; uCnt++)
         {
+            // We're trying to avioid anomalies such as having (say)
+            // 1:   1111111111111111111111111111111111111 1r2
+            //   return a VFP because the string of 1s is converted to FLT
+            //   and FLT RAT -> VFP where we would prefer RAT RAT -> RAT
+            // 2:   1111111111111111111111111111111111111 0i1
+            //   return a HC2F because the string of 1s is converted to FLT
+            //   and FLT HC2I -> HC2F where we would prefer RAT HC2I -> HC2R.
+            // 3:   0.1 5v
+            //   convert 0.1 as FLT and then to VFP
+            //   instead of convert 0.1 to VFP directly and not introduce spurious trailing digits.
+
             // If the first pass is float,
-            //   and the actual and common types are different,
-            //   and the result type isn't simple integer (meaning the only conversions are BOOL -> INT), ...
+            //   and (the item can be expressed as an integer,
+            //        OR the common type is VFP)
             if (IsPnNumTypeFlt (lppnVector[uCnt].chType)
-             && lppnVector[uCnt].chType NE lppnLocalVars->chComType
-             && !IsSimpleInt (aplTypeRes))
+             && (IsPnNumTypeVfp (lppnLocalVars->chComType) || lppnVector[uCnt].bInteger))
             {
                 // Save the starting point and length of the character stream
                 pnLocalVars.lpszStart    = lppnVector[uCnt].lpStart;
                 pnLocalVars.uNumLen      = lppnVector[uCnt].uNumLen;
+                pnLocalVars.uNumIni      = 0;
                 pnLocalVars.chComType    = lppnLocalVars->chComType;
 
                 // Call the parser to convert the PN to a number
@@ -1272,7 +1604,7 @@ UBOOL PN_VectorRes
                     pnType.at = lpMemVector->at;
 
                     // Promote to the common type and free old storage
-                    (*aNumTypeAction[lpMemVector->chType][lppnLocalVars->chComType]) (&pnType);
+                    (*aNumTypeAction[lpMemVector->chType][lppnLocalVars->chComType]) (&pnType, lppnLocalVars);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (pnLocalVars.hGlbVector); lpMemVector = NULL;
@@ -1287,7 +1619,7 @@ UBOOL PN_VectorRes
                 pnType.at = lppnVector[uCnt].at;
 
                 // Promote to the common type and free old storage
-                (*aNumTypeAction[lppnVector[uCnt].chType][lppnLocalVars->chComType]) (&pnType);
+                (*aNumTypeAction[lppnVector[uCnt].chType][lppnLocalVars->chComType]) (&pnType, lppnLocalVars);
             } // End IF/ELSE
 
             // Split cases based upon the common type
@@ -1362,10 +1694,10 @@ WSFULL_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    if (lppnLocalVars->hGlbRes && lpMemRes)
+    if (lppnLocalVars->hGlbRes NE NULL && lppnLocalVars->lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (lppnLocalVars->hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (lppnLocalVars->hGlbRes); lppnLocalVars->lpMemHdrRes = NULL;
     } // End IF
 
     // We no longer need this ptr

@@ -2622,6 +2622,31 @@ void mpiq_canonicalize
 
 
 //***************************************************************************
+//  $mpiq_clear
+//
+//  Clear a rational value
+//***************************************************************************
+
+void mpiq_clear
+    (mpq_t op)
+
+{
+    if (!mpq_inf_p (op))
+        mpq_clear (op);
+    else
+    {
+        // Set the numerator & denominator to all 0s
+        op->_mp_num._mp_size  =
+        op->_mp_den._mp_size  = 0;
+        op->_mp_num._mp_alloc =
+        op->_mp_den._mp_alloc = 0;
+        op->_mp_num._mp_d     =
+        op->_mp_den._mp_d     = NULL;
+    } // End IF/ELSE
+} // End mpiq_clear
+
+
+//***************************************************************************
 //  $mpiq_set
 //
 //  Save a rational in another rational
@@ -2733,50 +2758,6 @@ int mpiq_set_str
         mpq_set_inf (rop, p[0] EQ '-');
 
         return 0;
-    } else
-    if(q EQ NULL
-     && dpt NE NULL)
-    {
-        int  res, frcLen;
-        APLRAT mpqt_frc = {0},
-               mpqt_div = {0};
-
-        // Zap the decimal point
-        *dpt = AC_EOS;
-
-        // Convert the integer part to a RAT
-        res = mpq_set_str (mpq_clr_inf (rop), str, base);
-
-        // Restore the decimal point
-        *dpt = '.';
-
-        if (res NE 0)
-            goto ERROR_EXIT;
-
-        // Initialize to 0/1
-        mpq_init (&mpqt_frc);
-        mpq_init (&mpqt_div);
-
-        // Convert the fractional part to a RAT
-        res = mpz_set_str (mpq_numref (&mpqt_frc), &dpt[1], base);
-        if (res NE 0)
-            goto ERROR_EXIT;
-        // Get the length of the fractional part
-        frcLen = lstrlen (&dpt[1]);
-
-        // Calculate the fractional part's divisor as base^frcLen
-        mpz_ui_pow_ui (mpq_numref (&mpqt_div), base, frcLen);
-
-        // Divide the fractional part by base^frcLen
-        mpq_div (&mpqt_frc, &mpqt_frc, &mpqt_div);
-
-        // Add together the integer and fractional parts
-        mpq_add (rop, rop, &mpqt_frc);
-ERROR_EXIT:
-        Myq_clear (&mpqt_div);
-        Myq_clear (&mpqt_frc);
-
-        return res;
     } else
         return mpq_set_str (mpq_clr_inf (rop), str, base);
 } // End mpiq_set_str
@@ -3885,7 +3866,7 @@ void mpifr_div
      && mpfr_inf_p (op2))
         // N / _ is 0
         // Divide infinity into N returns 0 with op1xop2's sign
-        mpfr_set_d (rop, (SIGN_APLVFP (op1) NE SIGN_APLVFP (op2)) ? -0.0 : 0.0, rnd);
+        mpfr_set_d (rop, (OptionFlags.bAllowNeg0 && (SIGN_APLVFP (op1) NE SIGN_APLVFP (op2))) ? -0.0 : 0.0, rnd);
     else
     if (mpfr_inf_p (op1)
      && mpfr_inf_p (op2))

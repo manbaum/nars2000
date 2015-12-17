@@ -6846,6 +6846,7 @@ void InitFsaTabs
     // Ensure we calculated the lengths properly
     InitFsaTabTK ();
     InitFsaTabFS ();
+    InitFsaTabCR ();
 } // End InitFsaTabs
 #endif
 

@@ -29,6 +29,7 @@
   #include "bjhash.pro"
   #include "common.pro"
   #include "convert.pro"
+  #include "cr_proc.pro"
   #include "crash.pro"
 #ifndef DEBUG
   #include "crashserver.pro"

@@ -90,7 +90,7 @@ HBITMAP hBitmapWS,                  // Handle to WS bitmap strip
 #define MAX_PTSIZE      72
 #define MIN_PTSIZE       8
 
-#define MAXTIPWIDTHINCHARS  55
+#define MAXTIPWIDTHINCHARS  70
 
 
 //***************************************************************
@@ -1905,7 +1905,7 @@ LRESULT APIENTRY FW_RBWndProc
 //***************************************************************************
 //  $GetComboBoxFont
 //
-//  Get teh ComboBox font
+//  Get the ComboBox font
 //***************************************************************************
 
 HFONT GetComboBoxFont
@@ -3080,7 +3080,7 @@ typedef struct tagLANGCHARS
                     // If there's a last outlined char, ...
                     if (uLastCnt NE NOLASTCHAR)
                     {
-                        static WCHAR wszText[1024];
+                        static WCHAR wszText[2048];
                                UINT  uLen;
 
                         // Create the tooltip title

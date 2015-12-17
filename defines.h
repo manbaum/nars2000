@@ -179,6 +179,7 @@
 #define DEF_VIEWSTATUSBAR           TRUE
 #define DEF_DISPFCNLINENUMS         TRUE
 #define DEF_DISPMPSUF               FALSE
+#define DEF_ALLOWNEG0               FALSE
 
 
 // Range limits for []vars
@@ -523,12 +524,6 @@ default:        \
 
 #define WS_CRLF         L"\r\n"     // 0D0A:  CR/LF
 
-#define INFINITY1       '~'         // Use when translating to non-WCHAR code
-                                    //   in <pn_parse.y>
-#define INFINITY1_STR   "~"         // ...
-#define OVERBAR1        '-'         // ...
-#define OVERBAR1_STR    "-"         // ...
-
 #define DEF_UNDERFLOW       L'_'    // Default underflow char
 #define DEF_UNDERFLOW_WS    L"_"    // ...
 #define DEF_EXPONENT_UC     L'E'    // ...     exponent  ...
@@ -543,6 +538,12 @@ default:        \
 #define DEF_POSINFINITY_CHAR     '!'
 #define DEF_POSINFINITY_STR      "!"
 #define DEF_NEGINFINITY_STR     "-!"
+
+// Use when translating to non-WCHAR code in <pn_parse.y>
+#define INFINITY1       DEF_POSINFINITY_CHAR
+#define INFINITY1_STR   DEF_POSINFINITY_STR
+#define OVERBAR1        '-'
+#define OVERBAR1_STR    "-"
 
 
 //***************************************************************************

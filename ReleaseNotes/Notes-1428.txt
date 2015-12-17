@@ -1,6 +1,3 @@
-Version 0.4.12.xx consists of the following Builds:
-
-
 Build #1428 -- Version 0.4.12.xx
 --------------------------------
 
@@ -63,58 +60,3 @@ REBAR.C:
 
 TOKENIZE.C:
   Initialize ConvertToRational FSA table.
-
-
-Build #1427 -- Version 0.4.12.xx
---------------------------------
-
-* Fix Bug In Syntax Analyzer
-
-Directory trunk:
-
-PARSELINE.C:
-  After <PARSELINE_SCAN1>, check for VALUE and SYNTAX ERRORs and avoid reducing if present.
-
-
-Build #1426 -- Version 0.4.12.xx
---------------------------------
-
-* Use Proper Macro On String To Get Sizeof
-
-Directory trunk:
-
-FH_PARSE.Y:
-PN_PARSE.Y:
-  In <fh_yyerror>and <pn_parse.y>, use macro <strsizeof> to get the sizeof not counting the trailing zero.
-
-MACROS.H:
-  Define macro <strsizeof> to get sizeof a string not counting the trailing zero.
-
-PN_PARSE.H:
-  Define common string names for error messages.
-
-
-Build #1425 -- Version 0.4.12.xx
---------------------------------
-
-* Remove Spurious Trailing Digits From Display Of VFP Numbers
-
-Directory trunk:
-
-DISPLAY.C:
-  In <FormatAplVfpFC>, remove spurious trailing digits from teh display of VFP numbers
-    in both mantissa and exponent.
-
-
-Build #1424 -- Version 0.4.12.xx
---------------------------------
-
-* Fix Bug In Syntax Analyzer Cleanup
-
-Directory trunk:
-
-PARSELINE.C:
-  After <PARSELINE_ERROR>, be sure to cleanup the left stack on which there might be unfreed temps.
-
-VER.RC:
-  Increment version # to 0.4.12.xx.

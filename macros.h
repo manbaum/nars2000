@@ -23,6 +23,7 @@
 
 #define MB(a)                       MessageBox  (NULL, (a),      APPNAME, MB_OK)
 #define MBW(a)                      MessageBoxW (hWndMF, (a), WS_APPNAME, MB_OK)
+#define MBPW(a,b)                   MessageBoxW (hWndMF, (a), WS_APPNAME, MB_OK | (b))  // With parameter
 #define MBC(a)                  {if (MessageBox  (NULL, (a),      APPNAME, MB_OKCANCEL) EQ IDCANCEL) DbgBrk ();}
 #define MBWC(a)                 {if (MessageBoxW (hWndMF, (a), WS_APPNAME, MB_OKCANCEL) EQ IDCANCEL) DbgBrk ();}
 #define IsGlbTypeVarDir_PTB(a)  (IsGlobalTypeArray_PTB (            (a), VARARRAY_HEADER_SIGNATURE))
@@ -147,6 +148,7 @@
   #define CheckMemStat()                  _CheckMemStat ()
 
   #define Assert(a)                       ((a) || (DbgBrk (), nop (), 0))
+  #define BreakIf(a)                      Assert (!(a))
 //#define nop()                           // Use already defined function
 //#define DbgNop()                        // Use already defined function
   #define YYCheckInuse(a)                 _YYCheckInuse (a, FNLN)
@@ -185,6 +187,7 @@
   #define CheckMemStat()
 
   #define Assert(a)                       ((void) 0)
+  #define BreakIf(a)                      ((void) 0)
 ////  #define Assert(a) ((a) || (AssertPrint(#a, FNLN), 0))
   #define nop()                           {}    // Nothing
   #define DbgNop()                        {}    // Nothing
@@ -288,10 +291,10 @@
 // Define macro for detecting list array type
 #define IsList(ArrType)                 ((ArrType) EQ ARRAY_LIST)
 
-// Define macro for detecting an Rat
+// Define macro for detecting a Rat
 #define IsRat(ArrType)                  (ArrType EQ ARRAY_RAT)
 
-// Define macro for detecting an Variable FP
+// Define macro for detecting a Variable FP
 #define IsVfp(ArrType)                  (ArrType EQ ARRAY_VFP)
 
 // Define macros for detecting permutation vectors
@@ -499,6 +502,20 @@
 // Define macro for inverting VFP numbers
 #define mpfr_inv(rop,op,rnd)    mpfr_si_div (rop, 1, op, rnd)
 
+// Define macro for PN Boolean type
+#define IsPNBoolType(a)         ((a) EQ PN_NUMTYPE_BOOL)
+
+// Define macro for PN INT type
+#define IsPNIntType(a)          ((a) EQ PN_NUMTYPE_INT)
+
+// Define macro for PN FLT type
+#define IsPNFltType(a)          ((a) EQ PN_NUMTYPE_FLT)
+
+// Define macro for PN RAT type
+#define IsPNRatType(a)          ((a) EQ PN_NUMTYPE_RAT)
+
+// Define macro for PN VFP type
+#define IsPNVfpType(a)          ((a) EQ PN_NUMTYPE_VFP)
 // Define macros for extracting the left and right operands from operators
 #define GetMonLftOper(lpYYFcnStrOpr,lptkAxisOpr)    &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)]
 #define GetDydLftOper(lpYYFcnStrRht)                &lpYYFcnStrRht[lpYYFcnStrRht->TknCount]

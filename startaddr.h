@@ -50,7 +50,7 @@ typedef struct tagSTART_ADDRESSES
     "GetNameType"               , (LPUCHAR) &GetNameType                ,
     "AssignArrayCommon"         , (LPUCHAR) &AssignArrayCommon          ,
     "AssignNamedVars_EM"        , (LPUCHAR) &AssignNamedVars_EM         ,
-    "ModifyAssignNameVals_EM"   , (LPUCHAR) &ModifyAssignNameVals_EM    ,
+    "ModifyAssignNamedVars_EM"  , (LPUCHAR) &ModifyAssignNamedVars_EM   ,
 
     // axisfns.c
     "CheckAxisOper"             , (LPUCHAR) &CheckAxisOper              ,

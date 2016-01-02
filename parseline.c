@@ -264,7 +264,9 @@
 #define RHT2SYNOBJ                  ((RSTACKLEN > 1) ? lpMemPTD->lpplRhtStk[-2]->tkToken.tkSynObj : soNONE)
 #define LSTSYNOBJ                    lpplYYLstRht->tkToken.tkSynObj
 #define LSTACKLEN                   (lpMemPTD->lpplLftStk - lpplOrgLftStk)
+#define LSTACKLEN2                  (lpplLocalVars->lpMemPTD->lpplLftStk - lpplLocalVars->lpMemPTD->lpplOrgLftStk)
 #define RSTACKLEN                   (lpMemPTD->lpplRhtStk - lpplOrgRhtStk)
+#define RSTACKLEN2                  (lpplLocalVars->lpMemPTD->lpplRhtStk - lpplLocalVars->lpMemPTD->lpplOrgRhtStk)
 
 #ifdef DEBUG
 //#define DEBUG2
@@ -542,9 +544,22 @@ LPPL_YYSTYPE plRedLNR_SPA
             goto ERROR_EXIT;
     } // End IF
 
-    // Assign the names
-    bRet = AssignNamedVars_EM (&lpplYYCurObj->tkToken, &lpplYYLstRht->tkToken);
+    // If the left fcn is present (select spec as in NAM F {is} A), ...
+    if (lpplYYLstRht->lpplYYFcnCurry NE NULL)
+    {
+        Assert (!lpplYYCurObj->YYStranding && !lpplYYLstRht->lpplYYFcnCurry->YYStranding);
+        Assert ( lpplYYCurObj->tkToken.tkSynObj EQ soLNR);
 
+        // Modify assign the names
+        bRet =
+          ModifyAssignNamedVars_EM (lpplYYCurObj,
+                                    lpplYYLstRht->lpplYYFcnCurry,
+                                   &lpplYYLstRht->tkToken);
+    } else
+        // Assign the names
+        bRet =
+          AssignNamedVars_EM (lpplYYCurObj,
+                              lpplYYLstRht);
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
@@ -3402,14 +3417,13 @@ LPPL_YYSTYPE plRedNAM_ISPA
     else
     // If the left fcn is present (select spec as in NAM[A] F {is} A), ...
     if (lpplYYLstRht->lpplYYFcnCurry)
-    {
         // Assign the value to the indexed name via the modify function
         bRet =
           ArrayIndexFcnSet_EM (&lpplYYCurObj->tkToken,
                                &lpplYYLstRht->lpplYYIdxCurry->tkToken,
                                 lpplYYLstRht->lpplYYFcnCurry,
                                &lpplYYLstRht->tkToken);
-    } else
+    else
         // Assign the value to the indexed name
         bRet =
           ArrayIndexSet_EM    (&lpplYYCurObj->tkToken,
@@ -5753,10 +5767,89 @@ PL_YYLEX_FCNNAMED:
                     break;
 
                 case NAMETYPE_VAR:
-                    // Late catch of NAM     F {is} A
-                    //   and         NAM [A] F {is} A
-                    if (lpplLocalVars->lpMemPTD->lpplRhtStk[-1]->tkToken.tkSynObj EQ soSPA
-                     || lpplLocalVars->lpMemPTD->lpplRhtStk[-1]->tkToken.tkSynObj EQ soISPA)
+                {
+                    LPPL_YYSTYPE lpYYRht0 = NULL,
+                                 lpYYRht1 = NULL,
+                                 lpYYRht2 = NULL,
+                                 lpYYRht3 = NULL,
+                                 lpYYLft0 = NULL,
+                                 lpYYLft1 = NULL,
+                                 lpYYLft2 = NULL,
+                                 lpYYLft3 = NULL;
+                    LPTOKEN      lptkRht0 = NULL,
+                                 lptkRht1 = NULL,
+                                 lptkRht2 = NULL,
+                                 lptkRht3 = NULL,
+                                 lptkLft0 = NULL,
+                                 lptkLft1 = NULL,
+                                 lptkLft2 = NULL,
+                                 lptkLft3 = NULL;
+////////////////////LPTOKEN      lptkNxt1 = NULL,
+////////////////////             lptkNxt2 = NULL;
+                    UBOOL        bAssignName;
+
+                    if (RSTACKLEN2 > 0)
+                    {
+                        lpYYRht0 = lpplLocalVars->lpMemPTD->lpplRhtStk[ 0];
+                        lptkRht0 = &lpYYRht0->tkToken;
+                    } // End IF
+
+                    if (RSTACKLEN2 > 1)
+                    {
+                        lpYYRht1 = lpplLocalVars->lpMemPTD->lpplRhtStk[-1];
+                        lptkRht1 = &lpYYRht1->tkToken;
+                    } // End IF
+
+                    if (RSTACKLEN2 > 2)
+                    {
+                        lpYYRht2 = lpplLocalVars->lpMemPTD->lpplRhtStk[-2];
+                        lptkRht2 = &lpYYRht2->tkToken;
+                    } // End IF
+
+                    if (RSTACKLEN2 > 3)
+                    {
+                        lpYYRht3 = lpplLocalVars->lpMemPTD->lpplRhtStk[-3];
+                        lptkRht3 = &lpYYRht3->tkToken;
+                    } // End IF
+
+                    if (LSTACKLEN2 > 0)
+                    {
+                        lpYYLft0 = lpplLocalVars->lpMemPTD->lpplLftStk[ 0];
+                        lptkLft0 = &lpYYLft0->tkToken;
+                    } // End IF
+
+                    if (LSTACKLEN2 > 1)
+                    {
+                        lpYYLft1 = lpplLocalVars->lpMemPTD->lpplLftStk[-1];
+                        lptkLft1 = &lpYYLft1->tkToken;
+                    } // End IF
+
+                    if (LSTACKLEN2 > 2)
+                    {
+                        lpYYLft2 = lpplLocalVars->lpMemPTD->lpplLftStk[-2];
+                        lptkLft2 = &lpYYLft2->tkToken;
+                    } // End IF
+
+                    if (LSTACKLEN2 > 3)
+                    {
+                        lpYYLft3 = lpplLocalVars->lpMemPTD->lpplLftStk[-3];
+                        lptkLft3 = &lpYYLft3->tkToken;
+                    } // End IF
+
+////////////////////lptkNxt1 = &lpplLocalVars->lptkNext[1];
+////////////////////lptkNxt2 = &lpplLocalVars->lptkNext[2];
+
+                    bAssignName = ((lptkRht1 NE NULL)
+                                && ((lptkRht1->tkSynObj EQ soSPA) || (lptkRht1->tkSynObj EQ soISPA))
+                                && ((lpYYRht1->lpplYYFcnCurry NE NULL)))
+                               || ((lptkRht2 NE NULL)
+                                && ((lptkRht2->tkSynObj EQ soSPA) || (lptkRht2->tkSynObj EQ soISPA))
+                                && ((lpYYRht2->lpplYYFcnCurry NE NULL)));
+                    //                                          LftStk                  RhtStk
+                    // Late catch of NAM          F {is} A
+                    //   and         NAM [A]      F {is} A
+                    //   and        (NAM ... NAM) F {is} A
+                    if (bAssignName)
                         // Mark as being assigned into
                         lpplYYLval->tkToken.tkFlags.bAssignName = TRUE;
 
@@ -5790,6 +5883,7 @@ PL_YYLEX_FCNNAMED:
                         lpplYYLval->tkToken.tkSynObj = soNAM;
 
                     break;
+                } // case NAMETYPE_VAR
 
                 case NAMETYPE_FN0:
                     // Call this one TKT_FCNNAMED

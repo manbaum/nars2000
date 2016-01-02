@@ -1903,7 +1903,7 @@ UBOOL InitVarSTEs
     stFlagsClr.Inuse = TRUE;
 
     // If the token is defined, ...
-    if (lptkArg && numArgSTE)
+    if (lptkArg NE NULL && numArgSTE NE 0)
     {
         // Split cases based upon the variable token type
         switch (lptkArg->tkFlags.TknType)
@@ -1917,6 +1917,7 @@ UBOOL InitVarSTEs
                     *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
 ////////////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
 
+                    // Copy the immediate value into each STE
                     (*lplpSymEntry)->stFlags.Imm        = TRUE;
                     (*lplpSymEntry)->stFlags.ImmType    = lptkArg->tkFlags.ImmType;
                     (*lplpSymEntry)->stFlags.Value      = TRUE;
@@ -1951,6 +1952,7 @@ UBOOL InitVarSTEs
                         *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
 ////////////////////////(*lplpSymEntry)->stData.stLongest = 0;      // stLongest set below
 
+                        // Copy the immediate value into each STE
                         (*lplpSymEntry)->stFlags.Imm        = TRUE;
                         (*lplpSymEntry)->stFlags.ImmType    = lptkArg->tkData.tkSym->stFlags.ImmType;
                         (*lplpSymEntry)->stFlags.Value      = TRUE;
@@ -2008,8 +2010,8 @@ UBOOL InitVarSTEs
 #undef  lpHeader
 
             // These were checked for above, but it never hurts to test again
-            Assert (aplNELMArg EQ numArgSTE);
-            Assert (IsVector (aplRankArg));
+            Assert (aplNELMArg EQ numArgSTE
+                 || aplNELMArg EQ 1);
 
             // Skip over the header and dimensions to the data
             lpMemArg = VarArrayDataFmBase (lpMemArg);
@@ -2045,6 +2047,8 @@ UBOOL InitVarSTEs
                         (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
                         (*lplpSymEntry)->stData.stBoolean   = BIT0 & ((*(LPAPLBOOL) lpMemArg) >> uBitIndex);
 
+                        // If the arg is multi-element, ...
+                        if (aplNELMArg > 1)
                         // Check for end-of-byte
                         if (++uBitIndex EQ NBIB)
                         {
@@ -2060,8 +2064,12 @@ UBOOL InitVarSTEs
                         (*lplpSymEntry)->stFlags.Value      = TRUE;
                         (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
                         (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
-                        (*lplpSymEntry)->stData.stInteger   = *((LPAPLINT) lpMemArg)++;
+                        (*lplpSymEntry)->stData.stInteger   = *(LPAPLINT) lpMemArg;
 
+                        // If the arg is multi-element, ...
+                        if (aplNELMArg > 1)
+                            // Skip to next element in arg
+                            ((LPAPLINT) lpMemArg)++;
                         break;
 
                     case ARRAY_FLOAT:
@@ -2070,8 +2078,12 @@ UBOOL InitVarSTEs
                         (*lplpSymEntry)->stFlags.Value      = TRUE;
                         (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
                         (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
-                        (*lplpSymEntry)->stData.stFloat     = *((LPAPLFLOAT) lpMemArg)++;
+                        (*lplpSymEntry)->stData.stFloat     = *(LPAPLFLOAT) lpMemArg;
 
+                        // If the arg is multi-element, ...
+                        if (aplNELMArg > 1)
+                            // Skip to next element in arg
+                            ((LPAPLFLOAT) lpMemArg)++;
                         break;
 
                     case ARRAY_CHAR:
@@ -2080,8 +2092,12 @@ UBOOL InitVarSTEs
                         (*lplpSymEntry)->stFlags.Value      = TRUE;
                         (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
                         (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
-                        (*lplpSymEntry)->stData.stChar      = *((LPAPLCHAR) lpMemArg)++;
+                        (*lplpSymEntry)->stData.stChar      = *(LPAPLCHAR) lpMemArg;
 
+                        // If the arg is multi-element, ...
+                        if (aplNELMArg > 1)
+                            // Skip to next element in arg
+                            ((LPAPLCHAR) lpMemArg)++;
                         break;
 
                     case ARRAY_APA:
@@ -2090,7 +2106,7 @@ UBOOL InitVarSTEs
                         (*lplpSymEntry)->stFlags.Value      = TRUE;
                         (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
                         (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
-                        (*lplpSymEntry)->stData.stInteger   = apaOffArg + apaMulArg * uSym;
+                        (*lplpSymEntry)->stData.stInteger   = apaOffArg + apaMulArg * ((aplNELMArg > 1) ? uSym : 0);
 
                         break;
 
@@ -2107,8 +2123,10 @@ UBOOL InitVarSTEs
                                 (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
                                 (*lplpSymEntry)->stData             = (*(LPAPLHETERO) lpMemArg)->stData;
 
-                                // Skip to next element in arg
-                                ((LPAPLHETERO) lpMemArg)++;
+                                // If the arg is multi-element, ...
+                                if (aplNELMArg > 1)
+                                    // Skip to next element in arg
+                                    ((LPAPLHETERO) lpMemArg)++;
 
                                 break;
 
@@ -2120,8 +2138,10 @@ UBOOL InitVarSTEs
                                 (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
                                 (*lplpSymEntry)->stData.stGlbData   = CopySymGlbInd_PTB (lpMemArg);
 
-                                // Skip to next element in arg
-                                ((LPAPLNESTED) lpMemArg)++;
+                                // If the arg is multi-element, ...
+                                if (aplNELMArg > 1)
+                                    // Skip to next element in arg
+                                    ((LPAPLNESTED) lpMemArg)++;
 
                                 break;
 
@@ -2174,8 +2194,10 @@ UBOOL InitVarSTEs
                         (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
                         (*lplpSymEntry)->stData.stGlbData   = MakePtrTypeGlb (hGlbRes);
 
-                        // Skip to next element in arg
-                        ((LPAPLRAT) lpMemArg)++;
+                        // If the arg is multi-element, ...
+                        if (aplNELMArg > 1)
+                            // Skip to next element in arg
+                            ((LPAPLRAT) lpMemArg)++;
 
                         break;
 
@@ -2222,8 +2244,10 @@ UBOOL InitVarSTEs
                         (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
                         (*lplpSymEntry)->stData.stGlbData   = MakePtrTypeGlb (hGlbRes);
 
-                        // Skip to next element in arg
-                        ((LPAPLVFP) lpMemArg)++;
+                        // If the arg is multi-element, ...
+                        if (aplNELMArg > 1)
+                            // Skip to next element in arg
+                            ((LPAPLVFP) lpMemArg)++;
 
                         break;
 

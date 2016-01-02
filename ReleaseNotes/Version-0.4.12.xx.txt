@@ -1,6 +1,16 @@
 Version 0.4.12.xx consists of the following Builds:
 
 
+Build #1432 -- Version 0.4.12.xx
+--------------------------------
+
+* Reduce The Number Of Times ECM Is Called When Trying To factor A Number
+
+PF_PI.C:
+  In <PrimeFactor>, limit the number of times ECM is called so as to not wait on most likely unsuccessful attempts to factor a large number.
+  Add more DEBUG stmts to indicate how many iterations are being run.
+
+
 Build #1431 -- Version 0.4.12.xx
 --------------------------------
 

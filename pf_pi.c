@@ -1494,11 +1494,11 @@ APLMPI PrimeFactor
 #define DPRINTF
 #endif
 
-#define TryECM(Method,dB1,dB2)                                                                                  \
+#define TryECM(Method,dB1,dB2,iCnt,N)                                                                           \
     ecmParams->method    = Method;                                                                              \
     mpz_set_d (ecmParams->B2, dB2);                                                                             \
                                                                                                                 \
-    dprintfWL0 (L"Trying %S", szMethods[Method]);                                                               \
+    dprintfWL0 (L"Trying %S %u of %u", szMethods[Method], iCnt, N);                                             \
     DPRINTF (dB1, dB2, N);                                                                                      \
                                                                                                                 \
     /* Try ECM */                                                                                               \
@@ -1541,17 +1541,20 @@ APLMPI PrimeFactor
     ecmParams->B1done    = PRECOMPUTED_PRIME_MAX;
 
     // Try P-1 once with 10*B1 and B2
-    TryECM (ECM_PM1, 10*B1, B2);
+    TryECM (ECM_PM1, 10*B1, B2, 0, 0);
 
     // Try P+1 three times with 5*B1 and B2
-    TryECM (ECM_PP1,  5*B1, B2);
-    TryECM (ECM_PP1,  5*B1, B2);
-    TryECM (ECM_PP1,  5*B1, B2);
+    TryECM (ECM_PP1,  5*B1, B2, 0, 3);
+    TryECM (ECM_PP1,  5*B1, B2, 1, 3);
+    TryECM (ECM_PP1,  5*B1, B2, 2, 3);
+
+    // LIMIT N to 2 ***FIXME***
+    N = min (N, 2);
 
     // Try ECM N(B1, B2, D) times
     for (iCnt = 0; iCnt < N; iCnt++)
     {
-        TryECM (ECM_ECM, B1, B2);
+        TryECM (ECM_ECM, B1, B2, iCnt, N);
     } // End FOR
 
     /* Uninitialize ecmParams */

@@ -609,8 +609,11 @@ void Myz_init
     (LPAPLMPI mpzVal)
 
 {
-    if (mpzVal->_mp_d EQ NULL)
-        mpz_init (mpzVal);
+#ifdef DEBUG
+    if (mpzVal->_mp_d NE NULL)
+        DbgStop ();
+#endif
+    mpz_init (mpzVal);
 } // End Myz_init
 
 
@@ -622,7 +625,7 @@ void Myz_clear
     (MP_INT *mpzVal)
 
 {
-    if (mpzVal->_mp_d)
+    if (mpzVal->_mp_d NE NULL)
     {
         mpz_clear (mpzVal);
         mpzVal->_mp_d = NULL;
@@ -1055,7 +1058,7 @@ int mpq_cmp_ct
            mpfRht = {0};
     UBOOL  bRet;
 
-    // So as to avoid dividing by zero, if either arg is zero, ...
+    // So as to avoid dividing by zero, if neither arg is zero, ...
     if (!IsMpq0 (&aplRatLft)
      && !IsMpq0 (&aplRatRht))
     {
@@ -1090,23 +1093,33 @@ void Myq_init
     (LPAPLRAT mpqVal)
 
 {
-    if (mpqVal->_mp_num._mp_d EQ NULL)
-        mpq_init (mpqVal);
+#ifdef DEBUG
+    if (mpqVal->_mp_num._mp_d NE NULL)
+        DbgStop ();
+#endif
+    mpq_init (mpqVal);
 } // End Myq_init
 
 
 //***************************************************************************
 //  $Myq_clear
+//
+//  Free a RAT unless already clear
 //***************************************************************************
 
 void Myq_clear
     (LPAPLRAT mpqVal)
 
 {
-    if (mpqVal->_mp_num._mp_d)
+    if (mpq_numref (mpqVal)->_mp_d NE NULL)
     {
-        mpq_clear (mpqVal);
-        mpqVal->_mp_num._mp_d =
+        mpz_clear (mpq_numref (mpqVal));
+        mpqVal->_mp_num._mp_d = NULL;
+    } // End IF
+
+    if (mpq_denref (mpqVal)->_mp_d NE NULL)
+    {
+        mpz_clear (mpq_denref (mpqVal));
         mpqVal->_mp_den._mp_d = NULL;
     } // End IF
 } // End Myq_clear
@@ -1811,22 +1824,25 @@ void Myf_init
     (LPAPLVFP mpfVal)
 
 {
-    if (mpfVal->_mpfr_d EQ NULL)
-        mpfr_init0 (mpfVal);
-    else
-        mpfr_set_prec (mpfVal, mpfr_get_default_prec ());
+#ifdef DEBUG
+    if (mpfVal->_mpfr_d NE NULL)
+        DbgStop ();
+#endif
+    mpfr_init0 (mpfVal);
 } // End Myf_init
 
 
 //***************************************************************************
 //  $Myf_clear
+//
+//  Free a VFP unless already clear
 //***************************************************************************
 
 void Myf_clear
     (LPAPLVFP mpfVal)
 
 {
-    if (mpfVal->_mpfr_d)
+    if (mpfVal->_mpfr_d NE NULL)
     {
         mpfr_clear (mpfVal);
         mpfVal->_mpfr_d = NULL;

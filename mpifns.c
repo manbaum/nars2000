@@ -3376,7 +3376,7 @@ void mpifr_set_z
         mpfr_set_inf (rop, mpz_sgn (op));
     else
         mpfr_set_z (mpfr_clr_inf (rop), op, rnd);
-} // End mpifr_set_qz
+} // End mpifr_set_z
 
 
 //***************************************************************************

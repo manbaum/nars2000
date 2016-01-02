@@ -25,7 +25,9 @@
 #pragma pack(push,4)
 #include <dbghelp.h>
 #pragma pack(pop)
+#define REAL_MPIFNS
 #include "headers.h"
+#undef  REAL_MPIFNS
 #include "startaddr.h"
 
 

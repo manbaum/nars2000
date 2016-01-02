@@ -78,7 +78,9 @@
 #include "termcode.h"
 #include "qf.h"
 #include "fmtspec.h"
-#include "mpifns.h"
+#ifndef REAL_MPIFNS
+  #include "mpifns.h"
+#endif
 #include "malloc.h"
 #include "qf_dr.h"
 #include "hungarian.h"

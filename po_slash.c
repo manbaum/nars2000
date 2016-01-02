@@ -162,8 +162,10 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
                       apaMulRht;            // ...           multiplier
     HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
                       hGlbRes = NULL;       // Result    ...
-    LPVOID            lpMemRht = NULL,      // Ptr to right arg global memory
-                      lpMemRes = NULL;      // Ptr to result    ...
+    LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
+                      lpMemHdrRes = NULL;   // ...    result    ...
+    LPVOID            lpMemRht,             // Ptr to right arg global memory
+                      lpMemRes;             // Ptr to result    ...
     LPAPLDIM          lpMemDimRht,          // Ptr to right arg dimensions
                       lpMemDimRes;          // Ptr to result    ...
     HGLOBAL           hGlbPro = NULL;       // Prototype global memory handle
@@ -185,7 +187,6 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
                       lptkAxisLft;          // ...    left operand axis token (may be NULL)
     LPSYMENTRY        lpSymTmp;             // Ptr to temporary LPSYMENTRY
     UINT              uBitIndex;            // Bit index for looping through Booleans
-    LPVARARRAY_HEADER lpMemHdrRes;          // Ptr to result header
     LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
     APLLONGEST        aplLongestRht;        // Right arg immediate value
@@ -251,11 +252,11 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
 
             // Otherwise, it's SlashBar on the first dimension
             aplAxis = 0;
-    } // End IF/ELSE
+        } // End IF/ELSE
     } // End IF/ELSE
 
     // Get right arg's global ptr
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // If the argument is not a scalar, ...
     if (!IsScalar (aplRankRht))
@@ -264,10 +265,10 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         aplRankRes = aplRankRht - 1;
 
         // Skip over the header to the dimensions
-        lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+        lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
 
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayDataFmBase (lpMemRht);
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
         //***************************************************************
         // Calculate product of dimensions before, at, and after the axis dimension
@@ -512,9 +513,9 @@ RESTART_ALLOC:
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -526,7 +527,7 @@ RESTART_ALLOC:
 #undef  lpHeader
 
     // Skip over the header to the dimensions
-    lpMemRes = lpMemDimRes = VarArrayBaseToDim (lpMemRes);
+    lpMemRes = lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
 
     // Copy the dimensions from the right arg to the result
     //   except for the axis dimension
@@ -765,6 +766,11 @@ RESTART_EXCEPTION_APA:
                               &lpSymGlbRht,     // ...        LPSYMENTRY or HGLOBAL (may be NULL)
                                NULL,            // ...        immediate type (see IMM_TYPES) (may be NULL)
                                NULL);           // ...        array type:  ARRAY_TYPES (may be NULL)
+            // If the right arg is immediate, ...
+            if (lpSymGlbRht EQ NULL)
+                // Point to the data
+                lpSymGlbRht = &aplLongestRht;
+
             // Split cases based upon the result type
             switch (aplTypeRes)
             {
@@ -1316,12 +1322,12 @@ RESTART_EXCEPTION:
                                 // It's now an INT result
                                 aplTypeRes = ARRAY_INT;
 
-                                if (hGlbRes)
+                                if (hGlbRes NE NULL)
                                 {
-                                    if (lpMemRes)
+                                    if (lpMemHdrRes NE NULL)
                                     {
                                         // We no longer need this ptr
-                                        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                                        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
                                     } // End IF
 
                                     // We no longer need this storage
@@ -1419,10 +1425,10 @@ RESTART_EXCEPTION:
     } // End IF/ELSE
 
     // Unlock the result global memory in case TypeDemote actually demotes
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
     // Allocate a new YYRes
@@ -1471,28 +1477,28 @@ VALUE_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this storage
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
     // Split cases based upon the result storage type
@@ -1689,8 +1695,10 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
                       hGlbRes = NULL,       // Result    ...
                       lpSymGlbLft;          // Ptr to left arg as global numeric
-    LPVOID            lpMemRht = NULL,      // Ptr to right arg global memory
-                      lpMemRes = NULL;      // Ptr to result    ...
+    LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
+                      lpMemHdrRes = NULL;   // ...    result    ...
+    LPVOID            lpMemRht,             // Ptr to right arg global memory
+                      lpMemRes;             // Ptr to result    ...
     LPAPLDIM          lpMemDimRht;          // Ptr to right arg dimensions
     UBOOL             bRet = TRUE,          // TRUE iff result is valid
                       bNstIdent = FALSE,    // TRUE iff reducing an empty nested array with a primitive scalar dyadic fcn
@@ -1700,7 +1708,8 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
                       lpYYRes2,             // Ptr to secondary result
                       lpYYFcnStrLft;        // Ptr to the left operand strand
     TOKEN             tkLftArg = {0},       // Left arg token
-                      tkRhtArg = {0};       // Right ...
+                      tkRhtArg = {0},       // Right ...
+                      tkFcn = {0};          // The function token
     LPTOKEN           lptkAxisOpr,          // Ptr to operator axis token (may be NULL)
                       lptkAxisLft;          // ...    left operand axis token (may be NULL)
     LPPRIMFNS         lpPrimProtoLft;       // Ptr to left operand prototype function
@@ -1708,7 +1717,6 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     LPPRIMFLAGS       lpPrimFlagsLft;       // Ptr to left operand PrimFlags entry
     LPPRIMIDENT       lpPrimIdentLft;       // Ptr to left operand PrimIdent entry
     LPSYMENTRY        lpSymTmp;             // Ptr to temporary LPSYMENTRY
-    LPVARARRAY_HEADER lpMemHdrRes;          // Ptr to result header
     LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
 
@@ -1784,7 +1792,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 
         case ARRAY_FLOAT:
             // Attempt to convert the float to an integer using System []CT
-        aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
+            aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
 
             break;
 
@@ -1847,13 +1855,13 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     //***************************************************************
 
     // Get right arg's global ptr
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // If the right arg is not an immediate, ...
-    if (lpMemRht)
+    if (lpMemHdrRht NE NULL)
     {
         // Skip over the header to the dimensions
-        lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+        lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
 
         // Calculate the product of the right arg's dimensions below the axis dimension
         uDimLo = 1;
@@ -1997,7 +2005,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
               aplTypeRes,           // Result storage type
               aplNELMRes,           // Result NELM
               aplRankRes,           // Result rank
-              lpMemRht,             // Ptr to right arg global memory
+              lpMemHdrRht,          // Ptr to right arg global memory
               lpMemDimRht,          // Ptr to right arg dimensions
               aplAxis,              // The (one and only) axis value
               uDimAxRes,            // Result axis value dimension length
@@ -2030,7 +2038,6 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
             HGLOBAL    hGlbIdn;             // Identity element global memory handle
             LPVOID     hSymGlbIdn;          // ...               LPSYMENTRY or HGLOBAL
             APLSTYPE   aplTypeIdn;          // ...               storage type
-            TOKEN      tkFcn = {0};         // The function token
 
             // The result common element is {first} f/[X] 0/[X] R
 
@@ -2101,7 +2108,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
             if (IsEmpty (aplNELMRes))
             {
                 // If the result is global, ...
-                if (hGlbIdn)
+                if (hGlbIdn NE NULL)
                     // Make the prototype
                     hSymGlbIdn =
                       MakeMonPrototype_EM_PTB (MakePtrTypeGlb (hGlbIdn),    // Proto arg handle
@@ -2133,7 +2140,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
                 } // End IF/ELSE
             } else
             // If the result is global, ...
-            if (hGlbIdn)
+            if (hGlbIdn NE NULL)
                 hSymGlbIdn = CopySymGlbDirAsGlb (hGlbIdn);
             else
             {
@@ -2239,8 +2246,16 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     {
         LPPL_YYSTYPE lpYYRes2;
 
+        // Setup the function token
+        tkFcn.tkFlags.TknType   = TKT_FCNIMMED;
+        tkFcn.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
+////////tkFcn.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
+        tkFcn.tkData.tkChar     = (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASHBAR) ? UTF16_CIRCLEBAR
+                                                                                             : UTF16_CIRCLESTILE;
+        tkFcn.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+
         // Reverse the right arg along the specified axis
-        lpYYRes2 = PrimFnMonCircleStile_EM_YY (&lpYYFcnStrOpr->tkToken, // Ptr to function token
+        lpYYRes2 = PrimFnMonCircleStile_EM_YY (&tkFcn,                  // Ptr to function token
                                                 lptkRhtArg,             // Ptr to right arg token
                                                 lptkAxisOpr);           // Ptr to operator axis token (may be NULL)
         // If it failed, ...
@@ -2274,7 +2289,7 @@ RESTART_ALLOC:
               aplTypeRes,           // Result storage type
               aplNELMRes,           // Result NELM
               aplRankRes,           // Result rank
-              lpMemRht,             // Ptr to right arg global memory
+              lpMemHdrRht,          // Ptr to right arg global memory
               lpMemDimRht,          // Ptr to right arg dimensions
               aplAxis,              // The (one and only) axis value
               uDimAxRes,            // Result axis value dimension length
@@ -2292,7 +2307,7 @@ RESTART_ALLOC:
         lpMemHdrRes = MyGlobalLock (hGlbRes); MyGlobalUnlock (hGlbRes);
 
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayDataFmBase (lpMemRht);
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
         // Fill in the right arg token
 ////////tkRhtArg.tkFlags.TknType   =            // To be filled in below
@@ -2487,12 +2502,12 @@ RESTART_EXCEPTION:
                                     // It's now an INT result
                                     aplTypeRes = ARRAY_INT;
 
-                                    if (hGlbRes)
+                                    if (hGlbRes NE NULL)
                                     {
-                                        if (lpMemRes)
+                                        if (lpMemHdrRes NE NULL)
                                         {
                                             // We no longer need this ptr
-                                            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                                            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
                                         } // End IF
 
                                         // We no longer need this storage
@@ -2615,10 +2630,10 @@ RESTART_EXCEPTION:
     } // End IF/ELSE/.../FOR/FOR
 
     // Unlock the result global memory in case TypeDemote actually demotes
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
     // Allocate a new YYRes
@@ -2682,28 +2697,28 @@ ERROR_EXIT:
         YYFree (lpYYRes); lpYYRes = NULL;
     } // End IF
 
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this storage
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
     return lpYYRes;
@@ -2731,9 +2746,10 @@ UBOOL PrimOpDydSlashInsertDim_EM
      LPPL_YYSTYPE lpYYFcnStrOpr)    // Ptr to operator function strand
 
 {
-    HGLOBAL hGlbTmp;            // Temporary global memory handle
-    APLUINT ByteRes;            // # bytes in the result
-    LPVOID  lpMemRes;           // Ptr to result global memory
+    HGLOBAL           hGlbTmp;              // Temporary global memory handle
+    APLUINT           ByteRes;              // # bytes in the result
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result header
+    LPVOID            lpMemRes;             // Ptr to result global memory
 
     // If it failed, ...
     if (lpYYRes EQ NULL)
@@ -2769,9 +2785,9 @@ UBOOL PrimOpDydSlashInsertDim_EM
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbTmp);
+        lpMemHdrRes = MyGlobalLock (hGlbTmp);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
         // Fill in the header values
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = aplTypeRes;
@@ -2783,10 +2799,10 @@ UBOOL PrimOpDydSlashInsertDim_EM
 #undef  lpHeader
 
         // Fill in the dimension
-        *VarArrayBaseToDim (lpMemRes) = 1;
+        *VarArrayBaseToDim (lpMemHdrRes) = 1;
 
         // Skip over the header and dimension
-        lpMemRes = VarArrayDataFmBase (lpMemRes);
+        lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
         // Fill in the value
         // Split cases based upon the immediate type
@@ -2817,7 +2833,7 @@ UBOOL PrimOpDydSlashInsertDim_EM
         } // End SWITCH
 
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbTmp); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbTmp); lpMemHdrRes = NULL;
 
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
@@ -2863,7 +2879,7 @@ UBOOL PrimOpDydSlashInsertDim_EM
         lpYYRes->tkToken.tkData.tkGlbData = *lphGlbRes;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (*lphGlbRes);
+    lpMemHdrRes = MyGlobalLock (*lphGlbRes);
 
     // Move the memory upwards to make room for a new dimension
     // Use MoveMemory as the source and destin blocks overlap
@@ -2871,17 +2887,17 @@ UBOOL PrimOpDydSlashInsertDim_EM
     //   in it, so the third arg below needs to subtract it out
     //   which is why the trailing "* (aplAxis + 1)" is used rather
     //   than the more logical "* aplAxis".
-    MoveMemory (ByteAddr (lpMemRes,     sizeof (VARARRAY_HEADER) + sizeof (APLDIM) * (aplAxis + 1)),
-                ByteAddr (lpMemRes,     sizeof (VARARRAY_HEADER) + sizeof (APLDIM) *  aplAxis     ),
+    MoveMemory (ByteAddr (lpMemHdrRes,  sizeof (VARARRAY_HEADER) + sizeof (APLDIM) * (aplAxis + 1)),
+                ByteAddr (lpMemHdrRes,  sizeof (VARARRAY_HEADER) + sizeof (APLDIM) *  aplAxis     ),
                 (APLU3264) (ByteRes  - (sizeof (VARARRAY_HEADER) + sizeof (APLDIM) * (aplAxis + 1))));
     // Increase the rank by one
-    ((LPVARARRAY_HEADER) lpMemRes)->Rank++;
+    lpMemHdrRes->Rank++;
 
     // Insert the new dimension
-    (VarArrayBaseToDim (lpMemRes))[aplAxis] = uDimAxRes;
+    (VarArrayBaseToDim (lpMemHdrRes))[aplAxis] = uDimAxRes;
 
     // We no longer need this ptr
-    MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
+    MyGlobalUnlock (*lphGlbRes); lpMemHdrRes = NULL;
 
     return TRUE;
 
@@ -2906,25 +2922,25 @@ WSFULL_EXIT:
 #endif
 
 UBOOL PrimOpDydSlashAllocate_EM
-    (APLRANK      aplTypeRht,       // Right arg storage type
-     APLRANK      aplRankRht,       // Right arg rank
-     APLSTYPE     aplTypeRes,       // Result storage type
-     APLNELM      aplNELMRes,       // Result NELM
-     APLRANK      aplRankRes,       // Result rank
-     LPVOID       lpMemRht,         // Ptr to right arg global memory
-     LPAPLDIM     lpMemDimRht,      // Ptr to right arg dimensions
-     APLUINT      aplAxis,          // Axis value
-     APLUINT      uDimAxRes,        // Result axis value
-
-     HGLOBAL     *lphGlbRes,        // Ptr to result global memory handle
-     LPVOID      *lplpMemRes,       // Ptr to ptr to result global memory
-     LPAPLINT     lpapaOffRht,      // Ptr to right arg APA offset
-     LPAPLINT     lpapaMulRht,      // ...                  multiplier
-     LPPL_YYSTYPE lpYYFcnStrOpr)    // Ptr to operator function strand
+    (APLRANK           aplTypeRht,          // Right arg storage type
+     APLRANK           aplRankRht,          // Right arg rank
+     APLSTYPE          aplTypeRes,          // Result storage type
+     APLNELM           aplNELMRes,          // Result NELM
+     APLRANK           aplRankRes,          // Result rank
+     LPVARARRAY_HEADER lpMemHdrRht,         // Ptr to right arg header
+     LPAPLDIM          lpMemDimRht,         // Ptr to right arg dimensions
+     APLUINT           aplAxis,             // Axis value
+     APLUINT           uDimAxRes,           // Result axis value
+     HGLOBAL          *lphGlbRes,           // Ptr to result global memory handle
+     LPVOID           *lplpMemRes,          // Ptr to ptr to result global memory
+     LPAPLINT          lpapaOffRht,         // Ptr to right arg APA offset
+     LPAPLINT          lpapaMulRht,         // ...                  multiplier
+     LPPL_YYSTYPE      lpYYFcnStrOpr)       // Ptr to operator function strand
 
 {
     APLUINT  ByteRes,           // # bytes in the result
              uDim;              // Dimension loop counter
+    LPAPLAPA lpMemRht;          // Ptr to APA data
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
@@ -2969,9 +2985,9 @@ UBOOL PrimOpDydSlashAllocate_EM
     if (IsSimpleAPA (aplTypeRht))
     {
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayDataFmBase (lpMemRht);
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
-#define lpAPA       ((LPAPLAPA) lpMemRht)
+#define lpAPA       lpMemRht
         // Get the APA parameters
         *lpapaOffRht = lpAPA->Off;
         *lpapaMulRht = lpAPA->Mul;

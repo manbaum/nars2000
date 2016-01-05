@@ -648,15 +648,40 @@ void TraceLine
             HGLOBAL      htGlbName;     // Function name global memory handle
             LPAPLCHAR    lpMemName;     // Ptr to function name global memory
             LPPL_YYSTYPE lpYYCurObj;    // Ptr to value to display
+            LPDFN_HEADER lpMemDfnHdr;   // Ptr to DFN header
             VARS_TEMP_OPEN
 
             // If the function is an AFO, ...
             if (lpSISCur->bAFO && lptkFunc NE NULL)
             {
-                Assert (!IsTknImmed (lptkFunc) && GetPtrTypeDir (lptkFunc->tkData.tkVoid) EQ PTRTYPE_STCONST);
+                Assert (!IsTknImmed (lptkFunc));
 
-                // Get the function name global memory handle
-                htGlbName = lptkFunc->tkData.tkSym->stHshEntry->htGlbName;
+                // Split cases based upon the ptr type bits
+                switch (GetPtrTypeDir (lptkFunc->tkData.tkVoid))
+                {
+                    case PTRTYPE_STCONST:
+                		// Get the function name global memory handle
+                		htGlbName = lptkFunc->tkData.tkSym->stHshEntry->htGlbName;
+
+                        break;
+
+                    case PTRTYPE_HGLOBAL:
+                        Assert (IsGlbTypeDfnDir_PTB (lptkFunc->tkData.tkGlbData));
+
+                        // Lock the memory to get a ptr to it
+                        lpMemDfnHdr = MyGlobalLock (lptkFunc->tkData.tkGlbData);
+
+                        // Get the function name global memory handle
+                        htGlbName = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (lptkFunc->tkData.tkGlbData); lpMemDfnHdr = NULL;
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
             } else
                 // Get the function name global memory handle
                 htGlbName = lpSISCur->hGlbFcnName;
@@ -848,8 +873,9 @@ UBOOL DisplayTraceResult
     // Save the first item
     lpMemRes[0] = MakePtrTypeGlb (hGlbItm);
 
-    // If it's NoValue, ...
-    if (IsTokenNoValue (lptkRes))
+    // If it's not a var or is NoValue, ...
+    if (!IsTknTypeVar (lptkRes->tkFlags.TknType)
+     || IsTokenNoValue (lptkRes))
         // Save the second item
         lpMemRes[1] = MakePtrTypeGlb (hGlbZilde);
     else

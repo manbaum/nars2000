@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -116,6 +116,31 @@ MAGIC_FCNOPR MFO_MonDot =
 {MonHeader,
  MonBody,
  countof (MonBody),
+};
+
+
+//***************************************************************************
+//  Magic function/operator for determinant operator from the
+//    inner product operator.
+//
+//	This algorithm is used to determine the result of the the determinant
+//    operator on a singleton scalar/vector/matrix.
+//***************************************************************************
+
+static APLCHAR DetSingHeader[] =
+  L"Z←(LO " MFON_DetSing L" RO) R";
+
+static APLCHAR DetSingLine1[] =
+  L"Z←⊃LO/⊃RO/R";
+
+static LPAPLCHAR DetSingBody[] =
+{DetSingLine1,
+};
+
+MAGIC_FCNOPR MFO_DetSing =
+{DetSingHeader,
+ DetSingBody,
+ countof (DetSingBody),
 };
 
 

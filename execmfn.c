@@ -66,6 +66,7 @@ extern MAGIC_FCNOPR MFO_RoS1R;
 extern MAGIC_FCNOPR MFO_RoS2;
 extern MAGIC_FCNOPR MFO_RoS3;
 extern MAGIC_FCNOPR MFO_MDIU;
+extern MAGIC_FCNOPR MFO_DetSing;
 
 
 //***************************************************************************
@@ -773,6 +774,7 @@ UBOOL InitMagicFunctions
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_RoS2             ]  = Init1MagicFunction (MFON_RoS2             , &MFO_RoS2             , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_RoS3             ]  = Init1MagicFunction (MFON_RoS3             , &MFO_RoS3             , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MDIU             ]  = Init1MagicFunction (MFON_MDIU             , &MFO_MDIU             , lpMemPTD, hWndEC, NULL));
+    bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DetSing          ]  = Init1MagicFunction (MFON_DetSing          , &MFO_DetSing          , lpMemPTD, hWndEC, NULL));
 
     return bRet;
 } // InitMagicFunctions

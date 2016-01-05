@@ -1,6 +1,44 @@
 Version 0.4.12.xx consists of the following Builds:
 
 
+Build #1436 -- Version 0.4.12.xx
+--------------------------------
+
+* Fix Bug In Determinant Operator On Singletons
+* Include "Hdr" In Name Of Result Of <MyGlobalLock>
+
+EXECMFN.C:
+EXECMFN.H:
+  Define names, etc. of new Magic Operator.
+
+MF_DOT.H:
+  Define APL Code for new Magic Operator.
+
+PO_DOT.C:
+  Include "Hdr" in name of result of <MyGlobalLock> and elsewhere.
+  In <PrimOpMonDotCommon_EM_YY>, move singleton code to before tests for
+    special cases.
+  In <PrimOpMonDotCommon_EM_YY>, handle singletons via Magic Operator as per
+    Reduction of Singletons.
+
+
+Build #1435 -- Version 0.4.12.xx
+--------------------------------
+
+* Miscellaneous Build Fixes
+
+NARS2000.32.SLN:
+NARS2000.32.VCPROJ:
+NARS2000.64.SLN:
+NARS2000.64.VCPROJ:
+NARS2000.VCPROJ:
+  Delete the old 32- and 64-bit build files.
+
+NARS2000.SLN:
+NARS2000.VCXPROJ:
+  Integrate the 32- and 64-bit build files into one.
+
+
 Build #1434 -- Version 0.4.12.xx
 --------------------------------
 

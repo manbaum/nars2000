@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "headers.h"
+////#include "bom.h"
 
 
 // Section names
@@ -3194,26 +3195,26 @@ LPDICTIONARY ProfileLoad_EM
         switch (errCode)
         {
             case ERRCODE_BUFFER_OVERFLOW:
-                wsprintfW (*lplpwErrMsg,
-                           ERRMSG_WS_NOT_LOADABLE
-                           L":  Buffer overflow"
-                           APPEND_NAME);
+                MySprintfW (wszTemp,
+                            sizeof (wszTemp),
+                            ERRMSG_WS_NOT_LOADABLE
+                           L":  Buffer overflow" APPEND_NAME);
                 break;
 
             case ERRCODE_SYNTAX_ERROR:
-                wsprintfW (*lplpwErrMsg,
-                           ERRMSG_WS_NOT_LOADABLE
-                           L":  Syntax error in line %u"
-                           APPEND_NAME,
-                           lineno);
+                MySprintfW (wszTemp,
+                            sizeof (wszTemp),
+                            ERRMSG_WS_NOT_LOADABLE
+                           L":  Syntax error in line %u" APPEND_NAME,
+                            lineno);
                 break;
 
             case ERRCODE_ALLOC_ERROR:
-                wsprintfW (*lplpwErrMsg,
-                           ERRMSG_WS_NOT_LOADABLE
-                           L":  Allocation in line %u"
-                           APPEND_NAME,
-                           lineno);
+                MySprintfW (wszTemp,
+                            sizeof (wszTemp),
+                            ERRMSG_WS_NOT_LOADABLE
+                           L":  Allocation in line %u" APPEND_NAME,
+                            lineno);
                 break;
 
             defstop
@@ -3247,8 +3248,137 @@ LPWSTR ProfileGetString
                L"%s" SECTION_SEP_STR L"%s",
                 lpwAppName,
                 lpwKeyName);
-    return iniparser_getstring (lpDict, wszTemp, lpwDefault);
+    return iniparser_getstring (lpDict, wszTemp, lpwDefault, NULL);
 } // End ProfileGetString
+
+
+//***************************************************************************
+//  $ProfileGetStringEx
+//
+//  Retrieve a string value from a .ini profile
+//***************************************************************************
+
+LPWSTR ProfileGetStringEx
+    (LPWSTR       lpwAppName,   // Section name containing the key name
+     LPWSTR       lpwKeyName,   // Key name whose associated string is to be retrieved
+     LPWSTR       lpwDefault,   // Ptr to default result if lpwKeyName not found
+     LPINT        lpIndex,      // Ptr to index on output (may be NULL)
+     LPDICTIONARY lpDict)       // Ptr to workspace dictionary
+
+{
+    WCHAR wszTemp[1024];        // Save area for longest "sectionname:keyname"
+
+    // Merge the section and key names
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
+               L"%s" SECTION_SEP_STR L"%s",
+                lpwAppName,
+                lpwKeyName);
+    return iniparser_getstring (lpDict, wszTemp, lpwDefault, lpIndex);
+} // End ProfileGetStringEx
+
+
+//***************************************************************************
+//  $ProfileCopyString
+//
+//  Copy a string value from a .ini profile into an external buffer
+//***************************************************************************
+
+UBOOL ProfileCopyString
+    (LPWSTR       lpwAppName,   // Section name containing the key name
+     LPWSTR       lpwKeyName,   // Key name whose associated string is to be retrieved
+     LPWSTR       lpwDefault,   // Ptr to default result if lpwKeyName not found
+     LPWSTR       lpwBuffer,    // Ptr to output buffer
+     DWORD        nSize,        // # bytes in the output buffer
+     LPDICTIONARY lpDict)       // Ptr to workspace dictionary
+
+{
+    WCHAR  wszTemp[1024];       // Save area for longest "sectionname:keyname"
+    LPWSTR lpwOutput;           // Ptr to string in memory
+
+    // Merge the section and key names
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
+               L"%s" SECTION_SEP_STR L"%s",
+                lpwAppName,
+                lpwKeyName);
+    lpwOutput = iniparser_getstring (lpDict, wszTemp, lpwDefault, NULL);
+
+    // If the section:keyname was found, ...
+    if (lpwOutput NE NULL)
+        // Copy the string to the output buffer
+        return SUCCEEDED (StringCchCopyW (lpwBuffer,
+                                          nSize / sizeof (WCHAR),
+                                          lpwOutput));
+    else
+        return FALSE;
+} // End ProfileCopyString
+
+
+//***************************************************************************
+//  $ProfileSetString
+//
+//  Set a string value into a .ini profile
+//***************************************************************************
+
+int ProfileSetString
+    (LPWSTR       lpwAppName,   // Section name containing the key name
+     LPWSTR       lpwKeyName,   // Key name whose associated string is to be set
+     LPWSTR       lpwVal,       // Ptr to new value to associate with the Section:Keyname
+     LPDICTIONARY lpDict)       // Ptr to workspace dictionary
+
+{
+    WCHAR wszTemp[1024];        // Save area for longest "sectionname:keyname"
+
+#ifdef DEBUG
+    // If the Keyname is present, ...
+    if (lpwKeyName NE NULL)
+    {
+        int nSecs, i;
+
+        // Get the # sections
+        nSecs = iniparser_getnsec (lpDict);
+
+        // Ensure the section name is present
+        for (i = 0; i < nSecs; i++)
+        if (lstrcmpiW (lpwAppName, iniparser_getsecname (lpDict, i)) EQ 0)
+            break;
+        // If we didn't terminate early (i.e., section not found), ...
+        if (i EQ nSecs)
+            DbgStop ();
+    } // End IF
+#endif
+    // If the keyname is not NULL, ...
+    if (lpwKeyName NE NULL)
+        // Merge the section and key names
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
+                   L"%s" SECTION_SEP_STR L"%s",
+                    lpwAppName,
+                    lpwKeyName);
+    else
+        // Format the section name
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
+                   L"%s",
+                    lpwAppName);
+    return iniparser_set (lpDict, wszTemp, lpwVal);
+} // End ProfileSetString
+
+
+//***************************************************************************
+//  $ProfileSetSection
+//
+//  Create a section in a .ini profile
+//***************************************************************************
+
+int ProfileSetSection
+    (LPWSTR       lpwAppName,   // Section name
+     LPDICTIONARY lpDict)       // Ptr to workspace dictionary
+
+{
+    return iniparser_set (lpDict, lpwAppName, NULL);
+} // End ProfileSetSection
 
 
 //***************************************************************************
@@ -3327,6 +3457,67 @@ APLFLOAT ProfileGetDouble
     // Get the integer
     return iniparser_getdouble (lpDict, wszTemp, fDefault);
 } // End ProfileGetDouble
+
+
+//***************************************************************************
+//  $ProfileDelSection
+//
+//  Delete a section in a .ini profile
+//***************************************************************************
+
+void ProfileDelSection
+    (LPWSTR       lpwAppName,   // Section name containing the key name
+     LPDICTIONARY lpDict)       // Ptr to workspace dictionary
+
+{
+    WCHAR wszTemp[1024];        // Save area for longest "sectionname:keyname"
+
+    // Format the section name with a trailing section separator
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
+               L"%s" SECTION_SEP_STR,
+                lpwAppName);
+    // Delete the Section
+    iniparser_delsection (lpDict, wszTemp);
+} // End ProfileDelSection
+
+
+//***************************************************************************
+//  $ProfileWrite
+//
+//  Write out a .ini profile
+//***************************************************************************
+
+UBOOL ProfileWrite
+    (LPDICTIONARY lpDict)       // Ptr to workspace dictionary
+
+{
+    HANDLE hFile;               // File handle from CreateFileW
+////DWORD  dwBytesOut;          // # bytes written out
+
+    // Create (or truncate the file)
+    hFile =
+      CreateFileW (lpDict->lpwszDPFE,               // lpwFileName
+                   GENERIC_READ | GENERIC_WRITE,    // dwDesiredAccess
+                   FILE_SHARE_READ,                 // dwShareMode
+                   NULL,                            // lpSecurityAttributes
+                   CREATE_ALWAYS,                   // dwCreationDistribution
+                   FILE_ATTRIBUTE_NORMAL,           // dwFlagsAndAttributes
+                   NULL);                           // hTemplateFile
+    if (hFile EQ NULL)
+        return FALSE;
+
+////// Write out the BOM for UTF-16
+////WriteFile (hFile, UTF16LE_BOM, strcountof (UTF16LE_BOM), &dwBytesOut, NULL);
+////
+    // Write out the .ini file
+    iniparser_dump_ini (lpDict, hFile);
+
+    // Close it after creating the file
+    CloseHandle (hFile); hFile = NULL;
+
+    return TRUE;
+} // End ProfileWrite
 
 
 //***************************************************************************

@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -302,7 +302,7 @@ RatConstantsInt:
                                     }
     | RatArgs  DEF_RATSEP INF       {DbgMsgWP (L"%%RatConstantsInt:  RatArgs 'r' INF");
                                      // If the integer is signed, ...
-                                     if (OptionFlags.bAllowNeg0
+                                     if (gAllowNeg0
                                       && lppnLocalVars->lpszNumAccum[0] EQ OVERBAR1)
                                      {
                                          // Initialize the result and set to -0
@@ -321,7 +321,7 @@ RatConstantsInt:
                                     }
     | RatArgs  DEF_RATSEP OVR INF   {DbgMsgWP (L"%%RatConstantsInt:  RatArgs 'r' OVR INF");
                                      // If the integer is NOT signed, ...
-                                     if (OptionFlags.bAllowNeg0
+                                     if (gAllowNeg0
                                       && lppnLocalVars->lpszNumAccum[0] NE OVERBAR1)
                                      {
                                          // Initialize the result and set to -0

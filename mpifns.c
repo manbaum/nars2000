@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3866,7 +3866,7 @@ void mpifr_div
      && mpfr_inf_p (op2))
         // N / _ is 0
         // Divide infinity into N returns 0 with op1xop2's sign
-        mpfr_set_d (rop, (OptionFlags.bAllowNeg0 && (SIGN_APLVFP (op1) NE SIGN_APLVFP (op2))) ? -0.0 : 0.0, rnd);
+        mpfr_set_d (rop, (gAllowNeg0 && (SIGN_APLVFP (op1) NE SIGN_APLVFP (op2))) ? -0.0 : 0.0, rnd);
     else
     if (mpfr_inf_p (op1)
      && mpfr_inf_p (op2))

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -199,6 +199,9 @@
   #define dprintfWL9(a,...)
 #endif
 
+#define bAllowNeg0          lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEG0]
+#define gAllowNeg0          GetMemPTD()->aplCurrentFEATURE[FEATURENDX_NEG0]
+
 #define imul64_RE(a,b)      imul64 ((a), (b), NULL)
 #define iadd64_RE(a,b)      iadd64 ((a), (b), NULL)
 #define isub64_RE(a,b)      isub64 ((a), (b), NULL)
@@ -209,8 +212,11 @@
 #define SIGN_APLINT(a)      ((UBOOL) (((APLUINT) (a)) >> 63))       // ...            APLINT
 #define SIGN_APLUINT(a)     ((UBOOL) ((a) >> 63))                   // ...            APLUINT
 #define SIGN_APLLONGEST(a)  ((UBOOL) ((a) >> 63))                   // ...            APLLONGEST
-#define SIGN_APLFLOAT(a)    ((UBOOL) (((LPAPLFLOATSTR) &a)->bSign)) // ...            APLFLOAT
-#define SIGN_APLVFP(a)      (        ((a)->_mpfr_sign < 0))
+#define SIGN_APLFLOAT(a)    (gAllowNeg0 ? ((UBOOL) (((LPAPLFLOATSTR) &a)->bSign))   \
+                                        : ((a) < 0))                // ...            APLFLOAT
+#define SIGN_APLVFP(a)      (gAllowNeg0 ? ((a)->_mpfr_sign < 0)                     \
+                                        : (mpfr_sgn (a) < 0))       // ...            APLVFP
+
 #define mpfr_sgn0(a)        (signumint ((a)->_mpfr_sign))
 #define signumrat            mpq_sgn
 

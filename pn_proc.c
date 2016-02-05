@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -359,7 +359,9 @@ void PN_NumCalc
                 if (bRet)
                 {
                     // If it's -0, ...
-                    if (bSigned && aplInteger EQ 0)
+                    if (gAllowNeg0
+                     && bSigned
+                     && aplInteger EQ 0)
                     {
                         // Save -0 as a float
                         lpYYArg->at.aplFloat = -0.0;
@@ -425,7 +427,9 @@ void PN_NumCalc
                         Myq_clear (&lpYYArg->at.aplRat);
 
                         // If the result is -0, ...
-                        if (bSigned && IsMpq0 (&mpqRes))
+                        if (gAllowNeg0
+                         && bSigned
+                         && IsMpq0 (&mpqRes))
                         {
                             // Change the type to VFP
                             lpYYArg->chType = PN_NUMTYPE_VFP;
@@ -452,7 +456,9 @@ void PN_NumCalc
                     } // End IF/ELSE
                 } else
                 // If the result is -0, ...
-                if (bSigned && IsMpz0 (mpq_numref (&lpYYArg->at.aplRat)))
+                if (gAllowNeg0
+                 && bSigned
+                 && IsMpz0 (mpq_numref (&lpYYArg->at.aplRat)))
                 {
                     // We no longer need this storage
                     Myq_clear (&lpYYArg->at.aplRat);
@@ -1416,14 +1422,18 @@ UBOOL PN_VectorAcc
     // Izit expressible as an integer?
     lppnVector[lppnLocalVars->uGlbVectorCurLen].bInteger =
         (strspn  (lpStart, OVERBAR1_STR INFINITY1_STR "0123456789eE") EQ uNumLen)
-     && (strncmp (lpStart, OVERBAR1_STR "0"          , uNumLen) NE 0)   // {neg}0     is FLT, not INT
+     && (!gAllowNeg0                                                    // Either we don't allow -0, or
+      || strncmp (lpStart, OVERBAR1_STR "0"          , uNumLen) NE 0)   //   it's not -0
 //// && (strncmp (lpStart, OVERBAR1_STR INFINITY1_STR, uNumLen) NE 0)   // {neg}{inf} is FLT, not INT
 //// && (strncmp (lpStart,              INFINITY1_STR, uNumLen) NE 0)   //      {inf} is FLT, not INT
         ;
 
     // Izit expressible as a rational?
     lppnVector[lppnLocalVars->uGlbVectorCurLen].bRat =
-      (strspn (lpStart, OVERBAR1_STR INFINITY1_STR "0123456789xrJijkl") EQ uNumLen);
+        (strspn  (lpStart, OVERBAR1_STR INFINITY1_STR "0123456789xrJijkl") EQ uNumLen)
+     && (!gAllowNeg0                                                    // Either we don't allow -0, or
+      || strncmp (lpStart, OVERBAR1_STR "0"          , uNumLen) NE 0)   //   it's not -0
+        ;
 
     // Set the new initial point
     lppnLocalVars->uNumIni += uNumLen;
@@ -1492,7 +1502,7 @@ UBOOL PN_VectorRes
     if (bPass1)
     {
         // Initialize the starting datatype
-        chType                    =
+        chType                   =
         chComType                =
         lppnLocalVars->chComType = PN_NUMTYPE_INIT;
 
@@ -1586,14 +1596,26 @@ UBOOL PN_VectorRes
             if (IsPnNumTypeFlt (lppnVector[uCnt].chType)
              && (IsPnNumTypeVfp (lppnLocalVars->chComType) || lppnVector[uCnt].bInteger))
             {
+                UBOOL bRet;                 // TRUE iff result is valid
+                char  cZap;                 // Temporary char
+
                 // Save the starting point and length of the character stream
                 pnLocalVars.lpszStart    = lppnVector[uCnt].lpStart;
                 pnLocalVars.uNumLen      = lppnVector[uCnt].uNumLen;
                 pnLocalVars.uNumIni      = 0;
                 pnLocalVars.chComType    = lppnLocalVars->chComType;
 
+                // Ensure properly terminated
+                cZap = pnLocalVars.lpszStart[pnLocalVars.uNumLen];
+                       pnLocalVars.lpszStart[pnLocalVars.uNumLen] = AC_EOS;
+
                 // Call the parser to convert the PN to a number
-                if (ParsePointNotation (&pnLocalVars))
+                bRet = ParsePointNotation (&pnLocalVars);
+
+                // Restore zapped char
+                pnLocalVars.lpszStart[pnLocalVars.uNumLen] = cZap;
+
+                if (bRet)
                 {
                     LPPN_VECTOR lpMemVector;            // Ptr to hGlbVector global memory
 

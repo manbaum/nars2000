@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -159,7 +159,7 @@ APLINT PrimFnMonBarIisI
 {
     // Check for overflow or -0
     if (aplIntegerRht EQ MIN_APLINT
-     || aplIntegerRht EQ 0)
+     || (gAllowNeg0 && aplIntegerRht EQ 0))
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
 
     return -aplIntegerRht;
@@ -177,7 +177,7 @@ APLFLOAT PrimFnMonBarFisI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    return -(APLFLOAT) aplIntegerRht;
+    return PrimFnMonBarFisF ((APLFLOAT) aplIntegerRht, lpPrimSpec);
 } // End PrimFnMonBarFisI
 
 
@@ -192,7 +192,11 @@ APLFLOAT PrimFnMonBarFisF
      LPPRIMSPEC lpPrimSpec)
 
 {
-    return -aplFloatRht;
+    if (!gAllowNeg0
+     && aplFloatRht EQ 0)
+        return 0.0;
+    else
+        return -aplFloatRht;
 } // End PrimFnMonBarFisF
 
 
@@ -210,7 +214,8 @@ APLRAT PrimFnMonBarRisR
     APLRAT mpqRes = {0};
 
     // Check for -0
-    if (IsMpq0 (&aplRatRht))
+    if (gAllowNeg0
+     && IsMpq0 (&aplRatRht))
         RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
 
     // Initialize the result to 0/1
@@ -239,8 +244,11 @@ APLVFP PrimFnMonBarVisV
     // Initialize the result to 0
     mpfr_init0 (&mpfRes);
 
-    // Negate the VFP
-    mpfr_neg (&mpfRes, &aplVfpRht, MPFR_RNDN);
+    // Check for -0
+    if (gAllowNeg0
+     || !IsMpf0 (&aplVfpRht))
+        // Negate the VFP
+        mpfr_neg (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
     return mpfRes;
 } // End PrimFnMonBarVisV
@@ -267,12 +275,12 @@ UBOOL PrimFnMonBarAPA_EM
      LPPRIMSPEC    lpPrimSpec)      // Ptr to local PRIMSPEC
 
 {
-    LPVOID  lpMemRes;               // Ptr to result global memory
-    APLNELM aplNELMRes;             // Result NELM
-    APLRANK aplRankRes;             // Result rank
-    UBOOL   bRet = FALSE;           // TRUE iff the result is valid
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result header
+    LPVOID            lpMemRes;             // Ptr to result global memory
+    APLNELM           aplNELMRes;           // Result NELM
+    APLRANK           aplRankRes;           // Result rank
+    UBOOL             bRet = FALSE;         // TRUE iff the result is valid
 
-    DBGENTER;
 
     // Axis may be anything
 
@@ -281,15 +289,15 @@ UBOOL PrimFnMonBarAPA_EM
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (*lphGlbRes);
+    lpMemHdrRes = MyGlobalLock (*lphGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
     aplNELMRes = lpHeader->NELM;
     aplRankRes = lpHeader->Rank;
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayDataFmBase (lpMemRes);
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // Check for un-negatable integer
 #define lpAPA       ((LPAPLAPA) lpMemRes)
@@ -301,7 +309,7 @@ UBOOL PrimFnMonBarAPA_EM
        )
     {
         // We no longer need this ptr
-        MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (*lphGlbRes); lpMemHdrRes = NULL;
 
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
     } // End IF
@@ -312,10 +320,10 @@ UBOOL PrimFnMonBarAPA_EM
 #undef  lpAPA
 
     // We no longer need this ptr
-    MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
+    MyGlobalUnlock (*lphGlbRes); lpMemHdrRes = NULL;
 
     // Fill in the result token
-    if (lpYYRes)
+    if (lpYYRes NE NULL)
     {
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
@@ -326,7 +334,6 @@ UBOOL PrimFnMonBarAPA_EM
     // Mark as successful
     bRet = TRUE;
 ERROR_EXIT:
-    DBGLEAVE;
 
     return bRet;
 } // End PrimFnMonBarAPA_EM
@@ -538,11 +545,11 @@ UBOOL PrimFnDydBarAPA_EM
      LPPRIMSPEC   lpPrimSpec)       // Ptr to PRIMSPEC
 
 {
-    APLRANK aplRankRes;             // Result rank
-    LPVOID  lpMemRes;               // Ptr to result global memory
-    UBOOL   bRet = FALSE;           // TRUE iff the result is valid
+    APLRANK           aplRankRes;           // Result rank
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result header
+    LPAPLAPA          lpMemRes;             // Ptr to result global memory
+    UBOOL             bRet = FALSE;         // TRUE iff the result is valid
 
-    DBGENTER;
 
     //***************************************************************
     // The result is an APA, one of the args is a simple singleton,
@@ -577,12 +584,12 @@ UBOOL PrimFnDydBarAPA_EM
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (*lphGlbRes);
+    lpMemHdrRes = MyGlobalLock (*lphGlbRes);
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayDataFmBase (lpMemRes);
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
-#define lpAPA       ((LPAPLAPA) lpMemRes)
+#define lpAPA       lpMemRes
 
     if (!IsSingleton (aplNELMLft))
         lpAPA->Off -= aplInteger;
@@ -595,10 +602,10 @@ UBOOL PrimFnDydBarAPA_EM
 #undef  lpAPA
 
     // We no longer need this ptr
-    MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
+    MyGlobalUnlock (*lphGlbRes); lpMemHdrRes = NULL;
 
     // Fill in the result token
-    if (lpYYRes)
+    if (lpYYRes NE NULL)
     {
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
@@ -609,7 +616,6 @@ UBOOL PrimFnDydBarAPA_EM
     // Mark as successful
     bRet = TRUE;
 ERROR_EXIT:
-    DBGLEAVE;
 
     return bRet;
 } // End PrimFnDydBarAPA_EM

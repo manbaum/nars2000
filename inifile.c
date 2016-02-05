@@ -711,8 +711,8 @@ UBOOL ReadIniFileGlb
     hGlbQuadALX_CWS =
       GetPrivateProfileGlbCharW (SECTNAME_SYSVARS,  // Ptr to the section name
                                  KEYNAME_QUADALX,   // Ptr to the key name
-                                 DEF_QUADALX_CWS_BR,// Ptr to default value
-                                 DEF_QUADALX_GLB,   // HGLOBAL of the result
+                                 DEF_QUADALX_CWS,   // Ptr to default value
+                                 DEF_QUADALX_GLB,   // HGLOBAL of the default value
                                  lpwszIniFile);     // Ptr to the file name
     // Read in []CT
     fQuadCT_CWS =
@@ -735,15 +735,15 @@ UBOOL ReadIniFileGlb
     hGlbQuadELX_CWS =
       GetPrivateProfileGlbCharW (SECTNAME_SYSVARS,  // Ptr to the section name
                                  KEYNAME_QUADELX,   // Ptr to the key name
-                                 DEF_QUADELX_CWS_BR,// Ptr to default value
-                                 DEF_QUADELX_GLB,   // HGLOBAL of the result
+                                 DEF_QUADELX_CWS,   // Ptr to default value
+                                 DEF_QUADELX_GLB,   // HGLOBAL of the default value
                                  lpwszIniFile);     // Ptr to the file name
     // Read in []FC
     hGlbQuadFC_CWS =
       GetPrivateProfileGlbCharW (SECTNAME_SYSVARS,  // Ptr to the section name
                                  KEYNAME_QUADFC,    // Ptr to the key name
-                                 DEF_QUADFC_CWS_BR, // Ptr to default value
-                                 DEF_QUADFC_GLB,    // HGLOBAL of the result
+                                 DEF_QUADFC_CWS,    // Ptr to default value
+                                 DEF_QUADFC_GLB,    // HGLOBAL of the default value
                                  lpwszIniFile);     // Ptr to the file name
     // Loop through the items of aplDefaultFEATURE
     for (uCnt = 0, lpwszTemp = wszTemp; uCnt < FEATURENDX_LENGTH; uCnt++)
@@ -757,7 +757,7 @@ UBOOL ReadIniFileGlb
       GetPrivateProfileGlbIntW (SECTNAME_SYSVARS,       // Ptr to the section name
                                 KEYNAME_QUADFEATURE,    // Ptr to the key name
                                 wszTemp,                // Ptr to default value
-                                DEF_QUADFEATURE_GLB,    // HGLOBAL of the result
+                                DEF_QUADFEATURE_GLB,    // HGLOBAL of the default value
                                 FEATURENDX_LENGTH,      // Length of the default integer vector
                                 lpwszIniFile);          // Ptr to the file name
     // Read in []FPC
@@ -778,7 +778,7 @@ UBOOL ReadIniFileGlb
       GetPrivateProfileGlbIntW (SECTNAME_SYSVARS,   // Ptr to the section name
                                 KEYNAME_QUADIC,     // Ptr to the key name
                                 wszTemp,            // Ptr to default value
-                                DEF_QUADIC_GLB,     // HGLOBAL of the result
+                                DEF_QUADIC_GLB,     // HGLOBAL of the default value
                                 ICNDX_LENGTH,       // Length of the default integer vector
                                 lpwszIniFile);      // Ptr to the file name
     // Read in uMigration.IC0LOG0
@@ -819,7 +819,7 @@ UBOOL ReadIniFileGlb
       GetPrivateProfileGlbCharW (SECTNAME_SYSVARS,  // Ptr to the section name
                                  KEYNAME_QUADLX,    // Ptr to the key name
                                  DEF_QUADLX_CWS,    // Ptr to default value
-                                 DEF_QUADLX_GLB,    // HGLOBAL of the result
+                                 DEF_QUADLX_GLB,    // HGLOBAL of the default value
                                  lpwszIniFile);     // Ptr to the file name
     // Read in []MF
     uQuadMF_CWS =
@@ -1538,8 +1538,7 @@ HGLOBAL GetPrivateProfileGlbCharW
                               hDefVal,              // Default value global memory handle
                               ARRAY_CHAR,           // Result storage type
                               sizeof (APLCHAR),     // Size of each item in the result
-                              lstrlenW (lpwDefVal) - 2,// Length of the default vector
-                                                    //   less the surrounding single quotes
+                              lstrlenW (lpwDefVal), // Length of the default vector
                               lpwszIniFile);        // Ptr to the file name
 } // End GetPrivateProfileGlbCharW
 
@@ -1594,13 +1593,15 @@ HGLOBAL GetPrivateProfileGlbComW
      LPWCHAR  lpwszIniFile)                         // Ptr to the file name
 
 {
-    WCHAR   wszTemp[1024];                          // Temporary storage for string results
-    APLNELM aplNELMRes;                             // Result NELM
-    APLUINT ByteRes;                                // # bytes in the result
-    HGLOBAL hGlbRes,                                // Result global memory handle
-            hGlbChk;                                // Result from CheckGlobals
-    LPVOID  lpMemRes,                               // Ptr to result global memory
-            lpMemInp;                               // Ptr to input global memory
+    WCHAR             wszTemp[1024];                // Temporary storage for string results
+    APLNELM           aplNELMRes,                   // Result NELM
+                      aplNELMInp;                   // Input NELM
+    APLUINT           ByteRes;                      // # bytes in the result
+    HGLOBAL           hGlbRes,                      // Result global memory handle
+                      hGlbChk;                      // Result from CheckGlobals
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;           // Ptr to result header
+    LPVOID            lpMemRes,                     // Ptr to result global memory
+                      lpMemInp;                     // Ptr to input global memory
 
     // Read in the global integer or char vector as a string
     GetPrivateProfileStringW (lpwSectName,          // Ptr to the section name
@@ -1626,7 +1627,8 @@ HGLOBAL GetPrivateProfileGlbComW
         lpMemInp = lpDefVal;
 
     // Find out how many elements are in the .ini file value
-    aplNELMRes = ScanNELM (lpMemInp, aplTypeRes);
+    aplNELMInp = ScanNELM (lpMemInp, aplTypeRes);
+    aplNELMRes = max (aplNELMInp, uVecLen);
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, 1);
@@ -1639,9 +1641,9 @@ HGLOBAL GetPrivateProfileGlbComW
         return hGlbRes;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -1653,16 +1655,43 @@ HGLOBAL GetPrivateProfileGlbComW
 #undef  lpHeader
 
     // Save the dimension
-    *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
+    *VarArrayBaseToDim (lpMemHdrRes) = aplNELMRes;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayDataFmBase (lpMemRes);
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // Copy and convert the values to the result
-    CopyConvertDataOfType (lpMemRes, aplTypeRes, aplNELMRes, lpMemInp);
+    CopyConvertDataOfType (lpMemRes,                                // Ptr to result global memory
+                           0,                                       // Initial index into lpMemRes
+                           aplTypeRes,                              // Result storage type
+                           aplNELMInp,                              // Result NELM
+                           lpMemInp,                                // Ptr to the input buffer
+                           FALSE);                                  // TRUE iff the input buffer is integer
+    // If the saved value is shorter than the default value, ...
+    if (aplNELMInp < aplNELMRes)
+    {
+        LPVARARRAY_HEADER lpMemHdrDef = NULL;   // Ptr to default header
+        LPVOID            lpMemDef;             // Ptr to default values
+
+        // Lock the memory to get a ptr to it
+        lpMemHdrDef = MyGlobalLock (hDefVal);
+
+        // Skip over the header & dimensions to the data
+        lpMemDef = VarArrayDataFmBase (lpMemHdrDef);
+
+        // Copy and convert the values to the result
+        CopyConvertDataOfType (lpMemRes,                            // Ptr to result global memory
+                               aplNELMInp,                          // Initial index into lpMemRes
+                               aplTypeRes,                          // Result storage type
+                               aplNELMRes - aplNELMInp,             // Result NELM
+                               lpMemDef,                            // Ptr to the input buffer
+                               lpMemHdrDef->ArrType EQ ARRAY_INT);  // TRUE iff the input buffer is integer
+        // We no longer need this ptr
+        MyGlobalUnlock (hDefVal); lpMemHdrDef = NULL;
+    } // End IF
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
     // Check to see if this value duplicates one of the already
     //   allocated permanent globals
@@ -1689,30 +1718,42 @@ HGLOBAL GetPrivateProfileGlbComW
 
 void CopyConvertDataOfType
     (LPVOID   lpMemRes,                             // Ptr to result global memory
+     APLNELM  aplNELMIni,                           // Initial index into lpMemRes
      APLSTYPE aplTypeRes,                           // Result storage type
      APLNELM  aplNELMRes,                           // Result NELM
-     LPWCHAR  wszTemp)                              // Ptr to the output buffer
+     LPWCHAR  lpwszTemp,                            // Ptr to the input buffer
+     UBOOL    bInpInteger)                          // TRUE iff the input buffer is integer
 
 {
-    APLUINT uCnt;                                   // Loop counter
-    WCHAR   wcTmp;                                  // Temporary char
+    LPAPLINT  lpaplInteger;                         // Ptr to integer input
+    APLUINT   uCnt;                                 // Loop counter
+    WCHAR     wcTmp;                                // Temporary char
 
     // Split cases based upon the result storage type
     switch (aplTypeRes)
     {
         case ARRAY_INT:
+            lpaplInteger = (LPAPLINT) lpwszTemp;
+
             // Loop through the result elements
             for (uCnt = 0; uCnt < aplNELMRes; uCnt++)
             {
-                // Convert the next #
-                sscanfW (wszTemp,
-                         L"%I64d",
-                         lpMemRes);
-                // Skip to the next field
-                wszTemp = SkipPastCharW (wszTemp, L' ');
+                // If the input buffer is integer, ...
+                if (bInpInteger)
+                {
+                    ((LPAPLINT) lpMemRes)[aplNELMIni] = lpaplInteger[uCnt];
+                } else
+                {
+                    // Convert the next #
+                    sscanfW (lpwszTemp,
+                             L"%I64d",
+                            &((LPAPLINT) lpMemRes)[aplNELMIni]);
+                    // Skip to the next field
+                    lpwszTemp = SkipPastCharW (lpwszTemp, L' ');
+                } // End IF/ELSE
 
                 // Skip to next result location
-                ((LPAPLINT) lpMemRes)++;
+                aplNELMIni++;
             } // End FOR
 
             break;
@@ -1722,35 +1763,36 @@ void CopyConvertDataOfType
             for (uCnt = 0; uCnt < aplNELMRes; uCnt++)
             {
                 // Convert the single {name} or other char to UTF16_xxx
-                if (L'{' EQ  *wszTemp)
+                if (L'{' EQ  *lpwszTemp)
                 {
                     // Get the next char
-                    wcTmp = SymbolNameToChar (wszTemp);
+                    wcTmp = SymbolNameToChar (lpwszTemp);
 
 #define ZEROSTR     L"{\\x0000}"
 
                     // If there's a matching UTF16_xxx equivalent,
                     //   or the hex value is zero
-                    if (wcTmp || strncmpW (wszTemp, ZEROSTR, strcountof (ZEROSTR)) EQ 0)
+                    if (wcTmp || strncmpW (lpwszTemp, ZEROSTR, strcountof (ZEROSTR)) EQ 0)
                     {
                         // Save in the result and skip over it
-                        *((LPAPLCHAR) lpMemRes)++ = wcTmp;
+                        ((LPAPLCHAR) lpMemRes)[aplNELMIni++] = wcTmp;
 
                         // Skip to the next field
-                        wszTemp = SkipPastCharW (wszTemp, L'}');
+                        lpwszTemp = SkipPastCharW (lpwszTemp, L'}');
                     } else
                     {
                         // Copy source to destin up to and including the matching '}'
-                        while (wszTemp[0] NE L'}')
+                        while (lpwszTemp[0] NE L'}')
                             // Save in the result and skip over it
-                            *((LPAPLCHAR) lpMemRes)++ = *wszTemp++;
+                            ((LPAPLCHAR) lpMemRes)[aplNELMIni++] = *lpwszTemp++;
 
                         // Copy the '}'
-                        *((LPAPLCHAR) lpMemRes)++ = *wszTemp++;
+                        ((LPAPLCHAR) lpMemRes)[aplNELMIni++] = *lpwszTemp++;
                     } // End IF/ELSE
+#undef  ZEROSTR
                 } else
                     // Save in the result and skip over it
-                    *((LPAPLCHAR) lpMemRes)++ = *wszTemp++;
+                    ((LPAPLCHAR) lpMemRes)[aplNELMIni++] = *lpwszTemp++;
             } // End FOR
 
             break;

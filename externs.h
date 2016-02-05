@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -162,7 +162,8 @@ typedef enum tagFEATURE_VALUES
 typedef enum tagFEATURE_INDICES
 {
     FEATURENDX_NEGINDICES ,             // 00:  Allow negative indices
-    FEATURENDX_LENGTH                   // 01:  # entries in this enum
+    FEATURENDX_NEG0       ,             // 01:  Allow -0
+    FEATURENDX_LENGTH                   // 02:  # entries in this enum
 } FEATURE_INDICES, *LPFEATURE_INDICES;
 
 // Define the minimum/maximum allowable values for []FEATURE
@@ -170,6 +171,7 @@ typedef enum tagFEATURE_INDICES
 #define FEATUREVAL_MAXVAL       TRUE
 
 #define DEF_FEATURE_NEGINDICES  FALSE
+#define DEF_FEATURE_NEG0        FALSE
 
 typedef struct tagFEATURE_NAMES
 {
@@ -181,6 +183,7 @@ EXTERN
 APLINT aplDefaultFEATURE[FEATURENDX_LENGTH]  // []FEATURE default values
 #ifdef DEFINE_VALUES
  = {DEF_FEATURE_NEGINDICES,             // 00:  Allow negative indices
+    DEF_FEATURE_NEG0      ,             // 01:  Allow -0
    }
 #endif
 ;
@@ -189,6 +192,7 @@ EXTERN
 FEATURE_NAMES featNames[FEATURENDX_LENGTH]
 #ifdef DEFINE_VALUES
  = {{FEATURENDX_NEGINDICES, L"Allow Negative Indices"},
+    {FEATURENDX_NEG0      , L"Allow " WS_UTF16_OVERBAR L"0"},
    }
 #endif
 ;
@@ -1702,8 +1706,7 @@ typedef struct tagOPTIONFLAGS
          bViewStatusBar      :1,    // 00400000:  ...      Status Bar is displayed
          bDefDispFcnLineNums :1,    // 00800000:  ...      Display function line #s
          bDispMPSuf:1,       :1,    // 01000000:  ...      Display multi-precision numbers with suffix 'x' or 'v'
-         bAllowNeg0          :1,    // 02000000:  ...      Allow -0
-                             :6;    // FC000000:  Available bits
+                             :5;    // FE000000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 // N.B.:  Whenever changing the above struct (OPTIONFLAGS),
@@ -1732,7 +1735,6 @@ OPTIONFLAGS OptionFlags
     DEF_VIEWSTATUSBAR,
     DEF_DISPFCNLINENUMS,
     DEF_DISPMPSUF,
-    DEF_ALLOWNEG0,
    }
 #endif
 ;

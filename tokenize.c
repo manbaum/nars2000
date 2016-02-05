@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2558,6 +2558,7 @@ UBOOL fnPointDone
     HGLOBAL      hGlbData;              // RatNum global memory handle
     APLSTYPE     aplTypeRes;            // Result storage type
     APLRANK      aplRankRes;            // ...    rank
+    char         cZap;                  // Temporary char
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnPointDone");
@@ -2585,8 +2586,16 @@ UBOOL fnPointDone
 ////pnLocalVars.hGlbRes       = NULL;           // Already zero from = {0}
     pnLocalVars.lptkLocalVars = lptkLocalVars;
 
+    // Ensure properly terminated
+    cZap = pnLocalVars.lpszStart[pnLocalVars.uNumLen];
+           pnLocalVars.lpszStart[pnLocalVars.uNumLen] = AC_EOS;
+
     // Call the parser to convert the PN to a number
     bRet = ParsePointNotation (&pnLocalVars);
+
+    // Restore zapped char
+    pnLocalVars.lpszStart[pnLocalVars.uNumLen] = cZap;
+
     if (bRet)
     {
         // Check for :CONSTANT during )COPY/)LOAD

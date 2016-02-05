@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -482,10 +482,10 @@ APLFLOAT PrimFnDydStileFisFvF
         // If Rht divided-by Lft is near an integer within CT
         //   return 0.
         if (_CompareCT (aplTmp, floor (aplTmp), fQuadCT, NULL, TRUE))
-            return SIGN_APLFLOAT (aplFloatLft) ? -0.0 : 0.0;
+            return (gAllowNeg0 && SIGN_APLFLOAT (aplFloatLft)) ? -0.0 : 0.0;
 
         if (_CompareCT (aplTmp, ceil  (aplTmp), fQuadCT, NULL, TRUE))
-            return SIGN_APLFLOAT (aplFloatLft) ? -0.0 : 0.0;
+            return (gAllowNeg0 && SIGN_APLFLOAT (aplFloatLft)) ? -0.0 : 0.0;
 
         // Calculate the modulus
         aplTmp = fmod (aplRht, aplLft);
@@ -591,7 +591,7 @@ APLRAT PrimFnDydStileRisRvR
         mpq_init_set (&mpqRes, &aplRatRht);
     } else
     {
-#ifdef RAT_EXACT
+#if defined (RAT_EXACT) || TRUE
         // Initialize the result to 0/1
         mpq_init (&mpqRes);
 

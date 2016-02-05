@@ -1,6 +1,6 @@
 # /***************************************************************************
 #     NARS2000 -- An Experimental APL Interpreter
-#     Copyright (C) 2006-2015 Sudley Place Software
+#     Copyright (C) 2006-2016 Sudley Place Software
 #
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -172,7 +172,8 @@ CFLAGS_DEBUG=$(CFLAGS_DEBUG) /D "RESDEBUG=$(RESDEBUG)" /D "_STDINT_H"
 
 VERSION_FLAGS = /D "NTDDI_VERSION=NTDDI_WINXP" /D "_WIN32_WINNT=_WIN32_WINNT_WINXP" /D "_WIN32_IE=0x0600"
 CFLAGS_WEXE = /nologo /GA /W3 /WX /Oy- /Ot $(CFLAGS_DEBUG) /D "_WIN32" /c /D "_CRT_SECURE_NO_WARNINGS"
-CFLAGS_WEXE = $(CFLAGS_WEXE) $(VERSION_FLAGS) /D "_MBCS" /GL /Qpar /O2
+CFLAGS_WEXE = $(CFLAGS_WEXE) $(VERSION_FLAGS) /D "_MBCS" /Qpar /O2
+##CFLAGS_WEXE = /GL
 LFLAGS_WEXE = /NOLOGO /MAP /LARGEADDRESSAWARE /OPT:REF /DYNAMICBASE:NO /MANIFEST:NO /SUBSYSTEM:WINDOWS /IGNOREIDL /NXCOMPAT /DEBUG /LTCG
 !if "$(WIN)" == "64"
 CFLAGS_WEXE = $(CFLAGS_WEXE) /D "_AMD64_" /D "_M_AMD64" /D "_WIN64" /Gd

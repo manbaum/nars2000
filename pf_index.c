@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2631,7 +2631,12 @@ UBOOL ArrayIndexSetNamImmed_EM
             SysVarValidNdx = aSysVarValidNdx[lptkNamArg->tkData.tkSym->stFlags.SysVarValid];
 
             // Validate the one (and only) element in the right arg
-            if (!(*SysVarValidNdx) (0, aplTypeRht, &aplLongestRht, &immTypeRht, lpMemRht, lptkLstArg))
+            if (!(*SysVarValidNdx) (0,                  // The origin-0 index value (in case the position is important)
+                                    aplTypeRht,         // Right arg storage type
+                                   &aplLongestRht,      // Ptr to the right arg value
+                                   &immTypeRht,         // Ptr to right arg immediate type (may be NULL)
+                                    lpMemRht,           // Ptr to right arg global value
+                                    lptkLstArg))        // Ptr to function token
                 goto DOMAIN_EXIT;
         } // End IF
 
@@ -2666,7 +2671,12 @@ UBOOL ArrayIndexSetNamImmed_EM
             SysVarValidNdx = aSysVarValidNdx[lptkNamArg->tkData.tkSym->stFlags.SysVarValid];
 
             // Validate the one (and only) element in the right arg
-            if (!(*SysVarValidNdx) (0, aplTypeRht, &aplLongestRht, &immTypeRht, lpMemRht, lptkLstArg))
+            if (!(*SysVarValidNdx) (0,                  // The origin-0 index value (in case the position is important)
+                                    aplTypeRht,         // Right arg storage type
+                                   &aplLongestRht,      // Ptr to the right arg value
+                                   &immTypeRht,         // Ptr to right arg immediate type (may be NULL)
+                                    lpMemRht,           // Ptr to right arg global value
+                                    lptkLstArg))        // Ptr to function token
                 goto DOMAIN_EXIT;
         } // End IF
 
@@ -2859,7 +2869,12 @@ HGLOBAL ArrayIndexSetNoLst_EM
                                 &aplLongestRht,     // Ptr to result immediate value (may be NULL)
                                  NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
             // Validate all elements in the right arg
-            if (!(*SysVarValidNdx) (uRht, aplTypeRht, &aplLongestRht, NULL, hGlbSubRht, lptkFunc))
+            if (!(*SysVarValidNdx) (uRht,               // The origin-0 index value (in case the position is important)
+                                    aplTypeRht,         // Right arg storage type
+                                   &aplLongestRht,      // Ptr to the right arg value
+                                    NULL,               // Ptr to right arg immediate type (may be NULL)
+                                    hGlbSubRht,         // Ptr to right arg global value
+                                    lptkFunc))          // Ptr to function token
                 goto DOMAIN_EXIT;
             // Split cases based upon the name arg storage type
             switch (aplTypeNam)
@@ -3229,7 +3244,12 @@ UBOOL ArrayIndexSetSingLst_EM
         if (bSysVar)
         {
             // Validate the one (and only) item from the right arg
-            if (!(*SysVarValidNdx) (0, aplTypeRht, &aplLongestRht, NULL, hGlbSubRht, lptkLstArg))
+            if (!(*SysVarValidNdx) (aplLongestSubLst,   // The origin-0 index value (in case the position is important)
+                                    aplTypeRht,         // Right arg storage type
+                                    &aplLongestRht,     // Ptr to the right arg value
+                                     NULL,              // Ptr to right arg immediate type (may be NULL)
+                                     hGlbSubRht,        // Ptr to right arg global value
+                                     lptkLstArg))       // Ptr to function token
                 goto DOMAIN_EXIT;
 
             // As we don't promote sysvars, ...
@@ -3965,7 +3985,12 @@ UBOOL ArrayIndexSetVector_EM
     if (bSysVar)
     {
         // Validate the one (and only) item from the right arg
-        if (!(*SysVarValidNdx) (aplLongestSubLst, aplTypeRht, &aplLongestRht, &immTypeRht, hGlbSubRht, lptkFunc))
+        if (!(*SysVarValidNdx) (aplLongestSubLst,       // The origin-0 index value (in case the position is important)
+                                aplTypeRht,             // Right arg storage type
+                               &aplLongestRht,          // Ptr to the right arg value
+                               &immTypeRht,             // Ptr to right arg immediate type (may be NULL)
+                                hGlbSubRht,             // Ptr to right arg global value
+                                lptkFunc))              // Ptr to function token
             goto DOMAIN_EXIT;
     } // End IF
 

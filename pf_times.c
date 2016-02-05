@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -296,10 +296,14 @@ APLINT PrimFnDydTimesIisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
+    // Check for -0
     // If either arg is 0
-    //   and the other arg is negative, ...
-    if ((aplIntegerLft EQ 0 && aplIntegerRht < 0)
-     || (aplIntegerRht EQ 0 && aplIntegerLft < 0))
+    //   and the signs are different
+    if (gAllowNeg0
+     && (aplIntegerLft EQ 0
+      || aplIntegerRht EQ 0)
+     && (aplIntegerLft < 0) NE
+        (aplIntegerRht < 0))
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
 
     return imul64_RE (aplIntegerLft, aplIntegerRht);
@@ -318,13 +322,17 @@ APLFLOAT PrimFnDydTimesFisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    UBOOL  bRet = TRUE;
+    UBOOL  bRet;
     APLINT aplRes;
 
+    // Check for -0
     // If either arg is 0
-    //   and the other arg is negative, ...
-    if ((aplIntegerLft EQ 0 && aplIntegerRht < 0)
-     || (aplIntegerRht EQ 0 && aplIntegerLft < 0))
+    //   and the signs are different
+    if (gAllowNeg0
+     && (aplIntegerLft EQ 0
+      || aplIntegerRht EQ 0)
+     && (aplIntegerLft < 0) NE
+        (aplIntegerRht < 0))
         return -0.0;
 
     aplRes = imul64 (aplIntegerLft, aplIntegerRht, &bRet);
@@ -367,6 +375,16 @@ APLFLOAT PrimFnDydTimesFisFvF
                                      aplFloatRht,
                                      (aplFloatLft EQ 0) ? SIGN_APLFLOAT (aplFloatLft)
                                                         : SIGN_APLFLOAT (aplFloatRht));
+    // Check for -0
+    // If either arg is 0
+    //   and the signs are different
+    if (gAllowNeg0
+     && (aplFloatLft EQ 0
+      || aplFloatRht EQ 0)
+     && (SIGN_APLFLOAT (aplFloatLft) NE
+         SIGN_APLFLOAT (aplFloatRht)))
+        return -0.0;
+
     return (aplFloatLft * aplFloatRht);
 } // End PrimFnDydTimesFisFvF
 
@@ -407,11 +425,24 @@ APLRAT PrimFnDydTimesRisRvR
                                  &mpqRes,
                                   IsMpq0 (&aplRatLft) ? (mpq_sgn (&aplRatLft) EQ -1)
                                                       : (mpq_sgn (&aplRatRht) EQ -1));
-    // Initalize the result to 0/1
-    mpq_init (&mpqRes);
+    else
+    // Check for -0
+    // If either arg is 0
+    //   and the signs are different
+    if (gAllowNeg0
+     && (IsMpq0 (&aplRatLft)
+      || IsMpq0 (&aplRatRht))
+     && (mpq_sgn (&aplRatLft) < 0) NE
+        (mpq_sgn (&aplRatRht) < 0))
+        RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
+    else
+    {
+        // Initalize the result to 0/1
+        mpq_init (&mpqRes);
 
-    // Multiply two Rationals
-    mpq_mul (&mpqRes, &aplRatLft, &aplRatRht);
+        // Multiply two Rationals
+        mpq_mul (&mpqRes, &aplRatLft, &aplRatRht);
+    } // End IF/ELSE/...
 
     return mpqRes;
 } // End PrimFnDydTimesRisRvR
@@ -453,11 +484,21 @@ APLVFP PrimFnDydTimesVisVvV
                                   &mpfRes,
                                    IsMpf0 (&aplVfpLft) ? SIGN_APLVFP (&aplVfpLft)
                                                        : SIGN_APLVFP (&aplVfpRht));
-    // Initalize the result to 0
-    mpfr_init0 (&mpfRes);
+    if (gAllowNeg0
+     && (IsMpf0 (&aplVfpLft)
+      || IsMpf0 (&aplVfpRht))
+     && (mpfr_sgn (&aplVfpLft) < 0) NE
+        (mpfr_sgn (&aplVfpRht) < 0))
+        // Set the result to -0
+        mpfr_init_set_d (&mpfRes, -0, MPFR_RNDN);
+    else
+    {
+        // Initalize the result to 0
+        mpfr_init0 (&mpfRes);
 
-    // Multiply two Variable FPs
-    mpfr_mul (&mpfRes, &aplVfpLft, &aplVfpRht, MPFR_RNDN);
+        // Multiply two Variable FPs
+        mpfr_mul (&mpfRes, &aplVfpLft, &aplVfpRht, MPFR_RNDN);
+    } // End IF/ELSE
 
     return mpfRes;
 } // End PrimFnDydTimesVisVvV
@@ -494,12 +535,11 @@ UBOOL PrimFnDydTimesAPA_EM
      LPPRIMSPEC   lpPrimSpec)       // Ptr to local PRIMSPEC
 
 {
-    APLNELM aplNELMRes;             // Result NELM
-    APLRANK aplRankRes;             // Result rank
-    LPVOID  lpMemRes;               // Ptr to result global memory
-    UBOOL   bRet = FALSE;           // TRUE iff the result is valid
-
-    DBGENTER;
+    APLNELM           aplNELMRes;           // Result NELM
+    APLRANK           aplRankRes;           // Result rank
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result header
+    LPAPLAPA          lpMemRes;             // Ptr to result global memory
+    UBOOL             bRet = FALSE;         // TRUE iff the result is valid
 
     //***************************************************************
     // The result is an APA, one of the args is a simple singleton,
@@ -534,19 +574,20 @@ UBOOL PrimFnDydTimesAPA_EM
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (*lphGlbRes);
+    lpMemHdrRes = MyGlobalLock (*lphGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
     aplNELMRes = lpHeader->NELM;
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayDataFmBase (lpMemRes);
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
 #define lpAPA       ((LPAPLAPA) lpMemRes)
 
     // Check for negative integer {times} an APA that spans 0
-    if (aplInteger < 0
+    if (gAllowNeg0
+     && aplInteger < 0
      && (lpAPA->Off EQ 0
       || (lpAPA->Off + aplNELMRes * lpAPA->Mul) EQ 0
       || signumint (lpAPA->Off) NE signumint (lpAPA->Off + aplNELMRes * lpAPA->Mul)
@@ -554,7 +595,7 @@ UBOOL PrimFnDydTimesAPA_EM
        )
     {
         // We no longer need this ptr
-        MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (*lphGlbRes); lpMemHdrRes = NULL;
 
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
     } // End IF
@@ -566,10 +607,10 @@ UBOOL PrimFnDydTimesAPA_EM
 #undef  lpAPA
 
     // We no longer need this ptr
-    MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
+    MyGlobalUnlock (*lphGlbRes); lpMemHdrRes = NULL;
 
     // Fill in the result token
-    if (lpYYRes)
+    if (lpYYRes NE NULL)
     {
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
@@ -580,7 +621,6 @@ UBOOL PrimFnDydTimesAPA_EM
     // Mark as successful
     bRet = TRUE;
 ERROR_EXIT:
-    DBGLEAVE;
 
     return bRet;
 } // End PrimFnDydTimesAPA_EM

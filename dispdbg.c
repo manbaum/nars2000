@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ void DisplayHshTab
          lpHshEntry++, i++)
     {
         // Format the HTE
-        FormatHTE (lpHshEntry, wszTemp, i);
+        FormatHTE (lpHshEntry, wszTemp, sizeof (wszTemp), i);
 
         DbgMsgW (wszTemp);
     } // End FOR
@@ -93,9 +93,10 @@ void DisplayHshTab
 //***************************************************************************
 
 void FormatHTE
-    (LPHSHENTRY lpHshEntry,
-     LPWCHAR    wszTemp,
-     UINT       i)
+    (LPHSHENTRY lpHshEntry,             // Ptr to hash entry struc
+     LPWCHAR    lpwszTemp,              // Ptr to output save area
+     UINT       uTempMaxSize,           // Maximum size of wszTemp
+     UINT       i)                      // Hash Table Entry
 
 {
     WCHAR wszFlags[128] = {WC_EOS};
@@ -123,8 +124,8 @@ void FormatHTE
     // Check for invalid HshEntry
     if (lpHshEntry EQ NULL)
     {
-        MySprintfW (wszTemp,
-                    sizeof (wszTemp),
+        MySprintfW (lpwszTemp,
+                    uTempMaxSize,
                    L"HT:%3d ***INVALID HSHENTRY (NULL)***",
                     i);
         return;
@@ -153,8 +154,8 @@ void FormatHTE
 
         lpSymEntry = lpHshEntry->htSymEntry;
         if (lpSymEntry->stFlags.Imm)
-            MySprintfW (wszTemp,
-                        sizeof (wszTemp),
+            MySprintfW (lpwszTemp,
+                        uTempMaxSize,
                        L"HT:%3d uH=%08X, uH&M=%d, <%s>, ull=%I64X, Sym=%p",
                         i,
                         lpHshEntry->uHash,
@@ -170,8 +171,8 @@ void FormatHTE
             // Lock the memory to get a ptr to it
             lpwGlbName = GlobalLock (lpHshEntry->htGlbName); Assert (lpwGlbName NE NULL);
 
-            MySprintfW (wszTemp,
-                        sizeof (wszTemp),
+            MySprintfW (lpwszTemp,
+                        uTempMaxSize,
                        L"HT:%3d uH=%08X, uH&M=%d, <%s>, <%s>, Sym=%p, %p-%p",
                         i,
                         lpHshEntry->uHash,
@@ -185,8 +186,8 @@ void FormatHTE
             GlobalUnlock (lpHshEntry->htGlbName); lpwGlbName = NULL;
         } // End IF/ELSE/IF
     } else
-        MySprintfW (wszTemp,
-                    sizeof (wszTemp),
+        MySprintfW (lpwszTemp,
+                    uTempMaxSize,
                    L"HT:%3d (EMPTY) <%s>, Sym=%p, <%p-%p>",
                     i,
                    &wszFlags[1],
@@ -243,7 +244,7 @@ void DisplaySymTab
         lpSymEntry->stFlags.ObjName NE OBJNAME_SYS)
     {
         // Format the STE
-        FormatSTE (lpSymEntry, wszTemp);
+        FormatSTE (lpSymEntry, wszTemp, sizeof (wszTemp));
 
         DbgMsgW (wszTemp);
     } // End FOR
@@ -263,7 +264,8 @@ void DisplaySymTab
 
 void FormatSTE
     (LPSYMENTRY lpSymEntry,             // Ptr to the SYMENTRY to format
-     LPWCHAR    wszTemp)                // Ptr to output save area
+     LPWCHAR    lpwszTemp,              // Ptr to output save area
+     UINT       uTempMaxSize)           // Maximum size of wszTemp
 
 {
     WCHAR   wszFlags[128] = {WC_EOS};
@@ -367,8 +369,8 @@ void FormatSTE
 
         if (lpSymEntry->stFlags.Imm)
         {
-            MySprintfW (wszTemp,
-                        sizeof (wszTemp),
+            MySprintfW (lpwszTemp,
+                        uTempMaxSize,
                        L"ST:%p <%s> <%s>, ull=%I64X, Hsh=%p, Prv=%p",
                         lpSymEntry,
                         wszName,
@@ -385,8 +387,8 @@ void FormatSTE
 
             if (lpHshEntry)
             {
-                MySprintfW (wszTemp,
-                            sizeof (wszTemp),
+                MySprintfW (lpwszTemp,
+                            uTempMaxSize,
                            L"ST:%p <%s>, <%s>, Data=%p, Hsh=%p, Prv=%p",
                             lpSymEntry,
                             wszName,
@@ -395,16 +397,16 @@ void FormatSTE
                             lpHshEntry,
                             lpPrvEntry);
             } else
-                MySprintfW (wszTemp,
-                            sizeof (wszTemp),
+                MySprintfW (lpwszTemp,
+                            uTempMaxSize,
                            L"ST:%p <******>, <%s>, Hsh=0, Prv=%p",
                             lpSymEntry,
                            &wszFlags[1],
                             lpPrvEntry);
         } // End IF/ELSE/IF
     } else
-        MySprintfW (wszTemp,
-                    sizeof (wszTemp),
+        MySprintfW (lpwszTemp,
+                    uTempMaxSize,
                    L"ST:%p (EMPTY) <%s>, Hsh=%p, Prv=%p",
                     lpSymEntry,
                    &wszFlags[1],

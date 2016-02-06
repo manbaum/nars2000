@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -835,10 +835,10 @@ void _CheckSymEntries
                            uLineNum);
                 AppendLine (lpMemPTD->lpwszTemp, FALSE, TRUE);
 
-                FormatSTE (lpSymEntryNxt, lpMemPTD->lpwszTemp);
+                FormatSTE (lpSymEntryNxt, lpMemPTD->lpwszTemp, lpMemPTD->uTempMaxSize);
                 AppendLine (lpMemPTD->lpwszTemp, FALSE, TRUE);
 
-                FormatHTE (lpSymEntryNxt->stHshEntry, lpMemPTD->lpwszTemp, 0);
+                FormatHTE (lpSymEntryNxt->stHshEntry, lpMemPTD->lpwszTemp, lpMemPTD->uTempMaxSize, 0);
                 AppendLine (lpMemPTD->lpwszTemp, FALSE, TRUE);
 
                 // Display message for unhandled exception

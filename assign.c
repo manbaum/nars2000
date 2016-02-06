@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1060,11 +1060,27 @@ UBOOL ModifyAssignNamedVars_EM
      LPTOKEN       lptkVal)         // Ptr to value token
 
 {
-    HGLOBAL      hGlbName;          // Name strand global memory handle
-    LPPL_YYSTYPE lpMemName;         // Ptr to name strand global memory
-    APLNELM      aplNELMNam;        // Name strand NELM
-    APLUINT      uName;             // Loop counter
-    UBOOL        bRet = FALSE;      // TRUE iff result is valid
+    HGLOBAL           hGlbName,             // Name strand global memory handle
+                      hGlbVal = NULL,       // Value       ...
+                      hGlbSub;              // Subarray    ...
+    LPVARNAMED_HEADER lpMemHdrNam = NULL;   // Ptr to name  header
+    LPVARARRAY_HEADER lpMemHdrVal = NULL;   // ...    value ...
+    LPPL_YYSTYPE      lpMemNam,             // Ptr to name strand global memory
+                      lpYYRes;              // Ptr to the result
+    LPVOID            lpMemVal;             // Ptr to value
+    APLNELM           aplNELMNam,           // Name strand NELM
+                      aplNELMVal,           // Value ...
+                      aplIndex;             // Index into lpMemVal
+    APLUINT           uName;                // Loop counter
+    APLRANK           aplRankVal;           // Value rank
+    APLSTYPE          aplTypeVal;           // Value storage type
+    TOKEN             tkToken = {0};        // Temp token
+    UINT              uBitMaskVal;          // Bool mask
+    LPSYMENTRY        lpSymVal;             // Ptr to global memory
+    APLINT            apaOffVal,            // APA offset
+                      apaMulVal;            // ... multiplier
+    ALLTYPES          atVal = {0};          // Value as ALLTYPES
+    UBOOL             bRet = FALSE;         // TRUE iff result is valid
 
     // Get the name strand global memory handle
     hGlbName = lpYYStrN->tkToken.tkData.tkGlbData;
@@ -1073,40 +1089,465 @@ UBOOL ModifyAssignNamedVars_EM
     Assert (IsGlbTypeNamDir_PTB (hGlbName));
 
     // Lock the memory to get a ptr to it
-    lpMemName = MyGlobalLock (hGlbName);
+    lpMemHdrNam = MyGlobalLock (hGlbName);
 
-#define lpHeader        ((LPVARNAMED_HEADER) lpMemName)
+#define lpHeader        lpMemHdrNam
     aplNELMNam = lpHeader->NELM;
 #undef  lpHeader
 
     // Skip over the header to the data
-    lpMemName = VarNamedBaseToData (lpMemName);
+    lpMemNam = VarNamedBaseToData (lpMemHdrNam);
 
-    // Loop through the names
-    for (uName = 0; uName < aplNELMNam; uName++)
+    // If there's only one name, ...
+    if (aplNELMNam EQ 1)
     {
-        LPPL_YYSTYPE lpYYRes;       // Ptr to the result
-
         lpYYRes =
-          ExecFunc_EM_YY (&lpMemName[uName].tkToken, lpYYFcnStr, lptkVal);
+          ExecFunc_EM_YY (&lpMemNam[0].tkToken, lpYYFcnStr, lptkVal);
 
         if (lpYYRes)
         {
             // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
-            bRet = AssignName_EM (&lpMemName[uName].tkToken, &lpYYRes->tkToken);
-            YYFree (lpYYRes); lpYYRes = NULL;
+            //   and increments the RefCnt
+            bRet = AssignName_EM (&lpMemNam[0].tkToken, &lpYYRes->tkToken);
+            FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
 
             if (!bRet)
                 goto ERROR_EXIT;
         } else
             goto ERROR_EXIT;
-    } // End FOR
+        goto NORMAL_EXIT;
+    } // End IF
+
+    // Split cases based upon the value's token type
+    switch (lptkVal->tkFlags.TknType)
+    {
+        case TKT_VARNAMED:
+            // tkData is an LPSYMENTRY
+            Assert (GetPtrTypeDir (lptkVal->tkData.tkVoid) EQ PTRTYPE_STCONST);
+
+            // If it's not immediate, we must look inside the array
+            if (!lptkVal->tkData.tkSym->stFlags.Imm)
+            {
+                // Get the global memory handle
+                hGlbVal = lptkVal->tkData.tkSym->stData.stGlbData;
+
+                break;          // Continue with global memory case
+            } // End IF
+
+            // Handle the immediate case
+
+            // Fall through to common code
+
+        case TKT_VARIMMED:
+            // Assign this immediate value to each name
+            for (uName = 0; uName < aplNELMNam; uName++)
+                // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
+                AssignName_EM (&lpMemNam[uName].tkToken, lptkVal);
+            goto NORMAL_EXIT;
+
+        case TKT_VARARRAY:
+            // Get the global memory handle
+            hGlbVal = lptkVal->tkData.tkGlbData;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Handle global case
+
+    // st/tkData is a valid HGLOBAL variable array
+    Assert (IsGlbTypeVarDir_PTB (hGlbVal));
+
+    // Lock the memory to get a ptr to it
+    lpMemHdrVal = MyGlobalLock (hGlbVal);
+
+#define lpHeader    lpMemHdrVal
+    // Get the Type, NELM, and Rank
+    aplTypeVal = lpHeader->ArrType;
+    aplRankVal = lpHeader->Rank;
+    aplNELMVal = lpHeader->NELM;
+#undef  lpHeader
+
+    // Check for RANK ERROR
+    if (IsMultiRank (aplRankVal))
+        goto RANK_EXIT;
+
+    // Check for LENGTH ERROR
+    if (!IsSingleton (aplNELMVal)
+     && aplNELMVal NE aplNELMNam)
+        goto LENGTH_EXIT;
+
+    // Skip over the header and dimension to the data
+    lpMemVal = VarArrayDataFmBase (lpMemHdrVal);
+
+    // If the value is an APA, ...
+    if (IsSimpleAPA (aplTypeVal))
+    {
+#define lpAPA       ((LPAPLAPA) lpMemVal)
+        // Get the APA parameters
+        apaOffVal = lpAPA->Off;
+        apaMulVal = lpAPA->Mul;
+#undef  lpAPA
+    } // End IF
+
+    // Fill in the value token
+////tkToken.tkFlags.TknType     =
+////tkToken.tkFlags.ImmType     =
+////tkToken.tkFlags.NoDisplay   = FALSE;    // Already from from {0}
+////tkToken.tkData              =
+    tkToken.tkCharIndex         = lptkVal->tkCharIndex;
+
+    // Split cases based upon the value storage type
+    switch (aplTypeVal)
+    {
+        case ARRAY_BOOL:
+            // Fill in the value token
+            tkToken.tkFlags.TknType = TKT_VARIMMED;
+            tkToken.tkFlags.ImmType = IMMTYPE_BOOL;
+
+            uBitMaskVal = BIT0;
+
+            // Loop through the names/values backwards
+            for (uName = 0; uName < aplNELMNam; uName++)
+            {
+                // Save the next value into the token
+                tkToken.tkData.tkBoolean = (uBitMaskVal & *(LPAPLBOOL) lpMemVal) ? TRUE : FALSE;
+
+                // Execute the function between the named value and the arg value
+                lpYYRes =
+                  ExecFunc_EM_YY (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, lpYYFcnStr, &tkToken);
+
+                if (lpYYRes)
+                {
+                    // Assign this token to this name
+                    // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
+                    //   and increments the RefCnt
+                    bRet = AssignName_EM (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, &lpYYRes->tkToken);
+                    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+
+                    if (!bRet)
+                        goto ERROR_EXIT;
+                } else
+                    goto ERROR_EXIT;
+
+                // If there's more than one value, ...
+                if (!IsSingleton (aplNELMVal))
+                {
+                    // Shift over the bit mask
+                    uBitMaskVal <<= 1;
+
+                    // Check for end-of-byte
+                    if (uBitMaskVal EQ END_OF_BYTE)
+                    {
+                        uBitMaskVal = BIT0;         // Start over
+                        ((LPAPLBOOL) lpMemVal)++;   // Skip to next byte
+                    } // End IF
+                } // End IF
+            } // End FOR
+
+            break;
+
+        case ARRAY_INT:
+            // Fill in the value token
+            tkToken.tkFlags.TknType = TKT_VARIMMED;
+            tkToken.tkFlags.ImmType = IMMTYPE_INT;
+
+            // Loop through the names/values
+            for (uName = 0; uName < aplNELMNam; uName++)
+            {
+                // Save the next value into the token
+                tkToken.tkData.tkInteger = ((LPAPLINT) lpMemVal)[uName % aplNELMVal];
+
+                // Execute the function between the named value and the arg value
+                lpYYRes =
+                  ExecFunc_EM_YY (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, lpYYFcnStr, &tkToken);
+
+                if (lpYYRes)
+                {
+                    // Assign this token to this name
+                    // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
+                    //   and increments the RefCnt
+                    bRet = AssignName_EM (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, &lpYYRes->tkToken);
+                    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+
+                    if (!bRet)
+                        goto ERROR_EXIT;
+                } else
+                    goto ERROR_EXIT;
+            } // End FOR
+
+            break;
+
+        case ARRAY_FLOAT:
+            // Fill in the value token
+            tkToken.tkFlags.TknType = TKT_VARIMMED;
+            tkToken.tkFlags.ImmType = IMMTYPE_FLOAT;
+
+            // Loop through the names/values
+            for (uName = 0; uName < aplNELMNam; uName++)
+            {
+                // Save the next value into the token
+                tkToken.tkData.tkFloat = ((LPAPLFLOAT) lpMemVal)[uName % aplNELMVal];
+
+                // Execute the function between the named value and the arg value
+                lpYYRes =
+                  ExecFunc_EM_YY (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, lpYYFcnStr, &tkToken);
+
+                if (lpYYRes)
+                {
+                    // Assign this token to this name
+                    // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
+                    //   and increments the RefCnt
+                    bRet = AssignName_EM (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, &lpYYRes->tkToken);
+                    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+
+                    if (!bRet)
+                        goto ERROR_EXIT;
+                } else
+                    goto ERROR_EXIT;
+            } // End FOR
+
+            break;
+
+        case ARRAY_CHAR:
+            // Fill in the value token
+            tkToken.tkFlags.TknType = TKT_VARIMMED;
+            tkToken.tkFlags.ImmType = IMMTYPE_CHAR;
+
+            // Loop through the names/values
+            for (uName = 0; uName < aplNELMNam; uName++)
+            {
+                // Save the next value into the token
+                tkToken.tkData.tkChar = ((LPAPLCHAR) lpMemVal)[uName % aplNELMVal];
+
+                // Execute the function between the named value and the arg value
+                lpYYRes =
+                  ExecFunc_EM_YY (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, lpYYFcnStr, &tkToken);
+
+                if (lpYYRes)
+                {
+                    // Assign this token to this name
+                    // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
+                    //   and increments the RefCnt
+                    bRet = AssignName_EM (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, &lpYYRes->tkToken);
+                    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+
+                    if (!bRet)
+                        goto ERROR_EXIT;
+                } else
+                    goto ERROR_EXIT;
+            } // End FOR
+
+            break;
+
+        case ARRAY_HETERO:
+            // Fill in the value token
+            tkToken.tkFlags.TknType = TKT_VARIMMED;
+
+            // Loop through the names/values
+            for (uName = 0; uName < aplNELMNam; uName++)
+            {
+                // Get a ptr to the next value
+                lpSymVal = ((LPAPLHETERO) lpMemVal)[uName % aplNELMVal];
+
+                // It's an LPSYMENTRY
+                Assert (GetPtrTypeDir (lpSymVal) EQ PTRTYPE_STCONST);
+
+                // It's an immediate
+                Assert (lpSymVal->stFlags.Imm);
+
+                // Save the immediate type and value in the token
+                tkToken.tkFlags.ImmType = lpSymVal->stFlags.ImmType;
+                tkToken.tkData.tkLongest = lpSymVal->stData.stLongest;
+
+                // Execute the function between the named value and the arg value
+                lpYYRes =
+                  ExecFunc_EM_YY (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, lpYYFcnStr, &tkToken);
+
+                if (lpYYRes)
+                {
+                    // Assign this token to this name
+                    // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
+                    //   and increments the RefCnt
+                    bRet = AssignName_EM (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, &lpYYRes->tkToken);
+                    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+
+                    if (!bRet)
+                        goto ERROR_EXIT;
+                } else
+                    goto ERROR_EXIT;
+            } // End FOR
+
+            break;
+
+        case ARRAY_NESTED:
+            // Loop through the names/values
+            for (uName = 0; uName < aplNELMNam; uName++)
+            {
+                LPVOID lpVal;
+
+                // Get the LPSYMENTRY or HGLOBAL
+                lpVal = ((LPAPLNESTED) lpMemVal)[uName % aplNELMVal];
+
+                // Split cases based the ptr type of the value
+                switch (GetPtrTypeDir (lpVal))
+                {
+                    case PTRTYPE_STCONST:
+                        // Get the LPSYMENTRY
+                        lpSymVal = (LPSYMENTRY) lpVal;
+
+                        // It's an immediate
+                        Assert (lpSymVal->stFlags.Imm);
+
+                        // Fill in the value token
+                        tkToken.tkFlags.TknType  = TKT_VARIMMED;
+                        tkToken.tkFlags.ImmType  = lpSymVal->stFlags.ImmType;
+                        tkToken.tkData.tkLongest = lpSymVal->stData.stLongest;
+
+                        break;
+
+                    case PTRTYPE_HGLOBAL:
+                        // Get the HGLOBAL
+                        hGlbSub = (HGLOBAL) lpVal;
+
+                        // It's a valid HGLOBAL variable array
+                        Assert (IsGlbTypeVarDir_PTB (hGlbSub));
+
+                        // Fill in the value token
+                        tkToken.tkFlags.TknType  = TKT_VARARRAY;
+                        tkToken.tkFlags.ImmType  = IMMTYPE_ERROR;
+                        tkToken.tkData.tkGlbData = hGlbSub;     // The call to AssignName_EM increments the RefCnt
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                // Execute the function between the named value and the arg value
+                lpYYRes =
+                  ExecFunc_EM_YY (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, lpYYFcnStr, &tkToken);
+
+                if (lpYYRes)
+                {
+                    // Assign this token to this name
+                    // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
+                    //   and increments the RefCnt
+                    bRet = AssignName_EM (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, &lpYYRes->tkToken);
+                    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+
+                    if (!bRet)
+                        goto ERROR_EXIT;
+                } else
+                    goto ERROR_EXIT;
+            } // End FOR
+
+            break;
+
+        case ARRAY_APA:
+            // Fill in the value token
+            tkToken.tkFlags.TknType = TKT_VARIMMED;
+            tkToken.tkFlags.ImmType = IMMTYPE_INT;
+
+            // Loop through the names/values
+            for (uName = 0; uName < aplNELMNam; uName++)
+            {
+                // Save the next value into the token
+                tkToken.tkData.tkInteger = apaOffVal + apaMulVal * (uName % aplNELMVal);
+
+                // Execute the function between the named value and the arg value
+                lpYYRes =
+                  ExecFunc_EM_YY (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, lpYYFcnStr, &tkToken);
+
+                if (lpYYRes)
+                {
+                    // Assign this token to this name
+                    // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
+                    //   and increments the RefCnt
+                    bRet = AssignName_EM (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, &lpYYRes->tkToken);
+                    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+
+                    if (!bRet)
+                        goto ERROR_EXIT;
+                } else
+                    goto ERROR_EXIT;
+            } // End FOR
+
+            break;
+
+        case ARRAY_RAT:
+        case ARRAY_VFP:
+            // Fill in the value token
+            tkToken.tkFlags.TknType  = TKT_VARARRAY;
+            tkToken.tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeVal);
+
+            // Loop through the names/values
+            for (uName = 0; uName < aplNELMNam; uName++)
+            {
+                // Calculate the index
+                aplIndex = uName % aplNELMVal;
+
+                // Copy to ALLTYPES
+                (*aTypeActPromote[aplTypeVal][aplTypeVal]) (lpMemVal, aplIndex, &atVal);
+
+                // Free the old value
+                (*aTypeFree[aplTypeVal]) (lpMemVal, aplIndex);
+
+                // Fill in the value token
+                tkToken.tkData.tkGlbData =
+                  MakeGlbEntry_EM (aplTypeVal,              // Entry type
+                                  &atVal,                   // Ptr to the value
+                                   TRUE,                    // TRUE iff we should initialize the target first
+                                   lptkVal);                // Ptr to function token
+                // Free the old atVal (if any)
+                (*aTypeFree[aplTypeVal]) (&atVal, 0);
+
+                // Execute the function between the named value and the arg value
+                lpYYRes =
+                  ExecFunc_EM_YY (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, lpYYFcnStr, &tkToken);
+
+                if (lpYYRes)
+                {
+                    // Assign this token to this name
+                    // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
+                    //   and increments the RefCnt
+                    bRet = AssignName_EM (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, &lpYYRes->tkToken);
+                    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+
+                    if (!bRet)
+                        goto ERROR_EXIT;
+                } else
+                    goto ERROR_EXIT;
+            } // End FOR
+
+            break;
+
+        case ARRAY_LIST:
+        defstop
+            break;
+    } // End SWITCH
 
     // Mark as successful
     bRet = TRUE;
+
+    goto NORMAL_EXIT;
+
+RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkVal);
+    goto ERROR_EXIT;
+
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkVal);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
+NORMAL_EXIT:
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbName); lpMemName = NULL;
+    MyGlobalUnlock (hGlbName); lpMemHdrNam = NULL;
 
     return bRet;
 } // End ModifyAssignNamedVars_EM

@@ -1854,6 +1854,86 @@ UBOOL QueryPromote
 
 
 //***************************************************************************
+//      TPF Routines
+//***************************************************************************
+
+//***************************************************************************
+//  $TPF_IDENT
+//***************************************************************************
+
+void TPF_IDENT
+    (LPVOID  lpArg,
+     APLNELM aplIndex)
+{
+    // No global storage to free
+} // End TPF_IDENT
+
+
+//***************************************************************************
+//  $TPF_HETERO
+//  $TPF_NESTED
+//***************************************************************************
+
+void TPF_HETERO
+    (LPALLTYPES lpatArg,
+     APLNELM    aplIndex)
+{
+    Assert (aplIndex EQ 0);
+
+    // If it's valid, ...
+    if (lpatArg->aplHetero NE NULL)
+    // Split cases based upon the ptr type bits
+    switch (GetPtrTypeDir (lpatArg->aplHetero))
+    {
+        case PTRTYPE_STCONST:
+            break;
+
+        case PTRTYPE_HGLOBAL:
+            // Free the global var
+            FreeResultGlobalVar (lpatArg->aplHetero);
+
+            // Zap the save area
+            lpatArg->aplHetero = NULL;
+
+            break;
+
+        defstop
+            break;
+    } // End IF/SWITCH
+} // End TPF_HETERO
+
+
+//***************************************************************************
+//  $TPF_RAT
+//***************************************************************************
+
+void TPF_RAT
+    (LPAPLRAT lpArg,
+     APLNELM  aplIndex)
+
+{
+    Myq_clear (&lpArg[aplIndex]);
+} // End TPF_RAT
+
+
+//***************************************************************************
+//  $TPF_VFP
+//***************************************************************************
+
+void TPF_VFP
+    (LPAPLVFP lpArg,
+     APLNELM   aplIndex)
+
+{
+    Myf_clear (&lpArg[aplIndex]);
+} // End TPF_VFP
+
+
+//***************************************************************************
+//      TPT Routines
+//***************************************************************************
+
+//***************************************************************************
 //  $TPT_ERROR
 //***************************************************************************
 

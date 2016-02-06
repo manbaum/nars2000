@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,7 +30,6 @@ typedef struct tagSYMBOLNAMES
 
 // Translate table for symbols to names
 SYMBOLNAMES aSymbolNames[]
-#ifdef DEFINE_VALUES
 =
 {
 // No keystroke equivalents for these as yet
@@ -310,14 +309,11 @@ SYMBOLNAMES aSymbolNames[]
   {UTF16_DIAMOND2             , L"{diamond2}"           },  // 2B26:  Diamond2 (a.k.a. 0x22C4)
   {UTF16_DIAMOND3             , L"{diamond3}"           },  // 25CA:  Diamond3 (a.k.a. 0x22C4)
 }
-#endif
 ;
 
 // The # rows in the aSymbolNames table
 UINT aSymbolNames_NRows
-#ifdef DEFINE_VALUES
 = (sizeof (aSymbolNames) / sizeof (aSymbolNames[0]))
-#endif
 ;
 
 

@@ -2252,12 +2252,40 @@ EXTERN
 PNNUMTYPE aNumTypePromote[PN_NUMTYPE_LENGTH][PN_NUMTYPE_LENGTH];
 
 typedef void (*PN_ACTION)    (LPPN_YYSTYPE, LPPNLOCALVARS);
+typedef void (*TPT_ACTION)   (LPTOKEN);
+typedef void (*TP_ACTION)    (LPVOID, APLINT, LPALLTYPES);
+typedef void (*TC_ACTION)    (LPVOID, APLINT, LPALLTYPES);
+typedef void (*TPF_ACTION)   (LPVOID, APLNELM);
 
 EXTERN
 PN_ACTION aNumTypeAction [PN_NUMTYPE_LENGTH][PN_NUMTYPE_LENGTH];
 
 
-#include "typemote.h"
+//***************************************************************************
+//  Type Promotion Prototoypes
+//***************************************************************************
+
+// ARRAY_xxx Type Promotion result matrix
+EXTERN
+APLSTYPE aTypePromote[ARRAY_LENGTH + 1][ARRAY_LENGTH + 1];
+
+// Type Promotion Token matrix
+EXTERN
+TPT_ACTION aTypeTknPromote[ARRAY_LENGTH + 1][ARRAY_LENGTH + 1];
+
+// Type Promotion Action matrix
+EXTERN
+TP_ACTION aTypeActPromote[ARRAY_LENGTH + 1][ARRAY_LENGTH + 1];
+
+// Type Conversion Action matrix allowing for type demotion
+EXTERN
+TC_ACTION aTypeActConvert[ARRAY_LENGTH][ARRAY_LENGTH];
+
+// Free action routine
+EXTERN
+TPF_ACTION aTypeFree[ARRAY_LENGTH + 1];
+
+
 //***************************************************************************
 //  Prime number
 //***************************************************************************

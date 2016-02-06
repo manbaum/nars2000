@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -142,15 +142,17 @@ typedef enum tagARRAY_TYPES
                                         // 0A-0F:  Available entries (4 bits)
  ARRAY_INIT  = ARRAY_LENGTH,
  ARRAY_ERROR = (APLSTYPE) -1,
+} ARRAY_TYPES;
 
 // Whenever changing this <enum>, be sure to make a
 //   corresponding change to <StorageType>  in <primfns.c>,
 //   <TypeDemote> in <typemote.c>
-//   <aTypePromote> and <uTypeMap> in <externs.h>,
+//   <aTypePromote> in <typemote.h>,
+//   <uTypeMap> in <externs.h>,
+//   <aTypeFree> in <typemote.h>,
 //   <IsSimpleNH> and <IsSimpleNum> macros in <macros.h>,
 //   ArrayTypeAsChar and BPE_VEC in <datatype.h>.
 
-} ARRAY_TYPES;
 
 // Translate an array type to a char
 // Note that the order of the chars in this #define

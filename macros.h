@@ -527,18 +527,27 @@
 #define GetDydLftOper(lpYYFcnStrRht)                &lpYYFcnStrRht[lpYYFcnStrRht->TknCount]
 #define GetDydRhtOper(lpYYFcnStrOpr,lptkAxisOpr)    GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr)
 
+// Define macro to free and YYFree a result, and set to NULL
+#define FreeYYRes(lpYYRes)                          \
+    if ((lpYYRes) NE NULL)                          \
+    {                                               \
+        FreeResult (lpYYRes);                       \
+        YYFree (lpYYRes);                           \
+        (lpYYRes) = NULL;                           \
+    } /* End IF */
+
 // Define macro to free (and set to NULL) a global name
 #define FreeGlbName(hGlb)                           \
-    if (hGlb NE NULL)                               \
+    if ((hGlb) NE NULL)                             \
     {                                               \
         DbgGlobalFree (hGlb); (hGlb) = NULL;        \
     } /* End IF */
 
 // Define macro to unlock and free (and set to NULL) a global name and ptr
 #define UnlFreeGlbName(hGlb,lpMem)                  \
-    if (hGlb NE NULL)                               \
+    if ((hGlb) NE NULL)                             \
     {                                               \
-        if (lpMem NE NULL)                          \
+        if ((lpMem) NE NULL)                        \
         {                                           \
             /* We no longer need this ptr */        \
             MyGlobalUnlock (hGlb); (lpMem) = NULL;  \

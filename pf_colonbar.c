@@ -466,6 +466,8 @@ APLRAT PrimFnDydColonBarRisRvR
 //  Primitive scalar function dyadic ColonBar:  V {is} V fn V
 //***************************************************************************
 
+//#define DEBUG_FMT
+
 APLVFP PrimFnDydColonBarVisVvV
     (APLVFP     aplVfpLft,
      APLVFP     aplVfpRht,
@@ -473,6 +475,9 @@ APLVFP PrimFnDydColonBarVisVvV
 
 {
     APLVFP mpfRes = {0};
+#ifdef DEBUG_FMT
+    WCHAR wszTemp[512];
+#endif
 
     // Check for indeterminates:  0 {div} 0
     if (IsMpf0 (&aplVfpLft)
@@ -514,6 +519,12 @@ APLVFP PrimFnDydColonBarVisVvV
 
     // Divide the VFPs
     mpfr_div (&mpfRes, &aplVfpLft, &aplVfpRht, MPFR_RNDN);
+
+#ifdef DEBUG_FMT
+    strcpyW (wszTemp, L"L:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], aplVfpLft, 0) = WC_EOS; DbgMsgW (wszTemp);
+    strcpyW (wszTemp, L"R:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], aplVfpRht, 0) = WC_EOS; DbgMsgW (wszTemp);
+    strcpyW (wszTemp, L"Z:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfRes   , 0) = WC_EOS; DbgMsgW (wszTemp);
+#endif
 
     return mpfRes;
 } // End PrimFnDydColonBarVisVvV

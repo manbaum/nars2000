@@ -4,7 +4,7 @@ Build #1444 -- Version 0.4.12.xx
 * Prepare For Use Of <aTypeFree>
 
 DATATYPE.H:
-  Note that changes in <ARRAY_TYPES> enuym must be reflected in <aTypeFree>.
+  Note that changes in <ARRAY_TYPES> enum must be reflected in <aTypeFree>.
 
 EXTERNS.H:
   Move prototypes of TypeMote functions from <typemote.h> to <externs.h>.

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -336,47 +336,48 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
      LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE          aplTypeLft,       // Left arg storage type
-                      aplTypeRht,       // Right ...
-                      aplTypeRes;       // Result   ...
-    APLNELM           aplNELMLft,       // Left arg NELM
-                      aplNELMRht,       // Right ...
-                      aplNELMRes;       // Result   ...
-    APLRANK           aplRankLft,       // Left arg rank
-                      aplRankRht,       // Right ...
-                      aplRankRes;       // Result   ...
-    APLDIM            aplColsLft,       // Left arg # cols
-                      aplColsLft2,      // ...             , saved value
-                      aplRowsLft,       // Left arg # rows
-                      aplRestLft;       // Left arg product of remaining dimensions
-    APLLONGEST        aplLongestLft,    // Left arg immediate value
-                      aplLongestRht;    // Right ...
-    HGLOBAL           hGlbLft = NULL,   // Left arg global memory handle
-                      hGlbRht = NULL,   // Right ...
-                      hGlbRes = NULL;   // Result   ...
-    LPVOID            lpMemLft = NULL,  // Ptr to left arg global memory
-                      lpMemRht = NULL,  // Ptr to right ...
-                      lpMemRes = NULL;  // Ptr to result   ...
-    LPAPLDIM          lpMemDimLft,      // Ptr to left arg dimensions
-                      lpMemDimRht,      // Ptr to right ...
-                      lpMemDimRes;      // Ptr to result   ...
-    APLUINT           ByteRes,          // # bytes in the result
-                      uLftCol,          // Loop counter
-                      uLftRst,          // Loop counter
-                      uRht;             // Loop counter
-    APLINT            iLftRow,          // Loop counter
-                      uLft,             // ...
-                      uRes,             // ...
-                      aplIntRht;        // Temporary integer
-    LPPL_YYSTYPE      lpYYRes = NULL;   // Ptr to the result
-    LPPLLOCALVARS     lpplLocalVars;    // Ptr to re-entrant vars
-    LPUBOOL           lpbCtrlBreak;     // Ptr to Ctrl-Break flag
-    APLRAT            aplRatRes = {0};  // Result item as RAT
-    APLVFP            aplVfpRes = {0};  // ...            VFP
-    ALLTYPES          atLft = {0},      // Left arg as ALLTYPES
-                      atRht = {0};      // Right ...
-    LPVARARRAY_HEADER lpMemHdrLft,      // Ptr to left arg var header
-                      lpMemHdrRht;      // ...    right ...
+    APLSTYPE          aplTypeLft,           // Left arg storage type
+                      aplTypeRht,           // Right ...
+                      aplTypeRes;           // Result   ...
+    APLNELM           aplNELMLft,           // Left arg NELM
+                      aplNELMRht,           // Right ...
+                      aplNELMRes;           // Result   ...
+    APLRANK           aplRankLft,           // Left arg rank
+                      aplRankRht,           // Right ...
+                      aplRankRes;           // Result   ...
+    APLDIM            aplColsLft,           // Left arg # cols
+                      aplColsLft2,          // ...             , saved value
+                      aplRowsLft,           // Left arg # rows
+                      aplRestLft;           // Left arg product of remaining dimensions
+    APLLONGEST        aplLongestLft,        // Left arg immediate value
+                      aplLongestRht;        // Right ...
+    HGLOBAL           hGlbLft = NULL,       // Left arg global memory handle
+                      hGlbRht = NULL,       // Right ...
+                      hGlbRes = NULL;       // Result   ...
+    LPVARARRAY_HEADER lpMemHdrLft = NULL,   // Ptr to left arg var header
+                      lpMemHdrRht = NULL,   // ...    right ...
+                      lpMemHdrRes = NULL;   // ...    result       ...
+    LPVOID            lpMemLft,             // Ptr to left arg global memory
+                      lpMemRht,             // Ptr to right ...
+                      lpMemRes;             // Ptr to result   ...
+    LPAPLDIM          lpMemDimLft,          // Ptr to left arg dimensions
+                      lpMemDimRht,          // Ptr to right ...
+                      lpMemDimRes;          // Ptr to result   ...
+    APLUINT           ByteRes,              // # bytes in the result
+                      uLftCol,              // Loop counter
+                      uLftRst,              // Loop counter
+                      uRht;                 // Loop counter
+    APLINT            iLftRow,              // Loop counter
+                      uLft,                 // ...
+                      uRes,                 // ...
+                      aplIntRht;            // Temporary integer
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    APLRAT            aplRatRes = {0};      // Result item as RAT
+    APLVFP            aplVfpRes = {0};      // ...            VFP
+    ALLTYPES          atLft = {0},          // Left arg as ALLTYPES
+                      atRht = {0};          // Right ...
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -416,6 +417,10 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
             aplTypeRes = ARRAY_BOOL;
     } // End IF/ELSE
 RESTART_EXCEPTION:
+    // Clear atLft and atRht in case aplTypeRes changed
+    ZeroMemory (&atLft, sizeof (atLft));
+    ZeroMemory (&atRht, sizeof (atRht));
+
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
@@ -431,9 +436,9 @@ RESTART_EXCEPTION:
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -445,16 +450,16 @@ RESTART_EXCEPTION:
 #undef  lpHeader
 
     // Skip over the header to the dimensions
-    if (hGlbLft)
+    if (hGlbLft NE NULL)
         lpMemDimLft = VarArrayBaseToDim (lpMemHdrLft);
-    if (hGlbRht)
+    if (hGlbRht NE NULL)
         lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
-    lpMemDimRes = VarArrayBaseToDim (lpMemRes);
+    lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
 
     // Fill in the result's dimension
     //   by copying the left arg dimensions
     //   and then the right arg dimensions
-    if (hGlbLft)
+    if (hGlbLft NE NULL)
     {
         CopyMemory (lpMemDimRes, lpMemDimLft, (APLU3264) aplRankLft * sizeof (APLDIM));
 
@@ -486,7 +491,7 @@ RESTART_EXCEPTION:
         lpMemLft   = &aplLongestLft;
     } // End IF/ELSE
 
-    if (hGlbRht)
+    if (hGlbRht NE NULL)
     {
         CopyMemory (lpMemDimRes, lpMemDimRht, (APLU3264) aplRankRht * sizeof (APLDIM));
 
@@ -502,27 +507,8 @@ RESTART_EXCEPTION:
     if (IsEmpty (aplNELMRes))
         goto YYALLOC_EXIT;
 
-    // Skip over the dimensions to the data
-    lpMemRes = lpMemDimRes;
-
-#define INIT_REL(mpq,mpf)                               \
-    /* If either arg is global numeric, ... */          \
-    if (IsGlbNum (aplTypeRes))                          \
-    {                                                   \
-        if (IsRat (aplTypeRes))                         \
-        {                                               \
-            mpq (&atLft.aplRat);                        \
-            mpq (&atRht.aplRat);                        \
-        } else                                          \
-        if (IsVfp (aplTypeRes))                         \
-        {                                               \
-            mpf (&atLft.aplVfp);                        \
-            mpf (&atRht.aplVfp);                        \
-        } else                                          \
-            DbgStop (); /* We should never get here */  \
-    } /* End IF */
-
-    INIT_REL (mpq_init, mpfr_init0)
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // If the result is Boolean, ...
     if (IsSimpleBool (aplTypeRes))
@@ -531,7 +517,7 @@ RESTART_EXCEPTION:
         for (uRht = 0; uRht < aplNELMRht; uRht++)
         {
             // Get the next right arg value
-            if (hGlbRht)
+            if (hGlbRht NE NULL)
                 aplLongestRht = GetNextInteger (lpMemRht, aplTypeRht, uRht);
 
             // The left arg is treated as a three-dimensional array of shape
@@ -681,8 +667,15 @@ RESTART_EXCEPTION:
                         defstop
                             break;
                     } // End SWITCH
+
+                    // Free the old atLft
+                    (*aTypeFree[aplTypeRes]) (&atLft, 0);
                 } __except (CheckException (GetExceptionInformation (), L"PrimFnDydUpTack_EM_YY"))
                 {
+                    // Free the old atLft and atRht
+                    (*aTypeFree[aplTypeRes]) (&atLft, 0);
+                    (*aTypeFree[aplTypeRes]) (&atRht, 0);
+
                     switch (MyGetExceptionCode ())
                     {
                         case EXCEPTION_RESULT_FLOAT:
@@ -690,14 +683,12 @@ RESTART_EXCEPTION:
 
                             if (!IsSimpleFlt (aplTypeRes))
                             {
-                                INIT_REL (Myq_clear, Myf_clear)
-
                                 aplTypeRes = ARRAY_FLOAT;
 
-                                dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                                dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 
                                 // We no longer need these ptrs
-                                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                                MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
                                 // We no longer need this storage
                                 FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
@@ -713,14 +704,12 @@ RESTART_EXCEPTION:
                         case EXCEPTION_RESULT_VFP:
                             if (!IsVfp (aplTypeRes))
                             {
-                                INIT_REL (Myq_clear, Myf_clear)
-
                                 aplTypeRes = ARRAY_VFP;
 
-                                dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                                dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 
                                 // We no longer need these ptrs
-                                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                                MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
                                 // We no longer need this storage
                                 FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
@@ -741,11 +730,18 @@ RESTART_EXCEPTION:
                     } // End SWITCH
                 } // End __try/__except
             } // End FOR
+
+            // Free the old atRht
+            (*aTypeFree[aplTypeRes]) (&atRht, 0);
         } // End FOR/FOR
     } // End FOR
 YYALLOC_EXIT:
     // Unlock the result global memory in case TypeDemote actually demotes
-    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+    } // End IF
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -773,36 +769,34 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this resource
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    INIT_REL (Myq_clear, Myf_clear)
-
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
-    if (hGlbLft && lpMemLft)
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
     return lpYYRes;

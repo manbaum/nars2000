@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1057,7 +1057,6 @@ void GetFirstValueImm
             if (lpaplInteger)
                 *lpaplInteger = (APLINT) aplLongest;
             if (lpaplFloat)
-                // ***FIXME*** -- Possible loss of precision
                 *lpaplFloat   = (APLFLOAT) (APLINT) aplLongest;
             if (lpaplChar)
                 *lpaplChar    = WC_EOS;
@@ -1180,7 +1179,7 @@ void GetFirstValueGlb
             if (lpaplInteger)
                 *lpaplInteger = aplInteger;
             if (lpaplFloat)
-                *lpaplFloat   = (APLFLOAT) aplInteger;  // ***FIXME*** -- Possible loss of precision
+                *lpaplFloat   = (APLFLOAT) aplInteger;
             if (lpaplChar)
                 *lpaplChar    = WC_EOS;
             if (lpaplLongest)
@@ -1197,7 +1196,7 @@ void GetFirstValueGlb
             if (lpaplInteger)
                 *lpaplInteger = aplInteger;
             if (lpaplFloat)
-                *lpaplFloat   = (APLFLOAT) aplInteger;  // ***FIXME*** -- Possible loss of precision
+                *lpaplFloat   = (APLFLOAT) aplInteger;
             if (lpaplChar)
                 *lpaplChar    = WC_EOS;
             if (lpaplLongest)
@@ -1822,14 +1821,12 @@ APLFLOAT GetNextFloat
             return (APLFLOAT) (BIT0 & (((LPAPLBOOL) lpMem)[uRes >> LOG2NBIB] >> (MASKLOG2NBIB & uRes)));
 
         case ARRAY_INT:
-            // ***FIXME*** -- Possible loss of precision
             return (APLFLOAT) ((LPAPLINT) lpMem)[uRes];
 
         case ARRAY_FLOAT:
             return ((LPAPLFLOAT) lpMem)[uRes];
 
         case ARRAY_APA:
-            // ***FIXME*** -- Possible loss of precision
             return (APLFLOAT) (((LPAPLAPA) lpMem)->Off + ((LPAPLAPA) lpMem)->Mul * uRes);
 
         defstop

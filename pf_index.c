@@ -742,7 +742,7 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
         if (lpMemRes)
         {
@@ -4068,12 +4068,18 @@ UBOOL ArrayIndexSetVector_EM
             break;
 
         case ARRAY_RAT:
+            // Clear out the old
+            Myq_clear (&((LPAPLRAT) lpMemRes)[aplLongestSubLst]);
+
             // Promote the right arg to the result type
             (*aTypeActPromote[aplTypeRht][aplTypeRes])(lpMemRht, uRht, (LPALLTYPES) &((LPAPLRAT) lpMemRes)[aplLongestSubLst]);
 
             break;
 
         case ARRAY_VFP:
+            // Clear out the old
+            Myf_clear (&((LPAPLVFP) lpMemRes)[aplLongestSubLst]);
+
             // Promote the right arg to the result type
             (*aTypeActPromote[aplTypeRht][aplTypeRes])(lpMemRht, uRht, (LPALLTYPES) &((LPAPLVFP) lpMemRes)[aplLongestSubLst]);
 
@@ -4554,29 +4560,237 @@ UBOOL ArrayIndexFcnSet_EM
      LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    LPPL_YYSTYPE lpYYRes1,              // Ptr to temporary resuilt
-                 lpYYRes2;              // ...
-    UBOOL        bRet;                  // TRUE iff result is valid
+    LPPL_YYSTYPE lpYYRes1 = NULL,       // Ptr to temporary resuilt
+                 lpYYRes2 = NULL,       // ...
+                 lpYYRes3 = NULL,       // ...
+                 lpYYResL = NULL,       // ...
+                 lpYYResR = NULL,       // ...
+                 lpYYResInd = NULL,     // ...                      for Ind
+                 lpYYResSub = NULL;     // ...                      for Ind[I]
+    UBOOL        bRet = TRUE;           // TRUE iff result is valid
+    TOKEN        tkFunc = {0},          // Temporary token for a function
+                 tkList = {0};          // ...                   list
+    APLNELM      aplNELMInd,            // The NELM of the indices
+                 aplNELMArg,            // ...             right arg
+                 uInd;                  // Loop counter
+    APLBOOL      bQuadIO;               // []IO
 
-    // Compute A[L]
-    lpYYRes1 = ArrayIndexRef_EM_YY (lptkNamArg,         // Ptr to name arg token
-                                    lptkLstArg);        // Ptr to right arg token
+    // Get []IO
+    bQuadIO = GetQuadIO ();
+
+    //***************************************************************************
+    // Compute ,({iota}{rho} NAM)[L]
+    //  so we can loop through the indices one by one
+    //  in case there are duplicate indices
+    //***************************************************************************
+
+    // Setup a token with the {rho} function
+    tkFunc.tkFlags.TknType   = TKT_FCNIMMED;
+    tkFunc.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
+////tkFunc.tkFlags.NoDisplay = FALSE;           // Already zero from tkZero
+    tkFunc.tkData.tkChar     = UTF16_RHO;
+    tkFunc.tkCharIndex       = lpYYFcnStr->tkToken.tkCharIndex;
+
+    // Compute {rho}NAM
+    lpYYRes1 =
+      PrimFnMonRho_EM_YY (&tkFunc,              // Ptr to function token
+                           lptkNamArg,          // Ptr to right arg token
+                           NULL);               // Ptr to axis token (may be NULL)
+    // Check for error
     if (lpYYRes1 EQ NULL)
-        return FALSE;
-    // Compute A[L] fcn R
-    lpYYRes2 = ExecFuncStr_EM_YY (&lpYYRes1->tkToken,   // Ptr to left arg token (may be NULL if monadic)
-                                   lpYYFcnStr,          // Ptr to function strand
-                                   lptkRhtArg,          // Ptr to right arg token
-                                   NULL);               // Ptr to axis token (may be NULL)
-    FreeResult (lpYYRes1); YYFree (lpYYRes1); lpYYRes1 = NULL;
-    if (lpYYRes2 EQ NULL)
-        return FALSE;
+        goto ERROR_EXIT;
 
-    // Assign the resulting values into A[L]
-    bRet = ArrayIndexSet_EM (lptkNamArg,
-                             lptkLstArg,
-                            &lpYYRes2->tkToken);
+    // Setup a token with the {iota} function
+////tkFunc.tkFlags.TknType   = TKT_FCNIMMED;        // Already set above
+////tkFunc.tkFlags.ImmType   = IMMTYPE_PRIMFCN;     // Already set above
+////tkFunc.tkFlags.NoDisplay = FALSE;               // Already zero from = {0}
+    tkFunc.tkData.tkChar     = UTF16_IOTA;
+////tkFunc.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
+
+    // Compute {iota}{rho}NAM
+    lpYYRes2 =
+      PrimFnMonIota_EM_YY (&tkFunc,                 // Ptr to function token
+                           &lpYYRes1->tkToken,      // Ptr to right arg token
+                            NULL);                  // Ptr to axis token (may be NULL)
+    FreeResult (lpYYRes1); YYFree (lpYYRes1); lpYYRes1 = NULL;
+
+    // Check for error
+    if (lpYYRes2 EQ NULL)
+        goto ERROR_EXIT;
+
+    // Compute ({iota}{rho} NAM)[L]
+    lpYYRes1 =
+      ArrayIndexRef_EM_YY (&lpYYRes2->tkToken,      // Ptr to indices token
+                            lptkLstArg);            // Ptr to right arg token
     FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
+
+    // Check for error
+    if (lpYYRes1 EQ NULL)
+        goto ERROR_EXIT;
+
+    // Setup a token with the {comma} function
+////tkFunc.tkFlags.TknType   = TKT_FCNIMMED;        // Already set above
+////tkFunc.tkFlags.ImmType   = IMMTYPE_PRIMFCN;     // Already set above
+////tkFunc.tkFlags.NoDisplay = FALSE;               // Already zero from = {0}
+    tkFunc.tkData.tkChar     = UTF16_COMMA;
+////tkFunc.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
+
+    // Compute ,({iota}{rho} NAM)[L]
+    lpYYResInd =
+      PrimFnMonComma_EM_YY (&tkFunc,                // Ptr to function token
+                            &lpYYRes1->tkToken,     // Ptr to right arg token
+                             NULL);                 // Ptr to axis token (may be NULL)
+    FreeResult (lpYYRes1); YYFree (lpYYRes1); lpYYRes1 = NULL;
+
+    // Check for error
+    if (lpYYResInd EQ NULL)
+        goto ERROR_EXIT;
+
+    // Get the NELM of the indices & right arg
+    AttrsOfToken (&lpYYResInd->tkToken, NULL, &aplNELMInd, NULL, NULL);
+    AttrsOfToken ( lptkRhtArg         , NULL, &aplNELMArg, NULL, NULL);
+
+    // Loop through the values in Ind
+    for (uInd = 0; bRet && uInd < aplNELMInd; uInd++)
+    {
+        //***************************************************************************
+        // Compute {enclose}({first}NAM[Ind[I]]) fcn {first}R[I]
+        //  so we can assign it into NAM[Ind[I]]
+        //***************************************************************************
+
+        // Form I as a list arg
+        tkList.tkFlags.TknType   = TKT_VARIMMED;
+        tkList.tkFlags.ImmType   = IMMTYPE_INT;
+////////tkList.tkFlags.NoDisplay = FALSE;           // Already zero from tkZero
+        tkList.tkData.tkInteger  = uInd + bQuadIO;
+        tkList.tkCharIndex       = lpYYFcnStr->tkToken.tkCharIndex;
+
+        // Compute Ind[I]
+        lpYYResSub =
+          ArrayIndexRef_EM_YY (&lpYYResInd->tkToken,
+                               &tkList);
+        if (lpYYResSub EQ NULL)
+            goto ERROR_EXIT;
+        // If the right arg is not a singleton, ...
+        if (!IsSingleton (aplNELMArg))
+        {
+            // Compute R[I]
+            lpYYRes1 =
+              ArrayIndexRef_EM_YY (lptkRhtArg,
+                                  &tkList);
+            // Check for error
+            if (lpYYRes1 EQ NULL)
+                goto ERROR_EXIT;
+        } else
+        {
+            // Allocate a new YYRes
+            lpYYRes1 = YYAlloc ();
+
+            // Copy right arg
+            lpYYRes1->tkToken = *lptkRhtArg;
+        } // End IF/ELSE
+
+        // Setup a token with the {first} function
+////////tkFunc.tkFlags.TknType   = TKT_FCNIMMED;        // Already set above
+////////tkFunc.tkFlags.ImmType   = IMMTYPE_PRIMFCN;     // Already set above
+////////tkFunc.tkFlags.NoDisplay = FALSE;               // Already zero from = {0}
+        tkFunc.tkData.tkChar     = UTF16_UPARROW;
+////////tkFunc.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
+
+        // Compute {first}R[I]
+        lpYYResR =
+          PrimFnMonUpArrow_EM_YY (&tkFunc,              // Ptr to function token
+                                  &lpYYRes1->tkToken,   // Ptr to right arg token
+                                   NULL);               // Ptr to axis token (may be NULL)
+        // If the right arg is not a singleton, ...
+        if (!IsSingleton (aplNELMArg))
+            FreeResult (lpYYRes1);
+        // Clear it
+        YYFree (lpYYRes1); lpYYRes1 = NULL;
+
+        // Check for error
+        if (lpYYResR EQ NULL)
+            goto ERROR_EXIT;
+
+        // Compute NAM[Ind[I]]
+        lpYYRes1 =
+          ArrayIndexRef_EM_YY (lptkNamArg,
+                              &lpYYResSub->tkToken);
+        // Check for error
+        if (lpYYRes1 EQ NULL)
+            goto ERROR_EXIT;
+
+        // Setup a token with the {first} function
+////////tkFunc.tkFlags.TknType   = TKT_FCNIMMED;        // Already set above
+////////tkFunc.tkFlags.ImmType   = IMMTYPE_PRIMFCN;     // Already set above
+////////tkFunc.tkFlags.NoDisplay = FALSE;               // Already zero from = {0}
+////////tkFunc.tkData.tkChar     = UTF16_UPARROW;       // Already set above
+////////tkFunc.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
+
+        // Compute {first}NAM[Ind[I]]
+        lpYYResL =
+          PrimFnMonUpArrow_EM_YY (&tkFunc,              // Ptr to function token
+                                  &lpYYRes1->tkToken,   // Ptr to right arg token
+                                   NULL);               // Ptr to axis token (may be NULL)
+        FreeResult (lpYYRes1); YYFree (lpYYRes1); lpYYRes1 = NULL;
+
+        // Check for error
+        if (lpYYResL EQ NULL)
+            goto ERROR_EXIT;
+
+        // Compute ({first}NAM[Ind[I]]) fcn {first}R[I]
+        lpYYRes1 =
+          ExecFuncStr_EM_YY (&lpYYResL->tkToken,    // Ptr to left arg token (may be NULL if monadic)
+                              lpYYFcnStr,           // Ptr to function strand
+                             &lpYYResR->tkToken,    // Ptr to right arg token
+                              NULL);                // Ptr to axis token (may be NULL)
+        FreeResult (lpYYResL); YYFree (lpYYResL); lpYYResL = NULL;
+        FreeResult (lpYYResR); YYFree (lpYYResR); lpYYResR = NULL;
+
+        // Check for error
+        if (lpYYRes1 EQ NULL)
+            goto ERROR_EXIT;
+
+        // Setup a token with the {enclose} function
+////////tkFunc.tkFlags.TknType   = TKT_FCNIMMED;        // Already set above
+////////tkFunc.tkFlags.ImmType   = IMMTYPE_PRIMFCN;     // Already set above
+////////tkFunc.tkFlags.NoDisplay = FALSE;               // Already zero from = {0}
+        tkFunc.tkData.tkChar     = UTF16_LEFTSHOE;
+////////tkFunc.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
+
+        // Compute {enclose}({first}NAM[Ind[I]]) fcn {first}R[I]
+        lpYYRes2 =
+          PrimFnMonLeftShoe_EM_YY (&tkFunc,             // Ptr to function token
+                                   &lpYYRes1->tkToken,  // Ptr to right arg token
+                                    NULL);              // Ptr to axis token (may be NULL)
+        FreeResult (lpYYRes1); YYFree (lpYYRes1); lpYYRes1 = NULL;
+
+        // Check for error
+        if (lpYYRes2 EQ NULL)
+            goto ERROR_EXIT;
+
+        // Assign the resulting values into NAM[Ind[I]]
+        bRet =
+          ArrayIndexSet_EM (lptkNamArg,
+                           &lpYYResSub->tkToken,
+                           &lpYYRes2->tkToken);
+        FreeResult (lpYYRes2  ); YYFree (lpYYRes2  ); lpYYRes2   = NULL;
+        FreeResult (lpYYResSub); YYFree (lpYYResSub); lpYYResSub = NULL;
+    } // End FOR
+
+    goto NORMAL_EXIT;
+
+ERROR_EXIT:
+    // Mark as in error
+    bRet = FALSE;
+NORMAL_EXIT:
+    FreeYYRes (lpYYRes1  );
+    FreeYYRes (lpYYRes2  );
+    FreeYYRes (lpYYRes3  );
+    FreeYYRes (lpYYResL  );
+    FreeYYRes (lpYYResR  );
+    FreeYYRes (lpYYResInd);
+    FreeYYRes (lpYYResSub);
 
     return bRet;
 } // End ArrayIndexFcnSet_EM

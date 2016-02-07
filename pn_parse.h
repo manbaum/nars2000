@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,8 +36,12 @@ typedef enum tagPN_NUMTYPE
 
 // N.B.:  Whenever changing the above tagPN_NUMTYPE enum,
 //   be sure to make a corresponding change to
-//   <PN_MAT> in <pn_parse.y>.
+//   <PN_MAT> in <pn_parse.y>,
+//   chComType++ in <PN_VectorRes> in <pn_proc.c>.
 
+
+#define IsPnNumTypeBool(a)          \
+    ((a) EQ PN_NUMTYPE_BOOL)
 
 #define IsPnNumTypeInt(a)           \
     ((a) EQ PN_NUMTYPE_BOOL         \

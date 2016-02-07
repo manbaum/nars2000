@@ -508,20 +508,6 @@
 // Define macro for inverting VFP numbers
 #define mpfr_inv(rop,op,rnd)    mpfr_si_div (rop, 1, op, rnd)
 
-// Define macro for PN Boolean type
-#define IsPNBoolType(a)         ((a) EQ PN_NUMTYPE_BOOL)
-
-// Define macro for PN INT type
-#define IsPNIntType(a)          ((a) EQ PN_NUMTYPE_INT)
-
-// Define macro for PN FLT type
-#define IsPNFltType(a)          ((a) EQ PN_NUMTYPE_FLT)
-
-// Define macro for PN RAT type
-#define IsPNRatType(a)          ((a) EQ PN_NUMTYPE_RAT)
-
-// Define macro for PN VFP type
-#define IsPNVfpType(a)          ((a) EQ PN_NUMTYPE_VFP)
 // Define macros for extracting the left and right operands from operators
 #define GetMonLftOper(lpYYFcnStrOpr,lptkAxisOpr)    &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)]
 #define GetDydLftOper(lpYYFcnStrRht)                &lpYYFcnStrRht[lpYYFcnStrRht->TknCount]

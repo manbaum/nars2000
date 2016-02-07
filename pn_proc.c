@@ -599,6 +599,21 @@ LPPN_YYSTYPE PN_MakeRatPoint
 
             break;
 
+        case CR_RESULT_NEG0:
+            // Clear the previous memory
+            Myq_clear (&lpYYNum->at.aplRat);
+
+            // Zap it
+            ZeroMemory (&lpYYNum->at.aplRat, sizeof (lpYYNum->at.aplRat));
+
+            // Set the result to -0
+            mpfr_init_set_str (&lpYYNum->at.aplVfp, "-0", 10, MPFR_RNDN);
+
+            // Set the result type
+            lpYYNum->chType = PN_NUMTYPE_VFP;
+
+            break;
+
         defstop
             break;
     } // End SWITCH
@@ -1164,17 +1179,17 @@ LPPN_YYSTYPE PN_MakePiPoint
         pnTypeRes = aNumTypePromote[lpYYMultiplier->chType][lpYYExponent->chType];
 
         // If the result is BOOL, ...
-        if (IsPNBoolType (pnTypeRes))
+        if (IsPnNumTypeBool (pnTypeRes))
             // Make it FLT
             pnTypeRes = PN_NUMTYPE_FLT;
         else
         // If the result is INT, ...
-        if (IsPNIntType (pnTypeRes))
+        if (IsPnNumTypeInt (pnTypeRes))
             // Make it FLT
             pnTypeRes++;
         else
         // If the result is RAT, ...
-        if (IsPNRatType (pnTypeRes))
+        if (IsPnNumTypeRat (pnTypeRes))
             // Make it VFP
             pnTypeRes++;
     } else
@@ -1419,22 +1434,27 @@ UBOOL PN_VectorAcc
     lppnVector[lppnLocalVars->uGlbVectorCurLen].lpStart = lpStart;
     lppnVector[lppnLocalVars->uGlbVectorCurLen].uNumLen = uNumLen;
 
-    // Izit expressible as an integer?
+    // Izit expressible as an integer or rational?
     lppnVector[lppnLocalVars->uGlbVectorCurLen].bInteger =
+    lppnVector[lppnLocalVars->uGlbVectorCurLen].bRat     =
         (strspn  (lpStart, OVERBAR1_STR INFINITY1_STR "0123456789eE") EQ uNumLen)
-     && (!gAllowNeg0                                                    // Either we don't allow -0, or
-      || strncmp (lpStart, OVERBAR1_STR "0"          , uNumLen) NE 0)   //   it's not -0
-//// && (strncmp (lpStart, OVERBAR1_STR INFINITY1_STR, uNumLen) NE 0)   // {neg}{inf} is FLT, not INT
-//// && (strncmp (lpStart,              INFINITY1_STR, uNumLen) NE 0)   //      {inf} is FLT, not INT
-        ;
-
-    // Izit expressible as a rational?
-    lppnVector[lppnLocalVars->uGlbVectorCurLen].bRat =
-        (strspn  (lpStart, OVERBAR1_STR INFINITY1_STR "0123456789xrJijkl") EQ uNumLen)
-     && (!gAllowNeg0                                                    // Either we don't allow -0, or
-      || strncmp (lpStart, OVERBAR1_STR "0"          , uNumLen) NE 0)   //   it's not -0
-        ;
-
+     && (gAllowNeg0 ? (strncmp (lpStart, OVERBAR1_STR "0"          , uNumLen) NE 0  //   it's not -0
+////               &&  strncmp (lpStart, OVERBAR1_STR INFINITY1_STR, uNumLen) NE 0  // {neg}{inf} is FLT, not INT
+////               &&  strncmp (lpStart,              INFINITY1_STR, uNumLen) NE 0  //      {inf} is FLT, not INT
+                      )
+                    : TRUE
+        );
+    // Izit expressible as a rational but not integer?
+    lppnVector[lppnLocalVars->uGlbVectorCurLen].bRat |=
+        (strspn (lpStart, OVERBAR1_STR INFINITY1_STR  "0123456789rJijkl") EQ uNumLen
+      || (strspn (lpStart, OVERBAR1_STR INFINITY1_STR "0123456789rJijkl") EQ (uNumLen - 1)
+       && lpStart[uNumLen - 1] EQ 'x'))
+     && (gAllowNeg0 ? (strncmp (lpStart, OVERBAR1_STR "0"          , uNumLen) NE 0  //   it's not -0
+                    && strncmp (lpStart, OVERBAR1_STR "0x"         , uNumLen) NE 0  //   it's not -0x
+                    && strncmp (lpStart, OVERBAR1_STR "0r"         , 3      ) NE 0  //   it's not -0r...
+                      )
+                    : TRUE
+        );
     // Set the new initial point
     lppnLocalVars->uNumIni += uNumLen;
 
@@ -1520,6 +1540,13 @@ UBOOL PN_VectorRes
                 chType = aNumTypePromote[chType][lppnVector[uCnt].chType];
             lppnLocalVars->chComType = aNumTypePromote[lppnLocalVars->chComType][lppnVector[uCnt].chType];
                            chComType = aNumTypePromote[               chComType][                 chType];
+            // If it's not expressible as a RAT and it is, ...
+            if (!lppnVector[uCnt].bRat
+             && IsPnNumTypeRat (lppnLocalVars->chComType))
+                lppnLocalVars->chComType++;         // ***ASSUME*** -- RAT+1=VFP, etc.
+            if (!lppnVector[uCnt].bRat
+             && IsPnNumTypeRat (               chComType))
+                               chComType++;         // ***ASSUME*** -- RAT+1=VFP, etc.
         } // End FOR
 
         // If the bInteger/bRat common type is Rational, ...

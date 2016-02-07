@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -70,6 +70,7 @@ typedef enum tagCR_RETCODES         // FSA return codes
     CR_SUCCESS      = 0 ,           // 00:  Success
     CR_SYNTAX_ERROR     ,           // 01:  Syntax error
     CR_DOMAIN_ERROR     ,           // 02:  Domain error (0/0)
+    CR_RESULT_NEG0      ,           // 03:  Result is -0
 } CR_RETCODES, *LPCR_RETCODES;
 
 typedef struct tagCRLOCALVARS

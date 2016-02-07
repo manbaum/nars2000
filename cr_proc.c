@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -285,6 +285,18 @@ UBOOL crExit
                                         lpcrLocalVars->mpqRes,
                                         FALSE);
             } else
+            // Check for -0
+            if (lpcrLocalVars->lpszStart[0] EQ OVERBAR1
+             && IsMpq0  (lpcrLocalVars->mpqRes)
+             && mpq_sgn (lpcrLocalVars->mpqMul) > 0
+             && gAllowNeg0)
+            {
+                // Mark as exiting with result == -0
+                lpcrLocalVars->iNewState = CRROW_EXIT;
+                lpcrLocalVars->crRetCode = CR_RESULT_NEG0;
+
+                return FALSE;
+            } else
             {
                 // Divide the denominator into the numerator
                 mpq_div (lpcrLocalVars->mpqRes,
@@ -333,7 +345,7 @@ UBOOL crEndSeg
 
 {
     LPCHAR lpDec = NULL;                // Ptr to decimal point (NULL if none)
-    int    res;                         // mpq_set_str result
+    int    res = 0;                     // mpq_set_str result
     char   chZap;                       // Zapped char
 
     // Convert the segment from lpcrLocalVars.lpszStart into a rational number
@@ -431,9 +443,21 @@ ERROR_EXIT:
     } // End IF/ELSE
 
     if (res EQ 0)
-        return TRUE;
+    {
+        // Check for -0
+        if (lpcrLocalVars->lpszStart[0] EQ OVERBAR1
+         && IsMpq0 (lpcrLocalVars->mpqMul)
+         && gAllowNeg0)
+        {
+            // Mark as exiting with result == -0
+            lpcrLocalVars->iNewState = CRROW_EXIT;
+            lpcrLocalVars->crRetCode = CR_RESULT_NEG0;
 
-    return crError (lpcrLocalVars);
+            return FALSE;
+        } else
+            return TRUE;
+    } else
+        return crError (lpcrLocalVars);
 } // End crEndSeg
 
 

@@ -572,6 +572,18 @@ LPPL_YYSTYPE plRedLNR_SPA
 
     return lpplYYLstRht;
 ERROR_EXIT:
+    // If there is a curried fcn, ...
+    if (lpplYYLstRht->lpplYYFcnCurry)
+    {
+        // If the curried function is not an AFO, ...
+        if (!IsTknAFO (&lpplYYLstRht->lpplYYFcnCurry->tkToken))
+            // Free it recursively
+            FreeResult (lpplYYLstRht->lpplYYFcnCurry);
+
+        // YYFree it
+        YYFree (lpplYYLstRht->lpplYYFcnCurry); lpplYYLstRht->lpplYYFcnCurry = NULL;
+    } // End IF
+
     // YYFree the last right object
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 

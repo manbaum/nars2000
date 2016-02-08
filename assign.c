@@ -1141,8 +1141,25 @@ UBOOL ModifyAssignNamedVars_EM
         case TKT_VARIMMED:
             // Assign this immediate value to each name
             for (uName = 0; uName < aplNELMNam; uName++)
-                // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
-                AssignName_EM (&lpMemNam[uName].tkToken, lptkVal);
+            {
+                // Execute the function between the named value and the immediate arg value
+                lpYYRes =
+                  ExecFunc_EM_YY (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, lpYYFcnStr, lptkVal);
+
+                if (lpYYRes)
+                {
+                    // Assign this token to this name
+                    // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
+                    //   and increments the RefCnt
+                    bRet = AssignName_EM (&lpMemNam[(aplNELMNam - 1) - uName].tkToken, &lpYYRes->tkToken);
+                    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+
+                    if (!bRet)
+                        goto ERROR_EXIT;
+                } else
+                    goto ERROR_EXIT;
+            } // End FOR
+
             goto NORMAL_EXIT;
 
         case TKT_VARARRAY:
@@ -1529,9 +1546,6 @@ UBOOL ModifyAssignNamedVars_EM
             break;
     } // End SWITCH
 
-    // Mark as successful
-    bRet = TRUE;
-
     goto NORMAL_EXIT;
 
 RANK_EXIT:
@@ -1544,8 +1558,10 @@ LENGTH_EXIT:
                                lptkVal);
     goto ERROR_EXIT;
 
-ERROR_EXIT:
 NORMAL_EXIT:
+    // Mark as successful
+    bRet = TRUE;
+ERROR_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbName); lpMemHdrNam = NULL;
 

@@ -3,6 +3,8 @@ Build #1435 -- Version 0.4.12.xx
 
 * Miscellaneous Build Fixes
 
+Directory trunk:
+
 NARS2000.32.SLN:
 NARS2000.32.VCPROJ:
 NARS2000.64.SLN:

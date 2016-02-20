@@ -6,6 +6,8 @@ Build #1448 -- Version 0.4.12.xx
 
 * Fix Bug In Modify Named Assignment On Immediate Right Args
 
+Directory trunk:
+
 ASSIGN.C:
   In <ModifyAssignNamedVars_EM>, in the case where the right arg is an immediate, execute the function between each name and the immediate.
 
@@ -18,6 +20,8 @@ Build #1447 -- Version 0.4.12.xx
 
 * Fix Bug In Point Notation To Handle 2x3
 * Catch More Occurrences Of -0
+
+Directory trunk:
 
 CR_PROC.C:
   In <crExit> and <crEndSeg>, check for -0.
@@ -44,6 +48,8 @@ Build #1446 -- Version 0.4.12.xx
 * Fix Memory Leak In L{downtack}R
 * Include "Hdr" In Name Of Result Of <MyGlobalLock>
 
+Directory trunk:
+
 GETFNS.C:
   Remove no longer relevant comments.
 
@@ -61,6 +67,8 @@ Build #1445 -- Version 0.4.12.xx
 * Fix Memory Leak In L..R
 * Include "Hdr" In Name Of Result Of <MyGlobalLock>
 
+Directory trunk:
+
 PF_DOTDOT.C:
   Include "Hdr" in name of result of <MyGlobalLock> and elsewhere.
   Fix memory leak in <PrimFnDydDotDot_EM_YY> where we fail to free Global Numerics
@@ -71,6 +79,8 @@ Build #1444 -- Version 0.4.12.xx
 --------------------------------
 
 * Prepare For Use Of <aTypeFree>
+
+Directory trunk:
 
 DATATYPE.H:
   Note that changes in <ARRAY_TYPES> enum must be reflected in <aTypeFree>.
@@ -100,6 +110,8 @@ Build #1443 -- Version 0.4.12.xx
 
 * Use String Safe Functions
 
+Directory trunk:
+
 DISPDBG.C:
   Use string safe functions as in MySprintf(W) instead of wsprintf(W), etc.
   Pass byte size of buffer to <FormatHTE> and <FormatSTE> so they can use string safe functions.
@@ -113,6 +125,8 @@ Build #1442 -- Version 0.4.12.xx
 
 * Fix Bug In A[B] F {is} R Where B Has Repeated Values
 
+Directory trunk:
+
 PF_INDEX.C:
   Fix heap memory leak in <ArrayIndexSetVector_EM>.
   Fix bug in <ArrayIndexFcnSet_EM> with A[B] F {is} R where B has repeated values.
@@ -123,6 +137,8 @@ Build #1441 -- Version 0.4.12.xx
 
 * Fix Bug With (A B C) F {is} R
 * Include "Hdr" In Name Of Result Of <MyGlobalLock>
+
+Directory trunk:
 
 ASSIGN.C:
   Include "Hdr" in name of result of <MyGlobalLock> and elsewhere.
@@ -136,6 +152,8 @@ Build #1440 -- Version 0.4.12.xx
 
 * Implement []FEATURE[2] As "Allow -0"
 * Include "Hdr" In Name Of Result Of <MyGlobalLock>
+
+Directory trunk:
 
 DEFINES.H:
   Remove "Allow -0" from "User Preferences" and into []FEATURE[2].
@@ -194,6 +212,8 @@ Build #1439 -- Version 0.4.12.xx
 
 * Fix Bug Not Handling Modify Assignments Into A Name
 
+Directory trunk:
+
 PARSELINE.C:
 PARSELINE.H:
   Rename DEBUG2 toDEBUG_TRACE.
@@ -212,6 +232,8 @@ Build #1438 -- Version 0.4.12.xx
 --------------------------------
 
 * Prepare To Use Our Own Workspace Writer
+
+Directory trunk:
 
 DICTIONARY.C:
   In <hashlittleConv>, convert units from char to WCHAR.
@@ -237,6 +259,8 @@ Build #1437 -- Version 0.4.12.xx
 
 * Fix Bug In []TRACE
 
+Directory trunk:
+
 QF_STRACE.C:
   In <TraceLine>, when retrieving the name of the function to display,
     handle AFOs using {del} or {del}{del} as the function name.
@@ -248,6 +272,8 @@ Build #1436 -- Version 0.4.12.xx
 
 * Fix Bug In Determinant Operator On Singletons
 * Include "Hdr" In Name Of Result Of <MyGlobalLock>
+
+Directory trunk:
 
 EXECMFN.C:
 EXECMFN.H:
@@ -269,6 +295,8 @@ Build #1435 -- Version 0.4.12.xx
 
 * Miscellaneous Build Fixes
 
+Directory trunk:
+
 NARS2000.32.SLN:
 NARS2000.32.VCPROJ:
 NARS2000.64.SLN:
@@ -287,6 +315,8 @@ Build #1434 -- Version 0.4.12.xx
 * Fix Bug When Restarting Certain Exceptions
 * Include "Hdr" In Name Of Result Of <MyGlobalLock>
 
+Directory trunk:
+
 PRIMSPEC.C:
 PRIMSPEC.H:
   Include "Hdr" in name of result of <MyGlobalLock> and elsewhere.
@@ -298,6 +328,8 @@ Build #1433 -- Version 0.4.12.xx
 
 * Fix Bug In N-Wise Reduction For Negative Left Args On Non-default Axes
 * Include "Hdr" In Name Of Result Of <MyGlobalLock>
+
+Directory trunk:
 
 PO_SLASH.C:
   Include "Hdr" in name of result of <MyGlobalLock> and elsewhere.
@@ -311,6 +343,8 @@ Build #1432 -- Version 0.4.12.xx
 
 * Reduce The Number Of Times ECM Is Called When Trying To factor A Number
 
+Directory trunk:
+
 PF_PI.C:
   In <PrimeFactor>, limit the number of times ECM is called so as to not wait on most likely unsuccessful attempts to factor a large number.
   Add more DEBUG stmts to indicate how many iterations are being run.
@@ -321,6 +355,8 @@ Build #1431 -- Version 0.4.12.xx
 
 * Fix Bug When Passing Global Numeric Scalar to Multi-element UDFO Header
 
+Directory trunk:
+
 EXECDFN.C:
   In <InitVarSTEs>, handle scalar global numeric assigned to a multi-element left or
     right arg as in Z{is}(L1 L2 L3) foo (R1 R2).
@@ -330,6 +366,8 @@ Build #1430 -- Version 0.4.12.xx
 --------------------------------
 
 * When Displaying DEBUG Crash Screen Show Offsets From Actual <mpifns.c> Routines
+
+Directory trunk:
 
 EXCEPT.C:
 HEADERS.H:
@@ -466,7 +504,7 @@ Build #1425 -- Version 0.4.12.xx
 Directory trunk:
 
 DISPLAY.C:
-  In <FormatAplVfpFC>, remove spurious trailing digits from teh display of VFP numbers
+  In <FormatAplVfpFC>, remove spurious trailing digits from the display of VFP numbers
     in both mantissa and exponent.
 
 

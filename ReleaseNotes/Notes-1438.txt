@@ -3,6 +3,8 @@ Build #1438 -- Version 0.4.12.xx
 
 * Prepare To Use Our Own Workspace Writer
 
+Directory trunk:
+
 DICTIONARY.C:
   In <hashlittleConv>, convert units from char to WCHAR.
   In <dictionary_del>, zap the items after freeing them so as to catch errors later on.

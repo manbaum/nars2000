@@ -3,6 +3,8 @@ Build #1439 -- Version 0.4.12.xx
 
 * Fix Bug Not Handling Modify Assignments Into A Name
 
+Directory trunk:
+
 PARSELINE.C:
   Rename DEBUG2 toDEBUG_TRACE.
   Undefine DEBUG_START to shorten run time of long functions.

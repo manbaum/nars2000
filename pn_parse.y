@@ -563,6 +563,27 @@ UBOOL ParsePointNotation
         // Delete it
         lppnLocalVars->uNumLen--;
 
+    // Check for Rat but not Vfp separator
+    if (strchr (lppnLocalVars->lpszStart, 'v' ) EQ NULL
+     && (strchr (lppnLocalVars->lpszStart, 'r' ) NE NULL
+      || strstr (lppnLocalVars->lpszStart, "x ") NE NULL
+      || lppnLocalVars->lpszStart[lppnLocalVars->uNumLen - 1] EQ 'x'))
+    {
+        // Weed out non-RAT expressions such as 2p3
+        if (strchr (lppnLocalVars->lpszStart, 'p' ) EQ NULL)
+        {
+            LPCHAR p;
+
+            // Weed out non-RAT expressions such as 2x3
+            p = strchr (lppnLocalVars->lpszStart, 'x');
+            while (p NE NULL && (p[1] EQ ' ' || p[1] EQ AC_EOS))
+                p = strchr (p + 1, 'x');
+            if (p EQ NULL)
+                // Save for later use
+                lppnLocalVars->bRatSep = TRUE;
+        } // End IF
+    } // End IF
+
 #if YYDEBUG
     // Enable debugging
     yydebug = TRUE;

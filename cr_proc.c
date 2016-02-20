@@ -57,8 +57,8 @@ CRACTSTR fsaActTableCR [][CRCOL_LENGTH]
   {CRROW_INT1    , crAccDig , NULL      },      // 01:  Digit
   {CRROW_DEC     , crAccDig , crIniDec  },      // 02:  Decimal point
   {CRROW_ERROR   , NULL     , crError   },      // 03:  E
-  {CRROW_INIT    , crEndInt , crIniRat  },      // 04:  /
-  {CRROW_EXIT    , crEndInt , crIniExt  },      // 05:  x
+  {CRROW_INIT    , NULL     , crError   },      // 04:  /
+  {CRROW_EXIT    , NULL     , crError   },      // 05:  x
   {CRROW_INF     , crAccInf , NULL      },      // 06:  Infinity
   {CRROW_EXIT    , crEndInt , crExit    },      // 07:  All other chars
  },
@@ -346,10 +346,20 @@ UBOOL crEndSeg
 {
     LPCHAR lpDec = NULL;                // Ptr to decimal point (NULL if none)
     int    res = 0;                     // mpq_set_str result
-    char   chZap;                       // Zapped char
+    char   chZap,                       // Zapped char
+           chZapRat;                    // ...    rational sep
 
     // Convert the segment from lpcrLocalVars.lpszStart into a rational number
     // This segment may include a decimal point
+
+    // If the next char is a rational separator, ...
+    if (CharTransCR (lpcrLocalVars->lpszCur[0]) EQ CRCOL_RAT)
+    {
+        // Save and zap the rational sep so as to terminate the integer part of the string
+        chZapRat = lpcrLocalVars->lpszCur[0];
+                   lpcrLocalVars->lpszCur[0] = AC_EOS;
+    } else
+       chZapRat = AC_EOS;
 
     // Check for a decimal point
     lpDec = strchr (lpcrLocalVars->lpszStart, '.');
@@ -367,14 +377,14 @@ UBOOL crEndSeg
         if (lpDec > lpcrLocalVars->lpszStart)
         {
             // Save and zap the decimal point so as to terminate the integer part of the string
-            chZap  = lpDec[0];
-                     lpDec[0] = AC_EOS;
+            chZap = lpDec[0];
+                    lpDec[0] = AC_EOS;
             // Convert the integer part of the string to a multiple precision integer
             res = mpq_set_str (lpcrLocalVars->mpqMul,
                                lpcrLocalVars->lpszStart,
                                lpcrLocalVars->base);
             // Restore the zapped char
-            *lpDec = chZap;
+            lpDec[0] = chZap;
 
             if (res NE 0)
                 goto ERROR_EXIT;
@@ -441,6 +451,11 @@ ERROR_EXIT:
         // Restore the zapped char
         lpcrLocalVars->lpszStart[intLen] = chZap;
     } // End IF/ELSE
+
+    // If we zapped the rational sep, ...
+    if (chZapRat NE AC_EOS)
+        // Restore it
+        lpcrLocalVars->lpszCur[0] = chZapRat;
 
     if (res EQ 0)
     {
@@ -523,6 +538,28 @@ ERROR_EXIT:
 
 
 //***************************************************************************
+//  $mpq_init_set_str2
+//
+//  Convert a string to rational allowing
+//    -12.345E-56/78.90E-123
+//***************************************************************************
+
+CR_RETCODES mpq_init_set_str2
+    (mpq_t  mpqRes,                         // Ptr to result
+     LPCHAR lpszLine,                       // Ptr to incoming line
+     int    base)                           // Base of number system
+
+{
+    // Initialize to 0/1
+    mpq_init (mpqRes);
+
+    return mpq_set_str2 (mpqRes,            // Ptr to result
+                         lpszLine,          // Ptr to incoming line
+                         base);             // Base of number system
+} // End mpq_init_set_str2
+
+
+//***************************************************************************
 //  $mpq_set_str2
 //
 //  Convert a string to rational allowing
@@ -538,7 +575,7 @@ ERROR_EXIT:
 CR_RETCODES mpq_set_str2
     (mpq_t  mpqRes,                         // Ptr to result
      LPCHAR lpszLine,                       // Ptr to incoming line
-     int    base)                           // Index of caret in caller
+     int    base)                           // Base of number system
 
 {
     CRCOLINDICES colIndex;                  // The translated char for tokenization as a CRCOL_*** value
@@ -569,7 +606,7 @@ CR_RETCODES mpq_set_str2
         // Use a FSA to parse the line
 
         // Calculate the class of the current char
-        colIndex = CharTransCR (&crLocalVars);
+        colIndex = CharTransCR (crLocalVars.lpszCur[0]);
 
         // Get primary action and new state
         crAction1_EM = fsaActTableCR[crLocalVars.iNewState][colIndex].crAction1;
@@ -638,11 +675,11 @@ NORMAL_EXIT:
 //***************************************************************************
 
 CRCOLINDICES CharTransCR
-    (LPCRLOCALVARS lpcrLocalVars)       // Ptr to <mpq_set_str2> local vars
+    (WCHAR wcCur)                       //  Char to translate
 
 {
     // Split cases based upon the incoming character
-    switch (*lpcrLocalVars->lpszCur)
+    switch (wcCur)
     {
         case OVERBAR1:
             return CRCOL_NEG;

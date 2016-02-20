@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -214,6 +214,7 @@
 #undef  mpfr_set_z
 #undef  mpfr_set_q
 #undef  mpfr_set_str
+#undef  mpfr_strtofr
 
 #undef  mpfr_init_set_d
 #undef  mpfr_init_set_str
@@ -461,6 +462,7 @@
 #define mpfr_set_z              mpifr_set_z
 #define mpfr_set_q              mpifr_set_q
 #define mpfr_set_str            mpifr_set_str
+#define mpfr_strtofr            mpifr_strtofr
 
 #define mpfr_init_set_d         mpifr_init_set_d
 #define mpfr_init_set_str       mpifr_init_set_str

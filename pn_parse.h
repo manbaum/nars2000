@@ -93,8 +93,8 @@ typedef struct tagPN_VECTOR
     PNNUMTYPE chType;               // 44:  The numeric type (see PNNUMTYPE)
     LPCHAR    lpStart;              // 48:  Ptr to start of char stream
     UINT      uNumLen;              // 4C:  # chars in lpStart
-    UINT      bInteger:1,           // 50:  00000001:  TRUE iff the number is integral (no decimal point, no 'e' 'E')
-              bRat:1;               //      00000002:  TRUE iff the number is rational
+    UINT      bRatExp:1,            // 50:  00000001:  TRUE iff the number is expressible as a Rat
+              :31;                  //      FFFFFFFE:  Available bits
                                     // 54:  Length
 } PN_VECTOR, *LPPN_VECTOR;
 
@@ -125,7 +125,9 @@ typedef struct tagPNLOCALVARS       // Point Notation Local Vars
     struct tagTKLOCALVARS *
                   lptkLocalVars;    // 84:  Ptr to Tokenize_EM local vars
     LPVARARRAY_HEADER lpMemHdrRes;  // 88:  Ptr to hGlbRes header
-                                    // 88:  Length
+    UINT          bRatSep:1,        // 8C:  00000001:  TRUE iff there is at least one Rat sep and no Vfp sep
+                  :31;              //      FFFFFFFE:  Available bits
+                                    // 90:  Length
 } PNLOCALVARS, *LPPNLOCALVARS;
 
 // Error messages

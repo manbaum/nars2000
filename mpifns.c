@@ -3431,6 +3431,39 @@ int mpifr_set_str
 
 
 //***************************************************************************
+//  $mpifr_strtofr
+//
+//  Set rop from a string in a given base
+//***************************************************************************
+
+int mpifr_strtofr
+    (mpfr_t     rop,            // Destination
+     char      *str,            // Source
+     char     **endptr,         // Output ptr to ending char (may be NULL)
+     int        base,           // Base
+     mpfr_rnd_t rnd)            // Rounding mode
+
+{
+    char *p;
+
+    // Skip over white space
+    p = str;
+    while (isspace (*p))
+        p++;
+    // If the input consists of "!" or "-!", ...
+    if (strcmp (p, DEF_POSINFINITY_STR) EQ 0
+     || strcmp (p, DEF_NEGINFINITY_STR) EQ 0)
+    {
+        // Set to the appropriate signed infinity
+        mpfr_set_inf (rop, p[0] EQ '-');
+
+        return 0;
+    } else
+        return mpfr_strtofr (mpfr_clr_inf (rop), str, endptr, base, rnd);
+} // End mpifr_strtofr
+
+
+//***************************************************************************
 //  $mpifr_init_copy
 //
 //  Set a MPFR from a MPFR

@@ -220,6 +220,9 @@
 #define mpfr_sgn0(a)        (signumint ((a)->_mpfr_sign))
 #define signumrat            mpq_sgn
 
+// Define macro to detect -0
+#define IsFltN0(a)          ((a) EQ 0.0 && SIGN_APLFLOAT(a))
+
 // Define macros for detecting characters and their alternates
 #define IsAPLCharAlpha(a)           ((a) EQ UTF16_ALPHA              || (a) EQ UTF16_ALPHA2                                        )
 #define IsAPLCharOmega(a)           ((a) EQ UTF16_OMEGA              || (a) EQ UTF16_OMEGA2                                        )

@@ -167,7 +167,7 @@ void PN_actFLT_VFP
     // In order to preserve the precision of the floating point number,
     //   we rescan it as a VFP number
     // Convert the string to a VFP number
-    mpfr_set_str (&lpSrc->at.aplVfp, &lppnLocalVars->lpszStart[lpSrc->uNumStart], 10, MPFR_RNDN);
+    mpfr_strtofr (&lpSrc->at.aplVfp, &lppnLocalVars->lpszStart[lpSrc->uNumStart], NULL, 10, MPFR_RNDN);
 
     lpSrc->chType = PN_NUMTYPE_VFP;
 } // End PN_actFLT_VFP
@@ -292,6 +292,12 @@ void PN_NumAcc
 //  Calculate the value of a number
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PN_NumCalc"
+#else
+#define APPEND_NAME
+#endif
+
 void PN_NumCalc
     (LPPNLOCALVARS lppnLocalVars,       // Ptr to local pnLocalVars
      LPPN_YYSTYPE  lpYYArg,             // Ptr to incoming YYSTYPE
@@ -381,9 +387,6 @@ void PN_NumCalc
                 } // End IF
             } // End IF
 
-            // Change the type to float
-            lpYYArg->chType = PN_NUMTYPE_FLT;
-
             // Fall through to the float case
 
         case PN_NUMTYPE_FLT:
@@ -391,6 +394,9 @@ void PN_NumCalc
 
             // Use David Gay's routines
             lpYYArg->at.aplFloat = MyStrtod (&lppnLocalVars->lpszNumAccum[uNumAcc], NULL);
+
+            // Change the type to float
+            lpYYArg->chType = PN_NUMTYPE_FLT;
 
             break;
 
@@ -473,16 +479,76 @@ void PN_NumCalc
                     mpq_canonicalize (&lpYYArg->at.aplRat);
             } else
             {
+
                 // Not formatting from a Rational number
                 // Must be one that is expressible as an integer
                 Assert (!bUseRat);
 
-                // Convert the string to a rational number
-                mpz_init_set_str (mpq_numref (&lpYYArg->at.aplRat), &lppnLocalVars->lpszNumAccum[uNumAcc], 10);
-                mpz_init_set_str (mpq_denref (&lpYYArg->at.aplRat), "1"                                  , 10);
+                // If it's a FLT, ...
+                if (IsPnNumTypeFlt (lpYYArg->chType))
+                {
+                    CR_RETCODES crRetCode;              // Return code
 
-                // Change the type to Rational
-                lpYYArg->chType = PN_NUMTYPE_RAT;
+                    // Convert to a RAT
+                    crRetCode =
+                      mpq_init_set_str2 (&lpYYArg->at.aplRat,                   // Ptr to result
+                                         &lppnLocalVars->lpszNumAccum[uNumAcc], // Ptr to incoming line
+                                          10);                                  // Base of number system
+                    // Split cases based upon the return code
+                    switch (crRetCode)
+                    {
+                        case CR_SUCCESS:
+                            // Change the type to Rational
+                            lpYYArg->chType = PN_NUMTYPE_RAT;
+
+                            break;
+
+                        case CR_SYNTAX_ERROR:
+                            // Save the error message
+                            ErrorMessageIndirect (ERRMSG_SYNTAX_ERROR APPEND_NAME);
+
+                            // Mark as in error
+                            lpYYArg = NULL;
+
+                            break;
+
+                        case CR_DOMAIN_ERROR:
+                            // Save the error message
+                            ErrorMessageIndirect (ERRMSG_DOMAIN_ERROR APPEND_NAME);
+
+                            // Mark as in error
+                            lpYYArg = NULL;
+
+                            break;
+
+                        case CR_RESULT_NEG0:
+                            // Clear the previous memory
+                            Myq_clear (&lpYYArg->at.aplRat);
+
+                            // Zap it
+                            ZeroMemory (&lpYYArg->at.aplRat, sizeof (lpYYArg->at.aplRat));
+
+                            // Set the result to -0
+                            mpfr_init_set_str (&lpYYArg->at.aplVfp, "-0", 10, MPFR_RNDN);
+
+                            // Set the result type
+                            lpYYArg->chType = PN_NUMTYPE_VFP;
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                } else
+                {
+                    // Convert the string to a rational number
+                    mpz_init_set_str (mpq_numref (&lpYYArg->at.aplRat), &lppnLocalVars->lpszNumAccum[uNumAcc], 10);
+                    mpz_init_set_str (mpq_denref (&lpYYArg->at.aplRat), "1"                                  , 10);
+
+                    // Change the type to Rational
+                    lpYYArg->chType = PN_NUMTYPE_RAT;
+                } // End IF/ELSE
             } // End IF/ELSE
 
             break;
@@ -508,9 +574,12 @@ void PN_NumCalc
             break;
     } // End SWITCH
 
-    // Save the sign
-    lpYYArg->bSigned = bSigned;
+    // If it's valid, ...
+    if (lpYYArg NE NULL)
+        // Save the sign
+        lpYYArg->bSigned = bSigned;
 } // End PN_NumCalc
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1434,27 +1503,14 @@ UBOOL PN_VectorAcc
     lppnVector[lppnLocalVars->uGlbVectorCurLen].lpStart = lpStart;
     lppnVector[lppnLocalVars->uGlbVectorCurLen].uNumLen = uNumLen;
 
-    // Izit expressible as an integer or rational?
-    lppnVector[lppnLocalVars->uGlbVectorCurLen].bInteger =
-    lppnVector[lppnLocalVars->uGlbVectorCurLen].bRat     =
-        (strspn  (lpStart, OVERBAR1_STR INFINITY1_STR "0123456789eE") EQ uNumLen)
-     && (gAllowNeg0 ? (strncmp (lpStart, OVERBAR1_STR "0"          , uNumLen) NE 0  //   it's not -0
-////               &&  strncmp (lpStart, OVERBAR1_STR INFINITY1_STR, uNumLen) NE 0  // {neg}{inf} is FLT, not INT
-////               &&  strncmp (lpStart,              INFINITY1_STR, uNumLen) NE 0  //      {inf} is FLT, not INT
-                      )
-                    : TRUE
-        );
-    // Izit expressible as a rational but not integer?
-    lppnVector[lppnLocalVars->uGlbVectorCurLen].bRat |=
-        (strspn (lpStart, OVERBAR1_STR INFINITY1_STR  "0123456789rJijkl") EQ uNumLen
-      || (strspn (lpStart, OVERBAR1_STR INFINITY1_STR "0123456789rJijkl") EQ (uNumLen - 1)
-       && lpStart[uNumLen - 1] EQ 'x'))
-     && (gAllowNeg0 ? (strncmp (lpStart, OVERBAR1_STR "0"          , uNumLen) NE 0  //   it's not -0
-                    && strncmp (lpStart, OVERBAR1_STR "0x"         , uNumLen) NE 0  //   it's not -0x
-                    && strncmp (lpStart, OVERBAR1_STR "0r"         , 3      ) NE 0  //   it's not -0r...
-                      )
-                    : TRUE
-        );
+    // Izit expressible as a rational?
+    lppnVector[lppnLocalVars->uGlbVectorCurLen].bRatExp =
+        lppnLocalVars->bRatSep
+     && !(gAllowNeg0 ? (IsPnNumTypeFlt (lppnVector[lppnLocalVars->uGlbVectorCurLen].chType) // Is not -0
+                     && IsFltN0 (lppnVector[lppnLocalVars->uGlbVectorCurLen].at.aplFloat)   // ...
+                       )
+                     : TRUE
+         );
     // Set the new initial point
     lppnLocalVars->uNumIni += uNumLen;
 
@@ -1502,8 +1558,7 @@ UBOOL PN_VectorRes
     APLUINT           ByteRes;              // # bytes in the string vector
     LPVOID            lpMemRes;             // Ptr to result global memory
     PNLOCALVARS       pnLocalVars = {0};    // PN Local vars
-    PNNUMTYPE         chType,               // The bInteger numeric type (see PNNUMTYPE)
-                      chComType;            // Common ...
+    PNNUMTYPE         chComType;            // Common numeric type (see PNNUMTYPE)
     PN_YYSTYPE        pnType = {0};         // PN_YYSTYPE stack element
     UBOOL             bPass1;               // TRUE iff pass 1
 
@@ -1522,37 +1577,23 @@ UBOOL PN_VectorRes
     if (bPass1)
     {
         // Initialize the starting datatype
-        chType                   =
         chComType                =
         lppnLocalVars->chComType = PN_NUMTYPE_INIT;
 
         // Scan all items to determine a common datatype
         for (uCnt = 0; uCnt < aplNELMRes; uCnt++)
         {
-            if (lppnVector[uCnt].bInteger
-             && IsPnNumTypeFlt (lppnVector[uCnt].chType))
-                chType = aNumTypePromote[chType][PN_NUMTYPE_INT];
+            // If there's a Rat but no Vfp separator, and
+            //    the item is a form of FLT, and
+            //    the item is not -0, ...
+            if (lppnLocalVars->bRatSep
+             && IsPnNumTypeFlt (lppnVector[uCnt].chType)
+             && !(gAllowNeg0 && IsFltN0 (lppnVector[uCnt].at.aplFloat)))    // Is not -0
+                // ***ASSUME***:  chtype - 1 is INT-like
+                lppnLocalVars->chComType = aNumTypePromote[lppnLocalVars->chComType][lppnVector[uCnt].chType - 1];
             else
-            if (lppnVector[uCnt].bRat
-             && IsPnNumTypeFlt (lppnVector[uCnt].chType))
-                chType = aNumTypePromote[chType][PN_NUMTYPE_RAT];
-            else
-                chType = aNumTypePromote[chType][lppnVector[uCnt].chType];
-            lppnLocalVars->chComType = aNumTypePromote[lppnLocalVars->chComType][lppnVector[uCnt].chType];
-                           chComType = aNumTypePromote[               chComType][                 chType];
-            // If it's not expressible as a RAT and it is, ...
-            if (!lppnVector[uCnt].bRat
-             && IsPnNumTypeRat (lppnLocalVars->chComType))
-                lppnLocalVars->chComType++;         // ***ASSUME*** -- RAT+1=VFP, etc.
-            if (!lppnVector[uCnt].bRat
-             && IsPnNumTypeRat (               chComType))
-                               chComType++;         // ***ASSUME*** -- RAT+1=VFP, etc.
+                lppnLocalVars->chComType = aNumTypePromote[lppnLocalVars->chComType][lppnVector[uCnt].chType    ];
         } // End FOR
-
-        // If the bInteger/bRat common type is Rational, ...
-        if (IsPnNumTypeRat (chComType))
-            // Use that type so that 111...111 1r2 111...111 comes out as Rational
-            lppnLocalVars->chComType = chComType;
 
         // Translate the datatype to an array storage type
         aplTypeRes = TranslatePnTypeToArrayType (lppnLocalVars->chComType);
@@ -1602,6 +1643,7 @@ UBOOL PN_VectorRes
         pnLocalVars.lpszNumAccum  = lppnLocalVars->lpszNumAccum;
         pnLocalVars.uCharIndex    = lppnLocalVars->uCharIndex;
         pnLocalVars.lptkLocalVars = lppnLocalVars->lptkLocalVars;
+        pnLocalVars.bRatSep       = lppnLocalVars->bRatSep;
 
         // Convert all items to a common datatype (lppnLocalVars->chComType)
         for (uCnt = uRes = 0; uCnt < aplNELMRes; uCnt++)
@@ -1617,11 +1659,8 @@ UBOOL PN_VectorRes
             //   convert 0.1 as FLT and then to VFP
             //   instead of convert 0.1 to VFP directly and not introduce spurious trailing digits.
 
-            // If the first pass is float,
-            //   and (the item can be expressed as an integer,
-            //        OR the common type is VFP)
-            if (IsPnNumTypeFlt (lppnVector[uCnt].chType)
-             && (IsPnNumTypeVfp (lppnLocalVars->chComType) || lppnVector[uCnt].bInteger))
+            // If the item needs promoting, ...
+            if (lppnLocalVars->chComType NE lppnVector[uCnt].chType)
             {
                 UBOOL bRet;                 // TRUE iff result is valid
                 char  cZap;                 // Temporary char

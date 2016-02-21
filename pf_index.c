@@ -149,7 +149,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             aplTypeSub    = aplTypeLst;
             aplNELMSub    = 1;
             aplRankSub    = 0;
-            aplLongestSub = lptkLstArg->tkData.tkLongest;
+            aplLongestSub = *GetPtrTknLongest (lptkLstArg);
             lpMemSub      = &aplLongestSub;
         } else
         {
@@ -631,6 +631,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                                       MakeSymEntry_EM (lpYYItm->tkToken.tkFlags.ImmType,    // Immediate type
                                                       &lpYYItm->tkToken.tkData.tkLongest,   // Ptr to immediate value
                                                        lptkFunc);                           // Ptr to function token
+                                    // Check for error
                                     if (lpSymTmp EQ NULL)
                                         goto ERROR_EXIT;
                                 } else
@@ -693,14 +694,14 @@ YYALLOC_EXIT:
             lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
             // Unlock the result global memory in case TypeDemote actually demotes
-            if (hGlbRes && lpMemRes)
+            if (hGlbRes NE NULL && lpMemRes NE NULL)
             {
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
             } // End IF
         } // End IF/ELSE/...
 
-        // If the result is valid, ...
+        // Check for error
         if (lpYYRes EQ NULL)
             goto ERROR_EXIT;
 
@@ -2003,7 +2004,7 @@ LPPL_YYSTYPE ListIndexRef_EM_YY
             tkLftArg.tkFlags.TknType   = TKT_VARIMMED;
             tkLftArg.tkFlags.ImmType   = lptkLftArg->tkFlags.ImmType;
 ////////////tkLftArg.tkFlags.NoDisplay = FALSE; // Already zero from = {0}
-            tkLftArg.tkData.tkLongest  = lptkLftArg->tkData.tkLongest;
+            tkLftArg.tkData.tkLongest  = *GetPtrTknLongest (lptkLftArg);
             tkLftArg.tkCharIndex       = lptkFunc->tkCharIndex;
         } // End IF/ELSE
 
@@ -2138,6 +2139,7 @@ UBOOL ArrayIndexSet_EM
                                              lptkRhtArg,    // Ptr to right ...
                                              bSysVar,       // TRUE iff indexed assignment into a SysVar
                                              lptkFunc);     // Ptr to function ...
+            // Check for error
             if (hGlbRes EQ NULL)
                 goto ERROR_EXIT;
         } else
@@ -2158,6 +2160,7 @@ UBOOL ArrayIndexSet_EM
                                                 bSysVar,        // TRUE iff indexed assignment into a SysVar
                                                 lpMemPTD,       // Ptr to PerTabData global memory
                                                 lptkFunc);      // Ptr to function token
+                // Check for error
                 if (!bRet)
                     goto ERROR_EXIT;
                 if (hGlbRes EQ NULL)
@@ -2214,7 +2217,7 @@ RANK_EXIT:
 ERROR_EXIT:
     bRet = FALSE;
 
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
         // We no longer need this storage
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
@@ -2450,7 +2453,7 @@ UBOOL ArrayIndexSetNamImmed_EM
             Assert (!IsImmErr (immTypeRht));
 
             // If it's a GlbNum, ..
-            if (hGlbSubRht)
+            if (hGlbSubRht NE NULL)
                 // Save an LPSYMENTRY in the result
                 lpSymTmp =
                   MakeGlbEntry_EM (aplTypeRht,  // Entry type
@@ -2510,6 +2513,7 @@ UBOOL ArrayIndexSetNamImmed_EM
                 FreeResultGlobalVar (lpMemRes[0]); lpMemRes[0] = NULL;
             } // End IF
 
+            // Check for error
             if (lpYYItm EQ NULL)
                 goto ERROR_EXIT;
 
@@ -2732,7 +2736,7 @@ ERROR_EXIT:
     } // End IF
 
     if (hGlbSubRht NE NULL
-     && IsValidHandle (hGlbSubRht))
+     && GetPtrTypeDir (hGlbSubRht) EQ PTRTYPE_HGLOBAL)
     {
         // We no longer need this storage
         FreeResultGlobalVar (hGlbSubRht); hGlbSubRht = NULL;
@@ -2846,6 +2850,8 @@ HGLOBAL ArrayIndexSetNoLst_EM
 
         // Copy the name arg
         hGlbRes = CopyGlbAsType_EM (hGlbNam, aplTypeNam, lptkNamArg);
+
+        // Check for error
         if (hGlbRes EQ NULL)
             goto ERROR_EXIT;
 
@@ -2925,6 +2931,7 @@ HGLOBAL ArrayIndexSetNoLst_EM
     lpYYRes1 = PrimFnMonRho_EM_YY (lptkFunc,                // Ptr to function token
                                    lptkNamArg,              // Ptr to right arg token
                                    NULL);                   // Ptr to axis token
+    // Check for error
     if (lpYYRes1 EQ NULL)
         goto ERROR_EXIT;
 
@@ -2936,6 +2943,7 @@ HGLOBAL ArrayIndexSetNoLst_EM
     // Free the first result
     FreeResult (lpYYRes1); YYFree (lpYYRes1); lpYYRes1 = NULL;
 
+    // Check for error
     if (lpYYRes2 EQ NULL)
         goto ERROR_EXIT;
 
@@ -2961,9 +2969,9 @@ DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                lptkFunc);
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -2973,19 +2981,19 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
 
-    if (hGlbNam && lpMemNam)
+    if (hGlbNam NE NULL && lpMemNam NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbNam); lpMemNam = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemRht NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
@@ -3090,7 +3098,7 @@ UBOOL ArrayIndexSetSingLst_EM
             aplTypeSubLst = TranslateImmTypeToArrayType (lptkLstArg->tkFlags.ImmType);
             aplNELMSubLst = 1;
             aplRankSubLst = 0;
-            aplLongestSubLst = lptkLstArg->tkData.tkLongest;
+            aplLongestSubLst = *GetPtrTknLongest (lptkLstArg);
 
             break;
 
@@ -3280,7 +3288,8 @@ UBOOL ArrayIndexSetSingLst_EM
             } // End IF/ELSE
         } // End IF/ELSE
 
-        if (!*lphGlbRes)
+        // Check for error
+        if (*lphGlbRes EQ NULL)
             goto ERROR_EXIT;
 
         // Copy as new name arg global memory handle
@@ -3370,6 +3379,7 @@ UBOOL ArrayIndexSetSingLst_EM
                       MakeSymEntry_EM (immTypeRht,      // Immediate type
                                       &aplLongestRht,   // Ptr to immediate value
                                        lptkFunc);       // Ptr to function token
+                    // Check for error
                     if (lpSymTmp EQ NULL)
                         goto ERROR_EXIT;
                 } // End IF/ELSE
@@ -3412,7 +3422,9 @@ UBOOL ArrayIndexSetSingLst_EM
     //   we need to copy the entire array first.  The
     //   caller of this code deletes the old array.
     *lphGlbRes = CopyArray_EM (hGlbNam, lptkNamArg);
-    if (!*lphGlbRes)
+
+    // Check for error
+    if (*lphGlbRes EQ NULL)
         goto ERROR_EXIT;
 
     // If the types are different, we need to type promote the name
@@ -3482,6 +3494,7 @@ UBOOL ArrayIndexSetSingLst_EM
                                            lptkNamArg,      // Ptr to name arg token
                                            lpMemPTD,        // Ptr to PerTabData global memory
                                            lptkFunc);       // Ptr to function token
+            // Check for error
             if (!bRet)
                 goto ERROR_EXIT;
         } // End FOR
@@ -3571,6 +3584,7 @@ UBOOL ArrayIndexSetSingLst_EM
                                                    lptkNamArg,      // Ptr to name arg token
                                                    lpMemPTD,        // Ptr to PerTabData global memory
                                                    lptkFunc);       // Ptr to function token
+                    // Check for error
                     if (!bRet)
                         goto ERROR_EXIT;
                     break;
@@ -3649,6 +3663,7 @@ UBOOL ArrayIndexSetSingLst_EM
                         FreeResultGlobalVar (hGlbSubLst2); hGlbSubLst2 = NULL;
                     } // End IF
 
+                    // Check for error
                     if (lpYYItm EQ NULL)
                         goto ERROR_EXIT;
                     break;
@@ -3684,9 +3699,9 @@ INDEX_EXIT:
 ERROR_EXIT:
     bRet = FALSE;
 
-    if (*lphGlbRes)
+    if (*lphGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
@@ -3696,31 +3711,31 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (*lphGlbRes); *lphGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (*lphGlbRes && lpMemRes)
+    if (*lphGlbRes NE NULL && lpMemRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (*lphGlbRes); lpMemRes = NULL;
     } // End IF
 
-    if (hGlbSubLst && lpMemSubLst)
+    if (hGlbSubLst NE NULL && lpMemSubLst NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbSubLst); lpMemSubLst = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemRht NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
-    if (hGlbLst && lpMemLst)
+    if (hGlbLst NE NULL && lpMemLst NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbLst); lpMemLst = NULL;
     } // End IF
 
-    if (hGlbNam && lpMemNam)
+    if (hGlbNam NE NULL && lpMemNam NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbNam); lpMemNam = NULL;
@@ -4049,7 +4064,7 @@ UBOOL ArrayIndexSetVector_EM
             } // End IF/SWITCH
 
             // If the right arg item is an HGLOBAL, ...
-            if (hGlbSubRht)
+            if (hGlbSubRht NE NULL)
                 // Replace the corresponding item in the result
                 ((LPAPLNESTED) lpMemRes)[aplLongestSubLst] =
                   CopySymGlbDir_PTB (hGlbSubRht);
@@ -4061,6 +4076,7 @@ UBOOL ArrayIndexSetVector_EM
                   MakeSymEntry_EM (immTypeRht,      // Immediate type
                                   &aplLongestRht,   // Ptr to immediate value
                                    lptkFunc);       // Ptr to function token
+                // Check for error
                 if (lpSymTmp EQ NULL)
                     goto ERROR_EXIT;
             } // End IF/ELSE
@@ -4127,32 +4143,35 @@ NORMAL_EXIT:
 #endif
 
 UBOOL ArrayIndexSetRect_EM
-    (LPTOKEN    lptkNamArg,             // Ptr to name arg token
-     LPTOKEN    lptkLstArg,             // Ptr to list ...
-     LPTOKEN    lptkRhtArg,             // Ptr to right ...
-     UBOOL      bSysVar,                // TRUE iff indexed assignment into a SysVar
-     LPTOKEN    lptkFunc)               // Ptr to function token
+    (LPTOKEN    lptkNamArg,                     // Ptr to name arg token
+     LPTOKEN    lptkLstArg,                     // Ptr to list ...
+     LPTOKEN    lptkRhtArg,                     // Ptr to right ...
+     UBOOL      bSysVar,                        // TRUE iff indexed assignment into a SysVar
+     LPTOKEN    lptkFunc)                       // Ptr to function token
 
 {
-    APLNELM      aplNELMLst;            // List arg NELM
-    APLRANK      aplRankNam;            // Name arg rank
-    HGLOBAL      hGlbNam = NULL,        // Name arg gobal memory handle
-                 hGlbNam2 = NULL,       // Secondary name ...
-                 hGlbRes = NULL,        // Result   ...
-                 hGlbLst = NULL;        // List ...
-    LPAPLLIST    lpMemLst = NULL;       // Ptr to list ...
-    APLUINT      uLst,                  // Loop counter
-                 uCount,                // Count of non-elided indices
-                 ByteRes;               // # bytes in the result
-    HGLOBAL      hGlbLstNew = NULL,     // New list arg global memory handle
-                 hGlbAxis = NULL;       // Axis operator global memory handle
-    LPAPLLIST    lpMemLstNew = NULL;    // Ptr to new list arg global memory
-    LPAPLUINT    lpMemAxis = NULL;      // Ptr to axis operator global memory
-    UBOOL        bRet = FALSE,          // TRUE iff result is valid
-                 bQuadIO;               // []IO
-    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
-    TOKEN        tkLstArg = {0},        // New list arg token
-                 tkAxis = {0};          // Axis token
+    APLNELM           aplNELMLst;               // List arg NELM
+    APLRANK           aplRankNam;               // Name arg rank
+    HGLOBAL           hGlbNam = NULL,           // Name arg gobal memory handle
+                      hGlbNam2 = NULL,          // Secondary name ...
+                      hGlbRes = NULL,           // Result   ...
+                      hGlbLst = NULL;           // List ...
+    LPVARARRAY_HEADER lpMemHdrAxis = NULL;      // Ptr to axis header
+    LPLSTARRAY_HEADER lpMemHdrLst = NULL,       // Ptr to list arg header
+                      lpMemHdrLstNew = NULL;    // Ptr to new list ...
+    LPAPLLIST         lpMemLst;                 // Ptr to list ...
+    APLUINT           uLst,                     // Loop counter
+                      uCount,                   // Count of non-elided indices
+                      ByteRes;                  // # bytes in the result
+    HGLOBAL           hGlbLstNew = NULL,        // New list arg global memory handle
+                      hGlbAxis = NULL;          // Axis operator global memory handle
+    LPAPLLIST         lpMemLstNew;              // Ptr to new list arg global memory
+    LPAPLUINT         lpMemAxis;                // Ptr to axis operator global memory
+    UBOOL             bRet = FALSE,             // TRUE iff result is valid
+                      bQuadIO;                  // []IO
+    LPPL_YYSTYPE      lpYYRes = NULL;           // Ptr to the result
+    TOKEN             tkLstArg = {0},           // New list arg token
+                      tkAxis = {0};             // Axis token
 
     Assert (!bSysVar);
 
@@ -4167,10 +4186,10 @@ UBOOL ArrayIndexSetRect_EM
 
     // Get name and list arg's global ptrs
     hGlbNam = GetGlbHandle (lptkNamArg);
-    GetGlbPtrs_LOCK (lptkLstArg, &hGlbLst, &lpMemLst);
+    GetGlbPtrs_LOCK (lptkLstArg, &hGlbLst, &lpMemHdrLst);
 
     // Skip over the header
-    lpMemLst = LstArrayBaseToData (lpMemLst);
+    lpMemLst = LstArrayBaseToData (lpMemHdrLst);
 
     // Loop through the elements of the list arg
     //   counting the # non-placeholders (non-elided) indices
@@ -4220,16 +4239,16 @@ UBOOL ArrayIndexSetRect_EM
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemLstNew = MyGlobalLock (hGlbLstNew);
+        lpMemHdrLstNew = MyGlobalLock (hGlbLstNew);
 
-#define lpHeader        ((LPLSTARRAY_HEADER) lpMemLstNew)
+#define lpHeader        lpMemHdrLstNew
         // Fill in the header
         lpHeader->Sig.nature = LSTARRAY_HEADER_SIGNATURE;
         lpHeader->NELM       = uCount;
 #undef  lpHeader
 
         // Skip over the header to the data
-        lpMemLstNew = LstArrayBaseToData (lpMemLstNew);
+        lpMemLstNew = LstArrayBaseToData (lpMemHdrLstNew);
 
         // Copy the non-elided indices to the new list arg
         for (uLst = 0; uLst < aplNELMLst; uLst++)
@@ -4257,7 +4276,7 @@ UBOOL ArrayIndexSetRect_EM
         } // End SWITCH
 
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbLstNew); lpMemLstNew = NULL;
+        MyGlobalUnlock (hGlbLstNew); lpMemHdrLstNew = NULL;
 
         // Fill in the new list arg token
         tkLstArg.tkFlags.TknType   = TKT_LSTMULT;
@@ -4279,9 +4298,9 @@ UBOOL ArrayIndexSetRect_EM
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemAxis = MyGlobalLock (hGlbAxis);
+        lpMemHdrAxis = MyGlobalLock (hGlbAxis);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemAxis)
+#define lpHeader        lpMemHdrAxis
         // Fill in the header
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_INT;
@@ -4293,10 +4312,10 @@ UBOOL ArrayIndexSetRect_EM
 #undef  lpHeader
 
         // Fill in the dimension
-        *VarArrayBaseToDim (lpMemAxis) = uCount;
+        *VarArrayBaseToDim (lpMemHdrAxis) = uCount;
 
         // Skip over the header and dimension to the data
-        lpMemAxis = VarArrayDataFmBase (lpMemAxis);
+        lpMemAxis = VarArrayDataFmBase (lpMemHdrAxis);
 
         // Get the current value of []IO
         bQuadIO = GetQuadIO ();
@@ -4307,7 +4326,7 @@ UBOOL ArrayIndexSetRect_EM
             *lpMemAxis++ = bQuadIO + uLst;
 
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbAxis); lpMemAxis = NULL;
+        MyGlobalUnlock (hGlbAxis); lpMemHdrAxis = NULL;
 
         // Fill in the axis token
         tkAxis.tkFlags.TknType   = TKT_VARARRAY;
@@ -4360,40 +4379,40 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
         // We no longer need this storage
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbAxis)
+    if (hGlbAxis NE NULL)
     {
-        if (lpMemAxis)
+        if (lpMemHdrAxis NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbAxis); lpMemAxis = NULL;
+            MyGlobalUnlock (hGlbAxis); lpMemHdrAxis = NULL;
         } // End IF
 
         // We no longer need this storage
         FreeResultGlobalVar (hGlbAxis); hGlbAxis = NULL;
     } // End IF
 
-    if (hGlbLstNew)
+    if (hGlbLstNew NE NULL)
     {
-        if (lpMemLstNew)
+        if (lpMemHdrLstNew NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbLstNew); lpMemLstNew = NULL;
+            MyGlobalUnlock (hGlbLstNew); lpMemHdrLstNew = NULL;
         } // End IF
 
         // We no longer need this storage
         FreeResultGlobalLst (hGlbLstNew); hGlbLstNew = NULL;
     } // End IF
 
-    if (hGlbLst && lpMemLst)
+    if (hGlbLst NE NULL && lpMemHdrLst NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbLst); lpMemLst = NULL;
+        MyGlobalUnlock (hGlbLst); lpMemHdrLst = NULL;
     } // End IF
 
     return bRet;
@@ -4468,6 +4487,7 @@ UBOOL ArrayIndexReplace_EM
                   MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeSet),    // Immediate type
                                   &aplLongestSet,                               // Ptr to immediate value
                                    lptkFunc);                                   // Ptr to function token
+                // Check for error
                 if (lpSymTmp EQ NULL)
                     goto ERROR_EXIT;
             } else
@@ -4479,6 +4499,7 @@ UBOOL ArrayIndexReplace_EM
                                    hGlbSet,             // Ptr to the value
                                    TRUE,                // TRUE iff we should initialize the target first
                                    lptkFunc);           // Ptr to function token
+                // Check for error
                 if (lpSymTmp EQ NULL)
                     goto ERROR_EXIT;
             } else

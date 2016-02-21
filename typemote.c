@@ -627,7 +627,7 @@ UNLOCK_EXIT:
                     lptkRhtArg->tkFlags.TknType  = TKT_VARIMMED;
                     lptkRhtArg->tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeRes);
                     lptkRhtArg->tkData.tkLongest = 0;
-                    lpaplLongestRht = &lptkRhtArg->tkData.tkLongest;
+                    lpaplLongestRht = GetPtrTknLongest (lptkRhtArg);
 
                     break;
 
@@ -820,7 +820,7 @@ HGLOBAL TypeDemoteGlb
         case TKT_VARIMMED:
             lpSymEntry =
               MakeSymEntry_EM (tkRhtArg.tkFlags.ImmType,
-                              &tkRhtArg.tkData.tkLongest,
+                               GetPtrTknLongest (&tkRhtArg),
                                NULL);
             if (lpSymEntry EQ NULL)
                 return hGlbRht;

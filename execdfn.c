@@ -186,7 +186,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
     // If the token is a Del, ...
     if (bTknDel)
         // Setup left and right operands (if present)
-        GetOperands (lpYYFcnStrOpr->tkToken.tkData.tkGlbData, &lpYYFcnStrLft, &lpYYFcnStrRht);
+        GetOperands (GetGlbHandle (&lpYYFcnStrOpr->tkToken), &lpYYFcnStrLft, &lpYYFcnStrRht);
     else
     // If this is a monadic operator, ...
     if (lpYYFcnStrOpr NE NULL
@@ -668,7 +668,7 @@ NORMAL_EXIT:
         // Restore the original tables
         lpMemPTD->lphtsPTD = lphtsPTD;
 
-    if (hGlbDfnHdr && lpMemDfnHdr)
+    if (hGlbDfnHdr NE NULL && lpMemDfnHdr NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
@@ -1294,9 +1294,10 @@ NEXTLINE:
 
         default:        // Multiple result names:  Allocate storage to hold them
         {
-            APLUINT ByteRes;        // # bytes in the result
-            HGLOBAL hGlbRes;        // Result global memory handle
-            LPVOID  lpMemRes;       // Ptr to result global memory
+            APLUINT           ByteRes;              // # bytes in the result
+            HGLOBAL           hGlbRes;              // Result global memory handle
+            LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result header
+            LPVOID            lpMemRes;             // Ptr to result global memory
 
             // Calculate space needed for the result
             ByteRes = CalcArraySize (ARRAY_NESTED, numResultSTE, 1);
@@ -1311,9 +1312,9 @@ NEXTLINE:
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemRes = MyGlobalLock (hGlbRes);
+            lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
             // Fill in the header
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = ARRAY_NESTED;
@@ -1325,10 +1326,10 @@ NEXTLINE:
 #undef  lpHeader
 
             // Fill in the dimension
-            *VarArrayBaseToDim (lpMemRes) = numResultSTE;
+            *VarArrayBaseToDim (lpMemHdrRes) = numResultSTE;
 
             // Skip over the header and dimension
-            lpMemRes = VarArrayDataFmBase (lpMemRes);
+            lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
             // Fill in the result
             for (numRes = 0; numRes < numResultSTE; numRes++)
@@ -1342,7 +1343,7 @@ NEXTLINE:
             } // End FOR
 
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
             // Allocate a new YYRes
             lpYYRes = YYAlloc ();
@@ -1582,7 +1583,7 @@ NORMAL_EXIT:
         MyGlobalUnlock (lpMemDfnHdr->hGlbTknHdr); lptkHdr = NULL;
     } // End IF
 
-    if (lpMemDfnHdr)
+    if (lpMemDfnHdr NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (lpSISCur->hGlbDfnHdr); lpMemDfnHdr = NULL;
@@ -1618,7 +1619,7 @@ void UnlocalizeSTEs
     lpMemPTD = GetMemPTD ();
 
     // If the global memory handle is valid, ...
-    if (hGlbDfnHdr)
+    if (hGlbDfnHdr NE NULL)
     {
         LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header
 
@@ -1652,7 +1653,7 @@ void UnlocalizeSTEs
     } // End IF
 
     // If the SI is non-empty, ...
-    if (lpMemPTD->SILevel)
+    if (lpMemPTD->SILevel > 0)
     {
         // Copy current SIS ptr
         lpSISCur = lpMemPTD->lpSISCur;
@@ -1770,7 +1771,7 @@ void UnlocalizeSTEs
         // Strip the level from the stack
         lpMemPTD->lpSISNxt = lpMemPTD->lpSISCur;
         lpMemPTD->lpSISCur = lpMemPTD->lpSISCur->lpSISPrv;
-        if (lpMemPTD->lpSISCur)
+        if (lpMemPTD->lpSISCur NE NULL)
         {
             lpMemPTD->lpSISCur->lpSISNxt = NULL;
 
@@ -2322,7 +2323,7 @@ UBOOL InitFcnSTEs
 ////////////////////(*lplpSymEntry)->stFlags.UsrDfn     = FALSE;            // Already zero from above
 ////////////////////(*lplpSymEntry)->stFlags.DfnAxis    = FALSE;            // Already zero from above
 ////////////////////(*lplpSymEntry)->stFlags.FcnDir     = FALSE;            // Already zero from above
-                    (*lplpSymEntry)->stData.stLongest   = lpYYArg->tkToken.tkData.tkLongest;
+                    (*lplpSymEntry)->stData.stLongest   = *GetPtrTknLongest (&lpYYArg->tkToken);
 
                     break;
 
@@ -2348,7 +2349,7 @@ UBOOL InitFcnSTEs
                     LPDFN_HEADER lpMemDfnHdr;
 
                     // Copy the HGLOBAL
-                    hGlbDfnHdr = lpYYArg->tkToken.tkData.tkGlbData;
+                    hGlbDfnHdr = GetGlbHandle (&lpYYArg->tkToken);
 
                     Assert (IsGlbTypeDfnDir_PTB (hGlbDfnHdr));
 
@@ -2450,7 +2451,7 @@ UBOOL InitFcnSTEs
                 case TKT_OP1AFO:
                 case TKT_OP2AFO:
                     // Increment the RefCnt
-                    DbgIncrRefCntDir_PTB (lpYYArg->tkToken.tkData.tkGlbData);   // EXAMPLE:  UDFO[X] A
+                    DbgIncrRefCntDir_PTB (GetGlbHandle (&lpYYArg->tkToken));    // EXAMPLE:  UDFO[X] A
 
                     break;
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -134,7 +134,7 @@ UBOOL ArrayDisplay_EM
             lpaplChar =
               FormatImmed (lpwszFormat,
                            lptkRes->tkFlags.ImmType,
-                          &lptkRes->tkData.tkLongest);
+                           GetPtrTknLongest (lptkRes));
             immType = lptkRes->tkFlags.ImmType;
             aplChar = lptkRes->tkData.tkChar;
 
@@ -1212,9 +1212,9 @@ LPAPLCHAR FormatAplIntFC
 
 #define MAXLEN  32
 
-    WCHAR wszTemp[MAXLEN + 1];
-    int   i;
-    UINT  u;
+    WCHAR wszTemp[MAXLEN + 1];      // Temp save area
+    int   i;                        // Temp
+    UINT  u;                        // ...
 
     // Check the sign bit -- if set, save and make positive
     if (aplInt < 0)

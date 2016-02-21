@@ -1308,7 +1308,7 @@ static TOKENNAMES tokenNames[] =
  {"LISTSEP"       , TKT_LISTSEP       },    // 07: List separator    (data is ';')
  {"LABELSEP"      , TKT_LABELSEP      },    // 08: Label ...         (data is ':')
  {"COLON"         , TKT_COLON         },    // 09: Colon             (data is ':')
- {"FCNIMMED"      , TKT_FCNIMMED      },    // 0A: Primitive function (any valence) (data is UTF16_***)
+ {"FCNIMMED"      , TKT_FCNIMMED      },    // 0A: Primitive function (any # args) (data is UTF16_***)
  {"OP1IMMED"      , TKT_OP1IMMED      },    // 0B: Monadic primitive operator (data is UTF16_***)
  {"OP2IMMED"      , TKT_OP2IMMED      },    // 0C: Dyadic  ...
  {"OP3IMMED"      , TKT_OP3IMMED      },    // 0D: Ambiguous ...
@@ -1984,7 +1984,7 @@ LPWCHAR DisplayFcnSub
             lpaplChar =
               FormatImmed (lpaplChar,           // ***FIXME*** Use FormatImmedFC ??
                            lpYYMem[0].tkToken.tkFlags.ImmType,
-                          &lpYYMem[0].tkToken.tkData.tkLongest);
+                           GetPtrTknLongest (&lpYYMem[0].tkToken));
             lpaplChar[-1] = L']';   // Overwrite the trailing blank
 
             break;
@@ -1995,7 +1995,7 @@ LPWCHAR DisplayFcnSub
             // Display the var array
             lpaplChar =
               DisplayVarSub (lpaplChar,                         // Ptr to output save area
-                             lpYYMem->tkToken.tkData.tkGlbData, // Object global memory handle
+                             GetGlbHandle (&lpYYMem->tkToken),  // Object global memory handle
                              lpSavedWsGlbVarConv,               // Ptr to function to convert an HGLOBAL var to FMTSTR_GLBOBJ (may be NULL)
                              lpSavedWsGlbVarParm);              // Ptr to extra parameters for lpSavedWsGlbVarConv
 
@@ -2007,7 +2007,7 @@ LPWCHAR DisplayFcnSub
             lpaplChar =
               FormatImmed (lpaplChar,           // ***FIXME*** Use FormatImmedFC ??
                            lpYYMem[0].tkToken.tkFlags.ImmType,
-                          &lpYYMem[0].tkToken.tkData.tkLongest);
+                           GetPtrTknLongest (&lpYYMem[0].tkToken));
             if (lpaplChar[-1] EQ L' ')
                 lpaplChar--;            // Back over the trailing blank
             break;
@@ -2019,14 +2019,14 @@ LPWCHAR DisplayFcnSub
             // Display the var array
             lpaplChar =
               DisplayVarSub (lpaplChar,                         // Ptr to output save area
-                             lpYYMem->tkToken.tkData.tkGlbData, // Object global memory handle
+                             GetGlbHandle (&lpYYMem->tkToken),  // Object global memory handle
                              lpSavedWsGlbVarConv,               // Ptr to function to convert an HGLOBAL var to FMTSTR_GLBOBJ (may be NULL)
                              lpSavedWsGlbVarParm);              // Ptr to extra parameters for lpSavedWsGlbVarConv
             break;
 
         case TKT_FCNARRAY:
             // Get the function array global memory handle
-            hGlbData = lpYYMem->tkToken.tkData.tkGlbData;
+            hGlbData = GetGlbHandle (&lpYYMem->tkToken);
 
             // tkData is a valid HGLOBAL function array
             //   or user-defined function/operator
@@ -2209,7 +2209,7 @@ LPWCHAR DisplayFcnSub
 
         case TKT_FCNAFO:
             // Get the AFO global memory handle
-            hGlbData = lpYYMem->tkToken.tkData.tkGlbData;
+            hGlbData = GetGlbHandle (&lpYYMem->tkToken);
 
             // Lock the memory to get a ptr to it
             lpMemDfnHdr = MyGlobalLock (hGlbData);
@@ -2238,7 +2238,7 @@ LPWCHAR DisplayFcnSub
 
         case TKT_OP1AFO:
             // Get the AFO global memory handle
-            hGlbData = lpYYMem->tkToken.tkData.tkGlbData;
+            hGlbData = GetGlbHandle (&lpYYMem->tkToken);
 
             // Lock the memory to get a ptr to it
             lpMemDfnHdr = MyGlobalLock (hGlbData);
@@ -2269,7 +2269,7 @@ LPWCHAR DisplayFcnSub
 
         case TKT_OP2AFO:
             // Get the AFO global memory handle
-            hGlbData = lpYYMem->tkToken.tkData.tkGlbData;
+            hGlbData = GetGlbHandle (&lpYYMem->tkToken);
 
             // Lock the memory to get a ptr to it
             lpMemDfnHdr = MyGlobalLock (hGlbData);
@@ -2674,7 +2674,7 @@ void DisplayStrand
                     GetTokenTypeName (lp->tkToken.tkFlags.TknType),
                     bIsTknImmed
                   ?           lp->tkToken.tkData.tkInteger
-                  : (APLUINT) lp->tkToken.tkData.tkGlbData,
+                  : (APLUINT) GetGlbHandle (&lp->tkToken),
                     lp->tkToken.tkCharIndex,
                     lp->TknCount,
                     lp->YYIndirect,

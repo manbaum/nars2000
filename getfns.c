@@ -24,6 +24,28 @@
 #include <windows.h>
 #include "headers.h"
 
+static LPVOID Ptr2Null = NULL;
+
+
+//***************************************************************************
+//  $GetPtrTknLongest
+//
+//  Return a ptr to either the tkLongest or stLongest of a token
+//***************************************************************************
+
+LPAPLLONGEST GetPtrTknLongest
+    (LPTOKEN lptkToken)                 // Ptr to the token
+
+{
+    // If it's named, ...
+    if (IsTknNamed (lptkToken))
+        // Get a ptr to the stLongest value from the SYMENTRY
+        return &lptkToken->tkData.tkSym->stData.stLongest;
+    else
+        // Get a ptr to the tkLongest value from the TOKEN
+        return &lptkToken->tkData.tkLongest;
+} // End GetPtrTknLongest
+
 
 //***************************************************************************
 //  $GetPtrGlbDataToken
@@ -36,8 +58,6 @@ HGLOBAL *GetPtrGlbDataToken
     (LPTOKEN lptkToken)                 // Ptr to the token
 
 {
-    static LPVOID Ptr2Null = NULL;
-
     // If it's named, ...
     if (IsTknNamed (lptkToken))
         // Get the xxGlbData value from the SYMENTRY
@@ -1844,10 +1864,10 @@ APLFLOAT GetNextFloat
 APLSTYPE GetNextHetero
     (LPAPLHETERO lpMem,                     // Ptr to global memory
      APLINT      uRes,                      // Index
-     LPAPLINT    lpaplInteger,              // Ptr to Boolean/Integer result
-     LPAPLFLOAT  lpaplFloat,                // Ptr to Float result
-     LPAPLCHAR   lpaplChar,                 // Ptr to Char result
-     HGLOBAL    *lplpSymGlb)                // Ptr to global memory handle (may be NULL)
+     LPAPLINT    lpaplInteger,              // Ptr to Boolean/Integer result (may be NULL)
+     LPAPLFLOAT  lpaplFloat,                // Ptr to Float result           (may be NULL)
+     LPAPLCHAR   lpaplChar,                 // Ptr to Char result            (may be NULL)
+     HGLOBAL    *lplpSymGlb)                // Ptr to global memory handle   (may be NULL)
 
 {
     LPSYMENTRY lpSymEntry;
@@ -1868,30 +1888,48 @@ APLSTYPE GetNextHetero
             switch (lpSymEntry->stFlags.ImmType)
             {
                 case IMMTYPE_BOOL:
-                    *lpaplInteger = lpSymEntry->stData.stBoolean;
-                    *lpaplFloat   = (APLFLOAT) *lpaplInteger;  // ***FIXME*** -- Possible loss of precision
+                    if (lpaplInteger NE NULL)
+                        *lpaplInteger = lpSymEntry->stData.stBoolean;
+                    if (lpaplFloat   NE NULL)
+                        *lpaplFloat   = (APLFLOAT) *lpaplInteger;
 
-                    return ARRAY_BOOL;
+                    aplType = ARRAY_BOOL;
+
+                    break;
 
                 case IMMTYPE_INT:
-                    *lpaplInteger = lpSymEntry->stData.stInteger;
-                    *lpaplFloat   = (APLFLOAT) *lpaplInteger;  // ***FIXME*** -- Possible loss of precision
+                    if (lpaplInteger NE NULL)
+                        *lpaplInteger = lpSymEntry->stData.stInteger;
+                    if (lpaplFloat   NE NULL)
+                        *lpaplFloat   = (APLFLOAT) *lpaplInteger;
 
-                    return ARRAY_INT;
+                    aplType = ARRAY_INT;
+
+                    break;
 
                 case IMMTYPE_FLOAT:
-                    *lpaplFloat   = lpSymEntry->stData.stFloat;
+                    if (lpaplFloat   NE NULL)
+                        *lpaplFloat   = lpSymEntry->stData.stFloat;
 
-                    return ARRAY_FLOAT;
+                    aplType = ARRAY_FLOAT;
+
+                    break;
 
                 case IMMTYPE_CHAR:
-                    *lpaplChar    = lpSymEntry->stData.stChar;
+                    if (lpaplChar    NE NULL)
+                        *lpaplChar    = lpSymEntry->stData.stChar;
 
-                    return ARRAY_CHAR;
+                    aplType = ARRAY_CHAR;
+
+                    break;
 
                 defstop
-                    return ARRAY_ERROR;
+                    aplType = ARRAY_ERROR;
+
+                    break;
             } // End SWITCH
+
+           lpSymGlb = &lpSymEntry->stData.stLongest;
 
             break;
 
@@ -1914,15 +1952,50 @@ APLSTYPE GetNextHetero
                 lpSymGlb = VarArrayDataFmBase (lpSymGlb);
             } // End IF
 
-            if (lplpSymGlb)
-                *lplpSymGlb = lpSymGlb;
-
-            return aplType;
+            break;
 
         defstop
-            return ARRAY_ERROR;
+            aplType = ARRAY_ERROR;
+
+            break;
     } // End SWITCH
+
+    if (lplpSymGlb NE NULL)
+       *lplpSymGlb = lpSymGlb;
+
+    return aplType;
 } // End GetNextHetero
+
+
+//***************************************************************************
+//  $GetNextHetero2
+//
+//  Return the next value as Boolean/Integer, Float, Char, Rat, or Vfp
+//  Ensure that if lplpSymGlb is valid, its value is set.
+//***************************************************************************
+
+APLSTYPE GetNextHetero2
+    (LPAPLHETERO lpMem,                     // Ptr to global memory
+     APLINT      uRes,                      // Index
+     LPAPLINT    lpaplInteger,              // Ptr to Boolean/Integer result
+     LPAPLFLOAT  lpaplFloat,                // Ptr to Float result
+     LPAPLCHAR   lpaplChar,                 // Ptr to Char result
+     HGLOBAL    *lplpSymGlb)                // Ptr to global memory handle (may be NULL)
+
+{
+    APLSTYPE aplTypeRes;
+
+    // Call common subroutine
+    aplTypeRes = GetNextHetero (lpMem, uRes, lpaplInteger, lpaplFloat, lpaplChar, lplpSymGlb);
+
+    // If the ptr is valid but unset, ...
+    if (lplpSymGlb NE NULL
+     && *lplpSymGlb EQ NULL)
+        // Set it to the data in the STE
+        *lplpSymGlb = &lpMem[uRes]->stData.stLongest;
+
+    return aplTypeRes;
+} // End GetNextHetero2
 
 
 //***************************************************************************
@@ -2280,7 +2353,7 @@ void GetNextValueMemSub
                 case TKT_VARIMMED:
                     // Extract the immediate type & value
                     if (lpaplLongestRes)
-                        *lpaplLongestRes = lptkList->tkData.tkLongest;
+                        *lpaplLongestRes = *GetPtrTknLongest (lptkList);
                     if (lpimmTypeRes)
                         *lpimmTypeRes    = lptkList->tkFlags.ImmType;
                     break;
@@ -2337,7 +2410,7 @@ void GetNextValueMemSub
 
             break;
 
-      case ARRAY_RAT:
+        case ARRAY_RAT:
             if (lpaplLongestRes)
                 *lpaplLongestRes = 0;
             if (lpimmTypeRes)
@@ -2346,7 +2419,7 @@ void GetNextValueMemSub
                 *lphGlbRes       = &((LPAPLRAT) lpMemSub)[uSub];
             break;
 
-      case ARRAY_VFP:
+        case ARRAY_VFP:
             if (lpaplLongestRes)
                 *lpaplLongestRes = 0;
             if (lpimmTypeRes)
@@ -2433,7 +2506,7 @@ APLLONGEST GetGlbPtrs_LOCK
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
     {
-        case TKT_VARNAMED:
+        case TKT_VARNAMED:      // Needed when called from <pf_index.c> on target of assignment
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpToken->tkData.tkVoid) EQ PTRTYPE_STCONST);
 
@@ -2526,7 +2599,7 @@ APLLONGEST GetGlbPtrs_LOCK
             if (lplpMem)
                 *lplpMem = NULL;
 
-            return lpToken->tkData.tkLongest;
+            return *GetPtrTknLongest (lpToken);
 
         case TKT_FCNARRAY:
             *lphGlb = lpToken->tkData.tkGlbData;

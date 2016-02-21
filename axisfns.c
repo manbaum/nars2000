@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -169,7 +169,7 @@ UBOOL CheckAxisImm
             // Note that because aplRank and aplRankCmp
             //   are unsigned, we don't need to check
             //   for below zero
-            bRet = bRet && (aplRank < aplRankCmp);
+            bRet &= (aplRank < aplRankCmp);
 
             break;
 
@@ -899,7 +899,7 @@ UBOOL CheckAxis_EM
         case TKT_AXISIMMED:
             // Get the immediate type and value
             immType    = lptkAxis->tkFlags.ImmType;
-            aplLongest = lptkAxis->tkData.tkLongest;
+            aplLongest = *GetPtrTknLongest (lptkAxis);
 
             break;
 

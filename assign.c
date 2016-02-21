@@ -49,8 +49,6 @@ UBOOL AssignName_EM
                  bRet = TRUE;       // TRUE iff result is valid
     LPDFN_HEADER lpMemDfnHdr;       // Ptr to UDFO header
 
-    DBGENTER;
-
     // It's a named variable or function
     Assert (lptkNam->tkFlags.TknType EQ TKT_VARNAMED
          || lptkNam->tkFlags.TknType EQ TKT_FCNNAMED
@@ -99,7 +97,7 @@ UBOOL AssignName_EM
         case TKT_OP1AFO:
         case TKT_OP2AFO:
             // Get the source global memory handle
-            hGlbSrc = lptkSrc->tkData.tkGlbData;
+            hGlbSrc = GetGlbHandle (lptkSrc);
 
             // tkData is a user-defined function/operator
             Assert (IsGlbTypeDfnDir_PTB (hGlbSrc));
@@ -249,8 +247,7 @@ UBOOL AssignName_EM
                           lptkSrc->tkFlags.ImmType;
 
             // Copy the constant data
-            lptkNam->tkData.tkSym->stData.stLongest=
-                          lptkSrc->tkData.tkLongest;
+            lptkNam->tkData.tkSym->stData.stLongest   = *GetPtrTknLongest (lptkSrc);
             break;
 
         case TKT_FCNIMMED:
@@ -263,8 +260,8 @@ UBOOL AssignName_EM
             lptkNam->tkData.tkSym->stFlags.stNameType = NAMETYPE_FN12;
 
             // Copy the constant data
-            lptkNam->tkData.tkSym->stData.stLongest=
-                          lptkSrc->tkData.tkLongest;
+            lptkNam->tkData.tkSym->stData.stLongest   = *GetPtrTknLongest (lptkSrc);
+
             break;
 
         case TKT_OP1IMMED:
@@ -277,8 +274,8 @@ UBOOL AssignName_EM
             lptkNam->tkData.tkSym->stFlags.stNameType = NAMETYPE_OP1;
 
             // Copy the constant data
-            lptkNam->tkData.tkSym->stData.stLongest=
-                          lptkSrc->tkData.tkLongest;
+            lptkNam->tkData.tkSym->stData.stLongest   = *GetPtrTknLongest (lptkSrc);
+
             break;
 
         case TKT_OP2IMMED:
@@ -291,8 +288,8 @@ UBOOL AssignName_EM
             lptkNam->tkData.tkSym->stFlags.stNameType = NAMETYPE_OP2;
 
             // Copy the constant data
-            lptkNam->tkData.tkSym->stData.stLongest=
-                          lptkSrc->tkData.tkLongest;
+            lptkNam->tkData.tkSym->stData.stLongest   = *GetPtrTknLongest (lptkSrc);
+
             break;
 
         case TKT_OP3IMMED:
@@ -305,8 +302,8 @@ UBOOL AssignName_EM
             lptkNam->tkData.tkSym->stFlags.stNameType = NAMETYPE_OP3;
 
             // Copy the constant data
-            lptkNam->tkData.tkSym->stData.stLongest=
-                          lptkSrc->tkData.tkLongest;
+            lptkNam->tkData.tkSym->stData.stLongest   = *GetPtrTknLongest (lptkSrc);
+
             break;
 
         case TKT_VARARRAY:
@@ -427,8 +424,6 @@ ERROR_EXIT:
     // Mark as in error
     bRet = FALSE;
 NORMAL_EXIT:
-    DBGLEAVE;
-
     return bRet;
 } // End AssignName_EM
 #undef  APPEND_NAME
@@ -649,8 +644,6 @@ UBOOL AssignNamedVars_EM
     LPSYMENTRY        lpSymVal;             // Ptr to temp SYMENTRY
     APLINT            apaOffVal,            // APA offset
                       apaMulVal;            // ... multiplier
-
-    DBGENTER;
 
     // Get ptrs to tokens
     lptkStr = &lpYYStr->tkToken;
@@ -1034,8 +1027,6 @@ NORMAL_EXIT:
 
     // Mark as not displayable
     lptkVal->tkFlags.NoDisplay = TRUE;
-
-    DBGLEAVE;
 
     return bRet;
 } // End AssignNamedVars_EM

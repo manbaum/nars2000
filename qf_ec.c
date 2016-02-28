@@ -264,9 +264,8 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
                 break;
 
             case TKT_VARARRAY:
-                // Save the global result
-                lpMemRes[2] =
-                  CopySymGlbDir_PTB (lpYYRes2->tkToken.tkData.tkGlbData);
+                // Save the global result w/o incrementing RefCnt
+                lpMemRes[2] = lpYYRes2->tkToken.tkData.tkGlbData;
 
                 break;
 
@@ -286,7 +285,7 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
                     if (lpMemRes[2] EQ NULL)
                         goto ERROR_EXIT;
                 } else
-                    // Save the global result
+                    // Save the global result incrementing RefCnt
                     lpMemRes[2] =
                       CopySymGlbDir_PTB (lpYYRes2->tkToken.tkData.tkSym->stData.stGlbData);
                 break;

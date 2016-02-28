@@ -1,6 +1,18 @@
 Version 0.4.13.xx consists of the following Builds:
 
 
+Build #1460 -- Version 0.4.13.xx
+--------------------------------
+
+* Fix Memory Leak In []EC
+
+Directory trunk:
+
+QF_EC.C:
+  In <SysFnMonEC_EM_YY>, when saving the result of executing the right arg, do not increment its RefCnt as
+    that var isn't otherwise freed.
+
+
 Build #1459 -- Version 0.4.13.xx
 --------------------------------
 

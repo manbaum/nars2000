@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -70,8 +70,13 @@ static APLCHAR IniLine2[] =
 static APLCHAR IniLine3[] = 
   MFON_MonDotMf L"←{0=1↑⍴⍵:⍵ ⋄ x←∇ 1 0↓⍵ ⋄ ⍵[1;]⍪x+⍵[(1↑⍴x)⍴1;]≤x}";
 
+// The call to ⎕EC traps errors which occur when reducing an empty or singleton column
+//   if the left operand has no identity element.  For example, if ⍺⍺ is an AFO
+//   such as {⍺-⍵} and the last coordinate of ⍵ is 0 or 1, then ⍺⍺/⍵ signals an
+//   error, because ⍺⍺ has no identity element.  Instead, we need the ability to  
+//   specify an identity element for this AFO such as {⍺-⍵ ⋄ ⎕ID:0}.
 static APLCHAR IniLine4[] = 
-  MFON_MonDotCr L"←{0=⍴⍴⍵:⍵ ⋄ ∇ ⍺⍺/⍵}";
+  MFON_MonDotCr L"←{0=⍴⍴⍵:⍵ ⋄ 0=1⍴⎕EC '⍺⍺/⍵':∇(¯1↓⍴⍵)⍴⍵ ⋄ ∇ ⍺⍺/⍵}";
 
 static LPAPLCHAR IniBody[] =
 {IniLine1,

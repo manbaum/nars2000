@@ -233,13 +233,13 @@ IDENT1:
                                   LINENUM_ID);              // Starting line # type (see LINE_NUMS)
     if (bNegate)
     {
-        HGLOBAL   hGlbRes;              // Result global memory handle
+        HGLOBAL           hGlbRes;              // Result global memory handle
         LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result header
-        LPAPLBOOL lpMemRes;             // Ptr to result global memory
-        APLNELM   aplNELMRes,           // Result NELM in bits
-                  aplNELMBytes;         // ...            bytes
-        APLRANK   aplRankRes;           // ...    rank
-        APLUINT   uRes;                 // Loop counter
+        LPAPLBOOL         lpMemRes;             // Ptr to result global memory
+        APLNELM           aplNELMRes,           // Result NELM in bits
+                          aplNELMBytes;         // ...            bytes
+        APLRANK           aplRankRes;           // ...    rank
+        APLUINT           uRes;                 // Loop counter
 
         // Get the result global ptr
         GetGlbPtrs_LOCK (&lpYYRes->tkToken, &hGlbRes, &lpMemHdrRes);
@@ -444,13 +444,9 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
             break;
     } // End SWITCH
 
-    // Check for non-square matrix
+    // Check for non-square matrix or multi-element vector
     if (aplDimRows NE aplDimCols)
         goto GENERAL_DET;
-
-    // Check for DOMAIN ERROR
-    if (!IsNumeric (aplTypeRht))
-        goto RIGHT_DOMAIN_EXIT;
 
     // Calculate the result storage type
     if (IsSimpleNum (aplTypeRht))
@@ -479,7 +475,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
         // According to Reduction of Singletons, the result is actually
         //   LO/RO/,R  where LO is the left operand and RO is the right operand.
 
-        // Get the magic function/operator global memory handles
+        // Get the magic function/operator global memory handle
         hGlbMFO = GetMemPTD ()->hGlbMFO[MFOE_DetSing];
 
         // Calculate LO/RO/,R
@@ -520,8 +516,8 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
 ////////lpYYRes->tkToken.tkData.tkFloat    =            // Filled in below
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-        // Split cases based upon the result storage type
-        switch (aplTypeRes)
+        // Split cases based upon the right arg storage type
+        switch (aplTypeRht)
         {
             case ARRAY_BOOL:
             case ARRAY_INT:
@@ -547,8 +543,8 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
                 immTypeRes = TranslateArrayTypeToImmType (aplTypeRes);
 
                 // Save in the result
-                lpYYRes->tkToken.tkFlags.ImmType   = immTypeRes;
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+                lpYYRes->tkToken.tkFlags.ImmType   = immTypeRes;
                 lpYYRes->tkToken.tkData.tkGlbData  =
                   MakeGlbEntry_EM (aplTypeRes,
                                    lpSymGlbRht,
@@ -565,6 +561,10 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
 
         goto NORMAL_EXIT;
     } // End IF
+
+    //***************************************************************
+    // From here on, the right arg is a square matrix
+    //***************************************************************
 
     // If this is Min.Plus  or  Max.Plus, ...
     if (IsTknImmed (&lpYYFcnStrRht->tkToken)
@@ -602,9 +602,12 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
         goto GENERAL_DET;
 
     //***************************************************************
-    // From here on, the right arg is a one-element vector or
-    //   a square matrix
+    // From here on, the derived function is -.x
     //***************************************************************
+
+    // Check for DOMAIN ERROR
+    if (!IsNumeric (aplTypeRht))
+        goto RIGHT_DOMAIN_EXIT;
 
     Assert (aplDimRows EQ (APLU3264) aplDimRows);
     Assert (aplDimCols EQ (APLU3264) aplDimCols);
@@ -613,9 +616,12 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
     // The scalar case is handled above, and the vector
     //   and matrix cases are handled the same
 
-    // Split cases based upon the result storage type
-    switch (aplTypeRes)
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
     {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
         case ARRAY_FLOAT:
             // No aborting on error!
             gsl_set_error_handler_off ();
@@ -646,6 +652,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
                         case ARRAY_BOOL:
                             uBitMask = BIT0;
 
+                            // Loop through the entire right arg
                             for (uCol = 0; uCol < aplNELMRht; uCol++)
                             {
                                 // Check for Ctrl-Break
@@ -668,6 +675,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
                             break;
 
                         case ARRAY_INT:
+                            // Loop through the entire right arg
                             for (uCol = 0; uCol < aplNELMRht; uCol++)
                             {
                                 // Check for Ctrl-Break
@@ -680,15 +688,16 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
                             break;
 
                         case ARRAY_FLOAT:
-                            // Calculate space needed for the result
-                            ByteRes = 1 * sizeof (APLFLOAT);
+                            // Calculate space needed to copy the right arg
+                            ByteRes = aplDimRows * aplDimCols * sizeof (APLFLOAT);
 
-////////////////////////////// Check for overflow
-////////////////////////////if (ByteRes NE (APLU3264) ByteRes)
-////////////////////////////    goto WSFULL_EXIT;
+                            // Check for overflow
+                            if (ByteRes NE (APLU3264) ByteRes)
+                                goto WSFULL_EXIT;
 
-                            Assert (sizeof (double) EQ sizeof (APLFLOAT));
                             CopyMemory (lpGslMatrixU->data, lpMemRht, (APLU3264) ByteRes);
+
+////////////////////////////// Loop through the entire right arg
 ////////////////////////////for (uCol = 0; uCol < aplNELMRht; uCol++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
@@ -706,6 +715,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
                             apaOffRht = lpAPA->Off;
                             apaMulRht = lpAPA->Mul;
 #undef  lpAPA
+                            // Loop through the entire right arg
                             for (uCol = 0; uCol < aplNELMRht; uCol++)
                             {
                                 // Check for Ctrl-Break
@@ -737,7 +747,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
             if (ErrCode NE GSL_SUCCESS)
                 goto RIGHT_DOMAIN_EXIT;
 
-            // Calculate the determinant
+            // Calculate the determinant of the LU decomposition
             aplFloatRht =
               gsl_linalg_LU_det (lpGslMatrixU,          // N x N
                                  signum);               // Sign of the perm
@@ -762,13 +772,11 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
             // Lock the memory to get a ptr to it
             lpMemTmp = MyGlobalLock (hGlbTmp);
 
-            // Loop through the rows and cols
-            for (uRow = 0; uRow < aplDimRows; uRow++)
-            for (uCol = 0; uCol < aplDimCols; uCol++)
-                // Initialize the matrix
-                mpq_init_set (&            lpMemTmp [uRow * aplDimCols + uCol],
-                              &((LPAPLRAT) lpMemRht)[uRow * aplDimCols + uCol]);
-
+            // Loop through the entire right arg
+            for (uCol = 0; uCol < aplNELMRht; uCol++)
+                // Initialize the matrix to 0/1
+                mpq_init_set (&            lpMemTmp [uCol],
+                              &((LPAPLRAT) lpMemRht)[uCol]);
             // Use Gauss-Jordan elimination to calculate the determinant (into aplRatRes)
             if (!GaussJordanDet (lpMemTmp, aplDimRows, &aplRatRes, lpbCtrlBreak))
                 goto RIGHT_DOMAIN_EXIT;
@@ -790,17 +798,16 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
             // Lock the memory to get a ptr to it
             lpMemTmp = MyGlobalLock (hGlbTmp);
 
-            // Loop through the rows and cols
-            for (uRow = 0; uRow < aplDimRows; uRow++)
-            for (uCol = 0; uCol < aplDimCols; uCol++)
+            // Loop through the entire right arg
+            for (uCol = 0; uCol < aplNELMRht; uCol++)
             {
                 // Initialize the entry
-                mpq_init   (&lpMemTmp[uRow * aplDimRows + uCol]);
+                mpq_init   (&lpMemTmp[uCol]);
 
                 // Copy and convert the entry
-                mpq_set_fr (&            lpMemTmp [uRow * aplDimRows + uCol],
-                            &((LPAPLVFP) lpMemRht)[uRow * aplDimCols + uCol]);
-            } // End FOR/FOR
+                mpq_set_fr (&            lpMemTmp [uCol],
+                            &((LPAPLVFP) lpMemRht)[uCol]);
+            } // End FOR
 
             // Use Gauss-Jordan elimination to calculate the determinant (into aplRatRes)
             if (!GaussJordanDet (lpMemTmp, aplDimRows, &aplRatRes, lpbCtrlBreak))
@@ -836,6 +843,15 @@ MINDOTPLUS:
     APLUINT  uRes;                      // Loop counter
     APLUINT  ByteRes;                   // # bytes in the result
     HGLOBAL  hGlbRes;                   // result global memory handle
+
+    //***************************************************************
+    // From here on, the derived function is {min}.+ or {max}.+ or
+    //   MinMaxAfo.,
+    //***************************************************************
+
+    // Check for DOMAIN ERROR
+    if (!IsNumeric (aplTypeRht))
+        goto RIGHT_DOMAIN_EXIT;
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -1171,7 +1187,7 @@ YYALLOC_EXIT:
 ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;     // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkData.tkFloat    =            // Filled in below
     lpYYRes->tkToken.tkData.tkGlbData  =
-      MakeGlbEntry_EM (aplTypeRes,
+      MakeGlbEntry_EM (TranslateImmTypeToArrayType (immTypeRes),
                        lpMemRes,
                        FALSE,
                        lptkFunc);

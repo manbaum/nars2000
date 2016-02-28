@@ -373,23 +373,23 @@ PRO:    DIR                     \
         $(SRC_PARSE:???=pro)
 
 {}.c{$(O)}.pro:
-        @echo $(@F)
+########@echo $(@F)
         @php $(MAKEPRO) %s $@
 
 {}.cpp{$(O)}.pro:
-        @echo $(@F)
+########@echo $(@F)
         @php $(MAKEPRO) %s $@
 
 {$(O)}.c{$(O)}.pro:
-        @echo $(@F)
+########@echo $(@F)
         @php $(MAKEPRO) %s $@
 
 {$(WS)}.c{$(O)}.pro:
-        @echo $(@F)
+########@echo $(@F)
         @php $(MAKEPRO) %s $@
 
 {$(MS_DIR)}.c{$(O)}.pro:
-        @echo $(@F)
+########@echo $(@F)
         @php $(MAKEPRO) %s $@
 
 

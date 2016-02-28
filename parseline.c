@@ -3249,16 +3249,26 @@ LPPL_YYSTYPE plRedNAM_SPNF
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    // Execute the niladic function returning an array
-    lpplYYLstRht =
-      plExecuteFn0 (lpplYYLstRht);
+    // If the token is an AFO, ...
+    if (IsTknAFO (&lpplYYLstRht->tkToken))
+    {
+        Assert (soType EQ soA);
 
-    // Check for error
-    if (!lpplYYLstRht)
-        goto ERROR_EXIT;
+        // Call common code
+        return plRedNAM_SPF (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soNF);
+    } else
+    {
+        // Execute the niladic function returning an array
+        lpplYYLstRht =
+          plExecuteFn0 (lpplYYLstRht);
 
-    // Call common code
-    return plRedNAM_SPA (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+        // Check for error
+        if (!lpplYYLstRht)
+            goto ERROR_EXIT;
+
+        // Call common code
+        return plRedNAM_SPA (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+    } // End IF
 ERROR_EXIT:
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
@@ -4690,6 +4700,9 @@ PARSELINE_ERROR:
                     // Free & YYFree the temp
                     FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
                 } else
+                // If it's not an EOS or SOS, ...
+                if (lpYYRes->tkToken.tkSynObj NE soSOS
+                 && lpYYRes->tkToken.tkSynObj NE soEOS)
                 {
                     // YYFree the temp
                     YYFree (lpYYRes); lpYYRes = NULL;
@@ -4722,6 +4735,9 @@ PARSELINE_ERROR:
                     // Free & YYFree the temp
                     FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
                 } else
+                // If it's not an EOS or SOS, ...
+                if (lpYYRes->tkToken.tkSynObj NE soSOS
+                 && lpYYRes->tkToken.tkSynObj NE soEOS)
                 {
                     // YYFree the temp
                     YYFree (lpYYRes); lpYYRes = NULL;

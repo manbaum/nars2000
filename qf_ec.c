@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -83,26 +83,29 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeRht;        // Right arg storage type
-    APLRANK      aplRankRht;        // Right arg rank
-    APLNELM      aplNELMRht;        // Right arg NELM
-    HGLOBAL      hGlbRht = NULL,    // Right arg global memory handle
-                 hGlbRes = NULL,    // Result    ...
-                 hGlbQuadDM,        // []DM      ...
-                 hGlbTmp;           // Temporary ...
-    RESET_FLAGS  resetFlag;         // Reset flag (see RESET_FLAGS)
-    LPAPLCHAR    lpMemRht = NULL;   // Ptr to right arg global memory
-    LPAPLNESTED  lpMemRes = NULL;   // Ptr to result    ...
-    APLLONGEST   aplLongestRht,     // Right arg immediate value
-                 aplLongestRC;      // Return code
-    LPPL_YYSTYPE lpYYRes = NULL,    // Ptr to result
-                 lpYYRes2 = NULL;   // Ptr to secondary result
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    APLUINT      ByteRes;           // # bytes in the result
+    APLSTYPE          aplTypeRht;           // Right arg storage type
+    APLRANK           aplRankRht;           // Right arg rank
+    APLNELM           aplNELMRht;           // Right arg NELM
+    HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
+                      hGlbRes = NULL,       // Result    ...
+                      hGlbQuadDM,           // []DM      ...
+                      hGlbTmp;              // Temporary ...
+    RESET_FLAGS       resetFlag;            // Reset flag (see RESET_FLAGS)
+    LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
+                      lpMemHdrRes = NULL;   // ...    result    ...
+    LPAPLCHAR         lpMemRht;             // Ptr to right arg global memory
+    LPAPLNESTED       lpMemRes;             // Ptr to result    ...
+    APLLONGEST        aplLongestRht,        // Right arg immediate value
+                      aplLongestRC;         // Return code
+    LPPL_YYSTYPE      lpYYRes,              // Ptr to result
+                      lpYYRes2;             // Ptr to secondary result
+    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
+    APLUINT           ByteRes;              // # bytes in the result
 #ifdef DEBUG
-    EC_RETCODES  retCode;           // Return code for []EC[0]
+    EC_RETCODES       retCode;              // Return code for []EC[0]
 #endif
-    EXIT_TYPES   exitType;          // Exit type (see EXIT_TYPES)
+    EXIT_TYPES        exitType;             // Exit type (see EXIT_TYPES)
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to ParseLine local vars
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -153,11 +156,11 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
 #define aplNELMRes  3
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_NESTED;
@@ -169,7 +172,7 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
 #undef  lpHeader
 
     // Skip over the header to the dimensions
-    lpMemRes = (LPAPLNESTED) VarArrayBaseToDim (lpMemRes);
+    lpMemRes = (LPAPLNESTED) VarArrayBaseToDim (lpMemHdrRes);
 
     // Save the dimension
     *((LPAPLDIM) lpMemRes)++ = aplNELMRes;
@@ -188,12 +191,12 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // Get the right arg's global ptrs
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // If it's global, ...
-    if (hGlbRht)
+    if (hGlbRht NE NULL)
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayDataFmBase (lpMemRht);
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
     else
         // Point to the immediate value
         lpMemRht = (LPAPLCHAR) &aplLongestRht;
@@ -213,6 +216,10 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
 #endif
     aplLongestRC = TranslateExitTypeToReturnCode (exitType);
 
+    // Clear the return code in the current plLocalVars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+    lpplLocalVars->ExitType = EXITTYPE_DISPLAY;
+
     // Create []DM & []EM
     ErrorMessageDirect (lpMemPTD->lpwszErrorMessage,    // Ptr to error message text
                         lpMemRht,                       // Ptr to the line which generated the error
@@ -231,7 +238,7 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
     lpMemRes[1] = MakePtrTypeGlb (hGlbTmp);
 
     // If it succeeded, ...
-    if (lpYYRes2)
+    if (lpYYRes2 NE NULL)
     {
         // Check for NoValue
         if (IsTokenNoValue (&lpYYRes2->tkToken))
@@ -346,28 +353,28 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this storage
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
     // Unlocalize the STEs on the innermost level
@@ -401,13 +408,14 @@ NORMAL_EXIT:
 #endif
 
 HGLOBAL AllocateET_EM
-    (LPPERTABDATA lpMemPTD,         // Ptr to PerTabData global memory
-     LPTOKEN      lptkFunc)         // Ptr to function token
+    (LPPERTABDATA lpMemPTD,                 // Ptr to PerTabData global memory
+     LPTOKEN      lptkFunc)                 // Ptr to function token
 
 {
-    APLUINT      ByteRes;           // # bytes in the result
-    HGLOBAL      hGlbTmp;           // Temporary global memory handle
-    LPAPLUINT    lpMemTmp;          // Ptr to temporary ...
+    APLUINT           ByteRes;              // # bytes in the result
+    HGLOBAL           hGlbTmp;              // Temporary global memory handle
+    LPVARARRAY_HEADER lpMemHdrTmp = NULL;   // Ptr to temp header
+    LPAPLUINT         lpMemTmp;             // Ptr to temporary ...
 
     // Calculate space needed for the []ET
     ByteRes = CalcArraySize (ARRAY_INT, 2, 1);
@@ -422,9 +430,9 @@ HGLOBAL AllocateET_EM
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemTmp = MyGlobalLock (hGlbTmp);
+    lpMemHdrTmp = MyGlobalLock (hGlbTmp);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemTmp)
+#define lpHeader    lpMemHdrTmp
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_INT;
@@ -436,7 +444,7 @@ HGLOBAL AllocateET_EM
 #undef  lpHeader
 
     // Skip over the header to the dimensions
-    lpMemTmp = VarArrayBaseToDim (lpMemTmp);
+    lpMemTmp = VarArrayBaseToDim (lpMemHdrTmp);
 
     // Save the dimension
     *((LPAPLDIM) lpMemTmp)++ = 2;
@@ -446,7 +454,7 @@ HGLOBAL AllocateET_EM
     lpMemTmp[1] = ET_MINOR (lpMemPTD->lpSISCur->EventType);
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbTmp); lpMemTmp = NULL;
+    MyGlobalUnlock (hGlbTmp); lpMemHdrTmp = NULL;
 
     return hGlbTmp;
 

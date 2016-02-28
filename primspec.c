@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1076,12 +1076,6 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
     APLVFP       mpfArg = {0},      // VFP arg
                  mpfRes = {0};      // VFP result
 
-    DBGENTER;
-
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
-
     // Check for axis present
     if (lptkAxis NE NULL)
         goto AXIS_SYNTAX_EXIT;
@@ -1147,10 +1141,8 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
                 lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-                lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+                lpYYRes->tkToken.tkData.tkGlbData  = hGlbRes;
                 lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-
-                DBGLEAVE;
 
                 return lpYYRes;
             } // End IF
@@ -1169,7 +1161,7 @@ RESTART_EXCEPTION_VARNAMED:
 
             __try
             {
-                // Split cases based upon the storage type of the result
+                // Split cases based upon the result storage type
                 switch (aplTypeRes)
                 {
                     case ARRAY_BOOL:            // Res = BOOL
@@ -1356,8 +1348,6 @@ RESTART_EXCEPTION_VARNAMED:
 
             // Restore the value of []RL from LclPrimSpec
             RestPrimSpecRL (&LclPrimSpec);
-
-            DBGLEAVE;
 
             return lpYYRes;
 
@@ -1606,8 +1596,6 @@ RESTART_EXCEPTION_VARIMMED:
             // Restore the value of []RL from LclPrimSpec
             RestPrimSpecRL (&LclPrimSpec);
 
-            DBGLEAVE;
-
             return lpYYRes;
 
         case TKT_VARARRAY:
@@ -1638,10 +1626,8 @@ RESTART_EXCEPTION_VARIMMED:
             lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-            lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+            lpYYRes->tkToken.tkData.tkGlbData  = hGlbRes;
             lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-
-            DBGLEAVE;
 
             return lpYYRes;
 
@@ -1682,6 +1668,7 @@ NONCE_EXIT:
 //  $PrimFnMonGlb_EM
 //
 //  Primitive scalar monadic function on a global memory object
+//  Returning an HGLOBAL with the ptr type bits significant
 //***************************************************************************
 
 #ifdef DEBUG
@@ -1691,9 +1678,9 @@ NONCE_EXIT:
 #endif
 
 HGLOBAL PrimFnMonGlb_EM
-    (HGLOBAL    hGlbRht,            // Right arg handle
-     LPTOKEN    lptkFunc,           // Ptr to function token
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+    (HGLOBAL    hGlbRht,                    // Right arg handle
+     LPTOKEN    lptkFunc,                   // Ptr to function token
+     LPPRIMSPEC lpPrimSpec)                 // Ptr to local PRIMSPEC
 
 {
     LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
@@ -2507,7 +2494,7 @@ RESTART_EXCEPTION:
                                                        lpPrimSpec);
                             if (hGlbSub NE NULL)
                                 // Save in result
-                                *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbSub);
+                                *((LPAPLNESTED) lpMemRes)++ = hGlbSub;
                             else
                                 bRet = FALSE;
                             break;
@@ -2833,6 +2820,11 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
+    // If the result global memory handle is valid, ...
+    if (hGlbRes NE NULL)
+        // Make it into a ptr type
+        hGlbRes = MakePtrTypeGlb (hGlbRes);
+
     // We no longer need this storage
     Myf_clear (&mpfRes);
 
@@ -2847,8 +2839,6 @@ NORMAL_EXIT:
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
-
-    DBGLEAVE;
 
     return hGlbRes;
 } // End PrimFnMonGlb_EM
@@ -9684,8 +9674,6 @@ HGLOBAL PrimFnDydSiScNest_EM
     APLCHAR           aplCharRht;
     UINT              uBitIndex = 0;
 
-    DBGENTER;
-
     // The right arg data is a valid HGLOBAL array
     Assert (IsGlbTypeVarDir_PTB (aplNestedRht));
 
@@ -9895,8 +9883,6 @@ NORMAL_EXIT:
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
-
-    DBGLEAVE;
 
     if (bRet)
         return hGlbRes;
@@ -10916,8 +10902,6 @@ UBOOL PrimFnDydSimpSimp_EM
 
     // Get the ptr to the Ctrl-Break flag
     lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
-
-    DBGENTER;
 
     //***************************************************************
     // Both arguments are simple
@@ -14495,13 +14479,13 @@ RESTART_EXCEPTION_NOAXIS:
                             // It's now a RAT result
                             aplTypeRes = ARRAY_RAT;
 
-                        	// If the old result is not immediate, ...
-                        	if (lpMemHdrRes NE NULL)
-                        	{
-                            	// We need to start over with the result
-                            	MyGlobalUnlock (*lphGlbRes); lpMemHdrRes = NULL;
-                            	FreeResultGlobalVar (*lphGlbRes); *lphGlbRes = NULL;
-                        	} // End IF
+                            // If the old result is not immediate, ...
+                            if (lpMemHdrRes NE NULL)
+                            {
+                                // We need to start over with the result
+                                MyGlobalUnlock (*lphGlbRes); lpMemHdrRes = NULL;
+                                FreeResultGlobalVar (*lphGlbRes); *lphGlbRes = NULL;
+                            } // End IF
 
                             if (!PrimScalarFnDydAllocate_EM (lptkFunc,
                                                              lphGlbRes,

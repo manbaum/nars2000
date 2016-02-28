@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -322,7 +322,7 @@ void _YYFree
 
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
-                   L"YYFree:  YYRes at %p index %04X is Perm and about to be YYFree'd.  YYAlloc'ed at %S#%d (%S#d)",
+                   L"YYFree:  YYRes at %p index %04X is Perm and about to be YYFree'd.  YYAlloc'ed at %S#%d (%S#%d)",
                     lpYYRes,
                     lpYYRes->YYIndex,
                     lpYYRes->lpFileName,

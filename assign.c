@@ -242,12 +242,13 @@ UBOOL AssignName_EM
             // It's an immediate
             lptkNam->tkData.tkSym->stFlags.Imm = TRUE;
 
-            // Include the source's .ImmType flags
+            // Include the source's .ImmType flag
             lptkNam->tkData.tkSym->stFlags.ImmType =
                           lptkSrc->tkFlags.ImmType;
 
             // Copy the constant data
             lptkNam->tkData.tkSym->stData.stLongest   = *GetPtrTknLongest (lptkSrc);
+
             break;
 
         case TKT_FCNIMMED:
@@ -388,7 +389,8 @@ UBOOL AssignName_EM
         } // End SWITCH
     } // End IF
 
-    // Mark as valued
+    // Mark as Inuse and valued
+    lptkNam->tkData.tkSym->stFlags.Inuse =
     lptkNam->tkData.tkSym->stFlags.Value = TRUE;
 
     // If it's a var, ensure NAMETYPE_VAR is set for either .stNameType
@@ -590,19 +592,27 @@ NAME_TYPES GetNameType
 #endif
 
 void AssignArrayCommon
-    (LPTOKEN     lptkName,          // Ptr to name token
+    (LPTOKEN     lptkNam,           // Ptr to name token
      LPTOKEN     lptkSrc,           // Ptr to source token
      TOKEN_TYPES TknType)           // Incoming token type for name (see TOKEN_TYPES)
 
 {
     // Free the old value for this name
-    FreeResultName (lptkName);
+    FreeResultName (lptkNam);
+
+////// Clear the name's STE flags
+////ZeroMemory (&lptkNam->tkData.tkSym->stFlags,
+////     sizeof (lptkNam->tkData.tkSym->stFlags));
+
+    // Clear the UsrDfn and DfnAxis flags
+    lptkNam->tkData.tkSym->stFlags.UsrDfn  =
+    lptkNam->tkData.tkSym->stFlags.DfnAxis = FALSE;
 
     // Fill in the token type
-    lptkName->tkFlags.TknType = TknType;
+    lptkNam->tkFlags.TknType = TknType;
 
     // Copy the HGLOBAL
-    lptkName->tkData.tkSym->stData.stGlbData = CopySymGlbDir_PTB (lptkSrc->tkData.tkGlbData);
+    lptkNam->tkData.tkSym->stData.stGlbData = CopySymGlbDir_PTB (lptkSrc->tkData.tkGlbData);
 } // End AssignArrayCommon
 #undef  APPEND_NAME
 

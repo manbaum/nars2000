@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -131,10 +131,10 @@ typedef struct tagHTFLAGS
 
 
 #ifdef DEBUG
-typedef struct tagAPLCHAR6
+typedef struct tagAPLCHAR16
 {
-    APLCHAR aplChar[6];
-} APLCHAR6, *LPAPLCHAR6;
+    APLCHAR aplChar[16];
+} APLCHAR16, *LPAPLCHAR16;
 #endif
 
 
@@ -152,7 +152,7 @@ typedef struct tagHSHENTRY
         HGLOBAL htGlbName;          // Use only if CharIsValid EQ FALSE
         LPWCHAR lpwCharName;        // Use only if CharIsValid EQ TRUE
 #ifdef DEBUG
-        LPAPLCHAR6 *lplpaplChar6;   // For debugging only
+        LPAPLCHAR16 lpaplChar16;    // For debugging only
 #endif
     };
     struct tagSYMENTRY

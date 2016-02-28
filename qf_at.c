@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -863,9 +863,8 @@ APLINT CalcSymEntrySize
 {
     APLUINT aplSize = 0;            // The result
 
-    // If it's an immediate (any type) or an internal function, ...
-    if (lpSymEntry->stFlags.Imm
-     || lpSymEntry->stFlags.FcnDir)
+    // If it's an immediate (any type), ...
+    if (lpSymEntry->stFlags.Imm)
     {
         aplSize = sizeof (SYMENTRY);
 
@@ -893,12 +892,21 @@ APLINT CalcSymEntrySize
 
                 break;
 
+            case IMMTYPE_PRIMFCN:
+            case IMMTYPE_PRIMOP1:
+            case IMMTYPE_PRIMOP2:
+            case IMMTYPE_PRIMOP3:
+                *lpDataSize += sizeof (APLCHAR);
+
+                break;
+
             defstop
                 break;
-        } // End SWITCH
+        } // End IF/SWITCH
     } else
-    // If it has no value, ...
-    if (!lpSymEntry->stFlags.Value)
+    // If it has no value or is a SysFcn, ...
+    if (!lpSymEntry->stFlags.Value
+     ||  lpSymEntry->stFlags.FcnDir)
         aplSize = 0;
     else
     // If it is a user variable, ...

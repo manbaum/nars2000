@@ -33,7 +33,7 @@
 #define IsGlbTypeDfnDir_PTB(a)  (IsGlobalTypeArray_PTB (            (a), DFN_HEADER_SIGNATURE))
 #define IsGlbTypeNamDir_PTB(a)  (IsGlobalTypeArray_PTB (            (a), VARNAMED_HEADER_SIGNATURE))
 #define IsGlbTypeLstDir_PTB(a)  (IsGlobalTypeArray_PTB (            (a), LSTARRAY_HEADER_SIGNATURE))
-#define IsSymNoValue(a)         ((a) EQ NULL || (a)->stFlags.Value EQ FALSE)
+#define IsSymNoValue(a)         ((a) EQ NULL || ((a)->stFlags.Value EQ FALSE && (a)->stFlags.FcnDir EQ FALSE))
 #define IsTokenNoValue(a)       (((a) NE NULL)                          \
                               && ((a)->tkFlags.TknType EQ TKT_VARNAMED) \
                               && (IsSymNoValue ((a)->tkData.tkSym)))

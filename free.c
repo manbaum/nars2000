@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,7 +41,13 @@ void FreeResultName
     (LPTOKEN lptkRes)
 
 {
+    Assert (IsTknNamed (lptkRes));
+
     FreeResultSub (lptkRes, TRUE, FALSE);
+
+////// Clear the STE flags
+////ZeroMemory (&lptkRes->tkData.tkSym->stFlags,
+////     sizeof (lptkRes->tkData.tkSym->stFlags));
 } // End FreeResultName
 #undef  APPEND_NAME
 

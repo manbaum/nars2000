@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -291,7 +291,7 @@ UBOOL LoadWorkspace_EM
     if (lstrcmpiW (lpwszDPFE, L"1 CLEANSPACE") EQ 0)
     {
         // Display the workspace timestamp
-        DisplaySavedMsg (cleanspaceTime, FALSE);
+        DisplaySavedMsg (cleanspaceTime, FALSE, NULL);
 
         goto WSID_EXIT;
     } // End IF

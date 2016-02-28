@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -116,11 +116,22 @@ void DisplayWorkspaceStamp
     (LPDICTIONARY lpDict)               // Ptr to workspace dictionary
 
 {
-    WCHAR      wszTimeStamp[16 + 1];    // Output save area for time stamp
+    WCHAR      wszTimeStamp[16 + 1],    // Output save area for time stamp
+               wszVersion[WS_VERLEN];   // ...                  version info
     LPWCHAR    lpwszProf;               // Ptr to profile string
     FILETIME   ftCreation,              // Function creation time in UTC
                ftLocalTime;             // ...                       localtime
     SYSTEMTIME systemTime;              // Current system (UTC) time
+
+    // Get the version #
+    lpwszProf =
+      ProfileGetString (SECTNAME_GENERAL,   // Ptr to the section name
+                        KEYNAME_VERSION,    // Ptr to the key name
+                        L"",                // Ptr to the default value
+                        lpDict);            // Ptr to workspace dictionary
+    // Copy the string to a save area
+    // DO NOT USE lstrcpyW as it doesn't trigger a visible Page Fault
+    MyStrcpyW (wszVersion, sizeof (wszVersion), lpwszProf);
 
     // Get the current system (UTC) time
     GetSystemTime (&systemTime);
@@ -153,7 +164,7 @@ void DisplayWorkspaceStamp
     FileTimeToSystemTime (&ftLocalTime, &systemTime);
 
     // Display the "SAVED ..." message
-    DisplaySavedMsg (systemTime, OptionFlags.bUseLocalTime);
+    DisplaySavedMsg (systemTime, OptionFlags.bUseLocalTime, wszVersion);
 } // End DisplayWorkspaceStamp
 
 
@@ -164,11 +175,12 @@ void DisplayWorkspaceStamp
 //***************************************************************************
 
 void DisplaySavedMsg
-    (SYSTEMTIME systemTime,
-     UBOOL      bUseLocalTime)
+    (SYSTEMTIME systemTime,         // System time
+     UBOOL      bUseLocalTime,      // TRUE iff we should use LocalTime
+     LPWCHAR    lpwszVersion)       // Workspace version # (may be NULL)
 
 {
-#define TIMESTAMP_FMT L"SAVED MM/DD/YYYY hh:mm:ss (GMT)"
+#define TIMESTAMP_FMT L"SAVED MM/DD/YYYY hh:mm:ss (GMT) (ver 0.00)"
 
     // "+ 1" for the trailing zero
     WCHAR wszTemp[strcountof (TIMESTAMP_FMT) + 1];
@@ -186,6 +198,14 @@ void DisplaySavedMsg
                  systemTime.wMinute,
                  systemTime.wSecond,
                  bUseLocalTime ? L"" : L" (GMT)");
+#ifdef DEBUG
+    if (lpwszVersion NE NULL)
+        // Append the workspace version
+        MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                     sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                    L" (ver %s)",
+                     lpwszVersion);
+#endif
     // Display it
     AppendLine (wszTemp, FALSE, TRUE);
 } // End DisplaySavedMsg

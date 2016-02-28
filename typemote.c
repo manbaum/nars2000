@@ -119,6 +119,30 @@ void TypeDemote
 
             // Handle the immediate case
         case TKT_VARIMMED:
+            // if it's integer-like and Boolean valued, ...
+            if (IsImmInt (lptkRhtArg->tkFlags.ImmType)
+             && IsBooleanValue (*GetPtrTknLongest (lptkRhtArg)))
+                lptkRhtArg->tkFlags.ImmType = IMMTYPE_BOOL;
+            else
+            // If it's an INT masquerading as a FLT, ...
+            if (IsImmFlt (lptkRhtArg->tkFlags.ImmType)
+            // Check for PoM infinity and numbers whose
+            //   absolute value is >= 2*53
+             && !(IsFltInfinity (lptkRhtArg->tkData.tkFloat)
+               || fabs (lptkRhtArg->tkData.tkFloat) >= Float2Pow53))
+            {
+                APLFLOAT aplFlt = lptkRhtArg->tkData.tkFloat,
+                         aplFlr = floor (aplFlt);
+
+                // If this FLT is an INT, ...
+                if (aplFlt EQ aplFlr)
+                {
+                    // Convert it
+                    lptkRhtArg->tkFlags.ImmType  = IMMTYPE_INT;
+                    lptkRhtArg->tkData.tkInteger = (APLINT) aplFlr;;
+                } // End IF
+            } // End IF/ELSE/...
+
             return;
 
         case TKT_VARARRAY:

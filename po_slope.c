@@ -330,12 +330,19 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
         goto YYALLOC_EXIT;
     } // End IF
 
-    // If the right arg is empty, return it
+    // If the right arg is empty, ...
     if (IsEmpty (aplNELMRht))
     {
-        hGlbRes = CopySymGlbDirAsGlb (MakePtrTypeGlb (hGlbRht));
-
-        goto YYALLOC_EXIT;
+        // Return the corresponding prototype
+        hGlbRes =
+          MakeMonPrototype_EM_PTB (MakePtrTypeGlb (hGlbRht),
+                                  &lpYYFcnStrOpr->tkToken,
+                                   MP_NUMCONV);
+        // Check for error
+        if (hGlbRes EQ NULL)
+            goto ERROR_EXIT;
+        else
+            goto YYALLOC_EXIT;
     } // End IF
 
     // Get a ptr to the Primitive Function Flags

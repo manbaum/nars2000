@@ -1,6 +1,21 @@
 Version 0.4.14.xx consists of the following Builds:
 
 
+Build #1462 -- Version 0.4.14.xx
+--------------------------------
+
+* Fix Bug In Scan On Empty Char Array Returning Char Instead Of Numeric
+* Include "Hdr" In Name Of Result Of <MyGlobalLock>
+
+Directory trunk:
+
+PO_SLOPE.C:
+  Change result of =\3 0{rho}'' from char to numeric so as to be consistent with the range of =\.
+
+PRIMFNS.C:
+  Include "Hdr" in name of result of <MyGlobalLock>.
+
+
 Build #1461 -- Version 0.4.14.xx
 --------------------------------
 

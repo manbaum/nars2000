@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -815,25 +815,24 @@ HGLOBAL MakeMonPrototype_EM_PTB
      MAKE_PROTO mpEnum)             // See MAKE_PROTO
 
 {
-    HGLOBAL      hGlbTmp,           // Temporary global memory handle
-                 hGlbRes,           // Result    ...
-                 hSymGlbProto;      // Prototype ...
-    LPVOID       lpMemArr = NULL,   // Ptr to array global memory
-                 lpMemRes,          // ...
-                 lpMemTmp = NULL;   // Ptr to tmp global memory
-    LPVARARRAY_HEADER lpHeader;
-    APLSTYPE     aplType;
-    APLNELM      aplNELM;
-    APLRANK      aplRank;
-    UINT         u;
-    APLNELM      uLen;
-    UBOOL        bRet = TRUE;       // TRUE iff result is valid
-    APLUINT      ByteRes;           // # bytes in the result
-    LPSYMENTRY   lpSymArr,
-                 lpSymRes;
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-
-    DBGENTER;
+    HGLOBAL           hGlbTmp,              // Temporary global memory handle
+                      hGlbRes,              // Result    ...
+                      hSymGlbProto;         // Prototype ...
+    LPVARARRAY_HEADER lpMemHdrArr = NULL,   // Ptr to array header
+                      lpMemHdrRes = NULL,   // ...    result ...
+                      lpMemHdrTmp = NULL;   // ...    temp   ...
+    LPVOID            lpMemArr,             // Ptr to array global memory
+                      lpMemRes;             // ...
+    APLSTYPE          aplType;
+    APLNELM           aplNELM;
+    APLRANK           aplRank;
+    UINT              u;
+    APLNELM           uLen;
+    UBOOL             bRet = TRUE;          // TRUE iff result is valid
+    APLUINT           ByteRes;              // # bytes in the result
+    LPSYMENTRY        lpSymArr,
+                      lpSymRes;
+    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -862,14 +861,16 @@ HGLOBAL MakeMonPrototype_EM_PTB
         return NULL;
 
     // Lock the memory to get a ptr to it
-    lpMemArr = lpHeader = MyGlobalLock (hGlbArr);
+    lpMemHdrArr = MyGlobalLock (hGlbArr);
 
+#define lpHeader        lpMemHdrArr
     aplType = lpHeader->ArrType;
     aplNELM = lpHeader->NELM;
     aplRank = lpHeader->Rank;
+#undef  lpHeader
 
     // Point to the data
-    lpMemArr = VarArrayDataFmBase (lpMemArr);
+    lpMemArr = VarArrayDataFmBase (lpMemHdrArr);
 
     // Split cases based upon the array type
     switch (aplType)
@@ -908,7 +909,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
                         goto DOMAIN_ERROR_EXIT;
 
                     // Change the storage type to Boolean
-                    lpHeader->ArrType = ARRAY_BOOL;
+                    lpMemHdrArr->ArrType = ARRAY_BOOL;
 
                     break;
 
@@ -930,9 +931,9 @@ HGLOBAL MakeMonPrototype_EM_PTB
                         goto WSFULL_EXIT;
 
                     // Lock the memory to get a ptr to it
-                    lpMemTmp = MyGlobalLock (hGlbTmp);
+                    lpMemHdrTmp = MyGlobalLock (hGlbTmp);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemTmp)
+#define lpHeader    lpMemHdrTmp
                     // Fill in the header
                     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
                     lpHeader->ArrType    = ARRAY_BOOL;
@@ -944,15 +945,15 @@ HGLOBAL MakeMonPrototype_EM_PTB
 #undef  lpHeader
 
                     // Copy the dimensions to the result
-                    CopyMemory (VarArrayBaseToDim (lpMemTmp),
-                                VarArrayBaseToDim (lpHeader),
+                    CopyMemory (VarArrayBaseToDim (lpMemHdrTmp),
+                                VarArrayBaseToDim (lpMemHdrArr),
                                 (APLU3264) aplRank * sizeof (APLDIM));
 
                     // We no longer need this ptr
-                    MyGlobalUnlock (hGlbTmp); lpMemTmp = NULL;
+                    MyGlobalUnlock (hGlbTmp); lpMemHdrTmp = NULL;
 
                     // We no longer need this ptr
-                    MyGlobalUnlock (hGlbArr); lpMemArr = NULL;
+                    MyGlobalUnlock (hGlbArr); lpMemHdrArr = NULL;
 
                     // We no longer need this storage
                     FreeResultGlobalVar (hGlbArr); hGlbArr = NULL;
@@ -1088,9 +1089,9 @@ HGLOBAL MakeMonPrototype_EM_PTB
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemRes = MyGlobalLock (hGlbRes);
+            lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
             // Fill in the header
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = aplType;
@@ -1101,13 +1102,13 @@ HGLOBAL MakeMonPrototype_EM_PTB
             lpHeader->Rank       = aplRank;
 #undef  lpHeader
             // Skip over the header to the dimensions
-            lpMemRes = VarArrayBaseToDim (lpMemRes);
+            lpMemRes = VarArrayBaseToDim (lpMemHdrRes);
 
             // Copy the dimensions
-            CopyMemory (lpMemRes, VarArrayBaseToDim (lpHeader), (APLU3264) aplRank * sizeof (APLRANK));
+            CopyMemory (lpMemRes, VarArrayBaseToDim (lpMemHdrArr), (APLU3264) aplRank * sizeof (APLRANK));
 
             // Skip over the dimensions to the data
-            lpMemRes = VarArrayDimToData (lpMemRes, aplRank);
+            lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
             // Loop through the result setting it to zero
             for (u = 0; u < aplNELM; u++)
@@ -1131,8 +1132,8 @@ HGLOBAL MakeMonPrototype_EM_PTB
             } // End FOR/SWITCH
 
             // We no longer need these ptrs
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-            MyGlobalUnlock (hGlbArr); lpMemArr = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+            MyGlobalUnlock (hGlbArr); lpMemHdrArr = NULL;
 
             // We no longer need this storage
             FreeResultGlobalVar (hGlbArr); hGlbArr = NULL;
@@ -1166,10 +1167,10 @@ WSFULL_EXIT:
 ERROR_EXIT:
     bRet = FALSE;
 NORMAL_EXIT:
-    if (hGlbArr && lpMemArr)
+    if (hGlbArr NE NULL && lpMemHdrArr NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbArr); lpMemArr = NULL;
+        MyGlobalUnlock (hGlbArr); lpMemHdrArr = NULL;
     } // End IF
 
     if (!bRet)
@@ -1177,8 +1178,6 @@ NORMAL_EXIT:
         // We no longer need this storage
         FreeResultGlobalIncompleteVar (hGlbArr); hGlbArr = NULL;
     } // End IF
-
-    DBGLEAVE;
 
     if (hGlbArr)
         return MakePtrTypeGlb (hGlbArr);

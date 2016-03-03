@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -123,7 +123,7 @@ static APLCHAR MonLineFMT28[] =
   L"  :endif";
 
 static APLCHAR MonLineFMT29[] =
-  L"  Z←((-2⌈⍴⍴Z)↑1,⍴Z)⍴Z←⍕Z";
+  L"  Z←((-2⌈⍴⍴Z)↑1,⍴Z)⍴Z←' ',⍕Z";
 
 static APLCHAR MonLineFMT30[] =
   L"  :if 0∊⍴R";

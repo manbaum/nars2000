@@ -299,6 +299,10 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             // Handle nested prototypes
             aplNELMNestSub = max (aplNELMSub, 1);
 
+            // If the list is an empty char array, ...
+            if (IsCharEmpty (aplTypeSub, aplNELMSub))
+                goto YYALLOC_EXIT;
+
             // If the list is a global numeric array, ...
             if (IsGlbNum (aplTypeSub))
             {

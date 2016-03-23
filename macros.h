@@ -288,6 +288,12 @@
 // Define macro for detecting simple character or heterogeneous array type
 #define IsSimpleCH(ArrType)             ((ArrType) EQ ARRAY_CHAR || (ArrType) EQ ARRAY_HETERO)
 
+// Define macro for detecting a simple character AND empty array
+#define IsCharEmpty(ArrType,ArrNELM)    (IsSimpleChar (ArrType) && IsEmpty (ArrNELM))
+
+// Define macro for detecting a simple character OR  empty array
+#define IsCharOrEmpty(ArrType,ArrNELM)  (IsSimpleChar (ArrType) || IsEmpty (ArrNELM))
+
 // Define macro for detecting simple hetero array type
 #define IsSimpleHet(ArrType)            ((ArrType) EQ ARRAY_HETERO)
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -875,8 +875,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
         goto LEFT_DOMAIN_EXIT;
 
     // Check for RIGHT DOMAIN ERROR
-    if (!IsSimpleChar (gradeData.aplTypeRht)
-     && !IsEmpty (aplNELMRht))
+    if (!IsCharOrEmpty (gradeData.aplTypeRht, aplNELMRht))
         goto RIGHT_DOMAIN_EXIT;
 
     // Check for scalar right arg

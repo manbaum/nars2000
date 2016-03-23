@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -244,7 +244,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
 
     // Check for LEFT DOMAIN ERROR
     if (!IsNumeric (aplTypeLft)
-     && !(IsSimpleChar (aplTypeLft) && IsEmpty (aplNELMLft)))
+     && !IsCharEmpty (aplTypeLft, aplNELMLft))
         goto LEFT_DOMAIN_EXIT;
 
     // Save a ptr to the right arg header

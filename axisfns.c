@@ -333,6 +333,11 @@ UBOOL CheckAxisGlb
     // Skip over the header and dimensions to the data
     lpMemData = VarArrayDataFmBase (lpMemData);
 
+    // If the axis value is an empty char array, ...
+    if (IsCharEmpty (aplTypeLcl, *lpaplNELM))
+        // Treat it as an empty Boolean array
+        aplTypeLcl = ARRAY_BOOL;
+
     // Split cases based upon the array type
     switch (aplTypeLcl)
     {

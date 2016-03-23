@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -144,7 +144,7 @@ APLSTYPE PrimSpecQuoteDotStorageTypeMon
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (IsEmpty (aplNELMRht) && IsSimpleChar (*lpaplTypeRht))
+    if (IsCharEmpty (*lpaplTypeRht, aplNELMRht))
         *lpaplTypeRht = ARRAY_BOOL;
 
     // The storage type of the result is
@@ -448,12 +448,12 @@ APLSTYPE PrimSpecQuoteDotStorageTypeDyd
 
     // In case the left arg is an empty char,
     //   change its type to BOOL
-    if (IsEmpty (aplNELMLft) && IsSimpleChar (*lpaplTypeLft))
+    if (IsCharEmpty (*lpaplTypeLft, aplNELMLft))
         *lpaplTypeLft = ARRAY_BOOL;
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (IsEmpty (aplNELMRht) && IsSimpleChar (*lpaplTypeRht))
+    if (IsCharEmpty (*lpaplTypeRht, aplNELMRht))
         *lpaplTypeRht = ARRAY_BOOL;
 
     // Calculate the storage type of the result

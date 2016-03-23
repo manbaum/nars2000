@@ -1,6 +1,3 @@
-Version 0.4.14.xx consists of the following Builds:
-
-
 Build #1463 -- Version 0.4.14.xx
 --------------------------------
 
@@ -64,33 +61,3 @@ QF_AT.C:
 
 QF_STRACE.C:
   Simplify code to test for just simple char arrays.
-
-
-Build #1462 -- Version 0.4.14.xx
---------------------------------
-
-* Fix Bug In Scan On Empty Char Array Returning Char Instead Of Numeric
-* Include "Hdr" In Name Of Result Of <MyGlobalLock>
-
-Directory trunk:
-
-PO_SLOPE.C:
-  Change result of =\3 0{rho}'' from char to numeric so as to be consistent with the range of =\.
-
-PRIMFNS.C:
-  Include "Hdr" in name of result of <MyGlobalLock>.
-
-
-Build #1461 -- Version 0.4.14.xx
---------------------------------
-
-* Insert Blank Column On Left Of Simple Array Output Of Monadic []FMT
-
-Directory trunk:
-
-MF_QUADFMT.H:
-  In <#MonFMT>, insert a blank column on the left of a simple array display inside the outer box
-    so as to avoid the dimension eliding with the values.
-
-VER.RC:
-  Increment version # to 0.4.14.xx.

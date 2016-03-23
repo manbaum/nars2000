@@ -230,9 +230,7 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
     } // End SWITCH
 
     // Check for RIGHT DOMAIN ERROR
-    if (!IsSimple (aplTypeRht)
-     || ((!IsSimpleChar (aplTypeRht))
-      && !IsEmpty (aplNELMRht)))
+    if (!IsCharOrEmpty (aplTypeRht, aplNELMRht))
         goto RIGHT_DOMAIN_EXIT;
 
     // Get right arg global ptrs
@@ -251,8 +249,8 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
     // Note that if bRet EQ FALSE, aplRowsRes EQ 1
 
     // Calculate the result NELM and rank
-    aplNELMRes = aplRowsRes * aplColsRes;
-    aplRankRes = 1 + (aplRowsRes > 1);
+    aplNELMRes = aplColsRes;
+    aplRankRes = 1;
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, aplRankRes);

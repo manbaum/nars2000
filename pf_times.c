@@ -137,12 +137,8 @@ APLSTYPE PrimSpecTimesStorageTypeMon
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (IsEmpty (aplNELMRht) && IsSimpleChar (*lpaplTypeRht))
+    if (IsCharEmpty (*lpaplTypeRht, aplNELMRht))
         *lpaplTypeRht = ARRAY_BOOL;
-
-    if (IsSimpleChar (*lpaplTypeRht)
-     || *lpaplTypeRht EQ ARRAY_LIST)
-        return ARRAY_ERROR;
 
     // The storage type of the result is
     //   the same as that of the right arg
@@ -262,12 +258,12 @@ APLSTYPE PrimSpecTimesStorageTypeDyd
 
     // In case the left arg is an empty char,
     //   change its type to BOOL
-    if (IsEmpty (aplNELMLft) && IsSimpleChar (*lpaplTypeLft))
+    if (IsCharEmpty (*lpaplTypeLft, aplNELMLft))
         *lpaplTypeLft = ARRAY_BOOL;
 
     // In case the right arg is an empty char,
     //   change its type to BOOL
-    if (IsEmpty (aplNELMRht) && IsSimpleChar (*lpaplTypeRht))
+    if (IsCharEmpty (*lpaplTypeRht, aplNELMRht))
         *lpaplTypeRht = ARRAY_BOOL;
 
     // Calculate the storage type of the result

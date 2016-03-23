@@ -666,7 +666,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
 
     // Skip over the header and dimensions to the data
-    if (aplTypeLft EQ ARRAY_LIST)
+    if (IsList (aplTypeLft))
         lpMemLft = LstArrayBaseToData (lpMemLft);
     else
     // If the left arg is not immediate, ...

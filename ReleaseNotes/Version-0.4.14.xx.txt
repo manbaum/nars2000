@@ -1,6 +1,21 @@
 Version 0.4.14.xx consists of the following Builds:
 
 
+Build #1464 -- Version 0.4.14.xx
+--------------------------------
+
+* Fix Bug Allowing Chars And Heteros In Certain Monadic Scalar Functions
+
+Directory trunk:
+
+PF_BAR.C:
+PF_COLONBAR.C:
+PF_PLUS.C:
+PF_QUERY.C:
+PF_TIMES.C:
+  Fix bug allowing chars and heteros in certain scalar monadic functions.
+
+
 Build #1463 -- Version 0.4.14.xx
 --------------------------------
 

@@ -176,6 +176,10 @@ APLSTYPE PrimSpecQueryStorageTypeMon
     if (IsCharEmpty (*lpaplTypeRht, aplNELMRht))
         *lpaplTypeRht = ARRAY_BOOL;
 
+    // Weed out chars & heteros
+    if (IsSimpleCH (*lpaplTypeRht))
+        return ARRAY_ERROR;
+
     // The storage type of the result is
     //   the same as that of the right arg
     //   except SimpleNum goes to INT

@@ -3969,7 +3969,7 @@ EXIT_TYPES ParseLine
          || plLocalVars.lptkStart->tkFlags.TknType EQ TKT_EOS);
 
     // If we're not starting at the first token, ...
-    if (uTknNum)
+    if (uTknNum NE 0)
     {
         // Skip to the starting token
         plLocalVars.lptkNext  = &plLocalVars.lptkStart[uTknNum];
@@ -4067,18 +4067,29 @@ PARSELINE_START:
             // If this is an EOS, ...
             if (CURSYNOBJ EQ soEOS)
             {
-                // Make a NoValue entry as the result
-                lpYYRes = MakeNoValue_YY (&lpplYYCurObj->tkToken);
+                // If the current token is a label separator, ...
+                if (plLocalVars.lptkNext->tkFlags.TknType EQ TKT_LABELSEP)
+                {
+                    // YYFree the current object
+                    YYFree (lpplYYCurObj); // lpplYYCurObj = NULL; curSynObj = soNONE;
 
-                // Change the tkSynObj
-                lpYYRes->tkToken.tkSynObj = soEOS;
+                    // Get the current object
+                    lpplYYCurObj = POPLEFT; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
+                } else
+                {
+                    // Make a NoValue entry as the result
+                    lpYYRes = MakeNoValue_YY (&lpplYYCurObj->tkToken);
 
-                // YYFree the current object
-                YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
+                    // Change the tkSynObj
+                    lpYYRes->tkToken.tkSynObj = soEOS;
 
-                // Copy to the current object
-                lpplYYCurObj = lpYYRes; curSynObj = soEOS; Assert (IsValidSO (curSynObj));
-                lpYYRes = NULL;
+                    // YYFree the current object
+                    YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
+
+                    // Copy to the current object
+                    lpplYYCurObj = lpYYRes; curSynObj = soEOS; Assert (IsValidSO (curSynObj));
+                    lpYYRes = NULL;
+                } // End IF/ELSE
 
                 goto PARSELINE_DONE;
             } else

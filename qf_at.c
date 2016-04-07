@@ -249,8 +249,8 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
     // Note that if bRet EQ FALSE, aplRowsRes EQ 1
 
     // Calculate the result NELM and rank
-    aplNELMRes = aplColsRes;
-    aplRankRes = 1;
+    aplNELMRes = aplRowsRes * aplColsRes;
+    aplRankRes = 1 + (aplRowsRes > 1);
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, aplRankRes);
@@ -287,7 +287,7 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
     } else
     // The result is a vector
         // Fill in the dimensions
-        (VarArrayBaseToDim (lpMemHdrRes))[0] = aplColsRes;
+        (VarArrayBaseToDim (lpMemHdrRes))[0] = aplNELMRes;
 
     // If we failed in CalcNumIDs, quit now
     if (!bRet)

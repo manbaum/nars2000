@@ -125,6 +125,7 @@
 #define plRedNAM_MOP    plRedLftOper_MOP
 #define plRedIO_MOP     plRedLftOper_MOP
 #define plRedA_MOP      plRedLftOper_MOP
+#define plRedNF_MOP     plRedLftOper_MOP
 #define plRedSA_MOPN    plRedLftOper_MOP
 #define plRedNAM_MOPN   plRedLftOper_MOP
 #define plRedIO_MOPN    plRedLftOper_MOP
@@ -2868,37 +2869,6 @@ ERROR_EXIT:
 
     return NULL;
 } // End plRedNF_F
-
-
-//***************************************************************************
-//  $plRedNF_MOP
-//
-//  Reduce "NF MOP"  &  "NF_MOPN"
-//***************************************************************************
-
-LPPL_YYSTYPE plRedNF_MOP
-    (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
-     LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
-     LPPL_YYSTYPE  lpplYYLstRht,        // ...    last right ...
-     SO_ENUM       soType)              // Next SO_ENUM value
-
-{
-    // Execute the niladic function returning an array
-    lpplYYCurObj =
-      plExecuteFn0 (lpplYYCurObj);
-
-    // Check for error
-    if (!lpplYYCurObj)
-        goto ERROR_EXIT;
-
-    // Call common code
-    return plRedA_MOP (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
-ERROR_EXIT:
-    // YYFree the last right object
-    YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
-
-    return NULL;
-} // End plRedNF_MOP
 
 
 //***************************************************************************

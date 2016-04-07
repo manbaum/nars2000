@@ -591,7 +591,7 @@ APLRAT PrimFnDydStileRisRvR
         mpq_init_set (&mpqRes, &aplRatRht);
     } else
     {
-#if defined (RAT_EXACT) || TRUE
+#ifdef RAT_EXACT
         // Initialize the result to 0/1
         mpq_init (&mpqRes);
 
@@ -603,7 +603,7 @@ APLRAT PrimFnDydStileRisRvR
                  aplTmp = {0};
         APLFLOAT fQuadCT;
 
-        // Initialize the temps & result
+        // Initialize the temps & result to 0/1
         mpq_init (&aplLft);
         mpq_init (&aplRht);
         mpq_init (&aplTmp);
@@ -638,7 +638,8 @@ APLRAT PrimFnDydStileRisRvR
     // The sign of the result is the sign of the left arg
     if (mpq_cmp_si (&aplRatLft, 0, 1) < 0)
     {
-        if (IsMpq0 (&mpqRes))
+        // If negating would produce allowed -0, ...
+        if (IsMpq0 (&mpqRes) && gAllowNeg0)
             RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
         mpq_neg (&mpqRes, &mpqRes);
     } // End IF
@@ -730,16 +731,48 @@ APLVFP PrimFnDydStileVisVvV
         mpfr_init_copy (&mpfRes, &aplVfpRht);
     } else
     {
+        APLVFP   aplFlr = {0},
+                 aplCel = {0},
+                 aplTmp = {0};
+        APLFLOAT fQuadCT;
+
         // Initialize the result to 0
         mpfr_init0 (&mpfRes);
+        mpfr_init0 (&aplFlr);
+        mpfr_init0 (&aplCel);
+        mpfr_init0 (&aplTmp);
 
-        // Calculate the residue
-        mpfr_mod (&mpfRes, &aplVfpRht, &aplVfpLft);
+        // Ensure both arguments are non-negative
+        mpfr_abs (&aplFlr, &aplVfpLft, MPFR_RNDN);
+        mpfr_abs (&aplCel, &aplVfpRht, MPFR_RNDN);
+
+        // Get the current value of []CT
+        fQuadCT = GetQuadCT ();
+
+        // Calculate right divided-by left
+        mpfr_div (&aplTmp, &aplCel, &aplFlr, MPFR_RNDN);
+
+        // If Rht divided-by Lft is near an integer within CT
+        //   return 0.
+        mpfr_floor (&aplFlr, &mpfRes);
+        mpfr_ceil  (&aplCel, &mpfRes);
+        if (mpfr_cmp_ct (aplTmp, aplFlr, fQuadCT) NE 0
+         && mpfr_cmp_ct (aplTmp, aplCel, fQuadCT) NE 0)
+            // Calculate the residue
+            mpfr_mod (&mpfRes, &aplVfpRht, &aplVfpLft);
+
+        Myf_clear (&aplTmp);
+        Myf_clear (&aplCel);
+        Myf_clear (&aplFlr);
     } // End IF/ELSE/...
 
     // The sign of the result is the sign of the left arg
     if (SIGN_APLVFP (&aplVfpLft))
-        mpfr_neg (&mpfRes, &mpfRes, MPFR_RNDN);
+    {
+        // If negating would not produce disallowed -0, ...
+        if (!(IsMpf0 (&mpfRes) && gAllowNeg0))
+            mpfr_neg (&mpfRes, &mpfRes, MPFR_RNDN);
+    } // End IF
 
     return mpfRes;
 } // End PrimFnDydStileVisVvV

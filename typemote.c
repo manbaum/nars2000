@@ -134,8 +134,10 @@ void TypeDemote
                 APLFLOAT aplFlt = lptkRhtArg->tkData.tkFloat,
                          aplFlr = floor (aplFlt);
 
-                // If this FLT is an INT, ...
-                if (aplFlt EQ aplFlr)
+                // If this FLT is an INT,
+                //   and if -0 is allowed, the value is not -0, ...
+                if (aplFlt EQ aplFlr
+                 && !(gAllowNeg0 && aplFlt EQ 0 && SIGN_APLFLOAT (aplFlt)))
                 {
                     // Convert it
                     lptkRhtArg->tkFlags.ImmType  = IMMTYPE_INT;

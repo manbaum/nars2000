@@ -614,7 +614,8 @@ void TraceLine
     LPSIS_HEADER  lpSISCur;                 // Ptr to current SI Stack Header
     int           iStmtNum;                 // Stmt # (origin-1 if after PARSELINE_DONE)
     static WCHAR  wcDiamond  [2] = {UTF16_DIAMOND},
-                  wcLeftArrow[2] = {UTF16_LEFTARROW};
+                  wcLftArrow[2] = {UTF16_LEFTARROW},
+                  wcRhtArrow[2] = {UTF16_RIGHTARROW};
     HGLOBAL       hGlbItm = NULL,           // Item global memory handle
                   hGlbRes = NULL;           // Result ...
 
@@ -707,7 +708,10 @@ void TraceLine
 
             // If the value is sinked, ...
             if (lpYYCurObj->tkToken.tkFlags.NoDisplay)
-                strcatW (lpMemPTD->lpwszTemp, wcLeftArrow);
+                strcatW (lpMemPTD->lpwszTemp, wcLftArrow);
+            else
+            if (lpplLocalVars->ExitType EQ EXITTYPE_GOTO_LINE)
+                strcatW (lpMemPTD->lpwszTemp, wcRhtArrow);
 
             // Note that although we're not finished with TEMP_OPEN, we must
             //   exit from it here as we can't carry the state across into

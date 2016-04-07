@@ -570,12 +570,13 @@ RESTART_EXCEPTION:
         {
             APLFLOAT aplFloatRes;
             APLINT   aplIntRes;
+            UBOOL    bDoneFOR = FALSE;
 
             // Promote the right arg to the result type
             (*aTypeActPromote[aplTypeRht][aplTypeRes])(lpMemRht, (hGlbRht EQ NULL) ? 0 : uRht, &atRht);
 
             // Trundle through the left arg rows from back to front
-            for (iLftRow = aplRowsLft - 1; iLftRow >= 0; iLftRow--)
+            for (iLftRow = aplRowsLft - 1; !bDoneFOR && iLftRow >= 0; iLftRow--)
             {
                 // Check for Ctrl-Break
                 if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -606,7 +607,12 @@ RESTART_EXCEPTION:
 
                             // If the modulus is zero, we're finished with this row
                             if (atLft.aplInteger EQ 0)
-                                break;  // ***FIXME*** breaks out of SWITCH stmt, not FOR stmt
+                            {
+                                bDoneFOR = TRUE;        // Quit the FOR stmt
+
+                                break;
+                            } // End IF
+
                             // Subtract from the right arg item and shift right
                             atRht.aplInteger = (atRht.aplInteger - aplIntRes) / atLft.aplInteger;
 
@@ -621,7 +627,12 @@ RESTART_EXCEPTION:
 
                             // If the modulus is zero, we're finished with this row
                             if (atLft.aplFloat EQ 0)
-                                break;  // ***FIXME*** breaks out of SWITCH stmt, not FOR stmt
+                            {
+                                bDoneFOR = TRUE;        // Quit the FOR stmt
+
+                                break;
+                            } // End IF
+
                             // Subtract from the right arg item
                             atRht.aplFloat = (atRht.aplFloat - aplFloatRes) / atLft.aplFloat;
 
@@ -636,7 +647,12 @@ RESTART_EXCEPTION:
 
                             // If the modulus is zero, we're finished with this row
                             if (IsMpq0 (&atLft.aplRat))
-                                break;  // ***FIXME*** breaks out of SWITCH stmt, not FOR stmt
+                            {
+                                bDoneFOR = TRUE;        // Quit the FOR stmt
+
+                                break;
+                            } // End IF
+
                             // Subtract from the right arg item
 ////////////////////////////atRht.aplRat = (atRht.aplRat - aplRatRes) / atLft.aplRat;
                             mpq_sub (&atRht.aplRat, &atRht.aplRat, &aplRatRes);
@@ -653,7 +669,12 @@ RESTART_EXCEPTION:
 
                             // If the modulus is zero, we're finished with this row
                             if (IsMpf0 (&atLft.aplVfp))
-                                break;  // ***FIXME*** breaks out of SWITCH stmt, not FOR stmt
+                            {
+                                bDoneFOR = TRUE;        // Quit the FOR stmt
+
+                                break;
+                            } // End IF
+
                             // Subtract from the right arg item
 ////////////////////////////atRht.aplVfp = (atRht.aplVfp - aplVfpRes) / atLft.aplVfp;
                             mpfr_sub (&atRht.aplVfp, &atRht.aplVfp, &aplVfpRes   , MPFR_RNDN);

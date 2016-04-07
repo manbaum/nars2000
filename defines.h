@@ -20,6 +20,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+#if _WIN32_WINNT < 0x0600   // From BASETSD.H
+
+#define MAXUINT64   ((UINT64)~((UINT64)0))
+#define MAXINT64    ((INT64)(MAXUINT64 >> 1))
+#define MININT64    ((INT64)~MAXINT64)
+
+#endif      // _WIN32_WINNT < 0x0600
+
 // Wide char __FILE__ and __LINE__ macros
 #define WFILE       WIDEN(__FILE__)
 #define WIDEN(x)    SMASH(L,x)

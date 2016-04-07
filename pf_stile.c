@@ -42,7 +42,7 @@ PRIMSPEC PrimSpecStile = {
     NULL,   // &PrimFnMonStileIisF, -- Can't happen w/Stile
 
 ////               FisB,   // Handled via type promotion (to FisI)
-    NULL,   // &PrimFnMonStileFisI, -- Can't happen w/Stile
+    &PrimFnMonStileFisI,
     &PrimFnMonStileFisF,
 
     &PrimFnMonStileRisR,
@@ -200,8 +200,27 @@ APLINT PrimFnMonStileIisI
      LPPRIMSPEC lpPrimSpec)
 
 {
+    // Check for |MININT64
+    if (aplIntegerRht EQ MININT64)
+        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+
     return  abs64 (aplIntegerRht);
 } // End PrimFnMonStileIisI
+
+
+//***************************************************************************
+//  $PrimFnMonStileFisI
+//
+//  Primitive scalar function monadic Stile:  F {is} fn I
+//***************************************************************************
+
+APLFLOAT PrimFnMonStileFisI
+    (APLINT     aplIntegerRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    return fabs ((APLFLOAT) aplIntegerRht);
+} // End PrimFnMonStileFisI
 
 
 //***************************************************************************

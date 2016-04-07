@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -215,7 +215,7 @@ void SetMarginsFE
 
     // If we're not displaying function line #s, ...
     if (!GetWindowLongW (GetParent (hWndEC), GWLSF_FLN))
-        uLeft = 0;
+        uLeft = 2;
     else
         uLeft = FCN_INDENT * GetFSIndAveCharSize (FONTENUM_FE)->cx;
     // Tell the Edit Ctrl about it

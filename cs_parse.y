@@ -1114,6 +1114,27 @@ ElseIfRec:
     ElseIf                                                      {DbgMsgWP (L"%%ElseIfRec:  ElseIf");
                                                                     $$ = $1;
                                                                 }
+  | ElseIfRec       ElseIf                                      {DbgMsgWP (L"%%ElseIfRec:  ElseIfRec ElseIf");
+                                                                    // Chain together the last token in ElseIfRec and the first token in ElseIf
+                                                                    CS_ChainTokens (lpcsLocalVars, &$1.lptkCur->tkData, $2.lptkIF1st);
+
+                                                                    // If $2 has an unmatched Continue, ...
+                                                                    if ($2.lptk1st)
+                                                                    // Loop through $2's tokens converting that token's .uCLIndex to $1's
+                                                                    for (lptk1st = $2.lptk1st; lptk1st <= $2.lptkCur; lptk1st++)
+                                                                    // If it's the same .uCLIndex
+                                                                    if (lptk1st->tkData.uCLIndex EQ $2.uCLIndex)
+                                                                        lptk1st->tkData.uCLIndex = $1.uCLIndex;
+
+                                                                    // In this partial sequence, pass on down a ptr to the first entry
+                                                                    $2.lptkIF1st                = $1.lptkIF1st;
+                                                                    $2.lptkCL1st                =
+                                                                    $2.lptk1st                  = $1.lptkCL1st;
+                                                                    $2.uCLIndex                 =
+                                                                    $2.lptkCur->tkData.uCLIndex = $1.uCLIndex;
+
+                                                                    $$ = $2;
+                                                                }
   | ElseIfRec CSRec ElseIf                                      {DbgMsgWP (L"%%ElseIfRec:  ElseIfRec CSRec ElseIf");
                                                                     // If $1 has an unmatched ContinueLeave, ...
                                                                     if ($1.lptkCL1st)

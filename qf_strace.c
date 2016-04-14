@@ -281,7 +281,7 @@ LPPL_YYSTYPE SysFnMonSTRACE_EM_YY
     // Run through the function lines
     for (uLine = 0; uLine < uNumLines; uLine++)
     if ((  bTrace  && lpFcnLines[uLine].bTrace)
-     || ((~bTrace) && lpFcnLines[uLine].bStop))
+     || ((!bTrace) && lpFcnLines[uLine].bStop))
         *lpMemRes++ = uLine + 1;
 
     // Allocate a new YYRes
@@ -443,8 +443,7 @@ LPPL_YYSTYPE SysFnDydSTRACE_EM_YY
 
     // Check for DOMAIN ERROR
     if (!IsNumeric (aplTypeLft)
-     || (IsSimpleChar (aplTypeLft)
-      && !IsEmpty (aplNELMLft)))
+     && !IsCharEmpty (aplTypeLft, aplNELMLft))
         goto LEFT_DOMAIN_EXIT;
 
     // Get left arg's global ptrs
@@ -554,6 +553,10 @@ LPPL_YYSTYPE SysFnDydSTRACE_EM_YY
                             lptkRhtArg,            // Ptr to right arg token
                             lptkAxis,              // Ptr to axis token (may be NULL)
                             bTrace);               // TRUE iff this is a call to []TRACE
+    // Check for error
+    if (lpYYRes EQ NULL)
+        goto ERROR_EXIT;
+
     // Disable display of returned values
     lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
 
@@ -587,6 +590,12 @@ NORMAL_EXIT:
         MyGlobalUnlock (lpSymEntry->stData.stGlbData); lpMemDfnHdr = NULL;
     } // End IF
 
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
+    } // End IF
+
     if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
@@ -613,7 +622,7 @@ void TraceLine
 {
     LPSIS_HEADER  lpSISCur;                 // Ptr to current SI Stack Header
     int           iStmtNum;                 // Stmt # (origin-1 if after PARSELINE_DONE)
-    static WCHAR  wcDiamond  [2] = {UTF16_DIAMOND},
+    static WCHAR  wcDiamond [2] = {UTF16_DIAMOND},
                   wcLftArrow[2] = {UTF16_LEFTARROW},
                   wcRhtArrow[2] = {UTF16_RIGHTARROW};
     HGLOBAL       hGlbItm = NULL,           // Item global memory handle

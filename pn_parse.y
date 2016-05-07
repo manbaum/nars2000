@@ -127,7 +127,6 @@ Integer:
               Digit                 {DbgMsgWP (L"%%Integer:  Digit");
                                      // Mark starting offset
                                      $1.uNumAcc = lppnLocalVars->uNumAcc;
-                                     $1.uNumStart = lppnLocalVars->uNumIni;
 
                                      // Accumulate the digit
                                      PN_NumAcc (lppnLocalVars, $1.chCur);
@@ -137,7 +136,6 @@ Integer:
     | OVR     Digit                 {DbgMsgWP (L"%%Integer:  " WS_UTF16_OVERBAR L" Digit");
                                      // Mark starting offset
                                      $1.uNumAcc = lppnLocalVars->uNumAcc;
-                                     $1.uNumStart = lppnLocalVars->uNumIni;
 
                                      // Accumulate the negative sign
                                      PN_NumAcc (lppnLocalVars, OVERBAR1);
@@ -172,7 +170,6 @@ Decimal:
               '.' Digit             {DbgMsgWP (L"%%Decimal:  '.' Digit");
                                      // Mark starting offset
                                      $1.uNumAcc = lppnLocalVars->uNumAcc;
-                                     $1.uNumStart = lppnLocalVars->uNumIni;
 
                                      // Accumulate the decimal point
                                      PN_NumAcc (lppnLocalVars, '.');
@@ -185,7 +182,6 @@ Decimal:
     | OVR     '.' Digit             {DbgMsgWP (L"%%Decimal:  '" WS_UTF16_OVERBAR L"' '.' Digit");
                                      // Mark starting offset
                                      $1.uNumAcc = lppnLocalVars->uNumAcc;
-                                     $1.uNumStart = lppnLocalVars->uNumIni;
 
                                      // Accumulate the negative sign
                                      PN_NumAcc (lppnLocalVars, OVERBAR1);
@@ -496,12 +492,12 @@ Number:
 VectorAcc:
       Number                        {DbgMsgWP (L"%%VectorAcc:  Number");
                                      // Accumulate the current value into the vector
-                                     if (!PN_VectorAcc (lppnLocalVars))
+                                     if (!PN_VectorAcc (&$1, lppnLocalVars))
                                          YYERROR2;
                                     }
     | VectorAcc Space Number        {DbgMsgWP (L"%%VectorAcc:  VectorAcc Space Number");
                                      // Accumulate the current value into the vector
-                                     if (!PN_VectorAcc (lppnLocalVars))
+                                     if (!PN_VectorAcc (&$3, lppnLocalVars))
                                          YYERROR2;
                                     }
     ;
@@ -638,6 +634,9 @@ int pn_yylex
      LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
 
 {
+    // Save the index position in lpszStart
+    lpYYLval->uNumStart = lppnLocalVars->uNumCur;
+
     // Check for EOL
     if (lppnLocalVars->uNumCur EQ lppnLocalVars->uNumLen)
         lpYYLval->chCur = AC_EOS;

@@ -1407,12 +1407,16 @@ LPPN_YYSTYPE PN_MakeVfpPoint
 #endif
 
 UBOOL PN_VectorAcc
-    (LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
+    (LPPN_YYSTYPE  lpYYArg,             // Number to accumulate
+     LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
 
 {
     LPPN_VECTOR lppnVector;
     LPCHAR      lpStart;
     UINT        uNumLen;
+    UBOOL       bFltN0,                 // TRUE iff the arg is FLT and -0
+                bVfpN0,                 // ...                 VFP ...
+                bNeg0;                  // ...      bFltN0 || bVfpN0
 
     // Accumulate the number
 
@@ -1483,8 +1487,8 @@ UBOOL PN_VectorAcc
     lppnVector[lppnLocalVars->uGlbVectorCurLen].chType   = lppnLocalVars->chType;
     lppnLocalVars->chType = PN_NUMTYPE_INIT;
 
-    lpStart = &lppnLocalVars->lpszStart[lppnLocalVars->uNumIni];
-    uNumLen =  lppnLocalVars->uNumCur - lppnLocalVars->uNumIni;
+    lpStart = &lppnLocalVars->lpszStart[lpYYArg->uNumStart];
+    uNumLen =  lppnLocalVars->uNumCur - lpYYArg->uNumStart;     // ***CHECKME***
 
     // Delete trailing blanks
     // While the last char is white, ...
@@ -1503,13 +1507,17 @@ UBOOL PN_VectorAcc
     lppnVector[lppnLocalVars->uGlbVectorCurLen].lpStart = lpStart;
     lppnVector[lppnLocalVars->uGlbVectorCurLen].uNumLen = uNumLen;
 
+    bFltN0 = (IsPnNumTypeFlt (lppnVector[lppnLocalVars->uGlbVectorCurLen].chType)           // Is not -0.0
+           && IsFltN0        (lppnVector[lppnLocalVars->uGlbVectorCurLen].at.aplFloat));    // ...
+    bVfpN0 = (IsPnNumTypeVfp (lppnVector[lppnLocalVars->uGlbVectorCurLen].chType)           // Is not -0.0v
+           && IsVfpN0        (lppnVector[lppnLocalVars->uGlbVectorCurLen].at.aplVfp  ));    // ...
+    bNeg0  = bFltN0 || bVfpN0;
+
     // Izit expressible as a rational?
     lppnVector[lppnLocalVars->uGlbVectorCurLen].bRatExp =
         lppnLocalVars->bRatSep
-     && !(gAllowNeg0 ? (IsPnNumTypeFlt (lppnVector[lppnLocalVars->uGlbVectorCurLen].chType) // Is not -0
-                     && IsFltN0 (lppnVector[lppnLocalVars->uGlbVectorCurLen].at.aplFloat)   // ...
-                       )
-                     : TRUE
+     && !(gAllowNeg0 ? bNeg0
+                     : FALSE
          );
     // Set the new initial point
     lppnLocalVars->uNumIni += uNumLen;
@@ -1583,14 +1591,22 @@ UBOOL PN_VectorRes
         // Scan all items to determine a common datatype
         for (uCnt = 0; uCnt < aplNELMRes; uCnt++)
         {
+            UBOOL bFltN0 = (IsPnNumTypeFlt (lppnVector[uCnt].chType)        // Is not -0.0
+                         && IsFltN0        (lppnVector[uCnt].at.aplFloat)), // ...
+                  bVfpN0 = (IsPnNumTypeVfp (lppnVector[uCnt].chType)        // Is not -0.0v
+                         && IsVfpN0        (lppnVector[uCnt].at.aplVfp  )), // ...
+                  bNeg0  = bFltN0 || bVfpN0;
+
             // If there's a Rat but no Vfp separator, and
             //    the item is a form of FLT, and
             //    the item is not -0, ...
             if (lppnLocalVars->bRatSep
-             && IsPnNumTypeFlt (lppnVector[uCnt].chType)
-             && !(gAllowNeg0 && IsFltN0 (lppnVector[uCnt].at.aplFloat)))    // Is not -0
-                // ***ASSUME***:  chtype - 1 is INT-like
-                lppnLocalVars->chComType = aNumTypePromote[lppnLocalVars->chComType][lppnVector[uCnt].chType - 1];
+             && !(gAllowNeg0 ? bNeg0
+                             : FALSE
+                 )
+                )
+                // ***ASSUME***:  chtype - 1 is INT- or RAT-like
+                lppnLocalVars->chComType = aNumTypePromote[lppnLocalVars->chComType][lppnVector[uCnt].chType - bNeg0];
             else
                 lppnLocalVars->chComType = aNumTypePromote[lppnLocalVars->chComType][lppnVector[uCnt].chType    ];
         } // End FOR

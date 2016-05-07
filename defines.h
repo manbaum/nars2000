@@ -252,6 +252,7 @@
 #define QUIET_NAN               (0xFFF8000000000000)
 #define FLOAT2POW53             (0x4340000000000000)
 #define FLOATPI                 (0x400921FB54442D18)
+#define FLOATGAMMA              (0x3FE2788CFC6FB619)
 #define FLOATE                  (0x4005BF0A8B145769)
 
 
@@ -467,7 +468,7 @@ default:        \
 #define MYWM_PROMPT         (WM_APP +21)    // MF (Display the prompt)
 #define MYWM_INIT_EC        (WM_APP +22)    // EC (Initialize local Edit Ctrl)
 #define MYWM_DNL_SUCCESS    (WM_APP +23)    // DL (TRUE iff the download succeeded)
-#define MYWM_MOUSELEAVE     (WM_APP+ 24)    // RB (Local version of WM_MOSUELEAVE)
+#define MYWM_MOUSELEAVE     (WM_APP+ 24)    // RB (Local version of WM_MOUSELEAVE)
 
 // Define Debug window messages
 #define MYWM_INIT_DB        (WM_APP +50)    // DB

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,6 +55,7 @@
 #define DESTROY_PERTABVARS                          \
     gmp_randclear (lpMemPTD->randState);            \
     Myf_clear (&lpMemPTD->mpfrPi);                  \
+    Myf_clear (&lpMemPTD->mpfrGamma);               \
     Myf_clear (&lpMemPTD->mpfrE);                   \
     gsl_rng_free (lpMemPTD->gslRNG);                \
 
@@ -140,7 +141,8 @@ typedef struct tagPERTABDATA
     APLINT       aplCurrentFEATURE[FEATURENDX_LENGTH];  // Current values for []FEATURE
     gmp_randstate_t randState;              // MPIR random number state for Query
     APLVFP       mpfrPi,                    // MPFR value for Pi
-                 mpfrE;                     // MPFR value for e
+                 mpfrGamma,                 // ...            Gamma
+                 mpfrE;                     // ...            e
     HGLOBAL      hGlbNfns;                  // Global memory handle for []Nfns data
     LPVOID       gslRNG;                    // Ptr to GSL random number generator
     LARGE_INTEGER liTickCnt;                // Performance counter

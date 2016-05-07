@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -180,7 +180,7 @@ typedef struct tagSTART_ADDRESSES
     "DisplayFcnLine"            , (LPUCHAR) &DisplayFcnLine             ,
     "DisplayStrand"             , (LPUCHAR) &DisplayStrand              ,
     "DisplayUndo"               , (LPUCHAR) &DisplayUndo                ,
-    "DisplayFnHdr"              , (LPUCHAR) &DisplayFnHdr               ,
+    "DisplayFcnHdr"             , (LPUCHAR) &DisplayFcnHdr              ,
   #endif
 
     // display.c
@@ -637,6 +637,7 @@ typedef struct tagSTART_ADDRESSES
     "PN_MakeBasePoint"          , (LPUCHAR) &PN_MakeBasePoint           ,
     "PN_MakeEulerPoint"         , (LPUCHAR) &PN_MakeEulerPoint          ,
     "PN_MakeExpPoint"           , (LPUCHAR) &PN_MakeExpPoint            ,
+    "PN_MakeGammaPoint"         , (LPUCHAR) &PN_MakeGammaPoint          ,
     "PN_MakePiPoint"            , (LPUCHAR) &PN_MakePiPoint             ,
     "PN_MakeVfpPoint"           , (LPUCHAR) &PN_MakeVfpPoint            ,
     "PN_VectorAcc"              , (LPUCHAR) &PN_VectorAcc               ,

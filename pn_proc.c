@@ -1224,6 +1224,106 @@ LPPN_YYSTYPE PN_MakeExpPoint
 
 
 //***************************************************************************
+//  $PN_MakeGammaPoint
+//
+//  Merge the multiplier and exponential part to form a number
+//***************************************************************************
+
+LPPN_YYSTYPE PN_MakeGammaPoint
+    (LPPN_YYSTYPE  lpYYMultiplier,      // The multiplier part
+     LPPN_YYSTYPE  lpYYExponent,        // The exponent part
+     LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
+
+{
+    PNNUMTYPE pnTypeRes;
+
+    // If there's been a YYERROR, ...
+    if (lppnLocalVars->bYYERROR)
+        return NULL;
+
+    // If this is the first time through, ...
+    if (lppnLocalVars->chComType EQ PN_NUMTYPE_INIT)
+    {
+        // Promote the multiplier and exponent to a common format
+        pnTypeRes = aNumTypePromote[lpYYMultiplier->chType][lpYYExponent->chType];
+
+        // If the result is BOOL, ...
+        if (IsPnNumTypeBool (pnTypeRes))
+            // Make it FLT
+            pnTypeRes = PN_NUMTYPE_FLT;
+        else
+        // If the result is INT, ...
+        if (IsPnNumTypeInt (pnTypeRes))
+            // Make it FLT
+            pnTypeRes++;
+        else
+        // If the result is RAT, ...
+        if (IsPnNumTypeRat (pnTypeRes))
+            // Make it VFP
+            pnTypeRes++;
+    } else
+        // Use common type
+        pnTypeRes = lppnLocalVars->chComType;
+
+    // If the multiplier must be promoted, ...
+    if (pnTypeRes NE lpYYMultiplier->chType
+     && aNumTypeAction[lpYYMultiplier->chType][pnTypeRes] NE NULL)
+        (*aNumTypeAction[lpYYMultiplier->chType][pnTypeRes]) (lpYYMultiplier, lppnLocalVars);
+
+    // If the exponent must be promoted, ...
+    if (pnTypeRes NE lpYYExponent->chType
+     && aNumTypeAction[lpYYExponent->chType  ][pnTypeRes] NE NULL)
+        (*aNumTypeAction[lpYYExponent->chType  ][pnTypeRes]) (lpYYExponent, lppnLocalVars);
+
+    // Set the result type
+    lpYYMultiplier->chType =
+    lpYYExponent->chType   = pnTypeRes;
+
+    // Split cases based upon the numeric type
+    switch (pnTypeRes)
+    {
+////////case PN_NUMTYPE_BOOL:
+////////case PN_NUMTYPE_INT:
+////////    // The result is Multiplier x (o1) * Exponent
+////////    lpYYMultiplier->at.aplFloat *= pow (FloatGamma, (APLFLOAT) lpYYExponent->at.aplInteger);
+////////
+////////    break;
+////////
+        case PN_NUMTYPE_FLT:
+            // The result is Multiplier x (o1) * Exponent
+            lpYYMultiplier->at.aplFloat *= pow (FloatGamma, lpYYExponent->at.aplFloat);
+
+            break;
+
+        case PN_NUMTYPE_VFP:
+        {
+            APLVFP aplVfpTmp = {0};
+
+            // Initialize the temp array
+            mpfr_init0 (&aplVfpTmp);
+
+            // The result is Multiplier x (o1) * Exponent
+            mpfr_pow (&aplVfpTmp, &GetMemPTD ()->mpfrGamma, &lpYYExponent->at.aplVfp, MPFR_RNDN);
+
+            // Accumulate in the multiplier
+            mpfr_mul (&lpYYMultiplier->at.aplVfp, &lpYYMultiplier->at.aplVfp, &aplVfpTmp, MPFR_RNDN);
+
+            // We no longer need this storage
+            Myf_clear (&aplVfpTmp);
+            Myf_clear (&lpYYExponent->at.aplVfp);
+
+            break;
+        } // End PN_NUMTYPE_VFP
+
+        defstop
+            break;
+    } // End SWITCH
+
+    return lpYYMultiplier;
+} // End PN_MakeGammaPoint
+
+
+//***************************************************************************
 //  $PN_MakePiPoint
 //
 //  Merge the multiplier and exponential part to form a number

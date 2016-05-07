@@ -594,12 +594,12 @@ Header:
 HeaderComm:
       Header SOS                {DbgMsgWP (L"%%HeaderComm:  Header SOS");
 #ifdef DEBUG
-                                 DisplayFnHdr (lpfhLocalVars);
+                                 DisplayFcnHdr (lpfhLocalVars);
 #endif
                                 }
     | Header SOS NOMORE         {DbgMsgWP (L"%%HeaderComm:  Header SOS NOMORE");
 #ifdef DEBUG
-                                 DisplayFnHdr (lpfhLocalVars);
+                                 DisplayFcnHdr (lpfhLocalVars);
 #endif
                                 }
     ;

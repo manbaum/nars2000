@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -112,6 +112,7 @@ void InitConstants
     aplInteger = NEG_INFINITY; fltNegInfinity = *(LPAPLFLOAT) &aplInteger;
     aplInteger = FLOAT2POW53;  Float2Pow53    = *(LPAPLFLOAT) &aplInteger;
     aplInteger = FLOATPI;      FloatPi        = *(LPAPLFLOAT) &aplInteger;
+    aplInteger = FLOATGAMMA;   FloatGamma     = *(LPAPLFLOAT) &aplInteger;
     aplInteger = FLOATE;       FloatE         = *(LPAPLFLOAT) &aplInteger;
 
     // Get # ticks per second to be used as a conversion
@@ -202,11 +203,16 @@ void InitPTDVars
 {
     // Free these vars unless already free
     Myf_clear        (&lpMemPTD->mpfrPi);
+    Myf_clear        (&lpMemPTD->mpfrGamma);
     Myf_clear        (&lpMemPTD->mpfrE);
 
     // Create a local value for Pi
     mpfr_init0       (&lpMemPTD->mpfrPi);
     mpfr_const_pi    (&lpMemPTD->mpfrPi, MPFR_RNDN);
+
+    // Create a local value for Gamma
+    mpfr_init0       (&lpMemPTD->mpfrGamma);
+    mpfr_const_euler (&lpMemPTD->mpfrGamma, MPFR_RNDN);
 
     // Create a local value for e
     mpfr_init_set_ui (&lpMemPTD->mpfrE,                1, MPFR_RNDN);

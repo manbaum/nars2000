@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,6 +40,7 @@
 
 // No keystroke equivalents for these as yet
 #define UTF16_PLUS_OR_MINUS       0x00B1        // Plus or minus symbol
+#define UTF16_GAMMA               0x03B3        // Gamma
 #define UTF16_LEFTSINGLEQUOTE     0x2018        // Left single quotation mark
 #define UTF16_RIGHTSINGLEQUOTE    0x2019        // Right ...
 #define UTF16_HORIZELLIPSIS       0x2026        // Horizontal ellipsis
@@ -317,6 +318,7 @@
 
 // No keystroke equivalents for these as yet
 #define WS_UTF16_PLUS_OR_MINUS       L"\x00B1"  // Plus or minus symbol
+#define WS_UTF16_GAMMA               L"\x03B3"  // Gamma
 #define WS_UTF16_LEFTSINGLEQUOTE     L"\x2018"  // Left single quotation mark
 #define WS_UTF16_RIGHTSINGLEQUOTE    L"\x2019"  // Right ...
 #define WS_UTF16_HORIZELLIPSIS       L"\x2026"  // Horizontal ellipsis

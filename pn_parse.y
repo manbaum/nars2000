@@ -357,16 +357,26 @@ ExtPoint:
                                     }
     ;
 
-// Euler/Pi left and right arguments
-EPArgs:
+// Euler/Pi/Gamma left and right arguments
+EPGArgs:
       DecPoint
     | ExpPoint
     | RatPoint
     | VfpPoint
     ;
 
+GammaPoint:
+      EPGArgs   'g' EPGArgs         {DbgMsgWP (L"%%GammaPoint:  EPGArgs 'g' EPGArgs");
+                                     // Make it into a GammaPoint number
+                                     lppnLocalVars->lpYYRes = PN_MakeGammaPoint (&$1, &$3,  lppnLocalVars);
+                                     if (lppnLocalVars->lpYYRes EQ NULL)
+                                         YYERROR2;
+                                     $$ = *lppnLocalVars->lpYYRes;
+                                    }
+    ;
+
 PiPoint:
-      EPArgs    'p' EPArgs          {DbgMsgWP (L"%%PiPoint:  EPArgs 'p' EPArgs");
+      EPGArgs   'p' EPGArgs         {DbgMsgWP (L"%%PiPoint:  EPGArgs 'p' EPGArgs");
                                      // Make it into a PiPoint number
                                      lppnLocalVars->lpYYRes = PN_MakePiPoint    (&$1, &$3,  lppnLocalVars);
                                      if (lppnLocalVars->lpYYRes EQ NULL)
@@ -431,7 +441,7 @@ VfpPoint:
     ;
 
 EulerPoint:
-      EPArgs   'x' EPArgs           {DbgMsgWP (L"%%EulerPoint:  EPArgs 'x' EPArgs");
+      EPGArgs  'x' EPGArgs          {DbgMsgWP (L"%%EulerPoint:  EPGArgs 'x' EPGArgs");
                                      // Make it into a EulerPoint number
                                      lppnLocalVars->lpYYRes = PN_MakeEulerPoint (&$1, &$3,  lppnLocalVars);
                                      if (lppnLocalVars->lpYYRes EQ NULL)
@@ -442,13 +452,14 @@ EulerPoint:
 
 // BasePoint left args
 BaseArgs:
-      EPArgs
+      EPGArgs
     | EulerPoint
+    | GammaPoint
     | PiPoint
     ;
 
 BasePoint:
-      BaseArgs   'b' AlphaInt       {DbgMsgWP (L"%%BasePoint:  EPArgs 'b' AlphaInt");
+      BaseArgs   'b' AlphaInt       {DbgMsgWP (L"%%BasePoint:  BaseArgs 'b' AlphaInt");
                                      // Make it into a BasePoint number
                                      lppnLocalVars->lpYYRes = PN_MakeBasePoint  (&$1, &$3,  lppnLocalVars);
                                      if (lppnLocalVars->lpYYRes EQ NULL)

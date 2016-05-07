@@ -2886,13 +2886,14 @@ UBOOL scPointDone
         //   to get the syntax color type
         switch (lpszNum[uVar])
         {
-            case 'b':
-            case DEF_EXPONENT_LC:
-            case DEF_EXPONENT_UC:
-            case 'p':
-            case DEF_RATSEP:
-            case DEF_VFPSEP:
-            case 'x':
+            case 'b':               // Base Point Notation
+            case DEF_EXPONENT_LC:   // Exponential ...
+            case DEF_EXPONENT_UC:   // ...
+            case 'g':               // Gamma ...
+            case 'p':               // Pi ...
+            case DEF_RATSEP:        // Rational
+            case DEF_VFPSEP:        // VFP
+            case 'x':               // Euler ...
                 // Point notation separator
                 scType = SC_PNSEP;
 

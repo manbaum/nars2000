@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2929,29 +2929,35 @@ typedef struct tagLANGCHARS
                                            L"Keyboard:  Alt-'f'\n\n"
                                            L"Unicode:  0x221E or 8734"},
         LANGCHARS_SEPARATOR
-        {L"b"                       , {0}, L"Base point notation",
+        {L"b"                       , {0}, L"Base Point Notation",
                                            L"This infix notation make it easy to enter numeric constants in an abritrary base as in 16bFFFF to represent 16" WS_UTF16_UPTACK L"15 15 15 15 or 65535.  "
                                            L"The number to the left of the b is the base of the number system for the characters to the right of the b."
                                            },
-        {L"e"                       , {0}, L"Exponential point notation",
+        {L"e"                       , {0}, L"Exponential Point Notation",
                                            L"This infix notation allows you to enter numeric constants by specifying a signed multiplier and a signed base 10 exponent "
                                            L"as in 1.23e" WS_UTF16_OVERBAR L"3 to represent 1.23" WS_UTF16_TIMES L"10*" WS_UTF16_OVERBAR L"3."
                                            },
-        {L"p"                       , {0}, L"Pi point notation",
+        {L"g"                       , {0}, L"Gamma Point Notation",
+                                           L"This infix notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES WS_UTF16_GAMMA L"*E "
+                                           L"as in 0.5g1 for " WS_UTF16_GAMMA WS_UTF16_COLONBAR L"2, or combining this with Rational point notation, 1r3g1 for " WS_UTF16_GAMMA WS_UTF16_COLONBAR L"3,"
+                                           L" where " WS_UTF16_GAMMA L" is Euler-Mascheroni's Constant (0.5772156649015329...)."
+                                           },
+        {L"p"                       , {0}, L"Pi Point Notation",
                                            L"This infix notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(" WS_UTF16_CIRCLE L"1)*E "
-                                           L"as in 0.5p1 for " WS_UTF16_PI WS_UTF16_COLONBAR L"2, or combining this with Rational point notation, 1r3p1 for " WS_UTF16_PI WS_UTF16_COLONBAR L"3."
+                                           L"as in 0.5p1 for " WS_UTF16_PI WS_UTF16_COLONBAR L"2, or combining this with Rational point notation, 1r3p1 for " WS_UTF16_PI WS_UTF16_COLONBAR L"3,"
+                                           L" where " WS_UTF16_PI L" is Archimedes' Constant (3.141592653589793...)."
                                            },
         {DEF_RATSEP_WS              , {0}, L"Rational Point Notation",
                                            L"This infix notation allows you to enter Rational numbers as in 1r3 to represent 1" WS_UTF16_COLONBAR L"3, or, if the denominator is 1, using the suffix x as in 123x.  "
-                                           L"Such constants are of infinite precision."
+                                           L"Such constants are of infinite precision, limited only by the available workspace."
                                            },
-        {DEF_VFPSEP_WS              , {0}, L"Variable-precision Floating Point notation",
+        {DEF_VFPSEP_WS              , {0}, L"Variable-precision Floating Point Notation",
                                            L"This suffix notation allows you to enter VFP numbers as in 1.3v to represent 1.3 or 12v to represent 12 where both have "
                                            L"a precision controlled by the current value of " WS_UTF16_QUAD L"FPC, as opposed to the 53-bit precision of IEEE-754 floating point numbers."
                                            },
-        {L"x"                       , {0}, L"Euler point notation",
+        {L"x"                       , {0}, L"Euler Point Notation",
                                            L"This infix notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(*1)*E "
-                                           L"as in 3x2 for three times e squared where e is the base of the natural logarithm.\r\n\r\n"
+                                           L"as in 3x2 for three times e squared where e is Euler's Number (2.718281828459045...).\r\n\r\n"
                                            L"As a suffix notation, \"x\" following an integer constant such as " WS_UTF16_OVERBAR L"123x indicates "
                                            L"that the constant is a rational integer identical to " WS_UTF16_OVERBAR L"123r1."
                                            },

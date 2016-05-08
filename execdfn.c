@@ -294,7 +294,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     UBOOL        bOldExecuting;     // Old value of bExecuting
     HWND         hWndEC;            // Edit Ctrl window handle
     UINT         startLineNum;      // Starting line #
-    LPHSHTABSTR  lphtsPTD;          // Save area for old HshTabStr
+    LPHSHTABSTR  lphtsPTD = NULL;   // Save area for old HshTabStr
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -432,12 +432,13 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     lpMemPTD->lpSISNxt->DfnAxis      = lpMemDfnHdr->DfnAxis;
     lpMemPTD->lpSISNxt->bAFO         = lpMemDfnHdr->bAFO;
     lpMemPTD->lpSISNxt->bMFO         = lpMemDfnHdr->bMFO;
+    lpMemPTD->lpSISNxt->bLclRL       = lpMemDfnHdr->bLclRL;
     lpMemPTD->lpSISNxt->CurLineNum   = 1;
     lpMemPTD->lpSISNxt->NxtLineNum   = 2;
     lpMemPTD->lpSISNxt->numLabels    = lpMemDfnHdr->numLblLines;
     lpMemPTD->lpSISNxt->numFcnLines  = lpMemDfnHdr->numFcnLines;
 ////lpMemPTD->lpSISNxt->lpSISNxt     =              // Filled in by LocalizeAll
-
+    lpMemPTD->lpSISNxt->lphtsPrv     = lphtsPTD;
     dprintfWL9 (L"~~Localize:    %p (%s)", lpMemPTD->lpSISNxt, L"ExecDfnGlb_EM_YY");
 
     //***************************************************************

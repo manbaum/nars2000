@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1413,11 +1413,11 @@ UBOOL SaveFunctionCom
         // If this is not an AFO, ...
         if (!fhLocalVars.bAFO)
         {
-        // Check to see if this function is already in global memory
-        lpSymName = fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym;
+            // Check to see if this function is already in global memory
+            lpSymName = fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym;
 
-        // Get the old Dfn global memory handle
-        hGlbOldDfn = lpSymName->stData.stGlbData;
+            // Get the old Dfn global memory handle
+            hGlbOldDfn = lpSymName->stData.stGlbData;
         } // End IF
 
         // If it's already in memory, get its creation time
@@ -1586,6 +1586,7 @@ UBOOL SaveFunctionCom
         lpMemDfnHdr->ListLft      = fhLocalVars.ListLft;
         lpMemDfnHdr->ListRht      = fhLocalVars.ListRht;
         lpMemDfnHdr->bAFO         = fhLocalVars.bAFO;
+        lpMemDfnHdr->bLclRL       = fhLocalVars.bLclRL;
         lpMemDfnHdr->RefCnt       = 1;
         lpMemDfnHdr->numFcnLines  = numFcnLines;
         lpMemDfnHdr->steLftOpr    = fhLocalVars.lpYYLftOpr
@@ -1799,6 +1800,9 @@ UBOOL SaveFunctionCom
         // If we're parsing an AFO, ...
         if (lpSF_Fcns->bAFO)
         {
+            // Save the []RL{is} setting
+            lpMemDfnHdr->bLclRL |= lpSF_Fcns->bLclRL;
+
             // Save the new HTS in global memory
             lpMemDfnHdr->htsDFN = ((LPLW_PARAMS) lpSF_Fcns->LclParams)->htsDFN;
 

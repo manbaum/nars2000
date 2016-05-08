@@ -2909,7 +2909,7 @@ void SavePrimSpecRL
 
 {
     // Save it
-    lpPrimSpec->QuadRL = GetQuadRL ();
+    lpPrimSpec->uQuadRL = GetQuadRL ();
 } // End SavePrimSpecRL
 
 
@@ -2923,8 +2923,46 @@ void RestPrimSpecRL
     (LPPRIMSPEC lpPrimSpec)
 
 {
-    // Restore it
-    SetQuadRL (lpPrimSpec->QuadRL);
+    APLUINT uQuadRL;                // []RL for atomicity
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
+
+    // Get the new value
+    uQuadRL = lpPrimSpec->uQuadRL;
+
+    // If there's something new to store, ...
+    if (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_RL]->stData.stInteger NE uQuadRL)
+    {
+        LPSIS_HEADER lpSISCur;          // Ptr to current SIS_HEADER srtuc
+
+        // Save the new value
+        lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_RL]->stData.stInteger = uQuadRL;
+
+        // Loop backwards through the SI levels
+        for (lpSISCur = lpMemPTD->lpSISCur;
+             lpSISCur NE NULL;
+             lpSISCur = lpSISCur->lpSISPrv)
+        {
+            // If this is a function or operator, ...
+            if (lpSISCur->DfnType EQ DFNTYPE_OP1
+             || lpSISCur->DfnType EQ DFNTYPE_OP2
+             || lpSISCur->DfnType EQ DFNTYPE_FCN)
+            {
+                // If []RL is not local, ...
+                if (!lpSISCur->bLclRL)
+                {
+                    // If the ptrs to the previous HASHTABSTR are valid, ...
+                    if (lpMemPTD->lphtsPTD               NE NULL
+                     && lpMemPTD->lphtsPTD->lphtsPrvSrch NE NULL)
+                        // Pass the new value up to the next layer
+                        lpSISCur->lphtsPrv->lpSymQuad[SYSVAR_RL]->stData.stInteger = uQuadRL;
+                } else
+                    break;
+            } // End IF
+        } // End FOR
+    } // End IF
 } // End RestPrimSpecRL
 
 

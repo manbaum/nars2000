@@ -1771,6 +1771,11 @@ UBOOL fnAsnDone
                 // Lock the memory to get a ptr to it
                 lpwszName = MyGlobalLock (hGlbName);
 
+                // If this is []RL, ...
+                if (lstrcmpiW (lpwszName, $QUAD_RL) EQ 0)
+                    // Mark for later use
+                    lptkLocalVars->lpSF_Fcns->bLclRL = TRUE;
+
                 // Allow assignment into {alpha}, but none of the other special names
                 if (IsAfoName (lpwszName, lstrlenW (lpwszName))
                  && lstrcmpW (lpwszName, WS_UTF16_ALPHA) NE 0)

@@ -211,7 +211,7 @@ APLINT PrimFnMonQueryIisI
 
     // Get the current value of []IO & []RL
     bQuadIO = GetQuadIO ();
-    uQuadRL = lpPrimSpec->QuadRL;
+    uQuadRL = lpPrimSpec->uQuadRL;
 
     // Check for DOMAIN ERROR
     if (aplIntegerRht < bQuadIO)
@@ -221,7 +221,7 @@ APLINT PrimFnMonQueryIisI
     uQuadRL = NextQuadRL (uQuadRL);
 
     // Save uQuadRL back into lpPrimSpec
-    lpPrimSpec->QuadRL = uQuadRL;
+    lpPrimSpec->uQuadRL = uQuadRL;
 
     return bQuadIO + GetRandomNum (aplIntegerRht, uQuadRL, GetMemPTD ());
 } // End PrimFnMonQueryIisI

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -54,7 +54,8 @@ typedef struct tagSIS_HEADER
                      bItsEC:1,      //      00004000:  TRUE iff DFNTYPE_ERRCTRL and this level is []EC (not []EA)
                      bAFO:1,        //      00008000:  TRUE iff this level is an AFO
                      bMFO:1,        //      00010000:  TRUE iff this level is an MFO
-                     :15;           //      FFFE0000:  Available bits
+                     bLclRL:1,      //      00020000:  TRUE iff []RL is localized in this AFO
+                     :14;           //      FFFC0000:  Available bits
     EVENT_TYPES      EventType;     // 20:  Event type (Major, Minor) (see EVENT_TYPES)
     UINT             CurLineNum,    // 24:  Current line # (origin-1)
                      NxtLineNum,    // 28:  Next    ...
@@ -74,8 +75,9 @@ typedef struct tagSIS_HEADER
                     *lpForStmtBase, // 58:  Ptr to starting entry in FORSTMT stack
                     *lpForStmtNext; // 5C:  Ptr to next available ...
     LPPLLOCALVARS    lpplLocalVars; // 60:  Ptr to this level's plLocalVars
-                                    // 64:  Length
-                                    // 64:  Array of LPSYMENTRYs (shadowed entry for results, args, labels, & locals)
+    LPHSHTABSTR      lphtsPrv;      // 64:  Ptr to previous HSHTABSTR (may be NULL)
+                                    // 68:  Length
+                                    // 68:  Array of LPSYMENTRYs (shadowed entry for results, args, labels, & locals)
 } SIS_HEADER, *LPSIS_HEADER;
 
 

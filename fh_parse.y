@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -768,8 +768,14 @@ FH_YYLEX_START:
         case TKT_VARNAMED:
             // If the token is a sysname, return NAMESYS
             if (lpfhLocalVars->lptkNext[-1].tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS)
+            {
+                // If this local is []RL, ...
+                if (IsThisSysName (lpfhLocalVars->lptkNext[-1].tkData.tkSym, $QUAD_RL))
+                   // Set a flag
+                   lpfhLocalVars->bLclRL = TRUE;
+
                 return NAMESYS;
-            else
+            } else
             {
                 // If the next token is a left bracket, return NAMEOPR
                 if (lpfhLocalVars->lptkNext->tkFlags.TknType EQ TKT_LEFTBRACKET)

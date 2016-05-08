@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -285,7 +285,7 @@ typedef struct tagPRIMSPEC
     B16ISB16VB16       *B16isB16vB16;       // Dyadic B16 {is} B16 v B16
     B08ISB08VB08       *B08isB08vB08;       // Dyadic B08 {is} B08 v B08
 
-    APLUINT             QuadRL;             // []RL for atomicity
+    APLUINT             uQuadRL;            // []RL for atomicity
 } PRIMSPEC, *LPPRIMSPEC;
 
 

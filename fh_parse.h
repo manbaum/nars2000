@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -119,7 +119,8 @@ typedef struct tagDFN_HEADER            // Function header structure
                      bMFO:1,            //      00020000:  TRUE iff this is an MFO
                      bStopHdr:1,        //      00040000:  TRUE iff we're stopping on exit
                      bTraceHdr:1,       //      00080000:  TRUE iff we're tracing on exit
-                     :12;               //      FFF00000:  Available bits
+                     bLclRL:1,          //      00100000:  TRUE iff []RL is localized in this function
+                     :11;               //      FFE00000:  Available bits
     UINT             RefCnt,            // 0C:  Reference count
                      nSysLblInv,        // 10:  Line # of the []ID  label (0 if not present)
                      nSysLblId,         // 14:  Line # of the []INV label (0 if not present)
@@ -200,8 +201,9 @@ typedef struct tagFHLOCALVARS       // Function Header Local Vars
                    ListRht:1,           //      00001000:  TRUE iff the right arg ...
                    ParseFcnName:1,      //      00002000:  TRUE iff we're parsing the function name
                    fhNameType:4,        //      0003C000:  Function name type (see NAME_TYPES)
-                   bAFO:1,              //      00040000   TRUE iff we're parsing an AFO
-                   :13;                 //      FFF80000:  Available bits
+                   bAFO:1,              //      00040000:  TRUE iff we're parsing an AFO
+                   bLclRL:1,            //      00080000:  TRUE iff []RL is localized in this function
+                   :12;                 //      FFF00000:  Available bits
     LPFH_YYSTYPE   lpYYStrandStart,     // 24:  Strand stack start (static)
                    lpYYStrandBase,      // 28:  ...          base (dynamic)
                    lpYYStrandNext,      // 2C:  ...          next token (dynamic)

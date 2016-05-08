@@ -653,7 +653,7 @@ UBOOL LoadWorkspace_EM
 
                         // If this var is []FPC, set the VFP constants and PTD vars
                         if (lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS
-                         && IsThisSysName (lpSymEntry, $QUAD_FPC))
+                         && IsSymSysName (lpSymEntry, $QUAD_FPC))
                         {
                             // Initialize the precision-specific VFP constants
                             InitVfpPrecision (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_FPC]->stData.stInteger);
@@ -863,12 +863,12 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $IsThisSysName
+//  $IsSymSysName
 //
 //  Is this SYMENTRY that of a particular SysName?
 //***************************************************************************
 
-UBOOL IsThisSysName
+UBOOL IsSymSysName
     (LPSYMENTRY lpSymEntry,
      LPWCHAR    wszSysName)
 
@@ -886,7 +886,7 @@ UBOOL IsThisSysName
     MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpwGlbName = NULL;
 
     return bRet;
-} // End IsThisSysname
+} // End IsSymSysname
 
 
 //***************************************************************************

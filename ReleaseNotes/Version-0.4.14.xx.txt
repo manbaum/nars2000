@@ -1,17 +1,30 @@
 Version 0.4.14.xx consists of the following Builds:
 
 
+Build #1479 -- Version 0.4.14.xx
+--------------------------------
+
+* Rename Function To be More Consistent
+
+Directory trunk:
+
+EXECDFN.C:
+FH_PARSE.Y:
+SC_LOAD.C:
+  Rename <IsThisSysName> to <IsSymSysName> to reflect the argument type.
+
+
 Build #1478 -- Version 0.4.14.xx
 --------------------------------
 
-* Fix Bug In []RL Handling From Build #1476
+* Fix Bug In []RL Handling From Build #1477
 
 Directory trunk:
 
 GETFNS.C:
   Include "Hdr" in name of result of <MyGlobalLock>.
   In <SetQuadDT>, convert argument to lowercase just in case.
-  In <RestPrimSpecRL>, fix bug introduced in build #1476 where I didn't update
+  In <RestPrimSpecRL>, fix bug introduced in build #1477 where I didn't update
     the var names after changing the place where the previous HSHTABSTR was saved.
 
 MAKEFILE.INC:

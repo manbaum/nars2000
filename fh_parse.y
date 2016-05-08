@@ -770,7 +770,7 @@ FH_YYLEX_START:
             if (lpfhLocalVars->lptkNext[-1].tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS)
             {
                 // If this local is []RL, ...
-                if (IsThisSysName (lpfhLocalVars->lptkNext[-1].tkData.tkSym, $QUAD_RL))
+                if (IsSymSysName (lpfhLocalVars->lptkNext[-1].tkData.tkSym, $QUAD_RL))
                    // Set a flag
                    lpfhLocalVars->bLclRL = TRUE;
 

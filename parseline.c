@@ -411,7 +411,7 @@ LPPL_YYSTYPE plRedNAM_RP
       PushNameStrand_YY (lpplYYCurObj);
 
     // Check for error
-    if (!lpYYRes)
+    if (lpYYRes EQ NULL)
         goto ERROR_EXIT;
 
     // Change the tkSynObj
@@ -448,7 +448,7 @@ LPPL_YYSTYPE plRedNAM_NR
       PushNameStrand_YY (lpplYYCurObj);
 
     // Check for error
-    if (!lpYYRes)
+    if (lpYYRes EQ NULL)
         goto ERROR_EXIT;
 
     // Change the tkSynObj
@@ -508,7 +508,7 @@ LPPL_YYSTYPE plRedLP_NNR
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
     // Check for error
-    if (!lpYYRes)
+    if (lpYYRes EQ NULL)
         goto ERROR_EXIT;
 
     // Change the tkSynObj
@@ -541,7 +541,7 @@ LPPL_YYSTYPE plRedLNR_SPA
           plExecuteFn0 (lpplYYLstRht);
 
         // Check for error
-        if (!lpplYYLstRht)
+        if (lpplYYLstRht EQ NULL)
             goto ERROR_EXIT;
     } // End IF
 
@@ -574,7 +574,7 @@ LPPL_YYSTYPE plRedLNR_SPA
     return lpplYYLstRht;
 ERROR_EXIT:
     // If there is a curried fcn, ...
-    if (lpplYYLstRht->lpplYYFcnCurry)
+    if (lpplYYLstRht->lpplYYFcnCurry NE NULL)
     {
         // If the curried function is not an AFO, ...
         if (!IsTknAFO (&lpplYYLstRht->lpplYYFcnCurry->tkToken))
@@ -614,14 +614,14 @@ LPPL_YYSTYPE plRedLBK_RBK
     // YYFree the last right object
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
-    if (!lpYYVar)                       // If not defined, free args and YYERROR
+    if (lpYYVar EQ NULL)                // If not defined, free args and YYERROR
         goto ERROR_EXIT;
 
     lpYYRes =
       MakeList_EM_YY (lpYYVar, TRUE);
     YYFree (lpYYVar); lpYYVar = NULL;
 
-    if (!lpYYRes)                       // If not defined, free args and YYERROR
+    if (lpYYRes EQ NULL)                // If not defined, free args and YYERROR
         goto ERROR_EXIT;
 
     // Change the tkSynObj
@@ -652,7 +652,7 @@ LPPL_YYSTYPE plRedNF_RBK
       plExecuteFn0 (lpplYYCurObj);
 
     // Check for error
-    if (!lpplYYCurObj)
+    if (lpplYYCurObj EQ NULL)
         goto ERROR_EXIT;
 
     // Call common code
@@ -683,7 +683,7 @@ LPPL_YYSTYPE plRedNF_SRBK
       plExecuteFn0 (lpplYYCurObj);
 
     // Check for error
-    if (!lpplYYCurObj)
+    if (lpplYYCurObj EQ NULL)
         goto ERROR_EXIT;
 
     // Call common code
@@ -722,7 +722,7 @@ LPPL_YYSTYPE plRedA_RBK
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
         // If not defined, ...
-        if (!lpYYVar)
+        if (lpYYVar EQ NULL)
             goto ERROR_EXIT;
 
         // Copy to the current object
@@ -742,7 +742,7 @@ LPPL_YYSTYPE plRedA_RBK
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
     // If not defined, ...
-    if (!lpYYRes)
+    if (lpYYRes EQ NULL)
         goto ERROR_EXIT;
 
     // Change the tkSynObj
@@ -778,7 +778,7 @@ LPPL_YYSTYPE plRedA_SRBK
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
         // If not defined, ...
-        if (!lpYYVar)
+        if (lpYYVar EQ NULL)
             goto ERROR_EXIT;
 
         // Copy to the current object
@@ -798,7 +798,7 @@ LPPL_YYSTYPE plRedA_SRBK
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
     // If not defined, ...
-    if (!lpYYRes)
+    if (lpYYRes EQ NULL)
         goto ERROR_EXIT;
 
     // Change the tkSynObj
@@ -831,7 +831,7 @@ LPPL_YYSTYPE plRedLBK_ARBK
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
     // If not defined, ...
-    if (!lpYYRes)
+    if (lpYYRes EQ NULL)
         goto ERROR_EXIT;
 
     // Change the tkSynObj
@@ -911,7 +911,7 @@ LPPL_YYSTYPE plRedSEMI_RBK
     // ***FIXME*** -- Do we need PushList (NULL) ???
 
     // If it succeeded, ...
-    if (lpYYRes)
+    if (lpYYRes NE NULL)
         // Change the tkSynObj
         lpYYRes->tkToken.tkSynObj = soType;
 
@@ -970,7 +970,7 @@ LPPL_YYSTYPE plRedSEMI_SRBK
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
     // If not defined, ...
-    if (!lpYYRes)
+    if (lpYYRes EQ NULL)
         goto ERROR_EXIT;
 
     // Change the tkSynObj
@@ -1025,7 +1025,7 @@ LPPL_YYSTYPE plRedA_A
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
     // If not defined, ...
-    if (!lpYYRes)
+    if (lpYYRes EQ NULL)
         goto ERROR_EXIT;
 
     // Append the last right object to the strand
@@ -1085,7 +1085,7 @@ LPPL_YYSTYPE plRedSA_A
       PushVarStrand_YY (lpplYYLstRht);
 
     // If not defined, ...
-    if (!lpYYRes)
+    if (lpYYRes EQ NULL)
         goto ERROR_EXIT;
 
     // Change the tkSynObj
@@ -1136,7 +1136,7 @@ LPPL_YYSTYPE plRedA_F
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
         // If not defined, ...
-        if (!lpYYVar)
+        if (lpYYVar EQ NULL)
             goto ERROR_EXIT;
 
         // Copy to the current object
@@ -1268,7 +1268,7 @@ LPPL_YYSTYPE plRedA_NF
       plExecuteFn0 (lpplYYLstRht);
 
     // Check for error
-    if (!lpplYYLstRht)
+    if (lpplYYLstRht EQ NULL)
         goto ERROR_EXIT;
 
     // Call common code
@@ -1301,7 +1301,7 @@ LPPL_YYSTYPE plRedSA_NF
       plExecuteFn0 (lpplYYLstRht);
 
     // Check for error
-    if (!lpplYYLstRht)
+    if (lpplYYLstRht EQ NULL)
         goto ERROR_EXIT;
 
     // Call common code
@@ -1368,7 +1368,7 @@ LPPL_YYSTYPE plRedDOP_RhtOper
             YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
             // If not defined, ...
-            if (!lpYYRes)
+            if (lpYYRes EQ NULL)
                 goto ERROR_EXIT;
 
             // Copy to the last right object
@@ -1472,7 +1472,7 @@ LPPL_YYSTYPE plRedGO_A
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
         // If not defined, ...
-        if (!lpYYVar)
+        if (lpYYVar EQ NULL)
             goto ERROR_EXIT;
 
         // Copy to the last right object
@@ -1587,7 +1587,7 @@ LPPL_YYSTYPE plRedGO_NF
       plExecuteFn0 (lpplYYLstRht);
 
     // Check for error
-    if (!lpplYYLstRht)
+    if (lpplYYLstRht EQ NULL)
         goto ERROR_EXIT;
 
     // Call common code
@@ -1625,7 +1625,7 @@ LPPL_YYSTYPE plRedA_FFR
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
         // If not defined, ...
-        if (!lpYYRes)
+        if (lpYYRes EQ NULL)
             goto ERROR_EXIT;
 
         // Copy to the current object
@@ -1693,7 +1693,7 @@ LPPL_YYSTYPE plRedCSI_A
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
         // If not defined, ...
-        if (!lpYYVar)
+        if (lpYYVar EQ NULL)
             goto ERROR_EXIT;
 
         // Copy to the last right object
@@ -1881,7 +1881,7 @@ LPPL_YYSTYPE plRedA_IDX
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
         // If not defined, ...
-        if (!lpYYVar)
+        if (lpYYVar EQ NULL)
             goto ERROR_EXIT;
 
         // Copy to the current object
@@ -1901,7 +1901,7 @@ LPPL_YYSTYPE plRedA_IDX
     FreeTempResult (lpplYYLstRht); YYFree (lpplYYLstRht); lpplYYLstRht = NULL;
 
     // If it succeeded, ...
-    if (lpYYRes)
+    if (lpYYRes NE NULL)
         // Change the tkSynObj
         lpYYRes->tkToken.tkSynObj = soType;
 ERROR_EXIT:
@@ -1975,7 +1975,7 @@ LPPL_YYSTYPE plRedMF_A
           plExecuteFn0 (lpplYYLstRht);
 
         // Check for error
-        if (!lpplYYLstRht)
+        if (lpplYYLstRht EQ NULL)
             goto ERROR_EXIT;
     } else
     // If the last right object is in the process of stranding, ...
@@ -1988,7 +1988,7 @@ LPPL_YYSTYPE plRedMF_A
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
         // If not defined, ...
-        if (!lpYYRes)
+        if (lpYYRes EQ NULL)
             goto ERROR_EXIT;
 
         // Copy to the last right object
@@ -2035,7 +2035,7 @@ LPPL_YYSTYPE plRedMF_A
     FreeResult (lpplYYLstRht); YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
     // If not defined, ...
-    if (!lpYYRes)
+    if (lpYYRes EQ NULL)
         goto ERROR_EXIT;
 
     // Change the tkSynObj
@@ -2078,7 +2078,7 @@ LPPL_YYSTYPE plRedMF_ARBK
 
     // Check for error in plRedMF_A after calling UnFcnStrand_EM on the current object
 ////// Check for error
-////if (!lpYYVar1)
+////if (lpYYVar1 EQ NULL)
 ////    goto ERROR_EXIT;
 
     // Execute the function on the var
@@ -2089,7 +2089,7 @@ LPPL_YYSTYPE plRedMF_ARBK
     lpplYYCurObj = lpYYVar1 = NULL;
 
     // Check for error
-    if (!lpYYVar2)
+    if (lpYYVar2 EQ NULL)
         goto ERROR_EXIT;
 
     // Push the result onto the list
@@ -2100,7 +2100,7 @@ LPPL_YYSTYPE plRedMF_ARBK
     YYFree (lpYYVar2); lpYYVar2 = NULL;
 
     // Check for error
-    if (!lpYYRes)
+    if (lpYYRes EQ NULL)
         goto ERROR_EXIT;
 
     // YYFree the last right object
@@ -2162,7 +2162,7 @@ LPPL_YYSTYPE plRedCS1_A
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
         // If not defined, ...
-        if (!lpYYVar)
+        if (lpYYVar EQ NULL)
             goto ERROR_EXIT;
 
         // Copy to the last right object
@@ -2359,7 +2359,7 @@ LPPL_YYSTYPE plRedF_IDX
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
         // If not defined, ...
-        if (!lpYYRes)
+        if (lpYYRes EQ NULL)
             goto ERROR_EXIT;
 
         // Copy to the last right object
@@ -2577,7 +2577,7 @@ LPPL_YYSTYPE plRedLftOper_MOP
             YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
             // If not defined, ...
-            if (!lpYYRes)
+            if (lpYYRes EQ NULL)
                 goto ERROR_EXIT;
 
             // Copy to the current object
@@ -2822,7 +2822,7 @@ LPPL_YYSTYPE plRedNF_A
       plExecuteFn0 (lpplYYCurObj);
 
     // Check for error
-    if (!lpplYYCurObj)
+    if (lpplYYCurObj EQ NULL)
         goto ERROR_EXIT;
 
     // Call common code
@@ -2856,7 +2856,7 @@ LPPL_YYSTYPE plRedNF_F
       plExecuteFn0 (lpplYYCurObj);
 
     // Check for error
-    if (!lpplYYCurObj)
+    if (lpplYYCurObj EQ NULL)
         goto ERROR_EXIT;
 
     // Call common code
@@ -2889,7 +2889,7 @@ LPPL_YYSTYPE plRedNF_HY
       plExecuteFn0 (lpplYYCurObj);
 
     // Check for error
-    if (!lpplYYCurObj)
+    if (lpplYYCurObj EQ NULL)
         goto ERROR_EXIT;
 
     // Call common code
@@ -2920,7 +2920,7 @@ LPPL_YYSTYPE plRedNF_IDX
       plExecuteFn0 (lpplYYCurObj);
 
     // Check for error
-    if (!lpplYYCurObj)
+    if (lpplYYCurObj EQ NULL)
         goto ERROR_EXIT;
 
     // Call common code
@@ -2951,7 +2951,7 @@ LPPL_YYSTYPE plRedNF_NF
       plExecuteFn0 (lpplYYCurObj);
 
     // Check for error
-    if (!lpplYYCurObj)
+    if (lpplYYCurObj EQ NULL)
         goto ERROR_EXIT;
 
 #ifdef DEBUG
@@ -2967,7 +2967,7 @@ LPPL_YYSTYPE plRedNF_NF
     lpplYYCurObj->SILevel++;
 #endif
     // Check for error
-    if (!lpplYYLstRht)
+    if (lpplYYLstRht EQ NULL)
         goto ERROR_EXIT;
 
     // Call common code
@@ -3014,7 +3014,7 @@ LPPL_YYSTYPE plRedMOP_IDX
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
         // If not defined, ...
-        if (!lpYYVar)
+        if (lpYYVar EQ NULL)
             goto ERROR_EXIT;
 
         // Copy to the last right object
@@ -3068,7 +3068,7 @@ LPPL_YYSTYPE plRedSP_A
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // curSynObj = soNONE;
 
         // If not defined, ...
-        if (!lpYYVar)
+        if (lpYYVar EQ NULL)
             goto ERROR_EXIT;
 
         // Copy to the last right object
@@ -3117,7 +3117,7 @@ LPPL_YYSTYPE plRedSP_NF
           plExecuteFn0 (lpplYYLstRht);
 
         // Check for error
-        if (!lpplYYLstRht)
+        if (lpplYYLstRht EQ NULL)
             goto ERROR_EXIT;
 
         // Call common code
@@ -3233,7 +3233,7 @@ LPPL_YYSTYPE plRedNAM_SPNF
           plExecuteFn0 (lpplYYLstRht);
 
         // Check for error
-        if (!lpplYYLstRht)
+        if (lpplYYLstRht EQ NULL)
             goto ERROR_EXIT;
 
         // Call common code
@@ -3265,7 +3265,7 @@ LPPL_YYSTYPE plRedIO_SPNF
       plExecuteFn0 (lpplYYLstRht);
 
     // Check for error
-    if (!lpplYYLstRht)
+    if (lpplYYLstRht EQ NULL)
         goto ERROR_EXIT;
 
     // Call common code
@@ -3408,7 +3408,7 @@ LPPL_YYSTYPE plRedNAM_ISPA
         bRet = FALSE;
     else
     // If the left fcn is present (select spec as in NAM[A] F {is} A), ...
-    if (lpplYYLstRht->lpplYYFcnCurry)
+    if (lpplYYLstRht->lpplYYFcnCurry NE NULL)
         // Assign the value to the indexed name via the modify function
         bRet =
           ArrayIndexFcnSet_EM (&lpplYYCurObj->tkToken,
@@ -3470,7 +3470,7 @@ LPPL_YYSTYPE plRedNAM_SPCom
             YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
             // If not defined, ...
-            if (!lpYYRes)
+            if (lpYYRes EQ NULL)
                 goto ERROR_EXIT;
 
             // Copy to the last right object
@@ -3502,7 +3502,7 @@ LPPL_YYSTYPE plRedNAM_SPCom
         FreeTempResult (lpplYYLstRht); YYFree (lpplYYLstRht); lpplYYLstRht = NULL;
 
         // If not defined, ...
-        if (!lpYYRes)
+        if (lpYYRes EQ NULL)
             goto ERROR_EXIT;
 
         // Copy to the last right object
@@ -3633,7 +3633,7 @@ LPPL_YYSTYPE plRedAFOG_A
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
         // If not defined, ...
-        if (!lpYYVar)
+        if (lpYYVar EQ NULL)
             goto ERROR_EXIT;
 
         // Copy to the last right object
@@ -3701,7 +3701,7 @@ LPPL_YYSTYPE plRedAFOR_A
         YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
         // If not defined, ...
-        if (!lpYYVar)
+        if (lpYYVar EQ NULL)
             goto ERROR_EXIT;
 
         // Copy to the last right object
@@ -3858,12 +3858,12 @@ EXIT_TYPES ParseLine
     plLocalVars.lpPLPrev = lpMemPTD->lpPLCur;
 
     // If it's valid, ...
-    if (lpMemPTD->lpSISCur)
+    if (lpMemPTD->lpSISCur NE NULL)
         // Save a ptr to this struc in the SIS header
         lpMemPTD->lpSISCur->lpplLocalVars = &plLocalVars;
 
     // If there's a previous ptr, transfer its Ctrl-Break flag
-    if (lpMemPTD->lpPLCur)
+    if (lpMemPTD->lpPLCur NE NULL)
         plLocalVars.bCtrlBreak = lpMemPTD->lpPLCur->bCtrlBreak;
 
     // Save as new current ptr
@@ -3876,7 +3876,7 @@ EXIT_TYPES ParseLine
     uError = ERRORCODE_NONE;
 
     // If we don't have a valid ptr, ...
-    if (!lpMemTknHdr)
+    if (lpMemTknHdr EQ NULL)
     {
         plLocalVars.ExitType = EXITTYPE_ERROR;
 
@@ -3888,7 +3888,7 @@ EXIT_TYPES ParseLine
 #endif
 
     // If there's a UDFO global memory handle, ...
-    if (hGlbDfnHdr)
+    if (hGlbDfnHdr NE NULL)
     {
         // Lock the memory to get a ptr to it
         lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
@@ -3957,7 +3957,7 @@ EXIT_TYPES ParseLine
     plLocalVars.tkErrorCharIndex = NEG1U;
 
     // Initialize the strand starts
-    if (oldTlsPlLocalVars)
+    if (oldTlsPlLocalVars NE NULL)
     {
         plLocalVars.lpYYStrArrStart[STRAND_VAR] = oldTlsPlLocalVars->lpYYStrArrNext[STRAND_VAR];
         plLocalVars.lpYYStrArrStart[STRAND_FCN] = oldTlsPlLocalVars->lpYYStrArrNext[STRAND_FCN];
@@ -4018,7 +4018,7 @@ PARSELINE_START:
             {
                 LPWCHAR lpwszLine2;
 
-                if (hGlbTxtLine)
+                if (hGlbTxtLine NE NULL)
                     lpwszLine2 = MyGlobalLock (hGlbTxtLine);
                 else
                     lpwszLine2 = lpwszLine - 2;
@@ -4028,7 +4028,7 @@ PARSELINE_START:
                            &lpwszLine2[2]);
                 TRACE (L"Starting:", L"", CURSYNOBJ, RHTSYNOBJ);
 
-                if (hGlbTxtLine)
+                if (hGlbTxtLine NE NULL)
                 {
                     MyGlobalUnlock (hGlbTxtLine); lpwszLine2 = NULL;
                 } // End IF
@@ -4162,7 +4162,7 @@ PARSELINE_MP_PAREN:
                   plExecuteFn0 (lpplYYCurObj);
 
                 // Check for error
-                if (!lpYYRes)
+                if (lpYYRes EQ NULL)
                     goto PARSELINE_ERROR;
 
                 // Copy to the current object
@@ -4180,7 +4180,7 @@ PARSELINE_MP_PAREN:
                 YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
 
                 // If not defined, ...
-                if (!lpYYRes)
+                if (lpYYRes EQ NULL)
                     goto PARSELINE_ERROR;
 
                 // Copy to the current object
@@ -4289,7 +4289,7 @@ PARSELINE_MP_DONE:
                       plExecuteFn0 (lpplYYCurObj);
 
                     // Check for error
-                    if (!lpYYRes)
+                    if (lpYYRes EQ NULL)
                         goto PARSELINE_ERROR;
 
                     // Copy to the current object
@@ -4305,7 +4305,7 @@ PARSELINE_MP_DONE:
                   ExecuteCS0 (&plLocalVars, lpplYYCurObj);
 
                 // Check for error
-                if (!lpYYRes)
+                if (lpYYRes EQ NULL)
                 {
                     // Check for stop execution of this line
                     if (plLocalVars.bStopExec)
@@ -4397,7 +4397,7 @@ PARSELINE_REDUCE:
                         goto PARSELINE_ERROR;
                     } // End IF
 
-                    if (!lpYYRes)                   // If not defined, free args and YYERROR
+                    if (lpYYRes EQ NULL)            // If not defined, free args and YYERROR
                         goto PARSELINE_ERROR;
 
                     // Set the new tkSynObj
@@ -4429,7 +4429,7 @@ PARSELINE_REDUCE:
                         goto PARSELINE_ERROR;
                     } // End IF
 
-                    if (!lpYYRes)                   // If not defined, free args and YYERROR
+                    if (lpYYRes EQ NULL)            // If not defined, free args and YYERROR
                         goto PARSELINE_ERROR;
 
                     // Set the new tkSynObj
@@ -4539,7 +4539,7 @@ PARSELINE_REDUCE:
                 } // Ebd IF
 
                 // Check for error
-                if (!lpYYRes)
+                if (lpYYRes EQ NULL)
                     goto PARSELINE_ERROR;
 
 #ifdef DEBUG
@@ -4649,7 +4649,7 @@ PARSELINE_SYNTERR:
 
 PARSELINE_ERROR:
             // If lpYYRes is defined, ...
-            if (lpYYRes)
+            if (lpYYRes NE NULL)
             {
                 // YYFree the temp
                 YYFree (lpYYRes); lpYYRes = NULL;
@@ -4767,7 +4767,7 @@ PARSELINE_ERROR:
             } // End IF
 
             // Check for ResetFlag
-            if (lpMemPTD->lpSISCur
+            if (lpMemPTD->lpSISCur NE NULL
              && lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE
              && lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_QUADERROR_EXEC)
             {
@@ -4861,7 +4861,7 @@ PARSELINE_DONE:
                         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
 
                         // If not defined, ...
-                        if (!lpYYRes)
+                        if (lpYYRes EQ NULL)
                             goto PARSELINE_ERROR;
 
                         // Change the tkSynObj
@@ -5140,7 +5140,8 @@ PARSELINE_END:
             // If it's an MFO
             //   or an AFO,
             // but not STACK FULL, ...
-            if ((lpSISCur->bMFO
+            if (lpSISCur NE NULL
+             && (lpSISCur->bMFO
               || lpSISCur->bAFO)
              && plLocalVars.ExitType NE EXITTYPE_STACK_FULL)
             {
@@ -5162,7 +5163,7 @@ PARSELINE_END:
             // If this level or an adjacent preceding level is from
             //   Execute, immediate execution mode, or an AFO,
             //   peel back to the preceding level
-            while (lpSISCur
+            while (lpSISCur NE NULL
                 && (lpSISCur->DfnType EQ DFNTYPE_EXEC
                  || lpSISCur->DfnType EQ DFNTYPE_IMM
                  || lpSISCur->bAFO))
@@ -5170,7 +5171,7 @@ PARSELINE_END:
 
             // If this level is a user-defined function/operator,
             //   mark it as suspended
-            if (lpSISCur
+            if (lpSISCur NE NULL
              && (lpSISCur->DfnType EQ DFNTYPE_OP1
               || lpSISCur->DfnType EQ DFNTYPE_OP2
               || lpSISCur->DfnType EQ DFNTYPE_FCN))
@@ -5232,10 +5233,11 @@ PARSELINE_END:
         goto NORMAL_EXIT;
 
     // If we're not resetting, ...
-    if (lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_NONE)
+    if (lpMemPTD->lpSISCur NE NULL
+     && lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_NONE)
     {
         // If called from Immediate Execution/Execute, ...
-        if (lpwszLine)
+        if (lpwszLine NE NULL)
             // Create []DM & []EM
             ErrorMessageDirect (lpMemPTD->lpwszErrorMessage,    // Ptr to error message text
                                 lpwszLine,                      // Ptr to the line which generated the error
@@ -5267,7 +5269,7 @@ NORMAL_EXIT:
     lpMemPTD->lpPLCur = plLocalVars.lpPLPrev;
 
     // Transfer the Ctrl-Break flag in case it hasn't been acted upon
-    if (lpMemPTD->lpPLCur)
+    if (lpMemPTD->lpPLCur NE NULL)
         lpMemPTD->lpPLCur->bCtrlBreak = plLocalVars.bCtrlBreak;
 
     LeaveCriticalSection (&CSOPL);
@@ -5306,7 +5308,7 @@ NORMAL_EXIT:
         } // End SWITCH
 #endif
         // If there's an immediate text line, ...
-        if (lpwszLine)
+        if (lpwszLine NE NULL)
         {
             DbgMsgW2 (lpwszLine);
 
@@ -5474,20 +5476,20 @@ NORMAL_EXIT:
                 lpSISCur = lpMemPTD->lpSISCur;
 
                 // If this level is an AFO, ...
-                while (lpSISPrv
+                while (lpSISPrv NE NULL
                     && lpSISPrv->bAFO)
                     // Peel back
                     lpSISPrv = lpSISPrv->lpSISPrv;
 
                 // If this level is Immediate Execution Mode, ...
-                while (lpSISPrv
+                while (lpSISPrv NE NULL
                     && lpSISPrv->DfnType EQ DFNTYPE_IMM)
                     // Peel back
                     lpSISPrv = lpSISPrv->lpSISPrv;
 
                 // If this level is Execute, skip the prompt
                 //   as Execute will handle that
-                if (lpSISPrv
+                if (lpSISPrv NE NULL
                  && lpSISPrv->DfnType EQ DFNTYPE_EXEC)
                 {
                     // If the result of {execute}[]xLX is a normal
@@ -5852,11 +5854,9 @@ PL_YYLEX_FCNNAMED:
                             } // End IF
                         } // End IF/ELSE
 
-                        // If we should not restore the token stack ptr,
-                        //   and if we're not assigning into this name,
+                        // If we're not assigning into this name,
                         //   and we're not in the middle of "for I :in", ...
-                        if (!bRestoreStk
-                         && !lpplYYLval->tkToken.tkFlags.bAssignName
+                        if (!lpplYYLval->tkToken.tkFlags.bAssignName
                          &&  lpplLocalVars->lptkNext[1].tkFlags.TknType NE TKT_CS_IN)
                         {
                             // If it's an immediate, ...
@@ -6056,7 +6056,7 @@ PL_YYLEX_FCNNAMED:
             lpSISCur = SrchSISForDfn (lpMemPTD);
 
             // If the ptr is valid, ...
-            if (lpSISCur)
+            if (lpSISCur NE NULL)
             {
                 // Fill in the ptr to the function header
                 //   in both the return value and the token stream
@@ -6087,7 +6087,7 @@ PL_YYLEX_FCNNAMED:
             lpSISCur = SrchSISForDfn (lpMemPTD);
 
             // If the ptr is valid, ...
-            if (lpSISCur)
+            if (lpSISCur NE NULL)
             {
                 // Fill in the ptr to the function header
                 //   in both the return value and the token stream
@@ -6675,7 +6675,7 @@ LPWCHAR LSTACK
             lpSISCur = SrchSISForDfn (lpMemPTD);
 
             // If the ptr is valid, ...
-            if (lpSISCur)
+            if (lpSISCur NE NULL)
             {
                 // Split case based upon the function type
                 switch (lpSISCur->DfnType)
@@ -7207,8 +7207,8 @@ LPPL_YYSTYPE plExecuteFn0
 
     Assert (lpYYFn0->lpplYYArgCurry EQ NULL);
     Assert (lpYYFn0->lpplYYIdxCurry EQ NULL);
-    Assert (lpYYFn0->lpplYYFcnCurry EQ NULL);
-    Assert (lpYYFn0->lpplYYOpRCurry EQ NULL);
+////Assert (lpYYFn0->lpplYYFcnCurry EQ NULL);   // Handled in UnFcnStrand_EM
+////Assert (lpYYFn0->lpplYYOpRCurry EQ NULL);   // ...
 
     // Unstrand the function if appropriate
     UnFcnStrand_EM (&lpYYFn0, NAMETYPE_FN0, FALSE);

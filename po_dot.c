@@ -36,21 +36,23 @@
 //***************************************************************************
 
 LPPL_YYSTYPE PrimOpDot_EM_YY
-    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if niladic/monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
-     LPTOKEN      lptkRhtArg)           // Ptr to right arg token
+     LPTOKEN      lptkRhtArg)           // Ptr to right arg token (may be NULL if niladic)
 
 {
     Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_DOT);
 
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
-        return PrimOpMonDot_EM_YY (lpYYFcnStrOpr,   // Ptr to operator function strand
-                                   lptkRhtArg);     // Ptr to right arg
+        return
+          PrimOpMonDot_EM_YY (lpYYFcnStrOpr,    // Ptr to operator function strand
+                              lptkRhtArg);      // Ptr to right arg (may be NULL if niladic)
     else
-        return PrimOpDydDot_EM_YY (lptkLftArg,      // Ptr to left arg token
-                                   lpYYFcnStrOpr,   // Ptr to operator function strand
-                                   lptkRhtArg);     // Ptr to right arg token
+        return
+          PrimOpDydDot_EM_YY (lptkLftArg,       // Ptr to left arg token
+                              lpYYFcnStrOpr,    // Ptr to operator function strand
+                              lptkRhtArg);      // Ptr to right arg token
 } // End PrimOpDot_EM_YY
 
 
@@ -75,17 +77,19 @@ LPPL_YYSTYPE PrimProtoOpDot_EM_YY
         //***************************************************************
         // Called monadically
         //***************************************************************
-        return PrimOpMonDotCommon_EM_YY (lpYYFcnStrOpr,         // Ptr to operator function strand
-                                         lptkRhtArg,            // Ptr to right arg token
-                                         TRUE);                 // TRUE iff prototyping
+        return
+          PrimOpMonDotCommon_EM_YY (lpYYFcnStrOpr,          // Ptr to operator function strand
+                                    lptkRhtArg,             // Ptr to right arg token
+                                    TRUE);                  // TRUE iff prototyping
     else
         //***************************************************************
         // Called dyadically
         //***************************************************************
-        return PrimOpDydDotCommon_EM_YY (lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
-                                         lpYYFcnStrOpr,         // Ptr to operator function strand
-                                         lptkRhtArg,            // Ptr to right arg token
-                                         TRUE);                 // TRUE iff prototyping
+        return
+          PrimOpDydDotCommon_EM_YY (lptkLftArg,             // Ptr to left arg token (may be NULL if monadic)
+                                    lpYYFcnStrOpr,          // Ptr to operator function strand
+                                    lptkRhtArg,             // Ptr to right arg token
+                                    TRUE);                  // TRUE iff prototyping
 } // End PrimProtoOpDot_EM_YY
 
 
@@ -145,12 +149,12 @@ LPPL_YYSTYPE PrimIdentOpDot_EM_YY
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_OPERAND_SYNTAX_EXIT;
+        goto LEFT_OPERAND_DOMAIN_EXIT;
 
     // Ensure the right operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
      || IsTknFillJot (&lpYYFcnStrRht->tkToken))
-        goto RIGHT_OPERAND_SYNTAX_EXIT;
+        goto RIGHT_OPERAND_DOMAIN_EXIT;
 
     // Pick off the inner products we know how to handle
     if (lpYYFcnStrLft->TknCount EQ 1
@@ -270,13 +274,13 @@ AXIS_SYNTAX_EXIT:
                                lptkAxisOpr);
     goto ERROR_EXIT;
 
-LEFT_OPERAND_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+LEFT_OPERAND_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
-RIGHT_OPERAND_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+RIGHT_OPERAND_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
 
@@ -310,9 +314,10 @@ LPPL_YYSTYPE PrimOpMonDot_EM_YY
      LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    return PrimOpMonDotCommon_EM_YY (lpYYFcnStrOpr,         // Ptr to operator function strand
-                                     lptkRhtArg,            // Ptr to right arg token
-                                     FALSE);                // TRUE iff prototyping
+    return
+      PrimOpMonDotCommon_EM_YY (lpYYFcnStrOpr,          // Ptr to operator function strand
+                                lptkRhtArg,             // Ptr to right arg token (may be NULL if niladic)
+                                FALSE);                 // TRUE iff prototyping
 } // End PrimOpMonDot_EM_YY
 
 
@@ -330,7 +335,7 @@ LPPL_YYSTYPE PrimOpMonDot_EM_YY
 
 LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,            // Ptr to operator function strand
-     LPTOKEN      lptkRhtArg,               // Ptr to right arg token
+     LPTOKEN      lptkRhtArg,               // Ptr to right arg token (may be NULL if niladic)
      UBOOL        bPrototyping)             // TRUE iff prototyping
 
 {
@@ -398,15 +403,19 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_OPERAND_SYNTAX_EXIT;
+        goto LEFT_OPERAND_DOMAIN_EXIT;
 
     // Ensure the right operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
      || IsTknFillJot (&lpYYFcnStrRht->tkToken))
-        goto RIGHT_OPERAND_SYNTAX_EXIT;
+        goto RIGHT_OPERAND_DOMAIN_EXIT;
 
     // Set the function token ptr
     lptkFunc = &lpYYFcnStrOpr->tkToken;
+
+    // If we're called niladically, ...
+    if (lptkRhtArg EQ NULL)
+        goto VALENCE_EXIT;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -1231,14 +1240,19 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     goto ERROR_EXIT;
 
-LEFT_OPERAND_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+LEFT_OPERAND_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
-RIGHT_OPERAND_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+RIGHT_OPERAND_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
+    goto ERROR_EXIT;
+
+VALENCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALENCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 
 RIGHT_RANK_EXIT:
@@ -1258,12 +1272,12 @@ WSFULL_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    if (lpGslPermP)
+    if (lpGslPermP NE NULL)
     {
         gsl_permutation_free (lpGslPermP); lpGslPermP = NULL;
     } // End IF
 
-    if (lpGslMatrixU)
+    if (lpGslMatrixU NE NULL)
     {
         gsl_matrix_free (lpGslMatrixU); lpGslMatrixU = NULL;
     } // End IF
@@ -1587,10 +1601,11 @@ LPPL_YYSTYPE PrimOpDydDot_EM_YY
      LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    return PrimOpDydDotCommon_EM_YY (lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
-                                     lpYYFcnStrOpr,         // Ptr to operator function strand
-                                     lptkRhtArg,            // Ptr to right arg token
-                                     FALSE);                // TRUE iff prototyping
+    return
+      PrimOpDydDotCommon_EM_YY (lptkLftArg,             // Ptr to left arg token (may be NULL if niladic/monadic)
+                                lpYYFcnStrOpr,          // Ptr to operator function strand
+                                lptkRhtArg,             // Ptr to right arg token (may be NULL if niladic)
+                                FALSE);                 // TRUE iff prototyping
 } // End PrimOpDydDot_EM_YY
 
 
@@ -1607,9 +1622,9 @@ LPPL_YYSTYPE PrimOpDydDot_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
-    (LPTOKEN      lptkLftArg,               // Ptr to left arg token (may be NULL if monadic)
+    (LPTOKEN      lptkLftArg,               // Ptr to left arg token (may be NULL if niladic/monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,            // Ptr to operator function strand
-     LPTOKEN      lptkRhtArg,               // Ptr to right arg token
+     LPTOKEN      lptkRhtArg,               // Ptr to right arg token (may be NULL if niladic)
      UBOOL        bPrototyping)             // TRUE iff prototyping
 
 {
@@ -1711,12 +1726,12 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_OPERAND_SYNTAX_EXIT;
+        goto LEFT_OPERAND_DOMAIN_EXIT;
 
     // Ensure the right operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
      || IsTknFillJot (&lpYYFcnStrRht->tkToken))
-        goto RIGHT_OPERAND_SYNTAX_EXIT;
+        goto RIGHT_OPERAND_DOMAIN_EXIT;
 
     // Check for left operand axis operator
     lptkAxisLft = CheckAxisOper (lpYYFcnStrLft);
@@ -1741,10 +1756,14 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     // Get a ptr to the Primitive Function Flags
     lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
     lpPrimFlagsRht = GetPrimFlagsPtr (&lpYYFcnStrRht->tkToken);
-    if (lpPrimFlagsLft)
+    if (lpPrimFlagsLft NE NULL)
         lpPrimIdentLft = &PrimIdent[lpPrimFlagsLft->Index];
     else
         lpPrimIdentLft = NULL;
+
+    // If we're called niladically, ...
+    if (lptkRhtArg EQ NULL)
+        goto VALENCE_EXIT;
 
     // Get the attributes (Type,NELM, and Rank)
     //   of the left & right args
@@ -2907,7 +2926,7 @@ RESTART_INNERPROD_RES:
                 } // End IF
 
                 // Execute the right operand between the left & right items
-                if (lpPrimProtoRht)
+                if (lpPrimProtoRht NE NULL)
                     // Note that we cast the function strand to LPTOKEN
                     //   to bridge the two types of calls -- one to a primitive
                     //   function which takes a function token, and one to a
@@ -2988,7 +3007,7 @@ RESTART_INNERPROD_RES:
                     } else
                     {
                         // Execute the left operand between the item result and the accumulated reduction
-                        if (lpPrimProtoLft)
+                        if (lpPrimProtoLft NE NULL)
                             // Note that we cast the function strand to LPTOKEN
                             //   to bridge the two types of calls -- one to a primitive
                             //   function which takes a function token, and one to a
@@ -3085,13 +3104,13 @@ AXIS_SYNTAX_EXIT:
                                lptkAxisOpr);
     goto ERROR_EXIT;
 
-LEFT_OPERAND_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+LEFT_OPERAND_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
-RIGHT_OPERAND_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+RIGHT_OPERAND_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
 
@@ -3105,19 +3124,14 @@ RIGHT_OPERAND_NONCE_EXIT:
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
 
-LENGTH_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+VALENCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALENCE_ERROR APPEND_NAME,
                               &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 
-LEFT_OPERAND_DOMAIN_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                              &lpYYFcnStrLft->tkToken);
-    goto ERROR_EXIT;
-
-RIGHT_OPERAND_DOMAIN_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                              &lpYYFcnStrRht->tkToken);
+LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 
 VALUE_EXIT:

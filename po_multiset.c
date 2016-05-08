@@ -52,14 +52,10 @@ LPPL_YYSTYPE PrimOpDownShoeStile_EM_YY
 {
     Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_DOWNSHOESTILE);
 
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
-
     return
-      PrimOpDownShoeStileCommon_EM_YY (lptkLftArg,      // Ptr to left arg token (may be NULL if called monadically)
+      PrimOpDownShoeStileCommon_EM_YY (lptkLftArg,      // Ptr to left arg token (may be NULL if niladic/monadic)
                                        lpYYFcnStrOpr,   // Ptr to operator function strand
-                                       lptkRhtArg,      // Ptr to right arg token
+                                       lptkRhtArg,      // Ptr to right arg token (may be NULL if niladic)
                                        FALSE);          // TRUE iff prototyping
 } // End PrimOpDownShoeStile_EM_YY
 #undef  APPEND_NAME
@@ -107,9 +103,9 @@ LPPL_YYSTYPE PrimProtoOpDownShoeStile_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimOpDownShoeStileCommon_EM_YY
-    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if called monadically)
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
-     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token (may be NULL if niladic)
      UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
@@ -149,7 +145,7 @@ LPPL_YYSTYPE PrimOpDownShoeStileCommon_EM_YY
     if (lpYYFcnStrLft->TknCount EQ 1)
     {
         // Get the attributes (Type, NELM, and Rank) of the left & right args
-        if (lptkLftArg)
+        if (lptkLftArg NE NULL)
             AttrsOfToken (lptkLftArg, &aplTypeLft, NULL, &aplRankLft, NULL);
         else
         {
@@ -157,10 +153,13 @@ LPPL_YYSTYPE PrimOpDownShoeStileCommon_EM_YY
             aplRankLft = 1;
         } // End IF/ELSE
 
-        AttrsOfToken (lptkRhtArg, &aplTypeRht, NULL, &aplRankRht, NULL);
+        if (lptkRhtArg NE NULL)
+            AttrsOfToken (lptkRhtArg, &aplTypeRht, NULL, &aplRankRht, NULL);
 
         // If the function is not {iotaunderbar}, ...
-        if (lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_IOTAUNDERBAR)
+        if (lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_IOTAUNDERBAR
+         && lptkLftArg NE NULL
+         && lptkRhtArg NE NULL)
         {
             // Check for LEFT/RIGHT RANK ERRORs
             if (IsMultiRank (aplRankLft))
@@ -376,9 +375,9 @@ LPPL_YYSTYPE PrimOpDownShoeStileCommon_EM_YY
 
                     // Execute the UDFO
                     return
-                      ExecFuncStrLine_EM_YY (lptkLftArg,        // Ptr to left arg token
+                      ExecFuncStrLine_EM_YY (lptkLftArg,        // Ptr to left arg token (may be NULL if niladic/monadic)
                                              lpYYFcnStrLft,     // Ptr to left operand function strand
-                                             lptkRhtArg,        // Ptr to right arg token
+                                             lptkRhtArg,        // Ptr to right arg token (may be NULL if niladic)
                                              lptkAxisOpr,       // Ptr to operator axis token (may be NULL)
                                              LINENUM_MS);       // Starting line # type (see LINE_NUMS)
                 } else
@@ -392,10 +391,10 @@ LPPL_YYSTYPE PrimOpDownShoeStileCommon_EM_YY
 
     //  Use an internal magic function.
     lpYYRes =
-      ExecuteMagicFunction_EM_YY (lptkLftArg,           // Ptr to left arg token
+      ExecuteMagicFunction_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if niladic/monadic)
                         (LPTOKEN) lpYYFcnStrLft,        // Ptr to left operand function token
                                   NULL,                 // Ptr to function strand
-                                  lptkRhtArg,           // Ptr to right arg token
+                                  lptkRhtArg,           // Ptr to right arg token (may be NULL if niladic)
                                   lptkAxisOpr,          // Ptr to operator axis token (may be NULL)
                                   hGlbMFO,              // Magic function/operator global memory handle
                                   NULL,                 // Ptr to HSHTAB struc (may be NULL)
@@ -624,7 +623,7 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
     lpMemRes = (LPAPLBOOL) VarArrayBaseToDim (lpMemRes);
 
     // Fill in the result's dimension
-    if (lpMemLft)
+    if (lpMemLft NE NULL)
     {
         // Skip over the header to the dimensions
         lpMemLft = VarArrayBaseToDim (lpMemLft);
@@ -644,7 +643,7 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
         lpMemLft = &aplLongestLft;
     } // End IF/ELSE
 
-    if (lpMemRht)
+    if (lpMemRht NE NULL)
         // Skip over the header and dimensions to the data
         lpMemRht = VarArrayDataFmBase (lpMemRht);
     else
@@ -722,7 +721,7 @@ WSFULL_EXIT:
 ERROR_EXIT:
     if (hGlbRes)
     {
-        if (lpMemRes)
+        if (lpMemRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -752,7 +751,7 @@ NORMAL_EXIT:
 #ifdef GRADE2ND
     if (hGlbGupLft && lpMemGupLft)
     {
-        if (lpMemGupLft)
+        if (lpMemGupLft NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbGupLft); lpMemGupLft = NULL;
@@ -764,7 +763,7 @@ NORMAL_EXIT:
 #endif
     if (hGlbGupRht && lpMemGupRht)
     {
-        if (lpMemGupRht)
+        if (lpMemGupRht NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbGupRht); lpMemGupRht = NULL;
@@ -1290,7 +1289,7 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
     lpMemRes = (LPAPLUINT) VarArrayBaseToDim (lpMemRes);
 
     // Fill in the result's dimension
-    if (lpMemRht)
+    if (lpMemRht NE NULL)
     {
         // Skip over the header to the dimensions
         lpMemRht = VarArrayBaseToDim (lpMemRht);
@@ -1310,7 +1309,7 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
         lpMemRht = &aplLongestRht;
     } // End IF/ELSE
 
-    if (lpMemLft)
+    if (lpMemLft NE NULL)
         // Skip over the header and dimensions to the data
         lpMemLft = VarArrayDataFmBase (lpMemLft);
     else
@@ -1405,7 +1404,7 @@ WSFULL_EXIT:
 ERROR_EXIT:
     if (hGlbRes)
     {
-        if (lpMemRes)
+        if (lpMemRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -1435,7 +1434,7 @@ NORMAL_EXIT:
 
     if (hGlbGupLft && lpMemGupLft)
     {
-        if (lpMemGupLft)
+        if (lpMemGupLft NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbGupLft); lpMemGupLft = NULL;
@@ -1447,7 +1446,7 @@ NORMAL_EXIT:
 #ifdef GRADE2ND
     if (hGlbGupRht && lpMemGupRht)
     {
-        if (lpMemGupRht)
+        if (lpMemGupRht NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbGupRht); lpMemGupRht = NULL;
@@ -1990,7 +1989,7 @@ NORMAL_EXIT:
 
     if (hGlbGupLft)
     {
-        if (lpMemGupLft)
+        if (lpMemGupLft NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbGupLft); lpMemGupLft = NULL;
@@ -2002,7 +2001,7 @@ NORMAL_EXIT:
 
     if (hGlbGupRht)
     {
-        if (lpMemGupRht)
+        if (lpMemGupRht NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbGupRht); lpMemGupRht = NULL;

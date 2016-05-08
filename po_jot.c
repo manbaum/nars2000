@@ -129,10 +129,10 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
     lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
 
     if (IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_OPERAND_SYNTAX_EXIT;
+        goto LEFT_OPERAND_DOMAIN_EXIT;
 
     if (IsTknFillJot (&lpYYFcnStrRht->tkToken))
-        goto RIGHT_OPERAND_SYNTAX_EXIT;
+        goto RIGHT_OPERAND_DOMAIN_EXIT;
 
     // Test for fcn/opr vs. var
     bLftOpr = IsTknFcnOpr (&lpYYFcnStrLft->tkToken);
@@ -177,6 +177,10 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
     else
         lptkAxisRht = NULL;
 
+    // If we're called niladically, ...
+    if (lptkRhtArg EQ NULL)
+        goto VALENCE_EXIT;
+
     // Split cases based upon the type (V or F) of
     //   the left and right operands
     switch (bLftOpr * 2 + bRhtOpr * 1)
@@ -189,14 +193,14 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
                 //   to bridge the two types of calls -- one to a primitive
                 //   function which takes a function token, and one to a
                 //   primitive operator which takes a function strand
-                lpYYRes2 = (*lpPrimProtoRht) (NULL,                     // Ptr to left arg token
+                lpYYRes2 = (*lpPrimProtoRht) (NULL,                     // Ptr to left arg token (may be NULL if niladic/monadic)
                                     (LPTOKEN) lpYYFcnStrRht,            // Ptr to right operand function strand
-                                              lptkRhtArg,               // Ptr to right arg token
+                                              lptkRhtArg,               // Ptr to right arg token (may be NULL if niladic)
                                               lptkAxisRht);             // Ptr to right operand axis token (may be NULL)
             else
-                lpYYRes2 = ExecFuncStr_EM_YY (NULL,                     // Ptr to left arg token
+                lpYYRes2 = ExecFuncStr_EM_YY (NULL,                     // Ptr to left arg token (may be NULL if niladic/monadic)
                                               lpYYFcnStrRht,            // Ptr to right operand function strand
-                                              lptkRhtArg,               // Ptr to right arg token
+                                              lptkRhtArg,               // Ptr to right arg token (may be NULL if niladic)
                                               lptkAxisRht);             // Ptr to right operand axis token (may be NULL)
             if (lpYYRes2)
             {
@@ -208,14 +212,14 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
                     //   to bridge the two types of calls -- one to a primitive
                     //   function which takes a function token, and one to a
                     //   primitive operator which takes a function strand
-                    lpYYRes = (*lpPrimProtoLft) (lptkLftArg,            // Ptr to left arg token
+                    lpYYRes = (*lpPrimProtoLft) (lptkLftArg,            // Ptr to left arg token (may be NULL if niladic/monadic)
                                        (LPTOKEN) lpYYFcnStrLft,         // Ptr to left operand function strand
-                                                &lpYYRes2->tkToken,     // Ptr to right arg token
+                                                &lpYYRes2->tkToken,     // Ptr to right arg token (may be NULL if niladic)
                                                  lptkAxisLft);          // Ptr to left operand axis token (may be NULL)
                 else
-                    lpYYRes = ExecFuncStr_EM_YY (lptkLftArg,            // Ptr to left arg token
+                    lpYYRes = ExecFuncStr_EM_YY (lptkLftArg,            // Ptr to left arg token (may be NULL if niladic/monadic)
                                                  lpYYFcnStrLft,         // Ptr to left operand function strand
-                                                &lpYYRes2->tkToken,     // Ptr to right arg token
+                                                &lpYYRes2->tkToken,     // Ptr to right arg token (may be NULL if niladic)
                                                  lptkAxisLft);          // Ptr to left operand axis token (may be NULL)
                 FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
             } else
@@ -235,14 +239,14 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
                 //   to bridge the two types of calls -- one to a primitive
                 //   function which takes a function token, and one to a
                 //   primitive operator which takes a function strand
-                lpYYRes = (*lpPrimProtoRht) (&lpYYFcnStrLft->tkToken,   // Ptr to left arg token
+                lpYYRes = (*lpPrimProtoRht) (&lpYYFcnStrLft->tkToken,   // Ptr to left arg token (may be NULL if niladic/monadic)
                                     (LPTOKEN) lpYYFcnStrRht,            // Ptr to right operand function strand
-                                              lptkRhtArg,               // Ptr to right arg token
+                                              lptkRhtArg,               // Ptr to right arg token (may be NULL if niladic)
                                               lptkAxisRht);             // Ptr to right operand axis token (may be NULL)
             else
-                lpYYRes = ExecFuncStr_EM_YY (&lpYYFcnStrLft->tkToken,   // Ptr to left arg token
+                lpYYRes = ExecFuncStr_EM_YY (&lpYYFcnStrLft->tkToken,   // Ptr to left arg token (may be NULL if niladic/monadic)
                                               lpYYFcnStrRht,            // Ptr to right operand function strand
-                                              lptkRhtArg,               // Ptr to right arg token
+                                              lptkRhtArg,               // Ptr to right arg token (may be NULL if niladic)
                                               lptkAxisRht);             // Ptr to right operand axis token (may be NULL)
             break;
 
@@ -258,14 +262,14 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
                 //   to bridge the two types of calls -- one to a primitive
                 //   function which takes a function token, and one to a
                 //   primitive operator which takes a function strand
-                lpYYRes = (*lpPrimProtoLft) (lptkRhtArg,                // Ptr to left arg token
+                lpYYRes = (*lpPrimProtoLft) (lptkRhtArg,                // Ptr to left arg token (may be NULL if niladic/monadic)
                                    (LPTOKEN) lpYYFcnStrLft,             // Ptr to left operand function strand
-                                            &lpYYFcnStrRht->tkToken,    // Ptr to right arg token
+                                            &lpYYFcnStrRht->tkToken,    // Ptr to right arg token (may be NULL if niladic)
                                              lptkAxisLft);              // Ptr to left operand axis token (may be NULL)
             else
-                lpYYRes = ExecFuncStr_EM_YY (lptkRhtArg,                // Ptr to left arg token
+                lpYYRes = ExecFuncStr_EM_YY (lptkRhtArg,                // Ptr to left arg token (may be NULL if niladic/monadic)
                                              lpYYFcnStrLft,             // Ptr to left operand function strand
-                                            &lpYYFcnStrRht->tkToken,    // Ptr to right arg token
+                                            &lpYYFcnStrRht->tkToken,    // Ptr to right arg token (may be NULL if niladic)
                                              lptkAxisLft);              // Ptr to left operand axis token (may be NULL)
             break;
 
@@ -283,13 +287,13 @@ AXIS_SYNTAX_EXIT:
                                lptkAxisOpr);
     return NULL;
 
-LEFT_OPERAND_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+LEFT_OPERAND_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     return NULL;
 
-RIGHT_OPERAND_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+RIGHT_OPERAND_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     return NULL;
 
@@ -301,6 +305,11 @@ LEFT_OPERAND_NONCE_EXIT:
 RIGHT_OPERAND_NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
+    return NULL;
+
+VALENCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALENCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
     return NULL;
 
 LEFT_SYNTAX_EXIT:

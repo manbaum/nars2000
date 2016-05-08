@@ -165,23 +165,23 @@ LPPL_YYSTYPE PrimIdentOpDieresisDownTack_EM_YY
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_OPERAND_SYNTAX_EXIT;
+        goto LEFT_OPERAND_DOMAIN_EXIT;
 
     // Ensure the right operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
      || IsTknFillJot (&lpYYFcnStrRht->tkToken))
-        goto RIGHT_OPERAND_SYNTAX_EXIT;
+        goto RIGHT_OPERAND_DOMAIN_EXIT;
 
     // Get the magic function/operator global memory handles
     hGlbMFO = GetMemPTD ()->hGlbMFO[MFOE_IdnConv];
 
     return
-      ExecuteMagicOperator_EM_YY (NULL,                     // Ptr to left arg token
+      ExecuteMagicOperator_EM_YY (NULL,                     // Ptr to left arg token (may be NULL if niladic/monadic)
                                  &lpYYFcnStrOpr->tkToken,   // Ptr to function token
                                   lpYYFcnStrLft,            // Ptr to left operand function strand
                                   lpYYFcnStrOpr,            // Ptr to function strand
                                   lpYYFcnStrRht,            // Ptr to right operand function strand (may be NULL)
-                                  lptkRhtArg,               // Ptr to right arg token
+                                  lptkRhtArg,               // Ptr to right arg token (may be NULL if niladic)
                                   lptkAxisOpr,              // Ptr to axis token
                                   hGlbMFO,                  // Magic function/operator global memory handle
                                   NULL,                     // Ptr to HSHTAB struc (may be NULL)
@@ -191,13 +191,13 @@ AXIS_SYNTAX_EXIT:
                                lptkAxisOpr);
     goto ERROR_EXIT;
 
-LEFT_OPERAND_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+LEFT_OPERAND_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
-RIGHT_OPERAND_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+RIGHT_OPERAND_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
 
@@ -224,8 +224,15 @@ LPPL_YYSTYPE PrimOpMonDieresisDownTack_EM_YY
      LPTOKEN      lptkRhtArg)           // Ptr to right arg token (may be NULL if niladic)
 
 {
-    return
-      PrimFnValenceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
+    // If we're called niladically, ...
+    if (lptkRhtArg EQ NULL)
+        return
+          PrimOpDydDieresisDownTack_EM_YY (NULL,            // Ptr to left arg token (may be NULL if niladic/monadic)
+                                           lpYYFcnStrOpr,   // Ptr to operator function strand
+                                           NULL);           // Ptr to right arg token (may be NULL if niladic)
+    else
+        return
+          PrimFnValenceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 } // End PrimOpMonDieresisDownTack_EM_YY
 #undef  APPEND_NAME
 
@@ -271,12 +278,12 @@ LPPL_YYSTYPE PrimOpDieresisDownTackCommon_EM_YY
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_OPERAND_SYNTAX_EXIT;
+        goto LEFT_OPERAND_DOMAIN_EXIT;
 
     // Ensure the right operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
      || IsTknFillJot (&lpYYFcnStrRht->tkToken))
-        goto RIGHT_OPERAND_SYNTAX_EXIT;
+        goto RIGHT_OPERAND_DOMAIN_EXIT;
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -285,12 +292,12 @@ LPPL_YYSTYPE PrimOpDieresisDownTackCommon_EM_YY
     hGlbMFO = lpMemPTD->hGlbMFO[MFOE_DydConv];
 
     lpYYRes =
-      ExecuteMagicOperator_EM_YY (lptkLftArg,               // Ptr to left arg token
+      ExecuteMagicOperator_EM_YY (lptkLftArg,               // Ptr to left arg token (may be NULL if niladic/monadic)
                                  &lpYYFcnStrOpr->tkToken,   // Ptr to function token
                                   lpYYFcnStrLft,            // Ptr to left operand function strand
                                   lpYYFcnStrOpr,            // Ptr to function strand
                                   lpYYFcnStrRht,            // Ptr to right operand function strand (may be NULL)
-                                  lptkRhtArg,               // Ptr to right arg token
+                                  lptkRhtArg,               // Ptr to right arg token (may be NULL if niladic)
                                   NULL,                     // Ptr to axis token
                                   hGlbMFO,                  // Magic function/operator global memory handle
                                   NULL,                     // Ptr to HSHTAB struc (may be NULL)
@@ -299,18 +306,18 @@ LPPL_YYSTYPE PrimOpDieresisDownTackCommon_EM_YY
                                 : LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
     goto NORMAL_EXIT;
 
-LEFT_OPERAND_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+LEFT_OPERAND_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
-RIGHT_OPERAND_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+RIGHT_OPERAND_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (lpYYRes)
+    if (lpYYRes NE NULL)
     {
         // Free the first YYRes
         FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
@@ -342,10 +349,11 @@ LPPL_YYSTYPE PrimOpDydDieresisDownTack_EM_YY
      LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    return PrimOpDydDieresisDownTackCommon_EM_YY (lptkLftArg,       // Ptr to left arg token
-                                                  lpYYFcnStrOpr,    // Ptr to operator function strand
-                                                  lptkRhtArg,       // Ptr to right arg token
-                                                  FALSE);           // TRUE iff prototyping
+    return
+      PrimOpDydDieresisDownTackCommon_EM_YY (lptkLftArg,        // Ptr to left arg token
+                                             lpYYFcnStrOpr,     // Ptr to operator function strand
+                                             lptkRhtArg,        // Ptr to right arg token
+                                             FALSE);            // TRUE iff prototyping
 } // End PrimOpDydDieresisDownTack_EM_YY
 
 

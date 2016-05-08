@@ -339,27 +339,27 @@ DEP:    DIR                     \
         $(O)version.dev
 
 {}.c{$(O)}.dep:
-        @echo $(@F)
+###     @echo $(@F)
         @php $(MAKEDEP) -s$(O)=$$(O) %s > $@
 
 {}.cpp{$(O)}.dep:
-        @echo $(@F)
+###     @echo $(@F)
         @php $(MAKEDEP) -s$(O)=$$(O) %s > $@
 
 {$(O)}.c{$(O)}.dep:
-        @echo $(@F)
+###     @echo $(@F)
         @php $(MAKEDEP) -s$(O)=$$(O) %s > $@
 
 {$(WS)}.c{$(O)}.dep:
-        @echo $(@F)
+###     @echo $(@F)
         @php $(MAKEDEP) -s$(O)=$$(O),$(WS)=$$(WS) %s > $@
 
 {$(MS_DIR)}.c{$(O)}.dep:
-        @echo $(@F)
+###     @echo $(@F)
         @php $(MAKEDEP) -s$(O)=$$(O),$(MS_DIR)=$$(MS_DIR) %s > $@
 
 {}.rc{$(O)}.dev:
-        @echo $(@F)
+###     @echo $(@F)
         @php $(MAKEDEP) -s$(O)=$$(O) %s > $@
 
 !include $(O)dep.txt

@@ -161,20 +161,21 @@ APLLONGEST ValidateFirstItemToken
 //***************************************************************************
 
 APLINT GetNextIntegerToken
-    (LPTOKEN  lptkArg,                  // Ptr to arg token
-     APLINT   uIndex,                   // Index
-     APLSTYPE aplTypeArg,               // Arg storage type
-     LPUBOOL  lpbRet)                   // Ptr to TRUE iff the result is valid
+    (LPTOKEN  lptkArg,                      // Ptr to arg token
+     APLINT   uIndex,                       // Index
+     APLSTYPE aplTypeArg,                   // Arg storage type
+     LPUBOOL  lpbRet)                       // Ptr to TRUE iff the result is valid
 
 {
-    APLLONGEST aplLongestArg;           // Immediate value
-    HGLOBAL    hGlbArg = NULL;          // Right arg global memory handle
-    LPVOID     lpMemArg;                // Ptr to right arg global memory
-    APLINT     aplIntegerRes;           // The result
-    APLSTYPE   aplTypeItm;              // Item storage type
-    APLFLOAT   aplFloatItm;             // Immediate item as a float
-    APLCHAR    aplCharItm;              // Immediate item as a char
-    HGLOBAL    hGlbItm;                 // ...                 HGLOBAL
+    APLLONGEST        aplLongestArg;        // Immediate value
+    HGLOBAL           hGlbArg = NULL;       // Right arg global memory handle
+    LPVARARRAY_HEADER lpMemHdrArg = NULL;   // Ptr to memory header
+    LPVOID            lpMemArg;             // Ptr to right arg global memory
+    APLINT            aplIntegerRes;        // The result
+    APLSTYPE          aplTypeItm;           // Item storage type
+    APLFLOAT          aplFloatItm;          // Immediate item as a float
+    APLCHAR           aplCharItm;           // Immediate item as a char
+    HGLOBAL           hGlbItm;              // ...                 HGLOBAL
 
     // Assume it'll be successful
     *lpbRet = TRUE;
@@ -195,11 +196,11 @@ APLINT GetNextIntegerToken
     // Otherwise it's global numeric
     {
         // Get the global ptrs
-        GetGlbPtrs_LOCK (lptkArg, &hGlbArg, &lpMemArg);
+        GetGlbPtrs_LOCK (lptkArg, &hGlbArg, &lpMemHdrArg);
 
         // If it's not an immediate, ...
-        if (hGlbArg)
-            lpMemArg = VarArrayDataFmBase (lpMemArg);
+        if (hGlbArg NE NULL)
+            lpMemArg = VarArrayDataFmBase (lpMemHdrArg);
     } // End IF/ELSE
 
     // Split cases based upon the storage type
@@ -282,10 +283,10 @@ APLINT GetNextIntegerToken
     } // End SWITCH
 NORMAL_EXIT:
     // If it's not an immediate, ...
-    if (hGlbArg)
+    if (hGlbArg NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
+        MyGlobalUnlock (hGlbArg); lpMemHdrArg = NULL;
     } // End IF
 
     return aplIntegerRes;
@@ -299,20 +300,21 @@ NORMAL_EXIT:
 //***************************************************************************
 
 APLFLOAT GetNextFloatToken
-    (LPTOKEN  lptkArg,                  // Ptr to arg token
-     APLINT   uIndex,                   // Index
-     APLSTYPE aplTypeArg,               // Arg storage type
-     LPUBOOL  lpbRet)                   // Ptr to TRUE iff the result is valid
+    (LPTOKEN  lptkArg,                      // Ptr to arg token
+     APLINT   uIndex,                       // Index
+     APLSTYPE aplTypeArg,                   // Arg storage type
+     LPUBOOL  lpbRet)                       // Ptr to TRUE iff the result is valid
 
 {
-    APLLONGEST aplLongestArg;           // Immediate value
-    HGLOBAL    hGlbArg = NULL;          // Right arg global memory handle
-    LPVOID     lpMemArg;                // Ptr to right arg global memory
-    APLINT     aplIntegerItm;           // Immediate value as integer
-    APLSTYPE   aplTypeItm;              // Item storage type
-    APLFLOAT   aplFloatRes;             // The result
-    APLCHAR    aplCharItm;              // Immediate item as a char
-    HGLOBAL    hGlbItm;                 // ...                 HGLOBAL
+    APLLONGEST        aplLongestArg;        // Immediate value
+    HGLOBAL           hGlbArg = NULL;       // Right arg global memory handle
+    LPVARARRAY_HEADER lpMemHdrArg = NULL;   // Ptr to memory header
+    LPVOID            lpMemArg;             // Ptr to right arg global memory
+    APLINT            aplIntegerItm;        // Immediate value as integer
+    APLSTYPE          aplTypeItm;           // Item storage type
+    APLFLOAT          aplFloatRes;          // The result
+    APLCHAR           aplCharItm;           // Immediate item as a char
+    HGLOBAL           hGlbItm;              // ...                 HGLOBAL
 
     // Assume it'll be successful
     *lpbRet = TRUE;
@@ -333,11 +335,11 @@ APLFLOAT GetNextFloatToken
     // Otherwise it's global numeric
     {
         // Get the global ptrs
-        GetGlbPtrs_LOCK (lptkArg, &hGlbArg, &lpMemArg);
+        GetGlbPtrs_LOCK (lptkArg, &hGlbArg, &lpMemHdrArg);
 
         // If it's not an immediate, ...
-        if (hGlbArg)
-            lpMemArg = VarArrayDataFmBase (lpMemArg);
+        if (hGlbArg NE NULL)
+            lpMemArg = VarArrayDataFmBase (lpMemHdrArg);
     } // End IF/ELSE
 
     // Split cases based upon the storage type
@@ -414,10 +416,10 @@ APLFLOAT GetNextFloatToken
     } // End SWITCH
 NORMAL_EXIT:
     // If it's not an immediate, ...
-    if (hGlbArg)
+    if (hGlbArg NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
+        MyGlobalUnlock (hGlbArg); lpMemHdrArg = NULL;
     } // End IF
 
     return aplFloatRes;
@@ -2779,7 +2781,7 @@ void SetQuadDT
     (APLCHAR cQuadDT)
 
 {
-    GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_DT]->stData.stChar = cQuadDT;
+    GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_DT]->stData.stChar = tolower (cQuadDT);
 } // End SetQuadDT
 
 
@@ -2923,7 +2925,7 @@ void RestPrimSpecRL
     (LPPRIMSPEC lpPrimSpec)
 
 {
-    APLUINT uQuadRL;                // []RL for atomicity
+    APLUINT      uQuadRL;           // []RL for atomicity
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
@@ -2953,9 +2955,8 @@ void RestPrimSpecRL
                 // If []RL is not local, ...
                 if (!lpSISCur->bLclRL)
                 {
-                    // If the ptrs to the previous HASHTABSTR are valid, ...
-                    if (lpMemPTD->lphtsPTD               NE NULL
-                     && lpMemPTD->lphtsPTD->lphtsPrvSrch NE NULL)
+                    // If the ptr to the previous HASHTABSTR is valid, ...
+                    if (lpSISCur->lphtsPrv NE NULL)
                         // Pass the new value up to the next layer
                         lpSISCur->lphtsPrv->lpSymQuad[SYSVAR_RL]->stData.stInteger = uQuadRL;
                 } else

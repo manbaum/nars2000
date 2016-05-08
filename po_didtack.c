@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,18 +46,16 @@ LPPL_YYSTYPE PrimOpDieresisDownTack_EM_YY
 {
     Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_DIERESISDOWNTACK);
 
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
-
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
-        return PrimOpMonDieresisDownTack_EM_YY (lpYYFcnStrOpr,      // Ptr to operator function strand
-                                                lptkRhtArg);        // Ptr to right arg token
+        return
+          PrimOpMonDieresisDownTack_EM_YY (lpYYFcnStrOpr,   // Ptr to operator function strand
+                                           lptkRhtArg);     // Ptr to right arg token (may be NULL if niladic)
     else
-        return PrimOpDydDieresisDownTack_EM_YY (lptkLftArg,         // Ptr to left arg token
-                                                lpYYFcnStrOpr,      // Ptr to operator function strand
-                                                lptkRhtArg);        // Ptr to right arg token
+        return
+          PrimOpDydDieresisDownTack_EM_YY (lptkLftArg,      // Ptr to left arg token
+                                           lpYYFcnStrOpr,   // Ptr to operator function strand
+                                           lptkRhtArg);     // Ptr to right arg token
 } // End PrimOpDieresisDownTack_EM_YY
 #undef  APPEND_NAME
 
@@ -96,18 +94,20 @@ LPPL_YYSTYPE PrimProtoOpDieresisDownTack_EM_YY
     // If left arg is not present, ...
     if (lptkLftArg EQ NULL)
         //***************************************************************
-        // Called monadically
+        // Called niladically/monadically
         //***************************************************************
-        return PrimOpMonDieresisDownTack_EM_YY (lpYYFcnStrOpr,          // Ptr to operator function strand
-                                                lptkRhtArg);            // Ptr to right arg token
+        return
+          PrimOpMonDieresisDownTack_EM_YY (lpYYFcnStrOpr,       // Ptr to operator function strand
+                                           lptkRhtArg);         // Ptr to right arg token (may be NULL if niladic)
     else
         //***************************************************************
         // Called dyadically
         //***************************************************************
-        return PrimOpDydDieresisDownTackCommon_EM_YY (lptkLftArg,       // Ptr to left arg token
-                                                      lpYYFcnStrOpr,    // Ptr to operator function strand
-                                                      lptkRhtArg,       // Ptr to right arg token
-                                                      TRUE);            // TRUE iff prototyping
+        return
+          PrimOpDydDieresisDownTackCommon_EM_YY (lptkLftArg,    // Ptr to left arg token
+                                                 lpYYFcnStrOpr, // Ptr to operator function strand
+                                                 lptkRhtArg,    // Ptr to right arg token
+                                                 TRUE);         // TRUE iff prototyping
 AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
@@ -221,10 +221,11 @@ ERROR_EXIT:
 
 LPPL_YYSTYPE PrimOpMonDieresisDownTack_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
-     LPTOKEN      lptkRhtArg)           // Ptr to right arg token
+     LPTOKEN      lptkRhtArg)           // Ptr to right arg token (may be NULL if niladic)
 
 {
-    return PrimFnValenceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
+    return
+      PrimFnValenceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 } // End PrimOpMonDieresisDownTack_EM_YY
 #undef  APPEND_NAME
 
@@ -243,11 +244,11 @@ LPPL_YYSTYPE PrimOpMonDieresisDownTack_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimOpDieresisDownTackCommon_EM_YY
-    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic derived function)
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if niladic/monadic derived function)
      LPPL_YYSTYPE lpYYFcnStrLft,        // Ptr to left operand function strand
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPPL_YYSTYPE lpYYFcnStrRht,        // Ptr to right operand function strand
-     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token (may be NULL if niladic)
      UBOOL        bPrototyping)         // TRUE iff protoyping
 
 {

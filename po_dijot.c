@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,14 +41,10 @@
 LPPL_YYSTYPE PrimOpDieresisJot_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
-     LPTOKEN      lptkRhtArg)           // Ptr to right arg token
+     LPTOKEN      lptkRhtArg)           // Ptr to right arg token (may be NULL if niladic)
 
 {
     Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_DIERESISJOT);
-
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
@@ -96,10 +92,10 @@ LPPL_YYSTYPE PrimProtoOpDieresisJot_EM_YY
     // If left arg is not present, ...
     if (lptkLftArg EQ NULL)
         //***************************************************************
-        // Called monadically
+        // Called monadically or niladically
         //***************************************************************
         return PrimOpMonDieresisJotCommon_EM_YY (lpYYFcnStrOpr,     // Ptr to operator function strand
-                                                 lptkRhtArg,        // Ptr to right arg token
+                                                 lptkRhtArg,        // Ptr to right arg token (may be NULL if niladic)
                                                  TRUE);             // TRUE iff prototyping
     else
         //***************************************************************
@@ -125,11 +121,11 @@ AXIS_SYNTAX_EXIT:
 
 LPPL_YYSTYPE PrimOpMonDieresisJot_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
-     LPTOKEN      lptkRhtArg)           // Ptr to right arg token
+     LPTOKEN      lptkRhtArg)           // Ptr to right arg token (may be NULL if niladic)
 
 {
     return PrimOpMonDieresisJotCommon_EM_YY (lpYYFcnStrOpr,     // Ptr to operator function strand
-                                             lptkRhtArg,        // Ptr to right arg token
+                                             lptkRhtArg,        // Ptr to right arg token (may be NULLif niladic)
                                              FALSE);            // TRUE iff prototyping
 } // End PrimOpMonDieresisJot_EM_YY
 
@@ -142,7 +138,7 @@ LPPL_YYSTYPE PrimOpMonDieresisJot_EM_YY
 
 LPPL_YYSTYPE PrimOpMonDieresisJotCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
-     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token (may be NULL if niladic)
      UBOOL        bPrototyping)         // TRUE iff protoyping
 
 {
@@ -159,7 +155,7 @@ LPPL_YYSTYPE PrimOpMonDieresisJotCommon_EM_YY
                                      lpYYFcnStrLft,     // Ptr to left operand function strand
                                      lpYYFcnStrOpr,     // Ptr to operator function strand
                                      lpYYFcnStrRht,     // Ptr to right operand function strand
-                                     lptkRhtArg,        // Ptr to right arg token
+                                     lptkRhtArg,        // Ptr to right arg token (may be NULL if niladic)
                                      bPrototyping);     // TRUE iff protoyping
 } // End PrimOpMonDieresisJotCommon_EM_YY
 
@@ -182,7 +178,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
      LPPL_YYSTYPE lpYYFcnStrLft,        // Ptr to left operand function strand
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPPL_YYSTYPE lpYYFcnStrRht,        // Ptr to right operand function strand
-     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token (may be NULL if niladic)
      UBOOL        bPrototyping)         // TRUE iff protoyping
 
 {
@@ -254,12 +250,12 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
         goto RIGHT_OPERAND_DOMAIN_EXIT;
 
     lpYYRes =
-      ExecuteMagicOperator_EM_YY (lptkLftArg,               // Ptr to left arg token
+      ExecuteMagicOperator_EM_YY (lptkLftArg,               // Ptr to left arg token (may be NULL if monadic/niladic)
                                  &lpYYFcnStrOpr->tkToken,   // Ptr to function token
                                   lpYYFcnStrLft,            // Ptr to left operand function strand
                                   lpYYFcnStrOpr,            // Ptr to function strand
                                   lpYYFcnStrRht,            // Ptr to right operand function strand (may be NULL)
-                                  lptkRhtArg,               // Ptr to right arg token
+                                  lptkRhtArg,               // Ptr to right arg token (may be NULL if niladic)
                                   NULL,                     // Ptr to axis token
                                   hGlbMFO1,                 // Magic function/operator global memory handle
                                   NULL,                     // Ptr to HSHTAB struc (may be NULL)

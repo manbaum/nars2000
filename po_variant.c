@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -45,10 +45,6 @@ LPPL_YYSTYPE PrimOpVariant_EM_YY
 
 {
     Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_VARIANT);
-
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
@@ -171,12 +167,12 @@ LPPL_YYSTYPE PrimIdentOpVariant_EM_YY
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_OPERAND_SYNTAX_EXIT;
+        goto LEFT_OPERAND_DOMAIN_EXIT;
 
     // Ensure the right operand is a variable
     if (IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
      || IsTknFillJot (&lpYYFcnStrRht->tkToken))
-        goto RIGHT_OPERAND_SYNTAX_EXIT;
+        goto RIGHT_OPERAND_DOMAIN_EXIT;
 
     // Check for left operand axis operator
     lptkAxisLft = CheckAxisOper (lpYYFcnStrLft);
@@ -200,13 +196,8 @@ AXIS_SYNTAX_EXIT:
                                lptkAxisOpr);
     goto ERROR_EXIT;
 
-LEFT_OPERAND_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                              &lpYYFcnStrLft->tkToken);
-    goto ERROR_EXIT;
-
-RIGHT_OPERAND_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+RIGHT_OPERAND_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
 
@@ -232,9 +223,10 @@ LPPL_YYSTYPE PrimOpMonVariant_EM_YY
      LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    return PrimOpMonVariantCommon_EM_YY (lpYYFcnStrOpr,       // Ptr to operator function strand
-                                           lptkRhtArg,          // Ptr to right arg token
-                                           FALSE);              // TRUE iff prototyping
+    return
+      PrimOpMonVariantCommon_EM_YY (lpYYFcnStrOpr,      // Ptr to operator function strand
+                                    lptkRhtArg,         // Ptr to right arg token
+                                    FALSE);             // TRUE iff prototyping
 } // End PrimOpMonVariant_EM_YY
 
 
@@ -259,12 +251,12 @@ LPPL_YYSTYPE PrimOpMonVariantCommon_EM_YY
     lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
 
     return
-      PrimOpVariantCommon_EM_YY (NULL,                // Ptr to left arg token (may be NULL if monadic derived function)
-                                   lpYYFcnStrLft,       // Ptr to left operand function strand
-                                   lpYYFcnStrOpr,       // Ptr to operator function strand
-                                   lpYYFcnStrRht,       // Ptr to right operand function strand
-                                   lptkRhtArg,          // Ptr to right arg token
-                                   bPrototyping);       // TRUE iff protoyping
+      PrimOpVariantCommon_EM_YY (NULL,                  // Ptr to left arg token (may be NULL if monadic derived function)
+                                 lpYYFcnStrLft,         // Ptr to left operand function strand
+                                 lpYYFcnStrOpr,         // Ptr to operator function strand
+                                 lpYYFcnStrRht,         // Ptr to right operand function strand
+                                 lptkRhtArg,            // Ptr to right arg token
+                                 bPrototyping);         // TRUE iff protoyping
 } // End PrimOpMonVariantCommon_EM_YY
 
 
@@ -322,12 +314,12 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_OPERAND_SYNTAX_EXIT;
+        goto LEFT_OPERAND_DOMAIN_EXIT;
 
     // Ensure the right operand is a variable
     if (IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
      || IsTknFillJot (&lpYYFcnStrRht->tkToken))
-        goto RIGHT_OPERAND_SYNTAX_EXIT;
+        goto RIGHT_OPERAND_DOMAIN_EXIT;
 
     //***************************************************************
     // Get the attributes (Type, NELM, and Rank) of the right operand
@@ -338,14 +330,15 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
     //    the right operand is nested or hetero, ...
     if (!IsTknImmed (&lpYYFcnStrLft->tkToken)
       || IsPtrArray (aplTypeRhtOpr))
-        return PrimOpVariantKeyword_EM_YY (lptkLftArg,      // Ptr to left arg token (may be NULL if monadic derived function)
-                                           lpYYFcnStrLft,   // Ptr to left operand function strand
-                                           lpYYFcnStrRht,   // Ptr to right operand function strand
-                                           lptkRhtArg,      // Ptr to right arg token
-                                           aplTypeRhtOpr,   // Right operand storage type
-                                           aplNELMRhtOpr,   // ...           NELM
-                                           aplRankRhtOpr,   // ...           rank
-                                           lpMemPTD);       // Ptr to PerTabData global memory
+        return
+          PrimOpVariantKeyword_EM_YY (lptkLftArg,       // Ptr to left arg token (may be NULL if monadic derived function)
+                                      lpYYFcnStrLft,    // Ptr to left operand function strand
+                                      lpYYFcnStrRht,    // Ptr to right operand function strand
+                                      lptkRhtArg,       // Ptr to right arg token
+                                      aplTypeRhtOpr,    // Right operand storage type
+                                      aplNELMRhtOpr,    // ...           NELM
+                                      aplRankRhtOpr,    // ...           rank
+                                      lpMemPTD);        // Ptr to PerTabData global memory
     // ***TESTME*** -- Handle axis operator on a PSDF
     // Split cases based upon the immediate function
     switch (lpYYFcnStrLft->tkToken.tkData.tkChar)
@@ -428,7 +421,9 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
         case UTF16_PI:                      // ...          (Number theoretic)
             // Ensure there's a left arg
             if (lptkLftArg EQ NULL)
-                goto LEFT_SYNTAX_EXIT;
+                goto LEFT_VALENCE_EXIT;
+
+            // Fall through to common code
 
         case UTF16_DELSTILE:                // Monadic:  Grade down, Dyadic: Grade down
         case UTF16_DELTASTILE:              // ...             up    ...           up
@@ -543,7 +538,9 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
         case UTF16_EPSILONUNDERBAR:         // ...          (Find)
             // Ensure there's a left arg
             if (lptkLftArg EQ NULL)
-                goto LEFT_SYNTAX_EXIT;
+                goto LEFT_VALENCE_EXIT;
+
+            // Fall through to common code
 
         case UTF16_DOWNSHOE:                // Monadic:  Unique,   Dyadic:  Set union
         case UTF16_DOWNSTILE:               // ...       Minimum   ...      Floor
@@ -568,7 +565,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
                 goto RIGHT_OPERAND_DOMAIN_EXIT;
 
             // Validate the value
-            if (!ValidateFloatTest (&aplFloatRhtOpr,    //
+            if (!ValidateFloatTest (&aplFloatRhtOpr,        // Ptr to float value
                                      DEF_MIN_QUADCT,        // Minimum value
                                      DEF_MAX_QUADCT,        // Maximum ...
                                      bRangeLimit.CT))       // TRUE iff range limiting
@@ -600,8 +597,9 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
             switch (aplRankRhtOpr)
             {
                 case 0:
-                    // If it's not simple global numeric, ...
-                    if (!IsNumeric (aplTypeRhtOpr))
+                    // If it's not simple global numeric and not simple char, ...
+                    if (!IsNumeric (aplTypeRhtOpr)
+                     && !IsSimpleChar (aplTypeRhtOpr))
                         goto RIGHT_OPERAND_DOMAIN_EXIT;
                     break;
 
@@ -767,7 +765,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 ////////    if (lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_BAR
 ////////     && lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_BAR2
 ////////     && !lptkLftArg)
-////////        goto LEFT_SYNTAX_EXIT;
+////////        goto LEFT_VALENCE_EXIT;
 ////////
 ////////    // Validate the right operand as
 ////////    //   a simple numeric scalar or one- or two-element vector
@@ -812,7 +810,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 ////////    if (lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_BAR
 ////////     && lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_BAR2
 ////////     && !lptkLftArg)
-////////        goto LEFT_SYNTAX_EXIT;
+////////        goto LEFT_VALENCE_EXIT;
 ////////
 ////////    // Validate the right operand as
 ////////    //   a simple numeric scalar or one-element vector
@@ -853,7 +851,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 ////////// []FE:  Fill Element:  ***FIXME*** -- Default value is either 0 or ' '
 ////////case UTF16_UPARROW:                 // Dyadic only
 ////////case UTF16_SLOPE:                   // ...
-////////    // DbgBrk ();           // ***FINISHME***
+////////    // DbgBrk ();           // ***FINISHME*** -- []FE
 ////////
 ////////    PrimFnNonceError_EM (&lpYYFcnStrLft->tkToken APPEND_NAME_ARG);
 ////////
@@ -873,24 +871,19 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 ////////    break;
 
         default:
-            goto LEFT_OPERAND_SYNTAX_EXIT;
+            goto LEFT_OPERAND_DOMAIN_EXIT;
     } // End SWITCH
 
     goto NORMAL_EXIT;
 
-LEFT_OPERAND_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+LEFT_OPERAND_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
-LEFT_SYNTAX_EXIT:
+LEFT_VALENCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkLftArg);
-    goto ERROR_EXIT;
-
-RIGHT_OPERAND_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                              &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
 
 RIGHT_OPERAND_RANK_EXIT:

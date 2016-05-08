@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,22 +39,18 @@
 #endif
 
 LPPL_YYSTYPE PrimOpDieresisCircle_EM_YY
-    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if niladic/monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
-     LPTOKEN      lptkRhtArg)           // Ptr to right arg token
+     LPTOKEN      lptkRhtArg)           // Ptr to right arg token (may be NULL if niladic)
 
 {
     Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_DIERESISCIRCLE);
-
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
         return
           PrimOpMonDieresisCircle_EM_YY (lpYYFcnStrOpr, // Ptr to operator function strand
-                                         lptkRhtArg,    // Ptr to right arg token
+                                         lptkRhtArg,    // Ptr to right arg token (may be NULL if niladic)
                                          FALSE);        // TRUE iff prototyping
     else
         return
@@ -79,9 +75,9 @@ LPPL_YYSTYPE PrimOpDieresisCircle_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimProtoOpDieresisCircle_EM_YY
-    (LPTOKEN      lptkLftArg,           // Ptr to left arg token
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if niladic/monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
-     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token (may be NULL if niladic)
      LPTOKEN      lptkAxisOpr)          // Ptr to axis token always NULL)
 
 {
@@ -99,11 +95,11 @@ LPPL_YYSTYPE PrimProtoOpDieresisCircle_EM_YY
     // If left arg is not present, ...
     if (lptkLftArg EQ NULL)
         //***************************************************************
-        // Called monadically
+        // Called niladically/monadically
         //***************************************************************
         return
           PrimOpMonDieresisCircle_EM_YY (lpYYFcnStrOpr, // Ptr to operator function strand
-                                         lptkRhtArg,    // Ptr to right arg token
+                                         lptkRhtArg,    // Ptr to right arg token (may be NULL if niladic)
                                          TRUE);         // TRUE iff prototyping
     else
         //***************************************************************
@@ -136,11 +132,12 @@ AXIS_SYNTAX_EXIT:
 
 LPPL_YYSTYPE PrimOpMonDieresisCircle_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
-     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token (may be NULL if niladic)
      UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
-    return PrimFnValenceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
+    return
+      PrimFnValenceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 } // End PrimOpDieresisCircle_EM_YY
 #undef  APPEND_NAME
 
@@ -158,9 +155,9 @@ LPPL_YYSTYPE PrimOpMonDieresisCircle_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimOpDydDieresisCircle_EM_YY
-    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if niladic/monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
-     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token (may be NULL if niladic)
      UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
@@ -194,12 +191,12 @@ LPPL_YYSTYPE PrimOpDydDieresisCircle_EM_YY
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
-        goto LEFT_OPERAND_SYNTAX_EXIT;
+        goto LEFT_OPERAND_DOMAIN_EXIT;
 
     // Ensure the right operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
      || IsTknFillJot (&lpYYFcnStrRht->tkToken))
-        goto RIGHT_OPERAND_SYNTAX_EXIT;
+        goto RIGHT_OPERAND_DOMAIN_EXIT;
 
     // Get a ptr to the left & right prototype function
     if (bPrototyping)
@@ -239,14 +236,14 @@ LPPL_YYSTYPE PrimOpDydDieresisCircle_EM_YY
         //   to bridge the two types of calls -- one to a primitive
         //   function which takes a function token, and one to a
         //   primitive operator which takes a function strand
-        lpYYResR = (*lpPrimProtoRht) (NULL,                     // Ptr to left arg token
+        lpYYResR = (*lpPrimProtoRht) (NULL,                     // Ptr to left arg token (may be NULL if niladic/monadic)
                             (LPTOKEN) lpYYFcnStrRht,            // Ptr to right operand function strand
-                                      lptkRhtArg,               // Ptr to right arg token
+                                      lptkRhtArg,               // Ptr to right arg token (may be NULL if niladic)
                                       lptkAxisRht);             // Ptr to right operand axis token (may be NULL)
     else
-        lpYYResR = ExecFuncStr_EM_YY (NULL,                     // Ptr to left arg token
+        lpYYResR = ExecFuncStr_EM_YY (NULL,                     // Ptr to left arg token (may be NULL if niladic/monadic)
                                       lpYYFcnStrRht,            // Ptr to right operand function strand
-                                      lptkRhtArg,               // Ptr to right arg token
+                                      lptkRhtArg,               // Ptr to right arg token (may be NULL if niladic)
                                       lptkAxisRht);             // Ptr to right operand axis token (may be NULL)
     // Check for error
     if (lpYYResR EQ NULL)
@@ -259,14 +256,14 @@ LPPL_YYSTYPE PrimOpDydDieresisCircle_EM_YY
         //   to bridge the two types of calls -- one to a primitive
         //   function which takes a function token, and one to a
         //   primitive operator which takes a function strand
-        lpYYResL = (*lpPrimProtoRht) (NULL,                 // Ptr to left arg token
+        lpYYResL = (*lpPrimProtoRht) (NULL,                 // Ptr to left arg token (may be NULL if niladic/monadic)
                             (LPTOKEN) lpYYFcnStrRht,        // Ptr to right operand function strand
-                                      lptkLftArg,           // Ptr to right arg token
+                                      lptkLftArg,           // Ptr to right arg token (may be NULL if niladic)
                                       lptkAxisRht);         // Ptr to right operand axis token (may be NULL)
     else
-        lpYYResL = ExecFuncStr_EM_YY (NULL,                 // Ptr to left arg token
+        lpYYResL = ExecFuncStr_EM_YY (NULL,                 // Ptr to left arg token (may be NULL if niladic/monadic)
                                       lpYYFcnStrRht,        // Ptr to right operand function strand
-                                      lptkLftArg,           // Ptr to right arg token
+                                      lptkLftArg,           // Ptr to right arg token (may be NULL if niladic)
                                       lptkAxisRht);         // Ptr to right operand axis token (may be NULL)
     // Check for error
     if (lpYYResL EQ NULL)
@@ -279,14 +276,14 @@ LPPL_YYSTYPE PrimOpDydDieresisCircle_EM_YY
         //   to bridge the two types of calls -- one to a primitive
         //   function which takes a function token, and one to a
         //   primitive operator which takes a function strand
-        lpYYRes = (*lpPrimProtoLft) (&lpYYResL->tkToken,    // Ptr to left arg token
+        lpYYRes = (*lpPrimProtoLft) (&lpYYResL->tkToken,    // Ptr to left arg token (may be NULL if niladic/monadic)
                             (LPTOKEN) lpYYFcnStrLft,        // Ptr to left operand function strand
-                                     &lpYYResR->tkToken,    // Ptr to right arg token
+                                     &lpYYResR->tkToken,    // Ptr to right arg token (may be NULL if niladic)
                                       lptkAxisLft);         // Ptr to left operand axis token (may be NULL)
     else
-        lpYYRes = ExecFuncStr_EM_YY (&lpYYResL->tkToken,    // Ptr to left arg token
+        lpYYRes = ExecFuncStr_EM_YY (&lpYYResL->tkToken,    // Ptr to left arg token (may be NULL if niladic/monadic)
                                       lpYYFcnStrLft,        // Ptr to left operand function strand
-                                     &lpYYResR->tkToken,    // Ptr to right arg token
+                                     &lpYYResR->tkToken,    // Ptr to right arg token (may be NULL if niladic)
                                       lptkAxisLft);         // Ptr to left operand axis token (may be NULL)
     // Free the left & right YYRes
     FreeResult (lpYYResL); YYFree (lpYYResL); lpYYResL = NULL;
@@ -299,13 +296,13 @@ AXIS_SYNTAX_EXIT:
                                lptkAxisOpr);
     return NULL;
 
-LEFT_OPERAND_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+LEFT_OPERAND_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     return NULL;
 
-RIGHT_OPERAND_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+RIGHT_OPERAND_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     return NULL;
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -71,7 +71,7 @@ LPPL_YYSTYPE ExecuteFn0
     {
         case FCNARRAY_HEADER_SIGNATURE:
             // Execute a function array global memory handle
-            return ExecFcnGlb_EM_YY (NULL,          // Ptr to left arg token (may be NULL if monadic or niladic)
+            return ExecFcnGlb_EM_YY (NULL,          // Ptr to left arg token (may be NULL if niladic/monadic)
                                      lpNameFcn,     // Function array global memory handle
                                      NULL,          // Ptr to right arg token (may be NULL if niladic)
                                      NULL);         // Ptr to axis token (may be NULL)
@@ -118,14 +118,12 @@ LPPL_YYSTYPE ExecFunc_EM_YY
     LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
     UINT         uSysNSLvl;             // System namespace level
 
-    DBGENTER;
-
     // Get the left and right arg global memory handle
-    if (lptkLftArg)
+    if (lptkLftArg NE NULL)
         hGlbLft = GetGlbHandle (lptkLftArg);
     else
         hGlbLft = NULL;
-    if (lptkRhtArg)
+    if (lptkRhtArg NE NULL)
         hGlbRht = GetGlbHandle (lptkRhtArg);
     else
         hGlbRht = NULL;
@@ -289,7 +287,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                     else
                         // Execute a function array global memory handle
                         lpYYRes =
-                          ExecFcnGlb_EM_YY (lptkLftArg,     // Ptr to left arg token (may be NULL if monadic or niladic)
+                          ExecFcnGlb_EM_YY (lptkLftArg,     // Ptr to left arg token (may be NULL if niladic/monadic)
                                             hGlbFcn,        // Function array global memory handle
                                             lptkRhtArg,     // Ptr to right arg token (may be NULL if niladic)
                                             lptkAxis);      // Ptr to axis token (may be NULL)
@@ -368,7 +366,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                     case FCNARRAY_HEADER_SIGNATURE:
                         // Execute a function array global memory handle
                         lpYYRes =
-                          ExecFcnGlb_EM_YY (lptkLftArg,     // Ptr to left arg token (may be NULL if monadic or niladic)
+                          ExecFcnGlb_EM_YY (lptkLftArg,     // Ptr to left arg token (may be NULL if niladic/monadic)
                                             hGlbFcn,        // Function array global memory handle
                                             lptkRhtArg,     // Ptr to right arg token
                                             lptkAxis);      // Ptr to axis token (may be NULL)
@@ -433,12 +431,12 @@ LPPL_YYSTYPE ExecFunc_EM_YY
             } // End __try/__except
 
             // If we allocated it, ...
-            if (lpYYFcnStrLft)
+            if (lpYYFcnStrLft NE NULL)
                 // Free the left operand YYRes
                 YYFree (lpYYFcnStrLft);
 
             // If we allocated it, ...
-            if (lpYYFcnStrRht)
+            if (lpYYFcnStrRht NE NULL)
                 // Free the right operand YYRes
                 YYFree (lpYYFcnStrRht);
 
@@ -450,7 +448,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
     } // End SWITCH
 
     // If the result is valid, ...
-    if (lpYYRes
+    if (lpYYRes NE NULL
      && !IsTokenNoValue (&lpYYRes->tkToken))
         // Change the tkSynObj
         lpYYRes->tkToken.tkSynObj = soA;
@@ -492,7 +490,7 @@ void GetOperands
     lpMemDfnHdr = MyGlobalLock (hGlbFcn);
 
     // If there's a left operand, ...
-    if (lpMemDfnHdr->steLftOpr)
+    if (lpMemDfnHdr->steLftOpr NE NULL)
     {
         // Allocate a new YYRes for the left operand
         *lplpYYFcnStrLft = YYAlloc ();
@@ -608,7 +606,7 @@ void GetOperands
         *lplpYYFcnStrLft = NULL;
 
     // If there's a right operand, ...
-    if (lpMemDfnHdr->steRhtOpr)
+    if (lpMemDfnHdr->steRhtOpr NE NULL)
     {
         // Allocate a new YYRes for it
         *lplpYYFcnStrRht = YYAlloc ();
@@ -747,32 +745,34 @@ LPPL_YYSTYPE ExecFcnGlb_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    LPFCNARRAY_HEADER lpHeader;     // Ptr to function array header
-    NAME_TYPES        fnNameType;   // Function array NAMETYPE
-    UINT              tknNELM;      // # tokens in the function array
-    LPPL_YYSTYPE      lpYYFcnStr,   // Ptr to function strand
-                      lpYYRes;      // Ptr to the result
-    LPTOKEN           lptkAxis2;    // Ptr to secondary axis token (may be NULL)
+    LPFCNARRAY_HEADER lpMemHdrFcn = NULL;   // Ptr to function array header
+    NAME_TYPES        fnNameType;           // Function array NAMETYPE
+    UINT              tknNELM;              // # tokens in the function array
+    LPPL_YYSTYPE      lpYYFcnStr,           // Ptr to function strand
+                      lpYYRes;              // Ptr to the result
+    LPTOKEN           lptkAxis2;            // Ptr to secondary axis token (may be NULL)
 
     // Lock the memory to get a ptr to it
-    lpHeader = MyGlobalLock (hGlbFcn);
+    lpMemHdrFcn = MyGlobalLock (hGlbFcn);
 
+#define lpHeader            lpMemHdrFcn
     // Save the NAMETYPE_xxx and # tokens
     fnNameType = lpHeader->fnNameType;
     tknNELM    = lpHeader->tknNELM;
+#undef  lpHeader
 
     // Skip over the header to the data (PL_YYSTYPEs)
-    lpYYFcnStr = FcnArrayBaseToData (lpHeader);
+    lpYYFcnStr = FcnArrayBaseToData (lpMemHdrFcn);
 
     // Check for axis operator
     lptkAxis2 = CheckAxisOper (lpYYFcnStr);
 
     // If two axis tokens, that's an error
-    if (lptkAxis && lptkAxis2)
+    if (lptkAxis NE NULL && lptkAxis2 NE NULL)
         goto AXIS_SYNTAX_EXIT;
     else
     // If the secondary only, use it
-    if (lptkAxis2)
+    if (lptkAxis2 NE NULL)
         lptkAxis = lptkAxis2;
 
     // If it's a Train, ...
@@ -797,10 +797,10 @@ LPPL_YYSTYPE ExecFcnGlb_EM_YY
                              lptkRhtArg,    // Ptr to right arg token
                              lptkAxis);     // Ptr to axis token
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbFcn); lpYYFcnStr = NULL;
+    MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL;
 
     // If the result is valid, ...
-    if (lpYYRes
+    if (lpYYRes NE NULL
      && !IsTokenNoValue (&lpYYRes->tkToken))
         // Change the SynObj
         lpYYRes->tkToken.tkSynObj = soA;
@@ -869,7 +869,7 @@ LPPL_YYSTYPE ExecTrain_EM_YY
                                              &lpYYFcnStr[0],    // Ptr to function strand
                                               lptkRhtArg,       // Ptr to right arg token
                                               NULL);            // Ptr to axis token
-                if (lpYYRes1)
+                if (lpYYRes1 NE NULL)
                 {
                     // Check for NoValue
                     if (IsTokenNoValue (&lpYYRes1->tkToken))
@@ -917,7 +917,7 @@ LPPL_YYSTYPE ExecTrain_EM_YY
                                              &lpYYFcnStr[0],    // Ptr to function strand
                                               lptkRhtArg,       // Ptr to right arg token
                                               NULL);            // Ptr to axis token
-                if (lpYYRes1)
+                if (lpYYRes1 NE NULL)
                 {
                     // Check for NoValue
                     if (IsTokenNoValue (&lpYYRes1->tkToken))
@@ -954,7 +954,7 @@ LPPL_YYSTYPE ExecTrain_EM_YY
                                              &lpYYFcnStr[0],    // Ptr to function strand
                                               lptkRhtArg,       // Ptr to right arg token
                                               NULL);            // Ptr to axis token
-                if (lpYYRes1)
+                if (lpYYRes1 NE NULL)
                 {
                     // Check for NoValue
                     if (IsTokenNoValue (&lpYYRes1->tkToken))
@@ -976,7 +976,7 @@ LPPL_YYSTYPE ExecTrain_EM_YY
                                                  &lpYYFcnStr[2],    // Ptr to function strand
                                                   lptkRhtArg,       // Ptr to right arg token
                                                   NULL);            // Ptr to axis token
-                    if (lpYYRes2)
+                    if (lpYYRes2 NE NULL)
                     {
                         // Check for NoValue
                         if (IsTokenNoValue (&lpYYRes2->tkToken))
@@ -1022,7 +1022,7 @@ LPPL_YYSTYPE ExecTrain_EM_YY
                                            &lpYYFcnStr[0],  // Ptr to function strand
                                             lptkRhtArg,     // Ptr to right arg token
                                             tknNELM - 2);   // # elements in the Train
-                if (lpYYRes1)
+                if (lpYYRes1 NE NULL)
                 {
                     // Check for NoValue
                     if (IsTokenNoValue (&lpYYRes1->tkToken))
@@ -1055,7 +1055,7 @@ LPPL_YYSTYPE ExecTrain_EM_YY
                                                      &lpYYFcnStr[tknNELM - 1],  // Ptr to function strand
                                                       lptkRhtArg,               // Ptr to right arg token
                                                       NULL);                    // Ptr to axis token
-                    if (lpYYRes2)
+                    if (lpYYRes2 NE NULL)
                     {
                         // Check for NoValue
                         if (IsTokenNoValue (&lpYYRes2->tkToken))
@@ -1108,7 +1108,7 @@ LPPL_YYSTYPE ExecTrain_EM_YY
                                                &lpYYFcnStr[0],  // Ptr to function strand
                                                 lptkRhtArg,     // Ptr to right arg token
                                                 tknNELM - 1);   // # elements in the Train
-                    if (lpYYRes1)
+                    if (lpYYRes1 NE NULL)
                     {
                         // Check for NoValue
                         if (IsTokenNoValue (&lpYYRes1->tkToken))
@@ -1150,13 +1150,13 @@ VALUE_EXIT:
 ERROR_EXIT:
 NORMAL_EXIT:
     // If a previous result is active, ...
-    if (lpYYRes1)
+    if (lpYYRes1 NE NULL)
     {
         // Free the previous result
         FreeResult (lpYYRes1); YYFree (lpYYRes1); lpYYRes1 = NULL;
     } // End IF
 
-    if (lpYYRes2)
+    if (lpYYRes2 NE NULL)
     {
         // Free the previous result
         FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
@@ -1187,9 +1187,9 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
 
 {
     return
-      ExecFuncStrLine_EM_YY (lptkLftArg,    // Ptr to left arg token (may be NULL if monadic)
+      ExecFuncStrLine_EM_YY (lptkLftArg,    // Ptr to left arg token (may be NULL if niladic/monadic)
                              lpYYFcnStr,    // Ptr to function strand
-                             lptkRhtArg,    // Ptr to right arg token
+                             lptkRhtArg,    // Ptr to right arg token (may be NULL if niladic)
                              lptkAxis,      // Ptr to axis token (may be NULL)
                              LINENUM_ONE);  // Starting line # type (see LINE_NUMS)
 } // End ExecFuncStr_EM_YY
@@ -1209,9 +1209,9 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
 #endif
 
 LPPL_YYSTYPE ExecFuncStrLine_EM_YY
-    (LPTOKEN      lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
+    (LPTOKEN      lptkLftArg,       // Ptr to left arg token (may be NULL if niladic/monadic)
      LPPL_YYSTYPE lpYYFcnStr,       // Ptr to function strand
-     LPTOKEN      lptkRhtArg,       // Ptr to right arg token
+     LPTOKEN      lptkRhtArg,       // Ptr to right arg token (may be NULL if niladic)
      LPTOKEN      lptkAxis,         // Ptr to axis token (may be NULL)
      LINE_NUMS    startLineType)    // Starting line type (see LINE_NUMS)
 
@@ -1288,7 +1288,7 @@ LPPL_YYSTYPE ExecFuncStrLine_EM_YY
                     lptkAxis = CheckAxisOper (lpYYFcnStr);
 
                     // Execute a function array global memory handle
-                    return ExecFcnGlb_EM_YY (lptkLftArg,    // Ptr to left arg token (may be NULL if monadic or niladic)
+                    return ExecFcnGlb_EM_YY (lptkLftArg,    // Ptr to left arg token (may be NULL if niladic/monadic)
                                              hGlbFcn,       // Function array global memory handle
                                              lptkRhtArg,    // Ptr to right arg token
                                              lptkAxis);     // Ptr to axis token (may be NULL)
@@ -1326,9 +1326,9 @@ LPPL_YYSTYPE ExecFuncStrLine_EM_YY
                 if (lpPrimFn EQ NULL)
                     goto SYNTAX_EXIT;
 
-                return (*lpPrimFn) (lptkLftArg,                 // Ptr to left arg token (may be NULL if monadic)
+                return (*lpPrimFn) (lptkLftArg,                 // Ptr to left arg token (may be NULL if niladic/monadic)
                                    &lpYYFcnStr->tkToken,        // Ptr to function token
-                                    lptkRhtArg,                 // Ptr to right arg token
+                                    lptkRhtArg,                 // Ptr to right arg token (may be NULL if niladic)
                                     lptkAxis);                  // Ptr to axis token (may be NULL)
             } else
             {
@@ -1340,7 +1340,7 @@ LPPL_YYSTYPE ExecFuncStrLine_EM_YY
                 if (lpYYFcnStr->tkToken.tkData.tkSym->stFlags.FcnDir)
                     return (*lpPrimFn) (lptkLftArg,             // Ptr to left arg token (may be NULL if monadic)
                                        &lpYYFcnStr->tkToken,    // Ptr to function token
-                                        lptkRhtArg,             // Ptr to right arg token
+                                        lptkRhtArg,             // Ptr to right arg token (may be NULL if niladic)
                                         lptkAxis);              // Ptr to axis token (may be NULL)
                 // tkData is a valid HGLOBAL function array
                 //   or user-defined function/operator
@@ -1352,17 +1352,17 @@ LPPL_YYSTYPE ExecFuncStrLine_EM_YY
                 {
                     case FCNARRAY_HEADER_SIGNATURE:
                         // Execute a function array global memory handle
-                        return ExecFcnGlb_EM_YY (lptkLftArg,    // Ptr to left arg token (may be NULL if monadic or niladic)
+                        return ExecFcnGlb_EM_YY (lptkLftArg,    // Ptr to left arg token (may be NULL if niladic/monadic)
                                                  hGlbFcn,       // Function array global memory handle
-                                                 lptkRhtArg,    // Ptr to right arg token
+                                                 lptkRhtArg,    // Ptr to right arg token (may be NULL if niladic)
                                                  lptkAxis);     // Ptr to axis token (may be NULL)
                     case DFN_HEADER_SIGNATURE:
                         // Execute a user-defined function/operator global memory handle
                         return ExecDfnGlb_EM_YY (hGlbFcn,       // User-defined function/operator global memory handle
-                                                 lptkLftArg,    // Ptr to left arg token (may be NULL if monadic)
+                                                 lptkLftArg,    // Ptr to left arg token (may be NULL if niladic/monadic)
                                                  lpYYFcnStr,    // Ptr to function strand
                                                  lptkAxis,      // Ptr to axis token (may be NULL -- used only if function strand is NULL)
-                                                 lptkRhtArg,    // Ptr to right arg token
+                                                 lptkRhtArg,    // Ptr to right arg token (may be NULL if niladic)
                                                  startLineType); // Starting line type (see LINE_NUMS)
                     defstop
                         return NULL;
@@ -1387,12 +1387,12 @@ LPPL_YYSTYPE ExecFuncStrLine_EM_YY
                                    lptkRhtArg,      // Ptr to right arg token
                                    startLineType);  // Starting line type (see LINE_NUMS)
             // If we allocated it, ...
-            if (lpYYFcnStrLft)
+            if (lpYYFcnStrLft NE NULL)
                 // Free the left operand YYRes
                 YYFree (lpYYFcnStrLft);
 
             // If we allocated it, ...
-            if (lpYYFcnStrRht)
+            if (lpYYFcnStrRht NE NULL)
                 // Free the right operand YYRes
                 YYFree (lpYYFcnStrRht);
 

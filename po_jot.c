@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,14 +46,11 @@ LPPL_YYSTYPE PrimOpJot_EM_YY
 {
     Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_JOT);
 
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
-
-    return PrimOpJotCommon_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
-                                  lpYYFcnStrOpr,        // Ptr to operator function strand
-                                  lptkRhtArg,           // Ptr to right arg token
-                                  FALSE);               // TRUE iff prototyping
+    return
+      PrimOpJotCommon_EM_YY (lptkLftArg,    // Ptr to left arg token (may be NULL if niladic/monadic)
+                             lpYYFcnStrOpr, // Ptr to operator function strand
+                             lptkRhtArg,    // Ptr to right arg token (may be NULL if niladic)
+                             FALSE);        // TRUE iff prototyping
 } // End PrimOpJot_EM_YY
 #undef  APPEND_NAME
 
@@ -73,10 +70,11 @@ LPPL_YYSTYPE PrimProtoOpJot_EM_YY
 {
     Assert (lptkAxis EQ NULL);
 
-    return PrimOpJotCommon_EM_YY (lptkLftArg,           // Ptr to left arg token
-                                  lpYYFcnStr,           // Ptr to operator function strand
-                                  lptkRhtArg,           // Ptr to right arg token
-                                  TRUE);                // TRUE iff prototyping
+    return
+      PrimOpJotCommon_EM_YY (lptkLftArg,    // Ptr to left arg token
+                             lpYYFcnStr,    // Ptr to operator function strand
+                             lptkRhtArg,    // Ptr to right arg token
+                             TRUE);         // TRUE iff prototyping
 } // End PrimProtoOpJot_EM_YY
 
 
@@ -94,9 +92,9 @@ LPPL_YYSTYPE PrimProtoOpJot_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimOpJotCommon_EM_YY
-    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if niladic/monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
-     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN      lptkRhtArg,           // Ptr to right arg token (may be NULL if niladic)
      UBOOL        bPrototyping)         // TRUE iff prototyping
 
 {
@@ -104,8 +102,8 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
                  lpYYFcnStrRht,         // Ptr to right ...
                  lpYYRes,               // Ptr to the result
                  lpYYRes2;              // Ptr to secondary result
-    UBOOL        bLftArg,               // TRUE iff left arg is a function/operator
-                 bRhtArg;               //          right ...
+    UBOOL        bLftOpr,               // TRUE iff left operand is a function/operator
+                 bRhtOpr;               //          right ...
     LPPRIMFNS    lpPrimProtoLft;        // Ptr to left operand prototype function
     LPPRIMFNS    lpPrimProtoRht;        // Ptr to right ...
     LPTOKEN      lptkAxisOpr,           // Ptr to axis token (may be NULL)
@@ -137,11 +135,11 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
         goto RIGHT_OPERAND_SYNTAX_EXIT;
 
     // Test for fcn/opr vs. var
-    bLftArg = IsTknFcnOpr (&lpYYFcnStrLft->tkToken);
-    bRhtArg = IsTknFcnOpr (&lpYYFcnStrRht->tkToken);
+    bLftOpr = IsTknFcnOpr (&lpYYFcnStrLft->tkToken);
+    bRhtOpr = IsTknFcnOpr (&lpYYFcnStrRht->tkToken);
 
     // Get a ptr to the prototype function for the left operand
-    if (bPrototyping && bLftArg)
+    if (bPrototyping && bLftOpr)
     {
         // Get the appropriate prototype function ptr
         lpPrimProtoLft = GetPrototypeFcnPtr (&lpYYFcnStrLft->tkToken);
@@ -151,7 +149,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
         lpPrimProtoLft = NULL;
 
     // Get a ptr to the prototype function for the right operand
-    if (bPrototyping && bRhtArg)
+    if (bPrototyping && bRhtOpr)
     {
         // Get the appropriate prototype function ptr
         lpPrimProtoRht = GetPrototypeFcnPtr (&lpYYFcnStrRht->tkToken);
@@ -164,7 +162,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
 
     // Determine if the left & right arg tokens are functions/operators
     // Check for axis operator in the left operand
-    if (bLftArg
+    if (bLftOpr
      && lpYYFcnStrLft->TknCount > 1
      && IsTknTypeAxis (lpYYFcnStrLft[1].tkToken.tkFlags.TknType))
         lptkAxisLft = &lpYYFcnStrLft[1].tkToken;
@@ -172,7 +170,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
         lptkAxisLft = NULL;
 
     // Check for axis operator in the right operand
-    if (bRhtArg
+    if (bRhtOpr
      && lpYYFcnStrRht->TknCount > 1
      && IsTknTypeAxis (lpYYFcnStrRht[1].tkToken.tkFlags.TknType))
         lptkAxisRht = &lpYYFcnStrRht[1].tkToken;
@@ -181,7 +179,7 @@ LPPL_YYSTYPE PrimOpJotCommon_EM_YY
 
     // Split cases based upon the type (V or F) of
     //   the left and right operands
-    switch (bLftArg * 2 + bRhtArg * 1)
+    switch (bLftOpr * 2 + bRhtOpr * 1)
     {
         case 1 * 2 + 1 * 1:     // F1 Jot F2 -> F1 F2 R or L F1 F2 R
             // Execute the right operand monadically

@@ -61,7 +61,7 @@ LPPL_YYSTYPE ExecDfnGlbProto_EM_YY
                         lptkRhtArg,             // Ptr to right arg token
                         LINENUM_PRO);           // Starting line # (see LINE_NUMS)
     // If the result is valid, ...
-    if (lpYYRes2)
+    if (lpYYRes2 NE NULL)
     {
         // Check for NoValue
         if (IsTokenNoValue (&lpYYRes2->tkToken))
@@ -126,7 +126,7 @@ LPPL_YYSTYPE ExecDfnGlbIdent_EM_YY
                         lptkRhtArg,             // Ptr to right arg token
                         LINENUM_ID);            // Starting line # (see LINE_NUMS)
     // If the result is valid, ...
-    if (lpYYRes)
+    if (lpYYRes NE NULL)
     {
         // Check for NoValue
         if (IsTokenNoValue (&lpYYRes->tkToken))
@@ -162,10 +162,10 @@ VALUE_EXIT:
 
 LPPL_YYSTYPE ExecDfnGlb_EM_YY
     (HGLOBAL      hGlbDfnHdr,       // User-defined function/operator global memory handle
-     LPTOKEN      lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN      lptkLftArg,       // Ptr to left arg token (may be NULL if niladic/monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,    // Ptr to function strand (may be NULL if not an operator and no axis)
      LPTOKEN      lptkAxisOpr,      // Ptr to axis token (may be NULL -- used only if function strand is NULL)
-     LPTOKEN      lptkRhtArg,       // Ptr to right arg token
+     LPTOKEN      lptkRhtArg,       // Ptr to right arg token (may be NULL if niladic)
      LINE_NUMS    startLineType)    // Starting line type (see LINE_NUMS)
 
 {
@@ -181,7 +181,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
         lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
 
     // Determine if the token is a Del
-    bTknDel = (lpYYFcnStrOpr
+    bTknDel = (lpYYFcnStrOpr NE NULL
             && lpYYFcnStrOpr->tkToken.tkFlags.TknType EQ TKT_DELAFO);
     // If the token is a Del, ...
     if (bTknDel)
@@ -213,29 +213,29 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
     // Call common routine
     lpYYRes =
       ExecDfnOprGlb_EM_YY (hGlbDfnHdr,      // User-defined function/operator global memory handle
-                           lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
+                           lptkLftArg,      // Ptr to left arg token (may be NULL if niladic/monadic)
                            lpYYFcnStrLft,   // Ptr to left operand function strand (may be NULL if not an operator and no axis)
                            lpYYFcnStrOpr,   // Ptr to function strand (may be NULL if not an operator and no axis)
                            lpYYFcnStrRht,   // Ptr to right operand function strand (may be NULL if not an operator and no axis)
                            lptkAxisOpr,     // Ptr to axis token (may be NULL -- used only if function strand is NULL)
-                           lptkRhtArg,      // Ptr to right arg token
+                           lptkRhtArg,      // Ptr to right arg token (may be NULL if niladic)
                            startLineType);  // Starting line type (see LINE_NUMS)
     // If the token is a Del, ...
     if (bTknDel)
     {
         // If we allocated it, ...
-        if (lpYYFcnStrLft)
+        if (lpYYFcnStrLft NE NULL)
             // Free the left operand YYRes
             YYFree (lpYYFcnStrLft);
 
         // If we allocated it, ...
-        if (lpYYFcnStrRht)
+        if (lpYYFcnStrRht NE NULL)
             // Free the right operand YYRes
             YYFree (lpYYFcnStrRht);
     } // End IF
 
     // If the result is valid and not NoValue, ...
-    if (lpYYRes
+    if (lpYYRes NE NULL
      && !IsTokenNoValue (&lpYYRes->tkToken))
         // Change the SynObj
         lpYYRes->tkToken.tkSynObj = soA;
@@ -259,12 +259,12 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
 
 LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     (HGLOBAL      hGlbDfnHdr,       // User-defined function/operator global memory handle
-     LPTOKEN      lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN      lptkLftArg,       // Ptr to left arg token (may be NULL if niladic/monadic)
      LPPL_YYSTYPE lpYYFcnStrLft,    // Ptr to left operand function strand (may be NULL if not an operator and no axis)
      LPPL_YYSTYPE lpYYFcnStr,       // Ptr to function strand (may be NULL if not an operator and no axis)
      LPPL_YYSTYPE lpYYFcnStrRht,    // Ptr to right operand function strand (may be NULL if not an operator and no axis)
      LPTOKEN      lptkAxis,         // Ptr to axis token (may be NULL -- used only if function strand is NULL)
-     LPTOKEN      lptkRhtArg,       // Ptr to right arg token
+     LPTOKEN      lptkRhtArg,       // Ptr to right arg token (may be NULL if niladic)
      LINE_NUMS    startLineType)    // Starting line type (see LINE_NUMS)
 
 {
@@ -355,9 +355,9 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
-    if (lptkLftArg)
+    if (lptkLftArg NE NULL)
         AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
-    if (lptkRhtArg)
+    if (lptkRhtArg NE NULL)
         AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // If the DFN left arg is present and a list, make sure the left arg token
@@ -451,7 +451,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     //   is local to the function/operator, we need to copy the STE of the name
     //   or else it'll get wiped out by a call to LocalizeSymEntries before we
     //   get to use it in InitVarSTEs/InitFcnSTEs
-    if (lptkLftArg)
+    if (lptkLftArg NE NULL)
     {
         // Copy the token
         tkLftTmp = *lptkLftArg;
@@ -467,7 +467,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     } else
         lptkLftTmp = NULL;
 
-    if (lpYYFcnStrLft)
+    if (lpYYFcnStrLft NE NULL)
     {
         // Copy the PL_YYSTYPE
         lpYYFcnTmpLft = lpYYFcnStrLft;
@@ -483,7 +483,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     } else
         lpYYFcnTmpLft = NULL;
 
-    if (lpYYFcnStrRht)
+    if (lpYYFcnStrRht NE NULL)
     {
         // Copy the PL_YYSTYPE
         lpYYFcnTmpRht = lpYYFcnStrRht;
@@ -499,7 +499,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     } else
         lpYYFcnTmpRht = NULL;
 
-    if (lptkRhtArg)
+    if (lptkRhtArg NE NULL)
     {
         // Copy the token
         tkRhtTmp = *lptkRhtArg;
@@ -524,7 +524,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
                       (LPAPLHETERO) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offLftArgSTE)))
         goto WSFULL_UNLOCALIZE_EXIT;
     // Setup the left operand STE
-    if (lpYYFcnTmpLft
+    if (lpYYFcnTmpLft NE NULL
      && lpYYFcnTmpLft->tkToken.tkFlags.TknType NE TKT_FILLJOT)
     {
         // Split cases based upon fcn vs. var
@@ -547,7 +547,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
                      &lpMemDfnHdr->steAxisOpr))
         goto WSFULL_UNLOCALIZE_EXIT;
     // Setup the right operand STE
-    if (lpYYFcnTmpRht
+    if (lpYYFcnTmpRht NE NULL
      && lpYYFcnTmpRht->tkToken.tkFlags.TknType NE TKT_FILLJOT)
     {
         // Split cases based upon fcn vs. var
@@ -657,11 +657,11 @@ NORMAL_EXIT:
     SetExecuting (lpMemPTD, bOldExecuting);
 
     // Restore named left operand tkSym
-    if (lpSymLftFcn && bNamedLftFcn)
+    if (lpSymLftFcn NE NULL && bNamedLftFcn)
         lpYYFcnTmpLft->tkToken.tkData.tkSym = lpSymLftFcn;
 
     // Restore named right operand tkSym
-    if (lpSymRhtFcn && bNamedRhtFcn)
+    if (lpSymRhtFcn NE NULL && bNamedRhtFcn)
         lpYYFcnTmpRht->tkToken.tkData.tkSym = lpSymRhtFcn;
 
     // If we're executing an AFO, ...
@@ -807,7 +807,7 @@ void _CheckSymEntries
     // Get a ptr to the current SIS header
     lpSISCur = lpMemPTD->lpSISCur;
 
-    while (lpSISCur)
+    while (lpSISCur NE NULL)
     {
         // Get # LPSYMENTRYs on the stack
         numSymEntries = lpSISCur->numSymEntries;
@@ -1428,7 +1428,7 @@ UBOOL CheckDfnExitError_EM
 
     // If the current level is Immediate Execution Mode, Execute, or Quad Input
     //   back off until it isn't
-    while (lpSISCur
+    while (lpSISCur NE NULL
         && (lpSISCur->DfnType EQ DFNTYPE_IMM
          || lpSISCur->DfnType EQ DFNTYPE_EXEC
          || lpSISCur->DfnType EQ DFNTYPE_QUAD))
@@ -1560,7 +1560,7 @@ ERROR_EXIT:
 
     // If the current level is not suspendable
     //   back off until it is
-    while (lpSISCur
+    while (lpSISCur NE NULL
         && (lpSISCur->DfnType EQ DFNTYPE_IMM
          || lpSISCur->DfnType EQ DFNTYPE_EXEC
          || lpSISCur->DfnType EQ DFNTYPE_QUAD
@@ -1578,7 +1578,7 @@ ERROR_EXIT:
     // Mark as error on exit
     bRet = TRUE;
 NORMAL_EXIT:
-    if (lptkHdr)
+    if (lptkHdr NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (lpMemDfnHdr->hGlbTknHdr); lptkHdr = NULL;
@@ -1700,7 +1700,7 @@ void UnlocalizeSTEs
         // Loop through the LPSYMENTRYs on the stack
         for (numSym = 0; numSym < numSymEntries; numSym++, lpSymEntryNxt--)
         // If the hash entry is valid, ...
-        if (lpSymEntryNxt->stHshEntry)
+        if (lpSymEntryNxt->stHshEntry NE NULL)
         {
             // Get the ptr to the corresponding SYMENTRY
             lpSymEntryCur = lpSymEntryNxt->stHshEntry->htSymEntry;
@@ -1896,10 +1896,11 @@ UBOOL InitVarSTEs
      LPSYMENTRY  *lplpSymEntry) // Ptr to LPSYMENTRYs
 
 {
-    UINT    uSym;               // Loop counter
-    HGLOBAL hGlbArg;            // Arg global memory handle
-    LPVOID  lpMemArg;           // Ptr to arg global memory
-    STFLAGS stFlagsClr = {0};   // Flags for clearing an STE
+    UINT              uSym;                 // Loop counter
+    HGLOBAL           hGlbArg;              // Arg global memory handle
+    LPVARARRAY_HEADER lpMemHdrArg = NULL;   // Ptr to arg header
+    LPVOID            lpMemArg;             // Ptr to arg global memory
+    STFLAGS           stFlagsClr = {0};     // Flags for clearing an STE
 
     // Set the Inuse flag
     stFlagsClr.Inuse = TRUE;
@@ -1992,20 +1993,21 @@ UBOOL InitVarSTEs
             (*lplpSymEntry)->stData.stGlbData   = CopySymGlbDir_PTB (hGlbArg);
         } else
         {
-            APLSTYPE aplTypeArg;            // Arg storage type
-            APLNELM  aplNELMArg;            // Arg NELM
-            APLRANK  aplRankArg;            // Arg rank
-            UINT     uBitIndex;             // Bit index for Booleans
-            APLINT   apaOffArg,             // APA offset
-                     apaMulArg;             // ... multiplier
-            APLUINT  ByteRes;               // # bytes in the result
-            HGLOBAL  hGlbRes;               // Result global memory handle
-            LPVOID   lpMemRes;              // Ptr to result global memory
+            APLSTYPE          aplTypeArg;           // Arg storage type
+            APLNELM           aplNELMArg;           // Arg NELM
+            APLRANK           aplRankArg;           // Arg rank
+            UINT              uBitIndex;            // Bit index for Booleans
+            APLINT            apaOffArg,            // APA offset
+                              apaMulArg;            // ... multiplier
+            APLUINT           ByteRes;              // # bytes in the result
+            HGLOBAL           hGlbRes;              // Result global memory handle
+            LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result header
+            LPVOID            lpMemRes;             // Ptr to result global memory
 
             // Lock the memory to get a ptr to it
-            lpMemArg = MyGlobalLock (hGlbArg);
+            lpMemHdrArg = MyGlobalLock (hGlbArg);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemArg)
+#define lpHeader        lpMemHdrArg
             aplTypeArg = lpHeader->ArrType;
             aplNELMArg = lpHeader->NELM;
             aplRankArg = lpHeader->Rank;
@@ -2016,7 +2018,7 @@ UBOOL InitVarSTEs
                  || aplNELMArg EQ 1);
 
             // Skip over the header and dimensions to the data
-            lpMemArg = VarArrayDataFmBase (lpMemArg);
+            lpMemArg = VarArrayDataFmBase (lpMemHdrArg);
 
             // In case the arg is Boolean
             uBitIndex = 0;
@@ -2168,9 +2170,9 @@ UBOOL InitVarSTEs
                             goto WSFULL_EXIT;
 
                         // Lock the memory to get a ptr to it
-                        lpMemRes = MyGlobalLock (hGlbRes);
+                        lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
                         // Fill in the header
                         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
                         lpHeader->ArrType    = ARRAY_RAT;
@@ -2181,13 +2183,13 @@ UBOOL InitVarSTEs
 ////////////////////////lpHeader->Rank       = 0;               // Already zero from GHNS
 #undef  lpHeader
                         // Skip over the header and dimension
-                        lpMemRes = VarArrayDataFmBase (lpMemRes);
+                        lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
                         // Fill in the scalar value
                         mpq_init_set ((LPAPLRAT) lpMemRes, (LPAPLRAT) lpMemArg);
 
                         // We no longer need this ptr
-                        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
 ////////////////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;        // Already zero from previous initialization
                         (*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_RAT;
@@ -2218,9 +2220,9 @@ UBOOL InitVarSTEs
                             goto WSFULL_EXIT;
 
                         // Lock the memory to get a ptr to it
-                        lpMemRes = MyGlobalLock (hGlbRes);
+                        lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
                         // Fill in the header
                         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
                         lpHeader->ArrType    = ARRAY_VFP;
@@ -2231,13 +2233,13 @@ UBOOL InitVarSTEs
 ////////////////////////lpHeader->Rank       = 0;               // Already zero from GHNS
 #undef  lpHeader
                         // Skip over the header and dimension
-                        lpMemRes = VarArrayDataFmBase (lpMemRes);
+                        lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
                         // Fill in the scalar value
                         mpfr_init_set ((LPAPLVFP) lpMemRes, (LPAPLVFP) lpMemArg, MPFR_RNDN);
 
                         // We no longer need this ptr
-                        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
 ////////////////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;        // Already zero from previous initialization
                         (*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_VFP;
@@ -2259,7 +2261,7 @@ UBOOL InitVarSTEs
             } // End FOR
 
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
+            MyGlobalUnlock (hGlbArg); lpMemHdrArg = NULL;
         } // End IF/ELSE
     } // End IF
 
@@ -2298,7 +2300,7 @@ UBOOL InitFcnSTEs
     stFlagsClr.Inuse = TRUE;
 
     // If the token is defined, ...
-    if (lpYYArg && numArgSTE)
+    if (lpYYArg NE NULL && numArgSTE NE 0)
     {
         // Get the token count
         TknCount = lpYYArg->TknCount;
@@ -2383,11 +2385,11 @@ UBOOL InitFcnSTEs
             } // End SWITCH
         } else
         {
-            APLUINT           ByteRes;          // # bytes in the result
-            HGLOBAL           hGlbRes;          // Result global memory handle
-            LPVOID            lpMemRes;         // Ptr to result global memory
-            UINT              uFcn;             // Loop counter
-            LPFCNARRAY_HEADER lpHeader;         // Ptr to function array header
+            APLUINT           ByteRes;              // # bytes in the result
+            HGLOBAL           hGlbRes;              // Result global memory handle
+            LPFCNARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result header
+            LPVOID            lpMemRes;             // Ptr to result global memory
+            UINT              uFcn;                 // Loop counter
 #ifdef DEBUG
             // If the token is a global, ...
             if (!IsTknImmed (&lpYYArg->tkToken))
@@ -2415,19 +2417,18 @@ UBOOL InitFcnSTEs
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemRes = MyGlobalLock (hGlbRes);
+            lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-            // Save a ptr to the function array header
-            lpHeader = (LPFCNARRAY_HEADER) lpMemRes;
-
+#define lpHeader            lpMemHdrRes
             // Fill in the header
             lpHeader->Sig.nature  = FCNARRAY_HEADER_SIGNATURE;
             lpHeader->fnNameType  = NAMETYPE_FN12;
             lpHeader->RefCnt      = 1;
             lpHeader->tknNELM     = TknCount;
+#undef  lpHeader
 
             // Skip over the header to the data (PL_YYSTYPEs)
-            lpMemRes = FcnArrayBaseToData (lpMemRes);
+            lpMemRes = FcnArrayBaseToData (lpMemHdrRes);
 
             // Copy the PL_YYSTYPEs to the global memory object
             // Test cases:  +/rank[2] a     (as defined operator)
@@ -2435,7 +2436,7 @@ UBOOL InitFcnSTEs
             CopyMemory (lpMemRes, lpYYArg, TknCount * sizeof (PL_YYSTYPE));
 
             // Make a function array text line
-            MakeTxtLine (lpHeader);
+            MakeTxtLine (lpMemHdrRes);
 
             // Loop through the functions incrementing the RefCnt as appropriate
             for (uFcn = 0; uFcn < TknCount; uFcn++, lpYYArg++)
@@ -2482,7 +2483,7 @@ UBOOL InitFcnSTEs
             } // End FOR/SWITCH
 
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
             // Clear the STE flags
             *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;

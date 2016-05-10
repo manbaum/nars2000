@@ -168,7 +168,7 @@ UBOOL CmdLoadCom_EM
                     bExecLX);           // TRUE iff execute []LX after successful load
 WSNOTFOUND_EXIT:
     // If we locked it, ...
-    if (lpwszLibDirs)
+    if (lpwszLibDirs NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbLibDirs); lpwszLibDirs = NULL;
@@ -395,7 +395,6 @@ UBOOL LoadWorkspace_EM
                             sizeof (wszCount),
                            L"%d",
                             uSID - 1);
-
                 // Read in the SI line
                 lpwFcnName =
                   ProfileGetString (SECTNAME_SI,        // Ptr to the section name
@@ -651,15 +650,69 @@ UBOOL LoadWorkspace_EM
                         lpSymEntry->stFlags.stNameType = NAMETYPE_VAR;
                         lpSymEntry->stData.stLongest   = aplLongestObj;
 
-                        // If this var is []FPC, set the VFP constants and PTD vars
-                        if (lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS
-                         && IsSymSysName (lpSymEntry, $QUAD_FPC))
+                        // If this is a sys var, ...
+                        if (lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS)
                         {
-                            // Initialize the precision-specific VFP constants
-                            InitVfpPrecision (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_FPC]->stData.stInteger);
+                            TOKEN        tkNam = {0};
+                            static WCHAR wszTemp[512];
+                            LPWCHAR      lpMemName;
 
-                            // Initialize PerTabData vars
-                            InitPTDVars (lpMemPTD);
+                            // Fill in the name token
+                            tkNam.tkFlags.TknType   = TKT_VARNAMED;
+////////////////////////////tkNam.tkFlags.ImmType   = IMMTYPE_ERROR;    // Unused
+////////////////////////////tkNam.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
+////////////////////////////tkNam.>tkCharIndex      =                   // Unused
+                            tkNam.tkData.tkSym      = lpSymEntry;
+
+                            // If the target is a user-defined function/operator system label, ...
+                            if (tkNam.tkData.tkSym->stFlags.DfnSysLabel)
+                            {
+                                // Lock the memory to get a ptr to it
+                                lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+
+                                // Format the error message text
+                                MySprintfW (wszTemp,
+                                            sizeof (wszTemp),
+                                           L"Error Assigning to SysLbl:  %s",
+                                            lpMemName);
+                                // We no longer need this ptr
+                                MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;
+
+                                // Set the error message text
+                                lpwErrMsg = &wszTemp[0];
+
+                                goto ETO_ERRMSG_EXIT;
+                            } // End IF
+
+                            // If it's not []DM, ...
+                            if (!IsSymSysName (lpSymEntry, $QUAD_DM))
+                            {
+                                // Validate the value
+                                bRet = (*aSysVarValidSet[tkNam.tkData.tkSym->stFlags.SysVarValid]) (&tkNam, &tkNam);
+
+                                // If it validated, ...
+                                if (bRet)
+                                    // Execute the post-validation function
+                                    (*aSysVarValidPost[tkNam.tkData.tkSym->stFlags.SysVarValid]) (&tkNam);
+                                else
+                                {
+                                    // Lock the memory to get a ptr to it
+                                    lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+
+                                    // Format the error message text
+                                    MySprintfW (wszTemp,
+                                                sizeof (wszTemp),
+                                               L"Error validating SysVar:  %s",
+                                                lpMemName);
+                                    // We no longer need this ptr
+                                    MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;
+
+                                    // Set the error message text
+                                    lpwErrMsg = &wszTemp[0];
+
+                                    goto ETO_ERRMSG_EXIT;
+                                } // End IF
+                            } // End IF
                         } // End IF
                     } // End IF
                 } // End IF/ELSE
@@ -844,14 +897,14 @@ ETO_ERROR_EXIT:
     EXIT_TEMP_OPEN
 ERROR_EXIT:
 NORMAL_EXIT:
-    if (hGlbDPFE && lpwszDPFE)
+    if (hGlbDPFE NE NULL && lpwszDPFE NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbDPFE); lpwszDPFE = NULL;
     } // End IF
 
     // If there's a dictionary, ...
-    if (lpDict)
+    if (lpDict NE NULL)
     {
         // Free the dictionary
         ProfileUnload (lpDict); lpDict = NULL;
@@ -935,7 +988,7 @@ UBOOL ParseSavedWsFcn_EM
         hGlbOld = lpSymObj->stData.stGlbData;
 
         // If the old value is valid, ...
-        if (hGlbOld)
+        if (hGlbOld NE NULL)
             // Increment its reference count to keep it around
             //   in case it gets freed by LoadWorkspaceGlobal_EM
             DbgIncrRefCntDir_PTB (hGlbOld); // EXAMPLE:  )copy tests\64bit lx
@@ -978,7 +1031,7 @@ UBOOL ParseSavedWsFcn_EM
         DbgIncrRefCntDir_PTB (hGlbObj);
 
         // If there's an old value, ...
-        if (hGlbOld)
+        if (hGlbOld NE NULL)
         {
             LPDFN_HEADER lpMemDfnHdr;   // Ptr to DFN_HEADER global memory
 
@@ -1128,7 +1181,7 @@ LPWCHAR ParseSavedWsVar_EM
         lpwSrc = &lpwCharEnd[1];
 
         // If the caller wants the storage type, ...
-        if (lpaplTypeObj)
+        if (lpaplTypeObj NE NULL)
         {
             LPVARARRAY_HEADER lpMemHdrObj = NULL;   // Ptr to object header
 
@@ -1148,7 +1201,7 @@ LPWCHAR ParseSavedWsVar_EM
         } // End IF
 
         // If the caller wants the immediate flag, ...
-        if (lpbImmed)
+        if (lpbImmed NE NULL)
             // Save as not immediate
             *lpbImmed = FALSE;
     } else
@@ -1157,12 +1210,12 @@ LPWCHAR ParseSavedWsVar_EM
         aplTypeObj = TranslateCharToArrayType (*lpwSrc);
 
         // If the caller wants the storage type, ...
-        if (lpaplTypeObj)
+        if (lpaplTypeObj NE NULL)
             // Save the storage type
             *lpaplTypeObj = aplTypeObj;
 
         // If the caller wants the immediate flag, ...
-        if (lpbImmed)
+        if (lpbImmed NE NULL)
             // Save as immediate
             *lpbImmed = TRUE;
 
@@ -1356,7 +1409,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                       ftLastMod;            // ...      last modification time
     SYSTEMTIME        systemTime;           // Current system (UTC) time
     UBOOL             bUserDefined = FALSE, // TRUE iff the current function is User-Defined
-                      bPermNdx     = FALSE, // ...          var is a permenent
+                      bPermNdx     = FALSE, // ...          var is a permanent
                       bAFO         = FALSE; // TRUE iff the current function is an AFO
     LPVOID            lpMemObj;             // Ptr to object global memory
     APLINT            aplInteger;           // Temporary integer
@@ -1816,7 +1869,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
             // Check to see if this value duplicates one of the already
             //   allocated permanent globals
             hGlbChk = CheckGlobals (hGlbObj);
-            if (hGlbChk)
+            if (hGlbChk NE NULL)
             {
                 LPVARARRAY_HEADER lpMemChk;
 

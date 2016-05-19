@@ -248,7 +248,7 @@ LPPL_YYSTYPE PrimProtoFnMixed_EM_YY
                            lptkFunc,        // Ptr to function token
                            lptkRhtArg,      // Ptr to right arg token
                            lptkAxis);       // Ptr to axis token (may be NULL)
-    if (lpYYRes)
+    if (lpYYRes NE NULL)
     // As this is a prototype function, convert
     //   the result to a prototype
     // Split cases based upon the result token type
@@ -3144,7 +3144,7 @@ ERROR_EXIT:
     } // End IF
 NORMAL_EXIT:
     // If the result is valid, ...
-    if (lpYYRes)
+    if (lpYYRes NE NULL)
         // Fill in the character index
         lpYYRes->tkToken.tkCharIndex = lptkFunc->tkCharIndex;
 
@@ -4314,7 +4314,7 @@ UBOOL PrimFnDydNestNest_EM
                                            &tkRht,          // Ptr to right arg token
                                             NULL,           // Ptr to axis token
                                             lpPrimSpec);    // Ptr to local PRIMSPEC
-        if (lpYYRes2)
+        if (lpYYRes2 NE NULL)
         {
             // If the result is immediate, make it into a SYMENTRY
             // Split cases based upon the result token type
@@ -4903,7 +4903,7 @@ RESTART_EXCEPTION:
                         aplNELMRem = aplNELMRes;
 
                         // Check for optimized chunking
-                        if (lpPrimSpec->B64isB64vB64)
+                        if (lpPrimSpec->B64isB64vB64 NE NULL)
                         {
                             APLB64 aplB64Lft;
 
@@ -7522,7 +7522,7 @@ RESTART_EXCEPTION:
                         aplNELMRem = aplNELMRes;
 
                         // Check for optimized chunking
-                        if (lpPrimSpec->B64isB64vB64)
+                        if (lpPrimSpec->B64isB64vB64 NE NULL)
                         {
                             APLB64 aplB64Rht;
 
@@ -10486,7 +10486,7 @@ RESTART_EXCEPTION_IMMED:
                     // Now we can allocate the storage for the result
                     //***************************************************************
                     hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-                    if (lphGlbRes)
+                    if (lphGlbRes NE NULL)
                        *lphGlbRes = hGlbTmp;
                     if (hGlbTmp EQ NULL)
                         goto WSFULL_EXIT;
@@ -10629,7 +10629,7 @@ RESTART_EXCEPTION_IMMED:
                 if (IsNumeric (aplTypeRes)
                  && !IsRat    (aplTypeRes))
                 {
-                    if (lphGlbRes && *lphGlbRes)
+                    if (lphGlbRes NE NULL && *lphGlbRes NE NULL)
                     {
                         if (lpMemHdrRes NE NULL)
                         {
@@ -10671,7 +10671,7 @@ RESTART_EXCEPTION_IMMED:
                 if (IsNumeric (aplTypeRes)
                  && !IsVfp    (aplTypeRes))
                 {
-                    if (lphGlbRes && *lphGlbRes)
+                    if (lphGlbRes NE NULL && *lphGlbRes NE NULL)
                     {
                         if (lpMemHdrRes NE NULL)
                         {
@@ -10713,7 +10713,7 @@ RESTART_EXCEPTION_IMMED:
                 if (IsNumeric (aplTypeRes)
                  && !IsSimpleFlt (aplTypeRes))
                 {
-                    if (lphGlbRes && *lphGlbRes)
+                    if (lphGlbRes NE NULL && *lphGlbRes NE NULL)
                     {
                         if (lpMemHdrRes NE NULL)
                         {
@@ -10784,7 +10784,7 @@ ERROR_EXIT:
         FreeResultGlobalVar (hGlbTmp); hGlbTmp = NULL;
 
         // If the caller passed it in, ...
-        if (lphGlbRes)
+        if (lphGlbRes NE NULL)
             *lphGlbRes = NULL;
     } // End IF
 
@@ -11768,7 +11768,7 @@ RESTART_EXCEPTION_SINGLETON:
         } // End IF
 
         // If the axis is significant, ...
-        if (lpMemAxisHead)
+        if (lpMemAxisHead NE NULL)
         {
             // Calculate space needed for the weighting vector
             ByteRes = aplRankRes * sizeof (APLUINT);
@@ -13228,7 +13228,7 @@ RESTART_EXCEPTION_NOAXIS:
                         aplNELMRem = aplNELMRes;
 
                         // Check for optimized chunking
-                        if (lpPrimSpec->B64isB64vB64)
+                        if (lpPrimSpec->B64isB64vB64 NE NULL)
                         {
                             // Calculate the # 64-bit chunks
                             aplNELMTmp  = aplNELMRem / 64;

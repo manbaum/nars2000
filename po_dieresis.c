@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -911,7 +911,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     } // End IF/ELSE
 
     // Unlock the result global memory in case TypeDemote actually demotes
-    if (hGlbRes NE NULL && lpMemRes NE NULL)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
@@ -977,7 +977,7 @@ WSFULL_EXIT:
 ERROR_EXIT:
     if (hGlbRes NE NULL)
     {
-        if (lpMemRes NE NULL)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
@@ -987,13 +987,13 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbRht NE NULL && lpMemRht NE NULL)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbRes NE NULL && lpMemRes NE NULL)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
@@ -1492,7 +1492,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         bRet = TRUE;
 
         // If the left arg is not immediate, get the next value
-        if (lpMemLft NE NULL)
+        if (lpMemHdrLft NE NULL)
             // Get the next value from the left arg
             bRet &=
               GetNextValueMemIntoToken (uLft,       // Index to use
@@ -1503,7 +1503,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                                         apaMulLft,  // APA multiplier (if needed)
                                        &tkLftArg);  // Ptr to token in which to place the value
         // If the right arg is not immediate, get the next value
-        if (lpMemRht NE NULL)
+        if (lpMemHdrRht NE NULL)
             // Get the next value from the right arg
             bRet &=
               GetNextValueMemIntoToken (uRht,       // Index to use
@@ -1525,16 +1525,16 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                                   &uValErrCnt,      // Ptr to VALUE ERROR counter
                                    lpPrimProtoLft); // Ptr to left operand prototype function
         // Free the left & right arg tokens
-        if (lpMemLft NE NULL)
+        if (lpMemHdrLft NE NULL)
             FreeResultTkn (&tkLftArg);
-        if (lpMemRht NE NULL)
+        if (lpMemHdrRht NE NULL)
             FreeResultTkn (&tkRhtArg);
         if (!bRet)
             goto ERROR_EXIT;
     } // End FOR
 
     // Unlock the result global memory in case TypeDemote actually demotes
-    if (hGlbRes NE NULL && lpMemRes NE NULL)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
@@ -1597,7 +1597,7 @@ ERROR_EXIT:
 
     if (hGlbRes NE NULL)
     {
-        if (lpMemRes NE NULL)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
@@ -1616,19 +1616,19 @@ NORMAL_EXIT:
     // Unlock and free (and set to NULL) a global name and ptr
     UnlFreeGlbName (hGlbAxis, lpMemAxisHead);
 
-    if (hGlbLft NE NULL && lpMemLft NE NULL)
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
     } // End IF
 
-    if (hGlbRht NE NULL && lpMemRht NE NULL)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbRes NE NULL && lpMemRes NE NULL)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;

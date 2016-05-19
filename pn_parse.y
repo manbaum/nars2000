@@ -249,22 +249,22 @@ DecPoint:
 DecConstants:
           INF                       {DbgMsgWP (L"%%DecConstants:  INF");
                                      // Set constant infinity
-                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_FLT,  1);
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_FLT, $1.uNumStart,  1);
                                     }
     | OVR INF                       {DbgMsgWP (L"%%DecConstants:  OVR INF");
                                      // Set constant infinity
-                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_FLT, -1);
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_FLT, $1.uNumStart, -1);
                                     }
     ;
 
 VfpConstants:
           INF DEF_VFPSEP            {DbgMsgWP (L"%%VfpConstants:  INF 'v'");
                                      // Set constant infinity
-                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_VFP,  1);
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_VFP, $1.uNumStart,  1);
                                     }
     | OVR INF DEF_VFPSEP            {DbgMsgWP (L"%%VfpConstants:  OVR INF 'v'");
                                      // Set constant infinity
-                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_VFP, -1);
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_VFP, $1.uNumStart, -1);
                                     }
     ;
 
@@ -289,12 +289,12 @@ RatConstantsInt:
           INF  DEF_RATSEP RatArgs   {DbgMsgWP (L"%%RatConstantsInt:  INF 'r' RatArgs");
                                      // Set constant infinity
                                      //   taking into account negative integer and -0
-                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT,  1 - 2 * (lppnLocalVars->lpszNumAccum[0] EQ OVERBAR1));
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT, $1.uNumStart,  1 - 2 * (lppnLocalVars->lpszNumAccum[0] EQ OVERBAR1));
                                     }
     | OVR INF  DEF_RATSEP RatArgs   {DbgMsgWP (L"%%RatConstantsInt:  OVR INF 'r' RatArgs");
                                      // Set constant infinity
                                      //   taking into account negative integer and -0
-                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT,  (2 * (lppnLocalVars->lpszNumAccum[0] EQ OVERBAR1)) - 1);
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT, $1.uNumStart,  (2 * (lppnLocalVars->lpszNumAccum[0] EQ OVERBAR1)) - 1);
                                     }
     | RatArgs  DEF_RATSEP INF       {DbgMsgWP (L"%%RatConstantsInt:  RatArgs 'r' INF");
                                      // If the integer is signed, ...
@@ -339,11 +339,11 @@ RatConstantsInt:
 RatConstantsExt:
           INF EXT                   {DbgMsgWP (L"%%RatConstantsExt:  INF 'x'");
                                      // Set constant infinity
-                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT,  1);
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT, $1.uNumStart,  1);
                                     }
     | OVR INF EXT                   {DbgMsgWP (L"%%RatConstantsExt:  OVR INF 'x'");
                                      // Set constant infinity
-                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT, -1);
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT, $1.uNumStart, -1);
                                     }
     ;
 

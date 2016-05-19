@@ -1607,9 +1607,9 @@ UBOOL PN_VectorAcc
     lppnVector[lppnLocalVars->uGlbVectorCurLen].lpStart = lpStart;
     lppnVector[lppnLocalVars->uGlbVectorCurLen].uNumLen = uNumLen;
 
-    bFltN0 = (IsPnNumTypeFlt (lppnVector[lppnLocalVars->uGlbVectorCurLen].chType)           // Is not -0.0
+    bFltN0 = (IsPnNumTypeFlt (lppnVector[lppnLocalVars->uGlbVectorCurLen].chType)           // Is -0.0
            && IsFltN0        (lppnVector[lppnLocalVars->uGlbVectorCurLen].at.aplFloat));    // ...
-    bVfpN0 = (IsPnNumTypeVfp (lppnVector[lppnLocalVars->uGlbVectorCurLen].chType)           // Is not -0.0v
+    bVfpN0 = (IsPnNumTypeVfp (lppnVector[lppnLocalVars->uGlbVectorCurLen].chType)           // Is -0.0v
            && IsVfpN0        (lppnVector[lppnLocalVars->uGlbVectorCurLen].at.aplVfp  ));    // ...
     bNeg0  = bFltN0 || bVfpN0;
 
@@ -1691,11 +1691,13 @@ UBOOL PN_VectorRes
         // Scan all items to determine a common datatype
         for (uCnt = 0; uCnt < aplNELMRes; uCnt++)
         {
-            UBOOL bFltN0 = (IsPnNumTypeFlt (lppnVector[uCnt].chType)        // Is not -0.0
+            UBOOL bFltN0 = (IsPnNumTypeFlt (lppnVector[uCnt].chType)        // Is -0.0
                          && IsFltN0        (lppnVector[uCnt].at.aplFloat)), // ...
-                  bVfpN0 = (IsPnNumTypeVfp (lppnVector[uCnt].chType)        // Is not -0.0v
+                  bVfpN0 = (IsPnNumTypeVfp (lppnVector[uCnt].chType)        // Is -0.0v
                          && IsVfpN0        (lppnVector[uCnt].at.aplVfp  )), // ...
-                  bNeg0  = bFltN0 || bVfpN0;
+                  bNeg0  = bFltN0 || bVfpN0,
+                  bFlt   =  IsPnNumTypeFlt (lppnVector[uCnt].chType)        // Is FLT
+                         || IsPnNumTypeVfp (lppnVector[uCnt].chType);       // Is VFP
 
             // If there's a Rat but no Vfp separator, and
             //    the item is a form of FLT, and
@@ -1706,9 +1708,9 @@ UBOOL PN_VectorRes
                  )
                 )
                 // ***ASSUME***:  chtype - 1 is INT- or RAT-like
-                lppnLocalVars->chComType = aNumTypePromote[lppnLocalVars->chComType][lppnVector[uCnt].chType - bNeg0];
+                lppnLocalVars->chComType = aNumTypePromote[lppnLocalVars->chComType][lppnVector[uCnt].chType - bFlt];
             else
-                lppnLocalVars->chComType = aNumTypePromote[lppnLocalVars->chComType][lppnVector[uCnt].chType    ];
+                lppnLocalVars->chComType = aNumTypePromote[lppnLocalVars->chComType][lppnVector[uCnt].chType       ];
         } // End FOR
 
         // Translate the datatype to an array storage type
@@ -1927,12 +1929,16 @@ NORMAL_EXIT:
 PN_YYSTYPE PN_SetInfinity
     (LPPNLOCALVARS lppnLocalVars,       // Ptr to local pnLocalVars
      PNNUMTYPE     pnNumType,           // The suggested PN_NUMTYPE_xx
+     int           uNumStart,           // The starting offset in lpszStart
      int           iInfSgn)             // The sign of infinity (1 for positive, -1 for negative)
 
 {
     PN_YYSTYPE pnYYRes = {0};           // The result
 
     Assert (iInfSgn EQ 1 || iInfSgn EQ -1);
+
+    // Save the starting offset
+    pnYYRes.uNumStart = uNumStart;
 
     // Get the numeric type
     pnYYRes.chType = (lppnLocalVars->chComType EQ PN_NUMTYPE_INIT) ? pnNumType : lppnLocalVars->chComType;

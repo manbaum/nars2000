@@ -1610,9 +1610,14 @@ UBOOL ValidateCharVector_EM
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    // Get ptr to temporary storage
-    lpwszTemp = lpMemPTD->lpwszTemp;
-    CHECK_TEMP_OPEN
+    // If the []var is []WSID, ...
+    if (bWSID)
+    {
+        // Get ptr to temporary storage
+        lpwszTemp = lpMemPTD->lpwszTemp;
+        CHECK_TEMP_OPEN
+    } else
+        lpwszTemp = NULL;
 
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
@@ -1733,7 +1738,7 @@ UBOOL ValidateCharVector_EM
     if (bScalar)
         goto MAKE_VECTOR;
 
-    // If this is []WSID, expand the name
+    // If the []var is []WSID, expand the name
     if (bWSID)
     {
 #define lpMemChar       ((LPAPLCHAR) lpMemRht)
@@ -1823,6 +1828,7 @@ ALLOC_VECTOR:
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
+    // If the []var is []WSID, ...
     if (bWSID)
         CopyMemoryW (lpMemRes, lpwszTemp, (APLU3264) aplNELMRes);
     else
@@ -1860,7 +1866,11 @@ DOMAIN_EXIT:
 
 ERROR_EXIT:
 UNLOCK_EXIT:
-    EXIT_TEMP_OPEN
+    // If the []var is []WSID, ...
+    if (bWSID)
+    {
+        EXIT_TEMP_OPEN
+    } // End IF
 
     if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
@@ -2390,7 +2400,7 @@ UBOOL VariantValidateCom_EM
           tkRhtArg = {0};       // ...       right arg ...
 
     // Set the named var token
-    tkNamArg.tkFlags.TknType = TKT_VARNAMED;
+    tkNamArg.tkFlags.TknType   = TKT_VARNAMED;
     tkNamArg.tkFlags.ImmType   = IMMTYPE_ERROR;
 ////tkNamArg.tkFlags.NoDisplay = FALSE;         // Already set by = {0}
     tkNamArg.tkData.tkSym      = lpSymEntry;
@@ -2634,7 +2644,7 @@ UBOOL ValidNdxDM
 //
 //  Validate a single value before assigning it to a position in []DT.
 //
-//  We allow the characters in DEF_QUADDT_ALLOW..
+//  We allow the characters in DEF_QUADDT_ALLOW.
 //***************************************************************************
 
 UBOOL ValidNdxDT
@@ -2808,6 +2818,7 @@ UBOOL ValidSetFEATURE_EM
         LPVARARRAY_HEADER lpMemHdrRht = NULL;   // Ptr to right arg header
         LPAPLINT          lpMemRht;             // Ptr to right arg global memory
         APLLONGEST        aplLongestRht;        // Right arg immediate value
+        APLINT            i, iLen;              // Loop counter & length
 
         // Get right arg's global ptrs
         aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
@@ -2823,12 +2834,18 @@ UBOOL ValidSetFEATURE_EM
             // Point to the data
             lpMemRht = &aplLongestRht;
 
-        // Save the current values for later use
-        CopyMemory (lpMemPTD->aplCurrentFEATURE, lpMemRht, (APLU3264) min (FEATURENDX_LENGTH, aplNELMRht) * sizeof (APLINT));
+        // Calculate the minimum length
+        iLen = min (FEATURENDX_LENGTH, aplNELMRht);
+
+        // Loop through the elements
+        for (i = 0; i < iLen; i++)
+            // Save the current values for later use
+            lpMemPTD->aplCurrentFEATURE[i] = GetNextInteger (lpMemRht, lpMemHdrRht->ArrType, i);
 
         // If the right arg is a global, ...
         if (hGlbRht NE NULL)
         {
+            // We no longer need this ptr
             MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
         } // End IF
     } // End IF
@@ -4134,7 +4151,7 @@ void AssignDefaultHTSSysVars
     AssignGlobalCWS     (hGlbQuadWSID_CWS    , SYSVAR_WSID    , lpSymQuad[SYSVAR_WSID    ]);    // Workspace Identifier
 
     // Set the values for []Z
-    lpSymQuad[SYSVAR_Z]->stFlags = lphtsPTD->steNoValue->stFlags;
+    lpSymQuad[SYSVAR_Z]->stFlags             = lphtsPTD->steNoValue->stFlags;
     lpSymQuad[SYSVAR_Z]->stFlags.Inuse       = TRUE;
     lpSymQuad[SYSVAR_Z]->stFlags.SysVarValid = SYSVAR_Z;
 } // End AssignDefaultHTSSysVars

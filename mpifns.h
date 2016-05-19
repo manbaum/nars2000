@@ -210,6 +210,7 @@
 #undef  mpq_out_str
 #undef  mpq_inp_str
 
+#undef  mpfr_set
 #undef  mpfr_set_d
 #undef  mpfr_set_z
 #undef  mpfr_set_q
@@ -458,6 +459,7 @@
 #define mpq_out_str             mpiq_out_str
 #define mpq_inp_str             mpiq_inp_str
 
+#define mpfr_set                mpifr_set
 #define mpfr_set_d              mpifr_set_d
 #define mpfr_set_z              mpifr_set_z
 #define mpfr_set_q              mpifr_set_q

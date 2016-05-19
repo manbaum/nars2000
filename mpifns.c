@@ -3047,9 +3047,15 @@ void mpiq_div
     else
     if (!mpq_inf_p (op1)
      && mpq_inf_p (op2))
-        // N / _ is 0
-        mpq_set_ui (rop, 0, 1);
-    else
+    {
+        // If the sign of infinity (op2) is negative and we're allowing -0, ...
+        if (signumrat (op2) < 0
+         && gAllowNeg0)
+            RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
+        else
+            // N / _ is 0
+            mpq_set_ui (rop, 0, 1);
+    } else
     if (mpq_inf_p (op1)
      && mpq_inf_p (op2))
         // Infinity / infinity is undefined
@@ -3339,6 +3345,22 @@ void mpifr_copy
     else
         mpfr_copy (mpfr_clr_inf (rop), op);
 } // End mpifr_copy
+
+
+//***************************************************************************
+//  $mpifr_set
+//
+//  Set a MPFR from a MPFR
+//***************************************************************************
+
+void mpifr_set
+    (mpfr_t     rop,            // Destination
+     mpfr_t     op,             // Source
+     mpfr_rnd_t rnd)            // Rounding mode
+
+{
+    mpfr_set (mpfr_clr_inf (rop), op, rnd);
+} // End mpifr_set
 
 
 //***************************************************************************

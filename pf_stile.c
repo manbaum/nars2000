@@ -356,7 +356,8 @@ APLINT PrimFnDydStileIisIvI
     // The sign of the result is the sign of the left arg
     if (aplIntegerLft < 0)
     {
-        if (aplTmp EQ 0)
+        // If zero and -0 is allowed, ...
+        if (aplTmp EQ 0 && gAllowNeg0)
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
 
         return -aplTmp;
@@ -659,10 +660,11 @@ APLRAT PrimFnDydStileRisRvR
     // The sign of the result is the sign of the left arg
     if (mpq_cmp_si (&aplRatLft, 0, 1) < 0)
     {
-        // If negating would produce allowed -0, ...
+        // If zero and -0 is allowed, ...
         if (IsMpq0 (&mpqRes) && gAllowNeg0)
             RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
-        mpq_neg (&mpqRes, &mpqRes);
+        else
+            mpq_neg (&mpqRes, &mpqRes);
     } // End IF
 
     return mpqRes;
@@ -790,8 +792,8 @@ APLVFP PrimFnDydStileVisVvV
     // The sign of the result is the sign of the left arg
     if (SIGN_APLVFP (&aplVfpLft))
     {
-        // If negating would not produce disallowed -0, ...
-        if (!(IsMpf0 (&mpfRes) && gAllowNeg0))
+        // If non-zero or -0 is allowed, ...
+        if (!IsMpf0 (&mpfRes) || gAllowNeg0)
             mpfr_neg (&mpfRes, &mpfRes, MPFR_RNDN);
     } // End IF
 

@@ -82,8 +82,15 @@ UBOOL AssignName_EM
     // Note that we have to wait until all errors have been
     //   resolved before calling FreeResultName.
 
-    // If the target is a user-defined function/operator label, signal a SYNTAX ERROR
+    // If the target is a NoValue system name (excep for []Z), ...
+    if (IsTokenNoValue (lptkNam)
+     && IsTknSysName   (lptkNam, TRUE))
+        // Signal a VALUE ERROR
+        goto NAME_VALUE_EXIT;
+
+    // If the target is a user-defined function/operator label, ...
     if (lptkNam->tkData.tkSym->stFlags.DfnLabel)
+        // Signal a SYNTAX ERROR
         goto SYNTAX_EXIT;
 
     // If the name is suspended or pendent, it's not eraseable
@@ -147,7 +154,7 @@ UBOOL AssignName_EM
 
             // Ensure there's a value (could have come from a{is}{execute}'')
             if (IsSymNoValue (lptkSrc->tkData.tkSym))
-                goto VALUE_EXIT;
+                goto ARG_VALUE_EXIT;
 
             // If the source is immediate, ...
             if (lptkSrc->tkData.tkSym->stFlags.Imm)
@@ -412,7 +419,12 @@ UBOOL AssignName_EM
 
     goto NORMAL_EXIT;
 
-VALUE_EXIT:
+NAME_VALUE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
+                               lptkNam);
+    goto ERROR_EXIT;
+
+ARG_VALUE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
                                lptkSrc);
     goto ERROR_EXIT;

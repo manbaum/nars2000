@@ -334,7 +334,7 @@ LRESULT APIENTRY FEWndProc
 
             // See if there is an existing function
             lpSymName = ParseFunctionName (hWnd, (*(LPFE_CREATESTRUCTW *) &lpMDIcs->lParam)->lpwszLine);
-            if (lpSymName)
+            if (lpSymName NE NULL)
             {
                 // If it has a value and is not a user-defined function/operator, ...
                 if (lpSymName->stFlags.Value
@@ -409,7 +409,7 @@ LRESULT APIENTRY FEWndProc
 
             // If there's a pre-existing function,
             //   and there's an Undo Buffer
-            if (hGlbDfnHdr
+            if (hGlbDfnHdr NE NULL
              && lpMemDfnHdr->hGlbUndoBuff)
             {
                 LPUNDO_BUF lpMemUndo;       // Ptr to Undo Buffer global memory
@@ -481,7 +481,7 @@ LRESULT APIENTRY FEWndProc
 
             // If there's a pre-existing function,
             //   read in its lines as the initial text
-            if (hGlbDfnHdr)
+            if (hGlbDfnHdr NE NULL)
             {
                 HGLOBAL        hGlbTxtLine;     // Line/header text global memory handle
                 LPMEMTXT_UNION lpMemTxtLine;    // Ptr to header/line text global memory
@@ -538,7 +538,7 @@ LRESULT APIENTRY FEWndProc
             SetWindowLongW (hWnd, GWLSF_CHANGED, FALSE);
 
             // If there's a pre-existing function, ...
-            if (hGlbDfnHdr)
+            if (hGlbDfnHdr NE NULL)
             {
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
@@ -931,7 +931,8 @@ UINT GetFunctionName
 
     // Get the header line text
     lpSymName = ParseFunctionName (hWndFE, lpwszTemp);
-    if (lpSymName)
+
+    if (lpSymName NE NULL)
         // Append the function name from the symbol table
         //   and calculate its length
         uNameLen = (UINT) (CopySteName (lpwszTemp, lpSymName, NULL) - lpwszTemp);
@@ -1183,7 +1184,7 @@ ERROR_EXIT:
     // Free the global memory:  hSyntClr
     if (hSyntClr)
     {
-        if (lpSyntClr)
+        if (lpSyntClr NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hSyntClr); lpSyntClr = NULL;
@@ -1255,7 +1256,7 @@ int LclECPaintHook
 
                 // Allocate space for the colors
                 hGlbClr = DbgGlobalAlloc (GHND, (uCol + uLen) * sizeof (lpMemClrIni[0]));
-                if (hGlbClr)
+                if (hGlbClr NE NULL)
                 {
                     // Lock the memory to get a ptr to it
                     lpMemClrIni = MyGlobalLock (hGlbClr);
@@ -1354,7 +1355,7 @@ int LclECPaintHook
         OneDrawTextW (hDC, &rcAct, &lpwsz, uLen, cxAveChar);
 #else
     // If we're syntax coloring, ...
-    if (hGlbClr)
+    if (hGlbClr NE NULL)
     {
         UINT     uAlignPrev;                // Previous value for TextAlign
         COLORREF clrBackDef;                // Default background color
@@ -1942,7 +1943,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             // If there's an identifier underneath this double click,
             //   attempt to edit it as a function/variable
             lpSymEntry = (LPSYMENTRY) SendMessageW (hWnd, MYWM_IZITNAME, xPos, yPos);
-            if (lpSymEntry
+            if (lpSymEntry NE NULL
              && (lpSymEntry->stFlags.ObjName EQ OBJNAME_NONE
               || lpSymEntry->stFlags.ObjName EQ OBJNAME_USR))
             {
@@ -2082,7 +2083,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 lpSymEntry = SymTabLookupNameLength (&lpwszTemp[uCharPosBeg],
                                                       (UINT) (uCharPosEnd - uCharPosBeg),
                                                      &stFlags);
-                if (lpSymEntry)
+                if (lpSymEntry NE NULL)
                     lResult = (LRESULT) lpSymEntry;
                 else
                     // Name not found -- append it
@@ -3166,7 +3167,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 hGlbClip = GetClipboardData (CF_UNICODETEXT);
 
             // If there's data in the clipboard, ...
-            if (hGlbClip)
+            if (hGlbClip NE NULL)
             {
                 // Lock the memory to get a ptr to it
                 // Note we can't use MyGlobalLock/Unlock as the lock count
@@ -3251,7 +3252,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             // Get the corresponding STE
             lpSymEntry = (LPSYMENTRY) SendMessageW (hWnd, MYWM_IZITNAME, xPos, yPos);
-            if (lpSymEntry && lpwszTemp)
+            if (lpSymEntry NE NULL && lpwszTemp NE NULL)
             {
                 VARS_TEMP_OPEN
                 CHECK_TEMP_OPEN
@@ -3833,7 +3834,7 @@ HGLOBAL CopyGlbMemory
         // Allocate space for the result
         hGlbDst = DbgGlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
 
-        if (hGlbDst)
+        if (hGlbDst NE NULL)
         {
             // Lock both memory blocks
             lpMemDst = MyGlobalLock (hGlbDst);
@@ -3855,7 +3856,7 @@ HGLOBAL CopyGlbMemory
         // Allocate space for the result
         hGlbDst =    GlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
 
-        if (hGlbDst)
+        if (hGlbDst NE NULL)
         {
             // Lock both memory blocks
             lpMemDst = GlobalLock (hGlbDst);
@@ -4066,15 +4067,15 @@ NORMAL_EXIT:
     // We're done with the clipboard and its handle
     CloseClipboard ();
 
-    if (hGlbText && lpMemText)
+    if (hGlbText NE NULL && lpMemText NE NULL)
     {
         // We no longer need this ptr
         GlobalUnlock (hGlbText); lpMemText = NULL;
     } // End IF
 
-    if (hGlbClip)
+    if (hGlbClip NE NULL)
     {
-        if (lpMemClip)
+        if (lpMemClip NE NULL)
         {
             // We no longer need this ptr
             GlobalUnlock (hGlbClip); lpMemClip = NULL;
@@ -4167,7 +4168,7 @@ void PasteAPLChars_EM
         // Get a handle to the clipboard data for CF_UNICODETEXT
         hGlbClip = GetClipboardData (CF_UNICODETEXT);
 
-    if (hGlbClip)
+    if (hGlbClip NE NULL)
     {
         // Get the clipboard memory size
         dwSize = MyGlobalSize (hGlbClip);
@@ -4308,15 +4309,15 @@ NORMAL_EXIT:
     // We're done with the clipboard and its handle
     CloseClipboard (); hGlbClip = NULL;
 
-    if (hGlbText && lpMemText)
+    if (hGlbText NE NULL && lpMemText NE NULL)
     {
         // We no longer need this ptr
         GlobalUnlock (hGlbText); lpMemText = NULL;
     } // End IF
 
-    if (hGlbClip)
+    if (hGlbClip NE NULL)
     {
-        if (lpMemClip)
+        if (lpMemClip NE NULL)
         {
             // We no longer need this ptr
             GlobalUnlock (hGlbClip); lpMemClip = NULL;
@@ -4326,7 +4327,7 @@ NORMAL_EXIT:
         CloseClipboard ();
     } // End IF
 
-    if (hGlbFmts)
+    if (hGlbFmts NE NULL)
     {
         // Loop through the formats freeing them as appropriate
         for (uFmt = 0; uFmt < uCount; uFmt++)
@@ -5018,6 +5019,12 @@ LPSYMENTRY ParseFunctionName
 
     Assert (IzitFE (hWndFE));
 
+    // If it's []Z, ...
+    if (lstrcmpiW ($AFORESULT, lpaplChar) EQ 0)
+        // Handle specially as Tokenize_EM treats []Z as no value
+        //   which causes ParseFcnHeader to crash
+        return lpSymName;
+
     // Get the handle to the Edit Ctrl
     hWndEC = (HWND) GetWindowLongPtrW (hWndFE, GWLSF_HWNDEC);
 
@@ -5082,7 +5089,7 @@ NORMAL_EXIT:
         UnlinkMVS (&lclMemVirtStr[0]);
     } // End IF
 
-    if (hGlbTknHdr)
+    if (hGlbTknHdr NE NULL)
     {
         LPTOKEN_HEADER lpMemTknHdr;
 

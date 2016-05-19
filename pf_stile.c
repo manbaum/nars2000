@@ -377,20 +377,22 @@ APLFLOAT PrimFnDydStileFisIvI
      LPPRIMSPEC lpPrimSpec)
 
 {
-    APLINT aplTmp, aplLft, aplRht;
+    APLFLOAT aplTmp,
+             aplLft,
+             aplRht;
 
     // Handle zero modulus or argument
     if (aplIntegerLft EQ 0
      || aplIntegerRht EQ 0)
         // Return the right arg with the appropriate sign
-        aplTmp = aplIntegerRht;
+        aplTmp = (APLFLOAT) aplIntegerRht;
     else
     {
         // Ensure both arguments are non-negative
-        aplLft = PrimFnMonStileIisI (aplIntegerLft, lpPrimSpec);
-        aplRht = PrimFnMonStileIisI (aplIntegerRht, lpPrimSpec);
+        aplLft = PrimFnMonStileFisI (aplIntegerLft, lpPrimSpec);
+        aplRht = PrimFnMonStileFisI (aplIntegerRht, lpPrimSpec);
 
-        aplTmp = aplRht % aplLft;
+        aplTmp = fmod (aplRht, aplLft);
 
         // If the arguments are of opposite sign
         //   and the result so far is non-zero,
@@ -403,9 +405,9 @@ APLFLOAT PrimFnDydStileFisIvI
 
     // The sign of the result is the sign of the left arg
     if (aplIntegerLft < 0)
-        return -(APLFLOAT) aplTmp;
+        return -aplTmp;
     else
-        return  (APLFLOAT) aplTmp;
+        return  aplTmp;
 } // End PrimFnDydStileFisIvI
 
 

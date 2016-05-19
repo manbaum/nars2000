@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -184,6 +184,10 @@ UBOOL CmdSave_EM
     // Make a backup copy of the workspace
     if (OptionFlags.bBackupOnSave)
         MakeWorkspaceBackup (lpMemSaveWSID, SAVEBAK_EXT);
+
+    // Note if the SI is non-empty
+    if (lpMemPTD->SILevel)
+        ReplaceLastLineCRPmt (L"WARNING:  SI non-empty -- not restartable after )LOAD");
 
     // Calculate space needed for the two counters
     ByteRes = 2 * sizeof (UINT) * (lpMemPTD->SILevel + 1);
@@ -537,10 +541,6 @@ UBOOL CmdSave_EM
 
     // Clean up after )SAVE
     CleanupAfterSave (lpMemPTD, lpMemCnt, lpMemSaveWSID, uGlbCnt);
-
-    // Note if the SI is non-empty
-    if (lpMemPTD->SILevel)
-        ReplaceLastLineCRPmt (L"WARNING:  SI non-empty -- not restartable after )LOAD");
 
     // Get the length of the []WSID excluding WS_WKSEXT
     iCmp = lstrlenW (lpMemSaveWSID) - WS_WKSEXT_LEN;

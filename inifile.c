@@ -3546,7 +3546,7 @@ UBOOL ProfileWrite
                    CREATE_ALWAYS,                   // dwCreationDistribution
                    FILE_ATTRIBUTE_NORMAL,           // dwFlagsAndAttributes
                    NULL);                           // hTemplateFile
-    if (hFile EQ NULL)
+    if (hFile EQ INVALID_HANDLE_VALUE)
         return FALSE;
 
 ////// Write out the BOM for UTF-16

@@ -1,6 +1,17 @@
 Version 0.4.15.xx consists of the following Builds:
 
 
+Build #1494 -- Version 0.4.15.xx
+--------------------------------
+
+* Handle Missing Cases With Global Numerics As Set Argument
+
+Directory trunk:
+
+PF_RSHOE.C:
+  Handle missing cases in indexed assignment with Global Numerics as set argument.
+
+
 Build #1493 -- Version 0.4.15.xx
 --------------------------------
 

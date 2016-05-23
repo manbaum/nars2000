@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2869,8 +2869,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                 {
                     case ARRAY_NESTED:
                     case ARRAY_HETERO:
-                        // If the set arg is simple non-heterogeneous, ...
-                        if (IsSimpleNH (aplTypeSet))
+                        // If the set arg is immediate, ...
+                        if (hGlbSet EQ NULL)
                         {
                             ((LPAPLNESTED) lpMemRht)[aplLongestSubLft] =
                             lpSymTmp =
@@ -2889,19 +2889,23 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         break;
 
                     case ARRAY_RAT:
-                        Assert (IsSimpleNH (aplTypeSet));
-
-                        // Save the new value, freeing the old one
-                        mpq_set_sx (&((LPAPLRAT) lpMemRht)[aplLongestSubLft], aplLongestSet, 1);
-
+                        // If the set arg is immediate, ...
+                        if (hGlbSet EQ NULL)
+                            // Save the new value, freeing the old one
+                            mpq_set_sx  (&((LPAPLRAT) lpMemRht)[aplLongestSubLft], aplLongestSet, 1);
+                        else
+                            // Save the new value, freeing the old one
+                            mpq_set     (&((LPAPLRAT) lpMemRht)[aplLongestSubLft], (LPAPLRAT) hGlbSet);
                         break;
 
                     case ARRAY_VFP:
-                        Assert (IsSimpleNH (aplTypeSet));
-
-                        // Save the new value, freeing the old one
-                        mpfr_set_sx (&((LPAPLVFP) lpMemRht)[aplLongestSubLft], aplLongestSet, MPFR_RNDN);
-
+                        // If the set arg is immediate, ...
+                        if (hGlbSet EQ NULL)
+                            // Save the new value, freeing the old one
+                            mpfr_set_sx (&((LPAPLVFP) lpMemRht)[aplLongestSubLft], aplLongestSet, MPFR_RNDN);
+                        else
+                            // Save the new value, freeing the old one
+                            mpfr_set    (&((LPAPLVFP) lpMemRht)[aplLongestSubLft], (LPAPLVFP) hGlbSet, MPFR_RNDN);
                         break;
 
                     case ARRAY_BOOL:

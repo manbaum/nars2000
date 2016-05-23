@@ -6467,6 +6467,11 @@ PL_YYLEX_OP3NAMED:
 
             break;
 
+        case TKT_COLON:
+            lpplYYLval->tkToken.tkSynObj = soSYNR;
+
+            break;
+
         case TKT_OPJOTDOT:
         case TKT_LEFTPAREN:
         case TKT_RIGHTPAREN:
@@ -6475,7 +6480,6 @@ PL_YYLEX_OP3NAMED:
         case TKT_LABELSEP:
         case TKT_EOS:
         case TKT_EOL:
-        case TKT_COLON:
         case TKT_LEFTBRACE:
             break;
 

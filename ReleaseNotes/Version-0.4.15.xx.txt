@@ -1,6 +1,17 @@
 Version 0.4.15.xx consists of the following Builds:
 
 
+Build #1495 -- Version 0.4.15.xx
+--------------------------------
+
+* Handle /L: In Syntax Analyzer
+
+Directory trunk:
+
+PARSELINE.C:
+  Handle /L: in syntax analyzer.
+
+
 Build #1494 -- Version 0.4.15.xx
 --------------------------------
 

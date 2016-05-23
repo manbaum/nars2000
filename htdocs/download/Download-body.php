@@ -186,6 +186,19 @@ Downloads</h1>
 </div>
 
 <div class="section">
+  <h2 id="Alpha_Versions">Alpha Versions</h2>
+
+  <p>For the latest (<b>untested</b>) version that implements
+    <a class="pdfLeft" href="http://www.sudleyplace.com/APL/HyperComplex%20Numbers%20in%20APL.pdf">Hypercomplex
+    Numbers</a>, goto the <a class="linkleft" href="binaries/alpha">alpha</a>
+    directory and download either the 32- or 64-bit file.  This is a .zip file (as opposed to the released
+    version which is an executable Setup file) which you might want to unzip into a directory separate from
+    the released installation so as to leave the latter unaffected.  As with the released version, please
+    report any bugs to the Bug Report section of the NARS2000
+    <a class="linkleft" href="http://nars2000.forumatic.com/viewforum.php?f=12">Forum</a>.</p>
+</div>
+
+<div class="section">
   <h2 id="Download_Files">Download Files</h2>
 
   <form id="DisplayForm" action="">&nbsp;

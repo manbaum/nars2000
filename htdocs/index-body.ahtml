@@ -608,7 +608,7 @@ Welcome to NARS2000</h1>
           alt="Donate Bitcoins to NARS2000"
           style="float: left; border: 10px inset transparent;"
           /></a>
-  This Open Source project is a labor of love &mdash; promoting APL since 1969 has been very personally rewarding.
+  <p>This Open Source project is a labor of love &mdash; promoting APL since 1969 has been very personally rewarding.
     Although I have no interest in making any money on this effort, another of my interests is promoting
       <a class="linkleft" href="http://en.wikipedia.org/wiki/Bitcoin">Bitcoin</a>, so here's your
       opportunity to make a micro-payment to express your support.
@@ -618,7 +618,7 @@ Welcome to NARS2000</h1>
     This amount is the minimum some Bitcoin wallets allow you to transfer, below which the
       transaction might be delayed indefinitely, or ignored entirely.</p>
 
-    <p>You may use either of two methods to donate:
+    <p>You may use either of two methods to donate:</p>
     <ul>
       <li>Open the Bitcoin wallet on your smartphone, scan the QR Code above, and press send.
         <br />OR</li>

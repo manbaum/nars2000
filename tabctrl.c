@@ -271,22 +271,23 @@ UBOOL WINAPI CreateNewTabInThread
     (LPCNT_THREAD lpcntThread)
 
 {
-    int          iCurTabIndex = -1; // Index of the current tab
-    TC_ITEMW     tcItem = {0};      // TabCtrl item struc
-    LPPERTABDATA lpMemPTD = NULL;   // Ptr to PerTabData global memory
-    UBOOL        bRet = FALSE;      // TR$UE iff the result is valid
-    RECT         rc;                // Rectangle for setting size of window
-    CLIENTCREATESTRUCT ccs;         // For MDI Client window
-    SM_CREATESTRUCTW csSM;          // For Session Manager window
-    HANDLE       hThread;           // Handle to this thread
-    HWND         hWndMC,            // Window handle of MDI Client
-                 hWndParent,        // Window handle of the parent
-                 hWndTmp;           // Temporary window handle
-    int          iTabIndex;         // Insert the new tab to the left of this one
-    MSG          Msg;               // Message for GetMessageW loop
+    int          iCurTabIndex = -1;     // Index of the current tab
+    TC_ITEMW     tcItem = {0};          // TabCtrl item struc
+    LPPERTABDATA lpMemPTD = NULL,       // Ptr to PerTabData global memory
+                 lpMemPTDOld = NULL;    // Outgoing lpMemPTD
+    UBOOL        bRet = FALSE;          // TR$UE iff the result is valid
+    RECT         rc;                    // Rectangle for setting size of window
+    CLIENTCREATESTRUCT ccs;             // For MDI Client window
+    SM_CREATESTRUCTW csSM;              // For Session Manager window
+    HANDLE       hThread;               // Handle to this thread
+    HWND         hWndMC,                // Window handle of MDI Client
+                 hWndParent,            // Window handle of the parent
+                 hWndTmp;               // Temporary window handle
+    int          iTabIndex;             // Insert the new tab to the left of this one
+    MSG          Msg;                   // Message for GetMessageW loop
     int          nThreads;
-    WCHAR        wszTemp[32];       // Temporary storage
-    UBOOL        bExecLX;           // TRUE iff execute []LX after successful load
+    WCHAR        wszTemp[32];           // Temporary storage
+    UBOOL        bExecLX;               // TRUE iff execute []LX after successful load
 
     // Store the thread type ('TC')
     TlsSetValue (dwTlsType, TLSTYPE_TC);
@@ -301,10 +302,10 @@ UBOOL WINAPI CreateNewTabInThread
     if (gCurTabID NE -1)
     {
         // Get ptr to PerTabData global memory
-        lpMemPTD = GetPerTabPtr (TranslateTabIDToIndex (gCurTabID)); Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
+        lpMemPTDOld = GetPerTabPtr (TranslateTabIDToIndex (gCurTabID)); Assert (IsValidPtr (lpMemPTDOld, sizeof (lpMemPTDOld)));
 
         // Hide the child windows of the outgoing tab
-        ShowHideChildWindows (lpMemPTD->hWndMC, FALSE);
+        ShowHideChildWindows (lpMemPTDOld->hWndMC, FALSE);
     } // End IF
 
     // Allocate PerTabData
@@ -490,19 +491,30 @@ UBOOL WINAPI CreateNewTabInThread
     goto NORMAL_EXIT;
 
 ERROR_EXIT:
-    // If there's a current tab index, delete it
+    // If there's a current tab index, ...
     if (iCurTabIndex NE -1)
+    {
+        // Delete the failed tab ctrl
         TabCtrl_DeleteItem (hWndTC, iCurTabIndex);
+
+        // Restore the focus to the previous tab
+        TabCtrl_SetCurFocus (hWndTC, iTabIndex - 1);
+
+        // If there was an outgoing tab, ...
+        if (lpMemPTDOld NE NULL)
+            // Show the child windows of the outgoing tab
+            ShowHideChildWindows (lpMemPTDOld->hWndMC, TRUE);
+    } // End IF
 NORMAL_EXIT:
     // Destroy any windows we might have created
-    if (lpMemPTD && lpMemPTD->hWndMC)
+    if (lpMemPTD NE NULL && lpMemPTD->hWndMC NE NULL)
     {
-        if (lpMemPTD->hWndDB)
+        if (lpMemPTD->hWndDB NE NULL)
         {
             SendMessageW (lpMemPTD->hWndMC, WM_MDIDESTROY, (WPARAM) (lpMemPTD->hWndDB), 0); lpMemPTD->hWndDB = NULL;
         } // End IF
 
-        if (lpMemPTD->hWndSM)
+        if (lpMemPTD->hWndSM NE NULL)
         {
             SendMessageW (lpMemPTD->hWndMC, WM_MDIDESTROY, (WPARAM) (lpMemPTD->hWndSM), 0); lpMemPTD->hWndSM = NULL;
         } // End IF
@@ -510,13 +522,13 @@ NORMAL_EXIT:
         DestroyWindow (lpMemPTD->hWndMC); lpMemPTD->hWndMC = NULL;
     } // End IF
 
-    if (csSM.hGlbDPFE)
+    if (csSM.hGlbDPFE NE NULL)
     {
         // Free the storage for the workspace DPFE global memory
         DbgGlobalFree (csSM.hGlbDPFE); csSM.hGlbDPFE = NULL;
     } // End IF
 
-    if (lpMemPTD)
+    if (lpMemPTD NE NULL)
     {
         // Destroy the PerTabData vars
         DESTROY_PERTABVARS

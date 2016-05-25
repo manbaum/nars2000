@@ -3312,6 +3312,44 @@ LPPL_YYSTYPE plRedF_SPA
 
 
 //***************************************************************************
+//  $plRedIDX_IDX
+//
+//  Reduce "IDX IDX"
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- plRedIDX_IDX"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE plRedIDX_IDX
+    (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
+     LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
+     LPPL_YYSTYPE  lpplYYLstRht,        // ...    last right ...
+     SO_ENUM       soType)              // Next SO_ENUM value
+
+{
+    LPPL_YYSTYPE lpplYYTmp = lpplYYLstRht;
+
+    while (lpplYYTmp->lpplYYIdxCurry NE NULL)
+        // Point to the next IdxCurry
+        lpplYYTmp = lpplYYTmp->lpplYYIdxCurry;
+
+    // Copy to the left curry object
+    lpplYYTmp->lpplYYIdxCurry = lpplYYCurObj;
+
+    // Change the tkSynObj
+    lpplYYLstRht->tkToken.tkSynObj = soType;
+
+////YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;  // Do *NOT* free as it is still curried
+
+    return lpplYYLstRht;
+} // End plRedIDX_IDX
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $plRedIDX_SPA
 //
 //  Reduce "IDX SPA"
@@ -3392,6 +3430,12 @@ LPPL_YYSTYPE plRedA_SPA
 //  Reduce "NAM ISPA"
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- plRedNAM_ISPA"
+#else
+#define APPEND_NAME
+#endif
+
 LPPL_YYSTYPE plRedNAM_ISPA
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
      LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
@@ -3403,6 +3447,10 @@ LPPL_YYSTYPE plRedNAM_ISPA
 
     Assert (lpplYYLstRht->lpplYYIdxCurry NE NULL);
     Assert (IsTknNamed (&lpplYYCurObj->tkToken));
+
+    // If the IDX is repeated, ...
+    if (lpplYYLstRht->lpplYYIdxCurry->lpplYYIdxCurry NE NULL)
+        goto NONCE_EXIT;
 
     if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
         bRet = FALSE;
@@ -3421,7 +3469,6 @@ LPPL_YYSTYPE plRedNAM_ISPA
           ArrayIndexSet_EM    (&lpplYYCurObj->tkToken,
                                &lpplYYLstRht->lpplYYIdxCurry->tkToken,
                                &lpplYYLstRht->tkToken);
-
     // YYFree the current & curried objects
                                                YYFree (lpplYYCurObj);                 lpplYYCurObj = NULL; // curSynObj = soNONE;
     FreeResult (lpplYYLstRht->lpplYYIdxCurry); YYFree (lpplYYLstRht->lpplYYIdxCurry); lpplYYLstRht->lpplYYIdxCurry = NULL;
@@ -3439,7 +3486,17 @@ LPPL_YYSTYPE plRedNAM_ISPA
     } // End IF
 
     return lpplYYLstRht;
+
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpplYYCurObj->tkToken);
+    // We'll free this object because of the NULL return,
+    //   so we increment the RefCnt as this is a named object
+    DbgIncrRefCntTkn (&lpplYYCurObj->tkToken);
+
+    return NULL;
 } // End plRedNAM_ISPA
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5809,9 +5866,10 @@ PL_YYLEX_FCNNAMED:
                             lptkRht1 = &lpYYRht1->tkToken;
                         } // End IF
 
-                        bAssignName = ((lptkRht1 NE NULL)
-                                    && ((lptkRht1->tkSynObj EQ soSPA) || (lptkRht1->tkSynObj EQ soISPA))
-                                    && (lpYYRht1->lpplYYFcnCurry NE NULL))
+                        bAssignName = (lpplYYLval->tkToken.tkFlags.bAssignName
+                                    || ((lptkRht1 NE NULL)
+                                     && ((lptkRht1->tkSynObj EQ soSPA) || (lptkRht1->tkSynObj EQ soISPA))
+                                     && (lpYYRht1->lpplYYFcnCurry NE NULL)))
                                       ;
                         //                                          RhtStk1 RhtStk2
                         // Late catch of NAM          F {is} A       SPA

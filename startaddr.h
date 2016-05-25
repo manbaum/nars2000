@@ -495,7 +495,6 @@ typedef struct tagSTART_ADDRESSES
     "ArrayIndexRefNamImmed_EM_YY", (LPUCHAR) &ArrayIndexRefNamImmed_EM_YY,
     "ArrayIndexValidZilde_EM"   , (LPUCHAR) &ArrayIndexValidZilde_EM    ,
     "ArrayIndexRefRect_EM_YY"   , (LPUCHAR) &ArrayIndexRefRect_EM_YY    ,
-    "ListIndexRef_EM_YY"        , (LPUCHAR) &ListIndexRef_EM_YY         ,
     "ArrayIndexSet_EM"          , (LPUCHAR) &ArrayIndexSet_EM           ,
     "ArrayIndexSetNamImmed_EM"  , (LPUCHAR) &ArrayIndexSetNamImmed_EM   ,
     "ArrayIndexSetNoLst_EM"     , (LPUCHAR) &ArrayIndexSetNoLst_EM      ,

@@ -3474,6 +3474,7 @@ UBOOL PrimFnDydSimpNest_EM
                 break;
 
             case PTRTYPE_HGLOBAL:
+                // 2 4-({enclose}0 1)(0 1 2)
                 hGlbSub = PrimFnDydSiScNest_EM (lptkFunc,
                                                 aplTypeHetLft,
                                                 aplIntegerLft,
@@ -3839,6 +3840,7 @@ UBOOL PrimFnDydNestSimp_EM
                 break;
 
             case PTRTYPE_HGLOBAL:
+                // ({enclose}0 1)(0 1 2)-2 4
                 hGlbSub = PrimFnDydNestSiSc_EM (lptkFunc,
                                                 aplTypeHetRht,
                                                 aplIntegerRht,
@@ -4109,6 +4111,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
                     break;
 
                 case PTRTYPE_HGLOBAL:
+                    // ({enclose}0 1)(0 1 2)-2 4
                     hGlbSub = PrimFnDydNestSiSc_EM (lptkFunc,
                                                     aplTypeRht,
                                                     aplIntegerRht,
@@ -9826,7 +9829,8 @@ HGLOBAL PrimFnDydSiScNest_EM
                     break;
 
                 case PTRTYPE_HGLOBAL:
-                    hGlbSub = PrimFnDydNestSiSc_EM (lptkFunc,
+                    // 2 4-({enclose}0 1)(0 1 2)
+                    hGlbSub = PrimFnDydSiScNest_EM (lptkFunc,
                                                     aplTypeLft,
                                                     aplIntegerLft,
                                                     aplFloatLft,

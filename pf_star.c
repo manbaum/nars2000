@@ -832,7 +832,7 @@ APLRAT PrimFnDydStarRisRvR
     // If the exponent's denominator is 1,
     //   and the exponent's numerator fits in an UINT, ...
     if (IsMpz1 (mpq_denref (&aplRatRht))
-     && mpz_fits_ulong_p (mpq_numref (&aplRatRht)) NE 0)
+     && mpz_fits_slong_p (mpq_numref (&aplRatRht)) NE 0)
     {
         // Initialize the base
         mpq_init_set (&mpqRes, &aplRatLft);

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -177,6 +177,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
     APLLONGEST        aplLongestRht;        // Right arg immediate type
     APLCHAR           alterChar;            // Original function in case alternating
+    ALLTYPES          atTmp = {0};          // Temporary ALLTYPES
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -966,8 +967,11 @@ RESTART_EXCEPTION:
                                     break;
 
                                 case ARRAY_FLOAT:
+                                    // In case the current item was demoted in type, we blow it up again to the result
+                                    (*aTypeActPromote[aplTypeTmp][aplTypeRes]) (&tkLftArg.tkData.tkFloat, 0, &atTmp);
+
                                     // Save in the result as a FLOAT
-                                    ((LPAPLFLOAT) lpMemRes)[uRht] = tkLftArg.tkData.tkFloat;
+                                    ((LPAPLFLOAT) lpMemRes)[uRht] = atTmp.aplFloat;
 
                                     break;
 

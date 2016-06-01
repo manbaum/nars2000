@@ -1668,6 +1668,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 {
     APLSTYPE          aplTypeLft,           // Left arg storage type
                       aplTypeRht,           // Right ...
+                      aplTypeTmp,           // Temporary ...
                       aplTypeRes;           // Result   ...
     APLNELM           aplNELMLft,           // Left arg NELM
                       aplNELMRht,           // Right ...
@@ -1719,6 +1720,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     LPSYMENTRY        lpSymTmp;             // Ptr to temporary LPSYMENTRY
     LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    ALLTYPES          atTmp = {0};          // Temporary ALLTYPES
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -2481,6 +2483,9 @@ RESTART_EXCEPTION:
                     } // End FOR
                 } // End IF/ELSE
 
+                // Get the attributes (Type, NELM, and Rank) of the new result
+                AttrsOfToken (&tkRhtArg, &aplTypeTmp, NULL, NULL, NULL);
+
                 // Initialize index into the result
                 uRes = uHi + uDimHi * (uAx + uDimAxRes * uLo);;
 
@@ -2541,8 +2546,11 @@ RESTART_EXCEPTION:
                                 break;
 
                             case ARRAY_FLOAT:
+                                // In case the current item was demoted in type, we blow it up again to the result
+                                (*aTypeActPromote[aplTypeTmp][aplTypeRes]) (&tkRhtArg.tkData.tkFloat, 0, &atTmp);
+
                                 // Save in the result as a FLOAT
-                                ((LPAPLFLOAT) lpMemRes)[uRes] = tkRhtArg.tkData.tkFloat;
+                                ((LPAPLFLOAT) lpMemRes)[uRht] = atTmp.aplFloat;
 
                                 break;
 

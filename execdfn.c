@@ -173,12 +173,10 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
                  lpYYFcnStrLft,     // Ptr to left operand function strand (may be NULL if not an operator)
                  lpYYFcnStrRht;     // Ptr to right operand function strand (may be NULL if monadic operator or not an operator)
     UBOOL        bTknDel;           // TRUE iff the function strand token is a Del
+    LPTOKEN      lptkAxisLcl;       // Ptr to local axis token
 
-    // If there's no axis and a function strand, ...
-    if (lptkAxisOpr EQ NULL
-     && lpYYFcnStrOpr NE NULL)
-        // Check for axis operator
-        lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
+    // Check for local axis operator
+    lptkAxisLcl = CheckAxisOper (lpYYFcnStrOpr);
 
     // Determine if the token is a Del
     bTknDel = (lpYYFcnStrOpr NE NULL
@@ -193,7 +191,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
      && IsTknOp1 (&lpYYFcnStrOpr->tkToken))
     {
         // Set ptr to left operand
-        lpYYFcnStrLft = GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr);
+        lpYYFcnStrLft = GetMonLftOper (lpYYFcnStrOpr, lptkAxisLcl);
 
         // Zap the right operand
         lpYYFcnStrRht = NULL;
@@ -203,12 +201,20 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
      && IsTknOp2 (&lpYYFcnStrOpr->tkToken))
     {
             // Set ptr to right operand
-        lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr);
+        lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisLcl);
 
         // Set ptr to left operand
         lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
     } else
         lpYYFcnStrLft = lpYYFcnStrRht = NULL;
+
+    // Only one axis
+    Assert (lptkAxisOpr EQ NULL || lptkAxisLcl EQ NULL);
+
+////// Pick the axis
+////if (lptkAxisOpr EQ NULL)
+////    // Use the local one
+////    lptkAxisOpr = lptkAxisLcl;
 
     // Call common routine
     lpYYRes =

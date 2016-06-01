@@ -69,7 +69,8 @@ typedef enum tagMFO
     MFOE_RoS3            ,      // 2B:  ...                           #3
     MFOE_MDIU            ,      // 2C:  Multiset dyadic iota underbar
     MFOE_DetSing         ,      // 2D:  Determinant of a singleton
-    MFOE_LENGTH                 // 2E:  # entries in this enum
+    MFOE_DydVOFact       ,      // 2E:  Pochhammer symbol:  rising/falling factorial
+    MFOE_LENGTH                 // 2F:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -119,6 +120,7 @@ typedef enum tagMFO
 #define MFON_RoS3               L"#RoS3"
 #define MFON_MDIU               L"#MDIU"
 #define MFON_DetSing            L"#DetSing"
+#define MFON_DydVOFact          L"#DydVOFact"
 
 // Magic Function/Operator Variables
 #define $ALPHA          WS_UTF16_ALPHA

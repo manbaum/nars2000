@@ -274,42 +274,42 @@ LPPL_YYSTYPE PrimOpMonVariantCommon_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
-    (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic derived function)
-     LPPL_YYSTYPE lpYYFcnStrLft,        // Ptr to left operand function strand
-     LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
-     LPPL_YYSTYPE lpYYFcnStrRht,        // Ptr to right operand function strand
-     LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     UBOOL        bPrototyping)         // TRUE iff protoyping
+    (LPTOKEN      lptkLftArg,               // Ptr to left arg token (may be NULL if monadic derived function)
+     LPPL_YYSTYPE lpYYFcnStrLft,            // Ptr to left operand function strand
+     LPPL_YYSTYPE lpYYFcnStrOpr,            // Ptr to operator function strand
+     LPPL_YYSTYPE lpYYFcnStrRht,            // Ptr to right operand function strand
+     LPTOKEN      lptkRhtArg,               // Ptr to right arg token
+     UBOOL        bPrototyping)             // TRUE iff protoyping
 
 {
-    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to result
-////              lpYYRes2;             // Ptr to secondary result
-    LPTOKEN       lptkAxis;             // Ptr to axis token
-    APLSTYPE      aplTypeRhtOpr;        // Right operand storage type
-    APLNELM       aplNELMRhtOpr;        // Right operand NELM
-    APLRANK       aplRankRhtOpr;        // Right operand rank
-    APLINT        aplIntegerRhtOpr;     // Right operand integer value
-    APLCHAR       aplCharRhtOpr;        // Right operand character value
-    APLFLOAT      aplFloatRhtOpr;       // Right operand float value
-    UBOOL         bRet = TRUE,          // TRUE iff the result is valid
-                  bQuadIOFound = FALSE, // TRUE iff []IO value found
-                  bQuadDTFound = FALSE; // ...      []DT ...
-    APLFLOAT      fQuadCT;              // []CT
-    APLCHAR       cQuadDT;              // []DT
-    APLBOOL       bQuadIO;              // []IO
-    APLINT        uQuadPPV;             // []PP for VFPs
-    TOKEN         tkFcn = {0},          // Function token
-                  tkRht = {0};          // Right arg token
-    HGLOBAL       hGlbRhtOpr;           // Right operand global memory handle
-    LPVOID        lpMemRhtOpr;          // Ptr to right operand memory
-////HGLOBAL       hGlbMFO;              // Magic function/operator global memory handle
-    LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to result
+////                  lpYYRes2;             // Ptr to secondary result
+    LPTOKEN           lptkAxisLft;          // Ptr to axis token on the left operand
+    APLSTYPE          aplTypeRhtOpr;        // Right operand storage type
+    APLNELM           aplNELMRhtOpr;        // Right operand NELM
+    APLRANK           aplRankRhtOpr;        // Right operand rank
+    APLINT            aplIntegerRhtOpr;     // Right operand integer value
+    APLCHAR           aplCharRhtOpr;        // Right operand character value
+    APLFLOAT          aplFloatRhtOpr;       // Right operand float value
+    UBOOL             bRet = TRUE,          // TRUE iff the result is valid
+                      bQuadIOFound = FALSE, // TRUE iff []IO value found
+                      bQuadDTFound = FALSE; // ...      []DT ...
+    APLFLOAT          fQuadCT;              // []CT
+    APLCHAR           cQuadDT;              // []DT
+    APLBOOL           bQuadIO;              // []IO
+    APLINT            uQuadPPV;             // []PP for VFPs
+    TOKEN             tkFcn = {0},          // Function token
+                      tkRht = {0};          // Right arg token
+    HGLOBAL           hGlbRhtOpr;           // Right operand global memory handle
+    LPVOID            lpMemRhtOpr;          // Ptr to right operand memory
+    HGLOBAL           hGlbMFO;              // Magic function/operator global memory handle
+    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    // Check for axis operator
-    lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
+    // Check for axis operator on the left operand
+    lptkAxisLft = CheckAxisOper (lpYYFcnStrLft);
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
@@ -727,6 +727,41 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 
             break;
 
+        // Pochhammer Symbol (Rising and Falling factorials):
+        // See https://en.wikipedia.org/wiki/Falling_and_rising_factorials
+        case UTF16_QUOTEDOT:                // Monadic only
+            // Ensure there's no left arg
+            if (lptkLftArg NE NULL)
+                goto LEFT_VALENCE_EXIT;
+
+            // Validate the right operand as
+            //   a simple or global numeric scalar or one- or two-element vector
+            if (IsMultiRank (aplRankRhtOpr))
+                goto RIGHT_OPERAND_RANK_EXIT;
+            if (aplNELMRhtOpr NE 1
+             && aplNELMRhtOpr NE 2)
+                goto RIGHT_OPERAND_LENGTH_EXIT;
+            if (!IsNumeric (aplTypeRhtOpr))
+                goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+            // Compute the rising/falling factorial using the Shreik primitive
+
+            // Get the magic function/operator global memory handle
+            hGlbMFO = lpMemPTD->hGlbMFO[MFOE_DydVOFact];
+
+            lpYYRes =
+              ExecuteMagicFunction_EM_YY (lptkLftArg,               // Ptr to left arg token
+                                         &lpYYFcnStrOpr->tkToken,   // Ptr to function token
+                                          lpYYFcnStrOpr,            // Ptr to function strand
+                                          lptkRhtArg,               // Ptr to right arg token
+                                         &lpYYFcnStrRht->tkToken,   // Ptr to axis token (from right operand)
+                                          hGlbMFO,                  // Magic function/operator global memory handle
+                                          NULL,                     // Ptr to HSHTAB struc (may be NULL)
+                                          bPrototyping
+                                        ? LINENUM_PRO
+                                        : LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
+            break;
+
 ////////// []CF:  Circular Functions divisor:
 //////////   L{circle}{variant}X R   is   L{circle}R{divide}X{divide}{circle}0.5
 ////////case UTF16_CIRCLE:                  // Dyadic w/ L=-3 -2 -1 1 2 3
@@ -757,14 +792,10 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 ////////    break;
 
 ////////// []RA:  Residue arithmetic:  Operand | L f R
-////////// Rising and falling factorial:
-////////// See http://en.wikipedia.org/wiki/Pochhammer_symbol
 ////////case UTF16_STAR:                    // Dyadic only
 ////////case UTF16_STAR2:                   // Dyadic only
 ////////    // Ensure there's a left arg
-////////    if (lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_BAR
-////////     && lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_BAR2
-////////     && !lptkLftArg)
+////////    if (lptkLftArg EQ NULL)
 ////////        goto LEFT_VALENCE_EXIT;
 ////////
 ////////    // Validate the right operand as
@@ -776,28 +807,6 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 ////////        goto RIGHT_OPERAND_LENGTH_EXIT;
 ////////    if (!IsNumeric (aplTypeRhtOpr))
 ////////        goto RIGHT_OPERAND_DOMAIN_EXIT;
-////////    // If there's a second element, ...
-////////    if (aplNELMRhtOpr EQ 2)
-////////    {
-////////        // Compute the factorial number
-////////        //   as {times}/{each} L + Opr2 {times} {iota} {each} R
-////////
-////////        // Get the magic function/operator global memory handle
-////////        hGlbMFO = lpMemPTD->hGlbMFO[MFOE_DydVOFact];
-////////
-////////        lpYYRes =
-////////          ExecuteMagicFunction_EM_YY (lptkLftArg,               // Ptr to left arg token
-////////                                     &lpYYFcnStrOpr->tkToken,   // Ptr to function token
-////////                                      lpYYFcnStrOpr,            // Ptr to function strand
-////////                                      lptkRhtArg,               // Ptr to right arg token
-////////                                     &lpYYFcnStrRht->tkToken,   // Ptr to axis token
-////////                                      hGlbMFO,                  // Magic function/operator global memory handle
-////////                                      NULL,                     // Ptr to HSHTAB struc (may be NULL)
-////////                                      bPrototyping
-////////                                    ? LINENUM_PRO
-////////                                    : LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
-////////        break;
-////////    } // End IF
 ////////
 ////////    // Fall through to other Residue Arithmetic code
 ////////
@@ -809,7 +818,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 ////////    // Ensure there's a left arg
 ////////    if (lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_BAR
 ////////     && lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_BAR2
-////////     && !lptkLftArg)
+////////     && lptkLftArg EQ NULL)
 ////////        goto LEFT_VALENCE_EXIT;
 ////////
 ////////    // Validate the right operand as
@@ -913,31 +922,12 @@ NORMAL_EXIT:
 #undef  APPEND_NAME
 
 
-/// //***************************************************************************
-/// //  Magic function/operator for rising/falling factorials from the Variant Operator
-/// //***************************************************************************
-///
-/// static APLCHAR DydVOFactHeader[] =
-///   L"Z" $IS L"L " MFON_DydVOFact L"[X] R;" $QUAD_IO;
-///
-/// static APLCHAR DydVOFactLine1[] =
-///   $QUAD_IO $IS L"0";
-///
-/// static APLCHAR DydVOFactLine2[] =
-///   L"Z" $IS L"X[0]|" $TIMES L"/" $EACH L"L+X[1]" $TIMES $IOTA $EACH L"R";
-///
-/// static LPAPLCHAR DydVOFactBody[] =
-/// {DydVOFactLine1,
-///  DydVOFactLine2,
-/// };
-///
-/// MAGIC_FCNOPR MFO_DydVOFact =
-/// {DydVOFactHeader,
-///  DydVOFactBody,
-///  countof (DydVOFactBody),
-/// };
-///
-///
+//***************************************************************************
+//  Magic functions/operators for Variant Operator
+//***************************************************************************
+
+#include "mf_variant.h"
+
 /// //***************************************************************************
 /// //  Magic function/operator for circular function divisor from the Variant Operator
 /// //***************************************************************************
@@ -1605,8 +1595,7 @@ UBOOL VariantValidateSymVal_EM
 
     // Validate the value
     return VariantValidateCom_EM (immTypeItm,                               // Immediate type
-                                  (IsImmGlbNum (immTypeItm))
-                               ?  hGlbItm
+    (IsImmGlbNum (immTypeItm)) ?  hGlbItm                                   //
                                : &aplLongestItm,                            // Ptr to immediate value (ignored if bReset)
                                   bReset,                                   // TRUE iff assignment value is empty (we're resetting to CLEAR WS/System)
                                   aVariantKeyStr[varKey].aSysVarValidSet,   // Ptr to validate set function

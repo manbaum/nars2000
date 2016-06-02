@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -195,6 +195,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
                       hGlbTmp;              // Temporary global memory handle
     APLRAT            aplRatRht = {0};      // Right arg as Rational
     APLVFP            aplVfpRht = {0};      // ...          VFP
+    ALLTYPES          atTmp = {0};          // Temporary ALLTYPES
 
     // Set the result array storage type for the ending code
     aplTypeRes = ARRAY_BOOL;
@@ -1000,8 +1001,8 @@ RESTART_EXCEPTION:
                     case ARRAY_BOOL:
                     case ARRAY_INT:
                     case ARRAY_FLOAT:
-                // Set the token & immediate types in case uDimAxRht EQ 1
-                tkRhtArg.tkFlags.TknType = TKT_VARIMMED;
+                        // Set the token & immediate types in case uDimAxRht EQ 1
+                        tkRhtArg.tkFlags.TknType = TKT_VARIMMED;
 
                         break;
 
@@ -1297,6 +1298,9 @@ RESTART_EXCEPTION:
                 } // End FOR
             } // End IF/ELSE
 
+            // In case the current item was demoted in type, we blow it up again to the result
+            (*aTypeActPromote[aplTypeTmp][aplTypeRes]) (&tkRhtArg.tkData.tkFloat, 0, &atTmp);
+
             // Split cases based upon the token type of the right arg (result)
             switch (tkRhtArg.tkFlags.TknType)
             {
@@ -1361,8 +1365,14 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_FLOAT:
+#ifdef DEBUG
+                            DbgBrk ();
+#endif
+                            // In case the current item was demoted in type, we blow it up again to the result
+                            (*aTypeActPromote[aplTypeTmp][aplTypeRes]) (&tkRhtArg.tkData.tkFloat, 0, &atTmp);
+
                             // Save in the result as a FLOAT
-                            *((LPAPLFLOAT) lpMemRes)++ = tkRhtArg.tkData.tkFloat;
+                            *((LPAPLFLOAT) lpMemRes)++ = atTmp.aplFloat;
 
                             break;
 

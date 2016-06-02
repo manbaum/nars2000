@@ -349,8 +349,10 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     // Get a ptr to the Primitive Function Flags
     lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
 
-    // If this function has no identity element, ...
-    if (!lpPrimFlagsLft->IdentElem)
+    // If this function has no identity element,
+    //   and is not a UDFO, ...
+    if (!lpPrimFlagsLft->IdentElem
+     && !IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
         goto DOMAIN_EXIT;
 
     // If the product of the dimensions above
@@ -730,7 +732,7 @@ RESTART_EXCEPTION:
 
                                 break;
 
-                            case ARRAY_FLOAT:
+                            case ARRAY_FLOAT:       // -\1.5 2.5
                                 // Save in the result as a FLOAT
                                 ((LPAPLFLOAT) lpMemRes)[uRht] = tkLftArg.tkData.tkFloat;
 
@@ -966,7 +968,7 @@ RESTART_EXCEPTION:
 
                                     break;
 
-                                case ARRAY_FLOAT:
+                                case ARRAY_FLOAT:           // +\1.5 2.5
                                     // In case the current item was demoted in type, we blow it up again to the result
                                     (*aTypeActPromote[aplTypeTmp][aplTypeRes]) (&tkLftArg.tkData.tkFloat, 0, &atTmp);
 
@@ -1085,7 +1087,7 @@ RESTART_EXCEPTION:
             //   each reduction starts at uDimRht and goes through the
             //   successive elements up to and including uDimRht + uAx * uDimHi
             //   for uAx running through 0 to uDimAxRht - 1.
-            // At this point, the left arg function is non-associative.
+            // At this point, the left operand is non-associative and non-alternating
             for (uAx = 0; uAx < uDimAxRht; uAx++)
             {
                 // Reduce the uDimAxRht values starting at
@@ -1238,6 +1240,9 @@ RESTART_EXCEPTION:
                 // Get the index into the result
                 uRht = uDimRht + uAx * uDimHi;
 
+                // Get the attributes (Type, NELM, and Rank) of the new result
+                AttrsOfToken (&tkRhtArg, &aplTypeTmp, NULL, NULL, NULL);
+
                 // Split cases based upon the token type of the right arg (result)
                 switch (tkRhtArg.tkFlags.TknType)
                 {
@@ -1305,8 +1310,14 @@ RESTART_EXCEPTION:
                                 break;
 
                             case ARRAY_FLOAT:
+#ifdef DEBUG
+                                DbgBrk ();              // ***TESTME***
+#endif
+                                // In case the current item was demoted in type, we blow it up again to the result
+                                (*aTypeActPromote[aplTypeTmp][aplTypeRes]) (&tkRhtArg.tkData.tkFloat, 0, &atTmp);
+
                                 // Save in the result as a FLOAT
-                                ((LPAPLFLOAT) lpMemRes)[uRht] = tkRhtArg.tkData.tkFloat;
+                                ((LPAPLFLOAT) lpMemRes)[uRht] = atTmp.aplFloat;
 
                                 break;
 

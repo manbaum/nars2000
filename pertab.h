@@ -29,7 +29,7 @@
 #define INIT_PERTABVARS                                     \
     lpMemPTD->Sig.nature    = ' DTP';                       \
     lpMemPTD->uQuadMF       = uQuadMF_CWS;                  \
-    SetCurrentFeatureCWS (lpMemPTD);                        \
+    SetCurrentFeatureFromCWS (lpMemPTD);                    \
     lpMemPTD->hGlbQuadEM    = hGlbQuadEM_DEF;               \
     gmp_randinit_default (lpMemPTD->randState);             \
 

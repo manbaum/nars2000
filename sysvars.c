@@ -2938,28 +2938,61 @@ UBOOL ValidNdxFEATURE
 
 
 //***************************************************************************
-//  $SetCurrentFeatureCWS
+//  $SetCurrentFeatureFromCWS
 //
-//  Copy the CLEARWS values of []FEATURES to the current copy in PTD
+//  Copy the CLEARWS values of []FEATURE to the current copy in PTD
 //***************************************************************************
 
-void SetCurrentFeatureCWS
+void SetCurrentFeatureFromCWS
     (LPPERTABDATA lpMemPTD)
 
 {
-    LPAPLINT lpMemHdrCWS;
+    // Call common subroutine
+    SetCurrentFeature (lpMemPTD,
+                       hGlbQuadFEATURE_CWS);
+} // End SetCurrentFeatureFromCWS
+
+
+//***************************************************************************
+//  $SetCurrentFeatureFromSysVar
+//
+//  Copy the Sysvar values of []FEATURE to the current copy in PTD
+//***************************************************************************
+
+void SetCurrentFeatureFromSysVar
+    (LPPERTABDATA lpMemPTD)
+
+{
+    // Call common subroutine
+    SetCurrentFeature (lpMemPTD,
+                       lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_FEATURE]->stData.stGlbData);
+} // End SetCurrentFeatureFromSysVar
+
+
+//***************************************************************************
+//  $SetCurrentFeature
+//
+//  Copy the HGLOBAL values of []FEATURE to the current copy in PTD
+//***************************************************************************
+
+void SetCurrentFeature
+    (LPPERTABDATA lpMemPTD,
+     HGLOBAL      hGlbFEATURE)
+
+{
+    LPVARARRAY_HEADER lpMemHdr;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrCWS = MyGlobalLock (hGlbQuadFEATURE_CWS);
+    lpMemHdr = MyGlobalLock (hGlbFEATURE);
 
     // Skip over the header and dimensions to the data
     // Save the values in the PTD
     CopyMemory (lpMemPTD->aplCurrentFEATURE,
-                VarArrayDataFmBase (lpMemHdrCWS),
+                VarArrayDataFmBase (lpMemHdr),
                 FEATURENDX_LENGTH * sizeof (APLINT));
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbQuadFEATURE_CWS); lpMemHdrCWS = NULL;
-} // End SetCurrentFeatureCWS
+    MyGlobalUnlock (hGlbFEATURE); lpMemHdr = NULL;
+} // End SetCurrentFeature
 
 
 //***************************************************************************

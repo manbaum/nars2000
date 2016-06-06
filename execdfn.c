@@ -1773,6 +1773,12 @@ void UnlocalizeSTEs
                 // Initialize PerTabData vars
                 InitPTDVars (lpMemPTD);
             } // End IF
+
+            // If this var is []FEATURE, set the aplCurrentFEATURE values
+            if (lpSymEntryCur->stFlags.ObjName EQ OBJNAME_SYS
+             && IsSymSysName (lpSymEntryCur, $QUAD_FEATURE))
+                // Set the aplCurrentFEATURE values from the SysVar
+                SetCurrentFeatureFromSysVar (lpMemPTD);
         } // End FOR/IF
 
         // Strip the level from the stack

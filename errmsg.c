@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -739,7 +739,7 @@ void ErrorMessageSetToken
 //***************************************************************************
 
 void ErrorMessageSetCharIndex
-    (int tkCharIndex)               // Error char index
+    (int tkErrorCharIndex)          // Error char index
 
 {
     LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
@@ -748,9 +748,34 @@ void ErrorMessageSetCharIndex
     lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
 
     // Set the error char index if we're inside ParseLine
-    if (lpplLocalVars)
-        lpplLocalVars->tkErrorCharIndex = tkCharIndex;
+    if (lpplLocalVars NE NULL)
+        lpplLocalVars->tkErrorCharIndex = tkErrorCharIndex;
+    else
+        GetMemPTD ()->tkErrorCharIndex = tkErrorCharIndex;
 } // End ErrorMessageSetCharIndex
+
+
+//***************************************************************************
+//  $ErrorMessageGetCharIndex
+//
+//  Get the error char index for an error message
+//***************************************************************************
+
+int ErrorMessageGetCharIndex
+    (void)
+
+{
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to local plLocalVars
+
+    // Get this thread's LocalVars ptr
+    lpplLocalVars = (LPPLLOCALVARS) TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the error char index if we're inside ParseLine
+    if (lpplLocalVars NE NULL)
+        return lpplLocalVars->tkErrorCharIndex;
+    else
+        return GetMemPTD ()->tkErrorCharIndex;
+} // End ErrorMessageGetCharIndex
 
 
 //***************************************************************************

@@ -871,7 +871,7 @@ UBOOL IsLocalName
           || strchrW (lpwBrkTerm, wp[iStrLen]) NE NULL))
         {
             // Mark as FOUND
-            if (lpPosition)
+            if (lpPosition NE NULL)
                *lpPosition = (UINT) (wp - lpwszTemp);
 
             return TRUE;
@@ -882,7 +882,7 @@ UBOOL IsLocalName
     } // End WHILE
 
     // If position is desired, ...
-    if (lpPosition)
+    if (lpPosition NE NULL)
     {
         // Remove the trailing lamp
         lpwszTemp[lstrlenW (lpwszTemp) - 1] = WC_EOS;
@@ -1248,7 +1248,7 @@ UBOOL scAlpha
                                           lptkLocalVars->iStrLen,
                                          &stFlags);
                 // If there's a shadow entry, ...
-                if (lpSymEntry && lpSymEntry->stPrvEntry)
+                if (lpSymEntry NE NULL && lpSymEntry->stPrvEntry NE NULL)
                 {
                     // Save the color index
                     uClr = SC_LCLNAME;
@@ -1289,7 +1289,7 @@ UBOOL scAlpha
             *lptkLocalVars->lpMemClrNxt++;
 
             // If the STE is available, ...
-            if (lpSymEntry)
+            if (lpSymEntry NE NULL)
             {
                 // If it's not []Z or we're fixing a function via []TF, ...
                 if (lpSymEntry NE lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_Z]
@@ -2138,6 +2138,12 @@ UBOOL scClnDone
 //  Done with this Control Structure
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- fnCtrlDone"
+#else
+#define APPEND_NAME
+#endif
+
 UBOOL fnCtrlDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
@@ -2156,6 +2162,15 @@ UBOOL fnCtrlDone
     if (lptkLocalVars->CtrlStrucTknType EQ TKT_CS_IN)
     {
         Assert (lptkLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_VARNAMED);
+
+        // If the name is that of a SysVar, ...
+        if (lptkLocalVars->lptkNext[-1].tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS)
+        {
+            // Set the error message
+            ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                                      &lptkLocalVars->lptkNext[-1]);
+            return FALSE;
+        } // End IF
 
         if (lptkLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_VARNAMED)
             // Mark the previous token as to be assigned into
@@ -2289,6 +2304,7 @@ UBOOL fnCtrlDone
     // Mark as successful
     return TRUE;
 } // End fnCtrlDone
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2715,8 +2731,10 @@ UBOOL fnPointDone
 
             // If the value is a scalar, ...
             if (IsScalar (aplRankRes))
+            {
                 // We no longer need this storage
                 DbgGlobalFree (pnLocalVars.hGlbRes); pnLocalVars.hGlbRes = NULL;
+            } // End IF
         } // End IF/ELSE/...
     } else
         // Mark as a SYNTAX ERROR
@@ -3509,14 +3527,14 @@ UBOOL fnComDone
     //   and thus have embedded WS_CRLF in it, we need to use the smaller of the
     //   lstrlenW length and the first occurrence of WC_CR or WC_LF.
     wp = strpbrkW (lptkLocalVars->lpwszCur, WS_CRLF);
-    if (wp)
+    if (wp NE NULL)
         iLen = min (iLen, (APLI3264) (wp - lptkLocalVars->lpwszCur));
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
 
     wp = strpbrkW (&lptkLocalVars->lpwszCur[1], WS_LF);
-    if (wp)
+    if (wp NE NULL)
     {
         int iLen2;
 
@@ -3559,7 +3577,7 @@ UBOOL scComDone
     //   and thus have embedded WS_CRLF in it, we need to use the smaller of the
     //   lstrlenW length and the first occurrence of WC_CR or WC_LF.
     wp = strpbrkW (lptkLocalVars->lpwszCur, WS_CRLF);
-    if (wp)
+    if (wp NE NULL)
         iLen = min (iLen, (APLI3264) (wp - lptkLocalVars->lpwszCur));
 
     // Check for Syntax Coloring
@@ -5363,7 +5381,7 @@ __try
 #endif
 
     // Set the HTS
-    if (lpSF_Fcns->lpHTS)
+    if (lpSF_Fcns->lpHTS NE NULL)
         tkLocalVars.lpHTS = lpSF_Fcns->lpHTS;
     else
         tkLocalVars.lpHTS = lpMemPTD->lphtsPTD;
@@ -5390,6 +5408,10 @@ __try
     tkLocalVars.uCharStart =
     tkLocalVars.uCharIni   = uChar;
     tkLocalVars.uActLen    = (UINT) aplNELM;
+
+    // Clear the caret position associated with lpwszErrorMessage
+    //   so that we can tell if it has been set by an error message
+    ErrorMessageSetToken (NULL);
 
     for (     ; uChar <= aplNELM; uChar++)
     {
@@ -5555,8 +5577,18 @@ NONCE_EXIT:
 
 ERROR_EXIT:
     // Signal an error
-    if (lpErrHandFn)
-        (*lpErrHandFn) (lpMemPTD->lpwszErrorMessage, lpwszLine, tkLocalVars.uChar);
+    if (lpErrHandFn NE NULL)
+    {
+        UINT uErrorCharIndex;
+
+        // If the error character index is valid, ...
+        if (ErrorMessageGetCharIndex () NE NEG1U)
+            uErrorCharIndex = lpMemPTD->tkErrorCharIndex;
+        else
+            uErrorCharIndex = tkLocalVars.uChar;
+
+        (*lpErrHandFn) (lpMemPTD->lpwszErrorMessage, lpwszLine, uErrorCharIndex);
+    } // End IF
 
     if (tkLocalVars.hGlbToken)
     {
@@ -6050,7 +6082,7 @@ UBOOL AppendNewToken_EM
     } // End IF
 
     // Insert this token into the stream:
-    if (lptkData)
+    if (lptkData NE NULL)
         lptkLocalVars->lptkNext->tkData.tkCtrlStruc = lptkData->tkCtrlStruc;
     else
         lptkLocalVars->lptkNext->tkData.tkLongest   = 0;

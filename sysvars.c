@@ -2389,6 +2389,7 @@ UNLOCK_EXIT:
 
 UBOOL VariantValidateCom_EM
     (IMM_TYPES       immType,           // Immediate type
+     HGLOBAL         hGlbItm,           // Global memory handle (may be NULL)
      LPAPLLONGEST    lpaplLongest,      // Ptr to immediate value (ignored if bReset)
      UBOOL           bReset,            // TRUE iff assignment value is empty (we're resetting to CLEAR WS/System)
      ASYSVARVALIDSET aSysVarValidSet,   // Ptr to validate set function
@@ -2414,6 +2415,15 @@ UBOOL VariantValidateCom_EM
 ////////tkRhtArg.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
 ////////tkRhtArg.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
         tkRhtArg.tkData.tkGlbData  = MakePtrTypeGlb (hGlbZilde);
+        tkRhtArg.tkCharIndex       = lptkFunc->tkCharIndex;
+    } else
+    if (hGlbItm NE NULL)
+    {
+        // Setup the token
+        tkRhtArg.tkFlags.TknType   = TKT_VARARRAY;
+////////tkRhtArg.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
+////////tkRhtArg.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+        tkRhtArg.tkData.tkGlbData  = hGlbItm;
         tkRhtArg.tkCharIndex       = lptkFunc->tkCharIndex;
     } else
     if (IsImmGlbNum (immType))
@@ -4272,12 +4282,6 @@ void InitSysVars
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
-
-    // Set the variant operator validation routines
-    aVariantKeyStr[VARIANT_KEY_CT].aSysVarValidSet = ValidSetCT_EM;
-    aVariantKeyStr[VARIANT_KEY_DT].aSysVarValidSet = ValidSetDT_EM;
-    aVariantKeyStr[VARIANT_KEY_IO].aSysVarValidSet = ValidSetIO_EM;
-    aVariantKeyStr[VARIANT_KEY_PP].aSysVarValidSet = ValidSetPP_EM;
 
     // Set the array set validation routines
     aSysVarValidSet[SYSVAR_ALX     ] = ValidSetALX_EM      ;

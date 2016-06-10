@@ -1348,7 +1348,7 @@ UBOOL PrimOpVariantValidateGlb_EM
     switch (GetPtrTypeDir (hGlbRhtOpr))
     {
         case PTRTYPE_STCONST:
-            goto RIGHT_OPERAND_RANK_EXIT;
+            goto RIGHT_OPERAND_DOMAIN_EXIT;
 
         case PTRTYPE_HGLOBAL:
             // Lock the memory to get a ptr to it
@@ -1422,12 +1422,12 @@ UBOOL PrimOpVariantValidateGlb_EM
         {
             // Get the second value from the right operand
             GetNextValueMem (lpMemRhtOpr,               // Ptr to right operand global memory
-                              aplTypeRhtOpr,            // Right operand storage type
-                              aplNELMRhtOpr,            // Right operand NELM
-                              1,                        // Index to use
-                             &hGlbItm,                  // Ptr to the LPSYMENTRY or HGLOBAL (may be NULL)
-                             &aplLongestItm,            // ...        immediate value (may be NULL)
-                             &immTypeItm);              // ...        immediate type:  IMM_TYPES (may be NULL)
+                             aplTypeRhtOpr,             // Right operand storage type
+                             aplNELMRhtOpr,             // Right operand NELM
+                             1,                         // Index to use
+                            &hGlbItm,                   // Ptr to the LPSYMENTRY or HGLOBAL (may be NULL)
+                            &aplLongestItm,             // ...        immediate value (may be NULL)
+                            &immTypeItm);               // ...        immediate type:  IMM_TYPES (may be NULL)
             if (hGlbItm EQ NULL             // Item is immediate
              && IsImmChr (immTypeItm))      //   and char
             {
@@ -1495,12 +1495,12 @@ UBOOL PrimOpVariantValidateGlb_EM
 
     // Get the second value from the right operand
     GetNextValueMem (lpMemRhtOpr,               // Ptr to right operand global memory
-                      aplTypeRhtOpr,            // Right operand storage type
-                      aplNELMRhtOpr,            // Right operand NELM
-                      1,                        // Index to use
-                     &hGlbItm,                  // Ptr to the LPSYMENTRY or HGLOBAL (may be NULL)
-                     &aplLongestItm,            // ...        immediate value (may be NULL)
-                     &immTypeItm);              // ...        immediate type:  IMM_TYPES (may be NULL)
+                     aplTypeRhtOpr,             // Right operand storage type
+                     aplNELMRhtOpr,             // Right operand NELM
+                     1,                         // Index to use
+                    &hGlbItm,                   // Ptr to the LPSYMENTRY or HGLOBAL (may be NULL)
+                    &aplLongestItm,             // ...        immediate value (may be NULL)
+                    &immTypeItm);               // ...        immediate type:  IMM_TYPES (may be NULL)
     // Check for error
     if (IsImmErr (immTypeItm))
         goto RIGHT_OPERAND_DOMAIN_EXIT;
@@ -1595,8 +1595,8 @@ UBOOL VariantValidateSymVal_EM
 
     // Validate the value
     return VariantValidateCom_EM (immTypeItm,                               // Immediate type
-    (IsImmGlbNum (immTypeItm)) ?  hGlbItm                                   //
-                               : &aplLongestItm,                            // Ptr to immediate value (ignored if bReset)
+                                  hGlbItm,                                  //
+                                 &aplLongestItm,                            // Ptr to immediate value (ignored if bReset)
                                   bReset,                                   // TRUE iff assignment value is empty (we're resetting to CLEAR WS/System)
                                   aVariantKeyStr[varKey].aSysVarValidSet,   // Ptr to validate set function
                                   lpSymEntry,                               // Ptr to sysvar SYMENTRY

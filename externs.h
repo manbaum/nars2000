@@ -1320,19 +1320,24 @@ UBOOL gbResDebug
 
 typedef enum tagVARIANT_KEYS
 {
-    VARIANT_KEY_CT = 0,     // 00:  []CT
-    VARIANT_KEY_DT    ,     // 01:  []DT
-    VARIANT_KEY_IO    ,     // 02:  []IO
-    VARIANT_KEY_PP    ,     // 03:  []PP
-    VARIANT_KEY_LENGTH,     // 04:  # entries
+    VARIANT_KEY_ALX = 0 ,   // 00:  []ALX
+    VARIANT_KEY_CT      ,   // 01:  []CT
+    VARIANT_KEY_DT      ,   // 02:  []DT
+    VARIANT_KEY_ELX     ,   // 03:  []ALX
+    VARIANT_KEY_FC      ,   // 04:  []FC
+    VARIANT_KEY_FEATURE ,   // 05:  []FEATURE
+    VARIANT_KEY_FPC     ,   // 06:  []FPC
+    VARIANT_KEY_IO      ,   // 07:  []IO
+    VARIANT_KEY_PP      ,   // 08:  []PP
+    VARIANT_KEY_RL      ,   // 09:  []PP
+    VARIANT_KEY_LENGTH  ,   // 0A:  # entries
 } VARIANTKEYS, *LPVARIANTKEYS;
 
 #define VARIANT_KEY_ERROR   VARIANT_KEY_LENGTH
 
 // N.B.:  Whenever changing the above enum (VARIANT_KEYS)
 //   be sure to make a corresponding change to
-//   <aVariantKeyStr> below, and
-//   <InitSystemVars> in <sysvars.c>.
+//   <aVariantKeyStr> below.
 
 typedef struct tagVARIANT_KEY_STR
 {
@@ -1341,13 +1346,30 @@ typedef struct tagVARIANT_KEY_STR
     ASYSVARVALIDSET   aSysVarValidSet;  // 08:  Ptr to validation function
 } VARIANTKEYSTR, LPVARIANTKEYSTR;
 
+UBOOL ValidSetALX_EM     (LPTOKEN, LPTOKEN);
+UBOOL ValidSetCT_EM      (LPTOKEN, LPTOKEN);
+UBOOL ValidSetDT_EM      (LPTOKEN, LPTOKEN);
+UBOOL ValidSetELX_EM     (LPTOKEN, LPTOKEN);
+UBOOL ValidSetFC_EM      (LPTOKEN, LPTOKEN);
+UBOOL ValidSetFEATURE_EM (LPTOKEN, LPTOKEN);
+UBOOL ValidSetFPC_EM     (LPTOKEN, LPTOKEN);
+UBOOL ValidSetIO_EM      (LPTOKEN, LPTOKEN);
+UBOOL ValidSetPP_EM      (LPTOKEN, LPTOKEN);
+UBOOL ValidSetRL_EM      (LPTOKEN, LPTOKEN);
+
 EXTERN
 VARIANTKEYSTR aVariantKeyStr[VARIANT_KEY_LENGTH]
 #ifdef DEFINE_VALUES
- = {{L"CT"   , SYSVAR_CT, NULL},
-    {L"DT"   , SYSVAR_DT, NULL},
-    {L"IO"   , SYSVAR_IO, NULL},
-    {L"PP"   , SYSVAR_PP, NULL},
+ = {{L"ALX"     , SYSVAR_ALX     , ValidSetALX_EM     },
+    {L"CT"      , SYSVAR_CT      , ValidSetCT_EM      },
+    {L"DT"      , SYSVAR_DT      , ValidSetDT_EM      },
+    {L"ELX"     , SYSVAR_ELX     , ValidSetELX_EM     },
+    {L"FC"      , SYSVAR_FC      , ValidSetFC_EM      },
+    {L"FEATURE" , SYSVAR_FEATURE , ValidSetFEATURE_EM },
+    {L"FPC"     , SYSVAR_FPC     , ValidSetFPC_EM     },
+    {L"IO"      , SYSVAR_IO      , ValidSetIO_EM      },
+    {L"PP"      , SYSVAR_PP      , ValidSetPP_EM      },
+    {L"RL"      , SYSVAR_RL      , ValidSetRL_EM      },
   }
 #endif
 ;

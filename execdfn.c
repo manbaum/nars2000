@@ -209,7 +209,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
         lpYYFcnStrLft = lpYYFcnStrRht = NULL;
 
     // Only one axis
-    Assert (lptkAxisOpr EQ NULL || lptkAxisLcl EQ NULL);
+    Assert (lptkAxisOpr EQ lptkAxisLcl || lptkAxisOpr EQ NULL || lptkAxisLcl EQ NULL);
 
 ////// Pick the axis
 ////if (lptkAxisOpr EQ NULL)
@@ -980,7 +980,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
         if (bStopLine)
         {
             // Mark as suspended
-            lpMemPTD->lpSISCur->Suspended = TRUE;
+            lpMemPTD->lpSISCur->bSuspended = TRUE;
             exitType = EXITTYPE_NONE;
         } else
         {
@@ -1013,7 +1013,7 @@ RESTART_AFTER_ERROR:
 
         // If suspended,
         //   and there's no parent []EA/[]EC control, ...
-        if (lpMemPTD->lpSISCur->Suspended
+        if (lpMemPTD->lpSISCur->bSuspended
          && lpMemPTD->lpSISCur->lpSISErrCtrl EQ NULL)
         {
             HWND hWndEC;        // Edit Ctrl window handle
@@ -1025,8 +1025,8 @@ RESTART_AFTER_ERROR:
 
             // If we're at a stop, display the error message
             //   along with the function name/line #
-            if (bStopLine
-             || lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_STOP)
+            if (bStopLine)
+//////////// || lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_STOP)
             {
                 HGLOBAL      htGlbName;     // Function name global memory handle
                 LPAPLCHAR    lpMemName;     // Ptr to function name global memory
@@ -1096,7 +1096,7 @@ RESTART_AFTER_ERROR:
         lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
 
         // If we're suspended, resetting, or stopping:  break
-        if (lpMemPTD->lpSISCur->Suspended
+        if (lpMemPTD->lpSISCur->bSuspended
          || lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE)
             break;
 NEXTLINE:
@@ -1125,7 +1125,7 @@ NEXTLINE:
      && exitType NE EXITTYPE_RESET_ONE)
     {
         // Mark as suspended & stopping
-        lpMemPTD->lpSISCur->Suspended = TRUE;
+        lpMemPTD->lpSISCur->bSuspended = TRUE;
         bStopLine = TRUE;
 
         // Mark as line #0
@@ -1145,8 +1145,11 @@ NEXTLINE:
             // Fall through to common code
 
         case EXITTYPE_RESET_ALL:
-            // Make a PL_YYSTYPE NoValue entry
-            lpYYRes = MakeNoValue_YY (lptkFunc);
+////////////// Make a PL_YYSTYPE NoValue entry
+////////////lpYYRes = MakeNoValue_YY (lptkFunc);
+
+            // Set to NULL
+            lpYYRes = NULL;
 
             break;
 
@@ -1233,7 +1236,7 @@ NEXTLINE:
         goto NORMAL_EXIT;
 
     // If we're suspended, don't return a result
-    if (lpMemPTD->lpSISCur->Suspended)
+    if (lpMemPTD->lpSISCur->bSuspended)
         goto ERROR_EXIT;
 
     // Get the # STEs in the result
@@ -1452,7 +1455,7 @@ UBOOL CheckDfnExitError_EM
         goto NORMAL_EXIT;
 
     // If the function is already suspended, quit
-    if (lpSISCur->Suspended)
+    if (lpSISCur->bSuspended)
         goto NORMAL_EXIT;
 
     // If we're resetting, quit
@@ -1559,7 +1562,7 @@ ERROR_EXIT:
     lpSISCur->CurLineNum = 0;
 
     // Mark as suspended
-    lpSISCur->Suspended = TRUE;
+    lpSISCur->bSuspended = TRUE;
 
     // Get a ptr to the current SIS
     lpSISCur = lpMemPTD->lpSISCur;
@@ -1575,7 +1578,7 @@ ERROR_EXIT:
          || lpSISCur->bItsEC))
     {
         // Mark as unwinding
-        lpSISCur->Unwind = TRUE;
+        lpSISCur->bUnwind = TRUE;
 
         // Back off to the previous SI level
         lpSISCur = lpSISCur->lpSISPrv;
@@ -1653,7 +1656,7 @@ void UnlocalizeSTEs
         // If there's a right operand,
         //   and it's not immediate, ...
         FreeZapSte (steRhtOpr);
-#undef  FreeZap
+#undef  FreeZapSte
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
@@ -2170,7 +2173,7 @@ UBOOL InitVarSTEs
                     case ARRAY_RAT:
                         // Allocate memory for a scalar RAT
                         // Calculate space needed for the result
-                        ByteRes = CalcArraySize (ARRAY_RAT, 1, 0);
+                        ByteRes = CalcArraySize (aplTypeArg, 1, 0);
 
                         // Check for overflow
                         if (ByteRes NE (APLU3264) ByteRes)
@@ -2187,7 +2190,7 @@ UBOOL InitVarSTEs
 #define lpHeader    lpMemHdrRes
                         // Fill in the header
                         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-                        lpHeader->ArrType    = ARRAY_RAT;
+                        lpHeader->ArrType    = aplTypeArg;
 ////////////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////////////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
                         lpHeader->RefCnt     = 1;
@@ -2254,7 +2257,7 @@ UBOOL InitVarSTEs
                         MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
 ////////////////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;        // Already zero from previous initialization
-                        (*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_VFP;
+                        (*lplpSymEntry)->stFlags.ImmType    = TranslateArrayTypeToImmType (aplTypeArg);
                         (*lplpSymEntry)->stFlags.Value      = TRUE;
                         (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
                         (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;

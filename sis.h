@@ -47,10 +47,10 @@ typedef struct tagSIS_HEADER
     UINT             DfnType:4,     // 1C:  0000000F:  User-defined function/operator Type (see DFN_TYPES)
                      FcnValence:3,  //      00000070:  User-defined function/operator Valence (see FCN_VALENCES)
                      DfnAxis:1,     //      00000080:  User-defined function/operator accepts axis value
-                     Suspended:1,   //      00000100:  Function is suspended
+                     bSuspended:1,  //      00000100:  TRUE iff the function is suspended
                      ResetFlag:3,   //      00000E00:  SI stack is resetting (see RESET_FLAGS)
-                     Restartable:1, //      00001000:  This SI level is restartable
-                     Unwind:1,      //      00002000:  Unwind this level for error message level
+                     bRestartable:1,//      00001000:  TRUE iff this SI level is restartable
+                     bUnwind:1,     //      00002000:  TRUE iff unwind this level for error message level
                      bItsEC:1,      //      00004000:  TRUE iff DFNTYPE_ERRCTRL and this level is []EC (not []EA)
                      bAFO:1,        //      00008000:  TRUE iff this level is an AFO
                      bMFO:1,        //      00010000:  TRUE iff this level is an MFO

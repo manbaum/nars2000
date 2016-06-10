@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -139,7 +139,7 @@ UBOOL CmdSiSinlCom_EM
                            L"%s[%d] %c",
                            (lpMemSaveWSID EQ NULL) ? lpMemName : lpwszFormat,
                            lpSISCur->CurLineNum,
-                           " *"[lpSISCur->Suspended]);
+                           " *"[lpSISCur->bSuspended]);
                 // We no longer need this ptr
                 MyGlobalUnlock (lpSISCur->hGlbFcnName); lpMemName = NULL;
 

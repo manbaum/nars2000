@@ -55,6 +55,7 @@ EXIT_TYPES GotoLine_EM
     IMM_TYPES      immType;         // Right arg first value immediate type
     APLINT         aplIntegerRht;   // First value as integer
     APLFLOAT       aplFloatRht;     // ...            float
+    APLLONGEST     aplLongest;      // Immediate value
     LPSIS_HEADER   lpSISCur;        // Ptr to current SIS header
     TOKEN_TYPES    TknType;         // Target token type
     LPTOKEN_HEADER lpMemTknHdr;     // Ptr to tokenized line header
@@ -85,10 +86,15 @@ EXIT_TYPES GotoLine_EM
                            &aplIntegerRht,  // Ptr to integer result
                            &aplFloatRht,    // Ptr to float ...
                             NULL,           // Ptr to WCHAR ...
-                            NULL,           // Ptr to longest ...
+                           &aplLongest,     // Ptr to longest ...
                            &lpSymGlb,       // Ptr to lpSym/Glb ...
                            &immType,        // Ptr to ...immediate type ...
                             NULL);          // Ptr to array type ...
+        // If the value is an immediate, ...
+        if (lpSymGlb EQ NULL)
+            // Point to the data
+            lpSymGlb = &aplLongest;
+
         // Split cases based upon the right arg storage type
         switch (aplTypeRht)
         {
@@ -179,7 +185,7 @@ EXIT_TYPES GotoLine_EM
     // Check for not restartable SI level
     if (lpSISCur->DfnType EQ DFNTYPE_IMM    // This level is Immediate
      && lpSISCur->lpSISPrv NE NULL          // There is a previous level
-     && !lpSISCur->lpSISPrv->Restartable)   // and it's not restartable
+     && !lpSISCur->lpSISPrv->bRestartable)  // and it's not restartable
         goto NORESTART_EXIT;
 
     // Save the {goto} target if we're executing under []EA/[]EC
@@ -303,7 +309,7 @@ EXIT_TYPES GotoLine_EM
                 lpMemPTD->lpSISCur->lpSISPrv->NxtTknNum  = uTknNum;
 
                 // Mark as no longer suspended
-                lpMemPTD->lpSISCur->lpSISPrv->Suspended = FALSE;
+                lpMemPTD->lpSISCur->lpSISPrv->bSuspended = FALSE;
             } // End IF
 
             break;
@@ -319,7 +325,7 @@ EXIT_TYPES GotoLine_EM
                 lpMemPTD->lpSISCur->NxtTknNum  = uTknNum;
 
                 // Mark as no longer suspended
-                lpMemPTD->lpSISCur->Suspended = FALSE;
+                lpMemPTD->lpSISCur->bSuspended = FALSE;
             } // End IF
 
             break;
@@ -341,7 +347,7 @@ EXIT_TYPES GotoLine_EM
                 lpSISCur->NxtTknNum  = uTknNum;
 
                 // Mark as no longer suspended
-                lpSISCur->Suspended = FALSE;
+                lpSISCur->bSuspended = FALSE;
 
                 // Save the suspended function's semaphore as the one to signal
                 lpMemPTD->lpSISCur->hSigaphore = lpSISCur->hSemaphore;

@@ -2265,8 +2265,8 @@ HGLOBAL CopyGlbAsType_EM
     HGLOBAL           hGlbRes = NULL;       // Result global memory handle
     LPVARARRAY_HEADER lpMemHdrArg = NULL,   // Ptr to arg header
                       lpMemHdrRes = NULL;   // ...    result ...
-    LPVOID            lpMemArg = NULL,      // Ptr to arg global memory
-                      lpMemRes = NULL;      // Ptr to result ...
+    LPVOID            lpMemArg,             // Ptr to arg global memory
+                      lpMemRes;             // Ptr to result ...
     APLUINT           uArg;                 // Loop counter
     UINT              uBitMask;             // Bit mask for looping through Booleans
     APLINT            apaOffArg,            // Arg APA offset
@@ -3219,8 +3219,8 @@ void FillSISNxt
      HANDLE       hSemaphore,           // Semaphore handle
      DFN_TYPES    DfnType,              // DFNTYPE_xxx
      FCN_VALENCES FcnValence,           // FCNVALENCE_xxx
-     UBOOL        Suspended,            // TRUE iff starts Suspended
-     UBOOL        Restartable,          // TRUE iff restartable
+     UBOOL        bSuspended,           // TRUE iff starts Suspended
+     UBOOL        bRestartable,         // TRUE iff restartable
      UBOOL        LinkIntoChain)        // TRUE iff we should link this entry into the SIS chain
 
 {
@@ -3240,10 +3240,10 @@ void FillSISNxt
     lpMemPTD->lpSISNxt->DfnType       = DfnType;
     lpMemPTD->lpSISNxt->FcnValence    = FcnValence;
 ////lpMemPTD->lpSISNxt->DfnAxis       = FALSE;          // Already zero from ZeroMemory
-    lpMemPTD->lpSISNxt->Suspended     = Suspended;
+    lpMemPTD->lpSISNxt->bSuspended    = bSuspended;
 ////lpMemPTD->lpSISNxt->ResetFlag     = RESETFLAG_NONE; // Already zero from ZeroMemory
-    lpMemPTD->lpSISNxt->Restartable   = Restartable;
-////lpMemPTD->lpSISNxt->Unwind        = FALSE;          // Already zero from ZeroMemory
+    lpMemPTD->lpSISNxt->bRestartable  = bRestartable;
+////lpMemPTD->lpSISNxt->bUnwind       = FALSE;          // Already zero from ZeroMemory
 ////lpMemPTD->lpSISNxt->bItsEC        = FALSE;          // Already zero from ZeroMemory
 ////lpMemPTD->lpSISNxt->bAFO          = FALSE;          // Already zero from ZeroMemory
 ////lpMemPTD->lpSISNxt->bMFO          = FALSE;          // Already zero from ZeroMemory

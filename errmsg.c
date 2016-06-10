@@ -61,10 +61,10 @@ void BreakMessage
     SetEventTypeMessage (EVENTTYPE_BREAK, NULL, NULL);
 
     // If it's valid, ...
-    if (lpSISCur)
+    if (lpSISCur NE NULL)
     {
         // Mark as suspended
-        lpSISCur->Suspended = TRUE;
+        lpSISCur->bSuspended = TRUE;
 
         // While the SIS layer is valid
         //   and the function name is invalid, ...
@@ -77,11 +77,13 @@ void BreakMessage
             // Lock the memory to get a ptr to it
             lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
 
-            // Copy the leading text
-            strcpyW (lpMemPTD->lpwszTemp, ERRMSG_ELLIPSIS WS_CR);
+////////////// Copy the leading text
+////////////strcpyW (lpMemPTD->lpwszTemp, ERRMSG_ELLIPSIS WS_CR);
+////////////
+////////////// Calculate the length so far
+////////////aplNELMRes = lstrlenW (lpMemPTD->lpwszTemp);
 
-            // Calculate the length so far
-            aplNELMRes = lstrlenW (lpMemPTD->lpwszTemp);
+            aplNELMRes = 0;
 
             // Format the name and line #
             aplNELMRes +=
@@ -223,11 +225,11 @@ HGLOBAL AppendFcnNameLineNum
          && !lpMemPTD->lpSISCur->bItsEC
          && !bItsEC)
             // Mark as suspended
-            lpSISCur->Suspended = TRUE;
+            lpSISCur->bSuspended = TRUE;
     } // End IF
 
     // If it's valid, ...
-    if (lpSISCur->hGlbDfnHdr)
+    if (lpSISCur->hGlbDfnHdr NE NULL)
     {
         // Lock the memory to get a ptr to it
         lpMemDfnHdr = MyGlobalLock (lpSISCur->hGlbDfnHdr);
@@ -249,7 +251,7 @@ HGLOBAL AppendFcnNameLineNum
     } else
     {
         // Look in this level's plLocalVars
-        if (lpSISCur->lpplLocalVars->hGlbTxtLine)
+        if (lpSISCur->lpplLocalVars->hGlbTxtLine NE NULL)
             // Return this global memory handle
             hGlbTxtLine = lpSISCur->lpplLocalVars->hGlbTxtLine;
         else
@@ -275,7 +277,7 @@ NORMAL_EXIT:
 
 void ErrorMessageDirect
     (LPWCHAR lpwszMsg,          // Ptr to error message text
-     LPWCHAR lpwszLine,         // Ptr to the line which generated the error
+     LPWCHAR lpwszLine,         // Ptr to the line which generated the error (may be NULL)
      UINT    uCaret)            // Position of caret (origin-0)
 
 {
@@ -309,13 +311,13 @@ void ErrorMessageDirect
     lpSISCur = lpMemPTD->lpSISCur;
 
     // Split cases based upon the DfnType
-    if (lpSISCur)
+    if (lpSISCur NE NULL && lpwszLine NE NULL)
     {
         // No signalling from here
         lpSISCur->hSigaphore = NULL;
 
         // Unwind through SI levels as appropriate
-        while (lpSISCur && lpSISCur->Unwind)
+        while (lpSISCur NE NULL && lpSISCur->bUnwind)
         {
             // Save bItsEC flag
             bItsEC |= lpSISCur->bItsEC;
@@ -325,7 +327,7 @@ void ErrorMessageDirect
         } // End WHILE
 
         // If there's an SIS level, ...
-        if (lpSISCur)
+        if (lpSISCur NE NULL)
         {
             // Save bItsEC flag
             bItsEC |= lpSISCur->bItsEC;
@@ -350,7 +352,7 @@ void ErrorMessageDirect
                         lpwszLine = &lpMemTxtLine->C;
                     } else
                     // If it's valid, ...
-                    if (lpwszLine2)
+                    if (lpwszLine2 NE NULL)
                         lpwszLine = lpwszLine2;
                     else
                     {
@@ -376,7 +378,7 @@ void ErrorMessageDirect
                     } // End FOR
 
                     // If the preceding SI level is a UDFO, ...
-                    if (lpSISPrv
+                    if (lpSISPrv NE NULL
                      && (lpSISPrv->DfnType EQ DFNTYPE_OP1
                       || lpSISPrv->DfnType EQ DFNTYPE_OP2
                       || lpSISPrv->DfnType EQ DFNTYPE_FCN))
@@ -405,7 +407,7 @@ void ErrorMessageDirect
                             strcatW (lpMemPTD->lpwszTemp, L" ");
                         } else
                         // If it's valid, ...
-                        if (lpwszLine2)
+                        if (lpwszLine2 NE NULL)
                             lpwszLine = lpwszLine2;
                         else
                         {
@@ -433,7 +435,12 @@ void ErrorMessageDirect
             } // End SWITCH
         } // End IF
     } else
+    {
         uNameLen = 0;
+
+        if (lpwszLine EQ NULL)
+            lpwszLine = L"";
+    } // End IF/ELSE
 
     // Calculate the various lengths
     uErrMsgLen = lstrlenW (lpwszMsg);
@@ -661,7 +668,7 @@ HGLOBAL *GetPtrQuadEM
     lpSISCur = lpMemPTD->lpSISCur;
 
     // If there's a []EA/[]EC parent in control, ...
-    if (lpSISCur
+    if (lpSISCur NE NULL
      && lpSISCur->lpSISErrCtrl NE NULL)
         // Get ptr to current []EA/[]EC parent of the current SI stack
         lpSISCur = lpSISCur->lpSISErrCtrl;
@@ -674,7 +681,7 @@ HGLOBAL *GetPtrQuadEM
             lpSISCur = lpSISCur->lpSISPrv;
 
     // If there's an SIS level, ...
-    if (lpSISCur)
+    if (lpSISCur NE NULL)
         return &lpSISCur->hGlbQuadEM;
     else
         return &lpMemPTD->hGlbQuadEM;

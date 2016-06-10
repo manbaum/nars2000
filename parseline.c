@@ -3830,7 +3830,8 @@ EXIT_TYPES ParseLine
     UINT          oldTlsType,               // Previous value of dwTlsType
                   uRet;                     // The result from pl_yyparse
     UBOOL         bPLBracket = FALSE,       // TRUE iff we came from PARSELINE_MP_BRACKET
-                  bRP_BRK;                  // TRUE if we should recurse into () or []
+                  bBreakMessage = FALSE,    // TRUE iff we called BreakMessage
+                  bRP_BRK;                  // TRUE iff we should recurse into () or []
     ERROR_CODES   uError = ERRORCODE_NONE;  // Error code
     UBOOL         bOldExecuting,            // Old value of bExecuting
                   bAssignName,              // TRUE iff the result is from an assigned name
@@ -5232,7 +5233,7 @@ PARSELINE_END:
              && (lpSISCur->DfnType EQ DFNTYPE_OP1
               || lpSISCur->DfnType EQ DFNTYPE_OP2
               || lpSISCur->DfnType EQ DFNTYPE_FCN))
-                lpSISCur->Suspended = TRUE;
+                lpSISCur->bSuspended = TRUE;
             break;
 
         case EXITTYPE_DISPLAY:      // Nothing more to do with these types
@@ -5284,6 +5285,8 @@ PARSELINE_END:
         BreakMessage (hWndSM,
                       (lpSISCur && lpSISCur NE lpMemPTD->lpSISNxt) ? lpSISCur
                                                                    : NULL);
+        // Mark as current
+        bBreakMessage = TRUE;
     } // End IF
 
     if (uRet EQ 0 || uError EQ ERRORCODE_ALX)
@@ -5297,7 +5300,8 @@ PARSELINE_END:
         if (lpwszLine NE NULL)
             // Create []DM & []EM
             ErrorMessageDirect (lpMemPTD->lpwszErrorMessage,    // Ptr to error message text
-                                lpwszLine,                      // Ptr to the line which generated the error
+                bBreakMessage ? NULL
+                              : lpwszLine,                      // Ptr to the line which generated the error
                                 plLocalVars.tkErrorCharIndex);  // Position of caret (origin-0)
         else
         {
@@ -5308,7 +5312,8 @@ PARSELINE_END:
 
             // Create []DM & []EM
             ErrorMessageDirect (lpMemPTD->lpwszErrorMessage,    // Ptr to error message text
-                               &lpMemTxtLine->C,                // Ptr to the line which generated the error
+                bBreakMessage ? NULL
+                              :&lpMemTxtLine->C,                // Ptr to the line which generated the error
                                 plLocalVars.tkErrorCharIndex);  // Position of caret (origin-0)
             // We no longer need this ptr
             MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
@@ -5371,7 +5376,8 @@ NORMAL_EXIT:
 
             // Create []DM & []EM
             ErrorMessageDirect (lpMemPTD->lpwszErrorMessage,    // Ptr to error message text
-                                lpwszLine,                      // Ptr to the line which generated the error
+                bBreakMessage ? NULL
+                              : lpwszLine,                      // Ptr to the line which generated the error
                                 plLocalVars.tkErrorCharIndex);  // Position of caret (origin-0)
         } else
         {
@@ -5385,11 +5391,12 @@ NORMAL_EXIT:
 
             // Create []DM & []EM
             ErrorMessageDirect (lpMemPTD->lpwszErrorMessage,    // Ptr to error message text
-                               &lpMemTxtLine->C,                // Ptr to the line which generated the error
+                bBreakMessage ? NULL
+                              :&lpMemTxtLine->C,                // Ptr to the line which generated the error
                                 plLocalVars.tkErrorCharIndex);  // Position of caret (origin-0)
             // We no longer need this ptr
             MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
-        } // End IF
+        } // End IF/ELSE
 
         // Set the text for the line
         // Split cases based upon the error code

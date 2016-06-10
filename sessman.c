@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -509,9 +509,9 @@ UINT GetLineLength
 #endif
 
 void FormatQQuadInput
-    (UINT          uLineNum,        // Line #
-     HWND          hWndEC,          // Handle of Edit Ctrl window
-     LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
+    (UINT         uLineNum,     // Line #
+     HWND         hWndEC,       // Handle of Edit Ctrl window
+     LPPERTABDATA lpMemPTD)     // Ptr to PerTabData global memory
 
 {
     UINT         uLineLen;      // Line length
@@ -1619,7 +1619,8 @@ NORMAL_EXIT:
 
         case MYWM_CREATEFCN:
             // If there's an active program, ignore this message
-            if (!(lpMemPTD->lpSISCur && !lpMemPTD->lpSISCur->Suspended))
+            if (!(lpMemPTD->lpSISCur NE NULL
+              && !lpMemPTD->lpSISCur->bSuspended))
                 CreateFcnWindow (L"");
             return FALSE;           // We handled the msg
 
@@ -1679,7 +1680,8 @@ NORMAL_EXIT:
 
                 case VK_RETURN:
                     // If there's an active program, ignore this key
-                    bRet = (lpMemPTD->lpSISCur && !lpMemPTD->lpSISCur->Suspended);
+                    bRet = (lpMemPTD->lpSISCur NE NULL
+                        && !lpMemPTD->lpSISCur->bSuspended);
                     if (!bRet)
                     {
                         // If we're not on the last line,
@@ -1926,9 +1928,9 @@ NORMAL_EXIT:
 #endif
 #ifdef DEBUG
                 case VK_F12:            // Clear the debugging display
-                    // If it's Shift-, then set the gDbgLvl to 9
+                    // If it's Shift-, then toggle gDbgLvl between 0 and 9
                     if (GetKeyState (VK_SHIFT) & BIT15)
-                        gDbgLvl = 9;
+                        gDbgLvl = (gDbgLvl EQ 0) ? 9 : 0;
                     else
                         // Clear the debugger listbox
                         DbgClr ();

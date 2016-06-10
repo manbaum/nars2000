@@ -716,6 +716,41 @@ static LINESTATUS iniparser_line
 
 /*-------------------------------------------------------------------------*/
 /**
+  @brief    Initialize an ini file and return an allocated dictionary object
+  @param    ininame Name of the ini file to read.
+  @return   Pointer to newly allocated dictionary
+
+  This is the initializer for ini files. This function is called, providing
+  the WCHAR ptr of the name of file to be read. It returns a dictionary object that
+  should not be accessed directly, but through accessor functions
+  instead.
+
+  The returned dictionary must be freed using iniparser_freedict().
+ */
+/*--------------------------------------------------------------------------*/
+LPDICTIONARY iniparser_init
+    (LPWCHAR    lpwszDPFE)          // Ptr to DPFE
+
+{
+    LPDICTIONARY lpDict;                // Ptr to workspace dictionary
+
+    // Allocate a new dictionary
+    lpDict = dictionary_new (0);
+    if (lpDict EQ NULL)
+        goto ERROR_EXIT;
+
+    // Save the workspace DPFE
+    lpDict->lpwszDPFE = lpwszDPFE;
+
+    // Allocate space for the entire file
+    lpDict->inifile = calloc (1, sizeof (WCHAR));
+ERROR_EXIT:
+    return lpDict;
+} // End iniparser_init
+
+
+/*-------------------------------------------------------------------------*/
+/**
   @brief    Parse an ini file and return an allocated dictionary object
   @param    ininame Name of the ini file to read.
   @return   Pointer to newly allocated dictionary

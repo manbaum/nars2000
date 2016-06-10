@@ -741,7 +741,7 @@ void GetOperands
 LPPL_YYSTYPE ExecFcnGlb_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      HGLOBAL hGlbFcn,               // Handle to function strand
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (may be NULL if niladic)
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
@@ -1502,7 +1502,7 @@ LPPL_YYSTYPE ExecOp1_EM_YY
 LPPL_YYSTYPE ExecOp2_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
-     LPTOKEN      lptkRhtArg)           // Ptr to right arg token
+     LPTOKEN      lptkRhtArg)           // Ptr to right arg token (may be NULL if niladic)
 
 {
     LPTOKEN lptkAxis;                   // Ptr to axis token (may be NULL)

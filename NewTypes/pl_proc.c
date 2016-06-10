@@ -143,28 +143,6 @@ void ArrExprCheckCaller
         // Copy the result
         lpYYRes = lpYYArg;
     else
-    // If it's []DM, ...
-    if (IzitQuadDM (&lpYYArg->tkToken))
-    {
-        // This DEBUG stmt probably never is triggered because
-        //    pl_yylex converts all unassigned named vars to temps
-        //    hence IzitQuadDM always returns FALSE.
-#ifdef DEBUG
-        DbgStop ();             // ***Probably never executed***
-#endif
-        // Alloc a new YYRes
-        lpYYRes = YYAlloc ();
-
-        // Copy the token
-        lpYYRes->tkToken = lpYYArg->tkToken;
-
-        // Change it to a unnamed var
-        lpYYRes->tkToken.tkFlags.TknType  = TKT_VARARRAY;
-        lpYYRes->tkToken.tkData.tkGlbData = lpYYRes->tkToken.tkData.tkSym->stData.stGlbData;
-
-        // Increment the refcnt
-        DbgIncrRefCntTkn (&lpYYRes->tkToken);   // EXAMPLE:  ***Probably never executed***
-    } else
         // Copy the function array incrementing the RefCnt
         lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYArg, FALSE);
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,6 +24,9 @@
 //   when not overridden by user preferences.
 #define DEF_QUADCT_CWS      3E-15
 #define DEF_QUADxCT_CWS     0x3CEB05876E5B0120      // 3E-15 in hex
+#define DEF_QUADDQ_CWS      L"r"
+#define DEF_QUADDQ_ALLOW    L"lr"
+#define DEF_QUADDQ_NAMES    L"Left", L"Right"
 #define DEF_QUADDT_CWS      L"r"
 #define DEF_QUADDT_ALLOW    L"rgp"
 #define DEF_QUADDT_NAMES    L"Rectangular", L"Gaussian", L"Poisson"
@@ -83,7 +86,7 @@
 
 
 // System Comparison Tolerance
-#define SYS_CT  3E-15
+#define SYS_CT  1E-10
 
 // GCD/LCM Comparison Tolerance
 #define GCD_CT  1E-10
@@ -127,23 +130,24 @@ typedef enum tagSYS_VARS
     SYSVAR_ALX     ,            // 01:  []ALX
     SYSVAR_CT      ,            // 02:  []CT
     SYSVAR_DM      ,            // 03:  []DM
-    SYSVAR_DT      ,            // 04:  []DT
-    SYSVAR_ELX     ,            // 05:  []ELX
-    SYSVAR_FC      ,            // 06:  []FC
-    SYSVAR_FEATURE ,            // 07:  []FEATURE
-    SYSVAR_FPC     ,            // 08:  []FPC
-    SYSVAR_IC      ,            // 09:  []IC
-    SYSVAR_IO      ,            // 0A:  []IO
-    SYSVAR_LX      ,            // 0B:  []LX
-    SYSVAR_PP      ,            // 0C:  []PP
-    SYSVAR_PR      ,            // 0D:  []PR
-    SYSVAR_PW      ,            // 0E:  []PW
-    SYSVAR_RL      ,            // 0F:  []RL
-    SYSVAR_SA      ,            // 10:  []SA
-    SYSVAR_WSID    ,            // 11:  []WSID
-    SYSVAR_Z       ,            // 12:  []Z
-    SYSVAR_LENGTH               // 13:  # entries in this enum
-                                // 14-1F:  Available entries (5 bits)
+    SYSVAR_DQ      ,            // 04:  []DQ
+    SYSVAR_DT      ,            // 05:  []DT
+    SYSVAR_ELX     ,            // 06:  []ELX
+    SYSVAR_FC      ,            // 07:  []FC
+    SYSVAR_FEATURE ,            // 08:  []FEATURE
+    SYSVAR_FPC     ,            // 09:  []FPC
+    SYSVAR_IC      ,            // 0A:  []IC
+    SYSVAR_IO      ,            // 0B:  []IO
+    SYSVAR_LX      ,            // 0C:  []LX
+    SYSVAR_PP      ,            // 0D:  []PP
+    SYSVAR_PR      ,            // 0E:  []PR
+    SYSVAR_PW      ,            // 0F:  []PW
+    SYSVAR_RL      ,            // 10:  []RL
+    SYSVAR_SA      ,            // 11:  []SA
+    SYSVAR_WSID    ,            // 12:  []WSID
+    SYSVAR_Z       ,            // 13:  []Z
+    SYSVAR_LENGTH               // 14:  # entries in this enum
+                                // 15-1F:  Available entries (5 bits)
 } SYS_VARS, *LPSYS_VARS;
 
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -114,36 +114,38 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
      LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE      aplTypeRht,           // Right arg storage type
-                  aplTypeRes;           // Result    ...
-    APLNELM       aplNELMRht,           // Right arg NELM
-                  aplNELMRes;           // Result    ...
-    APLRANK       aplRankRht;           // Right arg rank
-    APLINT        aplIntegerRht,        // Right arg temp integer value
-                  aplIntegerRep,        // Repetition integer
-                  apaOff,               // APA offset
-                  apaMul;               // ... multiplier
-    APLUINT       ByteRes,              // # bytes in the result
-                  uLen,                 // Length of repetition
-                  uRht,                 // ...
-                  uRep;                 // ...
-    UBOOL         bRet;                 // TRUE iff the result is valid
-    UINT          uBitMask;             // Boolean bit mask
-    HGLOBAL       hGlbRht = NULL,       // Right arg global memory handle
-                  hGlbRes = NULL,       // Result    ...
-                  hGlbRep = NULL,       // Right arg temp ...
-                  hGlbOdoRht = NULL;    // Right arg odometer global memory handle
-    LPVOID        lpMemRht = NULL;      // Ptr to right arg global memory
-    LPAPLDIM      lpMemDimRht;          // Ptr to right arg dimension vector
-    LPAPLUINT     lpMemOdoRht = NULL;   // Ptr to right arg odometer global memory
-    LPAPLNESTED   lpMemNestRes;         // Ptr to nested result
-    LPAPLUINT     lpMemRes = NULL,      // Ptr to result    ...
-                  lpMemRep = NULL,      // ...    right arg temp ...
-                  lpMemIniRep;          // ...    ...
-    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to result
-    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
-    APLBOOL       bQuadIO;              // []IO
+    APLSTYPE          aplTypeRht,           // Right arg storage type
+                      aplTypeRes;           // Result    ...
+    APLNELM           aplNELMRht,           // Right arg NELM
+                      aplNELMRes;           // Result    ...
+    APLRANK           aplRankRht;           // Right arg rank
+    APLINT            aplIntegerRht,        // Right arg temp integer value
+                      aplIntegerRep,        // Repetition integer
+                      apaOff,               // APA offset
+                      apaMul;               // ... multiplier
+    APLUINT           ByteRes,              // # bytes in the result
+                      uLen,                 // Length of repetition
+                      uRht,                 // ...
+                      uRep;                 // ...
+    UBOOL             bRet;                 // TRUE iff the result is valid
+    UINT              uBitMask;             // Boolean bit mask
+    HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
+                      hGlbRes = NULL,       // Result    ...
+                      hGlbRep = NULL,       // Right arg temp ...
+                      hGlbOdoRht = NULL;    // Right arg odometer global memory handle
+    LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
+                      lpMemHdrRes = NULL;   // ...    result    ...
+    LPVOID            lpMemRht;             // Ptr to right arg global memory
+    LPAPLDIM          lpMemDimRht;          // Ptr to right arg dimension vector
+    LPAPLUINT         lpMemOdoRht = NULL;   // Ptr to right arg odometer global memory
+    LPAPLNESTED       lpMemNestRes;         // Ptr to nested result
+    LPAPLUINT         lpMemRes,             // Ptr to result    ...
+                      lpMemRep = NULL,      // ...    right arg temp ...
+                      lpMemIniRep;          // ...    ...
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to result
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    APLBOOL           bQuadIO;              // []IO
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
@@ -169,12 +171,19 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
         goto DOMAIN_EXIT;
 
     // Get right arg's global ptr
-    aplIntegerRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplIntegerRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // If the right arg is not immediate, ...
-    if (lpMemRht)
+    if (lpMemHdrRht NE NULL)
+    {
         // Get a ptr to its dimension vector
-        lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+        lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
+
+        // Skip over the header and dimensions to the data
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+    } else
+        // Point to the data
+        lpMemRht = &aplIntegerRht;
 
     // If the right arg is empty, ...
     if (IsEmpty (aplNELMRht))
@@ -184,46 +193,17 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
     // If the right arg is singleton, ...
     if (IsSingleton (aplNELMRht))
     {
-        // Split cases based upon the array storage type
-        switch (aplTypeRht)
-        {
-            case ARRAY_BOOL:
-            case ARRAY_INT:
-            case ARRAY_APA:
-                break;
-
-            case ARRAY_FLOAT:
-                // Attempt to convert the float to an integer using System []CT
-                aplIntegerRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplIntegerRht, &bRet);
-                if (!bRet)
-                    goto DOMAIN_EXIT;
-                break;
-
-            case ARRAY_RAT:
-                // Attempt to convert the RAT to an integer using System []CT
-                aplIntegerRht = mpq_get_sctsx ((LPAPLRAT) VarArrayDataFmBase (lpMemRht), &bRet);
-                if (!bRet)
-                    goto DOMAIN_EXIT;
-                break;
-
-            case ARRAY_VFP:
-                // Attempt to convert the VFP to an integer using System []CT
-                aplIntegerRht = mpfr_get_sctsx ((LPAPLVFP) VarArrayDataFmBase (lpMemRht), &bRet);
-                if (!bRet)
-                    goto DOMAIN_EXIT;
-
-                break;
-
-            defstop
-                break;
-        } // End SWITCH
+        // Attempt to convert the right arg to an INT using System []CT
+        aplIntegerRht = ConvertToInteger_SCT (aplTypeRht, lpMemRht, 0, &bRet);
+        if (!bRet)
+            goto DOMAIN_EXIT;
 
         // Check the singleton arg
         if (aplIntegerRht < 0)
             goto DOMAIN_EXIT;
 
         // Point to the value
-        lpMemRep = lpMemRht = &aplIntegerRht;
+        lpMemRep = &aplIntegerRht;
 
         // We now have the result NELM
         apaOff = aplNELMRes = aplIntegerRht;
@@ -235,9 +215,6 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
         //   check the right arg for valid values, and
         //   accumulate the sum (as aplNELMRes).
 
-        // Skip over the header to the data
-        lpMemRht = VarArrayDataFmBase (lpMemRht);
-
         // Split cases based upon the right arg storage type
         switch (aplTypeRht)
         {
@@ -246,11 +223,26 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
             case ARRAY_APA:
                 break;
 
+            case ARRAY_HC2I:
+            case ARRAY_HC4I:
+            case ARRAY_HC8I:
+
             case ARRAY_FLOAT:
+            case ARRAY_HC2F:
+            case ARRAY_HC4F:
+
             case ARRAY_RAT:
+            case ARRAY_HC8F:
+            case ARRAY_HC2R:
+            case ARRAY_HC4R:
+            case ARRAY_HC8R:
+
             case ARRAY_VFP:
+            case ARRAY_HC2V:
+            case ARRAY_HC4V:
+            case ARRAY_HC8V:
                 // Calculate space needed for the normalized right arg
-                ByteRes = imul64 (aplNELMRht , sizeof (APLINT), &bRet);
+                ByteRes = imul64 (aplNELMRht , sizeof (APLINT), &bRet, EXCEPTION_RESULT_FLOAT);
 
                 // Check for overflow
                 if (!bRet || ByteRes NE (APLU3264) ByteRes)
@@ -288,53 +280,6 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
                                  NULL);             // Ptr to operator function strand
                 break;
 
-            case ARRAY_INT:
-                // Save the right arg ptr
-                lpMemRep = lpMemRht;
-
-                // Loop through the right arg validating the data
-                for (uRht = 0; uRht < aplNELMRht; uRht++)
-                {
-                    // Get the next value
-                    aplIntegerRht = *((LPAPLINT) lpMemRht)++;
-
-                    // Validate it
-                    if (aplIntegerRht < 0)
-                        goto DOMAIN_EXIT;
-
-                    // Accumulate in the result NELM
-                    aplNELMRes += aplIntegerRht;
-                } // End IF
-
-                break;
-
-            case ARRAY_FLOAT:
-                // Save the initial repetition vector ptr
-                lpMemIniRep = lpMemRep;
-
-                // Loop through the right arg validating the data
-                //   and copy it to the repetition vector
-                for (uRht = 0; uRht < aplNELMRht; uRht++)
-                {
-                    // Attempt to convert the float to an integer using System []CT
-                    aplIntegerRht = FloatToAplint_SCT (*((LPAPLFLOAT) lpMemRht)++, &bRet);
-
-                    // Validate it
-                    if (!bRet || aplIntegerRht < 0)
-                        goto DOMAIN_EXIT;
-
-                    // Accumulate in the result NELM
-                    aplNELMRes += aplIntegerRht;
-
-                    // Save in the repetition vector
-                    *lpMemRep++ = aplIntegerRht;
-                } // End FOR
-
-                // Restore lpMemRep to the start of the vector
-                lpMemRep = lpMemIniRep;
-
-                break;
-
             case ARRAY_APA:
 #define lpAPA       ((LPAPLAPA) lpMemRht)
                 // Get the APA parameters
@@ -346,13 +291,13 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
                     // Check the first and last values to validate the entire APA
                     if ((apaOff < 0)
 /////////////////////|| (apaOff + apaMul * ((APLINT) aplNELMRht - 1)) < 0)
-                     || iadd64_RE (apaOff, imul64_RE (apaMul, isub64_RE (aplNELMRht, 1))) < 0)
+                     || iadd64_RE (apaOff, imul64_RE (apaMul, isub64_RE (aplNELMRht, 1, FLOAT), FLOAT), FLOAT) < 0)
                         goto DOMAIN_EXIT;
 
                     // Calculate the sum of the APA as
                     //  (apaOff * aplNELMRht) + (apaMul * aplNELMRht * (aplNELMRht - 1)) / 2
-                    aplNELMRes = imul64_RE (apaOff,            aplNELMRht)
-                               + imul64_RE (apaMul, imul64_RE (aplNELMRht,  aplNELMRht - 1) / 2);
+                    aplNELMRes = imul64_RE (apaOff,            aplNELMRht, FLOAT)
+                               + imul64_RE (apaMul, imul64_RE (aplNELMRht,  aplNELMRht - 1, FLOAT) / 2, FLOAT);
                 } __except (CheckException (GetExceptionInformation (), L"PrimFnMonIotaUnderbar_EM_YY"))
                 {
                     dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
@@ -375,34 +320,38 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
 
                 break;
 
-            case ARRAY_RAT:
-                // Save the initial repetition vector ptr
-                lpMemIniRep = lpMemRep;
-
+            case ARRAY_INT:
                 // Loop through the right arg validating the data
-                //   and copy it to the repetition vector
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
-                    // Attempt to convert the RAT to an integer using System []CT
-                    aplIntegerRht = mpq_get_sctsx (((LPAPLRAT) lpMemRht)++, &bRet);
+                    // Get the next value
+                    aplIntegerRht = ((LPAPLINT) lpMemRht)[uRht];
 
                     // Validate it
-                    if (!bRet || aplIntegerRht < 0)
+                    if (aplIntegerRht < 0)
                         goto DOMAIN_EXIT;
 
                     // Accumulate in the result NELM
                     aplNELMRes += aplIntegerRht;
-
-                    // Save in the repetition vector
-                    *lpMemRep++ = aplIntegerRht;
-                } // End FOR
-
-                // Restore lpMemRep to the start of the vector
-                lpMemRep = lpMemIniRep;
+                } // End IF
 
                 break;
 
+            case ARRAY_HC2I:
+            case ARRAY_HC4I:
+            case ARRAY_HC8I:
+            case ARRAY_FLOAT:
+            case ARRAY_HC2F:
+            case ARRAY_HC4F:
+            case ARRAY_HC8F:
+            case ARRAY_RAT:
+            case ARRAY_HC2R:
+            case ARRAY_HC4R:
+            case ARRAY_HC8R:
             case ARRAY_VFP:
+            case ARRAY_HC2V:
+            case ARRAY_HC4V:
+            case ARRAY_HC8V:
                 // Save the initial repetition vector ptr
                 lpMemIniRep = lpMemRep;
 
@@ -410,8 +359,8 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
                 //   and copy it to the repetition vector
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
-                    // Attempt to convert the VFP to an integer using System []CT
-                    aplIntegerRht = mpfr_get_sctsx (((LPAPLVFP) lpMemRht)++, &bRet);
+                    // Attempt to convert the right arg to an INT using System []CT
+                    aplIntegerRht = ConvertToInteger_SCT (aplTypeRht, lpMemRht, uRht, &bRet);
 
                     // Validate it
                     if (!bRet || aplIntegerRht < 0)
@@ -451,9 +400,9 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -465,11 +414,11 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
 #undef  lpHeader
 
     // Fill in the axis dimension
-    *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
+    *VarArrayBaseToDim (lpMemHdrRes) = aplNELMRes;
 
     // Skip over the header and dimensions to the data
     lpMemNestRes = (LPAPLNESTED)
-    lpMemRes = VarArrayDataFmBase (lpMemRes);
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // If the right arg is multirank, ...
     if (IsMultiRank (aplRankRht))
@@ -546,8 +495,27 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
             if (CheckCtrlBreak (*lpbCtrlBreak))
                 goto ERROR_EXIT;
 
-            // Get the next repetition value
-            uLen = (IsSimpleAPA (aplTypeRht)) ? apaOff + apaMul * uRht : *lpMemRep++;
+            // Split cases based upon the right arg storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_INT:
+                    // Get the next repetition value
+                    uLen = ((LPAPLINT) lpMemRht)[uRht];
+
+                    break;
+
+                case ARRAY_APA:
+                    // Get the next repetition value
+                    uLen = apaOff + apaMul * uRht;
+
+                    break;
+
+                default:
+                    // Get the next repetition value
+                    uLen = *lpMemRep++;
+
+                    break;
+            } // End SWITCH
 
             // If it's non-zero (actually positive, but negative numbers have been ruled out above), ...
             if (uLen
@@ -601,8 +569,27 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
              uRht < aplNELMRht;
              uRht++, aplIntegerRep++)
         {
-            // Get the next repetition value
-            uLen = (IsSimpleAPA (aplTypeRht)) ? apaOff + apaMul * uRht : *lpMemRep++;
+            // Split cases based upon the right arg storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_INT:
+                    // Get the next repetition value
+                    uLen = ((LPAPLINT) lpMemRht)[uRht];
+
+                    break;
+
+                case ARRAY_APA:
+                    // Get the next repetition value
+                    uLen = apaOff + apaMul * uRht;
+
+                    break;
+
+                default:
+                    // Get the next repetition value
+                    uLen = *lpMemRep++;
+
+                    break;
+            } // End SWITCH
 
             // Loop through the repetition value
             for (uRep = 0; uRep < uLen; uRep++)
@@ -645,12 +632,12 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this storage
@@ -663,16 +650,16 @@ NORMAL_EXIT:
     // Unlock and free (and set to NULL) a global name and ptr
     UnlFreeGlbName (hGlbRep, lpMemRep);
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
     return lpYYRes;
@@ -700,10 +687,11 @@ UBOOL PrimFnMonIotaUnderbarNest_EM
      UBOOL        bQuadIO)              // []IO
 
 {
-    APLUINT       ByteRes;              // # bytes in the result
-    HGLOBAL       hGlbTmp;              // Temp global memory handle
-    LPAPLUINT     lpMemTmp;             // ...    temp result
-    APLUINT       uTmp;                 // Loop counter
+    APLUINT           ByteRes;              // # bytes in the result
+    HGLOBAL           hGlbTmp;              // Temp global memory handle
+    LPVARARRAY_HEADER lpMemHdrTmp = NULL;   // Ptr to temp header
+    LPAPLUINT         lpMemTmp;             // ...         result
+    APLUINT           uTmp;                 // Loop counter
 
     Assert (aplRep NE 0);
     Assert (aplRankRht NE 0);
@@ -724,9 +712,9 @@ UBOOL PrimFnMonIotaUnderbarNest_EM
         return FALSE;
 
     // Lock the memory to get a ptr to it
-    lpMemTmp = MyGlobalLock (hGlbTmp);
+    lpMemHdrTmp = MyGlobalLock (hGlbTmp);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemTmp)
+#define lpHeader    lpMemHdrTmp
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_INT;
@@ -737,10 +725,10 @@ UBOOL PrimFnMonIotaUnderbarNest_EM
     lpHeader->Rank       = 1;
 #undef  lpHeader
     // Fill in the axis dimension
-    *VarArrayBaseToDim (lpMemTmp) = aplRankRht;
+    *VarArrayBaseToDim (lpMemHdrTmp) = aplRankRht;
 
     // Skip over the header and dimensions to the data
-    lpMemTmp = VarArrayDataFmBase (lpMemTmp);
+    lpMemTmp = VarArrayDataFmBase (lpMemHdrTmp);
 
     // Copy the current odometer value
     CopyMemory (lpMemTmp, lpMemOdoRht, (APLU3264) aplRankRht * sizeof (APLUINT));
@@ -751,7 +739,7 @@ UBOOL PrimFnMonIotaUnderbarNest_EM
         *lpMemTmp++ += bQuadIO;
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbTmp); lpMemTmp = NULL;
+    MyGlobalUnlock (hGlbTmp); lpMemHdrTmp = NULL;
 
     // Make it into a global handle
     hGlbTmp = MakePtrTypeGlb (hGlbTmp);

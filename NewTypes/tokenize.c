@@ -2670,24 +2670,21 @@ UBOOL fnPointDone
                         break;
 
                     case ARRAY_RAT:
-                        hGlbData =
-                          MakeGlbEntry_EM (ARRAY_RAT,               // Entry type
-                                           lpMemRes,                // Ptr to the value
-                                           FALSE,                   // TRUE iff we should initialize the target first
-                                           NULL);                   // Ptr to function token
-                        // If the allocate failed, ...
-                        if (hGlbData EQ NULL)
-                            goto ERROR_EXIT;
-
-                        // Mark the data as a (scalar) array
-                        tkFlags.TknType  = TKT_NUMSCALAR;
-                        tkData.tkGlbData = hGlbData;
-
-                        break;
-
                     case ARRAY_VFP:
+                    case ARRAY_HC2I:
+                    case ARRAY_HC2F:
+                    case ARRAY_HC2R:
+                    case ARRAY_HC2V:
+                    case ARRAY_HC4I:
+                    case ARRAY_HC4F:
+                    case ARRAY_HC4R:
+                    case ARRAY_HC4V:
+                    case ARRAY_HC8I:
+                    case ARRAY_HC8F:
+                    case ARRAY_HC8R:
+                    case ARRAY_HC8V:
                         hGlbData =
-                          MakeGlbEntry_EM (ARRAY_VFP,               // Entry type
+                          MakeGlbEntry_EM (aplTypeRes,              // Entry type
                                            lpMemRes,                // Ptr to the value
                                            FALSE,                   // TRUE iff we should initialize the target first
                                            NULL);                   // Ptr to function token
@@ -2909,13 +2906,25 @@ UBOOL scPointDone
         //   to get the syntax color type
         switch (lpszNum[uVar])
         {
+            case 'a':               // Complex angle notation
+            case 'i':               // Hypercomplex ...
+            case 'j':               // ...
+            case 'J':               // ...
+            case 'k':               // ...
+            case 'l':               // ...
+            case 's':               // Postfix Real Part ...
+                // Hypercomplex notation separator
+                scType = SC_HCSEP;
+
+                break;
+
             case 'b':               // Base Point Notation
             case DEF_EXPONENT_LC:   // Exponential ...
             case DEF_EXPONENT_UC:   // ...
             case 'g':               // Gamma ...
             case 'p':               // Pi ...
-            case DEF_RATSEP:        // Rational
-            case DEF_VFPSEP:        // VFP
+            case DEF_RATSEP:        // Rational ...
+            case DEF_VFPSEP:        // VFP ...
             case 'x':               // Euler ...
                 // Point notation separator
                 scType = SC_PNSEP;
@@ -2928,6 +2937,19 @@ UBOOL scPointDone
 
                 break;
         } // End SWITCH
+
+        // If the current char is Complex Angle ('a'),
+        //   and the next char is Degrees ('d') or Radians ('r'), ...
+        if (lpszNum[uVar] EQ 'a'
+         && (lpszNum[uVar + 1] EQ 'd'
+          || lpszNum[uVar + 1] EQ 'r'))
+        {
+            // Save the color
+            lptkLocalVars->lpMemClrNxt++->syntClr =
+              gSyntaxColorName[scType].syntClr;
+            // Skip over it
+            uVar++;
+        } // End IF
 
         // Save the color
         lptkLocalVars->lpMemClrNxt++->syntClr =

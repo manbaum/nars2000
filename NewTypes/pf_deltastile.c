@@ -64,7 +64,7 @@ LPPL_YYSTYPE PrimFnDeltaStile_EM_YY
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonGradeCommon_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis, FALSE);
+        return PrimFnMonGradeCommon_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis, FALSE, FALSE);
     else
         return PrimFnDydGradeCommon_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, FALSE);
 AXIS_SYNTAX_EXIT:
@@ -111,7 +111,7 @@ LPPL_YYSTYPE PrimFnDelStile_EM_YY
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return PrimFnMonGradeCommon_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis, FALSE);
+        return PrimFnMonGradeCommon_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis, FALSE, FALSE);
     else
         return PrimFnDydGradeCommon_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, FALSE);
 AXIS_SYNTAX_EXIT:
@@ -207,25 +207,28 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis,              // Ptr to axis token (may be NULL)
-     UBOOL   bRavelArg)             // TRUE iff we're to treat the right arg as ravelled
+     UBOOL   bRavelArg,             // TRUE iff we're to treat the right arg as ravelled
+     UBOOL   bGradeAll)             // TRUE iff we can grade all arrays
 
 {
-    APLSTYPE      aplTypeRes;       // Result storage type
-    APLNELM       aplNELMRht,       // Right arg NELM
-                  aplNELMRes;       // Result    ...
-    APLRANK       aplRankRht;       // Right arg rank
-    HGLOBAL       hGlbRht = NULL,   // Right arg global memory handle
-                  hGlbRes = NULL;   // Result    ...
-    APLUINT       ByteRes,          // # bytes in the result
-                  uRes;             // Loop counter
-    LPVOID        lpMemRht = NULL,  // Ptr to right arg global memory
-                  lpMemRes = NULL;  // Ptr to result    ...
-    LPAPLDIM      lpMemDimRht;      // Ptr to right arg dimensions
-    UBOOL         bRet = TRUE;      // TRUE iff result is valid
-    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
-    APLBOOL       bQuadIO;          // []IO
-    GRADE_DATA    gradeData;        // Data passed to GRADE_ROUTINE
-    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
+    APLSTYPE          aplTypeRes;           // Result storage type
+    APLNELM           aplNELMRht,           // Right arg NELM
+                      aplNELMRes;           // Result    ...
+    APLRANK           aplRankRht;           // Right arg rank
+    HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
+                      hGlbRes = NULL;       // Result    ...
+    APLUINT           ByteRes,              // # bytes in the result
+                      uRes;                 // Loop counter
+    LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
+                      lpMemHdrRes = NULL;   // ...    result    ...
+    LPVOID            lpMemRht,             // Ptr to right arg global memory
+                      lpMemRes;             // Ptr to result    ...
+    LPAPLDIM          lpMemDimRht;          // Ptr to right arg dimensions
+    UBOOL             bRet = TRUE;          // TRUE iff result is valid
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
+    APLBOOL           bQuadIO;              // []IO
+    GRADE_DATA        gradeData;            // Data passed to GRADE_ROUTINE
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -259,7 +262,22 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
 
         case ARRAY_HETERO:
         case ARRAY_NESTED:
-            goto DOMAIN_EXIT;
+        case ARRAY_HC2I:
+        case ARRAY_HC2F:
+        case ARRAY_HC2R:
+        case ARRAY_HC2V:
+        case ARRAY_HC4I:
+        case ARRAY_HC4F:
+        case ARRAY_HC4R:
+        case ARRAY_HC4V:
+        case ARRAY_HC8I:
+        case ARRAY_HC8F:
+        case ARRAY_HC8R:
+        case ARRAY_HC8V:
+            if (bGradeAll)
+                break;
+            else
+                goto DOMAIN_EXIT;
 
         defstop
             break;
@@ -301,14 +319,14 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     } // End IF
 
     // Get right arg global ptr
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // Save the Array Property bits
-    gradeData.PV0 = ((LPVARARRAY_HEADER) lpMemRht)->PV0;
-    gradeData.PV1 = ((LPVARARRAY_HEADER) lpMemRht)->PV1;
+    gradeData.PV0 = lpMemHdrRht->PV0;
+    gradeData.PV1 = lpMemHdrRht->PV1;
 
     // Skip over the header to the dimensions
-    lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+    lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
 
     // If we're ravelling the right arg, ...
     if (bRavelArg)
@@ -348,9 +366,9 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -364,11 +382,11 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
 #undef  lpHeader
 
     // Save the dimension in the result
-    *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
+    *VarArrayBaseToDim (lpMemHdrRes) = aplNELMRes;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayDataFmBase (lpMemRes);
-    lpMemRht = VarArrayDataFmBase (lpMemRht);
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+    lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
     // If the right arg is an APA, ...
     if (IsSimpleAPA (gradeData.aplTypeRht))
@@ -433,7 +451,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     } // End IF
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 YYALLOC_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -458,28 +476,28 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this storage
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
     return lpYYRes;
@@ -503,9 +521,10 @@ HGLOBAL MakeEncloseZilde
     (void)
 
 {
-    APLUINT ByteRes;            // # bytes in the result
-    HGLOBAL hGlbRes;            // Result global memory handle
-    LPVOID  lpMemRes;           // Ptr to result global memory
+    APLUINT           ByteRes;              // # bytes in the result
+    HGLOBAL           hGlbRes;              // Result global memory handle
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result header
+    LPVOID            lpMemRes;             // Ptr to result global memory
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_NESTED, 1, 0);
@@ -520,9 +539,9 @@ HGLOBAL MakeEncloseZilde
         return NULL;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_NESTED;
@@ -536,13 +555,13 @@ HGLOBAL MakeEncloseZilde
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayDataFmBase (lpMemRes);
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // Save the one item
     *((LPAPLNESTED) lpMemRes) = MakePtrTypeGlb (hGlbZilde);
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
     return hGlbRes;
 } // End MakeEncloseZilde
@@ -817,34 +836,37 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
      UBOOL   bRavelArg)             // TRUE iff we're to treat the right arg as ravelled
 
 {
-    APLSTYPE      aplTypeLft;               // Left arg storage type
-    APLNELM       aplNELMLft,               // Left arg NELM
-                  aplNELMRht,               // Right ...
-                  aplNELMRes;               // Result    ...
-    APLRANK       aplRankLft,               // Left arg rank
-                  aplRankRht;               // Right ...
-    HGLOBAL       hGlbLft = NULL,           // Left arg global memory handle
-                  hGlbRht = NULL,           // Right ...
-                  hGlbRes = NULL;           // Result   ...
-    LPVOID        lpMemLft = NULL,          // Ptr to left arg global memory
-                  lpMemRht = NULL,          // Ptr to right ...
-                  lpMemRes = NULL;          // Ptr to result   ...
-    LPAPLDIM      lpMemDimLft,              // Ptr to left arg dimensions
-                  lpMemDimRht;              // Ptr to right ...
-    APLUINT       ByteRes,                  // # bytes in the result
-                  uDim,                     // Loop counter
-                  uRes,                     // Loop counter
-                  uBegLen,                  // Product of leading dimensions
-                  uBeg,                     // Loop counter
-                  uEndLen,                  // Product of trailing dimensions
-                  uEnd;                     // Loop counter
-    APLINT        iLft;                     // Loop counter
-    LPPL_YYSTYPE  lpYYRes = NULL;           // Ptr to the result
-    APLBOOL       bQuadIO;                  // []IO
-    GRADE_DATA    gradeData;                // Data passed to GRADE_ROUTINE
-    HGLOBAL       hGlbTTHandles = NULL;     // TT Handles global memory handle
-    LPTT_HANDLES  lpMemTTHandles = NULL;    // Ptr to TT handles global memory
-    LPPLLOCALVARS lpplLocalVars;            // Ptr to re-entrant vars
+    APLSTYPE          aplTypeLft;               // Left arg storage type
+    APLNELM           aplNELMLft,               // Left arg NELM
+                      aplNELMRht,               // Right ...
+                      aplNELMRes;               // Result    ...
+    APLRANK           aplRankLft,               // Left arg rank
+                      aplRankRht;               // Right ...
+    HGLOBAL           hGlbLft = NULL,           // Left arg global memory handle
+                      hGlbRht = NULL,           // Right ...
+                      hGlbRes = NULL;           // Result   ...
+    LPVARARRAY_HEADER lpMemHdrLft = NULL,       // Ptr to left arg header
+                      lpMemHdrRht = NULL,       // ...    right ...
+                      lpMemHdrRes = NULL;       // ...    result   ...
+    LPVOID            lpMemLft,                 // Ptr to left arg global memory
+                      lpMemRht,                 // Ptr to right ...
+                      lpMemRes;                 // Ptr to result   ...
+    LPAPLDIM          lpMemDimLft,              // Ptr to left arg dimensions
+                      lpMemDimRht;              // Ptr to right ...
+    APLUINT           ByteRes,                  // # bytes in the result
+                      uDim,                     // Loop counter
+                      uRes,                     // Loop counter
+                      uBegLen,                  // Product of leading dimensions
+                      uBeg,                     // Loop counter
+                      uEndLen,                  // Product of trailing dimensions
+                      uEnd;                     // Loop counter
+    APLINT            iLft;                     // Loop counter
+    LPPL_YYSTYPE      lpYYRes = NULL;           // Ptr to the result
+    APLBOOL           bQuadIO;                  // []IO
+    GRADE_DATA        gradeData;                // Data passed to GRADE_ROUTINE
+    HGLOBAL           hGlbTTHandles = NULL;     // TT Handles global memory handle
+    LPTT_HANDLES      lpMemTTHandles = NULL;    // Ptr to TT handles global memory
+    LPPLLOCALVARS     lpplLocalVars;            // Ptr to re-entrant vars
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -890,8 +912,8 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     } // End IF
 
     // Get left and right arg's global ptrs
-    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // Calculate space needed for the TT handles
     ByteRes = aplRankLft * sizeof (TT_HANDLES);
@@ -937,10 +959,10 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     gradeData.aplRankLft     = aplRankLft;
 
     // Skip over the header to the dimensions
-    lpMemDimLft = VarArrayBaseToDim (lpMemLft);
+    lpMemDimLft = VarArrayBaseToDim (lpMemHdrLft);
 
     // Skip over the header and dimensions to the data
-    lpMemLft = VarArrayDataFmBase (lpMemLft);
+    lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
 
     // Convert the left arg into multiple TTs
     for (uEndLen = 1, iLft = aplRankLft - 1; iLft >= 0; iLft--)
@@ -983,7 +1005,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     } // End FOR
 
     // Skip over the header to the dimensions
-    lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+    lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
 
     // If we're ravelling the right arg, ...
     if (bRavelArg)
@@ -1016,9 +1038,9 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_INT;
@@ -1032,11 +1054,11 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
 #undef  lpHeader
 
     // Save the dimension in the result
-    *VarArrayBaseToDim (lpMemRes) = aplNELMRes;
+    *VarArrayBaseToDim (lpMemHdrRes) = aplNELMRes;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayDataFmBase (lpMemRes);
-    lpMemRht = VarArrayDataFmBase (lpMemRht);
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+    lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
     // If the right arg is an APA, ...
     if (IsSimpleAPA (gradeData.aplTypeRht))
@@ -1065,7 +1087,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
         ((LPAPLINT) lpMemRes)[uRes] += bQuadIO;
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 YYALLOC_EXIT:
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -1105,37 +1127,37 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this storage
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbLft && lpMemLft)
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
-    if (hGlbTTHandles)
+    if (hGlbTTHandles NE NULL)
     {
         if (lpMemTTHandles EQ NULL)
             // Lock the memory to get a ptr to it
@@ -1394,6 +1416,323 @@ APLINT PrimFnGradeCompare
                 defstop
                     break;
             } // End FOR/SWITCH
+
+            // The hyper-planes are equal -- compare indices so the sort is stable
+            return signumint (aplUIntLft - aplUIntRht);
+
+        case ARRAY_HC2I:
+            // Compare the hyper-planes of the right arg
+            for (uRest = 0; uRest < aplNELMRest; uRest++)
+            // Split cases based upon the signum of the difference
+            switch (hc2i_cmp (((LPAPLHC2I) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
+                              ((LPAPLHC2I) lpMemRht)[aplUIntRht * aplNELMRest + uRest]))
+            {
+                case 1:
+                    return  1 * lpGradeData->iMul;
+
+                case 0:
+                    break;
+
+                case -1:
+                    return -1 * lpGradeData->iMul;
+
+                defstop
+                    break;
+            } // End FOR/SWITCH
+
+            // The hyper-planes are equal -- compare indices so the sort is stable
+            return signumint (aplUIntLft - aplUIntRht);
+
+        case ARRAY_HC4I:
+            // Compare the hyper-planes of the right arg
+            for (uRest = 0; uRest < aplNELMRest; uRest++)
+            // Split cases based upon the signum of the difference
+            switch (hc4i_cmp (((LPAPLHC4I) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
+                              ((LPAPLHC4I) lpMemRht)[aplUIntRht * aplNELMRest + uRest]))
+            {
+                case 1:
+                    return  1 * lpGradeData->iMul;
+
+                case 0:
+                    break;
+
+                case -1:
+                    return -1 * lpGradeData->iMul;
+
+                defstop
+                    break;
+            } // End FOR/SWITCH
+
+            // The hyper-planes are equal -- compare indices so the sort is stable
+            return signumint (aplUIntLft - aplUIntRht);
+
+        case ARRAY_HC8I:
+            // Compare the hyper-planes of the right arg
+            for (uRest = 0; uRest < aplNELMRest; uRest++)
+            // Split cases based upon the signum of the difference
+            switch (hc8i_cmp (((LPAPLHC8I) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
+                              ((LPAPLHC8I) lpMemRht)[aplUIntRht * aplNELMRest + uRest]))
+            {
+                case 1:
+                    return  1 * lpGradeData->iMul;
+
+                case 0:
+                    break;
+
+                case -1:
+                    return -1 * lpGradeData->iMul;
+
+                defstop
+                    break;
+            } // End FOR/SWITCH
+
+            // The hyper-planes are equal -- compare indices so the sort is stable
+            return signumint (aplUIntLft - aplUIntRht);
+
+        case ARRAY_HC2F:
+            // Compare the hyper-planes of the right arg
+            for (uRest = 0; uRest < aplNELMRest; uRest++)
+            // Split cases based upon the signum of the difference
+            switch (hc2f_cmp (((LPAPLHC2F) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
+                              ((LPAPLHC2F) lpMemRht)[aplUIntRht * aplNELMRest + uRest],
+                              0))
+            {
+                case 1:
+                    return  1 * lpGradeData->iMul;
+
+                case 0:
+                    break;
+
+                case -1:
+                    return -1 * lpGradeData->iMul;
+
+                defstop
+                    break;
+            } // End FOR/SWITCH
+
+            // The hyper-planes are equal -- compare indices so the sort is stable
+            return signumint (aplUIntLft - aplUIntRht);
+
+        case ARRAY_HC4F:
+            // Compare the hyper-planes of the right arg
+            for (uRest = 0; uRest < aplNELMRest; uRest++)
+            // Split cases based upon the signum of the difference
+            switch (hc4f_cmp (((LPAPLHC4F) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
+                              ((LPAPLHC4F) lpMemRht)[aplUIntRht * aplNELMRest + uRest],
+                              0))
+            {
+                case 1:
+                    return  1 * lpGradeData->iMul;
+
+                case 0:
+                    break;
+
+                case -1:
+                    return -1 * lpGradeData->iMul;
+
+                defstop
+                    break;
+            } // End FOR/FOR/SWITCH
+
+            // The hyper-planes are equal -- compare indices so the sort is stable
+            return signumint (aplUIntLft - aplUIntRht);
+
+        case ARRAY_HC8F:
+            // Compare the hyper-planes of the right arg
+            for (uRest = 0; uRest < aplNELMRest; uRest++)
+            // Split cases based upon the signum of the difference
+            switch (hc8f_cmp (((LPAPLHC8F) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
+                              ((LPAPLHC8F) lpMemRht)[aplUIntRht * aplNELMRest + uRest],
+                              0))
+            {
+                case 1:
+                    return  1 * lpGradeData->iMul;
+
+                case 0:
+                    break;
+
+                case -1:
+                    return -1 * lpGradeData->iMul;
+
+                defstop
+                    break;
+            } // End FOR/FOR/SWITCH
+
+            // The hyper-planes are equal -- compare indices so the sort is stable
+            return signumint (aplUIntLft - aplUIntRht);
+
+        case ARRAY_HC2R:
+            // Compare the hyper-planes of the right arg
+            for (uRest = 0; uRest < aplNELMRest; uRest++)
+            // Split cases based upon the comparison of the two values
+            switch (hc2r_cmp (((LPAPLHC2R) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
+                              ((LPAPLHC2R) lpMemRht)[aplUIntRht * aplNELMRest + uRest],
+                              0))
+            {
+                case 1:
+                    return  1 * lpGradeData->iMul;
+
+                case 0:
+                    break;
+
+                case -1:
+                    return -1 * lpGradeData->iMul;
+
+                defstop
+                    break;
+            } // End FOR/FOR/SWITCH
+
+            // The hyper-planes are equal -- compare indices so the sort is stable
+            return signumint (aplUIntLft - aplUIntRht);
+
+        case ARRAY_HC4R:
+            // Compare the hyper-planes of the right arg
+            for (uRest = 0; uRest < aplNELMRest; uRest++)
+            // Split cases based upon the comparison of the two values
+            switch (hc4r_cmp (((LPAPLHC4R) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
+                              ((LPAPLHC4R) lpMemRht)[aplUIntRht * aplNELMRest + uRest],
+                              0))
+            {
+                case 1:
+                    return  1 * lpGradeData->iMul;
+
+                case 0:
+                    break;
+
+                case -1:
+                    return -1 * lpGradeData->iMul;
+
+                defstop
+                    break;
+            } // End FOR/FOR/SWITCH
+
+            // The hyper-planes are equal -- compare indices so the sort is stable
+            return signumint (aplUIntLft - aplUIntRht);
+
+        case ARRAY_HC8R:
+            // Compare the hyper-planes of the right arg
+            for (uRest = 0; uRest < aplNELMRest; uRest++)
+            // Split cases based upon the comparison of the two values
+            switch (hc8r_cmp (((LPAPLHC8R) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
+                              ((LPAPLHC8R) lpMemRht)[aplUIntRht * aplNELMRest + uRest],
+                              0))
+            {
+                case 1:
+                    return  1 * lpGradeData->iMul;
+
+                case 0:
+                    break;
+
+                case -1:
+                    return -1 * lpGradeData->iMul;
+
+                defstop
+                    break;
+            } // End FOR/FOR/SWITCH
+
+            // The hyper-planes are equal -- compare indices so the sort is stable
+            return signumint (aplUIntLft - aplUIntRht);
+
+        case ARRAY_HC2V:
+            // Compare the hyper-planes of the right arg
+            for (uRest = 0; uRest < aplNELMRest; uRest++)
+            // Split cases based upon the comparison of the two values
+            switch (hc2v_cmp (((LPAPLHC2V) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
+                              ((LPAPLHC2V) lpMemRht)[aplUIntRht * aplNELMRest + uRest],
+                              0))
+            {
+                case 1:
+                    return  1 * lpGradeData->iMul;
+
+                case 0:
+                    break;
+
+                case -1:
+                    return -1 * lpGradeData->iMul;
+
+                defstop
+                    break;
+            } // End FOR/FOR/SWITCH
+
+            // The hyper-planes are equal -- compare indices so the sort is stable
+            return signumint (aplUIntLft - aplUIntRht);
+
+        case ARRAY_HC4V:
+            // Compare the hyper-planes of the right arg
+            for (uRest = 0; uRest < aplNELMRest; uRest++)
+            // Split cases based upon the comparison of the two values
+            switch (hc4v_cmp (((LPAPLHC4V) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
+                              ((LPAPLHC4V) lpMemRht)[aplUIntRht * aplNELMRest + uRest],
+                              0))
+            {
+                case 1:
+                    return  1 * lpGradeData->iMul;
+
+                case 0:
+                    break;
+
+                case -1:
+                    return -1 * lpGradeData->iMul;
+
+                defstop
+                    break;
+            } // End FOR/FOR/SWITCH
+
+            // The hyper-planes are equal -- compare indices so the sort is stable
+            return signumint (aplUIntLft - aplUIntRht);
+
+        case ARRAY_HC8V:
+            // Compare the hyper-planes of the right arg
+            for (uRest = 0; uRest < aplNELMRest; uRest++)
+            // Split cases based upon the comparison of the two values
+            switch (hc8v_cmp (((LPAPLHC8V) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
+                              ((LPAPLHC8V) lpMemRht)[aplUIntRht * aplNELMRest + uRest],
+                              0))
+            {
+                case 1:
+                    return  1 * lpGradeData->iMul;
+
+                case 0:
+                    break;
+
+                case -1:
+                    return -1 * lpGradeData->iMul;
+
+                defstop
+                    break;
+            } // End FOR/FOR/SWITCH
+
+            // The hyper-planes are equal -- compare indices so the sort is stable
+            return signumint (aplUIntLft - aplUIntRht);
+
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            // Compare the hyper-planes of the right arg
+            for (uRest = 0; uRest < aplNELMRest; uRest++)
+            {
+                LPSYMENTRY lpSymGlbLft,         // Ptr to left item
+                           lpSymGlbRht;         // ...    right ...
+
+                // Get a ptr to the two items from the right arg
+                lpSymGlbLft = ((LPAPLNESTED) lpMemRht)[aplUIntLft * aplNELMRest + uRest];
+                lpSymGlbRht = ((LPAPLNESTED) lpMemRht)[aplUIntRht * aplNELMRest + uRest];
+
+                // Split cases based upon the difference
+                switch (HeNe_cmp (lpSymGlbLft, lpSymGlbRht, 0))
+                {
+                    case  1:
+                        return  1 * lpGradeData->iMul;
+
+                    case  0:
+                        break;
+
+                    case -1:
+                        return -1 * lpGradeData->iMul;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } // End FOR
 
             // The hyper-planes are equal -- compare indices so the sort is stable
             return signumint (aplUIntLft - aplUIntRht);

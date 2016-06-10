@@ -31,10 +31,10 @@
 
 #define VER_MAJOR                   0   // 0.x.x.x
 #define VER_MAJOR_STR               "0"
-#define VER_MINOR                   4   // x.0.x.x
-#define VER_MINOR_STR               "4"
-#define VER_BETA                    15  // x.x.0.x
-#define VER_BETA_STR                "15"
+#define VER_MINOR                   5   // x.0.x.x
+#define VER_MINOR_STR               "5"
+#define VER_BETA                    0   // x.x.0.x
+#define VER_BETA_STR                "0"
 
 #define VERSION_BETA                VER_BETA_STR "." VER_MODULE_STR
 //#if BUILD_BETA

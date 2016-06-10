@@ -134,96 +134,23 @@ typedef UBOOL APARESULT_DYD
 typedef APARESULT_DYD *LPAPARESULT_DYD;
 
 
-typedef APLBOOL  BISB         (APLBOOL           , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISI         (APLINT            , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISF         (APLFLOAT          , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISC         (APLCHAR           , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISI         (APLINT            , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISF         (APLFLOAT          , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISC         (APLCHAR           , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISI         (APLINT            , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISF         (APLFLOAT          , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISC         (APLCHAR           , struct tagPRIMSPEC *lpPrimSpec);
+// Monadic Boolean result functions
+typedef APLBOOL  BISB               (APLBOOL           , struct tagPRIMSPEC *);
+typedef APLBOOL  BISI               (APLINT            , struct tagPRIMSPEC *);
+typedef APLBOOL  BISF               (APLFLOAT          , struct tagPRIMSPEC *);
 
-typedef APLRAT   RISR         (APLRAT            , struct tagPRIMSPEC *lpPrimSpec);
+// Monadic Boolean chunk functions
+typedef APLB64   B64ISB64           (APLB64            , struct tagPRIMSPEC *);
+typedef APLB32   B32ISB32           (APLB32            , struct tagPRIMSPEC *);
+typedef APLB16   B16ISB16           (APLB16            , struct tagPRIMSPEC *);
+typedef APLB08   B08ISB08           (APLB08            , struct tagPRIMSPEC *);
 
-typedef APLVFP   VISV         (APLVFP            , struct tagPRIMSPEC *lpPrimSpec);
+// Dyadic Boolean chunk functions
+typedef APLB64   B64ISB64VB64       (APLB64  , APLB64  , struct tagPRIMSPEC *);
+typedef APLB32   B32ISB32VB32       (APLB32  , APLB32  , struct tagPRIMSPEC *);
+typedef APLB16   B16ISB16VB16       (APLB16  , APLB16  , struct tagPRIMSPEC *);
+typedef APLB08   B08ISB08VB08       (APLB08  , APLB08  , struct tagPRIMSPEC *);
 
-typedef APLB64   B64ISB64     (APLB64            , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLB32   B32ISB32     (APLB32            , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLB16   B16ISB16     (APLB16            , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLB08   B08ISB08     (APLB08            , struct tagPRIMSPEC *lpPrimSpec);
-
-typedef APLBOOL  BISBVB       (APLBOOL , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISBVI       (APLBOOL , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISBVF       (APLBOOL , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISBVC       (APLBOOL , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
-
-typedef APLBOOL  BISIVB       (APLINT  , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISIVI       (APLINT  , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISIVF       (APLINT  , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISIVC       (APLINT  , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
-
-typedef APLBOOL  BISFVB       (APLFLOAT, APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISFVI       (APLFLOAT, APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISFVF       (APLFLOAT, APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISFVC       (APLFLOAT, APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
-
-typedef APLBOOL  BISCVB       (APLCHAR , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISCVI       (APLCHAR , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISCVF       (APLCHAR , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLBOOL  BISCVC       (APLCHAR , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
-
-typedef APLINT   IISBVB       (APLBOOL , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISBVI       (APLBOOL , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISBVF       (APLBOOL , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISBVC       (APLBOOL , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
-
-typedef APLINT   IISIVB       (APLINT  , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISIVI       (APLINT  , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISIVF       (APLINT  , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISIVC       (APLINT  , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
-
-typedef APLINT   IISFVB       (APLFLOAT, APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISFVI       (APLFLOAT, APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISFVF       (APLFLOAT, APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISFVC       (APLFLOAT, APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
-
-typedef APLINT   IISCVB       (APLCHAR , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISCVI       (APLCHAR , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISCVF       (APLCHAR , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLINT   IISCVC       (APLCHAR , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
-
-typedef APLFLOAT FISBVB       (APLBOOL , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISBVI       (APLBOOL , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISBVF       (APLBOOL , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISBVC       (APLBOOL , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
-
-typedef APLFLOAT FISIVB       (APLINT  , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISIVI       (APLINT  , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISIVF       (APLINT  , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISIVC       (APLINT  , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
-
-typedef APLFLOAT FISFVB       (APLFLOAT, APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISFVI       (APLFLOAT, APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISFVF       (APLFLOAT, APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISFVC       (APLFLOAT, APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
-
-typedef APLFLOAT FISCVB       (APLCHAR , APLBOOL , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISCVI       (APLCHAR , APLINT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISCVF       (APLCHAR , APLFLOAT, struct tagPRIMSPEC *lpPrimSpec);
-typedef APLFLOAT FISCVC       (APLCHAR , APLCHAR , struct tagPRIMSPEC *lpPrimSpec);
-
-typedef APLBOOL  BISRVR       (APLRAT  , APLRAT  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLRAT   RISRVR       (APLRAT  , APLRAT  , struct tagPRIMSPEC *lpPrimSpec);
-
-typedef APLBOOL  BISVVV       (APLVFP  , APLVFP  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLVFP   VISVVV       (APLVFP  , APLVFP  , struct tagPRIMSPEC *lpPrimSpec);
-
-typedef APLB64   B64ISB64VB64 (APLB64  , APLB64  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLB32   B32ISB32VB32 (APLB32  , APLB32  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLB16   B16ISB16VB16 (APLB16  , APLB16  , struct tagPRIMSPEC *lpPrimSpec);
-typedef APLB08   B08ISB08VB08 (APLB08  , APLB08  , struct tagPRIMSPEC *lpPrimSpec);
 
 // General structure passed to all primitive functions
 typedef struct tagPRIMSPEC
@@ -233,60 +160,157 @@ typedef struct tagPRIMSPEC
     LPSTORAGE_TYPE_MON  StorageTypeMon;     // ...            storage type ...
     LPAPARESULT_MON     ApaResultMon_EM;    // ...            APA result ...
 
+    // Monadic Boolean result functions
     BISB               *BisB;               // Monadic B {is} B
-    BISI               *BisI;               // ...            I
-    BISF               *BisF;               // ...            F
+    BISI               *BisI;               // ...            I         (Tilde)
+    BISF               *BisF;               // ...            F          ...
 
-////IISB               *IisB;               // Handled via type promotion (to IisI)
-    IISI               *IisI;               // Monadic I {is} I
-    IISF               *IisF;               // ...            F
+    // Monadic non-Boolean result functions (indexable)
+    ATISAT             *IisI;               // Monadic    I {is}    I
+    ATISAT             *IisF;               // ...        I         F
+    ATISAT             *FisI;               // ...        F         I
+    ATISAT             *FisF;               // ...        F         F
+    ATISAT             *RisR;               // ...        R         R
+    ATISAT             *VisR;               // ...        V         R
+    ATISAT             *VisV;               // ...        V         V
 
-////FISB               *FisB;               // Handled via type promotion (to FisF)
-    FISI               *FisI;               // Monadic F {is} I
-    FISF               *FisF;               // ...            F
+    ATISAT             *HC2IisHC2I;         // Monadic HC2I {is} HC2I
+    ATISAT             *HC2IisHC2F;         // ...        I         F
+    ATISAT             *HC2FisHC2I;         // ...        F         I
+    ATISAT             *HC2FisHC2F;         // ...        F         F
+    ATISAT             *HC2RisHC2R;         // ...        R         R
+    ATISAT             *HC2VisHC2R;         // ...        V         R
+    ATISAT             *HC2VisHC2V;         // ...        V         V
 
-    RISR               *RisR;               // Monadic R {is} R
+    ATISAT             *HC4IisHC4I;         // Monadic HC4I {is} HC4I
+    ATISAT             *HC4IisHC4F;         // ...        I         F
+    ATISAT             *HC4FisHC4I;         // ...        F         I
+    ATISAT             *HC4FisHC4F;         // ...        F         F
+    ATISAT             *HC4RisHC4R;         // ...        R         R
+    ATISAT             *HC4VisHC4R;         // ...        V         R
+    ATISAT             *HC4VisHC4V;         // ...        V         V
 
-////VISR               *VisR;               // Handled via type promotion (to VisV)
-    VISV               *VisV;               // Monadic V {is} V
+    ATISAT             *HC8IisHC8I;         // Monadic HC8I {is} HC8I
+    ATISAT             *HC8IisHC8F;         // ...        I         F
+    ATISAT             *HC8FisHC8I;         // ...        F         I
+    ATISAT             *HC8FisHC8F;         // ...        F         F
+    ATISAT             *HC8RisHC8R;         // ...        R         R
+    ATISAT             *HC8VisHC8R;         // ...        V         R
+    ATISAT             *HC8VisHC8V;         // ...        V         V
+
+    // Monadic FLT/VFP result HC arg functions (indexable)
+    ATISAT             *FisHC2I;            // Monadic    F      HC2I   (Stile)
+    ATISAT             *FisHC2F;            // ...        F      HC2F    ...
+    ATISAT             *VisHC2R;            // ...        V      HC2R    ...
+    ATISAT             *VisHC2V;            // ...        V      HC2V    ...
+    ATISAT             *FisHC4I;            // ...        F      HC4I    ...
+    ATISAT             *FisHC4F;            // ...        F      HC4F    ...
+    ATISAT             *VisHC4R;            // ...        V      HC4R    ...
+    ATISAT             *VisHC4V;            // ...        V      HC4V    ...
+    ATISAT             *FisHC8I;            // ...        F      HC8I    ...
+    ATISAT             *FisHC8F;            // ...        F      HC8F    ...
+    ATISAT             *VisHC8R;            // ...        V      HC8R    ...
+    ATISAT             *VisHC8V;            // ...        V      HC8V    ...
 
     // Dyadic functions
     LPPRIMFN_DYD        PrimFnDyd_EM_YY;    // Ptr to dyadic primitive function
     LPSTORAGE_TYPE_DYD  StorageTypeDyd;     // ...           storage type ...
     LPAPARESULT_DYD     ApaResultDyd_EM;    // ...           APA result ...
 
-    BISBVB             *BisBvB;             // Dyadic B {is} B vs B
-    BISIVI             *BisIvI;             // ...           I vs I
-    BISFVF             *BisFvF;             // ...           F vs F
-    BISCVC             *BisCvC;             // ...           C vs C
+    // Dyadic Boolean result functions (indexable)
+    ATISATVAT          *BisBvB;             // Dyadic B {is} B vs B
+    ATISATVAT          *BisIvI;             // ...           I vs I
+    ATISATVAT          *BisFvF;             // ...           F vs F
+    ATISATVAT          *BisCvC;             // ...           C vs C
+    ATISATVAT          *BisHvH;             // ...           H vs H
+    ATISATVAT          *BisRvR;             // ...           R vs R
+    ATISATVAT          *BisVvV;             // ...           V vs V
 
-////IISBVB             *IisBvB;             // Handled via type promotion (to IisIvI)
-    IISIVI             *IisIvI;             // Dyadic I {is} I vs I
-    IISFVF             *IisFvF;             // ...           F vs F
+    ATISATVAT          *BisHC2IvHC2I;       // Dyadic B {is} HC2I vs HC2I
+    ATISATVAT          *BisHC2FvHC2F;       // ...           HC2F vs HC2F
+    ATISATVAT          *BisHC2RvHC2R;       // ...           HC2R vs HC2R
+    ATISATVAT          *BisHC2VvHC2V;       // ...           HC2V vs HC2V
 
-////FISBVB             *FisBvB;             // Handled via type promotion (to FisFvF)
-    FISIVI             *FisIvI;             // Dyadic F {is} I vs I
-    FISFVF             *FisFvF;             // ...           F vs F
+    ATISATVAT          *BisHC4IvHC4I;       // Dyadic B {is} HC4I vs HC4I
+    ATISATVAT          *BisHC4FvHC4F;       // ...           HC4F vs HC4F
+    ATISATVAT          *BisHC4RvHC4R;       // ...           HC4R vs HC4R
+    ATISATVAT          *BisHC4VvHC4V;       // ...           HC4V vs HC4V
 
-    BISRVR             *BisRvR;             // Dyadic B {is} R vs R
-    RISRVR             *RisRvR;             // Dyadic R {is} R vs R
+    ATISATVAT          *BisHC8IvHC8I;       // Dyadic B {is} HC8I vs HC8I
+    ATISATVAT          *BisHC8FvHC8F;       // ...           HC8F vs HC8F
+    ATISATVAT          *BisHC8RvHC8R;       // ...           HC8R vs HC8R
+    ATISATVAT          *BisHC8VvHC8V;       // ...           HC8V vs HC8V
 
-    BISVVV             *BisVvV;             // Dyadic B {is} V vs V
-////VISRVV             *VisRvR;             // Handled via type promotion (to VisVvV)
-    VISVVV             *VisVvV;             // Dyadic V {is} V vs V
+    // Dyadic non-Boolean result functions (indexable)
+    ATISATVAT          *IisIvI;             // Dyadic  I {is}     I vs     I
+    ATISATVAT          *IisFvF;             // ...     I          F        F
+    ATISATVAT          *FisIvI;             // ...     F          I        I
+    ATISATVAT          *FisFvF;             // ...     F          F        F
+    ATISATVAT          *RisRvR;             // ...     R          R        R
+    ATISATVAT          *VisRvR;             // ...     V          R        R
+    ATISATVAT          *VisVvV;             // ...     V          V        V
 
+    ATISATVAT          *AT2IisAT2IvAT2I;    // Dyadic 2I {is} AT_2I vs AT_2I
+    ATISATVAT          *AT2IisAT2FvAT2F;    // ...    2I         2F       2F
+    ATISATVAT          *AT2FisAT2IvAT2I;    // ...    2F         2I       2I
+    ATISATVAT          *AT2FisAT2FvAT2F;    // ...    2F         2F       2F
+    ATISATVAT          *AT2RisAT2RvAT2R;    // ...    2R         2R       2R
+    ATISATVAT          *AT2VisAT2RvAT2R;    // ...    2V         2R       2R
+    ATISATVAT          *AT2VisAT2VvAT2V;    // ...    2V         2V       2V
+
+    ATISATVAT          *AT4IisAT4IvAT4I;    // Dyadic 4I {is} AT_4I vs AT_4I
+    ATISATVAT          *AT4IisAT4FvAT4F;    // ...    4I         4F       4F
+    ATISATVAT          *AT4FisAT4IvAT4I;    // ...    4F         4I       4I
+    ATISATVAT          *AT4FisAT4FvAT4F;    // ...    4F         4F       4F
+    ATISATVAT          *AT4RisAT4RvAT4R;    // ...    4R         4R       4R
+    ATISATVAT          *AT4VisAT4RvAT4R;    // ...    4V         4R       4R
+    ATISATVAT          *AT4VisAT4VvAT4V;    // ...    4V         4V       4V
+
+    ATISATVAT          *AT8IisAT8IvAT8I;    // Dyadic 8I {is} AT_8I vs AT_8I
+    ATISATVAT          *AT8IisAT8FvAT8F;    // ...    8I         8F       8F
+    ATISATVAT          *AT8FisAT8IvAT8I;    // ...    8F         8I       8I
+    ATISATVAT          *AT8FisAT8FvAT8F;    // ...    8F         8F       8F
+    ATISATVAT          *AT8RisAT8RvAT8R;    // ...    8R         8R       8R
+    ATISATVAT          *AT8VisAT8RvAT8R;    // ...    8V         8R       8R
+    ATISATVAT          *AT8VisAT8VvAT8V;    // ...    8V         8V       8V
+
+    // Monadic Boolean chunk functions
     B64ISB64           *B64isB64;           // Monadic B64 {is} B64
-    B32ISB32           *B32isB32;           // Monadic B32 {is} B32
-    B16ISB16           *B16isB16;           // Monadic B16 {is} B16
-    B08ISB08           *B08isB08;           // Monadic B08 {is} B08
+    B32ISB32           *B32isB32;           // ...     B32 {is} B32
+    B16ISB16           *B16isB16;           // ...     B16 {is} B16
+    B08ISB08           *B08isB08;           // ...     B08 {is} B08
 
+    // Dyadic Boolean chunk functions
     B64ISB64VB64       *B64isB64vB64;       // Dyadic B64 {is} B64 v B64
-    B32ISB32VB32       *B32isB32vB32;       // Dyadic B32 {is} B32 v B32
-    B16ISB16VB16       *B16isB16vB16;       // Dyadic B16 {is} B16 v B16
-    B08ISB08VB08       *B08isB08vB08;       // Dyadic B08 {is} B08 v B08
+    B32ISB32VB32       *B32isB32vB32;       // ...    B32 {is} B32 v B32
+    B16ISB16VB16       *B16isB16vB16;       // ...    B16 {is} B16 v B16
+    B08ISB08VB08       *B08isB08vB08;       // ...    B08 {is} B08 v B08
 
+    // Miscellaneous
     APLUINT             uQuadRL;            // []RL for atomicity
+    UINT                bMonDimDemote:1,    // 00000001:  Allow dimension demotion for monadic scalar function
+                        bDydDimDemote:1,    // 00000002:  ...                          dyadic  ...
+                        eHCMul:2,           // 0000000C:  Hypercomplex multiplication choice (see tagENUM_HCMUL)
+                        :28;                // FFFFFFF0:  Available bits
 } PRIMSPEC, *LPPRIMSPEC;
+
+#define HC1IisHC1I          IisI
+#define HC1IisHC1F          IisF
+#define HC1FisHC1I          FisI
+#define HC1FisHC1F          FisF
+#define HC1RisHC1R          RisR
+#define HC1VisHC1V          VisV
+#define HC1IisHC1IvHC1I     IisIvI
+#define HC1IisHC1FvHC1F     IisFvF
+#define HC1FisHC1IvHC1I     FisIvI
+#define HC1FisHC1FvHC1F     FisFvF
+#define HC1RisHC1RvHC1R     RisRvR
+#define HC1VisHC1VvHC1V     VisVvV
+
+#define mphc1r_init         mpq_init
+#define mphc1v_init0        mpfr_init0
+#define Myhc1r_clear        Myq_clear
+#define Myhc1v_clear        Myf_clear
 
 
 //***************************************************************************

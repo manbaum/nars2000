@@ -262,6 +262,23 @@ APLINT GetNextIntegerToken
 
                     goto NORMAL_EXIT;
 
+                case ARRAY_HC2I:
+                case ARRAY_HC4I:
+                case ARRAY_HC8I:
+                case ARRAY_HC2F:
+                case ARRAY_HC4F:
+                case ARRAY_HC8F:
+                case ARRAY_HC2R:
+                case ARRAY_HC4R:
+                case ARRAY_HC8R:
+                case ARRAY_HC2V:
+                case ARRAY_HC4V:
+                case ARRAY_HC8V:
+                    // Attempt to convert the item to an integer using System []CT
+                    aplIntegerRes = ConvertToInteger_SCT (aplTypeItm, hGlbItm, 0, lpbRet);
+
+                    goto NORMAL_EXIT;
+
                 case ARRAY_CHAR:
                 case ARRAY_NESTED:
                     break;
@@ -279,6 +296,26 @@ APLINT GetNextIntegerToken
             // Mark as in error
             *lpbRet = FALSE;
 
+            break;
+
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
+            // Attempt to convert the item to an integer using System []CT
+            aplIntegerRes = ConvertToInteger_SCT (aplTypeArg, lpMemArg, uIndex, lpbRet);
+
+            break;
+
+        defstop
             break;
     } // End SWITCH
 NORMAL_EXIT:
@@ -399,6 +436,23 @@ APLFLOAT GetNextFloatToken
                 case ARRAY_NESTED:
                     break;
 
+                case ARRAY_HC2I:
+                case ARRAY_HC4I:
+                case ARRAY_HC8I:
+                case ARRAY_HC2F:
+                case ARRAY_HC4F:
+                case ARRAY_HC8F:
+                case ARRAY_HC2R:
+                case ARRAY_HC4R:
+                case ARRAY_HC8R:
+                case ARRAY_HC2V:
+                case ARRAY_HC4V:
+                case ARRAY_HC8V:
+                    // Attempt to convert the item to a float
+                    aplFloatRes = ConvertToFloat (aplTypeItm, hGlbItm, lpbRet);
+
+                    goto NORMAL_EXIT;
+
                 case ARRAY_APA:             // Can't happen
                 case ARRAY_HETERO:          // ...
                 defstop
@@ -412,6 +466,26 @@ APLFLOAT GetNextFloatToken
             // Mark as in error
             *lpbRet = FALSE;
 
+            break;
+
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
+            // Attempt to convert the item to a float
+            aplFloatRes = ConvertToFloat (aplTypeArg, lpMemArg, lpbRet);
+
+            break;
+
+        defstop
             break;
     } // End SWITCH
 NORMAL_EXIT:
@@ -793,6 +867,18 @@ UBOOL GetNextValueTokenIntoNamedVarToken_EM
 
             case IMMTYPE_RAT:
             case IMMTYPE_VFP:
+            case IMMTYPE_HC2I:
+            case IMMTYPE_HC2F:
+            case IMMTYPE_HC2R:
+            case IMMTYPE_HC2V:
+            case IMMTYPE_HC4I:
+            case IMMTYPE_HC4F:
+            case IMMTYPE_HC4R:
+            case IMMTYPE_HC4V:
+            case IMMTYPE_HC8I:
+            case IMMTYPE_HC8F:
+            case IMMTYPE_HC8R:
+            case IMMTYPE_HC8V:
                 // Split cases based upon the ptr type
                 switch (GetPtrTypeDir (hGlbSub))
                 {
@@ -1374,6 +1460,18 @@ void GetFirstValueGlb
 
         case ARRAY_RAT:
         case ARRAY_VFP:
+        case ARRAY_HC2I:
+        case ARRAY_HC2F:
+        case ARRAY_HC2R:
+        case ARRAY_HC2V:
+        case ARRAY_HC4I:
+        case ARRAY_HC4F:
+        case ARRAY_HC4R:
+        case ARRAY_HC4V:
+        case ARRAY_HC8I:
+        case ARRAY_HC8F:
+        case ARRAY_HC8R:
+        case ARRAY_HC8V:
             if (lpaplInteger)
                 *lpaplInteger = 0;
             if (lpaplFloat)
@@ -1583,6 +1681,150 @@ UBOOL GetNextValueMemIntoToken
             lptkArg->tkData.tkGlbData =
               MakeGlbEntry_EM (aplTypeArg,                      // Entry type
                               &((LPAPLVFP) lpMemArg)[uArg],     // Ptr to the value
+                               TRUE,                            // TRUE iff we should initialize the target first
+                               lptkArg);                        // Ptr to function token
+            if (lptkArg->tkData.tkGlbData EQ NULL)
+                goto ERROR_EXIT;
+            break;
+
+        case ARRAY_HC2I:
+            lptkArg->tkFlags.TknType  = TKT_VARARRAY;
+            lptkArg->tkFlags.ImmType  = IMMTYPE_HC2I;
+            lptkArg->tkData.tkGlbData =
+              MakeGlbEntry_EM (aplTypeArg,                      // Entry type
+                              &((LPAPLHC2I) lpMemArg)[uArg],    // Ptr to the value
+                               TRUE,                            // TRUE iff we should initialize the target first
+                               lptkArg);                        // Ptr to function token
+            if (lptkArg->tkData.tkGlbData EQ NULL)
+                goto ERROR_EXIT;
+            break;
+
+        case ARRAY_HC4I:
+            lptkArg->tkFlags.TknType  = TKT_VARARRAY;
+            lptkArg->tkFlags.ImmType  = IMMTYPE_HC4I;
+            lptkArg->tkData.tkGlbData =
+              MakeGlbEntry_EM (aplTypeArg,                      // Entry type
+                              &((LPAPLHC4I) lpMemArg)[uArg],    // Ptr to the value
+                               TRUE,                            // TRUE iff we should initialize the target first
+                               lptkArg);                        // Ptr to function token
+            if (lptkArg->tkData.tkGlbData EQ NULL)
+                goto ERROR_EXIT;
+            break;
+
+        case ARRAY_HC8I:
+            lptkArg->tkFlags.TknType  = TKT_VARARRAY;
+            lptkArg->tkFlags.ImmType  = IMMTYPE_HC8I;
+            lptkArg->tkData.tkGlbData =
+              MakeGlbEntry_EM (aplTypeArg,                      // Entry type
+                              &((LPAPLHC8I) lpMemArg)[uArg],    // Ptr to the value
+                               TRUE,                            // TRUE iff we should initialize the target first
+                               lptkArg);                        // Ptr to function token
+            if (lptkArg->tkData.tkGlbData EQ NULL)
+                goto ERROR_EXIT;
+            break;
+
+        case ARRAY_HC2F:
+            lptkArg->tkFlags.TknType  = TKT_VARARRAY;
+            lptkArg->tkFlags.ImmType  = IMMTYPE_HC2F;
+            lptkArg->tkData.tkGlbData =
+              MakeGlbEntry_EM (aplTypeArg,                      // Entry type
+                              &((LPAPLHC2F) lpMemArg)[uArg],    // Ptr to the value
+                               TRUE,                            // TRUE iff we should initialize the target first
+                               lptkArg);                        // Ptr to function token
+            if (lptkArg->tkData.tkGlbData EQ NULL)
+                goto ERROR_EXIT;
+            break;
+
+        case ARRAY_HC4F:
+            lptkArg->tkFlags.TknType  = TKT_VARARRAY;
+            lptkArg->tkFlags.ImmType  = IMMTYPE_HC4F;
+            lptkArg->tkData.tkGlbData =
+              MakeGlbEntry_EM (aplTypeArg,                      // Entry type
+                              &((LPAPLHC4F) lpMemArg)[uArg],    // Ptr to the value
+                               TRUE,                            // TRUE iff we should initialize the target first
+                               lptkArg);                        // Ptr to function token
+            if (lptkArg->tkData.tkGlbData EQ NULL)
+                goto ERROR_EXIT;
+            break;
+
+        case ARRAY_HC8F:
+            lptkArg->tkFlags.TknType  = TKT_VARARRAY;
+            lptkArg->tkFlags.ImmType  = IMMTYPE_HC8F;
+            lptkArg->tkData.tkGlbData =
+              MakeGlbEntry_EM (aplTypeArg,                      // Entry type
+                              &((LPAPLHC8F) lpMemArg)[uArg],    // Ptr to the value
+                               TRUE,                            // TRUE iff we should initialize the target first
+                               lptkArg);                        // Ptr to function token
+            if (lptkArg->tkData.tkGlbData EQ NULL)
+                goto ERROR_EXIT;
+            break;
+
+        case ARRAY_HC2R:
+            lptkArg->tkFlags.TknType  = TKT_VARARRAY;
+            lptkArg->tkFlags.ImmType  = IMMTYPE_HC2R;
+            lptkArg->tkData.tkGlbData =
+              MakeGlbEntry_EM (aplTypeArg,                      // Entry type
+                              &((LPAPLHC2R) lpMemArg)[uArg],    // Ptr to the value
+                               TRUE,                            // TRUE iff we should initialize the target first
+                               lptkArg);                        // Ptr to function token
+            if (lptkArg->tkData.tkGlbData EQ NULL)
+                goto ERROR_EXIT;
+            break;
+
+        case ARRAY_HC4R:
+            lptkArg->tkFlags.TknType  = TKT_VARARRAY;
+            lptkArg->tkFlags.ImmType  = IMMTYPE_HC4R;
+            lptkArg->tkData.tkGlbData =
+              MakeGlbEntry_EM (aplTypeArg,                      // Entry type
+                              &((LPAPLHC4R) lpMemArg)[uArg],    // Ptr to the value
+                               TRUE,                            // TRUE iff we should initialize the target first
+                               lptkArg);                        // Ptr to function token
+            if (lptkArg->tkData.tkGlbData EQ NULL)
+                goto ERROR_EXIT;
+            break;
+
+        case ARRAY_HC8R:
+            lptkArg->tkFlags.TknType  = TKT_VARARRAY;
+            lptkArg->tkFlags.ImmType  = IMMTYPE_HC8R;
+            lptkArg->tkData.tkGlbData =
+              MakeGlbEntry_EM (aplTypeArg,                      // Entry type
+                              &((LPAPLHC8R) lpMemArg)[uArg],    // Ptr to the value
+                               TRUE,                            // TRUE iff we should initialize the target first
+                               lptkArg);                        // Ptr to function token
+            if (lptkArg->tkData.tkGlbData EQ NULL)
+                goto ERROR_EXIT;
+            break;
+
+        case ARRAY_HC2V:
+            lptkArg->tkFlags.TknType  = TKT_VARARRAY;
+            lptkArg->tkFlags.ImmType  = IMMTYPE_HC2V;
+            lptkArg->tkData.tkGlbData =
+              MakeGlbEntry_EM (aplTypeArg,                      // Entry type
+                              &((LPAPLHC2V) lpMemArg)[uArg],    // Ptr to the value
+                               TRUE,                            // TRUE iff we should initialize the target first
+                               lptkArg);                        // Ptr to function token
+            if (lptkArg->tkData.tkGlbData EQ NULL)
+                goto ERROR_EXIT;
+            break;
+
+        case ARRAY_HC4V:
+            lptkArg->tkFlags.TknType  = TKT_VARARRAY;
+            lptkArg->tkFlags.ImmType  = IMMTYPE_HC4V;
+            lptkArg->tkData.tkGlbData =
+              MakeGlbEntry_EM (aplTypeArg,                      // Entry type
+                              &((LPAPLHC4V) lpMemArg)[uArg],    // Ptr to the value
+                               TRUE,                            // TRUE iff we should initialize the target first
+                               lptkArg);                        // Ptr to function token
+            if (lptkArg->tkData.tkGlbData EQ NULL)
+                goto ERROR_EXIT;
+            break;
+
+        case ARRAY_HC8V:
+            lptkArg->tkFlags.TknType  = TKT_VARARRAY;
+            lptkArg->tkFlags.ImmType  = IMMTYPE_HC8V;
+            lptkArg->tkData.tkGlbData =
+              MakeGlbEntry_EM (aplTypeArg,                      // Entry type
+                              &((LPAPLHC8V) lpMemArg)[uArg],    // Ptr to the value
                                TRUE,                            // TRUE iff we should initialize the target first
                                lptkArg);                        // Ptr to function token
             if (lptkArg->tkData.tkGlbData EQ NULL)
@@ -2249,6 +2491,12 @@ void GetNextValueMemSub
             case ARRAY_BOOL:
             case ARRAY_INT:
             case ARRAY_FLOAT:
+            case ARRAY_HC2I:
+            case ARRAY_HC2F:
+            case ARRAY_HC4I:
+            case ARRAY_HC4F:
+            case ARRAY_HC8I:
+            case ARRAY_HC8F:
             case ARRAY_APA:
             case ARRAY_LIST:
                 if (lpaplLongestRes)
@@ -2428,6 +2676,114 @@ void GetNextValueMemSub
                 *lpimmTypeRes    = IMMTYPE_VFP;
             if (lphGlbRes)
                 *lphGlbRes       = &((LPAPLVFP) lpMemSub)[uSub];
+            break;
+
+        case ARRAY_HC2I:
+            if (lpaplLongestRes)
+                *lpaplLongestRes = 0;
+            if (lpimmTypeRes)
+                *lpimmTypeRes    = IMMTYPE_HC2I;
+            if (lphGlbRes)
+                *lphGlbRes       = &((LPAPLHC2I) lpMemSub)[uSub];
+            break;
+
+        case ARRAY_HC2F:
+            if (lpaplLongestRes)
+                *lpaplLongestRes = *(LPAPLLONGEST) &((LPAPLHC2F) lpMemSub)[uSub];
+            if (lpimmTypeRes)
+                *lpimmTypeRes    = IMMTYPE_HC2F;
+            if (lphGlbRes)
+                *lphGlbRes       = &((LPAPLHC2F) lpMemSub)[uSub];
+            break;
+
+        case ARRAY_HC2R:
+            if (lpaplLongestRes)
+                *lpaplLongestRes = 0;
+            if (lpimmTypeRes)
+                *lpimmTypeRes    = IMMTYPE_HC2R;
+            if (lphGlbRes)
+                *lphGlbRes       = &((LPAPLHC2R) lpMemSub)[uSub];
+            break;
+
+        case ARRAY_HC2V:
+            if (lpaplLongestRes)
+                *lpaplLongestRes = 0;
+            if (lpimmTypeRes)
+                *lpimmTypeRes    = IMMTYPE_HC2V;
+            if (lphGlbRes)
+                *lphGlbRes       = &((LPAPLHC2V) lpMemSub)[uSub];
+            break;
+
+        case ARRAY_HC4I:
+            if (lpaplLongestRes)
+                *lpaplLongestRes = 0;
+            if (lpimmTypeRes)
+                *lpimmTypeRes    = IMMTYPE_HC4I;
+            if (lphGlbRes)
+                *lphGlbRes       = &((LPAPLHC4I) lpMemSub)[uSub];
+            break;
+
+        case ARRAY_HC4F:
+            if (lpaplLongestRes)
+                *lpaplLongestRes = *(LPAPLLONGEST) &((LPAPLHC4F) lpMemSub)[uSub];
+            if (lpimmTypeRes)
+                *lpimmTypeRes    = IMMTYPE_HC4F;
+            if (lphGlbRes)
+                *lphGlbRes       = &((LPAPLHC4F) lpMemSub)[uSub];
+            break;
+
+        case ARRAY_HC4R:
+            if (lpaplLongestRes)
+                *lpaplLongestRes = 0;
+            if (lpimmTypeRes)
+                *lpimmTypeRes    = IMMTYPE_HC4R;
+            if (lphGlbRes)
+                *lphGlbRes       = &((LPAPLHC4R) lpMemSub)[uSub];
+            break;
+
+        case ARRAY_HC4V:
+            if (lpaplLongestRes)
+                *lpaplLongestRes = 0;
+            if (lpimmTypeRes)
+                *lpimmTypeRes    = IMMTYPE_HC4V;
+            if (lphGlbRes)
+                *lphGlbRes       = &((LPAPLHC4V) lpMemSub)[uSub];
+            break;
+
+        case ARRAY_HC8I:
+            if (lpaplLongestRes)
+                *lpaplLongestRes = 0;
+            if (lpimmTypeRes)
+                *lpimmTypeRes    = IMMTYPE_HC8I;
+            if (lphGlbRes)
+                *lphGlbRes       = &((LPAPLHC8I) lpMemSub)[uSub];
+            break;
+
+        case ARRAY_HC8F:
+            if (lpaplLongestRes)
+                *lpaplLongestRes = *(LPAPLLONGEST) &((LPAPLHC8F) lpMemSub)[uSub];
+            if (lpimmTypeRes)
+                *lpimmTypeRes    = IMMTYPE_HC8F;
+            if (lphGlbRes)
+                *lphGlbRes       = &((LPAPLHC8F) lpMemSub)[uSub];
+            break;
+
+        case ARRAY_HC8R:
+            if (lpaplLongestRes)
+                *lpaplLongestRes = 0;
+            if (lpimmTypeRes)
+                *lpimmTypeRes    = IMMTYPE_HC8R;
+            if (lphGlbRes)
+                *lphGlbRes       = &((LPAPLHC8R) lpMemSub)[uSub];
+            break;
+
+        case ARRAY_HC8V:
+            if (lpaplLongestRes)
+                *lpaplLongestRes = 0;
+            if (lpimmTypeRes)
+                *lpimmTypeRes    = IMMTYPE_HC8V;
+            if (lphGlbRes)
+                *lphGlbRes       = &((LPAPLHC8V) lpMemSub)[uSub];
             break;
 
         defstop
@@ -2755,6 +3111,34 @@ void SetQuadCT
 {
     GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_CT]->stData.stFloat = fQuadCT;
 } // End SetQuadCT
+
+
+//***************************************************************************
+//  $GetQuadDQ
+//
+//  Get the current value of []DQ
+//***************************************************************************
+
+APLCHAR GetQuadDQ
+    (void)
+
+{
+    return GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_DQ]->stData.stChar;
+} // End GetQuadDQ
+
+
+//***************************************************************************
+//  $SetQuadDQ
+//
+//  Set the current value of []DQ
+//***************************************************************************
+
+void SetQuadDQ
+    (APLCHAR cQuadDQ)
+
+{
+    GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_DQ]->stData.stChar = tolower (cQuadDQ);
+} // End SetQuadDQ
 
 
 //***************************************************************************

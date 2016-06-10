@@ -155,12 +155,15 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
                       hGlbWVecTst = NULL,   // ...  weighting vector ...
                       hGlbOdoTst = NULL,    // ...  odometer         ...
                       hGlbKmpNext = NULL;   // KMP temp global memory handle
-    LPVOID            lpMemLft = NULL,      // Ptr to left arg global memory
-                      lpMemRht = NULL;      // ...    right ...
+    LPVARARRAY_HEADER lpMemHdrLft = NULL,   // Ptr to left arg header
+                      lpMemHdrRht = NULL,   // ...    right ...
+                      lpMemHdrRes = NULL;   // ...    result   ...
+    LPVOID            lpMemLft,             // Ptr to left arg global memory
+                      lpMemRht;             // ...    right ...
     LPAPLDIM          lpMemDimLft,          // Ptr to left arg dimensions
                       lpMemDimRht,          // ...    right ...
                       lpMemDimTmp = NULL;   // ...    temp     ...
-    LPAPLBOOL         lpMemRes = NULL;      // Ptr to result   ...
+    LPAPLBOOL         lpMemRes;             // Ptr to result global memory
     APLUINT           ByteRes,              // # bytes in the result
                       uRes;                 // Accumulator
     APLINT            iDim;                 // Loop counter
@@ -215,11 +218,11 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
     } // End IF
 
     // Get left and right arg's global ptrs
-    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // If the right arg is not an immediate, ...
-    if (lpMemRht)
+    if (lpMemHdrRht)
     {
         //***************************************************************
         // Calculate space needed for the result
@@ -240,9 +243,9 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+        lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        lpMemHdrRes
         // Fill in the header
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_BOOL;
@@ -256,17 +259,17 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
         // Fill in the result's dimension
 
         // Skip over the header to the dimensions
-        lpMemRes = (LPAPLBOOL) VarArrayBaseToDim (lpMemRes);
+        lpMemRes = (LPAPLBOOL) VarArrayBaseToDim (lpMemHdrRes);
 
         // Skip over the header to the dimensions
-        lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+        lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
 
         // Copy the right arg dimensions to the result
         CopyMemory (lpMemRes, lpMemDimRht, (APLU3264) aplRankRht * sizeof (APLDIM));
 
         // Skip over the dimensions to the data
-        lpMemRes = VarArrayDimToData (lpMemRes, aplRankRht);
-        lpMemRht = VarArrayDimToData (lpMemDimRht, aplRankRht);
+        lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
     } else
     {
         // Allocate a new YYRes
@@ -291,13 +294,13 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
         lpMemRht = &aplLongestRht;
     } // End IF/ELSE
 
-    if (lpMemLft)
+    if (lpMemHdrLft)
     {
         // Skip over the header to the dimensions
-        lpMemDimLft = VarArrayBaseToDim (lpMemLft);
+        lpMemDimLft = VarArrayBaseToDim (lpMemHdrLft);
 
-        // Skip over the dimensions to the data
-        lpMemLft = VarArrayDimToData (lpMemDimLft, aplRankLft);
+        // Skip over the header and dimensions to the data
+        lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
     } else
     {
         // Point to the left arg dimension
@@ -602,10 +605,11 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
                                           lptkFunc))        // Ptr to function token
             goto ERROR_EXIT;
     } else
-    if (IsSimpleNum (aplTypeLft) && IsSimpleNum (aplTypeRht))
+    if (IsNumeric (aplTypeLft) && IsNumeric (aplTypeRht))
     {
         // Handle APLFLOAT vs. APLBOOL/APLINT/APLAPA/APLFLOAT
         // Handle APLINT   vs. APLFLOAT
+        // Handle all other Numeric vs. Numeric
         if (!PrimFnDydEpsilonUnderbarNvN (lpMemRes,         // Ptr to result global memory data
                                           lpMemDimDiff,     // ...    dimension difference vector
                                           lpMemWVecTst,     // ...    test weighting vector
@@ -694,10 +698,10 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
     } // End IF/ELSE/...
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
     // If the right arg is not immediate, ...
-    if (lpMemRht)
+    if (lpMemHdrRht)
     {
         // Allocate a new YYRes
         lpYYRes = YYAlloc ();
@@ -717,10 +721,10 @@ SOME1s:
     bSome1s = TRUE;
 NOMATCH:
     // If the right arg is a global, ...
-    if (lpMemRht)
+    if (lpMemHdrRht)
     {
         // Unlock and free (and set to NULL) a global name and ptr
-        UnlFreeGlbName (hGlbRes, lpMemRes);
+        UnlFreeGlbName (hGlbRes, lpMemHdrRes);
 
         // If there was a YYAlloc, ...
         if (lpYYRes)
@@ -771,9 +775,9 @@ NOMATCH:
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemRes = MyGlobalLock (hGlbRes);
+            lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        lpMemHdrRes
             // Fill in the header
             lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
             lpHeader->ArrType    = aplTypeRes;
@@ -785,20 +789,20 @@ NOMATCH:
 #undef  lpHeader
 
             // Skip over the header to the dimensions
-            lpMemRes = (LPAPLBOOL) VarArrayBaseToDim (lpMemRes);
+            lpMemRes = (LPAPLBOOL) VarArrayBaseToDim (lpMemHdrRes);
 
             // Copy the right arg dimensions to the result
             CopyMemory (lpMemRes, lpMemDimRht, (APLU3264) aplRankRht * sizeof (APLDIM));
 
-            // Skip over the dimensions to the data
-            lpMemRes = VarArrayDimToData (lpMemRes, aplRankRht);
+////        // Skip over the header and dimensions to the data
+////        lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
             // Fill in the APA parms
 ////////////((LPAPLAPA) lpMemRes)->Off = 0;     // Already zero from GHND
 ////////////((LPAPLAPA) lpMemRes)->Mul = 0;     // ...
 
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+////        // We no longer need this ptr
+////        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
             // Allocate a new YYRes
             lpYYRes = YYAlloc ();
@@ -827,12 +831,12 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemHdrRes)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this storage
@@ -857,27 +861,85 @@ NORMAL_EXIT:
     // Unlock and free (and set to NULL) a global name and ptr
     UnlFreeGlbName (hGlbOdoRht, lpMemOdoRht);
 
-    if (hGlbLft && lpMemLft)
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
     return lpYYRes;
 } // End PrimFnDydEpsilonUnderbar_EM_YY
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $EqualAny
+//***************************************************************************
+
+UBOOL EqualAny
+    (APLSTYPE   aplTypeCom,
+     LPALLTYPES lpatLft,
+     LPALLTYPES lpatRht,
+     int        iHCDimX,
+     APLFLOAT   fQuadCT,
+     LPCHAR     lpszMsg)
+
+{
+    // Split cases based upon the common type
+    switch (aplTypeCom)
+    {
+        case ARRAY_BOOL:
+            return (lpatLft->aplBoolean EQ lpatRht->aplBoolean);
+
+        case ARRAY_INT:
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
+            return EqualHCxIvHCxI (lpatLft, lpatRht, iHCDimX, fQuadCT, lpszMsg);
+
+        case ARRAY_FLOAT:
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
+            return EqualHCxFvHCxF (lpatLft, lpatRht, iHCDimX, fQuadCT, lpszMsg);
+
+        case ARRAY_RAT:
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
+            return EqualHCxRvHCxR (lpatLft, lpatRht, iHCDimX, fQuadCT, lpszMsg);
+
+        case ARRAY_VFP:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
+            return EqualHCxVvHCxV (lpatLft, lpatRht, iHCDimX, fQuadCT, lpszMsg);
+
+        case ARRAY_NESTED:
+        case ARRAY_HETERO:
+            return CompareNested  (lpatLft->aplNested, aplTypeCom, lpatRht->aplNested, aplTypeCom);
+
+        case ARRAY_CHAR:
+            return (lpatLft->aplChar EQ lpatRht->aplChar);
+
+        defstop
+            return FALSE;
+    } // End SWITCH
+
+    return FALSE;
+} // End EqualAny
 
 
 //***************************************************************************
@@ -904,10 +966,10 @@ NORMAL_EXIT:
 #define CompareRAT(Lft,typeLft,Rht,typeRht) (mpq_cmp_ct  ( Lft,  Rht, fQuadCT) EQ 0)
 #endif
 #define CompareVFP(Lft,typeLft,Rht,typeRht) (mpfr_cmp_ct ( Lft,  Rht, fQuadCT) EQ 0)
-#define Compare
+
 //  ***FIXME*** -- What to do about fuzzy comparisons not being transitive???
 
-#define FINDMAC(preKmp,aplTypeKmp,GetNextValLft,aplTypeLft,GetNextValRht,aplTypeRht,CompareVal,LblSuf)  \
+#define FINDMAC(preKmp,aplTypeLft,aplTypeRht,LblSuf)                                                    \
     APLINT    i,                        /* Loop counter             */                                  \
               j,                        /* ...                      */                                  \
               k,                        /* ...                      */                                  \
@@ -916,13 +978,24 @@ NORMAL_EXIT:
               uRht,                     /* ...                      */                                  \
               uTst,                     /* ...                      */                                  \
               uOdo;                     /* ...                      */                                  \
+    APLSTYPE  aplTypeCom;               /* Common storage type between Lft & Rht */                     \
+    int       iHCDimX;                  /* HC Dimension of aplTypeCom (1, 2, 4, 8) */                   \
+    ALLTYPES  atLft = {0},              /* Left arg as ALLTYPES */                                      \
+              atRht = {0};              /* Right ...            */                                      \
+    UBOOL     bRet;                     /* TRUE iff the result is valid */                              \
+                                                                                                        \
+    /* Calculate common storage type */                                                                 \
+    aplTypeCom = aTypePromote[aplTypeLft][aplTypeRht];                                                  \
+                                                                                                        \
+    /* Calculate the HC Dimension (1, 2, 4, 8) */                                                       \
+    iHCDimX = TranslateArrayTypeToHCDim (aplTypeCom);                                                   \
                                                                                                         \
     /* Initializing */                                                                                  \
     uRht = 0;                                                                                           \
     aplColsRmL = aplColsRht - aplColsLft;                                                               \
                                                                                                         \
     /* Preprocessing the first row in the left arg */                                                   \
-    preKmp (lpMemLft, aplTypeKmp, aplColsLft, lpMemKmpNext);                                            \
+    preKmp (aplTypeCom, lpMemLft, aplTypeLft, aplColsLft, iHCDimX, fQuadCT, lpMemKmpNext);              \
                                                                                                         \
     while (TRUE)                                                                                        \
     {                                                                                                   \
@@ -933,9 +1006,27 @@ NORMAL_EXIT:
         /* Searching through the cols */                                                                \
         while (k <= aplColsRmL)                                                                         \
         {                                                                                               \
-            while (i > -1 && !CompareVal (GetNextValLft (lpMemLft, aplTypeLft, i),        aplTypeLft,   \
-                                          GetNextValRht (lpMemRht, aplTypeRht, uRht + j), aplTypeRht))  \
+            while (i > -1)                                                                              \
+            {                                                                                           \
+                /* Promote the left and right arg items to ALLTYPES */                                  \
+                (*aTypeActPromote[aplTypeLft][aplTypeCom]) (lpMemLft,        i, &atLft);                \
+                (*aTypeActPromote[aplTypeRht][aplTypeCom]) (lpMemRht, uRht + j, &atRht);                \
+                                                                                                        \
+                bRet =                                                                                  \
+                     EqualAny (aplTypeCom,                                                              \
+                              &atLft,                                                                   \
+                              &atRht,                                                                   \
+                               iHCDimX, fQuadCT, __FUNCTION__);                                         \
+                /* Free the old atLft and atRht */                                                      \
+                (*aTypeFree[aplTypeCom]) (&atLft, 0);                                                   \
+                (*aTypeFree[aplTypeCom]) (&atRht, 0);                                                   \
+                                                                                                        \
+                if (bRet)                                                                               \
+                    break;                                                                              \
+                                                                                                        \
                 i = lpMemKmpNext[i];                                                                    \
+            } /* End WHILE */                                                                           \
+                                                                                                        \
             i++;                                                                                        \
             j++;                                                                                        \
                                                                                                         \
@@ -967,8 +1058,20 @@ NORMAL_EXIT:
                         /*   the values in lpMemDimLft                              */                  \
                         IncrOdometer (lpMemOdoTst, lpMemDimLft, NULL, aplRankRht);                      \
                                                                                                         \
-                        if (!CompareVal (GetNextValLft (lpMemLft, aplTypeLft, uLft),     aplTypeLft,    \
-                                         GetNextValRht (lpMemRht, aplTypeRht, uTst + k), aplTypeRht))   \
+                        /* Convert the left & right arg items to ALLTYPES */                            \
+                        (*aTypeActPromote[aplTypeLft][aplTypeCom]) (lpMemLft, uLft    , &atLft);        \
+                        (*aTypeActPromote[aplTypeRht][aplTypeCom]) (lpMemRht, uTst + k, &atRht);        \
+                                                                                                        \
+                        bRet =                                                                          \
+                             EqualAny (aplTypeCom,                                                      \
+                                      &atLft,                                                           \
+                                      &atRht,                                                           \
+                                      iHCDimX, fQuadCT, __FUNCTION__);                                  \
+                        /* Free the old atLft and atRht */                                              \
+                        (*aTypeFree[aplTypeCom]) (&atLft, 0);                                           \
+                        (*aTypeFree[aplTypeCom]) (&atRht, 0);                                           \
+                                                                                                        \
+                        if (!bRet)                                                                      \
                             goto NOMATCH##LblSuf;                                                       \
                     } /* End FOR */                                                                     \
                 } /* End IF */                                                                          \
@@ -1089,7 +1192,7 @@ UBOOL PrimFnDydEpsilonUnderbarBvB
      LPTOKEN   lptkFunc)                // Ptr to function token
 
 {
-    FINDMAC (preKmpB, ARRAY_BOOL, GetNextBool, ARRAY_BOOL, GetNextBool, ARRAY_BOOL, CompareInt, BvB)
+    FINDMAC (preKmpB, ARRAY_BOOL, ARRAY_BOOL , BvB)
 } // End PrimFnDydEpsilonUnderbarBvB
 #undef  APPEND_NAME
 
@@ -1132,7 +1235,7 @@ UBOOL PrimFnDydEpsilonUnderbarBvF
      LPTOKEN   lptkFunc)                // Ptr to function token
 
 {
-    FINDMAC (preKmpB, ARRAY_BOOL, GetNextBool, ARRAY_BOOL, GetNextFloat, ARRAY_FLOAT, CompareFlt, BvF)
+    FINDMAC (preKmpB, ARRAY_BOOL, ARRAY_FLOAT, BvF)
 } // End PrimFnDydEpsilonUnderbarBvF
 #undef  APPEND_NAME
 
@@ -1175,7 +1278,7 @@ UBOOL PrimFnDydEpsilonUnderbarAvF
      LPTOKEN   lptkFunc)                // Ptr to function token
 
 {
-    FINDMAC (preKmpA, ARRAY_APA, GetNextFloat, ARRAY_APA, GetNextFloat, ARRAY_FLOAT, CompareFlt, AvF)
+    FINDMAC (preKmpA, ARRAY_APA , ARRAY_FLOAT, AvF)
 } // End PrimFnDydEpsilonUnderbarAvF
 #undef  APPEND_NAME
 
@@ -1220,7 +1323,7 @@ UBOOL PrimFnDydEpsilonUnderbarIvI
      LPTOKEN   lptkFunc)                // Ptr to function token
 
 {
-    FINDMAC (preKmpO, aplTypeLft, GetNextInteger, aplTypeLft, GetNextInteger, aplTypeRht, CompareInt, IvI)
+    FINDMAC (preKmpI, aplTypeLft, aplTypeRht , IvI)
 } // End PrimFnDydEpsilonUnderbarIvI
 #undef  APPEND_NAME
 
@@ -1266,7 +1369,7 @@ UBOOL PrimFnDydEpsilonUnderbarNvN
      LPTOKEN   lptkFunc)                // Ptr to function token
 
 {
-    FINDMAC (preKmpO, aplTypeLft, GetNextFloat, aplTypeLft, GetNextFloat, aplTypeRht, CompareFlt, NvN)
+    FINDMAC (preKmpO, aplTypeLft, aplTypeRht , NvN)
 } // End PrimFnDydEpsilonUnderbarNvN
 #undef  APPEND_NAME
 
@@ -1309,7 +1412,7 @@ UBOOL PrimFnDydEpsilonUnderbarCvC
      LPTOKEN   lptkFunc)                // Ptr to function token
 
 {
-    FINDMAC (preKmpC, ARRAY_CHAR, GetNextDir, ARRAY_CHAR, GetNextDir, ARRAY_CHAR, CompareInt, CvC)
+    FINDMAC (preKmpC, ARRAY_CHAR, ARRAY_CHAR , CvC)
 } // End PrimFnDydEpsilonUnderbarCvC
 #undef  APPEND_NAME
 
@@ -1322,9 +1425,12 @@ UBOOL PrimFnDydEpsilonUnderbarCvC
 //***************************************************************************
 
 void preKmpA
-    (LPAPLAPA    x,
-     APLSTYPE    aplTypeKmp,
+    (APLSTYPE    aplTypeCom,
+     LPAPLAPA    x,
+     APLSTYPE    aplTypeLft,
      APLINT      m,
+     int         iHCDimX,
+     APLFLOAT    fQuadCT,
      APLINT      kmpNext[])
 {
     APLINT i, j;
@@ -1355,9 +1461,12 @@ void preKmpA
 //***************************************************************************
 
 void preKmpB
-    (LPAPLBOOL   x,
-     APLSTYPE    aplTypeKmp,
+    (APLSTYPE    aplTypeCom,
+     LPAPLBOOL   x,
+     APLSTYPE    aplTypeLft,
      APLINT      m,
+     int         iHCDimX,
+     APLFLOAT    fQuadCT,
      APLINT      kmpNext[])
 {
     APLINT i, j;
@@ -1388,9 +1497,12 @@ void preKmpB
 //***************************************************************************
 
 void preKmpC
-    (LPAPLCHAR   x,
-     APLSTYPE    aplTypeKmp,
+    (APLSTYPE    aplTypeCom,
+     LPAPLCHAR   x,
+     APLSTYPE    aplTypeLft,
      APLINT      m,
+     int         iHCDimX,
+     APLFLOAT    fQuadCT,
      APLINT      kmpNext[])
 {
     APLINT i, j;
@@ -1423,24 +1535,42 @@ void preKmpC
 //***************************************************************************
 
 void preKmpF
-    (LPAPLFLOAT  x,
-     APLSTYPE    aplTypeKmp,
+    (APLSTYPE    aplTypeCom,
+     LPVOID      x,
+     APLSTYPE    aplTypeLft,
      APLINT      m,
+     int         iHCDimX,
+     APLFLOAT    fQuadCT,
      APLINT      kmpNext[])
 {
-    APLINT i, j;
+    APLINT   i, j;
+    ALLTYPES atLft = {0},
+             atRht = {0};
 
     i = 0;
     j = kmpNext[0] = -1;
 
     while (i < m)
     {
-        while (j > -1 && x[i] NE x[j])
+        // Convert the left arg item to ALLTYPES
+        (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, i, &atLft);
+
+        while (j > -1 && !EqualHCxFvHCxF (&atLft, &atRht, iHCDimX, fQuadCT, __FUNCTION__))
+        {
             j = kmpNext[j];
+
+            // Convert the left arg item to ALLTYPES
+            (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, j, &atRht);
+        } // End WHILE
+
         i++;
         j++;
 
-        if ((i < m) && (x[i] EQ x[j]))
+        // Convert the left arg items i & j to ALLTYPES
+        (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, i, &atLft);
+        (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, j, &atRht);
+
+        if ((i < m) && EqualHCxFvHCxF (&atLft, &atRht, iHCDimX, fQuadCT, __FUNCTION__))
             kmpNext[i] = kmpNext[j];
         else
             kmpNext[i] = j;
@@ -1456,24 +1586,42 @@ void preKmpF
 //***************************************************************************
 
 void preKmpI
-    (LPAPLINT    x,
-     APLSTYPE    aplTypeKmp,
+    (APLSTYPE    aplTypeCom,
+     LPVOID      x,
+     APLSTYPE    aplTypeLft,
      APLINT      m,
+     int         iHCDimX,
+     APLFLOAT    fQuadCT,
      APLINT      kmpNext[])
 {
-    APLINT i, j;
+    APLINT   i, j;
+    ALLTYPES atLft = {0},
+             atRht = {0};
 
     i = 0;
     j = kmpNext[0] = -1;
 
     while (i < m)
     {
-        while (j > -1 && x[i] NE x[j])
+        // Convert the left arg item to ALLTYPES
+        (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, i, &atLft);
+
+        while (j > -1 && !EqualHCxIvHCxI (&atLft, &atRht, iHCDimX, fQuadCT, __FUNCTION__))
+        {
             j = kmpNext[j];
+
+            // Convert the left arg item to ALLTYPES
+            (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, j, &atRht);
+        } // End WHILE
+
         i++;
         j++;
 
-        if ((i < m) && (x[i] EQ x[j]))
+        // Convert the left arg item to ALLTYPES
+        (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, i, &atLft);
+        (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, j, &atRht);
+
+        if ((i < m) && EqualHCxIvHCxI (&atLft, &atRht, iHCDimX, fQuadCT, __FUNCTION__))
             kmpNext[i] = kmpNext[j];
         else
             kmpNext[i] = j;
@@ -1485,32 +1633,65 @@ void preKmpI
 //  $preKmpR
 //
 //  Preprocessing phase for Knuth-Morris-Pratt
-//    for APLRATs
+//    for APLRATs and HCxRs
 //***************************************************************************
 
 void preKmpR
-    (LPAPLRAT    x,
-     APLSTYPE    aplTypeKmp,
+    (APLSTYPE    aplTypeCom,
+     LPVOID      x,
+     APLSTYPE    aplTypeLft,
      APLINT      m,
+     int         iHCDimX,
+     APLFLOAT    fQuadCT,
      APLINT      kmpNext[])
 {
-    APLINT i, j;
+    APLINT   i, j, oldj;
+    ALLTYPES atLft = {0},
+             atRht = {0};
 
     i = 0;
     j = kmpNext[0] = -1;
 
     while (i < m)
     {
-        while (j > -1 && mpq_cmp (&x[i], &x[j]) NE 0)
+        oldj = j;
+
+        while (j > -1 && !EqualHCxRvHCxR (&atLft, &atRht, iHCDimX, fQuadCT, __FUNCTION__))
+        {
             j = kmpNext[j];
+
+            if (j NE -1)
+            {
+                // Free the old atRht
+                (*aTypeFree[aplTypeCom]) (&atRht, 0);
+
+                // Convert the left arg item to ALLTYPES
+                (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, j, &atRht);
+            } // End IF
+        } // End WHILE
+
+        if (oldj NE -1)
+        {
+            // Free the old atLft and atRht
+            (*aTypeFree[aplTypeCom]) (&atLft, 0);
+            (*aTypeFree[aplTypeCom]) (&atRht, 0);
+        } // End IF
+
         i++;
         j++;
 
-        if ((i < m) && mpq_cmp (&x[i], &x[j]) EQ 0)
+        if (i < m)
+        {
+            // Convert the left arg item to ALLTYPES
+            (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, i, &atLft);
+            (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, j, &atRht);
+        } // End IF
+
+        if ((i < m) && EqualHCxRvHCxR (&atLft, &atRht, iHCDimX, fQuadCT, __FUNCTION__))
             kmpNext[i] = kmpNext[j];
         else
             kmpNext[i] = j;
-   } // End WHILE
+    } // End WHILE
 } // End preKmpR
 
 
@@ -1518,32 +1699,65 @@ void preKmpR
 //  $preKmpV
 //
 //  Preprocessing phase for Knuth-Morris-Pratt
-//    for APLVFPs
+//    for APLVFPs and HCxVs
 //***************************************************************************
 
 void preKmpV
-    (LPAPLVFP    x,
-     APLSTYPE    aplTypeKmp,
+    (APLSTYPE    aplTypeCom,
+     LPVOID      x,
+     APLSTYPE    aplTypeLft,
      APLINT      m,
+     int         iHCDimX,
+     APLFLOAT    fQuadCT,
      APLINT      kmpNext[])
 {
-    APLINT i, j;
+    APLINT   i, j, oldj;
+    ALLTYPES atLft = {0},
+             atRht = {0};
 
     i = 0;
     j = kmpNext[0] = -1;
 
     while (i < m)
     {
-        while (j > -1 && mpfr_cmp (&x[i], &x[j]) NE 0)
+        oldj = j;
+
+        while (j > -1 && !EqualHCxVvHCxV (&atLft, &atRht, iHCDimX, fQuadCT, __FUNCTION__))
+        {
             j = kmpNext[j];
+
+            if (j NE -1)
+            {
+                // Free the old atRht
+                (*aTypeFree[aplTypeCom]) (&atRht, 0);
+
+                // Convert the left arg item to ALLTYPES
+                (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, j, &atRht);
+            } // End IF
+        } // End WHILE
+
+        if (oldj NE -1)
+        {
+            // Free the old atLft and atRht
+            (*aTypeFree[aplTypeCom]) (&atLft, 0);
+            (*aTypeFree[aplTypeCom]) (&atRht, 0);
+        } // End IF
+
         i++;
         j++;
 
-        if ((i < m) && mpfr_cmp (&x[i], &x[j]) EQ 0)
+        if (i < m)
+        {
+            // Convert the left arg item to ALLTYPES
+            (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, i, &atLft);
+            (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, j, &atRht);
+        } // End IF
+
+        if ((i < m) && EqualHCxVvHCxV (&atLft, &atRht, iHCDimX, fQuadCT, __FUNCTION__))
             kmpNext[i] = kmpNext[j];
         else
             kmpNext[i] = j;
-   } // End WHILE
+    } // End WHILE
 } // End preKmpV
 
 
@@ -1555,9 +1769,12 @@ void preKmpV
 //***************************************************************************
 
 void preKmpHN
-    (LPAPLNESTED x,
-     APLSTYPE    aplTypeKmp,
+    (APLSTYPE    aplTypeCom,
+     LPAPLNESTED x,
+     APLSTYPE    aplTypeLft,
      APLINT      m,
+     int         iHCDimX,
+     APLFLOAT    fQuadCT,
      APLINT      kmpNext[])
 {
     APLINT i, j;
@@ -1567,12 +1784,12 @@ void preKmpHN
 
     while (i < m)
     {
-        while (j > -1 && !CompareNested (x[i], aplTypeKmp, x[j], aplTypeKmp))
+        while (j > -1 && !CompareNested (x[i], aplTypeLft, x[j], aplTypeLft))
             j = kmpNext[j];
         i++;
         j++;
 
-        if ((i < m) && CompareNested (x[i], aplTypeKmp, x[j], aplTypeKmp))
+        if ((i < m) && CompareNested (x[i], aplTypeLft, x[j], aplTypeLft))
             kmpNext[i] = kmpNext[j];
         else
             kmpNext[i] = j;
@@ -1694,52 +1911,67 @@ UBOOL CompareSNvSN
 //***************************************************************************
 
 void preKmpO
-    (LPVOID     x,
-     APLSTYPE   aplTypeKmp,
-     APLINT     m,
-     APLINT     kmpNext[])
+    (APLSTYPE    aplTypeCom,
+     LPVOID      x,
+     APLSTYPE    aplTypeLft,
+     APLINT      m,
+     int         iHCDimX,
+     APLFLOAT    fQuadCT,
+     APLINT      kmpNext[])
 {
     // Split cases based upon the KMP array storage type
-    switch (aplTypeKmp)
+    switch (aplTypeLft)
     {
         case ARRAY_BOOL:
-            preKmpB (x, aplTypeKmp, m, kmpNext);
+            preKmpB  (aplTypeCom, x, aplTypeLft, m, iHCDimX, fQuadCT, kmpNext);
 
             break;
 
         case ARRAY_INT:
-            preKmpI (x, aplTypeKmp, m, kmpNext);
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
+            preKmpI  (aplTypeCom, x, aplTypeLft, m, iHCDimX, fQuadCT, kmpNext);
 
             break;
 
         case ARRAY_FLOAT:
-            preKmpF (x, aplTypeKmp, m, kmpNext);
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
+            preKmpF  (aplTypeCom, x, aplTypeLft, m, iHCDimX, fQuadCT, kmpNext);
 
             break;
 
         case ARRAY_APA:
-            preKmpA (x, aplTypeKmp, m, kmpNext);
+            preKmpA  (aplTypeCom, x, aplTypeLft, m, iHCDimX, fQuadCT, kmpNext);
 
             break;
 
         case ARRAY_CHAR:
-            preKmpC (x, aplTypeKmp, m, kmpNext);
+            preKmpC  (aplTypeCom, x, aplTypeLft, m, iHCDimX, fQuadCT, kmpNext);
 
             break;
 
         case ARRAY_HETERO:
         case ARRAY_NESTED:
-            preKmpHN (x, aplTypeKmp, m, kmpNext);
+            preKmpHN (aplTypeCom, x, aplTypeLft, m, iHCDimX, fQuadCT, kmpNext);
 
             break;
 
         case ARRAY_RAT:
-            preKmpR (x, aplTypeKmp, m, kmpNext);
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
+            preKmpR  (aplTypeCom, x, aplTypeLft, m, iHCDimX, fQuadCT, kmpNext);
 
             break;
 
         case ARRAY_VFP:
-            preKmpV (x, aplTypeKmp, m, kmpNext);
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
+            preKmpV  (aplTypeCom, x, aplTypeLft, m, iHCDimX, fQuadCT, kmpNext);
 
             break;
 
@@ -2173,55 +2405,55 @@ UBOOL PrimFnDydEpsilonUnderbarOvO
         //      RAT     RAT
         case 3 * 0 + 1 * 0:
         {
-            FINDMAC (preKmpO, aplTypeLft, GetNextRAT, aplTypeLft, GetNextRAT, aplTypeRht, CompareRAT    , RvR)
+            FINDMAC (preKmpO, aplTypeLft, aplTypeRht, RvR)
         } // End RAT vs. RAT
 
         //      RAT     VFP
         case 3 * 0 + 1 * 1:
         {
-            FINDMAC (preKmpO, aplTypeLft, GetNextRAT, aplTypeLft, GetNextVFP, aplTypeRht, CompareRATvVFP, RvV)
+            FINDMAC (preKmpO, aplTypeLft, aplTypeRht, RvV)
         } // End RAT vs. VFP
 
         //      RAT     Oth
         case 3 * 0 + 1 * 2:
         {
-            FINDMAC (preKmpO, aplTypeLft, GetNextRAT, aplTypeLft, GetNextSN , aplTypeRht, CompareRATvSN , RvO)
+            FINDMAC (preKmpO, aplTypeLft, aplTypeRht, RvO)
         } // End RAT vs. Oth
 
         //      VFP     RAT
         case 3 * 1 + 1 * 0:
         {
-            FINDMAC (preKmpO, aplTypeLft, GetNextVFP, aplTypeLft, GetNextRAT, aplTypeRht, CompareVFPvRAT, VvR)
+            FINDMAC (preKmpO, aplTypeLft, aplTypeRht, VvR)
         } // End VFP vs. RAT
 
         //      VFP     VFP
         case 3 * 1 + 1 * 1:
         {
-            FINDMAC (preKmpO, aplTypeLft, GetNextVFP, aplTypeLft, GetNextVFP, aplTypeRht, CompareVFP    , VvV)
+            FINDMAC (preKmpO, aplTypeLft, aplTypeRht, VvV)
         } // End VFP vs. VFP
 
         //      VFP     Oth
         case 3 * 1 + 1 * 2:
         {
-            FINDMAC (preKmpO, aplTypeLft, GetNextVFP, aplTypeLft, GetNextSN , aplTypeRht, CompareVFPvSN , VvO)
+            FINDMAC (preKmpO, aplTypeLft, aplTypeRht, VvO)
         } // End VFP vs. Oth
 
         //      Oth     RAT
         case 3 * 2 + 1 * 0:
         {
-            FINDMAC (preKmpO, aplTypeLft, GetNextSN , aplTypeLft, GetNextRAT, aplTypeRht, CompareSNvRAT , OvR)
+            FINDMAC (preKmpO, aplTypeLft, aplTypeRht, OvR)
         } // End Oth vs. RAT
 
         //      Oth     VFP
         case 3 * 2 + 1 * 1:
         {
-            FINDMAC (preKmpO, aplTypeLft, GetNextSN , aplTypeLft, GetNextVFP, aplTypeRht, CompareSNvVFP , OvV)
+            FINDMAC (preKmpO, aplTypeLft, aplTypeRht, OvV)
         } // End Oth vs. VFP
 
         //      Oth     Oth
         case 3 * 2 + 1 * 2:
         {
-            FINDMAC (preKmpO, aplTypeLft, GetNextSN , aplTypeLft, GetNextSN , aplTypeRht, CompareSNvSN  , OvO)
+            FINDMAC (preKmpO, aplTypeLft, aplTypeRht, OvO)
         } // End Oth vs. Oth
 
         defstop

@@ -33,57 +33,137 @@ PRIMSPEC PrimSpecTilde =
     &PrimSpecTildeStorageTypeMon,
     NULL,   // &PrimFnMonTildeAPA_EM, -- Can't happen w/Tilde
 
+    // Monadic Boolean result functions
     &PrimFnMonTildeBisB,
     &PrimFnMonTildeBisI,
     NULL,   // &PrimFnMonTildeBisF, -- Can't happen w/Tilde
 
-////               IisB,     // Handled via type promotion (to IisI)
+    // Monadic non-Boolean result functions (indexable)
     NULL,   // &PrimFnMonTildeIisI, -- Can't happen w/Tilde
     NULL,   // &PrimFnMonTildeIisF, -- Can't happen w/Tilde
-
-////               FisB,     // Handled via type promotion (to FisI)
     NULL,   // &PrimFnMonTildeFisI, -- Can't happen w/Tilde
     &PrimFnMonTildeFisF,
-
     &PrimFnMonTildeRisR,
-
-////               VisR,     // Handled via type promotion (to VisV)
+    &PrimFnMonTildeVisR,
     &PrimFnMonTildeVisV,
+
+    // Monadic Hypercomplex functions
+    NULL,   // &PrimFnMonTildeHC2IisHC2I, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeHC2IisHC2F, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeHC2FisHC2I, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeHC2FisHC2F, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeHC2RisHC2R, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeHC2VisHC2R, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeHC2VisHC2V, -- Can't happen w/Tilde
+
+    NULL,   // &PrimFnMonTildeHC4IisHC4I, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeHC4IisHC4F, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeHC4FisHC4I, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeHC4FisHC4F, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeHC4RisHC4R, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeHC4VisHC4R, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeHC4VisHC4V, -- Can't happen w/Tilde
+
+    NULL,   // &PrimFnMonTildeHC8IisHC8I, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeHC8IisHC8F, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeHC8FisHC8I, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeHC8FisHC8F, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeHC8RisHC8R, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeHC8VisHC8R, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeHC8VisHC8V, -- Can't happen w/Tilde
+
+    // Monadic FLT result HC arg functions (indexable)
+    NULL,   // &PrimFnMonTildeFisHC2I, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeFisHC2F, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeVisHC2R, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeVisHC2V, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeFisHC4I, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeFisHC4F, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeVisHC4R, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeVisHC4V, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeFisHC8I, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeFisHC8F, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeVisHC8R, -- Can't happen w/Tilde
+    NULL,   // &PrimFnMonTildeVisHC8V, -- Can't happen w/Tilde
 
     // Dyadic functions
     NULL,   // &PrimFnDyd_EM_YY, -- Dyadic Tilde not scalar
     NULL,   // &PrimSpecTildeStorageTypeDyd, -- Dyadic Tilde not scalar
     NULL,   // &PrimFnDydTildeAPA_EM, -- Dyadic Tilde not scalar
 
+    // Dyadic Boolean result functions
     NULL,   // &PrimFnDydTildeBisBvB, -- Dyadic Tilde not scalar
     NULL,   // &PrimFnDydTildeBisIvI, -- Dyadic Tilde not scalar
     NULL,   // &PrimFnDydTildeBisFvF, -- Dyadic Tilde not scalar
     NULL,   // &PrimFnDydTildeBisCvC, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeBisHvH, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeBisVvV, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeBisRvR, -- Dyadic Tilde not scalar
 
-////                 IisBvB,    // Handled via type promotion (to IisIvI)
-    NULL,   // &PrimFnDydTildeIisIvI,
+    NULL,   // &PrimFnDydTildeBisHC2IvHC2I, -- Can't happen w/Tilde
+    NULL,   // &PrimFnDydTildeBisHC2FvHC2F, -- Can't happen w/Tilde
+    NULL,   // &PrimFnDydTildeBisHC2RvHC2R, -- Can't happen w/Tilde
+    NULL,   // &PrimFnDydTildeBisHC2VvHC2V, -- Can't happen w/Tilde
+
+    NULL,   // &PrimFnDydTildeBisHC4IvHC4I, -- Can't happen w/Tilde
+    NULL,   // &PrimFnDydTildeBisHC4FvHC4F, -- Can't happen w/Tilde
+    NULL,   // &PrimFnDydTildeBisHC4RvHC4R, -- Can't happen w/Tilde
+    NULL,   // &PrimFnDydTildeBisHC4VvHC4V, -- Can't happen w/Tilde
+
+    NULL,   // &PrimFnDydTildeBisHC8IvHC8I, -- Can't happen w/Tilde
+    NULL,   // &PrimFnDydTildeBisHC8FvHC8F, -- Can't happen w/Tilde
+    NULL,   // &PrimFnDydTildeBisHC8RvHC8R, -- Can't happen w/Tilde
+    NULL,   // &PrimFnDydTildeBisHC8VvHC8V, -- Can't happen w/Tilde
+
+    // Dyadic non-Boolean result functions (indexable)
+    NULL,   // &PrimFnDydTildeIisIvI, -- Dyadic Tilde not scalar
     NULL,   // &PrimFnDydTildeIisFvF, -- Dyadic Tilde not scalar
-
-////                 FisBvB,    // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydTildeFisIvI, -- Dyadic Tilde not scalar
     NULL,   // &PrimFnDydTildeFisFvF, -- Dyadic Tilde not scalar
-
-    NULL,   // &PrimFnDydTildeBisRvR, -- Dyadic Tilde not scalar
     NULL,   // &PrimFnDydTildeRisRvR, -- Dyadic Tilde not scalar
-
-    NULL,   // &PrimFnDydTildeBisVvV, -- Dyadic Tilde not scalar
-////                 VisRvR     // Handled via type promotion (to VisVvV)
+    NULL,   // &PrimFnDydTildeVisRvR, -- Dyadic Tilde not scalar
     NULL,   // &PrimFnDydTildeVisVvV, -- Dyadic Tilde not scalar
 
+    NULL,   // &PrimFnDydTildeHC2IisHC2IvHC2I, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeHC2IisHC2FvHC2F, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeHC2FisHC2IvHC2I, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeHC2FisHC2FvHC2F, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeHC2RisHC2RvHC2R, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeHC2VisHC2RvHC2R, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeHC2VisHC2VvHC2V, -- Dyadic Tilde not scalar
+
+    NULL,   // &PrimFnDydTildeHC4IisHC4IvHC4I, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeHC4IisHC4FvHC4F, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeHC4FisHC4IvHC4I, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeHC4FisHC4FvHC4F, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeHC4RisHC4RvHC4R, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeHC4VisHC4RvHC4R, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeHC4VisHC4VvHC4V, -- Dyadic Tilde not scalar
+
+    NULL,   // &PrimFnDydTildeHC8IisHC8IvHC8I, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeHC8IisHC8FvHC8F, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeHC8FisHC8IvHC8I, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeHC8FisHC8FvHC8F, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeHC8RisHC8RvHC8R, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeHC8VisHC8RvHC8R, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeHC8VisHC8VvHC8V, -- Dyadic Tilde not scalar
+
+    // Monadic Boolean chunk functions
     &PrimFnMonTildeB64isB64,
     &PrimFnMonTildeB32isB32,
     &PrimFnMonTildeB16isB16,
     &PrimFnMonTildeB08isB08,
 
-    NULL,   // &PrimFnDydTildeB64isB64vB64, -- Can't happen w/Tilde
-    NULL,   // &PrimFnDydTildeB32isB32vB32, -- Can't happen w/Tilde
-    NULL,   // &PrimFnDydTildeB16isB16vB16, -- Can't happen w/Tilde
-    NULL,   // &PrimFnDydTildeB08isB08vB08, -- Can't happen w/Tilde
+    // Dyadic Boolean chunk functions
+    NULL,   // &PrimFnDydTildeB64isB64vB64, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeB32isB32vB32, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeB16isB16vB16, -- Dyadic Tilde not scalar
+    NULL,   // &PrimFnDydTildeB08isB08vB08, -- Dyadic Tilde not scalar
+
+    // Miscellaneous
+    0,      // []RL for atomicity
+    FALSE,  // 00000001:  Allow dimension demotion for monadic scalar function
+    FALSE,  // 00000002:  ...                          dyadic  ...
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecTilde};
@@ -264,6 +344,10 @@ APLSTYPE PrimSpecTildeStorageTypeMon
     //   and SimpleNum goes to BOOL
     aplTypeRes = *lpaplTypeRht;
 
+    // Is the result HC?
+    if (IsHCAny (aplTypeRes))
+        return ARRAY_ERROR;
+
     // Split cases based upon the storage type
     switch (aplTypeRes)
     {
@@ -310,34 +394,107 @@ APLBOOL PrimFnMonTildeBisB
 
 
 //***************************************************************************
+//  $PrimFnMonTildeBisI
+//
+//  Primitive scalar function monadic Tilde:  B {is} fn I
+//***************************************************************************
+
+APLBOOL PrimFnMonTildeBisI
+    (APLINT     aplIntegerRht,
+     LPPRIMSPEC lpPrimSpec)
+
+{
+    if (!IsBooleanValue (aplIntegerRht))
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    return !(APLBOOL) aplIntegerRht;
+} // End PrimFnMonTildeBisI
+
+
+//***************************************************************************
+//  $PrimFnMonTildeFisF
+//
+//  Primitive scalar function monadic Tilde:  F {is} fn F
+//***************************************************************************
+
+void PrimFnMonTildeFisF
+    (LPAPLFLOAT lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    APLINT aplIntegerRht;
+    UBOOL  bRet;
+
+    // If the float is between 0 and 1, ...
+    if (0.0 <= lpatRht->aplFloat
+     &&        lpatRht->aplFloat <= 1.0)
+        // Return the complement in 1.0
+        lpMemRes[uRes] = 1.0 - lpatRht->aplFloat;
+    else
+    {
+        // Attempt to convert the float to an integer using System []CT
+        aplIntegerRht = FloatToAplint_SCT (lpatRht->aplFloat, &bRet);
+        if (!bRet
+         || !IsBooleanValue (aplIntegerRht))
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+        else
+            lpMemRes[uRes] = (APLFLOAT) (1 - aplIntegerRht);
+    } // End IF/ELSE
+} // End PrimFnMonTildeFisF
+
+
+//***************************************************************************
 //  $PrimFnMonTildeRisR
 //
 //  Primitive scalar function monadic Tilde:  R {is} fn R
 //***************************************************************************
 
-APLRAT PrimFnMonTildeRisR
-    (APLRAT     aplRatRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnMonTildeRisR
+    (LPAPLRAT   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLRAT mpqRes = {0};
-
-    if (IsMpq0 (&aplRatRht))
-        mpq_init_set_ui (&mpqRes, 1, 1);
+    if (IsMpq0 (&lpatRht->aplRat))
+        mpq_init_set_ui (&lpMemRes[uRes], 1, 1);
     else
-    if (IsMpq1 (&aplRatRht))
-        mpq_init_set_ui (&mpqRes, 0, 1);
+    if (IsMpq1 (&lpatRht->aplRat))
+        mpq_init_set_ui (&lpMemRes[uRes], 0, 1);
     else
-    if (mpq_cmp_ui (&aplRatRht, 0, 1) > 0
-     && mpq_cmp_ui (&aplRatRht, 1, 1) < 0)
+    if (mpq_cmp_ui (&lpatRht->aplRat, 0, 1) > 0
+     && mpq_cmp_ui (&lpatRht->aplRat, 1, 1) < 0)
     {
-        mpq_init_set_ui (&mpqRes, 1, 1);
-        mpq_sub         (&mpqRes, &mpqRes, &aplRatRht);
+        mpq_init_set_ui (&lpMemRes[uRes], 1, 1);
+        mpq_sub         (&lpMemRes[uRes], &lpMemRes[uRes], &lpatRht->aplRat);
     } else
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-
-    return mpqRes;
 } // End PrimFnMonTildeRisR
+
+
+//***************************************************************************
+//  $PrimFnMonTildeVisR
+//
+//  Primitive scalar function monadic Tilde:  V {is} fn R
+//***************************************************************************
+
+void PrimFnMonTildeVisR
+    (LPAPLVFP   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atRht = {0};
+
+    // Promote the right arg to the result type
+    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatRht->aplRat, 0, &atRht);
+
+    PrimFnMonTildeVisV (lpMemRes, uRes, &atRht, lpPrimSpec);
+
+    Myhc1v_clear (&atRht.aplHC1V);
+} // End PrimFnMonTildeVisR
 
 
 //***************************************************************************
@@ -346,32 +503,31 @@ APLRAT PrimFnMonTildeRisR
 //  Primitive scalar function monadic Tilde:  V {is} fn V
 //***************************************************************************
 
-APLVFP PrimFnMonTildeVisV
-    (APLVFP     aplVfpRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnMonTildeVisV
+    (LPAPLVFP   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLVFP mpfRes = {0};
     UBOOL  bRet;
     APLINT aplIntegerRht;
 
-    if (mpfr_cmp_ui (&aplVfpRht, 0) >= 0
-     && mpfr_cmp_ui (&aplVfpRht, 1) <= 0)
+    if (mpfr_cmp_ui (&lpatRht->aplVfp, 0) >= 0
+     && mpfr_cmp_ui (&lpatRht->aplVfp, 1) <= 0)
     {
-        mpfr_init_set_ui (&mpfRes, 1, MPFR_RNDN);
-        mpfr_sub         (&mpfRes, &mpfRes, &aplVfpRht, MPFR_RNDN);
+        mpfr_init_set_ui (&lpMemRes[uRes], 1, MPFR_RNDN);
+        mpfr_sub         (&lpMemRes[uRes], &lpMemRes[uRes], &lpatRht->aplVfp, MPFR_RNDN);
     } else
     {
         // Attempt to convert the float to an integer using System []CT
-        aplIntegerRht = mpfr_get_sctsx (&aplVfpRht, &bRet);
+        aplIntegerRht = mpfr_get_sctsx (&lpatRht->aplVfp, &bRet);
         if (!bRet
          || !IsBooleanValue (aplIntegerRht))
             RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
         else
-            mpfr_init_set_ui (&mpfRes, 1 - (UINT) aplIntegerRht, MPFR_RNDN);
-    } // End IF/ELSE/...
-
-    return mpfRes;
+            mpfr_init_set_ui (&lpMemRes[uRes], 1 - (UINT) aplIntegerRht, MPFR_RNDN);
+    } // End IF/ELSE
 } // End PrimFnMonTildeVisV
 
 
@@ -433,53 +589,6 @@ APLB08 PrimFnMonTildeB08isB08
 {
     return ~aplBooleanRht;
 } // End PrimFnMonTildeB08isB08
-
-
-//***************************************************************************
-//  $PrimFnMonTildeBisI
-//
-//  Primitive scalar function monadic Tilde:  B {is} fn I
-//***************************************************************************
-
-APLBOOL PrimFnMonTildeBisI
-    (APLINT     aplIntegerRht,
-     LPPRIMSPEC lpPrimSpec)
-
-{
-    if (!IsBooleanValue (aplIntegerRht))
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    return !(APLBOOL) aplIntegerRht;
-} // End PrimFnMonTildeBisI
-
-
-//***************************************************************************
-//  $PrimFnMonTildeFisF
-//
-//  Primitive scalar function monadic Tilde:  F {is} fn F
-//***************************************************************************
-
-APLFLOAT PrimFnMonTildeFisF
-    (APLFLOAT   aplFloatRht,
-     LPPRIMSPEC lpPrimSpec)
-
-{
-    APLINT aplIntegerRht;
-    UBOOL  bRet;
-
-    // If the float is between 0 and 1, ...
-    if (0.0 <= aplFloatRht
-     &&        aplFloatRht <= 1.0)
-        // Return the complement in 1.0
-        return 1.0 - aplFloatRht;
-
-    // Attempt to convert the float to an integer using System []CT
-    aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
-    if (!bRet
-     || !IsBooleanValue (aplIntegerRht))
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-////else        // To keep the compiler happy as we must return a result
-        return (APLFLOAT) (1 - aplIntegerRht);
-} // End PrimFnMonTildeFisF
 
 
 //***************************************************************************

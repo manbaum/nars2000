@@ -158,8 +158,8 @@ void AppendLine
     // To aid in debugging, output the text immediately
     UpdateWindow (hWndEC);
 #endif
-    PERFMON
-    PERFMONSHOW
+////PERFMON
+////PERFMONSHOW (NULL)
 } // End AppendLine
 
 
@@ -470,8 +470,8 @@ void DisplayPrompt
     // Display the indent
     AppendLine (wszIndent, FALSE, FALSE);
 
-    PERFMON
-////PERFMONSHOW
+////PERFMON
+////PERFMONSHOW (NULL)
 } // End DisplayPrompt
 
 
@@ -688,7 +688,7 @@ LRESULT APIENTRY SMWndProc
 #define lpMDIcs     ((LPMDICREATESTRUCTW) ((*(LPCREATESTRUCTW *) &lParam)->lpCreateParams))
         case WM_NCCREATE:               // 0 = (int) wParam
                                         // lpcs = (LPCREATESTRUCTW) lParam
-            PERFMON
+////        PERFMON
 #ifndef UNISCRIBE
             // Initialize the OLE libraries
             CoInitialize (NULL);
@@ -715,7 +715,7 @@ LRESULT APIENTRY SMWndProc
             if (lpLclMemVirtStr EQ NULL)
             {
                 // ***FIXME*** -- Display error msg
-                DbgMsgW (L"SMWndProc/WM_NCCREATE:  MyVirtualAlloc for <lpLclMemVirtStr> failed");
+                MBW (L"SMWndProc/WM_NCCREATE:  MyVirtualAlloc for <lpLclMemVirtStr> failed");
 
                 goto WM_NCCREATE_FAIL;
             } // End IF
@@ -734,7 +734,7 @@ LRESULT APIENTRY SMWndProc
             if (!lpLclMemVirtStr[PTDMEMVIRT_LFTSTK].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpplLftStk> failed");
+                MBW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpplLftStk> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -762,7 +762,7 @@ LRESULT APIENTRY SMWndProc
             if (!lpLclMemVirtStr[PTDMEMVIRT_RHTSTK].IniAddr)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpplRhtStk> failed");
+                MBW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpplRhtStk> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -779,7 +779,7 @@ LRESULT APIENTRY SMWndProc
             // Save in window extra bytes
             SetWindowLongPtrW (hWnd, GWLSF_LPMVS, (APLU3264) (LONG_PTR) lpLclMemVirtStr);
 
-            PERFMON
+////        PERFMON
 
             break;                  // Continue with next handler
 WM_NCCREATE_FAIL:
@@ -796,7 +796,7 @@ WM_NCCREATE_FAIL:
             LRESULT lResult = -1;       // The result (assume we failed)
             UBOOL   bRet;               // TRUE iff the result is valid
 
-            PERFMON
+////        PERFMON
 
             // Initialize # threads
             SetPropW (hWnd, PROP_NTHREADS, 0);
@@ -828,7 +828,7 @@ WM_NCCREATE_FAIL:
             if (lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpwszQuadErrorMsg> failed");
+                MBW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpwszQuadErrorMsg> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -862,7 +862,7 @@ WM_NCCREATE_FAIL:
             if (lpLclMemVirtStr[PTDMEMVIRT_UNDOBEG].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpUndoBeg> failed");
+                MBW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpUndoBeg> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -908,7 +908,7 @@ WM_NCCREATE_FAIL:
             if (lpLclMemVirtStr[PTDMEMVIRT_HTSPTD].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lphtsPTD> failed");
+                MBW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lphtsPTD> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -929,7 +929,7 @@ WM_NCCREATE_FAIL:
             if (!bRet)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"SMWndProc/WM_CREATE:  AllocHshTab for <lpMemPTD->lpHshTab> failed");
+                MBW (L"SMWndProc/WM_CREATE:  AllocHshTab for <lpMemPTD->lpHshTab> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -948,7 +948,7 @@ WM_NCCREATE_FAIL:
             if (!bRet)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"SMWndProc/WM_CREATE:  AllocSymTab for <lpMemPTD->lpSymTab> failed");
+                MBW (L"SMWndProc/WM_CREATE:  AllocSymTab for <lpMemPTD->lpSymTab> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -968,7 +968,7 @@ WM_NCCREATE_FAIL:
             if (lpLclMemVirtStr[PTDMEMVIRT_SIS].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpSISBeg> failed");
+                MBW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpSISBeg> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -997,7 +997,7 @@ WM_NCCREATE_FAIL:
             if (lpLclMemVirtStr[PTDMEMVIRT_CS].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lptkCSIni> failed");
+                MBW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lptkCSIni> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -1026,7 +1026,7 @@ WM_NCCREATE_FAIL:
             if (lpLclMemVirtStr[PTDMEMVIRT_YYRES].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpYYRes> failed");
+                MBW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpYYRes> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -1059,7 +1059,7 @@ WM_NCCREATE_FAIL:
             if (lpLclMemVirtStr[PTDMEMVIRT_STRAND_VAR].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpStrand[STRAND_VAR]> failed");
+                MBW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpStrand[STRAND_VAR]> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1087,7 +1087,7 @@ WM_NCCREATE_FAIL:
             if (lpLclMemVirtStr[PTDMEMVIRT_STRAND_FCN].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpStrand[STRAND_FCN]> failed");
+                MBW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpStrand[STRAND_FCN]> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1116,7 +1116,7 @@ WM_NCCREATE_FAIL:
             if (lpLclMemVirtStr[PTDMEMVIRT_STRAND_LST].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpStrand[STRAND_LST]> failed");
+                MBW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpStrand[STRAND_LST]> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1145,7 +1145,7 @@ WM_NCCREATE_FAIL:
             if (lpLclMemVirtStr[PTDMEMVIRT_STRAND_NAM].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpStrand[STRAND_NAM]> failed");
+                MBW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpMemPTD->lpStrand[STRAND_NAM]> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1174,7 +1174,7 @@ WM_NCCREATE_FAIL:
             if (lpLclMemVirtStr[PTDMEMVIRT_WSZFORMAT].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpwszFormat> failed");
+                MBW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpwszFormat> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1207,7 +1207,7 @@ WM_NCCREATE_FAIL:
             if (lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpwszTemp> failed");
+                MBW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpwszTemp> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1236,7 +1236,7 @@ WM_NCCREATE_FAIL:
             if (lpLclMemVirtStr[PTDMEMVIRT_FORSTMT].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                DbgMsgW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpForStmtBase> failed");
+                MBW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpForStmtBase> failed");
 
                 return FALSE;           // Mark as failed
             } // End IF
@@ -1255,7 +1255,7 @@ WM_NCCREATE_FAIL:
             // Initialize all system names (functions and variables) as reserved
             if (!InitSystemNames_EM ())
             {
-                DbgMsgW (L"WM_CREATE:  InitSystemNames_EM failed");
+                MBW (L"WM_CREATE:  InitSystemNames_EM failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -1316,7 +1316,7 @@ WM_NCCREATE_FAIL:
             // Initialize all magic functions/operators
             if (!InitMagicFunctions (lpMemPTD, hWndEC, lpLclMemVirtStr, PTDMEMVIRT_MFO1, PTDMEMVIRT_LENGTH))
             {
-                DbgMsgW (L"WM_CREATE:  InitMagicFunctions failed");
+                MBW (L"WM_CREATE:  InitMagicFunctions failed");
 
                 goto WM_CREATE_FAIL_UNHOOK;
             } // End IF
@@ -1380,8 +1380,8 @@ NORMAL_EXIT:
             // Free the workspace global
             DbgGlobalFree ((*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE); (*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE = NULL;
 
-            PERFMON
-////////////PERFMONSHOW
+////        PERFMON
+////////////PERFMONSHOW (NULL)
 
             return lResult;         // Mark as failed
         } // End WM_CREATE
@@ -1461,8 +1461,8 @@ NORMAL_EXIT:
                 case 2:
                     RemovePropW (hWnd, L"INIT_EC");
 
-                    PERFMON
-////////////////////PERFMONSHOW
+////                PERFMON
+////////////////////PERFMONSHOW (NULL)
 
                     break;
 

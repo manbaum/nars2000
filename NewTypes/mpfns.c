@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -363,7 +363,7 @@ mpir_ui mpfr_invalid
                             //            <PrimFnMonRootVisVvV>
             Myf_clear (op1);
 
-            RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+            NONCE_RE        // sqrt (-Inf)
 
             break;
 
@@ -1039,6 +1039,28 @@ void mpq_mod
 
 
 //***************************************************************************
+//  $mpq_mod_sx
+//
+//  Calculate aplLft % aplRht
+//***************************************************************************
+
+void mpq_mod_sx
+    (mpq_ptr dest,
+     mpq_ptr aplLft,
+     APLINT  aplRht)
+
+{
+    APLRAT aplDiv = {0};
+
+    mpq_init_set_sx (&aplDiv, aplRht, 1);
+    mpq_mod         ( dest,   aplLft, &aplDiv);
+
+    // We no longer need this storage
+    Myq_clear (&aplDiv);
+} // End mpq_mod_sx
+
+
+//***************************************************************************
 //  $mpq_cmp_ct
 //
 //  Compare two RATs relative to a given comparison tolerance
@@ -1226,7 +1248,7 @@ void mpfr_copy
      mpfr_ptr val)
 
 {
-    mpfr_set_prec (dest, mpfr_get_prec (val));
+////mpfr_set_prec (dest, mpfr_get_prec (val));
     mpfr_set      (dest, val, MPFR_RNDN);
 } // End mpfr_copy
 
@@ -1242,7 +1264,8 @@ void mpfr_init_copy
      mpfr_ptr val)
 
 {
-    mpfr_init2 (dest, mpfr_get_prec (val));
+////mpfr_init2 (dest, mpfr_get_prec (val));
+    mpfr_init0 (dest);
     mpfr_set   (dest, val, MPFR_RNDN);
 } // End mpfr_init_copy
 
@@ -1598,6 +1621,28 @@ void mpfr_mod
 
 
 //***************************************************************************
+//  $mpfr_mod_sx
+//
+//  Calculate aplLft % aplRht
+//***************************************************************************
+
+void mpfr_mod_sx
+    (mpfr_ptr dest,
+     mpfr_ptr aplLft,
+     APLINT   aplRht)
+
+{
+    APLVFP aplDiv = {0};
+
+    mpfr_init_set_sx (&aplDiv, aplRht, 1);
+    mpfr_mod         ( dest,   aplLft, &aplDiv);
+
+    // We no longer need this storage
+    Myf_clear (&aplDiv);
+} // End mpfr_mod_sx
+
+
+//***************************************************************************
 //  $mpfr_mod_sub
 //
 //  Calculate aplLft % aplRht
@@ -1689,7 +1734,7 @@ int _mpfr_cmp_ct
     {
         APLVFP mpfLftAbs = {0},     // Absolute value of left arg
                mpfRhtAbs = {0};     // ...               right ...
-        UINT   sgnLft,              // Left arg sign
+        int    sgnLft,              // Left arg sign
                sgnRht;              // Right ...
 
         // Use an algorithm similar to the one in _CompareCT
@@ -1738,13 +1783,13 @@ int _mpfr_cmp_ct
             mpfr_mul (&mpfHoodLo, &mpfRhtAbs, &mpfCT    , MPFR_RNDN);
             mpfr_sub (&mpfHoodLo, &mpfRhtAbs, &mpfHoodLo, MPFR_RNDN);
 #if defined (DEBUG) && defined (CT_DEBUG)
-            strcpyW (wszTemp, L"Lo1: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfHoodLo, 0) = WC_EOS; DbgMsgW (wszTemp);
-            strcpyW (wszTemp, L"L1 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfLftAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
-            strcpyW (wszTemp, L"R1 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfRhtAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"Lo1: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &mpfHoodLo, 0) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"L1 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &mpfLftAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"R1 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &mpfRhtAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
             // If (|Rht) is greater than (|Lft),
             // and (|Lft) is in the
-            //    left-neighborhood of (|Rht) with CT, return 1
+            //    left-neighborhood of (|Rht) with CT, return 0 (equal)
 ////////////if (aplHoodLo <= aplLftAbs
 //////////// &&              aplLftAbs < aplRhtAbs)
 ////////////    return TRUE;
@@ -1758,13 +1803,13 @@ int _mpfr_cmp_ct
                 mpfr_mul (&mpfHoodLo, &mpfLftAbs, &mpfCT    , MPFR_RNDN);
                 mpfr_sub (&mpfHoodLo, &mpfLftAbs, &mpfHoodLo, MPFR_RNDN);
 #if defined (DEBUG) && defined (CT_DEBUG)
-            strcpyW (wszTemp, L"Lo2: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfHoodLo, 0) = WC_EOS; DbgMsgW (wszTemp);
-            strcpyW (wszTemp, L"R2 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfRhtAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
-            strcpyW (wszTemp, L"L2 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfLftAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"Lo2: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &mpfHoodLo, 0) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"R2 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &mpfRhtAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"L2 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &mpfLftAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
                 // If (|Lft) is greater than (|Rht),
                 // and (|Rht) is in the
-                //    left-neighborhood of (|Lft) with CT, return 1
+                //    left-neighborhood of (|Lft) with CT, return 0 (equal)
 ////////////////if (aplHoodLo <= aplRhtAbs
 //////////////// &&              aplRhtAbs < aplLftAbs)
 ////////////////    return TRUE;

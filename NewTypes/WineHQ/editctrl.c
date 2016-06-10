@@ -2713,8 +2713,8 @@ static void EDIT_EM_ReplaceSel(EDITSTATE *es, BOOL can_undo, LPCWSTR lpsz_replac
         memcpy(buf, es->text + s, bufl * sizeof(WCHAR));
         buf[bufl] = 0; /* ensure 0 termination */
         /* now delete */
-        strcpyW(es->text + s, es->text + e);
-                text_buffer_changed(es);
+        strcpyW (es->text + s, es->text + e);
+                 text_buffer_changed(es);
     }
     if (strl) {
         /* there is an insertion */
@@ -2741,7 +2741,7 @@ static void EDIT_EM_ReplaceSel(EDITSTATE *es, BOOL can_undo, LPCWSTR lpsz_replac
         /* if text is too long undo all changes */
         if (honor_limit && !(es->style & ES_AUTOVSCROLL) && (es->line_count > vlc)) {
             if (strl)
-                strcpyW(es->text + e, es->text + e + strl);
+                strcpyW (es->text + e, es->text + e + strl);
             if (e != s)
                 for (i = 0 , p = es->text ; i < e - s ; i++)
                     p[i + s] = buf[i];
@@ -2760,7 +2760,7 @@ static void EDIT_EM_ReplaceSel(EDITSTATE *es, BOOL can_undo, LPCWSTR lpsz_replac
         /* remove chars that don't fit */
         if (honor_limit && !(es->style & ES_AUTOHSCROLL) && (es->text_width > fw)) {
             while ((es->text_width > fw) && s + strl >= s) {
-                strcpyW(es->text + s + strl - 1, es->text + s + strl);
+                strcpyW (es->text + s + strl - 1, es->text + s + strl);
                 strl--;
                 EDIT_CalcLineWidth_SL(es);
             }
@@ -3259,7 +3259,7 @@ static BOOL EDIT_EM_Undo(EDITSTATE *es)
 
     utext = HeapAlloc(GetProcessHeap(), 0, (ulength + 1) * sizeof(WCHAR));
 
-    strcpyW(utext, es->undo_text);
+    strcpyW (utext, es->undo_text);
 
     TRACE("before UNDO:insertion length = %d, deletion buffer = %s\n",
              es->undo_insert_count, debugstr_w(utext));
@@ -3316,7 +3316,10 @@ static BOOL EDIT_IsInsideDialog(EDITSTATE *es)
 static void EDIT_WM_Paste(EDITSTATE *es)
 {
     HGLOBAL hsrc;
-    LPWSTR src;
+    LPWSTR  src;
+    INT     s, e;
+    UINT    uCurLine;               // Current line in EditCtrl buffer
+    UBOOL   bPaste = FALSE;
 
     /* Protect read-only edit control from modification */
     if(es->style & ES_READONLY)
@@ -3324,13 +3327,22 @@ static void EDIT_WM_Paste(EDITSTATE *es)
 
     OpenClipboard(es->hwndSelf);
 
+    // Get the selection start/end
+    s = es->selection_start;
+    e = es->selection_end;
+
+    // Put them in order such that s <= e
+    ORDER_UINT(s, e);
+
     // First try our private format
     if ((hsrc = GetClipboardData(CF_PRIVATEFIRST))) {
+////    hsrc = SplitLines (hsrc, CF_PRIVATEFIRST, &bPaste);
         src = (LPWSTR)GlobalLock(hsrc);
         EDIT_EM_ReplaceSel(es, TRUE, src, TRUE, TRUE);
         GlobalUnlock(hsrc);
     } else
     if ((hsrc = GetClipboardData(CF_UNICODETEXT))) {
+////    hsrc = SplitLines (hsrc, CF_UNICODETEXT, &bPaste);
         src = GlobalLock(hsrc);
         EDIT_EM_ReplaceSel(es, TRUE, src, TRUE, TRUE);
         GlobalUnlock(hsrc);
@@ -3340,6 +3352,33 @@ static void EDIT_WM_Paste(EDITSTATE *es)
             const WCHAR empty_strW[] = { 0 };
             EDIT_EM_ReplaceSel(es, TRUE, empty_strW, TRUE, TRUE);
         }
+    // If we need to finish off after SplitLines, ...
+    if (bPaste)
+    {
+        KEYDATA keyData = {0};
+
+        // Fill in the key data
+////////keyData.repeatCount     = 0;        // Already zero from = {0}
+        keyData.scanCode        = 0x1C;     // Scan code for CR (a.k.a. VK_RETURN)
+////////keyData.extendedKey     = FALSE;    // Already zero from = {0}
+////////keyData.reserved        = 0;        // Already zero from = {0}
+////////keyData.contextCode     = FALSE;    // Already zero from = {0}
+////////keyData.previous State  = FALSE;    // Already zero from = {0}
+////////keyData.transitionState = FALSE;    // Already zero from = {0}
+
+        // Get the # of the current line
+        uCurLine = (UINT) SendMessageW (es->hwndSelf, EM_LINEFROMCHAR, (WPARAM) e, 0);
+
+        // Tell the session manager to process the first section
+        PostMessageW (es->hwndSelf, WM_KEYDOWN, VK_RETURN, *(LPARAM *) &keyData);
+
+        // Tell the session manager to process the first section
+        PostMessageW (es->hwndSelf, WM_CHAR   , WC_CR    , *(LPARAM *) &keyData);
+
+////    // Pass on the next section as the contents of the next WM_PASTE
+////    PostMessageW (es->hwndSelf, WM_PASTE, FALSE, 0);
+    } // End IF
+
     CloseClipboard();
 } // End EDIT_WM_Paste
 
@@ -3652,8 +3691,8 @@ static INT EDIT_WM_GetText(const EDITSTATE *es, INT count, LPWSTR dst, BOOL unic
 
     if(unicode)
     {
-    strcpynW (dst, es->text, count);
-    return lstrlenW(dst);
+        strcpynW (dst, es->text, count);
+        return lstrlenW(dst);
     }
     else
     {

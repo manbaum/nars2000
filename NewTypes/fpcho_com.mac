@@ -1,0 +1,146 @@
+//***************************************************************************
+//  NARS2000 -- Multiple Precision CHO Common Macros
+//***************************************************************************
+
+/***************************************************************************
+    NARS2000 -- An Experimental APL Interpreter
+    Copyright (C) 2006-2016 Sudley Place Software
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+***************************************************************************/
+
+
+//***************************************************************************
+//  $fpXf_mag_imag
+//***************************************************************************
+
+#define fpXf_mag_imag(rop,op)                                   \
+                                                                \
+{                                                               \
+    int i;                      /* Loop counter */              \
+                                                                \
+    /* Initialize to additive identity */                       \
+    rop = 0;                                                    \
+                                                                \
+    /* Loop through the imaginary parts */                      \
+    for (i = 1; i < iHCDim; i++)                                \
+        /* Calculate the coefficient square */                  \
+        rop += op->parts[i] * op->parts[i];                     \
+                                                                \
+    /* Calculate:  sqrt (squares) */                            \
+    rop = sqrt (rop);                                           \
+} /* End fpXf_mag_imag */
+
+
+//***************************************************************************
+//  fpXf_mag_imag8
+//
+//  Calculate the magnitude of the imag parts
+//  This routine was copied mostly from GSL in .\sys\HYPOT.C
+//***************************************************************************
+
+#define fpXf_mag_imag8(rop,op,opAbs)                                \
+{                                                                   \
+    int      i;                     /* Loop counter               */\
+    APLFLOAT w, x;                                                  \
+                                                                    \
+    /* Loop through all of the imag parts                         */\
+    for (i = 1; i < iHCDim; i++)                                    \
+        /* Calculate the absolute value                           */\
+        opAbs->parts[i] = fabs (op->parts[i]);                      \
+                                                                    \
+    /* Find the maximum abs                                       */\
+    w = max (opAbs->parts[0], opAbs->parts[1]);                     \
+    x = max (opAbs->parts[2], opAbs->parts[3]);                     \
+    w = max (w, x);                                                 \
+                                                                    \
+    if (w EQ 0.0)                                                   \
+        rop = 0.0;                                                  \
+    else                                                            \
+    {                                                               \
+        /* Loop through all of the imag parts                     */\
+        for (x = 0.0, i = 1; i < iHCDim; i++)                       \
+        {                                                           \
+            /* Calcualte the quotient                             */\
+            opAbs->parts[i] /= w;                                   \
+                                                                    \
+            /* Calculate the sum of the squares                   */\
+            x += opAbs->parts[i] * opAbs->parts[i];                 \
+        } /* End FOR                                              */\
+    } /* End IF/ELSE                                              */\
+                                                                    \
+     rop = w * sqrt (x);                                            \
+} /* End fpXf_mag_imag8                                           */
+
+
+#ifdef USE_HYPOT
+//  This routine was copied directly from GSL in .\sys\HYPOT.C
+#define fpXf_hypot(xSign,x,ySign,y,N,suf)                                   \
+                                                                            \
+    APLFLOAT xabs = MagHC##N##F (x),                                        \
+             yabs = MagHC##N##F (y);                                        \
+    APLHC##N##F  res, min, max, u, v;                                       \
+                                                                            \
+    Assert (abs (xSign) EQ 1);                                              \
+    Assert (abs (ySign) EQ 1);                                              \
+                                                                            \
+    if (xabs < yabs)                                                        \
+    {                                                                       \
+        int tSign;                                                          \
+                                                                            \
+        if (xabs EQ 0)                                                      \
+            return y;                                                       \
+                                                                            \
+        min = x;                                                            \
+        max = y;                                                            \
+                                                                            \
+        tSign = xSign;                                                      \
+        xSign = ySign;                                                      \
+        ySign = tSign;                                                      \
+    } else                                                                  \
+    {                                                                       \
+        if (yabs EQ 0)                                                      \
+            return x;                                                       \
+                                                                            \
+        min = y;                                                            \
+        max = x;                                                            \
+    } /* End IF/ELSE                                                      */\
+                                                                            \
+    /* Calculate the quotient                                             */\
+    u = DivHC##N##F_RE (min , max);                                         \
+                                                                            \
+    /* Calculate the square                                               */\
+    u = MulHC##N##F_RE (u, u);                                              \
+                                                                            \
+    /* Include the sign for y                                             */\
+    if (ySign EQ -1)                                                        \
+        u = NegHC##N##F_RE (u);                                             \
+                                                                            \
+    /* Get the constant 1                                                 */\
+    v = confpof_1##suf;                                                     \
+                                                                            \
+    /* Include the sign for x                                             */\
+    if (xSign EQ -1)                                                        \
+        v = NegHC##N##F_RE (v);                                             \
+                                                                            \
+    /* Plus or minus one                                                  */\
+    u = AddHC##N##F_RE (u, v);                                              \
+                                                                            \
+    res = MulHC##N##F_RE (max,  SqrtHCxF_RE (*(LPAPLHC8F) &u, ##N##)suf);
+#endif
+
+
+//***************************************************************************
+//  End of File: fpcho_com.mac
+//***************************************************************************

@@ -22,6 +22,7 @@
 
 #define STRICT
 #include <windows.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include "headers.h"
 
@@ -115,6 +116,12 @@ void InitConstants
     aplInteger = FLOATGAMMA;   FloatGamma     = *(LPAPLFLOAT) &aplInteger;
     aplInteger = FLOATE;       FloatE         = *(LPAPLFLOAT) &aplInteger;
 
+    // Create various Hypercomplex constants
+
+    // Construct Pi & Gamma as HC8F
+    aplPiHC8F   .parts[0] = FloatPi;
+    aplGammaHC8F.parts[0] = FloatGamma;
+
     // Get # ticks per second to be used as a conversion
     //   factor for QueryPerformanceCounter into seconds
     QueryPerformanceFrequency (&liTicksPerSec);
@@ -147,6 +154,7 @@ void InitGlbNumConstants
     mpq_init_set_str  (&mpqMinInt  , "-9223372036854775808", 10);
     mpq_init_set_str  (&mpqMaxInt  ,  "9223372036854775807", 10);
     mpq_init_set_str  (&mpqMaxUInt , "18446744073709551615", 10);
+    mpq_init_set_ui   (&mpqOne     , 1, 1);
     mpq_init_set_ui   (&mpqHalf    , 1, 2);
     mpq_init          (&mpqZero);
     mpfr_init_set_str (&mpfMinInt  , "-9223372036854775808", 10, MPFR_RNDN);
@@ -154,8 +162,36 @@ void InitGlbNumConstants
     mpfr_init_set_str (&mpfMaxUInt , "18446744073709551615", 10, MPFR_RNDN);
     mpfr_set_inf      (&mpfPosInfinity                     ,  1);
     mpfr_set_inf      (&mpfNegInfinity                     , -1);
-    mpfr_init_set_d   (&mpfHalf    , 0.5                       , MPFR_RNDN);
+    mpfr_init_set_ui  (&mpfOne     , 1, MPFR_RNDN);
+    mpfr_init_set_d   (&mpfHalf    , 0.5                   , MPFR_RNDN);
     mpfr_init0        (&mpfZero);
+
+    mpci_init0        (mpciZero);
+    mphi_init0        (mphiZero);
+    mpoi_init0        (mpoiZero);
+
+    mpcf_init0        (mpcfZero);
+    mphf_init0        (mphfZero);
+    mpof_init0        (mpofZero);
+
+    // Construct Pi & Gamma as HC8V
+    mpof_init0        (&aplPiHC8V);
+    mpfr_const_pi     (&aplPiHC8V.parts[0], MPFR_RNDN);
+    mpof_init0        (&aplGammaHC8V);
+    mpfr_const_euler  (&aplGammaHC8V.parts[0], MPFR_RNDN);
+
+    // Constants 0, 1, -1, i, -i
+    mphc8r_init  (&conmpoi_0 ); mpq_set_si  (&conmpoi_0 .parts[0],  0, 1);
+    mphc8r_init  (&conmpoi_1 ); mpq_set_si  (&conmpoi_1 .parts[0],  1, 1);
+    mphc8r_init  (&conmpoi_N1); mpq_set_si  (&conmpoi_N1.parts[0], -1, 1);
+    mphc8r_init  (&conmpoi_I ); mpq_set_si  (&conmpoi_I .parts[1],  1, 1);
+    mphc8r_init  (&conmpoi_NI); mpq_set_si  (&conmpoi_NI.parts[1], -1, 1);
+
+    mphc8v_init0 (&conmpof_0 ); mpfr_set_si (&conmpof_0 .parts[0],  0, MPFR_RNDN);
+    mphc8v_init0 (&conmpof_1 ); mpfr_set_si (&conmpof_1 .parts[0],  1, MPFR_RNDN);
+    mphc8v_init0 (&conmpof_N1); mpfr_set_si (&conmpof_N1.parts[0], -1, MPFR_RNDN);
+    mphc8v_init0 (&conmpof_I ); mpfr_set_si (&conmpof_I .parts[1],  1, MPFR_RNDN);
+    mphc8v_init0 (&conmpof_NI); mpfr_set_si (&conmpof_NI.parts[1], -1, MPFR_RNDN);
 
     // Use our own invalid operation functions for MPIR/MPFR
     mp_set_invalid_functions (mpz_invalid, mpq_invalid, mpfr_invalid);
@@ -173,21 +209,46 @@ void UninitGlbNumConstants
 
 {
     // Uninitialize the MPI, RAT, and VFP constants
-    Myf_clear (&mpfZero    );
-    Myf_clear (&mpfHalf    );
-    Myf_clear (&mpfNegInfinity );
-    Myf_clear (&mpfPosInfinity );
-    Myf_clear (&mpfMaxUInt );
-    Myf_clear (&mpfMaxInt  );
-    Myf_clear (&mpfMinInt  );
-    Myq_clear (&mpqZero    );
-    Myq_clear (&mpqHalf    );
-    Myq_clear (&mpqMaxUInt );
-    Myq_clear (&mpqMaxInt  );
-    Myq_clear (&mpqMinInt  );
-    Myz_clear (&mpzMaxUInt );
-    Myz_clear (&mpzMaxInt  );
-    Myz_clear (&mpzMinInt  );
+    Myhc8v_clear (&conmpof_NI     );
+    Myhc8v_clear (&conmpof_I      );
+    Myhc8v_clear (&conmpof_N1     );
+    Myhc8v_clear (&conmpof_1      );
+    Myhc8v_clear (&conmpof_0      );
+
+    Myhc8r_clear (&conmpoi_NI     );
+    Myhc8r_clear (&conmpoi_I      );
+    Myhc8r_clear (&conmpoi_N1     );
+    Myhc8r_clear (&conmpoi_1      );
+    Myhc8r_clear (&conmpoi_0      );
+
+    Myhc8v_clear (&aplGammaHC8V   );
+    Myhc8v_clear (&aplPiHC8V      );
+
+    mpof_clear   ( mpofZero       );
+    mphf_clear   ( mphfZero       );
+    mpcf_clear   ( mpcfZero       );
+
+    mpoi_clear   ( mpoiZero       );
+    mphi_clear   ( mphiZero       );
+    mpci_clear   ( mpciZero       );
+
+    Myf_clear    (&mpfZero        );
+    Myf_clear    (&mpfHalf        );
+    Myf_clear    (&mpfOne         );
+    Myf_clear    (&mpfNegInfinity );
+    Myf_clear    (&mpfPosInfinity );
+    Myf_clear    (&mpfMaxUInt     );
+    Myf_clear    (&mpfMaxInt      );
+    Myf_clear    (&mpfMinInt      );
+    Myq_clear    (&mpqZero        );
+    Myq_clear    (&mpqHalf        );
+    Myq_clear    (&mpqOne         );
+    Myq_clear    (&mpqMaxUInt     );
+    Myq_clear    (&mpqMaxInt      );
+    Myq_clear    (&mpqMinInt      );
+    Myz_clear    (&mpzMaxUInt     );
+    Myz_clear    (&mpzMaxInt      );
+    Myz_clear    (&mpzMinInt      );
 } // End UninitGlbNumConstants
 
 
@@ -232,6 +293,9 @@ void InitVfpPrecision
 {
     // Set the new default precision
     mpfr_set_default_prec ((mpfr_prec_t) uDefPrec);
+
+    // Calculate the # decimal digits in the new precision
+    nDigitsFPC = 1 + (UINT) floor ((APLFLOAT) (uDefPrec) * M_LN2 / M_LN10);
 } // End InitVfpPrecision
 
 

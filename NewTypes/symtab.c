@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -596,7 +596,7 @@ UBOOL HshTabResize_EM
     // Set new hash table size
     lpHTS->iHshTabTotalNelm = iHshTabNewNelm;
 
-    Assert (1 EQ gcdAplInt (lpHTS->iHshTabIncrFree, lpHTS->iHshTabTotalNelm, NULL));
+    Assert (1 EQ GcdHC1I (lpHTS->iHshTabIncrFree, lpHTS->iHshTabTotalNelm));
 
     Assert (HshTabFrisk (lpHTS));
 
@@ -1904,36 +1904,40 @@ uint32_t hashlittleConv
      uint32_t    initval)       // Initial value for hash
 
 {
-    LPWCHAR  lpwConv,           // Ptr to global memory for the converted key
-             lpwTmp;            // Ptr to output name
+////LPWCHAR  lpwConv,           // Ptr to global memory for the converted key
+////         lpwTmp;            // Ptr to output name
     uint32_t uhash;             // The result
-    size_t   uCnt;              // Loop counter
+////size_t   uCnt;              // Loop counter
+    WCHAR    wszTemp[1024];
 
-    // Allocate virtual memory to hold the converted name
-    lpwConv =
-      MyVirtualAlloc (NULL,                 // Any address (FIXED SIZE)
-                      (DWORD) length * sizeof (WCHAR),
-                      MEM_COMMIT | MEM_TOP_DOWN,
-                      PAGE_READWRITE);
-    if (lpwConv EQ NULL)        // ***FIXME*** -- Better error handling needed
-        return 0;
-
-    // Loop through the name converting _alphabet_ to lowercase
-    for (uCnt = 0,
-          lpwTmp = lpwConv;
-        uCnt < length;
-        uCnt++)
-    if (UTF16_A_ <= *lpwName
-     &&             *lpwName <= UTF16_Z_)
-        *lpwTmp++ = L'a' + (*lpwName++ - UTF16_A_);
-    else
-        *lpwTmp++ = *lpwName++;
+////// Allocate virtual memory to hold the converted name
+////lpwConv =
+////  MyVirtualAlloc (NULL,                 // Any address (FIXED SIZE)
+////                  (DWORD) length * sizeof (WCHAR),
+////                  MEM_COMMIT | MEM_TOP_DOWN,
+////                  PAGE_READWRITE);
+////if (lpwConv EQ NULL)        // ***FIXME*** -- Better error handling needed
+////    return 0;
+////
+////// Loop through the name converting _alphabet_ to lowercase
+////for (uCnt = 0,
+////      lpwTmp = lpwConv;
+////    uCnt < length;
+////    uCnt++)
+////if (UTF16_A_ <= *lpwName
+//// &&             *lpwName <= UTF16_Z_)
+////    *lpwTmp++ = L'a' + (*lpwName++ - UTF16_A_);
+////else
+////    *lpwTmp++ = *lpwName++;
+    // Copy the name to a local var
+    if (FAILED (StringCchCopyW (wszTemp, countof (wszTemp), lpwName)))
+        DbgStop ();
 
     // Hash the converted name
-    uhash = hashlittle (lpwConv, length * sizeof (WCHAR), initval);
+    uhash = hashlittle (strlwrW (wszTemp), length * sizeof (WCHAR), initval);
 
-    // We no longer need this storage
-    MyVirtualFree (lpwConv, 0, MEM_RELEASE); lpwConv = NULL;
+////// We no longer need this storage
+////MyVirtualFree (lpwConv, 0, MEM_RELEASE); lpwConv = NULL;
 
     return uhash;
 } // End hashlittleConv

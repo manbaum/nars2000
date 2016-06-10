@@ -67,103 +67,139 @@ typedef union tagAPLUINT_UNION
 typedef enum tagSTRAND_TYPES
 {
  STRAND_INIT = 0,                       // 00:  Initial state
- STRAND_BOOL,                           // 01:  Boolean
- STRAND_INT,                            // 02:  Integer
- STRAND_FLOAT,                          // 03:  Floating point
- STRAND_CHAR,                           // 04:  Character
- STRAND_CHARST,                         // 05:  Character strand     (two or more character scalars in a row)
- STRAND_STRING,                         // 06:  Character vector
- STRAND_HETERO,                         // 07:  Simple heterogeneous (mixed numeric and character scalar)
- STRAND_NESTED,                         // 08:  Nested
- STRAND_RAT,                            // 09:  Multiprecision Rational Number
- STRAND_VFP,                            // 0A:  Variable-precision Float
-
- STRAND_LENGTH                          // 0B:  # elements in this enum
+ STRAND_BOOL    ,                       // 01:  Boolean
+ STRAND_INT     ,                       // 02:  Integer
+ STRAND_FLOAT   ,                       // 03:  Floating point
+ STRAND_CHAR    ,                       // 04:  Character
+ STRAND_CHARST  ,                       // 05:  Character strand     (two or more character scalars in a row)
+ STRAND_STRING  ,                       // 06:  Character vector
+ STRAND_HETERO  ,                       // 07:  Simple heterogeneous (mixed numeric and character scalar)
+ STRAND_NESTED  ,                       // 08:  Nested
+ STRAND_RAT     ,                       // 09:  Multiprecision Rational Number
+ STRAND_VFP     ,                       // 0A:  Variable-precision Float
+ STRAND_HC2I    ,                       // 0B:  Complex    INT coefficient
+ STRAND_HC2F    ,                       // 0C:  ...        FLT ...
+ STRAND_HC2R    ,                       // 0D:  ...        RAT ...
+ STRAND_HC2V    ,                       // 0E:  ...        VFP ...
+ STRAND_HC4I    ,                       // 0F:  Quaternion INT coefficient
+ STRAND_HC4F    ,                       // 10:  ...        FLT ...
+ STRAND_HC4R    ,                       // 11:  ...        RAT ...
+ STRAND_HC4V    ,                       // 12:  ...        VFP ...
+ STRAND_HC8I    ,                       // 13:  Octonion   INT coefficient
+ STRAND_HC8F    ,                       // 14:  ...        FLT ...
+ STRAND_HC8R    ,                       // 15:  ...        RAT ...
+ STRAND_HC8V    ,                       // 16:  ...        VFP ...
+ STRAND_LENGTH                          // 17:  # elements in this enum
                                         //      *MUST* be the last entry
 } STRAND_TYPES;
 
-typedef struct tagDTHC2
-{
-    APLFLOAT Real,                  // 00:  Complex number,    real      part    (8 bytes)
-             Imag;                  // 08:  ...                imaginary part    (8 bytes)
-} DTHC2, *LPDTHC2;
+// Whenever changing this <enum>, be sure to make a
+//   corresponding change to <tabConvert> in <strand.c>
 
-typedef struct tagDTHC4
-{
-    APLFLOAT  Real,                 // 00:  Quaternion number, real      part    (8 bytes)
-              Imag1,                // 08:  ...                imaginary part #1 (8 bytes)
-              Imag2,                // 10:  ...                imaginary part #2 (8 bytes)
-              Imag3;                // 18:  ...                imaginary part #3 (8 bytes)
-} DTHC4, *LPDTHC4;
 
-typedef struct tagDTHC8
+typedef struct tagALLTYPES
 {
-    APLFLOAT Real,                  // 00:  Octonion number,   real      part    (8 bytes)
-             Imag1,                 // 08:  ...                imaginary part #1 (8 bytes)
-             Imag2,                 // 10:  ...                imaginary part #2 (8 bytes)
-             Imag3,                 // 18:  ...                imaginary part #3 (8 bytes)
-             Imag4,                 // 20:  ...                imaginary part #4 (8 bytes)
-             Imag5,                 // 28:  ...                imaginary part #5 (8 bytes)
-             Imag6,                 // 30:  ...                imaginary part #6 (8 bytes)
-             Imag7;                 // 38:  ...                imaginary part #7 (8 bytes)
-} DTHC8, *LPDTHC8;
-
-typedef union tagALLTYPES
-{
-    APLINT     aplInteger;          // 00:  Integer or real number as an integer ( 8 bytes)
-    APLFLOAT   aplFloat;            // 00:  Real number as a float               ( 8 bytes)
-    APLCHAR    aplChar;             // 00:  Character
-    DTHC2      aplHC2;              // 00:  Complex number                       (16 bytes)
-    DTHC4      aplHC4;              // 00:  Quaternion number                    (32 bytes)
-    DTHC8      aplHC8;              // 00:  Octonion number                      (64 bytes)
-    APLHETERO  aplHetero;           // 00:  Heterogeneous array                  ( 4 bytes)
-    APLNESTED  aplNested;           // 00:  Nested array                         ( 4 bytes)
-    APLRAT     aplRat;              // 00:  RAT number, num and denom parts      (24 bytes)
-    APLVFP     aplVfp;              // 00:  VFP number                           (16 bytes)
-    APLLONGEST aplLongest;          // 00:  tkLongest ot stLongest
+    union
+    {
+        APLBOOL    aplBoolean;          // 00:  Boolean
+        APLINT     aplInteger;          // 00:  Integer or real number as an integer
+        APLFLOAT   aplFloat;            // 00:  Real number as a float
+        APLCHAR    aplChar;             // 00:  Character
+        APLHC1I    aplHC1I;             // 00:  Alias for APLINT
+        APLHC1F    aplHC1F;             // 00:  Alias for APLFLOAT
+        APLHC1R    aplHC1R;             // 00:  Alias for APLRAT
+        APLHC1V    aplHC1V;             // 00:  Alias for APLVFP
+        APLHC2I    aplHC2I;             // 00:  Complex    number w/INT coefficients
+        APLHC2F    aplHC2F;             // 00:  ...               w/FLT ...
+        APLHC2R    aplHC2R;             // 00:  ...               w/RAT ...
+        APLHC2V    aplHC2V;             // 00:  ...               w/VFP ...
+        APLHC4I    aplHC4I;             // 00:  Quaternion number w/INT coefficients
+        APLHC4F    aplHC4F;             // 00:  ...               w/FLT ...
+        APLHC4R    aplHC4R;             // 00:  ...               w/RAT ...
+        APLHC4V    aplHC4V;             // 00:  ...               w/VFP ...
+        APLHC8I    aplHC8I;             // 00:  Octonion   number w/INT coefficients
+        APLHC8F    aplHC8F;             // 00:  ...               w/FLT ...
+        APLHC8R    aplHC8R;             // 00:  ...               w/RAT ...
+        APLHC8V    aplHC8V;             // 00:  ...               w/VFP ...
+        APLHETERO  aplHetero;           // 00:  Heterogeneous array
+        APLNESTED  aplNested;           // 00:  Nested array
+        APLRAT     aplRat;              // 00:  RAT number, num and denom parts
+        APLVFP     aplVfp;              // 00:  VFP number
+        APLLONGEST aplLongest;          // 00:  tkLongest or stLongest
+    };                                  // 00:  Union of all types
+    APLFLOAT fQuadCT;                   // C0:  []CT if to be used
+    ENUM_CT  enumCT;                    // C8:  Use []CT, SYS_CT, or none (see ENUM_CT)
+                                        // CC:  Length
 } ALLTYPES, *LPALLTYPES;
 
 // Array types -- used to identify array storage type in memory
 typedef enum tagARRAY_TYPES
 {
- ARRAY_BOOL = 0,                        // 00:  Boolean
- ARRAY_INT,                             // 01:  Integer
- ARRAY_FLOAT,                           // 02:  Floating point
- ARRAY_CHAR,                            // 03:  Character
- ARRAY_HETERO,                          // 04:  Simple heterogeneous (mixed numeric and character scalars)
- ARRAY_NESTED,                          // 05:  Nested
- ARRAY_LIST,                            // 06:  List
- ARRAY_APA,                             // 07:  Arithmetic Progression Array
- ARRAY_RAT,                             // 08:  Multiprecision Rational Number
- ARRAY_VFP,                             // 09:  Variable-precision Float
+ ARRAY_BOOL = 0 ,                       // 00:  Boolean
+ ARRAY_INT      ,                       // 01:  Integer
+ ARRAY_FLOAT    ,                       // 02:  Floating point
+ ARRAY_CHAR     ,                       // 03:  Character
+ ARRAY_HETERO   ,                       // 04:  Simple heterogeneous (mixed numeric and character scalars)
+ ARRAY_NESTED   ,                       // 05:  Nested
+ ARRAY_LIST     ,                       // 06:  List
+ ARRAY_APA      ,                       // 07:  Arithmetic Progression Array
+ ARRAY_RAT      ,                       // 08:  Multiprecision Rational Number
+ ARRAY_VFP      ,                       // 09:  Variable-precision Float
+ ARRAY_HC2I     ,                       // 0A:  Complex    INT coefficients
+ ARRAY_HC2F     ,                       // 0B:  ...        FLT ...
+ ARRAY_HC2R     ,                       // 0C:  ...        RAT ...
+ ARRAY_HC2V     ,                       // 0D:  ...        VFP ...
+ ARRAY_HC4I     ,                       // 0E:  Quaternion INT coefficients
+ ARRAY_HC4F     ,                       // 0F:  ...        FLT ...
+ ARRAY_HC4R     ,                       // 10:  ...        RAT ...
+ ARRAY_HC4V     ,                       // 11:  ...        VFP ...
+ ARRAY_HC8I     ,                       // 12:  Octonion   INT coefficients
+ ARRAY_HC8F     ,                       // 13:  ...        FLT ...
+ ARRAY_HC8R     ,                       // 14:  ...        RAT ...
+ ARRAY_HC8V     ,                       // 15:  ...        VFP ...
 
- ARRAY_LENGTH,                          // 0A:  # elements in this enum
+ ARRAY_LENGTH   ,                       // 16:  # elements in this enum
                                         //      *MUST* be the last non-error entry
-                                        // 0A-0F:  Available entries (4 bits)
- ARRAY_INIT  = ARRAY_LENGTH,
- ARRAY_ERROR = (APLSTYPE) -1,
+                                        // 17-1F:  Available entries (5 bits)
+ ARRAY_INIT  = ARRAY_LENGTH  ,
+ ARRAY_ERROR = (APLSTYPE) -1 ,
+ ARRAY_NONCE = (APLSTYPE) -2 ,
+
+ ARRAY_HC1I  =   ARRAY_INT   ,          // To simplify common macros
+ ARRAY_HC1F  =   ARRAY_FLOAT ,          // ...
+ ARRAY_HC1R  =   ARRAY_RAT   ,          // ...
+ ARRAY_HC1V  =   ARRAY_VFP   ,          // ...
 } ARRAY_TYPES;
 
 // Whenever changing this <enum>, be sure to make a
-//   corresponding change to <StorageType>  in <primfns.c>,
-//   <TypeDemote> in <typemote.c>
+//   corresponding change to <StorageType> in <primfns.c>,
+//   <TypeDemote> in <typemote.c>,
 //   <aTypePromote> in <typemote.h>,
 //   <uTypeMap> in <externs.h>,
 //   <aTypeFree> in <typemote.h>,
 //   <IsSimpleNH> and <IsSimpleNum> macros in <macros.h>,
-//   ArrayTypeAsChar and BPE_VEC in <datatype.h>.
+//   <aArrayTypeToHCDimIndex> in <externs.h>,
+//   ArrayTypeAsChar and BPE_VEC in <datatype.h>,
+//   <TranslateTypesToPFSIndex> in <primspec.c>,
+//   <TranslateCharToArrayType> in <translate.c>.
 
 
 // Translate an array type to a char
 // Note that the order of the chars in this #define
 //   depends upon the ordering of the above enum
-#define ArrayTypeAsChar     L"BIFCHNLARV"
+// ***NOTE THAT THESE VALUES ARE SAVED IN WORKSPACES
+//    SO YOU HAD BETTER KNOW WHAT YOU ARE DOING***
+#define ArrayTypeAsChar     L"BIFCHNLARVifrvjgswkhtx"
 
-// Bites per element vector
+// Whenever changing the above <#define>, be sure to make a
+//   corresponding change to
+//   <TranslateCharToArrayType> in <translate.c>.
+
+// Bits per element vector
 // N.B. the order of elements in this vector matches
 //   the order of elements in the above ARRAY_TYPES enum.
-//                  B   I   F   C  H  N  L   A   R   V
-#define BPE_VEC     1, 64, 64, 16, 0, 0, 0, 64,  0,  0
+//                  B   I   F   C  H  N  L   A   R   V  CI  CF  CR  CV  HI  HF  HR  HV  OI  OF  OR  OV
+#define BPE_VEC     1, 64, 64, 16, 0, 0, 0, 64,  0,  0,128,128,  0,  0,256,256,  0,  0,512,512,  0,  0
 
 // Define APA structure
 typedef struct tagAPLAPA                // Offset + Multiplier {times} {iota} NELM (origin-0)
@@ -236,6 +272,20 @@ ARRAY_RAT       A rational or extended precision (denom EQ 1) scalar number.
 
 ARRAY_VFP       A variable-precision floating point scalar number.
                 The value is an HGLOBAL of a GMP value (see <gmp.h> for details).
+
+ARRAY_HC2I      Complex    number with INT coefficients
+ARRAY_HC2F      ...                    FLT ...
+ARRAY_HC2R      ...                    RAT ...
+ARRAY_HC2V      ...                    VFP ...
+ARRAY_HC4I      Quaternion number with INT coefficients
+ARRAY_HC4F      ...                    FLT ...
+ARRAY_HC4R      ...                    RAT ...
+ARRAY_HC4V      ...                    VFP ...
+ARRAY_HC8I      Octonion   number with INT coefficients
+ARRAY_HC8F      ...                    FLT ...
+ARRAY_HC8R      ...                    RAT ...
+ARRAY_HC8V      ...                    VFP ...
+
  */
 
 typedef struct tagHEADER_SIGNATURE
@@ -271,18 +321,18 @@ typedef enum tagPERM_NDX
 typedef struct tagVARARRAY_HEADER
 {
     HEADER_SIGNATURE Sig;               // 00:  Array header signature
-    UINT             ArrType:4,         // 04:  0000000F:  The type of the array (see ARRAY_TYPES)
-                     PermNdx:4,         //      000000F0:  Permanent array index (e.g., PERMNDX_ZILDE for {zilde})
-                     SysVar:1,          //      00000100:  Izit for a Sysvar (***DEBUG*** only)?
-                     PV0:1,             //      00000200:  Permutation Vector in origin-0
-                     PV1:1,             //      00000400:  ...                          1
-                     bSelSpec:1,        //      00000800:  Select Specification array
-                     All2s:1,           //      00001000:  Values are all 2s
+    UINT             ArrType:5,         // 04:  0000001F:  The type of the array (see ARRAY_TYPES)
+                     PermNdx:4,         //      000001E0:  Permanent array index (e.g., PERMNDX_ZILDE for {zilde})
+                     SysVar:1,          //      00000200:  Izit for a Sysvar (***DEBUG*** only)?
+                     PV0:1,             //      00000400:  Permutation Vector in origin-0
+                     PV1:1,             //      00000800:  ...                          1
+                     bSelSpec:1,        //      00001000:  Select Specification array
+                     All2s:1,           //      00002000:  Values are all 2s
 #ifdef DEBUG
-                     bMFOvar:1,         //      00002000:  Magic Function/Operator var -- do not display
-                     :18;               //      FFFFC000:  Available bits
+                     bMFOvar:1,         //      00004000:  Magic Function/Operator var -- do not display
+                     :17;               //      FFFF8000:  Available bits
 #else
-                     :19;               //      FFFFE000:  Available bits
+                     :18;               //      FFFFC000:  Available bits
 #endif
     UINT             RefCnt;            // 08:  Reference count
     APLNELM          NELM;              // 0C:  # elements in the array (8 bytes)

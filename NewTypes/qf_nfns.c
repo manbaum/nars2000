@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -171,6 +171,11 @@ LPPL_YYSTYPE SysFnDydNAPPEND_EM_YY
      ||     aplNELMRht > 2)
         goto RIGHT_LENGTH_EXIT;
 
+    // Check for LEFT NONCE ERROR
+    if (IsGlbNum (aplTypeLft)
+     || IsHCAny  (aplTypeLft))
+        goto LEFT_NONCE_EXIT;
+
     // Check for LEFT DOMAIN ERROR
     if (!IsSimpleNH (aplTypeLft))
         goto LEFT_DOMAIN_EXIT;
@@ -285,6 +290,11 @@ RIGHT_RANK_EXIT:
 RIGHT_LENGTH_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                                lptkRhtArg);
+    goto ERROR_EXIT;
+
+LEFT_NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                               lptkLftArg);
     goto ERROR_EXIT;
 
 LEFT_DOMAIN_EXIT:
@@ -2858,6 +2868,11 @@ LPPL_YYSTYPE SysFnDydNREPLACE_EM_YY
     // Is the file offset specified?
     bFileOffset = (aplNELMRht > 2);
 
+    // Check for LEFT NONCE ERROR
+    if (IsGlbNum (aplTypeLft)
+     || IsHCAny  (aplTypeLft))
+        goto LEFT_NONCE_EXIT;
+
     // Check for LEFT DOMAIN ERROR
     if (!IsSimpleNH (aplTypeLft))
         goto LEFT_DOMAIN_EXIT;
@@ -2994,6 +3009,11 @@ RIGHT_RANK_EXIT:
 RIGHT_LENGTH_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                                lptkRhtArg);
+    goto ERROR_EXIT;
+
+LEFT_NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                               lptkLftArg);
     goto ERROR_EXIT;
 
 LEFT_DOMAIN_EXIT:

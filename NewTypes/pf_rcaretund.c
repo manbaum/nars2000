@@ -33,57 +33,137 @@ PRIMSPEC PrimSpecRightCaretUnderbar = {
     NULL,   // &PrimSpecRightCaretUnderbarStorageTypeMon, -- Can't happen w/RightCaretUnderbar
     NULL,   // &PrimFnMonRightCaretUnderbarAPA_EM, -- Can't happen w/RightCaretUnderbar
 
+    // Monadic Boolean result functions
     NULL,   // &PrimFnMonRightCaretUnderbarBisB, -- Can't happen w/RightCaretUnderbar
     NULL,   // &PrimFnMonRightCaretUnderbarBisI, -- Can't happen w/RightCaretUnderbar
     NULL,   // &PrimFnMonRightCaretUnderbarBisF, -- Can't happen w/RightCaretUnderbar
 
-////                 IisB,   // Handled via type promotion (to IisI)
+    // Monadic non-Boolean result functions (indexable)
     NULL,   // &PrimFnMonRightCaretUnderbarIisI, -- Can't happen w/RightCaretUnderbar
     NULL,   // &PrimFnMonRightCaretUnderbarIisF, -- Can't happen w/RightCaretUnderbar
-
-////                 FisB,   // Handled via type promotion (to FisI)
     NULL,   // &PrimFnMonRightCaretUnderbarFisI, -- Can't happen w/RightCaretUnderbar
     NULL,   // &PrimFnMonRightCaretUnderbarFisF, -- Can't happen w/RightCaretUnderbar
-
     NULL,   // &PrimFnMonRightCaretUnderbarRisR, -- Can't happen w/RightCaretUnderbar
-
-////                 VisR,   // Handled via type promotion (to VisV)
+    NULL,   // &PrimFnMonRightCaretUnderbarVisR, -- Can't happen w/RightCaretUnderbar
     NULL,   // &PrimFnMonRightCaretUnderbarVisV, -- Can't happen w/RightCaretUnderbar
+
+    // Monadic Hypercomplex functions
+    NULL,   // &PrimFnMonRightCaretUnderbarHC2IisHC2I, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarHC2IisHC2F, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarHC2FisHC2I, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarHC2FisHC2F, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarHC2RisHC2R, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarHC2VisHC2R, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarHC2VisHC2V, -- Can't happen w/RightCaretUnderbar
+
+    NULL,   // &PrimFnMonRightCaretUnderbarHC4IisHC4I, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarHC4IisHC4F, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarHC4FisHC4I, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarHC4FisHC4F, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarHC4RisHC4R, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarHC4VisHC4R, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarHC4VisHC4V, -- Can't happen w/RightCaretUnderbar
+
+    NULL,   // &PrimFnMonRightCaretUnderbarHC8IisHC8I, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarHC8IisHC8F, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarHC8FisHC8I, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarHC8FisHC8F, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarHC8RisHC8R, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarHC8VisHC8R, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarHC8VisHC8V, -- Can't happen w/RightCaretUnderbar
+
+    // Monadic FLT result HC arg functions (indexable)
+    NULL,   // &PrimFnMonRightCaretUnderbarFisHC2I, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarFisHC2F, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarVisHC2R, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarVisHC2V, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarFisHC4I, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarFisHC4F, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarVisHC4R, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarVisHC4V, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarFisHC8I, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarFisHC8F, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarVisHC8R, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnMonRightCaretUnderbarVisHC8V, -- Can't happen w/RightCaretUnderbar
 
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecRightCaretUnderbarStorageTypeDyd,
     NULL,   // &PrimFnDydRightCaretUnderbarAPA_EM, -- Can't happen w/RightCaretUnderbar
 
+    // Dyadic Boolean result functions
     &PrimFnDydRightCaretUnderbarBisBvB,
     &PrimFnDydRightCaretUnderbarBisIvI,
     &PrimFnDydRightCaretUnderbarBisFvF,
     NULL,   // &PrimFnDydRightCaretUnderbarBisCvC, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarBisHvH, -- Can't happen w/RightCaretUnderbar
+    &PrimFnDydRightCaretUnderbarBisRvR,
+    &PrimFnDydRightCaretUnderbarBisVvV,
 
-////                 IisBvB,    // Handled via type promotion (to IisIvI)
+    NULL,   // &PrimFnDydRightCaretUnderbarBisHC2IvHC2I, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarBisHC2FvHC2F, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarBisHC2RvHC2R, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarBisHC2VvHC2V, -- Can't happen w/RightCaretUnderbar
+
+    NULL,   // &PrimFnDydRightCaretUnderbarBisHC4IvHC4I, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarBisHC4FvHC4F, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarBisHC4RvHC4R, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarBisHC4VvHC4V, -- Can't happen w/RightCaretUnderbar
+
+    NULL,   // &PrimFnDydRightCaretUnderbarBisHC8IvHC8I, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarBisHC8FvHC8F, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarBisHC8RvHC8R, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarBisHC8VvHC8V, -- Can't happen w/RightCaretUnderbar
+
+    // Dyadic non-Boolean result functions (indexable)
     NULL,   // &PrimFnDydRightCaretUnderbarIisIvI, -- Result Boolean, can't happen w/RightCaretUnderbar
     NULL,   // &PrimFnDydRightCaretUnderbarIisFvF, -- Result Boolean, can't happen w/RightCaretUnderbar
-
-////                 FisBvB,    // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydRightCaretUnderbarFisIvI, -- Result Boolean, can't happen w/RightCaretUnderbar
     NULL,   // &PrimFnDydRightCaretUnderbarFisFvF, -- Result Boolean, can't happen w/RightCaretUnderbar
-
-    &PrimFnDydRightCaretUnderbarBisRvR,
     NULL,   // &PrimFnDydRightCaretUnderbarRisRvR, -- Result Boolean, can't happen w/RightCaretUnderbar
-
-    &PrimFnDydRightCaretUnderbarBisVvV,
-////                 VisRvR     // Handled via type promotion (to VisVvV)
+    NULL,   // &PrimFnDydRightCaretUnderbarVisRvR, -- Result Boolean, can't happen w/RightCaretUnderbar
     NULL,   // &PrimFnDydRightCaretUnderbarVisVvV, -- Result Boolean, can't happen w/RightCaretUnderbar
 
+    NULL,   // &PrimFnDydRightCaretUnderbarHC2IisHC2IvHC2I, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarHC2IisHC2FvHC2F, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarHC2FisHC2IvHC2I, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarHC2FisHC2FvHC2F, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarHC2RisHC2RvHC2R, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarHC2VisHC2RvHC2R, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarHC2VisHC2VvHC2V, -- Can't happen w/RightCaretUnderbar
+
+    NULL,   // &PrimFnDydRightCaretUnderbarHC4IisHC4IvHC4I, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarHC4IisHC4FvHC4F, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarHC4FisHC4IvHC4I, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarHC4FisHC4FvHC4F, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarHC4RisHC4RvHC4R, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarHC4VisHC4RvHC4R, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarHC4VisHC4VvHC4V, -- Can't happen w/RightCaretUnderbar
+
+    NULL,   // &PrimFnDydRightCaretUnderbarHC8IisHC8IvHC8I, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarHC8IisHC8FvHC8F, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarHC8FisHC8IvHC8I, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarHC8FisHC8FvHC8F, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarHC8RisHC8RvHC8R, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarHC8VisHC8RvHC8R, -- Can't happen w/RightCaretUnderbar
+    NULL,   // &PrimFnDydRightCaretUnderbarHC8VisHC8VvHC8V, -- Can't happen w/RightCaretUnderbar
+
+    // Monadic Boolean chunk functions
     NULL,   // &PrimFnMonRightCaretUnderbarB64isB64, -- Can't happen w/RightCaretUnderbar
     NULL,   // &PrimFnMonRightCaretUnderbarB32isB32, -- Can't happen w/RightCaretUnderbar
     NULL,   // &PrimFnMonRightCaretUnderbarB16isB16, -- Can't happen w/RightCaretUnderbar
     NULL,   // &PrimFnMonRightCaretUnderbarB08isB08, -- Can't happen w/RightCaretUnderbar
 
+    // Dyadic Boolean chunk functions
     &PrimFnDydRightCaretUnderbarB64isB64vB64,
     &PrimFnDydRightCaretUnderbarB32isB32vB32,
     &PrimFnDydRightCaretUnderbarB16isB16vB16,
     &PrimFnDydRightCaretUnderbarB08isB08vB08,
+
+    // Miscellaneous
+    0,      // []RL for atomicity
+    FALSE,  // 00000001:  Allow dimension demotion for monadic scalar function
+    FALSE,  // 00000002:  ...                          dyadic  ...
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecRightCaretUnderbar};
@@ -147,6 +227,11 @@ APLSTYPE PrimSpecRightCaretUnderbarStorageTypeDyd
     if (IsCharEmpty (*lpaplTypeRht, aplNELMRht))
         *lpaplTypeRht = ARRAY_BOOL;
 
+    // Is either arg HC?
+    if (IsHCAny (*lpaplTypeLft)
+     || IsHCAny (*lpaplTypeRht))
+        return ARRAY_ERROR;
+
     // Calculate the storage type of the result
     aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
@@ -164,13 +249,17 @@ APLSTYPE PrimSpecRightCaretUnderbarStorageTypeDyd
 //  Primitive scalar function dyadic RightCaretUnderbar:  B {is} B fn B
 //***************************************************************************
 
-APLBOOL PrimFnDydRightCaretUnderbarBisBvB
-    (APLBOOL    aplBooleanLft,
-     APLBOOL    aplBooleanRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydRightCaretUnderbarBisBvB
+    (LPAPLBOOL  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    return (aplBooleanLft >= aplBooleanRht);
+    lpMemRes[uRes >> LOG2NBIB] |=
+      (lpatLft->aplBoolean >= lpatRht->aplBoolean)
+      << (MASKLOG2NBIB & (UINT) uRes);
 } // End PrimFnDydRightCaretUnderbarBisBvB
 
 
@@ -244,13 +333,17 @@ APLB08 PrimFnDydRightCaretUnderbarB08isB08vB08
 //  Primitive scalar function dyadic RightCaretUnderbar:  B {is} I fn I
 //***************************************************************************
 
-APLBOOL PrimFnDydRightCaretUnderbarBisIvI
-    (APLINT     aplIntegerLft,
-     APLINT     aplIntegerRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydRightCaretUnderbarBisIvI
+    (LPAPLBOOL  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    return (aplIntegerLft >= aplIntegerRht);
+    lpMemRes[uRes >> LOG2NBIB] |=
+      (lpatLft->aplInteger >= lpatRht->aplInteger)
+      << (MASKLOG2NBIB & (UINT) uRes);
 } // End PrimFnDydRightCaretUnderbarBisIvI
 
 
@@ -260,18 +353,17 @@ APLBOOL PrimFnDydRightCaretUnderbarBisIvI
 //  Primitive scalar function dyadic RightCaretUnderbar:  B {is} F fn F
 //***************************************************************************
 
-APLBOOL PrimFnDydRightCaretUnderbarBisFvF
-    (APLFLOAT   aplFloatLft,
-     APLFLOAT   aplFloatRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydRightCaretUnderbarBisFvF
+    (LPAPLBOOL  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    // If the left and right arguments are tolerantly-equal, return 1
-    if (PrimFnDydEqualBisFvF (aplFloatLft, aplFloatRht, lpPrimSpec))
-        return 1;
-
-    // Otherwise, return the natural result
-    return (aplFloatLft >= aplFloatRht);
+    lpMemRes[uRes >> LOG2NBIB] |=
+      CmpCT_F (lpatLft->aplFloat, lpatRht->aplFloat, GetQuadCT (), >=)
+      << (MASKLOG2NBIB & (UINT) uRes);
 } // End PrimFnDydRightCaretUnderbarBisFvF
 
 
@@ -281,19 +373,17 @@ APLBOOL PrimFnDydRightCaretUnderbarBisFvF
 //  Primitive scalar function dyadic RightCaretUnderbar:  B {is} R fn R
 //***************************************************************************
 
-APLBOOL PrimFnDydRightCaretUnderbarBisRvR
-    (APLRAT     aplRatLft,
-     APLRAT     aplRatRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydRightCaretUnderbarBisRvR
+    (LPAPLBOOL  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-#ifdef RAT_EXACT
-    // Compare the two RATs
-    return mpq_cmp    (&aplRatLft, &aplRatRht              ) >= 0;
-#else
-    // Compare the two RATs relative to []CT
-    return mpq_cmp_ct ( aplRatLft,  aplRatRht, GetQuadCT ()) >= 0;
-#endif
+    lpMemRes[uRes >> LOG2NBIB] |=
+      CmpCT_R (lpatLft->aplRat, lpatRht->aplRat, GetQuadCT (), >=)
+      << (MASKLOG2NBIB & (UINT) uRes);
 } // End PrimFnDydRightCaretUnderbarBisRvR
 
 
@@ -303,14 +393,17 @@ APLBOOL PrimFnDydRightCaretUnderbarBisRvR
 //  Primitive scalar function dyadic RightCaretUnderbar:  B {is} V fn V
 //***************************************************************************
 
-APLBOOL PrimFnDydRightCaretUnderbarBisVvV
-    (APLVFP     aplVfpLft,
-     APLVFP     aplVfpRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydRightCaretUnderbarBisVvV
+    (LPAPLBOOL  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    // Compare the two VFPs relative to []CT
-    return (mpfr_cmp_ct (aplVfpLft, aplVfpRht, GetQuadCT ()) >= 0);
+    lpMemRes[uRes >> LOG2NBIB] |=
+      CmpCT_V (lpatLft->aplVfp, lpatRht->aplVfp, GetQuadCT (), >=)
+      << (MASKLOG2NBIB & (UINT) uRes);
 } // End PrimFnDydRightCaretUnderbarBisVvV
 
 

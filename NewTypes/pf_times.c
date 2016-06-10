@@ -23,6 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include "headers.h"
+#include <math.h>
 
 
 #ifndef PROTO
@@ -33,57 +34,137 @@ PRIMSPEC PrimSpecTimes =
     &PrimSpecTimesStorageTypeMon,
     NULL,   // &PrimFnMonTimesAPA_EM, -- Can't happen w/Times
 
+    // Monadic Boolean result functions
     &PrimFnMonTimesBisB,
     NULL,   // &PrimFnMonTimesBisI, -- Can't happen w/Times
     NULL,   // &PrimFnMonTimesBisF, -- Can't happen w/Times
 
-////               IisB,     // Handled via type promotion (to IisI)
+    // Monadic non-Boolean result functions (indexable)
     &PrimFnMonTimesIisI,
     &PrimFnMonTimesIisF,
-
-////               FisB,     // Handled via type promotion (to FisI)
     NULL,   // &PrimFnMonTimesFisI, -- Can't happen w/Times
     NULL,   // &PrimFnMonTimesFisF, -- Can't happen w/Times
-
     &PrimFnMonTimesRisR,
-
-////               VisR,     // Handled via type promotion (to VisV)
+    &PrimFnMonTimesVisR,
     &PrimFnMonTimesVisV,
+
+    // Monadic Hypercomplex functions
+    &PrimFnMonTimesHC2IisHC2I,
+    &PrimFnMonTimesHC2IisHC2F,
+    &PrimFnMonTimesHC2FisHC2I,
+    &PrimFnMonTimesHC2FisHC2F,
+    &PrimFnMonTimesHC2RisHC2R,
+    &PrimFnMonTimesHC2VisHC2R,
+    &PrimFnMonTimesHC2VisHC2V,
+
+    &PrimFnMonTimesHC4IisHC4I,
+    &PrimFnMonTimesHC4IisHC4F,
+    &PrimFnMonTimesHC4FisHC4I,
+    &PrimFnMonTimesHC4FisHC4F,
+    &PrimFnMonTimesHC4RisHC4R,
+    &PrimFnMonTimesHC4VisHC4R,
+    &PrimFnMonTimesHC4VisHC4V,
+
+    &PrimFnMonTimesHC8IisHC8I,
+    &PrimFnMonTimesHC8IisHC8F,
+    &PrimFnMonTimesHC8FisHC8I,
+    &PrimFnMonTimesHC8FisHC8F,
+    &PrimFnMonTimesHC8RisHC8R,
+    &PrimFnMonTimesHC8VisHC8R,
+    &PrimFnMonTimesHC8VisHC8V,
+
+    // Monadic FLT result HC arg functions (indexable)
+    NULL,   // &PrimFnMonTimesFisHC2I, -- Can't happen w/Times
+    NULL,   // &PrimFnMonTimesFisHC2F, -- Can't happen w/Times
+    NULL,   // &PrimFnMonTimesVisHC2R, -- Can't happen w/Times
+    NULL,   // &PrimFnMonTimesVisHC2V, -- Can't happen w/Times
+    NULL,   // &PrimFnMonTimesFisHC4I, -- Can't happen w/Times
+    NULL,   // &PrimFnMonTimesFisHC4F, -- Can't happen w/Times
+    NULL,   // &PrimFnMonTimesVisHC4R, -- Can't happen w/Times
+    NULL,   // &PrimFnMonTimesVisHC4V, -- Can't happen w/Times
+    NULL,   // &PrimFnMonTimesFisHC8I, -- Can't happen w/Times
+    NULL,   // &PrimFnMonTimesFisHC8F, -- Can't happen w/Times
+    NULL,   // &PrimFnMonTimesVisHC8R, -- Can't happen w/Times
+    NULL,   // &PrimFnMonTimesVisHC8V, -- Can't happen w/Times
 
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecTimesStorageTypeDyd,
     &PrimFnDydTimesAPA_EM,
 
+    // Dyadic Boolean result functions
     &PrimFnDydUpCaretBisBvB,
     NULL,   // &PrimFnDydTimesBisIvI, -- Can't happen w/Times
     NULL,   // &PrimFnDydTimesBisFvF, -- Can't happen w/Times
     NULL,   // &PrimFnDydTimesBisCvC, -- Can't happen w/Times
+    NULL,   // &PrimFnDydTimesBisHvH, -- Can't happen w/Times
+    NULL,   // &PrimFnDydTimesBisRvR, -- Can't happen w/Times
+    NULL,   // &PrimFnDydTimesBisVvV, -- Can't happen w/Times
 
-////                 IisBvB,    // Handled via type promotion (to IisIvI)
+    NULL,   // &PrimFnDydTimesBisHC2IvHC2I, -- Can't happen w/Times
+    NULL,   // &PrimFnDydTimesBisHC2FvHC2F, -- Can't happen w/Times
+    NULL,   // &PrimFnDydTimesBisHC2RvHC2R, -- Can't happen w/Times
+    NULL,   // &PrimFnDydTimesBisHC2VvHC2V, -- Can't happen w/Times
+
+    NULL,   // &PrimFnDydTimesBisHC4IvHC4I, -- Can't happen w/Times
+    NULL,   // &PrimFnDydTimesBisHC4FvHC4F, -- Can't happen w/Times
+    NULL,   // &PrimFnDydTimesBisHC4RvHC4R, -- Can't happen w/Times
+    NULL,   // &PrimFnDydTimesBisHC4VvHC4V, -- Can't happen w/Times
+
+    NULL,   // &PrimFnDydTimesBisHC8IvHC8I, -- Can't happen w/Times
+    NULL,   // &PrimFnDydTimesBisHC8FvHC8F, -- Can't happen w/Times
+    NULL,   // &PrimFnDydTimesBisHC8RvHC8R, -- Can't happen w/Times
+    NULL,   // &PrimFnDydTimesBisHC8VvHC8V, -- Can't happen w/Times
+
+    // Dyadic non-Boolean result functions (indexable)
     &PrimFnDydTimesIisIvI,
     NULL,   // &PrimFnDydTimesIisFvF, -- Can't happen w/Times
-
-////                 FisBvB,    // Handled via type promotion (to FisIvI)
     &PrimFnDydTimesFisIvI,
     &PrimFnDydTimesFisFvF,
-
-    NULL,   // &PrimFnDydTimesBisRvR, -- Can't happen w/Times
     &PrimFnDydTimesRisRvR,
-
-    NULL,   // &PrimFnDydTimesBisVvV, -- Can't happen w/Times
-////                 VisRvR     // Handled via type promotion (to VisVvV)
+    &PrimFnDydTimesVisRvR,
     &PrimFnDydTimesVisVvV,
 
+    &PrimFnDydTimesHC2IisHC2IvHC2I,
+    NULL,   // &PrimFnDydTimesHC2IisHC2FvHC2F, -- Can't happen w/Times
+    &PrimFnDydTimesHC2FisHC2IvHC2I,
+    &PrimFnDydTimesHC2FisHC2FvHC2F,
+    &PrimFnDydTimesHC2RisHC2RvHC2R,
+    &PrimFnDydTimesHC2VisHC2RvHC2R,
+    &PrimFnDydTimesHC2VisHC2VvHC2V,
+
+    &PrimFnDydTimesHC4IisHC4IvHC4I,
+    NULL,   // &PrimFnDydTimesHC4IisHC4FvHC4F, -- Can't happen w/Times
+    &PrimFnDydTimesHC4FisHC4IvHC4I,
+    &PrimFnDydTimesHC4FisHC4FvHC4F,
+    &PrimFnDydTimesHC4RisHC4RvHC4R,
+    &PrimFnDydTimesHC4VisHC4RvHC4R,
+    &PrimFnDydTimesHC4VisHC4VvHC4V,
+
+    &PrimFnDydTimesHC8IisHC8IvHC8I,
+    NULL,   // &PrimFnDydTimesHC8IisHC8FvHC8F, -- Can't happen w/Times
+    &PrimFnDydTimesHC8FisHC8IvHC8I,
+    &PrimFnDydTimesHC8FisHC8FvHC8F,
+    &PrimFnDydTimesHC8RisHC8RvHC8R,
+    &PrimFnDydTimesHC8VisHC8RvHC8R,
+    &PrimFnDydTimesHC8VisHC8VvHC8V,
+
+    // Monadic Boolean chunk functions
     NULL,   // &PrimFnMonTimesB64isB64, -- Can't happen w/Times
     NULL,   // &PrimFnMonTimesB32isB32, -- Can't happen w/Times
     NULL,   // &PrimFnMonTimesB16isB16, -- Can't happen w/Times
     NULL,   // &PrimFnMonTimesB08isB08, -- Can't happen w/Times
 
+    // Dyadic Boolean chunk functions
     &PrimFnDydUpCaretB64isB64vB64,
     &PrimFnDydUpCaretB32isB32vB32,
     &PrimFnDydUpCaretB16isB16vB16,
     &PrimFnDydUpCaretB08isB08vB08,
+
+    // Miscellaneous
+    0,      // []RL for atomicity
+    FALSE,  // 00000001:  Allow dimension demotion for monadic scalar function
+    FALSE,  // 00000002:  ...                          dyadic  ...
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecTimes};
@@ -96,12 +177,6 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecTimes};
 //  Primitive function for monadic and dyadic Times ("signum" and "multiplication")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnTimes_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnTimes_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -109,16 +184,20 @@ LPPL_YYSTYPE PrimFnTimes_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
+    PRIMSPEC primSpec = *lpPrimSpec;
+
+    // Set the Hypercomplex Arithmetic Multiplication choice
+    primSpec.eHCMul = GetMemPTD ()->eHCMul;
+
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UTF16_TIMES);
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, &primSpec);
     else
-        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, &primSpec);
 } // End PrimFnTimes_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -178,12 +257,14 @@ APLBOOL PrimFnMonTimesBisB
 //  Primitive scalar function monadic Times:  I {is} fn I
 //***************************************************************************
 
-APLINT PrimFnMonTimesIisI
-    (APLINT     aplIntegerRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnMonTimesIisI
+    (LPAPLINT   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    return signumint (aplIntegerRht);
+    lpMemRes[uRes] = signumint (lpatRht->aplInteger);
 } // End PrimFnMonTimesIisI
 
 
@@ -193,12 +274,15 @@ APLINT PrimFnMonTimesIisI
 //  Primitive scalar function monadic Times:  I {is} fn F
 //***************************************************************************
 
-APLINT PrimFnMonTimesIisF
-    (APLFLOAT   aplFloatRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnMonTimesIisF
+    (LPAPLINT   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    return signumflt (aplFloatRht);
+    // Note that signum of -0 is 0
+    lpMemRes[uRes] = (lpatRht->aplFloat < 0) ? -1 : (lpatRht->aplFloat > 0);
 } // End PrimFnMonTimesIisF
 
 
@@ -208,17 +292,32 @@ APLINT PrimFnMonTimesIisF
 //  Primitive scalar function monadic Times:  R {is} fn R
 //***************************************************************************
 
-APLRAT PrimFnMonTimesRisR
-    (APLRAT     aplRatRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnMonTimesRisR
+    (LPAPLRAT   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLRAT mpqRes = {0};
-
-    mpq_init_set_si (&mpqRes, mpq_sgn (&aplRatRht), 1);
-
-    return mpqRes;
+    mpq_init_set_si (&lpMemRes[uRes], signumrat (&lpatRht->aplRat), 1);
 } // End PrimFnMonTimesRisR
+
+
+//***************************************************************************
+//  $PrimFnMonTimesVisR
+//
+//  Primitive scalar function monadic Times:  V {is} fn R
+//***************************************************************************
+
+void PrimFnMonTimesVisR
+    (LPAPLVFP   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    mpfr_init_set_si (&lpMemRes[uRes], signumrat (&lpatRht->aplRat), MPFR_RNDN);
+} // End PrimFnMonTimesVisR
 
 
 //***************************************************************************
@@ -227,21 +326,894 @@ APLRAT PrimFnMonTimesRisR
 //  Primitive scalar function monadic Times:  V {is} fn V
 //***************************************************************************
 
-APLVFP PrimFnMonTimesVisV
-    (APLVFP     aplVfpRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnMonTimesVisV
+    (LPAPLVFP   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLVFP mpfRes = {0};
+    // Note that signum of -0 is 0
+    mpfr_init_set_si (&lpMemRes[uRes], mpfr_sgn (&lpatRht->aplVfp), MPFR_RNDN);
+} // End PrimFnMonTimesVisV
+
+
+//***************************************************************************
+//  $DirHC2I_RE
+//***************************************************************************
+
+APLHC2I DirHC2I_RE
+    (APLHC2I aplRht)                    // Right arg
+
+{
+    APLHC2I aplRes;
 
     // If the arg is 0, ...
-    if (IsMpf0 (&aplVfpRht))
-        mpfr_init_set_si (&mpfRes, SIGN_APLVFP (&aplVfpRht) ? -1 : 0, MPFR_RNDN);
+    if (IsZeroHCxI (&aplRht, 2))
+        // Zap the memory
+        ZeroMemory (&aplRes, sizeof (aplRes));
     else
-        mpfr_init_set_si (&mpfRes,    mpfr_sgn (&aplVfpRht)         , MPFR_RNDN);
+        RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
 
-    return mpfRes;
-} // End PrimFnMonTimesVisV
+    return aplRes;
+} // End DirHC2I_RE
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC2IisHC2I
+//
+//  Primitive scalar function monadic Times:  HC2I {is} fn HC2I
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnMonTimesHC2IisHC2I"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnMonTimesHC2IisHC2I
+    (LPAPLHC2I  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Call subfunction
+        lpMemRes[uRes] = DirHC2I_RE (lpatRht->aplHC2I);
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC2F);
+} // End PrimFnMonTimesHC2IisHC2I
+#undef APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC2IisHC2F
+//
+//  Primitive scalar function monadic Times:  HC2I {is} fn HC2F
+//***************************************************************************
+
+void PrimFnMonTimesHC2IisHC2F
+    (LPAPLHC2I  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+} // End PrimFnMonTimesHC2IisHC2F
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC2FisHC2I
+//
+//  Primitive scalar function monadic Times:  HC2F {is} fn HC2I
+//***************************************************************************
+
+void PrimFnMonTimesHC2FisHC2I
+    (LPAPLHC2F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atRes = {0};
+
+    // No exceptions in this code
+
+    // Convert from HC2I to HC2F
+    (*aTypeActPromote[ARRAY_HC2I][ARRAY_HC2F]) (lpatRht, 0, &atRes);
+
+    // Call subfunction
+    lpMemRes[uRes] = DirHC2F_RE (atRes.aplHC2F);
+} // End PrimFnMonTimesHC2FisHC2I
+
+
+//***************************************************************************
+//  $DirHC2F_RE
+//***************************************************************************
+
+APLHC2F DirHC2F_RE
+    (APLHC2F aplRht)                    // Right arg
+
+{
+    APLHC2F  aplRes;
+    APLFLOAT aplMag;
+
+    // No exceptions in this code
+
+    // Get the magnitude of the arg
+    aplMag = MagHC2F (aplRht);
+
+    // If the arg is 0, ...
+    if (aplMag EQ 0.0)
+        // Zap the memory
+        ZeroMemory (&aplRes, sizeof (aplRes));
+    else
+        // Divide by the magnitude
+        aplRes = DivHC2F_F (aplRht, aplMag);
+
+    return aplRes;
+} // End DirHC2F_RE
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC2FisHC2F
+//
+//  Primitive scalar function monadic Times:  HC2F {is} fn HC2F
+//***************************************************************************
+
+void PrimFnMonTimesHC2FisHC2F
+    (LPAPLHC2F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // No exceptions in this code
+
+    // Call subfunction
+    lpMemRes[uRes] = DirHC2F_RE (lpatRht->aplHC2F);
+} // End PrimFnMonTimesHC2FisHC2F
+
+
+//***************************************************************************
+//  $DirHC2R_RE
+//***************************************************************************
+
+APLHC2R DirHC2R_RE
+    (APLHC2R aplRht)                    // Right arg
+
+{
+    APLHC2R aplRes = {0};
+
+    // If the arg is 0, ...
+    if (IsZeroHCxR (&aplRht, 2))
+        // Initialize to 0/1
+        mphc2r_init (&aplRes);
+    else
+        RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
+    return aplRes;
+} // End DirHC2R_RE
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC2RisHC2R
+//
+//  Primitive scalar function monadic Times:  HC2R {is} fn HC2R
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnMonTimesHC2RisHC2R"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnMonTimesHC2RisHC2R
+    (LPAPLHC2R  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Call subfunction
+        lpMemRes[uRes] = DirHC2R_RE (lpatRht->aplHC2R);
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC2V);
+} // End PrimFnMonTimesHC2RisHC2R
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $DirHC2V_RE
+//***************************************************************************
+
+APLHC2V DirHC2V_RE
+    (APLHC2V aplRht)                    // Right arg
+
+{
+    APLHC2V aplRes = {0};
+    APLVFP  aplMag;
+
+    // Get the magnitude of the arg
+    aplMag = MagHC2V (aplRht);
+
+    // No exceptions in this code
+
+    // If the arg is 0, ...
+    if (IsMpf0 (&aplMag))
+        // Initialize to 0
+        mphc2v_init0 (&aplRes);
+    else
+    {
+        // Divide by the magnitude
+        aplRes = DivHC2V_V (aplRht, aplMag);
+
+        // We no longer need this resource
+        Myf_clear (&aplMag);
+    } // End IF/ELSE
+
+    return aplRes;
+} // End DirHC2V_RE
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC2VisHC2R
+//
+//  Primitive scalar function monadic Times:  HC2V {is} fn HC2R
+//***************************************************************************
+
+void PrimFnMonTimesHC2VisHC2R
+    (LPAPLHC2V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atRht = {0};
+
+    // Promote the right arg to the result type
+    (*aTypeActPromote[ARRAY_HC2R][ARRAY_HC2V]) (&lpatRht->aplHC2R, 0, &atRht);
+
+    // No exceptions in this code
+
+    // Call subfunction
+    lpMemRes[uRes] = DirHC2V_RE (atRht.aplHC2V);
+
+    Myhc2v_clear (&atRht.aplHC2V);
+} // End PrimFnMonTimesHC2VisHC2R
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC2VisHC2V
+//
+//  Primitive scalar function monadic Times:  HC2V {is} fn HC2V
+//***************************************************************************
+
+void PrimFnMonTimesHC2VisHC2V
+    (LPAPLHC2V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // No exceptions in this code
+
+    // Call subfunction
+    lpMemRes[uRes] = DirHC2V_RE (lpatRht->aplHC2V);
+} // End PrimFnMonTimesHC2VisHC2V
+
+
+//***************************************************************************
+//  $DirHC4I_RE
+//***************************************************************************
+
+APLHC4I DirHC4I_RE
+    (APLHC4I aplRht)                    // Right arg
+
+{
+    APLHC4I aplRes;
+
+    // If the arg is 0, ...
+    if (IsZeroHCxI (&aplRht, 4))
+        // Zap the memory
+        ZeroMemory (&aplRes, sizeof (aplRes));
+    else
+        RaiseException (EXCEPTION_RESULT_HC4F, 0, 0, NULL);
+
+    return aplRes;
+} // End DirHC4I_RE
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC4IisHC4I
+//
+//  Primitive scalar function monadic Times:  HC4I {is} fn HC4I
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnMonTimesHC4IisHC4I"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnMonTimesHC4IisHC4I
+    (LPAPLHC4I  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Call subfunction
+        lpMemRes[uRes] = DirHC4I_RE (lpatRht->aplHC4I);
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC4F);
+} // End PrimFnMonTimesHC4IisHC4I
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC4IisHC4F
+//
+//  Primitive scalar function monadic Times:  HC4I {is} fn HC4F
+//***************************************************************************
+
+void PrimFnMonTimesHC4IisHC4F
+    (LPAPLHC4I  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    RaiseException (EXCEPTION_RESULT_HC4F, 0, 0, NULL);
+} // End PrimFnMonTimesHC4IisHC4F
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC4FisHC4I
+//
+//  Primitive scalar function monadic Times:  HC4F {is} fn HC4I
+//***************************************************************************
+
+void PrimFnMonTimesHC4FisHC4I
+    (LPAPLHC4F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atRes = {0};
+
+    // No exceptions in this code
+
+    // Convert from HC4I to HC4F
+    (*aTypeActPromote[ARRAY_HC4I][ARRAY_HC4F]) (lpatRht, 0, &atRes);
+
+    // Call subfunction
+    lpMemRes[uRes] = DirHC4F_RE (atRes.aplHC4F);
+} // End PrimFnMonTimesHC4FisHC4I
+
+
+//***************************************************************************
+//  $DirHC4F_RE
+//***************************************************************************
+
+APLHC4F DirHC4F_RE
+    (APLHC4F aplRht)                    // Right arg
+
+{
+    APLHC4F  aplRes;
+    APLFLOAT aplMag;
+
+    // Get the magnitude of the arg
+    aplMag = MagHC4F (aplRht);
+
+    // No exceptions in this code
+
+    // If the arg is 0, ...
+    if (aplMag EQ 0.0)
+        // Zap the memory
+        ZeroMemory (&aplRes, sizeof (aplRes));
+    else
+        // Divide by the magnitude
+        aplRes = DivHC4F_F (aplRht, aplMag);
+
+    return aplRes;
+} // End DirHC4F_RE
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC4FisHC4F
+//
+//  Primitive scalar function monadic Times:  HC4F {is} fn HC4F
+//***************************************************************************
+
+void PrimFnMonTimesHC4FisHC4F
+    (LPAPLHC4F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // No exceptions in this code
+
+    // Call subfunction
+    lpMemRes[uRes] = DirHC4F_RE (lpatRht->aplHC4F);
+} // End PrimFnMonTimesHC4FisHC4F
+
+
+//***************************************************************************
+//  $DirHC4R_RE
+//***************************************************************************
+
+APLHC4R DirHC4R_RE
+    (APLHC4R aplRht)                    // Right arg
+
+{
+    APLHC4R aplRes = {0};
+
+    // If the arg is 0, ...
+    if (IsZeroHCxR (&aplRht, 4))
+        // Initialize to 0/1
+        mphc4r_init (&aplRes);
+    else
+        RaiseException (EXCEPTION_RESULT_HC4V, 0, 0, NULL);
+
+    return aplRes;
+} // End DirHC4R_RE
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC4RisHC4R
+//
+//  Primitive scalar function monadic Times:  HC4R {is} fn HC4R
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnMonTimesHC4RisHC4R"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnMonTimesHC4RisHC4R
+    (LPAPLHC4R  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Call subfunction
+        lpMemRes[uRes] = DirHC4R_RE (lpatRht->aplHC4R);
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC4V);
+} // End PrimFnMonTimesHC4RisHC4R
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $DirHC4V_RE
+//***************************************************************************
+
+APLHC4V DirHC4V_RE
+    (APLHC4V aplRht)                    // Right arg
+
+{
+    APLHC4V aplRes;
+    APLVFP  aplMag;
+
+    // No exceptions in this code
+
+    // Get the magnitude of the arg
+    aplMag = MagHC4V (aplRht);
+
+    // If the arg is 0, ...
+    if (IsMpf0 (&aplMag))
+        // Initialize to 0
+        mphc4v_init0 (&aplRes);
+    else
+    {
+        // Divide by the magnitude
+        aplRes = DivHC4V_V (aplRht, aplMag);
+
+        Myf_clear (&aplMag);
+    } // End IF/ELSE
+
+    return aplRes;
+} // End DirHC4V_RE
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC4VisHC4R
+//
+//  Primitive scalar function monadic Times:  HC4V {is} fn HC4R
+//***************************************************************************
+
+void PrimFnMonTimesHC4VisHC4R
+    (LPAPLHC4V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atRht = {0};
+
+    // Promote the right arg to the result type
+    (*aTypeActPromote[ARRAY_HC4R][ARRAY_HC4V]) (&lpatRht->aplHC4R, 0, &atRht);
+
+    // No exceptions in this code
+
+    // Call subfunction
+    lpMemRes[uRes] = DirHC4V_RE (atRht.aplHC4V);
+
+    Myhc4v_clear (&atRht.aplHC4V);
+} // End PrimFnMonTimesHC4VisHC4R
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC4VisHC4V
+//
+//  Primitive scalar function monadic Times:  HC4V {is} fn HC4V
+//***************************************************************************
+
+void PrimFnMonTimesHC4VisHC4V
+    (LPAPLHC4V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // No exceptions in this code
+
+    // Call subfunction
+    lpMemRes[uRes] = DirHC4V_RE (lpatRht->aplHC4V);
+} // End PrimFnMonTimesHC4VisHC4V
+
+
+//***************************************************************************
+//  $DirHC8I_RE
+//***************************************************************************
+
+APLHC8I DirHC8I_RE
+    (APLHC8I aplRht)                    // Right arg
+
+{
+    APLHC8I aplRes;
+
+    // If the arg is 0, ...
+    if (IsZeroHCxI (&aplRht, 8))
+        // Zap the memory
+        ZeroMemory (&aplRes, sizeof (aplRes));
+    else
+        RaiseException (EXCEPTION_RESULT_HC8F, 0, 0, NULL);
+
+    return aplRes;
+} // End TimesHC8I
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC8IisHC8I
+//
+//  Primitive scalar function monadic Times:  HC8I {is} fn HC8I
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnMonTimesHC8IisHC8I"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnMonTimesHC8IisHC8I
+    (LPAPLHC8I  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Call subfunction
+        lpMemRes[uRes] = DirHC8I_RE (lpatRht->aplHC8I);
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC8F);
+} // End PrimFnMonTimesHC8IisHC8I
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC8IisHC8F
+//
+//  Primitive scalar function monadic Times:  HC8I {is} fn HC8F
+//***************************************************************************
+
+void PrimFnMonTimesHC8IisHC8F
+    (LPAPLHC8I  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    RaiseException (EXCEPTION_RESULT_HC8F, 0, 0, NULL);
+} // End PrimFnMonTimesHC8IisHC8F
+
+
+//***************************************************************************
+//  $DirHC8F_RE
+//***************************************************************************
+
+APLHC8F DirHC8F_RE
+    (APLHC8F aplRht)                    // Right arg
+
+{
+    APLHC8F  aplRes;
+    APLFLOAT aplMag;
+
+    // Get the magnitude
+    aplMag = MagHC8F (aplRht);
+
+    // No exceptions in this code
+
+    // If the arg is 0, ...
+    if (aplMag EQ 0.0)
+        // Zap the memory
+        ZeroMemory (&aplRes, sizeof (aplRes));
+    else
+        // Divide by the magnitude
+        aplRes = DivHC8F_F (aplRht, aplMag);
+
+    return aplRes;
+} // End DirHC8F_RE
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC8FisHC8F
+//
+//  Primitive scalar function monadic Times:  HC8F {is} fn HC8F
+//***************************************************************************
+
+void PrimFnMonTimesHC8FisHC8F
+    (LPAPLHC8F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // No exceptions in this code
+
+    // Call subfunction
+    lpMemRes[uRes] = DirHC8F_RE (lpatRht->aplHC8F);
+} // End PrimFnMonTimesHC8FisHC8F
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC8FisHC8I
+//
+//  Primitive scalar function monadic Times:  HC8F {is} fn HC8I
+//***************************************************************************
+
+void PrimFnMonTimesHC8FisHC8I
+    (LPAPLHC8F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atRes = {0};
+
+    // No exceptions in this code
+
+    // Convert from HC8I to HC8F
+    (*aTypeActPromote[ARRAY_HC8I][ARRAY_HC8F]) (lpatRht, 0, &atRes);
+
+    // Call subfunction
+    lpMemRes[uRes] = DirHC8F_RE (atRes.aplHC8F);
+} // End PrimFnMonTimesHC8FisHC8I
+
+
+//***************************************************************************
+//  $DirHC8R_RE
+//***************************************************************************
+
+APLHC8R DirHC8R_RE
+    (APLHC8R aplRht)                    // Right arg
+
+{
+    APLHC8R aplRes = {0};
+
+    // If the arg is 0, ...
+    if (IsZeroHCxR (&aplRht, 8))
+        // Initialize to 0/1
+        mphc8r_init (&aplRes);
+    else
+        RaiseException (EXCEPTION_RESULT_HC8V, 0, 0, NULL);
+    return aplRes;
+} // End DirHC8R_RE
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC8RisHC8R
+//
+//  Primitive scalar function monadic Times:  HC8R {is} fn HC8R
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnMonTimesHC8RisHC8R"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnMonTimesHC8RisHC8R
+    (LPAPLHC8R  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Call subfunction
+        lpMemRes[uRes] = DirHC8R_RE (lpatRht->aplHC8R);
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC8V);
+} // End PrimFnMonTimesHC8RisHC8R
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $DirHC8V_RE
+//***************************************************************************
+
+APLHC8V DirHC8V_RE
+    (APLHC8V aplRht)                    // Right arg
+
+{
+    APLHC8V aplRes = {0};
+    APLVFP  aplMag;
+
+    // No exceptions in this code
+
+    // Get the magnitude of the arg
+    aplMag = MagHC8V (aplRht);
+
+    // If the arg is 0, ...
+    if (IsMpf0 (&aplMag))
+        // Initialize to 0
+        mphc8v_init0 (&aplRes);
+    else
+    {
+        // Divide by the magnitude
+        aplRes = DivHC8V_V (aplRht, aplMag);
+
+        Myf_clear (&aplMag);
+    } // End IF/ELSE
+
+    return aplRes;
+} // End DirHC8V_RE
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC8VisHC8R
+//
+//  Primitive scalar function monadic Times:  HC8V {is} fn HC8R
+//***************************************************************************
+
+void PrimFnMonTimesHC8VisHC8R
+    (LPAPLHC8V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atRht = {0};
+
+    // Promote the right arg to the result type
+    (*aTypeActPromote[ARRAY_HC8R][ARRAY_HC8V]) (&lpatRht->aplHC8R, 0, &atRht);
+
+    // No exceptions in this code
+
+    // Call subfunction
+    lpMemRes[uRes] = DirHC8V_RE (atRht.aplHC8V);
+
+    Myhc8v_clear (&atRht.aplHC8V);
+} // End PrimFnMonTimesHC8VisHC8R
+
+
+//***************************************************************************
+//  $PrimFnMonTimesHC8VisHC8V
+//
+//  Primitive scalar function monadic Times:  HC8V {is} fn HC8V
+//***************************************************************************
+
+void PrimFnMonTimesHC8VisHC8V
+    (LPAPLHC8V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // No exceptions in this code
+
+    // Call subfunction
+    lpMemRes[uRes] = DirHC8V_RE (lpatRht->aplHC8V);
+} // End PrimFnMonTimesHC8VisHC8V
 
 
 //***************************************************************************
@@ -285,29 +1257,68 @@ APLSTYPE PrimSpecTimesStorageTypeDyd
 
 
 //***************************************************************************
-//  $PrimFnDydTimesIisIvI
-//
-//  Primitive scalar function dyadic Times:  I {is} I fn I
+//  $MulHC1I_RE
 //***************************************************************************
 
-APLINT PrimFnDydTimesIisIvI
-    (APLINT     aplIntegerLft,
-     APLINT     aplIntegerRht,
-     LPPRIMSPEC lpPrimSpec)
+APLINT MulHC1I_RE
+    (APLINT aplLft,                     // Left arg
+     APLINT aplRht)                     // Right ...
 
 {
     // Check for -0
     // If either arg is 0
     //   and the signs are different
     if (gAllowNeg0
-     && (aplIntegerLft EQ 0
-      || aplIntegerRht EQ 0)
-     && (aplIntegerLft < 0) NE
-        (aplIntegerRht < 0))
+     && (aplLft EQ 0
+      || aplRht EQ 0)
+     && (aplLft < 0) NE
+        (aplRht < 0))
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
 
-    return imul64_RE (aplIntegerLft, aplIntegerRht);
+    return imul64_RE (aplLft, aplRht, FLOAT);
+} // End MulHC1I_RE
+
+
+//***************************************************************************
+//  $PrimFnDydTimesIisIvI
+//
+//  Primitive scalar function dyadic Times:  I {is} I fn I
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydTimesIisIvI"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnDydTimesIisIvI
+    (LPAPLINT   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Call subfunction
+        lpMemRes[uRes] = MulHC1I_RE (lpatLft->aplInteger, lpatRht->aplInteger);
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_FLOAT);
 } // End PrimFnDydTimesIisIvI
+#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -316,31 +1327,82 @@ APLINT PrimFnDydTimesIisIvI
 //  Primitive scalar function dyadic Times:  F {is} I fn I
 //***************************************************************************
 
-APLFLOAT PrimFnDydTimesFisIvI
-    (APLINT     aplIntegerLft,
-     APLINT     aplIntegerRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydTimesFisIvI
+    (LPAPLFLOAT lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    UBOOL  bRet;
-    APLINT aplRes;
+    // No exceptions in this code
 
     // Check for -0
     // If either arg is 0
     //   and the signs are different
     if (gAllowNeg0
-     && (aplIntegerLft EQ 0
-      || aplIntegerRht EQ 0)
-     && (aplIntegerLft < 0) NE
-        (aplIntegerRht < 0))
-        return -0.0;
+     && (lpatLft->aplInteger EQ 0
+      || lpatRht->aplInteger EQ 0)
+     && (lpatLft->aplInteger < 0) NE
+        (lpatRht->aplInteger < 0))
+        lpMemRes[uRes] = -0.0;
+    else
+    {
+        UBOOL  bRet;
+        APLINT aplRes;
 
-    aplRes = imul64 (aplIntegerLft, aplIntegerRht, &bRet);
-    if (bRet)
-        return (APLFLOAT) aplRes;
-
-    return ((APLFLOAT) aplIntegerLft) * (APLFLOAT) aplIntegerRht;
+        aplRes = imul64 (lpatLft->aplInteger, lpatRht->aplInteger, &bRet, EXCEPTION_RESULT_FLOAT);
+        if (bRet)
+            lpMemRes[uRes] = (APLFLOAT) aplRes;
+        else
+            lpMemRes[uRes] = (APLFLOAT) lpatLft->aplInteger * (APLFLOAT) lpatRht->aplInteger;
+    } // End IF/ELSE
 } // End PrimFnDydTimesFisIvI
+
+
+//***************************************************************************
+//  $MulHC1F_RE
+//***************************************************************************
+
+APLFLOAT MulHC1F_RE
+    (APLFLOAT aplLft,                   // Left arg
+     APLFLOAT aplRht)                   // Right arg
+
+{
+    // Check for indeterminates:  0 {times} _  or  _ {times} 0
+    if ((aplLft EQ 0.0
+      && IsFltPosInfinity (aplRht))
+     || (IsFltPosInfinity (aplLft)
+      && aplRht EQ 0.0))
+        return TranslateQuadICIndex (aplLft,
+                                     ICNDX_0MULPi,
+                                     aplRht,
+                                     (aplLft EQ 0) ? SIGN_APLFLOAT (aplLft)
+                                                   : SIGN_APLFLOAT (aplRht));
+    else
+    // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
+    if ((aplLft EQ 0.0
+      && IsFltNegInfinity (aplRht))
+     || (IsFltNegInfinity (aplLft)
+      && aplRht EQ 0.0))
+        return TranslateQuadICIndex (aplLft,
+                                     ICNDX_0MULNi,
+                                     aplRht,
+                                     (aplLft EQ 0) ? SIGN_APLFLOAT (aplLft)
+                                                   : SIGN_APLFLOAT (aplRht));
+    else
+    // Check for -0
+    // If either arg is 0
+    //   and the signs are different
+    if (gAllowNeg0
+     && (aplLft EQ 0
+      || aplRht EQ 0)
+     && (SIGN_APLFLOAT (aplLft) NE
+         SIGN_APLFLOAT (aplRht)))
+        return -0.0;
+    else
+        return (aplLft * aplRht);
+} // End MulHC1F_RE
 
 
 //***************************************************************************
@@ -349,44 +1411,97 @@ APLFLOAT PrimFnDydTimesFisIvI
 //  Primitive scalar function dyadic Times:  F {is} F fn F
 //***************************************************************************
 
-APLFLOAT PrimFnDydTimesFisFvF
-    (APLFLOAT   aplFloatLft,
-     APLFLOAT   aplFloatRht,
-     LPPRIMSPEC lpPrimSpec)
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydTimesFisFvF"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnDydTimesFisFvF
+    (LPAPLFLOAT lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Call subfunction
+        lpMemRes[uRes] = MulHC1F_RE (lpatLft->aplFloat, lpatRht->aplFloat);
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
+} // End PrimFnDydTimesFisFvF
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MulHC1R_RE
+//***************************************************************************
+
+APLRAT MulHC1R_RE
+    (APLRAT aplLft,                     // Left arg
+     APLRAT aplRht)                     // Right ...
+
+{
+    APLRAT aplRes = {0};
+
     // Check for indeterminates:  0 {times} _  or  _ {times} 0
-    if ((aplFloatLft EQ 0
-      && IsFltPosInfinity (aplFloatRht))
-     || (IsFltPosInfinity (aplFloatLft)
-      && aplFloatRht EQ 0))
-        return TranslateQuadICIndex (aplFloatLft,
-                                     ICNDX_0MULPi,
-                                     aplFloatRht,
-                                     (aplFloatLft EQ 0) ? SIGN_APLFLOAT (aplFloatLft)
-                                                        : SIGN_APLFLOAT (aplFloatRht));
+    if ((IsMpq0 (&aplLft)
+      && IsMpqPosInfinity (&aplRht))
+     || (IsMpqPosInfinity (&aplLft)
+      && IsMpq0 (&aplRht)))
+        aplRes = *mpq_QuadICValue (&aplLft,
+                                    ICNDX_0MULPi,
+                                   &aplRht,
+                                   &aplRes,
+                                    IsMpq0 (&aplLft) ? (mpq_sgn (&aplLft) EQ -1)
+                                                              : (mpq_sgn (&aplRht) EQ -1));
+    else
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
-    if ((aplFloatLft EQ 0
-      && IsFltNegInfinity (aplFloatRht))
-     || (IsFltNegInfinity (aplFloatLft)
-      && aplFloatRht EQ 0))
-        return TranslateQuadICIndex (aplFloatLft,
-                                     ICNDX_0MULNi,
-                                     aplFloatRht,
-                                     (aplFloatLft EQ 0) ? SIGN_APLFLOAT (aplFloatLft)
-                                                        : SIGN_APLFLOAT (aplFloatRht));
+    if ((IsMpq0 (&aplLft)
+      && IsMpqNegInfinity (&aplRht))
+     || (IsMpqNegInfinity (&aplLft)
+      && IsMpq0 (&aplRht)))
+        aplRes = *mpq_QuadICValue (&aplLft,
+                                    ICNDX_0MULNi,
+                                   &aplRht,
+                                   &aplRes,
+                                    IsMpq0 (&aplLft) ? (mpq_sgn (&aplLft) EQ -1)
+                                                     : (mpq_sgn (&aplRht) EQ -1));
+    else
     // Check for -0
     // If either arg is 0
     //   and the signs are different
     if (gAllowNeg0
-     && (aplFloatLft EQ 0
-      || aplFloatRht EQ 0)
-     && (SIGN_APLFLOAT (aplFloatLft) NE
-         SIGN_APLFLOAT (aplFloatRht)))
-        return -0.0;
+     && (IsMpq0 (&aplLft)
+      || IsMpq0 (&aplRht))
+     && (mpq_sgn (&aplLft) < 0) NE
+        (mpq_sgn (&aplRht) < 0))
+        RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
+    else
+    {
+        // Initalize the result to 0/1
+        mpq_init (&aplRes);
 
-    return (aplFloatLft * aplFloatRht);
-} // End PrimFnDydTimesFisFvF
+        // Multiply two Rationals
+        mpq_mul (&aplRes, &aplLft, &aplRht);
+    } // End IF/ELSE/...
+
+    return aplRes;
+} // End MulHC1R_RE
 
 
 //***************************************************************************
@@ -395,57 +1510,126 @@ APLFLOAT PrimFnDydTimesFisFvF
 //  Primitive scalar function dyadic Times:  R {is} R fn R
 //***************************************************************************
 
-APLRAT PrimFnDydTimesRisRvR
-    (APLRAT     aplRatLft,
-     APLRAT     aplRatRht,
-     LPPRIMSPEC lpPrimSpec)
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydTimesRisRvR"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnDydTimesRisRvR
+    (LPAPLRAT   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLRAT mpqRes = {0};
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Call subfunction
+        lpMemRes[uRes] = MulHC1R_RE (lpatLft->aplRat, lpatRht->aplRat);
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_VFP);
+} // End PrimFnDydTimesRisRvR
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MulHC1V_RE
+//***************************************************************************
+
+APLVFP MulHC1V_RE
+    (APLVFP aplLft,                     // Left arg
+     APLVFP aplRht)                     // Right ...
+
+{
+    APLVFP aplRes = {0};
 
     // Check for indeterminates:  0 {times} _  or  _ {times} 0
-    if ((IsMpq0 (&aplRatLft)
-      && IsMpqPosInfinity (&aplRatRht))
-     || (IsMpqPosInfinity (&aplRatLft)
-      && IsMpq0 (&aplRatRht)))
-        return *mpq_QuadICValue (&aplRatLft,
-                                  ICNDX_0MULPi,
-                                 &aplRatRht,
-                                 &mpqRes,
-                                  IsMpq0 (&aplRatLft) ? (mpq_sgn (&aplRatLft) EQ -1)
-                                                      : (mpq_sgn (&aplRatRht) EQ -1));
+    if ((IsMpf0 (&aplLft)
+      && IsMpfPosInfinity (&aplRht))
+     || (IsMpfPosInfinity (&aplLft)
+      && IsMpf0 (&aplRht)))
+        aplRes = *mpfr_QuadICValue (&aplLft,
+                                     ICNDX_0MULPi,
+                                    &aplRht,
+                                    &aplRes,
+                                     IsMpf0 (&aplLft) ? SIGN_APLVFP (&aplLft)
+                                                      : SIGN_APLVFP (&aplRht));
+    else
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
-    if ((IsMpq0 (&aplRatLft)
-      && IsMpqNegInfinity (&aplRatRht))
-     || (IsMpqNegInfinity (&aplRatLft)
-      && IsMpq0 (&aplRatRht)))
-        return *mpq_QuadICValue (&aplRatLft,
-                                  ICNDX_0MULNi,
-                                 &aplRatRht,
-                                 &mpqRes,
-                                  IsMpq0 (&aplRatLft) ? (mpq_sgn (&aplRatLft) EQ -1)
-                                                      : (mpq_sgn (&aplRatRht) EQ -1));
+    if ((IsMpf0 (&aplLft)
+      && IsMpfNegInfinity (&aplRht))
+     || (IsMpfNegInfinity (&aplLft)
+      && IsMpf0 (&aplRht)))
+        aplRes = *mpfr_QuadICValue (&aplLft,
+                                     ICNDX_0MULNi,
+                                    &aplRht,
+                                    &aplRes,
+                                     IsMpf0 (&aplLft) ? SIGN_APLVFP (&aplLft)
+                                                      : SIGN_APLVFP (&aplRht));
     else
     // Check for -0
     // If either arg is 0
     //   and the signs are different
     if (gAllowNeg0
-     && (IsMpq0 (&aplRatLft)
-      || IsMpq0 (&aplRatRht))
-     && (mpq_sgn (&aplRatLft) < 0) NE
-        (mpq_sgn (&aplRatRht) < 0))
-        RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
+     && (IsMpf0 (&aplLft)
+      || IsMpf0 (&aplRht))
+     && (mpfr_sgn (&aplLft) < 0) NE
+        (mpfr_sgn (&aplRht) < 0))
+        // Set the result to -0
+        mpfr_init_set_d (&aplRes, -0, MPFR_RNDN);
     else
     {
-        // Initalize the result to 0/1
-        mpq_init (&mpqRes);
+        // Initalize the result to 0
+        mpfr_init0 (&aplRes);
 
-        // Multiply two Rationals
-        mpq_mul (&mpqRes, &aplRatLft, &aplRatRht);
+        // Multiply two Variable FPs
+        mpfr_mul (&aplRes, &aplLft, &aplRht, MPFR_RNDN);
     } // End IF/ELSE/...
 
-    return mpqRes;
-} // End PrimFnDydTimesRisRvR
+    return aplRes;
+} // End MulHC1V_RE
+
+
+//***************************************************************************
+//  $PrimFnDydTimesVisRvR
+//
+//  Primitive scalar function dyadic Times:  V {is} R fn R
+//***************************************************************************
+
+void PrimFnDydTimesVisRvR
+    (LPAPLVFP   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atLft = {0},
+             atRht = {0};
+
+    // Promote the left & right arg to the result type
+    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatLft->aplRat, 0, &atLft);
+    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatRht->aplRat, 0, &atRht);
+
+    PrimFnDydTimesVisVvV (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+
+    Myhc1v_clear (&atRht.aplHC1V);
+    Myhc1v_clear (&atLft.aplHC1V);
+} // End PrimFnDydTimesVisRvR
 
 
 //***************************************************************************
@@ -454,54 +1638,2114 @@ APLRAT PrimFnDydTimesRisRvR
 //  Primitive scalar function dyadic Times:  V {is} V fn V
 //***************************************************************************
 
-APLVFP PrimFnDydTimesVisVvV
-    (APLVFP     aplVfpLft,
-     APLVFP     aplVfpRht,
-     LPPRIMSPEC lpPrimSpec)
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydTimesVisVvV"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnDydTimesVisVvV
+    (LPAPLVFP   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLVFP mpfRes = {0};
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
 
-    // Check for indeterminates:  0 {times} _  or  _ {times} 0
-    if ((IsMpf0 (&aplVfpLft)
-      && IsMpfPosInfinity (&aplVfpRht))
-     || (IsMpfPosInfinity (&aplVfpLft)
-      && IsMpf0 (&aplVfpRht)))
-        return *mpfr_QuadICValue (&aplVfpLft,
-                                   ICNDX_0MULPi,
-                                  &aplVfpRht,
-                                  &mpfRes,
-                                   IsMpf0 (&aplVfpLft) ? SIGN_APLVFP (&aplVfpLft)
-                                                       : SIGN_APLVFP (&aplVfpRht));
-    // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
-    if ((IsMpf0 (&aplVfpLft)
-      && IsMpfNegInfinity (&aplVfpRht))
-     || (IsMpfNegInfinity (&aplVfpLft)
-      && IsMpf0 (&aplVfpRht)))
-        return *mpfr_QuadICValue (&aplVfpLft,
-                                   ICNDX_0MULNi,
-                                  &aplVfpRht,
-                                  &mpfRes,
-                                   IsMpf0 (&aplVfpLft) ? SIGN_APLVFP (&aplVfpLft)
-                                                       : SIGN_APLVFP (&aplVfpRht));
-    if (gAllowNeg0
-     && (IsMpf0 (&aplVfpLft)
-      || IsMpf0 (&aplVfpRht))
-     && (mpfr_sgn (&aplVfpLft) < 0) NE
-        (mpfr_sgn (&aplVfpRht) < 0))
-        // Set the result to -0
-        mpfr_init_set_d (&mpfRes, -0, MPFR_RNDN);
-    else
+    __try
     {
-        // Initalize the result to 0
-        mpfr_init0 (&mpfRes);
+        // Call subfunction
+        lpMemRes[uRes] = MulHC1V_RE (lpatLft->aplVfp, lpatRht->aplVfp);
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
 
-        // Multiply two Variable FPs
-        mpfr_mul (&mpfRes, &aplVfpLft, &aplVfpRht, MPFR_RNDN);
-    } // End IF/ELSE
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
-    return mpfRes;
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydTimesVisVvV
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MulHC2I_RE
+//***************************************************************************
+
+APLHC2I MulHC2I_RE
+    (APLHC2I aplLft,                    // Left arg
+     APLHC2I aplRht)                    // Right ...
+
+{
+    APLHC2I aplRes;
+
+#define a   aplLft.partsLo
+#define b   aplLft.partsHi
+#define c   aplRht.partsLo
+#define d   aplRht.partsHi
+
+    // Use Cayley-Dickson construction
+    // (a,b) x (c,d) = (ac - db, da + bc)
+    aplRes.partsLo = SubHC1I_RE (MulHC1I_RE (a, c),
+                                 MulHC1I_RE (d, b));
+    aplRes.partsHi = AddHC1I_RE (MulHC1I_RE (d, a),
+                                 MulHC1I_RE (b, c));
+#undef  d
+#undef  c
+#undef  b
+#undef  a
+
+    return aplRes;
+} // End MulHC2I_RE
+
+
+//***************************************************************************
+//  $PrimFnDydTimesHC2IisHC2IvHC2I
+//
+//  Primitive scalar function dyadic Times:  HC2I {is} HC2I fn HC2I
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydTimesHC2IisHC2IvHC2I"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnDydTimesHC2IisHC2IvHC2I
+    (LPAPLHC2I  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Call subfunction
+        lpMemRes[uRes] = MulHC2I_RE (lpatLft->aplHC2I, lpatRht->aplHC2I);
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC2F);
+} // End PrimFnDydTimesHC2IisHC2IvHC2I
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnDydTimesHC2FisHC2IvHC2I
+//
+//  Primitive scalar function dyadic Times:  HC2F {is} HC2I fn HC2I
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydTimesHC2IisHC2IvHC2I"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnDydTimesHC2FisHC2IvHC2I
+    (LPAPLHC2F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+    ALLTYPES        atLft = {0},
+                    atRht = {0};
+
+    // Convert the HC2I to HC2F
+    (*aTypeActPromote[ARRAY_HC2I][ARRAY_HC2F]) (lpatLft, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC2I][ARRAY_HC2F]) (lpatRht, 0, &atRht);
+
+    __try
+    {
+        // Call subfunction
+        lpMemRes[uRes] = MulHC2F_RE (atLft.aplHC2F, atRht.aplHC2F);
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
+} // End PrimFnDydTimesHC2FisHC2IvHC2I
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MulHC2F_RE
+//***************************************************************************
+
+APLHC2F MulHC2F_RE
+    (APLHC2F aplLft,
+     APLHC2F aplRht)
+
+{
+    APLHC2F aplRes;
+
+#define a   aplLft.partsLo
+#define b   aplLft.partsHi
+#define c   aplRht.partsLo
+#define d   aplRht.partsHi
+
+    // Use Cayley-Dickson construction
+    // (a,b) x (c,d) = (ac - db, da + bc)
+    aplRes.partsLo = SubHC1F_RE (MulHC1F_RE (a, c),
+                                 MulHC1F_RE (d, b));
+    aplRes.partsHi = AddHC1F_RE (MulHC1F_RE (d, a),
+                                 MulHC1F_RE (b, c));
+#undef  d
+#undef  c
+#undef  b
+#undef  a
+
+    return aplRes;
+} // End MulHC2F_RE
+
+
+//***************************************************************************
+//  $PrimFnDydTimesHC2FisHC2FvHC2F
+//
+//  Primitive scalar function dyadic Times:  HC2F {is} HC2F fn HC2F
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydTimesHC2FisHC2FvHC2F"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnDydTimesHC2FisHC2FvHC2F
+    (LPAPLHC2F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Call subfunction
+        lpMemRes[uRes] = MulHC2F_RE (lpatLft->aplHC2F, lpatRht->aplHC2F);
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
+} // End PrimFnDydTimesHC2FisHC2FvHC2F
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MulHC2R_RE
+//***************************************************************************
+
+APLHC2R MulHC2R_RE
+    (APLHC2R aplLft,                    // Left arg
+     APLHC2R aplRht)                    // Right ...
+
+{
+    int     i;
+    APLHC2R aplRes = {0};
+    APLRAT  aplTmp1,
+            aplTmp2;
+
+    // Initialize to 0/1
+    mphc2r_init (&aplRes);
+
+    // Initialize to 0/1
+    mpq_init    (&aplTmp1);
+    mpq_init    (&aplTmp2);
+
+////aplRes.parts[0] = aplLft.parts[0] * aplRht.parts[0],
+////                - aplLft.parts[1] * aplRht.parts[1];
+////aplRes.parts[1] = aplLft.parts[0] * aplRht.parts[1]
+////                + aplLft.parts[1] * aplRht.parts[0];
+
+#define a   aplLft.partsLo
+#define b   aplLft.partsHi
+#define c   aplRht.partsLo
+#define d   aplRht.partsHi
+
+    // Use Cayley-Dickson construction
+    // (a,b) x (c,d) = (ac - db, da + bc)
+    mpq_mul (&aplTmp1,         &a      , &c      );
+    mpq_mul (&aplTmp2,         &d      , &b      );
+    mpq_sub (&aplRes.parts[0], &aplTmp1, &aplTmp2);
+
+    mpq_mul (&aplTmp1,         &d      , &a      );
+    mpq_mul (&aplTmp2,         &b      , &c      );
+    mpq_add (&aplRes.parts[1], &aplTmp1, &aplTmp2);
+
+#undef  d
+#undef  c
+#undef  b
+#undef  a
+
+    Myq_clear (&aplTmp2);
+    Myq_clear (&aplTmp1);
+
+    // Loop through all of the parts
+    for (i = 0; i < 2; i++)
+    // Check for indeterminates:  0 {times} _  or  _ {times} 0
+    if ((IsMpq0 (&aplLft.parts[i])
+      && IsMpqPosInfinity (&aplRht.parts[i]))
+     || (IsMpqPosInfinity (&aplLft.parts[i])
+      && IsMpq0 (&aplRht.parts[i])))
+        mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
+                                                     ICNDX_0MULPi,
+                                                   &aplRht.parts[i],
+                                                   &aplRes.parts[i],
+                                                    IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
+                                                                              : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
+    else
+    // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
+    if ((IsMpq0 (&aplLft.parts[i])
+      && IsMpqNegInfinity (&aplRht.parts[i]))
+     || (IsMpqNegInfinity (&aplLft.parts[i])
+      && IsMpq0 (&aplRht.parts[i])))
+        mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
+                                                     ICNDX_0MULNi,
+                                                    &aplRht.parts[i],
+                                                    &aplRes.parts[i],
+                                                     IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
+                                                                               : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
+    return aplRes;
+} // End MulHC2R_RE
+
+
+//***************************************************************************
+//  $PrimFnDydTimesHC2RisHC2RvHC2R
+//
+//  Primitive scalar function dyadic Times:  HC2R {is} HC2R fn HC2R
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydTimesHC2RisHC2RvHC2R"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnDydTimesHC2RisHC2RvHC2R
+    (LPAPLHC2R  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Call subfunction
+        lpMemRes[uRes] = MulHC2R_RE (lpatLft->aplHC2R, lpatRht->aplHC2R);
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC2V);
+} // End PrimFnDydTimesHC2RisHC2RvHC2R
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MulHC2V_RE
+//***************************************************************************
+
+APLHC2V MulHC2V_RE
+    (APLHC2V aplLft,
+     APLHC2V aplRht)
+
+{
+    int     i;
+    APLHC2V aplRes = {0};
+    APLVFP  aplTmp1 = {0},
+            aplTmp2 = {0};
+////WCHAR   wszTemp[1024];
+
+////strcpyW (wszTemp, L"Lft (Mul):  "); *FormatAplHC2V (&wszTemp[lstrlenW (wszTemp)], &aplLft, 0) = WC_EOS; DbgMsgW (wszTemp);
+////strcpyW (wszTemp, L"Rht (Mul):  "); *FormatAplHC2V (&wszTemp[lstrlenW (wszTemp)], &aplRht, 0) = WC_EOS; DbgMsgW (wszTemp);
+
+    // Initialize to 0
+    mphc2v_init0 (&aplRes);
+    mpfr_init0   (&aplTmp1);
+    mpfr_init0   (&aplTmp2);
+
+////aplRes.parts[0] = aplLft.parts[0] * aplRht.parts[0],
+////                - aplLft.parts[1] * aplRht.parts[1];
+////aplRes.parts[1] = aplLft.parts[0] * aplRht.parts[1]
+////                + aplLft.parts[1] * aplRht.parts[0];
+
+#define a   aplLft.partsLo
+#define b   aplLft.partsHi
+#define c   aplRht.partsLo
+#define d   aplRht.partsHi
+
+    // ***FIXME*** -- Use MulHC1V and friends inside __try/__except
+    //                instead of mpfr_XXX
+
+    // Use Cayley-Dickson construction
+    // (a,b) x (c,d) = (ac - db, da + bc)
+    mpfr_mul (&aplTmp1,         &a      , &c      , MPFR_RNDN);
+    mpfr_mul (&aplTmp2,         &d      , &b      , MPFR_RNDN);
+    mpfr_sub (&aplRes.parts[0], &aplTmp1, &aplTmp2, MPFR_RNDN);
+
+    mpfr_mul (&aplTmp1,         &d      , &a      , MPFR_RNDN);
+    mpfr_mul (&aplTmp2,         &b      , &c      , MPFR_RNDN);
+    mpfr_add (&aplRes.parts[1], &aplTmp1, &aplTmp2, MPFR_RNDN);
+
+#undef  d
+#undef  c
+#undef  b
+#undef  a
+
+    Myf_clear (&aplTmp2);
+    Myf_clear (&aplTmp1);
+
+////strcpyW (wszTemp, L"Res (Mul):  "); *FormatAplHC2V (&wszTemp[lstrlenW (wszTemp)], &aplRes, 0) = WC_EOS; DbgMsgW (wszTemp);
+
+    // Loop through all of the parts
+    for (i = 0; i < 2; i++)
+    // Check for indeterminates:  0 {times} _  or  _ {times} 0
+    if ((IsMpf0 (&aplLft.parts[i])
+      && IsMpfPosInfinity (&aplRht.parts[i]))
+     || (IsMpfPosInfinity (&aplLft.parts[i])
+      && IsMpf0 (&aplRht.parts[i])))
+        mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
+                                                       ICNDX_0MULPi,
+                                                      &aplRht.parts[i],
+                                                      &aplRes.parts[i],
+                                                       IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
+                                                                                 : SIGN_APLVFP (&aplRht.parts[i])),
+                                    MPFR_RNDN);
+    else
+    // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
+    if ((IsMpf0 (&aplLft.parts[i])
+      && IsMpfNegInfinity (&aplRht.parts[i]))
+     || (IsMpfNegInfinity (&aplLft.parts[i])
+      && IsMpf0 (&aplRht.parts[i])))
+        mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
+                                                       ICNDX_0MULNi,
+                                                      &aplRht.parts[i],
+                                                      &aplRes.parts[i],
+                                                       IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
+                                                                                 : SIGN_APLVFP (&aplRht.parts[i])),
+                                    MPFR_RNDN);
+    return aplRes;
+} // End MulHC2V_RE
+
+
+//***************************************************************************
+//  $PrimFnDydTimesHC2VisHC2RvHC2R
+//
+//  Primitive scalar function dyadic Times:  HC2V {is} HC2R fn HC2R
+//***************************************************************************
+
+void PrimFnDydTimesHC2VisHC2RvHC2R
+    (LPAPLHC2V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atLft = {0},
+             atRht = {0};
+
+    // Promote the left & right arg to the result type
+    (*aTypeActPromote[ARRAY_HC2R][ARRAY_HC2V]) (&lpatLft->aplHC2R, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC2R][ARRAY_HC2V]) (&lpatRht->aplHC2R, 0, &atRht);
+
+    PrimFnDydTimesHC2VisHC2VvHC2V (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+
+    Myhc2v_clear (&atRht.aplHC2V);
+    Myhc2v_clear (&atLft.aplHC2V);
+} // End PrimFnDydTimesHC2VisHC2RvHC2R
+
+
+//***************************************************************************
+//  $PrimFnDydTimesHC2VisHC2VvHC2V
+//
+//  Primitive scalar function dyadic Times:  HC2V {is} HC2V fn HC2V
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydTimesHC2VisHC2VvHC2V"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnDydTimesHC2VisHC2VvHC2V
+    (LPAPLHC2V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Call subfunction
+        lpMemRes[uRes] = MulHC2V_RE (lpatLft->aplHC2V, lpatRht->aplHC2V);
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
+} // End PrimFnDydTimesHC2VisHC2VvHC2V
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MulHC4I_RE_HC
+//***************************************************************************
+
+APLHC4I MulHC4I_RE_HC
+    (APLHC4I    aplLft,             // Left arg
+     APLHC4I    aplRht,             // Right ...
+     ENUM_HCMUL eHCMul)             // Multiplication choice (see tagENUM_HCMUL)
+
+{
+    APLHC4I aplRes,                 // The result
+            aplLxR,                 // Temp var
+            aplRxL;                 // ...
+    int     i;                      // Loop counter
+
+    // Calculate L x R
+    aplLxR = MulHC4I_RE (aplLft, aplRht);
+
+    // Calculate R x L
+    aplRxL = MulHC4I_RE (aplRht, aplLft);
+
+    // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+    switch (eHCMul)
+    {
+        case ENUMHCM_ANTI:
+            // Loop through all of the parts
+            for (i = 0; i < 4; i++)
+            {
+                // Calculate the difference
+                aplRes.parts[i] = aplLxR.parts[i] - aplRxL.parts[i];
+
+                // Divide the difference by 2
+                aplRes.parts[i] /= 2;
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_COMM:
+            // Loop through all of the parts
+            for (i = 0; i < 4; i++)
+            {
+                // Calculate the sum
+                aplRes.parts[i] = aplLxR.parts[i] + aplRxL.parts[i];
+
+                // Divide the sum by 2
+                aplRes.parts[i] /= 2;
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_NONE:          // Can't happen
+        defstop
+            break;
+    } // End SWITCH
+
+    return aplRes;
+} // End MulHC4I_RE_HC
+
+
+//***************************************************************************
+//  $MulHC4I_RE
+//***************************************************************************
+
+APLHC4I MulHC4I_RE
+    (APLHC4I aplLft,                // Left arg
+     APLHC4I aplRht)                // Right ...
+
+{
+    APLHC4I aplRes;
+    APLHC2I dP, cP;
+
+    // Use Cayley-Dickson construction
+    // (a,b) x (c,d) = (ac - d'b, da + bc')
+    //   where d' = conjugate (d)
+    //   where c' = conjugate (c)
+
+#define a   aplLft.partsLo[0]
+#define b   aplLft.partsHi[0]
+#define c   aplRht.partsLo[0]
+#define d   aplRht.partsHi[0]
+
+    dP = ConjHC2I_RE (d);
+    cP = ConjHC2I_RE (c);
+
+    // ***FIXME*** -- Use __try/__except to catch blowup due to -0
+
+    aplRes.partsLo[0] = SubHC2I_RE (MulHC2I_RE (a  , c),
+                                    MulHC2I_RE (dP , b));
+    aplRes.partsHi[0] = AddHC2I_RE (MulHC2I_RE (d  , a ),
+                                    MulHC2I_RE (b  , cP));
+#undef  d
+#undef  c
+#undef  b
+#undef  a
+
+    return aplRes;
+} // End MulHC4I_RE
+
+
+//***************************************************************************
+//  $PrimFnDydTimesHC4IisHC4IvHC4I
+//
+//  Primitive scalar function dyadic Times:  HC4I {is} HC4I fn HC4I
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydTimesHC4IisHC4IvHC4I"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnDydTimesHC4IisHC4IvHC4I
+    (LPAPLHC4I  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:
+                // Call subbfunction
+                lpMemRes[uRes] = MulHC4I_RE (lpatLft->aplHC4I, lpatRht->aplHC4I);
+
+                break;
+
+            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
+            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+                // Call subbfunction
+                lpMemRes[uRes] = MulHC4I_RE_HC (lpatLft->aplHC4I, lpatRht->aplHC4I, lpPrimSpec->eHCMul);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC4F);
+} // End PrimFnDydTimesHC4IisHC4IvHC4I
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnDydTimesHC4FisHC4IvHC4I
+//
+//  Primitive scalar function dyadic Times:  HC4F {is} HC4I fn HC4I
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydTimesHC4FisHC4IvHC4I"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnDydTimesHC4FisHC4IvHC4I
+    (LPAPLHC4F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+    ALLTYPES        atLft = {0},
+                    atRht = {0};
+
+    // Convert the HC4I to HC4F
+    (*aTypeActPromote[ARRAY_HC4I][ARRAY_HC4F]) (lpatLft, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC4I][ARRAY_HC4F]) (lpatRht, 0, &atRht);
+
+    __try
+    {
+        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:
+                // Call subfunction
+                lpMemRes[uRes] = MulHC4F_RE (atLft.aplHC4F, atRht.aplHC4F);
+
+                break;
+
+            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
+            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+                // Call subbfunction
+                lpMemRes[uRes] = MulHC4F_RE_HC (atLft.aplHC4F, atRht.aplHC4F, lpPrimSpec->eHCMul);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
+} // End PrimFnDydTimesHC4FisHC4IvHC4I
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MulHC4F_RE_HC
+//***************************************************************************
+
+APLHC4F MulHC4F_RE_HC
+    (APLHC4F    aplLft,             // Left arg
+     APLHC4F    aplRht,             // Right ...
+     ENUM_HCMUL eHCMul)             // Multiplication choice (see tagENUM_HCMUL)
+
+{
+    APLHC4F aplRes,                 // The result
+            aplLxR,                 // Temp var
+            aplRxL;                 // ...
+    int     i;                      // Loop counter
+
+    // Calculate L x R
+    aplLxR = MulHC4F_RE (aplLft, aplRht);
+
+    // Calculate R x L
+    aplRxL = MulHC4F_RE (aplRht, aplLft);
+
+    // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+    switch (eHCMul)
+    {
+        case ENUMHCM_ANTI:
+            // Loop through all of the parts
+            for (i = 0; i < 4; i++)
+            {
+                // Calculate the difference
+                aplRes.parts[i] = aplLxR.parts[i] - aplRxL.parts[i];
+
+                // Divide the difference by 2
+                aplRes.parts[i] /= 2;
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_COMM:
+            // Loop through all of the parts
+            for (i = 0; i < 4; i++)
+            {
+                // Calculate the sum
+                aplRes.parts[i] = aplLxR.parts[i] + aplRxL.parts[i];
+
+                // Divide the sum by 2
+                aplRes.parts[i] /= 2;
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_NONE:          // Can't happen
+        defstop
+            break;
+    } // End SWITCH
+
+    return aplRes;
+} // End MulHC4F_RE_HC
+
+
+//***************************************************************************
+//  $MulHC4F_RE
+//***************************************************************************
+
+APLHC4F MulHC4F_RE
+    (APLHC4F aplLft,                // Left arg
+     APLHC4F aplRht)                // Right ...
+
+{
+    APLHC4F aplRes;
+    APLHC2F dP, cP;
+
+    // Use Cayley-Dickson construction
+    // (a,b) x (c,d) = (ac - d'b, da + bc')
+    //   where d' = conjugate (d)
+    //   where c' = conjugate (c)
+
+#define a   aplLft.partsLo[0]
+#define b   aplLft.partsHi[0]
+#define c   aplRht.partsLo[0]
+#define d   aplRht.partsHi[0]
+
+    dP = ConjHC2F_RE (d);
+    cP = ConjHC2F_RE (c);
+
+    // ***FIXME*** -- Use __try/__except to catch blowup due to -0
+
+    aplRes.partsLo[0] = SubHC2F_RE (MulHC2F_RE (a  , c ),
+                                    MulHC2F_RE (dP , b ));
+    aplRes.partsHi[0] = AddHC2F_RE (MulHC2F_RE (d  , a ),
+                                    MulHC2F_RE (b  , cP));
+#undef  d
+#undef  c
+#undef  b
+#undef  a
+
+    return aplRes;
+} // End MulHC4F_RE
+
+
+//***************************************************************************
+//  $PrimFnDydTimesHC4FisHC4FvHC4F
+//
+//  Primitive scalar function dyadic Times:  HC4F {is} HC4F fn HC4F
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydTimesHC4FisHC4FvHC4F"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnDydTimesHC4FisHC4FvHC4F
+    (LPAPLHC4F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:
+                // Call subfunction
+                lpMemRes[uRes] = MulHC4F_RE (lpatLft->aplHC4F, lpatRht->aplHC4F);
+
+                break;
+
+            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
+            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+                // Call subbfunction
+                lpMemRes[uRes] = MulHC4F_RE_HC (lpatLft->aplHC4F, lpatRht->aplHC4F, lpPrimSpec->eHCMul);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
+} // End PrimFnDydTimesHC4FisHC4FvHC4F
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MulHC4R_RE_HC
+//***************************************************************************
+
+APLHC4R MulHC4R_RE_HC
+    (APLHC4R    aplLft,             // Left arg
+     APLHC4R    aplRht,             // Right ...
+     ENUM_HCMUL eHCMul)             // Multiplication choice (see tagENUM_HCMUL)
+
+{
+    APLHC4R aplRes,                 // The result
+            aplLxR,                 // Temp var
+            aplRxL;                 // ...
+    int     i;                      // Loop counter
+
+    // Calculate L x R
+    aplLxR = MulHC4R_RE (aplLft, aplRht);
+
+    // Calculate R x L
+    aplRxL = MulHC4R_RE (aplRht, aplLft);
+
+    // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+    switch (eHCMul)
+    {
+        case ENUMHCM_ANTI:
+            // Loop through all of the parts
+            for (i = 0; i < 4; i++)
+            {
+                // Calculate the difference
+                aplRes.parts[i] = SubHC1R_RE (aplLxR.parts[i], aplRxL.parts[i]);
+
+                // Divide the difference by 2
+                mpq_div_2exp (&aplRes.parts[i], &aplRes.parts[i], 1);
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_COMM:
+            // Loop through all of the parts
+            for (i = 0; i < 4; i++)
+            {
+                // Calculate the sum
+                aplRes.parts[i] = AddHC1R_RE (aplLxR.parts[i], aplRxL.parts[i]);
+
+                // Divide the sum by 2
+                mpq_div_2exp (&aplRes.parts[i], &aplRes.parts[i], 1);
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_NONE:          // Can't happen
+        defstop
+            break;
+    } // End SWITCH
+
+    // We no longer need this storage
+    Myhc4r_clear (&aplLxR);
+    Myhc4r_clear (&aplRxL);
+
+    return aplRes;
+} // End MulHC4R_RE_HC
+
+
+//***************************************************************************
+//  $MulHC4R_RE
+//***************************************************************************
+
+APLHC4R MulHC4R_RE
+    (APLHC4R aplLft,                    // Left arg
+     APLHC4R aplRht)                    // Right ...
+
+{
+    int     i;
+    APLHC4R aplRes = {0};
+    APLHC2R dP, cP;
+
+    // Initialize to 0/1
+    mphc4r_init (&aplRes);
+
+    // Use Cayley-Dickson construction
+    // (a,b) x (c,d) = (ac - d'b, da + bc')
+    //   where d' = conjugate (d)
+    //   where c' = conjugate (c)
+
+#define a   aplLft.partsLo
+#define b   aplLft.partsHi
+#define c   aplRht.partsLo
+#define d   aplRht.partsHi
+
+    dP = ConjHC2R_RE (d);
+    cP = ConjHC2R_RE (c);
+
+    // ***FIXME*** -- Use __try/__except to catch blowup due to -0
+
+    aplRes.partsLo = SubHC2R_RE (MulHC2R_RE (a  , c  ),
+                                 MulHC2R_RE (dP , b  ));
+    aplRes.partsHi = AddHC2R_RE (MulHC2R_RE (d  , a  ),
+                                 MulHC2R_RE (b  , cP ));
+#undef  d
+#undef  c
+#undef  b
+#undef  a
+
+    Myhc2r_clear (&cP);
+    Myhc2r_clear (&dP);
+
+    // Loop through all of the parts
+    for (i = 0; i < 4; i++)
+    // Check for indeterminates:  0 {times} _  or  _ {times} 0
+    if ((IsMpq0 (&aplLft.parts[i])
+      && IsMpqPosInfinity (&aplRht.parts[i]))
+     || (IsMpqPosInfinity (&aplLft.parts[i])
+      && IsMpq0 (&aplRht.parts[i])))
+        mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
+                                                     ICNDX_0MULPi,
+                                                   &aplRht.parts[i],
+                                                   &aplRes.parts[i],
+                                                    IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
+                                                                              : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
+    else
+    // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
+    if ((IsMpq0 (&aplLft.parts[i])
+      && IsMpqNegInfinity (&aplRht.parts[i]))
+     || (IsMpqNegInfinity (&aplLft.parts[i])
+      && IsMpq0 (&aplRht.parts[i])))
+        mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
+                                                     ICNDX_0MULNi,
+                                                    &aplRht.parts[i],
+                                                    &aplRes.parts[i],
+                                                     IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
+                                                                               : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
+    return aplRes;
+} // End MulHC4R_RE
+
+
+//***************************************************************************
+//  $PrimFnDydTimesHC4RisHC4RvHC4R
+//
+//  Primitive scalar function dyadic Times:  HC4R {is} HC4R fn HC4R
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydTimesHC4RisHC4RvHC4R"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnDydTimesHC4RisHC4RvHC4R
+    (LPAPLHC4R  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:
+                // Call subfunction
+                lpMemRes[uRes] = MulHC4R_RE (lpatLft->aplHC4R, lpatRht->aplHC4R);
+
+                break;
+
+            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
+            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+                // Call subbfunction
+                lpMemRes[uRes] = MulHC4R_RE_HC (lpatLft->aplHC4R, lpatRht->aplHC4R, lpPrimSpec->eHCMul);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC4V);
+} // End PrimFnDydTimesHC4RisHC4RvHC4R
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MulHC4V_RE_HC
+//***************************************************************************
+
+APLHC4V MulHC4V_RE_HC
+    (APLHC4V    aplLft,             // Left arg
+     APLHC4V    aplRht,             // Right ...
+     ENUM_HCMUL eHCMul)             // Multiplication choice (see tagENUM_HCMUL)
+
+{
+    APLHC4V aplRes,                 // The result
+            aplLxR,                 // Temp var
+            aplRxL;                 // ...
+    int     i;                      // Loop counter
+
+    // Calculate L x R
+    aplLxR = MulHC4V_RE (aplLft, aplRht);
+
+    // Calculate R x L
+    aplRxL = MulHC4V_RE (aplRht, aplLft);
+
+    // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+    switch (eHCMul)
+    {
+        case ENUMHCM_ANTI:
+            // Loop through all of the parts
+            for (i = 0; i < 4; i++)
+            {
+                // Calculate the difference
+                aplRes.parts[i] = SubHC1V_RE (aplLxR.parts[i], aplRxL.parts[i]);
+
+                // Divide the difference by 2
+                mpfr_div_2exp (&aplRes.parts[i], &aplRes.parts[i], 1, MPFR_RNDN);
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_COMM:
+            // Loop through all of the parts
+            for (i = 0; i < 4; i++)
+            {
+                // Calculate the sum
+                aplRes.parts[i] = AddHC1V_RE (aplLxR.parts[i], aplRxL.parts[i]);
+
+                // Divide the sum by 2
+                mpfr_div_2exp (&aplRes.parts[i], &aplRes.parts[i], 1, MPFR_RNDN);
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_NONE:          // Can't happen
+        defstop
+            break;
+    } // End SWITCH
+
+    // We no longer need this storage
+    Myhc4v_clear (&aplLxR);
+    Myhc4v_clear (&aplRxL);
+
+    return aplRes;
+} // End MulHC4V_RE_HC
+
+
+//***************************************************************************
+//  $MulHC4V_RE
+//***************************************************************************
+
+APLHC4V MulHC4V_RE
+    (APLHC4V aplLft,
+     APLHC4V aplRht)
+
+{
+    int     i;
+    APLHC4V aplRes = {0};
+    APLHC2V dP,cP;
+
+    // Initialize to 0
+    mphc4v_init0 (&aplRes);
+
+////aplRes.parts[0] = aplLft.parts[0] * aplRht.parts[0],
+////                - aplLft.parts[1] * aplRht.parts[1];
+////aplRes.parts[1] = aplLft.parts[0] * aplRht.parts[1]
+////                + aplLft.parts[1] * aplRht.parts[0];
+
+    // Use Cayley-Dickson construction
+    // (a,b) x (c,d) = (ac - d'b, da + bc')
+    //   where d' = conjugate (d)
+    //   where c' = conjugate (c)
+
+#define a   aplLft.partsLo
+#define b   aplLft.partsHi
+#define c   aplRht.partsLo
+#define d   aplRht.partsHi
+
+    dP = ConjHC2V_RE (d);
+    cP = ConjHC2V_RE (c);
+
+    // ***FIXME*** -- Use __try/__except to catch blowup due to -0
+
+    aplRes.partsLo = SubHC2V_RE (MulHC2V_RE (a  , c  ),
+                                 MulHC2V_RE (dP , b  ));
+    aplRes.partsHi = AddHC2V_RE (MulHC2V_RE (d  , a  ),
+                                 MulHC2V_RE (b  , cP ));
+#undef  d
+#undef  c
+#undef  b
+#undef  a
+
+    Myhc2v_clear (&cP);
+    Myhc2v_clear (&dP);
+
+    // Loop through all of the parts
+    for (i = 0; i < 4; i++)
+    // Check for indeterminates:  0 {times} _  or  _ {times} 0
+    if ((IsMpf0 (&aplLft.parts[i])
+      && IsMpfPosInfinity (&aplRht.parts[i]))
+     || (IsMpfPosInfinity (&aplLft.parts[i])
+      && IsMpf0 (&aplRht.parts[i])))
+        mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
+                                                       ICNDX_0MULPi,
+                                                      &aplRht.parts[i],
+                                                      &aplRes.parts[i],
+                                                       IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
+                                                                                 : SIGN_APLVFP (&aplRht.parts[i])),
+                                    MPFR_RNDN);
+    else
+    // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
+    if ((IsMpf0 (&aplLft.parts[i])
+      && IsMpfNegInfinity (&aplRht.parts[i]))
+     || (IsMpfNegInfinity (&aplLft.parts[i])
+      && IsMpf0 (&aplRht.parts[i])))
+        mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
+                                                       ICNDX_0MULNi,
+                                                      &aplRht.parts[i],
+                                                      &aplRes.parts[i],
+                                                       IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
+                                                                                 : SIGN_APLVFP (&aplRht.parts[i])),
+                                    MPFR_RNDN);
+    return aplRes;
+} // End MulHC4V_RE
+
+
+//***************************************************************************
+//  $PrimFnDydTimesHC4VisHC4RvHC4R
+//
+//  Primitive scalar function dyadic Times:  HC4V {is} HC4R fn HC4R
+//***************************************************************************
+
+void PrimFnDydTimesHC4VisHC4RvHC4R
+    (LPAPLHC4V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atLft = {0},
+             atRht = {0};
+
+    // Promote the left & right arg to the result type
+    (*aTypeActPromote[ARRAY_HC4R][ARRAY_HC4V]) (&lpatLft->aplHC4R, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC4R][ARRAY_HC4V]) (&lpatRht->aplHC4R, 0, &atRht);
+
+    PrimFnDydTimesHC4VisHC4VvHC4V (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+
+    Myhc4v_clear (&atRht.aplHC4V);
+    Myhc4v_clear (&atLft.aplHC4V);
+} // End PrimFnDydTimesHC4VisHC4RvHC4R
+
+
+//***************************************************************************
+//  $PrimFnDydTimesHC4VisHC4VvHC4V
+//
+//  Primitive scalar function dyadic Times:  HC4V {is} HC4V fn HC4V
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydTimesHC4VisHC4VvHC4V"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnDydTimesHC4VisHC4VvHC4V
+    (LPAPLHC4V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:
+                // Call subfunction
+                lpMemRes[uRes] = MulHC4V_RE (lpatLft->aplHC4V, lpatRht->aplHC4V);
+
+                break;
+
+            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
+            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+                // Call subbfunction
+                lpMemRes[uRes] = MulHC4V_RE_HC (lpatLft->aplHC4V, lpatRht->aplHC4V, lpPrimSpec->eHCMul);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
+} // End PrimFnDydTimesHC4VisHC4VvHC4V
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MulHC8I_RE_HC
+//***************************************************************************
+
+APLHC8I MulHC8I_RE_HC
+    (APLHC8I    aplLft,             // Left arg
+     APLHC8I    aplRht,             // Right ...
+     ENUM_HCMUL eHCMul)             // Multiplication choice (see tagENUM_HCMUL)
+
+{
+    APLHC8I aplRes,                 // The result
+            aplLxR,                 // Temp var
+            aplRxL;                 // ...
+    int     i;                      // Loop counter
+
+    // Calculate L x R
+    aplLxR = MulHC8I_RE (aplLft, aplRht);
+
+    // Calculate R x L
+    aplRxL = MulHC8I_RE (aplRht, aplLft);
+
+    // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+    switch (eHCMul)
+    {
+        case ENUMHCM_ANTI:
+            // Loop through all of the parts
+            for (i = 0; i < 8; i++)
+            {
+                // Calculate the difference
+                aplRes.parts[i] = aplLxR.parts[i] - aplRxL.parts[i];
+
+                // Divide the difference by 2
+                aplRes.parts[i] /= 2;
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_COMM:
+            // Loop through all of the parts
+            for (i = 0; i < 8; i++)
+            {
+                // Calculate the sum
+                aplRes.parts[i] = aplLxR.parts[i] + aplRxL.parts[i];
+
+                // Divide the sum by 2
+                aplRes.parts[i] /= 2;
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_NONE:          // Can't happen
+        defstop
+            break;
+    } // End SWITCH
+
+    return aplRes;
+} // End MulHC8I_RE_HC
+
+
+//***************************************************************************
+//  $MulHC8I_RE
+//***************************************************************************
+
+APLHC8I MulHC8I_RE
+    (APLHC8I aplLft,                // Left arg
+     APLHC8I aplRht)                // Right ...
+
+{
+    APLHC8I aplRes;
+    APLHC4I dP, cP;
+
+    // Use Cayley-Dickson construction
+    // (a,b) x (c,d) = (ac - d'b, da + bc')
+    //   where d' = conjugate (d)
+    //   where c' = conjugate (c)
+
+#define a   aplLft.partsLo[0]
+#define b   aplLft.partsHi[0]
+#define c   aplRht.partsLo[0]
+#define d   aplRht.partsHi[0]
+
+    dP = ConjHC4I_RE (d);
+    cP = ConjHC4I_RE (c);
+
+    // ***FIXME*** -- Use __try/__except to catch blowup due to -0
+
+    aplRes.partsLo[0] = SubHC4I_RE (MulHC4I_RE (a  , c  ),
+                                    MulHC4I_RE (dP , b  ));
+    aplRes.partsHi[0] = AddHC4I_RE (MulHC4I_RE (d  , a  ),
+                                    MulHC4I_RE (b  , cP ));
+#undef  d
+#undef  c
+#undef  b
+#undef  a
+
+    return aplRes;
+} // End MulHC8I_RE
+
+
+//***************************************************************************
+//  $PrimFnDydTimesHC8IisHC8IvHC8I
+//
+//  Primitive scalar function dyadic Times:  HC8I {is} HC8I fn HC8I
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydTimesHC8IisHC8IvHC8I"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnDydTimesHC8IisHC8IvHC8I
+    (LPAPLHC8I  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:
+                // Call subfunction
+                lpMemRes[uRes] = MulHC8I_RE (lpatLft->aplHC8I, lpatRht->aplHC8I);
+
+                break;
+
+            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
+            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+                // Call subbfunction
+                lpMemRes[uRes] = MulHC8I_RE_HC (lpatLft->aplHC8I, lpatRht->aplHC8I, lpPrimSpec->eHCMul);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC8F);
+} // End PrimFnDydTimesHC8IisHC8IvHC8I
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnDydTimesHC8FisHC8IvHC8I
+//
+//  Primitive scalar function dyadic Times:  HC8F {is} HC8I fn HC8I
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydTimesHC8FisHC8IvHC8I"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnDydTimesHC8FisHC8IvHC8I
+    (LPAPLHC8F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+    ALLTYPES        atLft = {0},
+                    atRht = {0};
+
+    // Convert the HC8I to HC8F
+    (*aTypeActPromote[ARRAY_HC8I][ARRAY_HC8F]) (lpatLft, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC8I][ARRAY_HC8F]) (lpatRht, 0, &atRht);
+
+    __try
+    {
+        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:
+                // Call subfunction
+                lpMemRes[uRes] = MulHC8F_RE (atLft.aplHC8F, atRht.aplHC8F);
+
+                break;
+
+            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
+            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+                // Call subbfunction
+                lpMemRes[uRes] = MulHC8F_RE_HC (atLft.aplHC8F, atRht.aplHC8F, lpPrimSpec->eHCMul);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
+} // End PrimFnDydTimesHC8FisHC8IvHC8I
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MulHC8F_RE_HC
+//***************************************************************************
+
+APLHC8F MulHC8F_RE_HC
+    (APLHC8F    aplLft,             // Left arg
+     APLHC8F    aplRht,             // Right ...
+     ENUM_HCMUL eHCMul)             // Multiplication choice (see tagENUM_HCMUL)
+
+{
+    APLHC8F aplRes,                 // The result
+            aplLxR,                 // Temp var
+            aplRxL;                 // ...
+    int     i;                      // Loop counter
+
+    // Calculate L x R
+    aplLxR = MulHC8F_RE (aplLft, aplRht);
+
+    // Calculate R x L
+    aplRxL = MulHC8F_RE (aplRht, aplLft);
+
+    // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+    switch (eHCMul)
+    {
+        case ENUMHCM_ANTI:
+            // Loop through all of the parts
+            for (i = 0; i < 8; i++)
+            {
+                // Calculate the difference
+                aplRes.parts[i] = aplLxR.parts[i] - aplRxL.parts[i];
+
+                // Divide the difference by 2
+                aplRes.parts[i] /= 2;
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_COMM:
+            // Loop through all of the parts
+            for (i = 0; i < 8; i++)
+            {
+                // Calculate the sum
+                aplRes.parts[i] = aplLxR.parts[i] + aplRxL.parts[i];
+
+                // Divide the sum by 2
+                aplRes.parts[i] /= 2;
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_NONE:          // Can't happen
+        defstop
+            break;
+    } // End SWITCH
+
+    return aplRes;
+} // End MulHC8F_RE_HC
+
+
+//***************************************************************************
+//  $MulHC8F_RE
+//***************************************************************************
+
+APLHC8F MulHC8F_RE
+    (APLHC8F aplLft,
+     APLHC8F aplRht)
+
+{
+    APLHC8F aplRes;
+    APLHC4F dP, cP;
+
+    // Use Cayley-Dickson construction
+    // (a,b) x (c,d) = (ac - d'b, da + bc')
+    //   where d' = conjugate (d)
+    //   where c' = conjugate (c)
+
+#define a   aplLft.partsLo[0]
+#define b   aplLft.partsHi[0]
+#define c   aplRht.partsLo[0]
+#define d   aplRht.partsHi[0]
+
+    dP = ConjHC4F_RE (d);
+    cP = ConjHC4F_RE (c);
+
+    // ***FIXME*** -- Use __try/__except to catch blowup due to -0
+
+    aplRes.partsLo[0] = SubHC4F_RE (MulHC4F_RE (a  , c ),
+                                    MulHC4F_RE (dP , b ));
+    aplRes.partsHi[0] = AddHC4F_RE (MulHC4F_RE (d  , a ),
+                                    MulHC4F_RE (b  , cP));
+#undef  d
+#undef  c
+#undef  b
+#undef  a
+
+    return aplRes;
+} // End MulHC8F_RE
+
+
+//***************************************************************************
+//  $PrimFnDydTimesHC8FisHC8FvHC8F
+//
+//  Primitive scalar function dyadic Times:  HC8F {is} HC8F fn HC8F
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydTimesHC8FisHC8FvHC8F"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnDydTimesHC8FisHC8FvHC8F
+    (LPAPLHC8F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:
+               // Call subfunction
+               lpMemRes[uRes] = MulHC8F_RE (lpatLft->aplHC8F, lpatRht->aplHC8F);
+
+                break;
+
+            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
+            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+                // Call subbfunction
+                lpMemRes[uRes] = MulHC8F_RE_HC (lpatLft->aplHC8F, lpatRht->aplHC8F, lpPrimSpec->eHCMul);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
+} // End PrimFnDydTimesHC8FisHC8FvHC8F
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MulHC8R_RE_HC
+//***************************************************************************
+
+APLHC8R MulHC8R_RE_HC
+    (APLHC8R    aplLft,             // Left arg
+     APLHC8R    aplRht,             // Right ...
+     ENUM_HCMUL eHCMul)             // Multiplication choice (see tagENUM_HCMUL)
+
+{
+    APLHC8R aplRes,                 // The result
+            aplLxR,                 // Temp var
+            aplRxL;                 // ...
+    int     i;                      // Loop counter
+
+    // Calculate L x R
+    aplLxR = MulHC8R_RE (aplLft, aplRht);
+
+    // Calculate R x L
+    aplRxL = MulHC8R_RE (aplRht, aplLft);
+
+    // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+    switch (eHCMul)
+    {
+        case ENUMHCM_ANTI:
+            // Loop through all of the parts
+            for (i = 0; i < 8; i++)
+            {
+                // Calculate the difference
+                aplRes.parts[i] = SubHC1R_RE (aplLxR.parts[i], aplRxL.parts[i]);
+
+                // Divide the difference by 2
+                mpq_div_2exp (&aplRes.parts[i], &aplRes.parts[i], 1);
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_COMM:
+            // Loop through all of the parts
+            for (i = 0; i < 8; i++)
+            {
+                // Calculate the sum
+                aplRes.parts[i] = AddHC1R_RE (aplLxR.parts[i], aplRxL.parts[i]);
+
+                // Divide the sum by 2
+                mpq_div_2exp (&aplRes.parts[i], &aplRes.parts[i], 1);
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_NONE:          // Can't happen
+        defstop
+            break;
+    } // End SWITCH
+
+    // We no longer need this storage
+    Myhc8r_clear (&aplLxR);
+    Myhc8r_clear (&aplRxL);
+
+    return aplRes;
+} // End MulHC8R_RE_HC
+
+
+//***************************************************************************
+//  $MulHC8R_RE
+//***************************************************************************
+
+APLHC8R MulHC8R_RE
+    (APLHC8R aplLft,                    // Left arg
+     APLHC8R aplRht)                    // Right ...
+
+{
+    int     i;
+    APLHC8R aplRes = {0};
+    APLHC4R dP, cP;
+
+    // Initialize to 0/1
+    mphc8r_init (&aplRes);
+
+    // Use Cayley-Dickson construction
+    // (a,b) x (c,d) = (ac - d'b, da + bc')
+    //   where d' = conjugate (d)
+    //   where c' = conjugate (c)
+
+#define a   aplLft.partsLo
+#define b   aplLft.partsHi
+#define c   aplRht.partsLo
+#define d   aplRht.partsHi
+
+    dP = ConjHC4R_RE (d);
+    cP = ConjHC4R_RE (c);
+
+    // ***FIXME*** -- Use __try/__except to catch blowup due to -0
+
+    aplRes.partsLo = SubHC4R_RE (MulHC4R_RE (a  , c  ),
+                                 MulHC4R_RE (dP , b  ));
+    aplRes.partsHi = AddHC4R_RE (MulHC4R_RE (d  , a  ),
+                                 MulHC4R_RE (b  , cP ));
+#undef  d
+#undef  c
+#undef  b
+#undef  a
+
+    Myhc4r_clear (&cP);
+    Myhc4r_clear (&dP);
+
+    // Loop through all of the parts
+    for (i = 0; i < 8; i++)
+    // Check for indeterminates:  0 {times} _  or  _ {times} 0
+    if ((IsMpq0 (&aplLft.parts[i])
+      && IsMpqPosInfinity (&aplRht.parts[i]))
+     || (IsMpqPosInfinity (&aplLft.parts[i])
+      && IsMpq0 (&aplRht.parts[i])))
+        mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
+                                                     ICNDX_0MULPi,
+                                                   &aplRht.parts[i],
+                                                   &aplRes.parts[i],
+                                                    IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
+                                                                              : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
+    else
+    // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
+    if ((IsMpq0 (&aplLft.parts[i])
+      && IsMpqNegInfinity (&aplRht.parts[i]))
+     || (IsMpqNegInfinity (&aplLft.parts[i])
+      && IsMpq0 (&aplRht.parts[i])))
+        mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
+                                                     ICNDX_0MULNi,
+                                                    &aplRht.parts[i],
+                                                    &aplRes.parts[i],
+                                                     IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
+                                                                               : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
+    return aplRes;
+} // End MulHC8R_RE
+
+
+//***************************************************************************
+//  $PrimFnDydTimesHC8RisHC8RvHC8R
+//
+//  Primitive scalar function dyadic Times:  HC8R {is} HC8R fn HC8R
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydTimesHC8RisHC8RvHC8R"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnDydTimesHC8RisHC8RvHC8R
+    (LPAPLHC8R  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:
+                // Call subfunction
+                lpMemRes[uRes] = MulHC8R_RE (lpatLft->aplHC8R, lpatRht->aplHC8R);
+
+                break;
+
+            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
+            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+                // Call subbfunction
+                lpMemRes[uRes] = MulHC8R_RE_HC (lpatLft->aplHC8R, lpatRht->aplHC8R, lpPrimSpec->eHCMul);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC8V);
+} // End PrimFnDydTimesHC8RisHC8RvHC8R
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $MulHC8V_RE_HC
+//***************************************************************************
+
+APLHC8V MulHC8V_RE_HC
+    (APLHC8V    aplLft,             // Left arg
+     APLHC8V    aplRht,             // Right ...
+     ENUM_HCMUL eHCMul)             // Multiplication choice (see tagENUM_HCMUL)
+
+{
+    APLHC8V aplRes,                 // The result
+            aplLxR,                 // Temp var
+            aplRxL;                 // ...
+    int     i;                      // Loop counter
+
+    // Calculate L x R
+    aplLxR = MulHC8V_RE (aplLft, aplRht);
+
+    // Calculate R x L
+    aplRxL = MulHC8V_RE (aplRht, aplLft);
+
+    // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+    switch (eHCMul)
+    {
+        case ENUMHCM_ANTI:
+            // Loop through all of the parts
+            for (i = 0; i < 8; i++)
+            {
+                // Calculate the difference
+                aplRes.parts[i] = SubHC1V_RE (aplLxR.parts[i], aplRxL.parts[i]);
+
+                // Divide the difference by 2
+                mpfr_div_2exp (&aplRes.parts[i], &aplRes.parts[i], 1, MPFR_RNDN);
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_COMM:
+            // Loop through all of the parts
+            for (i = 0; i < 8; i++)
+            {
+                // Calculate the sum
+                aplRes.parts[i] = AddHC1V_RE (aplLxR.parts[i], aplRxL.parts[i]);
+
+                // Divide the sum by 2
+                mpfr_div_2exp (&aplRes.parts[i], &aplRes.parts[i], 1, MPFR_RNDN);
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_NONE:          // Can't happen
+        defstop
+            break;
+    } // End SWITCH
+
+    // We no longer need this storage
+    Myhc8v_clear (&aplLxR);
+    Myhc8v_clear (&aplRxL);
+
+    return aplRes;
+} // End MulHC8V_RE_HC
+
+
+//***************************************************************************
+//  $MulHC8V_RE
+//***************************************************************************
+
+APLHC8V MulHC8V_RE
+    (APLHC8V aplLft,
+     APLHC8V aplRht)
+
+{
+    int     i;
+    APLHC8V aplRes;
+    APLHC4V dP,cP;
+
+    // Initialize to 0
+    mphc8v_init0 (&aplRes);
+
+    // Use Cayley-Dickson construction
+    // (a,b) x (c,d) = (ac - d'b, da + bc')
+    //   where d' = conjugate (d)
+    //   where c' = conjugate (c)
+
+#define a   aplLft.partsLo
+#define b   aplLft.partsHi
+#define c   aplRht.partsLo
+#define d   aplRht.partsHi
+
+    dP = ConjHC4V_RE (d);
+    cP = ConjHC4V_RE (c);
+
+    // ***FIXME*** -- Use __try/__except to catch blowup due to -0
+
+    aplRes.partsLo = SubHC4V_RE (MulHC4V_RE (a  , c  ),
+                                 MulHC4V_RE (dP , b  ));
+    aplRes.partsHi = AddHC4V_RE (MulHC4V_RE (d  , a  ),
+                                 MulHC4V_RE (b  , cP ));
+#undef  d
+#undef  c
+#undef  b
+#undef  a
+
+    Myhc4v_clear (&cP);
+    Myhc4v_clear (&dP);
+
+    // Loop through all of the parts
+    for (i = 0; i < 8; i++)
+    // Check for indeterminates:  0 {times} _  or  _ {times} 0
+    if ((IsMpf0 (&aplLft.parts[i])
+      && IsMpfPosInfinity (&aplRht.parts[i]))
+     || (IsMpfPosInfinity (&aplLft.parts[i])
+      && IsMpf0 (&aplRht.parts[i])))
+        mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
+                                                       ICNDX_0MULPi,
+                                                      &aplRht.parts[i],
+                                                      &aplRes.parts[i],
+                                                       IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
+                                                                                 : SIGN_APLVFP (&aplRht.parts[i])),
+                                    MPFR_RNDN);
+    else
+    // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
+    if ((IsMpf0 (&aplLft.parts[i])
+      && IsMpfNegInfinity (&aplRht.parts[i]))
+     || (IsMpfNegInfinity (&aplLft.parts[i])
+      && IsMpf0 (&aplRht.parts[i])))
+        mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
+                                                       ICNDX_0MULNi,
+                                                      &aplRht.parts[i],
+                                                      &aplRes.parts[i],
+                                                       IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
+                                                                                 : SIGN_APLVFP (&aplRht.parts[i])),
+                                    MPFR_RNDN);
+    return aplRes;
+} // End MulHC8V_RE
+
+
+//***************************************************************************
+//  $PrimFnDydTimesHC8VisHC8RvHC8R
+//
+//  Primitive scalar function dyadic times:  HC8V {is} HC8R fn HC8R
+//***************************************************************************
+
+void PrimFnDydTimesHC8VisHC8RvHC8R
+    (LPAPLHC8V  lpMemRes,           // ptr to the result
+     APLUINT    uRes,               // index into the result
+     LPALLTYPES lpatLft,            // ptr to left arg alltypes
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // ptr to local primspec
+
+{
+    ALLTYPES atLft = {0},
+             atRht = {0};
+
+    // Promote the left & right arg to the result type
+    (*aTypeActPromote[ARRAY_HC8R][ARRAY_HC8V]) (&lpatLft->aplHC8R, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC8R][ARRAY_HC8V]) (&lpatRht->aplHC8R, 0, &atRht);
+
+    PrimFnDydTimesHC8VisHC8VvHC8V (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+
+    Myhc8v_clear (&atRht.aplHC8V);
+    Myhc8v_clear (&atLft.aplHC8V);
+} // End PrimFnDydTimesHC8VisHC8RvHC8R
+
+
+//***************************************************************************
+//  $PrimFnDydTimesHC8VisHC8VvHC8V
+//
+//  Primitive scalar function dyadic Times:  HC8V {is} HC8V fn HC8V
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnDydTimesHC8VisHC8VvHC8V"
+#else
+#define APPEND_NAME
+#endif
+
+void PrimFnDydTimesHC8VisHC8VvHC8V
+    (LPAPLHC8V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+    __try
+    {
+        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:
+                // Call subfunction
+                lpMemRes[uRes] = MulHC8V_RE (lpatLft->aplHC8V, lpatRht->aplHC8V);
+
+                break;
+
+            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
+            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+                // Call subbfunction
+                lpMemRes[uRes] = MulHC8V_RE_HC (lpatLft->aplHC8V, lpatRht->aplHC8V, lpPrimSpec->eHCMul);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Check the exception code in a helper function
+        CheckExCodeHelper (&exCode);
+    } // End __try/__except
+
+    // Check the exception code in a main function
+    CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
+} // End PrimFnDydTimesHC8VisHC8VvHC8V
+#undef  APPEND_NAME
 
 
 //***************************************************************************

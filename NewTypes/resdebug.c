@@ -224,7 +224,7 @@ void _SaveObj
         // Increment the counter
         (*lpiCount)++;
     } else
-        DbgBrk ();              // #ifdef DEBUG
+        MBW (L"*** Increase MAXOBJ ***");   // #ifdef DEBUG
 
     if (bCSO)
         LeaveCriticalSection (&CSORsrc);
@@ -1839,6 +1839,9 @@ void _CheckMemStat
 ////    DbgBrk ();              // #ifdef DEBUG
 ////
 #if defined (DEBUG) && defined (DEBUG_HEAP)
+    // Attempt to allocate some memory
+    GlobalFree (GlobalAlloc (GHND, 0x1C));
+
     if (!HeapValidate (GetProcessHeap (), 0, NULL))
         DbgBrk ();              // #ifdef DEBUG
 #endif

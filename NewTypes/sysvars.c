@@ -34,6 +34,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"alx"      , SYSVAR,      TRUE , FALSE, NULL                , SYSVAR_ALX     },    // Attention Latent Expression
     {WS_UTF16_QUAD L"ct"       , SYSVAR,      TRUE , TRUE , NULL                , SYSVAR_CT      },    // Comparison Tolerance
     {WS_UTF16_QUAD L"dm"       , SYSVAR,      TRUE , FALSE, NULL                , SYSVAR_DM      },    // Diagnostic Message (Read-only)
+    {WS_UTF16_QUAD L"dq"       , SYSVAR,      TRUE , FALSE, NULL                , SYSVAR_DQ      },    // Division Quotient
     {WS_UTF16_QUAD L"dt"       , SYSVAR,      TRUE , FALSE, NULL                , SYSVAR_DT      },    // Distribution Type
     {WS_UTF16_QUAD L"elx"      , SYSVAR,      TRUE , FALSE, NULL                , SYSVAR_ELX     },    // Error Latent Expression
     {WS_UTF16_QUAD L"fc"       , SYSVAR,      TRUE , FALSE, NULL                , SYSVAR_FC      },    // Format Control
@@ -81,6 +82,7 @@ SYSNAME aSystemNames[] =
 // Monadic or dyadic system functions
     {WS_UTF16_QUAD L"at"       ,      1,      FALSE, FALSE, SysFnAT_EM_YY       , 0              },    // Attributes
     {WS_UTF16_QUAD L"cr"       ,      1,      FALSE, TRUE , SysFnCR_EM_YY       , 0              },    // Canonical Representation
+    {WS_UTF16_QUAD L"dc"       ,      1,      FALSE, FALSE, SysFnDC_EM_YY       , 0              },    // Data Conversion
     {WS_UTF16_QUAD L"dl"       ,      1,      FALSE, TRUE , SysFnDL_EM_YY       , 0              },    // Delay Execution
     {WS_UTF16_QUAD L"dr"       ,      1,      FALSE, FALSE, SysFnDR_EM_YY       , 0              },    // Data Representation
     {WS_UTF16_QUAD L"ea"       ,      1,      FALSE, TRUE , SysFnEA_EM_YY       , 0              },    // Execute Alternate
@@ -700,9 +702,9 @@ void AssignCharScalarCWS
 
 
 //***************************************************************************
-//  $ValidateCharDT_EM
+//  $ValidateCharScalar_EM
 //
-//  Validate a value about to be assigned to an character system var.
+//  Validate a value about to be assigned to a character system var.
 //
 //  We allow any character scalar or one-element vector.
 //
@@ -710,15 +712,17 @@ void AssignCharScalarCWS
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- ValidateCharDT_EM"
+#define APPEND_NAME     L" -- ValidateCharScalar_EM"
 #else
 #define APPEND_NAME
 #endif
 
-UBOOL ValidateCharDT_EM
-    (LPTOKEN  lptkNamArg,           // Ptr to name token
+UBOOL ValidateCharScalar_EM
+    (LPTOKEN  lptkNamArg,           // Ptr to name token (may be NULL if retValue is not)
      LPTOKEN  lptkExpr,             // Ptr to value token
-     APLCHAR  cDefault)             // Default value
+     APLCHAR  cDefault,             // Default value
+     LPWCHAR  defAllow,             // Ptr to vector of allowed values
+     LPWCHAR  retValue)             // Ptr to return value (may be NULL if lptkNamArg is not)
 
 {
     APLSTYPE          aplTypeRht;           // Right arg storage type
@@ -760,10 +764,10 @@ UBOOL ValidateCharDT_EM
 
                 case IMMTYPE_CHAR:
                     // Get the value
-                    aplChar = lptkExpr->tkData.tkSym->stData.stChar;
+                    aplChar = tolower (lptkExpr->tkData.tkSym->stData.stChar);
 
                     // Test the value
-                    bRet = (strchrW (DEF_QUADDT_ALLOW, aplChar) NE NULL);
+                    bRet = (strchrW (defAllow, aplChar) NE NULL);
 
                     break;
             } // End SWITCH
@@ -784,10 +788,10 @@ UBOOL ValidateCharDT_EM
 
                 case IMMTYPE_CHAR:
                     // Get the value
-                    aplChar = lptkExpr->tkData.tkChar;
+                    aplChar = tolower (lptkExpr->tkData.tkChar);
 
                     // Test the value
-                    bRet = (strchrW (DEF_QUADDT_ALLOW, aplChar) NE NULL);
+                    bRet = (strchrW (defAllow, aplChar) NE NULL);
 
                     break;
             } // End SWITCH
@@ -859,10 +863,10 @@ UBOOL ValidateCharDT_EM
 
         case ARRAY_CHAR:
             // Get the value
-            aplChar = *(LPAPLCHAR) lpMemRht;
+            aplChar = tolower (*(LPAPLCHAR) lpMemRht);
 
             // Test the value
-            bRet = (strchrW (DEF_QUADDT_ALLOW, aplChar) NE NULL);
+            bRet = (strchrW (defAllow, aplChar) NE NULL);
 
             break;
 
@@ -873,10 +877,16 @@ UBOOL ValidateCharDT_EM
     if (!bRet)
         goto DOMAIN_EXIT;
 NORMAL_EXIT:
-    // Save the value in the name
-    lptkNamArg->tkData.tkSym->stData.stChar = aplChar;
-    lptkNamArg->tkFlags.NoDisplay = TRUE;
-
+    if (lptkNamArg NE NULL)
+    {
+        // Save the value in the name
+        lptkNamArg->tkData.tkSym->stData.stChar = aplChar;
+        lptkNamArg->tkFlags.NoDisplay = TRUE;
+    } else
+    if (retValue NE NULL)
+        retValue[0] = aplChar;
+    else
+        DbgStop ();         // We should never get here
     goto UNLOCK_EXIT;
 
 SYNTAX_EXIT:
@@ -908,7 +918,7 @@ UNLOCK_EXIT:
     } // End IF
 
     return bRet;
-} // End ValidateCharDT_EM
+} // End ValidateCharScalar_EM
 #undef  APPEND_NAME
 
 
@@ -2650,6 +2660,47 @@ UBOOL ValidNdxDM
 
 
 //***************************************************************************
+//  $ValidNdxDQ
+//
+//  Validate a single value before assigning it to a position in []DQ.
+//
+//  We allow the characters in DEF_QUADDQ_ALLOW.
+//***************************************************************************
+
+UBOOL ValidNdxDQ
+    (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
+     APLSTYPE     aplTypeRht,               // Right arg storage type
+     LPAPLLONGEST lpaplLongestRht,          // Ptr to the right arg value
+     LPIMM_TYPES  lpimmTypeRht,             // Ptr to right arg immediate type (may be NULL)
+     HGLOBAL      lpSymGlbRht,              // Ptr to right arg global value
+     LPTOKEN      lptkFunc)                 // Ptr to function token
+
+{
+    APLCHAR aplChar;                // The value to validate
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_FLOAT:
+        case ARRAY_APA:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            return FALSE;
+
+        case ARRAY_CHAR:
+            aplChar = (APLCHAR) *lpaplLongestRht;
+
+            return (strchrW (DEF_QUADDQ_ALLOW, aplChar) NE NULL);
+
+        defstop
+            return FALSE;
+    } // End SWITCH
+} // End ValidNdxDQ
+
+
+//***************************************************************************
 //  $ValidNdxDT
 //
 //  Validate a single value before assigning it to a position in []DT.
@@ -2691,6 +2742,28 @@ UBOOL ValidNdxDT
 
 
 //***************************************************************************
+//  $ValidSetDQ_EM
+//
+//  Validate a value before assigning it to []DT
+//***************************************************************************
+
+UBOOL ValidSetDQ_EM
+    (LPTOKEN lptkNamArg,            // Ptr to name arg token
+     LPTOKEN lptkRhtArg)            // Ptr to right arg token
+
+{
+    // Ensure the argument is either a real scalar or
+    //   one-element vector (demoted to a scalar)
+    return ValidateCharScalar_EM (lptkNamArg,           // Ptr to name arg token (may be NULL if retValue is not)
+                                  lptkRhtArg,           // Ptr to right arg token
+                  bResetVars.DQ ? DEF_QUADDQ_CWS[0]
+                                : cQuadDQ_CWS,          // Default ...
+                                  DEF_QUADDQ_ALLOW,     // Ptr to vector of allowed values
+                                  NULL);                // Ptr to return value (may be NULL if lptkNamArg is not)
+} // End ValidSetDQ_EM
+
+
+//***************************************************************************
 //  $ValidSetDT_EM
 //
 //  Validate a value before assigning it to []DT
@@ -2703,10 +2776,12 @@ UBOOL ValidSetDT_EM
 {
     // Ensure the argument is either a real scalar or
     //   one-element vector (demoted to a scalar)
-    return ValidateCharDT_EM (lptkNamArg,             // Ptr to name arg token
-                              lptkRhtArg,             // Ptr to right arg token
-              bResetVars.DT ? DEF_QUADDT_CWS[0]
-                            : cQuadDT_CWS);           // Default ...
+    return ValidateCharScalar_EM (lptkNamArg,           // Ptr to name arg token (may be NULL if retValue is not)
+                                  lptkRhtArg,           // Ptr to right arg token
+                  bResetVars.DT ? DEF_QUADDT_CWS[0]
+                                : cQuadDT_CWS,          // Default ...
+                                  DEF_QUADDT_ALLOW,     // Ptr to vector of allowed values
+                                  NULL);                // Ptr to return value (may be NULL if lptkNamArg is not)
 } // End ValidSetDT_EM
 
 
@@ -4175,6 +4250,7 @@ void AssignDefaultHTSSysVars
     AssignGlobalCWS     (hGlbQuadALX_CWS     , SYSVAR_ALX     , lpSymQuad[SYSVAR_ALX     ]);    // Attention Latent Expression
     AssignRealScalarCWS (fQuadCT_CWS         , SYSVAR_CT      , lpSymQuad[SYSVAR_CT      ]);    // Comparison Tolerance
     AssignGlobalCWS     (hGlbV0Char          , SYSVAR_DM      , lpSymQuad[SYSVAR_DM      ]);    // Diagnostic Message
+    AssignCharScalarCWS (cQuadDQ_CWS         , SYSVAR_DQ      , lpSymQuad[SYSVAR_DQ      ]);    // Division Quotient
     AssignCharScalarCWS (cQuadDT_CWS         , SYSVAR_DT      , lpSymQuad[SYSVAR_DT      ]);    // Distribution Type
     AssignGlobalCWS     (hGlbQuadELX_CWS     , SYSVAR_ELX     , lpSymQuad[SYSVAR_ELX     ]);    // Error Latent Expression
     AssignGlobalCWS     (hGlbQuadFC_CWS      , SYSVAR_FC      , lpSymQuad[SYSVAR_FC      ]);    // Format Control
@@ -4214,6 +4290,7 @@ void CopySysVars
 
     // Copy scalar values
     lphtsDst->lpSymQuad[SYSVAR_CT      ]->stData.stLongest = lphtsSrc->lpSymQuad[SYSVAR_CT      ]->stData.stLongest;
+    lphtsDst->lpSymQuad[SYSVAR_DQ      ]->stData.stLongest = lphtsSrc->lpSymQuad[SYSVAR_DQ      ]->stData.stLongest;
     lphtsDst->lpSymQuad[SYSVAR_DT      ]->stData.stLongest = lphtsSrc->lpSymQuad[SYSVAR_DT      ]->stData.stLongest;
     lphtsDst->lpSymQuad[SYSVAR_FPC     ]->stData.stLongest = lphtsSrc->lpSymQuad[SYSVAR_FPC     ]->stData.stLongest;
     lphtsDst->lpSymQuad[SYSVAR_IO      ]->stData.stLongest = lphtsSrc->lpSymQuad[SYSVAR_IO      ]->stData.stLongest;
@@ -4225,16 +4302,16 @@ void CopySysVars
     DeleSysVars (lphtsDst);
 
     // Copy HGLOBAL values
-////lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData);    // Not used in {}
-////lphtsDst->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData);    // ...
-////lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData);    // Not used in {}
+    lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stFlags.Value = TRUE;
+    lphtsDst->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_DM      ]->stFlags.Value = TRUE;
+    lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stFlags.Value = TRUE;
     lphtsDst->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FC      ]->stFlags.Value = TRUE;
     lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stFlags.Value = TRUE;
     lphtsDst->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_IC      ]->stFlags.Value = TRUE;
 ////lphtsDst->lpSymQuad[SYSVAR_LX      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_LX      ]->stData.stGlbData);    // Not used in {}
 ////lphtsDst->lpSymQuad[SYSVAR_PR      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_PR      ]->stData.stGlbData);    // Not used in {}
 ////lphtsDst->lpSymQuad[SYSVAR_SA      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_SA      ]->stData.stGlbData);    // Not used in {}
-////lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData);    // Not used in {}
+    lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stFlags.Value = TRUE;
 ////lphtsDst->lpSymQuad[SYSVAR_Z       ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_Z       ]->stData.stGlbData);    // Local to {}
 } // End CopySysVars
 
@@ -4253,16 +4330,16 @@ void DeleSysVars
     if (lphtsDst)
     {
     // Delete HGLOBAL values
-////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData);   // Not used in {}
-////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData);   // Not used in {}
-////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData);   // Not used in {}
+        FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stFlags.Value = FALSE;
+        FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_DM      ]->stFlags.Value = FALSE;
+        FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stFlags.Value = FALSE;
         FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_FC      ]->stFlags.Value = FALSE;
         FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stFlags.Value = FALSE;
         FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_IC      ]->stFlags.Value = FALSE;
 ////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_LX      ]->stData.stGlbData);   // Not used in {}
 ////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_PR      ]->stData.stGlbData);   // Not used in {}
 ////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_SA      ]->stData.stGlbData);   // Not used in {}
-////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData);   // Not used in {}
+        FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stFlags.Value = FALSE;
 ////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_Z       ]->stData.stGlbData);   // Not used in {}
     } // End IF
 } // End DeleSysVars
@@ -4287,6 +4364,7 @@ void InitSysVars
     aSysVarValidSet[SYSVAR_ALX     ] = ValidSetALX_EM      ;
     aSysVarValidSet[SYSVAR_CT      ] = ValidSetCT_EM       ;
     aSysVarValidSet[SYSVAR_DM      ] = ValidSetDM_EM       ;
+    aSysVarValidSet[SYSVAR_DQ      ] = ValidSetDQ_EM       ;
     aSysVarValidSet[SYSVAR_DT      ] = ValidSetDT_EM       ;
     aSysVarValidSet[SYSVAR_ELX     ] = ValidSetELX_EM      ;
     aSysVarValidSet[SYSVAR_FC      ] = ValidSetFC_EM       ;
@@ -4307,6 +4385,7 @@ void InitSysVars
     aSysVarValidNdx[SYSVAR_ALX     ] = ValidNdxChar        ;
     aSysVarValidNdx[SYSVAR_CT      ] = ValidNdxCT          ;
     aSysVarValidNdx[SYSVAR_DM      ] = ValidNdxDM          ;
+    aSysVarValidNdx[SYSVAR_DQ      ] = ValidNdxDQ          ;
     aSysVarValidNdx[SYSVAR_DT      ] = ValidNdxDT          ;
     aSysVarValidNdx[SYSVAR_ELX     ] = ValidNdxChar        ;
     aSysVarValidNdx[SYSVAR_FC      ] = ValidNdxChar        ;
@@ -4327,6 +4406,7 @@ void InitSysVars
     aSysVarValidPost[SYSVAR_ALX     ] = ValidPostNone       ;
     aSysVarValidPost[SYSVAR_CT      ] = ValidPostNone       ;
     aSysVarValidPost[SYSVAR_DM      ] = ValidPostNone       ;
+    aSysVarValidPost[SYSVAR_DQ      ] = ValidPostNone       ;
     aSysVarValidPost[SYSVAR_DT      ] = ValidPostNone       ;
     aSysVarValidPost[SYSVAR_ELX     ] = ValidPostNone       ;
     aSysVarValidPost[SYSVAR_FC      ] = ValidPostNone       ;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -79,8 +79,9 @@
 #define IDD_PROPPAGE_RANGE_LIMITS                154
 #define IDD_PROPPAGE_SYNTAX_COLORING             155
 #define IDD_PROPPAGE_SYSTEM_VAR_RESET            156
-#define IDD_PROPPAGE_TAB_COLORS                         158 // Not implemented as yet
+#define IDD_PROPPAGE_TAB_COLORS                         159 // Not implemented as yet
 #define IDD_PROPPAGE_USER_PREFS                  157
+#define IDD_PROPPAGE_HC_PREFS                    158
 
 // Message IDs
 #define IDM_EXIT                                 102
@@ -179,27 +180,28 @@
 #define IDC_CLEARWS_ALX_EC                       820
 #define IDC_CLEARWS_ALX_LEN                      821
 #define IDC_CLEARWS_CT_EC                        822
-#define IDC_CLEARWS_DT_CB                        823
-#define IDC_CLEARWS_ELX_EC                       824
-#define IDC_CLEARWS_ELX_LEN                      825
-#define IDC_CLEARWS_FC_EC                        826
-#define IDC_CLEARWS_FC_LEN                       827
-#define IDC_CLEARWS_FEATURE_CB1                  828
-#define IDC_CLEARWS_FEATURE_CB2                  829
-#define IDC_CLEARWS_FPC_EC                       830
-#define IDC_CLEARWS_FPC_UD                       831
-#define IDC_CLEARWS_IC_CB1                       832
-#define IDC_CLEARWS_IC_CB2                       833
-#define IDC_CLEARWS_IO_EC                        834
-#define IDC_CLEARWS_IO_UD                        835
-#define IDC_CLEARWS_LX_EC                        836
-#define IDC_CLEARWS_LX_LEN                       837
-#define IDC_CLEARWS_MF_CB                        838
-#define IDC_CLEARWS_PP_EC                        839
-#define IDC_CLEARWS_PP_UD                        840
-#define IDC_CLEARWS_PW_EC                        841
-#define IDC_CLEARWS_PW_UD                        842
-#define IDC_CLEARWS_RL_EC                        843
+#define IDC_CLEARWS_DQ_CB                        823
+#define IDC_CLEARWS_DT_CB                        824
+#define IDC_CLEARWS_ELX_EC                       825
+#define IDC_CLEARWS_ELX_LEN                      826
+#define IDC_CLEARWS_FC_EC                        827
+#define IDC_CLEARWS_FC_LEN                       828
+#define IDC_CLEARWS_FEATURE_CB1                  829
+#define IDC_CLEARWS_FEATURE_CB2                  830
+#define IDC_CLEARWS_FPC_EC                       831
+#define IDC_CLEARWS_FPC_UD                       832
+#define IDC_CLEARWS_IC_CB1                       833
+#define IDC_CLEARWS_IC_CB2                       834
+#define IDC_CLEARWS_IO_EC                        835
+#define IDC_CLEARWS_IO_UD                        836
+#define IDC_CLEARWS_LX_EC                        837
+#define IDC_CLEARWS_LX_LEN                       838
+#define IDC_CLEARWS_MF_CB                        839
+#define IDC_CLEARWS_PP_EC                        840
+#define IDC_CLEARWS_PP_UD                        841
+#define IDC_CLEARWS_PW_EC                        842
+#define IDC_CLEARWS_PW_UD                        843
+#define IDC_CLEARWS_RL_EC                        844
 
 #define IDC_FONTS1                               840
 #define IDC_FONTS2                               841
@@ -263,24 +265,26 @@
 
 #define IDC_RESET_CT_RADIO1                      901
 #define IDC_RESET_CT_RADIO2                      902
-#define IDC_RESET_DT_RADIO1                      903
-#define IDC_RESET_DT_RADIO2                      904
-#define IDC_RESET_FC_RADIO1                      905
-#define IDC_RESET_FC_RADIO2                      906
-#define IDC_RESET_FEATURE_RADIO1                 907
-#define IDC_RESET_FEATURE_RADIO2                 908
-#define IDC_RESET_FPC_RADIO1                     909
-#define IDC_RESET_FPC_RADIO2                     910
-#define IDC_RESET_IC_RADIO1                      911
-#define IDC_RESET_IC_RADIO2                      912
-#define IDC_RESET_IO_RADIO1                      913
-#define IDC_RESET_IO_RADIO2                      914
-#define IDC_RESET_PP_RADIO1                      915
-#define IDC_RESET_PP_RADIO2                      916
-#define IDC_RESET_PW_RADIO1                      917
-#define IDC_RESET_PW_RADIO2                      918
-#define IDC_RESET_RL_RADIO1                      919
-#define IDC_RESET_RL_RADIO2                      920
+#define IDC_RESET_DQ_RADIO1                      903
+#define IDC_RESET_DQ_RADIO2                      904
+#define IDC_RESET_DT_RADIO1                      905
+#define IDC_RESET_DT_RADIO2                      906
+#define IDC_RESET_FC_RADIO1                      907
+#define IDC_RESET_FC_RADIO2                      908
+#define IDC_RESET_FEATURE_RADIO1                 909
+#define IDC_RESET_FEATURE_RADIO2                 910
+#define IDC_RESET_FPC_RADIO1                     911
+#define IDC_RESET_FPC_RADIO2                     912
+#define IDC_RESET_IC_RADIO1                      913
+#define IDC_RESET_IC_RADIO2                      914
+#define IDC_RESET_IO_RADIO1                      915
+#define IDC_RESET_IO_RADIO2                      916
+#define IDC_RESET_PP_RADIO1                      917
+#define IDC_RESET_PP_RADIO2                      918
+#define IDC_RESET_PW_RADIO1                      919
+#define IDC_RESET_PW_RADIO2                      920
+#define IDC_RESET_RL_RADIO1                      921
+#define IDC_RESET_RL_RADIO2                      922
 
 #define IDC_SYNTCLR_MI1                         1020
 #define IDC_SYNTCLR_MI2                         1021
@@ -322,9 +326,14 @@
 #define IDC_USER_PREFS_XB_REVDBLCLK             1110
 #define IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS    1111
 #define IDC_USER_PREFS_XB_DISPMPSUF             1112
-#define IDC_USER_PREFS_CB_DEFAULTPASTE          1113
-#define IDC_USER_PREFS_CB_DEFAULTCOPY           1114
-#define IDC_USER_PREFS_CB_UPDFRQ                1115
+#define IDC_USER_PREFS_XB_ALLOWNEG0             1113
+#define IDC_USER_PREFS_CB_DEFAULTPASTE          1114
+#define IDC_USER_PREFS_CB_DEFAULTCOPY           1115
+#define IDC_USER_PREFS_CB_UPDFRQ                1116
+
+#define IDC_HC_PREFS_XB_J4i                     1200
+#define IDC_HC_PREFS_XB_DISP0IMAG               1201
+#define IDC_HC_PREFS_XB_DISPINFIX               1202
 
 #define IDC_SYNTCLR_LT1                         1400    // 00:  Global Name
 #define IDC_SYNTCLR_LT2                         1401    // 01:  Local  ...
@@ -339,18 +348,19 @@
 #define IDC_SYNTCLR_LT11                        1410    // 0A:  Numeric constant
 #define IDC_SYNTCLR_LT12                        1411    // 0B:  Character constant
 #define IDC_SYNTCLR_LT13                        1412    // 0C:  Point notation separator
-#define IDC_SYNTCLR_LT14                        1413    // 0D:  Comment
-#define IDC_SYNTCLR_LT15                        1414    // 0E:  Line drawing chars
-#define IDC_SYNTCLR_LT16                        1415    // 0F:  Function line numbers
-#define IDC_SYNTCLR_LT17                        1416    // 10:  Matched Grouping Symbols Level 1
-#define IDC_SYNTCLR_LT18                        1417    // 11:  ...                            2
-#define IDC_SYNTCLR_LT19                        1418    // 12:  ...                            3
-#define IDC_SYNTCLR_LT20                        1419    // 13:  ...                            4
-#define IDC_SYNTCLR_LT21                        1420    // 14:  Unmatched Grouping Symbols
-#define IDC_SYNTCLR_LT22                        1421    // 15:  Improperly Nested Grouping Symbols
-#define IDC_SYNTCLR_LT23                        1422    // 16:  Unknown symbol
-#define IDC_SYNTCLR_LT24                        1423    // 17:  Window background
-#define IDC_SYNTCLR_LT_LAST                     IDC_SYNTCLR_LT24
+#define IDC_SYNTCLR_LT14                        1413    // 0D:  Hypercomplex notation separator
+#define IDC_SYNTCLR_LT15                        1414    // 0E:  Comment
+#define IDC_SYNTCLR_LT16                        1415    // 0F:  Line drawing chars
+#define IDC_SYNTCLR_LT17                        1416    // 10:  Function line numbers
+#define IDC_SYNTCLR_LT18                        1417    // 11:  Matched Grouping Symbols Level 1
+#define IDC_SYNTCLR_LT19                        1418    // 12:  ...                            2
+#define IDC_SYNTCLR_LT20                        1419    // 13:  ...                            3
+#define IDC_SYNTCLR_LT21                        1420    // 14:  ...                            4
+#define IDC_SYNTCLR_LT22                        1421    // 15:  Unmatched Grouping Symbols
+#define IDC_SYNTCLR_LT23                        1422    // 16:  Improperly Nested Grouping Symbols
+#define IDC_SYNTCLR_LT24                        1423    // 17:  Unknown symbol
+#define IDC_SYNTCLR_LT25                        1424    // 18:  Window background
+#define IDC_SYNTCLR_LT_LAST                     IDC_SYNTCLR_LT25
 
 #define IDC_SYNTCLR_XB_TRANS1                   1500    // 00:  Global Name
 #define IDC_SYNTCLR_XB_TRANS2                   1501    // 01:  Local  ...
@@ -365,18 +375,19 @@
 #define IDC_SYNTCLR_XB_TRANS11                  1510    // 0A:  Numeric constant
 #define IDC_SYNTCLR_XB_TRANS12                  1511    // 0B:  Character constant
 #define IDC_SYNTCLR_XB_TRANS13                  1512    // 0C:  Point notation separator
-#define IDC_SYNTCLR_XB_TRANS14                  1513    // 0D:  Comment
-#define IDC_SYNTCLR_XB_TRANS15                  1514    // 0E:  Line drawing chars
-#define IDC_SYNTCLR_XB_TRANS16                  1515    // 0F:  Function line numbers
-#define IDC_SYNTCLR_XB_TRANS17                  1516    // 10:  Matched Grouping Symbols Level 1
-#define IDC_SYNTCLR_XB_TRANS18                  1517    // 11:  ...                            2
-#define IDC_SYNTCLR_XB_TRANS19                  1518    // 12:  ...                            3
-#define IDC_SYNTCLR_XB_TRANS20                  1519    // 13:  ...                            4
-#define IDC_SYNTCLR_XB_TRANS21                  1520    // 14:  Unmatched Grouping Symbols
-#define IDC_SYNTCLR_XB_TRANS22                  1521    // 15:  Improperly Nested Grouping Symbols
-#define IDC_SYNTCLR_XB_TRANS23                  1522    // 16:  Unknown symbol
-#define IDC_SYNTCLR_XB_TRANS24                  1523    // 17:  Window background
-#define IDC_SYNTCLR_XB_TRANS_LAST               IDC_SYNTCLR_XB_TRANS24
+#define IDC_SYNTCLR_XB_TRANS14                  1513    // 0D:  Hypercomplex notation separator
+#define IDC_SYNTCLR_XB_TRANS15                  1514    // 0E:  Comment
+#define IDC_SYNTCLR_XB_TRANS16                  1515    // 0F:  Line drawing chars
+#define IDC_SYNTCLR_XB_TRANS17                  1516    // 10:  Function line numbers
+#define IDC_SYNTCLR_XB_TRANS18                  1517    // 11:  Matched Grouping Symbols Level 1
+#define IDC_SYNTCLR_XB_TRANS19                  1518    // 12:  ...                            2
+#define IDC_SYNTCLR_XB_TRANS20                  1519    // 13:  ...                            3
+#define IDC_SYNTCLR_XB_TRANS21                  1520    // 14:  ...                            4
+#define IDC_SYNTCLR_XB_TRANS22                  1521    // 15:  Unmatched Grouping Symbols
+#define IDC_SYNTCLR_XB_TRANS23                  1522    // 16:  Improperly Nested Grouping Symbols
+#define IDC_SYNTCLR_XB_TRANS24                  1523    // 17:  Unknown symbol
+#define IDC_SYNTCLR_XB_TRANS25                  1524    // 18:  Window background
+#define IDC_SYNTCLR_XB_TRANS_LAST               IDC_SYNTCLR_XB_TRANS25
 
 #define IDC_SYNTCLR_BN_FGCLR1                   1600    // 00:  Global Name
 #define IDC_SYNTCLR_BN_FGCLR2                   1601    // 01:  Local  ...
@@ -391,18 +402,19 @@
 #define IDC_SYNTCLR_BN_FGCLR11                  1610    // 0A:  Numeric constant
 #define IDC_SYNTCLR_BN_FGCLR12                  1611    // 0B:  Character constant
 #define IDC_SYNTCLR_BN_FGCLR13                  1612    // 0C:  Point notation separator
-#define IDC_SYNTCLR_BN_FGCLR14                  1613    // 0D:  Comment
-#define IDC_SYNTCLR_BN_FGCLR15                  1614    // 0E:  Line drawing chars
-#define IDC_SYNTCLR_BN_FGCLR16                  1615    // 0F:  Function line numbers
-#define IDC_SYNTCLR_BN_FGCLR17                  1616    // 10:  Matched Grouping Symbols Level 1
-#define IDC_SYNTCLR_BN_FGCLR18                  1617    // 11:  ...                            2
-#define IDC_SYNTCLR_BN_FGCLR19                  1618    // 12:  ...                            3
-#define IDC_SYNTCLR_BN_FGCLR20                  1619    // 13:  ...                            4
-#define IDC_SYNTCLR_BN_FGCLR21                  1620    // 14:  Unmatched Grouping Symbols
-#define IDC_SYNTCLR_BN_FGCLR22                  1621    // 15:  Improperly Nested Grouping Symbols
-#define IDC_SYNTCLR_BN_FGCLR23                  1622    // 16:  Unknown symbol
-#define IDC_SYNTCLR_BN_FGCLR24                  1623    // 17:  Window background
-#define IDC_SYNTCLR_BN_FGCLR_LAST               IDC_SYNTCLR_BN_FGCLR24
+#define IDC_SYNTCLR_BN_FGCLR14                  1613    // 0D:  Hypercomplex notation separator
+#define IDC_SYNTCLR_BN_FGCLR15                  1614    // 0E:  Comment
+#define IDC_SYNTCLR_BN_FGCLR16                  1615    // 0F:  Line drawing chars
+#define IDC_SYNTCLR_BN_FGCLR17                  1616    // 10:  Function line numbers
+#define IDC_SYNTCLR_BN_FGCLR18                  1617    // 11:  Matched Grouping Symbols Level 1
+#define IDC_SYNTCLR_BN_FGCLR19                  1618    // 12:  ...                            2
+#define IDC_SYNTCLR_BN_FGCLR20                  1619    // 13:  ...                            3
+#define IDC_SYNTCLR_BN_FGCLR21                  1620    // 14:  ...                            4
+#define IDC_SYNTCLR_BN_FGCLR22                  1621    // 15:  Unmatched Grouping Symbols
+#define IDC_SYNTCLR_BN_FGCLR23                  1622    // 16:  Improperly Nested Grouping Symbols
+#define IDC_SYNTCLR_BN_FGCLR24                  1623    // 17:  Unknown symbol
+#define IDC_SYNTCLR_BN_FGCLR25                  1624    // 18:  Window background
+#define IDC_SYNTCLR_BN_FGCLR_LAST               IDC_SYNTCLR_BN_FGCLR25
 
 #define IDC_SYNTCLR_BN_BGCLR1                   1700    // 00:  Global Name
 #define IDC_SYNTCLR_BN_BGCLR2                   1701    // 01:  Local  ...
@@ -417,18 +429,19 @@
 #define IDC_SYNTCLR_BN_BGCLR11                  1710    // 0A:  Numeric constant
 #define IDC_SYNTCLR_BN_BGCLR12                  1711    // 0B:  Character constant
 #define IDC_SYNTCLR_BN_BGCLR13                  1712    // 0C:  Point notation separator
-#define IDC_SYNTCLR_BN_BGCLR14                  1713    // 0D:  Comment
-#define IDC_SYNTCLR_BN_BGCLR15                  1714    // 0E:  Line drawing chars
-#define IDC_SYNTCLR_BN_BGCLR16                  1715    // 0F:  Function line numbers
-#define IDC_SYNTCLR_BN_BGCLR17                  1716    // 10:  Matched Grouping Symbols Level 1
-#define IDC_SYNTCLR_BN_BGCLR18                  1717    // 11:  ...                            2
-#define IDC_SYNTCLR_BN_BGCLR19                  1718    // 12:  ...                            3
-#define IDC_SYNTCLR_BN_BGCLR20                  1719    // 13:  ...                            4
-#define IDC_SYNTCLR_BN_BGCLR21                  1720    // 14:  Unmatched Grouping Symbols
-#define IDC_SYNTCLR_BN_BGCLR22                  1721    // 15:  Improperly Nested Grouping Symbols
-#define IDC_SYNTCLR_BN_BGCLR23                  1722    // 16:  Unknown symbol
-#define IDC_SYNTCLR_BN_BGCLR24                  1723    // 17:  Window background
-#define IDC_SYNTCLR_BN_BGCLR_LAST               IDC_SYNTCLR_BN_BGCLR24
+#define IDC_SYNTCLR_BN_BGCLR14                  1713    // 0D:  Hypercomplex notation separator
+#define IDC_SYNTCLR_BN_BGCLR15                  1714    // 0E:  Comment
+#define IDC_SYNTCLR_BN_BGCLR16                  1715    // 0F:  Line drawing chars
+#define IDC_SYNTCLR_BN_BGCLR17                  1716    // 10:  Function line numbers
+#define IDC_SYNTCLR_BN_BGCLR18                  1717    // 11:  Matched Grouping Symbols Level 1
+#define IDC_SYNTCLR_BN_BGCLR19                  1718    // 12:  ...                            2
+#define IDC_SYNTCLR_BN_BGCLR20                  1719    // 13:  ...                            3
+#define IDC_SYNTCLR_BN_BGCLR21                  1720    // 14:  ...                            4
+#define IDC_SYNTCLR_BN_BGCLR22                  1721    // 15:  Unmatched Grouping Symbols
+#define IDC_SYNTCLR_BN_BGCLR23                  1722    // 16:  Improperly Nested Grouping Symbols
+#define IDC_SYNTCLR_BN_BGCLR24                  1723    // 17:  Unknown symbol
+#define IDC_SYNTCLR_BN_BGCLR25                  1724    // 18:  Window background
+#define IDC_SYNTCLR_BN_BGCLR_LAST               IDC_SYNTCLR_BN_BGCLR25
 
 #define IDC_SYNTCLR_LT_FGMRK1                   1800    // 00:  Global Name
 #define IDC_SYNTCLR_LT_FGMRK2                   1801    // 01:  Local  ...
@@ -443,18 +456,19 @@
 #define IDC_SYNTCLR_LT_FGMRK11                  1810    // 0A:  Numeric constant
 #define IDC_SYNTCLR_LT_FGMRK12                  1811    // 0B:  Character constant
 #define IDC_SYNTCLR_LT_FGMRK13                  1812    // 0C:  Point notation separator
-#define IDC_SYNTCLR_LT_FGMRK14                  1813    // 0D:  Comment
-#define IDC_SYNTCLR_LT_FGMRK15                  1814    // 0E:  Line drawing chars
-#define IDC_SYNTCLR_LT_FGMRK16                  1815    // 0F:  Function line numbers
-#define IDC_SYNTCLR_LT_FGMRK17                  1816    // 10:  Matched Grouping Symbols Level 1
-#define IDC_SYNTCLR_LT_FGMRK18                  1817    // 11:  ...                            2
-#define IDC_SYNTCLR_LT_FGMRK19                  1818    // 12:  ...                            3
-#define IDC_SYNTCLR_LT_FGMRK20                  1819    // 13:  ...                            4
-#define IDC_SYNTCLR_LT_FGMRK21                  1820    // 14:  Unmatched Grouping Symbols
-#define IDC_SYNTCLR_LT_FGMRK22                  1821    // 15:  Improperly Nested Grouping Symbols
-#define IDC_SYNTCLR_LT_FGMRK23                  1822    // 16:  Unknown symbol
-#define IDC_SYNTCLR_LT_FGMRK24                  1823    // 17:  Window background
-#define IDC_SYNTCLR_LT_FGMRK_LAST               IDC_SYNTCLR_LT_FGMRK24
+#define IDC_SYNTCLR_LT_FGMRK14                  1813    // 0D:  Hypercomplex notation separator
+#define IDC_SYNTCLR_LT_FGMRK15                  1814    // 0E:  Comment
+#define IDC_SYNTCLR_LT_FGMRK16                  1815    // 0F:  Line drawing chars
+#define IDC_SYNTCLR_LT_FGMRK17                  1816    // 10:  Function line numbers
+#define IDC_SYNTCLR_LT_FGMRK18                  1817    // 11:  Matched Grouping Symbols Level 1
+#define IDC_SYNTCLR_LT_FGMRK19                  1818    // 12:  ...                            2
+#define IDC_SYNTCLR_LT_FGMRK20                  1819    // 13:  ...                            3
+#define IDC_SYNTCLR_LT_FGMRK21                  1820    // 14:  ...                            4
+#define IDC_SYNTCLR_LT_FGMRK22                  1821    // 15:  Unmatched Grouping Symbols
+#define IDC_SYNTCLR_LT_FGMRK23                  1822    // 16:  Improperly Nested Grouping Symbols
+#define IDC_SYNTCLR_LT_FGMRK24                  1823    // 17:  Unknown symbol
+#define IDC_SYNTCLR_LT_FGMRK25                  1824    // 18:  Window background
+#define IDC_SYNTCLR_LT_FGMRK_LAST               IDC_SYNTCLR_LT_FGMRK25
 
 #define IDC_SYNTCLR_LT_BGMRK1                   1900    // 00:  Global Name
 #define IDC_SYNTCLR_LT_BGMRK2                   1901    // 01:  Local  ...
@@ -469,18 +483,19 @@
 #define IDC_SYNTCLR_LT_BGMRK11                  1910    // 0A:  Numeric constant
 #define IDC_SYNTCLR_LT_BGMRK12                  1911    // 0B:  Character constant
 #define IDC_SYNTCLR_LT_BGMRK13                  1912    // 0C:  Point notation separator
-#define IDC_SYNTCLR_LT_BGMRK14                  1913    // 0D:  Comment
-#define IDC_SYNTCLR_LT_BGMRK15                  1914    // 0E:  Line drawing chars
-#define IDC_SYNTCLR_LT_BGMRK16                  1915    // 0F:  Function line numbers
-#define IDC_SYNTCLR_LT_BGMRK17                  1916    // 10:  Matched Grouping Symbols Level 1
-#define IDC_SYNTCLR_LT_BGMRK18                  1917    // 11:  ...                            2
-#define IDC_SYNTCLR_LT_BGMRK19                  1918    // 12:  ...                            3
-#define IDC_SYNTCLR_LT_BGMRK20                  1919    // 13:  ...                            4
-#define IDC_SYNTCLR_LT_BGMRK21                  1920    // 14:  Unmatched Grouping Symbols
-#define IDC_SYNTCLR_LT_BGMRK22                  1921    // 15:  Improperly Nested Grouping Symbols
-#define IDC_SYNTCLR_LT_BGMRK23                  1922    // 16:  Unknown symbol
-#define IDC_SYNTCLR_LT_BGMRK24                  1923    // 17:  Window background
-#define IDC_SYNTCLR_LT_BGMRK_LAST               IDC_SYNTCLR_LT_BGMRK24
+#define IDC_SYNTCLR_LT_BGMRK14                  1913    // 0D:  Hypercomplex notation separator
+#define IDC_SYNTCLR_LT_BGMRK15                  1914    // 0E:  Comment
+#define IDC_SYNTCLR_LT_BGMRK16                  1915    // 0F:  Line drawing chars
+#define IDC_SYNTCLR_LT_BGMRK17                  1916    // 10:  Function line numbers
+#define IDC_SYNTCLR_LT_BGMRK18                  1917    // 11:  Matched Grouping Symbols Level 1
+#define IDC_SYNTCLR_LT_BGMRK19                  1918    // 12:  ...                            2
+#define IDC_SYNTCLR_LT_BGMRK20                  1919    // 13:  ...                            3
+#define IDC_SYNTCLR_LT_BGMRK21                  1920    // 14:  ...                            4
+#define IDC_SYNTCLR_LT_BGMRK22                  1921    // 15:  Unmatched Grouping Symbols
+#define IDC_SYNTCLR_LT_BGMRK23                  1922    // 16:  Improperly Nested Grouping Symbols
+#define IDC_SYNTCLR_LT_BGMRK24                  1923    // 17:  Unknown symbol
+#define IDC_SYNTCLR_LT_BGMRK25                  1924    // 18:  Window background
+#define IDC_SYNTCLR_LT_BGMRK_LAST               IDC_SYNTCLR_LT_BGMRK25
 
 #define IDC_WEBCLR_LT001                        2001
 #define IDC_WEBCLR_LT002                        2002

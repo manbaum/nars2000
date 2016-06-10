@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,7 +42,9 @@
 
 extern HICON hIconCustom;
 WNDPROC lpfnOldKeybEditCtrlWndProc,     // Save area for old EditCtrl window proc
-        lpfnOldFontsStaticTextWndProc;  // ...               Static Text ...
+        lpfnOldFontsStaticTextWndProc,  // ...               Static Text ...
+        lpfnOldFEATUREComboLboxWndProc; // ...               []FEATURE ComboLbox window proc
+
 HWND hWndListBox;                       // Dialog ListBox window handle
 
 // Local copy of gSyntaxColorName[].syntClr
@@ -390,6 +392,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         lpaplChar;              // ...
            LPAPLINT     lpMemInt;               // ...
            APLNELM      aplNELM;                // NELM of object
+           LPWCHAR      lpwGrpTitle;            // Ptr to Groupbox title
     static POINT        ptGroupBox;             // X- & Y- coordinates (in pixels) of the upper left corner of the GroupBox
     static SIZE         szGroupBox;             // Size (in pixels) of the GroupBox
     static FONTENUM     lclSameFontAs[FONTENUM_LENGTH];
@@ -413,6 +416,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                                            &FontsRadio8[0],
                                           };
     static UINT         ResetRadioCT      [] = {IDC_RESET_CT_RADIO1      , IDC_RESET_CT_RADIO2      },
+                        ResetRadioDQ      [] = {IDC_RESET_DQ_RADIO1      , IDC_RESET_DQ_RADIO2      },
                         ResetRadioDT      [] = {IDC_RESET_DT_RADIO1      , IDC_RESET_DT_RADIO2      },
                         ResetRadioFC      [] = {IDC_RESET_FC_RADIO1      , IDC_RESET_FC_RADIO2      },
                         ResetRadioFEATURE [] = {IDC_RESET_FEATURE_RADIO1 , IDC_RESET_FEATURE_RADIO2 },
@@ -423,6 +427,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         ResetRadioPW      [] = {IDC_RESET_PW_RADIO1      , IDC_RESET_PW_RADIO2      },
                         ResetRadioRL      [] = {IDC_RESET_RL_RADIO1      , IDC_RESET_RL_RADIO2      };
     static LPUINT       ResetRadioPtr[] = {&ResetRadioCT      [0],
+                                           &ResetRadioDQ      [0],
                                            &ResetRadioDT      [0],
                                            &ResetRadioFC      [0],
                                            &ResetRadioFEATURE [0],
@@ -452,7 +457,9 @@ INT_PTR CALLBACK CustomizeDlgProc
     static CHOOSECOLORW cc = {0};               // Struct for ChooseColorW
     static UBOOL        gbFore;                 // TRUE iff the button is FOREGROUND
     static UINT         guIndex;                // Index of the button
+    static LPWCHAR      lpwszQuadDQNames[] = {DEF_QUADDQ_NAMES};
     static LPWCHAR      lpwszQuadDTNames[] = {DEF_QUADDT_NAMES};
+    static   WCHAR        wszQuadDQAllow[] = {DEF_QUADDQ_ALLOW};
     static   WCHAR        wszQuadDTAllow[] = {DEF_QUADDT_ALLOW};
 
     static COLORNAMES scMenuItems[] =
@@ -586,7 +593,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                 for (uCnt = 0; uCnt < custStrucLen; uCnt++)
                 {
                     // Fill the ListBox with items and item data
-                    uSel = (UINT) SendMessageW (hWndListBox, LB_ADDSTRING, 0, (LPARAM) custStruc[uCnt].lpwTitle);
+                    uSel = (UINT) SendMessageW (hWndListBox, LB_ADDSTRING, 0, (LPARAM) custStruc[uCnt].lpwLstTitle);
                     SendMessageW (hWndListBox, LB_SETITEMDATA, uSel, custStruc[uCnt].uIDD);
 
                     // Mark as not initialized
@@ -623,8 +630,13 @@ INT_PTR CALLBACK CustomizeDlgProc
             return DLG_MSGDEFFOCUS;     // Use the focus in wParam, DWLP_MSGRESULT is ignored
 
         case MYWM_INITDIALOG:
+            if (custStruc[wParam].lpwGrpTitle NE NULL)
+                lpwGrpTitle = custStruc[wParam].lpwGrpTitle;
+            else
+                lpwGrpTitle = custStruc[wParam].lpwLstTitle;
+
             // Set the group box text
-            SetDlgItemTextW (hDlg, IDC_GROUPBOX, custStruc[wParam].lpwTitle);
+            SetDlgItemTextW (hDlg, IDC_GROUPBOX, lpwGrpTitle);
 
             // If the struc hasn't been initialized as yet, ...
             if (!custStruc[wParam].bInitialized)
@@ -669,7 +681,8 @@ INT_PTR CALLBACK CustomizeDlgProc
                         // Set the font for each Edit Ctrl or ComboBox
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ALX_EC      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []ALX
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_CT_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []CT
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_DT_CB       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_DQ_CB       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []DQ
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_DT_CB       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []DT
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ELX_EC      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []ELX
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FC_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []FC
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB1 ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []FEATURE
@@ -740,6 +753,21 @@ INT_PTR CALLBACK CustomizeDlgProc
 
                         // Set the text
                         SetDlgItemTextW (hWndProp, IDC_CLEARWS_CT_EC,  lpwszGlbTemp);
+
+                        //***************************************************************
+                        // []DQ -- CLEAR WS Values
+                        //***************************************************************
+
+                        // Loop through the []DQ names
+                        for (uCnt = 0; uCnt < strcountof (wszQuadDQAllow); uCnt++)
+                            // Insert the []DQ names
+                            SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_DQ_CB), CB_ADDSTRING, 0, (LPARAM) (HANDLE_PTR) lpwszQuadDQNames[uCnt]);
+
+                        // Get the index of the current value
+                        uCnt = (UINT) (strchrW (wszQuadDQAllow, cQuadDQ_CWS) - wszQuadDQAllow);
+
+                        // Select the current value
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_DQ_CB), CB_SETCURSEL, uCnt, 0);
 
                         //***************************************************************
                         // []DT -- CLEAR WS Values
@@ -815,6 +843,30 @@ INT_PTR CALLBACK CustomizeDlgProc
                         // Get the window handle to the ComboBox of index names & values
                         hWndFEATURE_CB1 = GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB1);
                         hWndFEATURE_CB2 = GetDlgItem (hWndProp, IDC_CLEARWS_FEATURE_CB2);
+
+                        // Get the ComboBox info
+                        SendMessageW (hWndFEATURE_CB1, CB_GETCOMBOBOXINFO, 0, (LPARAM) &cbi);
+
+                        // Fill in the TOOLINFOW struc
+                        tti.uFlags   = 0
+                                     | TTF_IDISHWND
+                                     | TTF_SUBCLASS
+                                     ;
+                        tti.hwnd     = cbi.hwndList;
+                        tti.uId      = (UINT_PTR) cbi.hwndList;
+            ////////////tti.rect     =                      // Not used with TTF_IDISHWND
+            ////////////tti.hinst    =                      // Not used except with string resources
+                        tti.lpszText = LPSTR_TEXTCALLBACKW;
+            ////////////tti.lParam   =                      // Not used by this code
+
+                        // Attach the Tooltip window to it
+                        SendMessageW (hWndTT, TTM_ADDTOOLW, 0, (LPARAM) &tti);
+
+                        // Subclass the Fonts ComboLbox so we can display a Tooltip
+                        (HANDLE_PTR) lpfnOldFEATUREComboLboxWndProc =
+                          SetWindowLongPtrW (cbi.hwndList,
+                                             GWLP_WNDPROC,
+                                             (APLU3264) (LONG_PTR) (WNDPROC) &LclFEATUREComboLboxWndProc);
 
                         // Insert the []FEATURE index names
                         for (uCnt = 0; uCnt < FEATURENDX_LENGTH; uCnt++)
@@ -949,7 +1001,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         // Format the value
                         lpaplChar =
                           FormatAplInt (lpwszGlbTemp,                   // Ptr to output save area
-                                        uQuadMF_CWS);                   // The value to format
+                                       &uQuadMF_CWS);                   // Ptr to the value to format
                         // Zap the trailing blank
                         lpaplChar[-1] = WC_EOS;
 
@@ -997,7 +1049,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         // Format the value
                         lpaplChar =
                           FormatAplInt (lpwszGlbTemp,                   // Ptr to output save area
-                                        uQuadRL_CWS);                   // The value to format
+                                       &uQuadRL_CWS);                   // Ptr to the value to format
                         // Zap the trailing blank
                         lpaplChar[-1] = WC_EOS;
 
@@ -1503,16 +1555,17 @@ INT_PTR CALLBACK CustomizeDlgProc
                         lclResetVars = bResetVars;
 
                         // Set the radio button initial states
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[0][lclResetVars.CT     ]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[1][lclResetVars.DT     ]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[2][lclResetVars.FC     ]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[3][lclResetVars.FEATURE]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[4][lclResetVars.FPC    ]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[5][lclResetVars.IC     ]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[6][lclResetVars.IO     ]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[7][lclResetVars.PP     ]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[8][lclResetVars.PW     ]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[9][lclResetVars.RL     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[ 0][lclResetVars.CT     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[ 1][lclResetVars.DQ     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[ 2][lclResetVars.DT     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[ 3][lclResetVars.FC     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[ 4][lclResetVars.FEATURE]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[ 5][lclResetVars.FPC    ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[ 6][lclResetVars.IC     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[ 7][lclResetVars.IO     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[ 8][lclResetVars.PP     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[ 9][lclResetVars.PW     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[10][lclResetVars.RL     ]), BM_SETCHECK, TRUE, 0);
 
                         break;
 
@@ -1577,6 +1630,13 @@ INT_PTR CALLBACK CustomizeDlgProc
 
                         // Set the current selection to the user preference value
                         SendMessageW (hWndProp1, CB_SELECTSTRING, -1, (LPARAM) gszUpdFrq);
+
+                        break;
+
+                    case IDD_PROPPAGE_HC_PREFS:                         // MYWM_INITDIALOG
+                        CheckDlgButton (hWndProp, IDC_HC_PREFS_XB_J4i                , OptionFlags.bJ4i                );
+                        CheckDlgButton (hWndProp, IDC_HC_PREFS_XB_DISP0IMAG          , OptionFlags.bDisp0Imag          );
+                        CheckDlgButton (hWndProp, IDC_HC_PREFS_XB_DISPINFIX          , OptionFlags.bDispInfix          );
 
                         break;
 
@@ -2644,6 +2704,17 @@ INT_PTR CALLBACK CustomizeDlgProc
                         fQuadCT_CWS = MyStrtod (szTemp, NULL);
 
                         //***************************************************************
+                        // []DQ
+                        //***************************************************************
+
+                        // Get the index of the currently selected []DQ name
+                        uCnt = (UINT)
+                          SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_DQ_CB), CB_GETCURSEL, 0, 0);
+
+                        // Save in global
+                        cQuadDQ_CWS = wszQuadDQAllow[uCnt];
+
+                        //***************************************************************
                         // []DT
                         //***************************************************************
 
@@ -2992,6 +3063,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                           SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
 
                         bResetVars.CT      = IsDlgButtonChecked (hWndProp, IDC_RESET_CT_RADIO2      );
+                        bResetVars.DQ      = IsDlgButtonChecked (hWndProp, IDC_RESET_DQ_RADIO2      );
                         bResetVars.DT      = IsDlgButtonChecked (hWndProp, IDC_RESET_DT_RADIO2      );
                         bResetVars.FC      = IsDlgButtonChecked (hWndProp, IDC_RESET_FC_RADIO2      );
                         bResetVars.FEATURE = IsDlgButtonChecked (hWndProp, IDC_RESET_FEATURE_RADIO2 );
@@ -3069,6 +3141,24 @@ INT_PTR CALLBACK CustomizeDlgProc
                         MyStrcpyW (gszUpdFrq, sizeof (gszUpdFrq), updFrq[guUpdFrq].lpwsz);
                     } // End IF
 
+
+                    //***************************************************************
+                    // HC PREFERENCES -- Apply
+                    //***************************************************************
+
+                    // Get the Property Page index
+                    uCnt = IDD_PROPPAGE_HC_PREFS - IDD_PROPPAGE_START;
+                    if (custStruc[uCnt].bInitialized)
+                    {
+                        // Get the associated item data (window handle of the Property Page)
+                        hWndProp = (HWND)
+                          SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
+
+                        OptionFlags.bJ4i                 = IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_XB_J4i                );
+                        OptionFlags.bDisp0Imag           = IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_XB_DISP0IMAG          );
+                        OptionFlags.bDispInfix           = IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_XB_DISPINFIX          );
+                    } // End IF
+
                     // Disable the Apply button
                     EnableWindow (hWndApply, FALSE);
 
@@ -3111,8 +3201,13 @@ INT_PTR CALLBACK CustomizeDlgProc
                                 // Get the Property Page window handle
                                 hWndProp = *(HWND *) &uIDD;
 
+                                if (custStruc[uSel].lpwGrpTitle NE NULL)
+                                    lpwGrpTitle = custStruc[uSel].lpwGrpTitle;
+                                else
+                                    lpwGrpTitle = custStruc[uSel].lpwLstTitle;
+
                                 // Set the group box text
-                                SetDlgItemTextW (hDlg, IDC_GROUPBOX, custStruc[uSel].lpwTitle);
+                                SetDlgItemTextW (hDlg, IDC_GROUPBOX, lpwGrpTitle);
                             } // End IF/ELSE
 
                             // If there's an outgoing window, ...
@@ -3272,6 +3367,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                     // Return dialog result
                     DlgMsgDone (hDlg);              // We handled the msg
 
+                case IDC_CLEARWS_DQ_CB:
                 case IDC_CLEARWS_DT_CB:
                     // We care about CBN_SELCHANGE only
                     if (CBN_SELCHANGE EQ cmdCtl)
@@ -4516,6 +4612,21 @@ INT_PTR CALLBACK CustomizeDlgProc
                     // Return dialog result
                     DlgMsgDone (hDlg);              // We handled the msg
 
+                case IDC_RESET_DQ_RADIO1:
+                case IDC_RESET_DQ_RADIO2:
+                    // We care about BN_CLICKED only
+                    if (BN_CLICKED EQ cmdCtl)
+                    {
+                        // Save the new setting in our local copy
+                        lclResetVars.DQ = (IDC_RESET_DQ_RADIO2 EQ idCtl);
+
+                        // Enable the Apply button
+                        EnableWindow (hWndApply, TRUE);
+                    } // End IF
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+
                 case IDC_RESET_DT_RADIO1:
                 case IDC_RESET_DT_RADIO2:
                     // We care about BN_CLICKED only
@@ -4691,6 +4802,20 @@ INT_PTR CALLBACK CustomizeDlgProc
                 case IDC_USER_PREFS_CB_UPDFRQ:
                     // We care about CBN_SELCHANGE only
                     if (CBN_SELCHANGE EQ cmdCtl)
+                        // Enable the Apply button
+                        EnableWindow (hWndApply, TRUE);
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+
+                //***************************************************************
+                // HC PREFERENCES -- WM_COMMAND
+                //***************************************************************
+
+                case IDC_HC_PREFS_XB_J4i:
+                case IDC_HC_PREFS_XB_DISP0IMAG:
+                case IDC_HC_PREFS_XB_DISPINFIX:
+                    // We care about BN_CLICKED only
+                    if (BN_CLICKED EQ cmdCtl)
                         // Enable the Apply button
                         EnableWindow (hWndApply, TRUE);
                     // Return dialog result
@@ -5942,6 +6067,124 @@ int CALLBACK DirsBrowseCallbackProc
 
     return FALSE;
 } // End DirsBrowseCallbackProc
+
+
+//***************************************************************************
+//  $LclFEATUREComboLboxWndProc
+//
+//  Local []FEATUREE name ComboLbox subclass procedure
+//***************************************************************************
+
+LRESULT WINAPI LclFEATUREComboLboxWndProc
+    (HWND   hWnd,                           // Window handle
+     UINT   message,                        // Type of message
+     WPARAM wParam,                         // Additional information
+     LPARAM lParam)                         // ...
+
+{
+    static TOOLINFOW tti = {sizeof (tti)};  // For Tooltip Ctrl
+    static int       iCurSel;
+           POINT     ptScr = {-1, -1};
+
+    // Split cases based upon the message
+    switch (message)
+    {
+        case WM_NOTIFY:             // idCtrl = (int) wParam;
+        {                           // pnmh = (LPNMHDR) lParam;
+#ifdef DEBUG
+            LPNMHDR         lpnmhdr = (LPNMHDR) lParam;
+            LPNMTTDISPINFOW lpnmtdi = (LPNMTTDISPINFOW) lParam;
+            WPARAM          idCtl   = wParam;
+#else
+  #define lpnmhdr         ((LPNMHDR) lParam)
+  #define lpnmtdi         ((LPNMTTDISPINFOW) lParam)
+  #define idCtl           ((WPARAM) wParam)
+#endif
+////////////LCLODSAPI ("LFLB: ", hWnd, message, wParam, lParam);
+            // Split cases based upon the code
+            switch (lpnmhdr->code)
+            {
+                //***************************************************************
+                // Tooltip Ctrl Notifications
+                //***************************************************************
+                case TTN_SHOW:
+                    // Reposition the ComboLbox not to be topmost
+                    SetWindowPos (hWnd,
+                                  HWND_NOTOPMOST,
+                                  0, 0, 0, 0,
+                                  0
+                                | SWP_NOSIZE
+                                | SWP_NOMOVE
+                                | SWP_NOACTIVATE
+                                 );
+                    return FALSE;       // Use default positioning
+
+////////////////case TTN_NEEDTEXTW:
+                case TTN_GETDISPINFOW:  // idCtl = (int) wParam;
+                                        // lpttt = (LPTOOLTIPTEXTW) lParam;
+                {
+                    // Get the current mouse position in screen coordinates
+                    GetCursorPos (&ptScr);
+
+                    // Get the index of the current highlighted item
+                    iCurSel = LBItemFromPt (hWnd, ptScr, FALSE);
+
+                    if (iCurSel NE -1)
+                    {
+                        // Set the Tooltip text
+                        lpnmtdi->lpszText = featNames[iCurSel].lpwszFeatureName;
+
+                        return FALSE;       // We handled the message
+                    } // End IF
+                } // End TTN_GETDISPINFOW
+
+                default:
+                    break;
+            } // End SWITCH
+
+            break;
+#ifndef DEBUG
+  #undef  idCtl
+  #undef  lpnmtdi
+  #undef  lpnmhdr
+#endif
+        } // End WM_NOTIFY
+
+        case WM_MOUSEMOVE:          // fwKeys = wParam;        // key flags
+                                    // xPos = LOWORD(lParam);  // horizontal position of cursor (CA)
+                                    // yPos = HIWORD(lParam);  // vertical position of cursor (CA)
+            // Save the mouse position as a point
+            ptScr.x = GET_X_LPARAM (lParam);
+            ptScr.y = GET_Y_LPARAM (lParam);
+
+            // Convert from client to screen coordinates
+            ClientToScreen (hWnd, &ptScr);
+
+            // If it's valid and different from the index of the current selection, ...
+            if (iCurSel NE -1
+             && iCurSel NE LBItemFromPt (hWnd, ptScr, FALSE))
+            {
+                // Tell the ToolTip to vanish
+                SendMessageW (hWndTT, TTM_POP, 0, 0);
+
+                // Clear the index of the current highlighted item
+                iCurSel = -1;
+            } // End IF
+
+            break;
+
+        default:
+            break;
+    } // End SWITCH
+
+////LCLODSAPI ("LFLBZ: ", hWnd, message, wParam, lParam);
+    return
+      CallWindowProcW (lpfnOldFEATUREComboLboxWndProc,
+                       hWnd,
+                       message,
+                       wParam,
+                       lParam);     // Pass on down the line
+} // End LclFEATUREComboLboxWndProc
 
 
 //***************************************************************************

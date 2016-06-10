@@ -39,10 +39,10 @@
   #define MyGetDC(a)                      _MyGetDC(a,__LINE__)
   #define MyGetWindowDC(a)                _MyGetWindowDC(a,__LINE__)
 #ifdef ALLOC_GPTR
-  #define MyGlobalAlloc(a,b)              _MyGlobalAlloc(GPTR,b,FNLN)           // _MyGlobalAlloc(a,b,FNLN)
-  #define MyGlobalLock(a)                 ClrPtrTypeDir(a)                      // _MyGlobalLock(ClrPtrTypeDir(a),FNLN)
-  #define MyGlobalHandle(a)               ClrPtrTypeDir(a)                      // _MyGlobalHandle(ClrPtrTypeDir(a))
-  #define MyGlobalUnlock(a)               ClrPtrTypeDir(a)                      // _MyGlobalUnlock(ClrPtrTypeDir(a),__LINE__)
+  #define MyGlobalAlloc(a,b)              _MyGlobalAlloc(GPTR,b,FNLN)
+  #define MyGlobalLock(a)                 ClrPtrTypeDir(a)
+  #define MyGlobalHandle(a)               ClrPtrTypeDir(a)
+  #define MyGlobalUnlock(a)               ClrPtrTypeDir(a)
 #else
   #define MyGlobalAlloc(a,b)              _MyGlobalAlloc(a,b,FNLN)
   #define MyGlobalLock(a)                 _MyGlobalLock(ClrPtrTypeDir(a),FNLN)
@@ -85,15 +85,15 @@
   #define MyGetDC(a)                      GetDC(a)
   #define MyGetWindowDC(a)                GetWindowDC(a)
 #ifdef ALLOC_GPTR
-  #define MyGlobalAlloc(a,b)              GlobalAlloc(GPTR,b)   // GlobalAlloc(a,b)
-  #define MyGlobalLock(a)                 ClrPtrTypeDir(a)      // GlobalLock(a)
-  #define MyGlobalHandle(a)               ClrPtrTypeDir(a)      // GlobalHandle(a)
-  #define MyGlobalUnlock(a)               /* empty */           // GlobalUnlock(a)
+  #define MyGlobalAlloc(a,b)              GlobalAlloc(GPTR,b)
+  #define MyGlobalLock(a)                 ClrPtrTypeDir(a)
+  #define MyGlobalHandle(a)               ClrPtrTypeDir(a)
+  #define MyGlobalUnlock(a)               /* empty */
 #else
   #define MyGlobalAlloc(a,b)              GlobalAlloc(a,b)
-  #define MyGlobalLock(a)                 GlobalLock(a)
-  #define MyGlobalHandle(a)               GlobalHandle(a)
-  #define MyGlobalUnlock(a)               GlobalUnlock(a)
+  #define MyGlobalLock(a)                 GlobalLock(ClrPtrTypeDir(a))
+  #define MyGlobalHandle(a)               GlobalHandle(ClrPtrTypeDir(a))
+  #define MyGlobalUnlock(a)               GlobalUnlock(ClrPtrTypeDir(a))
 #endif
   #define MyGlobalSize(a)                 GlobalSize(ClrPtrTypeDir(a))
   #define MyGlobalFlags(a)                GlobalFlags(ClrPtrTypeDir(a))

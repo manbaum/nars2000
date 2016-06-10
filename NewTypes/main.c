@@ -3949,19 +3949,19 @@ int PASCAL WinMain
     // This is needed by Wine's EDITCTRL.C
     user32_module = hInstance;
 
-    PERFMON
+////PERFMON
 
     // Construct file name(s) based upon where the module is on disk
     GetModuleFileNames (hInstance);
 
-    PERFMON
+////PERFMON
 
     // Ensure the Application Data and workspaces
     //   directories are present
     if (!CreateAppDataDirs ())
         goto EXIT1;
 
-    PERFMON
+////PERFMON
 
     // Save initial state
     nMinState = nCmdShow;
@@ -3975,25 +3975,25 @@ int PASCAL WinMain
     // Save the thread type ('MF')
     TlsSetValue (dwTlsType, TLSTYPE_MF);
 
-    PERFMON
+////PERFMON
 
     // If there's a command line, parse it
     if (!ParseCommandLine (lpCmdLine))
         goto EXIT1;
 
-    PERFMON
+////PERFMON
 
     // Perform initializations that apply to a specific instance
     if (!InitInstance (hInstance))
         goto EXIT2;
 
-    PERFMON
+////PERFMON
 
     // Register the window class
     if (!InitApplication (hInstance))
         goto EXIT3;
 
-    PERFMON
+////PERFMON
 
     // Allocate Critical Section objects
     //   for use in dtoa.c (2),
@@ -4015,24 +4015,24 @@ int PASCAL WinMain
     // Mark as CSO defined
     bCSO = TRUE;
 
-    PERFMON
+////PERFMON
 
     // Create various permanent variables
     MakePermVars ();
 
-    PERFMON
+////PERFMON
 
     // Initialize all {symbol} names & values
     if (!InitSymbolNamesValues ())
         goto EXIT4;
 
-    PERFMON
+////PERFMON
 
     // Read in global .ini file values
     if (!ReadIniFileGlb ())
         goto EXIT4;
 
-    PERFMON
+////PERFMON
 
     // Initialize ChooseFontW arguments here
     //   so its settings will be present
@@ -4040,7 +4040,7 @@ int PASCAL WinMain
     //   the common dialog is called.
     InitChooseFont ();
 
-    PERFMON
+////PERFMON
 
     // Initialize global numeric constants
     InitGlbNumConstants ();
@@ -4048,7 +4048,7 @@ int PASCAL WinMain
     // Initialize tables for Primitive Fns, Operators, etc.
     InitPrimTabs ();
 
-    PERFMON
+////PERFMON
 
 #ifdef DEBUG
     InitFsaTabs ();
@@ -4057,7 +4057,7 @@ int PASCAL WinMain
     // Get and save the current Thread Id
     dwMainThreadId = GetCurrentThreadId ();
 
-    PERFMON
+////PERFMON
 
     //***************************************************************
     // Create the Master Frame window
@@ -4081,9 +4081,9 @@ int PASCAL WinMain
         goto EXIT5;
     } // End IF
 
-    PERFMON
+////PERFMON
 
-////PERFMONSHOW
+////PERFMONSHOW (NULL)
 
 #ifdef DEBUG
     __try

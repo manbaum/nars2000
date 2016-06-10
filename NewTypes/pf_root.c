@@ -33,47 +33,137 @@ PRIMSPEC PrimSpecRoot = {
     &PrimSpecRootStorageTypeMon,
     NULL,   // &PrimFnMonRootAPA_EM, -- Can't happen w/Root
 
+    // Monadic Boolean result functions
     &PrimFnMonRootBisB,
     NULL,   // &PrimFnMonRootBisI, -- Can't happen w/Root
     NULL,   // &PrimFnMonRootBisF, -- Can't happen w/Root
 
-////               IisB,   // Handled via type promotion (to IisI)
+    // Monadic non-Boolean result functions (indexable)
     NULL,   // &PrimFnMonRootIisI, -- Can't happen w/Root
     NULL,   // &PrimFnMonRootIisF, -- Can't happen w/Root
-
-////               FisB,   // Handled via type promotion (to FisI)
     &PrimFnMonRootFisI,
     &PrimFnMonRootFisF,
-
     NULL,   // &PrimFnMonRootRisR, -- Can't happen w/Root
-
-////               VisR,   // Handled via type promotion (to VisV)
+    &PrimFnMonRootVisR,
     &PrimFnMonRootVisV,
+
+    // Monadic Hypercomplex functions
+    NULL,   // &PrimFnMonRootHC2IisHC2I, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootHC2IisHC2F, -- Can't happen w/Root
+    &PrimFnMonRootHC2FisHC2I,
+    &PrimFnMonRootHC2FisHC2F,
+    NULL,   // &PrimFnMonRootHC2RisHC2R, -- Can't happen w/Root
+    &PrimFnMonRootHC2VisHC2R,
+    &PrimFnMonRootHC2VisHC2V,
+
+    NULL,   // &PrimFnMonRootHC4IisHC4I, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootHC4IisHC4F, -- Can't happen w/Root
+    &PrimFnMonRootHC4FisHC4I,
+    &PrimFnMonRootHC4FisHC4F,
+    NULL,   // &PrimFnMonRootHC4RisHC4R, -- Can't happen w/Root
+    &PrimFnMonRootHC4VisHC4R,
+    &PrimFnMonRootHC4VisHC4V,
+
+    NULL,   // &PrimFnMonRootHC8IisHC8I, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootHC8IisHC8F, -- Can't happen w/Root
+    &PrimFnMonRootHC8FisHC8I,
+    &PrimFnMonRootHC8FisHC8F,
+    NULL,   // &PrimFnMonRootHC8RisHC8R, -- Can't happen w/Root
+    &PrimFnMonRootHC8VisHC8R,
+    &PrimFnMonRootHC8VisHC8V,
+
+    // Monadic FLT result HC arg functions (indexable)
+    NULL,   // &PrimFnMonRootFisHC2I, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootFisHC2F, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootVisHC2R, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootVisHC2V, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootFisHC4I, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootFisHC4F, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootVisHC4R, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootVisHC4V, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootFisHC8I, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootFisHC8F, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootVisHC8R, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootVisHC8V, -- Can't happen w/Root
 
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecRootStorageTypeDyd,
     NULL,   // &PrimFnDydRootAPA_EM, -- Can't happen w/Root
 
+    // Dyadic Boolean result functions
     &PrimFnDydRootBisBvB,
     NULL,   // &PrimFnDydRootBisIvI, -- Can't happen w/Root
     NULL,   // &PrimFnDydRootBisFvF, -- Can't happen w/Root
     NULL,   // &PrimFnDydRootBisCvC, -- Can't happen w/Root
+    NULL,   // &PrimFnDydRootBisHvH, -- Can't happen w/Root
+    NULL,   // &PrimFnDydRootBisRvR, -- Can't happen w/Root
+    NULL,   // &PrimFnDydRootBisVvV, -- Can't happen w/Root
 
-////                 IisBvB,    // Handled via type promotion (to IisIvI)
+    NULL,   // &PrimFnDydRootBisHC2IvHC2I, -- Can't happen w/Root
+    NULL,   // &PrimFnDydRootBisHC2FvHC2F, -- Can't happen w/Root
+    NULL,   // &PrimFnDydRootBisHC2RvHC2R, -- Can't happen w/Root
+    NULL,   // &PrimFnDydRootBisHC2VvHC2V, -- Can't happen w/Root
+
+    NULL,   // &PrimFnDydRootBisHC4IvHC4I, -- Can't happen w/Root
+    NULL,   // &PrimFnDydRootBisHC4FvHC4F, -- Can't happen w/Root
+    NULL,   // &PrimFnDydRootBisHC4RvHC4R, -- Can't happen w/Root
+    NULL,   // &PrimFnDydRootBisHC4VvHC4V, -- Can't happen w/Root
+
+    NULL,   // &PrimFnDydRootBisHC8IvHC8I, -- Can't happen w/Root
+    NULL,   // &PrimFnDydRootBisHC8FvHC8F, -- Can't happen w/Root
+    NULL,   // &PrimFnDydRootBisHC8RvHC8R, -- Can't happen w/Root
+    NULL,   // &PrimFnDydRootBisHC8VvHC8V, -- Can't happen w/Root
+
+    // Dyadic non-Boolean result functions (indexable)
     &PrimFnDydRootIisIvI,
     NULL,   // &PrimFnDydRootIisFvF, -- Can't happen w/Root
-
-////                 FisBvB,    // Handled via type promotion (to FisIvI)
     &PrimFnDydRootFisIvI,
     &PrimFnDydRootFisFvF,
-
-    NULL,   // &PrimFnDydRootBisRvR, -- Can't happen w/Root
     NULL,   // &PrimFnDydRootRisRvR, -- Can't happen w/Root
-
-    NULL,   // &PrimFnDydRootBisVvV, -- Can't happen w/Root
-////                 VisRvR     // Handled via type promotion (to VisVvV)
+    &PrimFnDydRootVisRvR,
     &PrimFnDydRootVisVvV,
+
+    NULL,   // &PrimFnDydRootHC2IisHC2IvHC2I, -- Can't happen w/Root
+    NULL,   // &PrimFnDydRootHC2IisHC2FvHC2F, -- Can't happen w/Root
+    &PrimFnDydRootHC2FisHC2IvHC2I,
+    &PrimFnDydRootHC2FisHC2FvHC2F,
+    NULL,   // &PrimFnDydRootHC2RisHC2RvHC2R, -- Can't happen w/Root
+    &PrimFnDydRootHC2VisHC2RvHC2R,
+    &PrimFnDydRootHC2VisHC2VvHC2V,
+
+    NULL,   // &PrimFnDydRootHC4IisHC4IvHC4I, -- Can't happen w/Root
+    NULL,   // &PrimFnDydRootHC4IisHC4FvHC4F, -- Can't happen w/Root
+    &PrimFnDydRootHC4FisHC4IvHC4I,
+    &PrimFnDydRootHC4FisHC4FvHC4F,
+    NULL,   // &PrimFnDydRootHC4RisHC4RvHC4R, -- Can't happen w/Root
+    &PrimFnDydRootHC4VisHC4RvHC4R,
+    &PrimFnDydRootHC4VisHC4VvHC4V,
+
+    NULL,   // &PrimFnDydRootHC8IisHC8IvHC8I, -- Can't happen w/Root
+    NULL,   // &PrimFnDydRootHC8IisHC8FvHC8F, -- Can't happen w/Root
+    &PrimFnDydRootHC8FisHC8IvHC8I,
+    &PrimFnDydRootHC8FisHC8FvHC8F,
+    NULL,   // &PrimFnDydRootHC8RisHC8RvHC8R, -- Can't happen w/Root
+    &PrimFnDydRootHC8VisHC8RvHC8R,
+    &PrimFnDydRootHC8VisHC8VvHC8V,
+
+    // Monadic Boolean chunk functions
+    NULL,   // &PrimFnMonRootB64isB64, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootB32isB32, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootB16isB16, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootB08isB08, -- Can't happen w/Root
+
+    // Dyadic Boolean chunk functions
+    NULL,   // &PrimFnMonRootB64isB64vB64, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootB32isB32vB32, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootB16isB16vB16, -- Can't happen w/Root
+    NULL,   // &PrimFnMonRootB08isB08vB08, -- Can't happen w/Root
+
+    // Miscellaneous
+    0,      // []RL for atomicity
+    FALSE,  // 00000001:  Allow dimension demotion for monadic scalar function
+    FALSE,  // 00000002:  ...                          dyadic  ...
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecRoot};
@@ -138,19 +228,32 @@ APLSTYPE PrimSpecRootStorageTypeMon
     switch (aplTypeRes)
     {
         case ARRAY_BOOL:
-        case ARRAY_INT:
-        case ARRAY_FLOAT:
         case ARRAY_APA:
             aplTypeRes = ARRAY_FLOAT;
 
             break;
 
+        // Except that INT -> FLT, RAT -> VFP, etc.
+        case ARRAY_INT:
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
         case ARRAY_RAT:
-            aplTypeRes = ARRAY_VFP;
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
+            aplTypeRes++;               // Assuming order as in <ARRAY_TYPES>
 
             break;
 
+        case ARRAY_FLOAT:
+        case ARRAY_HC2F:
+        case ARRAY_HC2V:
+        case ARRAY_HC4F:
         case ARRAY_VFP:
+        case ARRAY_HC4V:
+        case ARRAY_HC8F:
+        case ARRAY_HC8V:
         case ARRAY_NESTED:
             break;
 
@@ -189,16 +292,18 @@ APLBOOL PrimFnMonRootBisB
 //  Primitive scalar function monadic Root:  F {is} fn I
 //***************************************************************************
 
-APLFLOAT PrimFnMonRootFisI
-    (APLINT     aplIntegerRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnMonRootFisI
+    (LPAPLFLOAT lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     // Check for Complex result
-    if (aplIntegerRht < 0)
-        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
-
-    return sqrt ((APLFLOAT) aplIntegerRht);
+    if (lpatRht->aplInteger < 0)
+        RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+    else
+        lpMemRes[uRes] = sqrt ((APLFLOAT) lpatRht->aplInteger);
 } // End PrimFnMonRootFisI
 
 
@@ -208,17 +313,43 @@ APLFLOAT PrimFnMonRootFisI
 //  Primitive scalar function monadic Root:  F {is} fn F
 //***************************************************************************
 
-APLFLOAT PrimFnMonRootFisF
-    (APLFLOAT   aplFloatRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnMonRootFisF
+    (LPAPLFLOAT lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     // Check for Complex result
-    if (aplFloatRht < 0)    // Not SIGN_APLFLOAT as that'll catch -0 whose sqrt is -0
-        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
-
-    return sqrt (aplFloatRht);
+    if (lpatRht->aplFloat < 0)    // Not SIGN_APLFLOAT as that'll catch -0 whose sqrt is -0
+        RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+    else
+        lpMemRes[uRes] = sqrt (lpatRht->aplFloat);
 } // End PrimFnMonRootFisF
+
+
+//***************************************************************************
+//  $PrimFnMonRootVisR
+//
+//  Primitive scalar function monadic Root:  V {is} fn R
+//***************************************************************************
+
+void PrimFnMonRootVisR
+    (LPAPLVFP   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atRht = {0};
+
+    // Promote the right arg to the result type
+    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatRht->aplRat, 0, &atRht);
+
+    PrimFnMonRootVisV (lpMemRes, uRes, &atRht, lpPrimSpec);
+
+    Myhc1v_clear (&atRht.aplHC1V);
+} // End PrimFnMonRootVisR
 
 
 //***************************************************************************
@@ -227,25 +358,515 @@ APLFLOAT PrimFnMonRootFisF
 //  Primitive scalar function monadic Root:  V {is} fn V
 //***************************************************************************
 
-APLVFP PrimFnMonRootVisV
-    (APLVFP     aplVfpRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnMonRootVisV
+    (LPAPLVFP   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLVFP mpfRes = {0};
-
     // Check for Complex result
-    if (mpfr_cmp_ui (&aplVfpRht, 0) < 0)
-        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+    if (mpfr_cmp_ui (&lpatRht->aplVfp, 0) < 0)
+        RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
+    else
+    {
+        // Initialize the result
+        mpfr_init0 (&lpMemRes[uRes]);
 
-    // Initialize the result
-    mpfr_init0 (&mpfRes);
-
-    // Extract the square root of a Variable FP
-    mpfr_sqrt (&mpfRes, &aplVfpRht, MPFR_RNDN);
-
-    return mpfRes;
+        // Extract the square root of a Variable FP
+        mpfr_sqrt (&lpMemRes[uRes], &lpatRht->aplVfp, MPFR_RNDN);
+    } // End IF/ELSE
 } // End PrimFnMonRootVisV
+
+
+//***************************************************************************
+//  $PrimFnMonRootHC2FisHC2I
+//
+//  Primitive scalar function monadic Root:  HC2F {is} fn HC2I
+//***************************************************************************
+
+void PrimFnMonRootHC2FisHC2I
+    (LPAPLHC2F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atRht = {0};
+
+    // Convert the right arg to the result type
+    (*aTypeActPromote[ARRAY_HC2I][ARRAY_HC2F]) (lpatRht, 0, &atRht);
+
+    // Pass it on
+    PrimFnMonRootHC2FisHC2F (lpMemRes, uRes, &atRht, lpPrimSpec);
+} // End PrimFnMonRootHC2FisHC2I
+
+
+//***************************************************************************
+//  $SqrtHCxF_RE
+//***************************************************************************
+
+APLHC8F SqrtHCxF_RE
+    (APLHC8F aplRht,                // Right arg
+     int     iHCDimRes)             // HC Dimension (1, 2, 4, 8)
+
+{
+    APLHC8F  aplRes = {0};          // Result
+    APLFLOAT aplRMag,               // Magnitude of the entire arg
+             aplIMag,               // ...              imaginary parts
+             aplU,                  // Temp var
+             aplV,                  // ...
+             aplMul;                // ...
+    int      i;                     // Loop counter
+
+    /*
+        From http://home.comcast.net/~tamivox/redbear/qtrn_calc/index.html
+        Sqrt of a Hypercomplex number:
+
+        h = pF (stack[0].h);
+        i = pF (stack[0].i);
+        j = pF (stack[0].j);
+        k = pF (stack[0].k);
+
+        g = r_sqrt (i * i + j * j + k * k);
+        m = r_sqrt (h * h + g * g);
+        u = r_sqrt (m);
+        v = (g == 0) ? 0 : r_atan2 (g, h) / 2;
+        p = u * r_cos (v);
+        q = (g == 0) ? 0 : u * r_sin (v) / g;
+
+        stack[0].h = p;
+        stack[0].i = q * i;
+        stack[0].j = q * j;
+        stack[0].k = q * k;
+     */
+
+    // Calculate the sum of the squares of both the entire arg and
+    //   just the imaginary parts
+    aplIMag = 0;
+
+    // Loop through the imaginary parts
+    for (i = 1; i < iHCDimRes; i++)
+        // Calculate the sum of the squares
+        aplIMag += aplRht.parts[i] * aplRht.parts[i];
+
+    // Calculate the magnitude of the entire arg and
+    //   the magnitude of just the imaginary parts
+    aplRMag = sqrt (aplIMag + aplRht.parts[0] * aplRht.parts[0]);   // m
+    aplIMag = sqrt (aplIMag);                                       // g
+    aplU    = sqrt (aplRMag);                                       // u
+
+    // If the imaginary parts are all 0, ...
+    if (aplIMag EQ 0)
+        aplV = 0;
+    else
+        aplV = atan2 (aplIMag, aplRht.parts[0]) / 2;
+
+    // Calculate the real part
+    aplRes.parts[0] = aplU * cos (aplV);                            // p
+
+    // If the imaginary parts are all 0, ...
+    if (aplIMag EQ 0)
+    {
+        // Loop through all but the 1st of the imaginary parts
+        for (i = 2; i < iHCDimRes; i++)
+            // Initialize to 0
+            aplRes.parts[i] = 0.0;
+
+        // If the real part is negative, ...
+        if (aplRht.parts[0] < 0)
+        {
+            // Set the real part to 0
+            aplRes.parts[0] = 0;
+
+            // Set the 1st imaginary part to aplU
+            aplRes.parts[1] = aplU;
+        } else
+            // Set the 1st imaginary part to 0
+            aplRes.parts[1] = 0;
+    } else
+    {
+        // Calculate u * sin (v) / g
+        aplMul = aplU * sin (aplV) / aplIMag;
+
+        // Loop through the imaginary parts
+        for (i = 1; i < iHCDimRes; i++)
+            // Multiply each of the imaginary parts by the arctan2
+            aplRes.parts[i] = aplRht.parts[i] * aplMul;
+    } // End IF/ELSE
+
+    return aplRes;
+} // End SqrtHCxF_RE
+
+
+//***************************************************************************
+//  $PrimFnMonRootHC2FisHC2F
+//
+//  Primitive scalar function monadic Root:  HC2F {is} fn HC2F
+//***************************************************************************
+
+void PrimFnMonRootHC2FisHC2F
+    (LPAPLHC2F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Call subfunction
+    lpMemRes[uRes] = SqrtHCxF_RE (lpatRht->aplHC8F, 2).partsLo[0].partsLo[0];
+} // End PrimFnMonRootHC2FisHC2F
+
+
+//***************************************************************************
+//  $PrimFnMonRootHC4FisHC4I
+//
+//  Primitive scalar function monadic Root:  HC4F {is} fn HC4I
+//***************************************************************************
+
+void PrimFnMonRootHC4FisHC4I
+    (LPAPLHC4F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atRht = {0};
+
+    // Convert the right arg to the result type
+    (*aTypeActPromote[ARRAY_HC4I][ARRAY_HC4F]) (lpatRht, 0, &atRht);
+
+    // Pass it on
+    PrimFnMonRootHC4FisHC4F (lpMemRes, uRes, &atRht, lpPrimSpec);
+} // End PrimFnMonRootHC4FisHC4I
+
+
+//***************************************************************************
+//  $PrimFnMonRootHC4FisHC4F
+//
+//  Primitive scalar function monadic Root:  HC4F {is} fn HC4F
+//***************************************************************************
+
+void PrimFnMonRootHC4FisHC4F
+    (LPAPLHC4F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Call subfunction
+    lpMemRes[uRes] = SqrtHCxF_RE (lpatRht->aplHC8F, 4).partsLo[0];
+} // End PrimFnMonRootHC4FisHC4F
+
+
+//***************************************************************************
+//  $PrimFnMonRootHC8FisHC8I
+//
+//  Primitive scalar function monadic Root:  HC8F {is} fn HC8I
+//***************************************************************************
+
+void PrimFnMonRootHC8FisHC8I
+    (LPAPLHC8F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atRht = {0};
+
+    // Convert the right arg to the result type
+    (*aTypeActPromote[ARRAY_HC8I][ARRAY_HC8F]) (lpatRht, 0, &atRht);
+
+    // Pass it on
+    PrimFnMonRootHC8FisHC8F (lpMemRes, uRes, &atRht, lpPrimSpec);
+} // End PrimFnMonRootHC8FisHC8I
+
+
+//***************************************************************************
+//  $PrimFnMonRootHC8FisHC8F
+//
+//  Primitive scalar function monadic Root:  HC8F {is} fn HC8F
+//***************************************************************************
+
+void PrimFnMonRootHC8FisHC8F
+    (LPAPLHC8F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Call subfunction
+    lpMemRes[uRes] = SqrtHCxF_RE (lpatRht->aplHC8F, 8);
+} // End PrimFnMonRootHC8FisHC8F
+
+
+//***************************************************************************
+//  $PrimFnMonRootHC2VisHC2R
+//
+//  Primitive scalar function monadic Root:  HC2V {is} fn HC2R
+//***************************************************************************
+
+void PrimFnMonRootHC2VisHC2R
+    (LPAPLHC2V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atRht = {0};
+
+    // Promote the right arg to the result type
+    (*aTypeActPromote[ARRAY_HC2R][ARRAY_HC2V]) (&lpatRht->aplRat, 0, &atRht);
+
+    PrimFnMonRootHC2VisHC2V (lpMemRes, uRes, &atRht, lpPrimSpec);
+
+    Myhc2v_clear (&atRht.aplHC2V);
+} // End PrimFnMonRootHC2VisHC2R
+
+
+//***************************************************************************
+//  $SqrtHCxV_RE
+//***************************************************************************
+
+APLHC8V SqrtHCxV_RE
+    (APLHC8V aplRht,                // Right arg
+     int     iHCDimRes)             // HC Dimension (1, 2, 4, 8)
+
+{
+    APLHC8V  aplRes = {0};          // Result
+    APLVFP   aplRMag,               // Magnitude of the entire arg
+             aplIMag = {0},         // ...              imaginary parts
+             aplTmp,                // Temp var
+             aplU = {0},            // ...
+             aplV = {0},            // ...
+             aplMul;                  // ...
+    int      i;                     // Loop counter
+
+    /*
+        From http://home.comcast.net/~tamivox/redbear/qtrn_calc/index.html
+        Sqrt of a Hypercomplex number:
+
+        h = pF (stack[0].h);
+        i = pF (stack[0].i);
+        j = pF (stack[0].j);
+        k = pF (stack[0].k);
+
+        g = r_sqrt (i * i + j * j + k * k);
+        m = r_sqrt (h * h + g * g);
+        u = r_sqrt (m);
+        v = (g == 0) ? 0 : r_atan2 (g, h) / 2;
+        p = u * r_cos (v);
+        q = (g == 0) ? 0 : u * r_sin (v) / g;
+
+        stack[0].h = p;
+        stack[0].i = q * i;
+        stack[0].j = q * j;
+        stack[0].k = q * k;
+     */
+
+    // Calculate the sum of the squares of both the entire arg and
+    //   just the imaginary parts
+    mpfr_init0 (&aplIMag);
+
+    // Calculate the square of the real part
+    aplRMag = MulHC1V_RE (aplRht.parts[0], aplRht.parts[0]);
+
+    // Loop through the imaginary parts
+    for (i = 1; i < iHCDimRes; i++)
+    {
+        // Calculate square of the imaginary part
+        aplTmp = MulHC1V_RE (aplRht.parts[i], aplRht.parts[i]);
+
+        // Calculate the sum of the squares
+        mpfr_add (&aplIMag, &aplIMag, &aplTmp, MPFR_RNDN);
+
+        // We no longer need this resource
+        Myf_clear (&aplTmp);
+    } // End FOR
+
+    // Add the square of the real part to the sum of the squares of the imaginary parts
+    //   to get the sum of the squares of the entire arg
+    mpfr_add  (&aplRMag, &aplRMag, &aplIMag, MPFR_RNDN);
+
+    // Initialize to 0
+    mpfr_init0 (&aplU);
+
+    // Calculate the magnitude of the entire arg and
+    //   the magnitude of just the imaginary parts
+    mpfr_sqrt (&aplRMag, &aplRMag, MPFR_RNDN);                      // m
+    mpfr_sqrt (&aplIMag, &aplIMag, MPFR_RNDN);                      // g
+    mpfr_sqrt (&aplU   , &aplRMag, MPFR_RNDN);                      // u
+
+    // Initialize to 0
+    mpfr_init0 (&aplV);
+
+    // If the imaginary parts are NOT all 0, ...
+    if (!IsMpf0 (&aplIMag))
+    {
+        // Calculate atan2 (g, h) /2
+        mpfr_atan2  (&aplV, &aplIMag, &aplRht.parts[0], MPFR_RNDN);
+        mpfr_div_si (&aplV, &aplV, 2, MPFR_RNDN);
+    } // End IF/ELSE
+
+    // Calculate cos (v)
+    aplTmp = cosVfp (aplV);
+
+    // Calculate u * cos (v)
+    aplRes.parts[0] = MulHC1V_RE (aplU, aplTmp);                    // p
+
+    // We no longer need this storage
+    Myf_clear (&aplTmp);
+
+    // If the imaginary parts are all 0, ...
+    if (IsMpf0 (&aplIMag))
+    {
+        // Loop through all but the 1st of the imaginary parts
+        for (i = 2; i < iHCDimRes; i++)
+            // Initialize to 0
+            mpfr_init0 (&aplRes.parts[i]);
+
+        // If the real part is negative, ...
+        if (mpfr_sgn (&aplRht.parts[0]) < 0)
+        {
+            // Set the real part to 0
+            mpfr_set_si (&aplRes.parts[0], 0, MPFR_RNDN);
+
+            // Set the 1st imaginary part to aplU
+            mpfr_init_set (&aplRes.parts[1], &aplU, MPFR_RNDN);
+        } else
+            // Initialize the 1st imaginary part to 0
+            mpfr_init0 (&aplRes.parts[1]);
+    } else
+    {
+        //  Calculate sin (v)
+        aplTmp = sinVfp (aplV);
+
+        // Calculate sin (v) / g
+        aplMul = DivHC1V_RE (aplTmp, aplIMag);
+
+        // We no longer need this storage
+        Myf_clear (&aplTmp);
+
+        // Calculate u * sin (v) / g
+        mpfr_mul (&aplMul, &aplU, &aplMul, MPFR_RNDN);              // q
+
+        // Loop through the imaginary parts
+        for (i = 1; i < iHCDimRes; i++)
+            // Multiply each of the imaginary parts by the arctan2
+            aplRes.parts[i] = MulHC1V_RE (aplRht.parts[i], aplMul);
+        // We no longer need this storage
+        Myf_clear (&aplMul);
+    } // End IF/ELSE
+
+    // We no longer need this storage
+    Myf_clear (&aplV);
+    Myf_clear (&aplU);
+    Myf_clear (&aplIMag);
+    Myf_clear (&aplRMag);
+
+    return aplRes;
+} // End SqrtHCxV_RE
+
+
+//***************************************************************************
+//  $PrimFnMonRootHC2VisHC2V
+//
+//  Primitive scalar function monadic Root:  HC2V {is} fn HC2V
+//***************************************************************************
+
+void PrimFnMonRootHC2VisHC2V
+    (LPAPLHC2V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Call subfunction
+    lpMemRes[uRes] = SqrtHCxV_RE (lpatRht->aplHC8V, 2).partsLo.partsLo;
+} // End PrimFnMonRootHC2VisHC2V
+
+
+//***************************************************************************
+//  $PrimFnMonRootHC4VisHC4R
+//
+//  Primitive scalar function monadic Root:  HC4V {is} fn HC4R
+//***************************************************************************
+
+void PrimFnMonRootHC4VisHC4R
+    (LPAPLHC4V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atRht = {0};
+
+    // Promote the right arg to the result type
+    (*aTypeActPromote[ARRAY_HC4R][ARRAY_HC4V]) (&lpatRht->aplRat, 0, &atRht);
+
+    PrimFnMonRootHC4VisHC4V (lpMemRes, uRes, &atRht, lpPrimSpec);
+
+    Myhc4v_clear (&atRht.aplHC4V);
+} // End PrimFnMonRootHC4VisHC4R
+
+
+//***************************************************************************
+//  $PrimFnMonRootHC4VisHC4V
+//
+//  Primitive scalar function monadic Root:  HC4V {is} fn HC4V
+//***************************************************************************
+
+void PrimFnMonRootHC4VisHC4V
+    (LPAPLHC4V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Call the subfunction
+    lpMemRes[uRes] = SqrtHCxV_RE (lpatRht->aplHC8V, 4).partsLo;
+} // End PrimFnMonRootHC4VisHC4V
+
+
+//***************************************************************************
+//  $PrimFnMonRootHC8VisHC8R
+//
+//  Primitive scalar function monadic Root:  HC8V {is} fn HC8R
+//***************************************************************************
+
+void PrimFnMonRootHC8VisHC8R
+    (LPAPLHC8V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atRht = {0};
+
+    // Promote the right arg to the result type
+    (*aTypeActPromote[ARRAY_HC8R][ARRAY_HC8V]) (&lpatRht->aplRat, 0, &atRht);
+
+    PrimFnMonRootHC8VisHC8V (lpMemRes, uRes, &atRht, lpPrimSpec);
+
+    Myhc8v_clear (&atRht.aplHC8V);
+} // End PrimFnMonRootHC8VisHC8R
+
+
+//***************************************************************************
+//  $PrimFnMonRootHC8VisHC8V
+//
+//  Primitive scalar function monadic Root:  HC8V {is} fn HC8V
+//***************************************************************************
+
+void PrimFnMonRootHC8VisHC8V
+    (LPAPLHC8V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Call the subfunction
+    lpMemRes[uRes] = SqrtHCxV_RE (lpatRht->aplHC8V, 8);
+} // End PrimFnMonRootHC8VisHC8V
 
 
 //***************************************************************************
@@ -277,9 +898,49 @@ APLSTYPE PrimSpecRootStorageTypeDyd
     // Calculate the storage type of the result
     aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
-    // Except that RAT becomes VFP
-    if (IsRat (aplTypeRes))
-        return ARRAY_VFP;
+    // Split cases based upon the storage type
+    switch (aplTypeRes)
+    {
+        // Except all simple numerics become FLOAT
+        case ARRAY_BOOL:
+        case ARRAY_APA:
+            aplTypeRes = ARRAY_FLOAT;
+
+            break;
+
+        // Except that INT -> FLT, RAT -> VFP, etc.
+        case ARRAY_INT:
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
+        case ARRAY_RAT:
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
+            aplTypeRes++;               // Assuming order as in <ARRAY_TYPES>
+
+            break;
+
+        case ARRAY_FLOAT:
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
+        case ARRAY_VFP:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
+        case ARRAY_NESTED:
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+            aplTypeRes = ARRAY_ERROR;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
 
     return aplTypeRes;
 } // End PrimSpecRootStorageTypeDyd
@@ -291,40 +952,46 @@ APLSTYPE PrimSpecRootStorageTypeDyd
 //  Primitive scalar function dyadic Root:  B {is} B fn B
 //***************************************************************************
 
-APLBOOL PrimFnDydRootBisBvB
-    (APLBOOL    aplBooleanLft,
-     APLBOOL    aplBooleanRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydRootBisBvB
+    (LPAPLBOOL  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     APLFLOAT aplFloatRes;
+    UBOOL    bRet;
 
     // Check for indeterminates:  0 {root} 0 <==> 0 * _
-    if (aplBooleanLft EQ 0
-     && aplBooleanRht EQ 0)
+    if (lpatLft->aplBoolean EQ 0
+     && lpatRht->aplBoolean EQ 0)
     {
         // See what the []IC oracle has to say
         aplFloatRes =
-          TranslateQuadICIndex ((APLFLOAT) aplBooleanLft,
+          TranslateQuadICIndex ((APLFLOAT) lpatLft->aplBoolean,
                                            ICNDX_0EXPPi,
-                                (APLFLOAT) aplBooleanRht,
+                                (APLFLOAT) lpatRht->aplBoolean,
                                            FALSE);
         // If the result is Boolean
         if (aplFloatRes EQ 0)
-            return 0;
+            bRet = 0;
         else
         if (aplFloatRes EQ 1)
-            return 1;
+            bRet = 1;
         else
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
-    } // End IF
-
+    } else
     // Check for special case:  1 {root} R <==> R * 1 <==> R
-    if (aplBooleanLft EQ 1)
-        return aplBooleanRht;
+    if (lpatLft->aplBoolean EQ 1)
+        bRet = lpatRht->aplBoolean;
     else
         // It's 0 {root} 1 <==> 1 * _ <==> 1
-        return 1;
+        bRet = 1;
+
+    lpMemRes[uRes >> LOG2NBIB] |=
+      bRet
+      << (MASKLOG2NBIB & (UINT) uRes);
 } // End PrimFnDydRootBisBvB
 
 
@@ -334,65 +1001,97 @@ APLBOOL PrimFnDydRootBisBvB
 //  Primitive scalar function dyadic Root:  I {is} I fn I
 //***************************************************************************
 
-APLINT PrimFnDydRootIisIvI
-    (APLINT     aplIntegerLft,
-     APLINT     aplIntegerRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydRootIisIvI
+    (LPAPLINT   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     APLFLOAT aplFloatRes;
 
     // Check for special case:  1 {root} R <==> R * 1 <==> R
-    if (aplIntegerLft EQ 1)
-        return aplIntegerRht;
+    if (lpatLft->aplInteger EQ 1)
+    {
+        lpMemRes[uRes] = lpatRht->aplInteger;
+
+        return;
+    } // End IF
 
     // Check for indeterminates and special cases:  0 {root} R
-    if (aplIntegerLft EQ 0)
+    if (lpatLft->aplInteger EQ 0)
     {
         // Check for indeterminate:  0 {root} R where R <= -1
-        if (aplIntegerRht <= -1)
-            aplFloatRes = TranslateQuadICIndex ((APLFLOAT) aplIntegerLft,
+        if (lpatRht->aplInteger <= -1)
+        {
+            aplFloatRes = TranslateQuadICIndex ((APLFLOAT) lpatLft->aplInteger,
                                                            ICNDX_NEXPPi,
-                                                (APLFLOAT) aplIntegerRht,
+                                                (APLFLOAT) lpatRht->aplInteger,
                                                            FALSE);
-        else
+            // If aplFloatRes can't be expressed as an integer, ...
+            if (IsFltInfinity (aplFloatRes))
+                RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+            else
+                lpMemRes[uRes] = (APLINT) aplFloatRes;
+
+            return;
+        } else
 ////////// Check for special case:  0 {root} R where -1 < R < 0 <==> 0
-////////if (-1 < aplIntegerRht
-//////// &&      aplIntegerRht < 0)
-////////    return 0;
-////////else
+////////if (-1 < lpatRht->aplInteger
+//////// &&      lpatRht->aplInteger < 0)
+////////{
+////////    lpMemRes[uRes] = 0;
+////////
+////////    return;
+////////} else
         // Check for indeterminate:  0 {root} 0 <==> 0 * _
-        if (aplIntegerRht EQ 0)
-            aplFloatRes = TranslateQuadICIndex ((APLFLOAT) aplIntegerLft,
+        if (lpatRht->aplInteger EQ 0)
+        {
+            aplFloatRes = TranslateQuadICIndex ((APLFLOAT) lpatLft->aplInteger,
                                                            ICNDX_0EXPPi,
-                                                (APLFLOAT) aplIntegerRht,
+                                                (APLFLOAT) lpatRht->aplInteger,
                                                            FALSE);
-        else
+            // If aplFloatRes can't be expressed as an integer, ...
+            if (IsFltInfinity (aplFloatRes))
+                RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+            else
+                lpMemRes[uRes] = (APLINT) aplFloatRes;
+
+            return;
+        } else
 ////////// Check for special case:  0 {root} R where 0 < R < 1
-////////if (0 < aplIntegerRht
-//////// &&     aplIntegerRht < 1)
-////////    return 0;
-////////else
+////////if (0 < lpatRht->aplInteger
+//////// &&     lpatRht->aplInteger < 1)
+////////{
+////////    lpMemRes[uRes] = 0;
+////////
+////////    return;
+////////} else
 ////////// Check for special case:  0 {root} R where R > 1 <==> R * _ <==> _
-////////if (aplIntegerRht > 1)
+////////if (lpatRht->aplInteger > 1)
 ////////    RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
 ////////else
-            aplFloatRes = 2;        // Any non-Boolean value
+            lpMemRes[uRes] = 2;        // Any non-Boolean value
 
         // If the result is Boolean
-        if (aplFloatRes EQ 0)
-            return 0;
-        else
-        if (aplFloatRes EQ 1)
-            return 1;
-        else
+        if (lpMemRes[uRes] EQ 0)
+        {
+            lpMemRes[uRes] = 0;
+
+            return;
+        } else
+        if (lpMemRes[uRes] EQ 1)
+        {
+            lpMemRes[uRes] = 1;
+
+            return;
+        } else
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
     } // End IF
 
     // Otherwise, let the FisFvF code handle it
     RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
-
-    return 0;           // To keep the compiler happy
 } // End PrimFnDydRootIisIvI
 
 
@@ -402,73 +1101,72 @@ APLINT PrimFnDydRootIisIvI
 //  Primitive scalar function dyadic Root:  F {is} I fn I
 //***************************************************************************
 
-APLFLOAT PrimFnDydRootFisIvI
-    (APLINT     aplIntegerLft,
-     APLINT     aplIntegerRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydRootFisIvI
+    (LPAPLFLOAT lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLFLOAT aplFloatRes;
-
     // Check for indeterminates:  0 * _
-    if (aplIntegerLft EQ 0
-     && aplIntegerRht EQ 0)
-        return TranslateQuadICIndex ((APLFLOAT) aplIntegerLft,
-                                                ICNDX_0EXPPi,
-                                     (APLFLOAT) aplIntegerRht,
-                                                FALSE);
-
+    if (lpatLft->aplInteger EQ 0
+     && lpatRht->aplInteger EQ 0)
+        lpMemRes[uRes] = TranslateQuadICIndex ((APLFLOAT) lpatLft->aplInteger,
+                                                          ICNDX_0EXPPi,
+                                               (APLFLOAT) lpatRht->aplInteger,
+                                                          FALSE);
+    else
     // Check for special case:  1 {root} R <==> R * 1 <==> R
-    if (aplIntegerLft EQ 1)
-        return (APLFLOAT) aplIntegerRht;
-
+    if (lpatLft->aplInteger EQ 1)
+        lpMemRes[uRes] = (APLFLOAT) lpatRht->aplInteger;
+    else
     // Check for indeterminates and special cases:  0 {root} R
-    if (aplIntegerLft EQ 0)
+    if (lpatLft->aplInteger EQ 0)
     {
         // Check for indeterminate:  0 {root} R where R <= -1
-        if (aplIntegerRht <= -1)
-            return TranslateQuadICIndex ((APLFLOAT) aplIntegerLft,
-                                                    ICNDX_NEXPPi,
-                                         (APLFLOAT) aplIntegerRht,
-                                                    FALSE);
-
+        if (lpatRht->aplInteger <= -1)
+            lpMemRes[uRes] = TranslateQuadICIndex ((APLFLOAT) lpatLft->aplInteger,
+                                                              ICNDX_NEXPPi,
+                                                   (APLFLOAT) lpatRht->aplInteger,
+                                                              FALSE);
+////////else
 ////////// Check for special case:  0 {root} R where -1 < R < 0 <==> 0
-////////if (-1 < aplIntegerRht
-//////// &&      aplIntegerRht < 0)
+////////if (-1 < lpatRht->aplInteger
+//////// &&      lpatRht->aplInteger < 0)
 ////////    return 0;
-
+        else
         // Check for indeterminate:  0 {root} 0 <==> 0 * _
-        if (aplIntegerRht EQ 0)
-            return TranslateQuadICIndex ((APLFLOAT) aplIntegerLft,
-                                                    ICNDX_0EXPPi,
-                                         (APLFLOAT) aplIntegerRht,
-                                                    FALSE);
-
+        if (lpatRht->aplInteger EQ 0)
+            lpMemRes[uRes] = TranslateQuadICIndex ((APLFLOAT) lpatLft->aplInteger,
+                                                              ICNDX_0EXPPi,
+                                                   (APLFLOAT) lpatRht->aplInteger,
+                                                              FALSE);
+////////else
 ////////// Check for special case:  0 {root} R where 0 < R < 1
-////////if (0 < aplIntegerRht
-//////// &&     aplIntegerRht < 1)
-////////    return 0;
-
+////////if (0 < lpatRht->aplInteger
+//////// &&     lpatRht->aplInteger < 1)
+////////    lpMemRes[uRes] = 0;
+        else
         // Check for special case:  0 {root} R where R > 1 <==> R * _ <==> _
-        if (aplIntegerRht > 1)
-            return fltPosInfinity;
+        if (lpatRht->aplInteger > 1)
+            lpMemRes[uRes] = fltPosInfinity;
     } // End IF
-
+////else
 ////// Check for indeterminate:  PoM_ {root} 0 <==> 0 * 0
-////if (IsFltInfinity (aplIntegerLft)
-//// && aplIntegerRht EQ 0)
-////    return TranslateQuadICIndex ((APLFLOAT) aplIntegerLft,
-////                                            ICNDX_0EXP0,
-////                                 (APLFLOAT) aplIntegerRht,
-////                                            FALSE);
+////if (IsFltInfinity (lpatLft->aplInteger)
+//// && lpatRht->aplInteger EQ 0)
+////    lpMemRes[uRes] = TranslateQuadICIndex ((APLFLOAT) lpatLft->aplInteger,
+////                                                      ICNDX_0EXP0,
+////                                           (APLFLOAT) lpatRht->aplInteger,
+////                                                      FALSE);
+    else
     // Check for Complex result
-    if (aplIntegerRht < 0)
-        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
-
-    // Calculate the root
-    aplFloatRes = pow ((APLFLOAT) aplIntegerRht, 1 / (APLFLOAT) aplIntegerLft);
-
-    return aplFloatRes;
+    if (lpatRht->aplInteger < 0)
+        RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+    else
+        // Calculate the root
+        lpMemRes[uRes] = pow ((APLFLOAT) lpatRht->aplInteger, 1 / (APLFLOAT) lpatLft->aplInteger);
 } // End PrimFnDydRootFisIvI
 
 
@@ -478,82 +1176,111 @@ APLFLOAT PrimFnDydRootFisIvI
 //  Primitive scalar function dyadic Root:  F {is} F fn F
 //***************************************************************************
 
-APLFLOAT PrimFnDydRootFisFvF
-    (APLFLOAT   aplFloatLft,
-     APLFLOAT   aplFloatRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydRootFisFvF
+    (LPAPLFLOAT lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLFLOAT aplFloatRes;
-
     // Check for indeterminates:  0 * _
-    if (aplFloatLft EQ 0
-     && aplFloatRht EQ 0)
-        return TranslateQuadICIndex (aplFloatLft,
+    if (lpatLft->aplFloat EQ 0
+     && lpatRht->aplFloat EQ 0)
+        lpMemRes[uRes] = TranslateQuadICIndex (lpatLft->aplFloat,
                                      ICNDX_0EXPPi,
-                                     aplFloatRht,
+                                     lpatRht->aplFloat,
                                      FALSE);
+    else
     // Check for special case:  1 {root} R <==> R * 1 <==> R
-    if (aplFloatLft EQ 1)
-        return aplFloatRht;
-
+    if (lpatLft->aplFloat EQ 1)
+        lpMemRes[uRes] = lpatRht->aplFloat;
+    else
     // Check for indeterminates and special cases:  0 {root} R
-    if (aplFloatLft EQ 0)
+    if (lpatLft->aplFloat EQ 0)
     {
         // Check for indeterminate:  0 {root} R where R <= -1
-        if (aplFloatRht <= -1)
-            return TranslateQuadICIndex (aplFloatLft,
-                                         ICNDX_NEXPPi,
-                                         aplFloatRht,
-                                         FALSE);
+        if (lpatRht->aplFloat <= -1)
+            lpMemRes[uRes] = TranslateQuadICIndex (lpatLft->aplFloat,
+                                                   ICNDX_NEXPPi,
+                                                   lpatRht->aplFloat,
+                                                   FALSE);
+        else
         // Check for special case:  0 {root} R where -1 < R < 0 <==> 0
-        if (-1 < aplFloatRht
-         &&      aplFloatRht < 0)
-            return 0;
-
+        if (-1 < lpatRht->aplFloat
+         &&      lpatRht->aplFloat < 0)
+            lpMemRes[uRes] = 0;
+        else
         // Check for indeterminate:  0 {root} 0 <==> 0 * _
-        if (aplFloatRht EQ 0)
-            return TranslateQuadICIndex (aplFloatLft,
-                                         ICNDX_0EXPPi,
-                                         aplFloatRht,
-                                         FALSE);
+        if (lpatRht->aplFloat EQ 0)
+            lpMemRes[uRes] = TranslateQuadICIndex (lpatLft->aplFloat,
+                                                   ICNDX_0EXPPi,
+                                                   lpatRht->aplFloat,
+                                                   FALSE);
+        else
         // Check for special case:  0 {root} R where 0 < R < 1
-        if (0 < aplFloatRht
-         &&     aplFloatRht < 1)
-            return 0;
-
+        if (0 < lpatRht->aplFloat
+         &&     lpatRht->aplFloat < 1)
+            lpMemRes[uRes] = 0;
+        else
         // Check for special case:  0 {root} R where R > 1 <==> R * _ <==> _
-        if (aplFloatRht > 1)
-            return fltPosInfinity;
+        if (lpatRht->aplFloat > 1)
+            lpMemRes[uRes] = fltPosInfinity;
     } // End IF
-
+    else
     // Check for indeterminate:  PoM_ {root} 0 <==> 0 * 0
-    if (IsFltInfinity (aplFloatLft)
-     && aplFloatRht EQ 0)
-        return TranslateQuadICIndex (aplFloatLft,
-                                     ICNDX_0EXP0,
-                                     aplFloatRht,
-                                     FALSE);
+    if (IsFltInfinity (lpatLft->aplFloat)
+     && lpatRht->aplFloat EQ 0)
+        lpMemRes[uRes] = TranslateQuadICIndex (lpatLft->aplFloat,
+                                               ICNDX_0EXP0,
+                                               lpatRht->aplFloat,
+                                               FALSE);
+    else
     // Check for Complex result
-    if (aplFloatRht < 0)    // Not SIGN_APLFLOAT as that'll catch -0 whose root is -0
-        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
-
+    if (lpatRht->aplFloat < 0)    // Not SIGN_APLFLOAT as that'll catch -0 whose root is -0
+        RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+    else
     // Handle L {root} -0
-    if (aplFloatRht EQ 0)
+    if (lpatRht->aplFloat EQ 0)
     {
         // If L < 0, ...
-        if (aplFloatLft < 0)
-            return SIGN_APLFLOAT (aplFloatRht) ? fltNegInfinity
-                                               : fltPosInfinity;
+        if (lpatLft->aplFloat < 0)
+            lpMemRes[uRes] = SIGN_APLFLOAT (lpatRht->aplFloat) ? fltNegInfinity
+                                                               : fltPosInfinity;
         else
-            return aplFloatRht;
-    } // End IF
-
-    // Calculate the root
-    aplFloatRes = pow (aplFloatRht, 1 / aplFloatLft);
-
-    return aplFloatRes;
+            lpMemRes[uRes] = lpatRht->aplFloat;
+    } else
+        // Calculate the root
+        lpMemRes[uRes] = pow (lpatRht->aplFloat, 1 / lpatLft->aplFloat);
 } // End PrimFnDydRootFisFvF
+
+
+//***************************************************************************
+//  $PrimFnDydRootVisRvR
+//
+//  Primitive scalar function dyadic Root:  V {is} R fn R
+//***************************************************************************
+
+void PrimFnDydRootVisRvR
+    (LPAPLVFP   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atLft = {0},
+             atRht = {0};
+
+    // Promote the left & right arg to the result type
+    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatLft->aplRat, 0, &atLft);
+    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatRht->aplRat, 0, &atRht);
+
+    PrimFnDydRootVisVvV (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+
+    Myhc1v_clear (&atRht.aplHC1V);
+    Myhc1v_clear (&atLft.aplHC1V);
+} // End PrimFnDydRootVisRvR
 
 
 //***************************************************************************
@@ -562,112 +1289,527 @@ APLFLOAT PrimFnDydRootFisFvF
 //  Primitive scalar function dyadic Root:  V {is} V fn V
 //***************************************************************************
 
-APLVFP PrimFnDydRootVisVvV
-    (APLVFP     aplVfpLft,
-     APLVFP     aplVfpRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydRootVisVvV
+    (LPAPLVFP   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLVFP mpfRes = {0},
-           mpfTmp;
-
     // Check for indeterminates:  0 * _
-    if (IsMpf0 (&aplVfpLft)
-     && IsMpf0 (&aplVfpRht))
-        return *mpfr_QuadICValue (&aplVfpLft,
-                                   ICNDX_0EXPPi,
-                                  &aplVfpRht,
-                                  &mpfRes,
-                                   FALSE);
+    if (IsMpf0 (&lpatLft->aplVfp)
+     && IsMpf0 (&lpatRht->aplVfp))
+        lpMemRes[uRes] = *mpfr_QuadICValue (&lpatLft->aplVfp,
+                                             ICNDX_0EXPPi,
+                                            &lpatRht->aplVfp,
+                                            &lpMemRes[uRes],
+                                             FALSE);
+    else
     // Check for special case:  1 {root} R <==> R * 1 <==> R
-    if (IsMpf1 (&aplVfpLft))
-    {
-        mpfr_init_copy (&mpfRes, &aplVfpRht);
-        return mpfRes;
-    } // End IF
-
+    if (IsMpf1 (&lpatLft->aplVfp))
+        mpfr_init_copy (&lpMemRes[uRes], &lpatRht->aplVfp);
+    else
     // Check for indeterminates and special cases:  0 {root} R
-    if (IsMpf0 (&aplVfpLft))
+    if (IsMpf0 (&lpatLft->aplVfp))
     {
         // Check for indeterminate:  0 {root} R where R <= -1
-        if (mpfr_cmp_si (&aplVfpRht, -1) <= 0)  // R <= -1
-            return *mpfr_QuadICValue (&aplVfpLft,
-                                       ICNDX_NEXPPi,
-                                      &aplVfpRht,
-                                      &mpfRes,
-                                       FALSE);
+        if (mpfr_cmp_si (&lpatRht->aplVfp, -1) <= 0)  // R <= -1
+            lpMemRes[uRes] = *mpfr_QuadICValue (&lpatLft->aplVfp,
+                                                 ICNDX_NEXPPi,
+                                                &lpatRht->aplVfp,
+                                                &lpMemRes[uRes],
+                                                 FALSE);
+        else
         // Check for special case:  0 {root} R where -1 < R < 0 <==> 0
-        if (mpfr_si_cmp (-1, &aplVfpRht   ) < 0 // -1 < R
-         && mpfr_cmp_si (    &aplVfpRht, 0) < 0)    //      R < 0)
+        if (mpfr_si_cmp (-1, &lpatRht->aplVfp   ) < 0 // -1 < R
+         && mpfr_cmp_si (    &lpatRht->aplVfp, 0) < 0)    //      R < 0)
         {
-            mpfr_init0 (&mpfRes);
-            return mpfRes;
-        } // End IF
+            // Initialize to 0
+            mpfr_init0 (&lpMemRes[uRes]);
 
+            lpMemRes[uRes] = lpMemRes[uRes];
+        } // End IF
+        else
         // Check for indeterminate:  0 {root} 0 <==> 0 * _
-        if (IsMpf0 (&aplVfpRht))
-            return *mpfr_QuadICValue (&aplVfpLft,
-                                       ICNDX_0EXPPi,
-                                      &aplVfpRht,
-                                      &mpfRes,
-                                       FALSE);
+        if (IsMpf0 (&lpatRht->aplVfp))
+            lpMemRes[uRes] = *mpfr_QuadICValue (&lpatLft->aplVfp,
+                                                 ICNDX_0EXPPi,
+                                                &lpatRht->aplVfp,
+                                                &lpMemRes[uRes],
+                                                 FALSE);
+        else
         // Check for special case:  0 {root} R where 0 < R < 1
-        if (mpfr_ui_cmp (0, &aplVfpRht   ) < 0  // 0 < R
-         && mpfr_cmp_ui (   &aplVfpRht, 1) < 0) //     R < 1
+        if (mpfr_ui_cmp (0, &lpatRht->aplVfp   ) < 0  // 0 < R
+         && mpfr_cmp_ui (   &lpatRht->aplVfp, 1) < 0) //     R < 1
         {
-            mpfr_init0 (&mpfRes);
-            return mpfRes;
+            mpfr_init0 (&lpMemRes[uRes]);
+            lpMemRes[uRes] = lpMemRes[uRes];
         } // End IF
-
+        else
         // Check for special case:  0 {root} R where R > 1 <==> R * _ <==> _
-        if (mpfr_cmp_ui (&aplVfpRht, 1) > 0)    // R > 1
-            return mpfPosInfinity;
+        if (mpfr_cmp_ui (&lpatRht->aplVfp, 1) > 0)    // R > 1
+            lpMemRes[uRes] = mpfPosInfinity;
     } // End IF
-
+    else
     // Check for indeterminate:  PoM_ {root} 0 <==> 0 * 0
-    if (mpfr_inf_p (&aplVfpLft)
-     && IsMpf0 (&aplVfpRht))
-        return *mpfr_QuadICValue (&aplVfpLft,
-                                   ICNDX_0EXP0,
-                                  &aplVfpRht,
-                                  &mpfRes,
-                                   FALSE);
+    if (mpfr_inf_p (&lpatLft->aplVfp)
+     && IsMpf0 (&lpatRht->aplVfp))
+        lpMemRes[uRes] = *mpfr_QuadICValue (&lpatLft->aplVfp,
+                                             ICNDX_0EXP0,
+                                            &lpatRht->aplVfp,
+                                            &lpMemRes[uRes],
+                                             FALSE);
+    else
     // Check for Complex result
-    if (mpfr_cmp_ui (&aplVfpRht, 0) < 0)        // R < 0:  Not SIGN_APLVFP as that'll catch -0 whose root is -0
-        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
-
+    if (mpfr_cmp_ui (&lpatRht->aplVfp, 0) < 0)        // R < 0:  Not SIGN_APLVFP as that'll catch -0 whose root is -0
+        RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
+    else
     // Handle L {root} -0
-    if (IsMpf0 (&aplVfpRht))
+    if (IsMpf0 (&lpatRht->aplVfp))
     {
         // If L < 0, ...
-        if (mpfr_sgn (&aplVfpLft) < 0)
+        if (mpfr_sgn (&lpatLft->aplVfp) < 0)
         {
             // Initialize the result to NaN
-            mpfr_init (&mpfRes);
+            mpfr_init (&lpMemRes[uRes]);
 
             // Set it to +/- Infinity
-            mpfr_set_inf (&mpfRes, SIGN_APLVFP (&aplVfpRht) ? -1 : 1);
+            mpfr_set_inf (&lpMemRes[uRes], SIGN_APLVFP (&lpatRht->aplVfp) ? -1 : 1);
         } else
-            mpfr_init_copy (&mpfRes, &aplVfpRht);
+            mpfr_init_copy (&lpMemRes[uRes], &lpatRht->aplVfp);
     } else
     {
+        APLVFP mpfTmp;
+
         // Nth root (V) = exp (ln (V) / N)      for V > 0
 
         // Calculate ln (V)
-        mpfTmp = PrimFnMonCircleStarVisV (aplVfpRht, NULL);
+        PrimFnMonCircleStarVisV (&mpfTmp, 0, lpatRht, NULL);
 
         // Divide by N
-        mpfr_div (&mpfTmp, &mpfTmp, &aplVfpLft, MPFR_RNDN);
+        mpfr_div (&mpfTmp, &mpfTmp, &lpatLft->aplVfp, MPFR_RNDN);
 
         // Exp that
-        mpfRes = PrimFnMonStarVisV (mpfTmp, NULL);
+        lpMemRes[uRes] = ExpVfp_RE (mpfTmp);
 
         // We no longer need this storage
         Myf_clear (&mpfTmp);
     } // End IF/ELSE
-
-    return mpfRes;
 } // End PrimFnDydRootVisVvV
+
+
+//***************************************************************************
+//  $PrimFnDydRootHC2FisHC2IvHC2I
+//
+//  Primitive scalar function dyadic Root:  HC2F {is} HC2I fn HC2I
+//***************************************************************************
+
+void PrimFnDydRootHC2FisHC2IvHC2I
+    (LPAPLHC2F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atLft = {0},
+             atRht = {0};
+
+    // Convert HC2I to HC2F
+    (*aTypeActPromote[ARRAY_HC2I][ARRAY_HC2F]) (lpatLft, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC2I][ARRAY_HC2F]) (lpatRht, 0, &atRht);
+
+    // Pass it on
+    PrimFnDydRootHC2FisHC2FvHC2F (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+} // End PrimFnDydRootHC2FisHC2IvHC2I
+
+
+//***************************************************************************
+//  $RootHC2F_RE
+//***************************************************************************
+
+APLHC2F RootHC2F_RE
+    (APLHC2F aplLft,                // Left arg
+     APLHC2F aplRht)                // Right ...
+
+{
+    // Exp ((Log R) / L)
+    return ExpHC2F_RE (DivHC2F_RE (LogHCxF_RE (*(LPAPLHC8F) &aplRht, 2).partsLo[0].partsLo[0], aplLft));
+} // End RootHC2F_RE
+
+
+//***************************************************************************
+//  $PrimFnDydRootHC2FisHC2FvHC2F
+//
+//  Primitive scalar function dyadic Root:  HC2F {is} HC2F fn HC2F
+//***************************************************************************
+
+void PrimFnDydRootHC2FisHC2FvHC2F
+    (LPAPLHC2F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Call subfunction
+    lpMemRes[uRes] = RootHC2F_RE (lpatLft->aplHC2F, lpatRht->aplHC2F);
+} // End PrimFnDydRootHC2FisHC2FvHC2F
+
+
+//***************************************************************************
+//  $PrimFnDydRootHC2VisHC2RvHC2R
+//
+//  Primitive scalar function dyadic Root:  HC2V {is} HC2R fn HC2R
+//***************************************************************************
+
+void PrimFnDydRootHC2VisHC2RvHC2R
+    (LPAPLHC2V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atLft = {0},
+             atRht = {0};
+
+    // Promote the left & right arg to the result type
+    (*aTypeActPromote[ARRAY_HC2R][ARRAY_HC2V]) (&lpatLft->aplRat, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC2R][ARRAY_HC2V]) (&lpatRht->aplRat, 0, &atRht);
+
+    PrimFnDydRootHC2VisHC2VvHC2V (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+
+    Myhc2v_clear (&atRht.aplHC2V);
+    Myhc2v_clear (&atLft.aplHC2V);
+} // End PrimFnDydRootHC2VisHC2RvHC2R
+
+
+//***************************************************************************
+//  $RootHC2V_RE
+//***************************************************************************
+
+APLHC2V RootHC2V_RE
+    (APLHC2V aplLft,                // Left arg
+     APLHC2V aplRht)                // Right ...
+
+{
+    APLHC2V aplRes,                 // The result
+            aplLog,                 // Log (R)
+            aplDiv;                 // (Log (R) / L
+
+    // Exp ((Log R) / L)
+////return ExpHC2V_RE (DivHC2V_RE (LogHCxV_RE (*(LPAPLHC8V) &aplRht, 2).partsLo.partsLo, aplLft));
+
+    // Calcultae Log (R)
+    aplLog = LogHCxV_RE (*(LPAPLHC8V) &aplRht, 2).partsLo.partsLo;
+
+    // Calculate Log (R) / L
+    aplDiv = DivHC2V_RE (aplLog, aplLft);
+
+    // Calculate Exp ((Log (R) / L)
+    aplRes = ExpHC2V_RE (aplDiv);
+
+    // We no longer need this storage
+    Myhc2v_clear (&aplDiv);
+    Myhc2v_clear (&aplLog);
+
+    return aplRes;
+} // End RootHC2V_RE
+
+
+//***************************************************************************
+//  $PrimFnDydRootHC2VisHC2VvHC2V
+//
+//  Primitive scalar function dyadic Root:  HC2V {is} HC2V fn HC2V
+//***************************************************************************
+
+void PrimFnDydRootHC2VisHC2VvHC2V
+    (LPAPLHC2V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Call subfunction
+    lpMemRes[uRes] = RootHC2V_RE (lpatLft->aplHC2V, lpatRht->aplHC2V);
+} // End PrimFnDydRootHC2VisHC2VvHC2V
+
+
+//***************************************************************************
+//  $PrimFnDydRootHC4FisHC4IvHC4I
+//
+//  Primitive scalar function dyadic Root:  HC4F {is} HC4I fn HC4I
+//***************************************************************************
+
+void PrimFnDydRootHC4FisHC4IvHC4I
+    (LPAPLHC4F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atLft = {0},
+             atRht = {0};
+
+    // Convert HC4I to HC4F
+    (*aTypeActPromote[ARRAY_HC4I][ARRAY_HC4F]) (lpatLft, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC4I][ARRAY_HC4F]) (lpatRht, 0, &atRht);
+
+    // Pass it on
+    PrimFnDydRootHC4FisHC4FvHC4F (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+} // End PrimFnDydRootHC4FisHC4IvHC4I
+
+
+//***************************************************************************
+//  $RootHC4F_RE
+//***************************************************************************
+
+APLHC4F RootHC4F_RE
+    (APLHC4F aplLft,                // Left arg
+     APLHC4F aplRht)                // Right ...
+
+{
+    // Exp ((Log R) / L)
+    return ExpHC4F_RE (DivHC4F_RE (LogHCxF_RE (*(LPAPLHC8F) &aplRht, 4).partsLo[0], aplLft));
+} // End RootHC4F_RE
+
+
+//***************************************************************************
+//  $PrimFnDydRootHC4FisHC4FvHC4F
+//
+//  Primitive scalar function dyadic Root:  HC4F {is} HC4F fn HC4F
+//***************************************************************************
+
+void PrimFnDydRootHC4FisHC4FvHC4F
+    (LPAPLHC4F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Call subfunction
+    lpMemRes[uRes] = RootHC4F_RE (lpatLft->aplHC4F, lpatRht->aplHC4F);
+} // End PrimFnDydRootHC4FisHC4FvHC4F
+
+
+//***************************************************************************
+//  $PrimFnDydRootHC4VisHC4RvHC4R
+//
+//  Primitive scalar function dyadic Root:  HC4V {is} HC4R fn HC4R
+//***************************************************************************
+
+void PrimFnDydRootHC4VisHC4RvHC4R
+    (LPAPLHC4V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atLft = {0},
+             atRht = {0};
+
+    // Convert HC4R to HC4V
+    (*aTypeActPromote[ARRAY_HC4R][ARRAY_HC4V]) (lpatLft, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC4R][ARRAY_HC4V]) (lpatRht, 0, &atRht);
+
+    // Pass it on
+    PrimFnDydRootHC4VisHC4VvHC4V (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+} // End PrimFnDydRootHC4VisHC4RvHC4R
+
+
+//***************************************************************************
+//  $RootHC4V_RE
+//***************************************************************************
+
+APLHC4V RootHC4V_RE
+    (APLHC4V aplLft,                // Left arg
+     APLHC4V aplRht)                // Right ...
+
+{
+    APLHC4V aplRes,                 // The result
+            aplLog,                 // Log (R)
+            aplDiv;                 // (Log (R) / L
+
+    // Exp ((Log R) / L)
+////return ExpHC4V_RE (DivHC4V_RE (LogHCxV_RE (*(LPAPLHC8V) &aplRht, 4).partsLo.partsLo, aplLft));
+
+    // Calcultae Log (R)
+    aplLog = LogHCxV_RE (*(LPAPLHC8V) &aplRht, 4).partsLo;
+
+    // Calculate Log (R) / L
+    aplDiv = DivHC4V_RE (aplLog, aplLft);
+
+    // Calculate Exp ((Log (R) / L)
+    aplRes = ExpHC4V_RE (aplDiv);
+
+    // We no longer need this storage
+    Myhc4v_clear (&aplDiv);
+    Myhc4v_clear (&aplLog);
+
+    return aplRes;
+} // End RootHC4V_RE
+
+
+//***************************************************************************
+//  $PrimFnDydRootHC4VisHC4VvHC4V
+//
+//  Primitive scalar function dyadic Root:  HC4V {is} HC4V fn HC4V
+//***************************************************************************
+
+void PrimFnDydRootHC4VisHC4VvHC4V
+    (LPAPLHC4V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Call subfunction
+    lpMemRes[uRes] = RootHC4V_RE (lpatLft->aplHC4V, lpatRht->aplHC4V);
+} // End PrimFnDydRootHC4VisHC4VvHC4V
+
+
+//***************************************************************************
+//  $PrimFnDydRootHC8FisHC8IvHC8I
+//
+//  Primitive scalar function dyadic Root:  HC8F {is} HC8I fn HC8I
+//***************************************************************************
+
+void PrimFnDydRootHC8FisHC8IvHC8I
+    (LPAPLHC8F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atLft = {0},
+             atRht = {0};
+
+    // Convert HC8I to HC8F
+    (*aTypeActPromote[ARRAY_HC8I][ARRAY_HC8F]) (lpatLft, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC8I][ARRAY_HC8F]) (lpatRht, 0, &atRht);
+
+    // Pass it on
+    PrimFnDydRootHC8FisHC8FvHC8F (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+} // End PrimFnDydRootHC8FisHC8IvHC8I
+
+
+//***************************************************************************
+//  $RootHC8F_RE
+//***************************************************************************
+
+APLHC8F RootHC8F_RE
+    (APLHC8F aplLft,                // Left arg
+     APLHC8F aplRht)                // Right ...
+
+{
+    // Exp ((Log R) / L)
+    return ExpHC8F_RE (DivHC8F_RE (LogHCxF_RE (*(LPAPLHC8F) &aplRht, 8), aplLft));
+} // End RootHC8F_RE
+
+
+//***************************************************************************
+//  $PrimFnDydRootHC8FisHC8FvHC8F
+//
+//  Primitive scalar function dyadic Root:  HC8F {is} HC8F fn HC8F
+//***************************************************************************
+
+void PrimFnDydRootHC8FisHC8FvHC8F
+    (LPAPLHC8F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Call subfunction
+    lpMemRes[uRes] = RootHC8F_RE (lpatLft->aplHC8F, lpatRht->aplHC8F);
+} // End PrimFnDydRootHC8FisHC8FvHC8F
+
+
+//***************************************************************************
+//  $PrimFnDydRootHC8VisHC8RvHC8R
+//
+//  Primitive scalar function dyadic Root:  HC8V {is} HC8R fn HC8R
+//***************************************************************************
+
+void PrimFnDydRootHC8VisHC8RvHC8R
+    (LPAPLHC8V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atLft = {0},
+             atRht = {0};
+
+    // Convert HC8R to HC8V
+    (*aTypeActPromote[ARRAY_HC8R][ARRAY_HC8V]) (lpatLft, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC8R][ARRAY_HC8V]) (lpatRht, 0, &atRht);
+
+    // Pass it on
+    PrimFnDydRootHC8VisHC8VvHC8V (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+} // End PrimFnDydRootHC8VisHC8RvHC8R
+
+
+//***************************************************************************
+//  $RootHC8V_RE
+//***************************************************************************
+
+APLHC8V RootHC8V_RE
+    (APLHC8V aplLft,                // Left arg
+     APLHC8V aplRht)                // Right ...
+
+{
+    APLHC8V aplRes,                 // The result
+            aplLog,                 // Log (R)
+            aplDiv;                 // (Log (R) / L
+
+    // Exp ((Log R) / L)
+////return ExpHC8V_RE (DivHC8V_RE (LogHCxV_RE (*(LPAPLHC8V) &aplRht, 8).partsLo.partsLo, aplLft));
+
+    // Calcultae Log (R)
+    aplLog = LogHCxV_RE (*(LPAPLHC8V) &aplRht, 8);
+
+    // Calculate Log (R) / L
+    aplDiv = DivHC8V_RE (aplLog, aplLft);
+
+    // Calculate Exp ((Log (R) / L)
+    aplRes = ExpHC8V_RE (aplDiv);
+
+    // We no longer need this storage
+    Myhc8v_clear (&aplDiv);
+    Myhc8v_clear (&aplLog);
+
+    return aplRes;
+} // End RootHC8V_RE
+
+
+//***************************************************************************
+//  $PrimFnDydRootHC8VisHC8VvHC8V
+//
+//  Primitive scalar function dyadic Root:  HC8V {is} HC8V fn HC8V
+//***************************************************************************
+
+void PrimFnDydRootHC8VisHC8VvHC8V
+    (LPAPLHC8V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Call subfunction
+    lpMemRes[uRes] = RootHC8V_RE (lpatLft->aplHC8V, lpatRht->aplHC8V);
+} // End PrimFnDydRootHC8VisHC8VvHC8V
 
 
 //***************************************************************************

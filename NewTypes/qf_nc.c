@@ -426,15 +426,15 @@ UBOOL IsValid2ndCharInName
 //    0 = Available name
 //    1 = User label
 //    2 = User variable
-//    3 = User-defined function (any valence:  0, 1, or 2)
-//    4 = User-defined operator (either valence:  1 or 2)
+//    3 = User-defined function (any # args:  0, 1, or 2)
+//    4 = User-defined operator (either # operands:  1 or 2)
 //    5 = System variable
-//    6 = System function       (any valence:  0, 1, or 2)
+//    6 = System function       (any # args:  0, 1, or 2)
 // 7-20 = (Unused)
 //   21 = System label
 //   22 = (Unused)
-//   23 = Magic function        (any valence:  0, 1, or 2)
-//   24 = Magic operator        (either valence:  1 or 2)
+//   23 = Magic function        (any # args:  0, 1, or 2)
+//   24 = Magic operator        (either # operands:  1 or 2)
 //
 //  Note that the left shifts (BIT0 <<) in <SysFnDydNL_EM_YY>
 //    assume that the name class values are limited to 63.  If
@@ -529,13 +529,13 @@ UBOOL CalcNumIDs
      APLLONGEST        aplLongestRht,   // Right arg longest
      UBOOL             bMultipleNames,  // TRUE iff we allow multiple names in
                                         //   a vector (e.g., 'a b c') or a matrix
-     LPVARARRAY_HEADER lpMemHdrRht,     // Ptr to right arg global memory
+     LPVARARRAY_HEADER lpMemHdrRht,     // Ptr to right arg global memory header
      LPAPLNELM         lpaplNELMRes,    // Ptr to # right arg IDs
      LPAPLNELM         lpaplNELMCol)    // Ptr to # right arg cols (matrix only)
 
 {
     APLUINT   uRht;                     // Loop counter
-    LPAPLCHAR lpMemRht;
+    LPAPLCHAR lpMemRht;                 // Ptr to right arg global memory data
 
     // Split cases based upon the right arg rank
     switch (aplRankRht)

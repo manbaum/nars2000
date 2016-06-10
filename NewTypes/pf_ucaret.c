@@ -33,57 +33,137 @@ PRIMSPEC PrimSpecUpCaret = {
     NULL,   // &PrimSpecUpCaretStorageTypeMon, -- Can't happen w/UpCaret
     NULL,   // &PrimFnMonUpCaretAPA_EM, -- Can't happen w/UpCaret
 
+    // Monadic Boolean result functions
     NULL,   // &PrimFnMonUpCaretBisB, -- Can't happen w/UpCaret
     NULL,   // &PrimFnMonUpCaretBisI, -- Can't happen w/UpCaret
     NULL,   // &PrimFnMonUpCaretBisF, -- Can't happen w/UpCaret
 
-////                 IisB,   // Handled via type promotion (to IisI)
+    // Monadic non-Boolean result functions (indexable)
     NULL,   // &PrimFnMonUpCaretIisI, -- Can't happend w/UpCaret
     NULL,   // &PrimFnMonUpCaretIisF, -- Can't happend w/UpCaret
-
-////                 FisB,   // Handled via type promotion (to FisI)
     NULL,   // &PrimFnMonUpCaretFisI, -- Can't happen w/UpCaret
     NULL,   // &PrimFnMonUpCaretFisF, -- Can't happen w/UpCaret
-
     NULL,   // &PrimFnMonUpCaretRisR, -- Can't happen w/UpCaret
-
-////                 VisR,   // Handled via type promotion (to VisV)
+    NULL,   // &PrimFnMonUpCaretVisR, -- Can't happen w/UpCaret
     NULL,   // &PrimFnMonUpCaretVisV, -- Can't happen w/UpCaret
+
+    // Monadic Hypercomplex functions
+    NULL,   // &PrimFnMonUpCaretHC2IisHC2I, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretHC2IisHC2F, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretHC2FisHC2I, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretHC2FisHC2F, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretHC2RisHC2R, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretHC2VisHC2R, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretHC2VisHC2V, -- Can't happen w/UpCaret
+
+    NULL,   // &PrimFnMonUpCaretHC4IisHC4I, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretHC4IisHC4F, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretHC4FisHC4I, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretHC4FisHC4F, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretHC4RisHC4R, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretHC4VisHC4R, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretHC4VisHC4V, -- Can't happen w/UpCaret
+
+    NULL,   // &PrimFnMonUpCaretHC8IisHC8I, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretHC8IisHC8F, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretHC8FisHC8I, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretHC8FisHC8F, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretHC8RisHC8R, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretHC8VisHC8R, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretHC8VisHC8V, -- Can't happen w/UpCaret
+
+    // Monadic FLT/VFP result HC arg functions (indexable)
+    NULL,   // &PrimFnMonUpCaretFisHC2I, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretFisHC2F, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretFisHC2R, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretFisHC2V, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretFisHC4I, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretFisHC4F, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretFisHC4R, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretFisHC4V, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretFisHC8I, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretFisHC8F, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretFisHC8R, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnMonUpCaretFisHC8V, -- Can't happen w/UpCaret
 
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecUpCaretStorageTypeDyd,
     NULL,   // &PrimFnDydUpCaretAPA_EM, -- Can't happen w/UpCaret
 
+    // Dyadic Boolean result functions
     &PrimFnDydUpCaretBisBvB,
     NULL,   // &PrimFnDydUpCaretBisIvI, -- Can't happen w/UpCaret
     NULL,   // &PrimFnDydUpCaretBisFvF, -- Can't happen w/UpCaret
     NULL,   // &PrimFnDydUpCaretBisCvC, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnDydUpCaretBisHvH, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnDydUpCaretBisRvR, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnDydUpCaretBisVvV, -- Can't happen w/UpCaret
 
-////                 IisBvB,    // Handled via type promotion (to IisIvI)
+    NULL,   // &PrimFnDydUpCaretBisHC2IvHC2I, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnDydUpCaretBisHC2FvHC2F, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnDydUpCaretBisHC2RvHC2R, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnDydUpCaretBisHC2VvHC2V, -- Can't happen w/UpCaret
+
+    NULL,   // &PrimFnDydUpCaretBisHC4IvHC4I, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnDydUpCaretBisHC4FvHC4F, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnDydUpCaretBisHC4RvHC4R, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnDydUpCaretBisHC4VvHC4V, -- Can't happen w/UpCaret
+
+    NULL,   // &PrimFnDydUpCaretBisHC8IvHC8I, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnDydUpCaretBisHC8FvHC8F, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnDydUpCaretBisHC8RvHC8R, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnDydUpCaretBisHC8VvHC8V, -- Can't happen w/UpCaret
+
+    // Dyadic non-Boolean result functions (indexable)
     &PrimFnDydUpCaretIisIvI,
     NULL,   // &PrimFnDydUpCaretIisFvF, -- Can't happen w/UpCaret
-
-////                 FisBvB,    // Handled via type promotion (to FisIvI)
     &PrimFnDydUpCaretFisIvI,
     &PrimFnDydUpCaretFisFvF,
-
-    NULL,   // &PrimFnDydUpCaretBisRvR, -- Can't happen w/UpCaret
     &PrimFnDydUpCaretRisRvR,
-
-    NULL,   // &PrimFnDydUpCaretBisVvV, -- Can't happen w/UpCaret
-////                 VisRvR     // Handled via type promotion (to VisVvV)
+    &PrimFnDydUpCaretVisRvR,
     &PrimFnDydUpCaretVisVvV,
 
+    &PrimFnDydUpCaretHC2IisHC2IvHC2I,
+    NULL,   // &PrimFnDydUpCaretHC2IisHC2FvHC2F, -- Can't happen w/UpCaret
+    &PrimFnDydUpCaretHC2FisHC2IvHC2I,
+    &PrimFnDydUpCaretHC2FisHC2FvHC2F,
+    &PrimFnDydUpCaretHC2RisHC2RvHC2R,
+    &PrimFnDydUpCaretHC2VisHC2RvHC2R,
+    &PrimFnDydUpCaretHC2VisHC2VvHC2V,
+
+    &PrimFnDydUpCaretHC4IisHC4IvHC4I,
+    NULL,   // &PrimFnDydUpCaretHC4IisHC4FvHC4F, -- Can't happen w/UpCaret
+    &PrimFnDydUpCaretHC4FisHC4IvHC4I,
+    &PrimFnDydUpCaretHC4FisHC4FvHC4F,
+    &PrimFnDydUpCaretHC4RisHC4RvHC4R,
+    &PrimFnDydUpCaretHC4VisHC4RvHC4R,
+    &PrimFnDydUpCaretHC4VisHC4VvHC4V,
+
+    NULL,   // &PrimFnDydUpCaretHC8IisHC8IvHC8I, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnDydUpCaretHC8IisHC8FvHC8F, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnDydUpCaretHC8FisHC8IvHC8I, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnDydUpCaretHC8FisHC8FvHC8F, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnDydUpCaretHC8RisHC8RvHC8R, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnDydUpCaretHC8VisHC8RvHC8R, -- Can't happen w/UpCaret
+    NULL,   // &PrimFnDydUpCaretHC8VisHC8VvHC8V, -- Can't happen w/UpCaret
+
+    // Monadic Boolean chunk functions
     NULL,   // &PrimFnMonUpCaretB64isB64, -- Can't happen w/UpCaret
     NULL,   // &PrimFnMonUpCaretB32isB32, -- Can't happen w/UpCaret
     NULL,   // &PrimFnMonUpCaretB16isB16, -- Can't happen w/UpCaret
     NULL,   // &PrimFnMonUpCaretB08isB08, -- Can't happen w/UpCaret
 
+    // Dyadic Boolean chunk functions
     &PrimFnDydUpCaretB64isB64vB64,
     &PrimFnDydUpCaretB32isB32vB32,
     &PrimFnDydUpCaretB16isB16vB16,
     &PrimFnDydUpCaretB08isB08vB08,
+
+    // Miscellaneous
+    0,      // []RL for atomicity
+    FALSE,  // 00000001:  Allow dimension demotion for monadic scalar function
+    FALSE,  // 00000002:  ...                          dyadic  ...
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecUpCaret};
@@ -151,146 +231,478 @@ APLSTYPE PrimSpecUpCaretStorageTypeDyd
     // Calculate the storage type of the result
     aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
+    // Weed out numbers whose Floor does not have Fractionality
+    //   such as Character, Nested, Hetero, Octonions, and Quaternions w/o Hurwitz
+    if (!HasFractionality (aplTypeRes))
+        return ARRAY_ERROR;
+
     return aplTypeRes;
 } // End PrimSpecUpCaretStorageTypeDyd
 
 
 //***************************************************************************
-//  $lcmAplInt
+//  $LcmHC1I
 //
 //  LCM (Least Common Multiple) for aplIntegers
 //***************************************************************************
 
-APLINT lcmAplInt
+APLINT LcmHC1I
     (APLINT     aplIntegerLft,
-     APLINT     aplIntegerRht,
-     LPPRIMSPEC lpPrimSpec)
+     APLINT     aplIntegerRht)
 
 {
-    APLINT aplTmp, aplLft, aplRht;
+    APLINT aplRes,
+           aplGcd,
+           aplLft,
+           aplRht;
 
     // Ensure both arguments are non-negative
-    aplLft = PrimFnMonStileIisI (aplIntegerLft, lpPrimSpec);
-    aplRht = PrimFnMonStileIisI (aplIntegerRht, lpPrimSpec);
+////aplLft = abs64 (aplIntegerLft);
+////aplRht = abs64 (aplIntegerRht);
+    aplLft =        aplIntegerLft ;
+    aplRht =        aplIntegerRht ;
 
     // Calculate the GCD
-    aplTmp = gcdAplInt (aplLft, aplRht, lpPrimSpec);
-    if (aplTmp NE 0)
-        aplTmp = aplLft * (aplRht / aplTmp);
-
-    // The sign of the result is the product of the signs of the arguments
-    if ((signumint (aplIntegerLft) * signumint (aplIntegerRht)) < 0)
-        return -aplTmp;
+    aplGcd = GcdHC1I (aplLft, aplRht);
+    if (aplGcd NE 0)
+        aplRes = (aplLft * aplRht) / aplGcd;
     else
-        return  aplTmp;
-} // End lcmAplInt
+        aplRes = aplGcd;
+
+////// The sign of the result is the product of the signs of the arguments
+////if ((signumint (aplIntegerLft) * signumint (aplIntegerRht)) < 0)
+////    return -aplLcm;
+////else
+////    return  aplLcm;
+    return  aplRes;
+} // End LcmHC1I
 
 
 //***************************************************************************
-//  $lcmAplFloat
+//  $LcmHC2I
+//
+//  LCM (Least Common Multiple) for aplHC2I
+//***************************************************************************
+
+APLHC2I LcmHC2I
+    (APLHC2I aplLft,
+     APLHC2I aplRht)
+
+{
+    APLHC2I aplGcd,
+            aplRes;
+
+    __try
+    {
+        // Calculate the GCD
+        aplGcd = GcdHC2I (aplLft, aplRht);
+        if (!IsZeroHCxI (&aplGcd, 2))
+            aplRes = DivHC2I_RE (MulHC2I_RE (aplLft, aplRht), aplGcd);
+        else
+            aplRes = aplGcd;
+    } __except (CheckHCDim (GetExceptionInformation (), 2))
+    {
+        RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+    } // End __try/__except
+
+    return aplRes;
+} // End LcmHC2I
+
+
+//***************************************************************************
+//  $LcmHC4I
+//
+//  LCM (Least Common Multiple) for aplHC4I
+//***************************************************************************
+
+APLHC4I LcmHC4I
+    (APLHC4I aplLft,
+     APLHC4I aplRht)
+
+{
+    APLHC4I aplGcd,
+            aplRes;
+
+    __try
+    {
+        // Calculate the GCD
+        aplGcd = GcdHC4I (aplLft, aplRht);
+        if (!IsZeroHCxI (&aplGcd, 4))
+            aplRes = DivHC4I_RE (MulHC4I_RE (aplLft, aplRht), aplGcd);
+        else
+            aplRes = aplGcd;
+    } __except (CheckHCDim (GetExceptionInformation (), 4))
+    {
+        RaiseException (EXCEPTION_RESULT_HC4F, 0, 0, NULL);
+    } // End __try/__except
+
+    return aplRes;
+} // End LcmHC4I
+
+
+//***************************************************************************
+//  $LcmHC1F
 //
 //  LCM (Least Common Multiple) for aplFloats
 //***************************************************************************
 
-APLFLOAT lcmAplFloat
-    (APLFLOAT   aplFloatLft,
-     APLFLOAT   aplFloatRht,
-     LPPRIMSPEC lpPrimSpec)
+APLFLOAT LcmHC1F
+    (APLFLOAT aplLft,
+     APLFLOAT aplRht)
 
 {
-    APLFLOAT aplTmp, aplLft, aplRht;
-
-    // Ensure both arguments are non-negative
-    aplLft = PrimFnMonStileFisF (aplFloatLft, lpPrimSpec);
-    aplRht = PrimFnMonStileFisF (aplFloatRht, lpPrimSpec);
+    APLFLOAT aplGcd;
 
     // Calculate the GCD
-    aplTmp = gcdAplFloat (aplLft, aplRht, lpPrimSpec);
-    if (aplTmp >= GCD_CT)
-        aplTmp = aplLft * (aplRht / aplTmp);
-
-    // The sign of the result is the product of the signs of the arguments
-    if ((signumflt (aplFloatLft) * signumflt (aplFloatRht)) < 0)
-        return -aplTmp;
+    aplGcd = GcdHC1F (aplLft, aplRht);
+    if (aplGcd >= GCD_CT)
+        return (aplLft * aplRht) / aplGcd;
     else
-        return  aplTmp;
-} // End lcmAplFloat
+        return aplGcd;
+} // End LcmHC1F
 
 
 //***************************************************************************
-//  $lcmAplRat
+//  $LcmHC2F
+//
+//  LCM (Least Common Multiple) for aplHC2F
+//***************************************************************************
+
+APLHC2F LcmHC2F
+    (APLHC2F aplLft,
+     APLHC2F aplRht)
+
+{
+    APLHC2F aplGcd,
+            aplRes;
+
+    __try
+    {
+        // Calculate the GCD
+        aplGcd = GcdHC2F (aplLft, aplRht);
+        if (!IsZeroHCxI (&aplGcd, 2))
+            aplRes = DivHC2F_RE (MulHC2F_RE (aplLft, aplRht), aplGcd);
+        else
+            aplRes = aplGcd;
+    } __except (CheckHCDim (GetExceptionInformation (), 2))
+    {
+        RaiseException (EXCEPTION_LIMIT_ERROR, 0, 0, NULL);
+    } // End __try/__except
+
+    return aplRes;
+} // End LcmHC2F
+
+
+//***************************************************************************
+//  $LcmHC4F
+//
+//  LCM (Least Common Multiple) for aplHC4F
+//***************************************************************************
+
+APLHC4F LcmHC4F
+    (APLHC4F aplLft,
+     APLHC4F aplRht)
+
+{
+    APLHC4F aplGcd,
+            aplRes;
+
+    __try
+    {
+        // Calculate the GCD
+        aplGcd = GcdHC4F (aplLft, aplRht);
+        if (!IsZeroHCxI (&aplGcd, 4))
+            aplRes = DivHC4F_RE (MulHC4F_RE (aplLft, aplRht), aplGcd);
+        else
+            aplRes = aplGcd;
+    } __except (CheckHCDim (GetExceptionInformation (), 4))
+    {
+        RaiseException (EXCEPTION_LIMIT_ERROR, 0, 0, NULL);
+    } // End __try/__except
+
+    return aplRes;
+} // End LcmHC4F
+
+
+//***************************************************************************
+//  $LcmHC1R
 //
 //  LCM (Least Common Multiple) for aplRats
 //***************************************************************************
 
-APLRAT lcmAplRat
-    (APLRAT     aplRatLft,
-     APLRAT     aplRatRht,
-     LPPRIMSPEC lpPrimSpec)
+APLRAT LcmHC1R
+    (APLRAT aplLft,
+     APLRAT aplRht)
 
 {
-    APLRAT aplTmp,
-           aplLft,
-           aplRht;
+    APLRAT aplRes = {0},
+           aplGcd;
 
-    // Ensure both arguments are non-negative
-    aplLft = PrimFnMonStileRisR (aplRatLft, lpPrimSpec);
-    aplRht = PrimFnMonStileRisR (aplRatRht, lpPrimSpec);
+    // Initialize temp to 0/1
+    mpq_init (&aplRes);
 
     // Calculate the GCD
-    aplTmp = gcdAplRat (aplLft, aplRht, lpPrimSpec);
-    if (!IsMpq0 (&aplTmp))
+    aplGcd = GcdHC1R (aplLft, aplRht);
+    if (!IsMpq0 (&aplGcd))
     {
-////////aplTmp = aplLft * (aplRht / aplTmp);
+////////aplTmp = (aplLft * aplRht) / aplRes;
 
-        mpq_div (&aplTmp, &aplRht, &aplTmp);
-        mpq_mul (&aplTmp, &aplLft, &aplTmp);
+        mpq_mul (&aplRes, &aplLft, &aplRht);
+        mpq_div (&aplRes, &aplRes, &aplGcd);
     } // End IF
 
-    // The sign of the result is the product of the signs of the arguments
-    if ((signumrat (&aplRatLft) * signumrat (&aplRatRht)) < 0)
-        mpq_neg (&aplTmp, &aplTmp);
+    // We no longer need this storage
+    Myq_clear (&aplGcd);
+////Myq_clear (&aplRes);        // Returned as result
 
-    return aplTmp;
-} // End lcmAplRat
+    return aplRes;
+} // End LcmHC1R
 
 
 //***************************************************************************
-//  $lcmAplVfp
+//  $LcmHC2R
+//
+//  LCM (Least Common Multiple) for aplHC2R
+//***************************************************************************
+
+APLHC2R LcmHC2R
+    (APLHC2R aplLft,
+     APLHC2R aplRht)
+
+{
+    APLHC2R aplRes,
+            aplGcd,
+            aplMul;
+    APLVFP  aplMag;
+
+    __try
+    {
+        // Calculate the GCD
+        aplGcd = GcdHC2R (aplLft, aplRht);
+
+        // Calculate the magnitude
+        aplMag = MagHC2R (aplGcd);
+
+        if (mpfr_cmp_d (&aplMag, GCD_CT) >= 0)
+        {
+            aplMul = MulHC2R_RE (aplLft, aplRht);
+            aplRes = DivHC2R_RE (aplMul, aplGcd);
+
+            // We no longer need these resources
+            Myhc2r_clear (&aplMul);
+            Myhc2r_clear (&aplGcd);
+        } else
+            aplRes = aplGcd;
+
+        // We no longer need these resources
+        Myf_clear    (&aplMag);
+////////Myhc2r_clear (&aplRes);     // Returned as result
+    } __except (CheckHCDim (GetExceptionInformation (), 2))
+    {
+        // We no longer need these resources
+        Myf_clear    (&aplMag);
+////////Myhc2r_clear (&aplRes);     // Returned as result
+
+        RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
+    } // End __try/__except
+
+    return aplRes;
+} // End LcmHC2R
+
+
+//***************************************************************************
+//  $LcmHC4R
+//
+//  LCM (Least Common Multiple) for aplHC4R
+//***************************************************************************
+
+APLHC4R LcmHC4R
+    (APLHC4R aplLft,
+     APLHC4R aplRht)
+
+{
+    APLHC4R aplRes,
+            aplGcd,
+            aplMul;
+    APLVFP  aplMag;
+
+    __try
+    {
+        // Calculate the GCD
+        aplGcd = GcdHC4R (aplLft, aplRht);
+
+        // Calculate the magnitude
+        aplMag = MagHC4R (aplGcd);
+
+        if (mpfr_cmp_d (&aplMag, GCD_CT) >= 0)
+        {
+            aplMul = MulHC4R_RE (aplLft, aplRht);
+            aplRes = DivHC4R_RE (aplMul, aplGcd);
+
+            // We no longer need these resources
+            Myhc4r_clear (&aplMul);
+            Myhc4r_clear (&aplGcd);
+        } else
+            aplRes = aplGcd;
+
+        // We no longer need these resources
+        Myf_clear    (&aplMag);
+////////Myhc4r_clear (&aplRes);     // Returned as result
+    } __except (CheckHCDim (GetExceptionInformation (), 4))
+    {
+        // We no longer need these resources
+        Myf_clear    (&aplMag);
+////////Myhc4r_clear (&aplRes);     // Returned as result
+
+        RaiseException (EXCEPTION_RESULT_HC4V, 0, 0, NULL);
+    } // End __try/__except
+
+    return aplRes;
+} // End LcmHC4R
+
+
+//***************************************************************************
+//  $LcmHC1V
 //
 //  LCM (Least Common Multiple) for aplVfps
 //***************************************************************************
 
-APLVFP lcmAplVfp
-    (APLVFP     aplVfpLft,
-     APLVFP     aplVfpRht,
-     LPPRIMSPEC lpPrimSpec)
+APLVFP LcmHC1V
+    (APLVFP aplLft,
+     APLVFP aplRht)
 
 {
-    APLVFP aplTmp,
-           aplLft,
-           aplRht;
+    APLVFP aplRes = {0},
+           aplGcd;
+    APLVFP aplMag;
 
-    // Ensure both arguments are non-negative
-    aplLft = PrimFnMonStileVisV (aplVfpLft, lpPrimSpec);
-    aplRht = PrimFnMonStileVisV (aplVfpRht, lpPrimSpec);
+    // Initialize the temp to 0
+    mpfr_init0 (&aplRes);
 
     // Calculate the GCD
-    aplTmp = gcdAplVfp (aplLft, aplRht, lpPrimSpec);
-    if (!IsMpf0 (&aplTmp))
+    aplGcd = GcdHC1V (aplLft, aplRht);
+
+    // Calculate the magnitude
+    aplMag = MagVfp (aplGcd);
+
+    if (mpfr_cmp_d (&aplMag, GCD_CT) >= 0)
     {
-////////aplTmp = aplLft * (aplRht / aplTmp);
+////////aplTmp = (aplLft * aplRht) / aplGcd;
 
-        mpfr_div (&aplTmp, &aplRht, &aplTmp, MPFR_RNDN);
-        mpfr_mul (&aplTmp, &aplLft, &aplTmp, MPFR_RNDN);
-    } // End IF
+        mpfr_mul (&aplRes, &aplLft, &aplRht, MPFR_RNDN);
+        mpfr_div (&aplRes, &aplRes, &aplGcd, MPFR_RNDN);
+    } else
+        mpfr_set (&aplRes, &aplGcd, MPFR_RNDN);
 
-    // The sign of the result is the product of the signs of the arguments
-    if ((signumvfp (&aplVfpLft) * signumvfp (&aplVfpRht)) < 0)
-        mpfr_neg (&aplTmp, &aplTmp, MPFR_RNDN);
+    // We no longer need this storage
+    Myf_clear (&aplMag);
+    Myf_clear (&aplGcd);
+////Myf_clear (&aplRes);        // Returned as result
 
-    return aplTmp;
-} // End lcmAplVfp
+    return aplRes;
+} // End LcmHC1V
+
+
+//***************************************************************************
+//  $LcmHC2V
+//
+//  LCM (Least Common Multiple) for aplHC2V
+//***************************************************************************
+
+APLHC2V LcmHC2V
+    (APLHC2V aplLft,
+     APLHC2V aplRht)
+
+{
+    APLHC2V aplRes,
+            aplGcd,
+            aplMul;
+    APLVFP  aplMag;
+
+    __try
+    {
+        // Calculate the GCD
+        aplGcd = GcdHC2V (aplLft, aplRht);
+
+        // Calculate the magnitude
+        aplMag = MagHC2V (aplGcd);
+
+        if (mpfr_cmp_d (&aplMag, GCD_CT) >= 0)
+        {
+            aplMul = MulHC2V_RE (aplLft, aplRht);
+            aplRes = DivHC2V_RE (aplMul, aplGcd);
+
+            // We no longer need these resources
+            Myhc2v_clear (&aplMul);
+            Myhc2v_clear (&aplGcd);
+        } else
+            aplRes = aplGcd;
+
+        // We no longer need this resource
+        Myf_clear    (&aplMag);
+////////Myhc2v_clear (&aplRes);     // Returned as result
+    } __except (CheckHCDim (GetExceptionInformation (), 2))
+    {
+        // We no longer need these resources
+        Myf_clear    (&aplMag);
+////////Myhc2v_clear (&aplRes);     // Returned as result
+
+        RaiseException (EXCEPTION_LIMIT_ERROR, 0, 0, NULL);
+    } // End __try/__except
+
+    return aplRes;
+} // End LcmHC2V
+
+
+//***************************************************************************
+//  $LcmHC4V
+//
+//  LCM (Least Common Multiple) for aplHC4V
+//***************************************************************************
+
+APLHC4V LcmHC4V
+    (APLHC4V aplLft,
+     APLHC4V aplRht)
+
+{
+    APLHC4V aplRes,
+            aplGcd,
+            aplMul;
+    APLVFP  aplMag;
+
+    __try
+    {
+        // Calculate the GCD
+        aplGcd = GcdHC4V (aplLft, aplRht);
+
+        // Calculate the magnitude
+        aplMag = MagHC4V (aplGcd);
+
+        if (mpfr_cmp_d (&aplMag, GCD_CT) >= 0)
+        {
+            aplMul = MulHC4V_RE (aplLft, aplRht);
+            aplRes = DivHC4V_RE (aplMul, aplGcd);
+
+            // We no longer need these resources
+            Myhc4v_clear (&aplMul);
+            Myhc4v_clear (&aplGcd);
+        } else
+            aplRes = aplGcd;
+
+        // We no longer need this resource
+        Myf_clear    (&aplMag);
+////////Myhc4v_clear (&aplRes);     // Returned as result
+    } __except (CheckHCDim (GetExceptionInformation (), 4))
+    {
+        // We no longer need these resources
+        Myf_clear    (&aplMag);
+////////Myhc4v_clear (&aplRes);     // Returned as result
+
+        RaiseException (EXCEPTION_LIMIT_ERROR, 0, 0, NULL);
+    } // End __try/__except
+
+    return aplRes;
+} // End LcmHC4V
 
 
 //***************************************************************************
@@ -299,13 +711,17 @@ APLVFP lcmAplVfp
 //  Primitive scalar function dyadic UpCaret:  B {is} B fn B
 //***************************************************************************
 
-APLBOOL PrimFnDydUpCaretBisBvB
-    (APLBOOL    aplBooleanLft,
-     APLBOOL    aplBooleanRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydUpCaretBisBvB
+    (LPAPLBOOL  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    return (aplBooleanLft & aplBooleanRht);
+    lpMemRes[uRes >> LOG2NBIB] |=
+      (lpatLft->aplBoolean & lpatRht->aplBoolean)
+      << (MASKLOG2NBIB & (UINT) uRes);
 } // End PrimFnDydUpCaretBisBvB
 
 
@@ -379,13 +795,15 @@ APLB08 PrimFnDydUpCaretB08isB08vB08
 //  Primitive scalar function dyadic UpCaret:  I {is} I fn I
 //***************************************************************************
 
-APLINT PrimFnDydUpCaretIisIvI
-    (APLINT     aplIntegerLft,
-     APLINT     aplIntegerRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydUpCaretIisIvI
+    (LPAPLINT   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    return lcmAplInt (aplIntegerLft, aplIntegerRht, lpPrimSpec);
+    lpMemRes[uRes] = LcmHC1I (lpatLft->aplInteger, lpatRht->aplInteger);
 } // End PrimFnDydUpCaretIisIvI
 
 
@@ -395,13 +813,15 @@ APLINT PrimFnDydUpCaretIisIvI
 //  Primitive scalar function dyadic UpCaret:  F {is} I fn I
 //***************************************************************************
 
-APLFLOAT PrimFnDydUpCaretFisIvI
-    (APLINT     aplIntegerLft,
-     APLINT     aplIntegerRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydUpCaretFisIvI
+    (LPAPLFLOAT lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    return (APLFLOAT) lcmAplInt (aplIntegerLft, aplIntegerRht, lpPrimSpec);
+    lpMemRes[uRes] = (APLFLOAT) LcmHC1I (lpatLft->aplInteger, lpatRht->aplInteger);
 } // End PrimFnDydUpCaretFisIvI
 
 
@@ -411,25 +831,28 @@ APLFLOAT PrimFnDydUpCaretFisIvI
 //  Primitive scalar function dyadic UpCaret:  F {is} F fn F
 //***************************************************************************
 
-APLFLOAT PrimFnDydUpCaretFisFvF
-    (APLFLOAT   aplFloatLft,
-     APLFLOAT   aplFloatRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydUpCaretFisFvF
+    (LPAPLFLOAT lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     // Check for indeterminates:  lcm (PoM_, 0)  or  lcm (0, PoM_)
-    if ((IsFltInfinity (aplFloatLft) && (aplFloatRht EQ 0))
-     || (IsFltInfinity (aplFloatRht) && (aplFloatLft EQ 0)))
-        return TranslateQuadICIndex (aplFloatLft,
-                                     ICNDX_0LCMInf,
-                                     aplFloatRht,
-                                     SIGN_APLFLOAT (aplFloatLft));
+    if ((IsFltInfinity (lpatLft->aplFloat) && (lpatRht->aplFloat EQ 0))
+     || (IsFltInfinity (lpatRht->aplFloat) && (lpatLft->aplFloat EQ 0)))
+        lpMemRes[uRes] = TranslateQuadICIndex (lpatLft->aplFloat,
+                                               ICNDX_0LCMInf,
+                                               lpatRht->aplFloat,
+                                               SIGN_APLFLOAT (lpatLft->aplFloat));
+    else
     // Check for special cases:  lcm (PoM_, N)  or  lcm (N, PoM_)
-    if (IsFltInfinity (aplFloatLft)
-     || IsFltInfinity (aplFloatRht))
+    if (IsFltInfinity (lpatLft->aplFloat)
+     || IsFltInfinity (lpatRht->aplFloat))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-
-    return lcmAplFloat (aplFloatLft, aplFloatRht, lpPrimSpec);
+    else
+        lpMemRes[uRes] = LcmHC1F (lpatLft->aplFloat, lpatRht->aplFloat);
 } // End PrimFnDydUpCaretFisFvF
 
 
@@ -439,50 +862,75 @@ APLFLOAT PrimFnDydUpCaretFisFvF
 //  Primitive scalar function dyadic UpCaret:  R {is} fn R fn R
 //***************************************************************************
 
-APLRAT PrimFnDydUpCaretRisRvR
-    (APLRAT     aplRatLft,
-     APLRAT     aplRatRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydUpCaretRisRvR
+    (LPAPLRAT   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLRAT aplTmp = {0};
-
     // Check for indeterminates:  lcm (PoM_, 0)  or  lcm (0, PoM_)
-    if ((mpq_inf_p (&aplRatLft) && IsMpq0 (&aplRatRht))
-     || (mpq_inf_p (&aplRatRht) && IsMpq0 (&aplRatLft)))
-        return *mpq_QuadICValue (&aplRatLft,
-                                  ICNDX_0LCMInf,
-                                 &aplRatRht,
-                                 &aplTmp,
-                                  mpq_sgn (&aplRatLft) EQ -1);
+    if ((mpq_inf_p (&lpatLft->aplRat) && IsMpq0 (&lpatRht->aplRat))
+     || (mpq_inf_p (&lpatRht->aplRat) && IsMpq0 (&lpatLft->aplRat)))
+        lpMemRes[uRes] = *mpq_QuadICValue (&lpatLft->aplRat,
+                                            ICNDX_0LCMInf,
+                                           &lpatRht->aplRat,
+                                           &lpMemRes[uRes],
+                                            mpq_sgn (&lpatLft->aplRat) EQ -1);
+    else
     // Check for special cases:  lcm (PoM_, N)  or  lcm (N, PoM_)
-    if (mpq_inf_p (&aplRatLft)
-     || mpq_inf_p (&aplRatRht))
+    if (mpq_inf_p (&lpatLft->aplRat)
+     || mpq_inf_p (&lpatRht->aplRat))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-
+    else
     // If the denominators are both 1, ...
-    if (IsMpz1 (mpq_denref (&aplRatLft))
-     && IsMpz1 (mpq_denref (&aplRatRht)))
+    if (IsMpz1 (mpq_denref (&lpatLft->aplRat))
+     && IsMpz1 (mpq_denref (&lpatRht->aplRat)))
     {
-        APLRAT mpqRes = {0};
-
-        // Initialize the result
-        mpq_init (&mpqRes);
+        // Initialize the result to 0/1
+        mpq_init (&lpMemRes[uRes]);
 
         // Calculate the LCM on the numerators
-        mpz_lcm (mpq_numref (&mpqRes),
-                 mpq_numref (&aplRatLft),
-                 mpq_numref (&aplRatRht));
+        mpz_lcm (mpq_numref (&lpMemRes[uRes]),
+                 mpq_numref (&lpatLft->aplRat),
+                 mpq_numref (&lpatRht->aplRat));
         // The sign of the result is the product of the signs of the arguments
-        if ((signumrat (&aplRatLft) * signumrat (&aplRatRht)) < 0)
-            mpz_neg (mpq_numref (&mpqRes), mpq_numref (&mpqRes));
+        if ((signumrat (&lpatLft->aplRat) * signumrat (&lpatRht->aplRat)) < 0)
+            mpz_neg (mpq_numref (&lpMemRes[uRes]), mpq_numref (&lpMemRes[uRes]));
         // Set the denominator to 1
-        mpz_set_ui (mpq_denref (&mpqRes), 1);
-
-        return mpqRes;
+        mpz_set_ui (mpq_denref (&lpMemRes[uRes]), 1);
     } else
-        return lcmAplRat (aplRatLft, aplRatRht, lpPrimSpec);
+        lpMemRes[uRes] = LcmHC1R (lpatLft->aplRat, lpatRht->aplRat);
 } // End PrimFnDydUpCaretRisRvR
+
+
+//***************************************************************************
+//  $PrimFnDydUpCaretVisRvR
+//
+//  Primitive scalar function dyadic UpCaret:  V {is} fn R fn R
+//***************************************************************************
+
+void PrimFnDydUpCaretVisRvR
+    (LPAPLVFP   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atLft = {0},
+             atRht = {0};
+
+    // Promote the left & right arg to the result type
+    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatLft->aplRat, 0, &atLft);
+    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatRht->aplRat, 0, &atRht);
+
+    PrimFnDydUpCaretVisVvV (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+
+    Myhc1v_clear (&atRht.aplHC1V);
+    Myhc1v_clear (&atLft.aplHC1V);
+} // End PrimFnDydUpCaretVisRvR
 
 
 //***************************************************************************
@@ -491,29 +939,280 @@ APLRAT PrimFnDydUpCaretRisRvR
 //  Primitive scalar function dyadic UpCaret:  V {is} fn V fn V
 //***************************************************************************
 
-APLVFP PrimFnDydUpCaretVisVvV
-    (APLVFP     aplVfpLft,
-     APLVFP     aplVfpRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydUpCaretVisVvV
+    (LPAPLVFP   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLVFP aplTmp = {0};
-
     // Check for indeterminates:  lcm (PoM_, 0)  or  lcm (0, PoM_)
-    if ((mpfr_inf_p (&aplVfpLft) && IsMpf0 (&aplVfpRht))
-     || (mpfr_inf_p (&aplVfpRht) && IsMpf0 (&aplVfpLft)))
-        return *mpfr_QuadICValue (&aplVfpLft,
+    if ((mpfr_inf_p (&lpatLft->aplVfp) && IsMpf0 (&lpatRht->aplVfp))
+     || (mpfr_inf_p (&lpatRht->aplVfp) && IsMpf0 (&lpatLft->aplVfp)))
+        lpMemRes[uRes] = *mpfr_QuadICValue (&lpatLft->aplVfp,
                                    ICNDX_0LCMInf,
-                                  &aplVfpRht,
-                                  &aplTmp,
-                                   SIGN_APLVFP (&aplVfpLft));
+                                  &lpatRht->aplVfp,
+                                  &lpMemRes[uRes],
+                                   SIGN_APLVFP (&lpatLft->aplVfp));
+    else
     // Check for special cases:  lcm (PoM_, N)  or  lcm (N, PoM_)
-    if (mpfr_inf_p (&aplVfpLft)
-     || mpfr_inf_p (&aplVfpRht))
+    if (mpfr_inf_p (&lpatLft->aplVfp)
+     || mpfr_inf_p (&lpatRht->aplVfp))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-
-    return lcmAplVfp (aplVfpLft, aplVfpRht, lpPrimSpec);
+    else
+        lpMemRes[uRes] = LcmHC1V (lpatLft->aplVfp, lpatRht->aplVfp);
 } // End PrimFnDydUpCaretVisVvV
+
+
+//***************************************************************************
+//  $PrimFnDydUpCaretHC2IisHC2IvHC2I
+//
+//  Primitive scalar function dyadic UpCaret:  HC2I {is} HC2I fn HC2I
+//***************************************************************************
+
+void PrimFnDydUpCaretHC2IisHC2IvHC2I
+    (LPAPLHC2I  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    lpMemRes[uRes] = LcmHC2I (lpatLft->aplHC2I, lpatRht->aplHC2I);
+} // End PrimFnDydUpCaretHC2IisHC2IvHC2I
+
+
+//***************************************************************************
+//  $PrimFnDydUpCaretHC2FisHC2IvHC2I
+//
+//  Primitive scalar function dyadic UpCaret:  HC2F {is} HC2I fn HC2I
+//***************************************************************************
+
+void PrimFnDydUpCaretHC2FisHC2IvHC2I
+    (LPAPLHC2F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atLft = {0},           // Left arg as ALLTYPES
+             atRht = {0};           // Right ...
+
+    // Promote the left & right args to the result type
+    (*aTypeActPromote[ARRAY_HC2I][ARRAY_HC2F]) (&lpatLft->aplHC2I, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC2I][ARRAY_HC2F]) (&lpatRht->aplHC2I, 0, &atRht);
+
+    lpMemRes[uRes] = LcmHC2F (atLft.aplHC2F, atRht.aplHC2F);
+} // End PrimFnDydUpCaretHC2FisHC2IvHC2I
+
+
+//***************************************************************************
+//  $PrimFnDydUpCaretHC2FisHC2FvHC2F
+//
+//  Primitive scalar function dyadic UpCaret:  HC2F {is} HC2F fn HC2F
+//***************************************************************************
+
+void PrimFnDydUpCaretHC2FisHC2FvHC2F
+    (LPAPLHC2F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    lpMemRes[uRes] = LcmHC2F (lpatLft->aplHC2F, lpatRht->aplHC2F);
+} // End PrimFnDydUpCaretHC2FisHC2FvHC2F
+
+
+//***************************************************************************
+//  $PrimFnDydUpCaretHC2RisHC2RvHC2R
+//
+//  Primitive scalar function dyadic UpCaret:  HC2R {is} HC2R fn HC2R
+//***************************************************************************
+
+void PrimFnDydUpCaretHC2RisHC2RvHC2R
+    (LPAPLHC2R  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    lpMemRes[uRes] = LcmHC2R (lpatLft->aplHC2R, lpatRht->aplHC2R);
+} // End PrimFnDydUpCaretHC2RisHC2RvHC2R
+
+
+//***************************************************************************
+//  $PrimFnDydUpCaretHC2VisHC2RvHC2R
+//
+//  Primitive scalar function dyadic UpCaret:  HC2V {is} fn HC2R fn HC2R
+//***************************************************************************
+
+void PrimFnDydUpCaretHC2VisHC2RvHC2R
+    (LPAPLHC2V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atLft = {0},
+             atRht = {0};
+
+    // Promote the left & right arg to the result type
+    (*aTypeActPromote[ARRAY_HC2R][ARRAY_HC2V]) (&lpatLft->aplRat, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC2R][ARRAY_HC2V]) (&lpatRht->aplRat, 0, &atRht);
+
+    PrimFnDydUpCaretHC2VisHC2VvHC2V (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+
+    Myhc2v_clear (&atRht.aplHC2V);
+    Myhc2v_clear (&atLft.aplHC2V);
+} // End PrimFnDydUpCaretHC2VisHC2RvHC2R
+
+
+//***************************************************************************
+//  $PrimFnDydUpCaretHC2VisHC2VvHC2V
+//
+//  Primitive scalar function dyadic UpCaret:  HC2V {is} HC2V fn HC2V
+//***************************************************************************
+
+void PrimFnDydUpCaretHC2VisHC2VvHC2V
+    (LPAPLHC2V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    lpMemRes[uRes] = LcmHC2V (lpatLft->aplHC2V, lpatRht->aplHC2V);
+} // End PrimFnDydUpCaretHC2VisHC2VvHC2V
+
+
+//***************************************************************************
+//  $PrimFnDydUpCaretHC4IisHC4IvHC4I
+//
+//  Primitive scalar function dyadic UpCaret:  HC4I {is} HC4I fn HC4I
+//***************************************************************************
+
+void PrimFnDydUpCaretHC4IisHC4IvHC4I
+    (LPAPLHC4I  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    lpMemRes[uRes] = LcmHC4I (lpatLft->aplHC4I, lpatRht->aplHC4I);
+} // End PrimFnDydUpCaretHC4IisHC4IvHC4I
+
+
+//***************************************************************************
+//  $PrimFnDydUpCaretHC4FisHC4IvHC4I
+//
+//  Primitive scalar function dyadic UpCaret:  HC4F {is} HC4I fn HC4I
+//***************************************************************************
+
+void PrimFnDydUpCaretHC4FisHC4IvHC4I
+    (LPAPLHC4F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atLft = {0},           // Left arg as ALLTYPES
+             atRht = {0};           // Right ...
+
+    // Promote the left & right args to the result type
+    (*aTypeActPromote[ARRAY_HC4I][ARRAY_HC4F]) (&lpatLft->aplHC4I, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC4I][ARRAY_HC4F]) (&lpatRht->aplHC4I, 0, &atRht);
+
+    lpMemRes[uRes] = LcmHC4F (atLft.aplHC4F, atRht.aplHC4F);
+} // End PrimFnDydUpCaretHC4FisHC4IvHC4I
+
+
+//***************************************************************************
+//  $PrimFnDydUpCaretHC4FisHC4FvHC4F
+//
+//  Primitive scalar function dyadic UpCaret:  HC4F {is} HC4F fn HC4F
+//***************************************************************************
+
+void PrimFnDydUpCaretHC4FisHC4FvHC4F
+    (LPAPLHC4F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    lpMemRes[uRes] = LcmHC4F (lpatLft->aplHC4F, lpatRht->aplHC4F);
+} // End PrimFnDydUpCaretHC4FisHC4FvHC4F
+
+
+//***************************************************************************
+//  $PrimFnDydUpCaretHC4RisHC4RvHC4R
+//
+//  Primitive scalar function dyadic UpCaret:  HC4R {is} HC4R fn HC4R
+//***************************************************************************
+
+void PrimFnDydUpCaretHC4RisHC4RvHC4R
+    (LPAPLHC4R  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    lpMemRes[uRes] = LcmHC4R (lpatLft->aplHC4R, lpatRht->aplHC4R);
+} // End PrimFnDydUpCaretHC4RisHC4RvHC4R
+
+
+//***************************************************************************
+//  $PrimFnDydUpCaretHC4VisHC4RvHC4R
+//
+//  Primitive scalar function dyadic UpCaret:  HC4V {is} fn HC4R fn HC4R
+//***************************************************************************
+
+void PrimFnDydUpCaretHC4VisHC4RvHC4R
+    (LPAPLHC4V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atLft = {0},
+             atRht = {0};
+
+    // Promote the left & right arg to the result type
+    (*aTypeActPromote[ARRAY_HC4R][ARRAY_HC4V]) (&lpatLft->aplRat, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC4R][ARRAY_HC4V]) (&lpatRht->aplRat, 0, &atRht);
+
+    PrimFnDydUpCaretHC4VisHC4VvHC4V (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+
+    Myhc4v_clear (&atRht.aplHC4V);
+    Myhc4v_clear (&atLft.aplHC4V);
+} // End PrimFnDydUpCaretHC4VisHC4RvHC4R
+
+
+//***************************************************************************
+//  $PrimFnDydUpCaretHC4VisHC4VvHC4V
+//
+//  Primitive scalar function dyadic UpCaret:  HC4V {is} HC4V fn HC4V
+//***************************************************************************
+
+void PrimFnDydUpCaretHC4VisHC4VvHC4V
+    (LPAPLHC4V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    lpMemRes[uRes] = LcmHC4V (lpatLft->aplHC4V, lpatRht->aplHC4V);
+} // End PrimFnDydUpCaretHC4VisHC4VvHC4V
 
 
 //***************************************************************************

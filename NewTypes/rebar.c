@@ -2454,7 +2454,7 @@ typedef struct tagLANGCHARS
                                            L"Unicode:  0x2192 or 8594"},
         LANGCHARS_SEPARATOR
         {WS_UTF16_PLUS              , {0}, L"Plus",
-                                           L"Conjugate:  +R (when Complex Numbers are implemented)\n"
+                                           L"Conjugate:  +R (for Complex, Quaternion, and Octonion Numbers)\n"
                                            L"Addition:  L+R  or  L+[X] R\n\n"
                                            L"Keyboard:  '+' or Shift-'='\n\n"
                                            L"Unicode:  0x002B or 43"},
@@ -2464,6 +2464,7 @@ typedef struct tagLANGCHARS
                                            L"Keyboard:  '-'\n\n"
                                            L"Unicode:  0x002D or 45"},
         {WS_UTF16_TIMES             , {0}, L"Times",
+                                           L"Direction:  " WS_UTF16_TIMES L"R (for Complex, Quaternion, and Octonion Numbers)\n"
                                            L"Signum:           " WS_UTF16_TIMES L"R\n"
                                            L"Multiplication:  L" WS_UTF16_TIMES L"R  or  L" WS_UTF16_TIMES L"[X] R\n\n"
                                            L"Keyboard:  Alt-'-'\n\n"
@@ -2489,22 +2490,21 @@ typedef struct tagLANGCHARS
                                            L"Keyboard:  Alt-'+' or Alt-Shift-'='\n\n"
                                            L"Unicode:  0x2339 or 9017"},
         {WS_UTF16_CIRCLE            , {0}, L"Circle",
-                                           L"Pi Times:            " WS_UTF16_CIRCLE L"R\n"
-                                           L"Circle Functions:  " WS_UTF16_OVERBAR L"7" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" atanh (R)\n"
-                                           L"                   " WS_UTF16_OVERBAR L"6" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" acosh (R)\n"
-                                           L"                   " WS_UTF16_OVERBAR L"5" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" asinh (R)\n"
-                                           L"                   " WS_UTF16_OVERBAR L"4" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" R" WS_UTF16_TIMES WS_UTF16_ROOT L"(1-R*" WS_UTF16_OVERBAR L"2)\n"
-                                           L"                   " WS_UTF16_OVERBAR L"3" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" atan  (R)\n"
-                                           L"                   " WS_UTF16_OVERBAR L"2" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" acos  (R)\n"
-                                           L"                   " WS_UTF16_OVERBAR L"1" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" asin  (R)\n"
-                                           L"                    0" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" " WS_UTF16_ROOT L"(1-R*2)\n"
-                                           L"                    1" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  sin  (R)\n"
-                                           L"                    2" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  cos  (R)\n"
-                                           L"                    3" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  tan  (R)\n"
-                                           L"                    4" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" " WS_UTF16_ROOT L"(1+R*2)\n"
-                                           L"                    5" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  sinh (R)\n"
-                                           L"                    6" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  cosh (R)\n"
-                                           L"                    7" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  tanh (R)\n"
+                                           L"Pi Times:  " WS_UTF16_CIRCLE L"R\n"
+                                           L"Circle Functions:\n"
+  WS_UTF16_OVERBAR L"12" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" *0J1" WS_UTF16_TIMES L"R           12"                    WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" arc (R)\n"
+  WS_UTF16_OVERBAR L"11" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  0J1" WS_UTF16_TIMES L"R           11"                    WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" imaginary (R)\n"
+  WS_UTF16_OVERBAR L"10" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" +R               10"                                      WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" |R\n"
+  L" " WS_UTF16_OVERBAR L"9" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L"  R                9"                                  WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" real (R)\n"
+  L" " WS_UTF16_OVERBAR L"8" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" -" WS_UTF16_ROOT WS_UTF16_OVERBAR L"1-R*2          8" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" " WS_UTF16_ROOT WS_UTF16_OVERBAR L"1-R*2\n"
+  L" " WS_UTF16_OVERBAR L"7" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" atanh (R)         7"                                  WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" tanh (R)\n"
+  L" " WS_UTF16_OVERBAR L"6" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" acosh (R)         6"                                  WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" cosh (R)\n"
+  L" " WS_UTF16_OVERBAR L"5" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" asinh (R)         5"                                  WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" sinh (R)\n"
+  L" " WS_UTF16_OVERBAR L"4" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" (R+1)" WS_UTF16_TIMES WS_UTF16_ROOT L"(R-1)" WS_UTF16_COLONBAR L"R+1  4" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" " WS_UTF16_ROOT L"1+R*2\n"
+  L" " WS_UTF16_OVERBAR L"3" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" atan  (R)         3"                                  WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" tan  (R)\n"
+  L" " WS_UTF16_OVERBAR L"2" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" acos  (R)         2"                                  WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" cos  (R)\n"
+  L" " WS_UTF16_OVERBAR L"1" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" asin  (R)         1"                                  WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" sin  (R)\n"
+                      L"  0" WS_UTF16_CIRCLE L"R " WS_UTF16_LEFTRIGHTARROWS L" " WS_UTF16_ROOT L"1-R*2\n"
                                            L"Also accepts axis operator as in L" WS_UTF16_CIRCLE L"[X] R\n\n"
                                            L"Keyboard:  Alt-'o'\n\n"
                                            L"Unicode:  0x25CB or 9675"},
@@ -2525,7 +2525,7 @@ typedef struct tagLANGCHARS
                                            L"Unicode:  0x221A or 8730"},
         LANGCHARS_SEPARATOR
         {WS_UTF16_STILE             , {0}, L"Stile",
-                                           L"Magnitude:  |R\n"
+                                           L"Magnitude:  |R (for Complex, Quaternion, and Octonion Numbers)\n"
                                            L"Modulus:   L|R  or  L|[X] R\n\n"
                                            L"Keyboard:  '|' or Shift-'\\'\n\n"
                                            L"Unicode:  0x2223 or 8739"},
@@ -2560,10 +2560,12 @@ typedef struct tagLANGCHARS
                                            L"Unicode:  0x22A2 or 8866"},
         LANGCHARS_SEPARATOR
         {WS_UTF16_EQUAL             , {0}, L"Equal",
-                                           L"Equal To:  L=R  or  L=[X] R\n\n"
+                                           L"Dimension:   =R " WS_UTF16_LEFTRIGHTARROWS L" Hypercomplex dimension (1, 2, 4, 8)\n\n"
+                                           L"Equal To:   L=R  or  L=[X] R\n\n"
                                            L"Keyboard:  '=' or Alt-'5'\n\n"
                                            L"Unicode:  0x003D or 61"},
         {WS_UTF16_NOTEQUAL          , {0}, L"NotEqual",
+                                           L"Norm:   " WS_UTF16_NOTEQUAL L"R " WS_UTF16_LEFTRIGHTARROWS L" Hypercomplex Norm (R" WS_UTF16_TIMES L"+R)\n\n"
                                            L"Not Equal To:  L" WS_UTF16_NOTEQUAL L"R  or  L" WS_UTF16_NOTEQUAL L"[X] R\n\n"
                                            L"Keyboard:  Alt-'8'\n\n"
                                            L"Unicode:  0x2260 or 8800"},
@@ -2941,6 +2943,20 @@ typedef struct tagLANGCHARS
                                            L"This infix notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES WS_UTF16_GAMMA L"*E "
                                            L"as in 0.5g1 for " WS_UTF16_GAMMA WS_UTF16_COLONBAR L"2, or combining this with Rational point notation, 1r3g1 for " WS_UTF16_GAMMA WS_UTF16_COLONBAR L"3,"
                                            L" where " WS_UTF16_GAMMA L" is Euler-Mascheroni's Constant (0.5772156649015329...)."
+                                           },
+        {L"i"                       , {0}, L"Complex Point Notation",
+                                           L"This infix notation alllows you to enter numeric constants of the form 2.3i4.5 or 2.3J4.5 as a Complex number."
+                                           L"  Alternate forms of Angle in Degrees (ad -- as in 1ad45 for magnitude 1 at an angle of 45 degrees) and Angle in Radians"
+                                           L" (ar -- as in 2ar3 for magnitude 2 at an angle of 3 radians)."
+                                           L"  A suffix notation of 2i (=0i2) is also recognized."
+                                           },
+        {L"ijk"                     , {0}, L"Quaternion Point Notation",
+                                           L"This infix notation alllows you to enter numeric constants of the form 2.3i4.5j6k7 as a Quaternion number."
+                                           L"  An infix/suffix notation with many forms such as 2j3k (=0i0j2k3) is also recognized."
+                                           },
+        {L"ijkl"                    , {0}, L"Octonion Point Notation",
+                                           L"This infix notation alllows you to enter numeric constants of the form 1i2j3k4l5ij6jk7kl8 as an Octonion number."
+                                           L"  A infix/suffix notation with many forms such as 2j3kl (=0i0j2k0l0ij0jk0kl3) is also recognized."
                                            },
         {L"p"                       , {0}, L"Pi Point Notation",
                                            L"This infix notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(" WS_UTF16_CIRCLE L"1)*E "

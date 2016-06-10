@@ -577,6 +577,20 @@ APLSTYPE StorageType
             else
                 return ARRAY_ERROR;
 
+        case ARRAY_HC2I:
+        case ARRAY_HC2F:
+        case ARRAY_HC2R:
+        case ARRAY_HC2V:
+        case ARRAY_HC4I:
+        case ARRAY_HC4F:
+        case ARRAY_HC4R:
+        case ARRAY_HC4V:
+        case ARRAY_HC8I:
+        case ARRAY_HC8F:
+        case ARRAY_HC8R:
+        case ARRAY_HC8V:
+            return aplTypeRes;
+
         case ARRAY_APA:
         defstop
             return ARRAY_ERROR;
@@ -810,7 +824,8 @@ WSFULL_EXIT:
 #endif
 
 HGLOBAL MakeMonPrototype_EM_PTB
-    (HGLOBAL    hGlbArr,            // Incoming array handle
+    (HGLOBAL    hGlbArr,            // Incoming array handle (may be NULL)
+     APLSTYPE   aplTypeArr,         // Array storage type
      LPTOKEN    lptkFunc,           // Ptr to function token
      MAKE_PROTO mpEnum)             // See MAKE_PROTO
 
@@ -837,6 +852,44 @@ HGLOBAL MakeMonPrototype_EM_PTB
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
+    // If the global memory handle is NULL, ...
+    if (hGlbArr EQ NULL)
+    {
+        // Split cases based upon the array storage type
+        switch (aplTypeArr)
+        {
+            case ARRAY_BOOL:
+            case ARRAY_INT:
+            case ARRAY_FLOAT:
+                return lpMemPTD->lphtsGLB->steZero;
+
+            case ARRAY_CHAR:
+                return lpMemPTD->lphtsGLB->steBlank;
+
+            case ARRAY_RAT:
+            case ARRAY_VFP:
+            case ARRAY_HC2I:
+            case ARRAY_HC2F:
+            case ARRAY_HC2R:
+            case ARRAY_HC2V:
+            case ARRAY_HC4I:
+            case ARRAY_HC4F:
+            case ARRAY_HC4R:
+            case ARRAY_HC4V:
+            case ARRAY_HC8I:
+            case ARRAY_HC8F:
+            case ARRAY_HC8R:
+            case ARRAY_HC8V:
+                DbgBrk ();
+
+
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } else
     // Split cases based upon the ptr type
     switch (GetPtrTypeDir (hGlbArr))
     {
@@ -885,14 +938,15 @@ HGLOBAL MakeMonPrototype_EM_PTB
             break;
 
         case ARRAY_INT:
-            // Zero the memory
-            ZeroMemory (lpMemArr, (APLU3264) aplNELM * sizeof (APLINT));
-
-            break;
-
         case ARRAY_FLOAT:
+        case ARRAY_HC2I:
+        case ARRAY_HC2F:
+        case ARRAY_HC4I:
+        case ARRAY_HC4F:
+        case ARRAY_HC8I:
+        case ARRAY_HC8F:
             // Zero the memory
-            ZeroMemory (lpMemArr, (APLU3264) aplNELM * sizeof (APLFLOAT));
+            ZeroMemory (lpMemArr, (APLU3264) aplNELM * TranslateArrayTypeToSizeof (aplType));
 
             break;
 
@@ -1056,6 +1110,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
 
                     hSymGlbProto =
                       MakeMonPrototype_EM_PTB (*(LPAPLNESTED) lpMemArr, // Proto arg handle
+                                               ARRAY_NESTED,            // Array storage tyoe
                                                lptkFunc,                // Ptr to function token
                                                mpEnum);                 // Pass flag through
                     if (hSymGlbProto)
@@ -1076,6 +1131,12 @@ HGLOBAL MakeMonPrototype_EM_PTB
 
         case ARRAY_RAT:
         case ARRAY_VFP:
+        case ARRAY_HC2R:
+        case ARRAY_HC2V:
+        case ARRAY_HC4R:
+        case ARRAY_HC4V:
+        case ARRAY_HC8R:
+        case ARRAY_HC8V:
             // Calculate space needed for the result
             ByteRes = CalcArraySize (aplType, aplNELM, aplRank);
 
@@ -1117,13 +1178,49 @@ HGLOBAL MakeMonPrototype_EM_PTB
             {
                 case ARRAY_RAT:
                     // Initialize to 0/1
-                    mpq_init   (((LPAPLRAT) lpMemRes)++);
+                    mpq_init     (((LPAPLRAT) lpMemRes)++);
 
                     break;
 
                 case ARRAY_VFP:
                     // Initialize to 0
-                    mpfr_init0 (((LPAPLVFP) lpMemRes)++);
+                    mpfr_init0   (((LPAPLVFP) lpMemRes)++);
+
+                    break;
+
+                case ARRAY_HC2R:
+                    // Initialize to 0/1
+                    mphc2r_init  (((LPAPLHC2R) lpMemRes)++);
+
+                    break;
+
+                case ARRAY_HC2V:
+                    // Initialize to 0
+                    mphc2v_init0 (((LPAPLHC2V) lpMemRes)++);
+
+                    break;
+
+                case ARRAY_HC4R:
+                    // Initialize to 0/1
+                    mphc4r_init  (((LPAPLHC4R) lpMemRes)++);
+
+                    break;
+
+                case ARRAY_HC4V:
+                    // Initialize to 0
+                    mphc4v_init0 (((LPAPLHC4V) lpMemRes)++);
+
+                    break;
+
+                case ARRAY_HC8R:
+                    // Initialize to 0/1
+                    mphc8r_init  (((LPAPLHC8R) lpMemRes)++);
+
+                    break;
+
+                case ARRAY_HC8V:
+                    // Initialize to 0
+                    mphc8v_init0 (((LPAPLHC8V) lpMemRes)++);
 
                     break;
 
@@ -1332,6 +1429,9 @@ HGLOBAL MakeDydPrototype_EM_PTB
                                                 lptkFunc,
                                                 aplNELMRht,
                                                &aplTypeRht);
+    if (IsNonceType (aplTypeRes))
+        goto NONCE_EXIT;
+
     if (IsErrorType (aplTypeRes))
         goto DOMAIN_EXIT;
 
@@ -1464,14 +1564,16 @@ HGLOBAL MakeDydPrototype_EM_PTB
     // If the left arg is immediate, the result is the prototype of the other arg
     if (hGlbLft EQ NULL)
         hGlbRes =
-          MakeMonPrototype_EM_PTB (hGlbRht,     // Proto arg handle
-                                   lptkFunc,    // Ptr to function token
+          MakeMonPrototype_EM_PTB (hGlbRht,         // Proto arg handle
+                                   ARRAY_NESTED,    // Array storage tyoe
+                                   lptkFunc,        // Ptr to function token
                                    bBoolFn ? MP_NUMCONV : MP_NUMONLY);
     else
     if (hGlbRht EQ NULL)
         hGlbRes =
-          MakeMonPrototype_EM_PTB (hGlbLft,     // Proto arg handle
-                                   lptkFunc,    // Ptr to function token
+          MakeMonPrototype_EM_PTB (hGlbLft,         // Proto arg handle
+                                   ARRAY_NESTED,    // Array storage tyoe
+                                   lptkFunc,        // Ptr to function token
                                    bBoolFn ? MP_NUMCONV : MP_NUMONLY);
     else
     {
@@ -1613,6 +1715,7 @@ HGLOBAL MakeDydPrototype_EM_PTB
                 {
                     hGlbSub =
                       MakeMonPrototype_EM_PTB (lpMemRht[uRht],                  // Proto arg handle
+                                               ARRAY_NESTED,                    // Array storage tyoe
                                                lptkFunc,                        // Ptr to function token
                                                bBoolFn ? MP_NUMCONV : MP_NUMONLY);
                     if (hGlbSub EQ NULL)
@@ -1627,6 +1730,7 @@ HGLOBAL MakeDydPrototype_EM_PTB
                 {
                     hGlbSub =
                       MakeMonPrototype_EM_PTB (lpMemLft[uLft],                  // Proto arg handle
+                                               ARRAY_NESTED,                    // Array storage tyoe
                                                lptkFunc,                        // Ptr to function token
                                                bBoolFn ? MP_NUMCONV : MP_NUMONLY);
                     if (hGlbSub EQ NULL)
@@ -1657,6 +1761,11 @@ HGLOBAL MakeDydPrototype_EM_PTB
     } // End IF/ELSE/...
 
     goto NORMAL_EXIT;
+
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
@@ -1987,6 +2096,12 @@ HGLOBAL CopyArray_EM
                     case ARRAY_FLOAT:
                     case ARRAY_CHAR:
                     case ARRAY_APA:
+                    case ARRAY_HC2I:
+                    case ARRAY_HC2F:
+                    case ARRAY_HC4I:
+                    case ARRAY_HC4F:
+                    case ARRAY_HC8I:
+                    case ARRAY_HC8F:
                         break;
 
                     case ARRAY_HETERO:
@@ -2067,6 +2182,96 @@ HGLOBAL CopyArray_EM
 
                             // Copy the source value to the destin
                             mpfr_init_copy ((LPAPLVFP) lpMemDst, (LPAPLVFP) lpMemSrc);
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_HC2R:
+                        // Loop through the source and destin arrays
+                        for (u = 0;
+                             u < aplNELM;
+                             u++, ((LPAPLHC2R) lpMemDst)++, ((LPAPLHC2R) lpMemSrc)++)
+                        {
+                            // Zap the copied values
+                            ZeroMemory (lpMemDst, sizeof (APLHC2R));
+
+                            // Copy the source value to the destin
+                            mphc2r_init_set ((LPAPLHC2R) lpMemDst, (LPAPLHC2R) lpMemSrc);
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_HC2V:
+                        // Loop through the source and destin arrays
+                        for (u = 0;
+                             u < aplNELM;
+                             u++, ((LPAPLHC2V) lpMemDst)++, ((LPAPLHC2V) lpMemSrc)++)
+                        {
+                            // Zap the copied values
+                            ZeroMemory (lpMemDst, sizeof (APLHC2V));
+
+                            // Copy the source value to the destin
+                            mphc2v_init_copy ((LPAPLHC2V) lpMemDst, (LPAPLHC2V) lpMemSrc);
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_HC4R:
+                        // Loop through the source and destin arrays
+                        for (u = 0;
+                             u < aplNELM;
+                             u++, ((LPAPLHC4R) lpMemDst)++, ((LPAPLHC4R) lpMemSrc)++)
+                        {
+                            // Zap the copied values
+                            ZeroMemory (lpMemDst, sizeof (APLHC4R));
+
+                            // Copy the source value to the destin
+                            mphc4r_init_set ((LPAPLHC4R) lpMemDst, (LPAPLHC4R) lpMemSrc);
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_HC4V:
+                        // Loop through the source and destin arrays
+                        for (u = 0;
+                             u < aplNELM;
+                             u++, ((LPAPLHC4V) lpMemDst)++, ((LPAPLHC4V) lpMemSrc)++)
+                        {
+                            // Zap the copied values
+                            ZeroMemory (lpMemDst, sizeof (APLHC4V));
+
+                            // Copy the source value to the destin
+                            mphc4v_init_copy ((LPAPLHC4V) lpMemDst, (LPAPLHC4V) lpMemSrc);
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_HC8R:
+                        // Loop through the source and destin arrays
+                        for (u = 0;
+                             u < aplNELM;
+                             u++, ((LPAPLHC8R) lpMemDst)++, ((LPAPLHC8R) lpMemSrc)++)
+                        {
+                            // Zap the copied values
+                            ZeroMemory (lpMemDst, sizeof (APLHC8R));
+
+                            // Copy the source value to the destin
+                            mphc8r_init_set ((LPAPLHC8R) lpMemDst, (LPAPLHC8R) lpMemSrc);
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_HC8V:
+                        // Loop through the source and destin arrays
+                        for (u = 0;
+                             u < aplNELM;
+                             u++, ((LPAPLHC8V) lpMemDst)++, ((LPAPLHC8V) lpMemSrc)++)
+                        {
+                            // Zap the copied values
+                            ZeroMemory (lpMemDst, sizeof (APLHC8V));
+
+                            // Copy the source value to the destin
+                            mphc8v_init_copy ((LPAPLHC8V) lpMemDst, (LPAPLHC8V) lpMemSrc);
                         } // End FOR
 
                         break;
@@ -2276,6 +2481,10 @@ HGLOBAL CopyGlbAsType_EM
     LPSYMENTRY        lpSym0,               // LPSYMENTRY for constant zero
                       lpSym1,               // ...                     one
                       lpSymTmp;             // Ptr to temporary LPSYMENTRY
+    int               iSizeofRes;           // Byte size of a single result item
+
+    // Translate the array type to sizeof
+    iSizeofRes = TranslateArrayTypeToSizeof (aplTypeRes);
 
     // Get the attributes (Type, NELM, and Rank) of the arg
     AttrsOfGlb (hGlbArg, &aplTypeArg, &aplNELMArg, &aplRankArg, NULL);
@@ -2351,16 +2560,44 @@ HGLOBAL CopyGlbAsType_EM
 
             break;
 
-        case ARRAY_INT:                     // Res = INT, Arg = BOOL/INT/APA
+        case ARRAY_INT:                     // Res = INT
+        case ARRAY_HC2I:                    // Res = HC2I
+        case ARRAY_HC4I:                    // Res = HC4I
+        case ARRAY_HC8I:                    // Res = HC8I
             // Loop through the arg elements
-            for (uArg = 0; uArg < aplNELMArg; uArg++)
-                (*aTypeActPromote[aplTypeArg][aplTypeRes]) (lpMemArg, uArg, (LPALLTYPES) ((LPAPLINT  ) lpMemRes)++);
+            for (uArg = 0; uArg < aplNELMArg; uArg++, ((LPBYTE) lpMemRes) += iSizeofRes)
+                (*aTypeActPromote[aplTypeArg][aplTypeRes]) (lpMemArg, uArg, (LPALLTYPES) lpMemRes);
+
             break;
 
-        case ARRAY_FLOAT:                   // Res = FLOAT, Arg = BOOL/INT/APA/FLOAT
+        case ARRAY_FLOAT:                   // Res = FLOAT
+        case ARRAY_HC2F:                    // Res = HC2F
+        case ARRAY_HC4F:                    // Res = HC4F
+        case ARRAY_HC8F:                    // Res = HC8F
             // Loop through the arg elements
-            for (uArg = 0; uArg < aplNELMArg; uArg++)
-                (*aTypeActPromote[aplTypeArg][aplTypeRes]) (lpMemArg, uArg, (LPALLTYPES) ((LPAPLFLOAT) lpMemRes)++);
+            for (uArg = 0; uArg < aplNELMArg; uArg++, ((LPBYTE) lpMemRes) += iSizeofRes)
+                (*aTypeActPromote[aplTypeArg][aplTypeRes]) (lpMemArg, uArg, (LPALLTYPES) lpMemRes);
+
+            break;
+
+        case ARRAY_RAT:                     // Res = RAT
+        case ARRAY_HC2R:                    // Res = HC2R
+        case ARRAY_HC4R:                    // Res = HC4R
+        case ARRAY_HC8R:                    // Res = HC8R
+            // Loop through the arg elements
+            for (uArg = 0; uArg < aplNELMArg; uArg++, ((LPBYTE) lpMemRes) += iSizeofRes)
+                (*aTypeActPromote[aplTypeArg][aplTypeRes]) (lpMemArg, uArg, (LPALLTYPES) lpMemRes);
+
+            break;
+
+        case ARRAY_VFP:                     // Res = VFP
+        case ARRAY_HC2V:                    // Res = HC2R
+        case ARRAY_HC4V:                    // Res = HC4R
+        case ARRAY_HC8V:                    // Res = HC8R
+            // Loop through the arg elements
+            for (uArg = 0; uArg < aplNELMArg; uArg++, ((LPBYTE) lpMemRes) += iSizeofRes)
+                (*aTypeActPromote[aplTypeArg][aplTypeRes]) (lpMemArg, uArg, (LPALLTYPES) lpMemRes);
+
             break;
 
         case ARRAY_CHAR:
@@ -2510,18 +2747,6 @@ HGLOBAL CopyGlbAsType_EM
                     break;
             } // End SWITCH
 
-            break;
-
-        case ARRAY_RAT:
-            // Loop through the arg elements
-            for (uArg = 0; uArg < aplNELMArg; uArg++)
-                (*aTypeActPromote[aplTypeArg][aplTypeRes]) (lpMemArg, uArg, (LPALLTYPES) ((LPAPLRAT  ) lpMemRes)++);
-            break;
-
-        case ARRAY_VFP:
-            // Loop through the arg elements
-            for (uArg = 0; uArg < aplNELMArg; uArg++)
-                (*aTypeActPromote[aplTypeArg][aplTypeRes]) (lpMemArg, uArg, (LPALLTYPES) ((LPAPLVFP  ) lpMemRes)++);
             break;
 
         defstop
@@ -2955,9 +3180,10 @@ APLINT abs64
 //***************************************************************************
 
 APLINT iadd64
-    (APLINT  aplLft,            // Left arg
-     APLINT  aplRht,            // Right ...
-     LPUBOOL lpbRet)            // Is the result valid?? (may be NULL)
+    (APLINT          aplLft,            // Left arg
+     APLINT          aplRht,            // Right ...
+     LPUBOOL         lpbRet,            // Is the result valid?? (may be NULL)
+     EXCEPTION_CODES exceptionCode)     // Exception code to Raise (see tagEXCEPTION_CODES)
 
 {
     APLINT aplRes;              // The result
@@ -2974,7 +3200,7 @@ APLINT iadd64
     else
     // Otherwise, if it overflowed, ...
     if (!bRet)
-        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+        RaiseException (exceptionCode, 0, 0, NULL);
 
     return aplRes;
 } // End iadd64
@@ -2988,9 +3214,10 @@ APLINT iadd64
 //***************************************************************************
 
 APLINT isub64
-    (APLINT  aplLft,            // Left arg
-     APLINT  aplRht,            // Right ...
-     LPUBOOL lpbRet)            // Is the result valid?? (may be NULL)
+    (APLINT          aplLft,            // Left arg
+     APLINT          aplRht,            // Right ...
+     LPUBOOL         lpbRet,            // Is the result valid?? (may be NULL)
+     EXCEPTION_CODES exceptionCode)     // Exception code to Raise (see tagEXCEPTION_CODES)
 
 {
     APLINT aplRes;              // The result
@@ -3007,7 +3234,7 @@ APLINT isub64
     else
     // Otherwise, if it overflowed, ...
     if (!bRet)
-        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+        RaiseException (exceptionCode, 0, 0, NULL);
 
     return aplRes;
 } // End isub64
@@ -3021,9 +3248,10 @@ APLINT isub64
 //***************************************************************************
 
 APLINT imul64
-    (APLINT  aplLft,            // Left arg
-     APLINT  aplRht,            // Right ...
-     LPUBOOL lpbRet)            // Is the result valid?? (may be NULL)
+    (APLINT          aplLft,            // Left arg
+     APLINT          aplRht,            // Right ...
+     LPUBOOL         lpbRet,            // Is the result valid?? (may be NULL)
+     EXCEPTION_CODES exceptionCode)     // Exception code to Raise (see tagEXCEPTION_CODES)
 
 {
     APLINT aplRes;              // The result
@@ -3038,7 +3266,7 @@ APLINT imul64
     else
     // Otherwise, if it overflowed, ...
     if (!bRet)
-        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+        RaiseException (exceptionCode, 0, 0, NULL);
     return aplRes;
 } // End imul64
 
@@ -3061,40 +3289,76 @@ APLUINT CalcDataSize
     switch (aplType)
     {
         case ARRAY_BOOL:
-            return imul64 (sizeof (APLBOOL)   , RoundUpBitsInArray (aplNELM), lpbRet);
+            return imul64 (sizeof (APLBOOL)   , RoundUpBitsInArray (aplNELM), lpbRet, EXCEPTION_RESULT_FLOAT);
 
         case ARRAY_INT:
-            return imul64 (sizeof (APLINT)    , aplNELM                     , lpbRet);
+            return imul64 (sizeof (APLINT)    , aplNELM                     , lpbRet, EXCEPTION_RESULT_FLOAT);
 
         case ARRAY_FLOAT:
-            return imul64 (sizeof (APLFLOAT)  , aplNELM                     , lpbRet);
+            return imul64 (sizeof (APLFLOAT)  , aplNELM                     , lpbRet, EXCEPTION_RESULT_FLOAT);
 
         case ARRAY_CHAR:
             // Add in one element so we always have
             //   a zero-terminated string
-            return imul64 (sizeof (APLCHAR)   , aplNELM + 1                 , lpbRet);
+            return imul64 (sizeof (APLCHAR)   , aplNELM + 1                 , lpbRet, EXCEPTION_RESULT_FLOAT);
 
         case ARRAY_APA:
-            return imul64 (sizeof (APLAPA)    , 1                           , lpbRet);
+            return imul64 (sizeof (APLAPA)    , 1                           , lpbRet, EXCEPTION_RESULT_FLOAT);
 
         case ARRAY_HETERO:
-            return imul64 (sizeof (APLHETERO) , aplNELM                     , lpbRet);
+            return imul64 (sizeof (APLHETERO) , aplNELM                     , lpbRet, EXCEPTION_RESULT_FLOAT);
 
         case ARRAY_LIST:
-            ByteRes = imul64 (sizeof (APLLIST)   , aplNELM                  , lpbRet);
+            ByteRes = imul64 (sizeof (APLLIST)   , aplNELM                  , lpbRet, EXCEPTION_RESULT_FLOAT);
             if (*lpbRet)
-                ByteRes = iadd64 (ByteRes, sizeof (LSTARRAY_HEADER)         , lpbRet);
+                ByteRes = iadd64 (ByteRes, sizeof (LSTARRAY_HEADER)         , lpbRet, EXCEPTION_RESULT_FLOAT);
             return ByteRes;
 
         case ARRAY_NESTED:
             // Make room for the prototype
-            return imul64 (sizeof (APLNESTED) , max (aplNELM, 1)            , lpbRet);
+            return imul64 (sizeof (APLNESTED) , max (aplNELM, 1)            , lpbRet, EXCEPTION_RESULT_FLOAT);
 
         case ARRAY_RAT:
-            return imul64 (sizeof (APLRAT)    , aplNELM                     , lpbRet);
+            return imul64 (sizeof (APLRAT)    , aplNELM                     , lpbRet, EXCEPTION_RESULT_FLOAT);
 
         case ARRAY_VFP:
-            return imul64 (sizeof (APLVFP)    , aplNELM                     , lpbRet);
+            return imul64 (sizeof (APLVFP)    , aplNELM                     , lpbRet, EXCEPTION_RESULT_FLOAT);
+
+        case ARRAY_HC2I:
+            return imul64 (sizeof (APLHC2I)   , aplNELM                     , lpbRet, EXCEPTION_RESULT_FLOAT);
+
+        case ARRAY_HC2F:
+            return imul64 (sizeof (APLHC2F)   , aplNELM                     , lpbRet, EXCEPTION_RESULT_FLOAT);
+
+        case ARRAY_HC2R:
+            return imul64 (sizeof (APLHC2R)   , aplNELM                     , lpbRet, EXCEPTION_RESULT_FLOAT);
+
+        case ARRAY_HC2V:
+            return imul64 (sizeof (APLHC2V)   , aplNELM                     , lpbRet, EXCEPTION_RESULT_FLOAT);
+
+        case ARRAY_HC4I:
+            return imul64 (sizeof (APLHC4I)   , aplNELM                     , lpbRet, EXCEPTION_RESULT_FLOAT);
+
+        case ARRAY_HC4F:
+            return imul64 (sizeof (APLHC4F)   , aplNELM                     , lpbRet, EXCEPTION_RESULT_FLOAT);
+
+        case ARRAY_HC4R:
+            return imul64 (sizeof (APLHC4R)   , aplNELM                     , lpbRet, EXCEPTION_RESULT_FLOAT);
+
+        case ARRAY_HC4V:
+            return imul64 (sizeof (APLHC4V)   , aplNELM                     , lpbRet, EXCEPTION_RESULT_FLOAT);
+
+        case ARRAY_HC8I:
+            return imul64 (sizeof (APLHC8I)   , aplNELM                     , lpbRet, EXCEPTION_RESULT_FLOAT);
+
+        case ARRAY_HC8F:
+            return imul64 (sizeof (APLHC8F)   , aplNELM                     , lpbRet, EXCEPTION_RESULT_FLOAT);
+
+        case ARRAY_HC8R:
+            return imul64 (sizeof (APLHC8R)   , aplNELM                     , lpbRet, EXCEPTION_RESULT_FLOAT);
+
+        case ARRAY_HC8V:
+            return imul64 (sizeof (APLHC8V)   , aplNELM                     , lpbRet, EXCEPTION_RESULT_FLOAT);
 
         defstop
             return MAX_APLINT;
@@ -3122,7 +3386,7 @@ APLUINT CalcArraySize
 
     if (bRet && aplType NE ARRAY_LIST)
         // Add in the size of the header and dimension
-        ByteRes = iadd64 (ByteRes, CalcHeaderSize (aplRank), &bRet);
+        ByteRes = iadd64 (ByteRes, CalcHeaderSize (aplRank), &bRet, EXCEPTION_RESULT_FLOAT);
 
     return bRet ? ByteRes : MAX_APLINT;
 } // End CalcArraySize

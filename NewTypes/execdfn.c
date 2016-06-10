@@ -1373,7 +1373,7 @@ NEXTLINE:
             lpYYRes->tkToken.tkFlags.NoDisplay = lpMemDfnHdr->NoDispRes;
 
             // See if it fits into a lower (but not necessarily smaller) datatype
-            TypeDemote (&lpYYRes->tkToken);
+            TypeDemote (&lpYYRes->tkToken, FALSE);
 
             break;
         } // End default
@@ -2018,6 +2018,9 @@ UBOOL InitVarSTEs
             HGLOBAL           hGlbRes;              // Result global memory handle
             LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result header
             LPVOID            lpMemRes;             // Ptr to result global memory
+            int               iHCDimArg,            // HC Dimension (1, 2, 4, 8) of the arg
+                              iSizeofArg,           // Sizeof an item in the arg
+                              i;                    // Loop counter
 
             // Lock the memory to get a ptr to it
             lpMemHdrArg = MyGlobalLock (hGlbArg);
@@ -2047,6 +2050,12 @@ UBOOL InitVarSTEs
                 apaMulArg = lpAPA->Mul;
 #undef  lpAPA
             } // End IF
+
+            // Calculate the dimension of the arg (1, 2, 4, 8)
+            iHCDimArg = TranslateArrayTypeToHCDim (aplTypeArg);
+
+            // Calculate the sizeof the arg
+            iSizeofArg = TranslateArrayTypeToSizeof (aplTypeArg);
 
             // Loop through the LPSYMENTRYs
             for (uSym = 0; uSym < numArgSTE; uSym++, lplpSymEntry++)
@@ -2170,8 +2179,26 @@ UBOOL InitVarSTEs
 
                         break;
 
+////////////////////case ARRAY_INT:
+                    case ARRAY_HC2I:
+                    case ARRAY_HC4I:
+                    case ARRAY_HC8I:
+
+////////////////////case ARRAY_FLOAT:
+                    case ARRAY_HC2F:
+                    case ARRAY_HC4F:
+                    case ARRAY_HC8F:
+
                     case ARRAY_RAT:
-                        // Allocate memory for a scalar RAT
+                    case ARRAY_HC2R:
+                    case ARRAY_HC4R:
+                    case ARRAY_HC8R:
+
+                    case ARRAY_VFP:
+                    case ARRAY_HC2V:
+                    case ARRAY_HC4V:
+                    case ARRAY_HC8V:
+                        // Allocate memory for a scalar HCxy
                         // Calculate space needed for the result
                         ByteRes = CalcArraySize (aplTypeArg, 1, 0);
 
@@ -2200,58 +2227,66 @@ UBOOL InitVarSTEs
                         // Skip over the header and dimension
                         lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
-                        // Fill in the scalar value
-                        mpq_init_set ((LPAPLRAT) lpMemRes, (LPAPLRAT) lpMemArg);
+                        // Loop through the dimensions (1, 2, 4, 8)
+                        for (i = 0; i < iHCDimArg; i++)
+                        // Split cases based upon the storage type
+                        switch (aplTypeArg)
+                        {
+////////////////////////////case ARRAY_INT:
+                            case ARRAY_HC2I:
+                            case ARRAY_HC4I:
+                            case ARRAY_HC8I:
+                                // Fill in the scalar value
+                                ((LPAPLHC8I) lpMemRes)->parts[i] = *(LPAPLINT) lpMemArg;
 
-                        // We no longer need this ptr
-                        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+                                // If the arg is multi-element, ...
+                                if (aplNELMArg > 1)
+                                    // Skip to next element in arg
+                                    ((LPAPLINT) lpMemArg)++;
 
-////////////////////////(*lplpSymEntry)->stFlags.Imm        = FALSE;        // Already zero from previous initialization
-                        (*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_RAT;
-                        (*lplpSymEntry)->stFlags.Value      = TRUE;
-                        (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
-                        (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
-                        (*lplpSymEntry)->stData.stGlbData   = MakePtrTypeGlb (hGlbRes);
+                                break;
 
-                        // If the arg is multi-element, ...
-                        if (aplNELMArg > 1)
-                            // Skip to next element in arg
-                            ((LPAPLRAT) lpMemArg)++;
+////////////////////////////case ARRAY_FLOAT:
+                            case ARRAY_HC2F:
+                            case ARRAY_HC4F:
+                            case ARRAY_HC8F:
+                                // Fill in the scalar value
+                                ((LPAPLHC8F) lpMemRes)->parts[i] = *(LPAPLFLOAT) lpMemArg;
 
-                        break;
+                                // If the arg is multi-element, ...
+                                if (aplNELMArg > 1)
+                                    // Skip to next element in arg
+                                    ((LPAPLFLOAT) lpMemArg)++;
+                                break;
 
-                    case ARRAY_VFP:
-                        // Allocate memory for a scalar VFP
-                        // Calculate space needed for the result
-                        ByteRes = CalcArraySize (ARRAY_VFP, 1, 0);
+                            case ARRAY_RAT:
+                            case ARRAY_HC2R:
+                            case ARRAY_HC4R:
+                            case ARRAY_HC8R:
+                                // Fill in the scalar value
+                                mpq_init_set (&((LPAPLHC8R) lpMemRes)->parts[i], (LPAPLRAT) lpMemArg);
 
-                        // Check for overflow
-                        if (ByteRes NE (APLU3264) ByteRes)
-                            goto WSFULL_EXIT;
+                                // If the arg is multi-element, ...
+                                if (aplNELMArg > 1)
+                                    // Skip to next element in arg
+                                    ((LPAPLRAT) lpMemArg)++;
+                                break;
 
-                        // Allocate space for the result
-                        hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-                        if (hGlbRes EQ NULL)
-                            goto WSFULL_EXIT;
+                            case ARRAY_VFP:
+                            case ARRAY_HC2V:
+                            case ARRAY_HC4V:
+                            case ARRAY_HC8V:
+                                // Fill in the scalar value
+                                mpfr_init_set (&((LPAPLHC8V) lpMemRes)->parts[i], (LPAPLVFP) lpMemArg, MPFR_RNDN);
 
-                        // Lock the memory to get a ptr to it
-                        lpMemHdrRes = MyGlobalLock (hGlbRes);
-
-#define lpHeader    lpMemHdrRes
-                        // Fill in the header
-                        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-                        lpHeader->ArrType    = ARRAY_VFP;
-////////////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
-                        lpHeader->RefCnt     = 1;
-                        lpHeader->NELM       = 1;
-////////////////////////lpHeader->Rank       = 0;               // Already zero from GHNS
-#undef  lpHeader
-                        // Skip over the header and dimension
-                        lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
-
-                        // Fill in the scalar value
-                        mpfr_init_set ((LPAPLVFP) lpMemRes, (LPAPLVFP) lpMemArg, MPFR_RNDN);
+                                // If the arg is multi-element, ...
+                                if (aplNELMArg > 1)
+                                    // Skip to next element in arg
+                                    ((LPAPLVFP) lpMemArg)++;
+                                break;
+                            defstop
+                                break;
+                        } // End SWITCH
 
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
@@ -2262,11 +2297,6 @@ UBOOL InitVarSTEs
                         (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
                         (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_VAR;
                         (*lplpSymEntry)->stData.stGlbData   = MakePtrTypeGlb (hGlbRes);
-
-                        // If the arg is multi-element, ...
-                        if (aplNELMArg > 1)
-                            // Skip to next element in arg
-                            ((LPAPLVFP) lpMemArg)++;
 
                         break;
 

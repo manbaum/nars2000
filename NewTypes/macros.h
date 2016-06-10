@@ -44,11 +44,6 @@
 #define ByteAddr(a,b)           (&(((LPBYTE) (a))[b]))
 #define ByteDiff(a,b)           (((LPBYTE) (a)) - (LPBYTE) (b))
 
-#define AplModI(m,a) PrimFnDydStileIisIvI ((m), (a), NULL)
-#define AplModF(m,a) PrimFnDydStileFisFvF ((m), (a), NULL)
-#define AplModR(m,a) PrimFnDydStileRisRvR ((m), (a), NULL)
-#define AplModV(m,a) PrimFnDydStileVisVvV ((m), (a), NULL)
-
 #define LOLONGLONG(x)           ( (LONG) ( ( ( (LONGLONG) x) & LOPART_LONGLONG)      ) )
 #define HILONGLONG(x)           ( (LONG) ( ( ( (LONGLONG) x) & HIPART_LONGLONG) >> 32) )
 
@@ -199,13 +194,16 @@
   #define dprintfWL9(a,...)
 #endif
 
+#define imul64_RE(a,b,c)    imul64 ((a), (b), NULL, EXCEPTION_RESULT_##c)
+#define iadd64_RE(a,b,c)    iadd64 ((a), (b), NULL, EXCEPTION_RESULT_##c)
+#define isub64_RE(a,b,c)    isub64 ((a), (b), NULL, EXCEPTION_RESULT_##c)
+
 #define bAllowNeg0          lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEG0]
 #define gAllowNeg0          GetMemPTD()->aplCurrentFEATURE[FEATURENDX_NEG0]
+#define gUseHurwitz         GetMemPTD()->aplCurrentFEATURE[FEATURENDX_HURWITZ]
 
-#define imul64_RE(a,b)      imul64 ((a), (b), NULL)
-#define iadd64_RE(a,b)      iadd64 ((a), (b), NULL)
-#define isub64_RE(a,b)      isub64 ((a), (b), NULL)
-
+////ine signumint(a)        (   (((APLINT) (a)) < 0) ? -1 : (((APLINT) (a)) > 0))
+////ine signumflt(a)        (SIGN_APLFLOAT (a)       ? -1 : (          (a)  > 0))
 #define SIGN_APLNELM(a)     ((UBOOL) ((a) >> 63))                   // Sign bit of an APLNELM
 #define SIGN_APLRANK(a)     ((UBOOL) ((a) >> 63))                   // ...            APLRANK
 #define SIGN_APLDIM(a)      ((UBOOL) ((a) >> 63))                   // ...            APLDIM
@@ -216,9 +214,9 @@
                                         : ((a) < 0))                // ...            APLFLOAT
 #define SIGN_APLVFP(a)      (gAllowNeg0 ? ((a)->_mpfr_sign < 0)                     \
                                         : (mpfr_sgn (a) < 0))       // ...            APLVFP
-
-#define mpfr_sgn0(a)        (signumint ((a)->_mpfr_sign))
 #define signumrat            mpq_sgn
+#define signumvfp(a)        (SIGN_APLVFP   (a)       ? -1 : ( mpfr_sgn (a)  > 0))
+#define mpfr_sgn0(a)        (signumint ((a)->_mpfr_sign))
 
 // Define macro to detect -0.0
 #define IsFltN0(a)          ((a) EQ 0.0  && SIGN_APLFLOAT ( a))
@@ -244,7 +242,10 @@
 #define IsAPLCharUpCaret(a)         ((a) EQ UTF16_UPCARET            || (a) EQ UTF16_CIRCUMFLEX                                    )
 
 // Define macro for detecting error array type
-#define IsErrorType(ArrType)            (ArrType EQ ARRAY_ERROR)
+#define IsNonceType(ArrType)            (ArrType EQ ARRAY_NONCE)
+
+// Define macro for detecting error array type
+#define IsErrorType(ArrType)            (IsNonceType (ArrType) || ArrType EQ ARRAY_ERROR)
 
 // Define macro for detecting simple array type
 /////// IsSimple(ArrType)               ((ArrType) EQ ARRAY_BOOL || (ArrType) EQ ARRAY_INT || (ArrType) EQ ARRAY_APA || (ArrType) EQ ARRAY_FLOAT || (ArrType) EQ ARRAY_CHAR || (ArrType) EQ ARRAY_HETERO)
@@ -283,7 +284,7 @@
 #define IsSimpleNHGlbNum(ArrType)       (IsSimpleNH (ArrType) || IsGlbNum (ArrType))
 
 // Define macro for detecting Global Numeric arrays (including RAT, VFP, etc.)
-#define IsGlbNum(ArrType)               (IsRat (ArrType) || IsVfp (ArrType))
+#define IsGlbNum(ArrType)               (ARRAY_RAT <= (ArrType) && (ArrType) <= ARRAY_HC8V)
 
 // Define macro for detecting simple character array type
 #define IsSimpleChar(ArrType)           ((ArrType) EQ ARRAY_CHAR)
@@ -310,10 +311,40 @@
 #define IsList(ArrType)                 ((ArrType) EQ ARRAY_LIST)
 
 // Define macro for detecting a Rat
-#define IsRat(ArrType)                  (ArrType EQ ARRAY_RAT)
+#define IsRat(ArrType)                  ((ArrType) EQ ARRAY_RAT)
 
 // Define macro for detecting a Variable FP
-#define IsVfp(ArrType)                  (ArrType EQ ARRAY_VFP)
+#define IsVfp(ArrType)                  ((ArrType) EQ ARRAY_VFP)
+
+// Define macro for detecting any HCxI
+#define IsHCxI(ArrType)                 ((ArrType) EQ ARRAY_HC2I || (ArrType) EQ ARRAY_HC4I || (ArrType) EQ ARRAY_HC8I)
+
+// Define macro for detecting any INT including Hypercomplex
+#define IsHCInt(ArrType)                (IsSimpleInt (ArrType)   || IsHCxI (ArrType))
+
+// Define macro for detecting any HCxF
+#define IsHCxF(ArrType)                 ((ArrType) EQ ARRAY_HC2F || (ArrType) EQ ARRAY_HC4F || (ArrType) EQ ARRAY_HC8F)
+
+// Define macro for detecting any FLT including Hypercomplex
+#define IsHCFlt(ArrType)                (IsSimpleFlt (ArrType)   || IsHCxF (ArrType))
+
+// Define macro for detecting any HCxR
+#define IsHCxR(ArrType)                 ((ArrType) EQ ARRAY_HC2R || (ArrType) EQ ARRAY_HC4R || (ArrType) EQ ARRAY_HC8R)
+
+// Define macro for detecting any Rat including Hypercomplex
+#define IsHCRat(ArrType)                (IsRat (ArrType)         || IsHCxR (ArrType))
+
+// Define macro for detecting any HCxV
+#define IsHCxV(ArrType)                 ((ArrType) EQ ARRAY_HC2V || (ArrType) EQ ARRAY_HC4V || (ArrType) EQ ARRAY_HC8V)
+
+// Define macro for detecting any Variable FP including Hypercomplex
+#define IsHCVfp(ArrType)                (IsVfp (ArrType)         || IsHCxV (ArrType))
+
+// Define macro for detecting any Hypercomplex number
+#define IsHCAny(ArrType)                ((ARRAY_HC2I <= (ArrType)) && ((ArrType) <= ARRAY_HC8V))
+
+// Define macro for detecting any numeric including Hypercomplex
+#define IsHCNum(ArrType)                (IsSimpleNum (ArrType) || IsHCInt (ArrType) || IsHCFlt (ArrType) || IsHCRat (ArrType) || IsHCVfp (ArrType))
 
 // Define macros for detecting permutation vectors
 #define IsPermVector0(lpHeader)         (((lpHeader) NE NULL) && (lpHeader)->PV0)
@@ -459,7 +490,7 @@
 #define IsImmChr(a)                 ((a) EQ IMMTYPE_CHAR)
 #define IsImmRat(a)                 ((a) EQ IMMTYPE_RAT)
 #define IsImmVfp(a)                 ((a) EQ IMMTYPE_VFP)
-#define IsImmGlbNum(a)              (IsImmRat (a) || IsImmVfp (a))
+#define IsImmGlbNum(a)              (IMMTYPE_RAT <= (a) && (a) <= IMMTYPE_HC8V)
 #define IsImmErr(a)                 ((a) EQ IMMTYPE_ERROR)
 
 // The enum NAME_TYPES in <symtab.h> is constructed to allow
@@ -556,8 +587,9 @@
     } /* End IF */
 
 // Define macros that expand to another function
-#define FloatToAplint_CT(a,b,c)     _FloatToAplint_CT (a, b, c, FALSE)
-#define CompareCT(a,b,c,d)          _CompareCT (a, b, c, d, FALSE)
+#define FloatToAplint_CT(a,b,c)     (_FloatToAplint_CT (a, b, c, FALSE))
+#define CompareCT(a,b,c,d)          (_CompareCT (a, b, c, FALSE))
+#define _CompareCT(a,b,c,d)         (flt_cmp_ct (a, b, c, d) EQ 0)
 
 #define mpq_get_sctsx(a,b)          _mpq_get_ctsx (a, SYS_CT, b, TRUE)
 #define mpq_get_ctsx(a,b,c)         _mpq_get_ctsx (a, b, c, FALSE)

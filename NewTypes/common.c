@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -780,55 +780,6 @@ int signum
     else
        return (val > 0);
 } // End signum
-
-
-//***************************************************************************
-//  $signumint
-//
-//  Return -1, 0, +1 depending upon the sign of a given integer
-//***************************************************************************
-
-int signumint
-    (APLINT val)                // Source
-
-{
-    return (val < 0) ? -1 : (val > 0);
-} // End signumint
-
-
-//***************************************************************************
-//  $signumflt
-//
-//  Return -1, 0, +1 depending upon the sign of a given float
-//***************************************************************************
-
-int signumflt
-    (APLFLOAT val)
-
-{
-    return SIGN_APLFLOAT (val) ? -1 : (val > 0);
-} // End signumflt
-
-
-//***************************************************************************
-//  $signumrat
-//
-//  Is an alias for mpq_sgn which already returns -1, 0, or 1.
-//***************************************************************************
-
-
-//***************************************************************************
-//  $signumvfp
-//
-//  Return -1, 0, +1 depending upon the sign of a given VFP
-//***************************************************************************
-
-int signumvfp
-    (LPAPLVFP val)
-
-{
-    return (SIGN_APLVFP (val) ? -1 : mpfr_sgn (val) > 0);
-} // End signumvfp
 
 
 //***************************************************************************

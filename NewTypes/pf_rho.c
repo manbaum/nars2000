@@ -23,6 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include "headers.h"
+#include "math.h"
 
 
 //***************************************************************************
@@ -262,22 +263,24 @@ LPPL_YYSTYPE PrimFnMonRhoCon_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
-    (HGLOBAL hGlbRht,               // Right arg handle
-     LPTOKEN lptkFunc)              // Ptr to function token
+    (HGLOBAL hGlbRht,                   // Right arg handle
+     LPTOKEN lptkFunc)                  // Ptr to function token
 
 {
-    LPVOID       lpMemRht,          // Ptr to right arg memory
-                 lpMemRes;          // ...    result ...
-    APLRANK      aplRankRht;        // The rank of the array
-    HGLOBAL      hGlbRes;           // Result global memory handle
-    APLUINT      ByteRes;           // # bytes in the result
-    UINT         uRes;              // Loop counter
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
+                      lpMemHdrRes = NULL;   // ...    result    ...
+    LPVOID            lpMemRht,             // Ptr to right arg memory
+                      lpMemRes;             // ...    result ...
+    APLRANK           aplRankRht;           // The rank of the array
+    HGLOBAL           hGlbRes;              // Result global memory handle
+    APLUINT           ByteRes;              // # bytes in the result
+    UINT              uRes;                 // Loop counter
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
 
     // Lock the memory to get a ptr to it
-    lpMemRht = MyGlobalLock (hGlbRht);
+    lpMemHdrRht = MyGlobalLock (hGlbRht);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRht)
+#define lpHeader        lpMemHdrRht
     // Get the rank
     aplRankRht = lpHeader->Rank;
 #undef  lpHeader
@@ -300,9 +303,9 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+        lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        lpMemHdrRes
         // Fill in the header
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_INT;
@@ -314,13 +317,13 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
 #undef  lpHeader
 
         // Save the dimension
-        *VarArrayBaseToDim (lpMemRes) = aplRankRht;
+        *VarArrayBaseToDim (lpMemHdrRes) = aplRankRht;
 
         // Skip over the header and dimension to the data
-        lpMemRes = VarArrayDataFmBase (lpMemRes);
+        lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
         // Skip over the header to the right arg's dimensions
-        lpMemRht = VarArrayBaseToDim (lpMemRht);
+        lpMemRht = VarArrayBaseToDim (lpMemHdrRht);
 
 #define lpDimRht        ((LPAPLDIM) lpMemRht)
 #define lpDataRes       ((LPAPLINT) lpMemRes)
@@ -333,7 +336,7 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
 #undef  lpDataRes
 
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
     // Allocate a new YYRes
@@ -356,7 +359,7 @@ WSFULL_EXIT:
 ERROR_EXIT:
 NORMAL_EXIT:
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+    MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
 
     return lpYYRes;
 } // End PrimFnMonRhoGlb_EM_YY
@@ -389,8 +392,8 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     APLRANK           aplRankRes;           // Result rank
     HGLOBAL           hGlbRes = NULL,       // Handle of result's global memory
                       hSymGlbProto;         // ...                prototype
-    LPVOID            lpMemRes = NULL;      // Ptr to result's global memory
-    LPVARARRAY_HEADER lpMemHdrRes;          // Ptr to result global memory header
+    LPVOID            lpMemRes;             // Ptr to result's global memory
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result global memory header
     UBOOL             bRet = TRUE,          // TRUE iff result is valid
                       bReshapeSing = FALSE, // TRUE if reshaping an integer singleton
                       bPrototype = FALSE;   // TRUE iff we're to generate a prototype
@@ -429,13 +432,27 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
             case ARRAY_INT:
             case ARRAY_FLOAT:
             case ARRAY_APA:
+            case ARRAY_HC2I:
+            case ARRAY_HC2F:
+            case ARRAY_HC4I:
+            case ARRAY_HC4F:
+            case ARRAY_HC8I:
+            case ARRAY_HC8F:
                 aplTypeRes = ARRAY_BOOL;
 
                 break;
 
             case ARRAY_RAT:
             case ARRAY_VFP:
+            case ARRAY_HC2R:
+            case ARRAY_HC2V:
+            case ARRAY_HC4R:
+            case ARRAY_HC4V:
+            case ARRAY_HC8R:
+            case ARRAY_HC8V:
             case ARRAY_CHAR:
+////////////////aplTypeRes = aplTypeRes;
+
                 break;
 
             case ARRAY_HETERO:
@@ -545,9 +562,9 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -564,7 +581,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     // Because the left argument's values have already been
     //   validated above, we can skip error checks.
     //***************************************************************
-    PrimFnDydRhoCopyDim (lpMemRes, lptkLftArg);
+    PrimFnDydRhoCopyDim (lpMemHdrRes, lptkLftArg);
 
     //***************************************************************
     // Now run through the right arg copying its data
@@ -575,7 +592,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     if (bReshapeSing)
     {
         // Get a ptr to the result's data
-        lpMemRes = VarArrayDataFmBase (lpMemRes);
+        lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
 #define lpAPA       ((LPAPLAPA) lpMemRes)
         // Get the first (and only) value from the right arg
@@ -602,6 +619,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
         // Make the prototype
         hSymGlbProto =
           MakeMonPrototype_EM_PTB (hSymGlbProto,    // Proto arg handle
+                                   ARRAY_NESTED,    // Array storage type
                                    lptkFunc,        // Ptr to function token
                                    FALSE);          // Allow CHARs
         if (!hSymGlbProto)
@@ -609,22 +627,22 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
         else
         {
             // Get a ptr to the result's data
-            lpMemRes = VarArrayDataFmBase (lpMemRes);
+            lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
             // Save the handle
             *((LPAPLNESTED) lpMemRes) = hSymGlbProto;
         } // End IF
     } else
-    if (aplNELMRes)
+    if (!IsEmpty (aplNELMRes))
         bRet =
           PrimFnDydRhoRhtCopyData (lptkRhtArg,      // Ptr to right arg token
                                    aplTypeRes,      // Result storage type
                                    aplNELMRes,      // Result NELM
                                    aplRankRes,      // Result rank
-                                   lpMemRes,        // Ptr to result memory
+                                   lpMemHdrRes,     // Ptr to result memory
                                    lptkFunc);       // Ptr to function token
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
     // Check the result
     if (bRet)
@@ -640,7 +658,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
         // See if it fits into a lower (but not necessarily smaller) datatype
-        TypeDemote (&lpYYRes->tkToken);
+        TypeDemote (&lpYYRes->tkToken, FALSE);
 
         return lpYYRes;
     } // End IF
@@ -653,12 +671,12 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this storage
@@ -681,7 +699,7 @@ UBOOL PrimFnDydRhoRhtCopyData
      APLSTYPE aplTypeRes,           // Result storage type
      APLNELM  aplNELMRes,           // Result NELM
      APLRANK  aplRankRes,           // Result rank
-     LPVOID   lpMemRes,             // Ptr to result memory
+     LPVOID   lpMemHdrRes,          // Ptr to result header
      LPTOKEN  lptkFunc)             // Ptr to function token
 
 {
@@ -689,6 +707,7 @@ UBOOL PrimFnDydRhoRhtCopyData
     UINT          uRes;             // Loop counter
     LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+    LPVOID        lpMemRes;         // Ptr to result memory
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -697,7 +716,7 @@ UBOOL PrimFnDydRhoRhtCopyData
     lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayDataFmBase (lpMemRes);
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // Split cases based upon the right arg's token type
     switch (lptkRhtArg->tkFlags.TknType)
@@ -969,14 +988,14 @@ ERROR_EXIT:
 //***************************************************************************
 
 void PrimFnDydRhoCopyDim
-    (LPVOID  lpMemRes,      // Ptr to result memory
-     LPTOKEN lptkLftArg)    // Ptr to left arg token
+    (LPVARARRAY_HEADER lpMemHdrRes, // Ptr to result global memory header
+     LPTOKEN           lptkLftArg)  // Ptr to left arg token
 
 {
     LPAPLDIM  lpDimRes;     // Ptr to result's dimensions
 
     // Get ptr to the dimensions in the result
-    lpDimRes = VarArrayBaseToDim (lpMemRes);
+    lpDimRes = VarArrayBaseToDim (lpMemHdrRes);
 
     // Split cases based upon the left arg's token type
     switch (lptkLftArg->tkFlags.TknType)
@@ -1244,6 +1263,105 @@ DOMAIN_EXIT:
 
 
 //***************************************************************************
+//  $INTToAplint
+//
+//  INT conversion routine
+//***************************************************************************
+
+APLINT INTToAplint
+    (LPAPLINT   lpDataLft,  // Ptr to left arg data
+     APLUINT    u,          // Index into left arg
+     LPUBOOL    lpbRet)     // Ptr to TRUE iff it succeeded
+
+{
+    // Get the next dimension
+    return lpDataLft[u];
+} // INTToAplint
+
+
+//***************************************************************************
+//  $FLTToAplint
+//
+//  FLT conversion routine
+//***************************************************************************
+
+APLINT FLTToAplint
+    (LPAPLFLOAT lpDataLft,      // Ptr to left arg data
+     APLUINT    u,              // Index into left arg
+     LPUBOOL    lpbRet)         // Ptr to TRUE iff it succeeded
+
+{
+    // Attempt to convert the FLT to an integer using System []CT
+    return FloatToAplint_SCT (lpDataLft[u], lpbRet);
+} // FLTToAplint
+
+
+//***************************************************************************
+//  $RhoLftGlbValidCom
+//
+//  Common routine used in PrimFnDydRhoLftGlbValid_EM
+//***************************************************************************
+
+UBOOL RhoLftGlbValidCom
+    (LPVOID        lpDataLft,               // Ptr to left arg data
+     APLNELM       aplNELMLft,              // Left arg NELM
+     LPAPLNELM     lpaplNELMRes,            // Ptr to result NELM
+     HCxyTOAPLINT  HCxyToAplint)            // Conversion to integer routine
+
+{
+    APLUINT u;
+    APLINT  aplIntTmp;
+    UBOOL   bRet = TRUE;
+
+    // Loop through the dimensions
+    for (u = 0; bRet && u < aplNELMLft; u++)
+    {
+        // Get the next dimension
+        aplIntTmp = (*HCxyToAplint) (lpDataLft, u, &bRet);
+
+        // Ensure the value fits into a dimension
+        if (0 > aplIntTmp
+         ||     aplIntTmp > MAX_APLDIM)
+            goto DOMAIN_EXIT;
+
+        // Multiply the two numbers as APLINTs so we can check for overflow
+        aplIntTmp = imul64 (*lpaplNELMRes, aplIntTmp, &bRet, EXCEPTION_RESULT_FLOAT);
+
+        // Check for overflow
+        bRet = bRet && (aplIntTmp <= MAX_APLNELM);
+
+        // If overflow, check for zeros
+        if (!bRet)
+        {
+            // Loop through the rest of the dimensions
+            for (u++; u < aplNELMLft; u++)
+            {
+                // Get the next dimension
+                aplIntTmp = (*HCxyToAplint) (lpDataLft, u, &bRet);
+
+                if (IsZeroDim (aplIntTmp))
+                {
+                    // The result NELM is zero
+                    *lpaplNELMRes = 0;
+
+                    goto NORMAL_EXIT;
+                } // End IF
+            } // End FOR
+
+            goto DOMAIN_EXIT;
+        } // End IF
+
+        // Save back
+        *lpaplNELMRes = (APLNELM) aplIntTmp;
+    } // End FOR
+NORMAL_EXIT:
+    return TRUE;
+DOMAIN_EXIT:
+    return FALSE;
+} // End RhoLftGlbValidCom
+
+
+//***************************************************************************
 //  $PrimFnDydRhoLftGlbValid_EM
 //
 //  Dyadic Rho left argument validation on a global memory object
@@ -1262,17 +1380,17 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
      LPTOKEN   lptkFunc)                // Ptr to function token
 
 {
-    LPVOID   lpMemLft,      // Ptr to left argument global memory
-             lpDataLft;
-    APLSTYPE aplTypeLft;
-    APLNELM  aplNELMLft;
-    APLRANK  aplRankLft;
-    UBOOL    bRet = TRUE;
-    APLNELM  uNELM;
-    UINT     u,
-             uBits;
-    APLINT   aplIntTmp;
-    jmp_buf  oldHeapFull;   // Save area for previous jmp_buf
+    LPVARARRAY_HEADER lpMemHdrLft;      // Ptr to left arg header
+    LPVOID            lpMemLft;         // Ptr to left argument global memory
+    APLSTYPE          aplTypeLft;
+    APLNELM           aplNELMLft;
+    APLRANK           aplRankLft;
+    UBOOL             bRet = TRUE;
+    APLNELM           uNELM;
+    UINT              u,
+                      uBits;
+    APLINT            aplIntTmp;
+    jmp_buf           oldHeapFull;      // Save area for previous jmp_buf
 
     // Save the previous heapFull
     *oldHeapFull = *heapFull;
@@ -1282,9 +1400,9 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemLft = MyGlobalLock (hGlbLft);
+    lpMemHdrLft = MyGlobalLock (hGlbLft);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemLft)
+#define lpHeader        lpMemHdrLft
     aplTypeLft = lpHeader->ArrType;
     aplNELMLft = lpHeader->NELM;
     aplRankLft = lpHeader->Rank;
@@ -1302,7 +1420,7 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
     else
     {
         // Point to the left arg's data
-        lpDataLft = VarArrayDataFmBase (lpMemLft);
+        lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
 
         // Check for LEFT DOMAIN ERROR and fill in *lpaplNELMRes
         // Split cases based upon the left arg's storage type
@@ -1313,102 +1431,38 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
 
                 // Loop through the dimensions
                 for (u = 0; *lpaplNELMRes && u < uNELM; u++) // char at a time, except for the last byte
-                    *lpaplNELMRes = ((LPAPLBOOL) lpDataLft)[u] EQ 0xFF;
+                    *lpaplNELMRes = ((LPAPLBOOL) lpMemLft)[u] EQ 0xFF;
 
                 // Check the last byte
 
                 // # valid bits in last byte
                 uBits = MASKLOG2NBIB & (UINT) aplNELMLft;
                 if (uBits)                                  // Last byte not full
-                    *lpaplNELMRes &= ((LPAPLBOOL) lpDataLft)[u] EQ ((BIT0 << uBits) - 1);
+                    *lpaplNELMRes &= ((LPAPLBOOL) lpMemLft)[u] EQ ((BIT0 << uBits) - 1);
 
                 break;
 
             case ARRAY_INT:
-                // Loop through the dimensions
-                for (u = 0; bRet && u < aplNELMLft; u++)
-                {
-                    // Get the next dimension
-                    aplIntTmp = ((LPAPLINT) lpDataLft)[u];
-
-                    // Ensure the value fits into a dimension
-                    if (0 > aplIntTmp
-                     ||     aplIntTmp > MAX_APLDIM)
-                        goto DOMAIN_EXIT;
-
-                    // Multiply the two numbers as APLINTs so we can check for overflow
-                    aplIntTmp = imul64 (*lpaplNELMRes, aplIntTmp, &bRet);
-
-                    // Check for overflow
-                    bRet = bRet && (aplIntTmp <= MAX_APLNELM);
-
-                    // If overflow, check for zeros
-                    if (!bRet)
-                    {
-                        // Loop through the rest of the dimensions
-                        for (u++; u < aplNELMLft; u++)
-                        if (IsZeroDim (((LPAPLINT) lpDataLft)[u]))
-                        {
-                            // The result NELM is zero
-                            *lpaplNELMRes = 0;
-
-                            goto NORMAL_EXIT;
-                        } // End IF
-
-                        goto DOMAIN_EXIT;
-                    } // End IF
-
-                    // Save back
-                    *lpaplNELMRes = (APLNELM) aplIntTmp;
-                } // End FOR/IF/ELSE
+                // Handle this loop/test in a common routine
+                if (RhoLftGlbValidCom (lpMemLft,                // Ptr to left arg data
+                                       aplNELMLft,              // Left arg NELM
+                                       lpaplNELMRes,            // Ptr to result NELM
+                                       INTToAplint))      // Routine to convert to integer
+                    goto NORMAL_EXIT;
+                else
+                    goto DOMAIN_EXIT;
 
                 break;
 
             case ARRAY_FLOAT:
-                // Loop through the dimensions
-                for (u = 0; bRet && u < aplNELMLft; u++)
-                {
-                    // Attempt to convert the float to an integer using System []CT
-                    aplIntTmp = FloatToAplint_SCT (((LPAPLFLOAT) lpDataLft)[u], &bRet);
-                    if (!bRet)
-                        goto DOMAIN_EXIT;
-
-                    // Ensure the value fits into a dimension
-                    if (0 > aplIntTmp
-                     ||     aplIntTmp > MAX_APLDIM)
-                        goto DOMAIN_EXIT;
-
-                    // Multiply the two numbers as APLINTs so we can check for overflow
-                    aplIntTmp = imul64 (*lpaplNELMRes, aplIntTmp, &bRet);
-
-                    // Check for overflow
-                    bRet = bRet && (aplIntTmp <= MAX_APLNELM);
-
-                    // If overflow, check for zeros
-                    if (!bRet)
-                    {
-                        // Loop through the rest of the dimensions
-                        for (u++; u < aplNELMLft; u++)
-                        {
-                            // Attempt to convert the float to an integer using System []CT
-                            aplIntTmp = FloatToAplint_SCT (((LPAPLFLOAT) lpDataLft)[u], &bRet);
-                            if (!bRet)
-                                goto DOMAIN_EXIT;
-                            if (IsZeroDim (aplIntTmp))
-                            {
-                                // The result NELM is zero
-                                *lpaplNELMRes = 0;
-
-                                goto NORMAL_EXIT;
-                            } // End IF
-                        } // End FOR
-
-                        goto DOMAIN_EXIT;
-                    } // End IF
-
-                    // Save back
-                    *lpaplNELMRes = (APLNELM) aplIntTmp;
-                } // End FOR
+                // Handle this loop/test in a common routine
+                if (RhoLftGlbValidCom (lpMemLft,                // Ptr to left arg data
+                                       aplNELMLft,              // Left arg NELM
+                                       lpaplNELMRes,            // Ptr to result NELM
+                                       FLTToAplint))      // Routine to convert to integer
+                    goto NORMAL_EXIT;
+                else
+                    goto DOMAIN_EXIT;
 
                 break;
 
@@ -1419,7 +1473,7 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
                         apaVal;
                 APLUINT apaLen;
 
-#define lpAPA       ((LPAPLAPA) lpDataLft)
+#define lpAPA       ((LPAPLAPA) lpMemLft)
                 // Get the APA parameters
                 apaOff = lpAPA->Off;
                 apaMul = lpAPA->Mul;
@@ -1440,12 +1494,13 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
                     else
                     {
                         // Multiply the two numbers as APLINTs so we can check for overflow
-                        aplIntTmp = ((APLINT) *lpaplNELMRes) * apaVal;
+                        aplIntTmp = imul64 (((APLINT) *lpaplNELMRes), apaVal, &bRet, EXCEPTION_RESULT_FLOAT);
 
                         // Check for overflow
-                        if (0 > aplIntTmp
-                         ||     aplIntTmp > MAX_APLDIM)
-                            bRet = FALSE;
+                        if (!bRet
+                          || 0 > aplIntTmp
+                          ||     aplIntTmp > MAX_APLDIM)
+                            goto DOMAIN_EXIT;
 
                         // Save back
                         *lpaplNELMRes = (APLNELM) aplIntTmp;
@@ -1467,92 +1522,170 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
                 break;
 
             case ARRAY_RAT:
-                // Loop through the dimensions
-                for (u = 0; bRet && u < aplNELMLft; u++)
-                {
-                    // Attempt to convert the RAT to an integer using System []CT
-                    aplIntTmp = mpq_get_sctsx (&((LPAPLRAT) lpDataLft)[u], &bRet);
-                    if (!bRet)
-                        goto DOMAIN_EXIT;
-
-                    // Ensure the value fits into a dimension
-                    if (0 > aplIntTmp
-                     ||     aplIntTmp > MAX_APLDIM)
-                        goto DOMAIN_EXIT;
-
-                    // Multiply the two numbers as APLINTs so we can check for overflow
-                    aplIntTmp = imul64 (*lpaplNELMRes, aplIntTmp, &bRet);
-
-                    // Check for overflow
-                    bRet = bRet && (aplIntTmp <= MAX_APLNELM);
-
-                    // If overflow, check for zeros
-                    if (!bRet)
-                    {
-                        // Loop through the rest of the dimensions
-                        for (u++; u < aplNELMLft; u++)
-                        {
-                            // If the dimension is zero, ...
-                            if (IsMpq0 (&((LPAPLRAT) lpDataLft)[u]))
-                            {
-                                // The result NELM is zero
-                                *lpaplNELMRes = 0;
-
-                                goto NORMAL_EXIT;
-                            } // End IF
-                        } // End FOR
-
-                        goto DOMAIN_EXIT;
-                    } // End IF
-
-                    // Save back
-                    *lpaplNELMRes = (APLNELM) aplIntTmp;
-                } // End FOR
+                // Handle this loop/test in a common routine
+                if (RhoLftGlbValidCom (lpMemLft,                // Ptr to left arg data
+                                       aplNELMLft,              // Left arg NELM
+                                       lpaplNELMRes,            // Ptr to result NELM
+                                       RATToAplint))      // Routine to convert to integer
+                    goto NORMAL_EXIT;
+                else
+                    goto DOMAIN_EXIT;
 
                 break;
 
             case ARRAY_VFP:
-                // Loop through the dimensions
-                for (u = 0; bRet && u < aplNELMLft; u++)
-                {
-                    // Attempt to convert the VFP to an integer using System []CT
-                    aplIntTmp = mpfr_get_sctsx (&((LPAPLVFP) lpDataLft)[u], &bRet);
-                    if (!bRet)
-                        goto DOMAIN_EXIT;
+                // Handle this loop/test in a common routine
+                if (RhoLftGlbValidCom (lpMemLft,                // Ptr to left arg data
+                                       aplNELMLft,              // Left arg NELM
+                                       lpaplNELMRes,            // Ptr to result NELM
+                                       VFPToAplint))      // Routine to convert to integer
+                    goto NORMAL_EXIT;
+                else
+                    goto DOMAIN_EXIT;
 
-                    // Ensure the value fits into a dimension
-                    if (0 > aplIntTmp
-                     ||     aplIntTmp > MAX_APLDIM)
-                        goto DOMAIN_EXIT;
+                break;
 
-                    // Multiply the two numbers as APLINTs so we can check for overflow
-                    aplIntTmp = imul64 (*lpaplNELMRes, aplIntTmp, &bRet);
+            case ARRAY_HC2I:
+                // Handle this loop/test in a common routine
+                if (RhoLftGlbValidCom (lpMemLft,                // Ptr to left arg data
+                                       aplNELMLft,              // Left arg NELM
+                                       lpaplNELMRes,            // Ptr to result NELM
+                                       HC2IToAplint_SCT))     // Routine to convert to integer
+                    goto NORMAL_EXIT;
+                else
+                    goto DOMAIN_EXIT;
 
-                    // Check for overflow
-                    bRet = bRet && (aplIntTmp <= MAX_APLNELM);
+                break;
 
-                    // If overflow, check for zeros
-                    if (!bRet)
-                    {
-                        // Loop through the rest of the dimensions
-                        for (u++; u < aplNELMLft; u++)
-                        {
-                            // If the dimension is zero, ...
-                            if (IsMpq0 (&((LPAPLRAT) lpDataLft)[u]))
-                            {
-                                // The result NELM is zero
-                                *lpaplNELMRes = 0;
+            case ARRAY_HC4I:
+                // Handle this loop/test in a common routine
+                if (RhoLftGlbValidCom (lpMemLft,                // Ptr to left arg data
+                                       aplNELMLft,              // Left arg NELM
+                                       lpaplNELMRes,            // Ptr to result NELM
+                                       HC4IToAplint_SCT))     // Routine to convert to integer
+                    goto NORMAL_EXIT;
+                else
+                    goto DOMAIN_EXIT;
 
-                                goto NORMAL_EXIT;
-                            } // End IF
-                        } // End FOR
+                break;
 
-                        goto DOMAIN_EXIT;
-                    } // End IF
+            case ARRAY_HC8I:
+                // Handle this loop/test in a common routine
+                if (RhoLftGlbValidCom (lpMemLft,                // Ptr to left arg data
+                                       aplNELMLft,              // Left arg NELM
+                                       lpaplNELMRes,            // Ptr to result NELM
+                                       HC8IToAplint_SCT))     // Routine to convert to integer
+                    goto NORMAL_EXIT;
+                else
+                    goto DOMAIN_EXIT;
 
-                    // Save back
-                    *lpaplNELMRes = (APLNELM) aplIntTmp;
-                } // End FOR
+                break;
+
+            case ARRAY_HC2F:
+                // Handle this loop/test in a common routine
+                if (RhoLftGlbValidCom (lpMemLft,                // Ptr to left arg data
+                                       aplNELMLft,              // Left arg NELM
+                                       lpaplNELMRes,            // Ptr to result NELM
+                                       HC2FToAplint_SCT))     // Routine to convert to integer
+                    goto NORMAL_EXIT;
+                else
+                    goto DOMAIN_EXIT;
+
+                break;
+
+            case ARRAY_HC4F:
+                // Handle this loop/test in a common routine
+                if (RhoLftGlbValidCom (lpMemLft,                // Ptr to left arg data
+                                       aplNELMLft,              // Left arg NELM
+                                       lpaplNELMRes,            // Ptr to result NELM
+                                       HC4FToAplint_SCT))     // Routine to convert to integer
+                    goto NORMAL_EXIT;
+                else
+                    goto DOMAIN_EXIT;
+
+                break;
+
+            case ARRAY_HC8F:
+                // Handle this loop/test in a common routine
+                if (RhoLftGlbValidCom (lpMemLft,                // Ptr to left arg data
+                                       aplNELMLft,              // Left arg NELM
+                                       lpaplNELMRes,            // Ptr to result NELM
+                                       HC8FToAplint_SCT))     // Routine to convert to integer
+                    goto NORMAL_EXIT;
+                else
+                    goto DOMAIN_EXIT;
+
+                break;
+
+            case ARRAY_HC2R:
+                // Handle this loop/test in a common routine
+                if (RhoLftGlbValidCom (lpMemLft,                // Ptr to left arg data
+                                       aplNELMLft,              // Left arg NELM
+                                       lpaplNELMRes,            // Ptr to result NELM
+                                       HC2RToAplint_SCT))     // Routine to convert to integer
+                    goto NORMAL_EXIT;
+                else
+                    goto DOMAIN_EXIT;
+
+                break;
+
+            case ARRAY_HC4R:
+                // Handle this loop/test in a common routine
+                if (RhoLftGlbValidCom (lpMemLft,                // Ptr to left arg data
+                                       aplNELMLft,              // Left arg NELM
+                                       lpaplNELMRes,            // Ptr to result NELM
+                                       HC4RToAplint_SCT))     // Routine to convert to integer
+                    goto NORMAL_EXIT;
+                else
+                    goto DOMAIN_EXIT;
+
+                break;
+
+            case ARRAY_HC8R:
+                // Handle this loop/test in a common routine
+                if (RhoLftGlbValidCom (lpMemLft,                // Ptr to left arg data
+                                       aplNELMLft,              // Left arg NELM
+                                       lpaplNELMRes,            // Ptr to result NELM
+                                       HC8RToAplint_SCT))     // Routine to convert to integer
+                    goto NORMAL_EXIT;
+                else
+                    goto DOMAIN_EXIT;
+
+                break;
+
+            case ARRAY_HC2V:
+                // Handle this loop/test in a common routine
+                if (RhoLftGlbValidCom (lpMemLft,                // Ptr to left arg data
+                                       aplNELMLft,              // Left arg NELM
+                                       lpaplNELMRes,            // Ptr to result NELM
+                                       HC2VToAplint_SCT))     // Routine to convert to integer
+                    goto NORMAL_EXIT;
+                else
+                    goto DOMAIN_EXIT;
+
+                break;
+
+            case ARRAY_HC4V:
+                // Handle this loop/test in a common routine
+                if (RhoLftGlbValidCom (lpMemLft,                // Ptr to left arg data
+                                       aplNELMLft,              // Left arg NELM
+                                       lpaplNELMRes,            // Ptr to result NELM
+                                       HC4VToAplint_SCT))     // Routine to convert to integer
+                    goto NORMAL_EXIT;
+                else
+                    goto DOMAIN_EXIT;
+
+                break;
+
+            case ARRAY_HC8V:
+                // Handle this loop/test in a common routine
+                if (RhoLftGlbValidCom (lpMemLft,                // Ptr to left arg data
+                                       aplNELMLft,              // Left arg NELM
+                                       lpaplNELMRes,            // Ptr to result NELM
+                                       HC8VToAplint_SCT))     // Routine to convert to integer
+                    goto NORMAL_EXIT;
+                else
+                    goto DOMAIN_EXIT;
 
                 break;
 
@@ -1590,7 +1723,7 @@ NORMAL_EXIT:
     *heapFull = *oldHeapFull;
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+    MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
 
     return bRet;
 } // End PrimFnDydRhoLftGlbValid_EM
@@ -1609,32 +1742,33 @@ void PrimFnDydRhoLftGlbCopyDim
      LPAPLDIM  lpaplDim)
 
 {
-    LPVOID   lpMemLft,      // Ptr to left arg header (via lpHeader)
-             lpDataLft;     // Ptr to left arg global memory
-    APLNELM  aplNELMLft;    // Left arg NELM
-    UINT     uLft,          // Loop counter
-             uBitMaskLft;   // Left arg bit mask
-    UBOOL    bRet;          // TRUE iff the result is valid
+    LPVARARRAY_HEADER lpMemHdrLft;  // Ptr to left arg header
+    LPVOID            lpMemLft;     // Ptr to left arg memory
+    APLNELM           aplNELMLft;   // Left arg NELM
+    UINT              uLft,         // Loop counter
+                      uBitMaskLft;  // Left arg bit mask
+    UBOOL             bRet;         // TRUE iff the result is valid
 
     // Lock the memory to get a ptr to it
-    lpMemLft = MyGlobalLock (hGlbLft);
+    lpMemHdrLft = MyGlobalLock (hGlbLft);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemLft)
+#define lpHeader        lpMemHdrLft
 
     // Get the left arg's NELM to use as loop limit
     aplNELMLft = lpHeader->NELM;
 
     // Point to the left arg's data
-    lpDataLft = VarArrayDataFmBase (lpMemLft);
+    lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
 
     // Split cases based upon the left arg's array type
     switch (lpHeader->ArrType)
+#undef  lpHeader
     {
         case ARRAY_BOOL:
             uBitMaskLft = BIT0;
             for (uLft = 0; uLft < aplNELMLft; uLft++)
             {
-                *lpaplDim++ = (uBitMaskLft & *(LPAPLBOOL) lpDataLft) ? TRUE : FALSE;
+                *lpaplDim++ = (uBitMaskLft & *(LPAPLBOOL) lpMemLft) ? TRUE : FALSE;
 
                 // Shift over the left arg's bit mask
                 uBitMaskLft <<= 1;
@@ -1643,7 +1777,7 @@ void PrimFnDydRhoLftGlbCopyDim
                 if (uBitMaskLft EQ END_OF_BYTE)
                 {
                     uBitMaskLft = BIT0;         // Start over
-                    ((LPAPLBOOL) lpDataLft)++;  // Skip to next byte
+                    ((LPAPLBOOL) lpMemLft)++;  // Skip to next byte
                 } // End IF
             } // End FOR
 
@@ -1651,12 +1785,12 @@ void PrimFnDydRhoLftGlbCopyDim
 
         case ARRAY_INT:
             for (uLft = 0; uLft < aplNELMLft; uLft++)
-                *lpaplDim++ = (APLDIM) *((LPAPLINT) lpDataLft)++;
+                *lpaplDim++ = (APLDIM) *((LPAPLINT) lpMemLft)++;
             break;
 
         case ARRAY_FLOAT:
             for (uLft = 0; uLft < aplNELMLft; uLft++)
-                *lpaplDim++ = (APLDIM) FloatToAplint_SCT (*((LPAPLFLOAT) lpDataLft)++, NULL);
+                *lpaplDim++ = (APLDIM) FloatToAplint_SCT (*((LPAPLFLOAT) lpMemLft)++, NULL);
             break;
 
         case ARRAY_APA:
@@ -1665,7 +1799,7 @@ void PrimFnDydRhoLftGlbCopyDim
                     apaMul;
             APLUINT apaLen;
 
-#define lpAPA       ((LPAPLAPA) lpDataLft)
+#define lpAPA       ((LPAPLAPA) lpMemLft)
             // Get the APA parameters
             apaOff = lpAPA->Off;
             apaMul = lpAPA->Mul;
@@ -1682,21 +1816,80 @@ void PrimFnDydRhoLftGlbCopyDim
 
         case ARRAY_RAT:
             for (uLft = 0; uLft < aplNELMLft; uLft++)
-                *lpaplDim++ = (APLDIM) mpq_get_sctsx (((LPAPLRAT) lpDataLft)++, &bRet);
+                *lpaplDim++ = (APLDIM) mpq_get_sctsx (((LPAPLRAT) lpMemLft)++, &bRet);
             break;
 
         case ARRAY_VFP:
             for (uLft = 0; uLft < aplNELMLft; uLft++)
-                *lpaplDim++ = (APLDIM) mpfr_get_sctsx (((LPAPLVFP) lpDataLft)++, &bRet);
+                *lpaplDim++ = (APLDIM) mpfr_get_sctsx (((LPAPLVFP) lpMemLft)++, &bRet);
+            break;
+
+        case ARRAY_HC2I:
+            for (uLft = 0; uLft < aplNELMLft; uLft++)
+                *lpaplDim++ = (APLDIM) ((LPAPLHC2I) lpMemLft)++->parts[0];
+            break;
+
+        case ARRAY_HC4I:
+            for (uLft = 0; uLft < aplNELMLft; uLft++)
+                *lpaplDim++ = (APLDIM) ((LPAPLHC4I) lpMemLft)++->parts[0];
+            break;
+
+        case ARRAY_HC8I:
+            for (uLft = 0; uLft < aplNELMLft; uLft++)
+                *lpaplDim++ = (APLDIM) ((LPAPLHC8I) lpMemLft)++->parts[0];
+            break;
+
+        case ARRAY_HC2F:
+            for (uLft = 0; uLft < aplNELMLft; uLft++)
+                *lpaplDim++ = (APLDIM) FloatToAplint_SCT (((LPAPLHC2F) lpMemLft)++->parts[0], NULL);
+            break;
+
+        case ARRAY_HC4F:
+            for (uLft = 0; uLft < aplNELMLft; uLft++)
+                *lpaplDim++ = (APLDIM) FloatToAplint_SCT (((LPAPLHC4F) lpMemLft)++->parts[0], NULL);
+            break;
+
+        case ARRAY_HC8F:
+            for (uLft = 0; uLft < aplNELMLft; uLft++)
+                *lpaplDim++ = (APLDIM) FloatToAplint_SCT (((LPAPLHC8F) lpMemLft)++->parts[0], NULL);
+            break;
+
+        case ARRAY_HC2R:
+            for (uLft = 0; uLft < aplNELMLft; uLft++)
+                *lpaplDim++ = (APLDIM) mpq_get_sctsx (&((LPAPLHC2R) lpMemLft)++->parts[0], &bRet);
+            break;
+
+        case ARRAY_HC4R:
+            for (uLft = 0; uLft < aplNELMLft; uLft++)
+                *lpaplDim++ = (APLDIM) mpq_get_sctsx (&((LPAPLHC4R) lpMemLft)++->parts[0], &bRet);
+            break;
+
+        case ARRAY_HC8R:
+            for (uLft = 0; uLft < aplNELMLft; uLft++)
+                *lpaplDim++ = (APLDIM) mpq_get_sctsx (&((LPAPLHC8R) lpMemLft)++->parts[0], &bRet);
+            break;
+
+        case ARRAY_HC2V:
+            for (uLft = 0; uLft < aplNELMLft; uLft++)
+                *lpaplDim++ = (APLDIM) mpfr_get_sctsx (&((LPAPLHC2V) lpMemLft)++->parts[0], &bRet);
+            break;
+
+        case ARRAY_HC4V:
+            for (uLft = 0; uLft < aplNELMLft; uLft++)
+                *lpaplDim++ = (APLDIM) mpfr_get_sctsx (&((LPAPLHC4V) lpMemLft)++->parts[0], &bRet);
+            break;
+
+        case ARRAY_HC8V:
+            for (uLft = 0; uLft < aplNELMLft; uLft++)
+                *lpaplDim++ = (APLDIM) mpfr_get_sctsx (&((LPAPLHC8V) lpMemLft)++->parts[0], &bRet);
             break;
 
         defstop
             break;
     } // End SWITCH
-#undef  lpHeader
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+    MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
 } // End PrimFnDydRhoLftGlbCopyDim
 
 
@@ -1714,17 +1907,18 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
      LPTOKEN   lptkFunc)
 
 {
-    LPVOID        lpMemRhtBase,
-                  lpMemRhtData,
-                  lpMemRhtNext;
-    APLINT        uRes,
-                  uRht;
-    UINT          uBitMaskRes,
-                  uBitMaskRht;
-    UBOOL         bRet = TRUE;
-    APLINT        aplNELMRht;
-    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPVARARRAY_HEADER lpMemHdrRht = NULL;   // Ptr to right arg base header
+    LPVOID            lpMemRhtData,         // Ptr to right arg memory
+                      lpMemRhtNext;         // ...              next memory
+    APLINT            uRes,                 // Loop counter
+                      uRht;                 // ...
+    UINT              uBitMaskRes,          // Bit mask for the result
+                      uBitMaskRht,          // ...              right arg
+                      i;                    // Loop counter
+    UBOOL             bRet = TRUE;          // TRUE iff the reault is valid
+    APLINT            aplNELMRht;           // Right arg NELM
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -1733,12 +1927,13 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
     lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Lock the memory to get a ptr to it
-    lpMemRhtBase = MyGlobalLock (hGlbRht);
+    lpMemHdrRht  = MyGlobalLock (hGlbRht);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRhtBase)
+#define lpHeader        lpMemHdrRht
 
-    aplNELMRht = lpHeader->NELM;
-    lpMemRhtNext = lpMemRhtData = VarArrayDataFmBase (lpMemRhtBase);
+    aplNELMRht   = lpHeader->NELM;
+    lpMemRhtNext =
+    lpMemRhtData = VarArrayDataFmBase (lpMemHdrRht);
 
     // Check for empty right arg
     if (IsEmpty (aplNELMRht))
@@ -1750,6 +1945,12 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             case ARRAY_INT:
             case ARRAY_FLOAT:
             case ARRAY_APA:
+            case ARRAY_HC2I:
+            case ARRAY_HC4I:
+            case ARRAY_HC8I:
+            case ARRAY_HC2F:
+            case ARRAY_HC4F:
+            case ARRAY_HC8F:
 ////////////////// Fill the result with zeros (already done by GND)
 ////////////////ZeroMemory (lpDataRes, (APLU3264) RoundUpBitsToBytes (aplNELMRes));
 
@@ -1772,17 +1973,58 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             case ARRAY_VFP:
                 // Fill the result with VFP zeros
                 for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                    // Initialize to 0
                     mpfr_init0 (((LPAPLVFP) lpDataRes)++);
+                break;
+
+            case ARRAY_HC2R:
+                // Fill the result with HC2R zeros
+                for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                    // Initialize to 0/1
+                    mphc2r_init (((LPAPLHC2R) lpDataRes)++);
+                break;
+
+            case ARRAY_HC4R:
+                // Fill the result with HC4R zeros
+                for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                    // Initialize to 0/1
+                    mphc4r_init (((LPAPLHC4R) lpDataRes)++);
+                break;
+
+            case ARRAY_HC8R:
+                // Fill the result with HC8R zeros
+                for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                    // Initialize to 0/1
+                    mphc8r_init (((LPAPLHC8R) lpDataRes)++);
+                break;
+
+            case ARRAY_HC2V:
+                // Fill the result with HC2V zeros
+                for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                    // Initialize to 0
+                    mphc2v_init0 (((LPAPLHC2V) lpDataRes)++);
+                break;
+
+            case ARRAY_HC4V:
+                // Fill the result with HC4V zeros
+                for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                    // Initialize to 0
+                    mphc4v_init0 (((LPAPLHC4V) lpDataRes)++);
+                break;
+
+            case ARRAY_HC8V:
+                // Fill the result with HC8V zeros
+                for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++)
+                    // Initialize to 0
+                    mphc8v_init0 (((LPAPLHC8V) lpDataRes)++);
                 break;
 
             case ARRAY_HETERO:
             defstop
                 break;
         } // End SWITCH
-
-        goto NORMAL_EXIT;
     } // End IF
-
+    else
     // Split cases based upon the right arg's array type
     switch (lpHeader->ArrType)
     {
@@ -2036,14 +2278,277 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
 
             break;
 
+        case ARRAY_HC2I:
+            // Loop through the result and right arg copying the data
+            for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                // Check to see if we should start the right arg's
+                //   counter and ptr over again
+                if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
+                {
+                    uRht = 0;
+                    lpMemRhtNext = lpMemRhtData;
+                } // End IF
+
+                *((LPAPLHC2I) lpDataRes)++ = *((LPAPLHC2I) lpMemRhtNext)++;
+            } // End FOR
+
+            break;
+
+        case ARRAY_HC2F:
+            // Loop through the result and right arg copying the data
+            for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                // Check to see if we should start the right arg's
+                //   counter and ptr over again
+                if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
+                {
+                    uRht = 0;
+                    lpMemRhtNext = lpMemRhtData;
+                } // End IF
+
+                *((LPAPLHC2F) lpDataRes)++ = *((LPAPLHC2F) lpMemRhtNext)++;
+            } // End FOR
+
+            break;
+
+        case ARRAY_HC2R:
+            // Loop through the result and right arg copying the data
+            for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                // Check to see if we should start the right arg's
+                //   counter and ptr over again
+                if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
+                {
+                    uRht = 0;
+                    lpMemRhtNext = lpMemRhtData;
+                } // End IF
+
+                // Loop through all of the parts
+                for (i = 0; i < 2; i++)
+                    mpq_init_set (&((LPAPLHC2R) lpDataRes)[uRes].parts[i], &((LPAPLHC2R) lpMemRhtNext)[uRht].parts[i]);
+            } // End FOR
+
+            break;
+
+        case ARRAY_HC2V:
+            // Loop through the result and right arg copying the data
+            for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                // Check to see if we should start the right arg's
+                //   counter and ptr over again
+                if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
+                {
+                    uRht = 0;
+                    lpMemRhtNext = lpMemRhtData;
+                } // End IF
+
+                // Loop through all of the parts
+                for (i = 0; i < 2; i++)
+                    mpfr_init_copy (&((LPAPLHC2V) lpDataRes)[uRes].parts[i], &((LPAPLHC2V) lpMemRhtNext)[uRht].parts[i]);
+            } // End FOR
+
+            break;
+
+        case ARRAY_HC4I:
+            // Loop through the result and right arg copying the data
+            for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                // Check to see if we should start the right arg's
+                //   counter and ptr over again
+                if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
+                {
+                    uRht = 0;
+                    lpMemRhtNext = lpMemRhtData;
+                } // End IF
+
+                *((LPAPLHC4I) lpDataRes)++ = *((LPAPLHC4I) lpMemRhtNext)++;
+            } // End FOR
+
+            break;
+
+        case ARRAY_HC4F:
+            // Loop through the result and right arg copying the data
+            for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                // Check to see if we should start the right arg's
+                //   counter and ptr over again
+                if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
+                {
+                    uRht = 0;
+                    lpMemRhtNext = lpMemRhtData;
+                } // End IF
+
+                *((LPAPLHC4F) lpDataRes)++ = *((LPAPLHC4F) lpMemRhtNext)++;
+            } // End FOR
+
+            break;
+
+        case ARRAY_HC4R:
+            // Loop through the result and right arg copying the data
+            for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                // Check to see if we should start the right arg's
+                //   counter and ptr over again
+                if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
+                {
+                    uRht = 0;
+                    lpMemRhtNext = lpMemRhtData;
+                } // End IF
+
+                // Loop through all of the parts
+                for (i = 0; i < 4; i++)
+                    mpq_init_set (&((LPAPLHC4R) lpDataRes)[uRes].parts[i], &((LPAPLHC4R) lpMemRhtNext)[uRht].parts[i]);
+            } // End FOR
+
+            break;
+
+        case ARRAY_HC4V:
+            // Loop through the result and right arg copying the data
+            for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                // Check to see if we should start the right arg's
+                //   counter and ptr over again
+                if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
+                {
+                    uRht = 0;
+                    lpMemRhtNext = lpMemRhtData;
+                } // End IF
+
+                // Loop through all of the parts
+                for (i = 0; i < 4; i++)
+                    mpfr_init_copy (&((LPAPLHC4V) lpDataRes)[uRes].parts[i], &((LPAPLHC4V) lpMemRhtNext)[uRht].parts[i]);
+            } // End FOR
+
+            break;
+
+        case ARRAY_HC8I:
+            // Loop through the result and right arg copying the data
+            for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                // Check to see if we should start the right arg's
+                //   counter and ptr over again
+                if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
+                {
+                    uRht = 0;
+                    lpMemRhtNext = lpMemRhtData;
+                } // End IF
+
+                *((LPAPLHC8I) lpDataRes)++ = *((LPAPLHC8I) lpMemRhtNext)++;
+            } // End FOR
+
+            break;
+
+        case ARRAY_HC8F:
+            // Loop through the result and right arg copying the data
+            for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                // Check to see if we should start the right arg's
+                //   counter and ptr over again
+                if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
+                {
+                    uRht = 0;
+                    lpMemRhtNext = lpMemRhtData;
+                } // End IF
+
+                *((LPAPLHC8F) lpDataRes)++ = *((LPAPLHC8F) lpMemRhtNext)++;
+            } // End FOR
+
+            break;
+
+        case ARRAY_HC8R:
+            // Loop through the result and right arg copying the data
+            for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                // Check to see if we should start the right arg's
+                //   counter and ptr over again
+                if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
+                {
+                    uRht = 0;
+                    lpMemRhtNext = lpMemRhtData;
+                } // End IF
+
+                // Loop through all of the parts
+                for (i = 0; i < 8; i++)
+                    mpq_init_set (&((LPAPLHC8R) lpDataRes)[uRes].parts[i], &((LPAPLHC8R) lpMemRhtNext)[uRht].parts[i]);
+            } // End FOR
+
+            break;
+
+        case ARRAY_HC8V:
+            // Loop through the result and right arg copying the data
+            for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
+            {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
+                // Check to see if we should start the right arg's
+                //   counter and ptr over again
+                if (uRht EQ (APLNELMSIGN) lpHeader->NELM)
+                {
+                    uRht = 0;
+                    lpMemRhtNext = lpMemRhtData;
+                } // End IF
+
+                // Loop through all of the parts
+                for (i = 0; i < 8; i++)
+                    mpfr_init_copy (&((LPAPLHC8V) lpDataRes)[uRes].parts[i], &((LPAPLHC8V) lpMemRhtNext)[uRht].parts[i]);
+            } // End FOR
+
+            break;
+
         defstop
             break;
     } // End SWITCH
 #undef  lpHeader
 
-NORMAL_EXIT:
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbRht); lpMemRhtBase = lpMemRhtNext = lpMemRhtData = NULL;
+    MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
 
     return bRet;
 ERROR_EXIT:

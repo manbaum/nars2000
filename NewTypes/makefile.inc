@@ -62,6 +62,10 @@
 !error Environment variable MS_DIR= not defined.
 !endif
 
+!ifndef MPC_DIR
+!error Environment variable MPC_DIR= not defined.
+!endif
+
 !ifndef MPIR_DIR
 !error Environment variable MPIR_DIR= not defined.
 !endif
@@ -122,10 +126,14 @@ GSL1_LIB=$(GSL_DIR)$(XWIN)\lib\gsl.lib      # GSL library
 GSL2_LIB=$(GSL_DIR)$(XWIN)\lib\cblas.lib    # CBLAS library
 
 MS_INC   = $(MS_DIR)
+MPC_INC  = $(MPC_DIR)include^\
 MPIR_INC = $(MPIR_DIR)include^\
 MPFR_INC = $(MPFR_DIR)include^\
 ECM_INC  = $(ECM_DIR)include^\
 
+!if [if not exist $(MPC_INC)*.h  exit 1]
+!error Incorrect value for MPC_INC=$(MPC_INC)
+!endif
 !if [if not exist $(MPIR_INC)*.h  exit 1]
 !error Incorrect value for MPIR_INC=$(MPIR_INC)
 !endif
@@ -139,7 +147,7 @@ ECM_INC  = $(ECM_DIR)include^\
 WDEF=_WIN$(WIN)
 MFEXT=w$(WIN)
 
-I98=.\;$(SDK_INC);$(MSVC)INCLUDE;$(MS_INC);$(MPIR_INC);$(MPFR_INC);$(ECM_INC);$(GSL_INC);$(CS_DIR)include;$(QDEBUG)
+I98=.\;$(SDK_INC);$(MSVC)INCLUDE;$(MS_INC);$(MPC_INC);$(MPIR_INC);$(MPFR_INC);$(ECM_INC);$(GSL_INC);$(CS_DIR)include;$(QDEBUG)
 
 MV=makever
 
@@ -147,6 +155,7 @@ MV=makever
 ##   mkn LINKDEBUG=1
 LINKDEBUG=0
 
+MPC_LIB  = $(MPC_DIR)lib\mpc$(WIN)$(DEBUG_LIBSUFFIX).lib
 MPIR_LIB = $(MPIR_DIR)lib\mpir$(WIN)$(DEBUG_LIBSUFFIX).lib
 MPFR_LIB = $(MPFR_DIR)lib\mpfr$(WIN)$(DEBUG_LIBSUFFIX).lib
 ECM_LIB  = $(ECM_DIR)lib\ecm$(WIN)$(DEBUG_LIBSUFFIX).lib
@@ -203,6 +212,7 @@ LIBS_WEXE =                     \
             libcmt.lib          \
 !endif
 ##VS2015    legacy_stdio_definitions.lib \
+            $(MPC_LIB)          \
             $(MPIR_LIB)         \
             $(MPFR_LIB)         \
             $(ECM_LIB)          \
@@ -495,9 +505,11 @@ $(O)execmfn.obj:        $(@B).c         $(EXECMFN_DEP)
 $(O)fastbool.obj:       $(@B).c         $(FASTBOOL_DEP)
 $(O)fh_proc.obj:        $(@B).c         $(FH_PROC_DEP)
 $(O)fmtspec.obj:        $(@B).c         $(FMTSPEC_DEP)
+$(O)fpcho_com.obj:      $(@B).c         $(FPCHO_COM_DEP)
 $(O)free.obj:           $(@B).c         $(FREE_DEP)
 $(O)getfns.obj:         $(@B).c         $(GETFNS_DEP)
 $(O)goto.obj:           $(@B).c         $(GOTO_DEP)
+$(O)hc_proc.obj:        $(@B).c         $(HC_PROC_DEP)
 $(O)hungarian_dbl.obj:  $(@B).c         $(HUNGARIAN_DBL_DEP)
 $(O)hungarian_int.obj:  $(@B).c         $(HUNGARIAN_INT_DEP)
 $(O)hungarian_rat.obj:  $(@B).c         $(HUNGARIAN_RAT_DEP)
@@ -509,6 +521,13 @@ $(O)iniparser.obj:      $(@B).c         $(INIPARSER_DEP)
 $(O)initdata.obj:       $(@B).c         $(INITDATA_DEP)
 $(O)main.obj:           $(@B).c         $(MAIN_DEP)
 $(O)malloc.obj:         $(@B).c         $(MALLOC_DEP)
+$(O)mpci.obj:           $(@B).c         $(MPCI_DEP)
+$(O)mphi.obj:           $(@B).c         $(MPHI_DEP)
+$(O)mpoi.obj:           $(@B).c         $(MPOI_DEP)
+$(O)mpcf.obj:           $(@B).c         $(MPCF_DEP)
+$(O)mphf.obj:           $(@B).c         $(MPHF_DEP)
+$(O)mpof.obj:           $(@B).c         $(MPOF_DEP)
+$(O)mpcho_com.obj:      $(@B).c         $(MPCHO_COM_DEP)
 $(O)mpfns.obj:          $(@B).c         $(MPFNS_DEP)
 $(O)mpifns.obj:         $(@B).c         $(MPIFNS_DEP)
 $(O)parseline.obj:      $(@B).c         $(PARSELINE_DEP)
@@ -592,6 +611,7 @@ $(O)qf_at.obj:          $(@B).c         $(QF_AT_DEP)
 $(O)qf_av.obj:          $(@B).c         $(QF_AV_DEP)
 $(O)qf_cr.obj:          $(@B).c         $(QF_CR_DEP)
 $(O)qf_d.obj:           $(@B).c         $(QF_D_DEP)
+$(O)qf_dc.obj:          $(@B).c         $(QF_DC_DEP)
 $(O)qf_dl.obj:          $(@B).c         $(QF_DL_DEP)
 $(O)qf_dr.obj:          $(@B).c         $(QF_DR_DEP)
 $(O)qf_ea.obj:          $(@B).c         $(QF_EA_DEP)
@@ -679,6 +699,7 @@ OBJS=   $(SRC:???=obj)                  \
 
 $(O)$(ENAME).exe:       $(OBJS)             \
                         $(DEFFILE)          \
+                        $(MPC_LIB)          \
                         $(MPIR_LIB)         \
                         $(MPFR_LIB)         \
                         $(ECM_LIB)          \

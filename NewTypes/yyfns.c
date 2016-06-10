@@ -48,7 +48,7 @@ LPPL_YYSTYPE YYAllocGlb
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = tkGlbData;
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (tkGlbData);
     lpYYRes->tkToken.tkCharIndex       = tkCharIndex;
 
     return lpYYRes;
@@ -421,8 +421,8 @@ UINT YYCountFcnStr
         TknCount += YYCountFcnStr (lpYYArg->lpplYYOpRCurry);
     if (lpYYArg->lpplYYFcnCurry)
         TknCount += YYCountFcnStr (lpYYArg->lpplYYFcnCurry);
-    if (IsTknTrain    (&lpYYArg->tkToken)
-     || IsTknFcnArray (&lpYYArg->tkToken))
+    if (IsTknFcnArray (&lpYYArg->tkToken)
+     || IsTknTrain    (&lpYYArg->tkToken))
     {
         HGLOBAL           hGlbFcn;      // Global memory handle
         LPFCNARRAY_HEADER lpMemFcn;     // Ptr to global memory

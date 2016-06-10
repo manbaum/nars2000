@@ -645,7 +645,7 @@ void DisplayGlobals
                             {
                                 lpwsz =
                                   FormatAplRat (aplArrChar,             // Ptr to output save area
-                                               *(LPAPLRAT) lpData);     // The value to format
+                                     (LPAPLRAT) lpData);                // Ptr to the value to format
                                 // Zap the trailing blank
                                 lpwsz[-1] = WC_EOS;
                             } // End IF/ELSE
@@ -662,11 +662,125 @@ void DisplayGlobals
                             {
                                 lpwsz =
                                   FormatAplVfp (aplArrChar,             // Ptr to output save area
-                                              *(LPAPLVFP) lpData,       // The value to format
-                                                0);                     // Use this many significant digits for VFP
+                                     (LPAPLVFP) lpData,                 // Ptr to the value to format
+                                                0);                     // # significant digits (0 = all)
                                 // Zap the trailing blank
                                 lpwsz[-1] = WC_EOS;
                             } // End IF/ELSE
+
+                            break;
+
+                        case ARRAY_HC2I:
+                            lpwsz =
+                              FormatAplHC2I (aplArrChar,            // Ptr to output save area
+                                 (LPAPLHC2I) lpData);               // Ptr to the value to format
+                            // Zap the trailing blank
+                            lpwsz[-1] = WC_EOS;
+
+                            break;
+
+                        case ARRAY_HC4I:
+                            lpwsz =
+                              FormatAplHC4I (aplArrChar,            // Ptr to output save area
+                                 (LPAPLHC4I) lpData);               // Ptr to the value to format
+                            // Zap the trailing blank
+                            lpwsz[-1] = WC_EOS;
+
+                            break;
+
+                        case ARRAY_HC8I:
+                            lpwsz =
+                              FormatAplHC8I (aplArrChar,            // Ptr to output save area
+                                 (LPAPLHC8I) lpData);               // Ptr to the value to format
+                            // Zap the trailing blank
+                            lpwsz[-1] = WC_EOS;
+
+                            break;
+
+                        case ARRAY_HC2F:
+                            lpwsz =
+                              FormatAplHC2F (aplArrChar,            // Ptr to output save area
+                                 (LPAPLHC2F) lpData,                // Ptr to the value to format
+                                             0);                    // Use this many significant digits for VFP
+                            // Zap the trailing blank
+                            lpwsz[-1] = WC_EOS;
+
+                            break;
+
+                        case ARRAY_HC4F:
+                            lpwsz =
+                              FormatAplHC4F (aplArrChar,            // Ptr to output save area
+                                 (LPAPLHC4F) lpData,                // Ptr to the value to format
+                                             0);                    // Use this many significant digits for VFP
+                            // Zap the trailing blank
+                            lpwsz[-1] = WC_EOS;
+
+                            break;
+
+                        case ARRAY_HC8F:
+                            lpwsz =
+                              FormatAplHC8F (aplArrChar,            // Ptr to output save area
+                                 (LPAPLHC8F) lpData,                // Ptr to the value to format
+                                             0);                    // Use this many significant digits for VFP
+                            // Zap the trailing blank
+                            lpwsz[-1] = WC_EOS;
+
+                            break;
+
+                        case ARRAY_HC2R:
+                            lpwsz =
+                              FormatAplHC2R (aplArrChar,            // Ptr to output save area
+                                 (LPAPLHC2R) lpData);               // Ptr to the value to format
+                            // Zap the trailing blank
+                            lpwsz[-1] = WC_EOS;
+
+                            break;
+
+                        case ARRAY_HC4R:
+                            lpwsz =
+                              FormatAplHC4R (aplArrChar,            // Ptr to output save area
+                                 (LPAPLHC4R) lpData);               // Ptr to the value to format
+                            // Zap the trailing blank
+                            lpwsz[-1] = WC_EOS;
+
+                            break;
+
+                        case ARRAY_HC8R:
+                            lpwsz =
+                              FormatAplHC8R (aplArrChar,            // Ptr to output save area
+                                 (LPAPLHC8R) lpData);               // Ptr to the value to format
+                            // Zap the trailing blank
+                            lpwsz[-1] = WC_EOS;
+
+                            break;
+
+                        case ARRAY_HC2V:
+                            lpwsz =
+                              FormatAplHC2V (aplArrChar,            // Ptr to output save area
+                                 (LPAPLHC2V) lpData,                // Ptr to the value to format
+                                             0);                    // # significant digits (0 = all)
+                            // Zap the trailing blank
+                            lpwsz[-1] = WC_EOS;
+
+                            break;
+
+                        case ARRAY_HC4V:
+                            lpwsz =
+                              FormatAplHC4V (aplArrChar,            // Ptr to output save area
+                                 (LPAPLHC4V) lpData,                // Ptr to the value to format
+                                             0);                    // # significant digits (0 = all)
+                            // Zap the trailing blank
+                            lpwsz[-1] = WC_EOS;
+
+                            break;
+
+                        case ARRAY_HC8V:
+                            lpwsz =
+                              FormatAplHC8V (aplArrChar,            // Ptr to output save area
+                                 (LPAPLHC8V) lpData,                // Ptr to the value to format
+                                             0);                    // # significant digits (0 = all)
+                            // Zap the trailing blank
+                            lpwsz[-1] = WC_EOS;
 
                             break;
 
@@ -1015,16 +1129,16 @@ LPWCHAR DisplayGlbVarSub
 
             lpwszTemp =
               FormatAplInt (lpwszTemp,          // Ptr to output save area
-                            apaOff);            // The value to format
+                           &apaOff);            // The value to format
             lpwszTemp[-1] = L'+';
             lpwszTemp =
               FormatAplInt (lpwszTemp,          // Ptr to output save area
-                            apaMul);            // The value to format
+                           &apaMul);            // The value to format
             lpwszTemp[-1] = UTF16_TIMES;
            *lpwszTemp++   = UTF16_IOTA;
             lpwszTemp =
               FormatAplInt (lpwszTemp,          // Ptr to output save area
-                            aplNELM);           // The value to format
+                           &aplNELM);           // The value to format
             break;
         } // End ARRAY_APA
 
@@ -1052,7 +1166,7 @@ LPWCHAR DisplayGlbVarSub
             for (uCnt = 0; uCnt < aplNELM; uCnt++)
                 lpwszTemp =
                   FormatAplRat (lpwszTemp,                  // Ptr to output save area
-                               *((LPAPLRAT) lpMemGlb)++);   // The value to format
+                                ((LPAPLRAT) lpMemGlb)++);   // The value to format
             Assert (lpwszTemp[-1] EQ L' ');
 
             lpwszTemp[-1] = L'x';
@@ -1069,7 +1183,7 @@ LPWCHAR DisplayGlbVarSub
             for (uCnt = 0; uCnt < aplNELM; uCnt++)
                 lpwszTemp =
                   FormatAplVfp (lpwszTemp,                  // Ptr to output save area
-                              *((LPAPLVFP) lpMemGlb)++,     // The value to format
+                                ((LPAPLVFP) lpMemGlb)++,    // The value to format
                                 0);                         // Use this many significant digits for VFP
             Assert (lpwszTemp[-1] EQ L' ');
 
@@ -2394,8 +2508,9 @@ LPWCHAR DisplayVarSub
                     for (uCnt = 0; uCnt < aplNELM; uCnt++)
                         // Format the next value as an integer
                         lpaplChar =
-                          FormatAplInt (lpaplChar,                                  // Ptr to output save area
-                                        GetNextInteger (lpMemData, aplType, uCnt)); // The value to format
+                          FormatAplIntFC (lpaplChar,                                    // Ptr to output save area
+                                          GetNextInteger (lpMemData, aplType, uCnt),    // The value to format
+                                          UTF16_OVERBAR);                               // Char to use as overbar
                     break;
 
                 case ARRAY_FLOAT:
@@ -2403,9 +2518,13 @@ LPWCHAR DisplayVarSub
                     for (uCnt = 0; uCnt < aplNELM; uCnt++)
                         // Format the next value as an integer
                         lpaplChar =
-                          FormatAplFlt (lpaplChar,                                  // Ptr to output savea area
-                                        GetNextFloat (lpMemData, aplType, uCnt),    // The value to format
-                                        0);                                         // Use default significant digits
+                          FormatAplFltFC (lpaplChar,                                // Ptr to output savea area
+                                          GetNextFloat (lpMemData, aplType, uCnt),  // The value to format
+                                          0,                                        // Use default significant digits
+                                          L'.',                                     // Char to use as decimal separator
+                                          UTF16_OVERBAR,                            // Char to use as overbar
+                                          FLTDISPFMT_RAWFLT,                        // Float display format
+                                          FALSE);                                   // TRUE iff we're to substitute text for infinity
                     break;
 
                 case ARRAY_CHAR:
@@ -3178,6 +3297,123 @@ void DisplayFcnHdr
     // Display it in the debug window
     DbgMsgW (wszTemp);
 } // End DisplayFcnHdr
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $DispVar1
+//
+//  Display the first item in a var
+//***************************************************************************
+
+void DispVar1
+    (APLSTYPE aplType,              // Var storage type
+     LPWCHAR  lpPrefix,             // Ptr to prefix text
+     LPVOID   lpMem)                // Ptr to the var contents
+
+{
+    WCHAR wszTemp[1024];
+    LPWCHAR lpw;
+
+    strcpyW (wszTemp, lpPrefix);
+
+    lpw = &wszTemp[lstrlenW (wszTemp)];
+
+    // Split cases based upon the storage type
+    switch (aplType)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            *FormatAplInt (lpw, lpMem) = WC_EOS;
+
+            break;
+
+        case ARRAY_FLOAT:
+            *FormatAplFlt (lpw, lpMem, 0) = WC_EOS;
+
+            break;
+
+        case ARRAY_RAT:
+            *FormatAplRat (lpw, lpMem) = WC_EOS;
+
+            break;
+
+        case ARRAY_VFP:
+            *FormatAplVfp (lpw, lpMem, 0) = WC_EOS;
+
+            break;
+
+        case ARRAY_HC2I:
+            *FormatAplHC2I (lpw, lpMem) = WC_EOS;
+
+            break;
+
+        case ARRAY_HC4I:
+            *FormatAplHC4I (lpw, lpMem) = WC_EOS;
+
+            break;
+
+        case ARRAY_HC8I:
+            *FormatAplHC8I (lpw, lpMem) = WC_EOS;
+
+            break;
+
+        case ARRAY_HC2F:
+            *FormatAplHC2F (lpw, lpMem, 0) = WC_EOS;
+
+            break;
+
+        case ARRAY_HC4F:
+            *FormatAplHC4F (lpw, lpMem, 0) = WC_EOS;
+
+            break;
+
+        case ARRAY_HC8F:
+            *FormatAplHC8F (lpw, lpMem, 0) = WC_EOS;
+
+            break;
+
+        case ARRAY_HC2R:
+            *FormatAplHC2R (lpw, lpMem) = WC_EOS;
+
+            break;
+
+        case ARRAY_HC4R:
+            *FormatAplHC4R (lpw, lpMem) = WC_EOS;
+
+            break;
+
+        case ARRAY_HC8R:
+            *FormatAplHC8R (lpw, lpMem) = WC_EOS;
+
+            break;
+
+        case ARRAY_HC2V:
+            *FormatAplHC2V (lpw, lpMem, 0) = WC_EOS;
+
+            break;
+
+        case ARRAY_HC4V:
+            *FormatAplHC4V (lpw, lpMem, 0) = WC_EOS;
+
+            break;
+
+        case ARRAY_HC8V:
+            *FormatAplHC8V (lpw, lpMem, 0) = WC_EOS;
+
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+        defstop
+            break;
+    } // End SWITCH
+
+    DbgMsgW (wszTemp);
+} // End DispVar1
 #endif
 
 

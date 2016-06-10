@@ -658,7 +658,8 @@ UBOOL AssignNamedVars_EM
     LPVOID            lpMemVal;             // Ptr to value
     APLNELM           aplNELMNam,           // Name strand NELM
                       aplNELMVal,           // Value ...
-                      aplName;              // Loop counter
+                      aplName,              // Loop counter
+                      aplIndex;             // Index into lpMemVal
     APLRANK           aplRankVal;           // Value rank
     APLSTYPE          aplTypeVal;           // Value storage type
     TOKEN             tkToken = {0};        // Temp token
@@ -666,6 +667,7 @@ UBOOL AssignNamedVars_EM
     LPSYMENTRY        lpSymVal;             // Ptr to temp SYMENTRY
     APLINT            apaOffVal,            // APA offset
                       apaMulVal;            // ... multiplier
+    ALLTYPES          atVal = {0};          // Value as ALLTYPES
 
     // Get ptrs to tokens
     lptkStr = &lpYYStr->tkToken;
@@ -965,54 +967,47 @@ UBOOL AssignNamedVars_EM
 
             break;
 
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
         case ARRAY_RAT:
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
+        case ARRAY_VFP:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
+            // Fill in the value token
+            tkToken.tkFlags.TknType  = TKT_VARARRAY;
+            tkToken.tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeVal);
+
             // Loop through the names/values
             for (aplName = 0; aplName < aplNELMNam; aplName++)
             {
-                LPAPLRAT lpVal;
+                // Calculate the index
+                aplIndex = aplName % aplNELMVal;
 
-                // Get the HGLOBAL
-                lpVal = &((LPAPLRAT) lpMemVal)[aplName % aplNELMVal];
+                // Copy to ALLTYPES
+                (*aTypeActPromote[aplTypeVal][aplTypeVal]) (lpMemVal, aplIndex, &atVal);
 
                 // Fill in the value token
-                tkToken.tkFlags.TknType  = TKT_VARARRAY;
-                tkToken.tkFlags.ImmType  = IMMTYPE_RAT;
                 tkToken.tkData.tkGlbData =
                   MakeGlbEntry_EM (aplTypeVal,              // Entry type
-                                   lpVal,                   // Ptr to the value
+                                  &atVal,                   // Ptr to the value
                                    TRUE,                    // TRUE iff we should initialize the target first
                                    lptkVal);                // Ptr to function token
+                // Free the old atVal (if any)
+                (*aTypeFree[aplTypeVal]) (&atVal, 0);
+
                 // Assign this token to this name
                 // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
                 AssignName_EM (&lpMemNam[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
 
                 DbgDecrRefCntTkn (&tkToken);    // EXAMPLE:  (a b c){is}1 2 3x
-            } // End FOR
-
-            break;
-
-        case ARRAY_VFP:
-            // Loop through the names/values
-            for (aplName = 0; aplName < aplNELMNam; aplName++)
-            {
-                LPAPLVFP lpVal;
-
-                // Get the HGLOBAL
-                lpVal = &((LPAPLVFP) lpMemVal)[aplName % aplNELMVal];
-
-                // Fill in the value token
-                tkToken.tkFlags.TknType  = TKT_VARARRAY;
-                tkToken.tkFlags.ImmType  = IMMTYPE_VFP;
-                tkToken.tkData.tkGlbData =
-                  MakeGlbEntry_EM (aplTypeVal,              // Entry type
-                                   lpVal,                   // Ptr to the value
-                                   TRUE,                    // TRUE iff we should initialize the target first
-                                   lptkVal);                // Ptr to function token
-                // Assign this token to this name
-                // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
-                AssignName_EM (&lpMemNam[(aplNELMNam - 1) - aplName].tkToken, &tkToken);
-
-                DbgDecrRefCntTkn (&tkToken);    // EXAMPLE:  (a b c){is}1 2 3v
             } // End FOR
 
             break;
@@ -1507,8 +1502,20 @@ UBOOL ModifyAssignNamedVars_EM
 
             break;
 
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
         case ARRAY_RAT:
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
         case ARRAY_VFP:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
             // Fill in the value token
             tkToken.tkFlags.TknType  = TKT_VARARRAY;
             tkToken.tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeVal);

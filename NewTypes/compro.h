@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -56,10 +56,12 @@
   #include "fh_parse.pro"
   #include "fh_proc.pro"
   #include "fmtspec.pro"
+  #include "fpcho_com.pro"
   #include "free.pro"
   #include "getreent.pro"
   #include "getfns.pro"
   #include "goto.pro"
+  #include "hc_proc.pro"
   #include "hungarian_dbl.pro"
   #include "hungarian_int.pro"
   #include "hungarian_rat.pro"
@@ -71,6 +73,13 @@
   #include "initdata.pro"
   #include "main.pro"
   #include "malloc.pro"
+  #include "mpci.pro"
+  #include "mphi.pro"
+  #include "mpoi.pro"
+  #include "mpcf.pro"
+  #include "mphf.pro"
+  #include "mpof.pro"
+  #include "mpcho_com.pro"
   #include "mpfns.pro"
   #include "mpifns.pro"
   #include "parseline.pro"
@@ -156,6 +165,7 @@
   #include "qf_av.pro"
   #include "qf_cr.pro"
   #include "qf_d.pro"
+  #include "qf_dc.pro"
   #include "qf_dl.pro"
   #include "qf_dr.pro"
   #include "qf_ea.pro"

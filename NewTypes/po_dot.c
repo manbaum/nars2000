@@ -339,45 +339,53 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
      UBOOL        bPrototyping)             // TRUE iff prototyping
 
 {
-    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
-    LPPL_YYSTYPE      lpYYFcnStrLft,        // Ptr to left operand function strand
-                      lpYYFcnStrRht;        // Ptr to right ...
-    LPTOKEN           lptkAxis,             // Ptr to axis token (may be NULL)
-                      lptkFunc;             // ...    function token
-    APLSTYPE          aplTypeRht,           // Right arg storage type
-                      aplTypeRes;           // Result    ...
-    APLNELM           aplNELMRht;           // Right arg NELM
-    APLRANK           aplRankRht;           // Right arg rank
-    APLLONGEST        aplLongestRht;        // Immediate right arg
-    HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
-                      lpSymGlbRht,          // Ptr to right arg global numeric
-                      hGlbTmp = NULL;       // Temp global memory handle
-    LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
-                      lpMemHdrRes = NULL;   // ...
-    LPVOID            lpMemRht,             // Ptr to right arg global memory
-                      lpMemRes;             // ...    result    ...
-    LPAPLRAT          lpMemTmp;             // Ptr to temp global memory
-    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
-    APLUINT           ByteRes;              // # bytes in the result
-    APLINT            apaOffRht,            // Right arg APA offset
-                      apaMulRht,            // ...           multiplier
-                      aplIntegerRht;        // Right arg temporary integer
-    APLFLOAT          aplFloatRht;          // Right arg temporary float
-    APLDIM            aplDimRows,           // # rows in the right arg
-                      aplDimCols,           // # cols ...
-                      uRow,                 // Loop counter
-                      uCol;                 // ...
-    UINT              uBitMask;             // Bit mask for marching through Booleans
-    IMM_TYPES         immTypeRes;           // Immediate result storage type
-    APLRAT            aplRatRes = {0};      // Temp result if RAT
-    APLVFP            aplVfpRes = {0};      // ...            VFP
-    UBOOL             bMaxFcn,              // TRUE iff the left operand is max in ??.+
-                      bMinMaxAfo = FALSE;   // TRUE iff the left operand is a min/max AFO
-    gsl_matrix       *lpGslMatrixU = NULL;  // GSL temporary
-    gsl_permutation  *lpGslPermP = NULL;    // ...
-    int               ErrCode,              // Error code from gsl_* functions
-                      signum;               // Sign of the LU permutation
+    LPPLLOCALVARS       lpplLocalVars;          // Ptr to re-entrant vars
+    LPUBOOL             lpbCtrlBreak;           // Ptr to Ctrl-Break flag
+    LPPL_YYSTYPE        lpYYFcnStrLft,          // Ptr to left operand function strand
+                        lpYYFcnStrRht;          // Ptr to right ...
+    LPTOKEN             lptkAxis,               // Ptr to axis token (may be NULL)
+                        lptkFunc;               // ...    function token
+    APLSTYPE            aplTypeRht,             // Right arg storage type
+                        aplTypeRes;             // Result    ...
+    APLNELM             aplNELMRht;             // Right arg NELM
+    APLRANK             aplRankRht;             // Right arg rank
+    APLLONGEST          aplLongestRht;          // Immediate right arg
+    HGLOBAL             hGlbRht = NULL,         // Right arg global memory handle
+                        lpSymGlbRht,            // Ptr to right arg global numeric
+                        hGlbTmp = NULL;         // Temp global memory handle
+    LPVARARRAY_HEADER   lpMemHdrRht = NULL,     // Ptr to right arg header
+                        lpMemHdrRes = NULL;     // ...
+    LPVOID              lpMemRht,               // Ptr to right arg global memory
+                        lpMemRes;               // ...    result    ...
+    LPAPLRAT            lpMemTmp;               // Ptr to temp global memory
+    LPPL_YYSTYPE        lpYYRes = NULL;         // Ptr to the result
+    APLUINT             ByteRes;                // # bytes in the result
+    APLINT              apaOffRht,              // Right arg APA offset
+                        apaMulRht,              // ...           multiplier
+                        aplIntegerRht;          // Right arg temporary integer
+    APLFLOAT            aplFloatRht;            // Right arg temporary float
+    APLDIM              aplDimRows,             // # rows in the right arg
+                        aplDimCols,             // # cols ...
+                        uRow,                   // Loop counter
+                        uCol;                   // ...
+    UINT                uBitMask;               // Bit mask for marching through Booleans
+    IMM_TYPES           immTypeRes;             // Immediate result storage type
+    APLRAT              aplRatRes = {0};        // Temp result if RAT
+    APLVFP              aplVfpRes = {0};        // ...            VFP
+    UBOOL               bMaxFcn,                // TRUE iff the left operand is max in ??.+
+                        bRet,                   // TRUE iff the result is valid
+                        bMinMaxAfo = FALSE;     // TRUE iff the left operand is a min/max AFO
+    gsl_matrix         *lpGslMatrixU = NULL;    // GSL temporary
+    gsl_matrix_complex *lpGslCMatrixU = NULL;   // ...
+    gsl_complex         gslHC2FRes;             // ...
+    gsl_permutation    *lpGslPermP = NULL;      // ...
+    int                 ErrCode,                // Error code from gsl_* functions
+                        iSizeofRes,             // Sizeof an item
+                        iHCDimRes,              // HC Dimension (1, 2, 4, 8)
+                        signum;                 // Sign of the LU permutation
+    APLHC8F             aplHC8FRes;             // Temp result
+    APLHC8R             aplHC8RRes;             // ...
+    APLHC8V             aplHC8VRes;             // ...
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -461,7 +469,16 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
     if (IsSimpleNum (aplTypeRht))
         aplTypeRes = ARRAY_FLOAT;
     else
+    // If the right arg is HCxI, ...
+    if (IsHCxI (aplTypeRht))
+        // The result is HCxF
+        aplTypeRes = aplTypeRht + 1;    // *** ASSUME*** -- order of ARRAY_TYPES as in I++ == F
+    else
         aplTypeRes = aplTypeRht;
+
+    // Calculate the item size and HC Dimension
+    iSizeofRes = TranslateArrayTypeToSizeof (aplTypeRes);
+    iHCDimRes  = TranslateArrayTypeToHCDim  (aplTypeRes);
 
     // If the right arg is not immediate, ...
     if (lpMemHdrRht NE NULL)
@@ -546,8 +563,20 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
 
                 break;
 
+            case ARRAY_HC2I:
+            case ARRAY_HC4I:
+            case ARRAY_HC8I:
+            case ARRAY_HC2F:
+            case ARRAY_HC4F:
+            case ARRAY_HC8F:
             case ARRAY_RAT:
+            case ARRAY_HC2R:
+            case ARRAY_HC4R:
+            case ARRAY_HC8R:
             case ARRAY_VFP:
+            case ARRAY_HC2V:
+            case ARRAY_HC4V:
+            case ARRAY_HC8V:
                 // Set the immediate type
                 immTypeRes = TranslateArrayTypeToImmType (aplTypeRes);
 
@@ -787,7 +816,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
                 mpq_init_set (&            lpMemTmp [uCol],
                               &((LPAPLRAT) lpMemRht)[uCol]);
             // Use Gauss-Jordan elimination to calculate the determinant (into aplRatRes)
-            if (!GaussJordanDet (lpMemTmp, aplDimRows, &aplRatRes, lpbCtrlBreak))
+            if (!GaussJordanDetHC1R (lpMemTmp, aplDimRows, &aplRatRes, lpbCtrlBreak))
                 goto RIGHT_DOMAIN_EXIT;
 
             // Point to the result
@@ -819,7 +848,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
             } // End FOR
 
             // Use Gauss-Jordan elimination to calculate the determinant (into aplRatRes)
-            if (!GaussJordanDet (lpMemTmp, aplDimRows, &aplRatRes, lpbCtrlBreak))
+            if (!GaussJordanDetHC1R (lpMemTmp, aplDimRows, &aplRatRes, lpbCtrlBreak))
                 goto RIGHT_DOMAIN_EXIT;
 
             // Initialize the VFP result to 0
@@ -837,6 +866,187 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
 
             // Set the immediate type
             immTypeRes = IMMTYPE_VFP;
+
+            goto YYALLOC_EXIT;
+
+        case ARRAY_HC2I:
+        case ARRAY_HC2F:
+            // No aborting on error!
+            gsl_set_error_handler_off ();
+
+            // Allocate space for a copy of the right arg
+            lpGslCMatrixU = gsl_matrix_complex_alloc ((APLU3264) aplDimRows, (APLU3264) aplDimCols);   // M x N
+            lpGslPermP    = gsl_permutation_alloc    ((APLU3264) aplDimRows);                          // M
+
+            // Calculate space needed to copy the right arg
+            ByteRes = aplDimRows * aplDimCols * sizeof (APLHC2F);
+
+            // Check for overflow
+            if (ByteRes NE (APLU3264) ByteRes)
+                goto WSFULL_EXIT;
+
+            // Split cases based upon the right arg storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_HC2I:
+                    // Loop through the entire right arg
+                    for (uCol = 0; uCol < (2 * aplNELMRht); uCol++)
+                        // Convert the HC2I to HC2F
+                        lpGslCMatrixU->data[uCol] = (APLFLOAT) ((LPAPLINT) lpMemRht)[uCol];
+
+                    break;
+
+                case ARRAY_HC2F:
+                    // Copy the right arg to the GSL temp
+                    CopyMemory (lpGslCMatrixU->data, lpMemRht, (APLU3264) ByteRes);
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // Calculate the LU (Lower/Upper) Decomposition of the square matrix U
+            //   with the result in U and P (P is a temporary used by LU decomp only)
+            ErrCode =
+              gsl_linalg_complex_LU_decomp (lpGslCMatrixU,  // N x N
+                                            lpGslPermP,     // N
+                                           &signum);        // Ptr to sign of the perm
+            // Check the error code
+            if (ErrCode NE GSL_SUCCESS)
+                goto RIGHT_DOMAIN_EXIT;
+
+            // Calculate the determinant of the LU decomposition
+            gslHC2FRes =
+              gsl_linalg_complex_LU_det (lpGslCMatrixU,     // N x N
+                                         signum);           // Sign of the perm
+            // Point to the result
+            lpMemRes = &gslHC2FRes.dat;
+
+            // Set the immediate type
+            immTypeRes = IMMTYPE_HC2F;
+
+            // Free the temps
+            gsl_matrix_complex_free (lpGslCMatrixU); lpGslCMatrixU = NULL;
+            gsl_permutation_free (lpGslPermP); lpGslPermP = NULL;
+
+            goto YYALLOC_EXIT;
+
+        case ARRAY_HC4I:
+        case ARRAY_HC4F:
+        case ARRAY_HC8I:
+        case ARRAY_HC8F:
+            // Allocate a temp array to hold a copy of the right arg (possibly converted)
+            hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) (aplDimRows * aplDimCols * iSizeofRes));
+            if (hGlbTmp EQ NULL)
+                goto WSFULL_EXIT;
+
+            // Lock the memory to get a ptr to it
+            lpMemTmp = MyGlobalLock (hGlbTmp);
+
+            // Split cases based upon the right arg storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_HC4I:
+                case ARRAY_HC8I:
+                    // Loop through the entire right arg
+                    for (uCol = 0; uCol < (iHCDimRes * aplNELMRht); uCol++)
+                        // Convert the HC2I to HC2F
+                        ((LPAPLFLOAT) lpMemTmp)[uCol] = (APLFLOAT) ((LPAPLINT) lpMemRht)[uCol];
+
+                    break;
+
+                case ARRAY_HC4F:
+                case ARRAY_HC8F:
+                    // Copy the right arg to the temp
+                    CopyMemory (lpMemTmp, lpMemRht, (APLU3264) (aplDimRows * aplDimCols * iSizeofRes));
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // Use Gauss-Jordan elimination to calculate the determinant (into aplHC8FRes)
+            bRet = GaussJordanDetHCxF ((LPVOID) lpMemTmp, aplDimRows, (LPVOID) &aplHC8FRes, iHCDimRes, lpbCtrlBreak);
+
+            // Free the temp
+            UnlFreeGlbName (hGlbTmp, lpMemTmp);
+
+            // Point to the result
+            lpMemRes = &aplHC8FRes;
+
+            // Set the immediate type
+            immTypeRes = TranslateArrayTypeToImmType (aplTypeRes);
+
+            if (!bRet)
+                goto RIGHT_DOMAIN_EXIT;
+
+            goto YYALLOC_EXIT;
+
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
+            // Allocate a temp array to hold a copy of the right arg
+            hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) (aplDimRows * aplDimCols * iSizeofRes));
+            if (hGlbTmp EQ NULL)
+                goto WSFULL_EXIT;
+
+            // Lock the memory to get a ptr to it
+            lpMemTmp = MyGlobalLock (hGlbTmp);
+
+            // Loop through the entire right arg
+            for (uCol = 0; uCol < (iHCDimRes * aplNELMRht); uCol++)
+                // Convert the next item
+                mpq_init_set (&((LPAPLRAT) lpMemTmp)[uCol], &((LPAPLRAT) lpMemRht)[uCol]);
+
+            // Use Gauss-Jordan elimination to calculate the determinant (into aplHC8RRes)
+            bRet = GaussJordanDetHCxR ((LPVOID) lpMemTmp, aplDimRows, (LPVOID) &aplHC8RRes, iHCDimRes, lpbCtrlBreak);
+
+            // Free the temp
+            UnlFreeGlbName (hGlbTmp, lpMemTmp);
+
+            // Point to the result
+            lpMemRes = &aplHC8RRes;
+
+            // Set the immediate type
+            immTypeRes = TranslateArrayTypeToImmType (aplTypeRes);
+
+            if (!bRet)
+                goto RIGHT_DOMAIN_EXIT;
+
+            goto YYALLOC_EXIT;
+
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
+            // Allocate a temp array to hold a copy of the right arg
+            hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) (aplDimRows * aplDimCols * iSizeofRes));
+            if (hGlbTmp EQ NULL)
+                goto WSFULL_EXIT;
+
+            // Lock the memory to get a ptr to it
+            lpMemTmp = MyGlobalLock (hGlbTmp);
+
+            // Loop through the entire right arg
+            for (uCol = 0; uCol < (iHCDimRes * aplNELMRht); uCol++)
+                // Copy the next item
+                mpfr_init_set (&((LPAPLVFP) lpMemTmp)[uCol], &((LPAPLVFP) lpMemRht)[uCol], MPFR_RNDN);
+
+            // Use Gauss-Jordan elimination to calculate the determinant (into aplHC8VRes)
+            bRet = GaussJordanDetHCxV ((LPVOID) lpMemTmp, aplDimRows, (LPVOID) &aplHC8VRes, iHCDimRes, lpbCtrlBreak);
+
+            // Free the temp
+            UnlFreeGlbName (hGlbTmp, lpMemTmp);
+
+            // Point to the result
+            lpMemRes = &aplHC8VRes;
+
+            // Set the immediate type
+            immTypeRes = TranslateArrayTypeToImmType (aplTypeRes);
+
+            if (!bRet)
+                goto RIGHT_DOMAIN_EXIT;
 
             goto YYALLOC_EXIT;
 
@@ -859,7 +1069,8 @@ MINDOTPLUS:
     //***************************************************************
 
     // Check for DOMAIN ERROR
-    if (!IsNumeric (aplTypeRht))
+    if (!IsNumeric (aplTypeRht)
+     || IsHCAny (aplTypeRht))       // Min not defined on HCxy
         goto RIGHT_DOMAIN_EXIT;
 
     // Split cases based upon the right arg storage type
@@ -1179,6 +1390,21 @@ MINDOTPLUS:
 
             break;
 
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
+            // These datatypes don't support {min} or {max}
+            goto RIGHT_DOMAIN_EXIT;
+
         defstop
             break;
     } // End SWITCH
@@ -1456,13 +1682,12 @@ ERROR_EXIT:
 
 
 //***************************************************************************
-//  $GaussJordanDet
+//  $GaussJordanDetHC1R
 //
 //  Perform Gauss-Jordan elimination on a square rational matrix
-//   or between left and right matrices.
 //***************************************************************************
 
-UBOOL GaussJordanDet
+UBOOL GaussJordanDetHC1R
     (LPAPLRAT lpMemRht,             // Ptr to copy of right arg as APLRAT matrix
      APLDIM   aplDimRows,           // # rows/cols in the right arg
      LPAPLRAT lpMemRes,             // Ptr to result as a single APLRAT (uninitialized)
@@ -1586,7 +1811,672 @@ ERROR_EXIT:
     Myq_clear (&aplRatTmp);
 
     return bRet;
-} // End GaussJordanDet
+} // End GaussJordanDetHC1R
+
+
+//***************************************************************************
+//  $MacGaussJordanDetHCxF
+//
+//  Macro to perform Gauss-Jordan elimination on a square HCxF matrix
+//***************************************************************************
+
+#define MacGaussJordanDetHCxF(lpMemRht,aplDimRows,lpMemRes,N,lpbCtrlBreak)                                  \
+{                                                                                                           \
+    APLHC##N##F aplTmp = {0},       /* Temporary HC##N##F                                                 */\
+              aplXch,               /* ...                                                                */\
+              aplScale = {0};       /* Scale factor                                                       */\
+    LPAPLHC##N##F lpaplDiv;         /* Divisor                                                            */\
+    APLDIM    uRow,                 /* Loop counter                                                       */\
+              uCol,                 /* ...                                                                */\
+              uTmp;                 /* ...                                                                */\
+    int       sign = 1;             /* Sign of the result                                                 */\
+    UBOOL     bRet = FALSE;         /* TRUE iff the result is valid                                       */\
+                                                                                                            \
+    /* Initialize the temps                                                                               */\
+    fpXf_init (&aplTmp);                                                                                    \
+    fpXf_init (&aplScale);                                                                                  \
+                                                                                                            \
+    /* Loop through the rows in a copy of the right arg                                                   */\
+    for (uRow = 0; uRow < aplDimRows; uRow++)                                                               \
+    {                                                                                                       \
+        /* Check for Ctrl-Break                                                                           */\
+        if (CheckCtrlBreak (*lpbCtrlBreak))                                                                 \
+            goto ERROR_EXIT##N;                                                                             \
+                                                                                                            \
+        /* Get the diagonal element to be used as a divisor                                               */\
+        lpaplDiv = &lpMemRht[uRow * aplDimRows + uRow];                                                     \
+                                                                                                            \
+        /* If it's zero,                                                                                  */\
+        if (fpXf_zero_p (lpaplDiv))                                                                         \
+        {                                                                                                   \
+            /* Loop through subsequent rows in the same column                                            */\
+            /*   looking for a non-zero divisor for scaling                                               */\
+            for (uTmp = uRow + 1; uTmp < aplDimRows; uTmp++)                                                \
+            {                                                                                               \
+                /* Check for Ctrl-Break                                                                   */\
+                if (CheckCtrlBreak (*lpbCtrlBreak))                                                         \
+                    goto ERROR_EXIT##N;                                                                     \
+                                                                                                            \
+                /* Get the diagonal element to be used as a divisor (if non-zero)                         */\
+                lpaplDiv = &lpMemRht[uTmp * aplDimRows + uRow];                                             \
+                                                                                                            \
+                if (!fpXf_zero_p (lpaplDiv))                                                                \
+                    break;                                                                                  \
+            } /* End FOR                                                                                  */\
+                                                                                                            \
+            /* If the divisor is still zero, ...                                                          */\
+            if (fpXf_zero_p (lpaplDiv))                                                                     \
+            {                                                                                               \
+                /* The result is 0                                                                        */\
+                fpXf_init0 (lpMemRes);                                                                      \
+                                                                                                            \
+                goto NORMAL_EXIT##N;                                                                        \
+            } /* End IF                                                                                   */\
+                                                                                                            \
+            /* Loop through the cols in rows <uTmp> and <uRow>                                            */\
+            for (uCol = 0; uCol < aplDimRows; uCol++)                                                       \
+            {                                                                                               \
+                /* Check for Ctrl-Break                                                                   */\
+                if (CheckCtrlBreak (*lpbCtrlBreak))                                                         \
+                    goto ERROR_EXIT##N;                                                                     \
+                                                                                                            \
+                /* Exchange the two rows <uTmp> and <uRow>                                                */\
+                aplXch = lpMemRht[uTmp * aplDimRows + uCol];                                                \
+                         lpMemRht[uTmp * aplDimRows + uCol] = lpMemRht[uRow * aplDimRows + uCol];           \
+                                                              lpMemRht[uRow * aplDimRows + uCol] = aplXch;  \
+            } /* End FOR                                                                                  */\
+                                                                                                            \
+            /* Get the diagonal element to be used as a divisor                                           */\
+            lpaplDiv = &lpMemRht[uRow * aplDimRows + uRow];                                                 \
+                                                                                                            \
+            /* Reverse the sign after an exchange                                                         */\
+            sign = -sign;                                                                                   \
+        } /* End IF                                                                                       */\
+                                                                                                            \
+        /* Loop through the remaining rows                                                                */\
+        for (uTmp = uRow + 1; uTmp < aplDimRows; uTmp++)                                                    \
+        {                                                                                                   \
+            /* Check for Ctrl-Break                                                                       */\
+            if (CheckCtrlBreak (*lpbCtrlBreak))                                                             \
+                goto ERROR_EXIT##N;                                                                         \
+                                                                                                            \
+            /* Divide the lpMemRht[uTmp][uRow] by the divisor                                             */\
+            /*   to get the scalar factor                                                                 */\
+            fpXf_div (&aplScale, &lpMemRht[uTmp * aplDimRows + uRow], lpaplDiv);                            \
+                                                                                                            \
+            /* Subtract row <uRow> scaled by <aplScale> from row <uTmp>                                   */\
+            for (uCol = 0; uCol < aplDimRows; uCol++)                                                       \
+            {                                                                                               \
+                /* Scale the next value from row <uRow>                                                   */\
+                fpXf_mul (&aplTmp, &aplScale, &lpMemRht[uRow * aplDimRows + uCol]);                         \
+                                                                                                            \
+                /* Subtract it from the corresponding value from row <uTmp>                               */\
+                fpXf_sub (&lpMemRht[uTmp * aplDimRows + uCol],                                              \
+                          &lpMemRht[uTmp * aplDimRows + uCol],                                              \
+                          &aplTmp);                                                                         \
+            } /* End FOR                                                                                  */\
+        } /* End FOR                                                                                      */\
+    } /* End FOR                                                                                          */\
+                                                                                                            \
+    /* Initialize to the first element                                                                    */\
+    fpXf_init_set (lpMemRes, lpMemRht);                                                                     \
+                                                                                                            \
+    /* Loop through the diagonal elements in a copy of the right arg                                      */\
+    for (uRow = 1; uRow < aplDimRows; uRow++)                                                               \
+        /* Evaluate the determinant by multiplying the diagonal elements                                  */\
+        fpXf_mul (lpMemRes, lpMemRes, &lpMemRht[uRow * aplDimRows + uRow]);                                 \
+                                                                                                            \
+    /* If we had a odd # exchanges, ...                                                                   */\
+    if (sign < 0)                                                                                           \
+        /* Negate the result                                                                              */\
+        fpXf_neg (lpMemRes, lpMemRes);                                                                      \
+NORMAL_EXIT##N:                                                                                             \
+    /* Mark as successful                                                                                 */\
+    bRet = TRUE;                                                                                            \
+ERROR_EXIT##N:                                                                                              \
+    /* Free the temps                                                                                     */\
+    fpXf_clear (&aplScale);                                                                                 \
+    fpXf_clear (&aplTmp);                                                                                   \
+                                                                                                            \
+    return bRet;                                                                                            \
+} /* End MacGaussJordanDetHCxF                                                                            */
+
+
+//***************************************************************************
+//  $GaussJordanDetHCxF
+//
+//  Perform Gauss-Jordan elimination on a square HCxF matrix
+//***************************************************************************
+
+UBOOL GaussJordanDetHCxF
+    (LPVOID    lpMemRht,            // Ptr to copy of right arg as APLHCxF matrix
+     APLDIM    aplDimRows,          // # rows/cols in the right arg
+     LPVOID    lpMemRes,            // Ptr to result as a single APLHCxF (uninitialized)
+     int       iHCDimRes,           // HC Dimension (1, 2, 4, 8)
+     LPUBOOL   lpbCtrlBreak)        // Ptr to Ctrl-Break flag
+
+{
+    // Split cases based upon the HC Dimension (1, 2, 4, 8)
+    switch (iHCDimRes)
+    {
+        case 4:
+#define fpXf_zero_p(a)          IsZeroHCxF((a), iHCDimRes)
+#define fpXf_div(a,b,c)         *(a) = DivHC4F_RE (*(b), *(c))
+#define fpXf_mul(a,b,c)         *(a) = MulHC4F_RE (*(b), *(c))
+#define fpXf_sub(a,b,c)         *(a) = SubHC4F_RE (*(b), *(c))
+#define fpXf_neg(a,b)           *(a) = NegHC4F_RE (*(b))
+#define fpXf_init(a)            ZeroMemory ((a), sizeof (*(a)))
+#define fpXf_clear(a)
+#define fpXf_init_set(a,b)      *(a) = *(b)
+#define fpXf_init0(a)           fpXf_init(a)
+
+            MacGaussJordanDetHCxF (((LPAPLHC4F) lpMemRht),      // Ptr to copy of right arg as APLHCxF matrix
+                                                aplDimRows,     // # rows/cols in the right arg
+                                   ((LPAPLHC4F) lpMemRes),      // Ptr to result as a single APLHCxF (uninitialized)
+                                                4,              // HC Dimension (1, 2, 4, 8)
+                                                lpbCtrlBreak);  // Ptr to Ctrl-Break flag
+#undef  fpXf_init0
+#undef  fpXf_init_set
+#undef  fpXf_clear
+#undef  fpXf_init
+#undef  fpXf_neg
+#undef  fpXf_sub
+#undef  fpXf_mul
+#undef  fpXf_div
+#undef  fpXf_zero_p
+
+        case 8:
+#define fpXf_zero_p(a)          IsZeroHCxF((a), iHCDimRes)
+#define fpXf_div(a,b,c)         *(a) = DivHC8F_RE (*(b), *(c))
+#define fpXf_mul(a,b,c)         *(a) = MulHC8F_RE (*(b), *(c))
+#define fpXf_sub(a,b,c)         *(a) = SubHC8F_RE (*(b), *(c))
+#define fpXf_neg(a,b)           *(a) = NegHC8F_RE (*(b))
+#define fpXf_init(a)            ZeroMemory ((a), sizeof (*(a)))
+#define fpXf_clear(a)
+#define fpXf_init_set(a,b)      *(a) = *(b)
+#define fpXf_init0(a)           fpXf_init(a)
+
+            MacGaussJordanDetHCxF (((LPAPLHC8F) lpMemRht),      // Ptr to copy of right arg as APLHCxF matrix
+                                                aplDimRows,     // # rows/cols in the right arg
+                                   ((LPAPLHC8F) lpMemRes),      // Ptr to result as a single APLHCxF (uninitialized)
+                                                8,              // HC Dimension (1, 2, 4, 8)
+                                                lpbCtrlBreak);  // Ptr to Ctrl-Break flag
+#undef  fpXf_init0
+#undef  fpXf_init_set
+#undef  fpXf_clear
+#undef  fpXf_init
+#undef  fpXf_neg
+#undef  fpXf_sub
+#undef  fpXf_mul
+#undef  fpXf_div
+#undef  fpXf_zero_p
+
+        case 1:
+        case 2:
+        defstop
+            return FALSE;
+    } // End SWITCH
+} // End GaussJordanDetHCxF
+
+
+//***************************************************************************
+//  $MacGaussJordanDetHCxR
+//
+//  Macro to perform Gauss-Jordan elimination on a square HCxR matrix
+//***************************************************************************
+
+#define MacGaussJordanDetHCxR(lpMemRht,aplDimRows,lpMemRes,N,lpbCtrlBreak)                                  \
+{                                                                                                           \
+    APLHC##N##R aplTmp = {0},       /* Temporary HC##N##R                                                 */\
+              aplXch,               /* ...                                                                */\
+              aplScale = {0};       /* Scale factor                                                       */\
+    LPAPLHC##N##R lpaplDiv;         /* Divisor                                                            */\
+    APLDIM    uRow,                 /* Loop counter                                                       */\
+              uCol,                 /* ...                                                                */\
+              uTmp;                 /* ...                                                                */\
+    int       sign = 1;             /* Sign of the result                                                 */\
+    UBOOL     bRet = FALSE;         /* TRUE iff the result is valid                                       */\
+                                                                                                            \
+    /* Initialize the temps                                                                               */\
+    fpXf_init (&aplTmp);                                                                                    \
+    fpXf_init (&aplScale);                                                                                  \
+                                                                                                            \
+    /* Loop through the rows in a copy of the right arg                                                   */\
+    for (uRow = 0; uRow < aplDimRows; uRow++)                                                               \
+    {                                                                                                       \
+        /* Check for Ctrl-Break                                                                           */\
+        if (CheckCtrlBreak (*lpbCtrlBreak))                                                                 \
+            goto ERROR_EXIT##N;                                                                             \
+                                                                                                            \
+        /* Get the diagonal element to be used as a divisor                                               */\
+        lpaplDiv = &lpMemRht[uRow * aplDimRows + uRow];                                                     \
+                                                                                                            \
+        /* If it's zero,                                                                                  */\
+        if (fpXf_zero_p (lpaplDiv))                                                                         \
+        {                                                                                                   \
+            /* Loop through subsequent rows in the same column                                            */\
+            /*   looking for a non-zero divisor for scaling                                               */\
+            for (uTmp = uRow + 1; uTmp < aplDimRows; uTmp++)                                                \
+            {                                                                                               \
+                /* Check for Ctrl-Break                                                                   */\
+                if (CheckCtrlBreak (*lpbCtrlBreak))                                                         \
+                    goto ERROR_EXIT##N;                                                                     \
+                                                                                                            \
+                /* Get the diagonal element to be used as a divisor (if non-zero)                         */\
+                lpaplDiv = &lpMemRht[uTmp * aplDimRows + uRow];                                             \
+                                                                                                            \
+                if (!fpXf_zero_p (lpaplDiv))                                                                \
+                    break;                                                                                  \
+            } /* End FOR                                                                                  */\
+                                                                                                            \
+            /* If the divisor is still zero, ...                                                          */\
+            if (fpXf_zero_p (lpaplDiv))                                                                     \
+            {                                                                                               \
+                /* The result is 0                                                                        */\
+                fpXf_init0 (lpMemRes);                                                                      \
+                                                                                                            \
+                goto NORMAL_EXIT##N;                                                                        \
+            } /* End IF                                                                                   */\
+                                                                                                            \
+            /* Loop through the cols in rows <uTmp> and <uRow>                                            */\
+            for (uCol = 0; uCol < aplDimRows; uCol++)                                                       \
+            {                                                                                               \
+                /* Check for Ctrl-Break                                                                   */\
+                if (CheckCtrlBreak (*lpbCtrlBreak))                                                         \
+                    goto ERROR_EXIT##N;                                                                     \
+                                                                                                            \
+                /* Exchange the two rows <uTmp> and <uRow>                                                */\
+                aplXch = lpMemRht[uTmp * aplDimRows + uCol];                                                \
+                         lpMemRht[uTmp * aplDimRows + uCol] = lpMemRht[uRow * aplDimRows + uCol];           \
+                                                              lpMemRht[uRow * aplDimRows + uCol] = aplXch;  \
+            } /* End FOR                                                                                  */\
+                                                                                                            \
+            /* Get the diagonal element to be used as a divisor                                           */\
+            lpaplDiv = &lpMemRht[uRow * aplDimRows + uRow];                                                 \
+                                                                                                            \
+            /* Reverse the sign after an exchange                                                         */\
+            sign = -sign;                                                                                   \
+        } /* End IF                                                                                       */\
+                                                                                                            \
+        /* Loop through the remaining rows                                                                */\
+        for (uTmp = uRow + 1; uTmp < aplDimRows; uTmp++)                                                    \
+        {                                                                                                   \
+            /* Check for Ctrl-Break                                                                       */\
+            if (CheckCtrlBreak (*lpbCtrlBreak))                                                             \
+                goto ERROR_EXIT##N;                                                                         \
+                                                                                                            \
+            /* Divide the lpMemRht[uTmp][uRow] by the divisor                                             */\
+            /*   to get the scalar factor                                                                 */\
+            fpXf_div (&aplScale, &lpMemRht[uTmp * aplDimRows + uRow], lpaplDiv);                            \
+                                                                                                            \
+            /* Subtract row <uRow> scaled by <aplScale> from row <uTmp>                                   */\
+            for (uCol = 0; uCol < aplDimRows; uCol++)                                                       \
+            {                                                                                               \
+                /* Scale the next value from row <uRow>                                                   */\
+                fpXf_mul (&aplTmp, &aplScale, &lpMemRht[uRow * aplDimRows + uCol]);                         \
+                                                                                                            \
+                /* Subtract it from the corresponding value from row <uTmp>                               */\
+                fpXf_sub (&lpMemRht[uTmp * aplDimRows + uCol],                                              \
+                          &lpMemRht[uTmp * aplDimRows + uCol],                                              \
+                          &aplTmp);                                                                         \
+            } /* End FOR                                                                                  */\
+        } /* End FOR                                                                                      */\
+    } /* End FOR                                                                                          */\
+                                                                                                            \
+    /* Initialize to the first element                                                                    */\
+    fpXf_init_set (lpMemRes, lpMemRht);                                                                     \
+                                                                                                            \
+    /* Loop through the diagonal elements in a copy of the right arg                                      */\
+    for (uRow = 1; uRow < aplDimRows; uRow++)                                                               \
+        /* Evaluate the determinant by multiplying the diagonal elements                                  */\
+        fpXf_mul (lpMemRes, lpMemRes, &lpMemRht[uRow * aplDimRows + uRow]);                                 \
+                                                                                                            \
+    /* If we had a odd # exchanges, ...                                                                   */\
+    if (sign < 0)                                                                                           \
+        /* Negate the result                                                                              */\
+        fpXf_neg (lpMemRes, lpMemRes);                                                                      \
+NORMAL_EXIT##N:                                                                                             \
+    /* Mark as successful                                                                                 */\
+    bRet = TRUE;                                                                                            \
+ERROR_EXIT##N:                                                                                              \
+    /* Free the temps                                                                                     */\
+    fpXf_clear (&aplScale);                                                                                 \
+    fpXf_clear (&aplTmp);                                                                                   \
+                                                                                                            \
+    return bRet;                                                                                            \
+} /* End MacGaussJordanDetHCxR                                                                            */
+
+
+//***************************************************************************
+//  $GaussJordanDetHCxR
+//
+//  Perform Gauss-Jordan elimination on a square HCxR matrix
+//***************************************************************************
+
+UBOOL GaussJordanDetHCxR
+    (LPVOID    lpMemRht,            // Ptr to copy of right arg as APLHCxR matrix
+     APLDIM    aplDimRows,          // # rows/cols in the right arg
+     LPVOID    lpMemRes,            // Ptr to result as a single APLHCxR (uninitialized)
+     int       iHCDimRes,           // HC Dimension (1, 2, 4, 8)
+     LPUBOOL   lpbCtrlBreak)        // Ptr to Ctrl-Break flag
+
+{
+    // Split cases based upon the HC Dimension (1, 2, 4, 8)
+    switch (iHCDimRes)
+    {
+        case 2:
+#define fpXf_zero_p(a)          IsZeroHCxR((a), iHCDimRes)
+#define fpXf_div(a,b,c)         *(a) = DivHC2R_RE (*(b), *(c))
+#define fpXf_mul(a,b,c)         *(a) = MulHC2R_RE (*(b), *(c))
+#define fpXf_sub(a,b,c)         *(a) = SubHC2R_RE (*(b), *(c))
+#define fpXf_neg(a,b)           *(a) = NegHC2R_RE (*(b))
+#define fpXf_init(a)            mphc2r_init (a)
+#define fpXf_clear(a)           Myhc2r_clear (a)
+#define fpXf_init_set(a,b)      mphc2r_init_set ((a), (b))
+#define fpXf_init0(a)           fpXf_init(a)
+
+            MacGaussJordanDetHCxR (((LPAPLHC2R) lpMemRht),      // Ptr to copy of right arg as APLHCxR matrix
+                                                aplDimRows,     // # rows/cols in the right arg
+                                   ((LPAPLHC2R) lpMemRes),      // Ptr to result as a single APLHCxR (uninitialized)
+                                                2,              // HC Dimension (1, 2, 4, 8)
+                                                lpbCtrlBreak);  // Ptr to Ctrl-Break flag
+#undef  fpXf_init0
+#undef  fpXf_init_set
+#undef  fpXf_clear
+#undef  fpXf_init
+#undef  fpXf_neg
+#undef  fpXf_sub
+#undef  fpXf_mul
+#undef  fpXf_div
+#undef  fpXf_zero_p
+
+        case 4:
+#define fpXf_zero_p(a)          IsZeroHCxR((a), iHCDimRes)
+#define fpXf_div(a,b,c)         *(a) = DivHC4R_RE (*(b), *(c))
+#define fpXf_mul(a,b,c)         *(a) = MulHC4R_RE (*(b), *(c))
+#define fpXf_sub(a,b,c)         *(a) = SubHC4R_RE (*(b), *(c))
+#define fpXf_neg(a,b)           *(a) = NegHC4R_RE (*(b))
+#define fpXf_init(a)            mphc4r_init (a)
+#define fpXf_clear(a)           Myhc4r_clear (a)
+#define fpXf_init_set(a,b)      mphc4r_init_set ((a), (b))
+#define fpXf_init0(a)           fpXf_init(a)
+
+            MacGaussJordanDetHCxR (((LPAPLHC4R) lpMemRht),      // Ptr to copy of right arg as APLHCxR matrix
+                                                aplDimRows,     // # rows/cols in the right arg
+                                   ((LPAPLHC4R) lpMemRes),      // Ptr to result as a single APLHCxR (uninitialized)
+                                                4,              // HC Dimension (1, 2, 4, 8)
+                                                lpbCtrlBreak);  // Ptr to Ctrl-Break flag
+#undef  fpXf_init0
+#undef  fpXf_init_set
+#undef  fpXf_clear
+#undef  fpXf_init
+#undef  fpXf_neg
+#undef  fpXf_sub
+#undef  fpXf_mul
+#undef  fpXf_div
+#undef  fpXf_zero_p
+
+        case 8:
+#define fpXf_zero_p(a)          IsZeroHCxR((a), iHCDimRes)
+#define fpXf_div(a,b,c)         *(a) = DivHC8R_RE (*(b), *(c))
+#define fpXf_mul(a,b,c)         *(a) = MulHC8R_RE (*(b), *(c))
+#define fpXf_sub(a,b,c)         *(a) = SubHC8R_RE (*(b), *(c))
+#define fpXf_neg(a,b)           *(a) = NegHC8R_RE (*(b))
+#define fpXf_init(a)            mphc8r_init (a)
+#define fpXf_clear(a)           Myhc8r_clear (a)
+#define fpXf_init_set(a,b)      mphc8r_init_set ((a), (b))
+#define fpXf_init0(a)           fpXf_init(a)
+
+            MacGaussJordanDetHCxR (((LPAPLHC8R) lpMemRht),      // Ptr to copy of right arg as APLHCxR matrix
+                                                aplDimRows,     // # rows/cols in the right arg
+                                   ((LPAPLHC8R) lpMemRes),      // Ptr to result as a single APLHCxR (uninitialized)
+                                                8,              // HC Dimension (1, 2, 4, 8)
+                                                lpbCtrlBreak);  // Ptr to Ctrl-Break flag
+#undef  fpXf_init0
+#undef  fpXf_init_set
+#undef  fpXf_clear
+#undef  fpXf_init
+#undef  fpXf_neg
+#undef  fpXf_sub
+#undef  fpXf_mul
+#undef  fpXf_div
+#undef  fpXf_zero_p
+
+        case 1:
+        defstop
+            return FALSE;
+    } // End SWITCH
+} // End GaussJordanDetHCxR
+
+
+//***************************************************************************
+//  $MacGaussJordanDetHCxV
+//
+//  Macro to perform Gauss-Jordan elimination on a square HCxV matrix
+//***************************************************************************
+
+#define MacGaussJordanDetHCxV(lpMemRht,aplDimRows,lpMemRes,N,lpbCtrlBreak)                                  \
+{                                                                                                           \
+    APLHC##N##V aplTmp = {0},       /* Temporary HC##N##V                                                 */\
+              aplXch,               /* ...                                                                */\
+              aplScale = {0};       /* Scale factor                                                       */\
+    LPAPLHC##N##V lpaplDiv;         /* Divisor                                                            */\
+    APLDIM    uRow,                 /* Loop counter                                                       */\
+              uCol,                 /* ...                                                                */\
+              uTmp;                 /* ...                                                                */\
+    int       sign = 1;             /* Sign of the result                                                 */\
+    UBOOL     bRet = FALSE;         /* TRUE iff the result is valid                                       */\
+                                                                                                            \
+    /* Initialize the temps                                                                               */\
+    fpXf_init (&aplTmp);                                                                                    \
+    fpXf_init (&aplScale);                                                                                  \
+                                                                                                            \
+    /* Loop through the rows in a copy of the right arg                                                   */\
+    for (uRow = 0; uRow < aplDimRows; uRow++)                                                               \
+    {                                                                                                       \
+        /* Check for Ctrl-Break                                                                           */\
+        if (CheckCtrlBreak (*lpbCtrlBreak))                                                                 \
+            goto ERROR_EXIT##N;                                                                             \
+                                                                                                            \
+        /* Get the diagonal element to be used as a divisor                                               */\
+        lpaplDiv = &lpMemRht[uRow * aplDimRows + uRow];                                                     \
+                                                                                                            \
+        /* If it's zero,                                                                                  */\
+        if (fpXf_zero_p (lpaplDiv))                                                                         \
+        {                                                                                                   \
+            /* Loop through subsequent rows in the same column                                            */\
+            /*   looking for a non-zero divisor for scaling                                               */\
+            for (uTmp = uRow + 1; uTmp < aplDimRows; uTmp++)                                                \
+            {                                                                                               \
+                /* Check for Ctrl-Break                                                                   */\
+                if (CheckCtrlBreak (*lpbCtrlBreak))                                                         \
+                    goto ERROR_EXIT##N;                                                                     \
+                                                                                                            \
+                /* Get the diagonal element to be used as a divisor (if non-zero)                         */\
+                lpaplDiv = &lpMemRht[uTmp * aplDimRows + uRow];                                             \
+                                                                                                            \
+                if (!fpXf_zero_p (lpaplDiv))                                                                \
+                    break;                                                                                  \
+            } /* End FOR                                                                                  */\
+                                                                                                            \
+            /* If the divisor is still zero, ...                                                          */\
+            if (fpXf_zero_p (lpaplDiv))                                                                     \
+            {                                                                                               \
+                /* The result is 0                                                                        */\
+                fpXf_init0 (lpMemRes);                                                                      \
+                                                                                                            \
+                goto NORMAL_EXIT##N;                                                                        \
+            } /* End IF                                                                                   */\
+                                                                                                            \
+            /* Loop through the cols in rows <uTmp> and <uRow>                                            */\
+            for (uCol = 0; uCol < aplDimRows; uCol++)                                                       \
+            {                                                                                               \
+                /* Check for Ctrl-Break                                                                   */\
+                if (CheckCtrlBreak (*lpbCtrlBreak))                                                         \
+                    goto ERROR_EXIT##N;                                                                     \
+                                                                                                            \
+                /* Exchange the two rows <uTmp> and <uRow>                                                */\
+                aplXch = lpMemRht[uTmp * aplDimRows + uCol];                                                \
+                         lpMemRht[uTmp * aplDimRows + uCol] = lpMemRht[uRow * aplDimRows + uCol];           \
+                                                              lpMemRht[uRow * aplDimRows + uCol] = aplXch;  \
+            } /* End FOR                                                                                  */\
+                                                                                                            \
+            /* Get the diagonal element to be used as a divisor                                           */\
+            lpaplDiv = &lpMemRht[uRow * aplDimRows + uRow];                                                 \
+                                                                                                            \
+            /* Reverse the sign after an exchange                                                         */\
+            sign = -sign;                                                                                   \
+        } /* End IF                                                                                       */\
+                                                                                                            \
+        /* Loop through the remaining rows                                                                */\
+        for (uTmp = uRow + 1; uTmp < aplDimRows; uTmp++)                                                    \
+        {                                                                                                   \
+            /* Check for Ctrl-Break                                                                       */\
+            if (CheckCtrlBreak (*lpbCtrlBreak))                                                             \
+                goto ERROR_EXIT##N;                                                                         \
+                                                                                                            \
+            /* Divide the lpMemRht[uTmp][uRow] by the divisor                                             */\
+            /*   to get the scalar factor                                                                 */\
+            fpXf_div (&aplScale, &lpMemRht[uTmp * aplDimRows + uRow], lpaplDiv);                            \
+                                                                                                            \
+            /* Subtract row <uRow> scaled by <aplScale> from row <uTmp>                                   */\
+            for (uCol = 0; uCol < aplDimRows; uCol++)                                                       \
+            {                                                                                               \
+                /* Scale the next value from row <uRow>                                                   */\
+                fpXf_mul (&aplTmp, &aplScale, &lpMemRht[uRow * aplDimRows + uCol]);                         \
+                                                                                                            \
+                /* Subtract it from the corresponding value from row <uTmp>                               */\
+                fpXf_sub (&lpMemRht[uTmp * aplDimRows + uCol],                                              \
+                          &lpMemRht[uTmp * aplDimRows + uCol],                                              \
+                          &aplTmp);                                                                         \
+            } /* End FOR                                                                                  */\
+        } /* End FOR                                                                                      */\
+    } /* End FOR                                                                                          */\
+                                                                                                            \
+    /* Initialize to the first element                                                                    */\
+    fpXf_init_set (lpMemRes, lpMemRht);                                                                     \
+                                                                                                            \
+    /* Loop through the diagonal elements in a copy of the right arg                                      */\
+    for (uRow = 1; uRow < aplDimRows; uRow++)                                                               \
+        /* Evaluate the determinant by multiplying the diagonal elements                                  */\
+        fpXf_mul (lpMemRes, lpMemRes, &lpMemRht[uRow * aplDimRows + uRow]);                                 \
+                                                                                                            \
+    /* If we had a odd # exchanges, ...                                                                   */\
+    if (sign < 0)                                                                                           \
+        /* Negate the result                                                                              */\
+        fpXf_neg (lpMemRes, lpMemRes);                                                                      \
+NORMAL_EXIT##N:                                                                                             \
+    /* Mark as successful                                                                                 */\
+    bRet = TRUE;                                                                                            \
+ERROR_EXIT##N:                                                                                              \
+    /* Free the temps                                                                                     */\
+    fpXf_clear (&aplScale);                                                                                 \
+    fpXf_clear (&aplTmp);                                                                                   \
+                                                                                                            \
+    return bRet;                                                                                            \
+} /* End MacGaussJordanDetHCxV                                                                            */
+
+
+//***************************************************************************
+//  $GaussJordanDetHCxV
+//
+//  Perform Gauss-Jordan elimination on a square HCxV matrix
+//***************************************************************************
+
+UBOOL GaussJordanDetHCxV
+    (LPVOID    lpMemRht,            // Ptr to copy of right arg as APLHCxV matrix
+     APLDIM    aplDimRows,          // # rows/cols in the right arg
+     LPVOID    lpMemRes,            // Ptr to result as a single APLHCxV (uninitialized)
+     int       iHCDimRes,           // HC Dimension (1, 2, 4, 8)
+     LPUBOOL   lpbCtrlBreak)        // Ptr to Ctrl-Break flag
+
+{
+    // Split cases based upon the HC Dimension (1, 2, 4, 8)
+    switch (iHCDimRes)
+    {
+        case 2:
+#define fpXf_zero_p(a)          IsZeroHCxV((a), iHCDimRes)
+#define fpXf_div(a,b,c)         *(a) = DivHC2V_RE (*(b), *(c))
+#define fpXf_mul(a,b,c)         *(a) = MulHC2V_RE (*(b), *(c))
+#define fpXf_sub(a,b,c)         *(a) = SubHC2V_RE (*(b), *(c))
+#define fpXf_neg(a,b)           *(a) = NegHC2V_RE (*(b))
+#define fpXf_init(a)            mphc2v_init0 (a)
+#define fpXf_clear(a)           Myhc2v_clear (a)
+#define fpXf_init_set(a,b)      mphc2v_init_set ((a), (b))
+#define fpXf_init0(a)           fpXf_init(a)
+
+            MacGaussJordanDetHCxV (((LPAPLHC2V) lpMemRht),      // Ptr to copy of right arg as APLHCxV matrix
+                                                aplDimRows,     // # rows/cols in the right arg
+                                   ((LPAPLHC2V) lpMemRes),      // Ptr to result as a single APLHCxV (uninitialized)
+                                                2,              // HC Dimension (1, 2, 4, 8)
+                                                lpbCtrlBreak);  // Ptr to Ctrl-Break flag
+#undef  fpXf_init0
+#undef  fpXf_init_set
+#undef  fpXf_clear
+#undef  fpXf_init
+#undef  fpXf_neg
+#undef  fpXf_sub
+#undef  fpXf_mul
+#undef  fpXf_div
+#undef  fpXf_zero_p
+
+        case 4:
+#define fpXf_zero_p(a)          IsZeroHCxV((a), iHCDimRes)
+#define fpXf_div(a,b,c)         *(a) = DivHC4V_RE (*(b), *(c))
+#define fpXf_mul(a,b,c)         *(a) = MulHC4V_RE (*(b), *(c))
+#define fpXf_sub(a,b,c)         *(a) = SubHC4V_RE (*(b), *(c))
+#define fpXf_neg(a,b)           *(a) = NegHC4V_RE (*(b))
+#define fpXf_init(a)            mphc4v_init0 (a)
+#define fpXf_clear(a)           Myhc4v_clear (a)
+#define fpXf_init_set(a,b)      mphc4v_init_set ((a), (b))
+#define fpXf_init0(a)           fpXf_init(a)
+
+            MacGaussJordanDetHCxV (((LPAPLHC4V) lpMemRht),      // Ptr to copy of right arg as APLHCxV matrix
+                                                aplDimRows,     // # rows/cols in the right arg
+                                   ((LPAPLHC4V) lpMemRes),      // Ptr to result as a single APLHCxV (uninitialized)
+                                                4,              // HC Dimension (1, 2, 4, 8)
+                                                lpbCtrlBreak);  // Ptr to Ctrl-Break flag
+#undef  fpXf_init0
+#undef  fpXf_init_set
+#undef  fpXf_clear
+#undef  fpXf_init
+#undef  fpXf_neg
+#undef  fpXf_sub
+#undef  fpXf_mul
+#undef  fpXf_div
+#undef  fpXf_zero_p
+
+        case 8:
+#define fpXf_zero_p(a)          IsZeroHCxV((a), iHCDimRes)
+#define fpXf_div(a,b,c)         *(a) = DivHC8V_RE (*(b), *(c))
+#define fpXf_mul(a,b,c)         *(a) = MulHC8V_RE (*(b), *(c))
+#define fpXf_sub(a,b,c)         *(a) = SubHC8V_RE (*(b), *(c))
+#define fpXf_neg(a,b)           *(a) = NegHC8V_RE (*(b))
+#define fpXf_init(a)            mphc8v_init0 (a)
+#define fpXf_clear(a)           Myhc8v_clear (a)
+#define fpXf_init_set(a,b)      mphc8v_init_set ((a), (b))
+#define fpXf_init0(a)           fpXf_init(a)
+
+            MacGaussJordanDetHCxV (((LPAPLHC8V) lpMemRht),      // Ptr to copy of right arg as APLHCxV matrix
+                                                aplDimRows,     // # rows/cols in the right arg
+                                   ((LPAPLHC8V) lpMemRes),      // Ptr to result as a single APLHCxV (uninitialized)
+                                                8,              // HC Dimension (1, 2, 4, 8)
+                                                lpbCtrlBreak);  // Ptr to Ctrl-Break flag
+#undef  fpXf_init0
+#undef  fpXf_init_set
+#undef  fpXf_clear
+#undef  fpXf_init
+#undef  fpXf_neg
+#undef  fpXf_sub
+#undef  fpXf_mul
+#undef  fpXf_div
+#undef  fpXf_zero_p
+
+        case 1:
+        defstop
+            return FALSE;
+    } // End SWITCH
+} // End GaussJordanDetHCxV
 
 
 //***************************************************************************
@@ -1631,6 +2521,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     APLSTYPE          aplTypeLft,               // Left arg storage type
                       aplTypeRht,               // Right ...
                       aplTypeCmp,               // Comparison ...
+                      aplTypeCom,               // Common
                       aplTypeRes;               // Result   ...
     APLNELM           aplNELMLft,               // Left arg NELM
                       aplNELMRht,               // Right ...
@@ -1697,10 +2588,13 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
                       bNrmIdent = FALSE,        // TRUE iff reducing an empty array with a primitive scalar dyadic function
                       bPrimIdent = FALSE;       // TRUE iff reducing an empty array with a primitive or
                                                 //   user-defined function/operator
-    APLRAT            aplRatLft = {0},          // Left arg as RAT
-                      aplRatRht = {0};          // Right ...
-    APLVFP            aplVfpLft = {0},          // Left arg as VFP
-                      aplVfpRht = {0};          // Right ...
+    ALLTYPES          atLft    = {0},           // Left arg as ALLTYPES
+                      atCmpLft = {0},           // ...  compare ...
+                      atRht    = {0},           // Right arg    ...
+                      atCmpRht = {0};           // ...   compare ...
+    int               i,                        // Loop counter
+                      iHCDimRes,                // HC Dimension (1, 2, 4, 8)
+                      iSizeofRes;               // # bytes in each result
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -1811,7 +2705,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     aplRankRes = max (aplRankLft, 1) + max (aplRankRht, 1) - 2;
 
     // Calc result NELM
-    aplNELMRes = imul64 (aplRestLft, aplRestRht, &bRet);
+    aplNELMRes = imul64 (aplRestLft, aplRestRht, &bRet, EXCEPTION_RESULT_FLOAT);
     if (!bRet)
         goto WSFULL_EXIT;
 
@@ -1897,6 +2791,9 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
                                            &lpYYFcnStrRht->tkToken,
                                             aplFrstRht,
                                            &aplTypeRht);
+        if (IsNonceType (aplTypeCmp))
+            goto RIGHT_OPERAND_NONCE_EXIT;
+
         if (IsErrorType (aplTypeCmp))
             goto RIGHT_OPERAND_DOMAIN_EXIT;
         // For the moment, APA is treated as INT
@@ -1910,6 +2807,9 @@ RESTART_INNERPROD_CMP:
                                            &lpYYFcnStrLft->tkToken,
                                             aplInnrMax,
                                            &aplTypeCmp);
+        if (IsNonceType (aplTypeRes))
+            goto LEFT_OPERAND_NONCE_EXIT;
+
         if (IsErrorType (aplTypeRes))
             goto LEFT_OPERAND_DOMAIN_EXIT;
 
@@ -1921,6 +2821,12 @@ RESTART_INNERPROD_CMP:
         //   but we'll call TypeDemote at the end just in case.
         aplTypeRes = ARRAY_NESTED;
 RESTART_INNERPROD_RES:
+    // Calculate the HC Dimension (1, 2, 4, 8)
+    iHCDimRes = TranslateArrayTypeToHCDim (aplTypeRes);
+
+    // Calculate the # bytes in each item in the result
+    iSizeofRes = TranslateArrayTypeToSizeof (aplTypeRes);
+
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
@@ -2067,8 +2973,20 @@ RESTART_INNERPROD_RES:
 
                         break;
 
+                    case ARRAY_HC2I:
+                    case ARRAY_HC4I:
+                    case ARRAY_HC8I:
+                    case ARRAY_HC2F:
+                    case ARRAY_HC4F:
+                    case ARRAY_HC8F:
                     case ARRAY_RAT:
+                    case ARRAY_HC2R:
+                    case ARRAY_HC4R:
+                    case ARRAY_HC8R:
                     case ARRAY_VFP:
+                    case ARRAY_HC2V:
+                    case ARRAY_HC4V:
+                    case ARRAY_HC8V:
                         // Fill in the left arg item token
                         tkItmLft.tkFlags.TknType   = TKT_VARARRAY;
                         tkItmLft.tkFlags.ImmType   = IMMTYPE_ERROR;
@@ -2172,6 +3090,20 @@ RESTART_INNERPROD_RES:
                         tkItmRht.tkData.tkGlbData  = CopySymGlbDir_PTB (hGlbRht);
 
                         break;
+
+                    case ARRAY_HC2I:
+                    case ARRAY_HC4I:
+                    case ARRAY_HC8I:
+                    case ARRAY_HC2F:
+                    case ARRAY_HC4F:
+                    case ARRAY_HC8F:
+                    case ARRAY_HC2R:
+                    case ARRAY_HC4R:
+                    case ARRAY_HC8R:
+                    case ARRAY_HC2V:
+                    case ARRAY_HC4V:
+                    case ARRAY_HC8V:
+                        goto NONCE_EXIT;
 
                     case ARRAY_HETERO:          // Can't occur:  there are no empty HETEROs
                     defstop
@@ -2343,22 +3275,132 @@ RESTART_INNERPROD_RES:
                             *((LPAPLBOOL) lpMemRes)++ = 0xFF;
                         break;
 
-                    case ARRAY_RAT:
+                    case ARRAY_HC2I:
+                    case ARRAY_HC4I:
+                    case ARRAY_HC8I:
                         for (uRes = 0; uRes < aplNELMRes; uRes++)
-                            mpq_init_set_ui (((LPAPLRAT) lpMemRes)++, lpPrimIdentLft->bIdentElem, 1);
+                        {
+                            // Set the real part of the result
+                            ((LPAPLHC8I) lpMemRes)->parts[0] = lpPrimIdentLft->bIdentElem;
+
+                            // Skip to the next item
+                            ((LPBYTE) lpMemRes) += iSizeofRes;
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_HC2F:
+                    case ARRAY_HC4F:
+                    case ARRAY_HC8F:
+                        for (uRes = 0; uRes < aplNELMRes; uRes++)
+                        {
+                            // Set the real part of the result
+                            ((LPAPLHC8F) lpMemRes)->parts[0] = (APLFLOAT) lpPrimIdentLft->bIdentElem;
+
+                            // Skip to the next item
+                            ((LPBYTE) lpMemRes) += iSizeofRes;
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_RAT:
+                    case ARRAY_HC2R:
+                    case ARRAY_HC4R:
+                    case ARRAY_HC8R:
+                        for (uRes = 0; uRes < aplNELMRes; uRes++)
+                        {
+                            // Initialize the result to 0/1
+                            mphcxr_init (lpMemRes, iHCDimRes);
+
+                            // Set the real part of the result
+                            mpq_set_ui (&((LPAPLHC8R) lpMemRes)->parts[0], lpPrimIdentLft->bIdentElem, 1);
+
+                            // Skip to the next item
+                            ((LPBYTE) lpMemRes) += iSizeofRes;
+                        } // End FOR
+
                         break;
 
                     case ARRAY_VFP:
+                    case ARRAY_HC2V:
+                    case ARRAY_HC4V:
+                    case ARRAY_HC8V:
                         for (uRes = 0; uRes < aplNELMRes; uRes++)
-                            mpfr_init_set_ui (((LPAPLVFP) lpMemRes)++, lpPrimIdentLft->bIdentElem, MPFR_RNDN);
+                        {
+                            // Initialize the result to 0
+                            mphcxv_init0 (lpMemRes, iHCDimRes);
+
+                            // Set the real part of the result
+                            mpfr_set_ui (&((LPAPLHC8V) lpMemRes)->parts[0], lpPrimIdentLft->bIdentElem, MPFR_RNDN);
+
+                            // Skip to the next item
+                            ((LPBYTE) lpMemRes) += iSizeofRes;
+                        } // End FOR
+
                         break;
 
                     defstop
                         break;
                 } // End IF/SWITCH
             } else
-            for (uRes = 0; uRes < aplNELMRes; uRes++)
-                *((LPAPLFLOAT) lpMemRes)++ = aplFloatIdent;
+            {
+                // The identity element is FLT
+
+                // Split cases based upon the result storage type
+                switch (aplTypeRes)
+                {
+                    case ARRAY_FLOAT:
+                    case ARRAY_HC2F:
+                    case ARRAY_HC4F:
+                    case ARRAY_HC8F:
+                        for (uRes = 0; uRes < aplNELMRes; uRes++)
+                        {
+                            // Set the real part of the result
+                            ((LPAPLHC8F) lpMemRes)->parts[0] = lpPrimIdentLft->fIdentElem;
+
+                            // Skip to the next item
+                            ((LPBYTE) lpMemRes) += iSizeofRes;
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_VFP:
+                    case ARRAY_HC2V:
+                    case ARRAY_HC4V:
+                    case ARRAY_HC8V:
+                        for (uRes = 0; uRes < aplNELMRes; uRes++)
+                        {
+                            // Initialize the result to 0
+                            mphcxv_init0 (lpMemRes, iHCDimRes);
+
+                            // Set the real part of the result
+                            mpfr_set_d (&((LPAPLHC8V) lpMemRes)->parts[0], lpPrimIdentLft->fIdentElem, MPFR_RNDN);
+
+                            // Skip to the next item
+                            ((LPBYTE) lpMemRes) += iSizeofRes;
+                        } // End FOR
+
+                        break;
+
+                    case ARRAY_RAT:
+                    case ARRAY_HC2R:
+                    case ARRAY_HC4R:
+                    case ARRAY_HC8R:
+                        //  Promote the type to handle a FLT result
+                        aplTypeRes++;   // ***ASSUME*** -- order of ARRAY_TYPES allows this
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+
+                        // We no longer need this storage
+                        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+
+                        goto RESTART_INNERPROD_RES;
+
+                    defstop
+                        break;
+                } // End IF/SWITCH
+            } // End IF/ELSE
         } // End IF
     } else
     // If the result is simple non-hetero or global numeric, ...
@@ -2367,16 +3409,6 @@ RESTART_INNERPROD_RES:
         APLUINT  uInnLft,           // Index into left arg
                  uInnRht;           // ...        right ...
         TOKEN    tkRes = {0};       // Temporary token result
-        APLINT   aplIntegerLft,     // Left arg integer
-                 aplIntegerRht,     // Right ...
-                 aplIntegerCmpLft,  // Left comparison arg integer
-                 aplIntegerCmpRht;  // Right ...
-        APLFLOAT aplFloatLft,       // Left arg float
-                 aplFloatRht,       // Right ...
-                 aplFloatCmpLft,    // Left comparison arg float
-                 aplFloatCmpRht;    // Right ...
-        APLCHAR  aplCharLft,        // Left arg char
-                 aplCharRht;        // Right ...
         UINT     uBitIndex;         // Bit index for looping through Boolean result
         HGLOBAL  lpSymGlbLft = NULL,    // Ptr to left arg global numeric
                  lpSymGlbRht = NULL,    // ...    right ...
@@ -2384,14 +3416,11 @@ RESTART_INNERPROD_RES:
                  lpSymGlbCmpRht = NULL; // ...    right ...
         APLSTYPE aplTypeNew;            // New storage type
 
-        // Initialize the temps
-        mpq_init (&aplRatLft);
-        mpq_init (&aplRatRht);
-        mpfr_init0 (&aplVfpLft);
-        mpfr_init0 (&aplVfpRht);
-
         // Initialize the bit index
         uBitIndex = 0;
+
+        // Get the common storage type between the left & right args
+        aplTypeCom = aTypePromote[aplTypeLft][aplTypeRht];
 
         // Trundle through the left & right arg remaining dimensions
         for (uOutLft = 0; uOutLft < aplRestLft; uOutLft++)
@@ -2419,113 +3448,36 @@ RESTART_INNERPROD_RES:
                 else
                     uInnRht = 1 * uOutRht + aplRestRht * iInnMax;
 
-                // Split cases based upon the left arg storage type
-                switch (aplTypeLft)
-                {
-                    case ARRAY_BOOL:
-                        aplIntegerLft = GetNextInteger (lpMemLft, aplTypeLft, uInnLft);
-                        aplFloatLft   = (APLFLOAT) aplIntegerLft;   // In case of type promotion
+////////////////// Promote the left arg to the common type
+////////////////(*aTypeActPromote[aplTypeLft][aplTypeCom]) (lpMemLft, uInnLft, &atLft);
+                // Copy the left arg to the ALLTYPE var
+                (*aTypeActPromote[aplTypeLft][aplTypeLft]) (lpMemLft, uInnLft, &atLft);
 
-                        break;
-
-                    case ARRAY_INT:
-                        aplIntegerLft = ((LPAPLINT)   lpMemLft)[uInnLft];
-                        aplFloatLft   = (APLFLOAT) aplIntegerLft;   // In case of type promotion
-
-                        break;
-
-                    case ARRAY_APA:
-                        aplIntegerLft = apaOffLft + apaMulLft * uInnLft;
-                        aplFloatLft   = (APLFLOAT) aplIntegerLft;   // In case of type promotion
-
-                        break;
-
-                    case ARRAY_FLOAT:
-                        aplFloatLft   = ((LPAPLFLOAT) lpMemLft)[uInnLft];
-
-                        break;
-
-                    case ARRAY_CHAR:
-                        aplCharLft    = ((LPAPLCHAR)  lpMemLft)[uInnLft];
-
-                        break;
-
-                    case ARRAY_RAT:
-                        lpSymGlbLft   = &((LPAPLRAT)   lpMemLft)[uInnLft];
-
-                        break;
-
-                    case ARRAY_VFP:
-                        lpSymGlbLft   = &((LPAPLVFP)   lpMemLft)[uInnLft];
-
-                        break;
-
-                    defstop
-                        break;
-                } // End SWITCH
-
-                // Split cases based upon the right arg storage type
-                switch (aplTypeRht)
-                {
-                    case ARRAY_BOOL:
-                        aplIntegerRht = GetNextInteger (lpMemRht, aplTypeRht, uInnRht);
-                        aplFloatRht   = (APLFLOAT) aplIntegerRht;   // In case of type promotion
-
-                        break;
-
-                    case ARRAY_INT:
-                        aplIntegerRht = ((LPAPLINT)   lpMemRht)[uInnRht];
-                        aplFloatRht   = (APLFLOAT) aplIntegerRht;   // In case of type promotion
-
-                        break;
-
-                    case ARRAY_APA:
-                        aplIntegerRht = apaOffRht + apaMulRht * uInnRht;
-                        aplFloatRht   = (APLFLOAT) aplIntegerRht;   // In case of type promotion
-
-                        break;
-
-                    case ARRAY_FLOAT:
-                        aplFloatRht   = ((LPAPLFLOAT) lpMemRht)[uInnRht];
-
-                        break;
-
-                    case ARRAY_CHAR:
-                        aplCharRht    = ((LPAPLCHAR)  lpMemRht)[uInnRht];
-
-                        break;
-
-                    case ARRAY_RAT:
-                        lpSymGlbRht   = &((LPAPLRAT)   lpMemRht)[uInnRht];
-
-                        break;
-
-                    case ARRAY_VFP:
-                        lpSymGlbRht   = &((LPAPLVFP)   lpMemRht)[uInnRht];
-
-                        break;
-
-                    defstop
-                        break;
-                } // End SWITCH
+////////////////// Promote the right arg to the common storage type
+////////////////(*aTypeActPromote[aplTypeRht][aplTypeCom]) (lpMemRht, uInnRht, &atRht);
+                // Copy the right arg to the ALLTYPE var
+                (*aTypeActPromote[aplTypeRht][aplTypeRht]) (lpMemRht, uInnRht, &atRht);
 
                 // Execute the comparison function between the left and right args
-                if (PrimFnDydSiScSiScSub_EM (&tkRes,                        // Result token
+                bRet =
+                    PrimFnDydSiScSiScSub_EM (&tkRes,                        // Result token
+                                              NULL,                         // Result as ALLTYPES (may be NULL)
                                              &lpYYFcnStrRht->tkToken,       // Comparison function
                                               NULL,                         // Result global memory handle (may be NULL)
                                               aplTypeCmp,                   // Comparison storage type
                                               aplTypeLft,                   // Left arg storage type
-                                              aplIntegerLft,                // ...      Boolean/Integer
-                                              aplFloatLft,                  // ...      Float
-                                              aplCharLft,                   // ...      Char
-                                              lpSymGlbLft,                  // ...      lpSym/Glb
+                                             &atLft,                        // ...      as ALLTYPES
                                               aplTypeRht,                   // Right arg storage type
-                                              aplIntegerRht,                // ...      Boolean/Integer
-                                              aplFloatRht,                  // ...      Float
-                                              aplCharRht,                   // ...      Char
-                                              lpSymGlbRht,                  // ...      lpSym/Glb
+                                             &atRht,                        // ...      as ALLTYPES
                                              &aplTypeNew,                   // New storage type
-                                              lpPrimSpecRht))               // Ptr to comparison function PRIMSPEC
+                                              lpPrimSpecRht);               // Ptr to comparison function PRIMSPEC
+                // Free the old atLft
+                (*aTypeFree[aplTypeLft]) (&atLft, 0);
+
+                // Free the old atRht
+                (*aTypeFree[aplTypeRht]) (&atRht, 0);
+
+                if (bRet)
                 {
                     // Check for type promotion
                     if (aplTypeCmp NE aplTypeNew)
@@ -2606,32 +3558,16 @@ RESTART_INNERPROD_RES:
                     // If the token type is an immediate, ...
                     if (tkRes.tkFlags.TknType EQ TKT_VARIMMED)
                     {
-                        // Split cases based upon the comparison immediate type
-                        switch (tkRes.tkFlags.ImmType)
-                        {
-                            case IMMTYPE_BOOL:
-                                aplIntegerCmpLft = (BIT0 & tkRes.tkData.tkBoolean);
+                        // Copy the immediate value to atCmpLft
+                        (*aTypeActPromote[aplTypeCmp][aplTypeCmp]) (&tkRes.tkData.tkLongest, 0, &atCmpLft);
 
-                                break;
-
-                            case IMMTYPE_INT:
-                                aplIntegerCmpLft = tkRes.tkData.tkInteger;
-
-                                break;
-
-                            case IMMTYPE_FLOAT:
-                                aplFloatCmpLft   = tkRes.tkData.tkFloat;
-
-                                break;
-
-                            defstop
-                                break;
-                        } // End SWITCH
+                        // Point to it
+                        lpSymGlbCmpLft = &atCmpLft;
                     } else
                     {
-                        HGLOBAL hGlb;
+                        HGLOBAL            hGlb;
                         LPVARARRAY_HEADER  lpMemHdr = NULL;
-                        LPVOID  lpMem;
+                        LPVOID             lpMem;
 
                         // Get the result global ptr
                         GetGlbPtrs_LOCK (&tkRes, &hGlb, &lpMemHdr);
@@ -2641,26 +3577,11 @@ RESTART_INNERPROD_RES:
                         // Skip over the header and dimensions to the data
                         lpMem = VarArrayDataFmBase (lpMemHdr);
 
-                        switch (aplTypeCmp)
-                        {
-                            case ARRAY_RAT:
-////////////////////////////////Myq_clear (&aplRatLft);
-                                mpq_set (&aplRatLft, (LPAPLRAT) lpMem);
-                                lpSymGlbCmpLft = &aplRatLft;
+                        // Copy the item to atCmpLft
+                        (*aTypeActPromote[aplTypeCmp][aplTypeCmp]) (lpMem, 0, &atCmpLft);
 
-                                break;
-
-
-                            case ARRAY_VFP:
-////////////////////////////////Myf_clear (&aplVfpLft);
-                                mpfr_copy (&aplVfpLft, (LPAPLVFP) lpMem);
-                                lpSymGlbCmpLft = &aplVfpLft;
-
-                                break;
-
-                            defstop
-                                break;
-                        } // End SWITCH
+                        // Point to it
+                        lpSymGlbCmpLft = &atCmpLft;
 
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlb); lpMemHdr = NULL;
@@ -2670,22 +3591,23 @@ RESTART_INNERPROD_RES:
                     } // End IF/ELSE
 
                     // Execute the left operand between the item result and the accumulated reduction
-                    if (PrimFnDydSiScSiScSub_EM (&tkRes,                    // Result token
+                    bRet =
+                        PrimFnDydSiScSiScSub_EM (&tkRes,                    // Result token
+                                                  NULL,                     // Result as ALLTYPES (may be NULL)
                                                  &lpYYFcnStrLft->tkToken,   // Reduction function
                                                   NULL,                     // Result global memory handle (may be NULL)
                                                   aplTypeRes,               // Result storage type
                                                   aplTypeCmp,               // Comparison storage type
-                                                  aplIntegerCmpLft,         // Left comparison arg Boolean/Integer
-                                                  aplFloatCmpLft,           // ...                 Float
-                                                  0,                        // No primitive scalar dyadic function returns a char
-                                                  lpSymGlbCmpLft,           // ...                 lpSym/Glb
+                                                 &atCmpLft,                 // Left arg as ALLTYPES
                                                   aplTypeCmp,               // Comparison storage type
-                                                  aplIntegerCmpRht,         // Right comparison arg Boolean/Integer
-                                                  aplFloatCmpRht,           // ...                  Float
-                                                  0,                        // No primitive scalar dyadic function returns a char
-                                                  lpSymGlbCmpRht,           // ...                 lpSym/Glb
+                                                 &atCmpRht,                 // Left arg as ALLTYPES
                                                  &aplTypeNew,               // New storage type
-                                                  lpPrimSpecLft))           // Ptr to reduction function PRIMSPEC
+                                                  lpPrimSpecLft);           // Ptr to reduction function PRIMSPEC
+                    // Free the old atCmpLft and atCmpRht
+                    (*aTypeFree[aplTypeCmp]) (&atCmpLft, 0);
+                    (*aTypeFree[aplTypeCmp]) (&atCmpRht, 0);
+
+                    if (bRet)
                     {
                         // Check for type promotion
                         if (aplTypeRes NE aplTypeNew)
@@ -2728,34 +3650,18 @@ RESTART_INNERPROD_RES:
                 // If the token type is an immediate, ...
                 if (tkRes.tkFlags.TknType EQ TKT_VARIMMED)
                 {
-                    // Split cases based upon the previous result immediate type
-                    switch (tkRes.tkFlags.ImmType)
-                    {
-                        case IMMTYPE_BOOL:
-                            aplIntegerCmpRht = (BIT0 &tkRes.tkData.tkBoolean);
+                    // Copy the immediate value to atCmpRht
+                    (*aTypeActPromote[aplTypeRes][aplTypeRes]) (&tkRes.tkData.tkLongest, 0, &atCmpRht);
 
-                            break;
-
-                        case IMMTYPE_INT:
-                            aplIntegerCmpRht = tkRes.tkData.tkInteger;
-
-                            break;
-
-                        case IMMTYPE_FLOAT:
-                            aplFloatCmpRht   = tkRes.tkData.tkFloat;
-
-                            break;
-
-                        defstop
-                            break;
-                    } // End SWITCH
+                    // Point to it
+                    lpSymGlbCmpRht = &atCmpRht;
                 } else
                 // If the token type is a global numeric, ...
                 if (tkRes.tkFlags.TknType EQ TKT_VARARRAY)
                 {
-                    HGLOBAL hGlb;
+                    HGLOBAL            hGlb;
                     LPVARARRAY_HEADER  lpMemHdr = NULL;
-                    LPVOID  lpMem;
+                    LPVOID             lpMem;
 
                     // Get the result global ptr
                     GetGlbPtrs_LOCK (&tkRes, &hGlb, &lpMemHdr);
@@ -2765,27 +3671,11 @@ RESTART_INNERPROD_RES:
                     // Skip over the header and dimensions to the data
                     lpMem = VarArrayDataFmBase (lpMemHdr);
 
-                    switch (aplTypeCmp)
-                    {
-                        case ARRAY_RAT:
-////                        Myq_clear (&aplRatLft);
-////                        Myq_clear (&aplRatRht);
-                            mpq_set (&aplRatRht, (LPAPLRAT) lpMem);
-                            lpSymGlbCmpRht = &aplRatRht;
+                    // Copy the item to atCmpRht
+                    (*aTypeActPromote[aplTypeCmp][aplTypeCmp]) (lpMem, 0, &atCmpRht);
 
-                            break;
-
-                        case ARRAY_VFP:
-////                        Myf_clear (&aplVfpLft);
-////                        Myf_clear (&aplVfpRht);
-                            mpfr_copy (&aplVfpRht, (LPAPLVFP) lpMem);
-                            lpSymGlbCmpRht = &aplVfpRht;
-
-                            break;
-
-                        defstop
-                            break;
-                    } // End SWITCH
+                    // Point to it
+                    lpSymGlbCmpRht = &atCmpRht;
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlb); lpMemHdr = NULL;
@@ -2801,7 +3691,7 @@ RESTART_INNERPROD_RES:
             {
                 case ARRAY_BOOL:
                     // Save in the result
-                    *((LPAPLBOOL) lpMemRes) |= (BIT0 & aplIntegerCmpRht) << uBitIndex;
+                    *((LPAPLBOOL) lpMemRes) |= (BIT0 & *(LPAPLINT) lpSymGlbCmpRht) << uBitIndex;
 
                     // Check for end-of-byte
                     if (++uBitIndex EQ NBIB)
@@ -2813,32 +3703,56 @@ RESTART_INNERPROD_RES:
                     break;
 
                 case ARRAY_INT:
-                    // Save the accumulated reduction in the result
-                    *((LPAPLINT)   lpMemRes)++ = aplIntegerCmpRht;
+                case ARRAY_HC2I:
+                case ARRAY_HC4I:
+                case ARRAY_HC8I:
+                    // Loop through all of the parts
+                    for (i = 0; i < iHCDimRes; i++)
+                        // Save the accumulated reduction in the result
+                        *((LPAPLINT)   lpMemRes)++ = ((LPAPLHC8I) lpSymGlbCmpRht)->parts[i];
 
                     break;
 
                 case ARRAY_FLOAT:
-                    // Save the accumulated reduction in the result
-                    *((LPAPLFLOAT) lpMemRes)++ = aplFloatCmpRht;
+                case ARRAY_HC2F:
+                case ARRAY_HC4F:
+                case ARRAY_HC8F:
+                    // Loop through all of the parts
+                    for (i = 0; i < iHCDimRes; i++)
+                        // Save the accumulated reduction in the result
+                        *((LPAPLFLOAT) lpMemRes)++ = ((LPAPLHC8F) lpSymGlbCmpRht)->parts[i];
 
                     break;
 
                 case ARRAY_RAT:
-                    // Save the accumulated reduction in the result
-                    mpq_init_set (((LPAPLRAT) lpMemRes)++, &aplRatRht);
+                case ARRAY_HC2R:
+                case ARRAY_HC4R:
+                case ARRAY_HC8R:
+                    // Loop through all of the parts
+                    for (i = 0; i < iHCDimRes; i++)
+                        // Save the accumulated reduction in the result
+                        mpq_init_set (((LPAPLRAT) lpMemRes)++, &((LPAPLHC8R) lpSymGlbCmpRht)->parts[i]);
 
                     break;
 
                 case ARRAY_VFP:
-                    // Save the accumulated reduction in the result
-                    mpfr_init_copy (((LPAPLVFP) lpMemRes)++, &aplVfpRht);
+                case ARRAY_HC2V:
+                case ARRAY_HC4V:
+                case ARRAY_HC8V:
+                    // Loop through all of the parts
+                    for (i = 0; i < iHCDimRes; i++)
+                        // Save the accumulated reduction in the result
+                        mpfr_init_copy (((LPAPLVFP) lpMemRes)++, &((LPAPLHC8V) lpSymGlbCmpRht)->parts[i]);
 
                     break;
 
                 defstop
                     break;
             } // End SWITCH
+
+            // Free the old atCmpLft and atCmpRht
+////////////(*aTypeFree[aplTypeCmp]) (&atCmpLft, 0);
+            (*aTypeFree[aplTypeCmp]) (&atCmpRht, 0);
         } // End FOR/FOR
     } else
     {
@@ -3095,7 +4009,7 @@ YYALLOC_EXIT:
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    TypeDemote (&lpYYRes->tkToken);
+    TypeDemote (&lpYYRes->tkToken, FALSE);
 
     goto NORMAL_EXIT;
 
@@ -3134,6 +4048,11 @@ LENGTH_EXIT:
                               &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+    goto ERROR_EXIT;
+
 VALUE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
                               &lpYYFcnStrOpr->tkToken);
@@ -3157,12 +4076,6 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    // Free the temps
-    Myf_clear (&aplVfpRht);
-    Myf_clear (&aplVfpLft);
-    Myq_clear (&aplRatRht);
-    Myq_clear (&aplRatLft);
-
     if (hGlbPro NE NULL)
     {
         FreeResultGlobalVar (hGlbPro); hGlbPro = NULL;

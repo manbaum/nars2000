@@ -390,6 +390,7 @@ UBOOL FillIdentityElement_EM
                 // Make the prototype
                 hGlbPro =
                   MakeMonPrototype_EM_PTB (hGlbSym.hGlb,            // Proto arg handle
+                                           ARRAY_NESTED,            // Array storage type
                                           &lpYYFcnStrLft->tkToken,  // Ptr to function token
                                            MP_CHARS);               // CHARs allowed
                 // We no longer need this storage

@@ -185,11 +185,29 @@ LPWSTR MyGetExceptionStr
         case EXCEPTION_RESULT_FLOAT:
             return L"EXCEPTION_RESULT_FLOAT";
 
-        case EXCEPTION_RESULT_RAT:
-            return L"EXCEPTION_RESULT_RAT";
-
+////////case EXCEPTION_RESULT_RAT:
+////////    return L"EXCEPTION_RESULT_RAT";
+////////
         case EXCEPTION_RESULT_VFP:
             return L"EXCEPTION_RESULT_VFP";
+
+        case EXCEPTION_RESULT_HC2F:
+            return L"EXCEPTION_RESULT_HC2F";
+
+        case EXCEPTION_RESULT_HC2V:
+            return L"EXCEPTION_RESULT_HC2V";
+
+        case EXCEPTION_RESULT_HC4F:
+            return L"EXCEPTION_RESULT_HC4F";
+
+        case EXCEPTION_RESULT_HC4V:
+            return L"EXCEPTION_RESULT_HC4V";
+
+        case EXCEPTION_RESULT_HC8F:
+            return L"EXCEPTION_RESULT_HC8F";
+
+        case EXCEPTION_RESULT_HC8V:
+            return L"EXCEPTION_RESULT_HC8V";
 
         case EXCEPTION_DOMAIN_ERROR:
             return L"EXCEPTION_DOMAIN_ERROR";
@@ -419,6 +437,75 @@ int CheckMemVirtStr
 
 
 //***************************************************************************
+//  $CheckHCDim
+//
+//  Check on a structured exception's HC Dimension
+//***************************************************************************
+
+long CheckHCDim
+    (LPEXCEPTION_POINTERS lpExcept,         // Ptr to exception information
+     int                  iHCDim)           // Expected HC Dimension (1, 2, 4, 8)
+
+{
+    // Split cases based upon the exception code
+    switch (lpExcept->ExceptionRecord->ExceptionCode)
+    {
+        case EXCEPTION_RESULT_FLOAT:
+        case EXCEPTION_RESULT_VFP:
+            if (iHCDim <= 1)
+                return EXCEPTION_CONTINUE_SEARCH;
+            else
+                return EXCEPTION_EXECUTE_HANDLER;
+
+        case EXCEPTION_RESULT_HC2F:
+        case EXCEPTION_RESULT_HC2V:
+            if (iHCDim <= 2)
+                return EXCEPTION_CONTINUE_SEARCH;
+            else
+                return EXCEPTION_EXECUTE_HANDLER;
+
+        case EXCEPTION_RESULT_HC4F:
+        case EXCEPTION_RESULT_HC4V:
+            if (iHCDim <= 4)
+                return EXCEPTION_CONTINUE_SEARCH;
+            else
+                return EXCEPTION_EXECUTE_HANDLER;
+
+////////case EXCEPTION_RESULT_HC8F:
+////////case EXCEPTION_RESULT_HC8V:
+////////    if (iHCDim <= 8)
+////////        return EXCEPTION_CONTINUE_SEARCH;
+////////    else
+////////        return EXCEPTION_EXECUTE_HANDLER;
+////////
+        default:
+            return EXCEPTION_CONTINUE_SEARCH;
+    } // End SWITCH
+} // End CheckHCDim
+
+
+//***************************************************************************
+//  $CheckExceptionS
+//
+//  Check on a structured exception
+//***************************************************************************
+
+long CheckExceptionS
+    (LPEXCEPTION_POINTERS lpExcept,         // Ptr to exception information
+     LPCHAR               lpText)           // Ptr to text of exception handler
+
+{
+    WCHAR lpwText[128];
+
+    MySprintfW (lpwText,
+                sizeof (lpwText),
+                L"%S",
+                lpText);
+    return CheckException (lpExcept, lpwText);
+} // End CheckExceptionS
+
+
+//***************************************************************************
 //  $CheckException
 //
 //  Check on a structured exception
@@ -467,7 +554,13 @@ long CheckException
 ////////case EXCEPTION_RESULT_INT:
         case EXCEPTION_RESULT_FLOAT:
         case EXCEPTION_RESULT_VFP:
-        case EXCEPTION_RESULT_RAT:
+////////case EXCEPTION_RESULT_RAT:
+        case EXCEPTION_RESULT_HC2F:
+        case EXCEPTION_RESULT_HC2V:
+        case EXCEPTION_RESULT_HC4F:
+        case EXCEPTION_RESULT_HC4V:
+        case EXCEPTION_RESULT_HC8F:
+        case EXCEPTION_RESULT_HC8V:
         case EXCEPTION_DOMAIN_ERROR:
         case EXCEPTION_NONCE_ERROR:
         case EXCEPTION_LIMIT_ERROR:

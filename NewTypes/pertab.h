@@ -80,7 +80,8 @@ typedef struct tagPERTABDATA
                  bExecuting:1,              // 00000004:  TRUE iff we're waiting for an execution to complete
                  bInTF:1,                   // 00000008:  TRUE if we're fixing a function via []TF
                  bTempOpen:1,               // 00000010:  TRUE if lpwszTemp is open and open-ended
-                 :27;                       // FFFFFFE0:  Available bits
+                 eHCMul:2,                  // 00000060:  Hypercomplex Arithmetic Multiplication choice (see tagENUM_HCMUL)
+                 :25;                       // FFFFFF80:  Available bits
     HGLOBAL      hGlbCurLine;               // Current line global memory handle
     LPWCHAR      lpwszTempName;             // Ptr to current name with lpwszTemp open
     LPWCHAR      lpwszErrorMessage;         // Ptr to error message to signal

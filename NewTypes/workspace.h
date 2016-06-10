@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2015 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@
 #define KEYNAME_WSID                    L"WSID"
 
 // Workspace Version string
-#define WS_VERSTR               L"0.01"
+#define WS_VERSTR               L"0.02"
 #define WS_VERLEN               32      // Length of longest WS_VERSTR
 
 // Format string for [Globals] section keyname
@@ -76,10 +76,10 @@
 
 typedef struct tagSAVEDWSGLBVARPARM
 {
-    LPAPLCHAR   lpMemSaveWSID;          // Ptr to saved WS file DPFE
-    LPUINT      lpuGlbCnt;              // Ptr to [Globals] count
-    LPSYMENTRY  lpSymEntry;             // Ptr to this global's SYMENTRY
-    LPSYMENTRY *lplpSymLink;            // Ptr to ptr to SYMENTRY link
+    LPDICTIONARY lpDict;                // Ptr to the dictionary
+    LPUINT       lpuGlbCnt;             // Ptr to [Globals] count
+    LPSYMENTRY   lpSymEntry;            // Ptr to this global's SYMENTRY
+    LPSYMENTRY  *lplpSymLink;           // Ptr to ptr to SYMENTRY link
 } SAVEDWSGLBVARPARM, *LPSAVEDWSGLBVARPARM;
 
 typedef LPAPLCHAR (*LPSAVEDWSGLBVARCONV) (LPAPLCHAR, HGLOBAL, LPSAVEDWSGLBVARPARM);
@@ -101,11 +101,11 @@ typedef HGLOBAL (*LPLOADWSGLBVARCONV) (UINT, LPLOADWSGLBVARPARM);
 
 typedef struct tagSAVEDWSGLBFCNPARM
 {
-    LPAPLCHAR   lpMemSaveWSID;          // Ptr to saved WS file DPFE
-    LPAPLCHAR   lpwszFcnTypeName;       // Ptr to the function section name as F nnn.Name where nnn is the count
-    LPUINT      lpuGlbCnt;              // Ptr to [Globals] count
-    LPSYMENTRY  lpSymEntry;             // Ptr to this global's SYMENTRY
-    LPSYMENTRY *lplpSymLink;            // Ptr to ptr to SYMENTRY link
+    LPDICTIONARY lpDict;                // Ptr to the dictionary
+    LPAPLCHAR    lpwszFcnTypeName;      // Ptr to the function section name as F nnn.Name where nnn is the count
+    LPUINT       lpuGlbCnt;             // Ptr to [Globals] count
+    LPSYMENTRY   lpSymEntry;            // Ptr to this global's SYMENTRY
+    LPSYMENTRY  *lplpSymLink;           // Ptr to ptr to SYMENTRY link
 } SAVEDWSGLBFCNPARM, *LPSAVEDWSGLBFCNPARM;
 
 typedef LPAPLCHAR (*LPSAVEDWSGLBFCNCONV) (LPAPLCHAR, HGLOBAL, LPSAVEDWSGLBFCNPARM);

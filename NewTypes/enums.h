@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -129,14 +129,23 @@ typedef enum tagEXCEPTION_CODES // Exception Codes
 {
     EXCEPTION_SUCCESS = 0 ,     // 00:  All OK
     EXCEPTION_RESULT_FLOAT ,    // 01:  Result should be Float
-    EXCEPTION_RESULT_RAT   ,    // 02:  Result should be RAT
+    EXCEPTION_RESULT_RAT   ,    // 02:  Result should be RAT ***FIXME*** -- When can this occur?
     EXCEPTION_RESULT_VFP   ,    // 03:  Result should be VFP
     EXCEPTION_DOMAIN_ERROR ,    // 04:  Signal a DOMAIN ERROR
     EXCEPTION_LIMIT_ERROR  ,    // 05:  Signal a LIMIT ERROR
     EXCEPTION_NONCE_ERROR  ,    // 06:  Signal a NONCE ERROR
     EXCEPTION_WS_FULL      ,    // 07:  Signal a WS FULL
     EXCEPTION_CTRL_BREAK   ,    // 08:  Ctrl-Break pressed
-} EXCEPTION_CODES;
+    EXCEPTION_RESULT_HC2F  ,    // 09:  Result should be HC2F
+    EXCEPTION_RESULT_HC2V  ,    // 0A:  Result should be HC2V
+    EXCEPTION_RESULT_HC4F  ,    // 0B:  Result should be HC4F
+    EXCEPTION_RESULT_HC4V  ,    // 0C:  Result should be HC4V
+    EXCEPTION_RESULT_HC8F  ,    // 0D:  Result should be HC8F
+    EXCEPTION_RESULT_HC8V  ,    // 0E:  Result should be HC8V
+
+    EXCEPTION_RESULT_HC1F = EXCEPTION_RESULT_FLOAT, // To simplify common macros
+    EXCEPTION_RESULT_HC1V = EXCEPTION_RESULT_VFP  , // ...
+} EXCEPTION_CODES, *LPEXCEPTION_CODES;
 
 // N.B.:  Whenever changing the above tagEXCEPTION_CODES enum,
 //   be sure to make a corresponding change to
@@ -343,6 +352,45 @@ enum tagMP_ENUM         // Multi-precision mpX_invalid arguments
     MP_DIVISIBLE_UI_P   ,   // 2B:  rop = non-zero if N is evenly divisible by D
     MP_DIVISIBLE_2EXP_P ,   // 2C:  rop = non-zero if N is evenly divisible by 2^D
 } MP_ENUM;
+
+
+typedef enum tagENUM_HCFI   // Indices into HCxFCN arrays
+{
+    ENUM_HCFI1 = 0     ,    // 00: 1-measurable (APLBOOL, APLINT, APLFLOAT)
+    ENUM_HCFI2         ,    // 01: 2-...        (APLHC2I, APLHC2F, APLHC2R, APLHC2V)
+    ENUM_HCFI4         ,    // 02: 4-           (APLHC4I, APLHC4F, APLHC4R, APLHC4V)
+    ENUM_HCFI8         ,    // 03: 8-...        (APLHC8I, APLHC8F, APLHC8R, APLHC8V)
+    ENUM_HCFI_LENGTH   ,    // 04: Length of this enum
+    ENUM_HCFI_ERR = -1 ,    // -1: Error
+} ENUM_HCFI, *LPENUM_HCFI;
+
+// N.B.: Whenever changing the above enum (ENUM_HCFI),
+//   be sure to make a corresponding change to
+//   <aArrayTypeToHCDimIndex> in <externs.h>, and
+//   the four <HCx_FCN>s in <externs.h>.
+
+
+//***************************************************************************
+//  Use []CT, SYS_CT, or none
+//***************************************************************************
+typedef enum tagENUM_CT
+{
+    ENUMCT_NONE = 0 ,       // 00:  No []CT to be used (comparisons are exact)
+    ENUMCT_USER     ,       // 01:  User []CT to be used (for FLT, VFP, HCxF, and HCxV only)
+    ENUMCT_SYS      ,       // 02:  System CT to be used (for FLT, VFP, HCxF, and HCxV only, integer tolerance)
+} ENUM_CT, *LPENUM_CT;
+
+
+//***************************************************************************
+//  Hypercomplex Arithmetic Multiplication Choice
+//***************************************************************************
+
+typedef enum tagENUM_HCMUL
+{
+    ENUMHCM_NONE = 0,       // 00:  Normal multiplication
+    ENUMHCM_COMM = 1,       // 01:  Commutative ...
+    ENUMHCM_ANTI = 2,       // 02:  Anti-commutative ...
+} ENUM_HCMUL, *LPENUM_HCMUL;
 
 
 //***************************************************************************

@@ -444,45 +444,6 @@ UBOOL DisplayGlbArr_EM
                                      TRUE);                 // TRUE iff top level array
                 break;
 
-            case ARRAY_INT:
-////////////////lpaplChar =
-                  CompileArrInteger ((LPAPLINT)    lpMemArr,// Ptr to right arg memory
-                                     lpFmtHeader,           // Ptr to parent header
-                                     lpFmtColStr,           // Ptr to vector of ColStrs
-                                     lpaplCharStart,        // Ptr to compiled output
-                                     aplDimNRows,           // # rows
-                                     aplDimNCols,           // # cols
-                                     aplRank,               // Right arg rank
-                                     lpMemDim,              // Ptr to right arg dimensions
-                                     TRUE);                 // TRUE iff top level array
-                break;
-
-            case ARRAY_FLOAT:
-////////////////lpaplChar =
-                  CompileArrFloat   ((LPAPLFLOAT)  lpMemArr,// Ptr to right arg memory
-                                     lpFmtHeader,           // Ptr to parent header
-                                     lpFmtColStr,           // Ptr to vector of ColStrs
-                                     lpaplCharStart,        // Ptr to compiled output
-                                     aplDimNRows,           // # rows
-                                     aplDimNCols,           // # cols
-                                     aplRank,               // Right arg rank
-                                     lpMemDim,              // Ptr to right arg dimensions
-                                     TRUE);                 // TRUE iff top level array
-                break;
-
-            case ARRAY_APA:
-////////////////lpaplChar =
-                  CompileArrAPA     ((LPAPLAPA)    lpMemArr,// Ptr to right arg memory
-                                     lpFmtHeader,           // Ptr to parent header
-                                     lpFmtColStr,           // Ptr to vector of ColStrs
-                                     lpaplCharStart,        // Ptr to compiled output
-                                     aplDimNRows,           // # rows
-                                     aplDimNCols,           // # cols
-                                     aplRank,               // Right arg rank
-                                     lpMemDim,              // Ptr to right arg dimensions
-                                     TRUE);                 // TRUE iff top level array
-                break;
-
             case ARRAY_CHAR:
 ////////////////lpaplChar =
                   CompileArrChar    ((LPAPLCHAR)   lpMemArr,// Ptr to right arg memory
@@ -523,27 +484,70 @@ UBOOL DisplayGlbArr_EM
                                      TRUE);                 // TRUE iff top level array
                 break;
 
-            case ARRAY_RAT:
+            case ARRAY_INT:
+            case ARRAY_APA:
+            case ARRAY_HC2I:
+            case ARRAY_HC4I:
+            case ARRAY_HC8I:
 ////////////////lpaplChar =
-                  CompileArrRat     ((LPAPLRAT)    lpMemArr,// Ptr to right arg memory
+                  CompileArrHCxI    (lpMemArr,              // Ptr to right arg memory
                                      lpFmtHeader,           // Ptr to parent header
                                      lpFmtColStr,           // Ptr to vector of ColStrs
                                      lpaplCharStart,        // Ptr to compiled output
                                      aplDimNRows,           // # rows
                                      aplDimNCols,           // # cols
+                                     aplType,               // Right arg storage type
+                                     aplRank,               // Right arg rank
+                                     lpMemDim,              // Ptr to right arg dimensions
+                                     TRUE);                 // TRUE iff top level array
+                break;
+
+            case ARRAY_FLOAT:
+            case ARRAY_HC2F:
+            case ARRAY_HC4F:
+            case ARRAY_HC8F:
+////////////////lpaplChar =
+                  CompileArrHCxF    (lpMemArr,              // Ptr to right arg memory
+                                     lpFmtHeader,           // Ptr to parent header
+                                     lpFmtColStr,           // Ptr to vector of ColStrs
+                                     lpaplCharStart,        // Ptr to compiled output
+                                     aplDimNRows,           // # rows
+                                     aplDimNCols,           // # cols
+                                     aplType,               // Right arg storage type
+                                     aplRank,               // Right arg rank
+                                     lpMemDim,              // Ptr to right arg dimensions
+                                     TRUE);                 // TRUE iff top level array
+                break;
+
+            case ARRAY_RAT:
+            case ARRAY_HC2R:
+            case ARRAY_HC4R:
+            case ARRAY_HC8R:
+////////////////lpaplChar =
+                  CompileArrHCxR    (lpMemArr,              // Ptr to right arg memory
+                                     lpFmtHeader,           // Ptr to parent header
+                                     lpFmtColStr,           // Ptr to vector of ColStrs
+                                     lpaplCharStart,        // Ptr to compiled output
+                                     aplDimNRows,           // # rows
+                                     aplDimNCols,           // # cols
+                                     aplType,               // Right arg storage type
                                      aplRank,               // Right arg rank
                                      lpMemDim,              // Ptr to right arg dimensions
                                      TRUE);                 // TRUE iff top level array
                 break;
 
             case ARRAY_VFP:
+            case ARRAY_HC2V:
+            case ARRAY_HC4V:
+            case ARRAY_HC8V:
 ////////////////lpaplChar =
-                  CompileArrVfp     ((LPAPLVFP)    lpMemArr,// Ptr to right arg memory
+                  CompileArrHCxV    (lpMemArr,              // Ptr to right arg memory
                                      lpFmtHeader,           // Ptr to parent header
                                      lpFmtColStr,           // Ptr to vector of ColStrs
                                      lpaplCharStart,        // Ptr to compiled output
                                      aplDimNRows,           // # rows
                                      aplDimNCols,           // # cols
+                                     aplType,               // Right arg storage type
                                      aplRank,               // Right arg rank
                                      lpMemDim,              // Ptr to right arg dimensions
                                      TRUE);                 // TRUE iff top level array
@@ -606,6 +610,18 @@ UBOOL DisplayGlbArr_EM
             case ARRAY_HETERO:
             case ARRAY_RAT:
             case ARRAY_VFP:
+            case ARRAY_HC2I:
+            case ARRAY_HC2F:
+            case ARRAY_HC2R:
+            case ARRAY_HC2V:
+            case ARRAY_HC4I:
+            case ARRAY_HC4F:
+            case ARRAY_HC4R:
+            case ARRAY_HC4V:
+            case ARRAY_HC8I:
+            case ARRAY_HC8F:
+            case ARRAY_HC8R:
+            case ARRAY_HC8V:
 ////////////////lpaplChar =
                   FormatArrSimple (lpFmtHeader,             // Ptr to FMTHEADER
                                    lpFmtColStr,             // Ptr to vector of <aplChrNCols> FMTCOLSTRs
@@ -939,40 +955,119 @@ LPAPLCHAR FormatImmed
     {
         case IMMTYPE_BOOL:
             lpaplChar =
-              FormatAplInt (lpaplChar,          // Ptr to output save area
-        BIT0 & *(LPAPLBOOL) lpaplLongest);      // The value to format
+              FormatAplIntFC (lpaplChar,            // Ptr to output save area
+          BIT0 & *(LPAPLBOOL) lpaplLongest,         // The value to format
+                              UTF16_OVERBAR);       // Char to use as overbar
             break;
 
         case IMMTYPE_INT:
             lpaplChar =
-              FormatAplInt (lpaplChar,          // Ptr to output save area
-                *(LPAPLINT) lpaplLongest);      // The value to format
+              FormatAplInt (lpaplChar,              // Ptr to output save area
+                 (LPAPLINT) lpaplLongest);          // Ptr to the value to format
             break;
 
         case IMMTYPE_CHAR:
             *lpaplChar++ = *(LPAPLCHAR) lpaplLongest;
-            *lpaplChar++ = L' ';                        // Append a blank to be deleted
+            *lpaplChar++ = L' ';                    // Append a blank to be deleted
 
             break;
 
         case IMMTYPE_FLOAT:
             lpaplChar =
-              FormatAplFlt (lpaplChar,          // Ptr to output save area
-              *(LPAPLFLOAT) lpaplLongest,       // The value to format
-                            0);                 // Use default significant digits
+              FormatAplFlt (lpaplChar,      // Ptr to output save area
+               (LPAPLFLOAT) lpaplLongest,   // Ptr to the value to format
+                            0);             // Use default significant digits
             break;
 
         case IMMTYPE_RAT:
             lpaplChar =
-              FormatAplRat (lpaplChar,          // Ptr to output save area
-                *(LPAPLRAT) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest))); // The value to format
+              FormatAplRat (lpaplChar,      // Ptr to output save area
+                 (LPAPLRAT) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest))); // Ptr to the value to format
             break;
 
         case IMMTYPE_VFP:
             lpaplChar =
-              FormatAplVfp (lpaplChar,          // Ptr to output save area
-                *(LPAPLVFP) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)),  // The value to format
+              FormatAplVfp (lpaplChar,      // Ptr to output save area
+                 (LPAPLVFP) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)),  // Ptr to the value to format
                             GetQuadPPV ()); // Use this many significant digits for VFP
+            break;
+
+        case IMMTYPE_HC2I:
+            lpaplChar =
+              FormatAplHC2I (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC2I) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest))); // Ptr to the value to format
+            break;
+
+        case IMMTYPE_HC4I:
+            lpaplChar =
+              FormatAplHC4I (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC4I) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest))); // Ptr to the value to format
+            break;
+
+        case IMMTYPE_HC8I:
+            lpaplChar =
+              FormatAplHC8I (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC8I) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest))); // Ptr to the value to format
+            break;
+
+        case IMMTYPE_HC2F:
+            lpaplChar =
+              FormatAplHC2F (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC2F) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)), // Ptr to the value to format
+                             0);            // Use default significant digits
+            break;
+
+        case IMMTYPE_HC4F:
+            lpaplChar =
+              FormatAplHC4F (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC4F) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)), // Ptr to the value to format
+                             0);            // Use default significant digits
+            break;
+
+        case IMMTYPE_HC8F:
+            lpaplChar =
+              FormatAplHC8F (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC8F) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)), // Ptr to the value to format
+                             0);            // Use default significant digits
+            break;
+
+        case IMMTYPE_HC2R:
+            lpaplChar =
+              FormatAplHC2R (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC2R) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest))); // Ptr to the value to format
+            break;
+
+        case IMMTYPE_HC4R:
+            lpaplChar =
+              FormatAplHC4R (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC4R) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest))); // Ptr to the value to format
+            break;
+
+        case IMMTYPE_HC8R:
+            lpaplChar =
+              FormatAplHC8R (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC8R) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest))); // Ptr to the value to format
+            break;
+
+        case IMMTYPE_HC2V:
+            lpaplChar =
+              FormatAplHC2V (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC2V) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)), // Ptr to the value to format
+                             GetQuadPPV ());// Use this many significant digits for VFP
+            break;
+
+        case IMMTYPE_HC4V:
+            lpaplChar =
+              FormatAplHC4V (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC4V) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)), // Ptr to the value to format
+                             GetQuadPPV ());// Use this many significant digits for VFP
+            break;
+
+        case IMMTYPE_HC8V:
+            lpaplChar =
+              FormatAplHC8V (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC8V) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)), // Ptr to the value to format
+                             GetQuadPPV ());// Use this many significant digits for VFP
             break;
 
         case IMMTYPE_ERROR:
@@ -990,13 +1085,13 @@ LPAPLCHAR FormatImmed
                 case ARRAY_RAT:
                     lpaplChar =
                       FormatAplRat (lpaplChar,      // Ptr to output save area
-                        *(LPAPLRAT) lpMemGlbNum);   // The value to format
+                         (LPAPLRAT) lpMemGlbNum);   // Ptr to the value to format
                     break;
 
                 case ARRAY_VFP:
                     lpaplChar =
                       FormatAplVfp (lpaplChar,      // Ptr to output save area
-                        *(LPAPLVFP) lpMemGlbNum,    // The value to format
+                         (LPAPLVFP) lpMemGlbNum,    // Ptr to the value to format
                                     GetQuadPPV ()); // Use this many significant digits for VFP
                     break;
 
@@ -1049,7 +1144,7 @@ LPAPLCHAR FormatImmedFC
         case IMMTYPE_INT:
             lpaplChar =
               FormatAplIntFC (lpaplChar,                        // Ptr to output save area
-                              *(LPAPLINT) lpaplLongest,         // The value to format
+                             *(LPAPLINT) lpaplLongest,          // The value to format
                               aplCharOverbar);                  // Char to use as overbar
             break;
 
@@ -1143,7 +1238,7 @@ LPAPLCHAR FormatImmedPtr
         case IMMTYPE_INT:
             lpaplChar =
               FormatAplInt (lpaplChar,      // Ptr to output save area
-                *(LPAPLINT) lpaplLongest);  // The value to format
+                 (LPAPLINT) lpaplLongest);  // The value to format
             break;
 
         case IMMTYPE_CHAR:
@@ -1155,21 +1250,99 @@ LPAPLCHAR FormatImmedPtr
         case IMMTYPE_FLOAT:
             lpaplChar =
               FormatAplFlt (lpaplChar,      // Ptr to output save area
-              *(LPAPLFLOAT) lpaplLongest,   // The value to format
+               (LPAPLFLOAT) lpaplLongest,   // The value to format
                             0);             // Use default significant digits
             break;
 
         case IMMTYPE_RAT:
             lpaplChar =
               FormatAplRat (lpaplChar,      // Ptr to output save area
-                *(LPAPLRAT) lpaplLongest);  // The value to format
+                 (LPAPLRAT) lpaplLongest);  // The value to format
             break;
 
         case IMMTYPE_VFP:
             lpaplChar =
               FormatAplVfp (lpaplChar,      // Ptr to output save area
-                *(LPAPLVFP) lpaplLongest,   // The value to format
+                 (LPAPLVFP) lpaplLongest,   // The value to format
                             GetQuadPPV ()); // Use this many significant digits for VFP
+            break;
+
+        case IMMTYPE_HC2I:
+            lpaplChar =
+              FormatAplHC2I (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC2I) lpaplLongest); // Ptr to the value to format
+            break;
+
+        case IMMTYPE_HC4I:
+            lpaplChar =
+              FormatAplHC4I (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC4I) lpaplLongest); // Ptr to the value to format
+            break;
+
+        case IMMTYPE_HC8I:
+            lpaplChar =
+              FormatAplHC8I (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC8I) lpaplLongest); // Ptr to the value to format
+            break;
+
+        case IMMTYPE_HC2F:
+            lpaplChar =
+              FormatAplHC2F (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC2F) lpaplLongest,  // Ptr to the value to format
+                             0);            // Use default significant digits
+            break;
+
+        case IMMTYPE_HC4F:
+            lpaplChar =
+              FormatAplHC4F (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC4F) lpaplLongest,  // Ptr to the value to format
+                             0);            // Use default significant digits
+            break;
+
+        case IMMTYPE_HC8F:
+            lpaplChar =
+              FormatAplHC8F (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC8F) lpaplLongest,  // Ptr to the value to format
+                             0);            // Use default significant digits
+            break;
+
+        case IMMTYPE_HC2R:
+            lpaplChar =
+              FormatAplHC2R (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC2R) lpaplLongest); // Ptr to the value to format
+            break;
+
+        case IMMTYPE_HC4R:
+            lpaplChar =
+              FormatAplHC4R (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC4R) lpaplLongest); // Ptr to the value to format
+            break;
+
+        case IMMTYPE_HC8R:
+            lpaplChar =
+              FormatAplHC8R (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC8R) lpaplLongest); // Ptr to the value to format
+            break;
+
+        case IMMTYPE_HC2V:
+            lpaplChar =
+              FormatAplHC2V (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC2V) lpaplLongest,  // Ptr to the value to format
+                             GetQuadPPV ());// Use this many significant digits for VFP
+            break;
+
+        case IMMTYPE_HC4V:
+            lpaplChar =
+              FormatAplHC4V (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC4V) lpaplLongest,  // Ptr to the value to format
+                             GetQuadPPV ());// Use this many significant digits for VFP
+            break;
+
+        case IMMTYPE_HC8V:
+            lpaplChar =
+              FormatAplHC8V (lpaplChar,     // Ptr to output save area
+                 (LPAPLHC8V) lpaplLongest,  // Ptr to the value to format
+                             GetQuadPPV ());// Use this many significant digits for VFP
             break;
 
         defstop
@@ -1188,11 +1361,11 @@ LPAPLCHAR FormatImmedPtr
 
 LPAPLCHAR FormatAplInt
     (LPAPLCHAR lpaplChar,           // Ptr to output save area
-     APLINT    aplInt)              // Integer to format
+     LPVOID    lpaplInt)            // Ptr to the value to format
 
 {
     return FormatAplIntFC (lpaplChar,       // Ptr to output save area
-                           aplInt,          // The value to format
+               *(LPAPLINT) lpaplInt,        // The value to format
                            UTF16_OVERBAR);  // Char to use as overbar
 } // End FormatAplInt
 
@@ -1269,11 +1442,11 @@ NORMAL_EXIT:
 
 LPAPLCHAR FormatAplRat
     (LPAPLCHAR lpaplChar,           // Ptr to output save area
-     APLRAT    aplRat)              // The value to format
+     LPVOID    lpaplRat)            // Ptr to the value to format
 
 {
     return FormatAplRatFC (lpaplChar,       // Ptr to output save area
-                           aplRat,          // The value to format
+                           lpaplRat,        // Ptr to the value to format
                            UTF16_OVERBAR,   // Char to use as overbar
                            DEF_RATSEP,      // Char to use as rational separator
                            FALSE,           // TRUE iff we're to substitute text for infinity
@@ -1289,7 +1462,7 @@ LPAPLCHAR FormatAplRat
 
 LPAPLCHAR FormatAplRatFC
     (LPAPLCHAR lpaplChar,           // Ptr to output save area
-     APLRAT    aplRat,              // The value to format
+     LPAPLRAT  lpaplRat,            // Ptr to the value to format
      APLCHAR   aplCharOverbar,      // Char to use as overbar
      APLCHAR   aplCharRatSep,       // Char to use as rational separator
      UBOOL     bSubstInf,           // TRUE iff we're to substitute text for infinity
@@ -1303,23 +1476,23 @@ LPAPLCHAR FormatAplRatFC
     LPCHAR    lpRawFmt;             // Ptr to raw formatted #
     APLUINT   uTotSize;             // Total size of formatted #
 
-    Assert (!IsMpqNULL (&aplRat));
+    Assert (!IsMpqNULL (lpaplRat));
 
     lpRawFmt = (LPCHAR) lpaplChar;
 
-    // If the number is not +/- infinity, ...
-    if (!mpq_inf_p (&aplRat))
+    // If the number is NOT +/- infinity, ...
+    if (!mpq_inf_p (lpaplRat))
     {
         // If the denominator is NE 1, ...
-        if (mpz_cmp_ui (mpq_denref (&aplRat), 1) NE 0)
+        if (mpz_cmp_ui (mpq_denref (lpaplRat), 1) NE 0)
             // Canonicalize the arg
-            mpq_canonicalize (&aplRat);
+            mpq_canonicalize (lpaplRat);
 
         // Calculate the needed size, where both "1 +"s include the sign,
         //   the first "+ 1" includes the 'r' separator and the second
         //   one the terminating zero
-        uTotSize = 1 + mpz_sizeinbase (mpq_numref (&aplRat), 10) + 1 +
-                   1 + mpz_sizeinbase (mpq_denref (&aplRat), 10) + 1;
+        uTotSize = 1 + mpz_sizeinbase (mpq_numref (lpaplRat), 10) + 1 +
+                   1 + mpz_sizeinbase (mpq_denref (lpaplRat), 10) + 1;
         // Double as we convert in place
         uTotSize = 2 * uTotSize;
 
@@ -1331,7 +1504,7 @@ LPAPLCHAR FormatAplRatFC
     } // End IF
 
     // Format the num/den
-    mpq_get_str (lpRawFmt, 10, &aplRat);
+    mpq_get_str (lpRawFmt, 10, lpaplRat);
 
     // Convert a leading minus to aplCharOverbar
     bNeg = (lpRawFmt[0] EQ '-');
@@ -1397,13 +1570,13 @@ LPAPLCHAR FormatAplRatFC
 
 LPAPLCHAR FormatAplFlt
     (LPWCHAR  lpaplChar,        // Ptr to output save area
-     APLFLOAT aplFloat,         // The value to format
+     LPVOID   lpaplFloat,       // Ptr to the value to format
      APLUINT  nDigits)          // Raw or E-format:  # significant digits
                                 // F-format:  # digits to right of decimal sep
 
 {
     return FormatAplFltFC (lpaplChar,               // Ptr to output save area
-                           aplFloat,                // The value to format
+             *(LPAPLFLOAT) lpaplFloat,              // The value to format
                            nDigits,                 // # significant digits (0 = default)
                            L'.',                    // Char to use as decimal separator
                            UTF16_OVERBAR,           // Char to use as overbar
@@ -1976,12 +2149,12 @@ LPAPLCHAR FormatExpFmt
 
 LPAPLCHAR FormatAplVfp
     (LPWCHAR  lpaplChar,        // Ptr to output save area
-     APLVFP   aplVfp,           // The value to format
+     LPVOID   lpaplVfp,         // Ptr to the value to format
      APLUINT  nDigits)          // # significant digits (0 = all)
 
 {
     return FormatAplVfpFC (lpaplChar,               // Ptr to output save area
-                           aplVfp,                  // The value to format
+                           lpaplVfp,                // Ptr to the value to format
                            nDigits,                 // # significant digits (0 = all)
                            UTF16_DOT,               // Char to use as decimal separator
                            UTF16_OVERBAR,           // Char to use as overbar
@@ -1999,7 +2172,7 @@ LPAPLCHAR FormatAplVfp
 
 LPAPLCHAR FormatAplVfpFC
     (LPWCHAR    lpaplChar,          // Ptr to output save area
-     APLVFP     aplVfp,             // The value to format
+     LPAPLVFP   lpaplVfp,           // Ptr to the value to format
      APLINT     nDigits,            // # significant digits (0 = all), or
                                     // # fractional digits (if bFractDigs)
                                     // If negative, use E-format
@@ -2030,13 +2203,15 @@ LPAPLCHAR FormatAplVfpFC
     //                  = 1 + floor (P x log10 (2))
     //   where log10 (2) = (ln (2)) / (ln (10))
     //                   = M_LN2 / M_LN10
-    nDigFPC = 1 + (int) floor (mpfr_get_prec (&aplVfp) * M_LN2 / M_LN10);
+    nDigFPC = 1 + (int) floor (mpfr_get_prec (lpaplVfp) * M_LN2 / M_LN10);
 
     // Display no more than this # digits
     if (nDigits < 0)
         nDigits = max (nDigits, -nDigFPC);
     else
         nDigits = min (nDigits,  nDigFPC);
+
+    Assert (!IsMpfNULL (lpaplVfp));
 
     // If we're to precede the display with (FPCnnn), ...
     if (bPrecFPC)
@@ -2045,17 +2220,18 @@ LPAPLCHAR FormatAplVfpFC
         *lpaplChar++ = L'(';
 
         lpaplChar =
-          FormatAplInt (lpaplChar,                  // Ptr to output save area
-                        mpfr_get_prec (&aplVfp));   // The value to format
+          FormatAplIntFC (lpaplChar,                // Ptr to output save area
+                          mpfr_get_prec (lpaplVfp), // The value to format
+                          UTF16_OVERBAR);           // Char to use as overbar
         // Append trailing marker overwriting the trailing space
         lpaplChar[-1] = L')';
     } // End IF
 
     // Izit an infinity?
-    if (IsMpfInfinity (&aplVfp))
+    if (IsMpfInfinity (lpaplVfp))
     {
         // Izit negative?
-        if (mpfr_sgn (&aplVfp) < 0)
+        if (mpfr_sgn (lpaplVfp) < 0)
             *lpaplChar++ = aplCharOverbar;
         *lpaplChar++ = UTF16_INFINITY;
     } else
@@ -2070,7 +2246,7 @@ LPAPLCHAR FormatAplVfpFC
                      &expptr,               // Ptr to exponent save area
                       10,                   // Base of number system
                       0,                    // # significant digits (0 = all)
-                     &aplVfp,               // Ptr to VFP number
+                      lpaplVfp,             // Ptr to VFP number
                       MPFR_RNDN);           // Rounding mode
         // If we're not already displaying in E-format, ...
         if (nDigits > 0)
@@ -2151,7 +2327,7 @@ LPAPLCHAR FormatAplVfpFC
                          &expptr,                       // Ptr to exponent save area
                           10,                           // Base of number system
                           iSigDigs,                     // # significant digits (0 = all)
-                         &aplVfp,                       // Ptr to VFP number
+                          lpaplVfp,                     // Ptr to VFP number
                           MPFR_RNDN);                   // Rounding mode
         // Get the char length
         iLen = lstrlen (lpRawFmt);
@@ -2216,13 +2392,13 @@ LPAPLCHAR FormatAplVfpFC
 
             // Format the number with exactly nDigits significant digits
             lpaplChar =
-              FormatExpFmt (lpaplChar,          // Ptr to output save area
-                     (int) -nDigits,            // # significant digits
-                            lpRawFmt,           // Ptr to raw formatted number
-                            expptr,             // Exponent
-                            DEF_MAX_QUADPPVFP,  // Maximum # significant digits
-                            aplCharDecimal,     // Char to use as decimal separator
-                            aplCharOverbar);    // Char to use as overbar
+              FormatExpFmt (lpaplChar,              // Ptr to output save area
+                     (int) -nDigits,                // # significant digits
+                            lpRawFmt,               // Ptr to raw formatted number
+                            expptr,                 // Exponent
+                            DEF_MAX_QUADPPVFP,      // Maximum # significant digits
+                            aplCharDecimal,         // Char to use as decimal separator
+                            aplCharOverbar);        // Char to use as overbar
         } else
         {
             // Convert the char to WCHAR
@@ -2340,6 +2516,1058 @@ LPAPLCHAR FormatAplVfpFC
 
     return lpaplChar;
 } // End FormatAplVfpFC
+
+
+//***************************************************************************
+//  $FormatAplHC2I
+//
+//  Format a HC2I number
+//***************************************************************************
+
+LPAPLCHAR FormatAplHC2I
+    (LPWCHAR  lpaplChar,        // Ptr to output save area
+     LPVOID   lpaplHC2I)        // Ptr to the value to format
+
+{
+    return FormatAplHC2IFC (lpaplChar,      // Ptr to output save area
+                            lpaplHC2I,      // Ptr to the value to format
+                            UTF16_OVERBAR,  // Char to use as overbar
+                            GetHC2Sep);     // Char to use as separator
+} // End FormatAplHC2I
+
+
+//***************************************************************************
+//  $FormatAplHC2IFC
+//
+//  Format a HC2I using []FC
+//***************************************************************************
+
+LPAPLCHAR FormatAplHC2IFC
+    (LPWCHAR    lpaplChar,          // Ptr to output save area
+     LPAPLHC2I  lpaplHC2I,          // Ptr to the value to format
+     APLCHAR    aplCharOverbar,     // Char to use as overbar
+     APLCHAR    aplCharSep)         // Char to use as separator
+
+{
+    int i,                          // Loop counter
+        iHCDimVar = 2;              // HC Dimension (1, 2, 4, 8)
+
+    // If we are displaying HC in infix form, ...
+    if (OptionFlags.bDispInfix)
+        // Format the real part
+        lpaplChar =
+          FormatAplIntFC (lpaplChar,            // Ptr to output save area
+                          lpaplHC2I->parts[0],  // The value to format
+                          aplCharOverbar);      // Char to use as overbar
+    else
+    // Otherwise, we're displaying in postfix form
+    {
+        // If the real part is non-zero, or the entire number is zero, ...
+        if (lpaplHC2I->parts[0] NE 0
+         || IsZeroHCxI (lpaplHC2I, iHCDimVar))
+        {
+            // Format the real part
+            lpaplChar =
+              FormatAplIntFC (lpaplChar,            // Ptr to output save area
+                              lpaplHC2I->parts[0],  // The value to format
+                              aplCharOverbar);      // Char to use as overbar
+            // If the imaginary part of the number is NOT all zero, ...
+            if (IzitImaginary (uHCxI[aHCDimToIndex[iHCDimVar]], lpaplHC2I))
+                // Append the real part separator
+                //  overwriting the trailing blank
+                lpaplChar[-1] = L's';
+            else
+                // Back up to the trailing blank so the next
+                //   coefficient overwrites it
+                lpaplChar--;
+        } // End IF
+    } // End IF/ELSE
+
+    // Loop through the imaginary parts
+    for (i = 1; i < iHCDimVar; i++)
+    // If the imaginary part is non-zero, ...
+    if (lpaplHC2I->parts[i] || OptionFlags.bDisp0Imag)
+    {
+        // If we are displaying HC in infix form, ...
+        if (OptionFlags.bDispInfix)
+            // Append the Complex separator
+            //  overwriting the trailing blank
+            lpaplChar[-1] = aplCharSep;
+
+        // Format the imag part
+        lpaplChar =
+          FormatAplIntFC (lpaplChar,            // Ptr to output save area
+                          lpaplHC2I->parts[i],  // The value to format
+                          aplCharOverbar);      // Char to use as overbar
+        // If we are NOT displaying HC in infix form, ...
+        if (!OptionFlags.bDispInfix)
+            // Append the Complex separator
+            //  overwriting the trailing blank
+            lpaplChar[-1] = aplCharSep;
+    } // End FOR/IF
+
+    // If we are NOT displaying HC in infix form, ...
+    if (!OptionFlags.bDispInfix)
+        // Append a trailing blank
+        *lpaplChar++ = L' ';
+
+    return lpaplChar;
+} // End FormatAplHC2I
+
+
+//***************************************************************************
+//  $FormatAplHC4I
+//
+//  Format a HC4I number
+//***************************************************************************
+
+LPAPLCHAR FormatAplHC4I
+    (LPWCHAR  lpaplChar,        // Ptr to output save area
+     LPVOID   lpaplHC4I)        // Ptr to the value to format
+
+{
+    return FormatAplHCxIFC (lpaplChar,      // Ptr to output save area
+                            lpaplHC4I,      // Ptr to the value to format
+                            UTF16_OVERBAR,  // Char to use as overbar
+                            4);             // HC Dimension (1, 2, 4, 8)
+} // End FormatAplHC4I
+
+
+//***************************************************************************
+//  $FormatAplHC8I
+//
+//  Format a HC8I number
+//***************************************************************************
+
+LPAPLCHAR FormatAplHC8I
+    (LPWCHAR  lpaplChar,        // Ptr to output save area
+     LPVOID   lpaplHC8I)        // Ptr to the value to format
+
+{
+    return FormatAplHCxIFC (lpaplChar,      // Ptr to output save area
+                            lpaplHC8I,      // Ptr to the value to format
+                            UTF16_OVERBAR,  // Char to use as overbar
+                            8);             // HC Dimension (1, 2, 4, 8)
+} // End FormatAplHC8I
+
+
+//***************************************************************************
+//  $FormatAplHCxIFC
+//
+//  Format a HCxI using []FC
+//***************************************************************************
+
+LPAPLCHAR FormatAplHCxIFC
+    (LPWCHAR    lpaplChar,          // Ptr to output save area
+     LPAPLHC8I  lpaplHC8I,          // Ptr to the value to format
+     APLCHAR    aplCharOverbar,     // Char to use as overbar
+     int        iHCDimVar)          // HC Dimension (1, 2, 4, 8)
+
+{
+    int i;                          // Loop counter
+
+    // If we are displaying HC in infix form, ...
+    if (OptionFlags.bDispInfix)
+        // Format the real part
+        lpaplChar =
+          FormatAplIntFC (lpaplChar,            // Ptr to output save area
+                          lpaplHC8I->parts[0],  // The value to format
+                          aplCharOverbar);      // Char to use as overbar
+    else
+    // Otherwise, we're displaying in postfix form
+    {
+        // If the real part is non-zero, or the entire number is zero, ...
+        if (lpaplHC8I->parts[0] NE 0
+         || IsZeroHCxI (lpaplHC8I, iHCDimVar))
+        {
+            // Format the real part
+            lpaplChar =
+              FormatAplIntFC (lpaplChar,            // Ptr to output save area
+                              lpaplHC8I->parts[0],  // The value to format
+                              aplCharOverbar);      // Char to use as overbar
+            // If the imaginary part of the number is NOT all zero, ...
+            if (IzitImaginary (uHCxI[aHCDimToIndex[iHCDimVar]], lpaplHC8I))
+                // Append the real part separator
+                //  overwriting the trailing blank
+                lpaplChar[-1] = L's';
+            else
+                // Back up to the trailing blank so the next
+                //   coefficient overwrites it
+                lpaplChar--;
+        } // End IF
+    } // End IF/ELSE
+
+    // Loop through the imaginary parts
+    for (i = 1; i < iHCDimVar; i++)
+    // If the next imaginary part is non-zero, ...
+    if (lpaplHC8I->parts[i] || OptionFlags.bDisp0Imag)
+    {
+        // If we are displaying HC in infix form, ...
+        if (OptionFlags.bDispInfix)
+        {
+            // Append the next HCx separator
+            //  overwriting the trailing blank
+            strcpyW (&lpaplChar[-1], hc8Sep[i - 1]);
+
+            // Skip over the separator
+            lpaplChar += lstrlenW (hc8Sep[i - 1]) - 1;
+        } // End IF
+
+        // Format the next imag part
+        lpaplChar =
+          FormatAplIntFC (lpaplChar,            // Ptr to output save area
+                          lpaplHC8I->parts[i],  // The value to format
+                          aplCharOverbar);      // Char to use as overbar
+        // If we are NOT displaying HC in infix form, ...
+        if (!OptionFlags.bDispInfix)
+        {
+            // Append the next HCx separator
+            //  overwriting the trailing blank
+            strcpyW (&lpaplChar[-1], hc8Sep[i - 1]);
+
+            // Skip over the separator
+            lpaplChar += lstrlenW (hc8Sep[i - 1]) - 1;
+        } // End IF
+    } // End FOR/IF
+
+    // If we are NOT displaying HC in infix form, ...
+    if (!OptionFlags.bDispInfix)
+        // Append a trailing blank
+        *lpaplChar++ = L' ';
+
+    return lpaplChar;
+} // End FormatAplHCxIFC
+
+
+//***************************************************************************
+//  $FormatAplHC2F
+//
+//  Format a HC2F number
+//***************************************************************************
+
+LPAPLCHAR FormatAplHC2F
+    (LPWCHAR  lpaplChar,        // Ptr to output save area
+     LPVOID   lpaplHC2F,        // Ptr to the value to format
+     APLUINT  nDigits)          // Raw or E-format:  # significant digits
+                                // F-format:  # digits to right of decimal sep
+
+{
+    return FormatAplHC2FFC (lpaplChar,          // Ptr to output save area
+                            lpaplHC2F,          // Ptr to the value to format
+                            nDigits,            // # significant digits (0 = default)
+                            UTF16_DOT,          // Char to use as decimal separator
+                            UTF16_OVERBAR,      // Char to use as overbar
+                            GetHC2Sep,          // Char to use as separator
+                            FLTDISPFMT_RAWFLT,  // Float display format
+                            FALSE);             // TRUE iff we're to substitute text for infinity
+} // End FormatAplHC2F
+
+
+//***************************************************************************
+//  $FormatAplHC2FFC
+//
+//  Format a HC2F using []FC
+//***************************************************************************
+
+LPAPLCHAR FormatAplHC2FFC
+    (LPWCHAR    lpaplChar,          // Ptr to output save area
+     LPAPLHC2F  lpaplHC2F,          // Ptr to the value to format
+     APLINT     nDigits,            // Raw or E-format:  # significant digits
+                                    // F-format:  # digits to right of decimal sep
+     APLCHAR    aplCharDecimal,     // Char to use as decimal separator
+     APLCHAR    aplCharOverbar,     // Char to use as overbar
+     APLCHAR    aplCharSep,         // Char to use a sseparator
+     FLTDISPFMT fltDispFmt,         // Float display format (see FLTDISPFMT)
+     UBOOL      bSubstInf)          // TRUE iff we're to substitute text for infinity
+
+{
+    int i,                          // Loop counter
+        iHCDimVar = 2;              // HC Dimension (1, 2, 4, 8)
+
+    // If we are displaying HC in infix form, ...
+    if (OptionFlags.bDispInfix)
+        // Format the real part
+        lpaplChar =
+          FormatAplFltFC (lpaplChar,            // Ptr to output save area
+                          lpaplHC2F->parts[0],  // The value to format
+                          nDigits,              // Raw or E-format:  # significant digits
+                                                // F-format:  # digits to right of decimal sep
+                          aplCharDecimal,       // Char to use as decimal separator
+                          aplCharOverbar,       // Char to use as overbar
+                          fltDispFmt,           // Float display format (see FLTDISPFMT)
+                          bSubstInf);           // TRUE iff we're to substitute text for infinity
+    else
+    {
+        // If the real part is non-zero, or the entire number is zero, ...
+        if (lpaplHC2F->parts[0] NE 0
+         || IsZeroHCxF (lpaplHC2F, iHCDimVar))
+        {
+            // Format the real part
+            lpaplChar =
+              FormatAplFltFC (lpaplChar,            // Ptr to output save area
+                              lpaplHC2F->parts[0],  // The value to format
+                              nDigits,              // Raw or E-format:  # significant digits
+                                                    // F-format:  # digits to right of decimal sep
+                              aplCharDecimal,       // Char to use as decimal separator
+                              aplCharOverbar,       // Char to use as overbar
+                              fltDispFmt,           // Float display format (see FLTDISPFMT)
+                              bSubstInf);           // TRUE iff we're to substitute text for infinity
+            // If the imaginary part of the number is NOT all zero, ...
+            if (IzitImaginary (uHCxF[aHCDimToIndex[iHCDimVar]], lpaplHC2F))
+                // Append the real part separator
+                //  overwriting the trailing blank
+                lpaplChar[-1] = L's';
+            else
+                // Back up to the trailing blank so the next
+                //   coefficient overwrites it
+                lpaplChar--;
+        } // End IF
+    } // End IF/ELSE
+
+    // Loop through the imaginary parts
+    for (i = 1; i < iHCDimVar; i++)
+    // If the imaginary part is non-zero, ...
+    if (lpaplHC2F->parts[i] || OptionFlags.bDisp0Imag)
+    {
+        // If we are displaying HC in infix form, ...
+        if (OptionFlags.bDispInfix)
+            // Append the Complex separator
+            //  overwriting the trailing blank
+            lpaplChar[-1] = aplCharSep;
+
+        // Format the imag part
+        lpaplChar =
+          FormatAplFltFC (lpaplChar,            // Ptr to output save area
+                          lpaplHC2F->parts[i],  // The value to format
+                          nDigits,              // Raw or E-format:  # significant digits
+                                                // F-format:  # digits to right of decimal sep
+                          aplCharDecimal,       // Char to use as decimal separator
+                          aplCharOverbar,       // Char to use as overbar
+                          fltDispFmt,           // Float display format (see FLTDISPFMT)
+                          bSubstInf);           // TRUE iff we're to substitute text for infinity
+        // If we are NOT displaying HC in infix form, ...
+        if (!OptionFlags.bDispInfix)
+            // Append the Complex separator
+            //  overwriting the trailing blank
+            lpaplChar[-1] = aplCharSep;
+    } // End FOR/IF
+
+    // If we are NOT displaying HC in infix form, ...
+    if (!OptionFlags.bDispInfix)
+        // Append a trailing blank
+        *lpaplChar++ = L' ';
+
+    return lpaplChar;
+} // End FormatAplHC2FFC
+
+
+//***************************************************************************
+//  $FormatAplHC4F
+//
+//  Format a HC4F number
+//***************************************************************************
+
+LPAPLCHAR FormatAplHC4F
+    (LPWCHAR  lpaplChar,        // Ptr to output save area
+     LPVOID   lpaplHC4F,        // Ptr to the value to format
+     APLUINT  nDigits)          // Raw or E-format:  # significant digits
+                                // F-format:  # digits to right of decimal sep
+
+{
+    return FormatAplHCxFFC (lpaplChar,          // Ptr to output save area
+                            lpaplHC4F,          // Ptr to the value to format
+                            nDigits,            // # significant digits (0 = default)
+                            UTF16_DOT,          // Char to use as decimal separator
+                            UTF16_OVERBAR,      // Char to use as overbar
+                            FLTDISPFMT_RAWFLT,  // Float display format
+                            FALSE,              // TRUE iff we're to substitute text for infinity
+                            4);                 // HC Dimension (1, 2, 4, 8)
+} // End FormatAplHC4F
+
+
+//***************************************************************************
+//  $FormatAplHC8F
+//
+//  Format a HC8F number
+//***************************************************************************
+
+LPAPLCHAR FormatAplHC8F
+    (LPWCHAR  lpaplChar,        // Ptr to output save area
+     LPVOID   lpaplHC8F,        // Ptr to the value to format
+     APLUINT  nDigits)          // Raw or E-format:  # significant digits
+                                // F-format:  # digits to right of decimal sep
+
+{
+    return FormatAplHCxFFC (lpaplChar,          // Ptr to output save area
+                            lpaplHC8F,          // Ptr to the value to format
+                            nDigits,            // # significant digits (0 = default)
+                            UTF16_DOT,          // Char to use as decimal separator
+                            UTF16_OVERBAR,      // Char to use as overbar
+                            FLTDISPFMT_RAWFLT,  // Float display format
+                            FALSE,              // TRUE iff we're to substitute text for infinity
+                            8);                 // HC Dimension (1, 2, 4, 8)
+} // End FormatAplHC8F
+
+
+//***************************************************************************
+//  $FormatAplHCxFFC
+//
+//  Format a HCxF using []FC
+//***************************************************************************
+
+LPAPLCHAR FormatAplHCxFFC
+    (LPWCHAR    lpaplChar,          // Ptr to output save area
+     LPAPLHC8F  lpaplHC8F,          // Ptr to the value to format
+     APLINT     nDigits,            // Raw or E-format:  # significant digits
+                                    // F-format:  # digits to right of decimal sep
+     APLCHAR    aplCharDecimal,     // Char to use as decimal separator
+     APLCHAR    aplCharOverbar,     // Char to use as overbar
+     FLTDISPFMT fltDispFmt,         // Float display format (see FLTDISPFMT)
+     UBOOL      bSubstInf,          // TRUE iff we're to substitute text for infinity
+     int        iHCDimVar)          // HC Dimension (1, 2, 4, 8)
+
+{
+    int i;                          // Loop counter
+
+    // If we are displaying HC in infix form, ...
+    if (OptionFlags.bDispInfix)
+        // Format the real part
+        lpaplChar =
+          FormatAplFltFC (lpaplChar,            // Ptr to output save area
+                          lpaplHC8F->parts[0],  // The value to format
+                          nDigits,              // Raw or E-format:  # significant digits
+                                                // F-format:  # digits to right of decimal sep
+                          aplCharDecimal,       // Char to use as decimal separator
+                          aplCharOverbar,       // Char to use as overbar
+                          fltDispFmt,           // Float display format (see FLTDISPFMT)
+                          bSubstInf);           // TRUE iff we're to substitute text for infinity
+    else
+    // Otherwise, we're displaying in postfix form
+    {
+        // If the real part is non-zero, or the entire number is zero, ...
+        if (lpaplHC8F->parts[0] NE 0
+         || IsZeroHCxF (lpaplHC8F, iHCDimVar))
+        {
+            // Format the real part
+            lpaplChar =
+              FormatAplFltFC (lpaplChar,            // Ptr to output save area
+                              lpaplHC8F->parts[0],  // The value to format
+                              nDigits,              // Raw or E-format:  # significant digits
+                                                    // F-format:  # digits to right of decimal sep
+                              aplCharDecimal,       // Char to use as decimal separator
+                              aplCharOverbar,       // Char to use as overbar
+                              fltDispFmt,           // Float display format (see FLTDISPFMT)
+                              bSubstInf);           // TRUE iff we're to substitute text for infinity
+            // If the imaginary part of the number is NOT all zero, ...
+            if (IzitImaginary (uHCxF[aHCDimToIndex[iHCDimVar]], lpaplHC8F))
+                // Append the real part separator
+                //  overwriting the trailing blank
+                lpaplChar[-1] = L's';
+            else
+                // Back up to the trailing blank so the next
+                //   coefficient overwrites it
+                lpaplChar--;
+        } // End IF
+    } // End IF/ELSE
+
+    // Loop through the imaginary parts
+    for (i = 1; i < iHCDimVar; i++)
+    // If the next imaginary part is non-zero, ...
+    if (lpaplHC8F->parts[i] || OptionFlags.bDisp0Imag)
+    {
+        // Append the next HC4 separator
+        //  overwriting the trailing blank
+        strcpyW (&lpaplChar[-1], hc8Sep[i - 1]);
+
+        // Skip over the separator
+        lpaplChar += lstrlenW (hc8Sep[i - 1]) - 1;
+
+        // Format the next imag part
+        lpaplChar =
+          FormatAplFltFC (lpaplChar,            // Ptr to output save area
+                          lpaplHC8F->parts[i],  // The value to format
+                          nDigits,              // Raw or E-format:  # significant digits
+                                                // F-format:  # digits to right of decimal sep
+                          aplCharDecimal,       // Char to use as decimal separator
+                          aplCharOverbar,       // Char to use as overbar
+                          fltDispFmt,           // Float display format (see FLTDISPFMT)
+                          bSubstInf);           // TRUE iff we're to substitute text for infinity
+    } // End FOR/IF
+
+    // If we are NOT displaying HC in infix form, ...
+    if (!OptionFlags.bDispInfix)
+        // Append a trailing blank
+        *lpaplChar++ = L' ';
+
+    return lpaplChar;
+} // End FormatAplHCxFFC
+
+
+//***************************************************************************
+//  $FormatAplHC2R
+//
+//  Format a HC2R number
+//***************************************************************************
+
+LPAPLCHAR FormatAplHC2R
+    (LPWCHAR  lpaplChar,        // Ptr to output save area
+     LPVOID   lpaplHC2R)        // Ptr to the value to format
+
+{
+    return FormatAplHC2RFC (lpaplChar,      // Ptr to output save area
+                            lpaplHC2R,      // Ptr to the value to format
+                            UTF16_OVERBAR,  // Char to use as overbar
+                            DEF_RATSEP,     // Char to use as RAT separator
+                            GetHC2Sep,      // Char to use as separator
+                            FALSE);         // TRUE iff we're to substitute text for infinity
+} // End FormatAplHC2R
+
+
+//***************************************************************************
+//  $FormatAplHC2RFC
+//
+//  Format a HC2R using []FC
+//***************************************************************************
+
+LPAPLCHAR FormatAplHC2RFC
+    (LPWCHAR    lpaplChar,          // Ptr to output save area
+     LPAPLHC2R  lpaplHC2R,          // Ptr to the value to format
+     APLCHAR    aplCharOverbar,     // Char to use as overbar
+     APLCHAR    aplCharRatSep,      // Char to use as separator
+     APLCHAR    aplCharSep,         // Char to use as separator
+     UBOOL      bSubstInf)          // TRUE iff we're to substitute text for infinity
+
+{
+    int   iHCDimVar = 2,
+           i;
+    UBOOL bImag0[2],
+          bScan0[2];
+
+    bScan0[iHCDimVar - 1] = TRUE;
+
+    // Loop through the imaginary parts
+    for (i = iHCDimVar - 1; i >= 1; i--)
+    {
+        bImag0[i] = IsMpq0 (&lpaplHC2R->parts[i]);
+
+        bScan0[i - 1] &= bScan0[i];
+    } // End IF
+
+    // If we are displaying HC in infix form, ...
+    if (OptionFlags.bDispInfix)
+        // Format the real part
+        lpaplChar =
+          FormatAplRatFC (lpaplChar,            // Ptr to output save area
+                         &lpaplHC2R->parts[0],  // Ptr to the value to format
+                          aplCharOverbar,       // Char to use as overbar
+                          aplCharRatSep,        // Char to use as separator
+                          bSubstInf,            // TRUE iff we're to substitute text for infinity
+                         !bScan0[0]);           // TRUE iff this RAT is inside a larger syntax
+    else
+    // Otherwise, we're displaying in postfix form
+    {
+        // If the real part is non-zero, or the entire number is zero, ...
+        if (!IsZeroHCxR (&lpaplHC2R->parts[0], 1)
+         || IsZeroHCxR (lpaplHC2R, iHCDimVar))
+        {
+            lpaplChar =
+              FormatAplRatFC (lpaplChar,            // Ptr to output save area
+                             &lpaplHC2R->parts[0],  // Ptr to the value to format
+                              aplCharOverbar,       // Char to use as overbar
+                              aplCharRatSep,        // Char to use as separator
+                              bSubstInf,            // TRUE iff we're to substitute text for infinity
+                             !bScan0[0]);           // TRUE iff this RAT is inside a larger syntax
+            // If the imaginary part of the number is NOT all zero, ...
+            if (IzitImaginary (uHCxR[aHCDimToIndex[iHCDimVar]], lpaplHC2R))
+                // Append the real part separator
+                //  overwriting the trailing blank
+                lpaplChar[-1] = L's';
+            else
+                // Back up to the trailing blank so the next
+                //   coefficient overwrites it
+                lpaplChar--;
+        } // End IF
+    } // End IF/ELSE
+
+    // Loop through the imaginary parts
+    for (i = 1; i < iHCDimVar; i++)
+    // If the imaginary part is non-zero, ...
+    if (!bImag0[i] || OptionFlags.bDisp0Imag)
+    {
+        // If we are displaying HC in infix form, ...
+        if (OptionFlags.bDispInfix)
+            // Append the Complex separator
+            //  overwriting the trailing blank
+            lpaplChar[-1] = aplCharSep;
+
+        // Format the next imaginary part
+        lpaplChar =
+          FormatAplRatFC (lpaplChar,            // Ptr to output save area
+                         &lpaplHC2R->parts[i],  // Ptr to the value to format
+                          aplCharOverbar,       // Char to use as overbar
+                          aplCharRatSep,        // Char to use as separator
+                          bSubstInf,            // TRUE iff we're to substitute text for infinity
+                         !bScan0[i]);           // TRUE iff this RAT is inside a larger syntax
+        // If we are NOT displaying HC in infix form, ...
+        if (!OptionFlags.bDispInfix)
+            // Append the Complex separator
+            //  overwriting the trailing blank
+            lpaplChar[-1] = aplCharSep;
+    } // End FOR/IF
+
+    // If we are NOT displaying HC in infix form, ...
+    if (!OptionFlags.bDispInfix)
+        // Append a trailing blank
+        *lpaplChar++ = L' ';
+
+    return lpaplChar;
+} // End FormatAplHC2R
+
+
+//***************************************************************************
+//  $FormatAplHC4R
+//
+//  Format a HC4R number
+//***************************************************************************
+
+LPAPLCHAR FormatAplHC4R
+    (LPWCHAR  lpaplChar,        // Ptr to output save area
+     LPVOID   lpaplHC4R)        // Ptr to the value to format
+
+{
+    return FormatAplHCxRFC (lpaplChar,      // Ptr to output save area
+                            lpaplHC4R,      // Ptr to the value to format
+                            UTF16_OVERBAR,  // Char to use as overbar
+                            DEF_RATSEP,     // Char to use as RAT separator
+                            FALSE,          // TRUE iff we're to substitute text for infinity
+                            4);             // HC Dimension (1, 2, 4, 8)
+} // End FormatAplHC4R
+
+
+//***************************************************************************
+//  $FormatAplHC8R
+//
+//  Format a HC8R number
+//***************************************************************************
+
+LPAPLCHAR FormatAplHC8R
+    (LPWCHAR  lpaplChar,        // Ptr to output save area
+     LPVOID   lpaplHC8R)        // Ptr to the value to format
+
+{
+    return FormatAplHCxRFC (lpaplChar,      // Ptr to output save area
+                            lpaplHC8R,      // Ptr to the value to format
+                            UTF16_OVERBAR,  // Char to use as overbar
+                            DEF_RATSEP,     // Char to use as RAT separator
+                            FALSE,          // TRUE iff we're to substitute text for infinity
+                            8);             // HC Dimension (1, 2, 4, 8)
+} // End FormatAplHC8R
+
+
+//***************************************************************************
+//  $FormatAplHCxRFC
+//
+//  Format a HCxR using []FC
+//***************************************************************************
+
+LPAPLCHAR FormatAplHCxRFC
+    (LPWCHAR    lpaplChar,          // Ptr to output save area
+     LPAPLHC8R  lpaplHC8R,          // Ptr to the value to format
+     APLCHAR    aplCharOverbar,     // Char to use as overbar
+     APLCHAR    aplCharRatSep,      // Char to use as separator
+     UBOOL      bSubstInf,          // TRUE iff we're to substitute text for infinity
+     int        iHCDimVar)          // HC Dimension (1, 2, 4, 8)
+
+{
+    int   i;                        // Loop counter
+    UBOOL bImag0[8],
+          bScan0[8];
+
+    bScan0[iHCDimVar - 1] = TRUE;
+
+    // Loop through the imaginary parts
+    for (i = iHCDimVar - 1; i >= 1; i--)
+    {
+        bImag0[i] = IsMpq0 (&lpaplHC8R->parts[i]);
+
+        bScan0[i - 1] &= bScan0[i];
+    } // End IF
+
+    // If we are displaying HC in infix form, ...
+    if (OptionFlags.bDispInfix)
+        // Format the real part
+        lpaplChar =
+          FormatAplRatFC (lpaplChar,            // Ptr to output save area
+                         &lpaplHC8R->parts[0],  // Ptr to the value to format
+                          aplCharOverbar,       // Char to use as overbar
+                          aplCharRatSep,        // Char to use as separator
+                          bSubstInf,            // TRUE iff we're to substitute text for infinity
+                         !bScan0[0]);           // TRUE iff this RAT is inside a larger syntax
+    else
+    // Otherwise, we're displaying in postfix form
+    {
+        // If the real part is non-zero, or the entire number is zero, ...
+        if (!IsZeroHCxR (&lpaplHC8R->parts[0], 1)
+         || IsZeroHCxR (lpaplHC8R, iHCDimVar))
+        {
+            // Format the real part
+            lpaplChar =
+              FormatAplRatFC (lpaplChar,            // Ptr to output save area
+                             &lpaplHC8R->parts[0],  // Ptr to the value to format
+                              aplCharOverbar,       // Char to use as overbar
+                              aplCharRatSep,        // Char to use as separator
+                              bSubstInf,            // TRUE iff we're to substitute text for infinity
+                             !bScan0[0]);           // TRUE iff this RAT is inside a larger syntax
+            // If the imaginary part of the number is NOT all zero, ...
+            if (IzitImaginary (uHCxR[aHCDimToIndex[iHCDimVar]], lpaplHC8R))
+                // Append the real part separator
+                //  overwriting the trailing blank
+                lpaplChar[-1] = L's';
+            else
+                // Back up to the trailing blank so the next
+                //   coefficient overwrites it
+                lpaplChar--;
+        } // End IF
+    } // End IF/ELSE
+
+    // Loop through the imaginary parts
+    for (i = 1; i < iHCDimVar; i++)
+    // If the next imaginary part is non-zero, ...
+    if (!bImag0[i] || OptionFlags.bDisp0Imag)
+    {
+        // If we are displaying HC in infix form, ...
+        if (OptionFlags.bDispInfix)
+        {
+            // Append the next HCx separator
+            //  overwriting the trailing blank
+            strcpyW (&lpaplChar[-1], hc8Sep[i - 1]);
+
+            // Skip over the separator
+            lpaplChar += lstrlenW (hc8Sep[i - 1]) - 1;
+        } // End IF
+
+        // Format the next imag part
+        lpaplChar =
+          FormatAplRatFC (lpaplChar,            // Ptr to output save area
+                         &lpaplHC8R->parts[i],  // Ptr to the value to format
+                          aplCharOverbar,       // Char to use as overbar
+                          aplCharRatSep,        // Char to use as separator
+                          bSubstInf,            // TRUE iff we're to substitute text for infinity
+                         !bScan0[i]);           // TRUE iff this RAT is inside a larger syntax
+        // If we are NOT displaying HC in infix form, ...
+        if (!OptionFlags.bDispInfix)
+        {
+            // Append the next HCx separator
+            //  overwriting the trailing blank
+            strcpyW (&lpaplChar[-1], hc8Sep[i - 1]);
+
+            // Skip over the separator
+            lpaplChar += lstrlenW (hc8Sep[i - 1]) - 1;
+        } // End IF
+    } // End FOR/IF
+
+    // If we are NOT displaying HC in infix form, ...
+    if (!OptionFlags.bDispInfix)
+        // Append a trailing blank
+        *lpaplChar++ = L' ';
+
+    return lpaplChar;
+} // End FormatAplHCxRFC
+
+
+//***************************************************************************
+//  $FormatAplHC2V
+//
+//  Format a HC2V number
+//***************************************************************************
+
+LPAPLCHAR FormatAplHC2V
+    (LPWCHAR  lpaplChar,        // Ptr to output save area
+     LPVOID   lpaplHC2V,        // Ptr to the value to format
+     APLUINT  nDigits)          // # significant digits (0 = all)
+
+{
+    return FormatAplHC2VFC (lpaplChar,      // Ptr to output save area
+                            lpaplHC2V,      // Ptr to the value to format
+                            nDigits,        // # significant digits (0 = all)
+                            UTF16_DOT,      // Char to use as decimal separator
+                            UTF16_OVERBAR,  // Char to use as overbar
+                            GetHC2Sep,      // Char to use as separator
+                            FALSE,          // TRUE iff nDigits is # fractional digits
+                            FALSE,          // TRUE iff we're to substitute text for infinity
+                            FALSE);         // TRUE iff we're to precede the display with (FPCnnn)
+} // End FormatAplHC2V
+
+
+//***************************************************************************
+//  $FormatAplHC2VFC
+//
+//  Format a HC2V using []FC
+//***************************************************************************
+
+LPAPLCHAR FormatAplHC2VFC
+    (LPWCHAR    lpaplChar,          // Ptr to output save area
+     LPAPLHC2V  lpaplHC2V,          // Ptr to the value to format
+     APLINT     nDigits,            // # significant digits (0 = all), or
+                                    // # fractional digits (if bFractDigs)
+                                    // If negative, use E-format
+     APLCHAR    aplCharDecimal,     // Char to use as decimal separator
+     APLCHAR    aplCharOverbar,     // Char to use as overbar
+     APLCHAR    aplCharSep,         // Char to use as separator
+     UBOOL      bFractDigs,         // TRUE iff nDigits is # fractional digits
+     UBOOL      bSubstInf,          // TRUE iff we're to substitute text for infinity
+     UBOOL      bPrecFPC)           // TRUE iff we're to precede the display with (FPCnnn)
+
+{
+    int i,                          // Loop counter
+        iHCDimVar = 2;              // HC Dimension (1, 2, 4, 8)
+
+    // If we are displaying HC in infix form, ...
+    if (OptionFlags.bDispInfix)
+        // Format the real part
+        lpaplChar =
+          FormatAplVfpFC (lpaplChar,            // Ptr to output save area
+                         &lpaplHC2V->parts[0],  // Ptr to the value to format
+                          nDigits,              // # significant digits (0 = all), or
+                                                // # fractional digits (if bFractDigs)
+                                                // If negative, use E-format
+                          aplCharDecimal,       // Char to use as decimal separator
+                          aplCharOverbar,       // Char to use as overbar
+                          bFractDigs,           // TRUE iff nDigits is # fractional digits
+                          bSubstInf,            // TRUE iff we're to substitute text for infinity
+                          bPrecFPC);            // TRUE iff we're to precede the display with (FPCnnn)
+    else
+    // Otherwise, we're displaying in postfix form
+    {
+        // If the real part is non-zero, or the entire number is zero, ...
+        if (!IsZeroHCxV (&lpaplHC2V->parts[0], 1)
+         || IsZeroHCxV (lpaplHC2V, iHCDimVar))
+        {
+            // Format the real part
+            lpaplChar =
+              FormatAplVfpFC (lpaplChar,            // Ptr to output save area
+                             &lpaplHC2V->parts[0],  // Ptr to the value to format
+                              nDigits,              // # significant digits (0 = all), or
+                                                    // # fractional digits (if bFractDigs)
+                                                    // If negative, use E-format
+                              aplCharDecimal,       // Char to use as decimal separator
+                              aplCharOverbar,       // Char to use as overbar
+                              bFractDigs,           // TRUE iff nDigits is # fractional digits
+                              bSubstInf,            // TRUE iff we're to substitute text for infinity
+                              bPrecFPC);            // TRUE iff we're to precede the display with (FPCnnn)
+            // If the imaginary part of the number is NOT all zero, ...
+            if (IzitImaginary (uHCxV[aHCDimToIndex[iHCDimVar]], lpaplHC2V))
+                // Append the real part separator
+                //  overwriting the trailing blank
+                lpaplChar[-1] = L's';
+            else
+                // Back up to the trailing blank so the next
+                //   coefficient overwrites it
+                lpaplChar--;
+        } // End IF
+    } // End IF/ELSE
+
+    // Loop through the imaginary parts
+    for (i = 1; i < iHCDimVar; i++)
+    // If the imaginary part is non-zero, ...
+    if (!IsMpf0 (&lpaplHC2V->parts[i]) || OptionFlags.bDisp0Imag)
+    {
+        // If we are displaying HC in infix form, ...
+        if (OptionFlags.bDispInfix)
+            // Append the Complex separator
+            //  overwriting the trailing blank
+            lpaplChar[-1] = aplCharSep;
+
+        // Format the next imaginary part
+        lpaplChar =
+          FormatAplVfpFC (lpaplChar,            // Ptr to output save area
+                         &lpaplHC2V->parts[i],  // Ptr to the value to format
+                          nDigits,              // # significant digits (0 = all), or
+                                                // # fractional digits (if bFractDigs)
+                                                // If negative, use E-format
+                          aplCharDecimal,       // Char to use as decimal separator
+                          aplCharOverbar,       // Char to use as overbar
+                          bFractDigs,           // TRUE iff nDigits is # fractional digits
+                          bSubstInf,            // TRUE iff we're to substitute text for infinity
+                          bPrecFPC);            // TRUE iff we're to precede the display with (FPCnnn)
+        // If we are NOT displaying HC in infix form, ...
+        if (!OptionFlags.bDispInfix)
+            // Append the Complex separator
+            //  overwriting the trailing blank
+            lpaplChar[-1] = aplCharSep;
+    } // End FOR/IF
+
+    // If we are NOT displaying HC in infix form, ...
+    if (!OptionFlags.bDispInfix)
+        // Append a trailing blank
+        *lpaplChar++ = L' ';
+
+    return lpaplChar;
+} // End FormatAplHC2VFC
+
+
+//***************************************************************************
+//  $FormatAplHC4V
+//
+//  Format a HC4V number
+//***************************************************************************
+
+LPAPLCHAR FormatAplHC4V
+    (LPWCHAR  lpaplChar,        // Ptr to output save area
+     LPVOID   lpaplHC4V,        // Ptr to the value to format
+     APLUINT  nDigits)          // # significant digits (0 = all)
+
+{
+    return FormatAplHCxVFC (lpaplChar,      // Ptr to output save area
+                            lpaplHC4V,      // Ptr to the value to format
+                            nDigits,        // # significant digits (0 = all)
+                            UTF16_DOT,      // Char to use as decimal separator
+                            UTF16_OVERBAR,  // Char to use as overbar
+                            FALSE,          // TRUE iff nDigits is # fractional digits
+                            FALSE,          // TRUE iff we're to substitute text for infinity
+                            FALSE,          // TRUE iff we're to precede the display with (FPCnnn)
+                            4);             // HC Dimension (1, 2, 4, 8)
+} // End FormatAplHC4V
+
+
+//***************************************************************************
+//  $FormatAplHC8V
+//
+//  Format a HC8V number
+//***************************************************************************
+
+LPAPLCHAR FormatAplHC8V
+    (LPWCHAR  lpaplChar,        // Ptr to output save area
+     LPVOID   lpaplHC8V,        // Ptr to the value to format
+     APLUINT  nDigits)          // # significant digits (0 = all)
+
+{
+    return FormatAplHCxVFC (lpaplChar,      // Ptr to output save area
+                            lpaplHC8V,      // Ptr to the value to format
+                            nDigits,        // # significant digits (0 = all)
+                            UTF16_DOT,      // Char to use as decimal separator
+                            UTF16_OVERBAR,  // Char to use as overbar
+                            FALSE,          // TRUE iff nDigits is # fractional digits
+                            FALSE,          // TRUE iff we're to substitute text for infinity
+                            FALSE,          // TRUE iff we're to precede the display with (FPCnnn)
+                            8);             // HC Dimension (1, 2, 4, 8)
+} // End FormatAplHC8V
+
+
+//***************************************************************************
+//  $FormatAplHCxVFC
+//
+//  Format a HCxV using []FC
+//***************************************************************************
+
+LPAPLCHAR FormatAplHCxVFC
+    (LPWCHAR    lpaplChar,          // Ptr to output save area
+     LPAPLHC8V  lpaplHC8V,          // Ptr to the value to format
+     APLINT     nDigits,            // # significant digits (0 = all), or
+                                    // # fractional digits (if bFractDigs)
+                                    // If negative, use E-format
+     APLCHAR    aplCharDecimal,     // Char to use as decimal separator
+     APLCHAR    aplCharOverbar,     // Char to use as overbar
+     UBOOL      bFractDigs,         // TRUE iff nDigits is # fractional digits
+     UBOOL      bSubstInf,          // TRUE iff we're to substitute text for infinity
+     UBOOL      bPrecFPC,           // TRUE iff we're to precede the display with (FPCnnn)
+     int        iHCDimVar)          // HC Dimension (1, 2, 4, 8)
+
+{
+    int i;
+
+    // If we are displaying HC in infix form, ...
+    if (OptionFlags.bDispInfix)
+        // Format the real part
+        lpaplChar =
+          FormatAplVfpFC (lpaplChar,            // Ptr to output save area
+                         &lpaplHC8V->parts[0],  // Ptr to the value to format
+                          nDigits,              // # significant digits (0 = all), or
+                                                // # fractional digits (if bFractDigs)
+                                                // If negative, use E-format
+                          aplCharDecimal,       // Char to use as decimal separator
+                          aplCharOverbar,       // Char to use as overbar
+                          bFractDigs,           // TRUE iff nDigits is # fractional digits
+                          bSubstInf,            // TRUE iff we're to substitute text for infinity
+                          bPrecFPC);            // TRUE iff we're to precede the display with (FPCnnn)
+    else
+    // Otherwise, we're displaying in postfix form
+    {
+        // If the real part is non-zero, or the entire number is zero, ...
+        if (!IsZeroHCxV (&lpaplHC8V->parts[0], 1)
+         || IsZeroHCxV (lpaplHC8V, iHCDimVar))
+        {
+            // Format the real part
+            lpaplChar =
+              FormatAplVfpFC (lpaplChar,            // Ptr to output save area
+                             &lpaplHC8V->parts[0],  // Ptr to the value to format
+                              nDigits,              // # significant digits (0 = all), or
+                                                    // # fractional digits (if bFractDigs)
+                                                    // If negative, use E-format
+                              aplCharDecimal,       // Char to use as decimal separator
+                              aplCharOverbar,       // Char to use as overbar
+                              bFractDigs,           // TRUE iff nDigits is # fractional digits
+                              bSubstInf,            // TRUE iff we're to substitute text for infinity
+                              bPrecFPC);            // TRUE iff we're to precede the display with (FPCnnn)
+            // If the imaginary part of the number is NOT all zero, ...
+            if (IzitImaginary (uHCxV[aHCDimToIndex[iHCDimVar]], lpaplHC8V))
+                // Append the real part separator
+                //  overwriting the trailing blank
+                lpaplChar[-1] = L's';
+            else
+                // Back up to the trailing blank so the next
+                //   coefficient overwrites it
+                lpaplChar--;
+        } // End IF
+    } // End IF/ELSE
+
+    // Loop through the imaginary parts
+    for (i = 1; i < iHCDimVar; i++)
+    // If the nexst imaginary part is non-zero, ...
+    if (!IsMpf0 (&lpaplHC8V->parts[i]) || OptionFlags.bDisp0Imag)
+    {
+        // If we are displaying HC in infix form, ...
+        if (OptionFlags.bDispInfix)
+        {
+            // Append the next imaginary separator
+            //  overwriting the trailing blank
+            strcpyW (&lpaplChar[-1], hc8Sep[i - 1]);
+
+            // Skip over the separator
+            lpaplChar += lstrlenW (hc8Sep[i - 1]) - 1;
+        } // End IF
+
+        // Format the next imag part
+        lpaplChar =
+          FormatAplVfpFC (lpaplChar,            // Ptr to output save area
+                         &lpaplHC8V->parts[i],  // Ptr to the value to format
+                          nDigits,              // # significant digits (0 = all), or
+                                                // # fractional digits (if bFractDigs)
+                                                // If negative, use E-format
+                          aplCharDecimal,       // Char to use as decimal separator
+                          aplCharOverbar,       // Char to use as overbar
+                          bFractDigs,           // TRUE iff nDigits is # fractional digits
+                          bSubstInf,            // TRUE iff we're to substitute text for infinity
+                          bPrecFPC);            // TRUE iff we're to precede the display with (FPCnnn)
+        // If we are NOT displaying HC in infix form, ...
+        if (!OptionFlags.bDispInfix)
+        {
+            // Append the next HCx separator
+            //  overwriting the trailing blank
+            strcpyW (&lpaplChar[-1], hc8Sep[i - 1]);
+
+            // Skip over the separator
+            lpaplChar += lstrlenW (hc8Sep[i - 1]) - 1;
+        } // End IF
+    } // End FOR/IF
+
+    // If we are NOT displaying HC in infix form, ...
+    if (!OptionFlags.bDispInfix)
+        // Append a trailing blank
+        *lpaplChar++ = L' ';
+
+    return lpaplChar;
+} // End FormatAplHCxVFC
 
 
 //***************************************************************************
@@ -2505,7 +3733,16 @@ LPWCHAR DisplayTransferGlb2
              aplNELMNst;                    // Arg item NELM if nested
     APLRANK  aplRankArg;                    // Arg item rank
     APLUINT  uCnt;                          // Loop counter
-    UBOOL    bNeedParens = FALSE;           // TRUE iff this level needs surrounding parens
+    UBOOL    bNeedParens = FALSE,           // TRUE iff this level needs surrounding parens
+             bDispMPSuf,                    // Save area for OptionFlags value
+             bJ4i,                          // ...
+             bDisp0Imag,                    // ...
+             bDispInfix;                    // ...
+
+    // Save OptionFlags for display to fixed
+    //   values so we convert values on )LOAD,
+    //   )SAVE, )COPY, )OUT, and []TF consistently.
+    SetOptionFlagsDisplay (&bJ4i, &bDisp0Imag, &bDispInfix, &bDispMPSuf);
 
     // Lock the memory to get a ptr to it
     lpMemArg = MyGlobalLock (hGlbArg);
@@ -2577,9 +3814,9 @@ LPWCHAR DisplayTransferGlb2
             // Loop through the elements
             for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
                 lpwszTemp =
-                  FormatAplIntFC (lpwszTemp,        // Ptr to output save area
+                  FormatAplIntFC (lpwszTemp,            // Ptr to output save area
                                   GetNextInteger (lpMemArg, aplTypeArg, uCnt),  // The value to format
-                                  UTF16_OVERBAR);   // Char to use as overbar
+                                  UTF16_OVERBAR);       // Char to use as overbar
             break;
 
         case ARRAY_APA:
@@ -2638,10 +3875,10 @@ LPWCHAR DisplayTransferGlb2
         case ARRAY_CHAR:
             // Display the char vector
             lpwszTemp =
-              DisplayTransferChr2 (lpwszTemp,       // Ptr to output save area
-                                   lpMemArg,        // Ptr to character scalar/vector
-                                   aplNELMArg,      // Arg NELM
-                                   1);              // Arg rank
+              DisplayTransferChr2 (lpwszTemp,           // Ptr to output save area
+                                   lpMemArg,            // Ptr to character scalar/vector
+                                   aplNELMArg,          // Arg NELM
+                                   1);                  // Arg rank
             break;
 
         case ARRAY_HETERO:
@@ -2682,6 +3919,132 @@ LPWCHAR DisplayTransferGlb2
 
             break;
 
+        case ARRAY_HC2I:
+            // Loop through the elements
+            for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
+                lpwszTemp =
+                  FormatAplHC2IFC (lpwszTemp,           // Ptr to output save area
+                      ((LPAPLHC2I) lpMemArg)++,         // Ptr to float value
+                                   UTF16_OVERBAR,       // Char to use as overbar
+                                   GetHC2Sep);          // Char to use as separator
+            break;
+
+        case ARRAY_HC4I:
+            // Loop through the elements
+            for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
+                lpwszTemp =
+                  FormatAplHCxIFC (lpwszTemp,           // Ptr to output save area
+          (LPAPLHC8I) ((LPAPLHC4I) lpMemArg)++,         // Ptr to float value
+                                   UTF16_OVERBAR,       // Char to use as overbar
+                                   4);                  // HC Dimension (1, 2, 4, 8)
+            break;
+
+        case ARRAY_HC8I:
+            // Loop through the elements
+            for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
+                lpwszTemp =
+                  FormatAplHCxIFC (lpwszTemp,           // Ptr to output save area
+                      ((LPAPLHC8I) lpMemArg)++,         // Ptr to float value
+                                   UTF16_OVERBAR,       // Char to use as overbar
+                                   8);                  // HC Dimension (1, 2, 4, 8)
+            break;
+
+        case ARRAY_HC2F:
+            // Loop through the elements
+            for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
+                lpwszTemp =
+                  FormatAplHC2F (lpwszTemp,             // Ptr to output save area
+                    ((LPAPLHC2F) lpMemArg)++,           // Ptr to float value
+                                   DEF_MAX_QUADPP64);   // Precision to use
+            break;
+
+        case ARRAY_HC4F:
+            // Loop through the elements
+            for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
+                lpwszTemp =
+                  FormatAplHC4F (lpwszTemp,             // Ptr to output save area
+                    ((LPAPLHC4F) lpMemArg)++,           // Ptr to float value
+                                 DEF_MAX_QUADPP64);     // Precision to use
+            break;
+
+        case ARRAY_HC8F:
+            // Loop through the elements
+            for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
+                lpwszTemp =
+                  FormatAplHC8F (lpwszTemp,             // Ptr to output save area
+                    ((LPAPLHC8F) lpMemArg)++,           // Ptr to float value
+                                 DEF_MAX_QUADPP64);     // Precision to use
+            break;
+
+        case ARRAY_RAT :
+            // Loop through the elements
+            for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
+                lpwszTemp =
+                  FormatAplRat (lpwszTemp,              // Ptr to output save area
+                    ((LPAPLRAT) lpMemArg)++);           // Ptr to float value
+            break;
+
+        case ARRAY_HC2R:
+            // Loop through the elements
+            for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
+                lpwszTemp =
+                  FormatAplHC2R (lpwszTemp,             // Ptr to output save area
+                    ((LPAPLHC2R) lpMemArg)++);          // Ptr to float value
+            break;
+
+        case ARRAY_HC4R:
+            // Loop through the elements
+            for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
+                lpwszTemp =
+                  FormatAplHC4R (lpwszTemp,             // Ptr to output save area
+                    ((LPAPLHC4R) lpMemArg)++);          // Ptr to float value
+            break;
+
+        case ARRAY_HC8R:
+            // Loop through the elements
+            for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
+                lpwszTemp =
+                  FormatAplHC8R (lpwszTemp,             // Ptr to output save area
+                    ((LPAPLHC8R) lpMemArg)++);          // Ptr to float value
+            break;
+
+        case ARRAY_VFP :
+            // Loop through the elements
+            for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
+                lpwszTemp =
+                  FormatAplVfp (lpwszTemp,              // Ptr to output save area
+                    ((LPAPLVFP) lpMemArg)++,            // Ptr to float value
+                                0);                     // # significant digits (0 = all)
+            break;
+
+        case ARRAY_HC2V:
+            // Loop through the elements
+            for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
+                lpwszTemp =
+                  FormatAplHC2V (lpwszTemp,             // Ptr to output save area
+                    ((LPAPLHC2V) lpMemArg)++,           // Ptr to float value
+                                 0);                    // # significant digits (0 = all)
+            break;
+
+        case ARRAY_HC4V:
+            // Loop through the elements
+            for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
+                lpwszTemp =
+                  FormatAplHC4V (lpwszTemp,             // Ptr to output save area
+                    ((LPAPLHC4V) lpMemArg)++,           // Ptr to float value
+                                 0);                    // # significant digits (0 = all)
+            break;
+
+        case ARRAY_HC8V:
+            // Loop through the elements
+            for (uCnt = 0; uCnt < aplNELMArg; uCnt++)
+                lpwszTemp =
+                  FormatAplHC8V (lpwszTemp,             // Ptr to output save area
+                    ((LPAPLHC8V) lpMemArg)++,           // Ptr to float value
+                                 0);                    // # significant digits (0 = all)
+            break;
+
+
         defstop
             break;
     } // End SWITCH
@@ -2698,8 +4061,11 @@ LPWCHAR DisplayTransferGlb2
     if (bNeedParens)
         *lpwszTemp++ = L')';
 
-    // We no longer this ptr
+    // We no longer need this ptr
     MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
+
+    // Restore the OptionFlags values
+    RestoreOptionFlagsDisplay (bJ4i, bDisp0Imag, bDispInfix, bDispMPSuf);
 
     return lpwszTemp;
 } // End DisplayTansferGlb2
@@ -3021,9 +4387,21 @@ UBOOL DisplayGlbVector
             // Fall through to common code
 
         case ARRAY_INT:
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
         case ARRAY_FLOAT:
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
         case ARRAY_RAT:
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
         case ARRAY_VFP:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
             // Translate the array type to immediate type & sizeof
             immType = TranslateArrayTypeToImmType (aplType);
             iSizeof = TranslateArrayTypeToSizeof (aplType);

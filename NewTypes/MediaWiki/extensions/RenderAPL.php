@@ -7,52 +7,53 @@ $wgHooks['ParserFirstCallInit'][] = 'wfAPLExtension';
 
 $FontName = 'SImPL';
 
-function wfAPLExtension (&$parser)
+function wfAPLExtension (Parser $parser)
 {
     // Register the extension with the WikiText parser
     // the first parameter is the name of the new tag.
     // In this case it defines the tag <apl> ... </apl>
     // the second parameter is the callback function for
     // processing the text between the tags
-    $parser->setHook( "apl",   "renderAPL" );
-    $parser->setHook( "apll",  "renderAPLlarge" );
-    $parser->sethook( "aplx",  "renderAPLxlarge" );
-    $parser->sethook( "aplxx", "renderAPLxxlarge" );
+    $parser->setHook( 'apl'  , 'renderAPL'        );
+    $parser->setHook( 'apll' , 'renderAPLlarge'   );
+    $parser->sethook( 'aplx' , 'renderAPLxlarge'  );
+    $parser->sethook( 'aplxx', 'renderAPLxxlarge' );
+    $parser->sethook( 'pn'   , 'pointNotation'    );
 
     return true;
 } // End wfAPLExtension
 
 
 // The callback function for converting the input text to HTML output
-function renderAPL ($input, $args, $parser, $frame)
+function renderAPL ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return renderAPLcom ($input, $args, $parser, 0, false);
 } // End renderAPL
 
 
 // The callback function for converting the input text to HTML output
-function renderAPLlarge ($input, $args, $parser, $frame)
+function renderAPLlarge ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return renderAPLcom ($input, $args, $parser, 1, true);
 } // End renderAPLlarge
 
 
 // The callback function for converting the input text to HTML output
-function renderAPLxlarge ($input, $args, $parser, $frame)
+function renderAPLxlarge ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return renderAPLcom ($input, $args, $parser, 2, true);
 } // End renderAPLxlarge
 
 
 // The callback function for converting the input text to HTML output
-function renderAPLxxlarge ($input, $args, $parser, $frame)
+function renderAPLxxlarge ($input, array $args, Parser $parser, PPFrame $frame)
 {
     return renderAPLcom ($input, $args, $parser, 3, true);
 } // End renderAPLxxlarge
 
 
 // The callback function for converting the input text to HTML output
-function renderAPLcom ($input, $argv, $parser, $iLargeSize, $bBoldWeight)
+function renderAPLcom ($input, array $argv, Parser $parser, $iLargeSize, $bBoldWeight)
 {
     global $FontName;
 
@@ -97,7 +98,7 @@ function renderAPLcom ($input, $argv, $parser, $iLargeSize, $bBoldWeight)
     if ($argv['font'])
         $style .= 'font-family: ' . $argv['font']   . '; ';
     else
-        $style .= 'font-family: "' . $FontName     . '"; ';
+        $style .= 'font-family: ' . $FontName       . '; ';
 
     if ($argv['weight'])
         $style .= 'font-weight: ' . $argv['weight'] . '; ';
@@ -110,7 +111,20 @@ function renderAPLcom ($input, $argv, $parser, $iLargeSize, $bBoldWeight)
     else
         $class = '';
 
+    // Handle <pn>...</pn> within $input
+    $input = preg_replace ('#<pn>(.*?)</pn>#', '<span style="color:red;">$1</span>', $input);
+
     return '<span ' . $class . 'style="' . $style . '">' . $input . '</span>';
 } // End renderAPLcom
+
+
+// The callback function for converting the input text to HTML output
+function pointNotation ($input, array $args, Parser $parser, PPFrame $frame)
+{
+////// Disable caching for this parser tag
+////$parser->disableCache ();
+////
+    return '<span style="color:red;">' . $input . '</span>';
+} // End pointNotation
 
 ?>

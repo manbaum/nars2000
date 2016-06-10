@@ -82,12 +82,7 @@ void pn_yyprint     (FILE *yyoutput, unsigned short int yytoknum, PN_YYSTYPE con
 ////#define DbgMsgWP(a)         DbgMsgW(a)
     #define DbgMsgWP(a)
 
-#define WSFULL          "memory exhausted"
-
-// Define macro for Boolean or Integer type
-#define IsIntegerType(a)        ((a) EQ PN_NUMTYPE_BOOL || (a) EQ PN_NUMTYPE_INT)
-#define IsRatType(a)            ((a) EQ PN_NUMTYPE_RAT)
-#define IsVfpType(a)            ((a) EQ PN_NUMTYPE_VFP)
+#define NEED_EOT    lppnLocalVars->bNeedEOT = TRUE;
 
 %}
 
@@ -95,7 +90,7 @@ void pn_yyprint     (FILE *yyoutput, unsigned short int yytoknum, PN_YYSTYPE con
 %name-prefix "pn_yy"
 %parse-param {LPPNLOCALVARS lppnLocalVars}
 %lex-param   {LPPNLOCALVARS lppnLocalVars}
-%token EXT INF OVR
+%token EXT INF OVR EOT I J K L IJ JK KL S
 
 %start VectorRes
 
@@ -126,7 +121,7 @@ Alphabet:
 Integer:
               Digit                 {DbgMsgWP (L"%%Integer:  Digit");
                                      // Mark starting offset
-                                     $1.uNumAcc = lppnLocalVars->uNumAcc;
+                                     $1.uNumAcc   = lppnLocalVars->uNumAcc;
 
                                      // Accumulate the digit
                                      PN_NumAcc (lppnLocalVars, $1.chCur);
@@ -135,7 +130,7 @@ Integer:
                                     }
     | OVR     Digit                 {DbgMsgWP (L"%%Integer:  " WS_UTF16_OVERBAR L" Digit");
                                      // Mark starting offset
-                                     $1.uNumAcc = lppnLocalVars->uNumAcc;
+                                     $1.uNumAcc   = lppnLocalVars->uNumAcc;
 
                                      // Accumulate the negative sign
                                      PN_NumAcc (lppnLocalVars, OVERBAR1);
@@ -169,7 +164,7 @@ AlphaInt:
 Decimal:
               '.' Digit             {DbgMsgWP (L"%%Decimal:  '.' Digit");
                                      // Mark starting offset
-                                     $1.uNumAcc = lppnLocalVars->uNumAcc;
+                                     $1.uNumAcc   = lppnLocalVars->uNumAcc;
 
                                      // Accumulate the decimal point
                                      PN_NumAcc (lppnLocalVars, '.');
@@ -181,7 +176,7 @@ Decimal:
                                     }
     | OVR     '.' Digit             {DbgMsgWP (L"%%Decimal:  '" WS_UTF16_OVERBAR L"' '.' Digit");
                                      // Mark starting offset
-                                     $1.uNumAcc = lppnLocalVars->uNumAcc;
+                                     $1.uNumAcc   = lppnLocalVars->uNumAcc;
 
                                      // Accumulate the negative sign
                                      PN_NumAcc (lppnLocalVars, OVERBAR1);
@@ -265,6 +260,306 @@ VfpConstants:
     | OVR INF DEF_VFPSEP            {DbgMsgWP (L"%%VfpConstants:  OVR INF 'v'");
                                      // Set constant infinity
                                      $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_VFP, $1.uNumStart, -1);
+                                    }
+    ;
+
+// DecPoint & ExpPoint & RatPoint & ExtPoint & VfpPoint & Constants
+DRVPoint:
+      DecPoint                      {DbgMsgWP (L"%%DRVPoint:  DecPoint");
+                                    }
+    | ExpPoint                      {DbgMsgWP (L"%%DRVPoint:  ExpPoint");
+                                    }
+    | RatPoint                      {DbgMsgWP (L"%%DRVPoint:  RatPoint");
+                                    }
+    | ExtPoint                      {DbgMsgWP (L"%%DRVPoint:  ExtPoint");
+                                    }
+    | VfpPoint                      {DbgMsgWP (L"%%DRVPoint:  VfpPoint");
+                                    }
+    | DecConstants                  {DbgMsgWP (L"%%DRVPoint:  DecConstants");
+                                    }
+    | RatConstantsInt               {DbgMsgWP (L"%%DRVPoint:  RatConstantsInt");
+                                    }
+    | VfpConstants                  {DbgMsgWP (L"%%DRVPoint:  VfpConstants");
+                                    }
+    ;
+
+// Hypercomplex Point
+HcxPoint:
+      DRVPoint 'J'     DRVPoint     {DbgMsgWP (L"%%HcxPoint:  DRVPoint 'J' DRVPoint");
+                                     $$ = PN_MakeHc2Point (&$1, &$3, 'J', lppnLocalVars);
+                                    }
+    | DRVPoint 'a' 'd' DRVPoint     {DbgMsgWP (L"%%HcxPoint:  DRVPoint 'a' 'd' DRVPoint");
+                                     $$ = PN_MakeHc2Point (&$1, &$4, 'd', lppnLocalVars);
+                                    }
+    | DRVPoint 'a' 'r' DRVPoint     {DbgMsgWP (L"%%HcxPoint:  DRVPoint 'a' 'r' DRVPoint");
+                                     $$ = PN_MakeHc2Point (&$1, &$4, 'r', lppnLocalVars);
+                                    }
+    | DRVPoint Co1X                 {DbgMsgWP (L"%%HcxPoint:  DRVPoint Co1X");
+                                     $$ = PN_MakeHcxPoint (&$1, 1, &$2, lppnLocalVars);
+                                    }
+    | DRVPoint Co2X                 {DbgMsgWP (L"%%HcxPoint:  DRVPoint Co2X");
+                                     $$ = PN_MakeHcxPoint (&$1, 2, &$2, lppnLocalVars);
+                                    }
+    | DRVPoint Co3X                 {DbgMsgWP (L"%%HcxPoint:  DRVPoint Co3X");
+                                     $$ = PN_MakeHcxPoint (&$1, 3, &$2, lppnLocalVars);
+                                    }
+    | DRVPoint Co4X                 {DbgMsgWP (L"%%HcxPoint:  DRVPoint Co4X");
+                                     $$ = PN_MakeHcxPoint (&$1, 4, &$2, lppnLocalVars);
+                                    }
+    | DRVPoint Co5X                 {DbgMsgWP (L"%%HcxPoint:  DRVPoint Co5X");
+                                     $$ = PN_MakeHcxPoint (&$1, 5, &$2, lppnLocalVars);
+                                    }
+    | DRVPoint Co6X                 {DbgMsgWP (L"%%HcxPoint:  DRVPoint Co6X");
+                                     $$ = PN_MakeHcxPoint (&$1, 6, &$2, lppnLocalVars);
+                                    }
+    | DRVPoint Co7X                 {DbgMsgWP (L"%%HcxPoint:  DRVPoint C07X");
+                                     $$ = PN_MakeHcxPoint (&$1, 7, &$2, lppnLocalVars);
+                                    }
+    | DoxX EOT
+    ;
+
+DoxX:
+      Do1X                          {DbgMsgWP (L"%%DoxX:  Do1X");
+                                     $$ = PN_MakeHcxPoint (NULL, 1, &$1 , lppnLocalVars);
+                                    }
+    | Do2X                          {DbgMsgWP (L"%%DoxX:  Do2X");
+                                     $$ = PN_MakeHcxPoint (NULL, 2, &$1 , lppnLocalVars);
+                                    }
+    | Do3X                          {DbgMsgWP (L"%%DoxX:  Do3X");
+                                     $$ = PN_MakeHcxPoint (NULL, 3, &$1 , lppnLocalVars);
+                                    }
+    | Do4X                          {DbgMsgWP (L"%%DoxX:  Do4X");
+                                     $$ = PN_MakeHcxPoint (NULL, 4, &$1 , lppnLocalVars);
+                                    }
+    | Do5X                          {DbgMsgWP (L"%%DoxX:  Do5X");
+                                     $$ = PN_MakeHcxPoint (NULL, 5, &$1 , lppnLocalVars);
+                                    }
+    | Do6X                          {DbgMsgWP (L"%%DoxX:  Do6X");
+                                     $$ = PN_MakeHcxPoint (NULL, 6, &$1 , lppnLocalVars);
+                                    }
+    | Do7X                          {DbgMsgWP (L"%%DoxX:  Do7X");
+                                     $$ = PN_MakeHcxPoint (NULL, 7, &$1 , lppnLocalVars);
+                                    }
+    | DRVPoint S                    {DbgMsgWP (L"%%DoxX:  DRVPoint 's'");
+                                     $$ = PN_MakeHcxPoint (&$1 , 0, NULL, lppnLocalVars);
+                                    }
+    | DRVPoint S Do1X               {DbgMsgWP (L"%%DoxX:  DRVPoint 's' Do1X");
+                                     $$ = PN_MakeHcxPoint (&$1 , 1, &$3 , lppnLocalVars);
+                                    }
+    | DRVPoint S Do2X               {DbgMsgWP (L"%%DoxX:  DRVPoint 's' Do2X");
+                                     $$ = PN_MakeHcxPoint (&$1 , 2, &$3 , lppnLocalVars);
+                                    }
+    | DRVPoint S Do3X               {DbgMsgWP (L"%%DoxX:  DRVPoint 's' Do3X");
+                                     $$ = PN_MakeHcxPoint (&$1 , 3, &$3 , lppnLocalVars);
+                                    }
+    | DRVPoint S Do4X               {DbgMsgWP (L"%%DoxX:  DRVPoint 's' Do4X");
+                                     $$ = PN_MakeHcxPoint (&$1 , 4, &$3 , lppnLocalVars);
+                                    }
+    | DRVPoint S Do5X               {DbgMsgWP (L"%%DoxX:  DRVPoint 's' Do5X");
+                                     $$ = PN_MakeHcxPoint (&$1 , 5, &$3 , lppnLocalVars);
+                                    }
+    | DRVPoint S Do6X               {DbgMsgWP (L"%%DoxX:  DRVPoint 's' Do6X");
+                                     $$ = PN_MakeHcxPoint (&$1 , 6, &$3 , lppnLocalVars);
+                                    }
+    | DRVPoint S Do7X               {DbgMsgWP (L"%%DoxX:  DRVPoint 's' Do7X");
+                                     $$ = PN_MakeHcxPoint (&$1 , 7, &$3 , lppnLocalVars);
+                                    }
+    ;
+
+Do1X:
+      Do1                           {DbgMsgWP (L"%%Do1X:  Do1");}
+    | Do1 Do2X                      {DbgMsgWP (L"%%Do1X:  Do1 Do2X");}
+    | Do1 Do3X                      {DbgMsgWP (L"%%Do1X:  Do1 Do3X");}
+    | Do1 Do4X                      {DbgMsgWP (L"%%Do1X:  Do1 Do4X");}
+    | Do1 Do5X                      {DbgMsgWP (L"%%Do1X:  Do1 Do5X");}
+    | Do1 Do6X                      {DbgMsgWP (L"%%Do1X:  Do1 Do6X");}
+    | Do1 Do7X                      {DbgMsgWP (L"%%Do1X:  Do1 Do7X");}
+    ;
+
+Do2X:
+      Do2                           {DbgMsgWP (L"%%Do2X:  Do2");}
+    | Do2 Do3X                      {DbgMsgWP (L"%%Do2X:  Do2 Do3X");}
+    | Do2 Do4X                      {DbgMsgWP (L"%%Do2X:  Do2 Do4X");}
+    | Do2 Do5X                      {DbgMsgWP (L"%%Do2X:  Do2 Do5X");}
+    | Do2 Do6X                      {DbgMsgWP (L"%%Do2X:  Do2 Do6X");}
+    | Do2 Do7X                      {DbgMsgWP (L"%%Do2X:  Do2 Do7X");}
+    ;
+
+Do3X:
+      Do3                           {DbgMsgWP (L"%%Do3X:  Do3");}
+    | Do3 Do4X                      {DbgMsgWP (L"%%Do3X:  Do3 Do4X");}
+    | Do3 Do5X                      {DbgMsgWP (L"%%Do3X:  Do3 Do5X");}
+    | Do3 Do6X                      {DbgMsgWP (L"%%Do3X:  Do3 Do6X");}
+    | Do3 Do7X                      {DbgMsgWP (L"%%Do3X:  Do3 Do7X");}
+    ;
+
+Do4X:
+      Do4                           {DbgMsgWP (L"%%Do4X:  Do4");}
+    | Do4 Do5X                      {DbgMsgWP (L"%%Do4X:  Do4 Do5X");}
+    | Do4 Do6X                      {DbgMsgWP (L"%%Do4X:  Do4 Do6X");}
+    | Do4 Do7X                      {DbgMsgWP (L"%%Do4X:  Do4 Do7X");}
+    ;
+
+Do5X:
+      Do5                           {DbgMsgWP (L"%%Do5X:  Do5");}
+    | Do5 Do6X                      {DbgMsgWP (L"%%Do5X:  Do5 Do6X");}
+    | Do5 Do7X                      {DbgMsgWP (L"%%Do5X:  Do5 Do7X");}
+    ;
+
+Do6X:
+      Do6                           {DbgMsgWP (L"%%Do6X:  Do6");}
+    | Do6 Do7X                      {DbgMsgWP (L"%%Do6X:  Do6 Do7X");}
+    ;
+
+Do7X:
+      Do7                           {DbgMsgWP (L"%%Do7X:  Do7");}
+    ;
+
+Do1:
+      DRVPoint I                    {DbgMsgWP (L"%%Do1:  DRVPoint I");
+                                     $$ = PN_MakeHcxCo (1, &$1, lppnLocalVars);
+                                    }
+    ;
+
+Do2:
+      DRVPoint J                    {DbgMsgWP (L"%%Do2:  DRVPoint J");
+                                     $$ = PN_MakeHcxCo (2, &$1, lppnLocalVars);
+                                    }
+    ;
+
+Do3:
+      DRVPoint K                    {DbgMsgWP (L"%%Do3:  DRVPoint K");
+                                     $$ = PN_MakeHcxCo (3, &$1, lppnLocalVars);
+                                    }
+    ;
+
+Do4:
+      DRVPoint L                    {DbgMsgWP (L"%%Do4:  DRVPoint L");
+                                     $$ = PN_MakeHcxCo (4, &$1, lppnLocalVars);
+                                    }
+    ;
+
+Do5:
+      DRVPoint IJ                   {DbgMsgWP (L"%%Do5:  DRVPoint IJ");
+                                     $$ = PN_MakeHcxCo (5, &$1, lppnLocalVars);
+                                    }
+    ;
+
+Do6:
+      DRVPoint JK                   {DbgMsgWP (L"%%Do6:  DRVPoint JK");
+                                     $$ = PN_MakeHcxCo (6, &$1, lppnLocalVars);
+                                    }
+    ;
+
+Do7:
+      DRVPoint KL                   {DbgMsgWP (L"%%Do7:  DRVPoint KL");
+                                     $$ = PN_MakeHcxCo (7, &$1, lppnLocalVars);
+                                    }
+    ;
+
+Co1X:
+      Co1                           {DbgMsgWP (L"%%Co1X:  Co1");}
+    | Co1 Co2X                      {DbgMsgWP (L"%%Co1X:  Co1 Co2X");}
+    | Co1 Co3X                      {DbgMsgWP (L"%%Co1X:  Co1 Co3X");}
+    | Co1 Co4X                      {DbgMsgWP (L"%%Co1X:  Co1 Co4X");}
+    | Co1 Co5X                      {DbgMsgWP (L"%%Co1X:  Co1 Co5X");}
+    | Co1 Co6X                      {DbgMsgWP (L"%%Co1X:  Co1 Co6X");}
+    | Co1 Co7X                      {DbgMsgWP (L"%%Co1X:  Co1 Co7X");}
+    ;
+
+Co2X:
+      Co2                           {DbgMsgWP (L"%%Co2X:  Co2");}
+    | Co2 Co3X                      {DbgMsgWP (L"%%Co2X:  Co2 Co3X");}
+    | Co2 Co4X                      {DbgMsgWP (L"%%Co2X:  Co2 Co4X");}
+    | Co2 Co5X                      {DbgMsgWP (L"%%Co2X:  Co2 Co5X");}
+    | Co2 Co6X                      {DbgMsgWP (L"%%Co2X:  Co2 Co6X");}
+    | Co2 Co7X                      {DbgMsgWP (L"%%Co2X:  Co2 Co7X");}
+    ;
+
+Co3X:
+      Co3                           {DbgMsgWP (L"%%Co3X:  Co3");}
+    | Co3 Co4X                      {DbgMsgWP (L"%%Co3X:  Co3 Co4X");}
+    | Co3 Co5X                      {DbgMsgWP (L"%%Co3X:  Co3 Co5X");}
+    | Co3 Co6X                      {DbgMsgWP (L"%%Co3X:  Co3 Co6X");}
+    | Co3 Co7X                      {DbgMsgWP (L"%%Co3X:  Co3 Co7X");}
+    ;
+
+Co4X:
+      Co4                           {DbgMsgWP (L"%%Co4X:  Co4");}
+    | Co4 Co5X                      {DbgMsgWP (L"%%Co4X:  Co4 Co5X");}
+    | Co4 Co6X                      {DbgMsgWP (L"%%Co4X:  Co4 Co6X");}
+    | Co4 Co7X                      {DbgMsgWP (L"%%Co4X:  Co4 Co7X");}
+    ;
+
+Co5X:
+      Co5                           {DbgMsgWP (L"%%Co5X:  Co5");}
+    | Co5 Co6X                      {DbgMsgWP (L"%%Co5X:  Co5 Co6X");}
+    | Co5 Co7X                      {DbgMsgWP (L"%%Co5X:  Co5 Co7X");}
+    ;
+
+Co6X:
+      Co6                           {DbgMsgWP (L"%%Co6X:  Co6");}
+    | Co6 Co7X                      {DbgMsgWP (L"%%Co6X:  Co6 Co7X");}
+    ;
+
+Co7X:
+      Co7                           {DbgMsgWP (L"%%Co7X:  Co7");}
+    ;
+
+Co1:
+      'i'     DRVPoint              {DbgMsgWP (L"%%Co1:  'i' DRVPoint");
+                                     $$ = PN_MakeHcxCo (1, &$2, lppnLocalVars);
+                                    }
+    ;
+
+Co2:
+      'j'     DRVPoint              {DbgMsgWP (L"%%Co2:  'j' DRVPoint");
+                                     $$ = PN_MakeHcxCo (2, &$2, lppnLocalVars);
+                                    }
+    ;
+
+Co3:
+      'k'     DRVPoint              {DbgMsgWP (L"%%Co3:  'k' DRVPoint");
+                                     $$ = PN_MakeHcxCo (3, &$2, lppnLocalVars);
+                                    }
+    ;
+
+Co4:
+      'l'     DRVPoint              {DbgMsgWP (L"%%Co4:  'l' DRVPoint");
+                                     $$ = PN_MakeHcxCo (4, &$2, lppnLocalVars);
+                                    }
+    ;
+
+Co5:
+      'i' 'i' DRVPoint              {DbgMsgWP (L"%%Co5:  'i' 'i' DRVPoint");
+                                     $$ = PN_MakeHcxCo (5, &$3, lppnLocalVars);
+                                    }
+    | 'i' 'j' DRVPoint              {DbgMsgWP (L"%%Co5:  'i' 'j' DRVPoint");
+                                     $$ = PN_MakeHcxCo (5, &$3, lppnLocalVars);
+                                    }
+    ;
+
+Co6:
+      'i' 'k' DRVPoint              {DbgMsgWP (L"%%Co6:  'i' 'k' DRVPoint");
+                                     $$ = PN_MakeHcxCo (6, &$3, lppnLocalVars);
+                                    }
+    | 'j' 'j' DRVPoint              {DbgMsgWP (L"%%Co6:  'j' 'j' DRVPoint");
+                                     $$ = PN_MakeHcxCo (6, &$3, lppnLocalVars);
+                                    }
+    | 'j' 'k' DRVPoint              {DbgMsgWP (L"%%Co6:  'j' 'k' DRVPoint");
+                                     $$ = PN_MakeHcxCo (6, &$3, lppnLocalVars);
+                                    }
+    ;
+
+Co7:
+      'i' 'l' DRVPoint              {DbgMsgWP (L"%%Co7:  'i' 'l' DRVPoint");
+                                     $$ = PN_MakeHcxCo (7, &$3, lppnLocalVars);
+                                    }
+    | 'k' 'k' DRVPoint              {DbgMsgWP (L"%%Co7:  'k' 'k' DRVPoint");
+                                     $$ = PN_MakeHcxCo (7, &$3, lppnLocalVars);
+                                    }
+    | 'k' 'l' DRVPoint              {DbgMsgWP (L"%%Co7:  'k' 'l' DRVPoint");
+                                     $$ = PN_MakeHcxCo (7, &$3, lppnLocalVars);
                                     }
     ;
 
@@ -361,6 +656,7 @@ ExtPoint:
 EPGArgs:
       DecPoint
     | ExpPoint
+    | HcxPoint
     | RatPoint
     | VfpPoint
     ;
@@ -558,26 +854,37 @@ UBOOL ParsePointNotation
 
 {
     UBOOL bRet;                             // TRUE iff result is valid
+    int   i;                                // Loop counter
 
     // Initialize the starting indices
-    lppnLocalVars->uNumCur =
-    lppnLocalVars->uNumIni =
-    lppnLocalVars->uAlpAcc =
-    lppnLocalVars->uNumAcc = 0;
+    lppnLocalVars->uNumCur  =
+    lppnLocalVars->uNumIni  =
+    lppnLocalVars->uAlpAcc  =
+    lppnLocalVars->uNumAcc  =
+    lppnLocalVars->bNeedEOT =
+    lppnLocalVars->bEOT     =
+    lppnLocalVars->bEOS     = 0;
+
+    // Loop through all of the parts
+    for (i = 0; i < 8; i++)
+        lppnLocalVars->lpCoeff[i] = NULL;
 
     // While the last char is a blank, ...
     while (lppnLocalVars->uNumLen && IsWhite (lppnLocalVars->lpszStart[lppnLocalVars->uNumLen - 1]))
         // Delete it
         lppnLocalVars->uNumLen--;
 
-    // Check for Rat but not Vfp separator
-    if (strchr (lppnLocalVars->lpszStart, 'v' ) EQ NULL
+    // Check for Rat but not Vfp nor Complex Angle separator
+    if (strchr (lppnLocalVars->lpszStart, 'v'  ) EQ NULL
+     && strstr (lppnLocalVars->lpszStart, "ad" ) EQ NULL
+     && strstr (lppnLocalVars->lpszStart, "ar" ) EQ NULL
      && (strchr (lppnLocalVars->lpszStart, 'r' ) NE NULL
       || strstr (lppnLocalVars->lpszStart, "x ") NE NULL
       || lppnLocalVars->lpszStart[lppnLocalVars->uNumLen - 1] EQ 'x'))
     {
-        // Weed out non-RAT expressions such as 2p3
-        if (strchr (lppnLocalVars->lpszStart, 'p' ) EQ NULL)
+        // Weed out non-RAT expressions such as 2g3 and 2p3
+        if (strchr (lppnLocalVars->lpszStart, 'g' ) EQ NULL
+         && strchr (lppnLocalVars->lpszStart, 'p' ) EQ NULL)
         {
             LPCHAR p;
 
@@ -625,6 +932,13 @@ UBOOL ParsePointNotation
         } // End SWITCH
     } // End __try/__except
 
+    // Loop through all of the parts
+    for (i = 0; i < 8; i++)
+    if (lppnLocalVars->lpCoeff[i] NE NULL)
+    {
+        MyGlobalFree (lppnLocalVars->lpCoeff[i]); lppnLocalVars->lpCoeff[i] = NULL;
+    } // End FOR/IF
+
 #if YYDEBUG
     // Disable debugging
     yydebug = FALSE;
@@ -645,6 +959,46 @@ int pn_yylex
      LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
 
 {
+    UCHAR uChar;
+    static UINT uCnt = 0;
+
+#ifdef YYLEX_DEBUG
+#ifdef DEBUG
+    {
+        char *lp;
+        char ch[2] = {'\0'};
+
+        if (lppnLocalVars->lpszStart[lppnLocalVars->uNumCur]EQ AC_EOS)
+            lp = "\\0";
+        else
+        {
+            ch[0] = lppnLocalVars->lpszStart[lppnLocalVars->uNumCur];
+            lp = &ch[0];
+        } // End IF/ELSE
+
+        dprintfWL0 (L"pn_yylex(%u):  '%S'",
+                     ++uCnt,
+                     lp);
+    }
+#endif
+#endif
+    // Check for EOT
+    if (lppnLocalVars->bEOT)
+    {
+        int iRes;
+
+        // Clear the flag for next time
+        lppnLocalVars->bEOT = FALSE;
+
+        // Get the proper return value
+        iRes = lppnLocalVars->bEOS ? AC_EOS : ' ';
+
+        // Clear the flag for next time
+        lppnLocalVars->bEOS = FALSE;
+
+        return iRes;
+    } // End IF
+
     // Save the index position in lpszStart
     lpYYLval->uNumStart = lppnLocalVars->uNumCur;
 
@@ -671,6 +1025,117 @@ int pn_yylex
         if (lpYYLval->chCur EQ INFINITY1)
             return INF;
     } // End IF/ELSE
+
+    // If we need an EOT, ...
+    if (lppnLocalVars->bNeedEOT)
+    {
+        // If the current token is a white space or EOS, ...
+        if (IsWhite (lpYYLval->chCur) || lpYYLval->chCur EQ AC_EOS)
+        {
+            // Mark as no longer needing an EOT
+            lppnLocalVars->bNeedEOT = FALSE;
+
+            // Mark as just returned an EOT
+            lppnLocalVars->bEOT     = TRUE;
+
+            // Mark if we just returned an EOS
+            lppnLocalVars->bEOS     = (lpYYLval->chCur EQ AC_EOS);
+
+            return EOT;
+        } // End IF
+    } // End IF
+
+    // Get the current char
+    uChar = lpYYLval->chCur;
+
+    // If the current char is a HC separator, ...
+    if (uChar NE AC_EOS
+     && strchr ("sijJkl", uChar) NE NULL)
+    {
+        LPCHAR lpChar;
+        UCHAR  uCharPrv,
+               uCharNxt,
+               uCharZap;
+
+        // It's possible for lpszStart to contain more chars than ->uNumLen
+        //   would indicate, so we terminate the string here so as not to overread.
+        uCharZap = lppnLocalVars->lpszStart[lppnLocalVars->uNumLen];
+
+        // Point to the char after the HC notation chars
+        //   starting with the current char;  "uNumCur
+        //   is the index of the next char and "uNumCur - 1"
+        //   is the index of the current char from which
+        //   "uChar" came.
+        lppnLocalVars->lpszStart[lppnLocalVars->uNumLen] = AC_EOS;
+        lpChar = SkipPastStr (&lppnLocalVars->lpszStart[lppnLocalVars->uNumCur - 1],
+                               "sijJkl0123456789rv.eE" OVERBAR1_STR);
+
+        // Get the char at the end of and after the HC notation chars
+        uCharPrv = lpChar[-1];
+        uCharNxt = lpChar[ 0];
+
+        // Restore zapped char
+        lppnLocalVars->lpszStart[lppnLocalVars->uNumLen] = uCharZap;
+
+        // Restart the initial char
+        lppnLocalVars->uNumIni =
+        lppnLocalVars->uNumCur;
+
+        // If the ending char is a HC separator,
+        //   and the next char is an EOS or white space, ...
+        if (strchr ("sijJkl", uCharPrv) NE NULL
+         && (uCharNxt EQ AC_EOS || IsWhite (uCharNxt)))
+        {
+            // Mark as needing an EOT
+            lppnLocalVars->bNeedEOT = TRUE;
+
+            // If the current char is a HC separator (possibly combined with the next token), ...
+            switch (lpYYLval->chCur)
+            {
+                case 'i':
+                    // If this is a digraph, ...
+                    if (lppnLocalVars->lpszStart[lppnLocalVars->uNumCur] EQ 'j')
+                    {
+                        // Account for absorbing this token
+                        lppnLocalVars->uNumCur++;
+
+                        return IJ;
+                    } else
+                        return I;
+
+                case 'j':
+                    // If this is a digraph, ...
+                    if (lppnLocalVars->lpszStart[lppnLocalVars->uNumCur] EQ 'k')
+                    {
+                        // Account for absorbing this token
+                        lppnLocalVars->uNumCur++;
+
+                        return JK;
+                    } else
+                        return J;
+
+                case 'k':
+                    // If this is a digraph, ...
+                    if (lppnLocalVars->lpszStart[lppnLocalVars->uNumCur] EQ 'l')
+                    {
+                        // Account for absorbing this token
+                        lppnLocalVars->uNumCur++;
+
+                        return KL;
+                    } else
+                        return K;
+
+                case 'l':
+                    return L;
+
+                case 's':
+                    return S;
+
+                defstop
+                    break;
+            } // End SWITCH
+        } // End IF
+    } // End IF
 
     // Return it
     return lpYYLval->chCur;

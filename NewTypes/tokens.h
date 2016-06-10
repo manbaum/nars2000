@@ -183,14 +183,14 @@ typedef struct tagTKFLAGS
 {
     UINT TknType:7,         // 0000007F:  Data token type (see TOKEN_TYPES)
          bSetAlpha:1,       // 00000080:  TRUE iff this stmt sets {alpha}
-         ImmType:4,         // 00000F00:  Type of immediate data (see IMM_TYPES) (if .TknType is TKT_xxxIMMED)
-         NoDisplay:1,       // 00001000:  Do not display this token
-         SysNSLvl:3,        // 0000E000:  System namespace level (0 = none, 1 = top)
-         bSyntErr:1,        // 00010000:  TRUE iff this stmt is a SYNTAX ERROR
-         bAfoArgs:1,        // 00020000:  TRUE iff this stmt references {alpha} or {omega}
-         bGuardStmt:1,      // 00040000:  TRUE iff this stmt is an AFO Guard
-         bAssignName:1,     // 00080000:  TRUE iff this token is a name that is the target of an assignment
-         :12;               // FFF00000:  Available bits
+         ImmType:5,         // 00001F00:  Type of immediate data (see IMM_TYPES) (if .TknType is TKT_xxxIMMED)
+         NoDisplay:1,       // 00002000:  Do not display this token
+         SysNSLvl:3,        // 0001C000:  System namespace level (0 = none, 1 = top)
+         bSyntErr:1,        // 00020000:  TRUE iff this stmt is a SYNTAX ERROR
+         bAfoArgs:1,        // 00040000:  TRUE iff this stmt references {alpha} or {omega}
+         bGuardStmt:1,      // 00080000:  TRUE iff this stmt is an AFO Guard
+         bAssignName:1,     // 00100000:  TRUE iff this token is a name that is the target of an assignment
+         :11;               // FFE00000:  Available bits
 } TKFLAGS, *LPTKFLAGS;
 
 // N.B.:  Whenever changing the above enum (TKFLAGS),
@@ -235,6 +235,7 @@ typedef union tagTOKEN_DATA
            };
     APLBOOL    tkBoolean;           // 00:  ...     an APLBOOL
     APLINT     tkInteger;           // 00:  ...     an APLINT
+    APLAPA     tkAPA;               // 00:  ...     an APLAPA
     ANON_CTRL_STRUC;                // 00:  ...     Ctrl Struc data (8 bytes)
     struct tagTOKEN
               *lptkCSLink;          // 00:  ...     Ptr to previous token at start of stmt

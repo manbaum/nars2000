@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -96,7 +96,7 @@ LPPL_YYSTYPE PrimProtoFnUpTack_EM_YY
     //***************************************************************
 
     // Convert to a prototype
-    return PrimProtoFnMixed_EM_YY (&PrimFnUpTack_EM_YY,   // Ptr to primitive function routine
+    return PrimProtoFnMixed_EM_YY (&PrimFnUpTack_EM_YY,     // Ptr to primitive function routine
                                     lptkLftArg,             // Ptr to left arg token
                                     lptkFunc,               // Ptr to function token
                                     lptkRhtArg,             // Ptr to right arg token
@@ -147,50 +147,51 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE      aplTypeLft,       // Left arg storage type
-                  aplTypeRht,       // Right ...
-                  aplTypeRes;       // Result   ...
-    APLNELM       aplNELMLft,       // Left arg NELM
-                  aplNELMRht,       // Right ...
-                  aplNELMRes;       // Result   ...
-    APLRANK       aplRankLft,       // Left arg rank
-                  aplRankRht,       // Right ...
-                  aplRankRes;       // Result   ...
-    APLDIM        aplColsLft,       // Left arg last dim
-                  aplRestLft,       // Left arg product of remaining dims
-                  aplFrstRht,       // Right arg 1st dim
-                  aplRestRht,       // Right arg product of remaining dims
-                  aplInnrMax;       // Larger of inner dimensions
-    APLLONGEST    aplLongestLft,    // Left arg immediate value
-                  aplLongestRht;    // Right ...
-    HGLOBAL       hGlbLft = NULL,   // Left arg global memory handle
-                  hGlbRht = NULL,   // Right ...
-                  hGlbRes = NULL,   // Result   ...
-                  lpSymGlbLft,      // Ptr to left arg global numeric
-                  lpSymGlbRht;      // ...    right ...
-    LPVOID        lpMemLft = NULL,  // Ptr to left arg global memory
-                  lpMemRht = NULL,  // Ptr to right ...
-                  lpMemRes = NULL;  // Ptr to result   ...
-    LPAPLDIM      lpMemDimLft,      // Ptr to left arg dimensions
-                  lpMemDimRht,      // Ptr to right ...
-                  lpMemDimRes;      // Ptr to result   ...
-    APLUINT       ByteRes,          // # bytes in the result
-                  uRes,             // Loop counter
-                  uOutLft,          // Loop counter
-                  uOutRht,          // Loop counter
-                  uDimCopy;         // # dimensions to copy
-    APLINT        iInnMax;          // Loop counter
-    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
-    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
-    APLRAT        aplRatLft = {0},  // Left arg as a RAT
-                  aplRatRht = {0},  // Right ...
-                  aplRatAcc = {0},  // Accum ...
-                  aplRatVal = {0};  // Value ...
-    APLVFP        aplVfpLft = {0},  // Left arg as a VFP
-                  aplVfpRht = {0},  // Right ...
-                  aplVfpAcc = {0},  // Accum ...
-                  aplVfpVal = {0};  // Value ...
+    APLSTYPE          aplTypeLft,           // Left arg storage type
+                      aplTypeRht,           // Right ...
+                      aplTypeRes;           // Result   ...
+    APLNELM           aplNELMLft,           // Left arg NELM
+                      aplNELMRht,           // Right ...
+                      aplNELMRes;           // Result   ...
+    APLRANK           aplRankLft,           // Left arg rank
+                      aplRankRht,           // Right ...
+                      aplRankRes;           // Result   ...
+    APLDIM            aplColsLft,           // Left arg last dim
+                      aplRestLft,           // Left arg product of remaining dims
+                      aplFrstRht,           // Right arg 1st dim
+                      aplRestRht,           // Right arg product of remaining dims
+                      aplInnrMax;           // Larger of inner dimensions
+    APLLONGEST        aplLongestLft,        // Left arg immediate value
+                      aplLongestRht;        // Right ...
+    HGLOBAL           hGlbLft = NULL,       // Left arg global memory handle
+                      hGlbRht = NULL,       // Right ...
+                      hGlbRes = NULL;       // Result   ...
+    LPVARARRAY_HEADER lpMemHdrLft = NULL,   // Ptr to left arg header
+                      lpMemHdrRht = NULL,   // ...    right ...
+                      lpMemHdrRes = NULL;   // ...    result   ...
+    LPVOID            lpMemLft,             // Ptr to left arg global memory
+                      lpMemRht,             // ...    right ...
+                      lpMemRes;             // ...    result   ...
+    LPAPLDIM          lpMemDimLft,          // Ptr to left arg dimensions
+                      lpMemDimRht,          // Ptr to right ...
+                      lpMemDimRes;          // Ptr to result   ...
+    APLUINT           ByteRes,              // # bytes in the result
+                      uRes,                 // Loop counter
+                      uOutLft,              // Loop counter
+                      uOutRht,              // Loop counter
+                      uDimCopy;             // # dimensions to copy
+    APLINT            iInnMax;              // Loop counter
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    ALLTYPES          atLft = {0},          // Left arg as ALLTYPES
+                      atRht = {0},          // Right ...
+                      atAdd = {0},          // Temp        ...
+                      atMul = {0},          // Temp        ...
+                      atAcc = {0},          // Accumulator ...
+                      atVal = {0};          // Value       ...
+    int               iHCDimRes,            // Result HC Dimension (1, 2, 4, 8)
+                      i;                    // Loop counter
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -204,12 +205,12 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Get left & right arg global ptrs
-    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // Calculate length of right arg first dimension
-    if (hGlbRht && !IsScalar (aplRankRht))
-        aplFrstRht = *VarArrayBaseToDim (lpMemRht);
+    if (hGlbRht NE NULL && !IsScalar (aplRankRht))
+        aplFrstRht = *VarArrayBaseToDim (lpMemHdrRht);
     else
         aplFrstRht = 1;
 
@@ -219,47 +220,15 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
      && !IsUnitDim (aplFrstRht))
         goto LENGTH_EXIT;
 
-    // Check for LEFT DOMAIN ERROR
-    if (!IsSimpleGlbNum (aplTypeLft))
+    // Weed out numbers whose Floor does not have Fractionality
+    //   such as Character, Nested, Hetero, Octonions, and Quaternions w/o Hurwitz
+    if (!HasFractionality (aplTypeLft))
         goto LEFT_DOMAIN_EXIT;
 
-    // If the left arg is not numeric, ...
-    if (!IsNumeric (aplTypeLft))
-    {
-        // If it's empty and simple, ...
-        if (IsEmpty (aplNELMLft)
-         && IsSimple (aplTypeLft))
-            // Convert to Boolean
-            aplTypeLft = ARRAY_BOOL;
-        else
-            goto LEFT_DOMAIN_EXIT;
-    } // End IF
-
-    // Check for RIGHT DOMAIN ERROR
-    if (!IsSimpleGlbNum (aplTypeRht))
+    // Weed out numbers whose Floor does not have Fractionality
+    //   such as Character, Nested, Hetero, Octonions, and Quaternions w/o Hurwitz
+    if (!HasFractionality (aplTypeRht))
         goto RIGHT_DOMAIN_EXIT;
-
-    // If the right arg is not numeric, ...
-    if (!IsNumeric (aplTypeRht))
-    {
-        // If it's empty and simple, ...
-        if (IsEmpty (aplNELMRht)
-         && IsSimple (aplTypeRht))
-            // Convert to Boolean
-            aplTypeRht = ARRAY_BOOL;
-        else
-            goto RIGHT_DOMAIN_EXIT;
-    } // End IF
-
-    // If both are scalars, and one is not numeric, ...
-    if (IsScalar (aplRankLft)
-     && IsScalar (aplRankRht))
-    {
-        if (!IsNumeric (aplTypeLft))
-            goto LEFT_DOMAIN_EXIT;
-        if (!IsNumeric (aplTypeRht))
-            goto RIGHT_DOMAIN_EXIT;
-    } // End IF
 
     // Re-calculate the inner dimensions based upon
     //   scalar/one-element vector extension for empty args
@@ -280,9 +249,9 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
     if (aplColsLft)
         aplRestLft = aplNELMLft / aplColsLft;
     else
-    if (hGlbLft)
+    if (hGlbLft NE NULL)
         for (aplRestLft = 1, uOutLft = 0; uOutLft < (aplRankLft - 1); uOutLft++)
-            aplRestLft *= (VarArrayBaseToDim (lpMemLft))[uOutLft];
+            aplRestLft *= (VarArrayBaseToDim (lpMemHdrLft))[uOutLft];
     else
         aplRestLft = 1;
 
@@ -290,9 +259,9 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
     if (aplFrstRht)
         aplRestRht = aplNELMRht / aplFrstRht;
     else
-    if (hGlbRht)
+    if (hGlbRht NE NULL)
         for (aplRestRht = 1, uOutRht = 1; uOutRht < aplRankRht; uOutRht++)
-            aplRestRht *= (VarArrayBaseToDim (lpMemRht))[uOutRht];
+            aplRestRht *= (VarArrayBaseToDim (lpMemHdrRht))[uOutRht];
     else
         aplRestRht = 1;
 
@@ -316,22 +285,10 @@ LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
         if (IsSimpleBool (aplTypeRes))
             aplTypeRes = ARRAY_INT;
     } // End IF/ELSE
-
-    // If the result is global numeric, ...
-    if (IsGlbNum (aplTypeRes))
-    {
-        // Initialize the temps
-        mpq_init (&aplRatLft);
-        mpq_init (&aplRatRht);
-        mpq_init (&aplRatAcc);
-        mpq_init (&aplRatVal);
-
-        mpfr_init0 (&aplVfpLft);
-        mpfr_init0 (&aplVfpRht);
-        mpfr_init0 (&aplVfpAcc);
-        mpfr_init0 (&aplVfpVal);
-    } // End IF
 RESTART_EXCEPTION:
+    // Calculate the HC Dimension (1, 2, 4, 8)
+    iHCDimRes = TranslateArrayTypeToHCDim (aplTypeRes);
+
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
 
@@ -347,9 +304,9 @@ RESTART_EXCEPTION:
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -361,18 +318,18 @@ RESTART_EXCEPTION:
 #undef  lpHeader
 
     // Skip over the header to the dimensions
-    if (hGlbLft)
-        lpMemDimLft = VarArrayBaseToDim (lpMemLft);
-    if (hGlbRht)
-        lpMemDimRht = VarArrayBaseToDim (lpMemRht);
-    lpMemDimRes = VarArrayBaseToDim (lpMemRes);
+    if (hGlbLft NE NULL)
+        lpMemDimLft = VarArrayBaseToDim (lpMemHdrLft);
+    if (hGlbRht NE NULL)
+        lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
+    lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
 
     // Fill in the result's dimension
     //   by copying the left arg dimensions (except for the last)
     //   and then the right arg dimensions  (except for the first)
 
     // If the left arg is an array, ...
-    if (hGlbLft)
+    if (hGlbLft NE NULL)
     {
         // Calc # dimensions to copy
         uDimCopy = max (aplRankLft, 1) - 1;
@@ -380,12 +337,14 @@ RESTART_EXCEPTION:
         // Copy the dimensions
         CopyMemory (lpMemDimRes, lpMemDimLft, (APLU3264) uDimCopy * sizeof (APLDIM));
 
-        // Skip over the copied dimensions
-        lpMemDimRes += uDimCopy;
-    } // End IF
+        // Skip over the header and dimensions to the data
+        lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
+    } else
+        // Point to the data
+        lpMemLft = &aplLongestLft;
 
     // If the right arg is an array, ...
-    if (hGlbRht)
+    if (hGlbRht NE NULL)
     {
         // Calc # dimensions to copy
         uDimCopy = max (aplRankRht, 1) - 1;
@@ -393,16 +352,18 @@ RESTART_EXCEPTION:
         // Copy the dimensions
         CopyMemory (lpMemDimRes, &lpMemDimRht[1], (APLU3264) uDimCopy * sizeof (APLDIM));
 
-        // Skip over the copied dimensions
-        lpMemDimRes += uDimCopy;
-    } // End IF
+        // Skip over the header and dimensions to the data
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+    } else
+        // Point to the data
+        lpMemRht = &aplLongestRht;
 
     // Check for empty result
     if (IsEmpty (aplNELMRes))
         goto YYALLOC_EXIT;
 
-    // Skip over the dimensions to the data
-    lpMemRes = lpMemDimRes;
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // The left arg is treated as a two-dimensional array of shape
     //   aplRestLft aplColsLft
@@ -414,13 +375,6 @@ RESTART_EXCEPTION:
     for (uOutLft = 0; uOutLft < aplRestLft; uOutLft++)
     for (uOutRht = 0; uOutRht < aplRestRht; uOutRht++)
     {
-        APLINT   aplIntAcc,
-                 InnValInt;
-        APLFLOAT aplFloatAcc,
-                 InnValFlt;
-        APLFLOAT aplFloatLft,       // Temporary floats
-                 aplFloatRht;       // ...
-
         // Calc result index
         uRes = 1 * uOutRht + aplRestRht * uOutLft;
 
@@ -430,29 +384,82 @@ RESTART_EXCEPTION:
             case ARRAY_BOOL:
             case ARRAY_INT:
                 // Initialize accumulator and weighting value
-                aplIntAcc = 0;
-                InnValInt = 1;
+                atAcc.aplInteger = 0;
+                atVal.aplInteger = 1;
 
                 break;
 
             case ARRAY_FLOAT:
                 // Initialize accumulator and weighting value
-                aplFloatAcc = 0.0;
-                InnValFlt   = 1.0;
+                atAcc.aplFloat = 0.0;
+                atVal.aplFloat = 1.0;
 
                 break;
 
             case ARRAY_RAT:
                 // Initialize accumulator and weighting value
-                mpq_set_ui (&aplRatAcc, 0, 1);
-                mpq_set_ui (&aplRatVal, 1, 1);
+                mphc1r_init (&atAcc.aplHC1R);
+                mphc1r_init (&atVal.aplHC1R);
+                mpq_set_si  (&atVal.aplRat, 1, 1);
 
                 break;
 
             case ARRAY_VFP:
                 // Initialize accumulator and weighting value
-                mpfr_set_ui (&aplVfpAcc, 0, MPFR_RNDN);
-                mpfr_set_ui (&aplVfpVal, 1, MPFR_RNDN);
+                mphc1v_init0 (&atAcc.aplHC1V);
+                mphc1v_init0 (&atVal.aplHC1V);
+                mpfr_set_si  (&atVal.aplVfp, 1, MPFR_RNDN);
+
+                break;
+
+            case ARRAY_HC2I:
+            case ARRAY_HC4I:
+                // Initialize accumulator and weighting value
+////////////////ZeroMemory (&atAcc, sizeof (atAcc));        // Already zero from = {0}
+////////////////ZeroMemory (&atVal, sizeof (atVal));        // ...
+                atVal.aplInteger = 1;
+
+                break;
+
+            case ARRAY_HC2F:
+            case ARRAY_HC4F:
+                // Initialize accumulator and weighting value
+////////////////ZeroMemory (&atAcc, sizeof (atAcc));        // Already zero from = {0}
+////////////////ZeroMemory (&atVal, sizeof (atVal));        // ...
+                atVal.aplFloat   = 1.0;
+
+                break;
+
+
+            case ARRAY_HC2R:
+                // Initialize accumulator and weighting value
+                mphc2r_init (&atAcc.aplHC2R);
+                mphc2r_init (&atVal.aplHC2R);
+                mpq_set_si  (&atVal.aplRat, 1, 1);
+
+                break;
+
+            case ARRAY_HC4R:
+                // Initialize accumulator and weighting value
+                mphc4r_init (&atAcc.aplHC4R);
+                mphc4r_init (&atVal.aplHC4R);
+                mpq_set_si  (&atVal.aplRat, 1, 1);
+
+                break;
+
+            case ARRAY_HC2V:
+                // Initialize accumulator and weighting value
+                mphc2v_init0 (&atAcc.aplHC2V);
+                mphc2v_init0 (&atVal.aplHC2V);
+                mpfr_set_si  (&atVal.aplVfp, 1, MPFR_RNDN);
+
+                break;
+
+            case ARRAY_HC4V:
+                // Initialize accumulator and weighting value
+                mphc4v_init0 (&atAcc.aplHC4V);
+                mphc4v_init0 (&atVal.aplHC4V);
+                mpfr_set_si  (&atVal.aplVfp, 1, MPFR_RNDN);
 
                 break;
 
@@ -460,6 +467,10 @@ RESTART_EXCEPTION:
             case ARRAY_APA:             // ...
             case ARRAY_HETERO:          // ...
             case ARRAY_NESTED:          // ...
+            case ARRAY_HC8I:            // ...
+            case ARRAY_HC8F:            // ...
+            case ARRAY_HC8R:            // ...
+            case ARRAY_HC8V:            // ...
             defstop
                 break;
         } // End SWITCH
@@ -486,47 +497,22 @@ RESTART_EXCEPTION:
             else
                 uInnRht = 1 * uOutRht + aplRestRht * iInnMax;
 
+            // Promote the left and right arg items to the result type
+            (aTypeActPromote[aplTypeLft][aplTypeRes]) (lpMemLft, uInnLft, &atLft);
+            (aTypeActPromote[aplTypeRht][aplTypeRes]) (lpMemRht, uInnRht, &atRht);
+
             // Split cases based upon the result storage type
             switch (aplTypeRes)
             {
                 case ARRAY_BOOL:
                 case ARRAY_INT:
-                    // If the right arg is an array, ...
-                    if (hGlbRht)
-                    {
-                        // If the right arg is non-empty, ...
-                        if (aplNELMRht)
-                            // Get the next right arg value
-                            GetNextValueGlb (hGlbRht,           // The global memory handle
-                                             uInnRht,           // Index into item
-                                             NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
-                                            &aplLongestRht,     // Ptr to result immediate value (may be NULL)
-                                             NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-                        else
-                            aplLongestRht = 0;
-                    } // End IF
-
                     __try
                     {
                         // Add into accumulator
-                        aplIntAcc = iadd64_RE (aplIntAcc, imul64_RE (InnValInt, aplLongestRht));
-
-                        // Get the next left arg value
-                        if (hGlbLft)
-                        {
-                            // If the left arg is non-empty, ...
-                            if (aplNELMLft)
-                                GetNextValueGlb (hGlbLft,       // The global memory handle
-                                                 uInnLft,       // Index into item
-                                                 NULL,          // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
-                                                &aplLongestLft, // Ptr to result immediate value (may be NULL)
-                                                 NULL);         // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-                            else
-                                aplLongestLft = 0;
-                        } // End IF
+                        atAcc.aplInteger = iadd64_RE (atAcc.aplInteger, imul64_RE (atVal.aplInteger, GetNextInteger (lpMemRht, aplTypeRht, uInnRht), FLOAT), FLOAT);
 
                         // Multiply into the weighting value
-                        InnValInt = imul64_RE (InnValInt, aplLongestLft);
+                        atVal.aplInteger = imul64_RE (atVal.aplInteger, GetNextInteger (lpMemLft, aplTypeLft, uInnLft), FLOAT);
                     } __except (CheckException (GetExceptionInformation (), L"PrimFnDydUpTack_EM_YY"))
                     {
                         switch (MyGetExceptionCode ())
@@ -541,7 +527,7 @@ RESTART_EXCEPTION:
                                     dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 
                                     // We no longer need these ptrs
-                                    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                                    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
                                     // We no longer need this storage
                                     FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
@@ -562,251 +548,399 @@ RESTART_EXCEPTION:
                     break;
 
                 case ARRAY_FLOAT:
-                    // If the right arg is an array, ...
-                    if (hGlbRht)
-                    {
-                        // If the right arg is non-empty, ...
-                        if (aplNELMRht)
-                            // Get the next right arg value
-                            GetNextValueGlb (hGlbRht,           // The global memory handle
-                                             uInnRht,           // Index into item
-                                             NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
-                                            &aplLongestRht,     // Ptr to result immediate value (may be NULL)
-                                             NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-                        else
-                            aplLongestRht = 0;
-                    } // End IF
-
-                    // If the right arg is int, convert it to float
-                    if (IsSimpleInt (aplTypeRht))
-                        aplFloatRht = (APLFLOAT) (APLINT) aplLongestRht;
-                    else
-                        aplFloatRht = *(LPAPLFLOAT) &aplLongestRht;
-
                     // Add into accumulator
-                    aplFloatAcc += InnValFlt * aplFloatRht;
-
-                    // If the left arg is an array, ...
-                    if (hGlbLft)
-                    {
-                        // If the left arg is non-empty, ...
-                        if (aplNELMLft)
-                            // Get the next left arg value
-                            GetNextValueGlb (hGlbLft,           // The global memory handle
-                                             uInnLft,           // Index into item
-                                             NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
-                                            &aplLongestLft,     // Ptr to result immediate value (may be NULL)
-                                             NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-                        else
-                            aplLongestLft = 0;
-                    } // End IF
-
-                    // If the left arg is int, convert it to float
-                    if (IsSimpleInt (aplTypeLft))
-                        aplFloatLft = (APLFLOAT) (APLINT) aplLongestLft;
-                    else
-                        aplFloatLft = *(LPAPLFLOAT) &aplLongestLft;
+                    atAcc.aplFloat += atVal.aplFloat * GetNextFloat (lpMemRht, aplTypeRht, uInnRht);
 
                     // Multiply into the weighting value
-                    InnValFlt *= aplFloatLft;
+                    atVal.aplFloat *= GetNextFloat (lpMemLft, aplTypeLft, uInnLft);
 
                     break;
 
                 case ARRAY_RAT:
-                    // If the right arg is an array, ...
-                    if (hGlbRht)
-                    {
-                        // If the right arg is non-empty, ...
-                        if (aplNELMRht)
-                            // Get the next right arg value
-                            GetNextValueGlb (hGlbRht,           // The global memory handle
-                                             uInnRht,           // Index into item
-                                            &lpSymGlbRht,       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
-                                            &aplLongestRht,     // Ptr to result immediate value (may be NULL)
-                                             NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-                        else
-                            aplLongestRht = 0;
-                    } // End IF
-
-                    // Split cases based upon the right arg storage type
-                    switch (aplTypeRht)
-                    {
-                        case ARRAY_BOOL:
-                        case ARRAY_INT:
-                        case ARRAY_APA:
-                            mpq_set_sx (&aplRatRht, aplLongestRht, 1);
-
-                            break;
-
-                        case ARRAY_RAT:
-                            mpq_set    (&aplRatRht, (LPAPLRAT) lpSymGlbRht);
-
-                            break;
-
-                        case ARRAY_FLOAT:       // Can't happen w/Res = RAT
-                        case ARRAY_CHAR:        // ...
-                        case ARRAY_HETERO:      // ...
-                        case ARRAY_NESTED:      // ...
-                        case ARRAY_VFP:         // ...
-                        defstop
-                            break;
-                    } // End SWITCH
-
                     // Add into accumulator
-////////////////////aplFloatAcc += InnValFlt * aplFloatRht;
-                    mpq_mul (&aplRatRht, &aplRatVal, &aplRatRht);
-                    mpq_add (&aplRatAcc, &aplRatAcc, &aplRatRht);
+////////////////////atAcc.aplRat += atVal.aplRat * GetNextRat (lpMemRht, aplTypeRht, uInnRht);
+////////////////////mpq_mul (&atAdd.aplRat, &atVal.aplRat, &atRht.aplRat);
+                    atAdd.aplRat = MulHC1R_RE (atVal.aplRat, atRht.aplRat);
+                    mpq_add (&atAcc.aplRat, &atAcc.aplRat, &atAdd.aplRat);
 
-                    // If the left arg is an array, ...
-                    if (hGlbLft)
-                    {
-                        // If the left arg is non-empty, ...
-                        if (aplNELMLft)
-                            // Get the next left arg value
-                            GetNextValueGlb (hGlbLft,       // The global memory handle
-                                             uInnLft,       // Index into item
-                                            &lpSymGlbLft,   // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
-                                            &aplLongestLft, // Ptr to result immediate value (may be NULL)
-                                             NULL);         // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-                        else
-                            aplLongestLft = 0;
-                    } // End IF
-
-                    // Split cases based upon the left arg storage type
-                    switch (aplTypeLft)
-                    {
-                        case ARRAY_BOOL:
-                        case ARRAY_INT:
-                        case ARRAY_APA:
-                            mpq_set_sx (&aplRatLft, aplLongestLft, 1);
-
-                            break;
-
-                        case ARRAY_RAT:
-                            mpq_set    (&aplRatLft, (LPAPLRAT) lpSymGlbLft);
-
-                            break;
-
-                        case ARRAY_FLOAT:       // Can't happen w/Res = RAT
-                        case ARRAY_CHAR:        // ...
-                        case ARRAY_HETERO:      // ...
-                        case ARRAY_NESTED:      // ...
-                        case ARRAY_VFP:         // ...
-                        defstop
-                            break;
-                    } // End SWITCH
+                    // Free old atAdd
+                    (*aTypeFree[aplTypeRes]) (&atAdd, 0);
 
                     // Multiply into the weighting value
-////////////////////InnValFlt *= aplFloatLft;
-                    mpq_mul (&aplRatVal, &aplRatVal, &aplRatLft);
+////////////////////atVal.aplRat *= atLft.aplRat;
+                    mpq_mul (&atVal.aplRat, &atVal.aplRat, &atLft.aplRat);
 
                     break;
 
                 case ARRAY_VFP:
-                    // If the right arg is an array, ...
-                    if (hGlbRht)
-                    {
-                        // If the right arg is non-empty, ...
-                        if (aplNELMRht)
-                            // Get the next right arg value
-                            GetNextValueGlb (hGlbRht,           // The global memory handle
-                                             uInnRht,           // Index into item
-                                            &lpSymGlbRht,       // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
-                                            &aplLongestRht,     // Ptr to result immediate value (may be NULL)
-                                             NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-                        else
-                            aplLongestRht = 0;
-                    } // End IF
-
-                    // Split cases based upon the right arg storage type
-                    switch (aplTypeRht)
-                    {
-                        case ARRAY_BOOL:
-                        case ARRAY_INT:
-                        case ARRAY_APA:
-                            mpfr_set_sx (&aplVfpRht, aplLongestRht, MPFR_RNDN);
-
-                            break;
-
-                        case ARRAY_FLOAT:
-                            mpfr_set_d  (&aplVfpRht, *(LPAPLFLOAT) &aplLongestRht, MPFR_RNDN);
-
-                            break;
-
-                        case ARRAY_RAT:
-                            mpfr_set_q  (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
-
-                            break;
-
-                        case ARRAY_VFP:
-                            mpfr_copy   (&aplVfpRht, (LPAPLVFP) lpSymGlbRht);
-
-                            break;
-
-                        case ARRAY_CHAR:        // Can't happen w/Res=VFP
-                        case ARRAY_HETERO:      // ...
-                        case ARRAY_NESTED:      // ...
-                        defstop
-                            break;
-                    } // End SWITCH
-
                     // Add into accumulator
-////////////////////aplFloatAcc += InnValFlt * aplFloatRht;
-                    mpfr_mul (&aplVfpRht, &aplVfpVal, &aplVfpRht, MPFR_RNDN);
-                    mpfr_add (&aplVfpAcc, &aplVfpAcc, &aplVfpRht, MPFR_RNDN);
+////////////////////atAcc.aplVfp += atVal.aplVfp * atRht.aplVfp;
+////////////////////mpfr_mul (&atAdd.aplVfp, &atVal.aplVfp, &atRht.aplVfp, MPFR_RNDN);
+                    atAdd.aplVfp = MulHC1V_RE (atVal.aplVfp, atRht.aplVfp);
+                    mpfr_add (&atAcc.aplVfp, &atAcc.aplVfp, &atAdd.aplVfp, MPFR_RNDN);
 
-                    // If the left arg is an array, ...
-                    if (hGlbLft)
-                    {
-                        // If the left arg is non-empty, ...
-                        if (aplNELMLft)
-                            // Get the next left arg value
-                            GetNextValueGlb (hGlbLft,       // The global memory handle
-                                             uInnLft,       // Index into item
-                                            &lpSymGlbLft,   // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
-                                            &aplLongestLft, // Ptr to result immediate value (may be NULL)
-                                             NULL);         // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-                        else
-                            aplLongestLft = 0;
-                    } // End IF
-
-                    // Split cases based upon the left arg storage type
-                    switch (aplTypeLft)
-                    {
-                        case ARRAY_BOOL:
-                        case ARRAY_INT:
-                        case ARRAY_APA:
-                            mpfr_set_sx (&aplVfpLft, aplLongestLft, MPFR_RNDN);
-
-                            break;
-
-                        case ARRAY_FLOAT:
-                            mpfr_set_d  (&aplVfpLft, *(LPAPLFLOAT) &aplLongestLft, MPFR_RNDN);
-
-                            break;
-
-                        case ARRAY_RAT:
-                            mpfr_set_q  (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
-
-                            break;
-
-                        case ARRAY_VFP:
-                            mpfr_copy   (&aplVfpLft, (LPAPLVFP) lpSymGlbLft);
-
-                            break;
-
-                        case ARRAY_CHAR:        // Can't happen w/Res = VFP
-                        case ARRAY_HETERO:      // ...
-                        case ARRAY_NESTED:      // ...
-                        defstop
-                            break;
-                    } // End SWITCH
+                    // Free old atAdd
+                    (*aTypeFree[aplTypeRes]) (&atAdd, 0);
 
                     // Multiply into the weighting value
-////////////////////InnValFlt *= aplFloatLft;
-                    mpfr_mul (&aplVfpVal, &aplVfpVal, &aplVfpLft, MPFR_RNDN);
+////////////////////atVal.aplVfp *= atLft.aplVfp;
+                    mpfr_mul (&atVal.aplVfp, &atVal.aplVfp, &atLft.aplVfp, MPFR_RNDN);
 
                     break;
+
+                case ARRAY_HC2I:
+                    __try
+                    {
+                        // Add into accumulator
+////////////////////////atAcc.aplHCxI += atRht.aplHCxI * atVal.aplHCxI
+                        atAcc.aplHC2I = AddHC2I_RE (atAcc.aplHC2I,
+                                                    MulHC2I_RE (atRht.aplHC2I,
+                                                                atVal.aplHC2I));
+                        // Multiply into the weighting value on the left
+////////////////////////atVal.aplHCxI = atLft.aplHCxI * atVal.aplHCxI
+                        atVal.aplHC2I = MulHC2I_RE (atLft.aplHC2I,
+                                                    atVal.aplHC2I);
+                    } __except (CheckException (GetExceptionInformation (), L"PrimFnDydUpTack_EM_YY"))
+                    {
+                        switch (MyGetExceptionCode ())
+                        {
+                            case EXCEPTION_RESULT_FLOAT:
+                            case EXCEPTION_RESULT_HC2F:
+                                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                                if (!IsSimpleFlt (aplTypeRes))
+                                {
+                                    aplTypeRes = ARRAY_HC2F;
+
+                                    dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+
+                                    // We no longer need these ptrs
+                                    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+
+                                    // We no longer need this storage
+                                    FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+
+                                    goto RESTART_EXCEPTION;
+                                } // End IF
+
+                                // Fall through to never-never-land
+
+                            default:
+                                // Display message for unhandled exception
+                                DisplayException ();
+
+                                break;
+                        } // End SWITCH
+                    } // End __try/__except
+
+                    break;
+
+                case ARRAY_HC4I:
+                    __try
+                    {
+                        // Add into accumulator
+////////////////////////atAcc.aplHCxI += atRht.aplHCxI * atVal.aplHCxI;
+                        atAcc.aplHC4I = AddHC4I_RE (atAcc.aplHC4I,
+                                                    MulHC4I_RE (atRht.aplHC4I,
+                                                                atVal.aplHC4I));
+                        // Multiply into the weighting value on the left
+////////////////////////atVal.aplHCxI = atLft.aplHCxI * atVal.aplHCxI;
+                        atVal.aplHC4I = MulHC4I_RE (atLft.aplHC4I,
+                                                    atVal.aplHC4I);
+                    } __except (CheckException (GetExceptionInformation (), L"PrimFnDydUpTack_EM_YY"))
+                    {
+                        switch (MyGetExceptionCode ())
+                        {
+                            case EXCEPTION_RESULT_FLOAT:
+                            case EXCEPTION_RESULT_HC2F:
+                            case EXCEPTION_RESULT_HC4F:
+                                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                                if (!IsSimpleFlt (aplTypeRes))
+                                {
+                                    aplTypeRes = ARRAY_HC4F;
+
+                                    dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+
+                                    // We no longer need these ptrs
+                                    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+
+                                    // We no longer need this storage
+                                    FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+
+                                    goto RESTART_EXCEPTION;
+                                } // End IF
+
+                                // Fall through to never-never-land
+
+                            default:
+                                // Display message for unhandled exception
+                                DisplayException ();
+
+                                break;
+                        } // End SWITCH
+                    } // End __try/__except
+
+                    break;
+
+////            case ARRAY_HC8I:
+////                __try
+////                {
+////                    // Add into accumulator
+////////////////////////atAcc.aplHCxI += atRht.aplHCxI * atVal.aplHCxI;
+////                    atAcc.aplHC8I = AddHC8I_RE (atAcc.aplHC8I,
+////                                                MulHC8I_RE (atRht.aplHC8I,
+////                                                            atVal.aplHC8I));
+////                    // Multiply into the weighting value on the left
+////////////////////////atVal.aplHCxI = atLft.aplHCxI * atVal.aplHCxI;
+////                    atVal.aplHC8I = MulHC8I_RE (atLft.aplHC8I,
+////                                                atVal.aplHC8I);
+////                } __except (CheckException (GetExceptionInformation (), L"PrimFnDydUpTack_EM_YY"))
+////                {
+////                    switch (MyGetExceptionCode ())
+////                    {
+////                        case EXCEPTION_RESULT_FLOAT:
+////                        case EXCEPTION_RESULT_HC2F:
+////                        case EXCEPTION_RESULT_HC4F:
+////                        case EXCEPTION_RESULT_HC8F:
+////                            MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+////
+////                            if (!IsSimpleFlt (aplTypeRes))
+////                            {
+////                                aplTypeRes = ARRAY_HC8F;
+////
+////                                dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L": %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+////
+////                                // We no longer need these ptrs
+////                                MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+////
+////                                // We no longer need this storage
+////                                FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+////
+////                                goto RESTART_EXCEPTION;
+////                            } // End IF
+////
+////                            // Fall through to never-never-land
+////
+////                        default:
+////                            // Display message for unhandled exception
+////                            DisplayException ();
+////
+////                            break;
+////                    } // End SWITCH
+////                } // End __try/__except
+////
+////                break;
+
+                case ARRAY_HC2F:
+                    // Add into accumulator
+////////////////////atAcc.aplHCxF += atRht.aplHCxF * atVal.aplHCxF;
+                    atAcc.aplHC2F = AddHC2F_RE (atAcc.aplHC2F,
+                                                MulHC2F_RE (atRht.aplHC2F,
+                                                            atVal.aplHC2F));
+                    // Multiply into the weighting value on the left
+////////////////////atVal.aplHCxF = atLft.aplHCxF * atVal.aplHCxF;
+                    atVal.aplHC2F = MulHC2F_RE (atLft.aplHC2F,
+                                                atVal.aplHC2F);
+                    break;
+
+                case ARRAY_HC4F:
+                    // Add into accumulator
+////////////////////atAcc.aplHCxF += atRht.aplHCxF * atVal.aplHCxF;
+                    atAcc.aplHC4F = AddHC4F_RE (atAcc.aplHC4F,
+                                                MulHC4F_RE (atRht.aplHC4F,
+                                                            atVal.aplHC4F));
+                    // Multiply into the weighting value on the left
+////////////////////atVal.aplHCxF = atLft.aplHCxF * atVal.aplHCxF;
+                    atVal.aplHC4F = MulHC4F_RE (atLft.aplHC4F,
+                                                atVal.aplHC4F);
+                    break;
+
+////            case ARRAY_HC8F:
+////                // Add into accumulator
+////////////////////atAcc.aplHCxF += atRht.aplHCxF * atVal.aplHCxF;
+////                atAcc.aplHC8F = AddHC8F_RE (atAcc.aplHC8F,
+////                                            MulHC8F_RE (atRht.aplHC8F,
+////                                                        atVal.aplHC8F));
+////                // Multiply into the weighting value on the left
+////////////////////atVal.aplHCxF = atLft.aplHCxF * atVal.aplHCxF;
+////                atVal.aplHC8F = MulHC8F_RE (atLft.aplHC8F,
+////                                            atVal.aplHC8F);
+////                break;
+
+                case ARRAY_HC2R:
+                    // Add into accumulator
+////////////////////atAcc.aplHCxR += atRht.aplHCxR * atVal.aplHCxR;
+////////////////////atAcc.aplHC2R = AddHC2R_RE (atAcc.aplHC2R,
+////////////////////                            MulHC2R_RE (atRht.aplHC2R,
+////////////////////                                        atVal.aplHC2R));
+                    atMul.aplHC2R = MulHC2R_RE (atRht.aplHC2R,
+                                                atVal.aplHC2R);
+                    atAdd.aplHC2R = AddHC2R_RE (atAcc.aplHC2R,
+                                                atMul.aplHC2R);
+                    mphc2r_set (&atAcc.aplHC2R, &atAdd.aplHC2R);
+
+                    // Free old atAdd and atMul
+                    (*aTypeFree[aplTypeRes]) (&atAdd, 0);
+                    (*aTypeFree[aplTypeRes]) (&atMul, 0);
+
+                    // Multiply into the weighting value on the left
+////////////////////atVal.aplHCxR = atLft.aplHCxR * atVal.aplHCxR;
+////////////////////atVal.aplHC2R = MulHC2R_RE (atLft.aplHC2R,
+////////////////////                            atVal.aplHC2R);
+                    atMul.aplHC2R = MulHC2R_RE (atLft.aplHC2R,
+                                                atVal.aplHC2R);
+                    mphc2r_set (&atVal.aplHC2R, &atMul.aplHC2R);
+
+                    // Free old atMul
+                    (*aTypeFree[aplTypeRes]) (&atMul, 0);
+
+                    break;
+
+                case ARRAY_HC4R:
+                    // Add into accumulator
+////////////////////atAcc.aplHCxR += atRht.aplHCxR * atVal.aplHCxR;
+////////////////////atAcc.aplHC4R = AddHC4R_RE (atAcc.aplHC4R,
+////////////////////                            MulHC4R_RE (atRht.aplHC4R,
+////////////////////                                        atVal.aplHC4R));
+                    atMul.aplHC4R = MulHC4R_RE (atRht.aplHC4R,
+                                                atVal.aplHC4R);
+                    atAdd.aplHC4R = AddHC4R_RE (atAcc.aplHC4R,
+                                                atMul.aplHC4R);
+                    mphc4r_set (&atAcc.aplHC4R, &atAdd.aplHC4R);
+
+                    // Free old atAdd and atMul
+                    (*aTypeFree[aplTypeRes]) (&atAdd, 0);
+                    (*aTypeFree[aplTypeRes]) (&atMul, 0);
+
+                    // Multiply into the weighting value on the left
+////////////////////atVal.aplHCxR = atLft.aplHCxR * atVal.aplHCxR;
+////////////////////atVal.aplHC4R = MulHC4R_RE (atLft.aplHC4R,
+////////////////////                            atVal.aplHC4R);
+                    atMul.aplHC4R = MulHC4R_RE (atLft.aplHC4R,
+                                                atVal.aplHC4R);
+                    mphc4r_set (&atVal.aplHC4R, &atMul.aplHC4R);
+
+                    // Free old atMul
+                    (*aTypeFree[aplTypeRes]) (&atMul, 0);
+
+                    break;
+
+////            case ARRAY_HC8R:
+////                // Add into accumulator
+////////////////////atAcc.aplHCxR += atRht.aplHCxR * atVal.aplHCxR;
+////////////////////atAcc.aplHC8R = AddHC8R_RE (atAcc.aplHC8R,
+////////////////////                            MulHC8R_RE (atRht.aplHC8R,
+////////////////////                                        atVal.aplHC8R));
+////                atMul.aplHC8R = MulHC8R_RE (atRht.aplHC8R,
+////                                            atVal.aplHC8R);
+////                atAdd.aplHC8R = AddHC8R_RE (atAcc.aplHC8R,
+////                                            atMul.aplHC8R);
+////                mphc8r_set (&atAcc.aplHC8R, &atAdd.aplHC8R);
+////
+////                // Free old atAdd and atMul
+////                (*aTypeFree[aplTypeRes]) (&atAdd, 0);
+////                (*aTypeFree[aplTypeRes]) (&atMul, 0);
+////
+////                // Multiply into the weighting value on the left
+////////////////////atVal.aplHCxR = atLft.aplHCxR * atVal.aplHCxR;
+////////////////////atVal.aplHC8R = MulHC8R_RE (atLft.aplHC8R,
+////////////////////                            atVal.aplHC8R);
+////                atMul.aplHC8R = MulHC8R_RE (atLft.aplHC8R,
+////                                            atVal.aplHC8R);
+////                mphc8r_set (&atVal.aplHC8R, &atMul.aplHC8R);
+////
+////                // Free old atMul
+////                (*aTypeFree[aplTypeRes]) (&atMul, 0);
+////
+////                break;
+
+                case ARRAY_HC2V:
+                    // Add into accumulator
+////////////////////atAcc.aplHCxV += atRht.aplHCxV * atVal.aplHCxV;
+////////////////////atAcc.aplHC2V = AddHC2V_RE (atAcc.aplHC2V,
+////////////////////                            MulHC2V_RE (atRht.aplHC2V,
+////////////////////                                        atVal.aplHC2V));
+                    atMul.aplHC2V = MulHC2V_RE (atRht.aplHC2V,
+                                                atVal.aplHC2V);
+                    atAdd.aplHC2V = AddHC2V_RE (atAcc.aplHC2V,
+                                                atMul.aplHC2V);
+                    mphc2v_set (&atAcc.aplHC2V, &atAdd.aplHC2V);
+
+                    // Free old atAdd and atMul
+                    (*aTypeFree[aplTypeRes]) (&atAdd, 0);
+                    (*aTypeFree[aplTypeRes]) (&atMul, 0);
+
+                    // Multiply into the weighting value on the left
+////////////////////atVal.aplHCxV = atLft.aplHCxV * atVal.aplHCxV;
+////////////////////atVal.aplHC2V = MulHC2V_RE (atLft.aplHC2V,
+////////////////////                            atVal.aplHC2V);
+                    atMul.aplHC2V = MulHC2V_RE (atLft.aplHC2V,
+                                                atVal.aplHC2V);
+                    mphc2v_set (&atVal.aplHC2V, &atMul.aplHC2V);
+
+                    // Free old atMul
+                    (*aTypeFree[aplTypeRes]) (&atMul, 0);
+
+                    break;
+
+                case ARRAY_HC4V:
+                    // Add into accumulator
+////////////////////atAcc.aplHCxV += atRht.aplHCxV * atVal.aplHCxV;
+////////////////////atAcc.aplHC4V = AddHC4V_RE (atAcc.aplHC4V,
+////////////////////                            MulHC4V_RE (atRht.aplHC4V,
+////////////////////                                        atVal.aplHC4V));
+                    atMul.aplHC4V = MulHC4V_RE (atRht.aplHC4V,
+                                                atVal.aplHC4V);
+                    atAdd.aplHC4V = AddHC4V_RE (atAcc.aplHC4V,
+                                                atMul.aplHC4V);
+                    mphc4v_set (&atAcc.aplHC4V, &atAdd.aplHC4V);
+
+                    // Free old atAdd and atMul
+                    (*aTypeFree[aplTypeRes]) (&atAdd, 0);
+                    (*aTypeFree[aplTypeRes]) (&atMul, 0);
+
+                    // Multiply into the weighting value on the left
+////////////////////atVal.aplHCxV = atLft.aplHCxV * atVal.aplHCxV;
+////////////////////atVal.aplHC4V = MulHC4V_RE (atLft.aplHC4V,
+////////////////////                            atVal.aplHC4V);
+                    atMul.aplHC4V = MulHC4V_RE (atLft.aplHC4V,
+                                                atVal.aplHC4V);
+                    mphc4v_set (&atVal.aplHC4V, &atMul.aplHC4V);
+
+                    // Free old atMul
+                    (*aTypeFree[aplTypeRes]) (&atMul, 0);
+
+                    break;
+
+////            case ARRAY_HC8V:
+////                // Add into accumulator
+////////////////////atAcc.aplHCxV += atRht.aplHCxV * atVal.aplHCxV;
+////////////////////atAcc.aplHC8V = AddHC8V_RE (atAcc.aplHC8V,
+////////////////////                            MulHC8V_RE (atRht.aplHC8V,
+////////////////////                                        atVal.aplHC8V));
+////                atMul.aplHC8V = MulHC8V_RE (atRht.aplHC8V,
+////                                            atVal.aplHC8V);
+////                atAdd.aplHC8V = AddHC8V_RE (atAcc.aplHC8V,
+////                                            atMul.aplHC8V);
+////                mphc8v_set (&atAcc.aplHC8V, &atAdd.aplHC8V);
+////
+////                // Free old atAdd and atMul
+////                (*aTypeFree[aplTypeRes]) (&atAdd, 0);
+////                (*aTypeFree[aplTypeRes]) (&atMul, 0);
+////
+////                // Multiply into the weighting value on the left
+////////////////////atVal.aplHCxV = atLft.aplHCxV * atVal.aplHCxV;
+////////////////////atVal.aplHC8V = MulHC8V_RE (atLft.aplHC8V,
+////////////////////                            atVal.aplHC8V);
+////                atMul.aplHC8V = MulHC8V_RE (atLft.aplHC8V,
+////                                            atVal.aplHC8V);
+////                mphc8v_set (&atVal.aplHC8V, &atMul.aplHC8V);
+////
+////                // Free old atMul
+////                (*aTypeFree[aplTypeRes]) (&atMul, 0);
+////
+////                break;
 
                 case ARRAY_APA:
                 case ARRAY_CHAR:
@@ -815,6 +949,10 @@ RESTART_EXCEPTION:
                 defstop
                     break;
             } // End SWITCH
+
+            // Free the old atLft and atRht (if any)
+            (*aTypeFree[aplTypeRes]) (&atLft, 0);
+            (*aTypeFree[aplTypeRes]) (&atRht, 0);
         } // End FOR
 
         // Split cases based upon the result storage type
@@ -822,27 +960,63 @@ RESTART_EXCEPTION:
         {
             case ARRAY_BOOL:
             case ARRAY_INT:
-                // Save in result
-                ((LPAPLINT)   lpMemRes)[uRes] = aplIntAcc;
+                // Save in the result
+                ((LPAPLINT)   lpMemRes)[uRes] = atAcc.aplInteger;
 
                 break;
 
             case ARRAY_FLOAT:
-                // Save in result
-                ((LPAPLFLOAT) lpMemRes)[uRes] = aplFloatAcc;
+                // Save in the result
+                ((LPAPLFLOAT) lpMemRes)[uRes] = atAcc.aplFloat;
 
                 break;
 
             case ARRAY_RAT:
-                // Save in result
-                mpq_init_set (&((LPAPLRAT) lpMemRes)[uRes], &aplRatAcc);
+                // Save in the result
+                mpq_init_set (&((LPAPLRAT) lpMemRes)[uRes], &atAcc.aplRat);
 
                 break;
 
             case ARRAY_VFP:
-                // Save in result
-                mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uRes], &aplVfpAcc);
+                // Save in the result
+                mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uRes], &atAcc.aplVfp);
 
+                break;
+
+            case ARRAY_HC2I:
+            case ARRAY_HC4I:
+////        case ARRAY_HC8I:
+                // Loop through all of the parts
+                for (i = 0; i < iHCDimRes; i++)
+                    // Save in the result
+                    *((LPAPLINT) lpMemRes)++ = atAcc.aplHC8I.parts[i];
+                break;
+
+            case ARRAY_HC2F:
+            case ARRAY_HC4F:
+////        case ARRAY_HC8F:
+                // Loop through all of the parts
+                for (i = 0; i < iHCDimRes; i++)
+                    // Save in the result
+                    *((LPAPLFLOAT) lpMemRes)++ = atAcc.aplHC8F.parts[i];
+                break;
+
+            case ARRAY_HC2R:
+            case ARRAY_HC4R:
+////        case ARRAY_HC8R:
+                // Loop through all of the parts
+                for (i = 0; i < iHCDimRes; i++)
+                    // Save in the result
+                    mpq_init_set (((LPAPLRAT) lpMemRes)++, &atAcc.aplHC8R.parts[i]);
+                break;
+
+            case ARRAY_HC2V:
+            case ARRAY_HC4V:
+////        case ARRAY_HC8V:
+                // Loop through all of the parts
+                for (i = 0; i < iHCDimRes; i++)
+                    // Save in the result
+                    mpfr_init_set (((LPAPLVFP) lpMemRes)++, &atAcc.aplHC8V.parts[i], MPFR_RNDN);
                 break;
 
             case ARRAY_CHAR:            // Can't happen w/UpTack
@@ -852,10 +1026,18 @@ RESTART_EXCEPTION:
             defstop
                 break;
         } // End SWITCH
+
+        // Free the old atAcc and atVal (if any)
+        (*aTypeFree[aplTypeRes]) (&atAcc, 0);
+        (*aTypeFree[aplTypeRes]) (&atVal, 0);
     } // End FOR/FOR
 YYALLOC_EXIT:
     // Unlock the result global memory in case TypeDemote actually demotes
-    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+    } // End IF
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -868,7 +1050,7 @@ YYALLOC_EXIT:
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    TypeDemote (&lpYYRes->tkToken);
+    TypeDemote (&lpYYRes->tkToken, FALSE);
 
     goto NORMAL_EXIT;
 
@@ -893,49 +1075,34 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this storage
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    // If the result is global numeric, ...
-    if (IsGlbNum (aplTypeRes))
-    {
-        // We no longer need this storage
-        Myf_clear (&aplVfpVal);
-        Myf_clear (&aplVfpAcc);
-        Myf_clear (&aplVfpRht);
-        Myf_clear (&aplVfpLft);
-
-        Myq_clear (&aplRatVal);
-        Myq_clear (&aplRatAcc);
-        Myq_clear (&aplRatRht);
-        Myq_clear (&aplRatLft);
-    } // End IF
-
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
-    if (hGlbLft && lpMemLft)
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
     return lpYYRes;

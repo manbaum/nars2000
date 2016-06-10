@@ -365,6 +365,7 @@ void FreeResultSub
         case TKT_RIGHTBRACE:    // ...                    right brace in {}
         case TKT_SYNTERR:       // ...                    SYNTAX ERROR
         case TKT_EOL:           // ...                    EOL EXAMPLE:  {{alpha}{alpha} {omega}}{each}{zilde}
+        case TKT_ASSIGN:        // ...                    Close in middle of Quote-Quad input
             return;
 
         case TKT_STRNAMED:  // tkData contains an HGLOBAL of a strand of names
@@ -563,6 +564,12 @@ UBOOL FreeResultGlobalVarSub
             case ARRAY_CHAR:    // ...
             case ARRAY_FLOAT:   // ...
             case ARRAY_APA:     // ...
+            case ARRAY_HC2I:
+            case ARRAY_HC2F:
+            case ARRAY_HC4I:
+            case ARRAY_HC4F:
+            case ARRAY_HC8I:
+            case ARRAY_HC8F:
                 break;
 
             case ARRAY_NESTED:  // Free the LPSYMENTRYs and/or HGLOBALs
@@ -625,6 +632,72 @@ UBOOL FreeResultGlobalVarSub
                 // Loop through the APLVFPs
                 for (u = 0; u < aplNELM; u++, ((LPAPLVFP) lpMem)++)
                     Myf_clear ((LPAPLVFP) lpMem);
+
+                break;
+
+            case ARRAY_HC2R:
+                // Point to the array data (APLHC2Rs)
+                lpMem = VarArrayDataFmBase (lpMem);
+
+                // Loop through the APLHC2Rs
+                for (u = 0; u < aplNELM; u++, ((LPAPLHC2R) lpMem)++)
+                    // Clear the HC2R
+                    Myhc2r_clear ((LPAPLHC2R) lpMem);
+
+                break;
+
+            case ARRAY_HC2V:
+                // Point to the array data (APLHC2Vs)
+                lpMem = VarArrayDataFmBase (lpMem);
+
+                // Loop through the APLHC2Vs
+                for (u = 0; u < aplNELM; u++, ((LPAPLHC2V) lpMem)++)
+                    // Clear the HC2V
+                    Myhc2v_clear ((LPAPLHC2V) lpMem);
+
+                break;
+
+            case ARRAY_HC4R:
+                // Point to the array data (APLHC4Rs)
+                lpMem = VarArrayDataFmBase (lpMem);
+
+                // Loop through the APLHC4Rs
+                for (u = 0; u < aplNELM; u++, ((LPAPLHC4R) lpMem)++)
+                    // Clear the HC4R
+                    Myhc4r_clear ((LPAPLHC4R) lpMem);
+
+                break;
+
+            case ARRAY_HC4V:
+                // Point to the array data (APLHC4Vs)
+                lpMem = VarArrayDataFmBase (lpMem);
+
+                // Loop through the APLHC4Vs
+                for (u = 0; u < aplNELM; u++, ((LPAPLHC4V) lpMem)++)
+                    // Clear the HC4V
+                    Myhc4v_clear ((LPAPLHC4V) lpMem);
+
+                break;
+
+            case ARRAY_HC8R:
+                // Point to the array data (APLHC8Rs)
+                lpMem = VarArrayDataFmBase (lpMem);
+
+                // Loop through the APLHC8Rs
+                for (u = 0; u < aplNELM; u++, ((LPAPLHC8R) lpMem)++)
+                    // Clear the HC8R
+                    Myhc8r_clear ((LPAPLHC8R) lpMem);
+
+                break;
+
+            case ARRAY_HC8V:
+                // Point to the array data (APLHC8Vs)
+                lpMem = VarArrayDataFmBase (lpMem);
+
+                // Loop through the APLHC8Vs
+                for (u = 0; u < aplNELM; u++, ((LPAPLHC8V) lpMem)++)
+                    // Clear the HC8V
+                    Myhc8v_clear ((LPAPLHC8V) lpMem);
 
                 break;
 
@@ -1038,40 +1111,6 @@ void FreeResultGlobalDfnStruc
     } // End WHILE
 } // End FreeResultGlobalDfnStruc
 #undef  APPEND_NAME
-
-
-//***************************************************************************
-//  $IzitQuadDM
-//
-//  Is the name of a token []DM?
-//***************************************************************************
-
-UBOOL IzitQuadDM
-    (LPTOKEN lptkName)          // Ptr to the token
-
-{
-    HGLOBAL    htGlbName;       // Name global memory handle
-    LPAPLCHAR  lpMemName;       // Ptr to name global memory
-    APLBOOL    bRet;            // TRUE iff eraseable name
-
-    if (IsTknNamed (lptkName))
-    {
-        // Get the name global memory handle
-        htGlbName = lptkName->tkData.tkSym->stHshEntry->htGlbName;
-
-        // Lock the memory to get a ptr to it
-        lpMemName = MyGlobalLock (htGlbName);
-
-        // Save flag of whether or not the name is []DM
-        bRet = lstrcmpiW (lpMemName, $QUAD_DM) EQ 0;
-
-        // We no longer need this ptr
-        MyGlobalUnlock (htGlbName); lpMemName = NULL;
-    } else
-        bRet = FALSE;
-
-    return bRet;
-} // End IzitQuadDM
 
 
 //***************************************************************************

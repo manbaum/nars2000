@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2012 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+#ifndef NO_CHO_TYPES
+#include "mpci.h"
+#include "mphi.h"
+#include "mpoi.h"
+#include "mpcf.h"
+#include "mphf.h"
+#include "mpof.h"
+#include "fpci.h"
+#include "fphi.h"
+#include "fpoi.h"
+#include "fpcf.h"
+#include "fphf.h"
+#include "fpof.h"
+#endif
 
 typedef unsigned int   UBOOL, *LPUBOOL;
 typedef unsigned int   uint32_t;
@@ -58,6 +72,44 @@ typedef MP_INT      APLMPI;             // ...         ...           an Arbitrar
 typedef MP_RAT      APLRAT;             // ...         ...           a Rational Number array
 typedef __mpfr_struct APLVFP;           // ...         ...           a Variable-precision Floating Point array
 typedef enum tagARRAY_TYPES APLSTYPE;   // Storage type (see ARRAY_TYPES)
+
+#ifndef NO_CHO_TYPES
+typedef __fpci_struct        APLHC2I;
+typedef __fpci_struct*     LPAPLHC2I;
+
+typedef __fphi_struct        APLHC4I;
+typedef __fphi_struct*     LPAPLHC4I;
+
+typedef __fpoi_struct        APLHC8I;
+typedef __fpoi_struct*     LPAPLHC8I;
+
+typedef __fpcf_struct        APLHC2F;
+typedef __fpcf_struct*     LPAPLHC2F;
+
+typedef __fphf_struct        APLHC4F;
+typedef __fphf_struct*     LPAPLHC4F;
+
+typedef __fpof_struct        APLHC8F;
+typedef __fpof_struct*     LPAPLHC8F;
+
+typedef __mpci_struct        APLHC2R;
+typedef __mpci_struct*     LPAPLHC2R;
+
+typedef __mphi_struct        APLHC4R;
+typedef __mphi_struct*     LPAPLHC4R;
+
+typedef __mpoi_struct        APLHC8R;
+typedef __mpoi_struct*     LPAPLHC8R;
+
+typedef __mpcf_struct        APLHC2V;
+typedef __mpcf_struct*     LPAPLHC2V;
+
+typedef __mphf_struct        APLHC4V;
+typedef __mphf_struct*     LPAPLHC4V;
+
+typedef __mpof_struct        APLHC8V;
+typedef __mpof_struct*     LPAPLHC8V;
+#endif
 
 typedef ULONGLONG   APLB64;             // Boolean 64 bits
 typedef uint32_t    APLB32;             // ...     32 ...
@@ -108,6 +160,15 @@ typedef APLB08    * LPAPLB08;
 
 typedef APLLONGEST* LPAPLLONGEST;
 
+#define   APLHC1I     APLINT
+#define   APLHC1F     APLFLOAT
+#define   APLHC1R     APLRAT
+#define   APLHC1V     APLVFP
+#define LPAPLHC1I   LPAPLINT
+#define LPAPLHC1F   LPAPLFLOAT
+#define LPAPLHC1R   LPAPLRAT
+#define LPAPLHC1V   LPAPLVFP
+
 #pragma pack(push,4)
 typedef struct tagAPLI_SPLIT
 {
@@ -135,6 +196,40 @@ typedef union tagUSPLIT
             UINT hi;};
 } USPLIT, *LPUSPLIT;
 #pragma pack(pop)
+
+// This typedef is used for common routines to convert HCxy to an APLINT
+typedef APLINT (*HCxyTOAPLINT) (LPVOID, APLUINT, LPUBOOL);
+
+// This typedef and struc are used for common routine in <pf_lshoe.c>
+typedef void (*LFTSHOEGLBCOPY) (LPVOID, APLNELM, LPVOID, APLNELM);
+
+typedef struct tagLFTSHOEGLBCOMVARS
+{
+    LPUBOOL          lpbCtrlBreak;       // Ptr to Ctrl-Break flag
+    APLUINT          ByteRes;           // # bytes in the result
+    APLSTYPE         aplTypeRht;        // Right arg storage type
+    APLNELM          aplNELMSub;        // Subarray NELM
+    APLNELM          aplNELMAxis;       // Axis NELM
+    APLRANK          aplRankRes;        // Result rank
+    APLRANK          aplRankRht;        // Right arg rank
+    LPVOID          *lplpMemRes;        // Ptr to ptr to result global memory
+    LPAPLDIM         lpMemDimRht;       // Ptr to right arg dimensions
+    LPAPLUINT        lpMemAxisHead;     // Ptr to axis values, fleshed out by CheckAxis_EM
+    LPAPLUINT        lpMemAxisTail;     // Ptr to grade up of AxisHead
+    HGLOBAL         *lphGlbSub;         // Ptr to subarray global memory handle
+    LPVOID          *lplpMemRht;        // Ptr to ptr to right arg global memory
+    LPVOID          *lplpMemSub;        // Ptr to ptr to subarray global memory
+    struct tagTOKEN *lptkFunc;          // Ptr to function token
+    LPAPLUINT        lpMemOdo;          // Ptr to odometer vector
+    LPAPLUINT        lpMemWVec;         // Ptr to weighting vector
+    LFTSHOEGLBCOPY   LftShoeGlbCopy;    // Ptr to data copy routine
+} LFTSHOEGLBCOMVARS, *LPLFTSHOEGLBCOMVARS;
+
+// These typedef are used for PRIMSPEC items
+typedef void     ATISAT    (LPVOID, APLUINT, struct tagALLTYPES *,                       struct tagPRIMSPEC *);
+typedef          ATISAT    *LPATISAT;
+typedef void     ATISATVAT (LPVOID, APLUINT, struct tagALLTYPES *, struct tagALLTYPES *, struct tagPRIMSPEC *);
+typedef          ATISATVAT *LPATISATVAT;
 
 
 //***************************************************************************

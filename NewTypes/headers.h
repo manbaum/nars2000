@@ -38,12 +38,16 @@
 #include <stdint.h>
 #include <mpir.h>
 #include <mpfr.h>
+#include <complex.h>
+#undef  I               // So we can use this symbol ourselves
+#undef _Complex_I       // To keep mpc.h happy
+#include <mpc.h>
 #include "classnames.h"
+#include "perfmon.h"
 #include "defines.h"
 #include "enums.h"
 #include "types.h"
 #include "macros.h"
-#include "perfmon.h"
 #include "uniscribe.h"
 #include "aplerrors.h"
 #include "resdebug.h"
@@ -84,6 +88,7 @@
 #include "malloc.h"
 #include "qf_dr.h"
 #include "hungarian.h"
+#include "sc_save.h"
 #include "cr_proc.h"
 
 #pragma pack(pop)

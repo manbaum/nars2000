@@ -23,6 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include <math.h>
+#include "pf_fcre.h"
 #include "headers.h"
 
 
@@ -33,57 +34,137 @@ PRIMSPEC PrimSpecUpStile = {
     &PrimSpecUpStileStorageTypeMon,
     &PrimFnMonUpStileAPA_EM,
 
+    // Monadic Boolean result functions
     &PrimFnMonUpStileBisB,
     NULL,   // &PrimFnMonUpStileBisI, -- Can't happen w/UpStile
     NULL,   // &PrimFnMonUpStileBisF, -- Can't happen w/UpStile
 
-////                 IisB,   // Handled via type promotion (to IisI)
+    // Monadic non-Boolean result functions (indexable)
     &PrimFnMonUpStileIisI,
     &PrimFnMonUpStileIisF,
-
-////                 FisB,   // Handled via type promotion (to FisI)
     NULL,   // &PrimFnMonUpStileFisI, -- Can't happen w/UpStile
     &PrimFnMonUpStileFisF,
-
     &PrimFnMonUpStileRisR,
-
-////               VisR,    // Handled via type promotion (to VisV)
+    &PrimFnMonUpStileVisR,
     &PrimFnMonUpStileVisV,
+
+    // Monadic Hypercomplex functions
+    &PrimFnMonUpStileHC2IisHC2I,
+    &PrimFnMonUpStileHC2IisHC2F,
+    &PrimFnMonUpStileHC2FisHC2I,
+    &PrimFnMonUpStileHC2FisHC2F,
+    &PrimFnMonUpStileHC2RisHC2R,
+    &PrimFnMonUpStileHC2VisHC2R,
+    &PrimFnMonUpStileHC2VisHC2V,
+
+    &PrimFnMonUpStileHC4IisHC4I,
+    &PrimFnMonUpStileHC4IisHC4F,
+    &PrimFnMonUpStileHC4FisHC4I,
+    &PrimFnMonUpStileHC4FisHC4F,
+    &PrimFnMonUpStileHC4RisHC4R,
+    &PrimFnMonUpStileHC4VisHC4R,
+    &PrimFnMonUpStileHC4VisHC4V,
+
+    NULL,   // &PrimFnMonUpStileHC8IisHC8I, -- Can't happen w/UpStile
+    NULL,   // &PrimFnMonUpStileHC8IisHC8F, -- Can't happen w/UpStile
+    NULL,   // &PrimFnMonUpStileHC8FisHC8I, -- Can't happen w/UpStile
+    NULL,   // &PrimFnMonUpStileHC8FisHC8F, -- Can't happen w/UpStile
+    NULL,   // &PrimFnMonUpStileHC8RisHC8R, -- Can't happen w/UpStile
+    NULL,   // &PrimFnMonUpStileHC8VisHC8R, -- Can't happen w/UpStile
+    NULL,   // &PrimFnMonUpStileHC8VisHC8V, -- Can't happen w/UpStile
+
+    // Monadic FLT result HC arg functions (indexable)
+    NULL,   // &PrimFnMonUpStileFisHC2I, -- Can't happen w/UpStile
+    NULL,   // &PrimFnMonUpStileFisHC2F, -- Can't happen w/UpStile
+    NULL,   // &PrimFnMonUpStileVisHC2R, -- Can't happen w/UpStile
+    NULL,   // &PrimFnMonUpStileVisHC2V, -- Can't happen w/UpStile
+    NULL,   // &PrimFnMonUpStileFisHC4I, -- Can't happen w/UpStile
+    NULL,   // &PrimFnMonUpStileFisHC4F, -- Can't happen w/UpStile
+    NULL,   // &PrimFnMonUpStileVisHC4R, -- Can't happen w/UpStile
+    NULL,   // &PrimFnMonUpStileVisHC4V, -- Can't happen w/UpStile
+    NULL,   // &PrimFnMonUpStileFisHC8I, -- Can't happen w/UpStile
+    NULL,   // &PrimFnMonUpStileFisHC8F, -- Can't happen w/UpStile
+    NULL,   // &PrimFnMonUpStileVisHC8R, -- Can't happen w/UpStile
+    NULL,   // &PrimFnMonUpStileVisHC8V, -- Can't happen w/UpStile
 
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecUpStileStorageTypeDyd,
     NULL,   // &PrimFnDydUpStileAPA_EM, -- Can't happen w/UpStile
 
+    // Dyadic Boolean result functions
     &PrimFnDydDownCaretBisBvB,
     NULL,   // &PrimFnDydUpStileBisIvI, -- Can't happen w/UpStile
     NULL,   // &PrimFnDydUpStileBisFvF, -- Can't happen w/UpStile
     NULL,   // &PrimFnDydUpStileBisCvC, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileBisHvH, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileBisRvR, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileBisVvV, -- Can't happen w/UpStile
 
-////                 IisBvB,    // Handled via type promotion (to IisIvI)
+    NULL,   // &PrimFnDydUpStileBisHC2IvHC2I, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileBisHC2FvHC2F, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileBisHC2RvHC2R, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileBisHC2VvHC2V, -- Can't happen w/UpStile
+
+    NULL,   // &PrimFnDydUpStileBisHC4IvHC4I, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileBisHC4FvHC4F, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileBisHC4RvHC4R, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileBisHC4VvHC4V, -- Can't happen w/UpStile
+
+    NULL,   // &PrimFnDydUpStileBisHC8IvHC8I, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileBisHC8FvHC8F, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileBisHC8RvHC8R, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileBisHC8VvHC8V, -- Can't happen w/UpStile
+
+    // Dyadic non-Boolean result functions (indexable)
     &PrimFnDydUpStileIisIvI,
     NULL,   // &PrimFnDydUpStileIisFvF, -- Can't happen w/UpStile
-
-////                 FisBvB,    // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydUpStileFisIvI, -- Can't happen w/UpStile
     &PrimFnDydUpStileFisFvF,
-
-    NULL,   // &PrimFnDydUpStileBisRvR, -- Can't happen w/UpStile
     &PrimFnDydUpStileRisRvR,
-
-    NULL,   // &PrimFnDydUpStileBisVvV, -- Can't happen w/UpStile
-////                  VisRvR,   // Handled via type promotion (to VisVvV)
+    &PrimFnDydUpStileVisRvR,
     &PrimFnDydUpStileVisVvV,
 
+    NULL,   // &PrimFnDydUpStileHC2IisHC2IvHC2I, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileHC2IisHC2FvHC2F, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileHC2FisHC2IvHC2I, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileHC2FisHC2FvHC2F, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileHC2RisHC2RvHC2R, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileHC2VisHC2RvHC2R, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileHC2VisHC2VvHC2V, -- Can't happen w/UpStile
+
+    NULL,   // &PrimFnDydUpStileHC4IisHC4IvHC4I, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileHC4IisHC4FvHC4F, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileHC4FisHC4IvHC4I, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileHC4FisHC4FvHC4F, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileHC4RisHC4RvHC4R, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileHC4VisHC4RvHC4R, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileHC4VisHC4VvHC4V, -- Can't happen w/UpStile
+
+    NULL,   // &PrimFnDydUpStileHC8IisHC8IvHC8I, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileHC8IisHC8FvHC8F, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileHC8FisHC8IvHC8I, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileHC8FisHC8FvHC8F, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileHC8RisHC8RvHC8R, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileHC8VisHC8RvHC8R, -- Can't happen w/UpStile
+    NULL,   // &PrimFnDydUpStileHC8VisHC8VvHC8V, -- Can't happen w/UpStile
+
+    // Monadic Boolean chunk functions
     NULL,   // &PrimFnMonUpStileB64isB64, -- Can't happen w/UpStile
     NULL,   // &PrimFnMonUpStileB32isB32, -- Can't happen w/UpStile
     NULL,   // &PrimFnMonUpStileB16isB16, -- Can't happen w/UpStile
     NULL,   // &PrimFnMonUpStileB08isB08, -- Can't happen w/UpStile
 
+    // Dyadic Boolean chunk functions
     &PrimFnDydDownCaretB64isB64vB64,
     &PrimFnDydDownCaretB32isB32vB32,
     &PrimFnDydDownCaretB16isB16vB16,
     &PrimFnDydDownCaretB08isB08vB08,
+
+    // Miscellaneous
+    0,      // []RL for atomicity
+    FALSE,  // 00000001:  Allow dimension demotion for monadic scalar function
+    FALSE,  // 00000002:  ...                          dyadic  ...
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecUpStile};
@@ -150,7 +231,8 @@ APLSTYPE PrimSpecUpStileStorageTypeMon
         // Except FLOAT goes to INT
         // IisF promotes to FisF as necessary.
         case ARRAY_FLOAT:
-            aplTypeRes = ARRAY_FLOAT;
+        case ARRAY_HC2F:
+            aplTypeRes--;       // ***ASSUME*** --  order of ARRAY_TYPES allows this
 
             break;
 
@@ -164,13 +246,36 @@ APLSTYPE PrimSpecUpStileStorageTypeMon
 
         case ARRAY_CHAR:
         case ARRAY_HETERO:
+        case ARRAY_HC8I:
+        case ARRAY_HC8F:
+        case ARRAY_HC8R:
+        case ARRAY_HC8V:
             aplTypeRes = ARRAY_ERROR;
 
             break;
 
+        case ARRAY_HC2I:
+        case ARRAY_HC2R:
+        case ARRAY_HC2V:
+            break;
+
+        case ARRAY_HC4F:
+            if (HasFractionality (aplTypeRes))
+                aplTypeRes--;   // ***ASSUME*** --  order of ARRAY_TYPES allows this
+            else
+                aplTypeRes = ARRAY_ERROR;
+            break;
+
+        case ARRAY_HC4I:
+        case ARRAY_HC4R:
+        case ARRAY_HC4V:
+            if (!HasFractionality (aplTypeRes))
+                aplTypeRes = ARRAY_ERROR;
+            break;
+
         defstop
             break;
-    } // End SWITCH
+    } // End IF/ELSE/SWITCH
 
     return aplTypeRes;
 } // End PrimSpecUpStileStorageTypeMon
@@ -197,12 +302,14 @@ APLBOOL PrimFnMonUpStileBisB
 //  Primitive scalar function monadic UpStile:  I {is} fn I
 //***************************************************************************
 
-APLINT PrimFnMonUpStileIisI
-    (APLINT     aplIntegerRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnMonUpStileIisI
+    (LPAPLINT   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    return aplIntegerRht;
+    lpMemRes[uRes] = lpatRht->aplInteger;
 } // End PrimFnMonUpStileIisI
 
 
@@ -212,19 +319,32 @@ APLINT PrimFnMonUpStileIisI
 //  Primitive scalar function monadic UpStile:  I {is} fn F
 //***************************************************************************
 
-APLINT PrimFnMonUpStileIisF
-    (APLFLOAT   aplFloatRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnMonUpStileIisF
+    (LPAPLINT   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     // Check for PoM infinity and numbers whose
     //   absolute value is >= 2*53
-    if (IsFltInfinity (aplFloatRht)
-     || fabs (aplFloatRht) >= Float2Pow53)
+    if (IsFltInfinity (lpatRht->aplFloat)
+     || fabs (lpatRht->aplFloat) >= Float2Pow53)
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+    else
+    {
+        APLFLOAT aplFloatRes;
 
-    // Use the code in DownStile
-    return (APLINT) -PrimFnMonDownStileFisF (-aplFloatRht, lpPrimSpec);
+        // No need to set enumCT as this is UpStile which always uses []CT
+        PrimFnMonUpStileFisF (&aplFloatRes, 0, lpatRht, NULL);
+
+        // Check for range
+        if (fabs (aplFloatRes) > MAX_APLINT)
+            RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+
+        // Save in the result
+        lpMemRes[uRes] = (APLINT) aplFloatRes;
+    } // End IF/ELSE
 } // End PrimFnMonUpStileIisF
 
 
@@ -234,13 +354,25 @@ APLINT PrimFnMonUpStileIisF
 //  Primitive scalar function monadic UpStile:  F {is} fn F
 //***************************************************************************
 
-APLFLOAT PrimFnMonUpStileFisF
-    (APLFLOAT   aplFloatRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnMonUpStileFisF
+    (LPAPLFLOAT lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
+    APLFLOAT aplFloatRes;
+    ALLTYPES atTmp = {0};
+
+    // Save in a temp
+    atTmp.aplFloat = -lpatRht->aplFloat;
+
     // Use the code in DownStile
-    return -PrimFnMonDownStileFisF (-aplFloatRht, lpPrimSpec);
+    // No need to set enumCT as this is DownStile which always uses []CT
+    PrimFnMonDownStileFisF (&aplFloatRes, 0, &atTmp, NULL);
+
+    // Save in the result
+    lpMemRes[uRes] = -aplFloatRes;
 } // End PrimFnMonUpStileFisF
 
 
@@ -250,31 +382,68 @@ APLFLOAT PrimFnMonUpStileFisF
 //  Primitive scalar function monadic UpStile:  R {is} fn R
 //***************************************************************************
 
-APLRAT PrimFnMonUpStileRisR
-    (APLRAT     aplRatRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnMonUpStileRisR
+    (LPAPLRAT   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLRAT mpqRes = {0},
-           mpqTmp = {0};
+    ALLTYPES atRht = {0};
 
-    // Initialize the temp to 0/1
-    mpq_init (&mpqTmp);
+    // ***FIXME*** -- Handle -0
+
+    // Promote the right arg to the result type
+    (*aTypeActPromote[ARRAY_RAT][ARRAY_RAT]) (&lpatRht->aplRat, 0, &atRht);
 
     // Negate the temp to use with DownStile
-    mpq_neg (&mpqTmp, &aplRatRht);
+    mpq_neg (&atRht.aplRat, &lpatRht->aplRat);
 
     // Use the code in DownStile
-    mpqRes = PrimFnMonDownStileRisR (mpqTmp, NULL);
+    // No need to set enumCT as this is DownStile which always uses []CT
+    PrimFnMonDownStileRisR (lpMemRes, uRes, &atRht, NULL);
 
     // Negate the result after calling RisR
-    mpq_neg (&mpqRes, &mpqRes);
+    mpq_neg (&lpMemRes[uRes], &lpMemRes[uRes]);
 
     // We no longer need this storage
-    Myq_clear (&mpqTmp);
-
-    return mpqRes;
+    Myq_clear (&atRht.aplRat);
 } // End PrimFnMonUpStileRisR
+
+
+//***************************************************************************
+//  $PrimFnMonUpStileVisR
+//
+//  Primitive scalar function monadic UpStile:  V {is} fn R
+//***************************************************************************
+
+void PrimFnMonUpStileVisR
+    (LPAPLVFP   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atRht = {0};
+
+    // ***FIXME*** -- Handle -0
+
+    // Promote the right arg to the result type
+    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatRht->aplRat, 0, &atRht);
+
+    // Negate the temp to use with DownStile
+    mpfr_neg (&atRht.aplVfp, &lpatRht->aplVfp, MPFR_RNDN);
+
+    // Use the code in DownStile
+    // No need to set enumCT as this is DownStile which always uses []CT
+    PrimFnMonDownStileVisV (lpMemRes, uRes, &atRht, NULL);
+
+    // Negate the result after calling VisV
+    mpfr_neg (&lpMemRes[uRes], &lpMemRes[uRes], MPFR_RNDN);
+
+    // We no longer need this storage
+    Myf_clear (&atRht.aplVfp);
+} // End PrimFnMonUpStileVisR
 
 
 //***************************************************************************
@@ -283,31 +452,487 @@ APLRAT PrimFnMonUpStileRisR
 //  Primitive scalar function monadic UpStile:  V {is} fn V
 //***************************************************************************
 
-APLVFP PrimFnMonUpStileVisV
-    (APLVFP     aplVfpRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnMonUpStileVisV
+    (LPAPLVFP   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLVFP mpfRes = {0},
-           mpfTmp = {0};
+    ALLTYPES atRht = {0};
+
+    // ***FIXME*** -- Handle -0
 
     // Initialize the temp to 0
-    mpfr_init0 (&mpfTmp);
+    mpfr_init0 (&atRht.aplVfp);
 
     // Negate the temp to use with DownStile
-    mpfr_neg (&mpfTmp, &aplVfpRht, MPFR_RNDN);
+    mpfr_neg (&atRht.aplVfp, &lpatRht->aplVfp, MPFR_RNDN);
 
     // Use the code in DownStile
-    mpfRes = PrimFnMonDownStileVisV (mpfTmp, NULL);
+    // No need to set enumCT as this is DownStile which always uses []CT
+    PrimFnMonDownStileVisV (lpMemRes, uRes, &atRht, NULL);
 
     // Negate the result after calling VisV
-    mpfr_neg (&mpfRes, &mpfRes, MPFR_RNDN);
+    mpfr_neg (&lpMemRes[uRes], &lpMemRes[uRes], MPFR_RNDN);
 
     // We no longer need this storage
-    Myf_clear (&mpfTmp);
-
-    return mpfRes;
+    Myf_clear (&atRht.aplVfp);
 } // End PrimFnMonUpStileVisV
+
+
+//***************************************************************************
+//  $CeilHC2F
+//***************************************************************************
+
+APLHC2F CeilHC2F
+    (APLHC2F aplRht)                    // Right arg
+
+{
+    // No exceptions in this code
+
+    // Use the code in DownStile
+    return NegHC2F_RE (FloorHC2F (NegHC2F_RE (aplRht)));
+} // End CeilHC2F
+
+
+//***************************************************************************
+//  $CeilHC4F
+//***************************************************************************
+
+APLHC4F CeilHC4F
+    (APLHC4F aplRht)                    // Right arg
+
+{
+    // No exceptions in this code
+
+    // Use the code in DownStile
+    return NegHC4F_RE (FloorHC4F (NegHC4F_RE (aplRht)));
+} // End CeilHC4F
+
+
+//***************************************************************************
+//  $CeilHC2R
+//***************************************************************************
+
+APLHC2R CeilHC2R
+    (APLHC2R aplRht)                    // Right arg
+
+{
+    APLHC2R aplNeg,
+            aplFlr,
+            aplRes;
+
+    // No exceptions in this code
+
+    // Negate the temp to use with DownStile
+    aplNeg = NegHC2R_RE (aplRht);
+
+    // Use the code in DownStile
+    aplFlr = FloorHC2R (aplNeg);
+
+    // Negate the temp to return as the result
+    aplRes = NegHC2R_RE (aplFlr);
+
+    // Free the temps
+    Myhc2r_clear (&aplFlr);
+    Myhc2r_clear (&aplNeg);
+
+    return aplRes;
+} // End CeilHC2R
+
+
+//***************************************************************************
+//  $CeilHC4R
+//***************************************************************************
+
+APLHC4R CeilHC4R
+    (APLHC4R aplRht)                    // Right arg
+
+{
+    APLHC4R aplNeg,
+            aplFlr,
+            aplRes;
+
+    // No exceptions in this code
+
+    // Negate the temp to use with DownStile
+    aplNeg = NegHC4R_RE (aplRht);
+
+    // Use the code in DownStile
+    aplFlr = FloorHC4R (aplNeg);
+
+    // Negate the temp to return as the result
+    aplRes = NegHC4R_RE (aplFlr);
+
+    // Free the temps
+    Myhc4r_clear (&aplFlr);
+    Myhc4r_clear (&aplNeg);
+
+    return aplRes;
+} // End CeilHC4R
+
+
+//***************************************************************************
+//  $CeilHC2V
+//***************************************************************************
+
+APLHC2V CeilHC2V
+    (APLHC2V aplRht)                    // Right arg
+
+{
+    APLHC2V aplNeg,
+            aplFlr,
+            aplRes;
+
+    // No exceptions in this code
+
+    // Negate the temp to use with DownStile
+    aplNeg = NegHC2V_RE (aplRht);
+
+    // Use the code in DownStile
+    aplFlr = FloorHC2V (aplNeg);
+
+    // Negate the temp to return as the result
+    aplRes = NegHC2V_RE (aplFlr);
+
+    // Free the temps
+    Myhc2v_clear (&aplFlr);
+    Myhc2v_clear (&aplNeg);
+
+    return aplRes;
+} // End CeilHC2V
+
+
+//***************************************************************************
+//  $CeilHC4V
+//***************************************************************************
+
+APLHC4V CeilHC4V
+    (APLHC4V aplRht)                    // Right arg
+
+{
+    APLHC4V aplNeg,
+            aplFlr,
+            aplRes;
+
+    // No exceptions in this code
+
+    // Negate the temp to use with DownStile
+    aplNeg = NegHC4V_RE (aplRht);
+
+    // Use the code in DownStile
+    aplFlr = FloorHC4V (aplNeg);
+
+    // Negate the temp to return as the result
+    aplRes = NegHC4V_RE (aplFlr);
+
+    // Free the temps
+    Myhc4v_clear (&aplFlr);
+    Myhc4v_clear (&aplNeg);
+
+    return aplRes;
+} // End CeilHC4V
+
+
+//***************************************************************************
+//  $PrimFnMonUpStileHC2IisHC2I
+//
+//  Primitive scalar function monadic UpStile:  HC2I {is} fn HC2I
+//***************************************************************************
+
+void PrimFnMonUpStileHC2IisHC2I
+    (LPAPLHC2I  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Save in the result
+    lpMemRes[uRes] = lpatRht->aplHC2I;
+} // End PrimFnMonUpStileHC2IisHC2I
+
+
+//***************************************************************************
+//  $PrimFnMonUpStileHC4IisHC4I
+//
+//  Primitive scalar function monadic UpStile:  HC4I {is} fn HC4I
+//***************************************************************************
+
+void PrimFnMonUpStileHC4IisHC4I
+    (LPAPLHC4I  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Save in the result
+    lpMemRes[uRes] = lpatRht->aplHC4I;
+} // End PrimFnMonUpStileHC4IisHC4I
+
+
+//***************************************************************************
+//  $PrimFnMonUpStileHC2FisHC2I
+//
+//  Primitive scalar function monadic UpStile:  HC2F {is} fn HC2I
+//***************************************************************************
+
+void PrimFnMonUpStileHC2FisHC2I
+    (LPAPLHC2F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    int i;
+
+    // Loop through all of the parts
+    for (i = 0; i < 2; i++)
+        // Save in the result
+        lpMemRes[uRes].parts[i] = (APLFLOAT) lpatRht->aplHC2I.parts[i];
+} // End PrimFnMonUpStileHC2FisHC2I
+
+
+//***************************************************************************
+//  $PrimFnMonUpStileHC4FisHC4I
+//
+//  Primitive scalar function monadic UpStile:  HC4F {is} fn HC4I
+//***************************************************************************
+
+void PrimFnMonUpStileHC4FisHC4I
+    (LPAPLHC4F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    int i;
+
+    // Loop through all of the parts
+    for (i = 0; i < 4; i++)
+        // Save in the result
+        lpMemRes[uRes].parts[i] = (APLFLOAT) lpatRht->aplHC4I.parts[i];
+} // End PrimFnMonUpStileHC4FisHC4I
+
+
+//***************************************************************************
+//  $PrimFnMonUpStileHC2IisHC2F
+//
+//  Primitive scalar function monadic UpStile:  HC2I {is} fn HC2F
+//***************************************************************************
+
+void PrimFnMonUpStileHC2IisHC2F
+    (LPAPLHC2I  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    APLHC2F aplRes;
+    int     i;
+    UBOOL   bRet;
+
+    // Calculate the floor
+    aplRes = CeilHC2F (lpatRht->aplHC2F);
+
+    // Loop through all of the parts
+    for (i = 0; i < 2; i++)
+    {
+        // Save in the result
+        lpMemRes[uRes].parts[i] = ConvertToInteger_SCT (ARRAY_FLOAT, &aplRes.parts[i], 0, &bRet);
+
+        Assert (bRet);
+    } // End FOR
+} // End PrimFnMonUpStileHC2IisHC2F
+
+
+//***************************************************************************
+//  $PrimFnMonUpStileHC4IisHC4F
+//
+//  Primitive scalar function monadic UpStile:  HC4I {is} fn HC4F
+//***************************************************************************
+
+void PrimFnMonUpStileHC4IisHC4F
+    (LPAPLHC4I  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    APLHC4F aplRes;
+    int     i;
+    UBOOL   bRet;
+
+    // Calculate the floor
+    aplRes = CeilHC4F (lpatRht->aplHC4F);
+
+    // Loop through all of the parts
+    for (i = 0; i < 4; i++)
+    {
+        // Save in the result
+        lpMemRes[uRes].parts[i] = ConvertToInteger_SCT (ARRAY_FLOAT, &aplRes.parts[i], 0, &bRet);
+
+        Assert (bRet);
+    } // End FOR
+} // End PrimFnMonUpStileHC4IisHC4F
+
+
+//***************************************************************************
+//  $PrimFnMonUpStileHC2FisHC2F
+//
+//  Primitive scalar function monadic UpStile:  HC2F {is} fn HC2F
+//***************************************************************************
+
+void PrimFnMonUpStileHC2FisHC2F
+    (LPAPLHC2F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Save in the result
+    lpMemRes[uRes] = CeilHC2F (lpatRht->aplHC2F);
+} // End PrimFnMonUpStileHC2FisHC2F
+
+
+//***************************************************************************
+//  $PrimFnMonUpStileHC4FisHC4F
+//
+//  Primitive scalar function monadic UpStile:  HC4F {is} fn HC4F
+//***************************************************************************
+
+void PrimFnMonUpStileHC4FisHC4F
+    (LPAPLHC4F  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Save in the result
+    lpMemRes[uRes] = CeilHC4F (lpatRht->aplHC4F);
+} // End PrimFnMonUpStileHC4FisHC4F
+
+
+//***************************************************************************
+//  $PrimFnMonUpStileHC2RisHC2R
+//
+//  Primitive scalar function monadic UpStile:  HC2R {is} fn HC2R
+//***************************************************************************
+
+void PrimFnMonUpStileHC2RisHC2R
+    (LPAPLHC2R  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Save in the result
+    lpMemRes[uRes] = CeilHC2R (lpatRht->aplHC2R);
+} // End PrimFnMonUpStileHC2RisHC2R
+
+
+//***************************************************************************
+//  $PrimFnMonUpStileHC4RisHC4R
+//
+//  Primitive scalar function monadic UpStile:  HC4R {is} fn HC4R
+//***************************************************************************
+
+void PrimFnMonUpStileHC4RisHC4R
+    (LPAPLHC4R  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Save in the result
+    lpMemRes[uRes] = CeilHC4R (lpatRht->aplHC4R);
+} // End PrimFnMonUpStileHC4RisHC4R
+
+
+//***************************************************************************
+//  $PrimFnMonUpStileHC2VisHC2R
+//
+//  Primitive scalar function monadic UpStile:  HC2V {is} fn HC2R
+//***************************************************************************
+
+void PrimFnMonUpStileHC2VisHC2R
+    (LPAPLHC2V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atRht = {0};
+
+    // Promote the right arg to the result type
+    (*aTypeActPromote[ARRAY_HC2R][ARRAY_HC2V]) (&lpatRht->aplRat, 0, &atRht);
+
+    // Save in the result
+    PrimFnMonUpStileHC2VisHC2V (lpMemRes, uRes, &atRht, lpPrimSpec);
+
+    Myhc2v_clear (&atRht.aplHC2V);
+} // End PrimFnMonUpStileHC2VisHC2R
+
+
+//***************************************************************************
+//  $PrimFnMonUpStileHC4VisHC4R
+//
+//  Primitive scalar function monadic UpStile:  HC4V {is} fn HC4R
+//***************************************************************************
+
+void PrimFnMonUpStileHC4VisHC4R
+    (LPAPLHC4V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atRht = {0};
+
+    // Promote the right arg to the result type
+    (*aTypeActPromote[ARRAY_HC4R][ARRAY_HC4V]) (&lpatRht->aplRat, 0, &atRht);
+
+    // Save in the result
+    PrimFnMonUpStileHC4VisHC4V (lpMemRes, uRes, &atRht, lpPrimSpec);
+
+    Myhc4v_clear (&atRht.aplHC4V);
+} // End PrimFnMonUpStileHC4VisHC4R
+
+
+//***************************************************************************
+//  $PrimFnMonUpStileHC2VisHC2V
+//
+//  Primitive scalar function monadic UpStile:  HC2V {is} fn HC2V
+//***************************************************************************
+
+void PrimFnMonUpStileHC2VisHC2V
+    (LPAPLHC2V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Save in the result
+    lpMemRes[uRes] = CeilHC2V (lpatRht->aplHC2V);
+} // End PrimFnMonUpStileHC2VisHC2V
+
+
+//***************************************************************************
+//  $PrimFnMonUpStileHC4VisHC4V
+//
+//  Primitive scalar function monadic UpStile:  HC4V {is} fn HC4V
+//***************************************************************************
+
+void PrimFnMonUpStileHC4VisHC4V
+    (LPAPLHC4V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Save in the result
+    lpMemRes[uRes] = CeilHC4V (lpatRht->aplHC4V);
+} // End PrimFnMonUpStileHC4VisHC4V
 
 
 //***************************************************************************
@@ -335,8 +960,6 @@ UBOOL PrimFnMonUpStileAPA_EM
      LPPRIMSPEC   lpPrimSpec)       // Ptr to local PRIMSPEC
 
 {
-    DBGENTER;
-
     // Axis may be anything
 
     // Copy the HGLOBAL to the result
@@ -350,8 +973,6 @@ UBOOL PrimFnMonUpStileAPA_EM
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = hGlbRht;
     } // End IF
-
-    DBGLEAVE;
 
     return TRUE;
 } // End PrimFnMonUpStileAPA_EM
@@ -387,7 +1008,24 @@ APLSTYPE PrimSpecUpStileStorageTypeDyd
     // Calculate the storage type of the result
     aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
 
-    return aplTypeRes;
+    // Is the result HC?
+    if (IsHCAny (aplTypeRes))
+        return ARRAY_ERROR;
+    else
+    // Split cases based upon the result storage type
+    switch (aplTypeRes)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_FLOAT:
+        case ARRAY_APA:
+        case ARRAY_RAT:
+        case ARRAY_VFP:
+            return aplTypeRes;
+
+        defstop
+            return ARRAY_ERROR;
+    } // End IF/ELSE/SWITCH
 } // End PrimSpecUpStileStorageTypeDyd
 
 
@@ -397,13 +1035,15 @@ APLSTYPE PrimSpecUpStileStorageTypeDyd
 //  Primitive scalar function dyadic UpStile:  I {is} I fn I
 //***************************************************************************
 
-APLINT PrimFnDydUpStileIisIvI
-    (APLINT     aplIntegerLft,
-     APLINT     aplIntegerRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydUpStileIisIvI
+    (LPAPLINT   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    return max (aplIntegerLft, aplIntegerRht);
+    lpMemRes[uRes] = max (lpatLft->aplInteger, lpatRht->aplInteger);
 } // End PrimFnDydUpStileIisIvI
 
 
@@ -413,13 +1053,15 @@ APLINT PrimFnDydUpStileIisIvI
 //  Primitive scalar function dyadic UpStile:  F {is} F fn F
 //***************************************************************************
 
-APLFLOAT PrimFnDydUpStileFisFvF
-    (APLFLOAT   aplFloatLft,
-     APLFLOAT   aplFloatRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydUpStileFisFvF
+    (LPAPLFLOAT lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    return max (aplFloatLft, aplFloatRht);
+    lpMemRes[uRes] = max (lpatLft->aplFloat, lpatRht->aplFloat);
 } // End PrimFnDydUpStileFisFvF
 
 
@@ -429,22 +1071,42 @@ APLFLOAT PrimFnDydUpStileFisFvF
 //  Primitive scalar function dyadic UpStile:  R {is} R fn R
 //***************************************************************************
 
-APLRAT PrimFnDydUpStileRisRvR
-    (APLRAT     aplRatLft,
-     APLRAT     aplRatRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydUpStileRisRvR
+    (LPAPLRAT   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLRAT mpqRes = {0};
-
     // Compare the two Rationals
-    if (mpq_cmp (&aplRatLft, &aplRatRht) > 0)
-        mpq_init_set (&mpqRes, &aplRatLft);
+    if (mpq_cmp (&lpatLft->aplRat, &lpatRht->aplRat) > 0)
+        mpq_init_set (&lpMemRes[uRes], &lpatLft->aplRat);
     else
-        mpq_init_set (&mpqRes, &aplRatRht);
-
-    return mpqRes;
+        mpq_init_set (&lpMemRes[uRes], &lpatRht->aplRat);
 } // End PrimFnDydUpStileRisRvR
+
+
+//***************************************************************************
+//  $PrimFnDydUpStileVisRvR
+//
+//  Primitive scalar function dyadic UpStile:  V {is} R fn R
+//***************************************************************************
+
+void PrimFnDydUpStileVisRvR
+    (LPAPLVFP   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Compare the two Variable FPs
+    if (mpq_cmp (&lpatLft->aplRat, &lpatRht->aplRat) > 0)
+        mpfr_init_set_q (&lpMemRes[uRes], &lpatLft->aplRat, MPFR_RNDN);
+    else
+        mpfr_init_set_q (&lpMemRes[uRes], &lpatRht->aplRat, MPFR_RNDN);
+} // End PrimFnDydUpStileVisRvR
 
 
 //***************************************************************************
@@ -453,21 +1115,19 @@ APLRAT PrimFnDydUpStileRisRvR
 //  Primitive scalar function dyadic UpStile:  V {is} V fn V
 //***************************************************************************
 
-APLVFP PrimFnDydUpStileVisVvV
-    (APLVFP     aplVfpLft,
-     APLVFP     aplVfpRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydUpStileVisVvV
+    (LPAPLVFP   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLVFP mpfRes = {0};
-
     // Compare the two Variable FPs
-    if (mpfr_cmp (&aplVfpLft, &aplVfpRht) > 0)
-        mpfr_init_copy (&mpfRes, &aplVfpLft);
+    if (mpfr_cmp (&lpatLft->aplVfp, &lpatRht->aplVfp) > 0)
+        mpfr_init_copy (&lpMemRes[uRes], &lpatLft->aplVfp);
     else
-        mpfr_init_copy (&mpfRes, &aplVfpRht);
-
-    return mpfRes;
+        mpfr_init_copy (&lpMemRes[uRes], &lpatRht->aplVfp);
 } // End PrimFnDydUpStileVisVvV
 
 

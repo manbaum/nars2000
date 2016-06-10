@@ -21,22 +21,24 @@
 }
 #reltable th, #reltable tr, #reltable td
 {
-  color: rgb(0, 0, 164);
   padding: 0 1em 0 1em;
 }
-#reltable td
+#reltable th
+{
+  font-weight: bold;
+  color: rgb(0, 0, 128);    /* navy */
+}
+#reltable tr, #reltable td, #reltable a
+{
+  color: rgb(46, 139, 87);  /* seagreen */
+}
+.border
 {
   border: solid blue 1px;
-  font-weight: bold;
-  color: rgb(46, 139, 87); /* seagreen */
 }
 .dnlbutton
 {
   background-color: rgb(255, 255, 224); /* Lightyellow */
-}
-.notes
-{
-  display: none;
 }
   </style>
 </head>
@@ -177,7 +179,7 @@ Downloads</h1>
 <div class="section">
   <h2 id="Beta_Versions">Beta Versions</h2>
 
-  <p>For the latest (<b>untested</b>) versions, goto the <a class="linkleft" href="binaries/beta">beta</a>
+  <p>For the latest (<b>unreleased</b>) versions, goto the <a class="linkleft" href="binaries/beta">beta</a>
     directory and download either the 32- or 64-bit file.  This is a .zip file (as opposed to the released
     version which is an executable Setup file) which you might want to unzip into a directory separate from
     the released installation so as to leave the latter unaffected.  As with the released version, please
@@ -188,11 +190,11 @@ Downloads</h1>
 <div class="section">
   <h2 id="Alpha_Versions">Alpha Versions</h2>
 
-  <p>For the latest (<b>untested</b>) version that implements
+  <p>For the latest (<b>unreleased</b>) version that implements
     <a class="pdfLeft" href="http://www.sudleyplace.com/APL/HyperComplex%20Numbers%20in%20APL.pdf">Hypercomplex
     Numbers</a>, goto the <a class="linkleft" href="binaries/alpha">alpha</a>
-    directory and download either the 32- or 64-bit file.  This is a .zip file (as opposed to the released
-    version which is an executable Setup file) which you might want to unzip into a directory separate from
+    directory and download either the 32- or 64-bit file.  This is an executable Setup file which you might want
+    to install into a directory separate from
     the released installation so as to leave the latter unaffected.  As with the released version, please
     report any bugs to the Bug Report section of the NARS2000
     <a class="linkleft" href="http://nars2000.forumatic.com/viewforum.php?f=12">Forum</a>.</p>
@@ -204,135 +206,136 @@ Downloads</h1>
   <form id="DisplayForm" action="">&nbsp;
     <input type="button" name="displaytype" id="IDtoggle" value="Display all files" onclick="return DisplayTab ();" />
   </form>
-
-  <table border="0" cellspacing="0" summary="">
+  <table id="reltable" border="0" cellspacing="0" summary="">
     <tr>
-      <td>
-        <table id="reltable" border="0" cellspacing="0" summary="">
-        <tr>
-          <th>File Name</th>
-          <th>Version</th>
-          <th>Date/Time (GMT)</th>
-          <th>Type</th>
-          <th class="notes">Notes</th>
-          <th>32-bit (bytes)</th>
-          <th>64-bit (bytes)</th>
-        </tr>
-
-        <?php
-        ob_implicit_flush (true);
-        echo "\n";
-
-        $DirName = '/v/nars2000.org/htdocs/download/binaries/';
-
-        $dh = opendir ($DirName);
-
-        // This is the correct way to loop over the directory.
-        while (false !== ($File = readdir ($dh)))
-        {
-            if (!is_dir ($DirName . $File)
-             && strcmp  ($File, "linestat.txt") != 0
-             && strcmp  ($File, "nars2000.ver") != 0
-             && strncmp ($File, "Notes-", 6)    != 0)
-            {
-                if (strncmp ($File, "Version-", 8) == 0)
-                {
-                    $Pos  = strpos ($File, '-');
-                    $FileName = "NARS2000" . substr ($File, $Pos, -3);
-
-                    // Append the appropriate file (.exe or .zip) to the list
-                    if (file_exists ($DirName . "w32/" . $FileName . "exe")
-                     || file_exists ($DirName . "w64/" . $FileName . "exe"))
-                        $Files[] = $FileName . "exe";
-                    else
-                    if (file_exists ($DirName . "w32/" . $FileName . "zip"))
-                        $Files[] = $FileName . "zip";
-
-                    // Append the appropriate file (.map) to the list, if it exists
-                    if (file_exists ($DirName . "w32/" . $FileName . "map")
-                     || file_exists ($DirName . "w64/" . $FileName . "map"))
-                        $Files[] = $FileName . "map";
-
-                    // Append the appropriate file (.pdb) to the list, if it exists
-                    if (file_exists ($DirName . "w32/" . $FileName . "pdb")
-                     || file_exists ($DirName . "w64/" . $FileName . "pdb"))
-                        $Files[] = $FileName . "pdb";
-                } else
-                    $Files[] = $File;
-            } // End IF
-        } // End WHILE
-
-        // Sort files descendingly by version #
-        //   (which also sorts the Special Files to the front)
-        natsort ($Files);
-        $Files = array_reverse ($Files);
-
-        foreach ($Files as $File)
-        {
-            // Ignore "robots.txt"
-            if (strcmp ($File, "robots.txt") == 0)
-                continue;
-
-            // Handle special files separately
-            $IsSpec = (0
-                    || strcmp ($File, "gsldir.zip"     ) == 0
-                    || strcmp ($File, "misc.zip"       ) == 0
-                    || strcmp ($File, "mpfns-src.zip"  ) == 0
-                    || strcmp ($File, "mplibs.zip"     ) == 0
-                    || strcmp ($File, "qdebug.zip"     ) == 0
-                      );
-            if ($IsSpec)
-            {
-                $Name   = substr ($File, 0, strpos ($File, '.'));
-                $Rel    = "";
-                $ExtPos = strpos (strrev ($File), '.');
-                $Ext    = substr ($File, -$ExtPos);         // Extract the extension
-                $Class  = "map";
-            } else
-            {
-                $Pos    = strpos ($File, '-');
-                $Name   = substr ($File, 0, $Pos);
-                $Rel    = substr ($File, $Pos + 1);
-                $ExtPos = strpos (strrev ($File), '.');
-                $Ext    = substr ($File, -$ExtPos);         // Extract the extension
-                $Rel    = substr ($Rel , 0, -$ExtPos-1);    // Remove trailing extension
-                $Class  = $Ext;
-                $Notes  = "Version-$Rel.txt";
-            } // End IF/ELSE
-
-            $Is32 = is_file ($DirName . "w32/$File");
-            $Is64 = is_file ($DirName . "w64/$File");
-            $D32  = ($IsSpec ? "" : "w32/" );
-            $Date = gmdate ("Y F d H:i:s", filemtime ("$DirName$D32$File"));
-            $Sz32 = number_format (filesize ("$DirName$D32/$File"));
-            if ($Is64)
-                $Sz64 = number_format (filesize ($DirName . "w64/$File"));
-            else
-                $Sz64 = '';
-
-            echo   "      <tr class=\"$Class\">\n"
-               .   "        <td>$Name</td>\n"
-               .   "        <td>$Rel</td>\n"
-               .   "        <td>$Date</td>\n"
-               .   "        <td>$Ext</td>\n"
-               . (($Class == 'exe' || $Class == 'zip')
-               ?   "        <td class=\"notes\"><a target=\"bodyFrame\" class=\"linkleft\" href=\"binaries/$Notes\" onclick=\"return PageTrack ('binaries/$Notes');\">$Rel</a></td>\n"
-               :   "        <td class=\"notes\"></td>\n")
-               . (($Is32 || $IsSpec)
-               ?   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"binaries/$D32$File\" onclick=\"return PageTrack ('binaries/$D32$File');\">Download ($Sz32)</a></td>\n"
-               :   "        <td></td>\n")
-               . ($Is64
-               ?   "        <td class=\"dnlbutton\"><a class=\"linkleft\" href=\"binaries/w64/$File\" onclick=\"return PageTrack ('binaries/w64/$File');\">Download ($Sz64)</a></td>\n"
-               :   "        <td></td>\n")
-               .   "      </tr>\n";
-        } // End FOREACH
-
-        closedir ($dh);
-        ?>
-        </table>
-      </td>
-      <td class="recommended" valign="top"><br /><b>&nbsp;&lArr;&nbsp;Recommended</b></td>
+      <th>File Name</th>
+      <th>Version</th>
+      <th>Date/Time (GMT)</th>
+      <th>Type</th>
+      <th class="notes">Notes</th>
+      <th>32-bit (bytes)</th>
+      <th>64-bit (bytes)</th>
     </tr>
+
+    <?php
+    ob_implicit_flush (true);
+    echo "\n";
+
+    $DirName = '/v/nars2000.org/htdocs/download/binaries/';
+
+    $dh = opendir ($DirName);
+
+    // This is the correct way to loop over the directory.
+    while (false !== ($File = readdir ($dh)))
+    {
+        if (!is_dir ($DirName . $File)
+         && strcmp  ($File, "linestat.txt") != 0
+         && strcmp  ($File, "nars2000.ver") != 0
+         && strncmp ($File, "Notes-", 6)    != 0)
+        {
+            if (strncmp ($File, "Version-", 8) == 0)
+            {
+                $Pos  = strpos ($File, '-');
+                $FileName = "NARS2000" . substr ($File, $Pos, -3);
+
+                // Append the appropriate file (.exe or .zip) to the list
+                if (file_exists ($DirName . "w32/" . $FileName . "exe")
+                 || file_exists ($DirName . "w64/" . $FileName . "exe"))
+                    $Files[] = $FileName . "exe";
+                else
+                if (file_exists ($DirName . "w32/" . $FileName . "zip"))
+                    $Files[] = $FileName . "zip";
+
+                // Append the appropriate file (.map) to the list, if it exists
+                if (file_exists ($DirName . "w32/" . $FileName . "map")
+                 || file_exists ($DirName . "w64/" . $FileName . "map"))
+                    $Files[] = $FileName . "map";
+
+                // Append the appropriate file (.pdb) to the list, if it exists
+                if (file_exists ($DirName . "w32/" . $FileName . "pdb")
+                 || file_exists ($DirName . "w64/" . $FileName . "pdb"))
+                    $Files[] = $FileName . "pdb";
+            } else
+                $Files[] = $File;
+        } // End IF
+    } // End WHILE
+
+    // Sort files descendingly by version #
+    //   (which also sorts the Special Files to the front)
+    natsort ($Files);
+    $Files = array_reverse ($Files);
+
+    $IsFirst = true;
+
+    foreach ($Files as $File)
+    {
+        // Ignore "robots.txt"
+        if (strcmp ($File, "robots.txt") == 0)
+            continue;
+
+        // Handle special files separately
+        $IsSpec = (0
+                || strcmp ($File, "gsldir.zip"     ) == 0
+                || strcmp ($File, "misc.zip"       ) == 0
+                || strcmp ($File, "mpfns-src.zip"  ) == 0
+                || strcmp ($File, "mplibs.zip"     ) == 0
+                || strcmp ($File, "qdebug.zip"     ) == 0
+                  );
+        if ($IsSpec)
+        {
+            $Name   = substr ($File, 0, strpos ($File, '.'));
+            $Rel    = "";
+            $ExtPos = strpos (strrev ($File), '.');
+            $Ext    = substr ($File, -$ExtPos);         // Extract the extension
+            $Class  = "map";
+        } else
+        {
+            $Pos    = strpos ($File, '-');
+            $Name   = substr ($File, 0, $Pos);
+            $Rel    = substr ($File, $Pos + 1);
+            $ExtPos = strpos (strrev ($File), '.');
+            $Ext    = substr ($File, -$ExtPos);         // Extract the extension
+            $Rel    = substr ($Rel , 0, -$ExtPos-1);    // Remove trailing extension
+            $Class  = $Ext;
+            $Notes  = "Version-$Rel.txt";
+        } // End IF/ELSE
+
+        $Is32 = is_file ($DirName . "w32/$File");
+        $Is64 = is_file ($DirName . "w64/$File");
+        $D32  = ($IsSpec ? "" : "w32/" );
+        $Date = gmdate ("Y F d H:i:s", filemtime ("$DirName$D32$File"));
+        $Sz32 = number_format (filesize ("$DirName$D32/$File"));
+        if ($Is64)
+            $Sz64 = number_format (filesize ($DirName . "w64/$File"));
+        else
+            $Sz64 = '';
+
+        $DnlFile = ($Class == 'exe' || $Class == 'zip');
+
+        echo   "      <tr class=\"$Class\">\n"
+           .   "        <td class=\"border\">$Name</td>\n"
+           .   "        <td class=\"border\">$Rel</td>\n"
+           .   "        <td class=\"border\">$Date</td>\n"
+           .   "        <td class=\"border\">$Ext</td>\n"
+           . ($DnlFile
+           ?   "        <td class=\"notes border\"><a target=\"bodyFrame\" class=\"linkleft\" href=\"binaries/$Notes\" onclick=\"return PageTrack ('binaries/$Notes');\">$Rel</a></td>\n"
+           :   "        <td class=\"notes border\"></td>\n")
+           . (($Is32 || $IsSpec)
+           ?   "        <td class=\"dnlbutton border\"><a class=\"linkleft\" href=\"binaries/$D32$File\" onclick=\"return PageTrack ('binaries/$D32$File');\">Download ($Sz32)</a></td>\n"
+           :   "        <td class=\"border\"></td>\n")
+           . ($Is64
+           ?   "        <td class=\"dnlbutton border\"><a class=\"linkleft\" href=\"binaries/w64/$File\" onclick=\"return PageTrack ('binaries/w64/$File');\">Download ($Sz64)</a></td>\n"
+           :   "        <td class=\"border\"></td>\n")
+           . (($IsFirst && $DnlFile)
+           ?   "        <td class=\"recommended\"><b>&nbsp;&lArr;&nbsp;Recommended</b></td>\n"
+           :   "        <td class=\"recommended\"></td>\n")
+           .   "      </tr>\n";
+         if ($DnlFile)
+            $IsFirst = false;
+    } // End FOREACH
+
+    closedir ($dh);
+    ?>
   </table>
 
   <script type="text/javascript">
@@ -378,10 +381,10 @@ Downloads</h1>
         var attr = td.attributes['class'];
             if (attr)
             {
-                if (attr.value == 'notes')
+                if (attr.value.search('/notes/') != -1)
                     td.style.display = DispNotes;
                 else
-                if (attr.value == 'recommended')
+                if (attr.value.search('/recommended/') != -1)
                     td.style.display = DispRecom;
             } // End IF
         } // End FOR

@@ -119,8 +119,10 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
     HGLOBAL           hGlbLft,              // Left arg global memory handle
                       hGlbRht = NULL,       // Right ...
                       hGlbRes = NULL;       // Result   ...
-    LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
-                      lpMemHdrRes = NULL;   // ...    result    ...
+    LPVARARRAY_HEADER lpMemHdrLft = NULL,   // Ptr to left arg header
+                      lpMemHdrRht = NULL,   // ...    right ...
+                      lpMemHdrRes = NULL;   // ...    result   ...
+    LPVOID            lpMemLft;             // Ptr to left arg global memory
     LPAPLCHAR         lpMemDataRht,         // Ptr to right arg char data
                       lpMemDataStart;       // Ptr to start of identifier
     LPAPLUINT         lpMemDataRes;         // Ptr to result integer data
@@ -133,6 +135,7 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
     STFLAGS           stFlags;              // STE flags
     LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
     UBOOL             bRet;                 // TRUE iff the result is valid
+    ALLTYPES          atLft = {0};          // Left arg as ALLTYPES
 
     // Get the attributes (Type, NELM, and Rank) of the left & right args
     AttrsOfToken (lptkLftArg, &aplTypeLft, NULL,        &aplRankLft, NULL);
@@ -151,48 +154,31 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
         goto LEFT_DOMAIN_EXIT;
 
     // Get the left arg global handle & longest w/o locking it
-    aplLongestLft = GetGlbPtrs (lptkLftArg, &hGlbLft);
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
 
     // If the left arg is a global, ...
     if (hGlbLft NE NULL)
         // Set the ptr type bits
         hGlbLft = MakePtrTypeGlb (hGlbLft);
+    else
+        // The left arg is an immediate
+        lpMemLft = &aplLongestLft;
 
-    // Split cases based upon the left arg storage type
-    switch (aplTypeLft)
+    // Attempt to convert the left arg to INT
+    (*aTypeActConvert[aplTypeLft][ARRAY_INT]) (lpMemLft, 0, &atLft, &bRet);
+
+    if (hGlbLft NE NULL)
     {
-        case ARRAY_BOOL:
-        case ARRAY_INT:
-        case ARRAY_APA:
-            bRet = TRUE;
-
-            break;
-
-        case ARRAY_FLOAT:
-            // Attempt to convert the float to an integer using System []CT
-            aplLongestLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
-
-            break;
-
-        case ARRAY_RAT:
-            // Attempt to convert the RAT to an integer using System []CT
-            aplLongestLft = GetNextRatIntGlb (hGlbLft, 0, &bRet);
-
-            break;
-
-        case ARRAY_VFP:
-            // Attempt to convert the VFP to an integer using System []CT
-            aplLongestLft = GetNextVfpIntGlb (hGlbLft, 0, &bRet);
-
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
+    } // End IF
 
     // Check for LEFT DOMAIN ERROR
     if (!bRet)
         goto LEFT_DOMAIN_EXIT;
+
+    // Copy to left arg common var
+    aplLongestLft = atLft.aplInteger;
 
     // Check for LEFT DOMAIN ERROR
     switch (aplLongestLft)
@@ -513,8 +499,7 @@ LPAPLUINT AttributeValences
      LPSYMENTRY lpSymEntry)                 // Ptr to object SYMENTRY
 
 {
-    HGLOBAL hGlbObj          = NULL;        // Object global memory handle
-    LPDFN_HEADER lpMemHdrObj = NULL;        // Ptr to object global memory header
+    HGLOBAL hGlbObj = NULL;                 // Object global memory handle
 
     // Split cases based upon the name type
     switch (lpSymEntry->stFlags.stNameType)
@@ -580,6 +565,8 @@ LPAPLUINT AttributeValences
             // If it's a user-defined function/operator
             if (lpSymEntry->stFlags.UsrDfn)
             {
+                LPDFN_HEADER lpMemHdrObj;               // Ptr to object global memory
+
                 // Get the user-defined function/operator global memory handle
                 hGlbObj = lpSymEntry->stData.stGlbData;
 
@@ -646,7 +633,6 @@ LPAPLUINT AttributeFixTime
 
 {
     HGLOBAL    hGlbObj = NULL;              // Object global memory handle
-    LPVOID     lpMemHdrObj = NULL;          // Ptr to object global memory
     FILETIME   ftLastMod;                   // FILETIME of last modification
     SYSTEMTIME systemTime;                  // Current system (UTC) time
 
@@ -676,6 +662,8 @@ LPAPLUINT AttributeFixTime
             if (!lpSymEntry->stFlags.Imm
              && !lpSymEntry->stFlags.FcnDir)
             {
+                LPVOID lpMemHdrObj;                         // Ptr to object global memory
+
                 // Get the user-defined function/operator global memory handle
                 hGlbObj = lpSymEntry->stData.stGlbData;
 
@@ -949,7 +937,7 @@ APLINT CalcSymEntrySize
                                              + lpMemDfnHdr->numRhtArgSTE
                                              + lpMemDfnHdr->numLocalsSTE)
                       + sizeof (FCNLINE) * uNumFcnLines;
-            if (lpMemDfnHdr->hGlbMonInfo)
+            if (lpMemDfnHdr->hGlbMonInfo NE NULL)
                 aplSize += MyGlobalSize (lpMemDfnHdr->hGlbMonInfo);
 
             // Get ptr to array of function line structs (FCNLINE[numFcnLines])
@@ -984,11 +972,11 @@ APLINT CalcSymEntrySize
             } // End FOR
 
             // Add in the size of the function header text
-            if (lpMemDfnHdr->hGlbTxtHdr)
+            if (lpMemDfnHdr->hGlbTxtHdr NE NULL)
                 aplGlbSize += MyGlobalSize (lpMemDfnHdr->hGlbTxtHdr);
 
             // Add in the size of the function header tokenized
-            if (lpMemDfnHdr->hGlbTknHdr)
+            if (lpMemDfnHdr->hGlbTknHdr NE NULL)
                 aplGlbSize += MyGlobalSize (lpMemDfnHdr->hGlbTknHdr);
 
             // Include in the object size
@@ -999,7 +987,7 @@ APLINT CalcSymEntrySize
                 *lpDataSize += aplGlbSize;
 
             // Add in the size of the function Undo buffer
-            if (lpMemDfnHdr->hGlbUndoBuff)
+            if (lpMemDfnHdr->hGlbUndoBuff NE NULL)
                 aplSize += MyGlobalSize (lpMemDfnHdr->hGlbUndoBuff);
 
             // We no longer need this ptr
@@ -1034,11 +1022,11 @@ APLUINT CalcGlbVarSize
     APLUINT           aplSize = 0;          // The result
     LPVARARRAY_HEADER lpMemHdrData = NULL;  // Ptr to data header
     LPAPLNESTED       lpMemData;            // Ptr to the global memory
-    LPAPLRAT          lpMemRat;             // Ptr to Rationals ...
     APLSTYPE          aplType;              // Data storage type
     APLNELM           aplNELM;              // Data NELM
     APLRANK           aplRank;              // Data rank
     APLUINT           uData;                // Loop counter
+    int               i;                    // ...
 
     // stData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir_PTB (hGlbData));
@@ -1058,10 +1046,6 @@ APLUINT CalcGlbVarSize
     // If the caller wants the data size, ...
     if (lpDataSize)
         *lpDataSize += aplSize - (sizeof (VARARRAY_HEADER) + aplRank * sizeof (APLDIM));
-
-    // If the array is simple, that's all
-    if (IsSimple (aplType))
-        goto NORMAL_EXIT;
 
     // Skip over the header and dimensions to the data
     lpMemData = VarArrayDataFmBase (lpMemHdrData);
@@ -1093,16 +1077,109 @@ APLUINT CalcGlbVarSize
             break;
 
         case ARRAY_RAT:
-            // Copy as ptr to Rationals
-            lpMemRat = (LPAPLRAT) lpMemData;
+            // Copy as ptr to RATs
+#define lpMemRat    ((LPAPLRAT) lpMemData)
 
             // Loop through the array adding the sizes
             for (uData = 0; uData < aplNELM; uData++, lpMemRat++)
-                aplSize += sizeof (APLRAT)                      // Size of the header
-                        +  lpMemRat->_mp_num._mp_alloc          // # numerator limbs
-                        * sizeof (*lpMemRat->_mp_num._mp_d)     // ...times the size of each limb
-                        +  lpMemRat->_mp_den._mp_alloc          // # denominator limbs
-                        * sizeof (*lpMemRat->_mp_den._mp_d);    // ...times the size of each limb
+                // Add in the size of the data
+                aplSize += CalcRatDataSize (lpMemRat);
+#undef  lpMemRat
+            break;
+
+        case ARRAY_HC2R:
+            // Copy as ptr to RATs
+#define lpMemHC2R   ((LPAPLHC2R) lpMemData)
+
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemHC2R++)
+            // Loop through all of the parts
+            for (i = 0; i < 2; i++)
+                // Add in the size of the data
+                aplSize += CalcRatDataSize (&lpMemHC2R->parts[i]);
+#undef  lpMemHC2R
+
+            break;
+
+        case ARRAY_HC4R:
+            // Copy as ptr to RATs
+#define lpMemHC4R   ((LPAPLHC4R) lpMemData)
+
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemHC4R++)
+            // Loop through all of the parts
+            for (i = 0; i < 4; i++)
+                // Add in the size of the data
+                aplSize += CalcRatDataSize (&lpMemHC4R->parts[i]);
+#undef  lpMemHC4R
+
+            break;
+
+        case ARRAY_HC8R:
+            // Copy as ptr to RATs
+#define lpMemHC8R   ((LPAPLHC8R) lpMemData)
+
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemHC8R++)
+            // Loop through all of the parts
+            for (i = 0; i < 8; i++)
+                // Add in the size of the data
+                aplSize += CalcRatDataSize (&lpMemHC8R->parts[i]);
+#undef  lpMemHC8R
+
+            break;
+
+        case ARRAY_VFP:
+            // Copy as ptr to VFPs
+#define lpMemVfp    ((LPAPLVFP) lpMemData)
+
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemVfp++)
+                // Add in the size of the data
+                aplSize += CalcVfpDataSize (lpMemVfp);
+#undef  lpMemVfp
+            break;
+
+        case ARRAY_HC2V:
+            // Copy as ptr to VFPs
+#define lpMemHC2V   ((LPAPLHC2V) lpMemData)
+
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemHC2V++)
+            // Loop through all of the parts
+            for (i = 0; i < 2; i++)
+                // Add in the size of the data
+                aplSize += CalcVfpDataSize (&lpMemHC2V->parts[i]);
+#undef  lpMemHC2V
+
+            break;
+
+        case ARRAY_HC4V:
+            // Copy as ptr to VFPs
+#define lpMemHC4V   ((LPAPLHC4V) lpMemData)
+
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemHC4V++)
+            // Loop through all of the parts
+            for (i = 0; i < 4; i++)
+                // Add in the size of the data
+                aplSize += CalcVfpDataSize (&lpMemHC4V->parts[i]);
+#undef  lpMemHC4V
+
+            break;
+
+        case ARRAY_HC8V:
+            // Copy as ptr to VFPs
+#define lpMemHC8V   ((LPAPLHC8V) lpMemData)
+
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemHC8V++)
+            // Loop through all of the parts
+            for (i = 0; i < 8; i++)
+                // Add in the size of the data
+                aplSize += CalcVfpDataSize (&lpMemHC8V->parts[i]);
+#undef  lpMemHC8V
+
             break;
 
         case ARRAY_BOOL:
@@ -1110,15 +1187,54 @@ APLUINT CalcGlbVarSize
         case ARRAY_CHAR:
         case ARRAY_FLOAT:
         case ARRAY_APA:
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
+            break;
+
         defstop
             break;
     } // End SWITCH
-NORMAL_EXIT:
+
     // We no longer need this ptr
     MyGlobalUnlock (hGlbData); lpMemHdrData = NULL;
 
     return aplSize;
 } // End CalcGlbVarSize
+
+
+//***************************************************************************
+//  $CalcRatDataSize
+//
+//  Calculate the data size of a RAT item
+//***************************************************************************
+
+int CalcRatDataSize
+    (LPAPLRAT lpMemRat)
+
+{
+    return lpMemRat->_mp_num._mp_alloc                  // # numerator limbs
+          * sizeof (*lpMemRat->_mp_num._mp_d)           // ...times the size of each limb
+         + lpMemRat->_mp_den._mp_alloc                  // # denominator limbs
+          * sizeof (*lpMemRat->_mp_den._mp_d);          // ...times the size of each limb
+} // End CalcRatDataSize
+
+
+//***************************************************************************
+//  $CalcVfpDataSize
+//
+//  Calculate the data size of a VFP item
+//***************************************************************************
+
+int CalcVfpDataSize
+    (LPAPLVFP lpMemVfp)
+
+{
+    return mpfr_custom_get_size (lpMemVfp->_mpfr_prec); // # bytes pointed to by <mpfr_d>
+} // End CalcVfpDataSize
 
 
 //***************************************************************************
@@ -1135,8 +1251,8 @@ APLUINT CalcGlbFcnSize
                                     //   it to be called serially.
 
 {
-    APLUINT           aplSize = 0;  // The result
-    HGLOBAL           hGlbTxtLine;  // Line text global memory handle
+    APLUINT           aplSize = 0;          // The result
+    HGLOBAL           hGlbTxtLine;          // Line text global memory handle
     LPFCNARRAY_HEADER lpMemHdrData; // Ptr to the global memory header
 
     // stData is a valid HGLOBAL function array

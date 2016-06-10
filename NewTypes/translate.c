@@ -397,6 +397,42 @@ ARRAY_TYPES TranslateImmTypeToArrayType
         case IMMTYPE_VFP:
             return ARRAY_VFP;
 
+        case IMMTYPE_HC2I:
+            return ARRAY_HC2I;
+
+        case IMMTYPE_HC2F:
+            return ARRAY_HC2F;
+
+        case IMMTYPE_HC2R:
+            return ARRAY_HC2R;
+
+        case IMMTYPE_HC2V:
+            return ARRAY_HC2V;
+
+        case IMMTYPE_HC4I:
+            return ARRAY_HC4I;
+
+        case IMMTYPE_HC4F:
+            return ARRAY_HC4F;
+
+        case IMMTYPE_HC4R:
+            return ARRAY_HC4R;
+
+        case IMMTYPE_HC4V:
+            return ARRAY_HC4V;
+
+        case IMMTYPE_HC8I:
+            return ARRAY_HC8I;
+
+        case IMMTYPE_HC8F:
+            return ARRAY_HC8F;
+
+        case IMMTYPE_HC8R:
+            return ARRAY_HC8R;
+
+        case IMMTYPE_HC8V:
+            return ARRAY_HC8V;
+
         defstop
             return (APLSTYPE) -1;   // To keep the compiler happy
     } // End SWITCH
@@ -434,6 +470,42 @@ IMM_TYPES TranslateArrayTypeToImmType
 
         case ARRAY_VFP:
             return IMMTYPE_VFP;
+
+        case ARRAY_HC2I:
+            return IMMTYPE_HC2I;
+
+        case ARRAY_HC2F:
+            return IMMTYPE_HC2F;
+
+        case ARRAY_HC2R:
+            return IMMTYPE_HC2R;
+
+        case ARRAY_HC2V:
+            return IMMTYPE_HC2V;
+
+        case ARRAY_HC4I:
+            return IMMTYPE_HC4I;
+
+        case ARRAY_HC4F:
+            return IMMTYPE_HC4F;
+
+        case ARRAY_HC4R:
+            return IMMTYPE_HC4R;
+
+        case ARRAY_HC4V:
+            return IMMTYPE_HC4V;
+
+        case ARRAY_HC8I:
+            return IMMTYPE_HC8I;
+
+        case ARRAY_HC8F:
+            return IMMTYPE_HC8F;
+
+        case ARRAY_HC8R:
+            return IMMTYPE_HC8R;
+
+        case ARRAY_HC8V:
+            return IMMTYPE_HC8V;
 
         case ARRAY_HETERO:
         case ARRAY_NESTED:
@@ -483,53 +555,46 @@ STRAND_TYPES TranslateArrayTypeToStrandType
         case ARRAY_VFP:
             return STRAND_VFP;
 
+        case ARRAY_HC2I:
+            return STRAND_HC2I;
+
+        case ARRAY_HC2F:
+            return STRAND_HC2F;
+
+        case ARRAY_HC2R:
+            return STRAND_HC2R;
+
+        case ARRAY_HC2V:
+            return STRAND_HC2V;
+
+        case ARRAY_HC4I:
+            return STRAND_HC4I;
+
+        case ARRAY_HC4F:
+            return STRAND_HC4F;
+
+        case ARRAY_HC4R:
+            return STRAND_HC4R;
+
+        case ARRAY_HC4V:
+            return STRAND_HC4V;
+
+        case ARRAY_HC8I:
+            return STRAND_HC8I;
+
+        case ARRAY_HC8F:
+            return STRAND_HC8F;
+
+        case ARRAY_HC8R:
+            return STRAND_HC8R;
+
+        case ARRAY_HC8V:
+            return STRAND_HC8V;
+
         defstop
             return -1;              // To keep the compiler happy
     } // End SWITCH
 } // End TranslateArrayTypeToStrandType
-
-
-//***************************************************************************
-//  $TranslateArrayTypeToSizeof
-//
-//  Translate an array type (see ARRAY_TYPES) to
-//    a sizeof ().
-//***************************************************************************
-
-APLI3264 TranslateArrayTypeToSizeof
-    (ARRAY_TYPES arrayType)
-
-{
-    switch (arrayType)
-    {
-        case ARRAY_BOOL:
-            return sizeof (APLBOOL);
-
-        case ARRAY_INT:
-        case ARRAY_APA:
-            return sizeof (APLINT);
-
-        case ARRAY_FLOAT:
-            return sizeof (APLFLOAT);
-
-        case ARRAY_CHAR:
-            return sizeof (APLCHAR);
-
-        case ARRAY_RAT:
-            return sizeof (APLRAT);
-
-        case ARRAY_VFP:
-            return sizeof (APLVFP);
-
-        case ARRAY_HETERO:
-        case ARRAY_NESTED:
-        case ARRAY_LIST:
-            return -1;
-
-        defstop
-            return -1;                     // To keep the compiler happy
-    } // End SWITCH
-} // End TranslateArrayTypeToSizeof
 
 
 //***************************************************************************
@@ -571,47 +636,46 @@ ARRAY_TYPES TranslateStrandTypeToArrayType
         case STRAND_VFP:
             return ARRAY_VFP;
 
+        case STRAND_HC2I:
+            return ARRAY_HC2I;
+
+        case STRAND_HC2F:
+            return ARRAY_HC2F;
+
+        case STRAND_HC2R:
+            return ARRAY_HC2R;
+
+        case STRAND_HC2V:
+            return ARRAY_HC2V;
+
+        case STRAND_HC4I:
+            return ARRAY_HC4I;
+
+        case STRAND_HC4F:
+            return ARRAY_HC4F;
+
+        case STRAND_HC4R:
+            return ARRAY_HC4R;
+
+        case STRAND_HC4V:
+            return ARRAY_HC4V;
+
+        case STRAND_HC8I:
+            return ARRAY_HC8I;
+
+        case STRAND_HC8F:
+            return ARRAY_HC8F;
+
+        case STRAND_HC8R:
+            return ARRAY_HC8R;
+
+        case STRAND_HC8V:
+            return ARRAY_HC8V;
+
         defstop
             return ARRAY_ERROR;     // To keep the compiler happy
     } // End SWITCH
 } // End TranslateStrandTypeToArrayType
-
-
-//***************************************************************************
-//  $TranslatePnTypeToArrayType
-//
-//  Translate a PN_NUMTYPE_xxx to an ARRAY_xxx
-//***************************************************************************
-
-ARRAY_TYPES TranslatePnTypeToArrayType
-    (PNNUMTYPE pnType)
-
-{
-    // Split cases based upon the storage type
-    switch (pnType)
-    {
-        case PN_NUMTYPE_BOOL:
-            return ARRAY_BOOL;
-
-        case PN_NUMTYPE_INT:
-            return ARRAY_INT;
-
-        case PN_NUMTYPE_FLT:
-            return ARRAY_FLOAT;
-
-        case PN_NUMTYPE_RAT:
-            return ARRAY_RAT;
-
-        case PN_NUMTYPE_VFP:
-            return ARRAY_VFP;
-
-        case PN_NUMTYPE_HC2:
-        case PN_NUMTYPE_HC4:
-        case PN_NUMTYPE_HC8:
-        defstop
-            return ARRAY_ERROR;
-    } // End SWITCH
-} // End TranslatePnTypeToArrayType
 
 
 //***************************************************************************
@@ -732,6 +796,42 @@ ARRAY_TYPES TranslateCharToArrayType
 
         case 'V':
             return ARRAY_VFP;
+
+        case 'i':
+            return ARRAY_HC2I;
+
+        case 'f':
+            return ARRAY_HC2F;
+
+        case 'r':
+            return ARRAY_HC2R;
+
+        case 'v':
+            return ARRAY_HC2V;
+
+        case 'j':
+            return ARRAY_HC4I;
+
+        case 'g':
+            return ARRAY_HC4F;
+
+        case 's':
+            return ARRAY_HC4R;
+
+        case 'w':
+            return ARRAY_HC4V;
+
+        case 'k':
+            return ARRAY_HC8I;
+
+        case 'h':
+            return ARRAY_HC8F;
+
+        case 't':
+            return ARRAY_HC8R;
+
+        case 'x':
+            return ARRAY_HC8V;
 
         defstop
             return '?';
@@ -992,6 +1092,112 @@ APLFLOAT TranslateQuadICIndex
             return (gAllowNeg0 && bNegate) ? -0.0 : 0.0;
     } // End SWITCH
 } // TranslateQuadICIndex
+
+
+//***************************************************************************
+//  $TranslateCharToType
+//
+//  Translate am ASCIIZ APLCHAR vector to a storage type
+//***************************************************************************
+
+APLSTYPE TranslateCharToType
+    (LPAPLCHAR lpMemChar)
+
+{
+    if (lstrcmpiW (lpMemChar, L"INT" ) EQ 0)
+        return ARRAY_INT;
+    else
+    if (lstrcmpiW (lpMemChar, L"FLT" ) EQ 0)
+        return ARRAY_FLOAT;
+    else
+    if (lstrcmpiW (lpMemChar, L"RAT" ) EQ 0)
+        return ARRAY_RAT;
+    else
+    if (lstrcmpiW (lpMemChar, L"VFP" ) EQ 0)
+        return ARRAY_VFP;
+    else
+    if (lstrcmpiW (lpMemChar, L"HC2I") EQ 0)
+        return ARRAY_HC2I;
+    else
+    if (lstrcmpiW (lpMemChar, L"HC2F") EQ 0)
+        return ARRAY_HC2F;
+    else
+    if (lstrcmpiW (lpMemChar, L"HC2R") EQ 0)
+        return ARRAY_HC2R;
+    else
+    if (lstrcmpiW (lpMemChar, L"HC2V") EQ 0)
+        return ARRAY_HC2V;
+    else
+    if (lstrcmpiW (lpMemChar, L"HC4I") EQ 0)
+        return ARRAY_HC4I;
+    else
+    if (lstrcmpiW (lpMemChar, L"HC4F") EQ 0)
+        return ARRAY_HC4F;
+    else
+    if (lstrcmpiW (lpMemChar, L"HC4R") EQ 0)
+        return ARRAY_HC4R;
+    else
+    if (lstrcmpiW (lpMemChar, L"HC4V") EQ 0)
+        return ARRAY_HC4V;
+    else
+    if (lstrcmpiW (lpMemChar, L"HC8I") EQ 0)
+        return ARRAY_HC8I;
+    else
+    if (lstrcmpiW (lpMemChar, L"HC8F") EQ 0)
+        return ARRAY_HC8F;
+    else
+    if (lstrcmpiW (lpMemChar, L"HC8R") EQ 0)
+        return ARRAY_HC8R;
+    else
+    if (lstrcmpiW (lpMemChar, L"HC8V") EQ 0)
+        return ARRAY_HC8V;
+    else
+        return ARRAY_ERROR;
+} // End TranslateCharToType
+
+
+//***************************************************************************
+//  $TranslateExceptionCodeToArrayType
+//
+//  Translate an ExceptionCode (see EXCEPTION_CODES) to
+//    an array type (see ARRAY_TYPES)
+//***************************************************************************
+
+APLSTYPE TranslateExceptionCodeToArrayType
+    (EXCEPTION_CODES exCode)
+
+{
+    // Split cases based upon the ExceptionCode
+    switch (exCode)
+    {
+        case EXCEPTION_RESULT_FLOAT:
+            return ARRAY_FLOAT;
+
+        case EXCEPTION_RESULT_VFP:
+            return ARRAY_VFP;
+
+        case EXCEPTION_RESULT_HC2F:
+            return ARRAY_HC2F;
+
+        case EXCEPTION_RESULT_HC4F:
+            return ARRAY_HC4F;
+
+        case EXCEPTION_RESULT_HC8F:
+            return ARRAY_HC8F;
+
+        case EXCEPTION_RESULT_HC2V:
+            return ARRAY_HC2V;
+
+        case EXCEPTION_RESULT_HC4V:
+            return ARRAY_HC4V;
+
+        case EXCEPTION_RESULT_HC8V:
+            return ARRAY_HC8V;
+
+        defstop
+            return ARRAY_ERROR;
+    } // End SWITCH
+} // End TranslateExceptionCodeToArrayType
 
 
 //***************************************************************************

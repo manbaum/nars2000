@@ -32,6 +32,7 @@ typedef struct tagPERFMONDATA
     LPCHAR        lpFileName;       // Ptr to filename
     UINT          uLine;            // Line #
     LARGE_INTEGER liPerf;           // Performance data
+    LPWCHAR       lpwText;          // Ptr to text message
 } PERFMONDATA, *LPPERFMONDATA;
 
 
@@ -55,6 +56,9 @@ void PerfMonInit
 {
     // Initialize the starting performance counter value
     QueryPerformanceCounter (&liStart);
+
+    // Start the data over again
+    uPerfMonData = 0;
 } // End PerfMonInit
 #endif
 
@@ -97,7 +101,7 @@ void PerfMonAccum
 //***************************************************************************
 
 void PerfMonShow
-    (void)
+    (LPWCHAR lpwText)               // Ptr to text message (may be NULL)
 
 {
     WCHAR         wszTemp[1024];    // Temporary storage area
@@ -107,15 +111,16 @@ void PerfMonShow
                   liCurrent;        // Current # ticks
     LPWCHAR       lpwszMicro = L"\x03BC" L"s";
 
-    // If the Perfmonance Monitoring window is not created, do so now
+    // If the Perfmonance Monitoring window is not created, ...
     if (hWndPM EQ NULL)
+        // Do so now
         hWndPM = PerfMonCreate ();
 
     // Get the window handle of the Listbox
     (HANDLE_PTR) hWndLB = GetWindowLongPtrW (hWndPM, GWLPM_HWNDLB);
 
-    // Clear the ListBox
-    SendMessageW (hWndLB, LB_RESETCONTENT, 0, 0);
+////// Clear the ListBox
+////SendMessageW (hWndLB, LB_RESETCONTENT, 0, 0);
 
     // Insert the PM lines into the ListBox
     for (uCnt = 0; uCnt < uPerfMonData; uCnt++)
@@ -126,13 +131,14 @@ void PerfMonShow
         // Format the string
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
-                   L"%-13S[%5d]: %s %s",
+                   L"%-13S[%5d]: %s %s: %s",
                     PerfMonData[uCnt].lpFileName,
                     PerfMonData[uCnt].uLine,
                     FormatWithSep ((1000000 * liCurrent.QuadPart) / liTicksPerSec.QuadPart, 13),
-                    lpwszMicro);
-        // Zap for the next time
-        lpwszMicro = L"";
+                    lpwszMicro,
+                    (lpwText EQ NULL) ? L"" : lpwText);
+////    // Zap for the next time
+////    lpwszMicro = L"";
 
         // Save as new Last performance value
         liLast.QuadPart = PerfMonData[uCnt].liPerf.QuadPart;
@@ -153,6 +159,8 @@ void PerfMonShow
                 lpwszMicro);
     // Append the string
     SendMessageW (hWndLB, LB_ADDSTRING, 0, (LPARAM) wszTemp);
+
+    UpdateWindow (hWndPM);
 } // End PerfMonShow
 #endif
 

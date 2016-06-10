@@ -61,9 +61,15 @@ extern int gDbgLvl;
 #define MP_INT          int
 #define mp_bitcnt_t     int
 #define mp_prec_t       int
+#define NO_CHO_TYPES
 #include "types.h"
 #include "editctrl.h"
 #include "resource.h"
+#define EXTERN extern
+#include "keyboards.h"
+#undef  EXTERN
+
+extern HGLOBAL __cdecl SplitLines (HGLOBAL, UINT, LPUBOOL);
 
 #ifdef DEBUG
   #define   LCLODSAPI   ODSAPI

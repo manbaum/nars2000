@@ -125,7 +125,7 @@ LPPL_YYSTYPE PrimIdentOpDieresis_EM_YY
     HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
                       hGlbRes = NULL;       // Result    ...
     LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
-                      lpMemHdrRes = NULL;   // ...    result    ...
+                      lpMemHdrRes = NULL;   // ...    result ...
     LPAPLNESTED       lpMemRes;             // Ptr to result global memory
     LPPL_YYSTYPE      lpYYFcnStrLft,        // Ptr to left operand function strand
                       lpYYRes = NULL,       // Ptr to result
@@ -274,7 +274,7 @@ LPPL_YYSTYPE PrimIdentOpDieresis_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    TypeDemote (&lpYYRes->tkToken);
+    TypeDemote (&lpYYRes->tkToken, FALSE);
 
     goto NORMAL_EXIT;
 
@@ -372,7 +372,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                       hGlbRes = NULL,       // Result    ...
                       lpSymGlb;             // Ptr to global numeric
     LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
-                      lpMemHdrRes = NULL;   // ...    result    ...
+                      lpMemHdrRes = NULL;   // ...    result ...
     LPVOID            lpMemRht,             // Ptr to right arg global memory
                       lpMemRes;             // Ptr to result    ...
     APLUINT           uRht,                 // Right arg loop counter
@@ -842,7 +842,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                     // Copy the value to the arg token
                     tkRhtArg.tkData.tkGlbData =
                     lpSymGlb =
-                      MakeGlbEntry_EM (ARRAY_RAT,                   // Entry type
+                      MakeGlbEntry_EM (aplTypeRht,                  // Entry type
                                        ((LPAPLRAT) lpMemRht)++,     // Ptr to the value
                                        TRUE,                        // TRUE iff we should initialize the target first
                                       &lpYYFcnStrOpr->tkToken);     // Ptr to function token
@@ -881,7 +881,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                     // Copy the value to the arg token
                     tkRhtArg.tkData.tkGlbData =
                     lpSymGlb =
-                      MakeGlbEntry_EM (ARRAY_VFP,                   // Entry type
+                      MakeGlbEntry_EM (aplTypeRht,                  // Entry type
                                        ((LPAPLVFP) lpMemRht)++,     // Ptr to the value
                                        TRUE,                        // TRUE iff we should initialize the target first
                                       &lpYYFcnStrOpr->tkToken);     // Ptr to function token
@@ -901,6 +901,57 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
 
                     if (!bRet)
                         goto ERROR_EXIT;
+                } // End FOR
+
+                break;
+
+            case ARRAY_HC2I:
+            case ARRAY_HC2F:
+            case ARRAY_HC2R:
+            case ARRAY_HC2V:
+            case ARRAY_HC4I:
+            case ARRAY_HC4F:
+            case ARRAY_HC4R:
+            case ARRAY_HC4V:
+            case ARRAY_HC8I:
+            case ARRAY_HC8F:
+            case ARRAY_HC8R:
+            case ARRAY_HC8V:
+                // Loop through the right arg
+                for (uRht = 0; uRht < aplNELMRht; uRht++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    // Set the token & immediate type
+                    tkRhtArg.tkFlags.TknType = TKT_VARARRAY;
+                    tkRhtArg.tkFlags.ImmType = TranslateArrayTypeToImmType (aplTypeRht);
+
+                    // Copy the value to the arg token
+                    tkRhtArg.tkData.tkGlbData =
+                    lpSymGlb =
+                      MakeGlbEntry_EM (aplTypeRht,                  // Entry type
+                                       lpMemRht,                    // Ptr to the value
+                                       TRUE,                        // TRUE iff we should initialize the target first
+                                      &lpYYFcnStrOpr->tkToken);     // Ptr to function token
+                    // Skip over the item
+                    ((LPBYTE) lpMemRht) += TranslateArrayTypeToSizeof (aplTypeRht);
+
+                    if (lpSymGlb EQ NULL)
+                        goto ERROR_EXIT;
+                    // Execute the function on the arg token
+                    if (!ExecFuncOnToken_EM (&lpMemRes,             // Ptr to output storage
+                                              NULL,                 // Ptr to left arg token
+                                              lpYYFcnStrLft,        // Ptr to function strand
+                                             &tkRhtArg,             // Ptr to right arg token
+                                              lptkAxisLft,          // Ptr to left operand axis token
+                                             &uValErrCnt,           // Ptr to VALUE ERROR counter
+                                              lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
+                        goto ERROR_EXIT;
+
+                    // Free the arg token
+                    FreeResultTkn (&tkRhtArg); tkRhtArg.tkData.tkGlbData = NULL;
                 } // End FOR
 
                 break;
@@ -945,7 +996,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    TypeDemote (&lpYYRes->tkToken);
+    TypeDemote (&lpYYRes->tkToken, FALSE);
 
     goto NORMAL_EXIT;
 
@@ -1568,7 +1619,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    TypeDemote (&lpYYRes->tkToken);
+    TypeDemote (&lpYYRes->tkToken, FALSE);
 
     goto NORMAL_EXIT;
 

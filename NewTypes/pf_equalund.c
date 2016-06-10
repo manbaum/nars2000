@@ -212,15 +212,16 @@ APLINT PrimFnMonEqualUnderBarGlb_PTB
     (HGLOBAL hGlbRht)
 
 {
-    LPAPLNESTED   lpMemRht;
-    APLSTYPE      aplTypeRht;
-    APLNELM       aplNELMRht;
-    APLRANK       aplRankRht;
-    APLUINT       uRes,
-                  uRht,
-                  uTmp;
-    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+    LPVARARRAY_HEADER lpMemHdrRht;      // Ptr to right arg header
+    LPAPLNESTED       lpMemRht;
+    APLSTYPE          aplTypeRht;
+    APLNELM           aplNELMRht;
+    APLRANK           aplRankRht;
+    APLUINT           uRes,
+                      uRht,
+                      uTmp;
+    LPPLLOCALVARS     lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;     // Ptr to Ctrl-Break flag
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -239,9 +240,9 @@ APLINT PrimFnMonEqualUnderBarGlb_PTB
             Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
             // Lock the memory to get a ptr to it
-            lpMemRht = MyGlobalLock (hGlbRht);
+            lpMemHdrRht = MyGlobalLock (hGlbRht);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
+#define lpHeader    lpMemHdrRht
             // Get the Array Type, NELM, and Rank
             aplTypeRht = lpHeader->ArrType;
             aplNELMRht = lpHeader->NELM;
@@ -260,7 +261,7 @@ APLINT PrimFnMonEqualUnderBarGlb_PTB
             if (IsNested (aplTypeRht))
             {
                 // Skip over the header and dimensions
-                lpMemRht = VarArrayDataFmBase (lpMemRht);
+                lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
                 // Loop through the elements of the right arg
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
@@ -288,7 +289,7 @@ APLINT PrimFnMonEqualUnderBarGlb_PTB
             } // End IF
 
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+            MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
 
             break;
 
@@ -345,35 +346,37 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbarCom_EM_YY
      UBOOL   bNotEqual)             // TRUE iff it's NotEqualUnderbar
 
 {
-    APLSTYPE      aplTypeLft,       // Left arg storage type
-                  aplTypeRht,       // Right ...
-                  aplTypeTmp;       // Temp ...
-    APLNELM       aplNELMLft,       // Left arg NELM
-                  aplNELMRht;       // Right ...
-    APLRANK       aplRankLft,       // Left arg rank
-                  aplRankRht;       // Right ...
-    HGLOBAL       hGlbLft,          // Left arg global memory handle
-                  hGlbRht;          // Right ...
-    LPVOID        lpMemLft,         // Ptr to left arg global memory
-                  lpMemRht;         // Ptr to right ...
-    LPTOKEN       lptkTmpArg;       // Ptr to temp arg token
-    UBOOL         bNumLft,          // TRUE iff left arg is simple numeric
-                  bNumRht,          // ...      right ...
-                  bHeader = TRUE;   // TRUE iff lpMemLft/Rht point to header
-                                    //   otherwise they point to data
-    APLINT        aplIntegerLft,    // Left arg as integer
-                  aplIntegerRht,    // Right ...
-                  aplIntegerRes;    // Result   ...
-    APLFLOAT      aplFloatLft,      // Left arg as float
-                  aplFloatRht;      // Right ...
-    APLCHAR       aplCharLft,       // Left arg as char
-                  aplCharRht;       // Right ...
-    APLLONGEST    aplLongestLft,    // Left arg as an immediate
-                  aplLongestRht;    // Right ...
-    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
-    APLFLOAT      fQuadCT;          // []CT
-    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+    APLSTYPE          aplTypeLft,       // Left arg storage type
+                      aplTypeRht,       // Right ...
+                      aplTypeTmp;       // Temp ...
+    APLNELM           aplNELMLft,       // Left arg NELM
+                      aplNELMRht;       // Right ...
+    APLRANK           aplRankLft,       // Left arg rank
+                      aplRankRht;       // Right ...
+    HGLOBAL           hGlbLft,          // Left arg global memory handle
+                      hGlbRht;          // Right ...
+    LPVARARRAY_HEADER lpMemHdrLft,      // Ptr to left arg header
+                      lpMemHdrRht;      // ...    right ...
+    LPVOID            lpMemLft,         // Ptr to left arg global memory
+                      lpMemRht;         // Ptr to right ...
+    LPTOKEN           lptkTmpArg;       // Ptr to temp arg token
+    UBOOL             bNumLft,          // TRUE iff left arg is simple numeric
+                      bNumRht,          // ...      right ...
+                      bHeader = TRUE;   // TRUE iff lpMemHdrLft/Rht point to header
+                                        //   otherwise they point to data
+    APLINT            aplIntegerLft,    // Left arg as integer
+                      aplIntegerRht,    // Right ...
+                      aplIntegerRes;    // Result   ...
+    APLFLOAT          aplFloatLft,      // Left arg as float
+                      aplFloatRht;      // Right ...
+    APLCHAR           aplCharLft,       // Left arg as char
+                      aplCharRht;       // Right ...
+    APLLONGEST        aplLongestLft,    // Left arg as an immediate
+                      aplLongestRht;    // Right ...
+    LPPL_YYSTYPE      lpYYRes = NULL;   // Ptr to the result
+    APLFLOAT          fQuadCT;          // []CT
+    LPPLLOCALVARS     lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;     // Ptr to Ctrl-Break flag
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -421,18 +424,24 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbarCom_EM_YY
     } // End IF
 
     // Get left and right arg's global ptrs
-    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
-    // Split based upon Simple vs. Hetero vs. Nested
-    switch (2 * IsNested (aplTypeLft)
-          + 1 * IsNested (aplTypeRht))
+    // Split based upon Simple vs. Hetero/Nested
+    switch (2 * IsPtrArray (aplTypeLft)
+          + 1 * IsPtrArray (aplTypeRht))
     {
         case 2 * 0 + 1 * 0:     // Lft = Simple, Rht = Simple
+            // Ensure Simple Numeric vs. Simple Numeric or Char vs. Char
+            bNumLft = IsNumeric (aplTypeLft);
+            bNumRht = IsNumeric (aplTypeRht);
+            if (bNumLft NE bNumRht)
+                break;
+
             // If both arguments are scalars, get the
             //   first values and compare them as they
             //   might be TKT_VARIMMED and thus not pointed
-            //   to by the lpMemLft/Rht vars
+            //   to by the lpMemHdrLft/Rht vars
             if (IsScalar (aplRankLft)
              && IsScalar (aplRankRht))
             {
@@ -441,29 +450,23 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbarCom_EM_YY
                  || IsGlbNum (aplTypeRht))
                 {
                     // If the left arg is global, ...
-                    if (lpMemLft)
+                    if (lpMemHdrLft)
                         // Skip over the header to the data
-                        lpMemLft = VarArrayDataFmBase (lpMemLft);
+                        lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
                     else
                         // Point to the data
                         lpMemLft = &aplLongestLft;
 
                     // If the right arg is global, ...
-                    if (lpMemRht)
+                    if (lpMemHdrRht)
                         // Skip over the header to the data
-                        lpMemRht = VarArrayDataFmBase (lpMemRht);
+                        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
                     else
                         // Point to the data
                         lpMemRht = &aplLongestRht;
                     bHeader = FALSE;
                 } else
                 {
-                    // Ensure Simple Numeric vs. Simple Numeric or Char vs. Char
-                    bNumLft = IsSimpleNum (aplTypeLft);
-                    bNumRht = IsSimpleNum (aplTypeRht);
-                    if (bNumLft NE bNumRht)
-                        break;
-
                     // Get the respective first values
                     GetFirstValueToken (lptkLftArg,     // Ptr to left arg token
                                        &aplIntegerLft,  // Ptr to integer result
@@ -496,21 +499,29 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbarCom_EM_YY
                 } // End IF/ELSE
             } // End IF
 
-            // Compare ordered values
-            aplIntegerRes =
-              PrimFnDydEqualUnderbarSimpleOrd (lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
-                                               lpMemRht, aplTypeRht, aplNELMRht, aplRankRht,
-                                               bHeader, lpbCtrlBreak);
+            // If the header is present, ...
+            if (bHeader)
+                // Compare ordered values
+                aplIntegerRes =
+                  PrimFnDydEqualUnderbarSimpleOrd (lpMemHdrLft, aplTypeLft, aplNELMLft, aplRankLft,
+                                                   lpMemHdrRht, aplTypeRht, aplNELMRht, aplRankRht,
+                                                   bHeader    , lpbCtrlBreak);
+            else
+                // Compare ordered values
+                aplIntegerRes =
+                  PrimFnDydEqualUnderbarSimpleOrd (lpMemLft   , aplTypeLft, aplNELMLft, aplRankLft,
+                                                   lpMemRht   , aplTypeRht, aplNELMRht, aplRankRht,
+                                                   bHeader    , lpbCtrlBreak);
             break;
 
-        case 2 * 0 + 1 * 1:     // Lft = Simple, Rht = Nested
-        case 2 * 1 + 1 * 0:     // Lft = Nested, Rht = Simple
+        case 2 * 0 + 1 * 1:     // Lft = Simple,        Rht = Nested/Hetero
+        case 2 * 1 + 1 * 0:     // Lft = Nested/Hetero, Rht = Simple
             break;
 
-        case 2 * 1 + 1 * 1:     // Lft = Nested, Rht = Nested
+        case 2 * 1 + 1 * 1:     // Lft = Nested/Hetero, Rht = Nested/Hetero
             aplIntegerRes =
-              PrimFnDydEqualUnderbarNested (lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
-                                            lpMemRht, aplTypeRht, aplNELMRht, aplRankRht,
+              PrimFnDydEqualUnderbarNested (lpMemHdrLft, aplTypeLft, aplNELMLft, aplRankLft,
+                                            lpMemHdrRht, aplTypeRht, aplNELMRht, aplRankRht,
                                             TRUE, lpbCtrlBreak);
             break;
 
@@ -541,16 +552,16 @@ AXIS_SYNTAX_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    if (hGlbLft && lpMemLft)
+    if (hGlbLft && lpMemHdrLft)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht && lpMemHdrRht)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
     return lpYYRes;
@@ -565,37 +576,28 @@ NORMAL_EXIT:
 //***************************************************************************
 
 UBOOL PrimFnDydEqualUnderbarSimpleOrd
-    (LPVOID   lpMemLft,         // Ptr to left arg header
+    (LPVOID   lpMemHdrLft,      // Ptr to left arg header
      APLSTYPE aplTypeLft,       // Left arg storage type
      APLNELM  aplNELMLft,       // ...      NELM
      APLRANK  aplRankLft,       // ...      rank
-     LPVOID   lpMemRht,         // Ptr to right arg header
+     LPVOID   lpMemHdrRht,      // Ptr to right arg header
      APLSTYPE aplTypeRht,       // Right arg storage type
      APLNELM  aplNELMRht,       // ...       NELM
      APLRANK  aplRankRht,       // ...       rank
-     UBOOL    bHeader,          // TRUE iff lpMemLft/Rht point to header
+     UBOOL    bHeader,          // TRUE iff lpMemHdrLft/Rht point to header
                                 //   otherwise they point to data
      LPUBOOL  lpbCtrlBreak)     // Ptr to Ctrl-Break flag
 
 {
-    APLINT        uDim,
-                  apaOff,
-                  apaMul;
-    UINT          uBitMask = BIT0;
-    APLINT        aplIntegerLft,
-                  aplIntegerRht;
-    APLFLOAT      aplFloatLft,
-                  aplFloatRht;
-    APLCHAR       aplCharLft,
-                  aplCharRht;
+    LPVOID        lpMemLft,         // Ptr to left arg global memory
+                  lpMemRht;         // ...    right ...
+    APLINT        uDim;             // Loop counter
     APLFLOAT      fQuadCT;          // []CT
     UBOOL         bRet = TRUE;      // TRUE iff the result is valid
-    APLRAT        aplRatLft = {0},
-                  aplRatRht = {0};
-    APLVFP        aplVfpLft = {0},
-                  aplVfpRht = {0};
-    HGLOBAL       lpSymGlbLft,
-                  lpSymGlbRht;
+    APLSTYPE      aplTypeCom;       // Common arg stprage type
+    ALLTYPES      atLft = {0},      // Left arg as ALLTYPES
+                  atRht = {0};      // Right ...
+    int           iHCDim;           // HC Dimension (1, 2, 4, 8)
 
     // Get the current value of []CT
     fQuadCT = GetQuadCT ();
@@ -610,8 +612,8 @@ UBOOL PrimFnDydEqualUnderbarSimpleOrd
      && bHeader)
     {
         // Skip over the headers to the dimensions
-        lpMemLft = VarArrayBaseToDim (lpMemLft);
-        lpMemRht = VarArrayBaseToDim (lpMemRht);
+        lpMemLft = VarArrayBaseToDim (lpMemHdrLft);
+        lpMemRht = VarArrayBaseToDim (lpMemHdrRht);
 
         for (uDim = 0; uDim < (APLINT) aplRankLft; uDim++)
         if (*((LPAPLDIM) lpMemLft)++ NE *((LPAPLDIM) lpMemRht)++)
@@ -623,971 +625,204 @@ UBOOL PrimFnDydEqualUnderbarSimpleOrd
         // If the left arg is global numeric, ...
         if (IsGlbNum (aplTypeLft))
             // Skip over the header and dimensions to the data
-            lpMemLft = VarArrayDataFmBase (lpMemLft);
+            lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
         // If the right arg is global numeric, ...
         if (IsGlbNum (aplTypeRht))
             // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayDataFmBase (lpMemRht);
-    } // End IF
+            lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+    } else
+    {
+        // Point to the data
+        lpMemLft = lpMemHdrLft;
+        lpMemRht = lpMemHdrRht;
+    } // End IF/ELSE
 
     // lpMemLft and lpMemRht now point to the data
 
-    // Split cases based upon the left arg's storage type
-    switch (aplTypeLft)
+    // Calculate the common storage type
+    aplTypeCom = aTypePromote[aplTypeLft][aplTypeRht];
+
+    // Calculate the HC Dimension (1, 2, 4, 8)
+    iHCDim = TranslateArrayTypeToHCDim (aplTypeCom);
+
+    // Loop through the elements
+    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
     {
-        case ARRAY_BOOL:            // Lft = BOOL, Rht = BOOL/INT/FLOAT/APA/CHAR/HETERO/RAT/VFP
-            // Split cases based upon the right arg's storage type
-            switch (aplTypeRht)
-            {
-                case ARRAY_BOOL:    // Lft = BOOL, Rht = BOOL
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
+        // Check for Ctrl-Break
+        if (CheckCtrlBreak (*lpbCtrlBreak))
+            goto ERROR_EXIT;
 
-                        // Optimize for Booleans
-                        if ((aplNELMLft - uDim) >= BITS_IN_APLINT)
-                        {
-                            if ((*((LPAPLINT) lpMemLft))
-                             NE (*((LPAPLINT) lpMemRht)))
-                                bRet = FALSE;
-                            // Increment the loop counter
-                            uDim += BITS_IN_APLINT - 1;
+        // Promote the left arg to the common type
+        (*aTypeActPromote[aplTypeLft][aplTypeCom]) (lpMemLft, uDim, &atLft);
 
-                            // Increment the global memory ptrs
-                            ((LPAPLINT) lpMemLft)++;
-                            ((LPAPLINT) lpMemRht)++;
-                        } else
-                        {
-                            if ((uBitMask & *((LPAPLBOOL) lpMemLft))
-                             NE (uBitMask & *((LPAPLBOOL) lpMemRht)))
-                                bRet = FALSE;
+        // Promote the right arg to the common type
+        (*aTypeActPromote[aplTypeRht][aplTypeCom]) (lpMemRht, uDim, &atRht);
 
-                            // Shift over the bit mask
-                            uBitMask <<= 1;
+        // Split cases based upon the common storage type
+        switch (aplTypeCom)
+        {
+            case ARRAY_BOOL:
+                bRet = (atLft.aplBoolean EQ atRht.aplBoolean);
 
-                            // Check for end-of-byte
-                            if (uBitMask EQ END_OF_BYTE)
-                            {
-                                uBitMask = BIT0;            // Start over
-                                ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
-                                ((LPAPLBOOL) lpMemRht)++;   // ...
-                            } // End IF
-                        } // End IF/ELSE
-                    } // End FOR
+                break;
 
-                    break;
+            case ARRAY_INT:
+            case ARRAY_APA:
+                bRet = (atLft.aplInteger EQ atRht.aplInteger);
 
-                case ARRAY_INT:     // Lft = BOOL, Rht = INT
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
+                break;
 
-                        if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE)
-                         NE *((LPAPLINT) lpMemRht)++)
-                            bRet = FALSE;
+            case ARRAY_FLOAT:
+                bRet = CompareCT (atLft.aplFloat,
+                                  atRht.aplFloat,
+                                  fQuadCT,
+                                  NULL);
+                break;
 
-                        // Shift over the bit mask
-                        uBitMask <<= 1;
-
-                        // Check for end-of-byte
-                        if (uBitMask EQ END_OF_BYTE)
-                        {
-                            uBitMask = BIT0;            // Start over
-                            ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
-                        } // End IF
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_FLOAT:   // Lft = BOOL, Rht = FLOAT
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        if (!CompareCT ((uBitMask & *((LPAPLBOOL) lpMemLft)) ? 1.0 : 0.0,
-                                       *((LPAPLFLOAT) lpMemRht)++,
-                                        fQuadCT,
-                                        NULL))
-                            bRet = FALSE;
-
-                        // Shift over the bit mask
-                        uBitMask <<= 1;
-
-                        // Check for end-of-byte
-                        if (uBitMask EQ END_OF_BYTE)
-                        {
-                            uBitMask = BIT0;            // Start over
-                            ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
-                        } // End IF
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_APA:     // Lft = BOOL, Rht = APA
-#define lpAPA       ((LPAPLAPA) lpMemRht)
-                    // Get the APA parameters
-                    apaOff = lpAPA->Off;
-                    apaMul = lpAPA->Mul;
-#undef  lpAPA
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        if (((uBitMask & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE)
-                         NE (apaOff + apaMul * uDim))
-                            bRet = FALSE;
-
-                        // Shift over the bit mask
-                        uBitMask <<= 1;
-
-                        // Check for end-of-byte
-                        if (uBitMask EQ END_OF_BYTE)
-                        {
-                            uBitMask = BIT0;            // Start over
-                            ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
-                        } // End IF
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_CHAR:    // Lft = BOOL, Rht = CHAR
-                    bRet = FALSE;
-
-                    break;
-
-                case ARRAY_HETERO:  // Lft = BOOL, Rht = HETERO
-                    // Because a HETERO array by definition must contain numbers and chars,
-                    //   there's no way a non-HETERO can match it
-                    bRet = FALSE;
-
-                    break;
-
-                case ARRAY_RAT:     // Lft = BOOL, Rht = RAT
-                    // Initialize the temp
-                    mpq_init (&aplRatLft);
-
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        // Convert the BOOL to a RAT
-                        mpq_set_sx (&aplRatLft,
-                                     (uBitMask & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE,
-                                     1);
+            case ARRAY_RAT:
+                // Compare the two RATs relative to []CT
 #ifdef RAT_EXACT
-                        if (mpq_cmp    (&aplRatLft,  ((LPAPLRAT) lpMemRht)++         ) NE 0)
+                bRet = mpq_cmp     (&atLft.aplRat, &atRht.aplRat         ) EQ 0;
 #else
-                        if (mpq_cmp_ct ( aplRatLft, *((LPAPLRAT) lpMemRht)++, fQuadCT) NE 0)
+                bRet = mpq_cmp_ct  ( atLft.aplRat,  atRht.aplRat, fQuadCT) EQ 0;
 #endif
-                            bRet = FALSE;
+                break;
 
-                        // Shift over the bit mask
-                        uBitMask <<= 1;
+            case ARRAY_VFP:
+                // Compare the two VFPs relative to []CT
+                bRet = mpfr_cmp_ct (atLft.aplVfp, atRht.aplVfp, fQuadCT) EQ 0;
 
-                        // Check for end-of-byte
-                        if (uBitMask EQ END_OF_BYTE)
-                        {
-                            uBitMask = BIT0;            // Start over
-                            ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
-                        } // End IF
-                    } // End FOR
+                break;
 
-                    // We no longer need this storage
-                    Myq_clear (&aplRatLft);
+            case ARRAY_HC2I:
+            case ARRAY_HC4I:
+            case ARRAY_HC8I:
+                // Use the Equal function
+                bRet = EqualHCxIvHCxI (&atLft, &atRht, iHCDim, fQuadCT, __FUNCTION__);
 
-                    break;
+                break;
 
-                case ARRAY_VFP:     // Lft = BOOL, Rht = VFP
-                    // Initialize the temp
-                    mpfr_init0 (&aplVfpLft);
+            case ARRAY_HC2F:
+            case ARRAY_HC4F:
+            case ARRAY_HC8F:
+                // Use the Equal function
+                bRet = EqualHCxFvHCxF (&atLft, &atRht, iHCDim, fQuadCT, __FUNCTION__);
 
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
+                break;
 
-                        // Convert the BOOL to a VFP
-                        mpfr_set_sx (&aplVfpLft,
-                                      (uBitMask & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE,
-                                      MPFR_RNDN);
-                        // Compare the two VFPs relative to []CT
-                        bRet = (mpfr_cmp_ct (aplVfpLft, *((LPAPLVFP) lpMemRht)++, fQuadCT) EQ 0);
+            case ARRAY_HC2R:
+            case ARRAY_HC4R:
+            case ARRAY_HC8R:
+                // Use the Equal function
+                bRet = EqualHCxRvHCxR (&atLft, &atRht, iHCDim, fQuadCT, __FUNCTION__);
 
-                        // Shift over the bit mask
-                        uBitMask <<= 1;
+                break;
 
-                        // Check for end-of-byte
-                        if (uBitMask EQ END_OF_BYTE)
-                        {
-                            uBitMask = BIT0;            // Start over
-                            ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
-                        } // End IF
-                    } // End FOR
+            case ARRAY_HC2V:
+            case ARRAY_HC4V:
+            case ARRAY_HC8V:
+                // Use the Equal function
+                bRet = EqualHCxVvHCxV (&atLft, &atRht, iHCDim, fQuadCT, __FUNCTION__);
 
-                    // We no longer need this storage
-                    Myf_clear (&aplVfpLft);
+                break;
 
-                    break;
-
-                defstop
-                    bRet = FALSE;
-
-                    break;
-            } // End SWITCH
-
-            break;
-
-        case ARRAY_INT:             // Lft = INT, Rht = INT/FLOAT/APA/CHAR/HETERO/RAT/VFP
-            // Split cases based upon the right arg's storage type
-            switch (aplTypeRht)
+            case ARRAY_HETERO:
             {
-                case ARRAY_INT:     // Lft = INT, Rht = INT
-                    // Loop through the elements
-                    for (uDim = 0; bRet &&uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
+                IMM_TYPES immTypeLft,       // Left arg immediate type
+                          immTypeRht;       // Right ...
 
-                        if (*((LPAPLINT) lpMemLft)++ NE *((LPAPLINT) lpMemRht)++)
-                            bRet = FALSE;
-                    } // End FOR
+                // Get the two immediate types
+                immTypeLft = atLft.aplHetero->stFlags.ImmType;
+                immTypeRht = atRht.aplHetero->stFlags.ImmType;
 
-                    break;
-
-                case ARRAY_FLOAT:   // Lft = INT, Rht = FLOAT
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        if (!CompareCT ((APLFLOAT) *((LPAPLINT) lpMemLft)++, *((LPAPLFLOAT) lpMemRht)++, fQuadCT, NULL))
-                            bRet = FALSE;
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_APA:     // Lft = INT, Rht = APA
-#define lpAPA       ((LPAPLAPA) lpMemRht)
-                    // Get the APA parameters
-                    apaOff = lpAPA->Off;
-                    apaMul = lpAPA->Mul;
-#undef  lpAPA
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        if (*((LPAPLINT) lpMemLft)++ NE (apaOff + apaMul * uDim))
-                            bRet = FALSE;
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_CHAR:    // Lft = INT, Rht = CHAR
+                // If the immediate types are incompatible, ...
+                if (IsImmChr (immTypeLft) NE IsImmChr (immTypeRht))
                     bRet = FALSE;
+                else
+                if (IsImmChr (immTypeLft))
+                    // Compare 'em
+                    bRet = atLft.aplHetero->stData.stChar EQ atRht.aplHetero->stData.stChar;
+                else
+                {
+                    APLSTYPE  aplTypeLft2,      // Left item storage type
+                              aplTypeRht2,      // Right ...
+                              aplTypeCom2;      // Common ...
+                    ALLTYPES  atSubLft = {0},   // Left arg item as ALLTYPES
+                              atSubRht = {0};   // Right ...
 
-                    break;
+                    // Translate them to array type
+                    aplTypeLft2 = TranslateImmTypeToArrayType (immTypeLft);
+                    aplTypeRht2 = TranslateImmTypeToArrayType (immTypeRht);
 
-                case ARRAY_HETERO:  // Lft = INT, Rht = HETERO
-                    // Because a HETERO array by definition must contain numbers and chars,
-                    //   there's no way a non-HETERO can match it
-                    bRet = FALSE;
+                    // Calculate the common storage type
+                    aplTypeCom2 = aTypePromote[aplTypeLft2][aplTypeRht2];
 
-                    break;
+                    // Convert the left arg to the common type
+                    (*aTypeActPromote[aplTypeLft2][aplTypeCom]) (&atLft, 0, &atSubLft);
+                    (*aTypeActPromote[aplTypeRht2][aplTypeCom]) (&atRht, 0, &atSubRht);
 
-                case ARRAY_RAT:     // Lft = INT, Rht = RAT
-                    // Initialize the temp
-                    mpq_init (&aplRatLft);
-
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
+                    // Split cases based upon the immediate type
+                    switch (aplTypeCom2)
                     {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        // Convert the INT to a RAT
-                        mpq_set_sx (&aplRatLft, *((LPAPLINT) lpMemLft)++, 1);
-
-#ifdef RAT_EXACT
-                        if (mpq_cmp    (&aplRatLft,  ((LPAPLRAT) lpMemRht)++         ) NE 0)
-#else
-                        if (mpq_cmp_ct ( aplRatLft, *((LPAPLRAT) lpMemRht)++, fQuadCT) NE 0)
-#endif
-                            bRet = FALSE;
-                    } // End FOR
-
-                    // We no longer need this storage
-                    Myq_clear (&aplRatLft);
-
-                    break;
-
-                case ARRAY_VFP:     // Lft = INT, Rht = VFP
-                    // Initialize the temp
-                    mpfr_init0 (&aplVfpLft);
-
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        // Convert the INT to a VFP
-                        mpfr_set_sx (&aplVfpLft, *((LPAPLINT) lpMemLft)++, MPFR_RNDN);
-
-                        // Compare the two VFPs relative to []CT
-                        bRet = (mpfr_cmp_ct (aplVfpLft, *((LPAPLVFP) lpMemRht)++, fQuadCT) EQ 0);
-                    } // End FOR
-
-                    // We no longer need this storage
-                    Myf_clear (&aplVfpLft);
-
-                    break;
-
-                case ARRAY_BOOL:    // Lft = INT, Rht = BOOL    (Can't happen)
-                defstop
-                    bRet = FALSE;
-
-                    break;
-            } // End SWITCH
-
-            break;
-
-        case ARRAY_FLOAT:           // Lft = FLOAT, Rht = FLOAT/APA/CHAR/HETERO/RAT/VFP
-            // Split cases based upon the right arg's storage type
-            switch (aplTypeRht)
-            {
-                case ARRAY_FLOAT:   // Lft = FLOAT, Rht = FLOAT
-                    // Loop through the elements
-                    for (uDim = 0; bRet &&uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        if (!CompareCT (*((LPAPLFLOAT) lpMemLft)++, *((LPAPLFLOAT) lpMemRht)++, fQuadCT, NULL))
-                            bRet = FALSE;
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_APA:     // Lft = FLOAT, Rht = APA
-#define lpAPA       ((LPAPLAPA) lpMemRht)
-                    // Get the APA parameters
-                    apaOff = lpAPA->Off;
-                    apaMul = lpAPA->Mul;
-#undef  lpAPA
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        if (!CompareCT (*((LPAPLFLOAT) lpMemLft)++, (APLFLOAT) (apaOff + apaMul * uDim), fQuadCT, NULL))
-                            bRet = FALSE;
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_CHAR:    // Lft = FLOAT, Rht = CHAR
-                    bRet = FALSE;
-
-                    break;
-
-                case ARRAY_HETERO:  // Lft = FLOAT, Rht = HETERO
-                    // Because a HETERO array by definition must contain numbers and chars,
-                    //   there's no way a non-HETERO can match it
-                    bRet = FALSE;
-
-                    break;
-
-                case ARRAY_RAT:     // Lft = FLOAT, Rht = RAT
-                    // Initialize the temps
-                    mpfr_init0 (&aplVfpLft);
-                    mpfr_init0 (&aplVfpRht);
-
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        // Convert the RAT to a VFP
-                        mpfr_set_d (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++, MPFR_RNDN);
-
-                        // Convert the FLOAT to a VFP
-                        mpfr_set_q (&aplVfpRht,  ((LPAPLRAT)   lpMemRht)++, MPFR_RNDN);
-
-                        // Compare the two VFPs relative to []CT
-                        bRet = (mpfr_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT) EQ 0);
-                    } // End FOR
-
-                    // We no longer need this storage
-                    Myf_clear (&aplVfpRht);
-                    Myf_clear (&aplVfpLft);
-
-                    break;
-
-                case ARRAY_VFP:     // Lft = FLOAT, Rht = VFP
-                    // Initialize the temp
-                    mpfr_init0 (&aplVfpLft);
-
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        // Convert the FLOAT to a VFP
-                        mpfr_set_d (&aplVfpLft, *((LPAPLFLOAT) lpMemLft)++, MPFR_RNDN);
-
-                        // Compare the two VFPs relative to []CT
-                        bRet = (mpfr_cmp_ct (aplVfpLft, *((LPAPLVFP) lpMemRht)++, fQuadCT) EQ 0);
-                    } // End FOR
-
-                    // We no longer need this storage
-                    Myf_clear (&aplVfpLft);
-
-                    break;
-
-                case ARRAY_BOOL:    // Lft = FLOAT, Rht = BOOL  (Can't happen)
-                case ARRAY_INT:     // Lft = FLOAT, Rht = INT   (Can't happen)
-                defstop
-                    bRet = FALSE;
-
-                    break;
-            } // End SWITCH
-
-            break;
-
-        case ARRAY_APA:             // Lft = APA, Rht = APA/CHAR/HETERO/RAT/VFP
-#define lpAPA       ((LPAPLAPA) lpMemLft)
-            // Get the APA parameters
-            apaOff = lpAPA->Off;
-            apaMul = lpAPA->Mul;
-#undef  lpAPA
-            // Split cases based upon the right arg's storage type
-            switch (aplTypeRht)
-            {
-                case ARRAY_APA:     // Lft = APA, Rht = APA
-                    // If the args are empty, they're equal
-                    if (aplNELMLft EQ 0)
-                        break;
-
-                    // Compare the APA offsets and multipliers
-#define lpAPA       ((LPAPLAPA) lpMemRht)
-                    bRet = ((apaOff EQ lpAPA->Off)
-                         && (apaMul EQ lpAPA->Mul));
-
-                    break;
-#undef  lpAPA
-                case ARRAY_CHAR:    // Lft = APA, Rht = CHAR
-                    bRet = FALSE;
-
-                    break;
-
-                case ARRAY_HETERO:  // Lft = APA, Rht = HETERO
-                    // Because a HETERO array by definition must contain numbers and chars,
-                    //   there's no way a non-HETERO can match it
-                    bRet = FALSE;
-
-                    break;
-
-                case ARRAY_RAT:     // Lft = APA, Rht = RAT
-                    // Initialize the temp
-                    mpq_init (&aplRatLft);
-
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        // Convert the INT to a RAT
-                        mpq_set_sx (&aplRatLft, apaOff + apaMul * uDim, 1);
-
-#ifdef RAT_EXACT
-                        if (mpq_cmp    (&aplRatLft,  ((LPAPLRAT) lpMemRht)++         ) NE 0)
-#else
-                        if (mpq_cmp_ct ( aplRatLft, *((LPAPLRAT) lpMemRht)++, fQuadCT) NE 0)
-#endif
-                            bRet = FALSE;
-                    } // End FOR
-
-                    // We no longer need this storage
-                    Myq_clear (&aplRatLft);
-
-                    break;
-
-                case ARRAY_VFP:     // Lft = APA, Rht = VFP
-                    // Initialize the temp
-                    mpfr_init0 (&aplVfpLft);
-
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        // Convert the APA to a VFP
-                        mpfr_set_sx (&aplVfpLft, apaOff + apaMul * uDim, MPFR_RNDN);
-
-                        // Compare the two VFPs relative to []CT
-                        bRet = (mpfr_cmp_ct (aplVfpLft, *((LPAPLVFP) lpMemRht)++, fQuadCT) EQ 0);
-                    } // End FOR
-
-                    // We no longer need this storage
-                    Myf_clear (&aplVfpLft);
-
-                    break;
-
-                case ARRAY_BOOL:    // Lft = APA, Rht = BOOL    (Can't happen)
-                case ARRAY_INT:     // Lft = APA, Rht = INT     (Can't happen)
-                case ARRAY_FLOAT:   // Lft = APA, Rht = FLOAT   (Can't happen)
-                defstop
-                    bRet = FALSE;
-
-                    break;
-            } // End SWITCH
-
-            break;
-
-        case ARRAY_CHAR:            // Lft = CHAR, Rht = CHAR/HETERO/RAT/VFP
-            // Split cases based upon the right arg's storage type
-            switch (aplTypeRht)
-            {
-                case ARRAY_CHAR:    // Lft = CHAR, Rht = CHAR
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        if (*((LPAPLCHAR) lpMemLft)++ NE *((LPAPLCHAR) lpMemRht)++)
-                            bRet = FALSE;
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_HETERO:  // Lft = CHAR, Rht = HETERO
-                    // Because a HETERO array by definition must contain numbers and chars,
-                    //   there's no way a non-HETERO can match it
-                    bRet = FALSE;
-
-                    break;
-
-                case ARRAY_RAT:     // Lft = CHAR, Rht = RAT
-                case ARRAY_VFP:     // Lft = CHAR, Rht = VFP
-                    bRet = FALSE;
-
-                    break;
-
-                case ARRAY_BOOL:    // Lft = CHAR, Rht = BOOL   (Can't happen)
-                case ARRAY_INT:     // Lft = CHAR, Rht = INT    (Can't happen)
-                case ARRAY_FLOAT:   // Lft = CHAR, Rht = FLOAT  (Can't happen)
-                case ARRAY_APA:     // Lft = CHAR, Rht = APA    (Can't happen)
-                defstop
-                    bRet = FALSE;
-
-                    break;
-            } // End SWITCH
-
-            break;
-
-        case ARRAY_HETERO:          // Lft = HETERO
-            // Initialize the temps
-            mpq_init (&aplRatLft);
-            mpq_init (&aplRatRht);
-            mpfr_init0 (&aplVfpLft);
-            mpfr_init0 (&aplVfpRht);
-
-            // Split cases based upon the right arg's storage type
-            switch (aplTypeRht)
-            {
-                case ARRAY_HETERO:  // Lft = HETERO, Rht = HETERO
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        // Get the next values and type
-                        aplTypeLft = GetNextHetero (lpMemLft, uDim, &aplIntegerLft, &aplFloatLft, &aplCharLft, &lpSymGlbLft);
-                        aplTypeRht = GetNextHetero (lpMemRht, uDim, &aplIntegerRht, &aplFloatRht, &aplCharRht, &lpSymGlbRht);
-
-                        // Split cases based upon the left hetero's storage type
-                        switch (aplTypeLft)
-                        {
-                            case ARRAY_BOOL:            // Lft = HETERO:BOOL,  Rht = HETERO:BOOL/INT/FLOAT/CHAR/RAT/VFP
-                            case ARRAY_INT:             // Lft = HETERO:INT,   Rht = HETERO:BOOL/INT/FLOAT/CHAR/RAT/VFP
-                                // Split cases based upon the right hetero's storage type
-                                switch (aplTypeRht)
-                                {
-                                    case ARRAY_BOOL:    // Lft = HETERO:BOOL,  Rht = HETERO:BOOL
-                                    case ARRAY_INT:     // Lft = HETERO:BOOL,  Rht = HETERO:INT
-                                        if (aplIntegerLft NE aplIntegerRht)
-                                            bRet = FALSE;
-                                        break;
-
-                                    case ARRAY_FLOAT:   // Lft = HETERO:BOOL,  Rht = HETERO:FLOAT
-                                        if (!CompareCT ((APLFLOAT) aplIntegerLft, aplFloatRht, fQuadCT, NULL))
-                                            bRet = FALSE;
-                                        break;
-
-                                    case ARRAY_CHAR:    // Lft = HETERO:BOOL,  Rht = HETERO:CHAR
-                                        bRet = FALSE;
-
-                                        break;
-
-                                    case ARRAY_RAT:     // Lft = HETERO:BOOL,  Rht = HETERO:RAT
-                                        mpq_set_sx (&aplRatLft, aplIntegerLft, 1);
-
-#ifdef RAT_EXACT
-                                        if (mpq_cmp    (&aplRatLft,  (LPAPLRAT) lpSymGlbRht         ) NE 0)
-#else
-                                        if (mpq_cmp_ct ( aplRatLft, *(LPAPLRAT) lpSymGlbRht, fQuadCT) NE 0)
-#endif
-                                            bRet = FALSE;
-                                        break;
-
-                                    case ARRAY_VFP:     // Lft = HETERO:BOOL,  Rht = HETERO:VFP
-                                        mpfr_set_sx (&aplVfpLft, aplIntegerLft, MPFR_RNDN);
-
-                                        if (mpfr_cmp_ct (aplVfpLft, *(LPAPLVFP) lpSymGlbRht, fQuadCT) NE 0)
-                                            bRet = FALSE;
-                                        break;
-
-                                    defstop
-                                        bRet = FALSE;
-                                } // End SWITCH
-
-                                break;
-
-                            case ARRAY_FLOAT:           // Lft = HETERO:FLOAT, Rht = HETERO:BOOL/INT/FLOAT/CHAR/RAT/VFP
-                                // Split cases based upon the right hetero's storage type
-                                switch (aplTypeRht)
-                                {
-                                    case ARRAY_BOOL:    // Lft = HETERO:FLOAT, Rht = HETERO:BOOL
-                                    case ARRAY_INT:     // Lft = HETERO:FLOAT, Rht = HETERO:INT
-                                        if (!CompareCT (aplFloatLft, (APLFLOAT) aplIntegerRht, fQuadCT, NULL))
-                                            bRet = FALSE;
-                                        break;
-
-                                    case ARRAY_FLOAT:   // Lft = HETERO:FLOAT, Rht = HETERO:FLOAT
-                                        if (!CompareCT (aplFloatLft, aplFloatRht, fQuadCT, NULL))
-                                            bRet = FALSE;
-                                        break;
-
-                                    case ARRAY_CHAR:    // Lft = HETERO:FLOAT, Rht = HETERO:CHAR
-                                        bRet = FALSE;
-
-                                        break;
-
-                                    case ARRAY_RAT:     // Lft = HETERO:FLOAT, Rht = HETERO:RAT
-                                        mpfr_set_d (&aplVfpLft, aplFloatLft, MPFR_RNDN);
-                                        mpfr_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
-
-                                        if (mpfr_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT) NE 0)
-                                            bRet = FALSE;
-                                        break;
-
-                                    case ARRAY_VFP:     // Lft = HETERO:FLOAT, Rht = HETERO:VFP
-                                        mpfr_set_d (&aplVfpLft, aplFloatLft, MPFR_RNDN);
-
-                                        if (mpfr_cmp_ct (aplVfpLft, *(LPAPLVFP) lpSymGlbRht, fQuadCT) NE 0)
-                                            bRet = FALSE;
-                                        break;
-
-                                    defstop
-                                        bRet = FALSE;
-                                } // End SWITCH
-
-                                break;
-
-                            case ARRAY_CHAR:            // Lft = HETERO:CHAR,  Rht = HETERO:BOOL/INT/FLOAT/CHAR/RAT/VFP
-                                // Split cases based upon the right hetero's storage type
-                                switch (aplTypeRht)
-                                {
-                                    case ARRAY_BOOL:    // Lft = HETERO:CHAR,  Rht = HETERO:BOOL
-                                    case ARRAY_INT:     // Lft = HETERO:CHAR,  Rht = HETERO:INT
-                                    case ARRAY_FLOAT:   // Lft = HETERO:CHAR,  Rht = HETERO:FLOAT
-                                    case ARRAY_RAT:     // Lft = HETERO:CHAR,  Rht = HETERO:RAT
-                                    case ARRAY_VFP:     // Lft = HETERO:CHAR,  Rht = HETERO:VFP
-                                        bRet = FALSE;
-
-                                        break;
-
-                                    case ARRAY_CHAR:    // Lft = HETERO:CHAR,  Rht = HETERO:CHAR
-                                        if (aplCharLft NE aplCharRht)
-                                            bRet = FALSE;
-                                        break;
-
-                                    defstop
-                                        bRet = FALSE;
-                                } // End SWITCH
-
-                                break;
-
-                            case ARRAY_RAT:             // Lft = HETERO:RAT, Rht = HETERO:BOOL/INT/FLOAT/CHAR/RAT/VFP
-                                // Split cases based upon the right hetero's storage type
-                                switch (aplTypeRht)
-                                {
-                                    case ARRAY_BOOL:    // Lft = HETERO:RAT,  Rht = HETERO:BOOL
-                                    case ARRAY_INT:     // Lft = HETERO:RAT,  Rht = HETERO:INT
-                                        mpq_set_sx (&aplRatRht, aplIntegerRht, 1);
-
-#ifdef RAT_EXACT
-                                        if (mpq_cmp    ( (LPAPLRAT) lpSymGlbLft, &aplRatRht         ) NE 0)
-#else
-                                        if (mpq_cmp_ct (*(LPAPLRAT) lpSymGlbLft,  aplRatRht, fQuadCT) NE 0)
-#endif
-                                            bRet = FALSE;
-                                        break;
-
-                                    case ARRAY_FLOAT:   // Lft = HETERO:RAT,  Rht = HETERO:FLOAT
-                                        mpfr_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
-                                        mpfr_set_d (&aplVfpRht, aplFloatRht, MPFR_RNDN);
-
-                                        if (mpfr_cmp_ct (aplVfpLft, aplVfpRht, fQuadCT) NE 0)
-                                            bRet = FALSE;
-                                        break;
-
-                                    case ARRAY_CHAR:    // Lft = HETERO:RAT,  Rht = HETERO:CHAR
-                                        bRet = FALSE;
-
-                                        break;
-
-                                    case ARRAY_RAT:     // Lft = HETERO:RAT,  Rht = HETERO:RAT
-#ifdef RAT_EXACT
-                                        if (mpq_cmp    ( (LPAPLRAT) lpSymGlbLft,  (LPAPLRAT) lpSymGlbRht         ) NE 0)
-#else
-                                        if (mpq_cmp_ct (*(LPAPLRAT) lpSymGlbLft, *(LPAPLRAT) lpSymGlbRht, fQuadCT) NE 0)
-#endif
-                                            bRet = FALSE;
-                                        break;
-
-                                    case ARRAY_VFP:     // Lft = HETERO:RAT,  Rht = HETERO:VFP
-                                        mpfr_set_q (&aplVfpLft, (LPAPLRAT) lpSymGlbLft, MPFR_RNDN);
-
-                                        if (mpfr_cmp_ct (aplVfpLft, *(LPAPLVFP) lpSymGlbRht, fQuadCT) NE 0)
-                                            bRet = FALSE;
-                                        break;
-
-                                    defstop
-                                        bRet = FALSE;
-                                } // End SWITCH
-
-                                break;
-
-                            case ARRAY_VFP:             // Lft = HETERO:VFP, Rht = HETERO:BOOL/INT/FLOAT/CHAR/RAT/VFP
-                                // Split cases based upon the right hetero's storage type
-                                switch (aplTypeRht)
-                                {
-                                    case ARRAY_BOOL:    // Lft = HETERO:VFP,  Rht = HETERO:BOOL
-                                    case ARRAY_INT:     // Lft = HETERO:VFP,  Rht = HETERO:INT
-                                        mpfr_set_sx (&aplVfpRht, aplIntegerRht, MPFR_RNDN);
-
-                                        if (mpfr_cmp_ct (*(LPAPLVFP) lpSymGlbLft, aplVfpRht, fQuadCT) NE 0)
-                                            bRet = FALSE;
-                                        break;
-
-                                    case ARRAY_FLOAT:   // Lft = HETERO:VFP,  Rht = HETERO:FLOAT
-                                        mpfr_set_d (&aplVfpRht, aplFloatRht, MPFR_RNDN);
-
-                                        if (mpfr_cmp_ct (*(LPAPLVFP) lpSymGlbLft, aplVfpRht, fQuadCT) NE 0)
-                                            bRet = FALSE;
-                                        break;
-
-                                    case ARRAY_CHAR:    // Lft = HETERO:VFP,  Rht = HETERO:CHAR
-                                        bRet = FALSE;
-
-                                        break;
-
-                                    case ARRAY_RAT:     // Lft = HETERO:VFP,  Rht = HETERO:RAT
-                                        mpfr_set_q (&aplVfpRht, (LPAPLRAT) lpSymGlbRht, MPFR_RNDN);
-
-                                        if (mpfr_cmp_ct (*(LPAPLVFP) lpSymGlbLft, aplVfpRht, fQuadCT) NE 0)
-                                            bRet = FALSE;
-                                        break;
-
-                                    case ARRAY_VFP:     // Lft = HETERO:VFP,  Rht = HETERO:VFP
-                                        if (mpfr_cmp_ct (*(LPAPLVFP) lpSymGlbLft, *(LPAPLVFP) lpSymGlbRht, fQuadCT) NE 0)
-                                            bRet = FALSE;
-                                        break;
-
-                                    defstop
-                                        bRet = FALSE;
-                                } // End SWITCH
-
-                                break;
-
-                            defstop
-                                bRet = FALSE;
-                        } // End SWITCH
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_RAT:     // Lft = HETERO, Rht = RAT
-                case ARRAY_VFP:     // Lft = HETERO, Rht = VFP
-                    // Because a HETERO array by definition must contain numbers and chars,
-                    //   there's no way a non-HETERO can match it
-                    bRet = FALSE;
-
-                    break;
-
-                defstop
-                    bRet = FALSE;
-
-                    break;
-            } // End SWITCH
-
-            // We no longer need this storage
-            Myf_clear (&aplVfpRht);
-            Myf_clear (&aplVfpLft);
-            Myq_clear (&aplRatRht);
-            Myq_clear (&aplRatLft);
-
-            break;
-
-        case ARRAY_RAT:             // Lft = RAT, Rht = RAT/VFP
-            // Initialize the temps
-            mpq_init (&aplRatLft);
-            mpq_init (&aplRatRht);
-            mpfr_init0 (&aplVfpLft);
-            mpfr_init0 (&aplVfpRht);
-
-            // Split cases based upon the right arg's storage type
-            switch (aplTypeRht)
-            {
-                case ARRAY_RAT:     // Lft = RAT, Rht = RAT
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-#ifdef RAT_EXACT
-                        if (mpq_cmp    ( ((LPAPLRAT) lpMemLft)++,  ((LPAPLRAT) lpMemRht)++         ) NE 0)
-#else
-                        if (mpq_cmp_ct (*((LPAPLRAT) lpMemLft)++, *((LPAPLRAT) lpMemRht)++, fQuadCT) NE 0)
-#endif
-                            bRet = FALSE;
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_VFP:     // Lft = RAT, Rht = VFP
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        mpfr_set_q (&aplVfpLft, ((LPAPLRAT) lpMemLft)++, MPFR_RNDN);
-
-                        if (mpfr_cmp_ct (aplVfpLft, *((LPAPLVFP) lpMemRht)++, fQuadCT) NE 0)
-                            bRet = FALSE;
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_BOOL:    // Lft = RAT, Rht = BOOL
-                case ARRAY_INT:     // Lft = RAT, Rht = INT
-                case ARRAY_FLOAT:   // Lft = RAT, Rht = FLOAT
-                case ARRAY_CHAR:    // Lft = RAT, Rht = CHAR
-                case ARRAY_APA:     // Lft = RAT, Rht = APA
-                defstop
-                    break;
-            } // End SWITCH
-
-            // We no longer need this storage
-            Myf_clear (&aplVfpRht);
-            Myf_clear (&aplVfpLft);
-            Myq_clear (&aplRatRht);
-            Myq_clear (&aplRatLft);
-
-            break;
-
-        case ARRAY_VFP:             // Lft = VFP, Rht = VFP
-            // Split cases based upon the right arg's storage type
-            switch (aplTypeRht)
-            {
-                case ARRAY_VFP:     // Lft = VFP, Rht = VFP
-                    // Loop through the elements
-                    for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
-                    {
-                        // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
-                            goto ERROR_EXIT;
-
-                        if (mpfr_cmp_ct (*((LPAPLVFP) lpMemLft)++, *((LPAPLVFP) lpMemRht)++, fQuadCT) NE 0)
-                            bRet = FALSE;
-                    } // End FOR
-
-                    break;
-
-                case ARRAY_BOOL:    // Lft = VFP, Rht = BOOL
-                case ARRAY_INT:     // Lft = VFP, Rht = INT
-                case ARRAY_FLOAT:   // Lft = VFP, Rht = FLOAT
-                case ARRAY_CHAR:    // Lft = VFP, Rht = CHAR
-                case ARRAY_APA:     // Lft = VFP, Rht = APA
-                case ARRAY_RAT:     // Lft = VFP, Rht = RAT
-                defstop
-                    break;
-            } // End SWITCH
-
-            break;
-
-        defstop
-            bRet = FALSE;
-
-            break;
-    } // End SWITCH
+                        case ARRAY_BOOL:
+                            // Compare 'em
+                            bRet = atSubLft.aplBoolean EQ atSubRht.aplBoolean;
+
+                            break;
+
+                        case ARRAY_INT:
+                            // Compare 'em
+                            bRet = atSubLft.aplInteger EQ atSubRht.aplInteger;
+
+                            break;
+
+                        case ARRAY_FLOAT:
+                            // Compare 'em
+                            bRet = atSubLft.aplFloat   EQ atSubRht.aplFloat  ;
+
+                            break;
+
+                        case ARRAY_HC2I:
+                        case ARRAY_HC4I:
+                        case ARRAY_HC8I:
+                        case ARRAY_HC2F:
+                        case ARRAY_HC4F:
+                        case ARRAY_HC8F:
+                        case ARRAY_RAT:
+                        case ARRAY_HC2R:
+                        case ARRAY_HC4R:
+                        case ARRAY_HC8R:
+                        case ARRAY_VFP:
+                        case ARRAY_HC2V:
+                        case ARRAY_HC4V:
+                        case ARRAY_HC8V:
+                        defstop
+                            break;
+                    } // End SWITCH
+                } // End IF/ELSE
+
+                break;
+            } // End ARRAY_HETERO
+
+            case ARRAY_CHAR:
+                bRet = (atLft.aplChar EQ atRht.aplChar);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // Free the old atLft & atRht
+        (*aTypeFree[aplTypeCom]) (&atLft, 0);
+        (*aTypeFree[aplTypeCom]) (&atRht, 0);
+    } // End FOR
 
     goto NORMAL_EXIT;
 
 ERROR_EXIT:
     bRet = -1;
 NORMAL_EXIT:
-    // We no longer need this storage
-    Myq_clear (&aplRatLft);
-    Myq_clear (&aplRatRht);
-    Myf_clear (&aplVfpLft);
-    Myf_clear (&aplVfpRht);
-
     return bRet;
 } // End PrimFnDydEqualUnderbarSimpleOrd
 
@@ -1599,15 +834,15 @@ NORMAL_EXIT:
 //***************************************************************************
 
 UBOOL PrimFnDydEqualUnderbarSimpleUnord
-    (LPVOID   lpMemLft,         // Ptr to left arg header
+    (LPVOID   lpMemHdrLft,      // Ptr to left arg header
      APLSTYPE aplTypeLft,       // Left arg storage type
      APLNELM  aplNELMLft,       // ...      NELM
      APLRANK  aplRankLft,       // ...      rank
-     LPVOID   lpMemRht,         // Ptr to right arg header
+     LPVOID   lpMemHdrRht,      // Ptr to right arg header
      APLSTYPE aplTypeRht,       // Right arg storage type
      APLNELM  aplNELMRht,       // ...       NELM
      APLRANK  aplRankRht,       // ...       rank
-     UBOOL    bHeader,          // TRUE iff lpMemLft/Rht point to header
+     UBOOL    bHeader,          // TRUE iff lpMemHdrLft/Rht point to header
                                 //   otherwise they point to data
      LPUBOOL  lpbCtrlBreak)     // Ptr to Ctrl-Break flag
 
@@ -1618,12 +853,12 @@ UBOOL PrimFnDydEqualUnderbarSimpleUnord
     //    of the two (Simple Homogeneous < Simple Heterogeneous < Nested),
     //    and within Simple Homogeneous, BOOL < INT < FLOAT < APA < CHAR
     if (uTypeMap[aplTypeLft] > uTypeMap[aplTypeRht])
-        return PrimFnDydEqualUnderbarSimpleOrd (lpMemRht, aplTypeRht, aplNELMRht, aplRankRht,
-                                                lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
+        return PrimFnDydEqualUnderbarSimpleOrd (lpMemHdrRht, aplTypeRht, aplNELMRht, aplRankRht,
+                                                lpMemHdrLft, aplTypeLft, aplNELMLft, aplRankLft,
                                                 bHeader, lpbCtrlBreak);
     else
-        return PrimFnDydEqualUnderbarSimpleOrd (lpMemLft, aplTypeLft, aplNELMLft, aplRankLft,
-                                                lpMemRht, aplTypeRht, aplNELMRht, aplRankRht,
+        return PrimFnDydEqualUnderbarSimpleOrd (lpMemHdrLft, aplTypeLft, aplNELMLft, aplRankLft,
+                                                lpMemHdrRht, aplTypeRht, aplNELMRht, aplRankRht,
                                                 bHeader, lpbCtrlBreak);
 } // End PrimFnDydEqualUnderbarSimpleUnord
 
@@ -1635,32 +870,34 @@ UBOOL PrimFnDydEqualUnderbarSimpleUnord
 //***************************************************************************
 
 UBOOL PrimFnDydEqualUnderbarNested
-    (LPVOID   lpMemLft,         // Ptr to left arg header or data
+    (LPVOID   lpMemHdrLft,      // Ptr to left arg header or data
      APLSTYPE aplTypeLft,       // Left arg storage type
      APLNELM  aplNELMLft,       // ...      NELM
      APLRANK  aplRankLft,       // ...      rank
-     LPVOID   lpMemRht,         // Ptr to right arg header or data
+     LPVOID   lpMemHdrRht,      // Ptr to right arg header or data
      APLSTYPE aplTypeRht,       // Right arg storage type
      APLNELM  aplNELMRht,       // ...       NELM
      APLRANK  aplRankRht,       // ...       rank
-     UBOOL    bHeader,          // TRUE iff lpMemLft/Rht point to header
+     UBOOL    bHeader,          // TRUE iff lpMemHdrLft/Rht point to header
                                 //   otherwise they point to data
      LPUBOOL  lpbCtrlBreak)     // Ptr to Ctrl-Break flag
 
 {
-    APLUINT       uDim;
-    APLNELM       aplNELMLoop;
-    LPVOID        lpMemLft2,
-                  lpMemRht2;
-    APLINT        aplIntegerLft,
-                  aplIntegerRht;
-    APLFLOAT      aplFloatLft,
-                  aplFloatRht;
-    APLCHAR       aplCharLft,
-                  aplCharRht;
-    UINT          ptrType;
-    UBOOL         bRet = TRUE;
-    APLFLOAT      fQuadCT;          // []CT
+    APLUINT           uDim;
+    APLNELM           aplNELMLoop;
+    LPVARARRAY_HEADER lpMemHdrLft2,     // Ptr to left arg (secondary) header
+                      lpMemHdrRht2;     // ...    right ...
+    LPVOID            lpMemLft,         // Ptr to left arg global memory
+                      lpMemRht;         // ...    right ...
+    APLINT            aplIntegerLft,
+                      aplIntegerRht;
+    APLFLOAT          aplFloatLft,
+                      aplFloatRht;
+    APLCHAR           aplCharLft,
+                      aplCharRht;
+    UINT              ptrType;
+    UBOOL             bRet = TRUE;
+    APLFLOAT          fQuadCT;          // []CT
 
     // Get the current value of []CT
     fQuadCT = GetQuadCT ();
@@ -1679,18 +916,23 @@ UBOOL PrimFnDydEqualUnderbarNested
     // Save as loop limit
     aplNELMLoop = aplNELMLft;
 
-    // If lpMemLft/Rht point to their respective headers, ...
+    // If lpMemHdrLft/Rht point to their respective headers, ...
     if (bHeader)
     {
         // Skip over the headers to the dimensions (data if scalar)
-        lpMemLft = VarArrayBaseToDim (lpMemLft);
-        lpMemRht = VarArrayBaseToDim (lpMemRht);
+        lpMemLft = VarArrayBaseToDim (lpMemHdrLft);
+        lpMemRht = VarArrayBaseToDim (lpMemHdrRht);
 
         // Ensure the dimensions are the same
         for (uDim = 0; uDim < aplRankLft; uDim++)
         if (*((LPAPLDIM) lpMemLft)++ NE *((LPAPLDIM) lpMemRht)++)
             return FALSE;
-    } // End IF
+    } else
+    {
+        // Point to the data
+        lpMemLft = lpMemHdrLft;
+        lpMemRht = lpMemHdrRht;
+    } // End IF/ELSE
 
     // lpMemLft and lpMemRht now point to the data
 
@@ -1727,10 +969,10 @@ UBOOL PrimFnDydEqualUnderbarNested
                 hGlbSub = *(LPAPLNESTED) lpMemLft;
 
                 // Lock the memory to get a ptr to it
-                lpMemLft = MyGlobalLock (hGlbSub);
+                lpMemHdrLft = MyGlobalLock (hGlbSub);
 
                 // Skip over the header and dimensions to the data
-                lpMemLft = VarArrayDataFmBase (lpMemLft);
+                lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
 
                 // Point the other to its data
                 lpMemOth = &(*(LPAPLHETERO) lpMemRht)->stData.stLongest;
@@ -1753,10 +995,10 @@ UBOOL PrimFnDydEqualUnderbarNested
                 hGlbSub = *(LPAPLNESTED) lpMemRht;
 
                 // Lock the memory to get a ptr to it
-                lpMemRht = MyGlobalLock (hGlbSub);
+                lpMemHdrRht = MyGlobalLock (hGlbSub);
 
                 // Skip over the header and dimensions to the data
-                lpMemRht = VarArrayDataFmBase (lpMemRht);
+                lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
                 // Point the other to its data
                 lpMemOth = &(*(LPAPLHETERO) lpMemLft)->stData.stLongest;
@@ -1825,16 +1067,16 @@ UBOOL PrimFnDydEqualUnderbarNested
                     return FALSE;
 
                 // Lock the memory to get a ptr to it
-                lpMemLft2 = MyGlobalLock (ClrPtrTypeInd (lpMemLft));
-                lpMemRht2 = MyGlobalLock (ClrPtrTypeInd (lpMemRht));
+                lpMemHdrLft2 = MyGlobalLock (ClrPtrTypeInd (lpMemLft));
+                lpMemHdrRht2 = MyGlobalLock (ClrPtrTypeInd (lpMemRht));
 
                 // Split based upon Simple vs. Hetero vs. Nested
                 switch (2 * IsNested (aplTypeLft)
                       + 1 * IsNested (aplTypeRht))
                 {
                     case 2 * 0 + 1 * 0:     // Lft = Simple, Rht = Simple
-                        bRet = PrimFnDydEqualUnderbarSimpleUnord (lpMemRht2, aplTypeRht, aplNELMRht, aplRankRht,
-                                                                  lpMemLft2, aplTypeLft, aplNELMLft, aplRankLft,
+                        bRet = PrimFnDydEqualUnderbarSimpleUnord (lpMemHdrRht2, aplTypeRht, aplNELMRht, aplRankRht,
+                                                                  lpMemHdrLft2, aplTypeLft, aplNELMLft, aplRankLft,
                                                                   TRUE, lpbCtrlBreak);
                         break;
 
@@ -1845,8 +1087,8 @@ UBOOL PrimFnDydEqualUnderbarNested
                         break;
 
                     case 2 * 1 + 1 * 1:     // Lft = Nested, Rht = Nested
-                        bRet = PrimFnDydEqualUnderbarNested (lpMemLft2, aplTypeLft, aplNELMLft, aplRankLft,
-                                                             lpMemRht2, aplTypeRht, aplNELMRht, aplRankRht,
+                        bRet = PrimFnDydEqualUnderbarNested (lpMemHdrLft2, aplTypeLft, aplNELMLft, aplRankLft,
+                                                             lpMemHdrRht2, aplTypeRht, aplNELMRht, aplRankRht,
                                                              TRUE, lpbCtrlBreak);
                         break;
 
@@ -1855,8 +1097,8 @@ UBOOL PrimFnDydEqualUnderbarNested
                 } // End SWITCH
 
                 // We no longer need these ptrs
-                MyGlobalUnlock (ClrPtrTypeInd (lpMemLft)); lpMemLft2 = NULL;
-                MyGlobalUnlock (ClrPtrTypeInd (lpMemRht)); lpMemRht2 = NULL;
+                MyGlobalUnlock (ClrPtrTypeInd (lpMemLft)); lpMemHdrLft2 = NULL;
+                MyGlobalUnlock (ClrPtrTypeInd (lpMemRht)); lpMemHdrRht2 = NULL;
 
                 break;
 

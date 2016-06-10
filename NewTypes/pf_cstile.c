@@ -296,34 +296,37 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE      aplTypeRht,       // Right arg storage type
-                  aplTypeRes;       // Result    ...
-    APLNELM       aplNELMRht;       // Right arg NELM
-    APLRANK       aplRankRht;       // Right arg rank
-    HGLOBAL       hGlbRht = NULL,   // Right arg global memory handle
-                  hGlbRes = NULL;   // Result    ...
-    LPVOID        lpMemRht = NULL,  // Ptr to right arg global memory
-                  lpMemRes = NULL;  // Ptr to result    ...
-    LPAPLDIM      lpMemDimRht;      // Ptr to right arg dimensions
-    LPVARARRAY_HEADER lpMemHdrRht;  // Ptr to right arg header
-    APLUINT       aplAxis,          // The (one and only) axis value
-                  uDim,             // Loop counter
-                  uLo,              // ...
-                  uDimLo,           // ...
-                  uAx,              // ...
-                  uDimAx,           // ...
-                  uHi,              // ...
-                  uDimHi,           // ...
-                  uRes,             // ...
-                  uRht;             // ...
-    APLINT        apaOffRht,        // Right arg APA offset
-                  apaMulRht;        // Right arg APA multiplier
-    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
-    APLUINT       ByteRes;          // # bytes in the result
-    UINT          uBitMask,         // Bit mask when looping through Booleans
-                  uBitIndex;        // Bit index ...
-    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+    APLSTYPE          aplTypeRht,       // Right arg storage type
+                      aplTypeRes;       // Result    ...
+    APLNELM           aplNELMRht;       // Right arg NELM
+    APLRANK           aplRankRht;       // Right arg rank
+    HGLOBAL           hGlbRht = NULL,   // Right arg global memory handle
+                      hGlbRes = NULL;   // Result    ...
+    LPVOID            lpMemRht = NULL,  // Ptr to right arg global memory
+                      lpMemRes = NULL;  // Ptr to result    ...
+    LPAPLDIM          lpMemDimRht;      // Ptr to right arg dimensions
+    LPVARARRAY_HEADER lpMemHdrRht,      // Ptr to right arg header
+                      lpMemHdrRes;      // Ptr to result ...
+    APLUINT           aplAxis,          // The (one and only) axis value
+                      uDim,             // Loop counter
+                      uLo,              // ...
+                      uDimLo,           // ...
+                      uAx,              // ...
+                      uDimAx,           // ...
+                      uHi,              // ...
+                      uDimHi,           // ...
+                      uRes,             // ...
+                      uRht;             // ...
+    APLINT            apaOffRht,        // Right arg APA offset
+                      apaMulRht;        // Right arg APA multiplier
+    LPPL_YYSTYPE      lpYYRes = NULL;   // Ptr to the result
+    APLUINT           ByteRes;          // # bytes in the result
+    UINT              uBitMask,         // Bit mask when looping through Booleans
+                      uBitIndex;        // Bit index ...
+    LPPLLOCALVARS     lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+    int               iHCDimRht,        // HC Dimension (1, 2, 4, 8)
+                      i;                // Loop counter
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -377,14 +380,10 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
     } // End IF
 
     // Get right arg's global ptrs
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
-
-    // In case we need it, save a ptr to the right arg hdr
-    lpMemHdrRht = lpMemRht;
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // Skip over the header to the dimensions
-    lpMemRht = VarArrayBaseToDim (lpMemRht);
-    lpMemDimRht = (LPAPLDIM) lpMemRht;
+    lpMemRht = lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
 
     // The type of the result is the same as the
     //   type of the right arg except APA -> INT
@@ -411,9 +410,9 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -428,7 +427,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
 #undef  lpHeader
 
     // Skip over the header to the dimensions
-    lpMemRes = VarArrayBaseToDim (lpMemRes);
+    lpMemRes = VarArrayBaseToDim (lpMemHdrRes);
 
     // Fill in the dimensions
     for (uDim = 0; uDim < aplRankRht; uDim++)
@@ -460,6 +459,9 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
             uDimHi *= lpMemDimRht[uDim];
     } // End IF/ELSE
 
+    // Calculate the HC Dimension
+    iHCDimRht = TranslateArrayTypeToHCDim (aplTypeRht);
+
     // Split cases based upon the right arg's storage type
     switch (aplTypeRht)
     {
@@ -487,6 +489,9 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
             break;
 
         case ARRAY_INT:
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
@@ -498,14 +503,19 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    ((LPAPLINT) lpMemRes)[uDim +                 uAx  * uDimHi] =
-                    ((LPAPLINT) lpMemRht)[uDim + ((uDimAx - 1) - uAx) * uDimHi];
+                    // Loop through the parts
+                    for (i = 0; i < iHCDimRht; i++)
+                        ((LPAPLINT  ) lpMemRes)[i + iHCDimRht * (uDim +                 uAx  * uDimHi)] =
+                        ((LPAPLINT  ) lpMemRht)[i + iHCDimRht * (uDim + ((uDimAx - 1) - uAx) * uDimHi)];
                 } // End FOR
             } // End FOR/FOR
 
             break;
 
         case ARRAY_FLOAT:
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
@@ -517,8 +527,10 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    ((LPAPLFLOAT) lpMemRes)[uDim +                 uAx  * uDimHi] =
-                    ((LPAPLFLOAT) lpMemRht)[uDim + ((uDimAx - 1) - uAx) * uDimHi];
+                    // Loop through the parts
+                    for (i = 0; i < iHCDimRht; i++)
+                        ((LPAPLFLOAT) lpMemRes)[i + iHCDimRht * (uDim +                 uAx  * uDimHi)] =
+                        ((LPAPLFLOAT) lpMemRht)[i + iHCDimRht * (uDim + ((uDimAx - 1) - uAx) * uDimHi)];
                 } // End FOR
             } // End FOR/FOR
 
@@ -597,6 +609,9 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
             break;
 
         case ARRAY_RAT:
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
@@ -608,14 +623,19 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    mpq_init_set (&((LPAPLRAT) lpMemRes)[uDim +                 uAx  * uDimHi],
-                                  &((LPAPLRAT) lpMemRht)[uDim + ((uDimAx - 1) - uAx) * uDimHi]);
+                    // Loop through the parts
+                    for (i = 0; i < iHCDimRht; i++)
+                        mpq_init_set (&((LPAPLRAT) lpMemRes)[i + iHCDimRht * (uDim +                 uAx  * uDimHi)],
+                                      &((LPAPLRAT) lpMemRht)[i + iHCDimRht * (uDim + ((uDimAx - 1) - uAx) * uDimHi)]);
                 } // End FOR
             } // End FOR/FOR
 
             break;
 
         case ARRAY_VFP:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
@@ -627,8 +647,10 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uDim +                 uAx  * uDimHi],
-                                    &((LPAPLVFP) lpMemRht)[uDim + ((uDimAx - 1) - uAx) * uDimHi]);
+                    // Loop through the parts
+                    for (i = 0; i < iHCDimRht; i++)
+                        mpfr_init_copy (&((LPAPLVFP) lpMemRes)[i + iHCDimRht * (uDim +                 uAx  * uDimHi)],
+                                        &((LPAPLVFP) lpMemRht)[i + iHCDimRht * (uDim + ((uDimAx - 1) - uAx) * uDimHi)]);
                 } // End FOR
             } // End FOR/FOR
 
@@ -704,48 +726,50 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE      aplTypeLft,       // Left arg storage type
-                  aplTypeRht,       // Right ...
-                  aplTypeRes;       // Result   ...
-    APLNELM       aplNELMLft,       // Left arg NELM
-                  aplNELMRht;       // Right ...
-    APLRANK       aplRankLft,       // Left arg rank
-                  aplRankRht;       // Right ...
-    HGLOBAL       hGlbLft = NULL,   // Left arg global memory handle
-                  hGlbRht = NULL,   // Right ...
-                  hGlbRes = NULL,   // Result   ...
-                  hGlbRot = NULL;   // Normalized left arg ...
-    LPAPLDIM      lpMemDimLft,      // Ptr to left arg dimensions
-                  lpMemDimRht;      // Ptr to right ...
-    LPVOID        lpMemLft = NULL,  // Ptr to left arg global memory
-                  lpMemRht = NULL,  // Ptr to right ...
-                  lpMemRes = NULL;  // Ptr to result   ...
-    LPVARARRAY_HEADER lpMemHdrRht;  // Ptr to right arg header
-    LPAPLINT      lpMemRot = NULL;  // Ptr to normalized left arg ...
-    UBOOL         bRet = TRUE;      // TRUE iff result is valid
-    APLUINT       aplAxis,          // The (one and only) axis value
-                  ByteRes,          // # bytes in the result
-                  uLo,              // Loop counter
-                  uDimLo,           // ...
-                  uAx,              // ...
-                  uDimAx,           // ...
-                  uHi,              // ...
-                  uDimHi,           // ...
-                  uDim,             // ...
-                  uRes,             // ...
-                  uRht;             // ...
-    APLINT        aplIntegerLft,    // Temporary left arg integer
-                  apaOffLft,        // Left arg APA offset
-                  apaMulLft,        // Left arg APA multiplier
-                  apaOffRht,        // Right arg APA offset
-                  apaMulRht,        // Right arg APA multiplier
-                  aplRot;           //
-    APLLONGEST    aplLongestLft;    // Left arg immediate value
-    LPPL_YYSTYPE  lpYYRes = NULL;   // Ptr to the result
-    UINT          uBitMask,         // Bit mask when looping through Booleans
-                  uBitIndex;        // Bit index ...
-    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+    APLSTYPE          aplTypeLft,       // Left arg storage type
+                      aplTypeRht,       // Right ...
+                      aplTypeRes;       // Result   ...
+    APLNELM           aplNELMLft,       // Left arg NELM
+                      aplNELMRht;       // Right ...
+    APLRANK           aplRankLft,       // Left arg rank
+                      aplRankRht;       // Right ...
+    HGLOBAL           hGlbLft = NULL,   // Left arg global memory handle
+                      hGlbRht = NULL,   // Right ...
+                      hGlbRes = NULL,   // Result   ...
+                      hGlbRot = NULL;   // Normalized left arg ...
+    LPAPLDIM          lpMemDimLft,      // Ptr to left arg dimensions
+                      lpMemDimRht;      // Ptr to right ...
+    LPVOID            lpMemLft = NULL,  // Ptr to left arg global memory
+                      lpMemRht = NULL,  // Ptr to right ...
+                      lpMemRes = NULL;  // Ptr to result   ...
+    LPVARARRAY_HEADER lpMemHdrLft,      // Ptr to left arg header
+                      lpMemHdrRht,      // ...    right ...
+                      lpMemHdrRes;      // ...    result    ...
+    LPAPLINT          lpMemRot = NULL;  // Ptr to normalized left arg ...
+    UBOOL             bRet = TRUE;      // TRUE iff result is valid
+    APLUINT           aplAxis,          // The (one and only) axis value
+                      ByteRes,          // # bytes in the result
+                      uLo,              // Loop counter
+                      uDimLo,           // ...
+                      uAx,              // ...
+                      uDimAx,           // ...
+                      uHi,              // ...
+                      uDimHi,           // ...
+                      uDim,             // ...
+                      uRes,             // ...
+                      uRht;             // ...
+    APLINT            aplIntegerLft,    // Temporary left arg integer
+                      apaOffRht,        // Right arg APA offset
+                      apaMulRht,        // Right arg APA multiplier
+                      aplRot;           //
+    APLLONGEST        aplLongestLft;    // Left arg immediate value
+    LPPL_YYSTYPE      lpYYRes = NULL;   // Ptr to the result
+    UINT              uBitMask,         // Bit mask when looping through Booleans
+                      uBitIndex;        // Bit index ...
+    LPPLLOCALVARS     lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+    int               iHCDimRht,        // HC Dimension (1, 2, 4, 8)
+                      i;                // Loop counter
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -788,11 +812,16 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     } // End IF/ELSE
 
     // Get left and right arg's global ptrs
-    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-                    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
+                    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
-    // In case we need access to the right arg header, save that ptr
-    lpMemHdrRht = lpMemRht;
+    // If the left arg is immediate, ...
+    if (hGlbLft EQ NULL)
+        // Point to the immediate data
+        lpMemLft = &aplLongestLft;
+    else
+        // Skip over the header and dimensions to the data
+        lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
 
     // Scalar or one-element vector left arg matches everything
     if (!(IsScalar (aplRankLft) || IsVectorSing (aplNELMLft, aplRankLft)))
@@ -802,8 +831,8 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
             goto RANK_EXIT;
 
         // Skip over the header to the dimensions
-        lpMemDimRht = VarArrayBaseToDim (lpMemRht);
-        lpMemDimLft = VarArrayBaseToDim (lpMemLft);
+        lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
+        lpMemDimLft = VarArrayBaseToDim (lpMemHdrLft);
 
         // Check for LENGTH ERROR
         for (uDim = 0; uDim < aplRankLft; uDim++)
@@ -813,46 +842,15 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
 
     // Check for DOMAIN ERROR
     if (!IsNumeric (aplTypeLft))
-        goto DOMAIN_EXIT;
+        goto LEFT_DOMAIN_EXIT;
 
     // If the left arg is singleton, get its value
     if (IsSingleton (aplNELMLft))
     {
-        // Split cases based upon the storage type of the left arg
-        switch (aplTypeLft)
-        {
-            case ARRAY_BOOL:
-            case ARRAY_INT:
-            case ARRAY_APA:
-                aplIntegerLft = aplLongestLft;
-
-                break;
-
-            case ARRAY_FLOAT:
-                // Attempt to convert the float to an integer using System []CT
-                aplIntegerLft = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
-                if (!bRet)
-                    goto DOMAIN_EXIT;
-
-                break;
-
-            case ARRAY_RAT:
-                aplIntegerLft = mpq_get_sx ((LPAPLRAT) VarArrayDataFmBase (lpMemLft), &bRet);
-                if (!bRet)
-                    goto DOMAIN_EXIT;
-
-                break;
-
-            case ARRAY_VFP:
-                aplIntegerLft = mpfr_get_sx ((LPAPLVFP) VarArrayDataFmBase (lpMemLft), &bRet);
-                if (!bRet)
-                    goto DOMAIN_EXIT;
-
-                break;
-
-            defstop
-                break;
-        } // End SWITCH
+        // Attempt to convert it to an INT
+        aplIntegerLft = ConvertToInteger_SCT (aplTypeLft, lpMemLft, 0, &bRet);
+        if (!bRet)
+            goto LEFT_DOMAIN_EXIT;
     } else
     // Split cases based upon the left arg's storage type
     {
@@ -882,87 +880,15 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
             //   locking empty storage, so we just NULL the ptrs
             lpMemRot = lpMemRotIni = NULL;
 
-        // Skip over the header and dimensions to the data
-        lpMemLft = VarArrayDataFmBase (lpMemLft);
-
-        // Split cases based upon the left arg storage type
-        switch (aplTypeLft)
+        // Loop through the left arg NELM
+        for (uDim = 0; uDim < aplNELMLft; uDim++)
         {
-            case ARRAY_BOOL:
-                uBitMask = BIT0;
+            // Attempt to convert the left arg items to an INT
+            *lpMemRot++ = ConvertToInteger_SCT (aplTypeLft, lpMemLft, uDim, &bRet);
 
-                for (uDim = 0; uDim < aplNELMLft; uDim++)
-                {
-                    *lpMemRot++ = (uBitMask & *(LPAPLBOOL) lpMemLft) ? TRUE : FALSE;
-
-                    // Shift over the left bit mask
-                    uBitMask <<= 1;
-
-                    // Check for end-of-byte
-                    if (uBitMask EQ END_OF_BYTE)
-                    {
-                        uBitMask = BIT0;            // Start over
-                        ((LPAPLBOOL) lpMemLft)++;   // Skip to next byte
-                    } // End IF
-                } // End IF
-
-                break;
-
-            case ARRAY_INT:
-                for (uDim = 0; uDim < aplNELMLft; uDim++)
-                    *lpMemRot++ = *((LPAPLINT) lpMemLft)++;
-                break;
-
-            case ARRAY_FLOAT:
-                for (uDim = 0; uDim < aplNELMLft; uDim++)
-                {
-                    // Attempt to convert the float to an integer using System []CT
-                    aplIntegerLft = FloatToAplint_SCT (*((LPAPLFLOAT) lpMemLft)++, &bRet);
-                    if (!bRet)
-                        goto DOMAIN_EXIT;
-
-                    *lpMemRot++ = aplIntegerLft;
-                } // End FOR
-
-                break;
-
-            case ARRAY_APA:
-#define lpAPA       ((LPAPLAPA) lpMemLft)
-                // Get the APA parameters
-                apaOffLft = lpAPA->Off;
-                apaMulLft = lpAPA->Mul;
-#undef  lpAPA
-                for (uDim = 0; uDim < aplNELMLft; uDim++)
-                    *lpMemRot++ = apaOffLft + apaMulLft * uDim;
-                break;
-
-            case ARRAY_RAT:
-#define lpMemRat        ((LPAPLRAT) lpMemLft)
-                for (uDim = 0; uDim < aplNELMLft; uDim++)
-                {
-                    // Attempt to convert the RAT to an INT
-                    *lpMemRot++ = mpq_get_sx (lpMemRat++, &bRet);
-                    if (!bRet)
-                        goto DOMAIN_EXIT;
-                } // End FOR
-#undef  lpMemRat
-                break;
-
-            case ARRAY_VFP:
-#define lpMemVfp        ((LPAPLVFP) lpMemLft)
-                for (uDim = 0; uDim < aplNELMLft; uDim++)
-                {
-                    // Attempt to convert the VFP to an INT
-                    *lpMemRot++ = mpfr_get_sx (lpMemVfp++, &bRet);
-                    if (!bRet)
-                        goto DOMAIN_EXIT;
-                } // End FOR
-#undef  lpMemVfp
-                break;
-
-            defstop
-                break;
-        } // End SWITCH
+            if (!bRet)
+                goto LEFT_DOMAIN_EXIT;
+        } // End FOR
 
         // Restore lpMemRot to the start of the block
         lpMemRot = lpMemRotIni;
@@ -1038,9 +964,9 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -1055,8 +981,8 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
 #undef  lpHeader
 
     // Skip over the header to the dimensions
-    lpMemRes = VarArrayBaseToDim (lpMemRes);
-    lpMemDimRht = lpMemRht = VarArrayBaseToDim (lpMemRht);
+    lpMemRes = VarArrayBaseToDim (lpMemHdrRes);
+    lpMemDimRht = lpMemRht = VarArrayBaseToDim (lpMemHdrRht);
 
     if (IsScalar (aplRankRht))
         uDimLo = uDimAx = uDimHi = 1;
@@ -1080,6 +1006,9 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
 
     // lpMemRes now points to the result's data
     // lpMemRht now points to the right arg's data
+
+    // Calculate the HC Dimension
+    iHCDimRht = TranslateArrayTypeToHCDim (aplTypeRht);
 
     // Handle empty nested array results (prototypes)
     if (IsEmpty (aplNELMRht) && IsNested (aplTypeRes))
@@ -1117,6 +1046,9 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
             break;
 
         case ARRAY_INT:
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
@@ -1132,14 +1064,19 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    ((LPAPLINT) lpMemRes)[uDim +                  uAx           * uDimHi] =
-                    ((LPAPLINT) lpMemRht)[uDim + AplModI (uDimAx, uAx + aplRot) * uDimHi];
+                    // Loop through all of the parts
+                    for (i = 0; i < iHCDimRht; i++)
+                        ((LPAPLINT  ) lpMemRes)[i + iHCDimRht * (uDim +                  uAx           * uDimHi)] =
+                        ((LPAPLINT  ) lpMemRht)[i + iHCDimRht * (uDim + AplModI (uDimAx, uAx + aplRot) * uDimHi)];
                 } // End FOR
             } // End FOR/FOR
 
             break;
 
         case ARRAY_FLOAT:
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
@@ -1155,8 +1092,10 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    ((LPAPLFLOAT) lpMemRes)[uDim +                  uAx           * uDimHi] =
-                    ((LPAPLFLOAT) lpMemRht)[uDim + AplModI (uDimAx, uAx + aplRot) * uDimHi];
+                    // Loop through all of the parts
+                    for (i = 0; i < iHCDimRht; i++)
+                        ((LPAPLFLOAT) lpMemRes)[i + iHCDimRht * (uDim +                  uAx           * uDimHi)] =
+                        ((LPAPLFLOAT) lpMemRht)[i + iHCDimRht * (uDim + AplModI (uDimAx, uAx + aplRot) * uDimHi)];
                 } // End FOR
             } // End FOR/FOR
 
@@ -1238,6 +1177,9 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
             break;
 
         case ARRAY_RAT:
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
@@ -1253,14 +1195,19 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    mpq_init_set (&((LPAPLRAT) lpMemRes)[uDim +                  uAx           * uDimHi],
-                                  &((LPAPLRAT) lpMemRht)[uDim + AplModI (uDimAx, uAx + aplRot) * uDimHi]);
+                    // Loop through all of the parts
+                    for (i = 0; i < iHCDimRht; i++)
+                        mpq_init_set (&((LPAPLRAT) lpMemRes)[i + iHCDimRht * (uDim +                  uAx           * uDimHi)],
+                                      &((LPAPLRAT) lpMemRht)[i + iHCDimRht * (uDim + AplModI (uDimAx, uAx + aplRot) * uDimHi)]);
                 } // End FOR
             } // End FOR/FOR
 
             break;
 
         case ARRAY_VFP:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
             // Loop through the right arg copying the data to the result
             for (uLo = 0; uLo < uDimLo; uLo++)
             for (uHi = 0; uHi < uDimHi; uHi++)
@@ -1276,8 +1223,10 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uDim +                  uAx           * uDimHi],
-                                    &((LPAPLVFP) lpMemRht)[uDim + AplModI (uDimAx, uAx + aplRot) * uDimHi]);
+                    // Loop through all of the parts
+                    for (i = 0; i < iHCDimRht; i++)
+                        mpfr_init_copy (&((LPAPLVFP) lpMemRes)[i + iHCDimRht * (uDim +                  uAx           * uDimHi)],
+                                        &((LPAPLVFP) lpMemRht)[i + iHCDimRht * (uDim + AplModI (uDimAx, uAx + aplRot) * uDimHi)]);
                 } // End FOR
             } // End FOR/FOR
 
@@ -1309,7 +1258,7 @@ LENGTH_EXIT:
                                lptkLftArg);
     goto ERROR_EXIT;
 
-DOMAIN_EXIT:
+LEFT_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                lptkLftArg);
     goto ERROR_EXIT;

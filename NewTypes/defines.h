@@ -97,6 +97,23 @@
 #define DEF_RATSEP_WS     L"r"          // ...
 #define DEF_VFPSEP         'v'          // ...     VFP        ...
 #define DEF_VFPSEP_WS     L"v"          // ...
+#define DEF_HC2SEP        L'J'          // ...     HC2
+#define DEF_HC2SEP_WS     L"J"          // ...
+#define DEF_HC4SEP        L"i",     \
+                          L"j",     \
+                          L"k"          // ...     Quaternion ...
+#define DEF_HC8SEP        L"i",     \
+                          L"j",     \
+                          L"k",     \
+                          L"l",     \
+                          L"ij",    \
+                          L"jk",    \
+                          L"kl"         // ...     Octonion
+#define GetHC2Sep       (OptionFlags.bJ4i ? DEF_HC2SEP    : L'i')
+#define GetHC2SepWS     (OptionFlags.bJ4i ? DEF_HC2SEP_WS : L"i")
+#define PFMN            &PrimFnMonNonceError_RE
+#define PFDN            &PrimFnDydNonceError_RE
+#define NONCE_RE        RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
 
 // Size of storage areas
 #define DEF_NUM_INITNELM        (     1024)                 // Initial NELM for lpszNum
@@ -140,9 +157,9 @@
   #define DEF_WFORMAT_MAXNELM  (100*1024*1024)              // Maximum ...
   #define DEF_DISPLAY_MAXNELM  (100*1024*1024)              // Maximum ...
 #elif defined (_WIN32)
-  #define DEF_WPTDTEMP_MAXNELM  (2048*1024)                 // Maximum ...
-  #define DEF_WFORMAT_MAXNELM   (4096*1024)                 // Maximum ...
-  #define DEF_DISPLAY_MAXNELM   ( 256*1024)                 // Maximum ...
+  #define DEF_WPTDTEMP_MAXNELM ( 64*1024*1024)              // Maximum ...
+  #define DEF_WFORMAT_MAXNELM  ( 64*1024*1024)              // Maximum ...
+  #define DEF_DISPLAY_MAXNELM  (     256*1024)              // Maximum ...
 #else
   #error Need code for this architecture.
 #endif
@@ -189,6 +206,12 @@
 #define DEF_DISPMPSUF               FALSE
 
 
+// Global Options for HC Preferences
+#define DEF_J4i                     TRUE
+#define DEF_DISP0IMAG               TRUE
+#define DEF_DISPINFIX               TRUE
+
+
 // Range limits for []vars
 #define DEF_RANGELIMIT_CT           TRUE
 #define DEF_RANGELIMIT_FEATURE      TRUE
@@ -202,6 +225,7 @@
 
 // Empty assignment to []vars as Fixed System value (TRUE) or .ini file value (FALSE)
 #define DEF_RESETVARS_CT            FALSE
+#define DEF_RESETVARS_DQ            FALSE
 #define DEF_RESETVARS_DT            FALSE
 #define DEF_RESETVARS_FC            FALSE
 #define DEF_RESETVARS_FEATURE       FALSE
@@ -652,7 +676,7 @@ default:        \
 // Resource debugging size
 //***************************************************************************
 
-#define MAXOBJ  256000
+#define MAXOBJ  (1024*1024)
 
 
 //***************************************************************************
@@ -699,6 +723,38 @@ typedef struct tagCOLORBLEND *LPCOLORBLEND;     // Dummy entry for .pro files on
 
 #define PBM_GETBUDDY            (WM_USER+18)
 #define PBM_SETBUDDY            (WM_USER+19)
+
+
+//***************************************************************************
+//  Residue functions
+//***************************************************************************
+
+#define AplModI     ModHC1I
+#define AplModF     ModHC1F
+#define AplModR     ModHC1R
+#define AplModV     ModHC1V
+
+
+//***************************************************************************
+//  Item Comparisons
+//***************************************************************************
+
+#define CmpCT_F(aplLft,aplRht,fQuadCT,CMP)                      \
+       (flt_cmp_ct   ( aplLft,  aplRht, fQuadCT, FALSE) CMP 0)
+
+#ifdef RAT_EXACT
+    // Compare the two RATs
+#define CmpCT_R(aplLft,aplRht,fQuadCT,CMP)                      \
+        (mpq_cmp     (&aplLft, &aplRht                ) CMP 0)
+#else
+    // Compare the two RATs relative to []CT
+#define CmpCT_R(aplLft,aplRht,fQuadCT,CMP)                      \
+        (mpq_cmp_ct  ( aplLft,  aplRht, fQuadCT       ) CMP 0)
+#endif
+
+#define CmpCT_V(aplLft,aplRht,fQuadCT,CMP)                      \
+        (mpfr_cmp_ct ( aplLft,  aplRht, fQuadCT       ) CMP 0)
+
 
 
 //***************************************************************************

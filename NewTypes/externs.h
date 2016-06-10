@@ -29,6 +29,9 @@
   #define EXTERN extern
 #endif
 
+EXTERN
+UINT nDigitsFPC;            // # decimal digits in []FPC
+
 // Define struct for passing parameters to WM_NCCREATE/WM_CREATE
 //   for the Session Manager
 typedef struct tagSM_CREATESTRUCTW
@@ -161,9 +164,10 @@ typedef enum tagFEATURE_VALUES
 
 typedef enum tagFEATURE_INDICES
 {
-    FEATURENDX_NEGINDICES ,             // 00:  Allow negative indices
-    FEATURENDX_NEG0       ,             // 01:  Allow -0
-    FEATURENDX_LENGTH                   // 02:  # entries in this enum
+    FEATURENDX_NEGINDICES   ,           // 00:  Allow negative indices
+    FEATURENDX_NEG0         ,           // 01:  Allow -0
+    FEATURENDX_HURWITZ      ,           // 02:  Use Hurwitz's Floor instead of McDonnell's
+    FEATURENDX_LENGTH                   // 03:  # entries in this enum
 } FEATURE_INDICES, *LPFEATURE_INDICES;
 
 // Define the minimum/maximum allowable values for []FEATURE
@@ -172,6 +176,7 @@ typedef enum tagFEATURE_INDICES
 
 #define DEF_FEATURE_NEGINDICES  FALSE
 #define DEF_FEATURE_NEG0        FALSE
+#define DEF_FEATURE_HURWITZ     FALSE
 
 typedef struct tagFEATURE_NAMES
 {
@@ -182,8 +187,9 @@ typedef struct tagFEATURE_NAMES
 EXTERN
 APLINT aplDefaultFEATURE[FEATURENDX_LENGTH]  // []FEATURE default values
 #ifdef DEFINE_VALUES
- = {DEF_FEATURE_NEGINDICES,             // 00:  Allow negative indices
-    DEF_FEATURE_NEG0      ,             // 01:  Allow -0
+ = {DEF_FEATURE_NEGINDICES  ,           // 00:  Allow negative indices
+    DEF_FEATURE_NEG0        ,           // 01:  Allow -0
+    DEF_FEATURE_HURWITZ     ,           // 02:  Use Hurwitz's Floor instead of McDonnell's
    }
 #endif
 ;
@@ -191,8 +197,9 @@ APLINT aplDefaultFEATURE[FEATURENDX_LENGTH]  // []FEATURE default values
 EXTERN
 FEATURE_NAMES featNames[FEATURENDX_LENGTH]
 #ifdef DEFINE_VALUES
- = {{FEATURENDX_NEGINDICES, L"Allow Negative Indices"},
-    {FEATURENDX_NEG0      , L"Allow " WS_UTF16_OVERBAR L"0"},
+ = {{FEATURENDX_NEGINDICES  , L"Allow Negative Indices"},
+    {FEATURENDX_NEG0        , L"Allow " WS_UTF16_OVERBAR L"0"},
+    {FEATURENDX_HURWITZ     , L"Use Hurwitz's Floor instead of McDonnell's"},
    }
 #endif
 ;
@@ -212,7 +219,8 @@ HGLOBAL  hGlbQuadALX_CWS     ,          // []ALX     ([]dm)
          hGlbQuadWSID_CWS    ,          // []WSID    (WS_EOS)
          hGlbQuadPR_CWS      ;          // []PR      (L"") (When an empty vector)
 EXTERN
-APLCHAR  cQuadDT_CWS         ;          // []DT
+APLCHAR  cQuadDQ_CWS         ,          // []DQ
+         cQuadDT_CWS         ;          // []DT
 
 EXTERN
 APLFLOAT fQuadCT_CWS         ;          // []CT
@@ -268,6 +276,7 @@ RANGELIMIT bRangeLimit
 typedef struct tagRESET_VARS
 {
     UBOOL CT     :1,
+          DQ     :1,
           DT     :1,
           FC     :1,
           FEATURE:1,
@@ -283,6 +292,7 @@ EXTERN
 RESET_VARS bResetVars
 #ifdef DEFINE_VALUES
  = {DEF_RESETVARS_CT,       // []CT
+    DEF_RESETVARS_DQ,       // []DQ
     DEF_RESETVARS_DT,       // []DT
     DEF_RESETVARS_FC,       // []FC
     DEF_RESETVARS_FEATURE,  // []FEATURE
@@ -1294,12 +1304,12 @@ HIMAGELIST hImageListTC,                // Handle to the common image list for T
            hImageListOW;                // ...                                 OW
 
 // Same order as in ARRAY_TYPES
-// so that BOOL < INT < FLOAT < APA < CHAR < HETERO < NESTED < LIST < RAT < VFP
+// so that BOOL < INT < FLOAT < APA < CHAR < HETERO < NESTED < LIST < RAT < VFP < HCxy
 EXTERN
 UINT uTypeMap[ARRAY_LENGTH]
 #ifdef DEFINE_VALUES
-//  BOOL, INT, FLOAT, CHAR, HETERO, NESTED, LIST, APA, RAT, VFP
- = {   0,   1,     2,    4,      5,      6,    7,   3,   8,   9}
+//  BOOL, INT, FLOAT, CHAR, HETERO, NESTED, LIST, APA, RAT, VFP HC2I HC2F HC2R HC2V HC4I HC4F HC4R HC4V HC8I HC8F HC8R HC8V
+ = {   0,   1,     2,    4,      5,      6,    7,   3,   8,   9,  10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20,  21}
 #endif
 ;
 
@@ -1322,15 +1332,16 @@ typedef enum tagVARIANT_KEYS
 {
     VARIANT_KEY_ALX = 0 ,   // 00:  []ALX
     VARIANT_KEY_CT      ,   // 01:  []CT
-    VARIANT_KEY_DT      ,   // 02:  []DT
-    VARIANT_KEY_ELX     ,   // 03:  []ALX
-    VARIANT_KEY_FC      ,   // 04:  []FC
-    VARIANT_KEY_FEATURE ,   // 05:  []FEATURE
-    VARIANT_KEY_FPC     ,   // 06:  []FPC
-    VARIANT_KEY_IO      ,   // 07:  []IO
-    VARIANT_KEY_PP      ,   // 08:  []PP
-    VARIANT_KEY_RL      ,   // 09:  []PP
-    VARIANT_KEY_LENGTH  ,   // 0A:  # entries
+    VARIANT_KEY_DQ      ,   // 02:  []DQ
+    VARIANT_KEY_DT      ,   // 03:  []DT
+    VARIANT_KEY_ELX     ,   // 04:  []ALX
+    VARIANT_KEY_FC      ,   // 05:  []FC
+    VARIANT_KEY_FEATURE ,   // 06:  []FEATURE
+    VARIANT_KEY_FPC     ,   // 07:  []FPC
+    VARIANT_KEY_IO      ,   // 08:  []IO
+    VARIANT_KEY_PP      ,   // 09:  []PP
+    VARIANT_KEY_RL      ,   // 0A:  []PP
+    VARIANT_KEY_LENGTH  ,   // 0B:  # entries
 } VARIANTKEYS, *LPVARIANTKEYS;
 
 #define VARIANT_KEY_ERROR   VARIANT_KEY_LENGTH
@@ -1348,6 +1359,7 @@ typedef struct tagVARIANT_KEY_STR
 
 UBOOL ValidSetALX_EM     (LPTOKEN, LPTOKEN);
 UBOOL ValidSetCT_EM      (LPTOKEN, LPTOKEN);
+UBOOL ValidSetDQ_EM      (LPTOKEN, LPTOKEN);
 UBOOL ValidSetDT_EM      (LPTOKEN, LPTOKEN);
 UBOOL ValidSetELX_EM     (LPTOKEN, LPTOKEN);
 UBOOL ValidSetFC_EM      (LPTOKEN, LPTOKEN);
@@ -1362,6 +1374,7 @@ VARIANTKEYSTR aVariantKeyStr[VARIANT_KEY_LENGTH]
 #ifdef DEFINE_VALUES
  = {{L"ALX"     , SYSVAR_ALX     , ValidSetALX_EM     },
     {L"CT"      , SYSVAR_CT      , ValidSetCT_EM      },
+    {L"DQ"      , SYSVAR_DQ      , ValidSetDQ_EM      },
     {L"DT"      , SYSVAR_DT      , ValidSetDT_EM      },
     {L"ELX"     , SYSVAR_ELX     , ValidSetELX_EM     },
     {L"FC"      , SYSVAR_FC      , ValidSetFC_EM      },
@@ -1399,30 +1412,31 @@ typedef struct tagSYNTAXCOLORNAME
 EXTERN
 SYNTAXCOLORNAME gSyntaxColorName[SC_LENGTH]
 #ifdef DEFINE_VALUES
- = {{{DEF_SC_GLBNAME    }, L"Global Name"                 },  // 00:  Global Name
-    {{DEF_SC_LCLNAME    }, L"Local Name"                  },  // 01:  Local  ...
-    {{DEF_SC_LABEL      }, L"Label"                       },  // 02:  Label
-    {{DEF_SC_PRIMFCN    }, L"Primitive Function"          },  // 03:  Primitive Function
-    {{DEF_SC_PRIMOP1    }, L"Primitive Monadic Operator"  },  // 04:  Primitive Monadic Operator
-    {{DEF_SC_PRIMOP2    }, L"Primitive Dyadic Operator"   },  // 05:  Primitive Dyadic Operator
-    {{DEF_SC_SYSFCN     }, L"System Function"             },  // 06:  System Function
-    {{DEF_SC_GLBSYSVAR  }, L"Global System Variable"      },  // 07:  Global System Variable
-    {{DEF_SC_LCLSYSVAR  }, L"Local System Variable"       },  // 08:  Local  ...
-    {{DEF_SC_CTRLSTRUC  }, L"Control Structure"           },  // 09:  Control Structure
-    {{DEF_SC_NUMCONST   }, L"Numeric Constant"            },  // 0A:  Numeric constant
-    {{DEF_SC_CHRCONST   }, L"Character Constant"          },  // 0B:  Character constant
-    {{DEF_SC_PNSEP      }, L"Point Notation Separator"    },  // 0C:  Point notation separator
-    {{DEF_SC_COMMENT    }, L"Comment"                     },  // 0D:  Comment
-    {{DEF_SC_LINEDRAWING}, L"Line Drawing Chars"          },  // 0E:  Line drawing chars
-    {{DEF_SC_FCNLINENUMS}, L"Function Line Numbers"       },  // 0F:  Function line numbers
-    {{DEF_SC_MATCHGRP1  }, L"Matched Group Level 1"       },  // 10:  Matched Grouping Symbols [] () {}
-    {{DEF_SC_MATCHGRP2  }, L"Matched Group Level 2"       },  // 11:  Matched Grouping Symbols [] () {}
-    {{DEF_SC_MATCHGRP3  }, L"Matched Group Level 3"       },  // 12:  Matched Grouping Symbols [] () {}
-    {{DEF_SC_MATCHGRP4  }, L"Matched Group Level 4"       },  // 13:  Matched Grouping Symbols [] () {}
-    {{DEF_SC_UNMATCHGRP }, L"Unmatched Group"             },  // 14:  Unmatched Grouping Symbols [] () {} ' "
-    {{DEF_SC_UNNESTED   }, L"Improper Nesting"            },  // 15:  Improperly Nested Grouping Symbols [] () {}
-    {{DEF_SC_UNK        }, L"Unknown Symbols"             },  // 16:  Unknown symbol
-    {{DEF_SC_WINTEXT    }, L"Window Text"                 },  // 17:  Window text
+ = {{{DEF_SC_GLBNAME    }, L"Global Name"                       },  // 00:  Global Name
+    {{DEF_SC_LCLNAME    }, L"Local Name"                        },  // 01:  Local  ...
+    {{DEF_SC_LABEL      }, L"Label"                             },  // 02:  Label
+    {{DEF_SC_PRIMFCN    }, L"Primitive Function"                },  // 03:  Primitive Function
+    {{DEF_SC_PRIMOP1    }, L"Primitive Monadic Operator"        },  // 04:  Primitive Monadic Operator
+    {{DEF_SC_PRIMOP2    }, L"Primitive Dyadic Operator"         },  // 05:  Primitive Dyadic Operator
+    {{DEF_SC_SYSFCN     }, L"System Function"                   },  // 06:  System Function
+    {{DEF_SC_GLBSYSVAR  }, L"Global System Variable"            },  // 07:  Global System Variable
+    {{DEF_SC_LCLSYSVAR  }, L"Local System Variable"             },  // 08:  Local  ...
+    {{DEF_SC_CTRLSTRUC  }, L"Control Structure"                 },  // 09:  Control Structure
+    {{DEF_SC_NUMCONST   }, L"Numeric Constant"                  },  // 0A:  Numeric constant
+    {{DEF_SC_CHRCONST   }, L"Character Constant"                },  // 0B:  Character constant
+    {{DEF_SC_PNSEP      }, L"Point Notation Separator"          },  // 0C:  Point notation separator
+    {{DEF_SC_HCSEP      }, L"Hypercomplex Notation Separator"   },  // 0D:  Hypercomplex notation separator
+    {{DEF_SC_COMMENT    }, L"Comment"                           },  // 0E:  Comment
+    {{DEF_SC_LINEDRAWING}, L"Line Drawing Chars"                },  // 0F:  Line drawing chars
+    {{DEF_SC_FCNLINENUMS}, L"Function Line Numbers"             },  // 10:  Function line numbers
+    {{DEF_SC_MATCHGRP1  }, L"Matched Group Level 1"             },  // 11:  Matched Grouping Symbols [] () {}
+    {{DEF_SC_MATCHGRP2  }, L"Matched Group Level 2"             },  // 12:  Matched Grouping Symbols [] () {}
+    {{DEF_SC_MATCHGRP3  }, L"Matched Group Level 3"             },  // 13:  Matched Grouping Symbols [] () {}
+    {{DEF_SC_MATCHGRP4  }, L"Matched Group Level 4"             },  // 14:  Matched Grouping Symbols [] () {}
+    {{DEF_SC_UNMATCHGRP }, L"Unmatched Group"                   },  // 15:  Unmatched Grouping Symbols [] () {} ' "
+    {{DEF_SC_UNNESTED   }, L"Improper Nesting"                  },  // 16:  Improperly Nested Grouping Symbols [] () {}
+    {{DEF_SC_UNK        }, L"Unknown Symbols"                   },  // 17:  Unknown symbol
+    {{DEF_SC_WINTEXT    }, L"Window Text"                       },  // 18:  Window text
   }
 #endif
 ;
@@ -1453,17 +1467,18 @@ UBOOL gSyntClrBGTrans[SC_LENGTH]
     TRUE,                   // 0A:  Numeric constant
     TRUE,                   // 0B:  Character constant
     TRUE,                   // 0C:  Point notation separator
-    TRUE,                   // 0D:  Comment
-    TRUE,                   // 0E:  Line drawing chars
-    TRUE,                   // 0F:  Function line numbers
-    TRUE,                   // 10:  Matched Grouping Symbols Level 1
-    TRUE,                   // 11:  ...                            2
-    TRUE,                   // 12:  ...                            3
-    TRUE,                   // 13:  ...                            4
-    FALSE,                  // 14:  Unmatched Grouping Symbols
-    FALSE,                  // 15:  Improperly Nested Grouping Symbols
-    FALSE,                  // 16:  Unknown symbol
-    FALSE,                  // 17:  Window background
+    TRUE,                   // 0D:  Hypercomplex notation separator
+    TRUE,                   // 0E:  Comment
+    TRUE,                   // 0F:  Line drawing chars
+    TRUE,                   // 10:  Function line numbers
+    TRUE,                   // 11:  Matched Grouping Symbols Level 1
+    TRUE,                   // 12:  ...                            2
+    TRUE,                   // 13:  ...                            3
+    TRUE,                   // 14:  ...                            4
+    FALSE,                  // 15:  Unmatched Grouping Symbols
+    FALSE,                  // 16:  Improperly Nested Grouping Symbols
+    FALSE,                  // 17:  Unknown symbol
+    FALSE,                  // 18:  Window background
   }
 #endif
 ;
@@ -1729,7 +1744,10 @@ typedef struct tagOPTIONFLAGS
          bViewStatusBar      :1,    // 00400000:  ...      Status Bar is displayed
          bDefDispFcnLineNums :1,    // 00800000:  ...      Display function line #s
          bDispMPSuf:1,       :1,    // 01000000:  ...      Display multi-precision numbers with suffix 'x' or 'v'
-                             :5;    // FE000000:  Available bits
+         bJ4i                :1,    // 02000000:  ...      Use 'J' instead of 'i' as Complex # separator on output
+         bDisp0Imag          :1,    // 04000000:  ...      Display all imaginary parts
+         bDispInfix          :1,    // 08000000:  ...      Display CHO numbers using infix notation
+                             :4;    // F0000000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 // N.B.:  Whenever changing the above struct (OPTIONFLAGS),
@@ -1758,6 +1776,9 @@ OPTIONFLAGS OptionFlags
     DEF_VIEWSTATUSBAR,
     DEF_DISPFCNLINENUMS,
     DEF_DISPMPSUF,
+    DEF_J4i,
+    DEF_DISP0IMAG,
+    DEF_DISPINFIX,
    }
 #endif
 ;
@@ -1935,24 +1956,26 @@ HWND ghDlgCustomize             // Window handle for Customize dialog (NULL = no
 
 typedef struct tagCUSTOMIZE
 {
-    LPWCHAR lpwTitle;
-    UINT    uIDD;
-    UBOOL   bInitialized;
+    LPWCHAR lpwLstTitle,        // Title in Listbox
+            lpwGrpTitle;        // ...      Groupbox (may be NULL in which case use lpwLstTitle)
+    UINT    uIDD;               // IDD_xxx value
+    UBOOL   bInitialized;       // TRUE iff the Groupbox has been initialized
 } CUSTOMIZE, *LPCUSTOMIZE;
 
 EXTERN
 CUSTOMIZE custStruc[]
 #ifdef DEFINE_VALUES
  =
-{   {L"CLEAR WS Values"         , IDD_PROPPAGE_CLEARWS_VALUES   ,  FALSE},  // 00
-    {L"Directories"             , IDD_PROPPAGE_DIRS             ,  FALSE},  // 01
-    {L"Fonts"                   , IDD_PROPPAGE_FONTS            ,  FALSE},  // 02
-    {L"Keyboards"               , IDD_PROPPAGE_KEYBS            ,  FALSE},  // 03
-    {L"Range Limited Vars"      , IDD_PROPPAGE_RANGE_LIMITS     ,  FALSE},  // 04
-    {L"Syntax Coloring"         , IDD_PROPPAGE_SYNTAX_COLORING  ,  FALSE},  // 05
-    {L"System Variable Reset"   , IDD_PROPPAGE_SYSTEM_VAR_RESET ,  FALSE},  // 06
-////{L"Tab Colors"              , IDD_PROPPAGE_TAB_COLORS       ,  FALSE},  // 07
-    {L"User Preferences"        , IDD_PROPPAGE_USER_PREFS       ,  FALSE},  // 08
+{   {L"CLEAR WS Values"         , NULL                        , IDD_PROPPAGE_CLEARWS_VALUES   ,  FALSE},  // 00
+    {L"Directories"             , NULL                        , IDD_PROPPAGE_DIRS             ,  FALSE},  // 01
+    {L"Fonts"                   , NULL                        , IDD_PROPPAGE_FONTS            ,  FALSE},  // 02
+    {L"Keyboards"               , NULL                        , IDD_PROPPAGE_KEYBS            ,  FALSE},  // 03
+    {L"Range Limited Vars"      , NULL                        , IDD_PROPPAGE_RANGE_LIMITS     ,  FALSE},  // 04
+    {L"Syntax Coloring"         , NULL                        , IDD_PROPPAGE_SYNTAX_COLORING  ,  FALSE},  // 05
+    {L"System Variable Reset"   , NULL                        , IDD_PROPPAGE_SYSTEM_VAR_RESET ,  FALSE},  // 06
+////{L"Tab Colors"              , NULL                        , IDD_PROPPAGE_TAB_COLORS       ,  FALSE},  // 07
+    {L"User Preferences"        , NULL                        , IDD_PROPPAGE_USER_PREFS       ,  FALSE},  // 08
+    {L"Hypercomplex Prefs"      , L"Hypercomplex Preferences" , IDD_PROPPAGE_HC_PREFS         ,  FALSE},  // 09
 }
 #endif
 ;
@@ -2215,6 +2238,10 @@ APLRAT mpqMinInt                // Minimum signed integer -2*63
 #ifdef DEFINE_VALUES
 = {0}
 #endif
+,      mpqOne                   // 1
+#ifdef DEFINE_VALUES
+= {0}
+#endif
 ,      mpqHalf                  // ...          0.5 ...
 #ifdef DEFINE_VALUES
 = {0}
@@ -2257,6 +2284,10 @@ APLVFP mpfMinInt                // Minimum signed integer -2*63
 #ifdef DEFINE_VALUES
 = {0}
 #endif
+,      mpfOne                   // 1
+#ifdef DEFINE_VALUES
+= {0}
+#endif
 ,      mpfHalf                  // 0.5
 #ifdef DEFINE_VALUES
 = {0}
@@ -2266,6 +2297,107 @@ APLVFP mpfMinInt                // Minimum signed integer -2*63
 = {0}
 #endif
 ;
+
+mpci_t mpciZero                 // 0
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+;
+
+mphi_t mphiZero                 // 0
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+;
+
+mpoi_t mpoiZero                 // 0
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+;
+
+mpcf_t mpcfZero                 // 0
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+;
+
+mphf_t mphfZero                 // 0
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+;
+
+mpof_t mpofZero                 // 0
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+;
+
+
+//***************************************************************************
+//  Point Notation translate tables
+//***************************************************************************
+
+EXTERN
+PNNUMTYPE aArrayTypeToNumType[ARRAY_LENGTH]
+#ifdef DEFINE_VALUES
+= {PN_NUMTYPE_BOOL ,        // ARRAY_BOOL
+   PN_NUMTYPE_INT  ,        // ARRAY_INT
+   PN_NUMTYPE_FLT  ,        // ARRAY_FLOAT
+   PN_NUMTYPE_ERR  ,        // ARRAY_CHAR
+   PN_NUMTYPE_ERR  ,        // ARRAY_HETERO
+   PN_NUMTYPE_ERR  ,        // ARRAY_NESTED
+   PN_NUMTYPE_ERR  ,        // ARRAY_LIST
+   PN_NUMTYPE_ERR  ,        // ARRAY_APA
+   PN_NUMTYPE_RAT  ,        // ARRAY_RAT
+   PN_NUMTYPE_VFP  ,        // ARRAY_VFP
+   PN_NUMTYPE_HC2I ,        // ARRAY_HC2I
+   PN_NUMTYPE_HC2F ,        // ARRAY_HC2F
+   PN_NUMTYPE_HC2R ,        // ARRAY_HC2R
+   PN_NUMTYPE_HC2V ,        // ARRAY_HC2V
+   PN_NUMTYPE_HC4I ,        // ARRAY_HC4I
+   PN_NUMTYPE_HC4F ,        // ARRAY_HC4F
+   PN_NUMTYPE_HC4R ,        // ARRAY_HC4R
+   PN_NUMTYPE_HC4V ,        // ARRAY_HC4V
+   PN_NUMTYPE_HC8I ,        // ARRAY_HC8I
+   PN_NUMTYPE_HC8F ,        // ARRAY_HC8F
+   PN_NUMTYPE_HC8R ,        // ARRAY_HC8R
+   PN_NUMTYPE_HC8V ,        // ARRAY_HC8V
+  }
+#endif
+;
+
+#define TranslateArrayTypeToNumType(a)      aArrayTypeToNumType[(a)]
+
+
+EXTERN
+ARRAY_TYPES aNumTypeToArrayType[PN_NUMTYPE_LENGTH]
+#ifdef DEFINE_VALUES
+= {ARRAY_BOOL   ,           // PN_NUMTYPE_BOOL
+   ARRAY_INT    ,           // PN_NUMTYPE_INT
+   ARRAY_FLOAT  ,           // PN_NUMTYPE_FLT
+   ARRAY_RAT    ,           // PN_NUMTYPE_RAT
+   ARRAY_VFP    ,           // PN_NUMTYPE_VFP
+   ARRAY_HC2I   ,           // PN_NUMTYPE_HC2I
+   ARRAY_HC2F   ,           // PN_NUMTYPE_HC2F
+   ARRAY_HC2R   ,           // PN_NUMTYPE_HC2R
+   ARRAY_HC2V   ,           // PN_NUMTYPE_HC2V
+   ARRAY_HC4I   ,           // PN_NUMTYPE_HC4I
+   ARRAY_HC4F   ,           // PN_NUMTYPE_HC4F
+   ARRAY_HC4R   ,           // PN_NUMTYPE_HC4R
+   ARRAY_HC4V   ,           // PN_NUMTYPE_HC4V
+   ARRAY_HC8I   ,           // PN_NUMTYPE_HC8I
+   ARRAY_HC8F   ,           // PN_NUMTYPE_HC8F
+   ARRAY_HC8R   ,           // PN_NUMTYPE_HC8R
+   ARRAY_HC8V   ,           // PN_NUMTYPE_HC8V
+  }
+#endif
+;
+
+#define TranslateNumTypeToArrayType(a)      aNumTypeToArrayType[(a)]
+#define TranslateExceptionCodeToNumType(a)  aArrayTypeToNumType[TranslateExceptionCodeToArrayType (a)]
+
 
 //***************************************************************************
 //  Point Notation Prototoypes
@@ -2277,7 +2409,7 @@ PNNUMTYPE aNumTypePromote[PN_NUMTYPE_LENGTH][PN_NUMTYPE_LENGTH];
 typedef void (*PN_ACTION)    (LPPN_YYSTYPE, LPPNLOCALVARS);
 typedef void (*TPT_ACTION)   (LPTOKEN);
 typedef void (*TP_ACTION)    (LPVOID, APLINT, LPALLTYPES);
-typedef void (*TC_ACTION)    (LPVOID, APLINT, LPALLTYPES);
+typedef void (*TC_ACTION)    (LPVOID, APLINT, LPALLTYPES, LPUBOOL);
 typedef void (*TPF_ACTION)   (LPVOID, APLNELM);
 
 EXTERN
@@ -2318,6 +2450,12 @@ TPF_ACTION aTypeFree[ARRAY_LENGTH + 1];
 EXTERN
 NTHPRIMESTR NthPrimeStr;        // Initialized in InitPrimeTabs
 
+
+//***************************************************************************
+//  Hypercomplex Numbers
+//***************************************************************************
+
+#include "hc_proc.h"
 
 #define ENUMS_DEFINED
 #undef  EXTERN

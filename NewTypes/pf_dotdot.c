@@ -202,6 +202,12 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
     if (!IsSingleton (aplNELMRht))
         goto RIGHT_LENGTH_EXIT;
 
+    // If either arg is HCxx, ...
+    if (IsHCAny (aplTypeLft))
+        goto LEFT_DOMAIN_EXIT;
+    if (IsHCAny (aplTypeRht))
+        goto LEFT_DOMAIN_EXIT;
+
     // If either arg is nested, ...
     if (IsNested (aplTypeLft)
      || IsNested (aplTypeRht))
@@ -262,12 +268,12 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
     } // End SWITCH
 
     // Promote the left arg to the result type
-    (*aTypeActConvert[aplTypeLft][(aplTypeRes EQ ARRAY_APA) ? ARRAY_INT : aplTypeRes])(lpMemLft, 0, &atLft);
+    (*aTypeActConvert[aplTypeLft][(aplTypeRes EQ ARRAY_APA) ? ARRAY_INT : aplTypeRes])(lpMemLft, 0, &atLft, NULL);
 
     // If there's a step, ...
     if (aplNELMLft EQ 2)
         // Promote the step (in the left arg) to the result type
-        (*aTypeActConvert[aplTypeLft][(aplTypeRes EQ ARRAY_APA) ? ARRAY_INT : aplTypeRes])(lpMemLft, 1, &atStp);
+        (*aTypeActConvert[aplTypeLft][(aplTypeRes EQ ARRAY_APA) ? ARRAY_INT : aplTypeRes])(lpMemLft, 1, &atStp, NULL);
     else
         // Split cases based upon the result storage type
         switch (aplTypeRes)
@@ -308,7 +314,7 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
         case ARRAY_RAT:
         case ARRAY_VFP:
             // Promote the right arg to the result type
-            (*aTypeActConvert[aplTypeRht][(aplTypeRes EQ ARRAY_APA) ? ARRAY_INT : aplTypeRes])(lpMemRht, 0, &atRht);
+            (*aTypeActConvert[aplTypeRht][(aplTypeRes EQ ARRAY_APA) ? ARRAY_INT : aplTypeRes])(lpMemRht, 0, &atRht, NULL);
 
             break;
 

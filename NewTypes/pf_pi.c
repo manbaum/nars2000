@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -146,31 +146,32 @@ LPPL_YYSTYPE PrimProtoFnPi_EM_YY
 #endif
 
 LPPL_YYSTYPE PrimFnMonPi_EM_YY
-    (LPTOKEN lptkFunc,                  // Ptr to function token
-     LPTOKEN lptkRhtArg,                // Ptr to right arg token
-     LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
+    (LPTOKEN lptkFunc,                      // Ptr to function token
+     LPTOKEN lptkRhtArg,                    // Ptr to right arg token
+     LPTOKEN lptkAxis)                      // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE          aplTypeRht,       // Right arg storage type
-                      aplTypeRes;       // Result ...
-    APLNELM           aplNELMRht,       // Right arg NELM
-                      aplNELMRes = 0;   // Result    ...
-    APLRANK           aplRankRht;       // Right arg rank
-    HGLOBAL           hGlbRht,          // Right arg global memory handle
-                      hGlbRes = NULL;   // Result global memory handle
-    LPVOID            lpMemRes = NULL;  // Ptr to result global memory
-    APLLONGEST        aplLongestRht;    // Right arg integer value
-    APLINT            aplIntegerRht;    // Right arg integer value
-    UBOOL             bRet;             // TRUE iff the result is valid
-    APLUINT           ByteRes,          // # bytes in the result
-                      uRes;             // Loop counter
-    LPPL_YYSTYPE      lpYYRes = NULL;   // Ptr to result
-    LPPLLOCALVARS     lpplLocalVars;    // Ptr to re-entrant vars
-    LPUBOOL           lpbCtrlBreak;     // Ptr to Ctrl-Break flag
-    APLMPI            aplMPIRht = {0},  // Right arg as MP integer
-                      aplMPIRes = {0};  // Result    ...
-    LPVOID            lpMemRht;         // Ptr to right arg global memory
-    MEMTMP            memTmp = {0};     // Temporary memory for factors
+    APLSTYPE          aplTypeRht,           // Right arg storage type
+                      aplTypeRes;           // Result ...
+    APLNELM           aplNELMRht,           // Right arg NELM
+                      aplNELMRes = 0;       // Result    ...
+    APLRANK           aplRankRht;           // Right arg rank
+    HGLOBAL           hGlbRht,              // Right arg global memory handle
+                      hGlbRes = NULL;       // Result global memory handle
+    LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
+                      lpMemHdrRes = NULL;   // ...    result    ...
+    LPVOID            lpMemRht,             // Ptr to right arg global memory
+                      lpMemRes;             // ...    resutl    ...
+    APLLONGEST        aplLongestRht;        // Right arg integer value
+    UBOOL             bRet;                 // TRUE iff the result is valid
+    APLUINT           ByteRes,              // # bytes in the result
+                      uRes;                 // Loop counter
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to result
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    APLMPI            aplMPIRht = {0},      // Right arg as MP integer
+                      aplMPIRes = {0};      // Result    ...
+    MEMTMP            memTmp = {0};         // Temporary memory for factors
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -191,87 +192,34 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
         goto RIGHT_LENGTH_EXIT;
 
     // Get right arg's global ptr
-    aplLongestRht = GetGlbPtrs (lptkRhtArg, &hGlbRht);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
-    // Split cases based upon the right arg storage type
-    switch (aplTypeRht)
-    {
-        case ARRAY_BOOL:
-        case ARRAY_INT:
-        case ARRAY_APA:
-            // Save in local var
-            mpz_init_set_sx (&aplMPIRht, (APLINT) aplLongestRht);
+    // If it's a global, ...
+    if (hGlbRht NE NULL)
+        // Skip over the header and dimensions to the data
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+    else
+        // Point to the data
+        lpMemRht = &aplLongestRht;
 
-            // Set the result storage type
-            aplTypeRes = ARRAY_INT;
+    // Attempt to convert the right arg to an MPI
+    aplMPIRht = ConvertToMPI_SCT (aplTypeRht, lpMemRht, 0, &bRet);
 
-            break;
+    // Check for errors
+    if (!bRet)
+        goto RIGHT_DOMAIN_EXIT;
 
-        case ARRAY_FLOAT:
-            // Attempt to convert the float to an integer using System []CT
-            aplIntegerRht = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestRht, &bRet);
-            if (!bRet)
-                goto RIGHT_DOMAIN_EXIT;
+    // Set the result type to simple IFRV (INT, FLT, RAT, VFP)
+    aplTypeRes = aToSimple[aplTypeRht];
 
-            // Save in local var
-            mpz_init_set_sx (&aplMPIRht, aplIntegerRht);
-
-            // Set the result storage type
-            aplTypeRes = ARRAY_INT;
-
-            break;
-
-        case ARRAY_RAT:
-            // Lock the memory to get a ptr to it
-            lpMemRht = MyGlobalLock (hGlbRht);
-
-            // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayDataFmBase (lpMemRht);
-
-            // Save in local var
-            mpz_init_set (&aplMPIRht, mpq_numref ((LPAPLRAT) lpMemRht));
-
-            // Is it an integer?
-            bRet = mpq_integer_p ((LPAPLRAT) lpMemRht);
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-
-            // If it's not an integer, ...
-            if (!bRet)
-                goto RIGHT_DOMAIN_EXIT;
-            // Set the result storage type
-            aplTypeRes = ARRAY_RAT;
-
-            break;
-
-        case ARRAY_VFP:
-            // Lock the memory to get a ptr to it
-            lpMemRht = MyGlobalLock (hGlbRht);
-
-            // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayDataFmBase (lpMemRht);
-
-            // Save in local var
-            mpz_init_set_fr (&aplMPIRht, (LPAPLVFP) lpMemRht);
-
-            // Is it an integer?
-            bRet = mpfr_integer_p ((LPAPLVFP) lpMemRht);
-
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-
-            // If it's not an integer, ...
-            if (!bRet)
-                goto RIGHT_DOMAIN_EXIT;
-            // Set the result storage type
-            aplTypeRes = ARRAY_RAT;
-
-            break;
-
-        default:
-            goto RIGHT_DOMAIN_EXIT;
-    } // End SWITCH
+    // Set the result type (FLT -> INT or VFP -> RAT)
+    if (IsSimpleFlt (aplTypeRes))
+        // Set to INT
+        aplTypeRes = ARRAY_INT;
+    else
+    if (IsVfp (aplTypeRes))
+        // Set to RAT
+        aplTypeRes = ARRAY_RAT;
 
     // Check the singleton arg
     if (mpz_sgn (&aplMPIRht) <= 0)
@@ -333,9 +281,9 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -347,7 +295,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
 #undef  lpHeader
 
     // Skip over the header to the dimension
-    lpMemRes = VarArrayBaseToDim (lpMemRes);
+    lpMemRes = VarArrayBaseToDim (lpMemHdrRes);
 
     // Save and skip over the actual dimension
     *((LPAPLDIM) lpMemRes)++ = aplNELMRes;
@@ -374,7 +322,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
     } // End SWITCH
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
     // Allocate a new YYRes;
     lpYYRes = YYAlloc ();
@@ -414,12 +362,12 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this resource
@@ -438,6 +386,18 @@ NORMAL_EXIT:
 
         // We no longer need this storage
         DbgGlobalFree (memTmp.hGlbMem); memTmp.hGlbMem = NULL;
+    } // End IF
+
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
+    } // End IF
+
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
     // We no longer need this storage
@@ -468,37 +428,40 @@ LPPL_YYSTYPE PrimFnDydPi_EM_YY
      LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE      aplTypeLft,           // Left arg storage type
-                  aplTypeRht,           // Right ...
-                  aplTypeRes;           // Result   ...
-    APLNELM       aplNELMLft,           // Left arg NELM
-                  aplNELMRht,           // Right ...
-                  aplNELMRes = 0;       // Result   ...
-    APLRANK       aplRankLft,           // Left arg rank
-                  aplRankRht;           // Right ...
-    HGLOBAL       hGlbLft = NULL,       // Left arg global memory handle
-                  hGlbRht = NULL,       // Right ...
-                  hGlbRes = NULL;       // Result   ...
-    LPVOID        lpMemLft = NULL,      // Ptr to left arg global memory
-                  lpMemRht = NULL,      // Ptr to right ...
-                  lpMemRes = NULL;      // Ptr to result   ...
-    LPAPLDIM      lpMemDimRht;          // Ptr to right arg dimensions
-    LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
-    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
-    APLRAT        mpqRes = {0},         // The result
-                  mpqTmp = {0};         // Temporary
-    APLLONGEST    aplLongestLft,        // Left arg integer value
-                  aplLongestRht;        // Right ...
-    NUMTHEORY     fcnType;              // Left arg as an integer
-    APLUINT       uCnt,                 // Loop counter
-                  ByteRes;              // # bytes in the result
-    UBOOL         bRet;                 // TRUE iff the result is valid
-    APLMPI        aplMPIRht = {0},      // Right arg as MP integer
-                  aplMPIRes = {0};      // Result    ...
-    APLBOOL       bQuadIO;              // []IO
-    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to result
-    EXCEPTION_CODES exceptionCode = EXCEPTION_SUCCESS;
+    APLSTYPE          aplTypeLft,           // Left arg storage type
+                      aplTypeRht,           // Right ...
+                      aplTypeRes;           // Result   ...
+    APLNELM           aplNELMLft,           // Left arg NELM
+                      aplNELMRht,           // Right ...
+                      aplNELMRes = 0;       // Result   ...
+    APLRANK           aplRankLft,           // Left arg rank
+                      aplRankRht;           // Right ...
+    HGLOBAL           hGlbLft = NULL,       // Left arg global memory handle
+                      hGlbRht = NULL,       // Right ...
+                      hGlbRes = NULL;       // Result   ...
+    LPVARARRAY_HEADER lpMemHdrLft = NULL,   // Ptr to left arg header
+                      lpMemHdrRht = NULL,   // ...    right ...
+                      lpMemHdrRes = NULL;   // ...    result   ...
+    LPVOID            lpMemLft,             // Ptr to left arg global memory
+                      lpMemRht,             // Ptr to right ...
+                      lpMemRes;             // Ptr to result   ...
+    LPAPLDIM          lpMemDimRht;          // Ptr to right arg dimensions
+    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    APLRAT            mpqRes = {0},         // The result
+                      mpqTmp = {0};         // Temporary
+    APLLONGEST        aplLongestLft,        // Left arg integer value
+                      aplLongestRht;        // Right ...
+    NUMTHEORY         fcnType;              // Left arg as an integer
+    APLUINT           uCnt,                 // Loop counter
+                      ByteRes;              // # bytes in the result
+    UBOOL             bRet;                 // TRUE iff the result is valid
+    APLMPI            aplMPIRht = {0},      // Right arg as MP integer
+                      aplMPIRes = {0};      // Result    ...
+    APLBOOL           bQuadIO;              // []IO
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to result
+    EXCEPTION_CODES   exceptionCode = EXCEPTION_SUCCESS;
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
@@ -528,101 +491,54 @@ LPPL_YYSTYPE PrimFnDydPi_EM_YY
     } // End IF
 
     // Get left/right arg's global ptr
-    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // If it's a global, ...
-    if (hGlbRht)
+    if (hGlbRht NE NULL)
         // Skip over the header to the dimensions
-        lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+        lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
 
     // If it's a global, ...
-    if (hGlbLft)
+    if (hGlbLft NE NULL)
         // Skip over the header and dimentions to the data
-        lpMemLft = VarArrayDataFmBase (lpMemLft);
+        lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
     else
         lpMemLft = &aplLongestLft;
 
     // If it's a global, ...
-    if (hGlbRht)
+    if (hGlbRht NE NULL)
         // Skip over the header and dimentions to the data
-        lpMemRht = VarArrayDataFmBase (lpMemRht);
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
     else
         lpMemRht = &aplLongestRht;
 
-    // Split cases based upon the left arg storage type
-    switch (aplTypeLft)
-    {
-        case ARRAY_BOOL:
-        case ARRAY_INT:
-        case ARRAY_APA:
-            // Get the left arg as an integer
-            fcnType = (APLINT) aplLongestLft;
+    // Attempt to convert the left arg to an integer
+    fcnType = ConvertToInteger_SCT (aplTypeLft, lpMemLft, 0, &bRet);
 
-            break;
+    // Check for errors
+    if (!bRet)
+        goto LEFT_DOMAIN_EXIT;
 
-        case ARRAY_FLOAT:
-            // Attempt to convert the float to an integer using System []CT
-            fcnType = FloatToAplint_SCT (*(LPAPLFLOAT) &aplLongestLft, &bRet);
-            if (!bRet)
-                goto LEFT_DOMAIN_EXIT;
-            break;
+    // If the right arg is not numeric, ...
+    if (!IsNumeric (aplTypeRht))
+        goto RIGHT_DOMAIN_EXIT;
 
-        case ARRAY_CHAR:
-        case ARRAY_HETERO:
-        case ARRAY_NESTED:
-            goto LEFT_DOMAIN_EXIT;
+    // Set the result type to simple IFRV (INT, FLT, RAT, VFP)
+    aplTypeRes = aToSimple[aplTypeRht];
 
-        case ARRAY_RAT:
-            // Get the left arg as an integer
-            fcnType = mpq_get_sx ((LPAPLRAT) lpMemLft, &bRet);
-
-            if (!bRet)
-                goto LEFT_DOMAIN_EXIT;
-            break;
-
-        case ARRAY_VFP:
-            // Get the left arg as an integer
-            fcnType = mpfr_get_sx ((LPAPLVFP) lpMemLft, &bRet);
-
-            if (!bRet)
-                goto LEFT_DOMAIN_EXIT;
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
-
-    // Split cases based upon the right arg storage type
-    switch (aplTypeRht)
-    {
-        case ARRAY_BOOL:
-        case ARRAY_INT:
-        case ARRAY_APA:
-        case ARRAY_FLOAT:
-            aplTypeRes = ARRAY_INT;
-
-            break;
-
-        case ARRAY_CHAR:
-        case ARRAY_HETERO:
-        case ARRAY_NESTED:
-            goto RIGHT_DOMAIN_EXIT;
-
-        case ARRAY_RAT:
-        case ARRAY_VFP:
-            aplTypeRes = ARRAY_RAT;
-
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
+    // Set the result type (FLT -> INT or VFP -> RAT)
+    if (IsSimpleFlt (aplTypeRes))
+        // Set to INT
+        aplTypeRes = ARRAY_INT;
+    else
+    if (IsVfp (aplTypeRes))
+        // Set to RAT
+        aplTypeRes = ARRAY_RAT;
 
     // Initialize the temps
     mpz_init (&aplMPIRht);
-    mpq_init (&mpqRes);
-    mpq_init (&mpqTmp);
+////mpq_init (&mpqRes);
 RESTART_RAT:
     //***************************************************************
     // Calculate space needed for the result
@@ -643,9 +559,9 @@ RESTART_RAT:
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -657,7 +573,7 @@ RESTART_RAT:
 #undef  lpHeader
 
     // Skip over the header to the dimensions
-    lpMemRes = VarArrayBaseToDim (lpMemRes);
+    lpMemRes = VarArrayBaseToDim (lpMemHdrRes);
 
     // Fill in the result's dimensions
     for (uCnt = 0; uCnt < aplRankRht; uCnt++)
@@ -670,59 +586,19 @@ RESTART_RAT:
     // Loop through the elements of the right arg
     for (uCnt = 0; uCnt < aplNELMRht; uCnt++)
     {
-        // Split cases based upon the right arg storage type
-        switch (aplTypeRht)
-        {
-            case ARRAY_BOOL:
-            case ARRAY_INT:
-            case ARRAY_APA:
-                // Get the next element as an integer
-                mpz_set_sx (&aplMPIRht, GetNextInteger (lpMemRht, aplTypeRht, uCnt));
+        // Attempt to convert each element of the right arg to RAT
+        mpqTmp = ConvertToRAT_SCT (aplTypeRht, lpMemRht, uCnt, &bRet);
 
-                break;
+        // Check for errors
+        if (!bRet)
+            goto RIGHT_DOMAIN_EXIT;
 
-            case ARRAY_FLOAT:
-                // Convert from FLOAT to RAT
-                mpq_set_d (&mpqTmp, ((LPAPLFLOAT) lpMemRht)[uCnt]);
+        // Call common code to test for integer tolerance
+        if (!PrimFnPiIntegerTolerance (&aplMPIRht, fcnType, &mpqTmp))
+            goto RIGHT_DOMAIN_EXIT;
 
-                // Call common code to test for integer tolerance
-                if (!PrimFnPiIntegerTolerance (&mpqRes, fcnType, &mpqTmp))
-                    goto RIGHT_DOMAIN_EXIT;
-
-                // Copy the integer as an MPI
-                mpz_set (&aplMPIRht, mpq_numref (&mpqRes));
-
-                break;
-
-            case ARRAY_RAT:
-                // Copy the RAT
-                mpq_set   (&mpqTmp, &((LPAPLRAT) lpMemRht)[uCnt]);
-
-                // Call common code to test for integer tolerance
-                if (!PrimFnPiIntegerTolerance (&mpqRes, fcnType, &mpqTmp))
-                    goto RIGHT_DOMAIN_EXIT;
-
-                // Copy the integer as an MPI
-                mpz_set (&aplMPIRht, mpq_numref (&mpqRes));
-
-                break;
-
-            case ARRAY_VFP:
-                // Convert from VFP to RAT
-                mpq_set_fr (&mpqTmp, &((LPAPLVFP) lpMemRht)[uCnt]);
-
-                // Call common code to test for integer tolerance
-                if (!PrimFnPiIntegerTolerance (&mpqRes, fcnType, &mpqTmp))
-                    goto RIGHT_DOMAIN_EXIT;
-
-                // Copy the integer as an MPI
-                mpz_set (&aplMPIRht, mpq_numref (&mpqRes));
-
-                break;
-
-            defstop
-                break;
-        } // End SWITCH
+        // We no longer need this resource
+        Myq_clear (&mpqTmp);
 
         // Split cases based upon the left arg
         switch (fcnType)
@@ -814,7 +690,7 @@ RESTART_RAT:
                     aplTypeRes = ARRAY_RAT;
 
                     // We no longer need this ptr
-                    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
                     // We no longer need this resource
                     FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
@@ -834,8 +710,10 @@ RESTART_RAT:
                 break;
         } // End SWITCH
 
-        // We no longer need this storage
-        Myz_clear (&aplMPIRes);
+        // If we're not at the last iteration, ...
+        if (uCnt < (aplNELMRht - 1))
+            // We no longer need this storage
+            Myz_clear (&aplMPIRes);
     } // End FOR
     } __except (CheckException (GetExceptionInformation (), L"PrimFnDydPi_EM_YY"))
     {
@@ -866,7 +744,11 @@ RESTART_RAT:
     } // End __try/__except
 
     // Unlock the result global memory in case TypeDemote actually demotes
-    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+    if (hGlbRes && lpMemRes)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+    } // End IF
 
     // Allocate a new YYRes;
     lpYYRes = YYAlloc ();
@@ -879,7 +761,7 @@ RESTART_RAT:
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    TypeDemote (&lpYYRes->tkToken);
+    TypeDemote (&lpYYRes->tkToken, FALSE);
 
     goto NORMAL_EXIT;
 
@@ -914,33 +796,32 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this resource
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbLft && lpMemLft)
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
     // We no longer need this storage
-    Myq_clear (&mpqTmp);
-    Myq_clear (&mpqRes);
+////Myq_clear (&mpqRes);
     Myz_clear (&aplMPIRes);
     Myz_clear (&aplMPIRht);
 
@@ -956,39 +837,57 @@ NORMAL_EXIT:
 //***************************************************************************
 
 UBOOL PrimFnPiIntegerTolerance
-    (LPAPLRAT  mpqRes,                  // Ptr to result
+    (LPAPLMPI  mpzRes,                  // Ptr to (uninitialized) result
      NUMTHEORY fcnType,                 // Number theory function type
      LPAPLRAT  mpqTmp)                  // Ptr to incoming value
 
 {
-    // Allow Next Prime/Prev Prime/Num Primes right arg to be fractional
-    if (fcnType EQ NUMTHEORY_NEXTPRIME
-     || fcnType EQ NUMTHEORY_PREVPRIME
-     || fcnType EQ NUMTHEORY_NUMPRIMES)
-    {
-        // Convert the RAT to an integer
-        if (fcnType EQ NUMTHEORY_PREVPRIME)
-            mpq_ceil  (mpqRes, mpqTmp);
-        else
-            mpq_floor (mpqRes, mpqTmp);
-    } else
-    {
-        // See if this number is within SYS_CT of a rational integer
+    APLRAT mpqRes = {0};                // Result as RAT
 
-        // Get the ceiling
-        mpq_ceil  (mpqRes, mpqTmp);
+    // Initialize to 0/1
+    mpq_init (&mpqRes);
 
-        // Compare against the original value
-        if (mpq_cmp_ct (*mpqRes, *mpqTmp, SYS_CT) NE 0)
-        {
+    // Split cases based upon the function type
+    switch (fcnType)
+    {
+        case NUMTHEORY_PREVPRIME:
+            // Get the ceiling
+            mpq_ceil  (&mpqRes, mpqTmp);
+
+            break;
+
+        case NUMTHEORY_NEXTPRIME:
+        case NUMTHEORY_NUMPRIMES:
             // Get the floor
-            mpq_floor (mpqRes, mpqTmp);
+            mpq_floor (&mpqRes, mpqTmp);
+
+            break;
+
+        default:
+            // See if this number is within SYS_CT of a rational integer
+
+            // Get the ceiling
+            mpq_ceil  (&mpqRes, mpqTmp);
 
             // Compare against the original value
-            if (mpq_cmp_ct (*mpqRes, *mpqTmp, SYS_CT) NE 0)
-                return FALSE;
-        } // End IF/ELSE
-    } // End IF/ELSE
+            if (mpq_cmp_ct (mpqRes, *mpqTmp, SYS_CT) NE 0)
+            {
+                // Get the floor
+                mpq_floor (&mpqRes, mpqTmp);
+
+                // Compare against the original value
+                if (mpq_cmp_ct (mpqRes, *mpqTmp, SYS_CT) NE 0)
+                    return FALSE;
+            } // End IF/ELSE
+
+            break;
+    } // End SWITCH
+
+    // Copy the integer as an MPI
+    mpz_init_set (mpzRes, mpq_numref (&mpqRes));
+
+    // We no longer need this resource
+    Myq_clear (&mpqRes);
 
     return TRUE;
 } // End PrimFnPiIntegerTolerance
@@ -1065,7 +964,7 @@ APLMPI PrimFnPiCommon
             ProcessPrime (aplPrime, uPrimeCnt, &procPrime);
 
             // If we're saving the values, ...
-            if (lpMemTmp)
+            if (lpMemTmp NE NULL)
             while (uPrimeCnt--)
             {
                 // Resize the factor struc if needed
@@ -1089,7 +988,7 @@ APLMPI PrimFnPiCommon
         ProcessPrime (*mpzRht, 1, &procPrime);
 
         // If we're saving the values, ...
-        if (lpMemTmp)
+        if (lpMemTmp NE NULL)
         {
             // Resize the factor struc if needed
             if (!ResizeFactorStruc (lpMemTmp))
@@ -1127,7 +1026,7 @@ APLMPI PrimFnPiCommon
             ProcessPrime (aplPrime, uPrimeCnt, &procPrime);
 
             // If we're saving the values, ...
-            if (lpMemTmp)
+            if (lpMemTmp NE NULL)
             while (uPrimeCnt--)
             {
                 // Resize the factor struc if needed
@@ -1194,7 +1093,7 @@ WSFULL_EXIT:
 
 ERROR_EXIT:
     // If we're saving the values, ...
-    if (lpMemTmp)
+    if (lpMemTmp NE NULL)
     for (uRes = 0; uRes < lpMemTmp->uNumEntry; uRes++)
         Myz_clear (&lpMemTmp->lpMemOrg[uRes]);
 NORMAL_EXIT:
@@ -1241,7 +1140,7 @@ UBOOL ResizeFactorStruc
           MyGlobalReAlloc (lpMemTmp->hGlbMem,
                            uLen,
                            GMEM_MOVEABLE | GMEM_ZEROINIT);
-        if (hGlbMem)
+        if (hGlbMem NE NULL)
             // Lock the memory to get a ptr to it
             lpMemNew = MyGlobalLock (hGlbMem);
         else
@@ -1249,7 +1148,7 @@ UBOOL ResizeFactorStruc
             // Attempt to allocate a new struc
             hGlbMem =
               DbgGlobalAlloc (GHND, uLen);
-            if (hGlbMem)
+            if (hGlbMem NE NULL)
             {
                 // Lock the old memory to get a ptr to it
                 lpMemTmp->lpMemOrg = MyGlobalLock (lpMemTmp->hGlbMem);
@@ -2047,7 +1946,7 @@ APLMPI PrimFnPiNthPrime
     // We no longer need this storage
     Myz_clear (&mpzRes);
 
-    RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+    NONCE_RE    // ***FINISHME***
 
 NORMAL_EXIT:
     // Save as the new last value
@@ -2353,7 +2252,7 @@ APLMPI PrimFnPiNumPrimes
     // We no longer need this storage
     Myz_clear (&mpzRes);
 
-    RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+    NONCE_RE    // ***FINISHME***
 
 NORMAL_EXIT:
     return mpzRes;

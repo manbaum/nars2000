@@ -70,6 +70,7 @@
 
 #define KEYNAME_QUADALX                 L"QuadALX"
 #define KEYNAME_QUADCT                  L"QuadCT"
+#define KEYNAME_QUADDQ                  L"QuadDQ"
 #define KEYNAME_QUADDT                  L"QuadDT"
 #define KEYNAME_QUADELX                 L"QuadELX"
 #define KEYNAME_QUADFC                  L"QuadFC"
@@ -110,6 +111,9 @@
 #define KEYNAME_REVDBLCLK               L"RevDblClk"
 #define KEYNAME_VIEWSTATUSBAR           L"ViewStatusBar"
 #define KEYNAME_DEFDISPFCNLINENUMS      L"DefDispFcnLineNums"
+#define KEYNAME_J4i                     L"Use_J_AsHC2SepOnOutput"
+#define KEYNAME_DISP0IMAG               L"Display0ImaginaryParts"
+#define KEYNAME_DISPINFIX               L"DisplayHCAsInfix"
 #define KEYNAME_DISPMPSUF               L"DisplayMPSuffix"
 
 #define KEYNAME_SC_GLBNAME              L"GlbName"
@@ -125,6 +129,7 @@
 #define KEYNAME_SC_NUMCONST             L"NumConst"
 #define KEYNAME_SC_CHRCONST             L"ChrConst"
 #define KEYNAME_SC_PNSEP                L"PNSep"
+#define KEYNAME_SC_HCSEP                L"HCSep"
 #define KEYNAME_SC_COMMENT              L"Comment"
 #define KEYNAME_SC_LINEDRAWING          L"LineDrawing"
 #define KEYNAME_SC_FCNLINENUMS          L"FcnLineNums"
@@ -177,17 +182,18 @@ LPWCHAR aColorKeyNames[] =
  KEYNAME_SC_NUMCONST    ,       // 0A:  Numeric constant
  KEYNAME_SC_CHRCONST    ,       // 0B:  Character constant
  KEYNAME_SC_PNSEP       ,       // 0C:  Point notation separator
- KEYNAME_SC_COMMENT     ,       // 0D:  Comment
- KEYNAME_SC_LINEDRAWING ,       // 0E:  Line drawing chars
- KEYNAME_SC_FCNLINENUMS ,       // 0F:  Function line numbers
- KEYNAME_SC_MATCHGRP1   ,       // 10:  Matched Grouping Symbols [] () {}
- KEYNAME_SC_MATCHGRP2   ,       // 11:  Matched Grouping Symbols [] () {}
- KEYNAME_SC_MATCHGRP3   ,       // 12:  Matched Grouping Symbols [] () {}
- KEYNAME_SC_MATCHGRP4   ,       // 13:  Matched Grouping Symbols [] () {}
- KEYNAME_SC_UNMATCHGRP  ,       // 14:  Unmatched Grouping Symbols [] () {} ' "
- KEYNAME_SC_UNNESTED    ,       // 15:  Improperly Nested Grouping Symbols [] () {}
- KEYNAME_SC_UNK         ,       // 16:  Unknown symbol
- KEYNAME_SC_WINTEXT     ,       // 17:  Window text
+ KEYNAME_SC_HCSEP       ,       // 0D:  Hypercomplex notation separator
+ KEYNAME_SC_COMMENT     ,       // 0E:  Comment
+ KEYNAME_SC_LINEDRAWING ,       // 0F:  Line drawing chars
+ KEYNAME_SC_FCNLINENUMS ,       // 10:  Function line numbers
+ KEYNAME_SC_MATCHGRP1   ,       // 11:  Matched Grouping Symbols [] () {}
+ KEYNAME_SC_MATCHGRP2   ,       // 12:  Matched Grouping Symbols [] () {}
+ KEYNAME_SC_MATCHGRP3   ,       // 13:  Matched Grouping Symbols [] () {}
+ KEYNAME_SC_MATCHGRP4   ,       // 14:  Matched Grouping Symbols [] () {}
+ KEYNAME_SC_UNMATCHGRP  ,       // 15:  Unmatched Grouping Symbols [] () {} ' "
+ KEYNAME_SC_UNNESTED    ,       // 16:  Improperly Nested Grouping Symbols [] () {}
+ KEYNAME_SC_UNK         ,       // 17:  Unknown symbol
+ KEYNAME_SC_WINTEXT     ,       // 18:  Window text
 };
 
 // Array of keynames for use in [Toolbars] section
@@ -702,6 +708,24 @@ UBOOL ReadIniFileGlb
                              KEYNAME_DISPMPSUF,     // Ptr to the key name
                              DEF_DISPMPSUF,         // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
+    // Read in bJ4i
+    OptionFlags.bJ4i =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_J4i,           // Ptr to the key name
+                             DEF_J4i,               // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bDisp0Imag
+    OptionFlags.bDisp0Imag =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_DISP0IMAG,     // Ptr to the key name
+                             DEF_DISP0IMAG,         // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bDispInfix
+    OptionFlags.bDispInfix =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_DISPINFIX,     // Ptr to the key name
+                             DEF_DISPINFIX,         // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
     //***************************************************************
     // Read in the [SysVars] section -- default values for system
     //                                  variables in a CLEAR WS
@@ -720,6 +744,17 @@ UBOOL ReadIniFileGlb
                                KEYNAME_QUADCT,      // Ptr to the key name
                                DEF_QUADCT_CWS,      // Ptr to the default value
                                lpwszIniFile);       // Ptr to the file name
+    // Read in []DQ
+    GetPrivateProfileStringW (SECTNAME_SYSVARS,     // Ptr to the section name
+                              KEYNAME_QUADDQ,       // Ptr to the key name
+                              DEF_QUADDQ_CWS,       // Ptr to the default value
+                              wszTemp,              // Ptr to the output buffer
+                              TEMPBUFLEN,           // Count of the output buffer
+                              lpwszIniFile);        // Ptr to the file name
+    // Convert any {name}s to symbols
+    ConvertNameInPlace (wszTemp);
+    cQuadDQ_CWS = wszTemp[0];
+
     // Read in []DT
     GetPrivateProfileStringW (SECTNAME_SYSVARS,     // Ptr to the section name
                               KEYNAME_QUADDT,       // Ptr to the key name
@@ -967,6 +1002,12 @@ UBOOL ReadIniFileGlb
       GetPrivateProfileIntW (SECTNAME_RESETVARS,    // Ptr to the section name
                              KEYNAME_QUADCT,        // Ptr to the key name
                              DEF_RESETVARS_CT,      // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bResetVars.DQ
+    bResetVars.DQ =
+      GetPrivateProfileIntW (SECTNAME_RESETVARS,    // Ptr to the section name
+                             KEYNAME_QUADDQ,        // Ptr to the key name
+                             DEF_RESETVARS_DQ,      // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     // Read in bResetVars.DT
     bResetVars.DT =
@@ -2373,6 +2414,39 @@ void SaveIniFile
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
 
+    //******************* bJ4i ********************************
+    // Format bJ4i
+    wszTemp[0] = L'0' + OptionFlags.bJ4i;
+    wszTemp[1] = WC_EOS;
+
+    // Write out bJ4i
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
+                                KEYNAME_J4i,                // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+
+    //******************* bDisp0Imag **************************
+    // Format bDisp0Imag
+    wszTemp[0] = L'0' + OptionFlags.bDisp0Imag;
+    wszTemp[1] = WC_EOS;
+
+    // Write out bDisp0Imag
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
+                                KEYNAME_DISP0IMAG,          // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+
+    //******************* bDispInfix **************************
+    // Format bDispInfix
+    wszTemp[0] = L'0' + OptionFlags.bDispInfix;
+    wszTemp[1] = WC_EOS;
+
+    // Write out bDispInfix
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
+                                KEYNAME_DISPINFIX,          // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+
     //*********************************************************
     // Write out [SysVars] section entries
     //*********************************************************
@@ -2399,6 +2473,19 @@ void SaveIniFile
     // Write out []CT
     WritePrivateProfileStringW (SECTNAME_SYSVARS,           // Ptr to the section name
                                 KEYNAME_QUADCT,             // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    //************************ []DQ ***************************
+    // Format []DQ
+    wszTemp[0] = WC_SQ;
+    uLen = (UINT)
+      ConvertWideToNameLength (&wszTemp[1], &cQuadDQ_CWS, 1);
+    wszTemp[uLen + 1] = WC_SQ;
+    wszTemp[uLen + 2] = WC_EOS;
+
+    // Write out []DQ
+    WritePrivateProfileStringW (SECTNAME_SYSVARS,           // Ptr to the section name
+                                KEYNAME_QUADDQ,             // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //************************ []DT ***************************
@@ -2703,6 +2790,16 @@ void SaveIniFile
     // Write out bResetVars.CT
     WritePrivateProfileStringW (SECTNAME_RESETVARS,         // Ptr to the section name
                                 KEYNAME_QUADCT,             // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    //****************** bResetVars.DQ ************************
+    // Format bResetVars.DQ
+    wszTemp[0] = L'0' + bResetVars.DQ;
+    wszTemp[1] = WC_EOS;
+
+    // Write out bResetVars.DQ
+    WritePrivateProfileStringW (SECTNAME_RESETVARS,         // Ptr to the section name
+                                KEYNAME_QUADDQ,             // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //****************** bResetVars.DT ************************
@@ -3182,6 +3279,30 @@ void WritePrivateProfileGlbCharW
 
 
 //***************************************************************************
+//  $ProfileInit_EM
+//
+//  Initialize a .ini profile
+//***************************************************************************
+
+LPDICTIONARY ProfileInit_EM
+    (LPWSTR       lpwszDPFE,        // Ptr to workspace DPFE
+     LPWCHAR     *lplpwErrMsg)      // Ptr to ptr to error message text
+
+{
+    LPDICTIONARY lpDict;            // Ptr to workspace dictionary
+
+    // Initialize the parser dictionary
+    lpDict = iniparser_init (lpwszDPFE);
+    if (lpDict EQ NULL)
+        *lplpwErrMsg = L"No room for Dictionary";
+    else
+        *lplpwErrMsg = NULL;
+
+    return lpDict;
+} // End ProfileInit_EM
+
+
+//***************************************************************************
 //  $ProfileLoad_EM
 //
 //  Load a .ini profile
@@ -3534,12 +3655,33 @@ UBOOL ProfileWrite
     (LPDICTIONARY lpDict)       // Ptr to workspace dictionary
 
 {
+    WCHAR wszDrive[_MAX_DRIVE],
+          wszDir  [_MAX_DIR],
+          wszFname[_MAX_FNAME],
+          wszExt  [_MAX_EXT],
+          wszPath [_MAX_PATH];
     HANDLE hFile;               // File handle from CreateFileW
 ////DWORD  dwBytesOut;          // # bytes written out
 
+    // Split out the drive and path from the module filename
+    _wsplitpath (lpDict->lpwszDPFE, wszDrive, wszDir, wszFname, wszExt);
+
+    // Form the destination path
+    lstrcpyW (wszPath, wszDrive);
+    lstrcatW (wszPath, wszDir  );
+
+    // Append a backslash if not already present
+    if (wszPath[lstrlenW (wszPath) - 1] NE '\\')
+        lstrcatW (wszPath, L"\\"   );
+
+    // Append the temp filename
+    GetTempFileNameW (wszPath,                      // Temp path
+                     L"",                           // Prefix string
+                      0,                            // Unique ID (0 = none)
+                      wszPath);                     // Output buffer
     // Create (or truncate the file)
     hFile =
-      CreateFileW (lpDict->lpwszDPFE,               // lpwFileName
+      CreateFileW (wszPath,                         // lpwFileName
                    GENERIC_READ | GENERIC_WRITE,    // dwDesiredAccess
                    FILE_SHARE_READ,                 // dwShareMode
                    NULL,                            // lpSecurityAttributes
@@ -3547,7 +3689,14 @@ UBOOL ProfileWrite
                    FILE_ATTRIBUTE_NORMAL,           // dwFlagsAndAttributes
                    NULL);                           // hTemplateFile
     if (hFile EQ INVALID_HANDLE_VALUE)
+    {
+#ifdef DEBUG
+        DWORD dwErrCode = GetLastError ();
+
+        DbgBrk ();
+#endif
         return FALSE;
+    } // End IF
 
 ////// Write out the BOM for UTF-16
 ////WriteFile (hFile, UTF16LE_BOM, strcountof (UTF16LE_BOM), &dwBytesOut, NULL);
@@ -3557,6 +3706,12 @@ UBOOL ProfileWrite
 
     // Close it after creating the file
     CloseHandle (hFile); hFile = NULL;
+
+    // Delete the old file
+    DeleteFileW (lpDict->lpwszDPFE);
+
+    // Rename the temp file
+    MoveFileW (wszPath, lpDict->lpwszDPFE);
 
     return TRUE;
 } // End ProfileWrite

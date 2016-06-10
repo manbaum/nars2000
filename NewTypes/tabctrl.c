@@ -271,23 +271,23 @@ UBOOL WINAPI CreateNewTabInThread
     (LPCNT_THREAD lpcntThread)
 
 {
-    int          iCurTabIndex = -1;     // Index of the current tab
-    TC_ITEMW     tcItem = {0};          // TabCtrl item struc
-    LPPERTABDATA lpMemPTD = NULL,       // Ptr to PerTabData global memory
-                 lpMemPTDOld = NULL;    // Outgoing lpMemPTD
-    UBOOL        bRet = FALSE;          // TR$UE iff the result is valid
-    RECT         rc;                    // Rectangle for setting size of window
-    CLIENTCREATESTRUCT ccs;             // For MDI Client window
-    SM_CREATESTRUCTW csSM;              // For Session Manager window
-    HANDLE       hThread;               // Handle to this thread
-    HWND         hWndMC,                // Window handle of MDI Client
-                 hWndParent,            // Window handle of the parent
-                 hWndTmp;               // Temporary window handle
-    int          iTabIndex;             // Insert the new tab to the left of this one
-    MSG          Msg;                   // Message for GetMessageW loop
-    int          nThreads;
-    WCHAR        wszTemp[32];           // Temporary storage
-    UBOOL        bExecLX;               // TRUE iff execute []LX after successful load
+    int                iCurTabIndex = -1;   // Index of the current tab
+    TC_ITEMW           tcItem = {0};        // TabCtrl item struc
+    LPPERTABDATA       lpMemPTD = NULL,     // Ptr to PerTabData global memory
+                       lpMemPTDOld = NULL;  // Outgoing lpMemPTD
+    UBOOL              bRet = FALSE;        // TRUE iff the result is valid
+    RECT               rc;                  // Rectangle for setting size of window
+    CLIENTCREATESTRUCT ccs;                 // For MDI Client window
+    SM_CREATESTRUCTW   csSM;                // For Session Manager window
+    HANDLE             hThread;             // Handle to this thread
+    HWND               hWndMC,              // Window handle of MDI Client
+                       hWndParent,          // Window handle of the parent
+                       hWndTmp;             // Temporary window handle
+    int                iTabIndex;           // Insert the new tab to the left of this one
+    MSG                Msg;                 // Message for GetMessageW loop
+    int                nThreads;            // # threads
+    WCHAR              wszTemp[32];         // Temporary storage
+    UBOOL              bExecLX;             // TRUE iff execute []LX after successful load
 
     // Store the thread type ('TC')
     TlsSetValue (dwTlsType, TLSTYPE_TC);

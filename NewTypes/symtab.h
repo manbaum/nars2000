@@ -234,7 +234,19 @@ typedef enum tagIMM_TYPES
     IMMTYPE_PRIMOP3   ,     // 08:  ...       ambiguous ...
     IMMTYPE_RAT       ,     // 09:  Rational number
     IMMTYPE_VFP       ,     // 0A:  Variable-precision floating-point number
-                            // 0B-0F:  Available entries (4 bits)
+    IMMTYPE_HC2I      ,     // 0B:  Complex    # w/INT coefficients
+    IMMTYPE_HC2F      ,     // 0C:  ...          w/FLT ...
+    IMMTYPE_HC2R      ,     // 0D:  ...          w/RAT ...
+    IMMTYPE_HC2V      ,     // 0E:  ...          w/VFP ...
+    IMMTYPE_HC4I      ,     // 0F:  Quaternion # w/INT ...
+    IMMTYPE_HC4F      ,     // 10:  ...          w/FLT ...
+    IMMTYPE_HC4R      ,     // 11:  ...          w/RAT ...
+    IMMTYPE_HC4V      ,     // 12:  ...          w/VFP ...
+    IMMTYPE_HC8I      ,     // 13:  Octonion   # w/INT ...
+    IMMTYPE_HC8F      ,     // 14:  ...          w/FLT ...
+    IMMTYPE_HC8R      ,     // 15:  ...          w/RAT ...
+    IMMTYPE_HC8V      ,     // 16:  ...          w/VFP ...
+                            // 17-1F:  Available entries (5 bits)
 } IMM_TYPES, *LPIMM_TYPES;
 
 // N.B.:  Whenever changing the above enum (IMM_TYPES),
@@ -246,7 +258,9 @@ typedef enum tagIMM_TYPES
 // Translate an immediate type to a char
 // Note that the order of the chars in this #define
 //   depends upon the ordering of the above enum
-#define ImmTypeAsChar   L"!BIFC?123RV"
+// ***NOTE THAT THESE VALUES ARE SAVED IN WORKSPACES
+//    SO YOU HAD BETTER KNOW WHAT YOU ARE DOING***
+#define ImmTypeAsChar   L"!BIFC?123RVifrvjgswkhtx"
 
 // Name types
 typedef enum tagNAME_TYPES
@@ -296,23 +310,23 @@ typedef enum tagOBJ_NAMES
 typedef struct tagSTFLAGS
 {
     UINT Imm:1,             // 00000001:  The data in .stData is Immediate simple numeric or character scalar
-         ImmType:4,         // 0000001E:  ...                    Immediate Boolean, Integer, Character, or Float (see IMM_TYPES)
-         Inuse:1,           // 00000020:  Inuse entry
-         Value:1,           // 00000040:  Entry has a value
-         ObjName:3,         // 00000380:  The data in .stData is NULL if .stNameType is NAMETYPE_UNK; value, address, or HGLOBAL otherwise
+         ImmType:5,         // 0000003E:  ...                    Immediate Boolean, Integer, Character, or Float (see IMM_TYPES)
+         Inuse:1,           // 00000040:  Inuse entry
+         Value:1,           // 00000080:  Entry has a value
+         ObjName:3,         // 00000700:  The data in .stData is NULL if .stNameType is NAMETYPE_UNK; value, address, or HGLOBAL otherwise
                             //            (see OBJ_NAMES)
-         stNameType:4,      // 00003C00:  The data in .stdata is value (if .Imm), address (if .FcnDir), or HGLOBAL (otherwise)
+         stNameType:4,      // 00007800:  The data in .stdata is value (if .Imm), address (if .FcnDir), or HGLOBAL (otherwise)
                             //            (see NAME_TYPES)
-         SysVarValid:5,     // 0007C000:  Index to validation routine for System Vars (see SYS_VARS)
-         UsrDfn:1,          // 00080000:  User-defined function/operator
-         DfnLabel:1,        // 00100000:  User-defined function/operator label        (valid only if .Value is set)
-         DfnSysLabel:1,     // 00200000:  User-defined function/operator system label (valid only if .Value is set)
-         DfnAxis:1,         // 00400000:  User-defined function/operator accepts axis value
-         FcnDir:1,          // 00800000:  Direct function/operator               (stNameFcn is valid)
-         StdSysName:1,      // 01000000:  Is a standard System Name
-         bIsAlpha:1,        // 02000000:  Is Alpha
-         bIsOmega:1,        // 04000000:  Is Omega
-         :5;                // F8000000:  Available bits
+         SysVarValid:5,     // 000F8000:  Index to validation routine for System Vars (see SYS_VARS)
+         UsrDfn:1,          // 00100000:  User-defined function/operator
+         DfnLabel:1,        // 00200000:  User-defined function/operator label        (valid only if .Value is set)
+         DfnSysLabel:1,     // 00400000:  User-defined function/operator system label (valid only if .Value is set)
+         DfnAxis:1,         // 00800000:  User-defined function/operator accepts axis value
+         FcnDir:1,          // 01000000:  Direct function/operator               (stNameFcn is valid)
+         StdSysName:1,      // 02000000:  Is a standard System Name
+         bIsAlpha:1,        // 04000000:  Is Alpha
+         bIsOmega:1,        // 08000000:  Is Omega
+         :4;                // F0000000:  Available bits
 } STFLAGS, *LPSTFLAGS;
 
 // N.B.:  Whenever changing the above struct (STFLAGS),

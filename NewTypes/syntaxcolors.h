@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
 #define DEF_SC_NUMCONST        DEF_SCN_GRAY         , DEF_SCN_TRANSPARENT
 #define DEF_SC_CHRCONST        DEF_SCN_TEAL         , DEF_SCN_TRANSPARENT
 #define DEF_SC_PNSEP           DEF_SCN_CRIMSON      , DEF_SCN_TRANSPARENT
+#define DEF_SC_HCSEP           DEF_SCN_DARKVIOLET   , DEF_SCN_TRANSPARENT
 #define DEF_SC_COMMENT         DEF_SCN_GREEN        , DEF_SCN_TRANSPARENT
 #define DEF_SC_LINEDRAWING     DEF_SCN_TEAL         , DEF_SCN_TRANSPARENT
 #define DEF_SC_FCNLINENUMS     DEF_SCN_DARKSEAGREEN , DEF_SCN_TRANSPARENT
@@ -63,33 +64,36 @@ typedef enum tagSC_TYPE
     SC_CTRLSTRUC,       // 09:  Control Structure (including leading colon)
     SC_NUMCONST,        // 0A:  Numeric constant (including leading overbar)
     SC_CHRCONST,        // 0B:  Character constant (including single- or double-quote marks)
-    SC_PNSEP,           // 0C:  Point notation separator (beEprvx)
-    SC_COMMENT,         // 0D:  Comment (including comment symbol)
-    SC_LINEDRAWING,     // 0E:  Line drawing chars
-    SC_FCNLINENUMS,     // 0F:  Function Line Numbers
-    SC_MATCHGRP1,       // 10:  Matched Grouping Symbols [] () {}
-    SC_MATCHGRP2,       // 11:  Matched Grouping Symbols [] () {}
-    SC_MATCHGRP3,       // 12:  Matched Grouping Symbols [] () {}
-    SC_MATCHGRP4,       // 13:  Matched Grouping Symbols [] () {}
-    SC_UNMATCHGRP,      // 14:  Unmatched Grouping Symbols [] () {} ' "
-    SC_UNNESTED,        // 15:  Improperly Nested Grouping Symbols [] () {}
-    SC_UNK,             // 16:  Unknown symbol
-    SC_WINTEXT,         // 17:  Window text
-    SC_LENGTH           // 18:  # entries in this enum
+    SC_PNSEP,           // 0C:  Point notation separator (beEgprvx)
+    SC_HCSEP,           // 0D:  Hypercomplex notation separator (ad ar ijkl)
+    SC_COMMENT,         // 0E:  Comment (including comment symbol)
+    SC_LINEDRAWING,     // 0F:  Line drawing chars
+    SC_FCNLINENUMS,     // 10:  Function Line Numbers
+    SC_MATCHGRP1,       // 11:  Matched Grouping Symbols [] () {}
+    SC_MATCHGRP2,       // 12:  Matched Grouping Symbols [] () {}
+    SC_MATCHGRP3,       // 13:  Matched Grouping Symbols [] () {}
+    SC_MATCHGRP4,       // 14:  Matched Grouping Symbols [] () {}
+    SC_UNMATCHGRP,      // 15:  Unmatched Grouping Symbols [] () {} ' "
+    SC_UNNESTED,        // 16:  Improperly Nested Grouping Symbols [] () {}
+    SC_UNK,             // 17:  Unknown symbol
+    SC_WINTEXT,         // 18:  Window text
+    SC_LENGTH           // 19:  # entries in this enum
                         //      Because this enum is origin-0, this value is the # valid columns.
 } SCTYPE, *LPSCTYPE;
 
 #define NUM_MATCHGRPS       4
 
-// N.B.:  Whenever changing the above enum (SC_TYPE),
+// N.B.:  Whenever changing the above enum (tagSC_TYPE),
 //   be sure to make a corresponding change to
 //   <gSyntaxColorName> and <gSyntClrBGTrans> in <externs.h>,
 //   <KEYNAME_SC_xxx> and <aColorKeyNames> in <inifile.c>,
+//   <#define IDC_SYNTCLR_LTxx>,
 //   <#define IDC_SYNTCLR_XB_TRANSxx>,
 //   <#define IDC_SYNTCLR_BN_FGCLRxx>,
 //   <#define IDC_SYNTCLR_BN_BGCLRxx>,
 //   <#define IDC_SYNTCLR_LT_FGMRKxx>,
-//   <#define IDC_SYNTCLR_LT_BGMRKxx> in <resource.h>, and
+//   <#define IDC_SYNTCLR_LT_BGMRKxx> in <resource.h>,
+//   <IDD_PROPPAGE_SYNTAX_COLORING DIALOGEX> in <main.rc>, and
 //   <SYNTAX COLORING -- WM_COMMAND> in <CustomizeDlgProc> in <customize.c>.
 // If changing the # SC_MATCHGRPn,
 //   be sure to make a corresponding change to

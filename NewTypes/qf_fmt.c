@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -212,6 +212,10 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
     if (!IsSimpleChar (aplTypeLft))
         goto LEFT_DOMAIN_EXIT;
 
+    // Check for RIGHT DOMAIN ERROR
+    if (IsHCAny (aplTypeRht))
+        goto RIGHT_DOMAIN_EXIT;
+
     // Get left & right arg's global ptrs
     aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
@@ -294,7 +298,8 @@ LPPL_YYSTYPE SysFnDydFMT_EM_YY
                 AttrsOfGlb (hGlbItm, &aplTypeItm, &aplNELMItm, &aplRankItm, &aplColsItm);
 
                 // Check for RIGHT DOMAIN ERROR
-                if (!IsSimpleGlbNum (aplTypeItm))
+                if (!IsSimpleGlbNum (aplTypeItm)
+                 || IsHCAny (aplTypeItm))
                     goto RIGHT_DOMAIN_EXIT;
 
                 // Count the # cols & rows in the item
@@ -1773,7 +1778,7 @@ void QFMT_CommonEFIR
 
                     lpwEnd =
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
-                                   aplVfpItm,            // The value to format
+                                     &aplVfpItm,            // Ptr to the value to format
                             -(APLINT) fsDig,                // # significant digits (0 = all)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
@@ -1791,7 +1796,7 @@ void QFMT_CommonEFIR
 
                     lpwEnd =
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
-                                      aplVfpItm,            // The value to format
+                                     &aplVfpItm,            // Ptr to the value to format
                             -(APLINT) fsDig,                // # significant digits (0 = all)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
@@ -1846,7 +1851,7 @@ void QFMT_CommonEFIR
 
                     lpwEnd =
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
-                                      aplVfpItm,            // The value to format
+                                     &aplVfpItm,            // Ptr to the value to format
                                       fsDig,                // # fractional digits (0 = all)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
@@ -1864,7 +1869,7 @@ void QFMT_CommonEFIR
 
                     lpwEnd =
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
-                                      aplVfpItm,            // The value to format
+                                     &aplVfpItm,            // Ptr to the value to format
                                       fsDig,                // # fractional digits (0 = all)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
@@ -1956,7 +1961,7 @@ void QFMT_CommonEFIR
 
             lpwEnd =
               FormatAplRatFC (lpwszFormat,          // Ptr to output save area
-                              aplRatTmp,            // The value to format
+                             &aplRatTmp,            // Ptr to the value to format
                               UTF16_OVERBAR,        // Char to use as overbar
                               DEF_RATSEP,           // Char to use as rational separator
                               FALSE,                // TRUE iff we're to substitute text for infinity
@@ -2039,7 +2044,7 @@ void QFMT_CommonEFIR
 
                     lpaplChar =
                       FormatAplRatFC (lpwszFormat,          // Ptr to output save area
-                                      aplRatTmp,            // The value to format
+                                     &aplRatTmp,            // Ptr to the value to format
                                       UTF16_OVERBAR,        // Char to use as overbar
                                       DEF_RATSEP,           // Char to use as rational separator
                                       FALSE,                // TRUE iff we're to substitute text for infinity
@@ -2059,7 +2064,7 @@ void QFMT_CommonEFIR
 
                     lpaplChar =
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
-                                      aplVfpTmp,            // The value to format
+                                     &aplVfpTmp,            // Ptr to the value to format
                                       fsDig,                // # significant digits (0 = all)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar

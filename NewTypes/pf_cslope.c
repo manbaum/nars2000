@@ -181,15 +181,16 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeRht;    // Right arg storage type
-    APLNELM      aplNELMRht;    // ...       NELM
-    APLRANK      aplRankRht;    // ...       rank
-    HGLOBAL      hGlbLft;       // Left arg global memory handle
-    LPVOID       lpMemLft;      // Ptr to left arg global memory
-    LPPL_YYSTYPE lpYYRes,       // Ptr to the result
-                 lpYYRes2;      // Ptr to secondary result
-    APLUINT      ByteRes;       // # bytes in the result
-    APLBOOL      bQuadIO;       // []IO
+    APLSTYPE          aplTypeRht;           // Right arg storage type
+    APLNELM           aplNELMRht;           // ...       NELM
+    APLRANK           aplRankRht;           // ...       rank
+    HGLOBAL           hGlbLft;              // Left arg global memory handle
+    LPVARARRAY_HEADER lpMemHdrLft = NULL;   // Ptr to left arg header
+    LPVOID            lpMemLft;             // Ptr to left arg global memory
+    LPPL_YYSTYPE      lpYYRes,              // Ptr to the result
+                      lpYYRes2;             // Ptr to secondary result
+    APLUINT           ByteRes;              // # bytes in the result
+    APLBOOL           bQuadIO;              // []IO
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
@@ -218,9 +219,9 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemLft = MyGlobalLock (hGlbLft);
+    lpMemHdrLft = MyGlobalLock (hGlbLft);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemLft)
+#define lpHeader    lpMemHdrLft
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_APA;
@@ -232,10 +233,10 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
 #undef  lpHeader
 
     // Fill in the dimension
-    *VarArrayBaseToDim (lpMemLft) = aplRankRht;
+    *VarArrayBaseToDim (lpMemHdrLft) = aplRankRht;
 
     // Skip over the header and dimensions to the data
-    lpMemLft = VarArrayDataFmBase (lpMemLft);
+    lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
 
     // Fill in the APA parameters
 #define lpAPA       ((LPAPLAPA) lpMemLft)
@@ -243,7 +244,7 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
     lpAPA->Mul = -1;
 #undef  lpAPA
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+    MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
@@ -297,44 +298,46 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
      LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE      aplTypeLft,           // Left arg storage type
-                  aplTypeRht,           // Right ...
-                  aplTypeRes;           // Result   ...
-    APLNELM       aplNELMLft,           // Left arg NELM
-                  aplNELMRht,           // Right ...
-                  aplNELMRes;           // Result   ...
-    APLRANK       aplRankLft,           // Left arg rank
-                  aplRankRht,           // Right ...
-                  aplRankRes;           // Result   ...
-    HGLOBAL       hGlbLft = NULL,       // Left arg global memory handle
-                  hGlbRht = NULL,       // Right ...
-                  hGlbRes = NULL,       // Result   ...
-                  hGlbAxis = NULL,      // Axis     ...
-                  hGlbWVec = NULL,      // Weighting vector ...
-                  hGlbOdo = NULL;       // Odometer ...
-    LPAPLDIM      lpMemDimRht,          // Ptr to right arg dimensions
-                  lpMemDimRes;          // Ptr to result    ...
-    APLDIM        uMinDim;              //
-    LPVOID        lpMemLft = NULL,      // Ptr to left arg global memory
-                  lpMemRht = NULL,      // Ptr to right ...
-                  lpMemRes = NULL;      // Ptr to result   ...
-    LPAPLUINT     lpMemAxisHead = NULL, // Ptr to axis values, fleshed out by CheckAxis_EM
-                  lpMemAxisTail,        // Ptr to grade up of AxisHead
-                  lpMemWVec = NULL,     // Ptr to weighting vector ...
-                  lpMemOdo = NULL;      // Ptr to odometer ...
-    APLUINT       ByteRes,              // # bytes in the result
-                  uRht,                 // Right arg loop counter
-                  uRes,                 // Result    ...
-                  uOdo;                 // Odometer  ...
-    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
-    UINT          uBitIndex,            // Bit index for marching through Booleans
-                  uBitMask;             // Bit mask  ...
-    APLINT        iDim,                 // Dimension loop counter
-                  apaOffRht,            // Right arg APA offset
-                  apaMulRht;            // ...           multiplier
-    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
-    LPVARARRAY_HEADER lpMemHdrRht;      // Ptr to right arg header
+    APLSTYPE          aplTypeLft,           // Left arg storage type
+                      aplTypeRht,           // Right ...
+                      aplTypeRes;           // Result   ...
+    APLNELM           aplNELMLft,           // Left arg NELM
+                      aplNELMRht,           // Right ...
+                      aplNELMRes;           // Result   ...
+    APLRANK           aplRankLft,           // Left arg rank
+                      aplRankRht,           // Right ...
+                      aplRankRes;           // Result   ...
+    HGLOBAL           hGlbLft = NULL,       // Left arg global memory handle
+                      hGlbRht = NULL,       // Right ...
+                      hGlbRes = NULL,       // Result   ...
+                      hGlbAxis = NULL,      // Axis     ...
+                      hGlbWVec = NULL,      // Weighting vector ...
+                      hGlbOdo = NULL;       // Odometer ...
+    LPAPLDIM          lpMemDimRht,          // Ptr to right arg dimensions
+                      lpMemDimRes;          // Ptr to result    ...
+    APLDIM            uMinDim;              //
+    LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
+                      lpMemHdrRes = NULL;   // ...    result ...
+    LPVOID            lpMemRht,             // Ptr to right arg global memory
+                      lpMemRes;             // Ptr to result   ...
+    LPAPLUINT         lpMemAxisHead = NULL, // Ptr to axis values, fleshed out by CheckAxis_EM
+                      lpMemAxisTail,        // Ptr to grade up of AxisHead
+                      lpMemWVec = NULL,     // Ptr to weighting vector ...
+                      lpMemOdo = NULL;      // Ptr to odometer ...
+    APLUINT           ByteRes,              // # bytes in the result
+                      uRht,                 // Right arg loop counter
+                      uRes,                 // Result    ...
+                      uOdo;                 // Odometer  ...
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
+    UINT              uBitIndex,            // Bit index for marching through Booleans
+                      uBitMask;             // Bit mask  ...
+    APLINT            iDim,                 // Dimension loop counter
+                      apaOffRht,            // Right arg APA offset
+                      apaMulRht;            // ...           multiplier
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    int               iHCDimRht,            // HC Dimension (1, 2, 4, 8)
+                      i;                    // Loop counter
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -354,9 +357,8 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
-    // Get left and right arg's global ptrs
-    GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    // Get right arg's global ptr
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // Check for RANK ERROR
     if (IsMultiRank (aplRankLft))
@@ -384,6 +386,9 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
         aplTypeRes = ARRAY_INT;
     else
         aplTypeRes = aplTypeRht;
+
+    // Calculate the HC Dimension (1, 2, 4, 8)
+    iHCDimRht = TranslateArrayTypeToHCDim (aplTypeRht);
 
     // Strip out the simple scalar right argument case
     if (IsScalar (aplRankRht) && IsSimpleNH (aplTypeRes))
@@ -443,14 +448,11 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     //   <aplRankRht> values in lpMemAxisHead
     lpMemAxisTail = &lpMemAxisHead[aplRankRht];
 
-    // Save a ptr to the right arg header
-    lpMemHdrRht = lpMemRht;
-
     // Skip over the header to the dimensions
-    lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+    lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayDataFmBase (lpMemRht);
+    lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
     // Calculate the NELM of the result
     aplNELMRes = 1;
@@ -487,9 +489,9 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -502,7 +504,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
 #undef  lpHeader
 
     // Skip over the header to the dimensions
-    lpMemRes = lpMemDimRes = VarArrayBaseToDim (lpMemRes);
+    lpMemRes = lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
 
     // Fill in the dimensions
     if (!IsScalar (aplRankRes))
@@ -634,6 +636,9 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
             break;
 
         case ARRAY_INT:
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
             // Loop through the elements in the result
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
@@ -651,13 +656,18 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 //   the values in lpMemDimRes
                 IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
 
-                // Copy element # uRht from the right arg to lpMemRes[uRes]
-                ((LPAPLINT) lpMemRes)[uRes] = ((LPAPLINT) lpMemRht)[uRht];
+                // Loop through all of the parts
+                for (i = 0; i < iHCDimRht; i++)
+                    // Copy element # uRht from the right arg to lpMemRes[uRes]
+                    *((LPAPLINT  )              lpMemRes)++ = ((LPAPLINT)   lpMemRht)[i + uRht * iHCDimRht];
             } // End FOR
 
             break;
 
         case ARRAY_FLOAT:
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
             // Loop through the elements in the result
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
@@ -675,8 +685,10 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 //   the values in lpMemDimRes
                 IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
 
-                // Copy element # uRht from the right arg to lpMemRes[uRes]
-                ((LPAPLFLOAT) lpMemRes)[uRes] = ((LPAPLFLOAT) lpMemRht)[uRht];
+                // Loop through all of the parts
+                for (i = 0; i < iHCDimRht; i++)
+                    // Copy element # uRht from the right arg to lpMemRes[uRes]
+                    *((LPAPLFLOAT)              lpMemRes)++ = ((LPAPLFLOAT) lpMemRht)[i + uRht * iHCDimRht];
             } // End FOR
 
             break;
@@ -760,6 +772,9 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
             break;
 
         case ARRAY_RAT:
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
             // Loop through the elements in the result
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
@@ -777,13 +792,18 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 //   the values in lpMemDimRes
                 IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
 
-                // Copy element # uRht from the right arg to lpMemRes[uRes]
-                mpq_init_set (&((LPAPLRAT) lpMemRes)[uRes], &((LPAPLRAT) lpMemRht)[uRht]);
+                // Loop through all of the parts
+                for (i = 0; i < iHCDimRht; i++)
+                    // Copy element # uRht from the right arg to lpMemRes[uRes]
+                    mpq_init_set   (((LPAPLRAT) lpMemRes)++,  &((LPAPLRAT)  lpMemRht)[i + uRht * iHCDimRht]);
             } // End FOR
 
             break;
 
         case ARRAY_VFP:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
             // Loop through the elements in the result
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
@@ -801,8 +821,10 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 //   the values in lpMemDimRes
                 IncrOdometer (lpMemOdo, lpMemDimRes, NULL, aplRankRes);
 
-                // Copy element # uRht from the right arg to lpMemRes[uRes]
-                mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uRes], &((LPAPLVFP) lpMemRht)[uRht]);
+                // Loop through all of the parts
+                for (i = 0; i < iHCDimRht; i++)
+                    // Copy element # uRht from the right arg to lpMemRes[uRes]
+                    mpfr_init_copy (((LPAPLVFP) lpMemRes)++,  &((LPAPLVFP)  lpMemRht)[i + uRht * iHCDimRht]);
             } // End FOR
 
             break;
@@ -812,10 +834,10 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     } // End SWITCH
 PROTO_EXIT:
     // Unlock the result global memory in case TypeDemote actually demotes
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
     // Allocate a new YYRes
@@ -829,7 +851,7 @@ PROTO_EXIT:
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    TypeDemote (&lpYYRes->tkToken);
+    TypeDemote (&lpYYRes->tkToken, FALSE);
 
     goto NORMAL_EXIT;
 
@@ -859,12 +881,12 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this storage
@@ -880,22 +902,16 @@ NORMAL_EXIT:
     // Unlock and free (and set to NULL) a global name and ptr
     UnlFreeGlbName (hGlbAxis, lpMemAxisHead);
 
-    if (hGlbLft && lpMemLft)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
-    } // End IF
-
-    if (hGlbRes && lpMemRes)
-    {
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
     return lpYYRes;

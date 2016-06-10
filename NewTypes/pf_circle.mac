@@ -1,0 +1,562 @@
+//***************************************************************************
+//  NARS2000 -- Primitive Function -- Circle Macros
+//***************************************************************************
+
+/***************************************************************************
+    NARS2000 -- An Experimental APL Interpreter
+    Copyright (C) 2006-2016 Sudley Place Software
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+***************************************************************************/
+
+////PrimFnCircleMpfMac (c,2,.partsLo.partsLo)
+////PrimFnCircleMpfMac (h,4,.partsLo        )
+////PrimFnCircleMpfMac (o,8,                )
+
+#define PrimFnCircleMpfMac(cho,N,suf)                                                                               \
+    UINT        bRet, i;                                                                                            \
+    APLINT      aplLft;                                                                                             \
+    mp##cho##f_t  aplTmp,                                                                                           \
+                  aplAdd,                                                                                           \
+                  aplSub,                                                                                           \
+                  aplMul,                                                                                           \
+                  aplDiv;                                                                                           \
+                                                                                                                    \
+    /* Attempt to convert the float to an integer using System []CT                                               */\
+    aplLft = ConvertToInteger_SCT (ARRAY_HC##N##V, &lpatLft->aplHC##N##V, 0, &bRet);                                \
+                                                                                                                    \
+    if (bRet)                                                                                                       \
+    /* Split cases based upon the value of the (now) integer left argument                                        */\
+    switch (aplLft)                                                                                                 \
+    {                                                                                                               \
+        case  12:       /* arc (phase) of R                                                                       */\
+            aplTmp[0] = ArcHCxV_RE (lpatRht->aplHC8V, N)suf;                                                        \
+            lpMemRes[uRes].parts[0] = aplTmp[0].parts[1];                                                           \
+            lpMemRes[uRes].parts[1] = aplTmp[0].parts[0];                                                           \
+                                                                                                                    \
+            /* Loop through the rest of the imaginary parts                                                       */\
+            for (i = 2; i < N; i++)                                                                                 \
+                /* Copy to the result                                                                             */\
+                lpMemRes[uRes].parts[i] = aplTmp[0].parts[i];                                                       \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  11:       /* Imaginary part of R                                                                    */\
+            mpfr_init_set (&lpMemRes[uRes].parts[0], &lpatRht->aplHC##N##V.parts[1], MPFR_RNDN);                    \
+                                                                                                                    \
+            /* Loop through the imaginary parts                                                                   */\
+            for (i = 1; i < N; i++)                                                                                 \
+                mpfr_init0 (&lpMemRes[uRes].parts[i]);                                                              \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  10:       /* |R                                                                                     */\
+            lpMemRes[uRes].parts[0] = MagHC##N##V (lpatRht->aplHC##N##V);                                           \
+                                                                                                                    \
+            /* Loop through the imaginary parts                                                                   */\
+            for (i = 1; i < N; i++)                                                                                 \
+                mpfr_init0 (&lpMemRes[uRes].parts[i]);                                                              \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   9:       /* Real part of R                                                                         */\
+            mpfr_init_set (&lpMemRes[uRes].parts[0], &lpatRht->aplHC##N##V.parts[0], MPFR_RNDN);                    \
+                                                                                                                    \
+            /* Loop through the imaginary parts                                                                   */\
+            for (i = 1; i < N; i++)                                                                                 \
+                mpfr_init0 (&lpMemRes[uRes].parts[i]);                                                              \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   8:       /* sqrt ((-1) - R * 2)                                                                    */\
+            /* R * 2                                                                                              */\
+            aplMul[0] = MulHC##N##V_RE (lpatRht->aplHC##N##V,                                                       \
+                                        lpatRht->aplHC##N##V);                                                      \
+            /* (-1) - R * 2                                                                                       */\
+            aplTmp[0] = SubHC##N##V_RE (conmpof_N1##suf,                                                            \
+                                        aplMul[0]);                                                                 \
+            /* sqrt ((-1) - R * 2)                                                                                  */\
+            lpMemRes[uRes] = SqrtHCxV_RE (*(LPAPLHC8V) &aplTmp, N)suf;                                              \
+                                                                                                                    \
+            /* We no longer need this storage                                                                     */\
+            mp##cho##f_clear (aplTmp);                                                                              \
+            mp##cho##f_clear (aplMul);                                                                              \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   7:       /* tanh (R)                                                                               */\
+            /* Intialize to 0                                                                                     */\
+            mp##cho##f_init0 (aplTmp);                                                                              \
+                                                                                                                    \
+            mp##cho##f_tanh  (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   6:       /* cosh (R)                                                                               */\
+            /* Intialize to 0                                                                                     */\
+            mp##cho##f_init0 (aplTmp);                                                                              \
+                                                                                                                    \
+            mp##cho##f_cosh  (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   5:       /* sinh (R)                                                                               */\
+            /* Intialize to 0                                                                                     */\
+            mp##cho##f_init0 (aplTmp);                                                                              \
+                                                                                                                    \
+            mp##cho##f_sinh  (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   4:       /* sqrt (1 + R * 2)                                                                       */\
+            /*  1 + R * 2                                                                                         */\
+            aplMul[0] = MulHC##N##V_RE (lpatRht->aplHC##N##V,                                                       \
+                                        lpatRht->aplHC##N##V);                                                      \
+            aplAdd[0] = AddHC##N##V_RE (conmpof_1##suf,                                                             \
+                                        aplMul[0]);                                                                 \
+            /* sqrt (1 + R * 2)                                                                                   */\
+            lpMemRes[uRes] = SqrtHCxV_RE (*(LPAPLHC8V) &aplAdd, N)suf;                                              \
+                                                                                                                    \
+            /* We no longer need this storage                                                                     */\
+            mp##cho##f_clear (aplAdd);                                                                              \
+            mp##cho##f_clear (aplMul);                                                                              \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   3:       /* tan (R)                                                                                */\
+            /* Intialize to 0                                                                                     */\
+            mp##cho##f_init0 (aplTmp);                                                                              \
+                                                                                                                    \
+            mp##cho##f_tan   (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   2:       /* cos (R)                                                                                */\
+            /* Intialize to 0                                                                                     */\
+            mp##cho##f_init0 (aplTmp);                                                                              \
+                                                                                                                    \
+            mp##cho##f_cos   (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   1:       /* sin (R)                                                                                */\
+            /* Intialize to 0                                                                                     */\
+            mp##cho##f_init0 (aplTmp);                                                                              \
+                                                                                                                    \
+            mp##cho##f_sin   (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   0:       /* sqrt (1 - R * 2)                                                                       */\
+            /*  1 - R * 2                                                                                         */\
+            aplMul[0] = MulHC##N##V_RE (lpatRht->aplHC##N##V,                                                       \
+                                        lpatRht->aplHC##N##V);                                                      \
+            aplSub[0] = SubHC##N##V_RE (conmpof_1##suf,                                                             \
+                                        aplMul[0]);                                                                 \
+            /* sqrt (1 - R * 2)                                                                                   */\
+            lpMemRes[uRes] = SqrtHCxV_RE (*(LPAPLHC8V) &aplSub, N)suf;                                              \
+                                                                                                                    \
+            /* We no longer need this storage                                                                     */\
+            mp##cho##f_clear (aplSub);                                                                              \
+            mp##cho##f_clear (aplMul);                                                                              \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  -1:       /* asin (R)                                                                               */\
+            /* Intialize to 0                                                                                     */\
+            mp##cho##f_init0 (aplTmp);                                                                              \
+                                                                                                                    \
+            mp##cho##f_asin  (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  -2:       /* acos (R)                                                                               */\
+            /* Intialize to 0                                                                                     */\
+            mp##cho##f_init0 (aplTmp);                                                                              \
+                                                                                                                    \
+            mp##cho##f_acos  (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  -3:       /* atan (R)                                                                               */\
+            /* Intialize to 0                                                                                     */\
+            mp##cho##f_init0 (aplTmp);                                                                              \
+                                                                                                                    \
+            /* ***FIXME*** -- Not atan2 ???                                                                       */\
+            mp##cho##f_atan  (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  -4:       /* (R + 1) × sqrt ((R - 1) / (R + 1))                                                     */\
+            /* If the right arg is -1, return 0                                                                   */\
+            if (EqualHCxVvHCxV (lpatRht,                                                                            \
+                  (LPALLTYPES) &conmpof_N1##suf,                                                                    \
+                                N,                                                                                  \
+                                GetQuadCT (),                                                                       \
+                                __FUNCTION__))                                                                      \
+                /* Initialzie the result to 0                                                                     */\
+                mp##cho##f_init0 (&lpMemRes[uRes]);                                                                 \
+            else                                                                                                    \
+            {                                                                                                       \
+                /*  (R - 1)                                                                                       */\
+                aplSub[0] = SubHC##N##V_RE (lpatRht->aplHC##N##V,                                                   \
+                                            conmpof_1##suf);                                                        \
+                /*  (R + 1)                                                                                       */\
+                aplAdd[0] = AddHC##N##V_RE (lpatRht->aplHC##N##V,                                                   \
+                                            conmpof_1##suf);                                                        \
+                /*  (R - 1) / (R + 1)                                                                             */\
+                aplDiv[0]= DivHC##N##V_RE (aplSub[0],                                                               \
+                                           aplAdd[0]);                                                              \
+                /* We no longer need this storage                                                                 */\
+                mp##cho##f_clear (aplAdd);                                                                          \
+                mp##cho##f_clear (aplSub);                                                                          \
+                                                                                                                    \
+                /* sqrt ((R - 1 / (R + 1))                                                                        */\
+                aplTmp[0] = SqrtHCxV_RE (*(LPAPLHC8V) &aplDiv[0], N)suf;                                            \
+                                                                                                                    \
+                /* (R + 1)                                                                                        */\
+                aplAdd[0] = AddHC##N##V_RE (lpatRht->aplHC##N##V,                                                   \
+                                            conmpof_1##suf),                                                        \
+                /* (R + 1) x sqrt ((R - 1 / (R + 1))                                                              */\
+                lpMemRes[uRes] = MulHC##N##V_RE (aplAdd[0],                                                         \
+                                                 aplTmp[0]);                                                        \
+                /* We no longer need this storage                                                                 */\
+                mp##cho##f_clear (aplAdd);                                                                          \
+                mp##cho##f_clear (aplTmp);                                                                          \
+                mp##cho##f_clear (aplDiv);                                                                          \
+            } /* End IF/ELSE                                                                                      */\
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  -5:       /* asinh (R)                                                                              */\
+                        /* ln (R + sqrt (1 + R * 2))                                                              */\
+            /* Intialize to 0                                                                                     */\
+            mp##cho##f_init0 (aplTmp);                                                                              \
+                                                                                                                    \
+            mp##cho##f_asinh (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  -6:       /* acosh (R)                                                                              */\
+                        /* 2 x ln (sqrt ((R + 1) x 0.5) + sqrt ((R - 1) x 0.5))                                   */\
+            /* Intialize to 0                                                                                     */\
+            mp##cho##f_init0 (aplTmp);                                                                              \
+                                                                                                                    \
+            mp##cho##f_acosh (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  -7:       /* atanh (R)                                                                              */\
+                        /* 0.5 x (ln (1 + R) - ln (1 - R))                                                        */\
+            /* Intialize to 0                                                                                     */\
+            mp##cho##f_init0 (aplTmp);                                                                              \
+                                                                                                                    \
+            mp##cho##f_atanh (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  -8:       /* -sqrt ((-1) - R * 2)                                                                   */\
+            /*  R * 2                                                                                             */\
+            aplMul[0] = MulHC##N##V_RE (lpatRht->aplHC##N##V,                                                       \
+                                        lpatRht->aplHC##N##V);                                                      \
+            /*  (-1) - R * 2                                                                                      */\
+            aplSub[0] = SubHC##N##V_RE (conmpof_N1##suf,                                                            \
+                                        aplMul[0]);                                                                 \
+            /*  sqrt ((-1) - R * 2)                                                                               */\
+            aplTmp[0] = SqrtHCxV_RE (*(LPAPLHC8V) &aplSub, N)suf;                                                   \
+                                                                                                                    \
+            /* -sqrt ((-1) - R * 2)                                                                               */\
+            lpMemRes[uRes] = NegHC##N##V_RE (aplTmp[0]);                                                            \
+                                                                                                                    \
+            /* We no longer need this storage                                                                     */\
+            mp##cho##f_clear (aplTmp);                                                                              \
+            mp##cho##f_clear (aplSub);                                                                              \
+            mp##cho##f_clear (aplMul);                                                                              \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  -9:       /* R                                                                                      */\
+            mphc##N##v_init_set (&lpMemRes[uRes], &lpatRht->aplHC##N##V);                                           \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case -10:       /* +R                                                                                     */\
+            lpMemRes[uRes] = ConjHC##N##V_RE (lpatRht->aplHC##N##V);                                                \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case -11:       /* 0J1 x R                                                                                */\
+            lpMemRes[uRes] = MulHC##N##V_RE (conmpof_I##suf,                                                        \
+                                             lpatRht->aplHC##N##V);                                                 \
+            return;                                                                                                 \
+                                                                                                                    \
+        case -12:       /* *0J1 x R                                                                               */\
+            lpMemRes[uRes] = ExpHC##N##V_RE (MulHC##N##V_RE (conmpof_I##suf,                                        \
+                                                             lpatRht->aplHC##N##V));                                \
+            return;                                                                                                 \
+                                                                                                                    \
+        default:                                                                                                    \
+            break;                                                                                                  \
+    } /* End SWITCH                                                                                               */\
+                                                                                                                    \
+    RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+////PrimFnCircleFpfMac (c,2,.partsLo.partsLo)
+////PrimFnCircleFpfMac (h,4,.partsLo        )
+////PrimFnCircleFpfMac (o,8,                )
+
+#define PrimFnCircleFpfMac(cho,N,suf)                                                                               \
+    UINT        bRet, i;                                                                                            \
+    APLINT      aplLft;                                                                                             \
+    fp##cho##f_t  aplTmp = {0};                                                                                     \
+                                                                                                                    \
+    /* Attempt to convert the float to an integer using System []CT                                               */\
+    aplLft = ConvertToInteger_SCT (ARRAY_HC##N##F, &lpatLft->aplHC##N##F, 0, &bRet);                                \
+                                                                                                                    \
+    if (bRet)                                                                                                       \
+    /* Split cases based upon the value of the (now) integer left argument                                        */\
+    switch (aplLft)                                                                                                 \
+    {                                                                                                               \
+        case  12:       /* arc (phase) of R                                                                       */\
+            aplTmp[0] = ArcHCxF_RE (lpatRht->aplHC8F, N)suf;                                                        \
+            lpMemRes[uRes].parts[0] = aplTmp[0].parts[1];                                                           \
+            lpMemRes[uRes].parts[1] = aplTmp[0].parts[0];                                                           \
+                                                                                                                    \
+            /* Loop through the rest of the imaginary parts                                                       */\
+            for (i = 2; i < N; i++)                                                                                 \
+                /* Copy to the result                                                                             */\
+                lpMemRes[uRes].parts[i] = aplTmp[0].parts[i];                                                       \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  11:       /* Imaginary part of R                                                                    */\
+            lpMemRes[uRes].parts[0] = lpatRht->aplHC##N##F.parts[1];                                                \
+                                                                                                                    \
+            /* Loop through the imaginary parts                                                                   */\
+            for (i = 1; i < N; i++)                                                                                 \
+                lpMemRes[uRes].parts[i] = 0;                                                                        \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  10:       /* |R                                                                                     */\
+            lpMemRes[uRes].parts[0] = MagHC##N##F (lpatRht->aplHC##N##F);                                           \
+                                                                                                                    \
+            /* Loop through the imaginary parts                                                                   */\
+            for (i = 1; i < N; i++)                                                                                 \
+                lpMemRes[uRes].parts[i] = 0;                                                                        \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   9:       /* Real part of R                                                                         */\
+            lpMemRes[uRes].parts[0] = lpatRht->aplHC##N##F.parts[0];                                                \
+                                                                                                                    \
+            /* Loop through the imaginary parts                                                                   */\
+            for (i = 1; i < N; i++)                                                                                 \
+                lpMemRes[uRes].parts[i] = 0;                                                                        \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   8:       /* sqrt ((-1) - R * 2)                                                                    */\
+            /* (-1) - R * 2                                                                                       */\
+            aplTmp[0] = SubHC##N##F_RE (confpof_N1##suf,                                                            \
+                                        MulHC##N##F_RE (lpatRht->aplHC##N##F,                                       \
+                                                        lpatRht->aplHC##N##F));                                     \
+            /* sqrt ((-1) - R * 2)                                                                                  */\
+            lpMemRes[uRes] = SqrtHCxF_RE (*(LPAPLHC8F) &aplTmp, N)suf;                                              \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   7:       /* tanh (R)                                                                               */\
+            fp##cho##f_tanh  (*(fpcho_t *) &aplTmp[0], &lpatRht->aplHC8F);                                          \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   6:       /* cosh (R)                                                                               */\
+            fp##cho##f_cosh  (*(fpcho_t *) &aplTmp[0], &lpatRht->aplHC8F);                                          \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   5:       /* sinh (R)                                                                               */\
+            fp##cho##f_sinh  (*(fpcho_t *) &aplTmp[0], &lpatRht->aplHC8F);                                          \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   4:       /* sqrt (1 + R * 2)                                                                       */\
+            /*  1 + R * 2                                                                                         */\
+            aplTmp[0] = AddHC##N##F_RE (confpof_1##suf,                                                             \
+                                        MulHC##N##F_RE (lpatRht->aplHC##N##F,                                       \
+                                                        lpatRht->aplHC##N##F));                                     \
+            /* sqrt (1 + R * 2)                                                                                   */\
+            lpMemRes[uRes] = SqrtHCxF_RE (*(LPAPLHC8F) &aplTmp, N)suf;                                              \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   3:       /* tan (R)                                                                                */\
+            fp##cho##f_tan   (*(fpcho_t *) &aplTmp[0], &lpatRht->aplHC8F);                                          \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   2:       /* cos (R)                                                                                */\
+            fp##cho##f_cos   (*(fpcho_t *) &aplTmp[0], &lpatRht->aplHC8F);                                          \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   1:       /* sin (R)                                                                                */\
+            fp##cho##f_sin   (*(fpcho_t *) &aplTmp[0], &lpatRht->aplHC8F);                                          \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case   0:       /* sqrt (1 - R * 2)                                                                       */\
+            /*  1 - R * 2                                                                                         */\
+            aplTmp[0] = SubHC##N##F_RE (confpof_1##suf,                                                             \
+                                        MulHC##N##F_RE (lpatRht->aplHC##N##F,                                       \
+                                                        lpatRht->aplHC##N##F));                                     \
+            /* sqrt (1 - R * 2)                                                                                   */\
+            lpMemRes[uRes] = SqrtHCxF_RE (*(LPAPLHC8F) &aplTmp, N)suf;                                              \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  -1:       /* asin (R)                                                                               */\
+            fp##cho##f_asin  (*(fpcho_t *) &aplTmp[0], &lpatRht->aplHC8F);                                          \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  -2:       /* acos (R)                                                                               */\
+            fp##cho##f_acos  (*(fpcho_t *) &aplTmp[0], &lpatRht->aplHC8F);                                          \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  -3:       /* atan (R)                                                                               */\
+            /* ***FIXME*** -- Not atan2 ???                                                                       */\
+            fp##cho##f_atan  (*(fpcho_t *) &aplTmp[0], &lpatRht->aplHC8F);                                          \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  -4:       /* (R + 1) × sqrt ((R - 1) / (R + 1))                                                     */\
+            /* If the right arg is -1, return 0                                                                   */\
+            if (EqualHCxFvHCxF (lpatRht,                                                                            \
+                  (LPALLTYPES) &confpof_N1##suf,                                                                    \
+                                N,                                                                                  \
+                                GetQuadCT (),                                                                       \
+                                __FUNCTION__))                                                                      \
+                return;                                                                                             \
+                                                                                                                    \
+            /*  (R - 1) / (R + 1)                                                                                 */\
+            lpMemRes[uRes] = DivHC##N##F_RE (SubHC##N##F_RE (lpatRht->aplHC##N##F,                                  \
+                                                             confpof_1##suf),                                       \
+                                             AddHC##N##F_RE (lpatRht->aplHC##N##F,                                  \
+                                                             confpof_1##suf));                                      \
+            /* sqrt ((R - 1 / (R + 1))                                                                            */\
+            lpMemRes[uRes] = SqrtHCxF_RE (*(LPAPLHC8F) &lpMemRes[uRes], N)suf;                                      \
+                                                                                                                    \
+            /* (R + 1) x sqrt ((R - 1 / (R + 1))                                                                  */\
+            lpMemRes[uRes] = MulHC##N##F_RE (AddHC##N##F_RE (lpatRht->aplHC##N##F,                                  \
+                                                             confpof_1##suf),                                       \
+                                             lpMemRes[uRes]);                                                       \
+            /* If the real part of the arg is zero, and the                                                       */\
+            /*   magnitude of the imag parts of the arg                                                           */\
+            /*   is <= 1, ...                                                                                     */\
+            if (lpatRht->aplHC##N##F.parts[0] EQ 0.0                                                                \
+             && MagHC##N##F (lpatRht->aplHC##N##F) <= 1.0)                                                          \
+            {                                                                                                       \
+                Assert (lpMemRes[uRes].parts[0] < SYS_CT);                                                          \
+                                                                                                                    \
+                /* Set the real part of the result to zero                                                        */\
+                lpMemRes[uRes].parts[0] = 0.0;                                                                      \
+            } /* End IF                                                                                           */\
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  -5:       /* asinh (R)                                                                              */\
+                        /* ln (R + sqrt (1 + R * 2))                                                              */\
+            fp##cho##f_asinh (*(fpcho_t *) &aplTmp[0], &lpatRht->aplHC8F);                                          \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  -6:       /* acosh (R)                                                                              */\
+                        /* 2 x ln (sqrt ((R + 1) x 0.5) + sqrt ((R - 1) x 0.5))                                   */\
+            fp##cho##f_acosh (*(fpcho_t *) &aplTmp[0], &lpatRht->aplHC8F);                                          \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  -7:       /* atanh (R)                                                                              */\
+                        /* 0.5 x (ln (1 + R) - ln (1 - R))                                                        */\
+            fp##cho##f_atanh (*(fpcho_t *) &aplTmp[0], &lpatRht->aplHC8F);                                          \
+            lpMemRes[uRes] = aplTmp[0];                                                                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  -8:       /* -sqrt ((-1) - R * 2)                                                                   */\
+            /*  (-1) - R * 2                                                                                      */\
+            aplTmp[0] = SubHC##N##F_RE (confpof_N1##suf,                                                            \
+                                        MulHC##N##F_RE (lpatRht->aplHC##N##F,                                       \
+                                                        lpatRht->aplHC##N##F));                                     \
+            /* -sqrt ((-1) - R * 2)                                                                               */\
+            lpMemRes[uRes] = NegHC##N##F_RE (SqrtHCxF_RE (*(LPAPLHC8F) &aplTmp, N)suf);                             \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case  -9:       /* R                                                                                      */\
+            lpMemRes[uRes] = lpatRht->aplHC##N##F;                                                                  \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case -10:       /* +R                                                                                     */\
+            lpMemRes[uRes] = ConjHC##N##F_RE (lpatRht->aplHC##N##F);                                                \
+                                                                                                                    \
+            return;                                                                                                 \
+                                                                                                                    \
+        case -11:       /* 0J1 x R                                                                                */\
+            lpMemRes[uRes] = MulHC##N##F_RE (confpof_I##suf,                                                        \
+                                             lpatRht->aplHC##N##F);                                                 \
+            return;                                                                                                 \
+                                                                                                                    \
+        case -12:       /* *0J1 x R                                                                               */\
+            lpMemRes[uRes] = ExpHC##N##F_RE (MulHC##N##F_RE (confpof_I##suf,                                        \
+                                                             lpatRht->aplHC##N##F));                                \
+            return;                                                                                                 \
+                                                                                                                    \
+        default:                                                                                                    \
+            break;                                                                                                  \
+    } /* End SWITCH                                                                                               */\
+                                                                                                                    \
+    RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+
+//***************************************************************************
+//  End of File: pf_circle.mac
+//***************************************************************************

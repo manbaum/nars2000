@@ -102,8 +102,8 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
                        hGlbMonInfo = NULL,      // MonInfo   ...
                        hGlbRes = NULL,          // Result    ...
                        lpSymGlbRht;             // Ptr to global immediate
-    LPVARARRAY_HEADER  lpMemHdrRht = NULL,      // ...    right arg header
-                       lpMemHdrResUnion = NULL; // Ptr to result union header
+    LPVARARRAY_HEADER  lpMemHdrRht = NULL,      // Ptr to right arg header
+                       lpMemHdrResUnion = NULL; // ...    result union ...
     LPAPLCHAR          lpMemRht;                // Ptr to right arg global memory
     LPEXTMONINFO_UNION lpMemResUnion;           // Ptr to result    ...           as integers
     LPDFN_HEADER       lpMemDfnHdr = NULL;      // Ptr to function header global memory

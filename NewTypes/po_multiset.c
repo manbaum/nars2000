@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -461,34 +461,39 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
      LPTOKEN  lptkAxis)                 // Ptr to axis token (may be NULL)
 
 {
-    APLNELM       aplNELMLft,           // Left arg NELM
-                  aplNELMRht;           // Right ...
-    APLRANK       aplRankLft,           // Left arg rank
-                  aplRankRht;           // Right ...
-    HGLOBAL       hGlbLft = NULL,       // Left arg global memory handle
-                  hGlbRht = NULL,       // Right ...
-                  hGlbRes = NULL;       // Result   ...
-    LPVOID        lpMemLft = NULL,      // Ptr to left arg global memory
-                  lpMemRht = NULL;      // Ptr to right ...
-    LPAPLBOOL     lpMemRes = NULL;      // Ptr to result   ...
-    TOKEN         tkFunc = {0};         // Grade-up function token
+    APLNELM           aplNELMLft,               // Left arg NELM
+                      aplNELMRht;               // Right ...
+    APLRANK           aplRankLft,               // Left arg rank
+                      aplRankRht;               // Right ...
+    HGLOBAL           hGlbLft = NULL,           // Left arg global memory handle
+                      hGlbRht = NULL,           // Right ...
+                      hGlbRes = NULL;           // Result   ...
+    LPVARARRAY_HEADER lpMemHdrLft = NULL,       // Ptr to left arg header
+                      lpMemHdrRht = NULL,       // ...    right ...
+                      lpMemHdrRes = NULL;       // ...    result   ...
+    LPVOID            lpMemLft,                 // Ptr to left arg global memory
+                      lpMemRht;                 // Ptr to right ...
+    LPAPLBOOL         lpMemRes;                 // Ptr to result   ...
+    TOKEN             tkFunc = {0};             // Grade-up function token
 #ifdef GRADE2ND
-    HGLOBAL       hGlbGupLft = NULL;    // Left arg grade-up global memory handle
-    LPPDIE        lpMemGupLft = NULL;   // Ptr to left arg grade-up global memory
+    HGLOBAL           hGlbGupLft = NULL;        // Left arg grade-up global memory handle
+    LPVARARRAY_HEADER lpMemHdrGupLft = NULL;    // Ptr to left GUP header
+    LPPDIE            lpMemGupLft;              // Ptr to left arg grade-up global memory
 #endif
-    HGLOBAL       hGlbGupRht = NULL;    // Right arg grade-up glolbal memory handle
-    LPPDIE        lpMemGupRht = NULL;   // Ptr to right arg grade-up global memory
-    PDIE          aplIntegerZero = {0}; // A zero in case the right arg is a scalar
-    APLUINT       ByteRes;              // # bytes in the result
-    APLINT        iLft;                 // Loop counter
-    APLLONGEST    aplLongestLft,        // Left arg immediate value
-                  aplLongestRht;        // Right ...
-    LPPL_YYSTYPE  lpYYRes;              // Ptr to grade-up result
-    UBOOL         bQuadIO;              // []IO
-    APLFLOAT      fQuadCT;              // []CT
-    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
-    LPMEOCOM      lpPrimFnDydMEO_Com;   // Ptr to common routine
+    HGLOBAL           hGlbGupRht = NULL;        // Right arg grade-up glolbal memory handle
+    LPVARARRAY_HEADER lpMemHdrGupRht = NULL;    // Ptr to right GUP header
+    LPPDIE            lpMemGupRht;              // Ptr to right arg grade-up global memory
+    PDIE              aplIntegerZero = {0};     // A zero in case the right arg is a scalar
+    APLUINT           ByteRes;                  // # bytes in the result
+    APLINT            iLft;                     // Loop counter
+    APLLONGEST        aplLongestLft,            // Left arg immediate value
+                      aplLongestRht;            // Right ...
+    LPPL_YYSTYPE      lpYYRes;                  // Ptr to grade-up result
+    UBOOL             bQuadIO;                  // []IO
+    APLFLOAT          fQuadCT;                  // []CT
+    LPPLLOCALVARS     lpplLocalVars;            // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;             // Ptr to Ctrl-Break flag
+    LPMEOCOM          lpPrimFnDydMEO_Com;       // Ptr to common routine
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -513,8 +518,8 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
         goto RIGHT_RANK_EXIT;
 
     // Get left and right arg's global ptrs
-    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // Setup the grade-up function token
     tkFunc.tkFlags.TknType   = TKT_FCNIMMED;
@@ -534,7 +539,8 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
           PrimFnMonGradeCommon_EM_YY (&tkFunc,      // Ptr to function token
                                        lptkLftArg,  // Ptr to right arg token
                                        NULL,        // Ptr to axis token (may be NULL)
-                                       TRUE);       // TRUE iff we're to treat the right arg as ravelled
+                                       TRUE,        // TRUE iff we're to treat the right arg as ravelled
+                                       TRUE);       // TRUE iff we can grade all arrays
         // Restore the index origin
         SetQuadIO (bQuadIO);
 
@@ -547,10 +553,10 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
         YYFree (lpYYRes); lpYYRes = NULL;
 
         // Lock the memory to get a ptr to it
-        lpMemGupLft = MyGlobalLock (hGlbGupLft);
+        lpMemHdrGupLft = MyGlobalLock (hGlbGupLft);
 
         // Skip over the header and dimensions to the data
-        lpMemGupLft = VarArrayDataFmBase (lpMemGupLft);
+        lpMemGupLft = VarArrayDataFmBase (lpMemHdrGupLft);
     } else
         // Handle the scalar case
         lpMemGupLft = &aplIntegerZero;
@@ -566,7 +572,8 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
           PrimFnMonGradeCommon_EM_YY (&tkFunc,      // Ptr to function token
                                        lptkRhtArg,  // Ptr to right arg token
                                        NULL,        // Ptr to axis token (may be NULL)
-                                       TRUE);       // TRUE iff we're to treat the right arg as ravelled
+                                       TRUE,        // TRUE iff we're to treat the right arg as ravelled
+                                       TRUE);       // TRUE iff we can grade all arrays
         // Restore the index origin
         SetQuadIO (bQuadIO);
 
@@ -579,10 +586,10 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
         YYFree (lpYYRes); lpYYRes = NULL;
 
         // Lock the memory to get a ptr to it
-        lpMemGupRht = MyGlobalLock (hGlbGupRht);
+        lpMemHdrGupRht = MyGlobalLock (hGlbGupRht);
 
         // Skip over the header and dimensions to the data
-        lpMemGupRht = VarArrayDataFmBase (lpMemGupRht);
+        lpMemGupRht = VarArrayDataFmBase (lpMemHdrGupRht);
     } else
         // Handle the scalar case
         lpMemGupRht = &aplIntegerZero;
@@ -606,9 +613,9 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_BOOL;
@@ -620,20 +627,20 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
 #undef  lpHeader
 
     // Skip over the header to the dimensions
-    lpMemRes = (LPAPLBOOL) VarArrayBaseToDim (lpMemRes);
+    lpMemRes = (LPAPLBOOL) VarArrayBaseToDim (lpMemHdrRes);
 
     // Fill in the result's dimension
-    if (lpMemLft NE NULL)
+    if (lpMemHdrLft NE NULL)
     {
         // Skip over the header to the dimensions
-        lpMemLft = VarArrayBaseToDim (lpMemLft);
+        lpMemLft = VarArrayBaseToDim (lpMemHdrLft);
 
         // Copy the left arg dimensions to the result
         CopyMemory (lpMemRes, lpMemLft, (APLU3264) aplRankLft * sizeof (APLDIM));
 
         // Skip over the dimensions to the data
-        lpMemRes = VarArrayDimToData (lpMemRes, 1         );
-        lpMemLft = VarArrayDimToData (lpMemLft, aplRankLft);
+        lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+        lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
     } else
     {
         // Fill in the result's dimension
@@ -643,9 +650,9 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
         lpMemLft = &aplLongestLft;
     } // End IF/ELSE
 
-    if (lpMemRht NE NULL)
+    if (lpMemHdrRht NE NULL)
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayDataFmBase (lpMemRht);
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
     else
         // Point to the right arg immediate value
         lpMemRht = &aplLongestRht;
@@ -719,54 +726,54 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes NE NULL)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this storage
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbLft && lpMemLft)
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 #ifdef GRADE2ND
-    if (hGlbGupLft && lpMemGupLft)
+    if (hGlbGupLft NE NULL && lpMemHdrGupLft NE NULL)
     {
-        if (lpMemGupLft NE NULL)
+        if (lpMemHdrGupLft NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbGupLft); lpMemGupLft = NULL;
+            MyGlobalUnlock (hGlbGupLft); lpMemHdrGupLft = NULL;
         } // End IF
 
         // We no longer need this resource
         FreeResultGlobalVar (hGlbGupLft); hGlbGupLft = NULL;
     } // End IF
 #endif
-    if (hGlbGupRht && lpMemGupRht)
+    if (hGlbGupRht NE NULL && lpMemHdrGupRht NE NULL)
     {
-        if (lpMemGupRht NE NULL)
+        if (lpMemHdrGupRht NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbGupRht); lpMemGupRht = NULL;
+            MyGlobalUnlock (hGlbGupRht); lpMemHdrGupRht = NULL;
         } // End IF
 
         // We no longer need this resource
@@ -1129,35 +1136,39 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
      LPTOKEN  lptkAxis)                 // Ptr to axis token (may be NULL)
 
 {
-    APLNELM       aplNELMLft,           // Left arg NELM
-                  aplNELMRht;           // Right ...
-    APLRANK       aplRankLft,           // Left arg rank
-                  aplRankRht;           // Right ...
-    HGLOBAL       hGlbLft = NULL,       // Left arg global memory handle
-                  hGlbRht = NULL,       // Right ...
-                  hGlbRes = NULL;       // Result   ...
-    LPVOID        lpMemLft = NULL,      // Ptr to left arg global memory
-                  lpMemRht = NULL;      // Ptr to right ...
-    LPAPLUINT     lpMemRes = NULL;      // Ptr to result   ...
-    TOKEN         tkFunc = {0};         // Grade-up function token
+    APLNELM           aplNELMLft,               // Left arg NELM
+                      aplNELMRht;               // Right ...
+    APLRANK           aplRankLft,               // Left arg rank
+                      aplRankRht;               // Right ...
+    HGLOBAL           hGlbLft = NULL,           // Left arg global memory handle
+                      hGlbRht = NULL,           // Right ...
+                      hGlbRes = NULL;           // Result   ...
+    LPVARARRAY_HEADER lpMemHdrLft = NULL,       // Ptr to left arg header
+                      lpMemHdrRht = NULL,       // ...    right ...
+                      lpMemHdrRes = NULL;       // ...    result   ...
+    LPVOID            lpMemLft,                 // Ptr to left arg global memory
+                      lpMemRht;                 // Ptr to right ...
+    LPAPLUINT         lpMemRes;                 // Ptr to result   ...
+    TOKEN             tkFunc = {0};             // Grade-up function token
 #ifdef GRADE2ND
-    HGLOBAL       hGlbGupRht = NULL;    // Right arg grade-up global memory handle
-    LPPDIE        lpMemGupRht = NULL;   // Ptr to right arg grade-up global memory
+    HGLOBAL           hGlbGupRht = NULL;        // Right arg grade-up global memory handle
+    LPPDIE            lpMemGupRht;              // Ptr to right arg grade-up global memory
 #endif
-    HGLOBAL       hGlbGupLft = NULL;    // Left arg grade-up global memory handle
-    LPPDIE        lpMemGupLft = NULL;   // Ptr to left arg grade-up global memory
-    PDIE          aplIntegerZero = {0}; // A zero in case the right arg is a scalar
-    APLUINT       NotFound,             // Not found value
-                  ByteRes;              // # bytes in the result
-    APLINT        iRht;                 // Loop counter
-    APLLONGEST    aplLongestLft,        // Left arg immediate value
-                  aplLongestRht;        // Right ...
-    LPPL_YYSTYPE  lpYYRes;              // Ptr to grade-up result
-    UBOOL         bQuadIO;              // []IO
-    APLFLOAT      fQuadCT;              // []CT
-    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
-    LPMIOCOM      lpPrimFnDydMIO_Com;   // Ptr to common routine
+    HGLOBAL           hGlbGupLft = NULL;        // Left arg grade-up global memory handle
+    LPVARARRAY_HEADER lpMemHdrGupLft = NULL;    // Ptr to left arg header
+    LPPDIE            lpMemGupLft;              // Ptr to left arg grade-up global memory
+    PDIE              aplIntegerZero = {0};     // A zero in case the right arg is a scalar
+    APLUINT           NotFound,                 // Not found value
+                      ByteRes;                  // # bytes in the result
+    APLINT            iRht;                     // Loop counter
+    APLLONGEST        aplLongestLft,            // Left arg immediate value
+                      aplLongestRht;            // Right ...
+    LPPL_YYSTYPE      lpYYRes;                  // Ptr to grade-up result
+    UBOOL             bQuadIO;                  // []IO
+    APLFLOAT          fQuadCT;                  // []CT
+    LPPLLOCALVARS     lpplLocalVars;            // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;             // Ptr to Ctrl-Break flag
+    LPMIOCOM          lpPrimFnDydMIO_Com;       // Ptr to common routine
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -1182,8 +1193,8 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
         goto RIGHT_RANK_EXIT;
 
     // Get left and right arg's global ptrs
-    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // Setup the grade-up function token
     tkFunc.tkFlags.TknType   = TKT_FCNIMMED;
@@ -1203,7 +1214,8 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
           PrimFnMonGradeCommon_EM_YY (&tkFunc,      // Ptr to function token
                                        lptkLftArg,  // Ptr to right arg token
                                        NULL,        // Ptr to axis token (may be NULL)
-                                       TRUE);       // TRUE iff we're to treat the right arg as ravelled
+                                       TRUE,        // TRUE iff we're to treat the right arg as ravelled
+                                       TRUE);       // TRUE iff we can grade all arrays
         // Restore the index origin
         SetQuadIO (bQuadIO);
 
@@ -1216,10 +1228,10 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
         YYFree (lpYYRes); lpYYRes = NULL;
 
         // Lock the memory to get a ptr to it
-        lpMemGupLft = MyGlobalLock (hGlbGupLft);
+        lpMemHdrGupLft = MyGlobalLock (hGlbGupLft);
 
         // Skip over the header and dimensions to the data
-        lpMemGupLft = VarArrayDataFmBase (lpMemGupLft);
+        lpMemGupLft = VarArrayDataFmBase (lpMemHdrGupLft);
     } else
         // Handle the scalar case
         lpMemGupLft = &aplIntegerZero;
@@ -1235,7 +1247,8 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
           PrimFnMonGradeCommon_EM_YY (&tkFunc,      // Ptr to function token
                                        lptkRhtArg,  // Ptr to right arg token
                                        NULL,        // Ptr to axis token (may be NULL)
-                                       TRUE);       // TRUE iff we're to treat the right arg as ravelled
+                                       TRUE,        // TRUE iff we're to treat the right arg as ravelled
+                                       TRUE);       // TRUE iff we can grade all arrays
         // Restore the index origin
         SetQuadIO (bQuadIO);
 
@@ -1248,10 +1261,10 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
         YYFree (lpYYRes); lpYYRes = NULL;
 
         // Lock the memory to get a ptr to it
-        lpMemGupRht = MyGlobalLock (hGlbGupRht);
+        lpMemHdrGupRht = MyGlobalLock (hGlbGupRht);
 
         // Skip over the header and dimensions to the data
-        lpMemGupRht = VarArrayDataFmBase (lpMemGupRht);
+        lpMemGupRht = VarArrayDataFmBase (lpMemHdrGupRht);
     } else
         // Handle the scalar case
         lpMemGupRht = &aplIntegerZero;
@@ -1272,9 +1285,9 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_INT;
@@ -1286,20 +1299,20 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
 #undef  lpHeader
 
     // Skip over the header to the dimensions
-    lpMemRes = (LPAPLUINT) VarArrayBaseToDim (lpMemRes);
+    lpMemRes = (LPAPLUINT) VarArrayBaseToDim (lpMemHdrRes);
 
     // Fill in the result's dimension
-    if (lpMemRht NE NULL)
+    if (lpMemHdrRht NE NULL)
     {
         // Skip over the header to the dimensions
-        lpMemRht = VarArrayBaseToDim (lpMemRht);
+        lpMemRht = VarArrayBaseToDim (lpMemHdrRht);
 
         // Copy the left arg dimensions to the result
         CopyMemory (lpMemRes, lpMemRht, (APLU3264) aplRankRht * sizeof (APLDIM));
 
         // Skip over the dimensions to the data
-        lpMemRes = VarArrayDimToData (lpMemRes, 1         );
-        lpMemRht = VarArrayDimToData (lpMemRht, aplRankRht);
+        lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
     } else
     {
         // Fill in the result's dimension
@@ -1309,9 +1322,9 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
         lpMemRht = &aplLongestRht;
     } // End IF/ELSE
 
-    if (lpMemLft NE NULL)
+    if (lpMemHdrLft NE NULL)
         // Skip over the header and dimensions to the data
-        lpMemLft = VarArrayDataFmBase (lpMemLft);
+        lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
     else
         // Point to the left arg immediate value
         lpMemLft = &aplLongestLft;
@@ -1402,54 +1415,54 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes NE NULL)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this storage
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbLft && lpMemLft)
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
-    if (hGlbGupLft && lpMemGupLft)
+    if (hGlbGupLft NE NULL && lpMemHdrGupLft NE NULL)
     {
-        if (lpMemGupLft NE NULL)
+        if (lpMemHdrGupLft NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbGupLft); lpMemGupLft = NULL;
+            MyGlobalUnlock (hGlbGupLft); lpMemHdrGupLft = NULL;
         } // End IF
 
         // We no longer need this resource
         FreeResultGlobalVar (hGlbGupLft); hGlbGupLft = NULL;
     } // End IF
 #ifdef GRADE2ND
-    if (hGlbGupRht && lpMemGupRht)
+    if (hGlbGupRht NE NULL && lpMemHdrGupRht NE NULL)
     {
-        if (lpMemGupRht NE NULL)
+        if (lpMemHdrGupRht NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbGupRht); lpMemGupRht = NULL;
+            MyGlobalUnlock (hGlbGupRht); lpMemHdrGupRht = NULL;
         } // End IF
 
         // We no longer need this resource
@@ -1817,27 +1830,31 @@ LPPL_YYSTYPE PrimFnDydMM_EM_YY
      LPTOKEN  lptkAxis)                 // Ptr to axis token (may be NULL)
 
 {
-    APLNELM       aplNELMLft,           // Left arg NELM
-                  aplNELMRht;           // Right ...
-    APLRANK       aplRankLft,           // Left arg rank
-                  aplRankRht;           // Right ...
-    HGLOBAL       hGlbLft = NULL,       // Left arg global memory handle
-                  hGlbRht = NULL;       // Right ...
-    LPVOID        lpMemLft = NULL,      // Ptr to left arg global memory
-                  lpMemRht = NULL;      // Ptr to right ...
-    TOKEN         tkFunc = {0};         // Grade-up function token
-    HGLOBAL       hGlbGupLft = NULL,    // Left arg grade-up global memory handle
-                  hGlbGupRht = NULL;    // Right ...
-    LPPDIE        lpMemGupLft = NULL,   // Ptr to left arg grade-up global memory
-                  lpMemGupRht = NULL;   // ...    right ...
-    APLLONGEST    aplLongestLft,        // Left arg immediate value
-                  aplLongestRht;        // Right ...
-    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to grade-up result
-    UBOOL         bQuadIO;              // []IO
-    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
-    UBOOL         aplBoolRes;           // The result
-    LPMMCOM       lpPrimFnDydMM_Com;    // Ptr to common routine
+    APLNELM           aplNELMLft,               // Left arg NELM
+                      aplNELMRht;               // Right ...
+    APLRANK           aplRankLft,               // Left arg rank
+                      aplRankRht;               // Right ...
+    HGLOBAL           hGlbLft = NULL,           // Left arg global memory handle
+                      hGlbRht = NULL;           // Right ...
+    LPVARARRAY_HEADER lpMemHdrLft = NULL,       // Ptr to left arg header
+                      lpMemHdrRht = NULL;       // ...    right ...
+    LPVOID            lpMemLft,                 // Ptr to left arg global memory
+                      lpMemRht;                 // Ptr to right ...
+    TOKEN             tkFunc = {0};             // Grade-up function token
+    HGLOBAL           hGlbGupLft = NULL,        // Left arg grade-up global memory handle
+                      hGlbGupRht = NULL;        // Right ...
+    LPVARARRAY_HEADER lpMemHdrGupLft = NULL,    // Ptr to left arg header
+                      lpMemHdrGupRht = NULL;    // ...    right ...
+    LPPDIE            lpMemGupLft,              // Ptr to left arg grade-up global memory
+                      lpMemGupRht;              // ...    right ...
+    APLLONGEST        aplLongestLft,            // Left arg immediate value
+                      aplLongestRht;            // Right ...
+    LPPL_YYSTYPE      lpYYRes = NULL;           // Ptr to grade-up result
+    UBOOL             bQuadIO;                  // []IO
+    LPPLLOCALVARS     lpplLocalVars;            // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;             // Ptr to Ctrl-Break flag
+    UBOOL             aplBoolRes;               // The result
+    LPMMCOM           lpPrimFnDydMM_Com;        // Ptr to common routine
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -1853,8 +1870,8 @@ LPPL_YYSTYPE PrimFnDydMM_EM_YY
     AttrsOfToken (lptkRhtArg, NULL, &aplNELMRht, &aplRankRht, NULL);
 
     // Get left and right arg's global ptrs
-    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // Check for mismatched lengths (RANK ERRORS are handled by the caller)
     //   or mismatched types
@@ -1884,7 +1901,8 @@ LPPL_YYSTYPE PrimFnDydMM_EM_YY
           PrimFnMonGradeCommon_EM_YY (&tkFunc,      // Ptr to function token
                                        lptkLftArg,  // Ptr to right arg token
                                        NULL,        // Ptr to axis token (may be NULL)
-                                       TRUE);       // TRUE iff we're to treat the right arg as ravelled
+                                       TRUE,        // TRUE iff we're to treat the right arg as ravelled
+                                       TRUE);       // TRUE iff we can grade all arrays
         // Restore the index origin
         SetQuadIO (bQuadIO);
 
@@ -1898,10 +1916,10 @@ LPPL_YYSTYPE PrimFnDydMM_EM_YY
         YYFree (lpYYRes); lpYYRes = NULL;
 
         // Lock the memory to get a ptr to it
-        lpMemGupLft = MyGlobalLock (hGlbGupLft);
+        lpMemHdrGupLft = MyGlobalLock (hGlbGupLft);
 
         // Skip over the header and dimensions to the data
-        lpMemGupLft = VarArrayDataFmBase (lpMemGupLft);
+        lpMemGupLft = VarArrayDataFmBase (lpMemHdrGupLft);
 
         // Set the current index origin to zero for convenience
         SetQuadIO (0);
@@ -1911,7 +1929,8 @@ LPPL_YYSTYPE PrimFnDydMM_EM_YY
           PrimFnMonGradeCommon_EM_YY (&tkFunc,      // Ptr to function token
                                        lptkRhtArg,  // Ptr to right arg token
                                        NULL,        // Ptr to axis token (may be NULL)
-                                       TRUE);       // TRUE iff we're to treat the right arg as ravelled
+                                       TRUE,        // TRUE iff we're to treat the right arg as ravelled
+                                       TRUE);       // TRUE iff we can grade all arrays
         // Restore the index origin
         SetQuadIO (bQuadIO);
 
@@ -1925,14 +1944,14 @@ LPPL_YYSTYPE PrimFnDydMM_EM_YY
         YYFree (lpYYRes); lpYYRes = NULL;
 
         // Lock the memory to get a ptr to it
-        lpMemGupRht = MyGlobalLock (hGlbGupRht);
+        lpMemHdrGupRht = MyGlobalLock (hGlbGupRht);
 
         // Skip over the header and dimensions to the data
-        lpMemGupRht = VarArrayDataFmBase (lpMemGupRht);
+        lpMemGupRht = VarArrayDataFmBase (lpMemHdrGupRht);
 
         // Skip over the header and dimensions to the data
-        lpMemLft = VarArrayDataFmBase (lpMemLft);
-        lpMemRht = VarArrayDataFmBase (lpMemRht);
+        lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
         // Split cases based upon the left and right arg storage types
         if (IsSimpleInt (aplTypeLft) && IsSimpleInt (aplTypeRht))
@@ -1975,36 +1994,36 @@ LPPL_YYSTYPE PrimFnDydMM_EM_YY
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    if (hGlbLft && lpMemLft)
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbGupLft)
+    if (hGlbGupLft NE NULL)
     {
-        if (lpMemGupLft NE NULL)
+        if (lpMemHdrGupLft NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbGupLft); lpMemGupLft = NULL;
+            MyGlobalUnlock (hGlbGupLft); lpMemHdrGupLft = NULL;
         } // End IF
 
         // We no longer need this resource
         FreeResultGlobalVar (hGlbGupLft); hGlbGupLft = NULL;
     } // End IF
 
-    if (hGlbGupRht)
+    if (hGlbGupRht NE NULL)
     {
-        if (lpMemGupRht NE NULL)
+        if (lpMemHdrGupRht NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbGupRht); lpMemGupRht = NULL;
+            MyGlobalUnlock (hGlbGupRht); lpMemHdrGupRht = NULL;
         } // End IF
 
         // We no longer need this resource

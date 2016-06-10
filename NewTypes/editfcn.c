@@ -929,8 +929,12 @@ UINT GetFunctionName
     // Ensure the line is properly terminated
     lpwszTemp[uLineLen] = WC_EOS;
 
-    // Get the header line text
-    lpSymName = ParseFunctionName (hWndFE, lpwszTemp);
+    // If it's []Z, ...
+    if (lstrcmpiW ($AFORESULT, lpwszTemp) EQ 0)
+        lpSymName = NULL;
+    else
+        // Get the header line text
+        lpSymName = ParseFunctionName (hWndFE, lpwszTemp);
 
     if (lpSymName NE NULL)
         // Append the function name from the symbol table
@@ -2116,7 +2120,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 RespecifyNewQuadPW (hWnd, nWidth);
 
             PERFMON
-////////////PERFMONSHOW
+////////////PERFMONSHOW (NULL)
 
             break;
 #undef  nHeight
@@ -2430,7 +2434,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             keyData = keyData;          // Respecify to avoid compiler error (unreferenced var)
 
 #ifdef DEBUG_WM_KEYUP
-            dprintfWL0 (L"WM_KEYUP:       nVirtKey = %02X(%c), ScanCode = %02X, SCMA = %u%u%u%u", nVirtKey, nVirtKey, keyData.scanCode);
+            dprintfWL0 (L"WM_KEYUP:       nVirtKey = %02X(%c), ScanCode = %02X", nVirtKey, nVirtKey, keyData.scanCode);
 #endif
             // Process the virtual key
             switch (nVirtKey)
@@ -4367,6 +4371,119 @@ NORMAL_EXIT:
     } // End IF
 } // End PasteAPLChars_EM
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $SplitLines
+//
+//  Split out separate lines from a clipboard format (CF_PRIVATEFIRST or
+//    CF_UNICODETEXT) so as to handle Quote-Quad input of multi-line text.
+//***************************************************************************
+
+HGLOBAL SplitLines
+    (HGLOBAL hSrc,                  // Source memory global memory handle
+     UINT    uIndex,                // Clipboard format (CF_xxx)
+     LPUBOOL lpbPaste)              // Edit Ctrl window handle
+
+{
+    LPAPLCHAR    lpMemSrc;          // Ptr to source global memory
+    UINT         uSrc,              // Loop counter
+                 uLen,              // String length
+                 uLen2;             // ...
+    HGLOBAL      h1st,              // 1st section global memory handle
+                 h2nd;              // 2nd ...
+    LPWCHAR      lpMemSect;         // Ptr to 1st/2nd section global memory
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
+
+    // If we're not in Quad or QuoteQuad input, ...
+    if (lpMemPTD->lpSISCur
+     && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD
+     && lpMemPTD->lpSISCur->DfnType NE DFNTYPE_QQUAD)
+        return hSrc;
+
+    // Lock the memory to get a ptr to it
+    lpMemSrc = GlobalLock (hSrc);
+
+    if (lpMemSrc EQ NULL)
+        return hSrc;
+
+    // Get the string length
+    uLen2 = uLen = lstrlenW (lpMemSrc);
+
+    // Loop through the chars looking for CR/LF
+    // We consider an End-Of-Line to be either a
+    //   single CR, a single LF,
+    //   a CR/LF pair, or a LF/CR pair.
+    for (uSrc = 0; uSrc < uLen; uSrc++)
+    if (lpMemSrc[uSrc] EQ WC_CR
+     || lpMemSrc[uSrc] EQ WC_LF)
+    {
+        // Save as the length of the 1st section
+        //   and skip over the CR/LF
+        uLen = uSrc++;
+
+        // Skip over any matching LF
+        if ((lpMemSrc[uSrc - 1] EQ WC_CR
+          && lpMemSrc[uSrc    ] EQ WC_LF)
+         || (lpMemSrc[uSrc - 1] EQ WC_LF
+          && lpMemSrc[uSrc    ] EQ WC_CR))
+            // Skip over the CR/LF
+            uSrc++;
+
+        // The first section begings at 0
+        // The next section begins at uSrc
+
+        // Allocate global memory for the first section
+        //   "+ 1" for trailing zero
+        h1st = GlobalAlloc (GHND, (uLen + 1 )* sizeof (WCHAR));
+        if (h1st EQ NULL)
+            goto ERROR_EXIT;
+
+        // Lock the memory to get a ptr to it
+        lpMemSect = GlobalLock (h1st);
+
+        // Copy the 1st section to global memory
+        CopyMemoryW (lpMemSect, lpMemSrc, uLen);
+
+        // We no longer need this ptr
+        GlobalUnlock (h1st); lpMemSect = NULL;
+
+        // Allocate global memory for the 2nd section
+        //   "+ 1" for trailing zero
+        h2nd = GlobalAlloc (GHND, (uLen2 + 1 - uSrc) * sizeof (WCHAR));
+        if (h2nd EQ NULL)
+            goto ERROR_EXIT;
+
+        // Lock the memory to get a ptr to it
+        lpMemSect = GlobalLock (h2nd);
+
+        // Copy the 2nd section to global memory
+        CopyMemoryW (lpMemSect, &lpMemSrc[uSrc], uLen2 - uSrc);
+
+        // We no longer need this ptr
+        GlobalUnlock (h2nd); lpMemSect = NULL;
+
+////    // Place this handle back onto the clipboard
+////    SetClipboardData (uIndex, h2nd); h2nd = NULL;
+
+        // Mark as needing post paste processing
+        *lpbPaste = TRUE;
+
+        // We no longer need this ptr
+        GlobalUnlock (hSrc); lpMemSrc = NULL;
+
+        // Pass on to caller the 1st section handle
+        return h1st;
+    } // End FOR/IF
+ERROR_EXIT:
+    // We no longer need this ptr
+    GlobalUnlock (hSrc); lpMemSrc = NULL;
+
+    return hSrc;
+} // End SplitLines
 
 
 //***************************************************************************

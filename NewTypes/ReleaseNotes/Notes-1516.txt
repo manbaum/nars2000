@@ -1,0 +1,11 @@
+Build #1516 -- Version 0.5.0.xx
+--------------------------------
+
+* Implement HyperComplex Numbers
+
+Directory trunk:
+
+Too Numerous To List.
+
+VER.RC:
+  Increment version # to 0.5.0.xx.

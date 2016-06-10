@@ -222,44 +222,45 @@ NORMAL_EXIT:
 #endif
 
 UBOOL CheckAxisGlb
-    (HGLOBAL      hGlbData,         // The global handle to check
-     LPTOKEN      lptkAxis,         // The Axis values
-     APLRANK      aplRankCmp,       // Comparison rank
-     UBOOL        bSingleton,       // TRUE iff scalar or one-element vector only
-                                    //   is allowed
-     UBOOL        bSortAxes,        // TRUE iff the axes should be sorted
-                                    //   (i.e., the order of the axes is unimportant)
-     UBOOL        bContiguous,      // TRUE iff the axes must be contiguous
-     UBOOL        bAllowDups,       // TRUE iff duplicate axes are allowed
-     LPUBOOL      lpbFract,         // Return TRUE iff fractional values are present,
-                                    //   (may be NULL if fractional values not allowed)
-     LPAPLINT     lpaplLastAxis,    // Return last axis value or ceiling if fractional
-                                    //   (may be NULL if caller is not interested)
-     LPAPLNELM    lpaplNELMAxis,    // Return # elements in axis
-                                    //   (may be NULL if caller is not interested)
-     HGLOBAL     *lphGlbAxis,       // Ptr to HGLOBAL where the cleaned up axis
-                                    //   is to be stored.  If the return is FALSE,
-                                    //   this ptr must be set to NULL.
-                                    //   (may be NULL if caller is not interested)
-     LPAPLNELM    lpaplNELM,        // Local var for NELM
-     LPAPLINT    *lplpAxisStart,    // Ptr to ptr to start of Axis values in *lphGlbAxis
-     LPAPLINT    *lplpAxisHead,     // ...                    user axis values in *lphGlbAxis
-     LPAPLUINT    lpaplAxisContLo,  // Contiguous low axis (not NULL)
-     LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
+    (HGLOBAL      hGlbData,             // The global handle to check
+     LPTOKEN      lptkAxis,             // The Axis values
+     APLRANK      aplRankCmp,           // Comparison rank
+     UBOOL        bSingleton,           // TRUE iff scalar or one-element vector only
+                                        //   is allowed
+     UBOOL        bSortAxes,            // TRUE iff the axes should be sorted
+                                        //   (i.e., the order of the axes is unimportant)
+     UBOOL        bContiguous,          // TRUE iff the axes must be contiguous
+     UBOOL        bAllowDups,           // TRUE iff duplicate axes are allowed
+     LPUBOOL      lpbFract,             // Return TRUE iff fractional values are present,
+                                        //   (may be NULL if fractional values not allowed)
+     LPAPLINT     lpaplLastAxis,        // Return last axis value or ceiling if fractional
+                                        //   (may be NULL if caller is not interested)
+     LPAPLNELM    lpaplNELMAxis,        // Return # elements in axis
+                                        //   (may be NULL if caller is not interested)
+     HGLOBAL     *lphGlbAxis,           // Ptr to HGLOBAL where the cleaned up axis
+                                        //   is to be stored.  If the return is FALSE,
+                                        //   this ptr must be set to NULL.
+                                        //   (may be NULL if caller is not interested)
+     LPAPLNELM    lpaplNELM,            // Local var for NELM
+     LPAPLINT    *lplpAxisStart,        // Ptr to ptr to start of Axis values in *lphGlbAxis
+     LPAPLINT    *lplpAxisHead,         // ...                    user axis values in *lphGlbAxis
+     LPAPLUINT    lpaplAxisContLo,      // Contiguous low axis (not NULL)
+     LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
 
 {
-    UBOOL     bRet = TRUE;          // TRUE iff the result is valid
-    LPVOID    lpMemData;            // Ptr to incoming data global memory
-    LPAPLBOOL lpMemDup = NULL;          // Ptr to duplciate axes global memory
-    HGLOBAL   hGlbDup = NULL;       // Duplicate axes global memory handle
-    UINT      uBitMask;             // Bit mask for looping through Booleans
-    APLUINT   ByteDup,              // # bytes for the duplicate axis test
-              ByteAxis,             // # bytes for the axis vector
-              uCnt;                 // Loop counter
-    APLSTYPE  aplTypeLcl;           // Incoming data storage type
-    APLRANK   aplRankLcl;           // Incoming data rank
-    LPAPLINT  lpAxisTail;           // Ptr to grade up of AxisHead
-    APLBOOL   bQuadIO;              // []IO
+    UBOOL             bRet = TRUE;      // TRUE iff the result is valid
+    LPVARARRAY_HEADER lpMemHdrData;     // Ptr to data header
+    LPVOID            lpMemData;        // Ptr to incoming data global memory
+    LPAPLBOOL         lpMemDup = NULL;  // Ptr to duplciate axes global memory
+    HGLOBAL           hGlbDup = NULL;   // Duplicate axes global memory handle
+    UINT              uBitMask;         // Bit mask for looping through Booleans
+    APLUINT           ByteDup,          // # bytes for the duplicate axis test
+                      ByteAxis,         // # bytes for the axis vector
+                      uCnt;             // Loop counter
+    APLSTYPE          aplTypeLcl;       // Incoming data storage type
+    APLRANK           aplRankLcl;       // Incoming data rank
+    LPAPLINT          lpAxisTail;       // Ptr to grade up of AxisHead
+    APLBOOL           bQuadIO;          // []IO
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
@@ -268,9 +269,9 @@ UBOOL CheckAxisGlb
     Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
     // Lock the memory to get a ptr to it
-    lpMemData = MyGlobalLock (hGlbData);
+    lpMemHdrData = MyGlobalLock (hGlbData);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemData)
+#define lpHeader    lpMemHdrData
     // Get the Array Type, NELM, and Rank
     aplTypeLcl = lpHeader->ArrType;
    *lpaplNELM  = lpHeader->NELM;
@@ -279,7 +280,9 @@ UBOOL CheckAxisGlb
 
     // Check the axis rank and the NELM (if singletons only)
     if (IsMultiRank (aplRankLcl)
-     || (bSingleton && !IsSingleton (*lpaplNELM)))
+     || (bSingleton && !IsSingleton (*lpaplNELM))
+     || IsSimpleChar (aplTypeLcl)
+     || IsPtrArray (aplTypeLcl))
         goto ERROR_EXIT;
 
     // Return the # elements
@@ -331,302 +334,59 @@ UBOOL CheckAxisGlb
     lpMemDup = MyGlobalLock (hGlbDup);
 
     // Skip over the header and dimensions to the data
-    lpMemData = VarArrayDataFmBase (lpMemData);
+    lpMemData = VarArrayDataFmBase (lpMemHdrData);
 
     // If the axis value is an empty char array, ...
     if (IsCharEmpty (aplTypeLcl, *lpaplNELM))
         // Treat it as an empty Boolean array
         aplTypeLcl = ARRAY_BOOL;
 
-    // Split cases based upon the array type
-    switch (aplTypeLcl)
+    // Loop through the elements
+    for (uCnt = 0; bRet && uCnt < *lpaplNELM; uCnt++)
     {
-        case ARRAY_BOOL:
-            uBitMask = BIT0;
+        // Attempt to convert the items of the axis to an INT
+        aplRankLcl = ConvertToInteger_SCT (aplTypeLcl, lpMemData, uCnt, &bRet) - bQuadIO;
 
-            // Loop through the elements
-            for (uCnt = 0; bRet && uCnt < *lpaplNELM; uCnt++)
-            {
-                // Get the next bit value
-                aplRankLcl = (uBitMask & *(LPAPLBOOL) lpMemData) ? TRUE : FALSE;
-                aplRankLcl -= bQuadIO; // Less the index origin
-
-                // Check for negative indices [-aplRankCmp, -1]
-                if (SIGN_APLRANK (aplRankLcl)
-                 && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
-                    aplRankLcl += aplRankCmp;
-
-                // Test against the comparison rank
-                // Note that because aplRankLcl and aplRankCmp
-                //   are unsigned, we don't need to check
-                //   for below zero
-                bRet = (aplRankLcl < aplRankCmp);
-
-                // Save the next trailing value
-                //   if asked to and not sorting
-                //   the axes.
-                if (bRet && lphGlbAxis && !bSortAxes)
-                    *lpAxisTail++ = aplRankLcl;
-
-                // Test for duplicates
-                if (bRet)
-                    bRet = TestDupAxis (lpMemDup, aplRankLcl, bAllowDups);
-
-                if (bRet)
-                {
-                    // Shift over the bit mask
-                    uBitMask <<= 1;
-
-                    // Check for end-of-byte
-                    if (uBitMask EQ END_OF_BYTE)
-                    {
-                        uBitMask = BIT0;        // Start over
-                        ((LPAPLBOOL) lpMemData)++;  // Skip to next byte
-                    } // End IF
-                } // End IF
-            } // End FOR
-
-            break;
-
-        case ARRAY_INT:
-
-#define lpaplInteger    ((LPAPLINT) lpMemData)
-
-            // Loop through the elements
-            for (uCnt = 0; bRet && uCnt < *lpaplNELM; uCnt++)
-            {
-                aplRankLcl = *lpaplInteger++ - bQuadIO;
-
-                // Check for negative indices [-aplRankCmp, -1]
-                if (SIGN_APLRANK (aplRankLcl)
-                 && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
-                    aplRankLcl += aplRankCmp;
-
-                // Ensure it's within range
-                // Note that because aplRankLcl and aplRankCmp
-                //   are unsigned, we don't need to check
-                //   for below zero
-                bRet = (aplRankLcl < aplRankCmp);
-
-                // Save the next trailing value
-                //   if asked to and not sorting
-                //   the axes.
-                if (bRet && lphGlbAxis && !bSortAxes)
-                    *lpAxisTail++ = aplRankLcl;
-
-                // Test for duplicates
-                if (bRet)
-                    bRet = TestDupAxis (lpMemDup, aplRankLcl, bAllowDups);
-            } // End FOR
-
-#undef  lpaplInteger
-
-            break;
-
-        case ARRAY_FLOAT:
-
-#define lpaplFloat      ((LPAPLFLOAT) lpMemData)
-
-            // Loop through the elements
-            for (uCnt = 0; bRet && uCnt < *lpaplNELM; uCnt++)
-            {
-                // Attempt to convert the float to an integer using System []CT
-                aplRankLcl = FloatToAplint_SCT (*lpaplFloat++, &bRet);
-                aplRankLcl -= bQuadIO; // Less the index origin
-
-                // Check for negative indices [-aplRankCmp, -1]
-                if (SIGN_APLRANK (aplRankLcl)
-                 && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
-                    aplRankLcl += aplRankCmp;
-
-                // If fractional values are allowed,
-                //   return whether or not they are present
-                if (lpbFract)
-                    *lpbFract |= !bRet;
-
-                // If fractional values allowed and are present, ...
-                if (lpbFract && !bRet)
-                    bRet = TRUE;
-
-                // Ensure it's within range
-                // Note that because aplRankLcl and aplRankCmp
-                //   are unsigned, we don't need to check
-                //   for below zero
-                bRet = bRet && (aplRankLcl < aplRankCmp);
-
-                // Save the next trailing value
-                //   if asked to and not sorting
-                //   the axes.
-                if (bRet && lphGlbAxis && !bSortAxes)
-                    *lpAxisTail++ = aplRankLcl;
-
-                // Test for duplicates
-                if (bRet)
-                    bRet = TestDupAxis (lpMemDup, aplRankLcl, bAllowDups);
-            } // End FOR
-
-#undef  lpaplFloat
-
-            break;
-
-        case ARRAY_APA:
+        // If the conversion failed,
+        if (!bRet)
         {
-            APLINT apaOff,
-                   apaMul,
-                   apaLen;
+            // See if the value is a real part fractional FLT or something close to that.
+            // The best way is to check the imaginary values for zero in which case
+            //   the item is not fractional.
+            if (IzitImaginary (aplTypeLcl, lpMemData))
+                goto ERROR_EXIT;
+        } // End IF
 
-#define lpAPA       ((LPAPLAPA) lpMemData)
+        // Check for negative indices [-aplRankCmp, -1]
+        if (SIGN_APLRANK (aplRankLcl)
+         && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+            aplRankLcl += aplRankCmp;
 
-            // Get the APA parameters
-            apaOff = lpAPA->Off;
-            apaMul = lpAPA->Mul;
-            apaLen = *lpaplNELM;
+        // If fractional values are allowed,
+        //   return whether or not they are present
+        if (lpbFract)
+            *lpbFract |= !bRet;
 
-#undef  lpAPA
+        // If fractional values allowed and are present, ...
+        if (lpbFract && !bRet)
+            bRet = TRUE;
 
-            // Convert to origin-0
-            apaOff -= bQuadIO;
+        // Ensure it's within range
+        // Note that because aplRankLcl and aplRankCmp
+        //   are unsigned, we don't need to check
+        //   for below zero
+        bRet &= (aplRankLcl < aplRankCmp);
 
-            // It's sufficient to check the length and
-            //   the first and last values for validity.
-            bRet = (apaLen EQ 0)
-                || (((apaOff + apaMul *           0 ) < (APLRANKSIGN) aplRankCmp)
-                 && ((apaOff + apaMul * (apaLen - 1)) < (APLRANKSIGN) aplRankCmp));
+        // Save the next trailing value
+        //   if asked to and not sorting
+        //   the axes.
+        if (bRet && lphGlbAxis && !bSortAxes)
+            *lpAxisTail++ = aplRankLcl;
 
-            // Save the trailing axis values
-            for (uCnt = 0; bRet && uCnt < (APLUINT) apaLen; uCnt++)
-            {
-                // Get the next value
-                aplRankLcl = apaOff + apaMul * uCnt;
-
-                // Check for negative indices [-aplRankCmp, -1]
-                if (SIGN_APLRANK (aplRankLcl)
-                 && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
-                    aplRankLcl += aplRankCmp;
-
-                // Ensure it's within range
-                // Note that because aplRankLcl and aplRankCmp
-                //   are unsigned, we don't need to check
-                //   for below zero
-                bRet = (aplRankLcl < aplRankCmp);
-
-                // Save the next trailing value
-                //   if asked to and not sorting
-                //   the axes.
-                if (bRet && lphGlbAxis && !bSortAxes)
-                    *lpAxisTail++ = aplRankLcl;
-
-                // Test for duplicates
-                if (bRet)
-                    bRet = TestDupAxis (lpMemDup, aplRankLcl, bAllowDups);
-            } // End FOR
-
-            break;
-        } // End ARRAY_APA
-
-        case ARRAY_CHAR:
-        case ARRAY_HETERO:
-        case ARRAY_NESTED:
-        case ARRAY_LIST:
-            goto ERROR_EXIT;
-
-            break;
-
-        case ARRAY_RAT:
-
-#define lpaplRat        ((LPAPLRAT) lpMemData)
-
-            // Loop through the elements
-            for (uCnt = 0; bRet && uCnt < *lpaplNELM; uCnt++)
-            {
-                // Attempt to fit the RAT into an APLINT
-                aplRankLcl = mpq_get_sx (lpaplRat++, &bRet);
-                aplRankLcl -= bQuadIO; // Less the index origin
-
-                // Check for negative indices [-aplRankCmp, -1]
-                if (SIGN_APLRANK (aplRankLcl)
-                 && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
-                    aplRankLcl += aplRankCmp;
-
-                // If fractional values are allowed,
-                //   return whether or not they are present
-                if (lpbFract)
-                    *lpbFract |= !bRet;
-
-                // If fractional values allowed and are present, ...
-                if (lpbFract && !bRet)
-                    bRet = TRUE;
-
-                // Ensure it's within range
-                // Note that because aplRankLcl and aplRankCmp
-                //   are unsigned, we don't need to check
-                //   for below zero
-                bRet = bRet && (aplRankLcl < aplRankCmp);
-
-                // Save the next trailing value
-                //   if asked to and not sorting
-                //   the axes.
-                if (bRet && lphGlbAxis && !bSortAxes)
-                    *lpAxisTail++ = aplRankLcl;
-
-                // Test for duplicates
-                if (bRet)
-                    bRet = TestDupAxis (lpMemDup, aplRankLcl, bAllowDups);
-            } // End FOR
-
-#undef  lpaplRat
-
-            break;
-
-        case ARRAY_VFP:
-
-#define lpaplVfp        ((LPAPLVFP) lpMemData)
-
-            // Loop through the elements
-            for (uCnt = 0; bRet && uCnt < *lpaplNELM; uCnt++)
-            {
-                // Attempt to fit the VFP into an APLINT
-                aplRankLcl = mpfr_get_sx (lpaplVfp++, &bRet);
-                aplRankLcl -= bQuadIO; // Less the index origin
-
-                // Check for negative indices [-aplRankCmp, -1]
-                if (SIGN_APLRANK (aplRankLcl)
-                 && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
-                    aplRankLcl += aplRankCmp;
-
-                // If fractional values are allowed,
-                //   return whether or not they are present
-                if (lpbFract)
-                    *lpbFract |= !bRet;
-
-                // If fractional values allowed and are present, ...
-                if (lpbFract && !bRet)
-                    bRet = TRUE;
-
-                // Ensure it's within range
-                // Note that because aplRankLcl and aplRankCmp
-                //   are unsigned, we don't need to check
-                //   for below zero
-                bRet = bRet && (aplRankLcl < aplRankCmp);
-
-                // Save the next trailing value
-                //   if asked to and not sorting
-                //   the axes.
-                if (bRet && lphGlbAxis && !bSortAxes)
-                    *lpAxisTail++ = aplRankLcl;
-
-                // Test for duplicates
-                if (bRet)
-                    bRet = TestDupAxis (lpMemDup, aplRankLcl, bAllowDups);
-            } // End FOR
-
-#undef  lpaplVfp
-
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
+        // Test for duplicates
+        if (bRet)
+            bRet = TestDupAxis (lpMemDup, aplRankLcl, bAllowDups);
+    } // End FOR
 
     // Save the last value
     if (lpaplLastAxis)

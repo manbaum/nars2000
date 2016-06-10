@@ -36,47 +36,137 @@ PRIMSPEC PrimSpecQuery =
     &PrimSpecQueryStorageTypeMon,
     NULL,   // &PrimFnMonQueryAPA_EM, -- Can't happen w/Query
 
+    // Monadic Boolean result functions
     NULL,   // &PrimFnMonQueryBisB, -- Can't happen w/Query
     NULL,   // &PrimFnMonQueryBisI, -- Can't happen w/Query
     NULL,   // &PrimFnMonQueryBisF, -- Can't happen w/Query
 
-////               IisB,     // Handled via type promotion (to IisI)
+    // Monadic non-Boolean result functions (indexable)
     &PrimFnMonQueryIisI,
     &PrimFnMonQueryIisF,
-
-////               FisB,     // Handled via type promotion (to FisI)
     NULL,   // &PrimFnMonQueryFisI, -- Can't happen w/Query
     NULL,   // &PrimFnMonQueryFisF, -- can't happen w/Query
-
     &PrimFnMonQueryRisR,
-
-////               VisR,     // Handled via type promotion (to VisV)
+    &PrimFnMonQueryVisR,
     &PrimFnMonQueryVisV,
+
+    // Monadic Hypercomplex functions
+    NULL,   // &PrimFnMonQueryHC2IisHC2I, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryHC2IisHC2F, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryHC2FisHC2I, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryHC2FisHC2F, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryHC2RisHC2R, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryHC2VisHC2R, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryHC2VisHC2V, -- Can't happen w/Query
+
+    NULL,   // &PrimFnMonQueryHC4IisHC4I, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryHC4IisHC4F, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryHC4FisHC4I, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryHC4FisHC4F, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryHC4RisHC4R, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryHC4VisHC4R, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryHC4VisHC4V, -- Can't happen w/Query
+
+    NULL,   // &PrimFnMonQueryHC8IisHC8I, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryHC8IisHC8F, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryHC8FisHC8I, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryHC8FisHC8F, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryHC8RisHC8R, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryHC8VisHC8R, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryHC8VisHC8V, -- Can't happen w/Query
+
+    // Monadic FLT result HC arg functions (indexable)
+    NULL,   // &PrimFnMonQueryFisHC2I, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryFisHC2F, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryVisHC2R, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryVisHC2V, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryFisHC4I, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryFisHC4F, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryVisHC4R, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryVisHC4V, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryFisHC8I, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryFisHC8F, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryVisHC8R, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryVisHC8V, -- Can't happen w/Query
 
     // Dyadic functions
     NULL,   // &PrimFnDyd_EM, -- Dyadic Query not scalar
     NULL,   // &PrimSpecQueryStorageTypeDyd, -- Dyadic Query not scalar
     NULL,   // &PrimFnDydQueryAPA_EM, -- Dyadic Query not scalar
 
+    // Dyadic Boolean result functions
     NULL,   // &PrimFnDydQueryBisBvB, -- Dyadic Query not scalar
     NULL,   // &PrimFnDydQueryBisIvI, -- Dyadic Query not scalar
     NULL,   // &PrimFnDydQueryBisFvF, -- Dyadic Query not scalar
     NULL,   // &PrimFnDydQueryBisCvC, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryBisHvH, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryBisRvR, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryBisVvV, -- Dyadic Query not scalar
 
-////                 IisBvB,    // Handled via type promotion (to IisIvI)
-    NULL,   // &PrimFnDydQueryIisIvI,
+    NULL,   // &PrimFnDydQueryBisHC2IvHC2I, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryBisHC2FvHC2F, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryBisHC2RvHC2R, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryBisHC2VvHC2V, -- Dyadic Query not scalar
+
+    NULL,   // &PrimFnDydQueryBisHC4IvHC4I, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryBisHC4FvHC4F, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryBisHC4RvHC4R, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryBisHC4VvHC4V, -- Dyadic Query not scalar
+
+    NULL,   // &PrimFnDydQueryBisHC8IvHC8I, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryBisHC8FvHC8F, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryBisHC8RvHC8R, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryBisHC8VvHC8V, -- Dyadic Query not scalar
+
+    // Dyadic non-Boolean result functions (indexable)
+    NULL,   // &PrimFnDydQueryIisIvI, -- Dyadic Query not scalar
     NULL,   // &PrimFnDydQueryIisFvF, -- Dyadic Query not scalar
-
-////                 FisBvB,    // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydQueryFisIvI, -- Dyadic Query not scalar
     NULL,   // &PrimFnDydQueryFisFvF, -- Dyadic Query not scalar
-
-    NULL,   // &PrimFnDydQueryBisRvR, -- Dyadic Query not scalar
     NULL,   // &PrimFnDydQueryRisRvR, -- Dyadic Query not scalar
-
-    NULL,   // &PrimFnDydQueryBisVvV, -- Dyadic Query not scalar
-////                 VisRvR     // Handled via type promotion (to VisVvV)
+    NULL,   // &PrimFnDydQueryVisRvR, -- Dyadic Query not scalar
     NULL,   // &PrimFnDydQueryVisVvV, -- Dyadic Query not scalar
+
+    NULL,   // &PrimFnDydQueryHC2IisHC2IvHC2I, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryHC2IisHC2FvHC2F, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryHC2FisHC2IvHC2I, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryHC2FisHC2FvHC2F, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryHC2RisHC2RvHC2R, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryHC2VisHC2RvHC2R, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryHC2VisHC2VvHC2V, -- Dyadic Query not scalar
+
+    NULL,   // &PrimFnDydQueryHC4IisHC4IvHC4I, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryHC4IisHC4FvHC4F, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryHC4FisHC4IvHC4I, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryHC4FisHC4FvHC4F, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryHC4RisHC4RvHC4R, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryHC4VisHC4RvHC4R, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryHC4VisHC4VvHC4V, -- Dyadic Query not scalar
+
+    NULL,   // &PrimFnDydQueryHC8IisHC8IvHC8I, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryHC8IisHC8FvHC8F, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryHC8FisHC8IvHC8I, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryHC8FisHC8FvHC8F, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryHC8RisHC8RvHC8R, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryHC8VisHC8RvHC8R, -- Dyadic Query not scalar
+    NULL,   // &PrimFnDydQueryHC8VisHC8VvHC8V, -- Dyadic Query not scalar
+
+    // Monadic Boolean chunk functions
+    NULL,   // &PrimFnMonQueryB64isB64, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryB32isB32, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryB16isB16, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryB08isB08, -- Can't happen w/Query
+
+    // Dyadic Boolean chunk functions
+    NULL,   // &PrimFnMonQueryB64isB64vB64, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryB32isB32vB32, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryB16isB16vB16, -- Can't happen w/Query
+    NULL,   // &PrimFnMonQueryB08isB08vB08, -- Can't happen w/Query
+
+    // Miscellaneous
+    0,      // []RL for atomicity
+    FALSE,  // 00000001:  Allow dimension demotion for monadic scalar function
+    FALSE,  // 00000002:  ...                          dyadic  ...
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecQuery};
@@ -176,8 +266,9 @@ APLSTYPE PrimSpecQueryStorageTypeMon
     if (IsCharEmpty (*lpaplTypeRht, aplNELMRht))
         *lpaplTypeRht = ARRAY_BOOL;
 
-    // Weed out chars & heteros
-    if (IsSimpleCH (*lpaplTypeRht))
+    // Weed out chars & heteros & HC
+    if (IsSimpleCH (*lpaplTypeRht)
+     || IsHCAny (*lpaplTypeRht))
         return ARRAY_ERROR;
 
     // The storage type of the result is
@@ -201,29 +292,37 @@ APLSTYPE PrimSpecQueryStorageTypeMon
 //    APL Quote Quad, Vol. 8, Number 3, p. 42.
 //***************************************************************************
 
-APLINT PrimFnMonQueryIisI
-    (APLINT     aplIntegerRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnMonQueryIisI
+    (LPAPLINT   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLBOOL      bQuadIO;       // []IO
-    APLUINT      uQuadRL;       // []RL
+    APLBOOL bQuadIO;                // []IO
 
-    // Get the current value of []IO & []RL
+    // Get the current value of []IO
     bQuadIO = GetQuadIO ();
-    uQuadRL = lpPrimSpec->uQuadRL;
 
     // Check for DOMAIN ERROR
-    if (aplIntegerRht < bQuadIO)
+    if (lpatRht->aplInteger < bQuadIO)
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    else
+    {
+        APLUINT uQuadRL;            // []RL
 
-    // Calculate the next QuadRL
-    uQuadRL = NextQuadRL (uQuadRL);
+        // Get the current value of []RL in case we fail on a later arg
+        uQuadRL = lpPrimSpec->uQuadRL;
 
-    // Save uQuadRL back into lpPrimSpec
-    lpPrimSpec->uQuadRL = uQuadRL;
+        // Calculate the next QuadRL
+        uQuadRL = NextQuadRL (uQuadRL);
 
-    return bQuadIO + GetRandomNum (aplIntegerRht, uQuadRL, GetMemPTD ());
+        // Save uQuadRL back into lpPrimSpec
+        lpPrimSpec->uQuadRL = uQuadRL;
+
+        // Generate a pseudo-random number
+        lpMemRes[uRes] = bQuadIO + GetRandomNum (lpatRht->aplInteger, uQuadRL, GetMemPTD ());
+    } // End IF/ELSE
 } // End PrimFnMonQueryIisI
 
 
@@ -237,16 +336,21 @@ APLINT PrimFnMonQueryIisI
 //    APL Quote Quad, Vol. 8, Number 3, p. 42.
 //***************************************************************************
 
-APLINT PrimFnMonQueryIisF
-    (APLFLOAT   aplFloatRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnMonQueryIisF
+    (LPAPLINT   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     // Check for DOMAIN ERROR
-    if (aplFloatRht NE floor (aplFloatRht))
+    if (lpatRht->aplFloat NE floor (lpatRht->aplFloat))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-
-    return PrimFnMonQueryIisI ((APLINT) aplFloatRht, lpPrimSpec);
+    else
+    {
+        lpatRht->aplInteger = (APLINT) lpatRht->aplFloat;
+        PrimFnMonQueryIisI (lpMemRes, uRes, lpatRht, lpPrimSpec);
+    } // End IF/ELSE
 } // End PrimFnMonQueryIisF
 
 
@@ -408,23 +512,24 @@ APLINT GetRandomNum
 //  Primitive scalar function monadic Query:  R {is} fn R
 //***************************************************************************
 
-APLRAT PrimFnMonQueryRisR
-    (APLRAT     aplRatRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnMonQueryRisR
+    (LPAPLRAT   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     APLBOOL bQuadIO;            // []IO
-    APLRAT  mpqRes = {0};       // Result
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
 
     // Check for DOMAIN ERROR
-    if (mpq_cmp_ui (&aplRatRht, bQuadIO, 1) < 0)
+    if (mpq_cmp_ui (&lpatRht->aplRat, bQuadIO, 1) < 0)
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-
+    else
     // If the RAT is an integer,  ...
-    if (mpq_integer_p (&aplRatRht))
+    if (mpq_integer_p (&lpatRht->aplRat))
     {
 #ifdef DEBUG
         LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -439,20 +544,20 @@ APLRAT PrimFnMonQueryRisR
         {
             case L'r':
                 // Initialize the result to 0/1
-                mpq_init (&mpqRes);
+                mpq_init (&lpMemRes[uRes]);
 
                 // Generate a uniformly-distributed random number in [0, Rht)
-                mpz_urandomm (mpq_numref (&mpqRes),
+                mpz_urandomm (mpq_numref (&lpMemRes[uRes]),
                               lpMemPTD->randState,
-                              mpq_numref (&aplRatRht));
+                              mpq_numref (&lpatRht->aplRat));
                 // Add in []IO
-                mpz_add_ui (mpq_numref (&mpqRes), mpq_numref (&mpqRes), bQuadIO);
+                mpz_add_ui (mpq_numref (&lpMemRes[uRes]), mpq_numref (&lpMemRes[uRes]), bQuadIO);
 
                 break;
 
             case L'g':
             case L'p':
-                RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+                NONCE_RE    // ***FINISHME*** -- []DT EQ 'g' or 'p'
 
                 break;
 
@@ -462,12 +567,34 @@ APLRAT PrimFnMonQueryRisR
     } else
         // Otherwise, it's an error
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-
-    return mpqRes;
 #ifndef DEBUG
   #undef  lpMemPTD
 #endif
 } // End PrimFnMonQueryRisR
+
+
+//***************************************************************************
+//  $PrimFnMonQueryVisR
+//
+//  Primitive scalar function monadic Query:  V {is} fn R
+//***************************************************************************
+
+void PrimFnMonQueryVisR
+    (LPAPLVFP   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    ALLTYPES atRht = {0};
+
+    // Promote the right arg to the result type
+    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatRht->aplRat, 0, &atRht);
+
+    PrimFnMonQueryVisV (lpMemRes, uRes, &atRht, lpPrimSpec);
+
+    Myhc1v_clear (&atRht.aplHC1V);
+} // End PrimFnMonQueryVisR
 
 
 //***************************************************************************
@@ -476,24 +603,25 @@ APLRAT PrimFnMonQueryRisR
 //  Primitive scalar function monadic Query:  V {is} fn V
 //***************************************************************************
 
-APLVFP PrimFnMonQueryVisV
-    (APLVFP     aplVfpRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnMonQueryVisV
+    (LPAPLVFP   lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     APLBOOL      bQuadIO;           // []IO
     APLMPI       mpzRes = {0};      // Result as MPI
-    APLVFP       mpfRes = {0};      // Result as VFP
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
 
     // Check for DOMAIN ERROR
-    if (mpfr_cmp_ui (&aplVfpRht, bQuadIO) < 0)
+    if (mpfr_cmp_ui (&lpatRht->aplVfp, bQuadIO) < 0)
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     // If the VFP is an integer,  ...
-    if (mpfr_integer_p (&aplVfpRht))
+    if (mpfr_integer_p (&lpatRht->aplVfp))
     {
 #ifdef DEBUG
         LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
@@ -508,7 +636,7 @@ APLVFP PrimFnMonQueryVisV
         {
             case L'r':
                 // Initialize the result to R
-                mpz_init_set_fr (&mpzRes, &aplVfpRht);
+                mpz_init_set_fr (&mpzRes, &lpatRht->aplVfp);
 
                 // Generate a uniformly-distributed random number in [0, Rht)
                 mpz_urandomm (&mpzRes,
@@ -518,7 +646,7 @@ APLVFP PrimFnMonQueryVisV
                 mpz_add_ui (&mpzRes, &mpzRes, bQuadIO);
 
                 // Copy to the VFP result
-                mpfr_init_set_z (&mpfRes, &mpzRes, MPFR_RNDN);
+                mpfr_init_set_z (&lpMemRes[uRes], &mpzRes, MPFR_RNDN);
 
                 // We no longer need this storage
                 Myz_clear (&mpzRes);
@@ -527,7 +655,7 @@ APLVFP PrimFnMonQueryVisV
 
             case L'g':
             case L'p':
-                RaiseException (EXCEPTION_NONCE_ERROR, 0, 0, NULL);
+                NONCE_RE    // ***FINISHME*** -- []DT EQ 'g' or 'p'
 
                 break;
 
@@ -540,8 +668,6 @@ APLVFP PrimFnMonQueryVisV
     } else
         // Otherwise, it's an error
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-
-    return mpfRes;
 } // End PrimFnMonQueryVisV
 
 

@@ -29,60 +29,140 @@
 PRIMSPEC PrimSpecEqual = {
     // Monadic functions
     &PrimFnMonValenceError_EM,
-    NULL,   // &PrimSpecEqualStorageTypeMon, -- Can't happen w/Equal
-    NULL,   // &PrimFnMonEqualAPA_EM, -- Can't happen w/Equal
+    NULL,   // &PrimSpecEqualStorageTypeMon, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualAPA_EM, -- No monadic defn, can't happen w/Equal
 
-    NULL,   // &PrimFnMonEqualBisB, -- Can't happen w/Equal
-    NULL,   // &PrimFnMonEqualBisI, -- Can't happen w/Equal
-    NULL,   // &PrimFnMonEqualBisF, -- Can't happen w/Equal
+    // Monadic Boolean result functions
+    NULL,   // &PrimFnMonEqualBisB, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualBisI, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualBisF, -- No monadic defn, can't happen w/Equal
 
-////               IisB,   // Handled via type promotion (to IisI)
-    NULL,   // &PrimFnMonEqualIisI, -- Can't happen w/Equal
-    NULL,   // &PrimFnMonEqualIisF, -- Can't happen w/Equal
+    // Monadic non-Boolean result functions (indexable)
+    NULL,   // &PrimFnMonEqualIisI, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualIisF, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualFisI, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualFisF, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualRisR, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualVisR, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualVisV, -- No monadic defn, can't happen w/Equal
 
-////               FisB,   // Handled via type promotion (to FisI)
-    NULL,   // &PrimFnMonEqualFisI, -- Can't happen w/Equal
-    NULL,   // &PrimFnMonEqualFisF, -- Can't happen w/Equal
+    // Monadic Hypercomplex functions
+    NULL,   // &PrimFnMonEqualHC2IisHC2I, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC2IisHC2F, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC2FisHC2I, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC2FisHC2F, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC2RisHC2R, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC2VisHC2R, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC2VisHC2V, -- No monadic defn, can't happen w/Equal
 
-    NULL,   // &PrimFnMonEqualRisR, -- Can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC4IisHC4I, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC4IisHC4F, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC4FisHC4I, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC4FisHC4F, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC4RisHC4R, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC4VisHC4R, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC4VisHC4V, -- No monadic defn, can't happen w/Equal
 
-////                          VisR      // Handled via type promotion (to VisV)
-    NULL,   // &PrimFnMonEqualVisV, -- Can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC8IisHC8I, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC8IisHC8F, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC8FisHC8I, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC8FisHC8F, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC8RisHC8R, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC8VisHC8R, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualHC8VisHC8V, -- No monadic defn, can't happen w/Equal
+
+    // Monadic FLT result HC arg functions (indexable)
+    NULL,   // &PrimFnMonEqualFisHC2I, -- Can't happen w/Equal
+    NULL,   // &PrimFnMonEqualFisHC2F, -- Can't happen w/Equal
+    NULL,   // &PrimFnMonEqualVisHC2R, -- Can't happen w/Equal
+    NULL,   // &PrimFnMonEqualVisHC2V, -- Can't happen w/Equal
+    NULL,   // &PrimFnMonEqualFisHC4I, -- Can't happen w/Equal
+    NULL,   // &PrimFnMonEqualFisHC4F, -- Can't happen w/Equal
+    NULL,   // &PrimFnMonEqualVisHC4R, -- Can't happen w/Equal
+    NULL,   // &PrimFnMonEqualVisHC4V, -- Can't happen w/Equal
+    NULL,   // &PrimFnMonEqualFisHC8I, -- Can't happen w/Equal
+    NULL,   // &PrimFnMonEqualFisHC8F, -- Can't happen w/Equal
+    NULL,   // &PrimFnMonEqualVisHC8R, -- Can't happen w/Equal
+    NULL,   // &PrimFnMonEqualVisHC8V, -- Can't happen w/Equal
 
     // Dyadic functions
     &PrimFnDyd_EM_YY,
     &PrimSpecEqualStorageTypeDyd,
-    NULL,   // &PrimFnDydEqualAPA_EM, -- Can't happen w/Equal
+    NULL,   // &PrimFnDydEqualAPA_EM, -- Result Boolean, can't happen w/Equal
 
+    // Dyadic Boolean result functions
     &PrimFnDydEqualBisBvB,
     &PrimFnDydEqualBisIvI,
     &PrimFnDydEqualBisFvF,
     &PrimFnDydEqualBisCvC,
+    &PrimFnDydEqualBisHvH,
+    &PrimFnDydEqualBisRvR,
+    &PrimFnDydEqualBisVvV,
 
-////                 IisBvB,    // Handled via type promotion (to IisIvI)
+    &PrimFnDydEqualBisHC2IvHC2I,
+    &PrimFnDydEqualBisHC2FvHC2F,
+    &PrimFnDydEqualBisHC2RvHC2R,
+    &PrimFnDydEqualBisHC2VvHC2V,
+
+    &PrimFnDydEqualBisHC4IvHC4I,
+    &PrimFnDydEqualBisHC4FvHC4F,
+    &PrimFnDydEqualBisHC4RvHC4R,
+    &PrimFnDydEqualBisHC4VvHC4V,
+
+    &PrimFnDydEqualBisHC8IvHC8I,
+    &PrimFnDydEqualBisHC8FvHC8F,
+    &PrimFnDydEqualBisHC8RvHC8R,
+    &PrimFnDydEqualBisHC8VvHC8V,
+
+    // Dyadic non-Boolean result functions (indexable)
     NULL,   // &PrimFnDydEqualIisIvI, -- Result Boolean, can't happen w/Equal
     NULL,   // &PrimFnDydEqualIisFvF, -- Result Boolean, can't happen w/Equal
-
-////                 FisBvB,    // Handled via type promotion (to FisIvI)
     NULL,   // &PrimFnDydEqualFisIvI, -- Result Boolean, can't happen w/Equal
     NULL,   // &PrimFnDydEqualFisFvF, -- Result Boolean, can't happen w/Equal
-
-    &PrimFnDydEqualBisRvR,
     NULL,   // &PrimFnDydEqualRisRvR, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualVisRvR, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualVisVvV, -- Result Boolean, can't happen w/Equal
 
-    &PrimFnDydEqualBisVvV,
-////                  VisRvR,   // Handled via type promotion (to VisVvV)
-    NULL,   // &PrimFnDydUpEqualVisVvV, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC2IisHC2IvHC2I, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC2IisHC2FvHC2F, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC2FisHC2IvHC2I, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC2FisHC2FvHC2F, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC2RisHC2RvHC2R, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC2VisHC2RvHC2R, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC2VisHC2VvHC2V, -- Result Boolean, can't happen w/Equal
 
-    NULL,   // &PrimFnMonEqualB64isB64, -- Can't happen w/Equal
-    NULL,   // &PrimFnMonEqualB32isB32, -- Can't happen w/Equal
-    NULL,   // &PrimFnMonEqualB16isB16, -- Can't happen w/Equal
-    NULL,   // &PrimFnMonEqualB08isB08, -- Can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC4IisHC4IvHC4I, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC4IisHC4FvHC4F, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC4FisHC4IvHC4I, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC4FisHC4FvHC4F, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC4RisHC4RvHC4R, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC4VisHC4RvHC4R, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC4VisHC4VvHC4V, -- Result Boolean, can't happen w/Equal
 
+    NULL,   // &PrimFnDydEqualHC8IisHC8IvHC8I, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC8IisHC8FvHC8F, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC8FisHC8IvHC8I, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC8FisHC8FvHC8F, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC8RisHC8RvHC8R, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC8VisHC8RvHC8R, -- Result Boolean, can't happen w/Equal
+    NULL,   // &PrimFnDydEqualHC8VisHC8VvHC8V, -- Result Boolean, can't happen w/Equal
+
+    // Monadic Boolean chunk functions
+    NULL,   // &PrimFnMonEqualB64isB64, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualB32isB32, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualB16isB16, -- No monadic defn, can't happen w/Equal
+    NULL,   // &PrimFnMonEqualB08isB08, -- No monadic defn, can't happen w/Equal
+
+    // Dyadic Boolean chunk functions
     &PrimFnDydEqualB64isB64vB64,
     &PrimFnDydEqualB32isB32vB32,
     &PrimFnDydEqualB16isB16vB16,
     &PrimFnDydEqualB08isB08vB08,
+
+    // Miscellaneous
+    0,      // []RL for atomicity
+    FALSE,  // 00000001:  Allow dimension demotion for monadic scalar function
+    FALSE,  // 00000002:  ...                          dyadic  ...
 };
 
 static LPPRIMSPEC lpPrimSpec = {&PrimSpecEqual};
@@ -113,10 +193,62 @@ LPPL_YYSTYPE PrimFnEqual_EM_YY
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return PrimFnMonEqual_EM_YY                       (lptkFunc, lptkRhtArg, lptkAxis);
     else
         return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
 } // End PrimFnEqual_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnMonEqual_EM_YY
+//
+//  Primitive function for monadic Equal ("dimension")
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnMonEqual_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimFnMonEqual_EM_YY
+    (LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    APLSTYPE     aplTypeRht;        // Right arg storage type
+    int          iHCDimRht;         // Right arg dimension (1, 2, 4, 8)
+    LPPL_YYSTYPE lpYYRes;           // Ptr to result
+
+    // Get the attributes (Type, NELM, and Rank) of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, NULL, NULL, NULL);
+
+    // If the right arg is HETERO or NESTED, ...
+    if (IsPtrArray (aplTypeRht))
+        goto DOMAIN_EXIT;
+
+    // Get the HC dimension (1, 2, 4, 8)
+    iHCDimRht = TranslateArrayTypeToHCDim (aplTypeRht);
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_INT;
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkLongest  = iHCDimRht;
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+} // End PrimFnMonEqual_EM_YY
 #undef  APPEND_NAME
 
 
@@ -163,13 +295,17 @@ APLSTYPE PrimSpecEqualStorageTypeDyd
 //  Primitive scalar function dyadic Equal:  B {is} B fn B
 //***************************************************************************
 
-APLBOOL PrimFnDydEqualBisBvB
-    (APLBOOL    aplBooleanLft,
-     APLBOOL    aplBooleanRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydEqualBisBvB
+    (LPAPLBOOL  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    return (aplBooleanLft EQ aplBooleanRht);
+    lpMemRes[uRes >> LOG2NBIB] |=
+      (lpatLft->aplBoolean EQ lpatRht->aplBoolean)
+      << (MASKLOG2NBIB & (UINT) uRes);
 } // End PrimFnDydEqualBisBvB
 
 
@@ -243,13 +379,17 @@ APLB08 PrimFnDydEqualB08isB08vB08
 //  Primitive scalar function dyadic Equal:  B {is} I fn I
 //***************************************************************************
 
-APLBOOL PrimFnDydEqualBisIvI
-    (APLINT     aplIntegerLft,
-     APLINT     aplIntegerRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydEqualBisIvI
+    (LPAPLBOOL  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    return (aplIntegerLft EQ aplIntegerRht);
+    lpMemRes[uRes >> LOG2NBIB] |=
+      (lpatLft->aplInteger EQ lpatRht->aplInteger)
+      << (MASKLOG2NBIB & (UINT) uRes);
 } // End PrimFnDydEqualBisIvI
 
 
@@ -259,14 +399,18 @@ APLBOOL PrimFnDydEqualBisIvI
 //  Primitive scalar function dyadic Equal:  B {is} F fn F
 //***************************************************************************
 
-APLBOOL PrimFnDydEqualBisFvF
-    (APLFLOAT   aplFloatLft,
-     APLFLOAT   aplFloatRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydEqualBisFvF
+    (LPAPLBOOL  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     // Compare the two floats relative to []CT
-    return CompareCT (aplFloatLft, aplFloatRht, GetQuadCT (), lpPrimSpec);
+    lpMemRes[uRes >> LOG2NBIB] |=
+      CmpCT_F (lpatLft->aplFloat, lpatRht->aplFloat, GetQuadCT (), EQ)
+      << (MASKLOG2NBIB & (UINT) uRes);
 } // End PrimFnDydEqualBisFvF
 
 
@@ -276,14 +420,50 @@ APLBOOL PrimFnDydEqualBisFvF
 //  Primitive scalar function dyadic Equal:  B {is} C fn C
 //***************************************************************************
 
-APLBOOL PrimFnDydEqualBisCvC
-    (APLCHAR    aplCharLft,
-     APLCHAR    aplCharRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydEqualBisCvC
+    (LPAPLBOOL  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    return (aplCharLft EQ aplCharRht);
+    lpMemRes[uRes >> LOG2NBIB] |=
+      (lpatLft->aplChar EQ lpatRht->aplChar)
+      << (MASKLOG2NBIB & (UINT) uRes);
 } // End PrimFnDydEqualBisCvC
+
+
+//***************************************************************************
+//  $PrimFnDydEqualBisHvH
+//
+//  Primitive scalar function dyadic NotEqual:  B {is} H fn H
+//***************************************************************************
+
+void PrimFnDydEqualBisHvH
+    (LPAPLBOOL  lpMemRes,               // Ptr to the result
+     APLUINT    uRes,                   // Index into the result
+     LPALLTYPES lpatLft,                // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,                // ...    right ...
+     LPPRIMSPEC lpPrimSpec)             // Ptr to local PRIMSPEC
+
+{
+    UBOOL bRet;                         // The result
+
+    // If the immediate types are both char, ...
+    if (IsImmChr (lpatLft->aplHetero->stFlags.ImmType)
+     && IsImmChr (lpatRht->aplHetero->stFlags.ImmType))
+        bRet = (lpatLft->aplHetero->stData.stChar EQ
+                lpatRht->aplHetero->stData.stChar);
+    else
+        bRet = 0;
+
+    // If the result is TRUE, ...
+    if (bRet)
+        lpMemRes[uRes >> LOG2NBIB] |=
+          BIT0
+          << (MASKLOG2NBIB & (UINT) uRes);
+} // End PrimFnDydEqualBisHvH
 
 
 //***************************************************************************
@@ -292,19 +472,18 @@ APLBOOL PrimFnDydEqualBisCvC
 //  Primitive scalar function dyadic Equal:  B {is} R fn R
 //***************************************************************************
 
-APLBOOL PrimFnDydEqualBisRvR
-    (APLRAT     aplRatLft,
-     APLRAT     aplRatRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydEqualBisRvR
+    (LPAPLBOOL  lpMemRes,               // Ptr to the result
+     APLUINT    uRes,                   // Index into the result
+     LPALLTYPES lpatLft,                // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,                // ...    right ...
+     LPPRIMSPEC lpPrimSpec)             // Ptr to local PRIMSPEC
 
 {
-#ifdef RAT_EXACT
-    // Compare the two RATs
-    return mpq_cmp    (&aplRatLft, &aplRatRht              ) EQ 0;
-#else
     // Compare the two RATs relative to []CT
-    return mpq_cmp_ct ( aplRatLft,  aplRatRht, GetQuadCT ()) EQ 0;
-#endif
+    lpMemRes[uRes >> LOG2NBIB] |=
+      CmpCT_R (lpatLft->aplRat, lpatRht->aplRat, GetQuadCT (), EQ)
+      << (MASKLOG2NBIB & (UINT) uRes);
 } // End PrimFnDydEqualBisRvR
 
 
@@ -314,15 +493,706 @@ APLBOOL PrimFnDydEqualBisRvR
 //  Primitive scalar function dyadic Equal:  B {is} V fn V
 //***************************************************************************
 
-APLBOOL PrimFnDydEqualBisVvV
-    (APLVFP     aplVfpLft,
-     APLVFP     aplVfpRht,
-     LPPRIMSPEC lpPrimSpec)
+void PrimFnDydEqualBisVvV
+    (LPAPLBOOL  lpMemRes,               // Ptr to the result
+     APLUINT    uRes,                   // Index into the result
+     LPALLTYPES lpatLft,                // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,                // ...    right ...
+     LPPRIMSPEC lpPrimSpec)             // Ptr to local PRIMSPEC
 
 {
     // Compare the two VFPs relative to []CT
-    return (mpfr_cmp_ct (aplVfpLft, aplVfpRht, GetQuadCT ()) EQ 0);
+    lpMemRes[uRes >> LOG2NBIB] |=
+      CmpCT_V (lpatLft->aplVfp, lpatRht->aplVfp, GetQuadCT (), EQ)
+      << (MASKLOG2NBIB & (UINT) uRes);
 } // End PrimFnDydEqualBisVvV
+
+
+//***************************************************************************
+//  $EqualHCxIvHCxI
+//***************************************************************************
+
+UBOOL EqualHCxIvHCxI
+    (LPALLTYPES lpatLft,                // Left arg as LPALLTYPES
+     LPALLTYPES lpatRht,                // Right ...
+     int        iHCDim,                 // Dimension (1, 2, 4, 8)
+     APLFLOAT   fQuadCT,                // []CT (0 = exact comparison)
+     LPCHAR     lpszMsg)                // Ptr to CheckExceptionS msg
+{
+////APLFLOAT aplMagLft,                 // Magnitude of left arg
+////         aplMagRht,                 // ...          right ...
+////         aplDist;                   // Distance between left and right args
+    UBOOL bRet = TRUE;                  // The result
+    int   i;                            // Loop counter
+
+    // Loop through all of the parts
+    for (i = 0; i < iHCDim; i++)
+        bRet &= (lpatLft->aplHC8I.parts[i] EQ lpatRht->aplHC8I.parts[i]);
+    return bRet;
+
+////__try
+////{
+////    // Split cases based upon the Dimension
+////    switch (iHCDim)
+////    {
+////        case 2:
+////            // Calculate the magnitudes
+////            aplMagLft = MagHC2I (lpatLft->aplHC2I);
+////            aplMagRht = MagHC2I (lpatRht->aplHC2I);
+////
+////            // Get the distance between the args
+////            aplDist   = DistHC2I  (lpatLft->aplHC2I, lpatRht->aplHC2I);
+////
+////            break;
+////
+////        case 4:
+////            // Calculate the magnitudes
+////            aplMagLft = MagHC4I (lpatLft->aplHC4I);
+////            aplMagRht = MagHC4I (lpatLft->aplHC4I);
+////
+////            // Get the distance between the args
+////            aplDist   = DistHC4I  (lpatLft->aplHC4I, lpatRht->aplHC4I);
+////
+////            break;
+////
+////        case 8:
+////            // Calculate the magnitudes
+////            aplMagLft = MagHC8I (lpatLft->aplHC8I);
+////            aplMagRht = MagHC8I (lpatLft->aplHC8I);
+////
+////            // Get the distance between the args
+////            aplDist   = DistHC8I  (lpatLft->aplHC8I, lpatRht->aplHC8I);
+////
+////            break;
+////
+////        defstop
+////            break;
+////    } // End SWITCH
+////} __except (CheckExceptionS (GetExceptionInformation (), lpszMsg))
+////{
+////    EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+////
+////    Assert (exCode EQ EXCEPTION_DOMAIN_ERROR);
+////
+////    aplDist = fltPosInfinity;
+////} // End __try/__except
+////
+////return (aplDist <= (GetQuadCT () * max (aplMagLft, aplMagRht))));
+} // End EqualHCxIvHCxI
+
+
+//***************************************************************************
+//  $EqualBisHCxIvHCxI
+//***************************************************************************
+
+void EqualBisHCxIvHCxI
+    (LPAPLBOOL  lpMemRes,               // Ptr to the result
+     APLUINT    uRes,                   // Index into the result
+     LPALLTYPES lpatLft,                // Left arg as LPALLTYPES
+     LPALLTYPES lpatRht,                // Right ...
+     int        iHCDim,                 // Dimension (1, 2, 4, 8)
+     UBOOL      bIsEqual,               // TRUE iff the calling function is Equal (FALSE if NotEqual)
+     LPCHAR     lpszMsg)                // Ptr to CheckExceptionS msg
+{
+    // The two numbers are equal iff all parts are equal
+    if (bIsEqual EQ EqualHCxIvHCxI (lpatLft, lpatRht, iHCDim, GetQuadCT (), lpszMsg))
+        lpMemRes[uRes >> LOG2NBIB] |=
+          BIT0
+          << (MASKLOG2NBIB & (UINT) uRes);
+} // End EqualBisHCxIvHCxI
+
+
+//***************************************************************************
+//  $PrimFnDydEqualBisHC2IvHC2I
+//
+//  Primitive scalar function dyadic Equal:  B {is} HC2I fn HC2I
+//***************************************************************************
+
+void PrimFnDydEqualBisHC2IvHC2I
+    (LPAPLBOOL  lpMemRes,               // Ptr to the result
+     APLUINT    uRes,                   // Index into the result
+     LPALLTYPES lpatLft,                // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,                // ...    right ...
+     LPPRIMSPEC lpPrimSpec)             // Ptr to local PRIMSPEC
+
+{
+    EqualBisHCxIvHCxI (lpMemRes,        // Ptr to the result
+                       uRes,            // Index into the result
+                       lpatLft,         // Left arg as LPALLTYPES
+                       lpatRht,         // Right ...
+                       2,               // Dimension (1, 2, 4, 8)
+                       TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
+                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+} // End PrimFnDydEqualBisHC2IvHC2I
+
+
+//***************************************************************************
+//  $PrimFnDydEqualBisHC4IvHC4I
+//
+//  Primitive scalar function dyadic Equal:  B {is} HC4I fn HC4I
+//***************************************************************************
+
+void PrimFnDydEqualBisHC4IvHC4I
+    (LPAPLBOOL  lpMemRes,               // Ptr to the result
+     APLUINT    uRes,                   // Index into the result
+     LPALLTYPES lpatLft,                // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,                // ...    right ...
+     LPPRIMSPEC lpPrimSpec)             // Ptr to local PRIMSPEC
+
+{
+    EqualBisHCxIvHCxI (lpMemRes,        // Ptr to the result
+                       uRes,            // Index into the result
+                       lpatLft,         // Left arg as LPALLTYPES
+                       lpatRht,         // Right ...
+                       4,               // Dimension (1, 2, 4, 8)
+                       TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
+                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+} // End PrimFnDydEqualBisHC4IvHC4I
+
+
+//***************************************************************************
+//  $PrimFnDydEqualBisHC8IvHC8I
+//
+//  Primitive scalar function dyadic Equal:  B {is} HC8I fn HC8I
+//***************************************************************************
+
+void PrimFnDydEqualBisHC8IvHC8I
+    (LPAPLBOOL  lpMemRes,               // Ptr to the result
+     APLUINT    uRes,                   // Index into the result
+     LPALLTYPES lpatLft,                // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,                // ...    right ...
+     LPPRIMSPEC lpPrimSpec)             // Ptr to local PRIMSPEC
+
+{
+    EqualBisHCxIvHCxI (lpMemRes,        // Ptr to the result
+                       uRes,            // Index into the result
+                       lpatLft,         // Left arg as LPALLTYPES
+                       lpatRht,         // Right ...
+                       8,               // Dimension (1, 2, 4, 8)
+                       TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
+                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+} // End PrimFnDydEqualBisHC8IvHC8I
+
+
+//***************************************************************************
+//  $EqualHCxFvHCxF
+//***************************************************************************
+
+UBOOL EqualHCxFvHCxF
+    (LPALLTYPES lpatLft,                // Left arg as LPALLTYPES
+     LPALLTYPES lpatRht,                // Right ...
+     int        iHCDim,                 // Dimension (1, 2, 4, 8)
+     APLFLOAT   fQuadCT,                // []CT (0 = exact comparison)
+     LPCHAR     lpszMsg)                // Ptr to CheckExceptionS msg
+{
+    APLFLOAT aplMagLft,                 // Magnitude of left arg
+             aplMagRht,                 // ...          right ...
+             aplDist;                   // Distance between left and right args
+
+    __try
+    {
+        // Split cases based upon the Dimension
+        switch (iHCDim)
+        {
+            case 1:
+                return CmpCT_F (lpatLft->aplFloat, lpatRht->aplFloat, GetQuadCT (), EQ);
+
+            case 2:
+                // Calculate the magnitudes
+                aplMagLft = MagHC2F (lpatLft->aplHC2F);
+                aplMagRht = MagHC2F (lpatRht->aplHC2F);
+
+                // Get the distance between the args
+                aplDist   = DistHC2F  (lpatLft->aplHC2F, lpatRht->aplHC2F);
+
+                break;
+
+            case 4:
+                // Calculate the magnitudes
+                aplMagLft = MagHC4F (lpatLft->aplHC4F);
+                aplMagRht = MagHC4F (lpatLft->aplHC4F);
+
+                // Get the distance between the args
+                aplDist   = DistHC4F  (lpatLft->aplHC4F, lpatRht->aplHC4F);
+
+                break;
+
+            case 8:
+                // Calculate the magnitudes
+                aplMagLft = MagHC8F (lpatLft->aplHC8F);
+                aplMagRht = MagHC8F (lpatLft->aplHC8F);
+
+                // Get the distance between the args
+                aplDist   = DistHC8F  (lpatLft->aplHC8F, lpatRht->aplHC8F);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } __except (CheckExceptionS (GetExceptionInformation (), lpszMsg))
+    {
+        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+
+        Assert (exCode EQ EXCEPTION_DOMAIN_ERROR);
+
+        aplDist = fltPosInfinity;
+    } // End __try/__except
+
+    // The two numbers are equal iff the Dist is <= []CT * max (aplMagLft, aplMagRht)
+    return aplDist <= (fQuadCT * max (aplMagLft, aplMagRht));
+} // End EqualHCxFvHCxF
+
+
+//***************************************************************************
+//  $EqualBisHCxFvHCxF
+//***************************************************************************
+
+void EqualBisHCxFvHCxF
+    (LPAPLBOOL  lpMemRes,               // Ptr to the result
+     APLUINT    uRes,                   // Index into the result
+     LPALLTYPES lpatLft,                // Left arg as LPALLTYPES
+     LPALLTYPES lpatRht,                // Right ...
+     int        iHCDim,                 // Dimension (1, 2, 4, 8)
+     UBOOL      bIsEqual,               // TRUE iff the calling function is Equal (FALSE if NotEqual)
+     LPCHAR     lpszMsg)                // Ptr to CheckExceptionS msg
+{
+    // The two numbers are equal iff the Dist is <= []CT * max (aplMagLft, aplMagRht)
+    if (bIsEqual EQ EqualHCxFvHCxF (lpatLft, lpatRht, iHCDim, GetQuadCT (), lpszMsg))
+        lpMemRes[uRes >> LOG2NBIB] |=
+          BIT0
+          << (MASKLOG2NBIB & (UINT) uRes);
+} // End EqualBisHCxFvHCxF
+
+
+//***************************************************************************
+//  $PrimFnDydEqualBisHC2FvHC2F
+//
+//  Primitive scalar function dyadic Equal:  B {is} HC2F fn HC2F
+//***************************************************************************
+
+void PrimFnDydEqualBisHC2FvHC2F
+    (LPAPLBOOL  lpMemRes,               // Ptr to the result
+     APLUINT    uRes,                   // Index into the result
+     LPALLTYPES lpatLft,                // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,                // ...    right ...
+     LPPRIMSPEC lpPrimSpec)             // Ptr to local PRIMSPEC
+
+{
+    EqualBisHCxFvHCxF (lpMemRes,        // Ptr to the result
+                       uRes,            // Index into the result
+                       lpatLft,         // Left arg as LPALLTYPES
+                       lpatRht,         // Right ...
+                       2,               // Dimension (1, 2, 4, 8)
+                       TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
+                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+} // End PrimFnDydEqualBisHC2FvHC2F
+
+
+//***************************************************************************
+//  $PrimFnDydEqualBisHC4FvHC4F
+//
+//  Primitive scalar function dyadic Equal:  B {is} HC4F fn HC4F
+//***************************************************************************
+
+void PrimFnDydEqualBisHC4FvHC4F
+    (LPAPLBOOL  lpMemRes,               // Ptr to the result
+     APLUINT    uRes,                   // Index into the result
+     LPALLTYPES lpatLft,                // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,                // ...    right ...
+     LPPRIMSPEC lpPrimSpec)             // Ptr to local PRIMSPEC
+
+{
+    EqualBisHCxFvHCxF (lpMemRes,        // Ptr to the result
+                       uRes,            // Index into the result
+                       lpatLft,         // Left arg as LPALLTYPES
+                       lpatRht,         // Right ...
+                       4,               // Dimension (1, 2, 4, 8)
+                       TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
+                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+} // End PrimFnDydEqualBisHC4FvHC4F
+
+
+//***************************************************************************
+//  $PrimFnDydEqualBisHC8FvHC8F
+//
+//  Primitive scalar function dyadic Equal:  B {is} HC8F fn HC8F
+//***************************************************************************
+
+void PrimFnDydEqualBisHC8FvHC8F
+    (LPAPLBOOL  lpMemRes,               // Ptr to the result
+     APLUINT    uRes,                   // Index into the result
+     LPALLTYPES lpatLft,                // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,                // ...    right ...
+     LPPRIMSPEC lpPrimSpec)             // Ptr to local PRIMSPEC
+
+{
+    EqualBisHCxFvHCxF (lpMemRes,        // Ptr to the result
+                       uRes,            // Index into the result
+                       lpatLft,         // Left arg as LPALLTYPES
+                       lpatRht,         // Right ...
+                       8,               // Dimension (1, 2, 4, 8)
+                       TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
+                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+} // End PrimFnDydEqualBisHC8FvHC8F
+
+
+//***************************************************************************
+//  $EqualHCxRvHCxR
+//***************************************************************************
+
+UBOOL EqualHCxRvHCxR
+    (LPALLTYPES lpatLft,                // Left arg as LPALLTYPES
+     LPALLTYPES lpatRht,                // Right ...
+     int        iHCDim,                 // Dimension (1, 2, 4, 8)
+     APLFLOAT   fQuadCT,                // []CT (0 = exact comparison)
+     LPCHAR     lpszMsg)                // Ptr to GetExceptionInformation msg
+{
+    APLVFP aplMagLft,                   // Magnitude of left arg
+           aplMagRht,                   // ...          right ...
+           aplMagMax,                   // Magnitude of larger
+           aplDist;                     // Distance between left and right args
+    UBOOL  bRet;                        // The result
+
+    __try
+    {
+        // Split cases based upon the Dimension
+        switch (iHCDim)
+        {
+            case 1:
+                return CmpCT_R (lpatLft->aplRat, lpatRht->aplRat, GetQuadCT (), EQ);
+
+            case 2:
+                // Calculate the magnitudes
+                aplMagLft = MagHC2R (lpatLft->aplHC2R);
+                aplMagRht = MagHC2R (lpatLft->aplHC2R);
+
+                // Get the distance between the args
+                aplDist   = DistHC2R (lpatLft->aplHC2R, lpatRht->aplHC2R);
+
+                break;
+
+            case 4:
+                // Calculate the magnitudes
+                aplMagLft = MagHC4R (lpatLft->aplHC4R);
+                aplMagRht = MagHC4R (lpatLft->aplHC4R);
+
+                // Get the distance between the args
+                aplDist   = DistHC4R (lpatLft->aplHC4R, lpatRht->aplHC4R);
+
+                break;
+
+            case 8:
+                // Calculate the magnitudes
+                aplMagLft = MagHC8R (lpatLft->aplHC8R);
+                aplMagRht = MagHC8R (lpatLft->aplHC8R);
+
+                // Get the distance between the args
+                aplDist   = DistHC8R (lpatLft->aplHC8R, lpatRht->aplHC8R);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // Calculate the larger magnitude
+        if (mpfr_cmp (&aplMagLft, &aplMagRht) < 0)
+            mpfr_init_set (&aplMagMax, &aplMagRht, MPFR_RNDN);
+        else
+            mpfr_init_set (&aplMagMax, &aplMagLft, MPFR_RNDN);
+
+        // Multiply it by []CT
+        mpfr_mul_d (&aplMagMax, &aplMagMax, fQuadCT, MPFR_RNDN);
+    } __except (CheckExceptionS (GetExceptionInformation (), lpszMsg))
+    {
+        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+
+        Assert (exCode EQ EXCEPTION_DOMAIN_ERROR);
+
+        aplDist = mpfPosInfinity;
+    } // End __try/__except
+
+    // The two numbers are equal iff the Dist is <= []CT * max (aplMagLft, aplMagRht)
+    bRet = mpfr_cmp (&aplDist, &aplMagMax) <= 0;
+
+    // We no longer need this resource
+    Myf_clear (&aplMagMax);
+
+    return bRet;
+} // End EqualHCxRvHCxR
+
+
+//***************************************************************************
+//  $EqualBisHCxRvHCxR
+//***************************************************************************
+
+void EqualBisHCxRvHCxR
+    (LPAPLBOOL  lpMemRes,               // Ptr to the result
+     APLUINT    uRes,                   // Index into the result
+     LPALLTYPES lpatLft,                // Left arg as LPALLTYPES
+     LPALLTYPES lpatRht,                // Right ...
+     int        iHCDim,                 // Dimension (1, 2, 4, 8)
+     UBOOL      bIsEqual,               // TRUE iff the calling function is Equal (FALSE if NotEqual)
+     LPCHAR     lpszMsg)                // Ptr to GetExceptionInformation msg
+{
+    // The two numbers are equal iff the Dist is <= []CT * max (aplMagLft, aplMagRht)
+    if (bIsEqual EQ EqualHCxRvHCxR (lpatLft, lpatRht, iHCDim, GetQuadCT (), lpszMsg))
+        lpMemRes[uRes >> LOG2NBIB] |=
+          BIT0
+          << (MASKLOG2NBIB & (UINT) uRes);
+} // End EqualBisHCxRvHCxR
+
+
+//***************************************************************************
+//  $PrimFnDydEqualBisHC2RvHC2R
+//
+//  Primitive scalar function dyadic Equal:  B {is} HC2R fn HC2R
+//***************************************************************************
+
+void PrimFnDydEqualBisHC2RvHC2R
+    (LPAPLBOOL  lpMemRes,               // Ptr to the result
+     APLUINT    uRes,                   // Index into the result
+     LPALLTYPES lpatLft,                // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,                // ...    right ...
+     LPPRIMSPEC lpPrimSpec)             // Ptr to local PRIMSPEC
+
+{
+    EqualBisHCxRvHCxR (lpMemRes,        // Ptr to the result
+                       uRes,            // Index into the result
+                       lpatLft,         // Left arg as LPALLTYPES
+                       lpatRht,         // Right ...
+                       2,               // Dimension (1, 2, 4, 8)
+                       TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
+                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+} // End PrimFnDydEqualBisHC2RvHC2R
+
+
+//***************************************************************************
+//  $PrimFnDydEqualBisHC4RvHC4R
+//
+//  Primitive scalar function dyadic Equal:  B {is} HC4R fn HC4R
+//***************************************************************************
+
+void PrimFnDydEqualBisHC4RvHC4R
+    (LPAPLBOOL  lpMemRes,               // Ptr to the result
+     APLUINT    uRes,                   // Index into the result
+     LPALLTYPES lpatLft,                // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,                // ...    right ...
+     LPPRIMSPEC lpPrimSpec)             // Ptr to local PRIMSPEC
+
+{
+    EqualBisHCxRvHCxR (lpMemRes,        // Ptr to the result
+                       uRes,            // Index into the result
+                       lpatLft,         // Left arg as LPALLTYPES
+                       lpatRht,         // Right ...
+                       4,               // Dimension (1, 2, 4, 8)
+                       TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
+                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+} // End PrimFnDydEqualBisHC4RvHC4R
+
+
+//***************************************************************************
+//  $PrimFnDydEqualBisHC8RvHC8R
+//
+//  Primitive scalar function dyadic Equal:  B {is} HC8R fn HC8R
+//***************************************************************************
+
+void PrimFnDydEqualBisHC8RvHC8R
+    (LPAPLBOOL  lpMemRes,               // Ptr to the result
+     APLUINT    uRes,                   // Index into the result
+     LPALLTYPES lpatLft,                // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,                // ...    right ...
+     LPPRIMSPEC lpPrimSpec)             // Ptr to local PRIMSPEC
+
+{
+    EqualBisHCxRvHCxR (lpMemRes,        // Ptr to the result
+                       uRes,            // Index into the result
+                       lpatLft,         // Left arg as LPALLTYPES
+                       lpatRht,         // Right ...
+                       8,               // Dimension (1, 2, 4, 8)
+                       TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
+                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+} // End PrimFnDydEqualBisHC8RvHC8R
+
+
+//***************************************************************************
+//  $EqualHCxVvHCxV
+//***************************************************************************
+
+UBOOL EqualHCxVvHCxV
+    (LPALLTYPES lpatLft,                // Left arg as LPALLTYPES
+     LPALLTYPES lpatRht,                // Right ...
+     int        iHCDim,                 // Dimension (1, 2, 4, 8)
+     APLFLOAT   fQuadCT,                // []CT (0 = exact comparison)
+     LPCHAR     lpszMsg)                // Ptr to GetExceptionInformation msg
+{
+    APLVFP aplMagLft,                   // Magnitude of left arg
+           aplMagRht,                   // ...          right ...
+           aplMagMax,                   // Magnitude of larger
+           aplDist;                     // Distance between left and right args
+    UBOOL  bRet;                        // The result
+
+    __try
+    {
+        // Split cases based upon the Dimension
+        switch (iHCDim)
+        {
+            case 1:
+                return CmpCT_V (lpatLft->aplVfp, lpatRht->aplVfp, GetQuadCT (), EQ);
+
+            case 2:
+                // Calculate the magnitudes
+                aplMagLft = MagHC2V (lpatLft->aplHC2V);
+                aplMagRht = MagHC2V (lpatLft->aplHC2V);
+
+                // Get the distance between the args
+                aplDist   = DistHC2V (lpatLft->aplHC2V, lpatRht->aplHC2V);
+
+                break;
+
+            case 4:
+                // Calculate the magnitudes
+                aplMagLft = MagHC4V (lpatLft->aplHC4V);
+                aplMagRht = MagHC4V (lpatLft->aplHC4V);
+
+                // Get the distance between the args
+                aplDist   = DistHC4V (lpatLft->aplHC4V, lpatRht->aplHC4V);
+
+                break;
+
+            case 8:
+                // Calculate the magnitudes
+                aplMagLft = MagHC8V (lpatLft->aplHC8V);
+                aplMagRht = MagHC8V (lpatLft->aplHC8V);
+
+                // Get the distance between the args
+                aplDist   = DistHC8V (lpatLft->aplHC8V, lpatRht->aplHC8V);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // Calculate the larger magnitude
+        if (mpfr_cmp (&aplMagLft, &aplMagRht) < 0)
+            mpfr_init_set (&aplMagMax, &aplMagRht, MPFR_RNDN);
+        else
+            mpfr_init_set (&aplMagMax, &aplMagLft, MPFR_RNDN);
+
+        // Multiply it by []CT
+        mpfr_mul_d (&aplMagMax, &aplMagMax, fQuadCT, MPFR_RNDN);
+    } __except (CheckExceptionS (GetExceptionInformation (), lpszMsg))
+    {
+        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+
+        Assert (exCode EQ EXCEPTION_DOMAIN_ERROR);
+
+        aplDist = mpfPosInfinity;
+    } // End __try/__except
+
+    // The two numbers are equal iff the Dist is <= []CT * max (aplMagLft, aplMagRht)
+    bRet = mpfr_cmp (&aplDist, &aplMagMax) <= 0;
+
+    // We no longer need this resource
+    Myf_clear (&aplMagMax);
+
+    return bRet;
+} // End EqualHCxVvHCxV
+
+
+//***************************************************************************
+//  $EqualBisHCxVvHCxV
+//***************************************************************************
+
+void EqualBisHCxVvHCxV
+    (LPAPLBOOL  lpMemRes,               // Ptr to the result
+     APLUINT    uRes,                   // Index into the result
+     LPALLTYPES lpatLft,                // Left arg as LPALLTYPES
+     LPALLTYPES lpatRht,                // Right ...
+     int        iHCDim,                   // Dimension (1, 2, 4, 8)
+     UBOOL      bIsEqual,               // TRUE iff the calling function is Equal (FALSE if NotEqual)
+     LPCHAR     lpszMsg)                // Ptr to GetExceptionInformation msg
+{
+    // The two numbers are equal iff the Dist is <= []CT * max (aplMagLft, aplMagRht)
+    if (bIsEqual EQ EqualHCxVvHCxV (lpatLft, lpatRht, iHCDim, GetQuadCT (), lpszMsg))
+        lpMemRes[uRes >> LOG2NBIB] |=
+          BIT0
+          << (MASKLOG2NBIB & (UINT) uRes);
+} // End EqualBisHCxVvHCxV
+
+
+//***************************************************************************
+//  $PrimFnDydEqualBisHC2VvHC2V
+//
+//  Primitive scalar function dyadic Equal:  B {is} HC2V fn HC2V
+//***************************************************************************
+
+void PrimFnDydEqualBisHC2VvHC2V
+    (LPAPLBOOL  lpMemRes,               // Ptr to the result
+     APLUINT    uRes,                   // Index into the result
+     LPALLTYPES lpatLft,                // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,                // ...    right ...
+     LPPRIMSPEC lpPrimSpec)             // Ptr to local PRIMSPEC
+
+{
+    EqualBisHCxVvHCxV (lpMemRes,        // Ptr to the result
+                       uRes,            // Index into the result
+                       lpatLft,         // Left arg as LPALLTYPES
+                       lpatRht,         // Right ...
+                       2,               // Dimension (1, 2, 4, 8)
+                       TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
+                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+} // End PrimFnDydEqualBisHC2VvHC2V
+
+
+//***************************************************************************
+//  $PrimFnDydEqualBisHC4VvHC4V
+//
+//  Primitive scalar function dyadic Equal:  B {is} HC4V fn HC4V
+//***************************************************************************
+
+void PrimFnDydEqualBisHC4VvHC4V
+    (LPAPLBOOL  lpMemRes,               // Ptr to the result
+     APLUINT    uRes,                   // Index into the result
+     LPALLTYPES lpatLft,                // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,                // ...    right ...
+     LPPRIMSPEC lpPrimSpec)             // Ptr to local PRIMSPEC
+
+{
+    EqualBisHCxVvHCxV (lpMemRes,        // Ptr to the result
+                       uRes,            // Index into the result
+                       lpatLft,         // Left arg as LPALLTYPES
+                       lpatRht,         // Right ...
+                       4,               // Dimension (1, 2, 4, 8)
+                       TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
+                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+} // End PrimFnDydEqualBisHC4VvHC4V
+
+
+//***************************************************************************
+//  $PrimFnDydEqualBisHC8VvHC8V
+//
+//  Primitive scalar function dyadic Equal:  B {is} HC8V fn HC8V
+//***************************************************************************
+
+void PrimFnDydEqualBisHC8VvHC8V
+    (LPAPLBOOL  lpMemRes,               // Ptr to the result
+     APLUINT    uRes,                   // Index into the result
+     LPALLTYPES lpatLft,                // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,                // ...    right ...
+     LPPRIMSPEC lpPrimSpec)             // Ptr to local PRIMSPEC
+
+{
+    EqualBisHCxVvHCxV (lpMemRes,        // Ptr to the result
+                       uRes,            // Index into the result
+                       lpatLft,         // Left arg as LPALLTYPES
+                       lpatRht,         // Right ...
+                       8,               // Dimension (1, 2, 4, 8)
+                       TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
+                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+} // End PrimFnDydEqualBisHC8VvHC8V
 
 
 //***************************************************************************

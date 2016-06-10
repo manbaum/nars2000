@@ -157,8 +157,10 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
                       apaMulRht;            // ...           multiplier
     HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
                       hGlbRes = NULL;       // Result    ...
-    LPVOID            lpMemRht = NULL,      // Ptr to right arg global memory
-                      lpMemRes = NULL;      // Ptr to result    ...
+    LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to result header
+                      lpMemHdrRes = NULL;   // Ptr to result header
+    LPVOID            lpMemRht,             // Ptr to right arg global memory
+                      lpMemRes;             // Ptr to result    ...
     LPAPLDIM          lpMemDimRht;          // Ptr to right arg dimensions
     UBOOL             bRet = TRUE,          // TRUE iff result is valid
                       bFastBool = FALSE;    // TRUE iff this is a Fast Boolean operation
@@ -172,12 +174,14 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     PL_YYSTYPE        YYFcnStrLft;          // Temporary left operand function strand for alternating scans
     LPPRIMFNS         lpPrimProtoLft;       // Ptr to left operand prototype function
     LPSYMENTRY        lpSymTmp;             // Ptr to temporary LPSYMENTRY
-    LPVARARRAY_HEADER lpMemHdrRes;          // Ptr to result header
     LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
     APLLONGEST        aplLongestRht;        // Right arg immediate type
     APLCHAR           alterChar;            // Original function in case alternating
     ALLTYPES          atTmp = {0};          // Temporary ALLTYPES
+    int               iSizeofRes,           // Sizeof an item
+                      iHCDimRes,            // HC Dimension (1, 2, 4, 8)
+                      i;                    // Loop counter
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -243,19 +247,19 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     } // End IF/ELSE
 
     // Get right arg's global ptr
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // The rank of the result is the same as that of the right arg
     aplRankRes = aplRankRht;
 
     // If the item is not immediate, ...
-    if (lpMemRht NE NULL)
+    if (lpMemHdrRht NE NULL)
     {
         // Skip over the header to the dimensions
-        lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+        lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
 
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayDataFmBase (lpMemRht);
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
     } else
         // Point to the immediate value
         //   Note that <lpMemDimRht> is not referenced in this case.
@@ -292,9 +296,9 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
             uDimHi *= lpMemDimRht[uDim];
 
         // Calculate the result NELM
-        aplNELMRes = imul64 (uDimLo, uDimHi, &bRet);
+        aplNELMRes = imul64 (uDimLo, uDimHi, &bRet, EXCEPTION_RESULT_FLOAT);
         if (bRet || IsZeroDim (uDimAxRht))
-            aplNELMRes = imul64 (aplNELMRes, uDimAxRht, &bRet);
+            aplNELMRes = imul64 (aplNELMRes, uDimAxRht, &bRet, EXCEPTION_RESULT_FLOAT);
         if (!bRet)
             goto WSFULL_EXIT;
     } else
@@ -337,6 +341,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
         // Return the corresponding prototype
         hGlbRes =
           MakeMonPrototype_EM_PTB (MakePtrTypeGlb (hGlbRht),
+                                   aplTypeRht,
                                   &lpYYFcnStrOpr->tkToken,
                                    MP_NUMCONV);
         // Check for error
@@ -408,6 +413,8 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
                                             &lpYYFcnStrLft->tkToken,
                                              1,
                                             &aplTypeRht);
+            if (IsNonceType (aplTypeRes))
+                goto NONCE_EXIT;
             if (IsErrorType (aplTypeRes))
                 goto DOMAIN_EXIT;
         } // End IF/ELSE
@@ -442,9 +449,9 @@ RESTART_ALLOC:
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -456,11 +463,17 @@ RESTART_ALLOC:
 #undef  lpHeader
 
     // Skip over the header to the dimensions
-    lpMemRes = VarArrayBaseToDim (lpMemRes);
+    lpMemRes = VarArrayBaseToDim (lpMemHdrRes);
 
     // Copy the dimensions from the right arg to the result
     for (uDim = 0; uDim < aplRankRht; uDim++)
         *((LPAPLDIM) lpMemRes)++ = lpMemDimRht[uDim];
+
+    // Calculate the # bytes in this item
+    iSizeofRes = TranslateArrayTypeToSizeof (aplTypeRes);
+
+    // Calculate the HC Dimension (1, 2, 4, 8)
+    iHCDimRes = TranslateArrayTypeToHCDim (aplTypeRes);
 
     // lpMemRes now points to its data
 
@@ -486,6 +499,11 @@ RESTART_ALLOC:
                               &lpSymGlbRht,     // ...        LPSYMENTRY or HGLOBAL (may be NULL)
                                NULL,            // ...        immediate type (see IMM_TYPES) (may be NULL)
                                NULL);           // ...        array type:  ARRAY_TYPES (may be NULL)
+            // If the rigth arg is an immediate, ...
+            if (lpSymGlbRht EQ NULL)
+                // Point to the data
+                lpSymGlbRht = &aplLongestRht;
+
             // Split cases based upon the result type
             switch (aplTypeRes)
             {
@@ -505,27 +523,37 @@ RESTART_ALLOC:
                     break;
 
                 case ARRAY_INT:
+                case ARRAY_HC2I:
+                case ARRAY_HC4I:
+                case ARRAY_HC8I:
                     // Loop through the elements in the vector along the axis
                     for (uAx = 0; uAx < uDimAxRht; uAx++)
                     {
                         // Calculate the index of the next element in this vector
                         uRht = uDimRht + uAx * uDimHi;
 
-                        // Save in the result
-                        ((LPAPLINT) lpMemRes)[uRht] = (APLINT) aplLongestRht;
+                        // Loop through all of the parts
+                        for (i = 0; i < iHCDimRes; i++)
+                            // Save in the result
+                            ((LPAPLINT) lpMemRes)[i + uRht * iHCDimRes] = ((LPAPLINT) lpSymGlbRht)[i];
                     } // End FOR
 
                     break;
 
                 case ARRAY_FLOAT:
+                case ARRAY_HC2F:
+                case ARRAY_HC4F:
+                case ARRAY_HC8F:
                     // Loop through the elements in the vector along the axis
                     for (uAx = 0; uAx < uDimAxRht; uAx++)
                     {
                         // Calculate the index of the next element in this vector
                         uRht = uDimRht + uAx * uDimHi;
 
-                        // Save in the result
-                        ((LPAPLFLOAT) lpMemRes)[uRht] = *(LPAPLFLOAT) &aplLongestRht;
+                        // Loop through all of the parts
+                        for (i = 0; i < iHCDimRes; i++)
+                            // Save in the result
+                            ((LPAPLFLOAT) lpMemRes)[i + uRht * iHCDimRes] = ((LPAPLFLOAT) lpSymGlbRht)[i];
                     } // End FOR
 
                     break;
@@ -558,27 +586,37 @@ RESTART_ALLOC:
                     break;
 
                 case ARRAY_RAT:
+                case ARRAY_HC2R:
+                case ARRAY_HC4R:
+                case ARRAY_HC8R:
                     // Loop through the elements in the vector along the axis
                     for (uAx = 0; uAx < uDimAxRht; uAx++)
                     {
                         // Calculate the index of the next element in this vector
                         uRht = uDimRht + uAx * uDimHi;
 
-                        // Save in the result
-                        mpq_init_set (&((LPAPLRAT) lpMemRes)[uRht], (LPAPLRAT) lpSymGlbRht);
+                        // Loop through all of the parts
+                        for (i = 0; i < iHCDimRes; i++)
+                            // Save in the result
+                            mpq_init_set (&((LPAPLRAT) lpMemRes)[i + uRht * iHCDimRes], &((LPAPLRAT) lpSymGlbRht)[i]);
                     } // End FOR
 
                     break;
 
                 case ARRAY_VFP:
+                case ARRAY_HC2V:
+                case ARRAY_HC4V:
+                case ARRAY_HC8V:
                     // Loop through the elements in the vector along the axis
                     for (uAx = 0; uAx < uDimAxRht; uAx++)
                     {
                         // Calculate the index of the next element in this vector
                         uRht = uDimRht + uAx * uDimHi;
 
-                        // Save in the result
-                        mpfr_init_set (&((LPAPLVFP) lpMemRes)[uRht], (LPAPLVFP) lpSymGlbRht, MPFR_RNDN);
+                        // Loop through all of the parts
+                        for (i = 0; i < iHCDimRes; i++)
+                            // Save in the result
+                            mpfr_init_set (&((LPAPLVFP) lpMemRes)[i + uRht * iHCDimRes], &((LPAPLVFP) lpSymGlbRht)[i], MPFR_RNDN);
                     } // End FOR
 
                     break;
@@ -644,10 +682,12 @@ RESTART_EXCEPTION:
             //   each being successive reductions of leading elements in the
             //   vector under consideration.
 
+            // If the right arg is associative, and
             // If this function is associative or alternating, speed it up
-            if ((lpPrimFlagsLft->AssocBool && IsSimpleBool (aplTypeRht))
-             || (lpPrimFlagsLft->AssocNumb && IsSimpleGlbNum (aplTypeRht))
-             ||  lpPrimFlagsLft->Alter)
+            if ((!IsSimpleGlbNum (aplTypeRht) || TranslateArrayTypeToHCDim (aplTypeRht) <= 4)
+             && ((lpPrimFlagsLft->AssocBool && IsSimpleBool (aplTypeRht))
+              || (lpPrimFlagsLft->AssocNumb && IsSimpleGlbNum (aplTypeRht))
+              ||  lpPrimFlagsLft->Alter))
             {
                 // Restore the original function in case it's alternating
                 YYFcnStrLft.tkToken.tkData.tkChar = alterChar;
@@ -686,12 +726,12 @@ RESTART_EXCEPTION:
                                     // It's now an INT result
                                     aplTypeRes = ARRAY_INT;
 
-                                    if (hGlbRes)
+                                    if (hGlbRes NE NULL)
                                     {
-                                        if (lpMemRes)
+                                        if (lpMemHdrRes NE NULL)
                                         {
                                             // We no longer need this ptr
-                                            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                                            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
                                         } // End IF
 
                                         // We no longer need this storage
@@ -701,7 +741,7 @@ RESTART_EXCEPTION:
                                     // Get the left arg global memory handle (if any)
                                     hGlbRes = GetGlbHandle (&tkLftArg);
 
-                                    if (hGlbRes)
+                                    if (hGlbRes NE NULL)
                                     {
                                         // We no longer need this storage
                                         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
@@ -759,38 +799,9 @@ RESTART_EXCEPTION:
                         // Split cases based upon the result storage type
                         switch (aplTypeRes)
                         {
-                            LPAPLRAT lpMemRat;
-                            LPAPLVFP lpMemVfp;
-
-                            case ARRAY_RAT:
-                                // Lock the memory to get a ptr to it
-                                lpMemRat = MyGlobalLock (tkLftArg.tkData.tkGlbData);
-
-                                // Skip over the header and dimensions to the data
-                                lpMemRat = VarArrayDataFmBase (lpMemRat);
-
-                                // Copy to the result
-                                mpq_init_set (&((LPAPLRAT) lpMemRes)[uRht], lpMemRat);
-
-                                // We no longer need this ptr
-                                MyGlobalUnlock (tkLftArg.tkData.tkGlbData); lpMemRat = NULL;
-
-                                break;
-
-                            case ARRAY_VFP:
-                                // Lock the memory to get a ptr to it
-                                lpMemVfp = MyGlobalLock (tkLftArg.tkData.tkGlbData);
-
-                                // Skip over the header and dimensions to the data
-                                lpMemVfp = VarArrayDataFmBase (lpMemVfp);
-
-                                // Copy to the result
-                                mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uRht], lpMemVfp);
-
-                                // We no longer need this ptr
-                                MyGlobalUnlock (tkLftArg.tkData.tkGlbData); lpMemVfp = NULL;
-
-                                break;
+                            LPVARARRAY_HEADER lpMemHdr = NULL;
+                            LPVOID            lpMem;
+                            int               i;
 
                             case ARRAY_NESTED:
                                 // Save in the result as an HGLOBAL
@@ -798,7 +809,67 @@ RESTART_EXCEPTION:
 
                                 break;
 
-                            defstop
+                            default:
+                                // Lock the memory to get a ptr to it
+                                lpMemHdr = MyGlobalLock (tkLftArg.tkData.tkGlbData);
+
+                                // Skip over the header and dimensions to the data
+                                lpMem = VarArrayDataFmBase (lpMemHdr);
+
+                                // Split cases based upon the result storage type
+                                switch (aplTypeRes)
+                                {
+                                    case ARRAY_INT:
+                                    case ARRAY_HC2I:
+                                    case ARRAY_HC4I:
+                                    case ARRAY_HC8I:
+                                        // Loop through all of the parts
+                                        for (i = 0; i < iHCDimRes; i++)
+                                            // Copy to the result
+                                            ((LPAPLINT) lpMemRes)[i + uRht * iHCDimRes] = ((LPAPLINT) lpMem)[i];
+
+                                        break;
+
+                                    case ARRAY_FLOAT:
+                                    case ARRAY_HC2F:
+                                    case ARRAY_HC4F:
+                                    case ARRAY_HC8F:
+                                        // Loop through all of the parts
+                                        for (i = 0; i < iHCDimRes; i++)
+                                            // Copy to the result
+                                            ((LPAPLFLOAT) lpMemRes)[i + uRht * iHCDimRes] = ((LPAPLFLOAT) lpMem)[i];
+
+                                        break;
+
+                                    case ARRAY_RAT:
+                                    case ARRAY_HC2R:
+                                    case ARRAY_HC4R:
+                                    case ARRAY_HC8R:
+                                        // Loop through all of the parts
+                                        for (i = 0; i < iHCDimRes; i++)
+                                            // Copy to the result
+                                            mpq_init_set (&((LPAPLRAT) lpMemRes)[i + uRht * iHCDimRes], &((LPAPLRAT) lpMem)[i]);
+
+                                        break;
+
+                                    case ARRAY_VFP:
+                                    case ARRAY_HC2V:
+                                    case ARRAY_HC4V:
+                                    case ARRAY_HC8V:
+                                        // Loop through all of the parts
+                                        for (i = 0; i < iHCDimRes; i++)
+                                            // Copy to the result
+                                            mpfr_init_copy (&((LPAPLVFP) lpMemRes)[i + uRht * iHCDimRes], &((LPAPLVFP) lpMem)[i]);
+
+                                        break;
+
+                                    defstop
+                                        break;
+                                } // End SWITCH
+
+                                // We no longer need this ptr
+                                MyGlobalUnlock (tkLftArg.tkData.tkGlbData); lpMemHdr = NULL;
+
                                 break;
                         } // End SWITCH
 
@@ -880,12 +951,12 @@ RESTART_EXCEPTION:
                         // It's now a aplTypeTmp result
                         aplTypeRes = aplTypeTmp;
 
-                        if (hGlbRes)
+                        if (hGlbRes NE NULL)
                         {
-                            if (lpMemRes)
+                            if (lpMemHdrRes NE NULL)
                             {
                                 // We no longer need this ptr
-                                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                                MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
                             } // End IF
 
                             // We no longer need this storage
@@ -895,7 +966,7 @@ RESTART_EXCEPTION:
                         // Get the left arg global memory handle (if any)
                         hGlbRes = GetGlbHandle (&tkLftArg);
 
-                        if (hGlbRes)
+                        if (hGlbRes NE NULL)
                         {
                             // We no longer need this storage
                             FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
@@ -922,12 +993,12 @@ RESTART_EXCEPTION:
                                         // It's now an INT result
                                         aplTypeRes = ARRAY_INT;
 
-                                        if (hGlbRes)
+                                        if (hGlbRes NE NULL)
                                         {
-                                            if (lpMemRes)
+                                            if (lpMemHdrRes NE NULL)
                                             {
                                                 // We no longer need this ptr
-                                                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                                                MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
                                             } // End IF
 
                                             // We no longer need this storage
@@ -937,7 +1008,7 @@ RESTART_EXCEPTION:
                                         // Get the left arg global memory handle (if any)
                                         hGlbRes = GetGlbHandle (&tkLftArg);
 
-                                        if (hGlbRes)
+                                        if (hGlbRes NE NULL)
                                         {
                                             // We no longer need this storage
                                             FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
@@ -998,38 +1069,9 @@ RESTART_EXCEPTION:
                             // Split cases based upon the result storage type
                             switch (aplTypeRes)
                             {
-                                LPAPLRAT lpMemRat;
-                                LPAPLVFP lpMemVfp;
-
-                                case ARRAY_RAT:
-                                    // Lock the memory to get a ptr to it
-                                    lpMemRat = MyGlobalLock (tkLftArg.tkData.tkGlbData);
-
-                                    // Skip over the header and dimensions to the data
-                                    lpMemRat = VarArrayDataFmBase (lpMemRat);
-
-                                    // Copy to the result
-                                    mpq_init_set (&((LPAPLRAT) lpMemRes)[uRht], lpMemRat);
-
-                                    // We no longer need this ptr
-                                    MyGlobalUnlock (tkLftArg.tkData.tkGlbData); lpMemRat = NULL;
-
-                                    break;
-
-                                case ARRAY_VFP:
-                                    // Lock the memory to get a ptr to it
-                                    lpMemVfp = MyGlobalLock (tkLftArg.tkData.tkGlbData);
-
-                                    // Skip over the header and dimensions to the data
-                                    lpMemVfp = VarArrayDataFmBase (lpMemVfp);
-
-                                    // Copy to the result
-                                    mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uRht], lpMemVfp);
-
-                                    // We no longer need this ptr
-                                    MyGlobalUnlock (tkLftArg.tkData.tkGlbData); lpMemVfp = NULL;
-
-                                    break;
+                                LPVARARRAY_HEADER lpMemHdr = NULL;
+                                LPVOID            lpMem;
+                                int               i;
 
                                 case ARRAY_NESTED:
                                     // Save in the result as an HGLOBAL
@@ -1037,7 +1079,67 @@ RESTART_EXCEPTION:
 
                                     break;
 
-                                defstop
+                                default:
+                                    // Lock the memory to get a ptr to it
+                                    lpMemHdr = MyGlobalLock (tkLftArg.tkData.tkGlbData);
+
+                                    // Skip over the header and dimensions to the data
+                                    lpMem = VarArrayDataFmBase (lpMemHdr);
+
+                                    // Split cases based upon the result storage type
+                                    switch (aplTypeRes)
+                                    {
+                                        case ARRAY_INT:
+                                        case ARRAY_HC2I:
+                                        case ARRAY_HC4I:
+                                        case ARRAY_HC8I:
+                                            // Loop through all of the parts
+                                            for (i = 0; i < iHCDimRes; i++)
+                                                // Copy to the result
+                                                ((LPAPLINT) lpMemRes)[i + uRht * iHCDimRes] = ((LPAPLINT) lpMem)[i];
+
+                                            break;
+
+                                        case ARRAY_FLOAT:
+                                        case ARRAY_HC2F:
+                                        case ARRAY_HC4F:
+                                        case ARRAY_HC8F:
+                                            // Loop through all of the parts
+                                            for (i = 0; i < iHCDimRes; i++)
+                                                // Copy to the result
+                                                ((LPAPLFLOAT) lpMemRes)[i + uRht * iHCDimRes] = ((LPAPLFLOAT) lpMem)[i];
+
+                                            break;
+
+                                        case ARRAY_RAT:
+                                        case ARRAY_HC2R:
+                                        case ARRAY_HC4R:
+                                        case ARRAY_HC8R:
+                                            // Loop through all of the parts
+                                            for (i = 0; i < iHCDimRes; i++)
+                                                // Copy to the result
+                                                mpq_init_set (&((LPAPLRAT) lpMemRes)[i + uRht * iHCDimRes], &((LPAPLRAT) lpMem)[i]);
+
+                                            break;
+
+                                        case ARRAY_VFP:
+                                        case ARRAY_HC2V:
+                                        case ARRAY_HC4V:
+                                        case ARRAY_HC8V:
+                                            // Loop through all of the parts
+                                            for (i = 0; i < iHCDimRes; i++)
+                                                // Copy to the result
+                                                mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uRht], &((LPAPLVFP) lpMem)[i]);
+
+                                            break;
+
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    // We no longer need this ptr
+                                    MyGlobalUnlock (tkLftArg.tkData.tkGlbData); lpMemHdr = NULL;
+
                                     break;
                             } // End SWITCH
 
@@ -1106,9 +1208,13 @@ RESTART_EXCEPTION:
                                           apaOffRht,        // APA offset (if needed)
                                           apaMulRht,        // APA multiplier (if needed)
                                          &tkRhtArg);        // Ptr to token in which to place the value
-                // In case we blew up, check to see if we must blow up tkRhtArg
-                if (aplTypeRes NE aplTypeRht)
-                    (*aTypeTknPromote[aplTypeRht][aplTypeRes]) (&tkRhtArg);
+                // If we're not reducing a singleton,
+                //   and the result is not nested (no blowup needed), ...
+                if (uAx NE 0
+                 && !IsNested (aplTypeRes))
+                    // In case we blew up, check to see if we must blow up tkRhtArg
+                    if (aplTypeRes NE aplTypeRht)
+                        (*aTypeTknPromote[aplTypeRht][aplTypeRes]) (&tkRhtArg);
 
                 // Check for Reduction of a Singleton
                 if (uAx EQ 0)
@@ -1212,12 +1318,12 @@ RESTART_EXCEPTION:
                         // It's now a aplTypeTmp result
                         aplTypeRes = aplTypeTmp;
 
-                        if (hGlbRes)
+                        if (hGlbRes NE NULL)
                         {
-                            if (lpMemRes)
+                            if (lpMemHdrRes NE NULL)
                             {
                                 // We no longer need this ptr
-                                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                                MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
                             } // End IF
 
                             // We no longer need this storage
@@ -1227,7 +1333,7 @@ RESTART_EXCEPTION:
                         // Get the right arg global memory handle (if any)
                         hGlbRes = GetGlbHandle (&tkRhtArg);
 
-                        if (hGlbRes)
+                        if (hGlbRes NE NULL)
                         {
                             // We no longer need this storage
                             FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
@@ -1235,7 +1341,7 @@ RESTART_EXCEPTION:
 
                         goto RESTART_ALLOC;
                     } // End IF
-                } // End FOR
+                } // End IF/ELSE/FOR
 
                 // Get the index into the result
                 uRht = uDimRht + uAx * uDimHi;
@@ -1263,12 +1369,12 @@ RESTART_EXCEPTION:
                                     // It's now an INT result
                                     aplTypeRes = ARRAY_INT;
 
-                                    if (hGlbRes)
+                                    if (hGlbRes NE NULL)
                                     {
-                                        if (lpMemRes)
+                                        if (lpMemHdrRes NE NULL)
                                         {
                                             // We no longer need this ptr
-                                            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+                                            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
                                         } // End IF
 
                                         // We no longer need this storage
@@ -1278,7 +1384,7 @@ RESTART_EXCEPTION:
                                     // Get the right arg global memory handle (if any)
                                     hGlbRes = GetGlbHandle (&tkRhtArg);
 
-                                    if (hGlbRes)
+                                    if (hGlbRes NE NULL)
                                     {
                                         // We no longer need this storage
                                         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
@@ -1313,11 +1419,8 @@ RESTART_EXCEPTION:
 #ifdef DEBUG
                                 DbgBrk ();              // ***TESTME***
 #endif
-                                // In case the current item was demoted in type, we blow it up again to the result
-                                (*aTypeActPromote[aplTypeTmp][aplTypeRes]) (&tkRhtArg.tkData.tkFloat, 0, &atTmp);
-
                                 // Save in the result as a FLOAT
-                                ((LPAPLFLOAT) lpMemRes)[uRht] = atTmp.aplFloat;
+                                ((LPAPLFLOAT) lpMemRes)[uRht] = tkRhtArg.tkData.tkFloat;
 
                                 break;
 
@@ -1342,36 +1445,68 @@ RESTART_EXCEPTION:
                         // Split cases based upon the result storage type
                         switch (aplTypeRes)
                         {
-                            LPAPLRAT lpMemRat;
-                            LPAPLVFP lpMemVfp;
+                            LPVARARRAY_HEADER lpMemHdr;
+                            LPVOID            lpMem;
 
-                            case ARRAY_RAT:
+                            case ARRAY_INT:
+                            case ARRAY_HC2I:
+                            case ARRAY_HC4I:
+                            case ARRAY_HC8I:
+                            case ARRAY_FLOAT:
+                            case ARRAY_HC2F:
+                            case ARRAY_HC4F:
+                            case ARRAY_HC8F:
                                 // Lock the memory to get a ptr to it
-                                lpMemRat = MyGlobalLock (tkRhtArg.tkData.tkGlbData);
+                                lpMemHdr = MyGlobalLock (tkRhtArg.tkData.tkGlbData);
 
                                 // Skip over the header and dimensions to the data
-                                lpMemRat = VarArrayDataFmBase (lpMemRat);
+                                lpMem = VarArrayDataFmBase (lpMemHdr);
 
-                                // Copy to the result
-                                mpq_init_set (&((LPAPLRAT) lpMemRes)[uRht], lpMemRat);
+                                // Copy the right item to the result
+                                CopyMemory (&((LPBYTE) lpMemRes)[uRht * iSizeofRes], lpMem, iSizeofRes);
 
                                 // We no longer need this ptr
-                                MyGlobalUnlock (tkRhtArg.tkData.tkGlbData); lpMemRat = NULL;
+                                MyGlobalUnlock (tkRhtArg.tkData.tkGlbData); lpMemHdr = NULL;
+
+                                break;
+
+                            case ARRAY_RAT:
+                            case ARRAY_HC2R:
+                            case ARRAY_HC4R:
+                            case ARRAY_HC8R:
+                                // Lock the memory to get a ptr to it
+                                lpMemHdr = MyGlobalLock (tkRhtArg.tkData.tkGlbData);
+
+                                // Skip over the header and dimensions to the data
+                                lpMem = VarArrayDataFmBase (lpMemHdr);
+
+                                // Loop through all of the parts
+                                for (i = 0; i < iHCDimRes; i++)
+                                    // Copy to the result
+                                    mpq_init_set (&((LPAPLRAT) lpMemRes)[i + uRht * iHCDimRes], &((LPAPLRAT) lpMem)[i]);
+
+                                // We no longer need this ptr
+                                MyGlobalUnlock (tkRhtArg.tkData.tkGlbData); lpMemHdr = NULL;
 
                                 break;
 
                             case ARRAY_VFP:
+                            case ARRAY_HC2V:
+                            case ARRAY_HC4V:
+                            case ARRAY_HC8V:
                                 // Lock the memory to get a ptr to it
-                                lpMemVfp = MyGlobalLock (tkRhtArg.tkData.tkGlbData);
+                                lpMemHdr = MyGlobalLock (tkRhtArg.tkData.tkGlbData);
 
                                 // Skip over the header and dimensions to the data
-                                lpMemVfp = VarArrayDataFmBase (lpMemVfp);
+                                lpMem = VarArrayDataFmBase (lpMemHdr);
 
-                                // Copy to the result
-                                mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uRht], lpMemVfp);
+                                // Loop through all of the parts
+                                for (i = 0; i < iHCDimRes; i++)
+                                    // Copy to the result
+                                    mpfr_init_set (&((LPAPLVFP) lpMemRes)[i + uRht * iHCDimRes], &((LPAPLVFP) lpMem)[i], MPFR_RNDN);
 
                                 // We no longer need this ptr
-                                MyGlobalUnlock (tkRhtArg.tkData.tkGlbData); lpMemVfp = NULL;
+                                MyGlobalUnlock (tkRhtArg.tkData.tkGlbData); lpMemHdr = NULL;
 
                                 break;
 
@@ -1379,11 +1514,11 @@ RESTART_EXCEPTION:
                                 // Save in the result as an HGLOBAL
                                 ((LPAPLNESTED) lpMemRes)[uRht] = CopySymGlbDir_PTB (tkRhtArg.tkData.tkGlbData);
 
-                        break;
+                                break;
 
-                    defstop
-                        break;
-                } // End SWITCH
+                            defstop
+                                break;
+                        } // End SWITCH
 
                         break;
 
@@ -1398,10 +1533,10 @@ RESTART_EXCEPTION:
     } // End IF/ELSE
 YYALLOC_EXIT:
     // Unlock the result global memory in case TypeDemote actually demotes
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
     // Allocate a new YYRes
@@ -1415,13 +1550,18 @@ YYALLOC_EXIT:
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    TypeDemote (&lpYYRes->tkToken);
+    TypeDemote (&lpYYRes->tkToken, FALSE);
 
     goto NORMAL_EXIT;
 
 LEFT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
+    goto ERROR_EXIT;
+
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 
 DOMAIN_EXIT:
@@ -1445,28 +1585,28 @@ VALUE_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this storage
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
     return lpYYRes;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -58,12 +58,21 @@ UBOOL CmdCopy_EM
                  iSrcTabID,                 // Source tab ID
                  iSrcTabIndex,              // Source tab index
                  iCnt;                      // # fields scanned
-    UBOOL        bRet = FALSE;              // TRUE iff result is valid
+    UBOOL        bRet = FALSE,              // TRUE iff result is valid
+                 bDispMPSuf,                // Save area for OptionFlags value
+                 bJ4i,                      // ...
+                 bDisp0Imag,                // ...
+                 bDispInfix;                // ...
     FILE        *fStream;                   // Ptr to file stream for the plain text workspace file
     HWND         hWndEC;                    // Edit Ctrl window handle
     LPSYMENTRY   lpSymLink = NULL;          // Anchor of SYMENTRY links for [Globals] values
                                             //   so we may delete them easily
     LPDICTIONARY lpDict = NULL;             // Ptr to workspace dictionary
+
+    // Save OptionFlags for display to fixed
+    //   values so we convert values on )LOAD,
+    //   )SAVE, )COPY, )OUT, and []TF consistently.
+    SetOptionFlagsDisplay (&bJ4i, &bDisp0Imag, &bDispInfix, &bDispMPSuf);
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -315,7 +324,7 @@ UBOOL CmdCopy_EM
         AppendLine (lpwszTail, FALSE, TRUE);
     } // End IF
 
-    // Mark as successfull
+    // Mark as successful
     bRet = TRUE;
 
     goto NORMAL_EXIT;
@@ -348,6 +357,9 @@ NORMAL_EXIT:
         // Free the dictionary
         ProfileUnload (lpDict); lpDict = NULL;
     } // End IF
+
+    // Restore the OptionFlags values
+    RestoreOptionFlagsDisplay (bJ4i, bDisp0Imag, bDispInfix, bDispMPSuf);
 
     return bRet;
 } // End CmdCopy_EM
@@ -510,9 +522,9 @@ int CopyWsVars
             // Parse the value into aplLongestObj and aplTypeObj
             lpwDataInWrk =
               ParseSavedWsVar_EM (lpwDataInWrk,     // Ptr to input buffer
-                                  uMaxSize - (APLU3264) ((LPBYTE) lpwDataInWrk - (LPBYTE) lpMemPTD->lpwszTemp), // Maximum size of lpwDataInWrk
                                  &lpaplLongestObj,  // Ptr to ptr to output element
                                  &aplTypeObj,       // Ptr to storage type (may be NULL)
+                                  lpSymEntry,       // Ptr to SYMENTRY of the source (may be NULL)
                                  &bImmed,           // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
                                   FALSE,            // TRUE iff to save SymTabAppend values, FALSE to save values directly
                                   TRUE,             // TRUE iff this is called from )COPY
@@ -667,7 +679,6 @@ int CopyWsFcns
 
             // Parse the line into lpSymEntry->stData
             bRet = ParseSavedWsFcn_EM (lpwDataInWrk,      // Ptr to input buffer
-                                       uMaxSize - (APLU3264) ((LPBYTE) lpwDataInWrk - (LPBYTE) lpMemPTD->lpwszTemp), // Maximum size of lpwDataInWrk
                                        lpSymEntry,        // Ptr to STE for the object
                                        nameType,          // Function name type (see NAME_TYPES)
                                        hWndEC,            // Edit Ctrl window handle

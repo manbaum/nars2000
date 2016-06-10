@@ -151,6 +151,66 @@ LPPL_YYSTYPE SysFnMonDR_EM_YY
 
             break;
 
+        case ARRAY_HC2I:
+            lpYYRes->tkToken.tkData.tkInteger = DR_HC2I;
+
+            break;
+
+        case ARRAY_HC2F:
+            lpYYRes->tkToken.tkData.tkInteger = DR_HC2F;
+
+            break;
+
+        case ARRAY_HC2R:
+            lpYYRes->tkToken.tkData.tkInteger = DR_HC2R;
+
+            break;
+
+        case ARRAY_HC2V:
+            lpYYRes->tkToken.tkData.tkInteger = DR_HC2V;
+
+            break;
+
+        case ARRAY_HC4I:
+            lpYYRes->tkToken.tkData.tkInteger = DR_HC4I;
+
+            break;
+
+        case ARRAY_HC4F:
+            lpYYRes->tkToken.tkData.tkInteger = DR_HC4F;
+
+            break;
+
+        case ARRAY_HC4R:
+            lpYYRes->tkToken.tkData.tkInteger = DR_HC4R;
+
+            break;
+
+        case ARRAY_HC4V:
+            lpYYRes->tkToken.tkData.tkInteger = DR_HC4V;
+
+            break;
+
+        case ARRAY_HC8I:
+            lpYYRes->tkToken.tkData.tkInteger = DR_HC8I;
+
+            break;
+
+        case ARRAY_HC8F:
+            lpYYRes->tkToken.tkData.tkInteger = DR_HC8F;
+
+            break;
+
+        case ARRAY_HC8R:
+            lpYYRes->tkToken.tkData.tkInteger = DR_HC8R;
+
+            break;
+
+        case ARRAY_HC8V:
+            lpYYRes->tkToken.tkData.tkInteger = DR_HC8V;
+
+            break;
+
         defstop
             break;
     } // End SWITCH
@@ -263,20 +323,20 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         case DR_INT8:
         case DR_INT16:
         case DR_INT32:
-        case DR_COMPLEX_I:
-        case DR_QUATERNIONS_I:
-        case DR_OCTONIONS_I:
-        case DR_COMPLEX_F:
-        case DR_QUATERNIONS_F:
-        case DR_OCTONIONS_F:
-        case DR_COMPLEX_Q:
-        case DR_QUATERNIONS_Q:
-        case DR_OCTONIONS_Q:
-        case DR_COMPLEX_V:
-        case DR_QUATERNIONS_V:
-        case DR_OCTONIONS_V:
         case DR_RAT:
         case DR_VFP:
+        case DR_HC2I:
+        case DR_HC2F:
+        case DR_HC2R:
+        case DR_HC2V:
+        case DR_HC4I:
+        case DR_HC4F:
+        case DR_HC4R:
+        case DR_HC4V:
+        case DR_HC8I:
+        case DR_HC8F:
+        case DR_HC8R:
+        case DR_HC8V:
             return PrimFnNonceError_EM (lptkFunc APPEND_NAME_ARG);
     } // End SWITCH
 
@@ -454,7 +514,7 @@ LPPL_YYSTYPE SysFnDR_Convert_EM_YY
                 goto RIGHT_DOMAIN_EXIT;
 
             // Save in NELM
-            aplNELMRes = imul64 (aplNELMRes, iAccum, &bRet);
+            aplNELMRes = imul64 (aplNELMRes, iAccum, &bRet, EXCEPTION_RESULT_FLOAT);
 
             // Check for overflow
             if (!bRet)
@@ -703,6 +763,7 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
     APLNELM           aplNELMRht;       // ...       NELM
     APLRANK           aplRankRht;       // ...       rank
     APLUINT           ByteRes,          // # bytes in the result
+                      uLen,             // Limit for HC #s
                       uRht;             // Loop counter
     HGLOBAL           hGlbRht,          // Right arg global memory handle
                       hGlbRes;          // Result    ...
@@ -783,6 +844,78 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
                         DR_VFP);
             break;
 
+        case ARRAY_HC2I:
+            wsprintfW (wszTemp,
+                      L"Complex Integer (%d):  128 bits per element",
+                      DR_HC2I);
+            break;
+
+        case ARRAY_HC2F:
+            wsprintfW (wszTemp,
+                      L"Complex Floating Point (%d):  128 bits per element",
+                      DR_HC2F);
+            break;
+
+        case ARRAY_HC2R:
+            wsprintfW (wszTemp,
+                      L"Complex Rational (%d):  arbitrary precision numerator and denominator",
+                      DR_HC2R);
+            break;
+
+        case ARRAY_HC2V:
+            wsprintfW (wszTemp,
+                      L"Complex Variable Floating Point (%d):  variable precision mantissa, 32-bit exponent",
+                      DR_HC2V);
+            break;
+
+        case ARRAY_HC4I:
+            wsprintfW (wszTemp,
+                      L"Quaternion Integer (%d):  256 bits per element",
+                      DR_HC4I);
+            break;
+
+        case ARRAY_HC4F:
+            wsprintfW (wszTemp,
+                      L"Quaternion Floating Point (%d):  256 bits per element",
+                      DR_HC4F);
+            break;
+
+        case ARRAY_HC4R:
+            wsprintfW (wszTemp,
+                      L"Quaternion Rational (%d):  arbitrary precision numerator and denominator",
+                      DR_HC4R);
+            break;
+
+        case ARRAY_HC4V:
+            wsprintfW (wszTemp,
+                      L"Quaternion Variable Floating Point (%d):  variable precision mantissa, 32-bit exponent",
+                      DR_HC4V);
+            break;
+
+        case ARRAY_HC8I:
+            wsprintfW (wszTemp,
+                      L"Octonion Integer (%d):  512 bits per element",
+                      DR_HC8I);
+            break;
+
+        case ARRAY_HC8F:
+            wsprintfW (wszTemp,
+                      L"Octonion Floating Point (%d):  512 bits per element",
+                      DR_HC8F);
+            break;
+
+        case ARRAY_HC8R:
+            wsprintfW (wszTemp,
+                      L"Octonion Rational (%d):  arbitrary precision numerator and denominator",
+                      DR_HC8R);
+            break;
+
+        case ARRAY_HC8V:
+            wsprintfW (wszTemp,
+                      L"Octonion Variable Floating Point (%d):  variable precision mantissa, 32-bit exponent",
+                      DR_HC8V);
+            break;
+
         defstop
             break;
     } // End SWITCH
@@ -824,13 +957,16 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
         MyStrcatW (wszTemp, sizeof (wszTemp), L" " AP_ALL2S);
     } // End IF
 
-    // If the array is VFP,
+    // If the array is any kind of VFP, ...
     //   and it's non-empty, ...
-    if (IsVfp (aplTypeRht)
+    if (IsHCVfp (aplTypeRht)
      && !IsEmpty (aplNELMRht))
     {
         LPAPLVFP lpaplVfp;          // Ptr to VFP value
         APLUINT  uCommPrec;         // Ptr to common VFP array precision (0 if none) (may be NULL)
+
+        // Get multiplier (1, 2, 4, 8) * aplNELMRht
+        uLen = aplNELMRht * TranslateArrayTypeToHCDim (aplTypeRht);
 
         // If the array is all the same precision, ...
 
@@ -840,7 +976,7 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
         // Get the initial precision
         uCommPrec = mpfr_get_prec (lpaplVfp++);
 
-        for (uRht = 1; uRht < aplNELMRht; uRht++)
+        for (uRht = 1; uRht < uLen; uRht++)
         if (uCommPrec NE mpfr_get_prec (lpaplVfp++))
         {
             // Mark as none

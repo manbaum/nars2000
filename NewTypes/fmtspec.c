@@ -27,8 +27,8 @@
 #include <math.h>
 #include "headers.h"
 
-// The following struc should have as many rows as TKROW_LENGTH
-//   and as many columns as TKCOL_LENGTH.
+// The following struc should have as many rows as FSROW_LENGTH
+//   and as many columns as FSCOL_LENGTH.
 FSACTSTR fsaActTableFS [][FSCOL_LENGTH]
 #ifndef PROTO
  =

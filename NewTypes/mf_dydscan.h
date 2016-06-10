@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,13 +38,13 @@ static APLCHAR DydLine1[] =
   L":if 0=⎕NC 'X'";
 
 static APLCHAR DydLine2[] = 
-  L"  Z←L LO/(((¯1↓⍴R),0⌈(|L)-1)⍴LO/0⍴R),R";
+  L"  Z←L LO/R,((¯1↓⍴R),0⌈(|L)-1)⍴LO/0⍴R";
 
 static APLCHAR DydLine3[] = 
   L":else";
 
 static APLCHAR DydLine4[] = 
-  L"  Z←L LO/[X]((((X≠⍳⍴⍴R)/⍴R),0⌈(|L)-1)[⍋⍋K=⍳⍴⍴R]⍴LO/0⍴R),[X]R";
+  L"  Z←L LO/[X] R,[X] (((X≠⍳⍴⍴R)/⍴R),0⌈(|L)-1)[⍋⍋K=⍳⍴⍴R]⍴LO/0⍴R";
 
 static APLCHAR DydLine5[] = 
   L":endif";

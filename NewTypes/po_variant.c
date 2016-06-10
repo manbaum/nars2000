@@ -292,10 +292,13 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
     APLCHAR           aplCharRhtOpr;        // Right operand character value
     APLFLOAT          aplFloatRhtOpr;       // Right operand float value
     UBOOL             bRet = TRUE,          // TRUE iff the result is valid
-                      bQuadIOFound = FALSE, // TRUE iff []IO value found
+                      bQuadCTFound = FALSE, // TRUE iff []CT value found
+                      bQuadIOFound = FALSE, // ...      []IO ...
+                      bQuadDQFound = FALSE, // ...      []DQ ...
                       bQuadDTFound = FALSE; // ...      []DT ...
     APLFLOAT          fQuadCT;              // []CT
-    APLCHAR           cQuadDT;              // []DT
+    APLCHAR           cQuadDQ,              // []DQ
+                      cQuadDT;              // []DT
     APLBOOL           bQuadIO;              // []IO
     APLINT            uQuadPPV;             // []PP for VFPs
     TOKEN             tkFcn = {0},          // Function token
@@ -304,6 +307,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
     LPVOID            lpMemRhtOpr;          // Ptr to right operand memory
     HGLOBAL           hGlbMFO;              // Magic function/operator global memory handle
     LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
+    ENUM_HCMUL        eHCMul;               // Hypercomplex Arithmetic Multiplication choice
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -515,6 +519,196 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 
             break;
 
+        // []DQ:  Division Quotient
+        case UTF16_COLONBAR:                // Dyadic only (Division)
+        case UTF16_DOWNCARET:               // ...         (GCD)
+        case UTF16_UPCARET:                 // ...         (LCM)
+        case UTF16_CIRCLE:                  // ...         (Trig)
+        case UTF16_DOWNTACK:                // ...         (Encode)
+            // Ensure there's a left arg
+            if (lptkLftArg EQ NULL)
+                goto LEFT_VALENCE_EXIT;
+
+            // Validate the right operand as
+            //   a simple char scalar or one-element vector
+            if (IsMultiRank (aplRankRhtOpr))
+                goto RIGHT_OPERAND_RANK_EXIT;
+            if (aplNELMRhtOpr NE 1)
+                goto RIGHT_OPERAND_LENGTH_EXIT;
+            if (!IsSimpleChar (aplTypeRhtOpr))
+                goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+            // Validate the value
+            if (!ValidateCharScalar_EM (NULL,                   // Ptr to name token
+                                       &lpYYFcnStrRht->tkToken, // Ptr to value token
+                                        DEF_QUADDQ_CWS[0],      // Default value
+                                        DEF_QUADDQ_ALLOW,       // Ptr to vector of allowed values
+                                       &aplCharRhtOpr))         // Ptr to return value
+                goto RIGHT_OPERAND_DOMAIN_EXIT;
+            // Save the current value for []DQ
+            cQuadDQ = GetQuadDQ ();
+
+            // Put the new value into effect
+            SetQuadDQ (aplCharRhtOpr);
+
+            // ***TESTME*** -- At some point we'll need to worry about multiple threads in the same workspace.
+
+            // Execute the function
+            lpYYRes =
+              ExecFunc_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+                              lpYYFcnStrLft,        // Ptr to function strand
+                              lptkRhtArg);          // Ptr to right arg token
+            // Restore the original value
+            SetQuadDQ (cQuadDQ);
+
+            break;
+
+        // []CT & []DQ:  Division Quotient:  'l' (left quotient) or 'r' (right quotient)
+        case UTF16_STILE:                   // Dyadic only  (Residue)
+        case UTF16_STILE2:                  // ...          (Residue)
+            // Ensure there's a left arg
+            if (lptkLftArg EQ NULL)
+                goto LEFT_VALENCE_EXIT;
+
+            // Validate the right operand as
+            //   a simple numeric scalar or one-element vector, or
+            //   a simple character scalar or one-element vector, or
+            //   a hetero two-element vector
+            switch (aplRankRhtOpr)
+            {
+                case 0:
+                    // If it's not simple global numeric and not simple char, ...
+                    if (!IsNumeric (aplTypeRhtOpr)
+                     && !IsSimpleChar (aplTypeRhtOpr))
+                        goto RIGHT_OPERAND_DOMAIN_EXIT;
+                    break;
+
+                case 1:
+                    if (((aplNELMRhtOpr EQ 1)
+                      && !IsNumeric (aplTypeRhtOpr)
+                      && !IsSimpleChar (aplTypeRhtOpr))
+                     || ((aplNELMRhtOpr EQ 2)
+                      && !IsSimpleHet (aplTypeRhtOpr)))
+                        goto RIGHT_OPERAND_LENGTH_EXIT;
+                    break;
+
+                default:
+                    goto RIGHT_OPERAND_RANK_EXIT;
+            } // End SWITCH
+
+            // Split cases based upon the right operand storage type
+            switch (aplTypeRhtOpr)
+            {
+                case ARRAY_BOOL:
+                case ARRAY_INT:
+                case ARRAY_APA:
+                case ARRAY_FLOAT:
+                case ARRAY_RAT:
+                case ARRAY_VFP:
+                    // Get the first value as a float from the token
+                    aplFloatRhtOpr =
+                      GetNextFloatToken (&lpYYFcnStrRht->tkToken,   // Ptr to arg token
+                                          0,                        // Index
+                                          aplTypeRhtOpr,            // Arg storage type
+                                         &bRet);                    // Ptr to TRUE iff the result is valid
+                    // Check for error
+                    if (!bRet)
+                        goto RIGHT_OPERAND_DOMAIN_EXIT;
+                    // Validate the value
+                    if (!ValidateFloatTest (&aplFloatRhtOpr,
+                                             DEF_MIN_QUADCT,        // Minimum value
+                                             DEF_MAX_QUADCT,        // Maximum ...
+                                             bRangeLimit.CT))       // TRUE iff range limiting
+                        goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+                    // Set the flag
+                    bQuadCTFound = TRUE;    // In aplFloatRhtOpr
+
+                    break;
+
+                case ARRAY_CHAR:
+                    // Get the first value from the right operand (Division Quotient)
+                    GetNextValueToken (&lpYYFcnStrRht->tkToken, // Ptr to the token
+                                        0,                      // Index to use
+                                        NULL,                   // Ptr to the integer (or Boolean) (may be NULL)
+                                        NULL,                   // ...        float (may be NULL)
+                                       &aplCharRhtOpr,          // ...        char (may be NULL)
+                                        NULL,                   // ...        longest (may be NULL)
+                                        NULL,                   // ...        LPSYMENTRY or HGLOBAL (may be NULL)
+                                        NULL,                   // ...        immediate type (see IMM_TYPES) (may be NULL)
+                                        NULL);                  // ...        array type:  ARRAY_TYPES (may be NULL)
+                    // Set the flag
+                    bQuadDQFound = TRUE;    // In aplCharRhtOpr
+
+                    break;
+
+                case ARRAY_HETERO:
+                    // Get right operand's global ptrs
+                    GetGlbPtrs_LOCK (&lpYYFcnStrRht->tkToken, &hGlbRhtOpr, (LPVOID *) &lpMemRhtOpr);
+
+                    // Check the first entry
+                    if (!PrimOpVariantCheckHetero (lpMemRhtOpr,         // Ptr to right operand global memory data
+                                                   0,                   // Index into lpMemRhtOpr to use
+                                                  &bQuadCTFound,        // Ptr to bQuadCTFound
+                                                  &bQuadDQFound,        // ...    ...  DQ ...
+                                                   NULL,
+                                                  &aplFloatRhtOpr,      // ...    aplFloatRhtOpr
+                                                  &aplCharRhtOpr))      // ...    ...Char ...
+                        goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+                    // Check the second entry
+                    if (!PrimOpVariantCheckHetero (lpMemRhtOpr,         // Ptr to right operand global memory data
+                                                   1,                   // Index into lpMemRhtOpr to use
+                                                  &bQuadCTFound,        // Ptr to bQuadCTFound
+                                                  &bQuadDQFound,        // ...    ...  DQ ...
+                                                   NULL,
+                                                  &aplFloatRhtOpr,      // ...    aplFloatRhtOpr
+                                                  &aplCharRhtOpr))      // ...    ...Char ...
+                        goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+                    // Test the value
+                    if (bQuadCTFound
+                     && !ValidateFloatTest (&aplFloatRhtOpr,            // Ptr to the integer to test
+                                             DEF_MIN_QUADCT,            // Low range value (inclusive)
+                                             DEF_MAX_QUADCT,            // High ...
+                                             bRangeLimit.CT))           // TRUE iff we're range limiting
+                        goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+                    // Test the value
+                    if (bQuadDQFound
+                     && (strchrW (DEF_QUADDQ_ALLOW, aplCharRhtOpr) EQ NULL))
+                        goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+                    break;
+
+                case ARRAY_NESTED:
+                defstop
+                    break;
+            } // End SWITCH
+
+            // Save the current values for []CT & []DQ
+            fQuadCT = GetQuadCT ();
+            cQuadDQ = GetQuadDQ ();
+
+            // Put the new value(s) into effect
+            if (bQuadCTFound)
+                SetQuadCT (aplFloatRhtOpr);
+            if (bQuadDQFound)
+                SetQuadDQ (aplCharRhtOpr);
+
+            // ***TESTME*** -- At some point we'll need to worry about multiple threads in the same workspace.
+
+            // Execute the function
+            lpYYRes =
+              ExecFunc_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+                              lpYYFcnStrLft,        // Ptr to function strand
+                              lptkRhtArg);          // Ptr to right arg token
+            // Restore the original values
+            SetQuadDQ (cQuadDQ);
+            SetQuadCT (fQuadCT);
+
+            break;
+
         // []CT:  Comparison Tolerance
         case UTF16_LEFTCARET:               // Dyadic only  (Less than)
         case UTF16_LEFTCARETUNDERBAR:       // ...          (Less than or equal)
@@ -527,8 +721,6 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
         case UTF16_EPSILON:                 // ...          (Membership)
         case UTF16_EQUALUNDERBAR:           // ...          (Match)
         case UTF16_NOTEQUALUNDERBAR:        // ...          (Mismatch)
-        case UTF16_STILE:                   // ...          (Residue)
-        case UTF16_STILE2:                  // ...          (Residue)
         case UTF16_UPSHOE:                  // ...          (Set intersection)
         case UTF16_LEFTSHOEUNDERBAR:        // ...          (Subset)
         case UTF16_RIGHTSHOEUNDERBAR:       // ...          (Superset)
@@ -672,6 +864,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
                                                   &bQuadIOFound,        // Ptr to bQuadIOFound
                                                   &bQuadDTFound,        // ...    ...  DT ...
                                                   &aplIntegerRhtOpr,    // ...    aplIntegerRhtOpr
+                                                   NULL,
                                                   &aplCharRhtOpr))      // ...    ...Char ...
                         goto RIGHT_OPERAND_DOMAIN_EXIT;
 
@@ -681,6 +874,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
                                                   &bQuadIOFound,        // Ptr to bQuadIOFound
                                                   &bQuadDTFound,        // ...    ...  DT ...
                                                   &aplIntegerRhtOpr,    // ...    aplIntegerRhtOpr
+                                                   NULL,
                                                   &aplCharRhtOpr))      // ...    ...Char ...
                         goto RIGHT_OPERAND_DOMAIN_EXIT;
 
@@ -760,6 +954,61 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
                                           bPrototyping
                                         ? LINENUM_PRO
                                         : LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
+            break;
+
+            // []HCAM:  Hypercomplex Arithmetic Multiplication choice
+        case UTF16_TIMES:                   // Dyadic only
+            // Ensure there's a left arg
+            if (lptkLftArg EQ NULL)
+                goto LEFT_VALENCE_EXIT;
+
+            // Validate the right operand as
+            //   a simple character scalar
+            if (IsMultiRank (aplRankRhtOpr))
+                goto RIGHT_OPERAND_RANK_EXIT;
+            if (aplNELMRhtOpr NE 1)
+                goto RIGHT_OPERAND_LENGTH_EXIT;
+            if (!IsSimpleChar (aplTypeRhtOpr))
+                goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+            // Get the first value from the right operand
+            GetNextValueToken (&lpYYFcnStrRht->tkToken, // Ptr to the token
+                                0,                      // Index to use
+                                NULL,                   // Ptr to the integer (or Boolean) (may be NULL)
+                                NULL,                   // ...        float (may be NULL)
+                               &aplCharRhtOpr,          // ...        char (may be NULL)
+                                NULL,                   // ...        longest (may be NULL)
+                                NULL,                   // ...        LPSYMENTRY or HGLOBAL (may be NULL)
+                                NULL,                   // ...        immediate type (see IMM_TYPES) (may be NULL)
+                                NULL);                  // ...        array type:  ARRAY_TYPES (may be NULL)
+            // Save the old value of eHCMul
+            eHCMul = lpMemPTD->eHCMul;
+
+            // Ensure the value is valid
+            switch (tolowerW (aplCharRhtOpr))
+            {
+                case L'a':
+                    lpMemPTD->eHCMul = ENUMHCM_ANTI;
+
+                    break;
+
+                case L'c':
+                    lpMemPTD->eHCMul = ENUMHCM_COMM;
+
+                    break;
+
+                default:
+                    goto RIGHT_OPERAND_DOMAIN_EXIT;
+            } // End SWITCH
+
+            // Multiply the operands as per the Hypercomplex Arithmetic Multiplication choice
+            lpYYRes =
+              ExecFunc_EM_YY (lptkLftArg,
+                              lpYYFcnStrLft,
+                              lptkRhtArg);
+            // Restore the original value
+            lpMemPTD->eHCMul = eHCMul;
+
             break;
 
 ////////// []CF:  Circular Functions divisor:
@@ -956,12 +1205,13 @@ NORMAL_EXIT:
 //***************************************************************************
 
 UBOOL PrimOpVariantCheckHetero
-    (LPVOID    lpMemRhtOpr,             // Ptr to right operand global memory data
-     APLINT    uIndex,                  // Index into lpMemRhtOpr to use
-     LPUBOOL   lpbIntFound,             // Ptr to bIntFound (Integer found)
-     LPUBOOL   lpbChrFound,             // ...    bChrFound (Char found)
-     LPAPLINT  lpaplInteger,            // ...    aplInteger
-     LPAPLCHAR lpaplChar)               // ...    aplChar
+    (LPVOID     lpMemRhtOpr,            // Ptr to right operand global memory data
+     APLINT     uIndex,                 // Index into lpMemRhtOpr to use
+     LPUBOOL    lpbNumFound,            // Ptr to bNumFound (Numeric found)
+     LPUBOOL    lpbChrFound,            // ...    bChrFound (Char found)
+     LPAPLINT   lpaplInteger,           // ...    aplInteger (May be NULL if FLT requested)
+     LPAPLFLOAT lpaplFloat,             // ...    aplFloat   (May be NULL if INT requested
+     LPAPLCHAR  lpaplChar)              // ...    aplChar
 
 {
     APLSTYPE aplTypeItm;
@@ -970,6 +1220,8 @@ UBOOL PrimOpVariantCheckHetero
     APLCHAR  aplCharItm;
     HGLOBAL  hGlbItm;
     UBOOL    bRet = TRUE;
+
+    Assert ((lpaplInteger EQ NULL) NE (lpaplFloat EQ NULL));
 
     aplTypeItm =
       GetNextHetero (lpMemRhtOpr, uIndex, &aplIntegerItm, &aplFloatItm, &aplCharItm, &hGlbItm);
@@ -980,62 +1232,75 @@ UBOOL PrimOpVariantCheckHetero
         case ARRAY_BOOL:
         case ARRAY_INT:
             // Check for duplicate entry
-            if (*lpbIntFound)
+            if (*lpbNumFound)
                 goto ERROR_EXIT;
 
             // Set the flag
-            *lpbIntFound = TRUE;        // In aplIntegerRhtOpr
+            *lpbNumFound = TRUE;        // In aplIntegerRhtOpr
 
             break;
 
         case ARRAY_FLOAT:
             // Check for duplicate entry
-            if (*lpbIntFound)
+            if (*lpbNumFound)
                 goto ERROR_EXIT;
 
-            // Attempt to convert the float to an integer using System []CT
-            aplIntegerItm = FloatToAplint_SCT (aplFloatItm,
-                                              &bRet);
-            // Check for error
-            if (!bRet)
-                goto ERROR_EXIT;
+            if (lpaplInteger NE NULL)
+            {
+                // Attempt to convert the float to an integer using System []CT
+                aplIntegerItm =
+                  FloatToAplint_SCT (aplFloatItm,
+                                    &bRet);
+                // Check for error
+                if (!bRet)
+                    goto ERROR_EXIT;
+            } // End IF
 
             // Set the flag
-            *lpbIntFound = TRUE;        // In aplIntegerRhtOpr
+            *lpbNumFound = TRUE;        // In *lpaplInteger or *lpaplFloat
 
             break;
 
         case ARRAY_RAT:
             // Check for duplicate entry
-            if (*lpbIntFound)
+            if (*lpbNumFound)
                 goto ERROR_EXIT;
 
-            // Attempt to convert the RAT to an integer
-            aplIntegerItm = mpq_get_sx ((LPAPLRAT) &hGlbItm, &bRet);
+            if (lpaplInteger NE NULL)
+            {
+                // Attempt to convert the RAT to an integer
+                aplIntegerItm = mpq_get_sx ((LPAPLRAT) &hGlbItm, &bRet);
 
-            // Check for error
-            if (!bRet)
-                goto ERROR_EXIT;
+                // Check for error
+                if (!bRet)
+                    goto ERROR_EXIT;
+            } else
+                // Convert the RAT to a float
+                aplFloatItm = mpq_get_d ((LPAPLRAT) &hGlbItm);
 
             // Set the flag
-            *lpbIntFound = TRUE;        // In aplIntegerRhtOpr
+            *lpbNumFound = TRUE;        // In aplIntegerRhtOpr
 
             break;
 
         case ARRAY_VFP:
             // Check for duplicate entry
-            if (*lpbIntFound)
+            if (*lpbNumFound)
                 goto ERROR_EXIT;
 
-            // Attempt to convert the VFP to an integer
-            aplIntegerItm = mpfr_get_sx ((LPAPLVFP) &hGlbItm, &bRet);
+            if (lpaplInteger NE NULL)
+            {
+                // Attempt to convert the VFP to an integer
+                aplIntegerItm = mpfr_get_sx ((LPAPLVFP) &hGlbItm, &bRet);
 
-            // Check for error
-            if (!bRet)
-                goto ERROR_EXIT;
+                // Check for error
+                if (!bRet)
+                    goto ERROR_EXIT;
+            } else
+                mpfr_get_d ((LPAPLVFP) &hGlbItm, MPFR_RNDN);
 
             // Set the flag
-            *lpbIntFound = TRUE;        // In aplIntegerRhtOpr
+            *lpbNumFound = TRUE;        // In aplIntegerRhtOpr
 
             break;
 
@@ -1057,8 +1322,15 @@ UBOOL PrimOpVariantCheckHetero
     } // End SWITCH
 
     // Save in globals
-    if (*lpbIntFound)
-        *lpaplInteger = aplIntegerItm;
+    if (*lpbNumFound)
+    {
+
+        if (lpaplInteger NE NULL)
+            *lpaplInteger = aplIntegerItm;
+        else
+            *lpaplFloat   = aplFloatItm;
+    } // End IF
+
     if (*lpbChrFound)
         *lpaplChar    = aplCharItm;
 
@@ -1202,10 +1474,10 @@ LPPL_YYSTYPE PrimOpVariantKeyword_EM_YY
              && IsSimpleHet (aplTypeRhtOpr)                         // and the right operand is hetero
              && aplNELMRhtOpr EQ 2)                                 // and the right operand is a pair, ...
             {
-                UBOOL   bIntFound = FALSE,
-                        bChrFound = FALSE;
-                APLINT  aplIntegerRhtOpr;
-                APLCHAR aplCharRhtOpr;
+                UBOOL    bNumFound = FALSE,
+                         bChrFound = FALSE;
+                APLINT   aplIntegerRhtOpr;
+                APLCHAR  aplCharRhtOpr;
 
                 // Here we need to test for the following possibilities
                 // 'g' 0
@@ -1214,32 +1486,34 @@ LPPL_YYSTYPE PrimOpVariantKeyword_EM_YY
                 // Check the first entry
                 if (!PrimOpVariantCheckHetero (lpMemRhtOpr,         // Ptr to right operand global memory data
                                                0,                   // Index into lpMemRhtOpr to use
-                                              &bIntFound,           // Ptr to bIntFound
+                                              &bNumFound,           // Ptr to bNumFound
                                               &bChrFound,           // ...    bChrFound
                                               &aplIntegerRhtOpr,    // ...    aplIntegerRhtOpr
+                                               NULL,                // ...    aplFloatRhtOpr
                                               &aplCharRhtOpr))      // ...    ...Char ...
                     goto RIGHT_OPERAND_DOMAIN_EXIT;
 
                 // Check the second entry
                 if (!PrimOpVariantCheckHetero (lpMemRhtOpr,         // Ptr to right operand global memory data
                                                1,                   // Index into lpMemRhtOpr to use
-                                              &bIntFound,           // Ptr to bIntFound
+                                              &bNumFound,           // Ptr to bNumFound
                                               &bChrFound,           // ...    bChrFound
                                               &aplIntegerRhtOpr,    // ...    aplIntegerRhtOpr
+                                               NULL,                // ...    aplFloatRhtOpr
                                               &aplCharRhtOpr))      // ...    ...Char ...
                     goto RIGHT_OPERAND_DOMAIN_EXIT;
 
                 // If neither value was found, ...
-                if (!bIntFound
+                if (!bNumFound
                  && !bChrFound)
                     goto RIGHT_OPERAND_DOMAIN_EXIT;
 
                 // If we found a value for []IO
-                if (bIntFound
+                if (bNumFound
                     // Save the SymEntry, validate the value
                  && !VariantValidateSymVal_EM (IMMTYPE_INT,             // Item immediate type
                                                NULL,                    // Item global memory handle
-                                               aplIntegerRhtOpr,        // Immediate value
+                              *(LPAPLLONGEST) &aplIntegerRhtOpr,        // Immediate value
                                                FALSE,                   // TRUE iff assignment value is empty (we're resetting to CLEAR WS/System)
                                               &varUseStr[0],            // Ptr to variant use struc
                                                VARIANT_KEY_IO,          // Variant key index
@@ -1252,10 +1526,79 @@ LPPL_YYSTYPE PrimOpVariantKeyword_EM_YY
                     // Save the SymEntry, validate the value
                  && !VariantValidateSymVal_EM (IMMTYPE_CHAR,            // Item immediate type
                                                NULL,                    // Item global memory handle
-                                               aplCharRhtOpr,           // Immediate value
+                              *(LPAPLLONGEST) &aplCharRhtOpr,           // Immediate value
                                                FALSE,                   // TRUE iff assignment value is empty (we're resetting to CLEAR WS/System)
                                               &varUseStr[0],            // Ptr to variant use struc
                                                VARIANT_KEY_DT,          // Variant key index
+                                               lpMemPTD,                // Ptr to PerTabData global memory
+                                              &lpYYFcnStrRht->tkToken)) // Ptr to function token
+                    goto ERROR_EXIT;
+
+                break;
+            } else
+            // If the function is immediate and is |, ...
+            if (IsTknImmed (&lpYYFcnStrLft->tkToken)                    // If the function is immediate,
+             && (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_STILE    // and it's stile/stile2
+              || lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_STILE2)  // ...
+             && IsSimpleHet (aplTypeRhtOpr)                             // and the right operand is hetero
+             && aplNELMRhtOpr EQ 2)                                     // and the right operand is a pair, ...
+            {
+                UBOOL    bNumFound = FALSE,
+                         bChrFound = FALSE;
+                APLFLOAT aplFloatRhtOpr;
+                APLCHAR  aplCharRhtOpr;
+
+                // Here we need to test for the following possibilities
+                // 'g' 0
+                // 0 'g'
+
+                // Check the first entry
+                if (!PrimOpVariantCheckHetero (lpMemRhtOpr,         // Ptr to right operand global memory data
+                                               0,                   // Index into lpMemRhtOpr to use
+                                              &bNumFound,           // Ptr to bNumFound
+                                              &bChrFound,           // ...    bChrFound
+                                               NULL,                // ...    aplIntegerRhtOpr
+                                              &aplFloatRhtOpr,      // ...    aplFloatRhtOpr
+                                              &aplCharRhtOpr))      // ...    ...Char ...
+                    goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+                // Check the second entry
+                if (!PrimOpVariantCheckHetero (lpMemRhtOpr,         // Ptr to right operand global memory data
+                                               1,                   // Index into lpMemRhtOpr to use
+                                              &bNumFound,           // Ptr to bNumFound
+                                              &bChrFound,           // ...    bChrFound
+                                               NULL,                // ...    aplIntegerRhtOpr
+                                              &aplFloatRhtOpr,      // ...    aplFloatRhtOpr
+                                              &aplCharRhtOpr))      // ...    ...Char ...
+                    goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+                // If neither value was found, ...
+                if (!bNumFound
+                 && !bChrFound)
+                    goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+                // If we found a value for []CT
+                if (bNumFound
+                    // Save the SymEntry, validate the value
+                 && !VariantValidateSymVal_EM (IMMTYPE_FLOAT,           // Item immediate type
+                                               NULL,                    // Item global memory handle
+                              *(LPAPLLONGEST) &aplFloatRhtOpr,          // Immediate value
+                                               FALSE,                   // TRUE iff assignment value is empty (we're resetting to CLEAR WS/System)
+                                              &varUseStr[0],            // Ptr to variant use struc
+                                               VARIANT_KEY_CT,          // Variant key index
+                                               lpMemPTD,                // Ptr to PerTabData global memory
+                                              &lpYYFcnStrRht->tkToken)) // Ptr to function token
+                    goto ERROR_EXIT;
+
+                // If we found a value for []DQ
+                if (bChrFound
+                    // Save the SymEntry, validate the value
+                 && !VariantValidateSymVal_EM (IMMTYPE_CHAR,            // Item immediate type
+                                               NULL,                    // Item global memory handle
+                              *(LPAPLLONGEST) &aplCharRhtOpr,           // Immediate value
+                                               FALSE,                   // TRUE iff assignment value is empty (we're resetting to CLEAR WS/System)
+                                              &varUseStr[0],            // Ptr to variant use struc
+                                               VARIANT_KEY_DQ,          // Variant key index
                                                lpMemPTD,                // Ptr to PerTabData global memory
                                               &lpYYFcnStrRht->tkToken)) // Ptr to function token
                     goto ERROR_EXIT;
@@ -1457,7 +1800,7 @@ UBOOL PrimOpVariantValidateGlb_EM
             // Save the SymEntry, validate the value
             if (!VariantValidateSymVal_EM (immTypeItm,          // Item immediate type
                                            hGlbItm,             // Item global memory handle
-                                           aplCharItm,          // Immediate value
+                          *(LPAPLLONGEST) &aplCharItm,          // Immediate value
                                            FALSE,               // TRUE iff assignment value is empty (we're resetting to CLEAR WS/System)
                                            lpVarUseStr,         // Ptr to variant use struc
                                            VARIANT_KEY_DT,      // Variant key index

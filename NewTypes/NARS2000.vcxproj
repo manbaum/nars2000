@@ -349,10 +349,17 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     <ClCompile Include="fastbool.c" />
     <ClCompile Include="fh_proc.c" />
     <ClCompile Include="fmtspec.c" />
+    <ClCompile Include="fpcho_com.c">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug32|Win32'">$(GSL_DIR)\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug64|Win32'">$(GSL_DIR)\x64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release64|Win32'">$(GSL_DIR)\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release32|Win32'">$(GSL_DIR)\x64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
     <ClCompile Include="free.c" />
     <ClCompile Include="getfns.c" />
     <ClCompile Include="getreent.c" />
     <ClCompile Include="goto.c" />
+    <ClCompile Include="hc_proc.c" />
     <ClCompile Include="hungarian_dbl.c" />
     <ClCompile Include="hungarian_int.c" />
     <ClCompile Include="hungarian_rat.c" />
@@ -364,8 +371,18 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     <ClCompile Include="initdata.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="malloc.c" />
+    <ClCompile Include="mpcf.c" />
+    <ClCompile Include="mpcho_com.c">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug32|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug64|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="mpci.c" />
     <ClCompile Include="mpfns.c" />
+    <ClCompile Include="mphf.c" />
+    <ClCompile Include="mphi.c" />
     <ClCompile Include="mpifns.c" />
+    <ClCompile Include="mpof.c" />
+    <ClCompile Include="mpoi.c" />
     <ClCompile Include="parseline.c" />
     <ClCompile Include="perfmon.c" />
     <ClCompile Include="pf_bar.c" />
@@ -492,6 +509,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     <ClCompile Include="qf_av.c" />
     <ClCompile Include="qf_cr.c" />
     <ClCompile Include="qf_d.c" />
+    <ClCompile Include="qf_dc.c" />
     <ClCompile Include="qf_dl.c" />
     <ClCompile Include="qf_dr.c" />
     <ClCompile Include="qf_ea.c" />

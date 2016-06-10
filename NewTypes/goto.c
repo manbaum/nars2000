@@ -141,29 +141,50 @@ EXIT_TYPES GotoLine_EM
                     case IMMTYPE_ERROR:
                         goto DOMAIN_EXIT;
 
+                    case IMMTYPE_HC2I:
+                    case IMMTYPE_HC4I:
+                    case IMMTYPE_HC8I:
+////////////////////case IMMTYPE_FLOAT:
+                    case IMMTYPE_HC2F:
+                    case IMMTYPE_HC4F:
+                    case IMMTYPE_HC8F:
+////////////////////case IMMTYPE_RAT:
+                    case IMMTYPE_HC2R:
+                    case IMMTYPE_HC4R:
+                    case IMMTYPE_HC8R:
+////////////////////case IMMTYPE_VFP:
+                    case IMMTYPE_HC2V:
+                    case IMMTYPE_HC4V:
+                    case IMMTYPE_HC8V:
+                        // Attempt to convert the float to an integer using System []CT
+                        aplIntegerRht = ConvertToInteger_SCT (aplTypeRht, lpSymGlb, 0, &bRet);
+                        if (!bRet)
+                            goto DOMAIN_EXIT;
+                        break;
+
                     defstop
                         break;
                 } // End SWITCH
 
                 break;
 
+            case ARRAY_HC2I:
+            case ARRAY_HC4I:
+            case ARRAY_HC8I:
             case ARRAY_FLOAT:
-                // Attempt to convert the float to an integer using System []CT
-                aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
-                if (!bRet)
-                    goto DOMAIN_EXIT;
-                break;
-
+            case ARRAY_HC2F:
+            case ARRAY_HC4F:
+            case ARRAY_HC8F:
             case ARRAY_RAT:
-                // Attempt to convert the RAT to an integer using System []CT
-                aplIntegerRht = mpq_get_sctsx ((LPAPLRAT) lpSymGlb, &bRet);
-                if (!bRet)
-                    goto DOMAIN_EXIT;
-                break;
-
+            case ARRAY_HC2R:
+            case ARRAY_HC4R:
+            case ARRAY_HC8R:
             case ARRAY_VFP:
-                // Attempt to convert the VFP to an integer using System []CT
-                aplIntegerRht = mpfr_get_sctsx ((LPAPLVFP) lpSymGlb, &bRet);
+            case ARRAY_HC2V:
+            case ARRAY_HC4V:
+            case ARRAY_HC8V:
+                // Attempt to convert the float to an integer using System []CT
+                aplIntegerRht = ConvertToInteger_SCT (aplTypeRht, lpSymGlb, 0, &bRet);
                 if (!bRet)
                     goto DOMAIN_EXIT;
                 break;

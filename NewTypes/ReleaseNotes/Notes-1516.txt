@@ -3,7 +3,7 @@ Build #1516 -- Version 0.5.0.xx
 
 * Implement HyperComplex Numbers
 
-Directory trunk:
+Directory branches/bsmith/NewTypes:
 
 Too Numerous To List.
 

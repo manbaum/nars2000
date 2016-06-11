@@ -1,6 +1,3 @@
-Version 0.5.0.xx consists of the following Builds:
-
-
 Build #1517 -- Version 0.5.0.xx
 --------------------------------
 
@@ -19,16 +16,3 @@ INDEX-BODY.AHTML:
 
 LICENSE-BODY.HTML:
   Include mention of MPC library licensing.
-
-
-Build #1516 -- Version 0.5.0.xx
---------------------------------
-
-* Implement Hypercomplex Numbers
-
-Directory branches/bsmith/NewTypes:
-
-Too Numerous To List.
-
-VER.RC:
-  Increment version # to 0.5.0.xx.

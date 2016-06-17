@@ -222,44 +222,45 @@ NORMAL_EXIT:
 #endif
 
 UBOOL CheckAxisGlb
-    (HGLOBAL      hGlbData,         // The global handle to check
-     LPTOKEN      lptkAxis,         // The Axis values
-     APLRANK      aplRankCmp,       // Comparison rank
-     UBOOL        bSingleton,       // TRUE iff scalar or one-element vector only
-                                    //   is allowed
-     UBOOL        bSortAxes,        // TRUE iff the axes should be sorted
-                                    //   (i.e., the order of the axes is unimportant)
-     UBOOL        bContiguous,      // TRUE iff the axes must be contiguous
-     UBOOL        bAllowDups,       // TRUE iff duplicate axes are allowed
-     LPUBOOL      lpbFract,         // Return TRUE iff fractional values are present,
-                                    //   (may be NULL if fractional values not allowed)
-     LPAPLINT     lpaplLastAxis,    // Return last axis value or ceiling if fractional
-                                    //   (may be NULL if caller is not interested)
-     LPAPLNELM    lpaplNELMAxis,    // Return # elements in axis
-                                    //   (may be NULL if caller is not interested)
-     HGLOBAL     *lphGlbAxis,       // Ptr to HGLOBAL where the cleaned up axis
-                                    //   is to be stored.  If the return is FALSE,
-                                    //   this ptr must be set to NULL.
-                                    //   (may be NULL if caller is not interested)
-     LPAPLNELM    lpaplNELM,        // Local var for NELM
-     LPAPLINT    *lplpAxisStart,    // Ptr to ptr to start of Axis values in *lphGlbAxis
-     LPAPLINT    *lplpAxisHead,     // ...                    user axis values in *lphGlbAxis
-     LPAPLUINT    lpaplAxisContLo,  // Contiguous low axis (not NULL)
-     LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
+    (HGLOBAL      hGlbData,             // The global handle to check
+     LPTOKEN      lptkAxis,             // The Axis values
+     APLRANK      aplRankCmp,           // Comparison rank
+     UBOOL        bSingleton,           // TRUE iff scalar or one-element vector only
+                                        //   is allowed
+     UBOOL        bSortAxes,            // TRUE iff the axes should be sorted
+                                        //   (i.e., the order of the axes is unimportant)
+     UBOOL        bContiguous,          // TRUE iff the axes must be contiguous
+     UBOOL        bAllowDups,           // TRUE iff duplicate axes are allowed
+     LPUBOOL      lpbFract,             // Return TRUE iff fractional values are present,
+                                        //   (may be NULL if fractional values not allowed)
+     LPAPLINT     lpaplLastAxis,        // Return last axis value or ceiling if fractional
+                                        //   (may be NULL if caller is not interested)
+     LPAPLNELM    lpaplNELMAxis,        // Return # elements in axis
+                                        //   (may be NULL if caller is not interested)
+     HGLOBAL     *lphGlbAxis,           // Ptr to HGLOBAL where the cleaned up axis
+                                        //   is to be stored.  If the return is FALSE,
+                                        //   this ptr must be set to NULL.
+                                        //   (may be NULL if caller is not interested)
+     LPAPLNELM    lpaplNELM,            // Local var for NELM
+     LPAPLINT    *lplpAxisStart,        // Ptr to ptr to start of Axis values in *lphGlbAxis
+     LPAPLINT    *lplpAxisHead,         // ...                    user axis values in *lphGlbAxis
+     LPAPLUINT    lpaplAxisContLo,      // Contiguous low axis (not NULL)
+     LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
 
 {
-    UBOOL     bRet = TRUE;          // TRUE iff the result is valid
-    LPVOID    lpMemData;            // Ptr to incoming data global memory
-    LPAPLBOOL lpMemDup = NULL;          // Ptr to duplciate axes global memory
-    HGLOBAL   hGlbDup = NULL;       // Duplicate axes global memory handle
-    UINT      uBitMask;             // Bit mask for looping through Booleans
-    APLUINT   ByteDup,              // # bytes for the duplicate axis test
-              ByteAxis,             // # bytes for the axis vector
-              uCnt;                 // Loop counter
-    APLSTYPE  aplTypeLcl;           // Incoming data storage type
-    APLRANK   aplRankLcl;           // Incoming data rank
-    LPAPLINT  lpAxisTail;           // Ptr to grade up of AxisHead
-    APLBOOL   bQuadIO;              // []IO
+    UBOOL             bRet = TRUE;      // TRUE iff the result is valid
+    LPVARARRAY_HEADER lpMemHdrData;     // Ptr to data header
+    LPVOID            lpMemData;        // Ptr to incoming data global memory
+    LPAPLBOOL         lpMemDup = NULL;  // Ptr to duplciate axes global memory
+    HGLOBAL           hGlbDup = NULL;   // Duplicate axes global memory handle
+    UINT              uBitMask;         // Bit mask for looping through Booleans
+    APLUINT           ByteDup,          // # bytes for the duplicate axis test
+                      ByteAxis,         // # bytes for the axis vector
+                      uCnt;             // Loop counter
+    APLSTYPE          aplTypeLcl;       // Incoming data storage type
+    APLRANK           aplRankLcl;       // Incoming data rank
+    LPAPLINT          lpAxisTail;       // Ptr to grade up of AxisHead
+    APLBOOL           bQuadIO;          // []IO
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
@@ -268,9 +269,9 @@ UBOOL CheckAxisGlb
     Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
     // Lock the memory to get a ptr to it
-    lpMemData = MyGlobalLock (hGlbData);
+    lpMemHdrData = MyGlobalLock (hGlbData);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemData)
+#define lpHeader    lpMemHdrData
     // Get the Array Type, NELM, and Rank
     aplTypeLcl = lpHeader->ArrType;
    *lpaplNELM  = lpHeader->NELM;
@@ -279,7 +280,9 @@ UBOOL CheckAxisGlb
 
     // Check the axis rank and the NELM (if singletons only)
     if (IsMultiRank (aplRankLcl)
-     || (bSingleton && !IsSingleton (*lpaplNELM)))
+     || (bSingleton && !IsSingleton (*lpaplNELM))
+     || IsSimpleChar (aplTypeLcl)
+     || IsPtrArray (aplTypeLcl))
         goto ERROR_EXIT;
 
     // Return the # elements
@@ -331,7 +334,7 @@ UBOOL CheckAxisGlb
     lpMemDup = MyGlobalLock (hGlbDup);
 
     // Skip over the header and dimensions to the data
-    lpMemData = VarArrayDataFmBase (lpMemData);
+    lpMemData = VarArrayDataFmBase (lpMemHdrData);
 
     // If the axis value is an empty char array, ...
     if (IsCharEmpty (aplTypeLcl, *lpaplNELM))
@@ -739,9 +742,16 @@ UBOOL CheckAxisGlb
 
     // If we allow duplicates, ...
     if (bRet && bAllowDups && aplRankCmp NE 0)
+    {
+        // Unlock and lock the memory to reset the
+        //   ptr to the start
+        MyGlobalUnlock (hGlbDup); lpMemDup = NULL;
+        lpMemDup = MyGlobalLock (hGlbDup);
+
         // If so (it's slicing dyadic transpose), so the axes
         //   must be contiguous starting at []IO.
         bRet = (*lpMemDup & BIT0);
+    } // End IF
 
     goto NORMAL_EXIT;
 

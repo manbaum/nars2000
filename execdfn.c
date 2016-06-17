@@ -1638,6 +1638,7 @@ void UnlocalizeSTEs
 
 #define FreeZapSte(ste)                                                                                             \
         if ( lpMemDfnHdr->ste NE NULL                                                                               \
+         && !lpMemDfnHdr->ste->stFlags.FcnDir                                                                       \
          && !lpMemDfnHdr->ste->stFlags.Imm                                                                          \
          &&  lpMemDfnHdr->ste->stData.stGlbData NE NULL)                                                            \
         {                                                                                                           \

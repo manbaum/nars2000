@@ -1,6 +1,17 @@
 Version 0.4.15.xx consists of the following Builds:
 
 
+Build #1519 -- Version 0.4.15.xx
+--------------------------------
+
+* Implement )FOPS and Its Alias )FOP, Part 2
+
+Directory trunk:
+
+ENUMS.H:
+  Implement )FOPS and its alias )FOP to display both functions and operators.
+
+
 Build #1518 -- Version 0.4.15.xx
 --------------------------------
 

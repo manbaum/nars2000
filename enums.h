@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -106,22 +106,23 @@ typedef enum tagSYSCMDS_ENUM    // System Commands
     SYSCMD_ERASE    ,           // 06:  )ERASE
     SYSCMD_EXIT     ,           // 07:  )EXIT
     SYSCMD_FNS      ,           // 08:  )FNS
-    SYSCMD_IN       ,           // 09:  )IN
-    SYSCMD_INASCII  ,           // 0A:  )INASCII
-    SYSCMD_LIB      ,           // 0B:  )LIB
-    SYSCMD_LOAD     ,           // 0C:  )LOAD
-    SYSCMD_NEWTAB   ,           // 0D:  )NEWTAB
-    SYSCMD_NMS      ,           // 0E:  )NMS
-    SYSCMD_OPS      ,           // 0F:  )OPS
-    SYSCMD_OUT      ,           // 10:  )OUT
-    SYSCMD_RESET    ,           // 11:  )RESET
-    SYSCMD_SAVE     ,           // 12:  )SAVE
-    SYSCMD_SI       ,           // 13:  )SI
-    SYSCMD_SINL     ,           // 14:  )SINL
-    SYSCMD_ULIB     ,           // 15:  )ULIB
-    SYSCMD_VARS     ,           // 16:  )VARS
-    SYSCMD_XLOAD    ,           // 17:  )XLOAD
-    SYSCMD_WSID     ,           // 18:  )WSID
+    SYSCMD_FOPS     ,           // 09:  )FOPS
+    SYSCMD_IN       ,           // 0A:  )IN
+    SYSCMD_INASCII  ,           // 0B:  )INASCII
+    SYSCMD_LIB      ,           // 0C:  )LIB
+    SYSCMD_LOAD     ,           // 0D:  )LOAD
+    SYSCMD_NEWTAB   ,           // 0E:  )NEWTAB
+    SYSCMD_NMS      ,           // 0F:  )NMS
+    SYSCMD_OPS      ,           // 10:  )OPS
+    SYSCMD_OUT      ,           // 11:  )OUT
+    SYSCMD_RESET    ,           // 12:  )RESET
+    SYSCMD_SAVE     ,           // 13:  )SAVE
+    SYSCMD_SI       ,           // 14:  )SI
+    SYSCMD_SINL     ,           // 15:  )SINL
+    SYSCMD_ULIB     ,           // 16:  )ULIB
+    SYSCMD_VARS     ,           // 17:  )VARS
+    SYSCMD_XLOAD    ,           // 18:  )XLOAD
+    SYSCMD_WSID     ,           // 19:  )WSID
 } SYSCMDS_ENUM, *LPSYSCMDS_ENUM;
 
 

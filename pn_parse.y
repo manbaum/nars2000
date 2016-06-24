@@ -153,9 +153,11 @@ Integer:
 
 AlphaInt:
                Alphabet             {DbgMsgWP (L"%%AlphaInt:  Alphabet");
+                                     lppnLocalVars->uAlpAcc = 0;
                                      PN_ChrAcc (lppnLocalVars, $1.chCur);
                                     }
     |          Digit                {DbgMsgWP (L"%%AlphaInt:  Digit");
+                                     lppnLocalVars->uAlpAcc = 0;
                                      PN_ChrAcc (lppnLocalVars, $1.chCur);
                                     }
     | AlphaInt Alphabet             {DbgMsgWP (L"%%AlphaInt:  Alphaint Alphabet");

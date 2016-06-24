@@ -1,6 +1,17 @@
 Version 0.4.15.xx consists of the following Builds:
 
 
+Build #1524 -- Version 0.4.15.xx
+--------------------------------
+
+* Fix Bug In Base Point Notation
+
+Directory trunk:
+
+PN_PARSE.Y:
+  Fix bug in Base Point Notation (BPN) where with multiple BPN instances in a strand later instances overflow because a counter isn't reset.
+
+
 Build #1523 -- Version 0.4.15.xx
 --------------------------------
 

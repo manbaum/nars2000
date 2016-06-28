@@ -233,7 +233,7 @@
 #define IsAPLCharStile(a)           ((a) EQ UTF16_STILE              || (a) EQ UTF16_STILE2                                        )
 #define IsAPLCharTilde(a)           ((a) EQ UTF16_TILDE              || (a) EQ UTF16_TILDE2                                        )
 #define IsAPLCharCircle(a)          ((a) EQ UTF16_CIRCLE             || (a) EQ UTF16_CIRCLE2                                       )
-#define IsAPLCharDiamond(a)         ((a) EQ UTF16_DIAMOND            || (a) EQ UTF16_DIAMOND2             || (a) EQ UTF16_DIAMOND3 )
+#define IsAPLCharDiamond(a)         ((a) EQ UTF16_DIAMOND            || (a) EQ UTF16_DIAMOND2             || (a) EQ UTF16_DIAMOND3 || (a) EQ UTF16_DIAMOND4)
 #define IsAPLCharStar(a)            ((a) EQ UTF16_STAR               || (a) EQ UTF16_STAR2                                         )
 #define IsAPLCharJot(a)             ((a) EQ UTF16_JOT                || (a) EQ UTF16_JOT2                                          )
 #define IsAPLCharQuad(a)            ((a) EQ UTF16_QUAD               || (a) EQ UTF16_QUAD2                                         )

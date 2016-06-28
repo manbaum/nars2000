@@ -306,8 +306,9 @@ SYMBOLNAMES aSymbolNames[]
   {UTF16_CIRCLE2              , L"{circle2}"            },  // 26AA:  Circle2  (a.k.a. 0x25CB)
   {UTF16_LEFTCARETUNDERBAR2   , L"{notmore2}"           },  // 2A7D:  Notmore2 (a.k.a. 0x2264)
   {UTF16_RIGHTCARETUNDERBAR2  , L"{notless2}"           },  // 2A7E:  Notless2 (a.k.a. 0x2265)
-  {UTF16_DIAMOND2             , L"{diamond2}"           },  // 2B26:  Diamond2 (a.k.a. 0x22C4)
+  {UTF16_DIAMOND2             , L"{diamond2}"           },  // 25C7:  Diamond2 (a.k.a. 0x22C4)
   {UTF16_DIAMOND3             , L"{diamond3}"           },  // 25CA:  Diamond3 (a.k.a. 0x22C4)
+  {UTF16_DIAMOND4             , L"{diamond4}"           },  // 2B26:  Diamond4 (a.k.a. 0x22C4)
 }
 ;
 

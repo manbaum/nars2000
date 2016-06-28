@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -78,8 +78,9 @@ WCHAR uniTransTab[][UNITRANS_LENGTH] =
     {0x008F, 0x00C2,  SAME ,  SAME , 0x00DC,   NA  , UTF16_DELTAUNDERBAR       },   // Delta underbar
     {0x0090, 0x00E8,  SAME ,  SAME , 0x00DB,   NA  , UTF16_DELTILDE            },   // Del tilde
     {0x00AA, 0x00C0,  SAME ,  SAME , 0x00F8,   NA  , UTF16_DIAMOND             },   // Diamond  (0x22C4)
-    {0x00AA, 0x00C0, 0x22C4, 0x22C4, 0x00F8,   NA  , UTF16_DIAMOND2            },   // Diamond2 (0x2B26)
+    {0x00AA, 0x00C0, 0x22C4, 0x22C4, 0x00F8,   NA  , UTF16_DIAMOND2            },   // Diamond2 (0x25C7)
     {0x00AA, 0x00C0, 0x22C4, 0x22C4, 0x00F8,   NA  , UTF16_DIAMOND3            },   // Diamond3 (0x25CA)
+    {0x00AA, 0x00C0, 0x22C4, 0x22C4, 0x00F8,   NA  , UTF16_DIAMOND4            },   // Diamond4 (0x2B26)
     {0x00A8, 0x00A1,  SAME ,  SAME , 0x00CA,   NA  , UTF16_DIERESIS            },   // Dieresis
     {  NA  ,   NA  ,   NA  ,   NA  , 0x00D6,   NA  , UTF16_DIERESISDOT         },   // Dieresis dot
     {0x00F0, 0x00F8,   NA  ,   NA  ,   NA  ,   NA  , UTF16_DIERESISJOT         },   // Dieresis jot

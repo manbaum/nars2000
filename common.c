@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -715,7 +715,7 @@ SIZE GetDlgUnitsInPixels
 
 void DrawBitmap
     (HDC     hDC,           // Destination DC
-     HBITMAP hBitMap,       // The bitmap to draw
+     HBITMAP hBitmap,       // The bitmap to draw
      UINT    xDstOrg,       // Destin bit origin
      UINT    yDstOrg)       // ...
 
@@ -723,19 +723,19 @@ void DrawBitmap
     BITMAP  bm;
     HDC     hDCMem;
     POINT   ptSize, ptOrg;
-    HBITMAP hOldBitmap;
+    HBITMAP hBitmapOld;
 
     // Get a Client Area DC for the bitmap
     hDCMem = MyCreateCompatibleDC (hDC);
 
     // Select the bitmap into the DC
-    hOldBitmap = SelectObject (hDCMem, hBitMap);
+    hBitmapOld = SelectObject (hDCMem, hBitmap);
 
     // Copy the mapping mode from the original DC
     SetMapMode (hDCMem, GetMapMode (hDC));
 
     // Get the size of the bitmap
-    GetObjectA (hBitMap, sizeof (BITMAP), (LPSTR) &bm);
+    GetObjectA (hBitmap, sizeof (BITMAP), (LPSTR) &bm);
 
     // Save it as a POINT
     ptSize.x = bm.bmWidth;
@@ -758,7 +758,7 @@ void DrawBitmap
             ptOrg.x, ptOrg.y,
             SRCCOPY);
     // Restore the old object
-    SelectObject (hDCMem, hOldBitmap);
+    SelectObject (hDCMem, hBitmapOld);
 
     // We no longer need this resource
     MyDeleteDC (hDCMem); hDCMem = NULL;
@@ -935,8 +935,8 @@ void CharFromPos
     } // End IF
 
     // Return the values
-    *lplLineNum = lLineNum;
-    *lplCharPos = lCharPos;
+        *lplLineNum = lLineNum;
+        *lplCharPos = lCharPos;
 } // End CharFromPos
 
 

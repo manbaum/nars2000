@@ -1130,8 +1130,8 @@ EXTERN
 SIZE  MFSize;                           // Size of Master Frame Window window rectangle
 
 EXTERN
-HBITMAP hBitMapLineCont,                // Bitmap for the line continuation char
-        hBitMapCheck;                   // Bitmap for the marker used in Customize
+HBITMAP hBitmapLineCont,                // Bitmap for the line continuation char
+        hBitmapCheck;                   // Bitmap for the marker used in Customize
 
 EXTERN
 int     iLCWidth;                       // Width of the line continuation column

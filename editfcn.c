@@ -115,13 +115,13 @@ UBOOL CreateFcnWindow
     uLen = (UINT) (SkipToCharW (lpwszLine, L';') - lpwszLine);
 
     // If there's a name, ...
-    if (uLen)
+    if (uLen NE 0)
     {
         // Check to see if this function name is already being edited
         // If so, switch to that window instead of opening a new one
         hWndNxt = lpMemPTD->hWndFENxt;
 
-        while (hWndNxt)
+        while (hWndNxt NE NULL)
         {
             // Ask the window if this function name is theirs
             if (SendMessageW (hWndNxt, MYWM_CMPNAME, uLen, (LPARAM) (HANDLE_PTR) lpwszLine))
@@ -131,7 +131,7 @@ UBOOL CreateFcnWindow
         } // End WHILE
 
         // If we found a matching window, ...
-        if (hWndNxt)
+        if (hWndNxt NE NULL)
         {
             // Activate the other window
             SendMessageW (lpMemPTD->hWndMC, WM_MDIACTIVATE, (WPARAM) hWndNxt, 0);
@@ -344,7 +344,7 @@ LRESULT APIENTRY FEWndProc
 
                     return -1;
                 } else
-                if (lpSymName->stData.stGlbData)
+                if (lpSymName->stData.stGlbData NE NULL)
                 {
                     // Get the global memory handle
                     hGlbDfnHdr = lpSymName->stData.stGlbData;
@@ -562,7 +562,7 @@ LRESULT APIENTRY FEWndProc
             SetWindowLongPtrW (hWnd, GWLFE_HWNDPRV, (APLU3264) (LONG_PTR) NULL);
 
             // If there are other FE windows, ...
-            if (hWndNxt)
+            if (hWndNxt NE NULL)
             {
                 Assert ((HWND) GetWindowLongPtrW (hWndNxt, GWLFE_HWNDPRV) EQ NULL);
 
@@ -614,7 +614,7 @@ LRESULT APIENTRY FEWndProc
             // Get this window's function name (if any)
             uNameLen = GetFunctionName (hWnd, lpwszTemp);
 
-            if (uNameLen && uNameLen EQ uLen)
+            if (uNameLen NE 0 && uNameLen EQ uLen)
                 lResult = (strncmpW (lpwszTemp, lpwName, uNameLen) EQ 0);
             else
                 lResult = FALSE;
@@ -851,7 +851,7 @@ LRESULT APIENTRY FEWndProc
             // *************** FCNMEMVIRTENUM Entries ******************
             // Get the MemVirtStr ptr
             lpLclMemVirtStr = (LPMEMVIRTSTR) GetWindowLongPtrW (hWnd, GWLSF_LPMVS);
-            if (lpLclMemVirtStr)
+            if (lpLclMemVirtStr NE NULL)
             {
                 UINT uCnt;                  // Loop counter
 
@@ -871,9 +871,9 @@ LRESULT APIENTRY FEWndProc
             hWndNxt = (HWND) GetWindowLongPtrW (hWnd, GWLFE_HWNDNXT);
             hWndPrv = (HWND) GetWindowLongPtrW (hWnd, GWLFE_HWNDPRV);
 
-            if (hWndPrv)
+            if (hWndPrv NE NULL)
                 SetWindowLongPtrW (hWndPrv, GWLFE_HWNDNXT, (APLU3264) (LONG_PTR) hWndNxt);
-            if (hWndNxt)
+            if (hWndNxt NE NULL)
                 SetWindowLongPtrW (hWndNxt, GWLFE_HWNDPRV, (APLU3264) (LONG_PTR) hWndPrv);
 
             // Get ptr to PerTabData global memory
@@ -1182,7 +1182,7 @@ ERROR_EXIT:
     } // End IF
 
     // Free the global memory:  hSyntClr
-    if (hSyntClr)
+    if (hSyntClr NE NULL)
     {
         if (lpSyntClr NE NULL)
         {
@@ -3324,7 +3324,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
         case WM_SETFONT:
         {
-            HBITMAP hBitMap;        // Handle of the replace caret bitmap
+            HBITMAP hBitmap;        // Handle of the replace caret bitmap
             USHORT  bits[1024];     // We need (cxAveCharXX x cyAveCharXX) / 8 bytes
             UINT    fontEnum,       // FONTENUM_xx value
                     uLen,           // # words in each row of the text caret (1+(sizeChar.cx-1)/16)
@@ -3333,13 +3333,13 @@ LRESULT WINAPI LclEditCtrlWndProc
             SIZE    sizeChar;       // cx & cy of the average char
 
             // Get the caret replace bitmap handle (if any)
-            hBitMap = (HBITMAP) GetWindowLongPtrW (hWnd, GWLEC_HBITMAP);
+            hBitmap = (HBITMAP) GetWindowLongPtrW (hWnd, GWLEC_HBITMAP);
 
             // If it's defined, ...
-            if (hBitMap)
+            if (hBitmap NE NULL)
             {
                 // Delete any existing replace caret bitmap
-                DeleteObject (hBitMap); hBitMap = NULL;
+                DeleteObject (hBitmap); hBitmap = NULL;
             } // End IF
 
             // Get the parent window handle
@@ -3379,13 +3379,13 @@ LRESULT WINAPI LclEditCtrlWndProc
             } // End FOR
 
             // Create a bitmap for replace mode
-            hBitMap = CreateBitmap (sizeChar.cx,    // Bitmap width, in pixels
+            hBitmap = CreateBitmap (sizeChar.cx,    // Bitmap width, in pixels
                                     sizeChar.cy,    // ...    height, ...
                                     1,              // # color planes used by device
                                     1,              // # bits requried to identify a color
                                    &bits);          // Ptr to array containing color data
             // Save the handle
-            SetWindowLongPtrW (hWnd, GWLEC_HBITMAP, (HANDLE_PTR) hBitMap);
+            SetWindowLongPtrW (hWnd, GWLEC_HBITMAP, (HANDLE_PTR) hBitmap);
 
             // If Edit Ctrl for SM, ...
             if (IzitSM (hWndParent))
@@ -3400,20 +3400,20 @@ LRESULT WINAPI LclEditCtrlWndProc
             // Split cases based upon the notification code
             switch (lpnmEC->nmHdr.code)
             {
-                HBITMAP hBitMap;        // Caret bitmap for replace mode
+                HBITMAP hBitmap;        // Caret bitmap for replace mode
 
                 case EN_KILLFOCUS:
                     // Delete the replace mode bitmap (if any)
-                    hBitMap = (HBITMAP) GetWindowLongPtrW (hWnd, GWLEC_HBITMAP);
+                    hBitmap = (HBITMAP) GetWindowLongPtrW (hWnd, GWLEC_HBITMAP);
 
                     // If it's valid
-                    if (hBitMap)
+                    if (hBitmap NE NULL)
                     {
                         // Delete it
-                        DeleteObject (hBitMap); hBitMap = NULL;
+                        DeleteObject (hBitmap); hBitmap = NULL;
 
                         // Save the handle
-                        SetWindowLongPtrW (hWnd, GWLEC_HBITMAP, (HANDLE_PTR) hBitMap);
+                        SetWindowLongPtrW (hWnd, GWLEC_HBITMAP, (HANDLE_PTR) hBitmap);
                     } // End IF
 
                     break;
@@ -3624,19 +3624,19 @@ LRESULT WINAPI LclEditCtrlWndProc
 
         case WM_DESTROY:
         {
-            HBITMAP hBitMap;        // Handle of the replace caret bitmap
+            HBITMAP hBitmap;        // Handle of the replace caret bitmap
 
             // Get the replace caret bitmap handle (if any)
-            hBitMap = (HBITMAP) GetWindowLongPtrW (hWnd, GWLEC_HBITMAP);
+            hBitmap = (HBITMAP) GetWindowLongPtrW (hWnd, GWLEC_HBITMAP);
 
             // Delete any replace caret bitmap
-            if (hBitMap)
+            if (hBitmap NE NULL)
             {
                 // Delete it
-                DeleteObject (hBitMap); hBitMap = NULL;
+                DeleteObject (hBitmap); hBitmap = NULL;
 
                 // Save the handle
-                SetWindowLongPtrW (hWnd, GWLEC_HBITMAP, (HANDLE_PTR) hBitMap);
+                SetWindowLongPtrW (hWnd, GWLEC_HBITMAP, (HANDLE_PTR) hBitmap);
             } // End IF
 
             break;
@@ -4865,11 +4865,11 @@ void DrawLineNumsFE
     // Loop through the line #s
     for (uCnt = 0; uCnt < uLineCnt; uCnt++)
     {
-        // Format the line #
+            // Format the line #
         wsprintfW (wszLineNum,
-                   L"[%d]",
+                       L"[%d]",
                    uCnt + uLineTop);
-        uLen = lstrlenW (wszLineNum);
+            uLen = lstrlenW (wszLineNum);
 
         // Pad out to FCN_INDENT chars
         for (; uLen < FCN_INDENT; uLen++)

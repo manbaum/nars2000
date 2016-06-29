@@ -145,7 +145,7 @@ UBOOL CALLBACK EnumCallbackPassMsg
         // icon and the icon title.  The parent of the icon title window is set to
         // the MDI client window, which confines the icon title to the MDI client
         // area.  The owner of the icon title is set to the MDI child window.
-        if (GetWindow (hWndChild, GW_OWNER)) // If it's an icon title window, ...
+        if (GetWindow (hWndChild, GW_OWNER) NE NULL) // If it's an icon title window, ...
             continue;                       // skip it, and continue enumerating
 
         PostMessageW (hWndChild, ((LPENUMPASSMSG) lParam)->message,
@@ -174,7 +174,7 @@ UBOOL CALLBACK EnumCallbackSetFontW
     // icon and the icon title.  The parent of the icon title window is set to
     // the MDI client window, which confines the icon title to the MDI client
     // area.  The owner of the icon title is set to the MDI child window.
-    if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
+    if (GetWindow (hWnd, GW_OWNER) NE NULL)     // If it's an icon title window, ...
         return TRUE;                    // skip it, and continue enumerating
 
     // Get the window's class name
@@ -432,7 +432,7 @@ void CreateNewFontCom
           iOldMode;                     // Previous mapping mode
 
     // Delete the previous handle (if any)
-    if (*lphFont)
+    if (*lphFont NE NULL)
     {
         // Delete the font handle
         MyDeleteObject (*lphFont); *lphFont = NULL;
@@ -469,13 +469,13 @@ void CreateNewFontCom
     cyAveChar = MulDiv (lpcf->iPointSize / 10, iLogPixelsY, 72);
 
     // New width (same aspect ratio as old)
-    if (lpcxAveChar)
+    if (lpcxAveChar NE NULL)
         *lpcxAveChar = MulDiv (lptm->tmAveCharWidth, cyAveChar, -lplf->lfHeight);
 
     // New height
     lplf->lfHeight = -cyAveChar;
 
-    if (lpcyAveChar)
+    if (lpcyAveChar NE NULL)
         *lpcyAveChar = lptm->tmHeight;
 
     // Now that we've calculated the correct height & width,
@@ -1212,7 +1212,7 @@ UBOOL CALLBACK EnumCallbackRestoreAll
     // icon and the icon title.  The parent of the icon title window is set to
     // the MDI client window, which confines the icon title to the MDI client
     // area.  The owner of the icon title is set to the MDI child window.
-    if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
+    if (GetWindow (hWnd, GW_OWNER) NE NULL)     // If it's an icon title window, ...
         return TRUE;                    // skip it, and continue enumerating
 
     // Restore the window in case it's an icon
@@ -1311,17 +1311,17 @@ LRESULT APIENTRY MFWndProc
             ReadIniFileWnd (hWnd);
 
             // *************** Bitmaps *********************************
-            hBitMapLineCont = MyLoadBitmap (_hInstance, MAKEINTRESOURCE (IDB_LINECONT));
-            if (hBitMapLineCont)
+            hBitmapLineCont = MyLoadBitmap (_hInstance, MAKEINTRESOURCE (IDB_LINECONT));
+            if (hBitmapLineCont NE NULL)
             {
-                GetObjectW (hBitMapLineCont, sizeof (BITMAP), (LPVOID) &bmLineCont);
+                GetObjectW (hBitmapLineCont, sizeof (BITMAP), (LPVOID) &bmLineCont);
 
                 iLCWidth = 2 + bmLineCont.bmWidth + 2;  // Width of line continuation column
             } // End IF
 
-            hBitMapCheck  = MyLoadBitmap (NULL, MAKEINTRESOURCE (OBM_CHECK));
-            if (hBitMapCheck)
-                GetObjectW (hBitMapCheck, sizeof (BITMAP), (LPVOID) &bmCheck);
+            hBitmapCheck  = MyLoadBitmap (NULL, MAKEINTRESOURCE (OBM_CHECK));
+            if (hBitmapCheck NE NULL)
+                GetObjectW (hBitmapCheck, sizeof (BITMAP), (LPVOID) &bmCheck);
 
             // *************** Image Lists *****************************
             hImageListTC =
@@ -1332,7 +1332,7 @@ LRESULT APIENTRY MFWndProc
                               | ILC_MASK,       // Flags
                                 1,              // Max # images
                                 0);             // # images by which the list can grow
-            if (!hImageListTC)
+            if (hImageListTC EQ NULL)
                 return -1;          // Stop the whole process
 
             // Add the Close button icon to the image list
@@ -1557,7 +1557,7 @@ LRESULT APIENTRY MFWndProc
                     lpMemPTD = GetPerTabPtr (uCnt);
 
                     // If it and the MDI Client's window handle are both valid, ...
-                    if (lpMemPTD && lpMemPTD->hWndMC)
+                    if (lpMemPTD NE NULL && lpMemPTD->hWndMC NE NULL)
                         // Position and size the MDI Child window to fit the
                         // tab control's display area
                         DeferWindowPos (hdwp,               // Handle to internal structure
@@ -2373,8 +2373,7 @@ LRESULT APIENTRY MFWndProc
                 case IDM_UPDATES:
                     // See if we have the latest version
                     CheckForUpdates (TRUE,
-                                     GetKeyState (VK_CONTROL) & BIT15);
-
+                                     (GetKeyState (VK_CONTROL) & BIT15) ? TRUE : FALSE);
                     return FALSE;       // We handled the msg
 
                 // The following messages come from the Tab Control.
@@ -2672,11 +2671,11 @@ LRESULT APIENTRY MFWndProc
                     } // End SWITCH
 
                     // Free allocated resources
-                    if (pdex.hDC)
+                    if (pdex.hDC NE NULL)
                         DeleteDC (pdex.hDC);
-                    if (pdex.hDevMode)
+                    if (pdex.hDevMode NE NULL)
                         GlobalFree (pdex.hDevMode);
-                    if (pdex.hDevNames)
+                    if (pdex.hDevNames NE NULL)
                         GlobalFree (pdex.hDevNames);
 
                     return FALSE;   // We handled the msg
@@ -2781,7 +2780,7 @@ LRESULT APIENTRY MFWndProc
             hWndSM = lpMemPTD->hWndSM;
 
             // If it's Quad input, and we're not resetting, ...
-            if (lpMemPTD->lpSISCur
+            if (lpMemPTD->lpSISCur NE NULL
              && lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_NONE
              && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
                 // Tell the SM to display the Quad Input Prompt
@@ -2817,24 +2816,24 @@ LRESULT APIENTRY MFWndProc
             } // End IF
 
             // If the Customize dialog box is still active, ...
-            if (ghDlgCustomize)
+            if (ghDlgCustomize NE NULL)
             {
                 // Ask 'em to close
                 SendMessageW (ghDlgCustomize, WM_CLOSE, 0, 0);
 
                 // If the Customize dialog box is still active, ...
-                if (ghDlgCustomize)
+                if (ghDlgCustomize NE NULL)
                     return FALSE;
             } // End IF
 
             // If the Updates dialog box is still active, ...
-            if (ghDlgUpdates)
+            if (ghDlgUpdates NE NULL)
             {
                 // Ask 'em to close
                 SendMessageW (ghDlgUpdates, WM_CLOSE, 0, 0);
 
                 // If the Updates dialog box is still active, ...
-                if (ghDlgUpdates)
+                if (ghDlgUpdates NE NULL)
                     return FALSE;
             } // End IF
 
@@ -2866,15 +2865,15 @@ LRESULT APIENTRY MFWndProc
             bMainDestroy = TRUE;
 
             // If the Customize dialog box is still active, ...
-            if (ghDlgCustomize)
+            if (ghDlgCustomize NE NULL)
                 // Destroy it
                 DestroyWindow (ghDlgCustomize);
             // If the Updates dialog box is still active, ...
-            if (ghDlgUpdates)
+            if (ghDlgUpdates NE NULL)
                 // Destroy it
                 DestroyWindow (ghDlgUpdates);
             // If the Keyboard Layout global memory is present, ...
-            if (hGlbKeybLayouts)
+            if (hGlbKeybLayouts NE NULL)
             {
                 DbgGlobalFree (hGlbKeybLayouts); hGlbKeybLayouts = NULL;
             } // End IF
@@ -2883,71 +2882,71 @@ LRESULT APIENTRY MFWndProc
             MF_Delete (hWnd);
 
             // Destroy the fonts
-            if (hFontTC)
+            if (hFontTC NE NULL)
             {
                 MyDeleteObject (hFontTC); hFontTC = NULL;
             } // End IF
 
-            if (hFontLW)
+            if (hFontLW NE NULL)
             {
                 MyDeleteObject (hFontLW); hFontLW = NULL;
             } // End IF
 
-            if (hFontSM)
+            if (hFontSM NE NULL)
             {
                 MyDeleteObject (hFontSM); hFontSM = NULL;
             } // End IF
 
-            if (hFontCC)
+            if (hFontCC NE NULL)
             {
                 MyDeleteObject (hFontCC); hFontCC = NULL;
             } // End IF
 
-            if (hFontFE)
+            if (hFontFE NE NULL)
             {
                 MyDeleteObject (hFontFE); hFontFE = NULL;
             } // End IF
 
-            if (hFontME)
+            if (hFontME NE NULL)
             {
                 MyDeleteObject (hFontME); hFontME = NULL;
             } // End IF
 
-            if (hFontVE)
+            if (hFontVE NE NULL)
             {
                 MyDeleteObject (hFontVE); hFontVE = NULL;
             } // End IF
 
             // Destroy the image lists
-            if (hImageListOW)
+            if (hImageListOW NE NULL)
             {
                 ImageList_Destroy (hImageListOW); hImageListOW = NULL;
             } // End IF
 
-            if (hImageListED)
+            if (hImageListED NE NULL)
             {
                 ImageList_Destroy (hImageListED); hImageListED = NULL;
             } // End IF
 
-            if (hImageListWS)
+            if (hImageListWS NE NULL)
             {
                 ImageList_Destroy (hImageListWS); hImageListWS = NULL;
             } // End IF
 
-            if (hImageListTC)
+            if (hImageListTC NE NULL)
             {
                 ImageList_Destroy (hImageListTC); hImageListTC = NULL;
             } // End IF
 
             // *************** Bitmaps *********************************
-            if (hBitMapLineCont)
+            if (hBitmapLineCont NE NULL)
             {
-                MyDeleteObject (hBitMapLineCont); hBitMapLineCont = NULL;
+                MyDeleteObject (hBitmapLineCont); hBitmapLineCont = NULL;
             } // End IF
 
-            if (hBitMapCheck)
+            if (hBitmapCheck NE NULL)
             {
-                MyDeleteObject (hBitMapCheck); hBitMapCheck = NULL;
+                MyDeleteObject (hBitmapCheck); hBitmapCheck = NULL;
             } // End IF
 
             DeleteImageBitmaps ();
@@ -3107,7 +3106,7 @@ HWND GetActiveEC
 
     // Get the active MDI Client window handle
     hWndMC  = GetActiveMC (hWndTC);
-    if (hWndMC)
+    if (hWndMC NE NULL)
     {
         // Get the active MDI Child window handle
         hWndAct = (HWND) SendMessageW (hWndMC, WM_MDIGETACTIVE, 0, 0);
@@ -3193,7 +3192,7 @@ UBOOL CALLBACK EnumCallbackQueryClose
     // icon and the icon title.  The parent of the icon title window is set to
     // the MDI client window, which confines the icon title to the MDI client
     // area.  The owner of the icon title is set to the MDI child window.
-    if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
+    if (GetWindow (hWnd, GW_OWNER) NE NULL)     // If it's an icon title window, ...
         return TRUE;                    // skip it, and continue enumerating
 
     return (UINT) SendMessageW (hWnd, WM_QUERYENDSESSION, 0, 0);
@@ -3682,7 +3681,7 @@ UBOOL InitInstance
                   memVirtStr[MEMVIRT_WSZGLBTEMP].MaxSize,
                   MEM_RESERVE,      // memVirtStr
                   PAGE_READWRITE);
-    if (!memVirtStr[MEMVIRT_WSZGLBTEMP].IniAddr)
+    if (memVirtStr[MEMVIRT_WSZGLBTEMP].IniAddr EQ NULL)
     {
         // ***FIXME*** -- WS FULL before we got started???
         DbgMsgW (L"InitInstance:  GuardAlloc for <lpwszGlbTemp> failed");
@@ -3708,7 +3707,7 @@ UBOOL InitInstance
                   memVirtStr[MEMVIRT_GLBHSHTAB].MaxSize,
                   MEM_RESERVE,      // memVirtStr
                   PAGE_READWRITE);
-    if (!memVirtStr[MEMVIRT_GLBHSHTAB].IniAddr)
+    if (memVirtStr[MEMVIRT_GLBHSHTAB].IniAddr EQ NULL)
     {
         // ***FIXME*** -- WS FULL before we got started???
         DbgMsgW (L"InitInstance:  GuardAlloc for <lpGlbHshTab> failed");
@@ -3812,7 +3811,7 @@ void UninitInstance
     UINT uCnt;              // Loop counter
 
     // Delete the window background brush
-    if (ghBrushBG)
+    if (ghBrushBG NE NULL)
     {
         DeleteObject (ghBrushBG); ghBrushBG = NULL;
     } // End IF
@@ -3820,7 +3819,7 @@ void UninitInstance
 
     // *************** Temporary Storage ***********************
     for (uCnt = 0; uCnt < MEMVIRT_LENGTH; uCnt++)
-    if (memVirtStr[uCnt].IniAddr)
+    if (memVirtStr[uCnt].IniAddr NE NULL)
     {
         // Free the virtual storage
         MyVirtualFree (memVirtStr[uCnt].IniAddr, 0, MEM_RELEASE);
@@ -3844,7 +3843,7 @@ UBOOL ParseCommandLine
     WCHAR  wszTempDPFE[1024];
 
     // If there's a command line, ...
-    if (lpCmdLine && lstrlen (lpCmdLine) NE 0)
+    if (lpCmdLine NE NULL && lstrlen (lpCmdLine) NE 0)
     {
         // Skip over leading space
         p = SkipWhite (lpCmdLine);

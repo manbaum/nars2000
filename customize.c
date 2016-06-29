@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1840,7 +1840,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         if (lpdis->itemData)
                         {
                             HDC     hDCMem;
-                            HBITMAP hBitMapOld;
+                            HBITMAP hBitmapOld;
 
                             // Copy the drawing rectangle
                             rcMark = lpdis->rcItem;
@@ -1853,7 +1853,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                             hDCMem = MyCreateCompatibleDC (lpdis->hDC);
 
                             // Select it into the DC
-                            hBitMapOld = SelectObject (hDCMem, hBitMapCheck);
+                            hBitmapOld = SelectObject (hDCMem, hBitmapCheck);
 
                             // Draw a bitmap
                             BitBlt (lpdis->hDC,
@@ -1866,7 +1866,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                                     0,
                                     SRCCOPY);
                             // Restore the previous bitmap
-                            SelectObject (hDCMem, hBitMapOld);
+                            SelectObject (hDCMem, hBitmapOld);
 
                             // We no longer need this resource
                             MyDeleteDC (hDCMem);
@@ -4209,7 +4209,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                                              (gbFore ? IDC_SYNTCLR_LT_FGMRK1 : IDC_SYNTCLR_LT_BGMRK1) + guIndex,
                                              STM_SETIMAGE,
                                              IMAGE_BITMAP,
-                                             (LPARAM) (HANDLE) hBitMapCheck);
+                                             (LPARAM) (HANDLE) hBitmapCheck);
                         // Display the popup menu
                         uRetCmd =
                           TrackPopupMenu (hMenu,            // Handle

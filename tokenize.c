@@ -4681,11 +4681,11 @@ UBOOL fnDiaDone
 
     // Skip over leading blanks and diamonds after the diamond
     while (IsWhiteW (lptkLocalVars->lpwszOrig[uChar])
-        || lptkLocalVars->lpwszOrig[uChar] EQ UTF16_DIAMOND)
+        || IsAPLCharDiamond (lptkLocalVars->lpwszOrig[uChar]))
         uChar++;
 
     // If we are not at the EOL, ...
-    if (lptkLocalVars->lpwszOrig[lptkLocalVars->uChar] NE UTF16_DIAMOND
+    if (!IsAPLCharDiamond (lptkLocalVars->lpwszOrig[lptkLocalVars->uChar])
      || lptkLocalVars->lpwszOrig[uChar] NE WC_EOS)
     {
         // Mark as an SOS
@@ -6658,6 +6658,7 @@ TKCOLINDICES CharTransTK
         case UTF16_DIAMOND:             // Alt-'`' - diamond
         case UTF16_DIAMOND2:            // Diamond2
         case UTF16_DIAMOND3:            // Diamond3
+        case UTF16_DIAMOND4:            // Diamond4
             return TKCOL_DIAMOND;
 
         case UTF16_ZILDE:               // Alt-'}' - zilde

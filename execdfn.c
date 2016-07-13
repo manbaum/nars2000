@@ -1012,8 +1012,10 @@ RESTART_AFTER_ERROR:
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
         // If suspended,
+        //   and we're not resetting,
         //   and there's no parent []EA/[]EC control, ...
         if (lpMemPTD->lpSISCur->bSuspended
+         && lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_NONE
          && lpMemPTD->lpSISCur->lpSISErrCtrl EQ NULL)
         {
             HWND hWndEC;        // Edit Ctrl window handle

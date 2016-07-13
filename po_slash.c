@@ -1298,9 +1298,6 @@ RESTART_EXCEPTION:
                 } // End FOR
             } // End IF/ELSE
 
-            // In case the current item was demoted in type, we blow it up again to the result
-            (*aTypeActPromote[aplTypeTmp][aplTypeRes]) (&tkRhtArg.tkData.tkFloat, 0, &atTmp);
-
             // Split cases based upon the token type of the right arg (result)
             switch (tkRhtArg.tkFlags.TknType)
             {
@@ -1365,11 +1362,8 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_FLOAT:
-#ifdef DEBUG
-                            DbgBrk ();
-#endif
                             // In case the current item was demoted in type, we blow it up again to the result
-                            (*aTypeActPromote[aplTypeTmp][aplTypeRes]) (&tkRhtArg.tkData.tkFloat, 0, &atTmp);
+                            (*aTypeActPromote[ARRAY_FLOAT][aplTypeRes]) (&tkRhtArg.tkData.tkFloat, 0, &atTmp);
 
                             // Save in the result as a FLOAT
                             *((LPAPLFLOAT) lpMemRes)++ = atTmp.aplFloat;
@@ -1678,7 +1672,6 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 {
     APLSTYPE          aplTypeLft,           // Left arg storage type
                       aplTypeRht,           // Right ...
-                      aplTypeTmp,           // Temporary ...
                       aplTypeRes;           // Result   ...
     APLNELM           aplNELMLft,           // Left arg NELM
                       aplNELMRht,           // Right ...
@@ -2493,9 +2486,6 @@ RESTART_EXCEPTION:
                     } // End FOR
                 } // End IF/ELSE
 
-                // Get the attributes (Type, NELM, and Rank) of the new result
-                AttrsOfToken (&tkRhtArg, &aplTypeTmp, NULL, NULL, NULL);
-
                 // Initialize index into the result
                 uRes = uHi + uDimHi * (uAx + uDimAxRes * uLo);;
 
@@ -2557,7 +2547,7 @@ RESTART_EXCEPTION:
 
                             case ARRAY_FLOAT:
                                 // In case the current item was demoted in type, we blow it up again to the result
-                                (*aTypeActPromote[aplTypeTmp][aplTypeRes]) (&tkRhtArg.tkData.tkFloat, 0, &atTmp);
+                                (*aTypeActPromote[ARRAY_FLOAT][aplTypeRes]) (&tkRhtArg.tkData.tkFloat, 0, &atTmp);
 
                                 // Save in the result as a FLOAT
                                 ((LPAPLFLOAT) lpMemRes)[uRht] = atTmp.aplFloat;

@@ -4180,14 +4180,10 @@ PARSELINE_SCAN1:
             // Check for left & right parens
             if (lftSynObj EQ soLP && rhtSynObj EQ soRP)
                 goto PARSELINE_MP_PAREN;
-            else
+
             // Check for left & right brackets
             if (lftSynObj EQ soLBK && rhtSynObj EQ soRBK)
                 goto PARSELINE_MP_BRACKET;
-            else
-            // Check for left & right EOS
-            if (lftSynObj EQ soEOS && rhtSynObj EQ soEOS)
-                goto PARSELINE_MP_DONE;
 
             // Check for SYNTAX ERROR
             if (curSynObj EQ soSYNR)
@@ -4196,6 +4192,10 @@ PARSELINE_SCAN1:
             // Check for VALUE ERROR
             if (curSynObj EQ soVALR)
                 goto PARSELINE_VALUEERR;
+
+            // Check for left & right EOS
+            if (lftSynObj EQ soEOS && rhtSynObj EQ soEOS)
+                goto PARSELINE_MP_DONE;
 
             // Check for shift
             if (curSynObj NE soEOS)
@@ -5511,16 +5511,8 @@ NORMAL_EXIT:
                 // If the Execute/Quad result is present, display it
                 if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType NE TKT_UNUSED)
                 {
-                    HGLOBAL hGlbDfnHdr;                 // AFO DfnHdr global memory handle
-
-                    // If it's not from executing []ALX,
-                    //   and we're parsing an AFO, ...
-                    if (uError NE ERRORCODE_ALX
-                     && (hGlbDfnHdr = SISAfo (lpMemPTD)))
-                        AfoDisplay_EM (&lpMemPTD->YYResExec.tkToken, FALSE, &plLocalVars, hGlbDfnHdr);
-                    else
-                        // Display the array
-                        ArrayDisplay_EM (&lpMemPTD->YYResExec.tkToken, TRUE, &plLocalVars.bCtrlBreak);
+                    // Display the array
+                    ArrayDisplay_EM (&lpMemPTD->YYResExec.tkToken, TRUE, &plLocalVars.bCtrlBreak);
 
                     // Free the result
                     FreeResult (&lpMemPTD->YYResExec);

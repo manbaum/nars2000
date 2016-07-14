@@ -50,10 +50,6 @@ LPPL_YYSTYPE PrimOpSlash_EM_YY
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASH         // For when we come in via TKT_OP3NAMED
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASHBAR);    // ...
 
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
-
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
         return PrimOpMonSlash_EM_YY (lpYYFcnStrOpr, // Ptr to operator function strand
@@ -337,7 +333,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
 
     // Get a ptr to the Primitive Function Flags
     lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
-    if (lpPrimFlagsLft)
+    if (lpPrimFlagsLft NE NULL)
         lpPrimIdentLft = &PrimIdent[lpPrimFlagsLft->Index];
     else
         lpPrimIdentLft = NULL;
@@ -1258,7 +1254,7 @@ RESTART_EXCEPTION:
                                               apaMulRht,    // APA multiplier (if needed)
                                              &tkLftArg);    // Ptr to token in which to place the value
                     // Execute the left operand between the left & right args
-                    if (lpPrimProtoLft)
+                    if (lpPrimProtoLft NE NULL)
                         // Note that we cast the function strand to LPTOKEN
                         //   to bridge the two types of calls -- one to a primitive
                         //   function which takes a function token, and one to a
@@ -1277,7 +1273,7 @@ RESTART_EXCEPTION:
                     FreeResultTkn (&tkRhtArg);
 
                     // If it succeeded, ...
-                    if (lpYYRes)
+                    if (lpYYRes NE NULL)
                     {
                         // Check for NoValue
                         if (IsTokenNoValue (&lpYYRes->tkToken))
@@ -1362,8 +1358,11 @@ RESTART_EXCEPTION:
                             break;
 
                         case ARRAY_FLOAT:
+                            // Extract the immediate type as an array type
+                            aplTypeTmp = TranslateImmTypeToArrayType (tkRhtArg.tkFlags.ImmType);
+
                             // In case the current item was demoted in type, we blow it up again to the result
-                            (*aTypeActPromote[ARRAY_FLOAT][aplTypeRes]) (&tkRhtArg.tkData.tkFloat, 0, &atTmp);
+                            (*aTypeActPromote[aplTypeTmp][aplTypeRes]) (&tkRhtArg.tkData.tkLongest, 0, &atTmp);
 
                             // Save in the result as a FLOAT
                             *((LPAPLFLOAT) lpMemRes)++ = atTmp.aplFloat;
@@ -1602,7 +1601,7 @@ LPPL_YYSTYPE PrimOpRedOfSing_EM_YY
 ////////tkAxis.tkCharIndex       =                   // Ignored
 
         // If there's an axis value, ...
-        if (lpaplAxis)
+        if (lpaplAxis NE NULL)
             tkAxis.tkData.tkInteger = GetQuadIO () + *lpaplAxis;
         else
             tkAxis.tkData.tkInteger = -1;
@@ -1672,6 +1671,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 {
     APLSTYPE          aplTypeLft,           // Left arg storage type
                       aplTypeRht,           // Right ...
+                      aplTypeTmp,           // Temp right arg ...
                       aplTypeRes;           // Result   ...
     APLNELM           aplNELMLft,           // Left arg NELM
                       aplNELMRht,           // Right ...
@@ -1899,7 +1899,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 
     // Get a ptr to the Primitive Function Flags
     lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
-    if (lpPrimFlagsLft)
+    if (lpPrimFlagsLft NE NULL)
         lpPrimIdentLft = &PrimIdent[lpPrimFlagsLft->Index];
     else
         lpPrimIdentLft = NULL;
@@ -2162,7 +2162,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
             // Free the YYRes (and the storage)
             FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
 
-            if (!hSymGlbIdn)
+            if (hSymGlbIdn EQ NULL)
                 goto ERROR_EXIT;
 
             // Save the identity element in the result
@@ -2264,7 +2264,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
                                                 lptkRhtArg,             // Ptr to right arg token
                                                 lptkAxisOpr);           // Ptr to operator axis token (may be NULL)
         // If it failed, ...
-        if (!lpYYRes2)
+        if (lpYYRes2 EQ NULL)
             goto ERROR_EXIT;
 
         // Reduce the reversed right arg along the specified axis
@@ -2385,7 +2385,7 @@ RESTART_EXCEPTION:
                                                   apaMulRht,    // APA multiplier (if needed)
                                                  &tkLftArg);    // Ptr to token in which to place the value
                         // Execute the left operand between the left & right args
-                        if (lpPrimProtoLft)
+                        if (lpPrimProtoLft NE NULL)
                             // Note that we cast the function strand to LPTOKEN
                             //   to bridge the two types of calls -- one to a primitive
                             //   function which takes a function token, and one to a
@@ -2404,7 +2404,7 @@ RESTART_EXCEPTION:
                         FreeResultTkn (&tkLftArg);
 
                         // If it succeeded, ...
-                        if (lpYYRes)
+                        if (lpYYRes NE NULL)
                         {
                             // Copy the result to the right arg token
                             tkRhtArg = lpYYRes->tkToken;
@@ -2455,7 +2455,7 @@ RESTART_EXCEPTION:
                                                   apaMulRht,    // APA multiplier (if needed)
                                                  &tkLftArg);    // Ptr to token in which to place the value
                         // Execute the left operand between the left & right args
-                        if (lpPrimProtoLft)
+                        if (lpPrimProtoLft NE NULL)
                             // Note that we cast the function strand to LPTOKEN
                             //   to bridge the two types of calls -- one to a primitive
                             //   function which takes a function token, and one to a
@@ -2474,7 +2474,7 @@ RESTART_EXCEPTION:
                         FreeResultTkn (&tkLftArg);
 
                         // If it succeeded, ...
-                        if (lpYYRes)
+                        if (lpYYRes NE NULL)
                         {
                             // Copy the result to the right arg token
                             tkRhtArg = lpYYRes->tkToken;
@@ -2546,8 +2546,11 @@ RESTART_EXCEPTION:
                                 break;
 
                             case ARRAY_FLOAT:
+                                // Extract the immediate type as an array type
+                                aplTypeTmp = TranslateImmTypeToArrayType (tkRhtArg.tkFlags.ImmType);
+
                                 // In case the current item was demoted in type, we blow it up again to the result
-                                (*aTypeActPromote[ARRAY_FLOAT][aplTypeRes]) (&tkRhtArg.tkData.tkFloat, 0, &atTmp);
+                                (*aTypeActPromote[aplTypeTmp][aplTypeRes]) (&tkRhtArg.tkData.tkLongest, 0, &atTmp);
 
                                 // Save in the result as a FLOAT
                                 ((LPAPLFLOAT) lpMemRes)[uRht] = atTmp.aplFloat;
@@ -2700,7 +2703,7 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (lpYYRes)
+    if (lpYYRes NE NULL)
     {
         YYFree (lpYYRes); lpYYRes = NULL;
     } // End IF
@@ -2959,7 +2962,7 @@ UBOOL PrimOpDydSlashAllocate_EM
 
     // Allocate space for the result
     *lphGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (!*lphGlbRes)
+    if (*lphGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it

@@ -252,6 +252,8 @@ APLRAT gcdAplRat
     mpq_abs (&aplRht, &aplRht);
 
     // We no longer need this storage
+////Myq_clear (&aplRht);        // Returned as result
+    Myq_clear (&aplLft);
     Myq_clear (&aplTmp);
 
     return aplRht;
@@ -281,7 +283,7 @@ APLVFP gcdAplVfp
     aplLft = PrimFnMonStileVisV (aplVfpLft, lpPrimSpec);
     aplRht = PrimFnMonStileVisV (aplVfpRht, lpPrimSpec);
 
-    while (!IsMpf0 (&aplLft))
+    while (mpfr_cmp_d (&aplLft, GCD_CT) >= 0)
     {
 ////////aplTmp = aplLft;
 ////////aplLft = aplRht % aplLft;
@@ -296,6 +298,8 @@ APLVFP gcdAplVfp
     mpfr_abs (&aplRht, &aplRht, MPFR_RNDN);
 
     // We no longer need this storage
+////Myf_clear (&aplRht);        // Returned as result
+    Myf_clear (&aplLft);
     Myf_clear (&aplTmp);
 
     return aplRht;

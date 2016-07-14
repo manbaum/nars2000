@@ -311,7 +311,7 @@ HGLOBAL Init1MagicFunction
     hGlbTxtHdr = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
     if (hGlbTxtHdr EQ NULL)
     {
-        MessageBox (hWndEC,
+        MessageBox (hWndMF,
                     "Insufficient memory to save the magic function/operator header text!!",
                     lpszAppName,
                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -369,7 +369,7 @@ HGLOBAL Init1MagicFunction
                     ERRMSG_SYNTAX_ERROR_IN_FUNCTION_HEADER,
                     lpMemPTD->uCaret);
         // Display the error message
-        MessageBoxW (hWndEC,
+        MessageBoxW (hWndMF,
                     wszTemp,
                     lpwszAppName,
                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -388,7 +388,7 @@ HGLOBAL Init1MagicFunction
                   PAGE_READWRITE);
     if (!lclMemVirtStr[0].IniAddr)
     {
-        MessageBox (hWndEC,
+        MessageBox (hWndMF,
                     "Insufficient memory to save the function header strand stack!!",
                     lpszAppName,
                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -467,7 +467,7 @@ HGLOBAL Init1MagicFunction
                               + uOffset);
         if (hGlbDfnHdr EQ NULL)
         {
-            MessageBox (hWndEC,
+            MessageBox (hWndMF,
                         "Insufficient memory to save the function header!!",
                         lpszAppName,
                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);

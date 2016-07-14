@@ -3977,7 +3977,7 @@ void CopyAPLChars_EM
         hGlbText = GlobalAlloc (GHND | GMEM_DDESHARE, (numChars + 1 ) * sizeof (WCHAR));
         if (hGlbText EQ NULL)
         {
-            MessageBox (hWndEC,
+            MessageBox (hWndMF,
                         "Unable to allocate memory for the copy of CF_UNICODETEXT format",
                         lpszAppName,
                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -4000,7 +4000,7 @@ void CopyAPLChars_EM
         hGlbText = GlobalAlloc (GHND | GMEM_DDESHARE, numChars * sizeof (WCHAR));
         if (hGlbText EQ NULL)
         {
-            MessageBox (hWndEC,
+            MessageBox (hWndMF,
                         "Unable to allocate memory for the copy of CF_UNICODETEXT format",
                         lpszAppName,
                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -4133,7 +4133,7 @@ void PasteAPLChars_EM
     hGlbFmts = DbgGlobalAlloc (GHND, uCount * sizeof (CLIPFMTS));
     if (hGlbFmts EQ NULL)
     {
-        MessageBox (hWndEC,
+        MessageBox (hWndMF,
                     "Unable to allocate memory for the clipboard formats",
                     lpszAppName,
                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -4195,7 +4195,7 @@ void PasteAPLChars_EM
             hGlbText = GlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
             if (hGlbText EQ NULL)
             {
-                MessageBox (hWndEC,
+                MessageBox (hWndMF,
                             "Unable to allocate memory for the copy of CF_UNICODETEXT/CF_PRIVATEFIRST format",
                             lpszAppName,
                             MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -4221,7 +4221,7 @@ void PasteAPLChars_EM
             hGlbText = GlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
             if (hGlbText EQ NULL)
             {
-                MessageBox (hWndEC,
+                MessageBox (hWndMF,
                             "Unable to allocate memory for the copy of CF_UNICODETEXT/CF_PRIVATEFIRST format",
                             lpszAppName,
                             MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -4954,7 +4954,7 @@ UBOOL QueryCloseFE
         return TRUE;
 
     // Ask the user what to do
-    switch (MessageBox (hWndFE, szCloseMessage, lpszAppName, MB_YESNOCANCEL | MB_ICONQUESTION))
+    switch (MessageBox (hWndMF, szCloseMessage, lpszAppName, MB_YESNOCANCEL | MB_ICONQUESTION))
     {
         case IDYES:         // Save the function
             return SaveFunction (hWndFE);

@@ -941,7 +941,7 @@ HGLOBAL SF_UndoBufferFE
             if (hGlbUndoBuff EQ NULL)
             {
                 // Display the error message
-                MessageBoxW (hWndEC,
+                MessageBoxW (hWndMF,
                              L"Insufficient memory to save Undo buffer!!",
                              lpwszAppName,
                              MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -1014,7 +1014,7 @@ HGLOBAL SF_UndoBufferLW
     if (hGlbUndoBuff EQ NULL)
     {
         // Display the error message
-        MessageBoxW (hWndEC,
+        MessageBoxW (hWndMF,
                      L"Insufficient memory to save Undo buffer!!",
                      lpwszAppName,
                      MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -1276,7 +1276,7 @@ UBOOL SaveFunctionCom
         if (hWndFE)
         {
             // Display the error message
-            MessageBoxW (hWndEC,
+            MessageBoxW (hWndMF,
                          L"Insufficient memory to save the function header text!!",
                          lpwszAppName,
                          MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -1333,7 +1333,7 @@ UBOOL SaveFunctionCom
                         ERRMSG_SYNTAX_ERROR_IN_FUNCTION_HEADER APPEND_NAME,
                         lpMemPTD->uCaret);
             // Display the error message
-            MessageBoxW (hWndEC,
+            MessageBoxW (hWndMF,
                         wszTemp,
                         lpwszAppName,
                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -1361,7 +1361,7 @@ UBOOL SaveFunctionCom
         if (hWndFE)
         {
             // Display the error message
-            MessageBoxW (hWndEC,
+            MessageBoxW (hWndMF,
                          L"Insufficient memory to save the function header strand stack!!",
                          lpwszAppName,
                          MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -1439,7 +1439,7 @@ UBOOL SaveFunctionCom
                 if (hWndFE)
                 {
                     // Display the error message
-                    MessageBoxW (hWndEC,
+                    MessageBoxW (hWndMF,
                                  L"SI Damage in pending function:  changes to this function NOT saved",
                                  lpwszAppName,
                                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -1471,7 +1471,7 @@ UBOOL SaveFunctionCom
                                L"New object name is <%s>, not a user-defined function/operator:  changes to this function NOT saved",
                                 lpwNameTypeStr[lpSymName->stFlags.stNameType]);
                     // Display the error message
-                    MessageBoxW (hWndEC,
+                    MessageBoxW (hWndMF,
                                  wszTemp,
                                  lpwszAppName,
                                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -1548,7 +1548,7 @@ UBOOL SaveFunctionCom
             if (hWndFE)
             {
                 // Display the error message
-                MessageBoxW (hWndEC,
+                MessageBoxW (hWndMF,
                              L"Insufficient memory to save the function header!!",
                              lpwszAppName,
                              MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -1728,7 +1728,7 @@ UBOOL SaveFunctionCom
                                 uLineNum + 1,
                                 lpMemPTD->uCaret);
                     // Display the error message
-                    MessageBoxW (hWndEC,
+                    MessageBoxW (hWndMF,
                                  wszTemp,
                                  lpwszAppName,
                                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -1771,7 +1771,7 @@ UBOOL SaveFunctionCom
                             csLocalVars.tkCSErr.tkData.Orig.c.uStmtNum + 1,
                             lpMemPTD->uCaret);
                 // Display the error message
-                MessageBoxW (hWndEC,
+                MessageBoxW (hWndMF,
                              wszTemp,
                              lpwszAppName,
                              MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -2054,7 +2054,7 @@ UINT SaveFunctionLine
         if (hWndFE)
         {
             // Display the error message
-            MessageBoxW (hWndEC,
+            MessageBoxW (hWndMF,
                          L"Insufficient memory to save a function line!!",
                          lpwszAppName,
                          MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -2180,7 +2180,7 @@ UINT SaveFunctionLine
                         uLineNum + 1,
                         lpMemPTD->uCaret);
             // Display the error message
-            MessageBoxW (hWndEC,
+            MessageBoxW (hWndMF,
                         wszTemp,
                         lpwszAppName,
                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);

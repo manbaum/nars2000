@@ -941,7 +941,7 @@ DISPLAYCAT:
 #endif
 DISPLAY:
     // Display a message box
-    MessageBoxW (lpfhLocalVars->hWndEC,
+    MessageBoxW (hWndMF,
                  wp,
                  lpwszAppName,
                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);

@@ -153,7 +153,7 @@ void BreakMessage
     return;
 
 WSFULL_EXIT:
-    MessageBoxW (hWndSM,
+    MessageBoxW (hWndMF,
                  L"Unable to allocate space for " $QUAD_DM,
                  lpwszAppName,
                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);

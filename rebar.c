@@ -2597,11 +2597,13 @@ typedef struct tagLANGCHARS
                                            L"Unicode:  0x2262 or 8802"},
         LANGCHARS_SEPARATOR
         {WS_UTF16_DOWNCARET         , {0}, L"DownCaret",
-                                           L"Or:  L" WS_UTF16_DOWNCARET L"R  or  L" WS_UTF16_DOWNCARET L"[X] R\n\n"
+                                           L"Or (Booleans):  L" WS_UTF16_DOWNCARET L"R  or  L" WS_UTF16_DOWNCARET L"[X] R\n"
+                                           L"GCD (Integer/Floats):\n\n"
                                            L"Keyboard:  Alt-'9'\n\n"
                                            L"Unicode:  0x2228 or 8744"},
         {WS_UTF16_UPCARET           , {0}, L"UpCaret",
-                                           L"And:  L" WS_UTF16_UPCARET L"R  or  L" WS_UTF16_UPCARET L"[X] R\n\n"
+                                           L"And (Booleans):  L" WS_UTF16_UPCARET L"R  or  L" WS_UTF16_UPCARET L"[X] R\n"
+                                           L"LCM (Integer/Floats):\n\n"
                                            L"Keyboard:  Alt-'0'\n\n"
                                            L"Unicode:  0x2227 or 8743"},
         {WS_UTF16_DOWNCARETTILDE    , {0}, L"DownCaretTilde",

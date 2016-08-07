@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -822,25 +822,25 @@ RESTART_EXCEPTION:
         {
             case ARRAY_BOOL:
             case ARRAY_INT:
-                // Save in result
+                // Save in the result
                 ((LPAPLINT)   lpMemRes)[uRes] = aplIntAcc;
 
                 break;
 
             case ARRAY_FLOAT:
-                // Save in result
+                // Save in the result
                 ((LPAPLFLOAT) lpMemRes)[uRes] = aplFloatAcc;
 
                 break;
 
             case ARRAY_RAT:
-                // Save in result
+                // Save in the result
                 mpq_init_set (&((LPAPLRAT) lpMemRes)[uRes], &aplRatAcc);
 
                 break;
 
             case ARRAY_VFP:
-                // Save in result
+                // Save in the result
                 mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uRes], &aplVfpAcc);
 
                 break;

@@ -280,6 +280,8 @@ SYMBOLNAMES aSymbolNames[]
   {UTF16_CIRCLEMIDDLEDOT      , L"{circlemiddledot}"    },  // Alt-'?' - circle-middle-dot
 
   {L' '                       , L"{space}"              },
+  {L'\r'                      , L"{cr}"                 },
+  {L'\n'                      , L"{lf}"                 },
 
 // Non-Alt key equivalents (these are the only ones we need for SaveWS)
   {UTF16_QUOTEDOT             , L"{quotedot}"           },  // 0021:  Quote dot

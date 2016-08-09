@@ -1,6 +1,18 @@
 Version 0.4.15.xx consists of the following Builds:
 
 
+Build #1535 -- Version 0.4.15.xx
+--------------------------------
+
+* Display Workspace Version Numbers If There Is A Mismatch On )LOAD/)COPY
+
+Directory trunk:
+
+SC_COPY.C:
+SC_LOAD.C:
+  Display the workspace version numbers if there is a mismatch on )LOAD/)COPY.
+
+
 Build #1534 -- Version 0.4.15.xx
 --------------------------------
 
@@ -26,7 +38,8 @@ EXTERNS.H:
   Define extern vars for command line keyword values.
 
 MAIN.C:
-  Change the NOT LOADED message for the Crash Report DLL to be more visible.
+  Change the NOT LOADyoungest
+  ge for the Crash Report DLL to be more visible.
   Implement test for command line args.
 
 MAIN.RC:

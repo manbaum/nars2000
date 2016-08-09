@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -165,10 +165,18 @@ UBOOL CmdCopy_EM
         // Compare the version #s
         if (lstrcmpW (wszVersion, WS_VERSTR) > 0)
         {
+            WCHAR wszTemp[1024];
+
+            // Format the error message text
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"The version of this workspace (%s) is later than the interpreter expects (%s)."
+                       L"  Please try copying from this workspace with a later version of the interpreter.",
+                        wszVersion,
+                        WS_VERSTR);
             // Tell the user the bad news
             MessageBoxW (hWndMF,
-                         L"The version of this workspace is later than the interpreter expects." WS_CRLF
-                         L"Please try copying from this workspace with a later version of the interpreter.",
+                         wszTemp,
                          WS_APPNAME,
                          MB_OK | MB_ICONSTOP);
             goto ERROR_EXIT;

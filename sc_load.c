@@ -342,10 +342,18 @@ UBOOL LoadWorkspace_EM
     // Compare the version #s
     if (lstrcmpW (wszVersion, WS_VERSTR) > 0)
     {
+        WCHAR wszTemp[1024];
+
+        // Format the error message text
+        MySprintfW (wszTemp,
+                    sizeof (wszTemp),
+                   L"The version of this workspace (%s) is later than the interpreter expects (%s)."
+                   L"  Please try loading the workspace with a later version of the interpreter.",
+                    wszVersion,
+                    WS_VERSTR);
         // Tell the user the bad news
         MessageBoxW (hWndMF,
-                     L"The version of this workspace is later than the interpreter expects." WS_CRLF
-                     L"Please try loading the workspace with a later version of the interpreter.",
+                     wszTemp,
                      WS_APPNAME,
                      MB_OK | MB_ICONSTOP);
         goto ERROR_EXIT;

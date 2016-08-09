@@ -1587,7 +1587,7 @@ UBOOL _MyHeapFree
 
 LPVOID _MyVirtualAlloc
     (LPVOID lpAddress,          // Address of region to reserve or commit
-     DWORD  dwSize,             // Size of region
+     size_t dwSize,             // Size of region
      DWORD  flAllocationType,   // Type of allocation
      DWORD  flProtect,          // Type of access protection
      UINT   uLine)              // Line #

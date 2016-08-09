@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -590,8 +590,8 @@ UBOOL HshTabResize_EM
         lpHTS->lpHshTab[i].PrevSameHash = LPHSHENTRY_NONE;
     } // End FOR
 
-    // Because iHshTabTotalNelm changed, we need to change iHshTabIncr
-    lpHTS->iHshTabIncrFree = DEF_HSHTAB_PRIME % (UINT) lpHTS->iHshTabTotalNelm;
+    // Because iHshTabTotalNelm changed, we need to change iHshTabIncrFree
+    lpHTS->iHshTabIncrFree  = DEF_HSHTAB_PRIME % lpHTS->iHshTabTotalNelm;
 
     // Set new hash table size
     lpHTS->iHshTabTotalNelm = iHshTabNewNelm;
@@ -2894,13 +2894,13 @@ NORMAL_EXIT:
 UBOOL AllocHshTab
     (LPMEMVIRTSTR lpLclMemVirtStr,  // Ptr to this entry in MemVirtStr (may be NULL if global allocation)
      LPHSHTABSTR  lpHTS,            // Ptr to HshTab Struc
-     UINT         uHshTabInitBlks,  // # blocks in this HshTab
-     UINT         uHshTabIncrNelm,  // # HTEs by which to resize when low
-     UINT         uHshTabMaxNelm)   // Maximum # HTEs
+     size_t       uHshTabInitBlks,  // # blocks in this HshTab
+     size_t       uHshTabIncrNelm,  // # HTEs by which to resize when low
+     size_t       uHshTabMaxNelm)   // Maximum # HTEs
 
 {
-    UINT uHshTabInitNelm,           // Initial NELM of HshTab
-         uCnt;                      // Loop counter
+    size_t uHshTabInitNelm;         // Initial NELM of HshTab
+    UINT   uCnt;                    // Loop counter
 
     // Validate the incoming constants
 
@@ -2909,14 +2909,14 @@ UBOOL AllocHshTab
         DbgStop ();
 
     // The maximum NELM must be divisible by DEF_HSHTAB_EPB
-    if (uHshTabMaxNelm % DEF_HSHTAB_EPB)
+    if (0 NE (uHshTabMaxNelm % DEF_HSHTAB_EPB))
         DbgStop ();
 
     // Calculate the initial # entries
     uHshTabInitNelm = uHshTabInitBlks * DEF_HSHTAB_EPB;
 
     // The amount to resize must be a divisor of uHshTabInitNelm
-    if (uHshTabInitNelm % uHshTabIncrNelm)
+    if (0 NE (uHshTabInitNelm % uHshTabIncrNelm))
         DbgStop ();
 
     // The maximum size must be >= the initial size
@@ -2924,11 +2924,11 @@ UBOOL AllocHshTab
         DbgStop ();
 
     // Initialize HTS fields
-    lpHTS->iHshTabTotalNelm = uHshTabInitNelm;
-    lpHTS->iHshTabBaseNelm  = uHshTabInitNelm;
-    lpHTS->iHshTabIncrFree  = DEF_HSHTAB_PRIME % uHshTabInitNelm;
-    lpHTS->iHshTabIncrNelm  = uHshTabIncrNelm;
-    lpHTS->uHashMask        = uHshTabInitBlks - 1;
+    lpHTS->iHshTabTotalNelm = (UINT) uHshTabInitNelm;
+    lpHTS->iHshTabBaseNelm  = (UINT) uHshTabInitNelm;
+    lpHTS->iHshTabIncrFree  = (UINT) (DEF_HSHTAB_PRIME % uHshTabInitNelm);
+    lpHTS->iHshTabIncrNelm  = (UINT) uHshTabIncrNelm;
+    lpHTS->uHashMask        = (UINT) uHshTabInitBlks - 1;
     lpHTS->iHshTabEPB       = DEF_HSHTAB_EPB;
 
     // If we are to allocate globally, ...
@@ -2942,8 +2942,8 @@ UBOOL AllocHshTab
     } else
     {
         // Allocate virtual memory for the hash table
-        lpLclMemVirtStr->IncrSize = uHshTabIncrNelm * sizeof (lpHTS->lpHshTab[0]);
-        lpLclMemVirtStr->MaxSize  = uHshTabMaxNelm  * sizeof (lpHTS->lpHshTab[0]);
+        lpLclMemVirtStr->IncrSize = (UINT) (uHshTabIncrNelm * sizeof (lpHTS->lpHshTab[0]));
+        lpLclMemVirtStr->MaxSize  = (UINT) (uHshTabMaxNelm  * sizeof (lpHTS->lpHshTab[0]));
         lpLclMemVirtStr->IniAddr  = (LPVOID)
         lpHTS->lpHshTab =
           GuardAlloc (NULL,             // Any address
@@ -3000,17 +3000,17 @@ UBOOL AllocSymTab
     (LPMEMVIRTSTR lpLclMemVirtStr,  // Ptr to this entry in MemVirtStr (may be NULL if global allocation)
      LPPERTABDATA lpMemPTD,         // Ptr to PerTabData global memory
      LPHSHTABSTR  lpHTS,            // Ptr to HshTab Struc
-     UINT         uSymTabInitNelm,  // Initial # STEs in SymTab
-     UINT         uSymTabIncrNelm,  // # STEs by which to resize when low
-     UINT         uSymTabMaxNelm)   // Maximum # STEs
+     size_t       uSymTabInitNelm,  // Initial # STEs in SymTab
+     size_t       uSymTabIncrNelm,  // # STEs by which to resize when low
+     size_t       uSymTabMaxNelm)   // Maximum # STEs
 
 {
 ////WCHAR wszTemp[1024];            // ***DEBUG***
 
     // Validate the incoming constants
 
-    // The amount to resize must be a divisor of uHshTabInitNelm
-    if (uSymTabInitNelm % uSymTabIncrNelm)
+    // The amount to resize must be a divisor of uSymTabInitNelm
+    if (0 NE (uSymTabInitNelm % uSymTabIncrNelm))
         DbgStop ();
 
     // The maximum NELM must be >= the initial NELM
@@ -3018,8 +3018,8 @@ UBOOL AllocSymTab
         DbgStop ();
 
     // Initialize HTS fields
-    lpHTS->uSymTabIncrNelm  = uSymTabIncrNelm;
-    lpHTS->iSymTabTotalNelm = uSymTabInitNelm;
+    lpHTS->uSymTabIncrNelm  = (UINT) uSymTabIncrNelm;
+    lpHTS->iSymTabTotalNelm = (UINT) uSymTabInitNelm;
 
     // If we are to allocate globally, ...
     if (lpLclMemVirtStr EQ NULL)
@@ -3032,8 +3032,8 @@ UBOOL AllocSymTab
     } else
     {
         // Allocate virtual memory for the symbol table
-        lpLclMemVirtStr->IncrSize = uSymTabIncrNelm * sizeof (lpHTS->lpSymTab[0]);
-        lpLclMemVirtStr->MaxSize  = uSymTabMaxNelm  * sizeof (lpHTS->lpSymTab[0]);
+        lpLclMemVirtStr->IncrSize = (UINT) (uSymTabIncrNelm * sizeof (lpHTS->lpSymTab[0]));
+        lpLclMemVirtStr->MaxSize  = (UINT) (uSymTabMaxNelm  * sizeof (lpHTS->lpSymTab[0]));
         lpLclMemVirtStr->IniAddr  = (LPVOID)
         lpHTS->lpSymTab =
           GuardAlloc (NULL,             // Any address

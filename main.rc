@@ -210,22 +210,22 @@ END
 // Dialogs
 //
 
-IDD_ABOUT DIALOGEX DISCARDABLE  4, 4, 197,155
+IDD_ABOUT DIALOGEX DISCARDABLE  4, 4, 225,173
 STYLE WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "About NARS2000"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    DEFPUSHBUTTON   "&OK"     , IDOK          ,135,  5, 50, 14
+    DEFPUSHBUTTON   "&OK"     , IDOK          ,165,  5, 50, 14
     LTEXT           "NARS2000 (WinXX)#%u.%u%u"
-                              , IDC_VERSION   , 10,  8,115, 14, NOT WS_GROUP
-    LTEXT           ""        , IDC_VERSION2  , 10, 25,190,100
-    LTEXT           "Copyright \xA9 2006-2015 Sudley Place Software\nAll rights reserved."
-                              , IDC_STATIC    , 10, 90,150, 18, NOT WS_GROUP
-    ICON            IDI_NARS  , IDC_LOADEDFROM,160, 25,  0,  0, SS_NOTIFY | SS_REALSIZEIMAGE
+                              , IDC_VERSION   , 10,  8,135, 14, NOT WS_GROUP
+    LTEXT           ""        , IDC_VERSION2  , 10, 25,210,108
+    LTEXT           "Copyright \xA9 2006-2016 Sudley Place Software\nAll rights reserved."
+                              , IDC_STATIC    , 10,108,170, 18, NOT WS_GROUP
+    ICON            IDI_NARS  , IDC_LOADEDFROM,180, 25,  0,  0, SS_NOTIFY | SS_REALSIZEIMAGE
     LTEXT           "This program is released under version 3 of the GNU GPL license or any later version.  For more details, see"
-                              , IDC_STATIC    , 10,115,170, 20
+                              , IDC_STATIC    , 10,133,200, 20
     LTEXT           "http://www.nars2000.org/License.html"
-                              , IDC_LINK      , 10,135,170,  9, SS_NOTIFY
+                              , IDC_LINK      , 10,153,200,  9, SS_NOTIFY
 END
 
 IDD_UPDATES DIALOGEX DISCARDABLE  0, 0, 240, 110

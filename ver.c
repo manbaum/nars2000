@@ -29,7 +29,7 @@
 
 
 WCHAR wszVarFileInfo[] = WS_SLOPE L"VarFileInfo" WS_SLOPE L"Translation",
-      lpwszVersion[]   = WS_APPNAME L" (" WS_WINSTR L") # %s";
+      lpwszVersion[]   = WS_APPNAME L" (" WS_WINSTR L") Version # %s";
 
 HWND    hWndStatic;                 // Handle to static control
 WNDPROC lpfnOldStaticWndProc;       // Save area for old Static Control procedure
@@ -130,6 +130,23 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
+//  $uSub
+//
+//  unsigned subtraction
+//***************************************************************************
+
+UINT uSub
+    (UINT uLft,
+     UINT uRht)
+
+{
+    Assert (uLft > uRht);
+
+    return uLft - uRht;
+} // End uSub
+
+
+//***************************************************************************
 //  $AboutDlgProc
 //
 //  Just yer standard About box.
@@ -165,60 +182,70 @@ APLU3264 CALLBACK AboutDlgProc
             SetDlgItemTextW (hDlg, IDC_VERSION, wszTemp);
 
             // Copy the MPIR prefix to the text
-            MyStrcpyW (wszTemp, sizeof (wszTemp), L"MPIR #");
+            MyStrcpyW (wszTemp, sizeof (wszTemp), L"MPIR Version #");
 
             // Append the MPIR version #
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
-                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%S\n",
                          mpir_version);
 
             // Copy the GMP prefix to the text
-            MyStrcatW (wszTemp, sizeof (wszTemp), L"GMP #");
+            MyStrcatW (wszTemp, sizeof (wszTemp), L"GMP Version #");
 
             // Append the GMP version #
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
-                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%S\n",
                          gmp_version);
             // Copy the MPFR prefix to the text
-            MyStrcatW (wszTemp, sizeof (wszTemp), L"MPFR #");
+            MyStrcatW (wszTemp, sizeof (wszTemp), L"MPFR Version #");
 
             // Append the MPFR version #
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
-                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%S\n",
                          mpfr_get_version ());
             // Copy the ECM prefix to the text
-            MyStrcatW (wszTemp, sizeof (wszTemp), L"ECM #");
+            MyStrcatW (wszTemp, sizeof (wszTemp), L"ECM Version #");
 
             // Append the ECM version #
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
-                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%S\n",
                          ecm_version);
             // Copy the COMCTL32.DLL prefix to the text
-            MyStrcatW (wszTemp, sizeof (wszTemp), L"COMCTL32.DLL #");
+            MyStrcatW (wszTemp, sizeof (wszTemp), L"COMCTL32.DLL Version #");
 
             // Append the COMCTL32.DLL version #
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
-                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%s\n",
                          wszComctl32FileVer);
             // Copy the CRASHRPT.DLL prefix to the text
             MyStrcatW (wszTemp, sizeof (wszTemp), crsh_dll);
-            MyStrcatW (wszTemp, sizeof (wszTemp), L" #");
+            MyStrcatW (wszTemp, sizeof (wszTemp), L" Version #");
 
             // Append the CRASHRPT.DLL version #
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
-                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%s\n",
                          crsh_version);
             // Append the workspace version #
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
-                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"Workspace version #%s\n",
                          WS_VERSTR);
+            // Append the SymTabSize
+            MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
+                        L"SymTabSize %u\n",
+                         gSymTabSize / SYMTABSIZE_MUL);
+            // Append the HshTabSize
+            MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
+                        L"HshTabSize %u\n",
+                         gHshTabSize / HSHTABSIZE_MUL);
             // Write out the secondary version string
             SetDlgItemTextW (hDlg, IDC_VERSION2, wszTemp);
 

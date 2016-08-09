@@ -925,7 +925,7 @@ WM_NCCREATE_FAIL:
                                  lpMemPTD->lphtsPTD,                    // Ptr to this HSHTABSTR
                                  DEF_HSHTAB_NBLKS,                      // Initial # blocks in HshTab
                                  DEF_HSHTAB_INCRNELM,                   // # HTEs by which to resize when low
-                                 DEF_HSHTAB_MAXNELM);                   // Maximum # HTEs
+                                 gHshTabSize);                          // Maximum # HTEs
             if (!bRet)
             {
                 // ***FIXME*** -- WS FULL before we got started???
@@ -944,7 +944,7 @@ WM_NCCREATE_FAIL:
                                  lpMemPTD->lphtsPTD,                    // Ptr to this HSHTABSTR
                                  DEF_SYMTAB_INITNELM,                   // Initial # STEs in SymTab
                                  DEF_SYMTAB_INCRNELM,                   // # STEs by which to resize when low
-                                 DEF_SYMTAB_MAXNELM);                   // Maximum # STEs
+                                 gSymTabSize);                          // Maximum # STEs
             if (!bRet)
             {
                 // ***FIXME*** -- WS FULL before we got started???

@@ -2319,6 +2319,23 @@ EXTERN
 NTHPRIMESTR NthPrimeStr;        // Initialized in InitPrimeTabs
 
 
+//***************************************************************************
+//  Command line keyword values
+//***************************************************************************
+
+EXTERN
+size_t gSymTabSize
+#ifdef DEFINE_VALUES
+= {DEF_SYMTAB_MAXNELM}
+#endif
+,
+       gHshTabSize
+#ifdef DEFINE_VALUES
+= {DEF_HSHTAB_MAXNELM}
+#endif
+;
+
+
 #define ENUMS_DEFINED
 #undef  EXTERN
 

@@ -46,7 +46,7 @@ CRITICAL_SECTION CSOPthread;            // Critical Section Object for pthread
 extern int Debug = 1;
 #endif
 WCHAR crsh_dll[] = L"CRASHRPT.DLL",
-      crsh_version[32] = L" not loaded";
+      crsh_version[32] = L" ***NOT LOADED***";
 
 
 //************************** Data Area **************************************
@@ -3830,6 +3830,68 @@ void UninitInstance
 
 
 //***************************************************************************
+//  $TestCmdLine
+//
+//  Test the command line for a keyword
+//***************************************************************************
+
+UBOOL TestCmdLine
+    (LPCHAR  *lplpCmdLine,      // Ptr to ptr to command line
+     LPCHAR  lpKeyWord,         // Ptr to keyword
+     UINT    uMul,              // Multiplier
+     LPUBOOL lpbDone,           // Ptr to bDone var
+     LPUBOOL lpbRet,            // Ptr to bRet  var
+     size_t *lpOutput)          // Ptr to output save area
+
+{
+    size_t iSpn;
+    UINT   iVal;
+
+    // Find the trailing char
+    iSpn = strcspn (*lplpCmdLine, "= ");
+
+    // If it matches, ...
+    if (strncmpi (*lplpCmdLine, lpKeyWord, iSpn) EQ 0)
+    {
+        // Skip over the keyword
+        *lplpCmdLine += lstrlen (lpKeyWord);
+
+        // Skip over leading space
+        *lplpCmdLine = SkipWhite (*lplpCmdLine);
+
+        Assert ((*lplpCmdLine)[0] EQ '=');
+
+        // If it's not the correct separator, ...
+        if ((*lplpCmdLine)[0] NE '=')
+        {
+            *lpbDone = TRUE;
+            *lpbRet = FALSE;
+            MBW (L"Invalid command line argument -- missing '=' separator.");
+
+            return FALSE;
+        } else
+        {
+            // Skip over the separator
+            (*lplpCmdLine)++;
+
+////////////// Skip over leading space
+////////////*lplpCmdLine = SkipWhite (*lplpCmdLine);    // atoi does this
+
+            iVal = abs (atoi (*lplpCmdLine));
+            if (iVal NE 0)
+                *lpOutput = iVal * uMul;
+             // Skip over the digits
+             *lplpCmdLine += strspn (*lplpCmdLine, " 0123456789");
+
+            return TRUE;
+        } // End IF/ELSE
+    } // End IF
+
+    return FALSE;
+} // End TestCmdLine
+
+
+//***************************************************************************
 //  $ParseCommandLine
 //
 //  Parse any command line
@@ -3839,32 +3901,75 @@ UBOOL ParseCommandLine
     (LPSTR lpCmdLine)
 
 {
-    LPCHAR p;
-    WCHAR  wszTempDPFE[1024];
+    WCHAR  wszTempDPFE[1024];       // Temporary buffer
+    UBOOL  bRet = TRUE;             // TRUE iff the result is valid
 
     // If there's a command line, ...
     if (lpCmdLine NE NULL && lstrlen (lpCmdLine) NE 0)
     {
+        LPCHAR p;                   // Temporary ptr
+        UBOOL  bDone = FALSE;       // TRUE iff we're bDone
+
         // Skip over leading space
         p = SkipWhite (lpCmdLine);
 
-        if (*p)
+        // Loop until bDone
+        while (!bDone)
+        // Split cases based upon the leading char
+        switch (*p)
         {
-            // Copy to temporary buffer
-            A2W (wszTempDPFE, p, sizeof (wszTempDPFE));
+            case '/':           // Check for common switch chars
+            case '-':           // ...
+                // Skip over the separator
+                p++;
 
-            // Convert the []WSID workspace name into a canonical form (without WS_WKSEXT)
-            MakeWorkspaceNameCanonical (wszLoadFile, wszTempDPFE, lpwszWorkDir);
+                // Test for various keywords
+                if (TestCmdLine (&p,
+                                 "symtabsize",
+                                 SYMTABSIZE_MUL,
+                                &bDone,
+                                &bRet,
+                                &gSymTabSize))
+                    break;
+                if (TestCmdLine (&p,
+                                 "hshtabsize",
+                                 HSHTABSIZE_MUL,
+                                &bDone,
+                                &bRet,
+                                &gHshTabSize))
+                    break;
 
-            // Append the common workspace extension
-            MyStrcatW (wszLoadFile, sizeof (wszLoadFile), WS_WKSEXT);
+                bDone = TRUE;
+                bRet = FALSE;
+                MBW (L"Unknown command line argument.");
 
-            // Mark as present
-            bCommandLine = TRUE;
-        } // End IF
+                break;
+
+            case AC_EOS:
+                bDone = TRUE;
+
+                break;
+
+            default:
+                // Copy to temporary buffer
+                A2W (wszTempDPFE, p, sizeof (wszTempDPFE));
+
+                // Convert the []WSID workspace name into a canonical form (without WS_WKSEXT)
+                MakeWorkspaceNameCanonical (wszLoadFile, wszTempDPFE, lpwszWorkDir);
+
+                // Append the common workspace extension
+                MyStrcatW (wszLoadFile, sizeof (wszLoadFile), WS_WKSEXT);
+
+                bDone = TRUE;
+
+                break;
+        } // End WHILE/SWITCH
+
+        // Mark as present
+        bCommandLine = TRUE;
     } // End IF
 
-    return TRUE;
+    return bRet;
 } // ParseCommandLine
 
 

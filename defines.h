@@ -560,6 +560,7 @@ default:        \
 
 #define strchrW         wcschr
 #define strncmpW        wcsncmp
+#define strncmpi        _strnicmp
 #define strncmpiW       _wcsnicmp
 #define strpbrkW        wcspbrk
 #define strspnW         wcsspn

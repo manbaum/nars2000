@@ -413,8 +413,8 @@ HGLOBAL MakePermVectorCom
      UINT     uLen)                 // Length of the common value
 
 {
-    HGLOBAL hGlbRes;
-    LPVARARRAY_HEADER lpHeader;
+    HGLOBAL           hGlbRes;
+    LPVARARRAY_HEADER lpHeader;     // Ptr to array header
 
     // Note, we can't use DbgGlobalAlloc here as the
     //   PTD has not been allocated as yet
@@ -498,7 +498,7 @@ UBOOL SymTabAppendOneSysName_EM
         return FALSE;
 
     // Save the LPSYMENTRY if requested
-    if (lplpSymEntry)
+    if (lplpSymEntry NE NULL)
         *lplpSymEntry = lpSymEntry;
 
     // Save the address of the execution routine
@@ -1758,7 +1758,7 @@ UBOOL ValidateCharVector_EM
 #undef  lpMemChar
 
         // If there's anything left, ...
-        if (aplNELMRes)
+        if (aplNELMRes NE 0)
         {
             // Convert the []WSID workspace name into a canonical form
             MakeWorkspaceNameCanonical (lpwszTemp, lpMemRht, lpwszWorkDir);
@@ -2922,7 +2922,7 @@ UBOOL ValidNdxFEATURE
         return bRet;
 
     // Set the new immediate type
-    if (lpimmTypeRht)
+    if (lpimmTypeRht NE NULL)
         *lpimmTypeRht = IMMTYPE_INT;
 
     // Test the value
@@ -2990,7 +2990,7 @@ void SetCurrentFeature
      HGLOBAL      hGlbFEATURE)
 
 {
-    LPVARARRAY_HEADER lpMemHdr;
+    LPVARARRAY_HEADER lpMemHdr;     // Ptr to array header
 
     // Lock the memory to get a ptr to it
     lpMemHdr = MyGlobalLock (hGlbFEATURE);
@@ -3100,7 +3100,7 @@ UBOOL ValidNdxFPC
         return bRet;
 
     // Set the new immediate type (in case it was integer/APA)
-    if (lpimmTypeRht)
+    if (lpimmTypeRht NE NULL)
         *lpimmTypeRht = IMMTYPE_BOOL;
 
     // Test the value
@@ -3234,7 +3234,7 @@ UBOOL ValidNdxIC
         return bRet;
 
     // Set the new immediate type
-    if (lpimmTypeRht)
+    if (lpimmTypeRht NE NULL)
         *lpimmTypeRht = IMMTYPE_INT;
 
     // Test the value
@@ -3329,7 +3329,7 @@ UBOOL ValidNdxIO
         return bRet;
 
     // Set the new immediate type (in case it was integer/APA)
-    if (lpimmTypeRht)
+    if (lpimmTypeRht NE NULL)
         *lpimmTypeRht = IMMTYPE_BOOL;
 
     // Test the value
@@ -3440,7 +3440,7 @@ UBOOL ValidNdxPP
         return bRet;
 
     // Set the new immediate type
-    if (lpimmTypeRht)
+    if (lpimmTypeRht NE NULL)
         *lpimmTypeRht = IMMTYPE_INT;
 
     // Test the value
@@ -3717,7 +3717,7 @@ UBOOL ValidNdxPW
         return bRet;
 
     // Set the new immediate type
-    if (lpimmTypeRht)
+    if (lpimmTypeRht NE NULL)
         *lpimmTypeRht = IMMTYPE_INT;
 
     // Test the value
@@ -3811,7 +3811,7 @@ UBOOL ValidNdxRL
         return bRet;
 
     // Set the new immediate type
-    if (lpimmTypeRht)
+    if (lpimmTypeRht NE NULL)
         *lpimmTypeRht = IMMTYPE_INT;
 
     // Test the value
@@ -4225,16 +4225,16 @@ void CopySysVars
     DeleSysVars (lphtsDst);
 
     // Copy HGLOBAL values
-////lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData);    // Not used in {}
-////lphtsDst->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData);    // ...
-////lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData);    // Not used in {}
+    lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData);    // Not used in {}
+    lphtsDst->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData);    // ...
+    lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData);    // Not used in {}
     lphtsDst->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FC      ]->stFlags.Value = TRUE;
     lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stFlags.Value = TRUE;
     lphtsDst->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_IC      ]->stFlags.Value = TRUE;
 ////lphtsDst->lpSymQuad[SYSVAR_LX      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_LX      ]->stData.stGlbData);    // Not used in {}
 ////lphtsDst->lpSymQuad[SYSVAR_PR      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_PR      ]->stData.stGlbData);    // Not used in {}
 ////lphtsDst->lpSymQuad[SYSVAR_SA      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_SA      ]->stData.stGlbData);    // Not used in {}
-////lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData);    // Not used in {}
+    lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData);    // Use by TabCtrl
 ////lphtsDst->lpSymQuad[SYSVAR_Z       ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_Z       ]->stData.stGlbData);    // Local to {}
 } // End CopySysVars
 
@@ -4250,19 +4250,19 @@ void DeleSysVars
 
 {
     // If the HSHTABSTR is valid, ...
-    if (lphtsDst)
+    if (lphtsDst NE NULL)
     {
-    // Delete HGLOBAL values
-////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData);   // Not used in {}
-////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData);   // Not used in {}
-////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData);   // Not used in {}
+        // Delete HGLOBAL values
+        FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData);   // Not used in {}
+        FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData);   // Not used in {}
+        FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData);   // Not used in {}
         FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_FC      ]->stFlags.Value = FALSE;
         FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stFlags.Value = FALSE;
         FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_IC      ]->stFlags.Value = FALSE;
 ////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_LX      ]->stData.stGlbData);   // Not used in {}
 ////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_PR      ]->stData.stGlbData);   // Not used in {}
 ////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_SA      ]->stData.stGlbData);   // Not used in {}
-////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData);   // Not used in {}
+        FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stFlags.Value = FALSE;   // Use by TabCtrl
 ////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_Z       ]->stData.stGlbData);   // Not used in {}
     } // End IF
 } // End DeleSysVars

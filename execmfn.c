@@ -306,7 +306,7 @@ HGLOBAL Init1MagicFunction
     uLineLen  = lstrlenW (lpMagicFcnOpr->Header);
 
     // Allocate space for the text
-    //   (the "sizeof (uLineLen)" is for the leading line length
+    //   (the "sizeof (lpMemTxtLine->U)" is for the leading line length
     //    and the "+ 1" is for the terminating zero)
     hGlbTxtHdr = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
     if (hGlbTxtHdr EQ NULL)
@@ -324,7 +324,7 @@ HGLOBAL Init1MagicFunction
     //   on the call to EM_GETLINE.
 
     // If the line is non-empty, ...
-    if (uLineLen)
+    if (uLineLen NE 0)
     {
         // Lock the memory to get a ptr to it
         lpMemTxtLine = MyGlobalLock (hGlbTxtHdr);

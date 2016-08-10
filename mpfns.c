@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1014,13 +1014,13 @@ void mpq_ceil
 //***************************************************************************
 //  $mpq_mod
 //
-//  Calculate aplLft % aplRht
+//  Calculate aplOpr mod (aplMod)
 //***************************************************************************
 
 void mpq_mod
-    (mpq_ptr dest,
-     mpq_ptr aplLft,
-     mpq_ptr aplRht)
+    (mpq_ptr dest,          // Destination
+     mpq_ptr aplOpr,        // Operand
+     mpq_ptr aplMod)        // Modulus
 
 {
     APLRAT aplTmp = {0};
@@ -1028,10 +1028,10 @@ void mpq_mod
     // Initialize the temp
     mpq_init (&aplTmp);
 
-    mpq_div   (&aplTmp,  aplLft,  aplRht);      // T = L / R
+    mpq_div   (&aplTmp,  aplOpr,  aplMod);      // T = L / R
     mpq_floor (&aplTmp, &aplTmp);               // T = floor (T)
-    mpq_mul   (&aplTmp,  aplRht, &aplTmp);      // T = R * T
-    mpq_sub   (dest   ,  aplLft, &aplTmp);      // Z = L - T
+    mpq_mul   (&aplTmp,  aplMod, &aplTmp);      // T = R * T
+    mpq_sub   (dest   ,  aplOpr, &aplTmp);      // Z = L - T
 
     // We no longer need this storage
     Myq_clear (&aplTmp);
@@ -1555,9 +1555,9 @@ APLINT _mpfr_get_ctsx
 //***************************************************************************
 
 void mpfr_mod
-    (mpfr_ptr dest,          // Destination
-     mpfr_ptr aplOpr,        // Operand
-     mpfr_ptr aplMod)        // Modulus
+    (mpfr_ptr dest,         // Destination
+     mpfr_ptr aplOpr,       // Operand
+     mpfr_ptr aplMod)       // Modulus
 
 {
 #if FALSE                   // ***FIXME*** -- Check rounding
@@ -1604,9 +1604,9 @@ void mpfr_mod
 //***************************************************************************
 
 void mpfr_mod_sub
-    (mpfr_ptr dest,          // Destination
-     mpfr_ptr aplOpr,        // Operand
-     mpfr_ptr aplMod)        // Modulus
+    (mpfr_ptr dest,         // Destination
+     mpfr_ptr aplOpr,       // Operand
+     mpfr_ptr aplMod)       // Modulus
 
 {
 ////#define MOD_DEBUG

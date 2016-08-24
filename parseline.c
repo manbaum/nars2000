@@ -1868,37 +1868,71 @@ LPPL_YYSTYPE plRedA_IDX
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    LPPL_YYSTYPE lpYYRes = NULL,        // Ptr to the result
-                 lpYYVar;               // Ptr to a temp
+    LPPL_YYSTYPE lpYYRes,               // Ptr to the result
+                 lpYYVar,               // Ptr to a temp
+                 lpYYRes2,              // ...
+                 lpYYVar2 = NULL;       // ...
 
-    // If the current object is in the process of stranding, ...
-    if (lpplYYCurObj->YYStranding)
+    // Copy to temp vars
+    lpYYRes = lpplYYCurObj;
+    lpYYVar = lpplYYLstRht;
+
+    // Loop until no more curried indices
+    while (lpYYVar NE NULL)
     {
-        // Turn this strand into a var
-        lpYYVar =
-          MakeVarStrand_EM_YY (lpplYYCurObj);
-        // YYFree the current object
-        YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+        // If the current object is in the process of stranding, ...
+        if (lpYYRes->YYStranding)
+        {
+            // Turn this strand into a var
+            lpYYVar2 =
+              MakeVarStrand_EM_YY (lpYYRes);
+            // YYFree the result object
+            YYFree (lpYYRes); lpYYRes = NULL;
 
-        // If not defined, ...
-        if (lpYYVar EQ NULL)
-            goto ERROR_EXIT;
+            // If not defined, ...
+            if (lpYYVar2 EQ NULL)
+                goto ERROR_EXIT;
 
-        // Copy to the current object
-        lpplYYCurObj = lpYYVar; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
-        lpYYVar = NULL;
-    } else
-        // Unstrand the current object if necessary
-        UnStrand (lpplYYCurObj);
+            // Copy to the current object
+            lpYYRes = lpYYVar2;
+            lpYYVar2 = NULL;
+        } else
+            // Unstrand the result object if necessary
+            UnStrand (lpYYRes);
 
-    if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
-        lpYYRes = NULL;
-    else
-        lpYYRes = ArrayIndexRef_EM_YY (&lpplYYCurObj->tkToken, &lpplYYLstRht->tkToken);
+        if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+            lpYYRes2 = NULL;
+        else
+            lpYYRes2 = ArrayIndexRef_EM_YY (&lpYYRes->tkToken, &lpYYVar->tkToken);
 
-    // Free (unnamed) and YYFree the current & last right objects
-    FreeTempResult (lpplYYCurObj); YYFree (lpplYYCurObj); lpplYYCurObj = NULL;
-    FreeTempResult (lpplYYLstRht); YYFree (lpplYYLstRht); lpplYYLstRht = NULL;
+        // Save the next curried index (if any)
+        lpYYVar2 = lpYYVar->lpplYYIdxCurry;
+
+        // Free (unnamed) and YYFree the objects
+        FreeTempResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+        FreeTempResult (lpYYVar); YYFree (lpYYVar); lpYYVar = NULL;
+
+        // Copy back and repeat
+        lpYYRes = lpYYRes2;
+        lpYYVar = lpYYVar2;
+
+        // Check for errors
+        if (lpYYRes EQ NULL)
+            break;
+    } // End WHILE
+
+    // While the curried index is valid, ...
+    while (lpYYVar NE NULL)
+    {
+        // Save the next curried index (if any)
+        lpYYVar2 = lpYYVar->lpplYYIdxCurry;
+
+        // Free (unnamed) and YYFree the curried index
+        FreeTempResult (lpYYVar); YYFree (lpYYVar); lpYYVar = NULL;
+
+        // Copy back and repeat
+        lpYYVar = lpYYVar2;
+    } // End WHILE
 
     // If it succeeded, ...
     if (lpYYRes NE NULL)
@@ -3330,21 +3364,23 @@ LPPL_YYSTYPE plRedIDX_IDX
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    LPPL_YYSTYPE lpplYYTmp = lpplYYLstRht;
+    LPPL_YYSTYPE lpplYYTmp = lpplYYCurObj;
 
+    // Find an open lpplYYIdxCurry
     while (lpplYYTmp->lpplYYIdxCurry NE NULL)
         // Point to the next IdxCurry
         lpplYYTmp = lpplYYTmp->lpplYYIdxCurry;
 
-    // Copy to the left curry object
-    lpplYYTmp->lpplYYIdxCurry = lpplYYCurObj;
+    // Extend the chain of curried objects
+    lpplYYTmp->lpplYYIdxCurry = lpplYYLstRht;
 
     // Change the tkSynObj
-    lpplYYLstRht->tkToken.tkSynObj = soType;
+    lpplYYCurObj->tkToken.tkSynObj = soType;
 
-////YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;  // Do *NOT* free as it is still curried
+    // Do *NOT* free as it is still curried
+////YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
-    return lpplYYLstRht;
+    return lpplYYCurObj;
 } // End plRedIDX_IDX
 #undef  APPEND_NAME
 
@@ -4322,7 +4358,8 @@ PARSELINE_MP_DONE:
                         soNames[curSynObj]);
 #endif
             // If the current object is a Niladic Function, ...
-            if (curSynObj EQ soNF)
+            if (curSynObj EQ soNF
+             || curSynObj EQ soSPNF)
             {
                 UBOOL NoDisplay;            // NoDisplay flag
 
@@ -4349,6 +4386,10 @@ PARSELINE_MP_DONE:
                     // Check for error
                     if (lpYYRes EQ NULL)
                         goto PARSELINE_ERROR;
+
+                    // If it's SPNF, ...
+                    if (curSynObj EQ soSPNF)
+                        lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
 
                     // Copy to the current object
                     lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));

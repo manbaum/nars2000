@@ -1,6 +1,17 @@
 Version 0.4.15.xx consists of the following Builds:
 
 
+Build #1541 -- Version 0.4.15.xx
+--------------------------------
+
+* Fix Bug In Magic Function For Rising And Falling Factorials
+
+Directory trunk:
+
+MF_VARIANT.H:
+  Fix a bug in the magic function which implements the Pochhammer k-symbol for rising and falling factorials.
+
+
 Build #1540 -- Version 0.4.15.xx
 --------------------------------
 

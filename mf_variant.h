@@ -34,9 +34,8 @@
 static LPAPLCHAR DydVOFactBody[] =
 {L"⎕PRO:",
  L"⎕IO←0",
- L"→(1=≢X)/L1 ⋄ Z←×/¨R+X[0]×⊂⍳|X[1] ⋄ →0",
- L"L1:→(X=0)/L2 ⋄ Z←×/¨R+X×⍳¨⌈R÷1⌈|X ⋄ →0",
- L"L2:Z←(⍴R)⍴∞",
+ L"→(2=≢X)/L1 ⋄ X←X,1",
+ L"L1:Z←×/¨R+((×X[0])×|X[1])×⊂⍳|X[0]",
 };
 
 MAGIC_FCNOPR MFO_DydVOFact =

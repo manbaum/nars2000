@@ -1038,6 +1038,39 @@ UBOOL ParseSavedWsFcn_EM
         // Increment the reference count
         DbgIncrRefCntDir_PTB (hGlbObj);
 
+        // Transfer the STE values to the new STE
+
+        // Split cases based upon the signature
+        switch (GetSignatureGlb_PTB (hGlbObj))
+        {
+            LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header
+
+            case DFN_HEADER_SIGNATURE:
+                // Lock the memory to get a ptr to it
+                lpMemDfnHdr = MyGlobalLock (hGlbObj);
+
+                // Mark as valued and user-defined function/operator
+                lpSymObj->stFlags.Value  =
+                lpSymObj->stFlags.UsrDfn = TRUE;
+
+                // Copy the "Accepts Axis Operator" flag
+                lpSymObj->stFlags.DfnAxis = lpMemDfnHdr->DfnAxis;
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbObj); lpMemDfnHdr = NULL;
+
+                break;
+
+            case FCNARRAY_HEADER_SIGNATURE:
+                // Mark as valued
+                lpSymObj->stFlags.Value  = TRUE;
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
         // If there's an old value, ...
         if (hGlbOld NE NULL)
         {

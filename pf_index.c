@@ -547,7 +547,8 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                                                     lptkFunc,           // Ptr to function token
                                                     TRUE,               // TRUE iff we came from indexing
                                                     NULL,               // Ptr to result global memory handle
-                                                    NULL);              // Ptr to set arg token
+                                                    NULL,               // Ptr to set arg token
+                                                    FALSE);             // TRUE iff protoyping
                         Assert (!IsPtrSuccess (lpYYItm));
 
                         // If valid, disclose the item as squad returns an enclosed item
@@ -1758,7 +1759,8 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
                                    lptkFunc,    // Ptr to function token
                                    TRUE,        // TRUE iff we came from indexing
                                    NULL,        // Ptr to result global memory handle
-                                   NULL);       // Ptr to set arg token
+                                   NULL,        // Ptr to set arg token
+                                   FALSE);      // TRUE iff protoyping
         Assert (!IsPtrSuccess (lpYYRes));
     } else
     // There are elided indices, so we must create a new
@@ -1882,7 +1884,8 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
                                     lptkFunc,       // Ptr to function token
                                     TRUE,           // TRUE iff we came from indexing
                                     NULL,           // Ptr to result global memory handle
-                                    NULL);          // Ptr to set arg token
+                                    NULL,           // Ptr to set arg token
+                                    FALSE);         // TRUE iff protoyping
         Assert (!IsPtrSuccess (lpYYRes));
     } // End IF/ELSE
 
@@ -4080,7 +4083,8 @@ UBOOL ArrayIndexSetRect_EM
                                    lptkFunc,        // Ptr to function token
                                    TRUE,            // TRUE iff we came from indexing
                                   &hGlbRes,         // Ptr to result global memory handle
-                                   lptkRhtArg);     // Ptr to set arg token
+                                   lptkRhtArg,      // Ptr to set arg token
+                                   FALSE);          // TRUE iff protoyping
         if (lpYYRes)
         {
             // If the name global memory handle changed, free the old one
@@ -4216,7 +4220,8 @@ UBOOL ArrayIndexSetRect_EM
                                     lptkFunc,       // Ptr to function token
                                     TRUE,           // TRUE iff we came from indexing
                                    &hGlbRes,        // Ptr to result global memory handle
-                                    lptkRhtArg);    // Ptr to set arg token
+                                    lptkRhtArg,     // Ptr to set arg token
+                                    FALSE);         // TRUE iff protoyping
         if (lpYYRes)
         {
             // If the name global memory handle changed, free the old one

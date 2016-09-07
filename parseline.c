@@ -239,6 +239,7 @@
 #define plRedSP_RBC     plRedSYNR
 #define plRedSP_EOS     plRedSYNR
 
+#define plRedADX_SPA    plRedIDX_SPA
 
 #define STRICT
 #include <windows.h>
@@ -262,7 +263,7 @@
 #define LFTSYNOBJ                   (lpplOrgLftStk < &lpMemPTD->lpplLftStk[-1]) ? lpMemPTD->lpplLftStk[-1]->tkToken.tkSynObj : GetLftSynObj (&plLocalVars)
 #define CURSYNOBJ                    lpplYYCurObj->tkToken.tkSynObj
 #define RHTSYNOBJ                    lpMemPTD->lpplRhtStk[-1]->tkToken.tkSynObj
-#define RHT2SYNOBJ                  ((RSTACKLEN > 1) ? lpMemPTD->lpplRhtStk[-2]->tkToken.tkSynObj : soNONE)
+#define RH2SYNOBJ                   ((RSTACKLEN > 1) ? lpMemPTD->lpplRhtStk[-2]->tkToken.tkSynObj : soNONE)
 #define LSTSYNOBJ                    lpplYYLstRht->tkToken.tkSynObj
 #define LSTACKLEN                   (lpMemPTD->lpplLftStk - lpplOrgLftStk)
 #define LSTACKLEN2                  (lpplLocalVars->lpMemPTD->lpplLftStk - lpplLocalVars->lpMemPTD->lpplOrgLftStk)
@@ -4194,6 +4195,30 @@ PARSELINE_SCAN1:
 
             TRACE (L"Binding: ", L"", CURSYNOBJ, RHTSYNOBJ);
 
+            // If lftSynObj is soA   and
+            //    curSynObj is soIDX and
+            //    rhtSynObj is soF   and
+            //    rh2SynObj is soMOP, ...
+            if (lftSynObj EQ soA
+             && curSynObj EQ soIDX
+             && rhtSynObj EQ soF
+             && RH2SYNOBJ EQ soMOP)
+            {
+                // This case handles
+                //     A IDX F MOP ... MOP SPA
+                //   by transforming it into
+                //     A ADX F MOP ... MOP SPA
+                //   and left shifting it so that
+                //     ADX F MOP
+                //   is handled next and it is reduced to
+                //     ADX F  by  F MOP => F
+                //   because (IDX F) > (F MOP)
+                //   and     (ADX F) < (F MOP)
+                //   so F MOP is the next pair to be reduced.
+                lpplYYCurObj->tkToken.tkSynObj = soADX;
+
+                goto LEFTSHIFT;
+            } else
             // If lftSynObj is neither soIDX nor soSRBK, ...
             if (lftSynObj NE soIDX          // LFTSYNOBJ NE IDX
              && lftSynObj NE soSRBK         // LFTSYNOBJ NE SRBK
@@ -4313,11 +4338,11 @@ PARSELINE_MP_PAREN:
                  && curSynObj NE soARBK
                  && curSynObj NE soSRBK)
                 {
-                    SO_ENUM rht2SynObj;
+                    SO_ENUM rh2SynObj;
 
-                    rht2SynObj = RHT2SYNOBJ; Assert (IsValidSO (rht2SynObj));
+                    rh2SynObj = RH2SYNOBJ; Assert (IsValidSO (rh2SynObj));
 
-                    if (RBIND (curSynObj, rhtSynObj) >= RBIND (rhtSynObj, rht2SynObj))
+                    if (RBIND (curSynObj, rhtSynObj) >= RBIND (rhtSynObj, rh2SynObj))
                     {
                         if (rhtSynObj NE soRP
                          && rhtSynObj NE soRBK
@@ -4329,7 +4354,7 @@ PARSELINE_MP_PAREN:
                         } else
                         {
                             if (LBIND (lftSynObj, curSynObj) <= RBIND (curSynObj, rhtSynObj)
-                             && RBIND (curSynObj, rhtSynObj) <= RBIND (rhtSynObj, rht2SynObj))
+                             && RBIND (curSynObj, rhtSynObj) <= RBIND (rhtSynObj, rh2SynObj))
                                 break;
                         } // End IF/ELSE
                     } // End IF
@@ -4337,8 +4362,8 @@ PARSELINE_MP_PAREN:
                     PUSHLEFT (lpplYYCurObj); lftSynObj = LFTSYNOBJ; Assert (IsValidSO (lftSynObj));
                     lpplYYCurObj = POPRIGHT; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
 
-                    rhtSynObj  = RHTSYNOBJ; Assert (IsValidSO (rhtSynObj));
-                    rht2SynObj = RHT2SYNOBJ; // Assert (IsValidSO (rht2SynObj)); // This item might be invalid
+                    rhtSynObj = RHTSYNOBJ; Assert (IsValidSO (rhtSynObj));
+                    rh2SynObj = RH2SYNOBJ;      // Assert (IsValidSO (rh2SynObj)); // This item might be invalid
 
                     TRACE (L"MatchPair", L"- LftShift", CURSYNOBJ, rhtSynObj);
                 } else
@@ -4690,12 +4715,12 @@ PARSELINE_REDUCE:
                      && curSynObj NE soARBK
                      && curSynObj NE soSRBK)
                     {
-                        SO_ENUM rht2SynObj;
+                        SO_ENUM rh2SynObj;
 
-                        rht2SynObj = RHT2SYNOBJ; Assert (IsValidSO (rht2SynObj));
+                        rh2SynObj = RH2SYNOBJ; Assert (IsValidSO (rh2SynObj));
 
                         // Check for left shift
-                        if (RBIND (curSynObj, rhtSynObj) >= RBIND (rhtSynObj, rht2SynObj))
+                        if (RBIND (curSynObj, rhtSynObj) >= RBIND (rhtSynObj, rh2SynObj))
                         {
                             if (rhtSynObj NE soRP
                              && rhtSynObj NE soRBK
@@ -4707,7 +4732,7 @@ PARSELINE_REDUCE:
                             } else
                             {
                                 if (LBIND (lftSynObj, curSynObj) <= RBIND (curSynObj, rhtSynObj)
-                                 && RBIND (curSynObj, rhtSynObj) <= RBIND (rhtSynObj, rht2SynObj))
+                                 && RBIND (curSynObj, rhtSynObj) <= RBIND (rhtSynObj, rh2SynObj))
                                     break;
                             } // End IF/ELSE
                         } // End IF
@@ -4715,8 +4740,8 @@ LEFTSHIFT:
                         PUSHLEFT (lpplYYCurObj); lftSynObj = LFTSYNOBJ; Assert (IsValidSO (lftSynObj));
                         lpplYYCurObj = POPRIGHT; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
 
-                        rhtSynObj  = RHTSYNOBJ; Assert (IsValidSO (rhtSynObj));
-                        rht2SynObj = RHT2SYNOBJ; // Assert (IsValidSO (rht2SynObj)); // This item might be invalid
+                        rhtSynObj = RHTSYNOBJ; Assert (IsValidSO (rhtSynObj));
+                        rh2SynObj = RH2SYNOBJ;  // Assert (IsValidSO (rh2SynObj));  // This item might be invalid
 
                         TRACE (L"PostRed: ", L"- LftShift", CURSYNOBJ, rhtSynObj);
                     } else

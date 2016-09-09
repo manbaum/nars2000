@@ -110,6 +110,7 @@ typedef struct tagDTHC8
 
 typedef union tagALLTYPES
 {
+    APLBOOL    aplBoolean;          // 00:  Boolean
     APLINT     aplInteger;          // 00:  Integer or real number as an integer ( 8 bytes)
     APLFLOAT   aplFloat;            // 00:  Real number as a float               ( 8 bytes)
     APLCHAR    aplChar;             // 00:  Character

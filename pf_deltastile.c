@@ -255,14 +255,12 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
         case ARRAY_CHAR:
         case ARRAY_RAT:
         case ARRAY_VFP:
-            break;
-
         case ARRAY_HETERO:
         case ARRAY_NESTED:
-            goto DOMAIN_EXIT;
-
-        defstop
             break;
+
+        default:
+            goto DOMAIN_EXIT;
     } // End SWITCH
 
     // Check for scalar right arg
@@ -1394,6 +1392,38 @@ APLINT PrimFnGradeCompare
                 defstop
                     break;
             } // End FOR/SWITCH
+
+            // The hyper-planes are equal -- compare indices so the sort is stable
+            return signumint (aplUIntLft - aplUIntRht);
+
+        case ARRAY_NESTED:
+        case ARRAY_HETERO:
+            // Compare the hyper-planes of the right arg
+            for (uRest = 0; uRest < aplNELMRest; uRest++)
+            {
+                LPSYMENTRY lpSymGlbLft,         // Ptr to left item
+                           lpSymGlbRht;         // ...    right ...
+
+                // Get a ptr to the two items from the right arg
+                lpSymGlbLft = ((LPAPLNESTED) lpMemRht)[aplUIntLft * aplNELMRest + uRest];
+                lpSymGlbRht = ((LPAPLNESTED) lpMemRht)[aplUIntRht * aplNELMRest + uRest];
+
+                // Split cases based upon the difference
+                switch (HeNe_cmp (lpSymGlbLft, lpSymGlbRht, 0))
+                {
+                    case  1:
+                        return  1 * lpGradeData->iMul;
+
+                    case  0:
+                        break;
+
+                    case -1:
+                        return -1 * lpGradeData->iMul;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } // End FOR
 
             // The hyper-planes are equal -- compare indices so the sort is stable
             return signumint (aplUIntLft - aplUIntRht);

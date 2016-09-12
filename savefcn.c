@@ -1450,7 +1450,7 @@ UBOOL SaveFunctionCom
                 goto ERROR_EXIT;
             } // End FOR/IF
 
-            // Ensure it's a UDFO
+            // If it's a UDFO, ...
             if (IsGlbTypeDfnDir_PTB (MakePtrTypeGlb (hGlbOldDfn)))
             {
                 // Lock the memory to get a ptr to it
@@ -1461,6 +1461,20 @@ UBOOL SaveFunctionCom
 
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbOldDfn); lpMemDfnHdr = NULL;
+            } else
+            // If it's a function array, ...
+            if (IsGlbTypeFcnDir_PTB (MakePtrTypeGlb (hGlbOldDfn)))
+            {
+                LPFCNARRAY_HEADER lpMemHdrFcn;  // Ptr to FCNARRAY header
+
+                // Lock the memory to get a ptr to it
+                lpMemHdrFcn = MyGlobalLock (hGlbOldDfn);
+
+                // Get the creation time
+                ftCreation = lpMemHdrFcn->ftCreation;
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbOldDfn); lpMemHdrFcn = NULL;
             } else
             {
                 if (hWndFE)
@@ -1794,7 +1808,7 @@ UBOOL SaveFunctionCom
         if (hGlbOldDfn)
         {
             // Free it
-            FreeResultGlobalDfn (hGlbOldDfn); hGlbOldDfn = NULL;
+            FreeResultGlobalDFLV (hGlbOldDfn); hGlbOldDfn = NULL;
         } // End IF
 
         // If we're parsing an AFO, ...

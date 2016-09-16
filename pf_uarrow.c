@@ -386,7 +386,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         goto LEFT_LENGTH_EXIT;
 
     // Check for LEFT DOMAIN error
-    if (!IsSimpleNum (aplTypeLft)
+    if (!IsSimpleGlbNum (aplTypeLft)
      && !IsCharEmpty (aplTypeLft, aplNELMLft))
         goto LEFT_DOMAIN_EXIT;
 

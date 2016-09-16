@@ -48,7 +48,7 @@ LPPL_YYSTYPE YYAllocGlb
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = tkGlbData;
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (tkGlbData);
     lpYYRes->tkToken.tkCharIndex       = tkCharIndex;
 
     return lpYYRes;

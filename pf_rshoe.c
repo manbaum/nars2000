@@ -2531,8 +2531,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         &hGlbSubLft,            // Ptr to result as HGLOBAL (may be NULL if singleton or simple)
                         &aplLongestSubLft,      // Ptr to result as singleton or simple value
                         &immTypeSubLft);        // Ptr to result as singleton or simple type
-        // If the left arg item is a global but not global Numeric, ...
-        if (hGlbSubLft NE NULL && !IsGlbNum (aplTypeLft))
+        // If the left arg item is a global value, ...
+        if (hGlbSubLft NE NULL)
         {
             APLSTYPE aplTypeSubLft;             // Left arg item storage type
             APLNELM  aplNELMSubLft;             // Left arg item NELM
@@ -2846,8 +2846,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         &hGlbSubRht,            // Ptr to result as HGLOBAL (may be NULL if singleton)
                         &aplLongestSubRht,      // Ptr to result as singleton value
                         &immTypeSubRht);        // Ptr to result as singleton type
-        // If the right arg item is a global but not global numeric, ...
-        if (hGlbSubRht NE NULL && !IsImmGlbNum (immTypeSubRht))
+        // If the right arg item is a global value, ...
+        if (hGlbSubRht NE NULL)
         {
             // If we're assigning a new value
             //   and this is the last element in the

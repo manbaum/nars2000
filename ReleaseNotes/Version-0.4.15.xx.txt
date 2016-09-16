@@ -1,6 +1,18 @@
 Version 0.4.15.xx consists of the following Builds:
 
 
+Build #1549 -- Version 0.4.15.xx
+--------------------------------
+
+* Fix Bug In Pick Where Either Argument Is Global Numeric
+
+Directory trunk:
+
+PF_RSHOE.C:
+  Fix bug in <PrimFnDydRightShoeGlbGlb_EM_YY> where either arg is global numeric
+    by backing out of Build #1502.
+
+
 Build #1548 -- Version 0.4.15.xx
 --------------------------------
 
@@ -606,7 +618,7 @@ Build #1502 -- Version 0.4.15.xx
 
 Directory trunk:
 
-EXECDFN.C:
+PF_RSHOE.C:
   Fix bug in <PrimFnDydRightShoeGlbGlb_EM_YY> where either arg is global numeric.
 
 

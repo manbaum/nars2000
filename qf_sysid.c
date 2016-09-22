@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -61,7 +61,7 @@ LPPL_YYSTYPE SysFnSYSID_EM_YY
         goto AXIS_SYNTAX_EXIT;
 
 #define SYSID           WS_APPNAME
-#define SYSID_NELM      countof (SYSID)
+#define SYSID_NELM      strcountof (SYSID)
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_CHAR, SYSID_NELM, 1);

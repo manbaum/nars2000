@@ -249,8 +249,7 @@ EXTERNS.H:
   Define extern vars for command line keyword values.
 
 MAIN.C:
-  Change the NOT LOADyoungest
-  ge for the Crash Report DLL to be more visible.
+  Change the NOT LOADED message for the Crash Report DLL to be more visible.
   Implement test for command line args.
 
 MAIN.RC:
@@ -340,9 +339,9 @@ SAVEFCN.C:
 Build #1527 -- Version 0.4.15.xx
 --------------------------------
 
-* Fix Bug In )RESET Not Being Passed Up The Line
 * Fix Bugs In <ParseLine> On Error
 * Fix Bug In f/ When Promoting Floating Point Numbers
+* Fix Bug In )RESET Not Being Passed Up The Line
 
 Directory trunk:
 

@@ -4225,9 +4225,9 @@ void CopySysVars
     DeleSysVars (lphtsDst);
 
     // Copy HGLOBAL values
-    lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData);    // Not used in {}
-    lphtsDst->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData);    // ...
-    lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData);    // Not used in {}
+    lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stFlags.Value = TRUE;
+    lphtsDst->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_DM      ]->stFlags.Value = TRUE;
+    lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stFlags.Value = TRUE;
     lphtsDst->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FC      ]->stFlags.Value = TRUE;
     lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stFlags.Value = TRUE;
     lphtsDst->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_IC      ]->stFlags.Value = TRUE;
@@ -4253,9 +4253,9 @@ void DeleSysVars
     if (lphtsDst NE NULL)
     {
         // Delete HGLOBAL values
-        FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData);   // Not used in {}
-        FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData);   // Not used in {}
-        FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData);   // Not used in {}
+        FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stFlags.Value = FALSE;
+        FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_DM      ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_DM      ]->stFlags.Value = FALSE;
+        FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_ELX     ]->stFlags.Value = FALSE;
         FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FC      ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_FC      ]->stFlags.Value = FALSE;
         FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_FEATURE ]->stFlags.Value = FALSE;
         FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_IC      ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_IC      ]->stFlags.Value = FALSE;

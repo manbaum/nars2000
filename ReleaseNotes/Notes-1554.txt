@@ -1,6 +1,3 @@
-Version 0.4.17.xx consists of the following Builds:
-
-
 Build #1554 -- Version 0.4.17.xx
 --------------------------------
 
@@ -51,30 +48,3 @@ SYMTRANS.C:
 UPDATES.C:
 WEBCOLORS.C:
   Update copyright years.
-
-
-Build #1553 -- Version 0.4.17.xx
---------------------------------
-
-* Fix Bug When Deleting Sys Vars
-
-Directory trunk:
-
-SYSVARS.C:
-  In <DeleteSysVars>, clear the global memory handle after deleting it so we don't try to delete it twice.
-
-Build #1552 -- Version 0.4.17.xx
---------------------------------
-
-* Fix Bug In Subroutine To []SYSID
-
-Directory trunk:
-
-QF_SYSID.C:
-  Fix bug of using the wrong macro <countof> instead of <strcountof>.
-
-YYFNS.C:
-  Fix bug in <YYAllocGlb> to mark the global handle as such.
-
-VER.RC:
-  Increment version # to 0.4.17.xx.

@@ -1,6 +1,17 @@
 Version 0.4.17.xx consists of the following Builds:
 
 
+Build #1555 -- Version 0.4.17.xx
+--------------------------------
+
+* Fix Typo In Dyadic Scan Magic Functions
+
+Directory trunk:
+
+MF_DYDSCAN.H:
+  Fix typo in axis operator lines.
+
+
 Build #1554 -- Version 0.4.17.xx
 --------------------------------
 

@@ -1,6 +1,17 @@
 Version 0.4.17.xx consists of the following Builds:
 
 
+Build #1556 -- Version 0.4.17.xx
+--------------------------------
+
+* Fix Bug In Tokenize With :FOR {quad} :IN ...
+
+Directory trunk:
+
+TOKENIZE.C:
+  Fix bug in <fnCtrlDone> when testing the "NAME" in :FOR NAME :IN ...
+
+
 Build #1555 -- Version 0.4.17.xx
 --------------------------------
 

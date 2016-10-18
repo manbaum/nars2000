@@ -2161,10 +2161,11 @@ UBOOL fnCtrlDone
     // For :IN, mark the previous name as to be assigned into
     if (lptkLocalVars->CtrlStrucTknType EQ TKT_CS_IN)
     {
-        Assert (lptkLocalVars->lptkNext[-1].tkFlags.TknType EQ TKT_VARNAMED);
 
-        // If the name is that of a SysVar, ...
-        if (lptkLocalVars->lptkNext[-1].tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS)
+        // If the token is not named, or
+        //    the name is that of a SysVar, ...
+        if (lptkLocalVars->lptkNext[-1].tkFlags.TknType NE TKT_VARNAMED
+         || lptkLocalVars->lptkNext[-1].tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS)
         {
             // Set the error message
             ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
@@ -3163,8 +3164,8 @@ UBOOL fnDelDone
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
         if (!AppendNewToken_EM (lptkLocalVars,
-                               &tkFlags,
-                               &tkData,
+                            &tkFlags,
+                            &tkData,
                                 0))
             return FALSE;
 

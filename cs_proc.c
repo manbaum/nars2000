@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1610,7 +1610,10 @@ UBOOL CS_SKIPCASE_Stmt
           || tkNxt.tkFlags.TknType EQ TKT_CS_CASELIST
           || tkNxt.tkFlags.TknType EQ TKT_CS_ELSE);
 
-    Assert (tkNxt.tkFlags.TknType EQ TKT_CS_ENDSELECT);
+    // The following commented out code is a bandaid covering the
+    //   fact that the CS parsing code doesn't handle certain cases
+    //   such as an :if ... :end stmt in a :case stmt.
+////Assert (tkNxt.tkFlags.TknType EQ TKT_CS_ENDSELECT);
 
     // Tell the lexical analyzer to get the next token from
     //   the stmt after the token pointed to by the ENDSELECT stmt

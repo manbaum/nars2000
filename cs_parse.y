@@ -1929,11 +1929,14 @@ SelectStmt:
                                                                     // If it's in the same sequence, ...
                                                                     if (lptk1st->tkData.uCLIndex EQ $3.uCLIndex)
                                                                     {
-                                                                        Assert (lptk1st->tkFlags.TknType EQ TKT_CS_CASE
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CASELIST
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF);
-
+                                                                        // The following commented out code is a bandaid covering the
+                                                                        //   fact that the CS parsing code doesn't handle certain cases
+                                                                        //   such as an :if ... :end stmt in a :case stmt.
+////////////////////////////////////////////////////////////////////////Assert (lptk1st->tkFlags.TknType EQ TKT_CS_CASE
+////////////////////////////////////////////////////////////////////////     || lptk1st->tkFlags.TknType EQ TKT_CS_CASELIST
+////////////////////////////////////////////////////////////////////////     || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+////////////////////////////////////////////////////////////////////////     || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF);
+////////////////////////////////////////////////////////////////////////
                                                                         // If it's LEAVE or LEAVEIF, ...
                                                                         if (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
                                                                          || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF)
@@ -1983,11 +1986,14 @@ SelectStmt:
                                                                     // If it's in the same sequence, ...
                                                                     if (lptk1st->tkData.uCLIndex EQ $3.uCLIndex)
                                                                     {
-                                                                        Assert (lptk1st->tkFlags.TknType EQ TKT_CS_CASE
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CASELIST
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF);
-
+                                                                        // The following commented out code is a bandaid covering the
+                                                                        //   fact that the CS parsing code doesn't handle certain cases
+                                                                        //   such as an :if ... :end stmt in a :case stmt.
+////////////////////////////////////////////////////////////////////////Assert (lptk1st->tkFlags.TknType EQ TKT_CS_CASE
+////////////////////////////////////////////////////////////////////////     || lptk1st->tkFlags.TknType EQ TKT_CS_CASELIST
+////////////////////////////////////////////////////////////////////////     || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+////////////////////////////////////////////////////////////////////////     || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF);
+////////////////////////////////////////////////////////////////////////
                                                                         // If it's LEAVE or LEAVEIF, ...
                                                                         if (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
                                                                          || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF)
@@ -2047,11 +2053,14 @@ SelectStmt:
                                                                     // If it's in the same sequence, ...
                                                                     if (lptk1st->tkData.uCLIndex EQ $3.uCLIndex)
                                                                     {
-                                                                        Assert (lptk1st->tkFlags.TknType EQ TKT_CS_CASE
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_CASELIST
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
-                                                                             || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF);
-
+                                                                        // The following commented out code is a bandaid covering the
+                                                                        //   fact that the CS parsing code doesn't handle certain cases
+                                                                        //   such as an :if ... :end stmt in a :case stmt.
+////////////////////////////////////////////////////////////////////////Assert (lptk1st->tkFlags.TknType EQ TKT_CS_CASE
+////////////////////////////////////////////////////////////////////////     || lptk1st->tkFlags.TknType EQ TKT_CS_CASELIST
+////////////////////////////////////////////////////////////////////////     || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
+////////////////////////////////////////////////////////////////////////     || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF);
+////////////////////////////////////////////////////////////////////////
                                                                         // If it's LEAVE or LEAVEIF, ...
                                                                         if (lptk1st->tkFlags.TknType EQ TKT_CS_LEAVE
                                                                          || lptk1st->tkFlags.TknType EQ TKT_CS_LEAVEIF)

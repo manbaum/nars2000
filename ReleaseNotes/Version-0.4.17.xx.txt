@@ -1,6 +1,17 @@
 Version 0.4.17.xx consists of the following Builds:
 
 
+Build #1562 -- Version 0.4.17.xx
+--------------------------------
+
+* Special Case {max) And {min} Reduction Of An APA
+
+Directory trunk:
+
+PO_SLASH.C:
+  Special case {max} and {min} reduction of an APA.
+
+
 Build #1561 -- Version 0.4.17.xx
 --------------------------------
 

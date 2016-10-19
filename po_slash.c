@@ -621,10 +621,12 @@ RESTART_ALLOC:
                                              : lpMemPTD->lphtsGLB->steBlank;
         } // End IF
     } else
-    // If this is +/APA
+    // If this is +/APA or max/APA or min/APA
     if (IsSimpleAPA (aplTypeRht)
      && lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-     && lpYYFcnStrLft->tkToken.tkData.tkChar   EQ L'+')
+     && (lpYYFcnStrLft->tkToken.tkData.tkChar  EQ L'+'
+      || lpYYFcnStrLft->tkToken.tkData.tkChar  EQ UTF16_UPSTILE
+      || lpYYFcnStrLft->tkToken.tkData.tkChar  EQ UTF16_DOWNSTILE))
     {
 RESTART_EXCEPTION_APA:
         // If the result is integer
@@ -642,54 +644,218 @@ RESTART_EXCEPTION_APA:
                 // The indices of the right arg are
                 //   uDimRht + uDimHi * {iota} uDimAxRht
 
-                // The result is
-                //   +/apaOffRht + apaMulRht * (uDimRht + uDimHi * {iota} uDimAxRht)
-                // = +/apaOffRht + apaMulRht * uDimRht + apalMulRht * uDimHi * {iota} uDimAxRht
-                // = uDimAxRht * (apaOffRht + apaMulRht * uDumRht) + +/apaMulRht * uDimHi *   {iota} uDimAxRht
-                // = uDimAxRht * (apaOffRht + apaMulRht * uDumRht) +   apaMulRht * uDimHi * +/{iota} uDimAxRht
-                // = uDimAxRht * (apaOffRht + apaMulRht * uDumRht) +   apaMulRht * uDimHi * (uDimAxRht * (uDimAxRht - 1)) / 2
-                __try
+                // Split cases based upon the function symbol
+                switch (lpYYFcnStrLft->tkToken.tkData.tkChar)
                 {
-////////////////////*((LPAPLINT) lpMemRes)++ = uDimAxRht * (apaOffRht + apaMulRht * uDimRht)
-////////////////////                         + apaMulRht * uDimHi * (uDimAxRht * (uDimAxRht - 1)) / 2;
-                    *((LPAPLINT) lpMemRes)++ = iadd64_RE (imul64_RE (uDimAxRht, iadd64_RE (apaOffRht, imul64_RE (apaMulRht, uDimRht))),
-                                                          imul64_RE (apaMulRht, imul64_RE (uDimHi,    imul64_RE (uDimAxRht, isub64_RE (uDimAxRht, 1)) / 2)));
-                } __except (CheckException (GetExceptionInformation (), L"PrimFnMon_EM_YY #1"))
-                {
-                    dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                    case UTF16_PLUS:
+                        // The result is (in origin-0)
+                        //   +/apaOffRht + apaMulRht * (uDimRht + uDimHi * {iota} uDimAxRht)
+                        // = +/apaOffRht + apaMulRht * uDimRht + apalMulRht * uDimHi * {iota} uDimAxRht
+                        // = uDimAxRht * (apaOffRht + apaMulRht * uDumRht) + +/apaMulRht * uDimHi *   {iota} uDimAxRht
+                        // = uDimAxRht * (apaOffRht + apaMulRht * uDumRht) +   apaMulRht * uDimHi * +/{iota} uDimAxRht
+                        // = uDimAxRht * (apaOffRht + apaMulRht * uDumRht) +   apaMulRht * uDimHi * (uDimAxRht * (uDimAxRht - 1)) / 2
+                        __try
+                        {
+        ////////////////////*((LPAPLINT) lpMemRes)++ = uDimAxRht * (apaOffRht + apaMulRht * uDimRht)
+        ////////////////////                         + apaMulRht * uDimHi * (uDimAxRht * (uDimAxRht - 1)) / 2;
+                            *((LPAPLINT) lpMemRes)++ = iadd64_RE (imul64_RE (uDimAxRht, iadd64_RE (apaOffRht, imul64_RE (apaMulRht, uDimRht))),
+                                                                  imul64_RE (apaMulRht, imul64_RE (uDimHi,    imul64_RE (uDimAxRht, isub64_RE (uDimAxRht, 1)) / 2)));
+                        } __except (CheckException (GetExceptionInformation (), L"PrimFnMon_EM_YY #1"))
+                        {
+                            dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 
-                    // Split cases based upon the ExceptionCode
-                    switch (MyGetExceptionCode ())
-                    {
-                        case EXCEPTION_RESULT_FLOAT:
-                            MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
-
-                            if (IsSimpleNum (aplTypeRes)
-                             && !IsSimpleFlt (aplTypeRes))
+                            // Split cases based upon the ExceptionCode
+                            switch (MyGetExceptionCode ())
                             {
-                                // It's now a FLOAT result
-                                aplTypeRes = ARRAY_FLOAT;
+                                case EXCEPTION_RESULT_FLOAT:
+                                    MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                                // Tell the header about it
-                                lpMemHdrRes->ArrType = aplTypeRes;
+                                    if (IsSimpleNum (aplTypeRes)
+                                     && !IsSimpleFlt (aplTypeRes))
+                                    {
+                                        // It's now a FLOAT result
+                                        aplTypeRes = ARRAY_FLOAT;
 
-                                // Restart the pointer
-                                lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+                                        // Tell the header about it
+                                        lpMemHdrRes->ArrType = aplTypeRes;
 
-                                dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+                                        // Restart the pointer
+                                        lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
-                                goto RESTART_EXCEPTION_APA;
-                            } // End IF
+                                        dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 
-                            // Fall through to never-never-land
+                                        goto RESTART_EXCEPTION_APA;
+                                    } // End IF
 
-                        default:
-                            // Display message for unhandled exception
-                            DisplayException ();
+                                    // Fall through to never-never-land
 
-                            break;
-                    } // End SWITCH
-                } // End __try/__except
+                                default:
+                                    // Display message for unhandled exception
+                                    DisplayException ();
+
+                                    break;
+                            } // End SWITCH
+                        } // End __try/__except
+
+                        break;
+
+                    case UTF16_UPSTILE:
+                        // The result is (in origin-0)
+                        //   max/apaOffRht + apaMulRht * (uDimRht + uDimHi * {iota} uDimAxRht)
+                        // = max/apaOffRht + apaMulRht * uDimRht + apalMulRht * uDimHi * {iota} uDimAxRht
+                        // If     apaMulRht == 0
+                        // =     apaOffRht
+                        // ElseIf apaMulRht  > 0
+                        // =     apaOffRht + apaMulRht * uDimRht + apalMulRht * uDimHi * (uDimAxRht - 1)
+                        // =     apaOffRht + apaMulRht * (uDimRht + uDimHi * (uDimAxRht - 1)))
+                        // ElseIf apaMulRht  < 0
+                        // =     apaOffRht + apaMulRht * uDimRht + apalMulRht * uDimHi * 0
+                        // =     apaOffRht + apaMulRht * uDimRht
+
+                        __try
+                        {
+                            // Split cases based upon the sign of the multiplier
+                            switch (signumint (apaMulRht))
+                            {
+                                case   0:
+                                    *((LPAPLINT) lpMemRes)++ = apaOffRht;
+
+                                    break;
+
+                                case   1:
+                                    *((LPAPLINT) lpMemRes)++ = iadd64_RE (apaOffRht, imul64_RE (apaMulRht,
+                                                                                                iadd64_RE (uDimRht,
+                                                                                                           imul64_RE (uDimHi,
+                                                                                                                      isub64_RE (uDimAxRht, 1)))));
+                                    break;
+
+                                case  -1:
+                                    *((LPAPLINT) lpMemRes)++ = iadd64_RE (apaOffRht, imul64_RE (apaMulRht, uDimRht));
+
+                                    break;
+
+                                defstop
+                                    break;
+                            } // End SWITCH
+                        } __except (CheckException (GetExceptionInformation (), L"PrimFnMon_EM_YY #1"))
+                        {
+                            dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #2: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+
+                            // Split cases based upon the ExceptionCode
+                            switch (MyGetExceptionCode ())
+                            {
+                                case EXCEPTION_RESULT_FLOAT:
+                                    MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                                    if (IsSimpleNum (aplTypeRes)
+                                     && !IsSimpleFlt (aplTypeRes))
+                                    {
+                                        // It's now a FLOAT result
+                                        aplTypeRes = ARRAY_FLOAT;
+
+                                        // Tell the header about it
+                                        lpMemHdrRes->ArrType = aplTypeRes;
+
+                                        // Restart the pointer
+                                        lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+
+                                        dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+
+                                        goto RESTART_EXCEPTION_APA;
+                                    } // End IF
+
+                                    // Fall through to never-never-land
+
+                                default:
+                                    // Display message for unhandled exception
+                                    DisplayException ();
+
+                                    break;
+                            } // End SWITCH
+                        } // End __try/__except
+
+                        break;
+
+                    case UTF16_DOWNSTILE:
+                        // The result is (in origin-0)
+                        //   min/apaOffRht + apaMulRht * (uDimRht + uDimHi * {iota} uDimAxRht)
+                        // = min/apaOffRht + apaMulRht * uDimRht + apalMulRht * uDimHi * {iota} uDimAxRht
+                        // If     apaMulRht == 0
+                        // =     apaOffRht
+                        // ElseIf apaMulRht  > 0
+                        // =     apaOffRht + apaMulRht * uDimRht + apalMulRht * uDimHi * 0
+                        // =     apaOffRht + apaMulRht * (uDimRht + uDimHi * uDimAxRht))
+                        // ElseIf apaMulRht  < 0
+                        // =     apaOffRht + apaMulRht * uDimRht + apalMulRht * uDimHi * (uDimAxRht - 1)
+                        // =     apaOffRht + apaMulRht * (uDimRht + uDimHi))
+
+                        __try
+                        {
+                            // Split cases based upon the sign of the multiplier
+                            switch (signumint (apaMulRht))
+                            {
+                                case   0:
+                                    *((LPAPLINT) lpMemRes)++ = apaOffRht;
+
+                                    break;
+
+                                case  -1:
+                                    *((LPAPLINT) lpMemRes)++ = iadd64_RE (apaOffRht, imul64_RE (apaMulRht,
+                                                                                                iadd64_RE (uDimRht,
+                                                                                                           imul64_RE (uDimHi,
+                                                                                                                      isub64_RE (uDimAxRht, 1)))));
+                                    break;
+
+                                case   1:
+                                    *((LPAPLINT) lpMemRes)++ = iadd64_RE (apaOffRht, imul64_RE (apaMulRht, uDimRht));
+
+                                    break;
+
+                                defstop
+                                    break;
+                            } // End SWITCH
+                        } __except (CheckException (GetExceptionInformation (), L"PrimFnMon_EM_YY #1"))
+                        {
+                            dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #3: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+
+                            // Split cases based upon the ExceptionCode
+                            switch (MyGetExceptionCode ())
+                            {
+                                case EXCEPTION_RESULT_FLOAT:
+                                    MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                                    if (IsSimpleNum (aplTypeRes)
+                                     && !IsSimpleFlt (aplTypeRes))
+                                    {
+                                        // It's now a FLOAT result
+                                        aplTypeRes = ARRAY_FLOAT;
+
+                                        // Tell the header about it
+                                        lpMemHdrRes->ArrType = aplTypeRes;
+
+                                        // Restart the pointer
+                                        lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+
+                                        dprintfWL9 (L"!!Restarting Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
+
+                                        goto RESTART_EXCEPTION_APA;
+                                    } // End IF
+
+                                    // Fall through to never-never-land
+
+                                default:
+                                    // Display message for unhandled exception
+                                    DisplayException ();
+
+                                    break;
+                            } // End SWITCH
+                        } // End __try/__except
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
             } // End FOR/FOR
         } else
         // The result is float

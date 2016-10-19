@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3073,13 +3073,13 @@ LPPL_YYSTYPE CopyPL_YYSTYPE_YY
 
 
 //***************************************************************************
-//  $UnStrand
+//  $UnVarStrand
 //
 //  If the object is a numeric/character strand/scalar, convert its token
 //    type to that of a variable
 //***************************************************************************
 
-void UnStrand
+void UnVarStrand
     (LPPL_YYSTYPE lpplYYObj)
 
 {
@@ -3101,7 +3101,7 @@ void UnStrand
         default:
             break;
     } // End SWITCH
-} // End Unstrand
+} // End UnVarStrand
 
 
 //***************************************************************************

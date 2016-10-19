@@ -58,8 +58,8 @@ typedef struct tagSF_FCNS
     LPSYMENTRY *lplpLocalSTEs;      // 34:  Ptr to save area for local STEs (may be NULL during sizing)
     LPHSHTABSTR lpHTS;              // 38:  Ptr to HshTabStr (may be NULL)
     SF_TYPES    sfTypes;            // 3C:  Caller type (see SF_TYPES above)
-    WCHAR       wszErrMsg[256];     // 3C:  Save area for error message
-                                    //23C:  Length of struc
+    WCHAR       wszErrMsg[256];     // 40:  Save area for error message
+                                    //240:  Length of struc
 } SF_FCNS, *LPSF_FCNS;
 
 

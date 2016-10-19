@@ -2038,6 +2038,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
 ////////////////SF_Fcns.numLocalsSTE    = 0;                // # locals in AFO (Already zero from = {0})
 ////////////////SF_Fcns.lplpLocalSTEs   = NULL;             // Ptr to save area for local STEs          (Already zero from = {0})
                 SF_Fcns.LclParams       = &LW_Params;       // Ptr to local parameters
+                SF_Fcns.sfTypes         = SFTYPES_LOAD;     // Ptr to local parameters
 
                 // Fill in local values
                 LW_Params.lpwSectName   = lpwSectName;      // Ptr to section name

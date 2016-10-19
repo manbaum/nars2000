@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1317,6 +1317,7 @@ UBOOL TransferInverseFcn1_EM
     SF_Fcns.SF_CreationTime = SF_CreationTimeTF1;   // Ptr to get function creation time
     SF_Fcns.SF_LastModTime  = SF_LastModTimeTF1;    // Ptr to get function last modification time
     SF_Fcns.SF_UndoBuffer   = SF_UndoBufferTF1;     // Ptr to get function Undo Buffer global memory handle
+    SF_Fcns.sfTypes         = SFTYPES_TF;           // Caller type
 
     // Save ptr to local parameters
     SF_Fcns.LclParams = &TF1_Params;

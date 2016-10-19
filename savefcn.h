@@ -20,6 +20,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+typedef enum tagSF_TYPES
+{
+    SFTYPES_UNK = 0 ,               // 00:  Unknown type
+    SFTYPES_FX      ,               // 01:  Called from []FX
+    SFTYPES_AFO     ,               // 02:  ...         AFO
+    SFTYPES_TF      ,               // 03:  ...         []TF
+    SFTYPES_AA      ,               // 04:  ...         )INASCII
+    SFTYPES_LOAD    ,               // 05:  ...         )LOAD/...
+    SFTYPES_FE      ,               // 06:  ...         Function Editor
+} SF_TYPES, *LPSF_TYPES;
+
 typedef struct tagSF_FCNS
 {
     UINT        bDisplayErr:1,      // 00:  00000001:  TRUE iff we should display errors
@@ -46,6 +57,7 @@ typedef struct tagSF_FCNS
     UINT        numLocalsSTE;       // 30:  # locals in AFO
     LPSYMENTRY *lplpLocalSTEs;      // 34:  Ptr to save area for local STEs (may be NULL during sizing)
     LPHSHTABSTR lpHTS;              // 38:  Ptr to HshTabStr (may be NULL)
+    SF_TYPES    sfTypes;            // 3C:  Caller type (see SF_TYPES above)
     WCHAR       wszErrMsg[256];     // 3C:  Save area for error message
                                     //23C:  Length of struc
 } SF_FCNS, *LPSF_FCNS;

@@ -164,24 +164,25 @@ typedef struct tagDFN_HEADER            // Function header structure
 //   <FreeResultGlobalDfn> in <free.c>.
 
 
-typedef struct tagFH_YYSTYPE        // YYSTYPE for Function Header parser
+typedef struct tagFH_YYSTYPE        	// YYSTYPE for Function Header parser
 {
-    TOKEN  tkToken;                 // 00:  Token info (28 bytes)
-    UINT   uStrandLen:30,           // 1C:  3FFFFFFF:  # elements in this strand
-           Indirect:1,              //      40000000:  Indirect entry
-           List:1;                  //      80000000:  Itsa list
-                                    //      00000000:  No available bits
+    TOKEN  tkToken;                 	// 00:  Token info (28 bytes)
+    UINT   uStrandLen:30,           	// 1C:  3FFFFFFF:  # elements in this strand
+           Indirect:1,              	//      40000000:  Indirect entry
+           List:1;                  	//      80000000:  Itsa list
+                                    	//      00000000:  No available bits
     struct tagFH_YYSTYPE *
-           lpYYStrandIndirect;      // 20:  Ptr to the indirect strand if .Indirect is set
+           lpYYStrandIndirect;      	// 20:  Ptr to the indirect strand if .Indirect is set
     struct tagFH_YYSTYPE *
-           lpYYStrandBase;          // 24:  Ptr to this token's strand base
-                                    // 28:  Length
-} FH_YYSTYPE, *LPFH_YYSTYPE;        // Data type of yacc stack
+           lpYYStrandBase;          	// 24:  Ptr to this token's strand base
+    UINT   offTknIndex;             	// 28:  Offset in tokens in hGlbTknHdr
+                                    	// 2C:  Length
+} FH_YYSTYPE, *LPFH_YYSTYPE;        	// Data type of yacc stack
 
 #define YYSTYPE_IS_DECLARED 1
 
 
-typedef struct tagFHLOCALVARS       // Function Header Local Vars
+typedef struct tagFHLOCALVARS       	// Function Header Local Vars
 {
     HWND           hWndEC;              // 00:  Window handle for Edit Ctrl
     HGLOBAL        hGlbTknHdr,          // 04:  Tokenized header global memory handle
@@ -190,8 +191,10 @@ typedef struct tagFHLOCALVARS       // Function Header Local Vars
     LPTOKEN        lptkStart,           // 10:  First available entry after the header
                    lptkNext,            // 14:  Next  ...
                    lptkStop;            // 18:  Stopping token
-    UINT           tkErrorCharIndex;    // 1C:  Error char index
-    UINT           DfnType:4,           // 20:  0000000F:  User-defined function/operator type (see DFN_TYPES)
+    UINT           tkErrorCharIndex,    // 1C:  Error char index
+                   offTknBase,          // 20:  Offset in hGlbTknHdr of the current token
+                   offFcnName;          // 24:  Offset in hGlbTknHdr of the function name token
+    UINT           DfnType:4,           // 28:  0000000F:  User-defined function/operator type (see DFN_TYPES)
                    FcnValence:3,        //      00000070:  User-defined function/operator valence (see FCN_VALENCES)
                    DfnAxis:1,           //      00000080:  User-defined function/operator accepts axis value
                    DisplayErr:1,        //      00000100:  TRUE iff we should display error messages
@@ -204,19 +207,19 @@ typedef struct tagFHLOCALVARS       // Function Header Local Vars
                    bAFO:1,              //      00040000:  TRUE iff we're parsing an AFO
                    bLclRL:1,            //      00080000:  TRUE iff []RL is localized in this function
                    :12;                 //      FFF00000:  Available bits
-    LPFH_YYSTYPE   lpYYStrandStart,     // 24:  Strand stack start (static)
-                   lpYYStrandBase,      // 28:  ...          base (dynamic)
-                   lpYYStrandNext,      // 2C:  ...          next token (dynamic)
-                   lpYYResult,          // 30:  Ptr to result name or list
-                   lpYYLftArg,          // 34:  ...    left arg name or list
-                   lpYYLftOpr,          // 38:  ...    left operand name
-                   lpYYFcnName,         // 3C:  ...    function/operator name
-                   lpYYAxisOpr,         // 40:  ...    axis operator name
-                   lpYYRhtOpr,          // 44:  ...    right operand name
-                   lpYYRhtArg,          // 48:  ...    right arg name or list
-                   lpYYLocals;          // 4C:  ...    locals name or list
-    WCHAR          wszErrMsg[256];      // 50:  Save area for error message
-                                        //250:  Length
+    LPFH_YYSTYPE   lpYYStrandStart,     // 2C:  Strand stack start (static)
+                   lpYYStrandBase,      // 30:  ...          base (dynamic)
+                   lpYYStrandNext,      // 34:  ...          next token (dynamic)
+                   lpYYResult,          // 38:  Ptr to result name or list
+                   lpYYLftArg,          // 3C:  ...    left arg name or list
+                   lpYYLftOpr,          // 40:  ...    left operand name
+                   lpYYFcnName,         // 44:  ...    function/operator name
+                   lpYYAxisOpr,         // 48:  ...    axis operator name
+                   lpYYRhtOpr,          // 4C:  ...    right operand name
+                   lpYYRhtArg,          // 50:  ...    right arg name or list
+                   lpYYLocals;          // 54:  ...    locals name or list
+    WCHAR          wszErrMsg[256];      // 58:  Save area for error message
+                                        //258:  Length
 } FHLOCALVARS, *LPFHLOCALVARS;
 
 

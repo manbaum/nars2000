@@ -3151,9 +3151,6 @@ UBOOL fnDelDone
         lptkLocalVars->uChar++;
     } else
     {
-        if (!fnGroupInitSub (lptkLocalVars, TKT_LEFTPAREN))
-            return FALSE;
-
         // Mark the data as a del
         tkFlags.TknType = TKT_DEL;              // Always a function
 ////////tkFlags.ImmType = IMMTYPE_ERROR;        // Already zero from {0}
@@ -3163,13 +3160,11 @@ UBOOL fnDelDone
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
-        if (!AppendNewToken_EM (lptkLocalVars,
+        return
+          AppendNewToken_EM (lptkLocalVars,
                             &tkFlags,
                             &tkData,
-                                0))
-            return FALSE;
-
-        bRet = fnGroupDoneSub (lptkLocalVars, TKT_RIGHTPAREN, TKT_LEFTPAREN);
+                             0);
     } // End IF/ELSE
 
     return bRet;

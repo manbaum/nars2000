@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -217,6 +217,7 @@ void MakeAfo_EM_YY
 ////SF_Fcns.numLocalsSTE    = 0;                    // # locals                         (Already zero from = {0})
 ////SF_Fcns.lplpLocalSTEs   = NULL;                 // Ptr to save area for local STEs  (Already zero from = {0})
     SF_Fcns.LclParams       = &LW_Params;           // Ptr to local parameters
+    SF_Fcns.sfTypes         = SFTYPES_AFO;          // Caller type
 
     // Fill in local values
     LW_Params.lpYYRht       = lpYYRht;              // Ptr to right brace token

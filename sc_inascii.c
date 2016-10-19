@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -328,6 +328,7 @@ UBOOL InAsciiFile_EM
     SF_Fcns.SF_CreationTime = SF_CreationTimeAA;    // Ptr to get function creation time
     SF_Fcns.SF_LastModTime  = SF_LastModTimeAA;     // Ptr to get function last modification time
     SF_Fcns.SF_UndoBuffer   = SF_UndoBufferAA;      // Ptr to get function Undo Buffer global memory handle
+    SF_Fcns.sfTypes         = SFTYPES_AA;           // Caller type
 
     // Fill in ASCII2APL-specific values
     AA_Params.lpwStart = lpwA2AView;

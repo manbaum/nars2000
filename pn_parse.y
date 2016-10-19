@@ -375,10 +375,24 @@ GammaPoint:
                                          YYERROR2;
                                      $$ = *lppnLocalVars->lpYYRes;
                                     }
+    | EPGArgs   'g' ExtPoint        {DbgMsgWP (L"%%GammaPoint:  EPGArgs 'g' ExtPoint");
+                                     // Make it into a GammaPoint number
+                                     lppnLocalVars->lpYYRes = PN_MakeGammaPoint (&$1, &$3,  lppnLocalVars);
+                                     if (lppnLocalVars->lpYYRes EQ NULL)
+                                         YYERROR2;
+                                     $$ = *lppnLocalVars->lpYYRes;
+                                    }
     ;
 
 PiPoint:
       EPGArgs   'p' EPGArgs         {DbgMsgWP (L"%%PiPoint:  EPGArgs 'p' EPGArgs");
+                                     // Make it into a PiPoint number
+                                     lppnLocalVars->lpYYRes = PN_MakePiPoint    (&$1, &$3,  lppnLocalVars);
+                                     if (lppnLocalVars->lpYYRes EQ NULL)
+                                         YYERROR2;
+                                     $$ = *lppnLocalVars->lpYYRes;
+                                    }
+    | EPGArgs   'p' ExtPoint        {DbgMsgWP (L"%%PiPoint:  EPGArgs 'p' ExtPoint");
                                      // Make it into a PiPoint number
                                      lppnLocalVars->lpYYRes = PN_MakePiPoint    (&$1, &$3,  lppnLocalVars);
                                      if (lppnLocalVars->lpYYRes EQ NULL)
@@ -444,6 +458,13 @@ VfpPoint:
 
 EulerPoint:
       EPGArgs  'x' EPGArgs          {DbgMsgWP (L"%%EulerPoint:  EPGArgs 'x' EPGArgs");
+                                     // Make it into a EulerPoint number
+                                     lppnLocalVars->lpYYRes = PN_MakeEulerPoint (&$1, &$3,  lppnLocalVars);
+                                     if (lppnLocalVars->lpYYRes EQ NULL)
+                                         YYERROR2;
+                                     $$ = *lppnLocalVars->lpYYRes;
+                                    }
+    | EPGArgs  'x' ExtPoint         {DbgMsgWP (L"%%EulerPoint:  EPGArgs 'x' ExtPoint");
                                      // Make it into a EulerPoint number
                                      lppnLocalVars->lpYYRes = PN_MakeEulerPoint (&$1, &$3,  lppnLocalVars);
                                      if (lppnLocalVars->lpYYRes EQ NULL)
@@ -578,8 +599,9 @@ UBOOL ParsePointNotation
       || strstr (lppnLocalVars->lpszStart, "x ") NE NULL
       || lppnLocalVars->lpszStart[lppnLocalVars->uNumLen - 1] EQ 'x'))
     {
-        // Weed out non-RAT expressions such as 2p3
-        if (strchr (lppnLocalVars->lpszStart, 'p' ) EQ NULL)
+        // Weed out non-RAT expressions such as 2g3 and 2p3
+        if (strchr (lppnLocalVars->lpszStart, 'g' ) EQ NULL
+         && strchr (lppnLocalVars->lpszStart, 'p' ) EQ NULL)
         {
             LPCHAR p;
 

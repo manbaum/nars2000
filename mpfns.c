@@ -1457,7 +1457,7 @@ APLINT _mpfr_get_ctsx
            mpfTmp2 = {0},
            mpfSrc  = {0};
     APLINT aplInt = 0;
-    UBOOL  bRet;
+    UBOOL  bRet = TRUE;
 
     if (lpbRet EQ NULL)
         lpbRet = &bRet;
@@ -1487,22 +1487,14 @@ APLINT _mpfr_get_ctsx
 
         // Compare the number and its floor
         if (_mpfr_cmp_ct (&mpfSrc, &mpfTmp1, fQuadCT, bIntegerTest) EQ 0)
-        {
             // Return the floor
             aplInt = mpfr_get_sx (&mpfTmp1, lpbRet);
-
-            // Mark as within []CT
-            *lpbRet = TRUE;
-        } else
+        else
         // Compare the number and its ceiling
         if (_mpfr_cmp_ct (&mpfSrc, &mpfTmp2, fQuadCT, bIntegerTest) EQ 0)
-        {
             // Return the ceiling
             aplInt = mpfr_get_sx (&mpfTmp2, lpbRet);
-
-            // Mark as within []CT
-            *lpbRet = TRUE;
-        } else
+        else
         {
             // Return the floor even though it isn't within []CT
             aplInt = mpfr_get_sx (&mpfTmp1, lpbRet);

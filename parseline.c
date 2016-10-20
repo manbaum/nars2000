@@ -5919,6 +5919,12 @@ PL_YYLEX_FCNNAMED:
                                      lptkRht2 = NULL;
                         UBOOL        bAssignName;
 
+                        // If it's a System Var, ...
+                        if (lpplYYLval->tkToken.tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS)
+                            // Copy the current value from the most local HTS
+                            lpplYYLval->tkToken.tkData.tkSym =
+                              lpMemPTD->lphtsPTD->lpSymQuad[lpplYYLval->tkToken.tkData.tkSym->stFlags.SysVarValid];
+
                         if (RSTACKLEN2 > 0)
                         {
                             lpYYRht0 = lpplLocalVars->lpMemPTD->lpplRhtStk[ 0];

@@ -54,7 +54,8 @@
 #define KEYNAME_YSIZE                   L"ySize"
 #define KEYNAME_INITIALCAT              L"InitialCategory"
 #define KEYNAME_COUNT                   L"Count"
-#define KEYNAME_KEYBUNIBASE             L"KeybUnibase"
+#define KEYNAME_UNIBASE                 L"Unibase"
+#define KEYNAME_CHAR                    L"Char"
 #define KEYNAME_KEYBTCNUM               L"KeybTCNum"
 #define KEYNAME_KEYBSTATE               L"KeybState"
 #define KEYNAME_KEYBLAYOUTNAME          L"KeybLayoutName"
@@ -135,6 +136,7 @@
 #define KEYNAME_SC_UNMATCHGRP           L"UnmatchGrp"
 #define KEYNAME_SC_UNNESTED             L"UnnestedGrp"
 #define KEYNAME_SC_UNK                  L"Unk"
+#define KEYNAME_SC_LINECONT             L"LineContinuation"
 #define KEYNAME_SC_WINTEXT              L"WinText"
 
 #define KEYNAME_CUSTOMCOLORS            L"CustomColors"
@@ -187,7 +189,8 @@ LPWCHAR aColorKeyNames[] =
  KEYNAME_SC_UNMATCHGRP  ,       // 14:  Unmatched Grouping Symbols [] () {} ' "
  KEYNAME_SC_UNNESTED    ,       // 15:  Improperly Nested Grouping Symbols [] () {}
  KEYNAME_SC_UNK         ,       // 16:  Unknown symbol
- KEYNAME_SC_WINTEXT     ,       // 17:  Window text
+ KEYNAME_SC_LINECONT    ,       // 17:  Line Continuation
+ KEYNAME_SC_WINTEXT     ,       // 18:  Window text
 };
 
 // Array of keynames for use in [Toolbars] section
@@ -702,6 +705,23 @@ UBOOL ReadIniFileGlb
                              KEYNAME_DISPMPSUF,     // Ptr to the key name
                              DEF_DISPMPSUF,         // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
+    // Read in the Line Continuation char as an integer
+    uUserChar =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_CHAR,          // Ptr to the key name
+                             WC_LC,                 // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in the Unicode base for typed chars (10 or 16)
+    uUserUnibase =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_UNIBASE,       // Ptr to the key name
+                             16,                    // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Ensure the Unicode base is either 10 or 16
+    if (uUserUnibase NE 10
+     && uUserUnibase NE 16)
+        uUserUnibase = 16;
+
     //***************************************************************
     // Read in the [SysVars] section -- default values for system
     //                                  variables in a CLEAR WS
@@ -1150,14 +1170,20 @@ UBOOL ReadIniFileGlb
     // Get the Unicode base for typed chars (10 or 16)
     uKeybUnibase =
       GetPrivateProfileIntW (SECTNAME_KEYBOARDS,    // Ptr to the section name
-                             KEYNAME_KEYBUNIBASE,   // Ptr to the key name
-                             10,                    // Default value if not found
+                             KEYNAME_UNIBASE,       // Ptr to the key name
+                             16,                    // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     // Ensure the Unicode base is either 10 or 16
     if (uKeybUnibase NE 10
      && uKeybUnibase NE 16)
         uKeybUnibase = 16;
 
+    // Get the last keyboard unicode character selected
+    uKeybChar =
+      GetPrivateProfileIntW (SECTNAME_KEYBOARDS,    // Ptr to the section name
+                             KEYNAME_CHAR,          // Ptr to the key name
+                             0,                     // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
     // Get the index of the keyboard TabCtrl tab
     uKeybTCNum =
       GetPrivateProfileIntW (SECTNAME_KEYBOARDS,    // Ptr to the section name
@@ -2372,6 +2398,28 @@ void SaveIniFile
                                 KEYNAME_DISPMPSUF,          // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
+    //******************* uUserChar ***************************
+    // Format the Line Continuation marker
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
+               L"%u",
+                uUserChar);
+    // Write it out
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
+                                KEYNAME_CHAR,               // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    //******************* uUserUnibase ************************
+    // Format the Line Continuation Unicode base
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
+               L"%u",
+                uUserUnibase);
+    // Write it out
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
+                                KEYNAME_UNIBASE,            // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
 
     //*********************************************************
     // Write out [SysVars] section entries
@@ -2907,7 +2955,17 @@ void SaveIniFile
                 uKeybUnibase);
     // Write it out
     WritePrivateProfileStringW (SECTNAME_KEYBOARDS,         // Ptr to the section name
-                                KEYNAME_KEYBUNIBASE,        // Ptr to the key name
+                                KEYNAME_UNIBASE,            // Ptr to the key name
+                                wszKey,                     // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    // Format the last keyboard unicode char
+    MySprintfW (wszKey,
+                sizeof (wszKey),
+               L"%u",
+                uKeybChar);
+    // Write it out
+    WritePrivateProfileStringW (SECTNAME_KEYBOARDS,         // Ptr to the section name
+                                KEYNAME_CHAR,               // Ptr to the key name
                                 wszKey,                     // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     // Format the keyboard TabCtrl tab index

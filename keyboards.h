@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -83,7 +83,6 @@ typedef struct tagVKSTATE
 //     < Left Caret               Alt-'3'
 //     ? Question Mark            Alt-'q'
 //     > Right Caret              Alt-'7'
-//     ' Single Quote             Alt-'k'
 //     ~ Tilde                    Alt-'t'
 //     ^ Up Caret (Circumflex)    Alt-'0'
 
@@ -624,7 +623,8 @@ UINT uGlbKeybLayoutNumAct,          // # of active keyboard layout
 = countof (aKeybLayoutsBI)          // Initialize to # built-in keyboard layouts
 #endif
 ,
-     uKeybUnibase,                  // Keyboard Unicode base:  10 or 16
+     uKeybUnibase,                  // Keyboard Unicode base:  10 or 16 for Current Char
+     uKeybChar,                     // Current Character
      uKeybTCNum,                    // Initial keyboard TabCtrl index
      uKeybState;                    // Initial keyboard state:  0 to 7 (3 bits, Shift(4), Ctrl(2), Alt(1))
 

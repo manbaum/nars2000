@@ -109,7 +109,7 @@ RESDEBUG=1
 CFLAGS_DEBUG=/Zi /D "DEBUG"
 BUILD_DIR=Debug
 DEBUG_LIBSUFFIX=d
-LFLAGS_NDEF=/NODEFAULTLIB:libcmt.lib
+LFLAGS_NDEF=/NODEFAULTLIB:libcmt.lib /SAFESEH:NO
 !else
 RESDEBUG=0
 CFLAGS_DEBUG=/Zi
@@ -190,6 +190,7 @@ LIBS_WEXE =                     \
             comctl32.lib        \
             wininet.lib         \
             oldnames.lib        \
+            MSImg32.lib         \
             ole32.lib           \
             uuid.lib            \
             winspool.lib        \
@@ -415,7 +416,6 @@ ICONS=$(A)About.ico     \
       $(A)SM.ico        \
       $(A)VE.ico        \
       $(A)WC.ico        \
-      $(A)LineCont.bmp  \
       $(A)Workspace.bmp \
       $(A)Edit.bmp      \
       $(A)Objects.bmp

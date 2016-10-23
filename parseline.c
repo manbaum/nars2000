@@ -5086,6 +5086,11 @@ PARSELINE_DONE:
 #endif
                 } // End IF/ELSE/...
 
+                // If the SIS level is valid, ...
+                if (lpSISCur NE NULL)
+                    // Copy the AFO value flag
+                    lpSISCur->bAfoValue = plLocalVars.bAfoValue;
+
                 // If there are no preceding tokens, ...
                 if (plLocalVars.lptkEOS EQ plLocalVars.lptkNext)
                     // Skip to one past the EOS
@@ -5094,6 +5099,17 @@ PARSELINE_DONE:
                 // If the previous token is a NOP, ...
                 if (plLocalVars.lptkNext[-1].tkFlags.TknType EQ TKT_NOP)
                     // Skip to the previous token (NOP) before which is (EOS/EOL)
+                    plLocalVars.lptkNext--;
+
+                // While the previous token is a Line Continuation, ...
+                while (plLocalVars.lptkNext[-1].tkFlags.TknType EQ TKT_LINECONT)
+                    // Skip to the previous token
+                    plLocalVars.lptkNext--;
+
+                // If the current token is a NOP, ...
+                // This can occur in an AFO such as f{is}{leftbrace} CR/CR/LF ...
+                if (plLocalVars.lptkNext[-1].tkFlags.TknType EQ TKT_NOP)
+                    // Skip to the previous token
                     plLocalVars.lptkNext--;
 
                 Assert (plLocalVars.lptkNext[-1].tkFlags.TknType EQ TKT_EOS
@@ -5109,7 +5125,7 @@ PARSELINE_DONE:
                       &&  plLocalVars.lptkNext[-3].tkFlags.TknType EQ TKT_EOL));
 
                 // If we're not at the end of the line, ...
-                if (!bEOL)
+                if (!bEOL && !plLocalVars.bAfoValue)
                 {
                     // Skip to the previous token (EOS/EOL)
                     plLocalVars.lptkNext--;

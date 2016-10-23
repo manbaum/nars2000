@@ -1130,15 +1130,10 @@ EXTERN
 SIZE  MFSize;                           // Size of Master Frame Window window rectangle
 
 EXTERN
-HBITMAP hBitmapLineCont,                // Bitmap for the line continuation char
-        hBitmapCheck;                   // Bitmap for the marker used in Customize
+HBITMAP hBitmapCheck;                   // Bitmap for the marker used in Customize
 
 EXTERN
-int     iLCWidth;                       // Width of the line continuation column
-
-EXTERN
-BITMAP  bmLineCont,                     // Bitmap metrics for the line continuation char
-        bmCheck;                        // Bitmap metrics for the marker
+BITMAP  bmCheck;                        // Bitmap metrics for the marker
 
 EXTERN
 HCURSOR hCursorWait,                    // Hourglass cursor
@@ -1422,12 +1417,14 @@ SYNTAXCOLORNAME gSyntaxColorName[SC_LENGTH]
     {{DEF_SC_UNMATCHGRP }, L"Unmatched Group"             },  // 14:  Unmatched Grouping Symbols [] () {} ' "
     {{DEF_SC_UNNESTED   }, L"Improper Nesting"            },  // 15:  Improperly Nested Grouping Symbols [] () {}
     {{DEF_SC_UNK        }, L"Unknown Symbols"             },  // 16:  Unknown symbol
-    {{DEF_SC_WINTEXT    }, L"Window Text"                 },  // 17:  Window text
+    {{DEF_SC_LINECONT   }, L"Line Continuation"           },  // 17:  Line Continuation
+    {{DEF_SC_WINTEXT    }, L"Window Text"                 },  // 18:  Window text
   }
 #endif
 ;
 
-#define gSyntaxColorText    gSyntaxColorName[SC_WINTEXT].syntClr
+#define gSyntaxColorText    gSyntaxColorName[SC_WINTEXT ].syntClr
+#define gSyntaxColorLC      gSyntaxColorName[SC_LINECONT].syntClr
 
 EXTERN
 HBRUSH ghBrushBG;           // Window background brush
@@ -1463,7 +1460,8 @@ UBOOL gSyntClrBGTrans[SC_LENGTH]
     FALSE,                  // 14:  Unmatched Grouping Symbols
     FALSE,                  // 15:  Improperly Nested Grouping Symbols
     FALSE,                  // 16:  Unknown symbol
-    FALSE,                  // 17:  Window background
+    TRUE,                   // 17:  Line Continuation
+    FALSE,                  // 18:  Window background
   }
 #endif
 ;
@@ -1863,6 +1861,9 @@ typedef enum tagFONTENUM
 EXTERN
 FONTENUM glbSameFontAs[FONTENUM_LENGTH];
 
+EXTERN
+UINT uWidthLC[FONTENUM_LENGTH];
+
 void CreateNewFontSM (UBOOL);
 void CreateNewFontLW (UBOOL);
 void CreateNewFontFE (UBOOL);
@@ -1940,8 +1941,21 @@ typedef struct tagCUSTOMIZE
     UBOOL   bInitialized;
 } CUSTOMIZE, *LPCUSTOMIZE;
 
+typedef enum tagALLCATS
+{
+    CAT_CLEARWS_VALUES = 0 ,        // 00:  CLEAR WS Values
+    CAT_DIRS               ,        // 01:  Directories
+    CAT_FONTS              ,        // 02:  Fonts
+    CAT_KEYBS              ,        // 03:  Keyboards
+    CAT_RANGE_LIMITS       ,        // 04:  Range Limits
+    CAT_SYNTAX_COLORING    ,        // 05:  Syntax Coloring
+    CAT_SYSTEM_VAR_RESET   ,        // 06:  System Var Reset
+    CAT_USER_PREFS         ,        // 07:  User Preferences
+    CAT_LENGTH             ,        // 08:  # entries in this enum
+} ALLCATS, *LPALLCATS;
+
 EXTERN
-CUSTOMIZE custStruc[]
+CUSTOMIZE custStruc[CAT_LENGTH] // **MUST** be in the same order as ALLCATS enum
 #ifdef DEFINE_VALUES
  =
 {   {L"CLEAR WS Values"         , IDD_PROPPAGE_CLEARWS_VALUES   ,  FALSE},  // 00
@@ -1967,11 +1981,15 @@ UINT custStrucLen
 #define DEF_INIT_CATEGORY   (IDD_PROPPAGE_FONTS - IDD_PROPPAGE_START)   // Fonts
 
 EXTERN
-int gInitCustomizeCategory
+ALLCATS gInitCustomizeCategory
 #ifdef DEFINE_VALUES
 = DEF_INIT_CATEGORY
 #endif
 ;
+
+EXTERN
+UINT uUserChar,             // Line Continuation marker
+     uUserUnibase;          // User Preferences Unicode base:  10 or 16
 
 typedef enum tagUNDO_ACTS
 {

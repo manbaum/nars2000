@@ -2960,6 +2960,12 @@ UBOOL DisplayGlbVector
     APLINT    iSizeof;              // sizeof () datatype
     UBOOL     bRet = FALSE,         // TRUE iff we succeeded
               bBoolAPA = FALSE;     // TRUE iff the type is BOOL or APA
+    HWND      hWndSM,               // Window handle for the Session Manager
+              hWndEC;               // ...                                  Edit Ctrl
+
+    // Get the current SM window handle
+    hWndSM = GetMemPTD ()->hWndSM;
+    hWndEC = (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
 
     // Set initial values
     lpaplChar = lpaplCharIni;
@@ -2979,12 +2985,18 @@ UBOOL DisplayGlbVector
                      (uCnt < aplDimNCols) && (uCurPos < uQuadPW);
                      uCnt++, ((LPAPLCHAR) lpMemArr)++)
                     // Check for Terminal Control chars
-                    CheckTermCodes (*(LPAPLCHAR) lpMemArr,  // Current char to test
-                                    lpaplCharIni,           // Ptr to initial output save area
-                                   &lpaplChar,              // Ptr to ptr to output save area
-                                   &uCurPos,                // Ptr to current position
-                                   &uMaxPos,                // Ptr to maximum position
-                                    uIniPos);               // Initial position
+                    if (CheckTermCodes ((LPAPLCHAR) lpMemArr,   // Ptr to current char to test
+                                        hWndEC,                 // EditCtrl window handle
+                                        lpaplCharIni,           // Ptr to initial output save area
+                                       &lpaplChar,              // Ptr to ptr to output save area
+                                       &uCurPos,                // Ptr to current position
+                                       &uMaxPos,                // Ptr to maximum position
+                                        uIniPos))               // Initial position
+                    {
+                        // Skip over the next two chars
+                        uCnt                   += 2;
+                        ((LPAPLCHAR) lpMemArr) += 2;
+                    } // End FOR/IF
                 // Ensure properly terminated
                 lpaplChar[0] = WC_EOS;
 
@@ -3144,8 +3156,9 @@ ERROR_EXIT:
 //  Check a character for terminal Codes
 //***************************************************************************
 
-void CheckTermCodes
-    (WCHAR      wc,             // Temp var
+UBOOL CheckTermCodes
+    (LPWCHAR    lpwc,           // Ptr to Temp var
+     HWND       hWndEC,         // Window handle of the EditCtrl
      LPAPLCHAR  lpaplCharIni,   // Ptr to initial output save area
      LPAPLCHAR *lplpaplChar,    // Ptr to ptr to output save area
      APLUINT   *lpuCurPos,      // Ptr to current position
@@ -3153,18 +3166,19 @@ void CheckTermCodes
      APLUINT    uIniPos)        // Initial position
 
 {
-    APLUINT   uSpaces;          // # spaces to fill in for HT
+    APLUINT uSpaces;            // # spaces to fill in for HT
+    UBOOL   bRet = FALSE;       // TRUE iff the caller is to skip over CR, LF
 
     // Split cases based upon the char value
-    switch (wc)
+    switch (*lpwc)
     {
-        case TCBEL:     // Bel
+        case WC_BEL:    // Bel
             // Sound the alarum!
             MessageBeep (NEG1U);
 
             break;
 
-        case TCHT:
+        case WC_HT:
             // Insert a tab -- convert into insert N spaces
             uSpaces = (((*lpuCurPos) / DEF_TABS) * DEF_TABS + DEF_TABS) - *lpuCurPos;
 
@@ -3180,7 +3194,7 @@ void CheckTermCodes
 
             break;
 
-        case TCBS:
+        case WC_BS:
             // If there's room to backspace, ...
             if (lpuCurPos[0] > uIniPos)
             {
@@ -3191,7 +3205,7 @@ void CheckTermCodes
 
             break;
 
-        case TCNL:
+        case WC_CR:
             // Ensure properly terminated
             lpaplCharIni[*lpuMaxPos - uIniPos] = WC_EOS;
 
@@ -3206,22 +3220,56 @@ void CheckTermCodes
             (*lpuMaxPos)   =
             (*lpuCurPos)   = uIniPos;
 
+            // If this char is followed by WC_CR and WC_LF, ...
+            if (lpwc[1] EQ WC_CR
+             && lpwc[2] EQ WC_LF)
+            {
+                UINT uCharPos,              // Current char position in the buffer
+                     uLineNum;              // Current line #
+
+                // The previous line ends with CR/LF and we need to change it
+                //   so that it ends with CR/CR/LF
+
+                // Get the indices of the selected text, and as
+                //   there is none, we need the leading position only
+                SendMessageW (hWndEC, EM_GETSEL, (WPARAM) &uCharPos, 0);
+
+                // Back up by 2 to the start of CR/LF
+                SendMessageW (hWndEC, EM_SETSEL, uCharPos - 2, uCharPos - 2);
+
+                // Insert another CR
+                SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) WS_CR);
+
+                // Reset the selection to the end
+                SendMessageW (hWndEC, EM_SETSEL, uCharPos + 1, uCharPos + 1);
+
+                // Get the current line # in the Edit Ctrl buffer
+                uLineNum = (UINT) SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
+
+                // Draw a Line Continuation marker
+                DrawLineCont (hWndEC, uLineNum);
+
+                bRet = TRUE;
+            } // End IF
+
             break;
 
-////////case TCESC:                 // Ignore these chars
-////////case TCLF:                  // ...
-////////case TCFF:                  // ...
-////////case TCNUL:                 // ...
+////////case WC_ESC:                // Ignore these chars
+////////case WC_LF:                 // ...
+////////case WC_FF:                 // ...
+////////case WC_NUL:                // ...
         default:
-            if (wc >= L' ')         // Ignore unprintable chars
+            if (*lpwc >= L' ')      // Ignore unprintable chars
             {
-                *(*lplpaplChar)++ = wc;
+                *(*lplpaplChar)++ = *lpwc;
                 (*lpuCurPos)++;
                 (*lpuMaxPos)      = max (*lpuMaxPos, *lpuCurPos);
             } // End IF
 
             break;
     } // End SWITCH
+
+    return bRet;
 } // End CheckTermCodes
 
 

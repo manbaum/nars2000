@@ -120,7 +120,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
     <Link>
-      <AdditionalOptions>/ignore:4099 comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib dbghelp.lib Shlwapi.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/ignore:4099 comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib MSImg32.lib dbghelp.lib Shlwapi.lib %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>mpir32d.lib;mpfr32d.lib;mpc32d.lib;ecm32d.lib;gsl.lib;cblas.lib;qdebug32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(MPIR_DIR)lib;$(MPFR_DIR)lib;$(MPC_DIR)lib;$(ECM_DIR)lib;$(CS_DIR)lib;$(GSL_DIR)x86\lib;$(NARSROOT)qdebug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>NARS2000.exe.manifest32;%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
@@ -135,6 +135,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
       <Message>Copy default APL font</Message>
@@ -173,7 +174,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
     <Link>
-      <AdditionalOptions>/ignore:4099 comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib dbghelp.lib Shlwapi.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/ignore:4099 comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib MSImg32.lib dbghelp.lib Shlwapi.lib %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>mpir64d.lib;mpfr64d.lib;mpc64d.lib;ecm64d.lib;gsl.lib;cblas.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(MPIR_DIR)lib;$(MPFR_DIR)lib;$(MPC_DIR)lib;$(ECM_DIR)lib;$(CS_DIR)lib;$(GSL_DIR)x64\lib;$(NARSROOT)qdebug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>NARS2000.exe.manifest64;%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
@@ -227,7 +228,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
     <Link>
-      <AdditionalOptions>/ignore:4099 comctl32.lib Wininet.lib version.lib libcmt.lib oldnames.lib dbghelp.lib Shlwapi.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/ignore:4099 comctl32.lib Wininet.lib version.lib libcmt.lib oldnames.lib MSImg32.lib dbghelp.lib Shlwapi.lib %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>mpir32.lib;mpfr32.lib;mpc32.lib;ecm32.lib;gsl.lib;cblas.lib;qdebug32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(MPIR_DIR)lib;$(MPFR_DIR)lib;$(MPC_DIR)lib;$(ECM_DIR)lib;$(CS_DIR)lib;$(GSL_DIR)x86\lib;$(NARSROOT)qdebug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>NARS2000.exe.manifest32;%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
@@ -280,7 +281,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
     <Link>
-      <AdditionalOptions>/ignore:4099 comctl32.lib Wininet.lib version.lib libcmt.lib oldnames.lib dbghelp.lib Shlwapi.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/ignore:4099 comctl32.lib Wininet.lib version.lib libcmt.lib oldnames.lib MSImg32.lib dbghelp.lib Shlwapi.lib %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>mpir64.lib;mpfr64.lib;mpc64.lib;ecm64.lib;gsl.lib;cblas.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(MPIR_DIR)lib;$(MPFR_DIR)lib;$(MPC_DIR)lib;$(ECM_DIR)lib;$(CS_DIR)lib;$(GSL_DIR)x64\lib;$(NARSROOT)qdebug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>NARS2000.exe.manifest64;%(AdditionalManifestDependencies)</AdditionalManifestDependencies>

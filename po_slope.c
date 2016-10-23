@@ -686,9 +686,9 @@ RESTART_EXCEPTION:
                                     // It's now an INT result
                                     aplTypeRes = ARRAY_INT;
 
-                                    if (hGlbRes)
+                                    if (hGlbRes NE NULL)
                                     {
-                                        if (lpMemRes)
+                                        if (lpMemRes NE NULL)
                                         {
                                             // We no longer need this ptr
                                             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -701,7 +701,7 @@ RESTART_EXCEPTION:
                                     // Get the left arg global memory handle (if any)
                                     hGlbRes = GetGlbHandle (&tkLftArg);
 
-                                    if (hGlbRes)
+                                    if (hGlbRes NE NULL)
                                     {
                                         // We no longer need this storage
                                         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
@@ -832,7 +832,7 @@ RESTART_EXCEPTION:
                         (*aTypeTknPromote[aplTypeRht][aplTypeRes]) (&tkRhtArg);
 
                     // Execute the left operand between the left & right args
-                    if (lpPrimProtoLft)
+                    if (lpPrimProtoLft NE NULL)
                         // Note that we cast the function strand to LPTOKEN
                         //   to bridge the two types of calls -- one to a primitive
                         //   function which takes a function token, and one to a
@@ -851,7 +851,7 @@ RESTART_EXCEPTION:
                     FreeResultTkn (&tkLftArg);
 
                     // If it succeeded, ...
-                    if (lpYYRes)
+                    if (lpYYRes NE NULL)
                     {
                         // Check for NoValue
                         if (IsTokenNoValue (&lpYYRes->tkToken))
@@ -880,9 +880,9 @@ RESTART_EXCEPTION:
                         // It's now a aplTypeTmp result
                         aplTypeRes = aplTypeTmp;
 
-                        if (hGlbRes)
+                        if (hGlbRes NE NULL)
                         {
-                            if (lpMemRes)
+                            if (lpMemRes NE NULL)
                             {
                                 // We no longer need this ptr
                                 MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -895,7 +895,7 @@ RESTART_EXCEPTION:
                         // Get the left arg global memory handle (if any)
                         hGlbRes = GetGlbHandle (&tkLftArg);
 
-                        if (hGlbRes)
+                        if (hGlbRes NE NULL)
                         {
                             // We no longer need this storage
                             FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
@@ -922,9 +922,9 @@ RESTART_EXCEPTION:
                                         // It's now an INT result
                                         aplTypeRes = ARRAY_INT;
 
-                                        if (hGlbRes)
+                                        if (hGlbRes NE NULL)
                                         {
-                                            if (lpMemRes)
+                                            if (lpMemRes NE NULL)
                                             {
                                                 // We no longer need this ptr
                                                 MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -937,7 +937,7 @@ RESTART_EXCEPTION:
                                         // Get the left arg global memory handle (if any)
                                         hGlbRes = GetGlbHandle (&tkLftArg);
 
-                                        if (hGlbRes)
+                                        if (hGlbRes NE NULL)
                                         {
                                             // We no longer need this storage
                                             FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
@@ -1126,7 +1126,7 @@ RESTART_EXCEPTION:
                     FreeResultTkn (&tkRhtArg);
 
                     // If it succeeded, ...
-                    if (lpYYRes)
+                    if (lpYYRes NE NULL)
                     {
                         // Check for NoValue
                         if (IsTokenNoValue (&lpYYRes->tkToken))
@@ -1164,7 +1164,7 @@ RESTART_EXCEPTION:
                                               apaMulRht,    // APA multiplier (if needed)
                                              &tkLftArg);    // Ptr to token in which to place the value
                     // Execute the left operand between the left & right args
-                    if (lpPrimProtoLft)
+                    if (lpPrimProtoLft NE NULL)
                         // Note that we cast the function strand to LPTOKEN
                         //   to bridge the two types of calls -- one to a primitive
                         //   function which takes a function token, and one to a
@@ -1183,7 +1183,7 @@ RESTART_EXCEPTION:
                     FreeResultTkn (&tkLftArg);
 
                     // If it succeeded, ...
-                    if (lpYYRes)
+                    if (lpYYRes NE NULL)
                     {
                         // Check for NoValue
                         if (IsTokenNoValue (&lpYYRes->tkToken))
@@ -1212,9 +1212,9 @@ RESTART_EXCEPTION:
                         // It's now a aplTypeTmp result
                         aplTypeRes = aplTypeTmp;
 
-                        if (hGlbRes)
+                        if (hGlbRes NE NULL)
                         {
-                            if (lpMemRes)
+                            if (lpMemRes NE NULL)
                             {
                                 // We no longer need this ptr
                                 MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -1227,7 +1227,7 @@ RESTART_EXCEPTION:
                         // Get the right arg global memory handle (if any)
                         hGlbRes = GetGlbHandle (&tkRhtArg);
 
-                        if (hGlbRes)
+                        if (hGlbRes NE NULL)
                         {
                             // We no longer need this storage
                             FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
@@ -1263,9 +1263,9 @@ RESTART_EXCEPTION:
                                     // It's now an INT result
                                     aplTypeRes = ARRAY_INT;
 
-                                    if (hGlbRes)
+                                    if (hGlbRes NE NULL)
                                     {
-                                        if (lpMemRes)
+                                        if (lpMemRes NE NULL)
                                         {
                                             // We no longer need this ptr
                                             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -1278,7 +1278,7 @@ RESTART_EXCEPTION:
                                     // Get the right arg global memory handle (if any)
                                     hGlbRes = GetGlbHandle (&tkRhtArg);
 
-                                    if (hGlbRes)
+                                    if (hGlbRes NE NULL)
                                     {
                                         // We no longer need this storage
                                         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
@@ -1398,7 +1398,7 @@ RESTART_EXCEPTION:
     } // End IF/ELSE
 YYALLOC_EXIT:
     // Unlock the result global memory in case TypeDemote actually demotes
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -1445,9 +1445,9 @@ VALUE_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -1457,13 +1457,13 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemRht NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;

@@ -406,7 +406,7 @@ HGLOBAL Init1MagicFunction
     // Parse the function header
     if (ParseFcnHeader (hWndEC, hGlbTknHdr, &fhLocalVars, TRUE))
     {
-        UINT         uLineNum,          // Current line # in the Edit Ctrl
+        UINT         uLineNum,          // Current line # in the Edit Ctrl (0 = header)
                      uOffset,           // Cumulative offset
                      numResultSTE,      // # result STEs (may be zero)
                      numLftArgSTE,      // # left arg ...
@@ -452,7 +452,7 @@ HGLOBAL Init1MagicFunction
         numFcnLines = lpMagicFcnOpr->numFcnLines;
 
         // Get size of tokenization of all lines (excluding the header)
-        for (uOffset = uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
+        for (uOffset = 0, uLineNum = 1; uLineNum <= numFcnLines; uLineNum++)
             // Size a function line
             if (SaveFunctionLine (NULL, lpMagicFcnOpr, NULL, uLineNum, NULL, hWndEC, NULL, &uOffset) EQ -1)
                 goto ERROR_EXIT;
@@ -595,7 +595,7 @@ HGLOBAL Init1MagicFunction
         uOffset = lpMemDfnHdr->offTknLines;
 
         // Loop through the lines
-        for (uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
+        for (uLineNum = 1; uLineNum <= numFcnLines; uLineNum++)
         {
             // Save a function line
             uLineLen =

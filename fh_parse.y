@@ -829,6 +829,7 @@ FH_YYLEX_START:
             return SOS;
 
         case TKT_GLBDFN:
+        case TKT_LINECONT:
             goto FH_YYLEX_START;    // Ignore these tokens
 
         default:

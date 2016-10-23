@@ -2031,7 +2031,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 SF_Fcns.lptkFunc        = NULL;             // Ptr to function token ***FIXME*** -- Used on error
                 SF_Fcns.SF_LineLen      = SF_LineLenLW;     // Ptr to line length function
                 SF_Fcns.SF_ReadLine     = SF_ReadLineLW;    // Ptr to read line function
-                SF_Fcns.SF_NumLines     = SF_NumLinesLW;    // Ptr to get # lines function
+                SF_Fcns.SF_IsLineCont   = SF_IsLineContLW;  // Ptr to Is Line Continued function
+                SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesLW; // Ptr to get # physical lines function
+                SF_Fcns.SF_NumLogLines  = SF_NumLogLinesLW; // Ptr to get # logical  ...
                 SF_Fcns.SF_CreationTime = SF_CreationTimeLW;// Ptr to get function creation time
                 SF_Fcns.SF_LastModTime  = SF_LastModTimeLW; // Ptr to get function last modification time
                 SF_Fcns.SF_UndoBuffer   = SF_UndoBufferLW;  // Ptr to get function Undo Buffer global memory handle
@@ -2121,7 +2123,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
             {
                 LPWCHAR          lpwLine;           // Ptr to line to execute
                 LPPERTABDATA     lpMemPTD;          // Ptr to PerTabData global memory
-                LOADWSGLBVARPARM LoadWsGlbVarParm;  // Extra parms for LoadWsGlbVarConv
+                LOADWSGLBVARPARM LoadWsGlbVarParm;  // Extra params for LoadWsGlbVarConv
                 VARS_TEMP_OPEN
 #ifdef DEBUG
                 EXIT_TYPES exitType;
@@ -2148,7 +2150,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 // Convert the {name}s and other chars to UTF16_xxx
                 (void) ConvertNameInPlace (lpwSrc);
 
-                // Fill in the extra parms
+                // Fill in the extra params
                 LoadWsGlbVarParm.lpwSrc        = &lpwSrc[lstrlenW (lpwSrc) + 1];    // "+ 1" to skip over WC_EOS
                 LoadWsGlbVarParm.uMaxSize      = (UINT) (uMaxSize - ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart)); // Maximum size of lpwSrc
                 LoadWsGlbVarParm.hWndEC        = hWndEC;

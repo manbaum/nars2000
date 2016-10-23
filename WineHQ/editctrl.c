@@ -146,9 +146,6 @@ typedef struct tagEDITSTATE
                        and just line width for single line controls */
     INT region_posx;        /* Position of cursor relative to region: */
     INT region_posy;        /* -1: to left, 0: within, 1: to right */
-#ifdef _WIN16
-    EDITWORDBREAKPROC16 word_break_proc16;
-#endif
     void *word_break_proc;      /* 32-bit word break proc: ANSI or Unicode */
     INT line_count;         /* number of lines */
     INT y_offset;           /* scroll offset in number of lines */
@@ -167,10 +164,6 @@ typedef struct tagEDITSTATE
     LPINT tabs;
     LINEDEF *first_line_def;    /* linked list of (soft) linebreaks */
     HLOCAL hloc32W;         /* our unicode local memory block */
-#ifdef _WIN16
-    HLOCAL16 hloc16;        /* alias for 16-bit control receiving EM_GETHANDLE16
-                       or EM_SETHANDLE16 */
-#endif
     HLOCAL hloc32A;         /* alias for ANSI control receiving EM_GETHANDLE
                        or EM_SETHANDLE */
 #if USE_IME
@@ -358,29 +351,6 @@ static INT EDIT_CallWordBreakProc(EDITSTATE *es, INT start, INT index, INT count
 {
     INT ret;
 
-#ifdef _WIN16
-    if (es->word_break_proc16) {
-        HGLOBAL16 hglob16;
-        SEGPTR segptr;
-        INT countA;
-            WORD args[5];
-            DWORD result;
-
-        countA = WideCharToMultiByte(CP_ACP, 0, es->text + start, count, NULL, 0, NULL, NULL);
-        hglob16 = GlobalAlloc16(GMEM_MOVEABLE | GMEM_ZEROINIT, countA);
-        segptr = WOWGlobalLock16(hglob16);
-        WideCharToMultiByte(CP_ACP, 0, es->text + start, count, MapSL(segptr), countA, NULL, NULL);
-            args[4] = SELECTOROF(segptr);
-            args[3] = OFFSETOF(segptr);
-            args[2] = index;
-            args[1] = countA;
-            args[0] = action;
-            WOWCallback16Ex((DWORD)es->word_break_proc16, WCB16_PASCAL, sizeof(args), args, &result);
-            ret = LOWORD(result);
-        GlobalUnlock16(hglob16);
-        GlobalFree16(hglob16);
-    } else
-#endif
      if (es->word_break_proc)
         {
         if(es->is_unicode)
@@ -1160,17 +1130,9 @@ static inline void text_buffer_changed(EDITSTATE *es)
  */
 static void EDIT_LockBuffer(EDITSTATE *es)
 {
-#ifdef _WIN16
-    STACK16FRAME* stack16 = MapSL(PtrToUlong(NtCurrentTeb()->WOW32Reserved));
-    HINSTANCE16 hInstance = GetWindowLongPtrW( es->hwndSelf, GWLP_HINSTANCE );
-#endif
-
     if (!es->text) {
         CHAR *textA = NULL;
         UINT countA = 0;
-#ifdef _WIN16
-        BOOL _16bit = FALSE;
-#endif
 
         if(es->hloc32W)
         {
@@ -1180,18 +1142,6 @@ static void EDIT_LockBuffer(EDITSTATE *es)
             textA = LocalLock(es->hloc32A);
             countA = (UINT) lstrlenA(textA) + 1;
         }
-#ifdef _WIN16
-        else if(es->hloc16)
-        {
-            HANDLE16 oldDS = stack16->ds;
-            TRACE("Synchronizing with 16-bit ANSI buffer\n");
-            stack16->ds = hInstance;
-            textA = MapSL(LocalLock16(es->hloc16));
-            stack16->ds = oldDS;
-            countA = lstrlenA(textA) + 1;
-            _16bit = TRUE;
-        }
-#endif
         }
         else {
 //      ERR("no buffer ... please report\n");
@@ -1224,17 +1174,7 @@ static void EDIT_LockBuffer(EDITSTATE *es)
 
         if(textA)
         {
-        MultiByteToWideChar(CP_ACP, 0, textA, countA, es->text, es->buffer_size + 1);
-#ifdef _WIN16
-        if(_16bit)
-        {
-            HANDLE16 oldDS = stack16->ds;
-            stack16->ds = hInstance;
-            LocalUnlock16(es->hloc16);
-            stack16->ds = oldDS;
-        }
-        else
-#endif
+            MultiByteToWideChar(CP_ACP, 0, textA, countA, es->text, es->buffer_size + 1);
             LocalUnlock(es->hloc32A);
         }
     }
@@ -1272,10 +1212,6 @@ static void EDIT_UnlockBuffer(EDITSTATE *es, BOOL force)
         CHAR *textA = NULL;
         UINT countA = 0;
         UINT countW = get_text_length(es) + 1;
-#ifdef _WIN16
-        STACK16FRAME* stack16 = NULL;
-            HANDLE16 oldDS = 0;
-#endif
 
         if(es->hloc32A)
         {
@@ -1300,51 +1236,12 @@ static void EDIT_UnlockBuffer(EDITSTATE *es, BOOL force)
             }
             textA = LocalLock(es->hloc32A);
         }
-#ifdef _WIN16
-        else if(es->hloc16)
-        {
-            UINT countA_new = WideCharToMultiByte(CP_ACP, 0, es->text, countW, NULL, 0, NULL, NULL);
-
-            TRACE("Synchronizing with 16-bit ANSI buffer\n");
-            TRACE("%d WCHARs translated to %d bytes\n", countW, countA_new);
-
-            stack16 = MapSL(PtrToUlong(NtCurrentTeb()->WOW32Reserved));
-            oldDS = stack16->ds;
-            stack16->ds = GetWindowLongPtrW( es->hwndSelf, GWLP_HINSTANCE );
-
-            countA = LocalSize16(es->hloc16);
-            if(countA_new > countA)
-            {
-            HLOCAL16 hloc16_new;
-            UINT alloc_size = ROUND_TO_GROW(countA_new);
-            TRACE("Resizing 16-bit ANSI buffer from %d to %d bytes\n", countA, alloc_size);
-            hloc16_new = LocalReAlloc16(es->hloc16, (WORD) alloc_size, LMEM_MOVEABLE | LMEM_ZEROINIT);
-            if(hloc16_new)
-            {
-                es->hloc16 = hloc16_new;
-                countA = LocalSize16(hloc16_new);
-                TRACE("Real new size %d bytes\n", countA);
-            }
-            else
-                WARN("FAILED! Will synchronize partially\n");
-            }
-            textA = MapSL(LocalLock16(es->hloc16));
-        }
-#endif
         if(textA)
         {
             WideCharToMultiByte(CP_ACP, 0, es->text, countW, textA, countA, NULL, NULL);
-#ifdef _WIN16
-            if(stack16)
-            LocalUnlock16(es->hloc16);
-            else
-#endif
             LocalUnlock(es->hloc32A);
         }
 
-#ifdef _WIN16
-        if (stack16) stack16->ds = oldDS;
-#endif
         LocalUnlock(es->hloc32W);
         es->text = NULL;
         }
@@ -1902,12 +1799,23 @@ static void EDIT_MoveBackward(EDITSTATE *es, BOOL extend)
 {
     INT e = es->selection_end;
 
-    if (e) {
+    if (e)
+    {
+        // Back over one char
         e--;
-        if ((es->style & ES_MULTILINE) && e &&
-                (es->text[e - 1] == '\r') && (es->text[e] == '\n')) {
+
+        // If it's a multiline ctrl and we're backing over a line-break, ...
+        if ((es->style & ES_MULTILINE)
+         && e
+         && (es->text[e - 1] == '\r') && (es->text[e] == '\n'))
+        {
+            // Back over the \n
             e--;
-            if (e && (es->text[e - 1] == '\r'))
+
+            // If there's another \r (soft line-break), ...
+            if (e
+             && (es->text[e - 1] == '\r'))
+                // Back over the left hand \r
                 e--;
         }
     }
@@ -1972,12 +1880,22 @@ static void EDIT_MoveForward(EDITSTATE *es, BOOL extend)
 {
     INT e = es->selection_end;
 
-    if (es->text[e]) {
+    if (es->text[e])
+    {
+        // Skip over one char
         e++;
-        if ((es->style & ES_MULTILINE) && (es->text[e - 1] == '\r')) {
+
+        // If it's a multiline ctrl and the char we skipped over was a line-break, ...
+        if ((es->style & ES_MULTILINE) && (es->text[e - 1] == '\r'))
+        {
+            // If we're at a hard line-break, ...
             if (es->text[e] == '\n')
+                // Skip over the \n
                 e++;
-            else if ((es->text[e] == '\r') && (es->text[e + 1] == '\n'))
+            else
+            // If there's another \r (soft line-break), ...
+            if ((es->text[e] == '\r') && (es->text[e + 1] == '\n'))
+                // Skip over the \r\n
                 e += 2;
         }
     }
@@ -2453,7 +2371,6 @@ static BOOL EDIT_EM_FmtLines(EDITSTATE *es, BOOL add_eol)
     es->flags &= ~EF_USE_SOFTBRK;
     if (add_eol) {
         es->flags |= EF_USE_SOFTBRK;
-        FIXME("soft break enabled, not implemented\n");
     }
     return add_eol;
 } // End EDIT_EM_FmtLines
@@ -2504,77 +2421,6 @@ static HLOCAL EDIT_EM_GetHandle(EDITSTATE *es)
     TRACE("Returning %p, LocalSize() = %ld\n", hLocal, LocalSize(hLocal));
     return hLocal;
 } // End EDIT_EM_GetHandle
-
-
-#ifdef _WIN16
-/*********************************************************************
- *
- *  EM_GETHANDLE16
- *
- *  Hopefully this won't fire back at us.
- *  We always start with a buffer in 32 bit linear memory.
- *  However, with this message a 16 bit application requests
- *  a handle of 16 bit local heap memory, where it expects to find
- *  the text.
- *  It's a pitty that from this moment on we have to use this
- *  local heap, because applications may rely on the handle
- *  in the future.
- *
- *  In this function we'll try to switch to local heap.
- */
-static HLOCAL16 EDIT_EM_GetHandle16(EDITSTATE *es)
-{
-    CHAR *textA;
-    UINT countA, alloc_size;
-    STACK16FRAME* stack16;
-    HANDLE16 oldDS;
-
-    if (!(es->style & ES_MULTILINE))
-        return 0;
-
-    if (es->hloc16)
-        return es->hloc16;
-
-    stack16 = MapSL(PtrToUlong(NtCurrentTeb()->WOW32Reserved));
-    oldDS = stack16->ds;
-    stack16->ds = GetWindowLongPtrW( es->hwndSelf, GWLP_HINSTANCE );
-
-    if (!LocalHeapSize16()) {
-
-        if (!LocalInit16(stack16->ds, 0, GlobalSize16(stack16->ds))) {
-//          ERR("could not initialize local heap\n");
-            goto done;
-        }
-        TRACE("local heap initialized\n");
-    }
-
-    countA = WideCharToMultiByte(CP_ACP, 0, es->text, -1, NULL, 0, NULL, NULL);
-    alloc_size = ROUND_TO_GROW(countA);
-
-    TRACE("Allocating 16-bit ANSI alias buffer\n");
-    if (!(es->hloc16 = LocalAlloc16(LMEM_MOVEABLE | LMEM_ZEROINIT, alloc_size))) {
-//      ERR("could not allocate new 16 bit buffer\n");
-        goto done;
-    }
-
-    if (!(textA = MapSL(LocalLock16( es->hloc16)))) {
-//      ERR("could not lock new 16 bit buffer\n");
-        LocalFree16(es->hloc16);
-        es->hloc16 = 0;
-        goto done;
-    }
-
-    WideCharToMultiByte(CP_ACP, 0, es->text, -1, textA, countA, NULL, NULL);
-    LocalUnlock16(es->hloc16);
-        es->flags |= EF_APP_HAS_HANDLE;
-
-    TRACE("Returning %04X, LocalSize() = %d\n", es->hloc16, LocalSize16(es->hloc16));
-
-done:
-    stack16->ds = oldDS;
-    return es->hloc16;
-} // End EDIT_EM_GetHandle16
-#endif
 
 
 /*********************************************************************
@@ -2881,19 +2727,6 @@ static void EDIT_EM_SetHandle(EDITSTATE *es, HLOCAL hloc)
 
     EDIT_UnlockBuffer(es, TRUE);
 
-#ifdef _WIN16
-    if(es->hloc16)
-    {
-        STACK16FRAME* stack16 = MapSL(PtrToUlong(NtCurrentTeb()->WOW32Reserved));
-        HANDLE16 oldDS = stack16->ds;
-
-        stack16->ds = GetWindowLongPtrW( es->hwndSelf, GWLP_HINSTANCE );
-        LocalFree16(es->hloc16);
-        stack16->ds = oldDS;
-        es->hloc16 = 0;
-    }
-#endif
-
     if(es->is_unicode)
     {
         if(es->hloc32A)
@@ -2946,80 +2779,6 @@ static void EDIT_EM_SetHandle(EDITSTATE *es, HLOCAL hloc)
     /* force scroll info update */
     EDIT_UpdateScrollInfo(es);
 } // End EDIT_EM_SetHandle
-
-
-#ifdef _WIN16
-/*********************************************************************
- *
- *  EM_SETHANDLE16
- *
- *  FIXME:  ES_LOWERCASE, ES_UPPERCASE, ES_OEMCONVERT, ES_NUMBER ???
- *
- */
-static void EDIT_EM_SetHandle16(EDITSTATE *es, HLOCAL16 hloc)
-{
-    STACK16FRAME* stack16 = MapSL(PtrToUlong(NtCurrentTeb()->WOW32Reserved));
-    HINSTANCE16 hInstance = GetWindowLongPtrW( es->hwndSelf, GWLP_HINSTANCE );
-    HANDLE16 oldDS = stack16->ds;
-    INT countW, countA;
-    HLOCAL hloc32W_new;
-    WCHAR *textW;
-    CHAR *textA;
-
-    if (!(es->style & ES_MULTILINE))
-        return;
-
-    if (!hloc) {
-        WARN("called with NULL handle\n");
-        return;
-    }
-
-    EDIT_UnlockBuffer(es, TRUE);
-
-    if(es->hloc32A)
-    {
-        LocalFree(es->hloc32A);
-        es->hloc32A = NULL;
-    }
-
-    stack16->ds = hInstance;
-    countA = LocalSize16(hloc);
-    textA = MapSL(LocalLock16(hloc));
-    countW = MultiByteToWideChar(CP_ACP, 0, textA, countA, NULL, 0);
-    if(!(hloc32W_new = LocalAlloc(LMEM_MOVEABLE | LMEM_ZEROINIT, countW * sizeof(WCHAR))))
-    {
-//      ERR("Could not allocate new unicode buffer\n");
-        return;
-    }
-    textW = LocalLock(hloc32W_new);
-    MultiByteToWideChar(CP_ACP, 0, textA, countA, textW, countW);
-    LocalUnlock(hloc32W_new);
-    LocalUnlock16(hloc);
-    stack16->ds = oldDS;
-
-    if(es->hloc32W)
-        LocalFree(es->hloc32W);
-
-    es->hloc32W = hloc32W_new;
-    es->hloc16 = hloc;
-
-    es->buffer_size = LocalSize(es->hloc32W)/sizeof(WCHAR) - 1;
-
-        es->flags |= EF_APP_HAS_HANDLE;
-    EDIT_LockBuffer(es);
-
-    es->x_offset = es->y_offset = 0;
-    es->selection_start = es->selection_end = 0;
-    EDIT_EM_EmptyUndoBuffer(es);
-    es->flags &= ~EF_MODIFIED;
-    es->flags &= ~EF_UPDATE;
-    EDIT_BuildLineDefs_ML(es, 0, get_text_length(es), 0, NULL);
-    EDIT_UpdateText(es, NULL, TRUE);
-    EDIT_EM_ScrollCaret(es);
-    /* force scroll info update */
-    EDIT_UpdateScrollInfo(es);
-} // End EDIT_EM_SetHandle16
-#endif
 
 
 /*********************************************************************
@@ -3172,31 +2931,6 @@ static BOOL EDIT_EM_SetTabStops(EDITSTATE *es, INT count, const INT *tabs)
 } // End EDIT_EM_SetTabStops
 
 
-#ifdef _WIN16
-/*********************************************************************
- *
- *  EM_SETTABSTOPS16
- *
- */
-static BOOL EDIT_EM_SetTabStops16(EDITSTATE *es, INT count, const INT16 *tabs)
-{
-    if (!(es->style & ES_MULTILINE))
-        return FALSE;
-        HeapFree(GetProcessHeap(), 0, es->tabs);
-    es->tabs_count = count;
-    if (!count)
-        es->tabs = NULL;
-    else {
-        INT i;
-        es->tabs = HeapAlloc(GetProcessHeap(), 0, count * sizeof(INT));
-        for (i = 0 ; i < count ; i++)
-            es->tabs[i] = *tabs++;
-    }
-    return TRUE;
-} // End EDIT_EM_SetTabStops16
-#endif
-
-
 /*********************************************************************
  *
  *  EM_SETWORDBREAKPROC
@@ -3208,36 +2942,12 @@ static void EDIT_EM_SetWordBreakProc(EDITSTATE *es, void *wbp)
         return;
 
     es->word_break_proc = wbp;
-#ifdef _WIN16
-    es->word_break_proc16 = NULL;
-#endif
 
     if ((es->style & ES_MULTILINE) && !(es->style & ES_AUTOHSCROLL)) {
         EDIT_BuildLineDefs_ML(es, 0, get_text_length(es), 0, NULL);
         EDIT_UpdateText(es, NULL, TRUE);
     }
 } // End EDIT_EM_SetWordBreakProc
-
-
-#ifdef _WIN16
-/*********************************************************************
- *
- *  EM_SETWORDBREAKPROC16
- *
- */
-static void EDIT_EM_SetWordBreakProc16(EDITSTATE *es, EDITWORDBREAKPROC16 wbp)
-{
-    if (es->word_break_proc16 == wbp)
-        return;
-
-    es->word_break_proc = NULL;
-    es->word_break_proc16 = wbp;
-    if ((es->style & ES_MULTILINE) && !(es->style & ES_AUTOHSCROLL)) {
-        EDIT_BuildLineDefs_ML(es, 0, get_text_length(es), 0, NULL);
-        EDIT_UpdateText(es, NULL, TRUE);
-    }
-} // End EDIT_EM_SetWordBreakProc16
-#endif
 
 
 /*********************************************************************
@@ -3409,9 +3119,10 @@ static inline void EDIT_WM_Cut(EDITSTATE *es)
  */
 static LRESULT EDIT_WM_Char(EDITSTATE *es, WCHAR c)
 {
-        BOOL control;
+        BOOL control, shift;
 
     control = GetKeyState(VK_CONTROL) & 0x8000;
+    shift   = GetKeyState(VK_SHIFT)   & 0x8000;
 
     switch (c) {
     case '\r':
@@ -3427,10 +3138,8 @@ static LRESULT EDIT_WM_Char(EDITSTATE *es, WCHAR c)
             if (es->style & ES_READONLY) {
                 EDIT_MoveHome(es, FALSE, FALSE);
                 EDIT_MoveDown_ML(es, FALSE);
-            } else {
-                static const WCHAR cr_lfW[] = {'\r','\n',0};
-                EDIT_EM_ReplaceSel(es, TRUE, cr_lfW, TRUE, TRUE);
-            }
+            } else
+                EDIT_EM_ReplaceSel(es, TRUE, (shift && (es->flags & EF_USE_SOFTBRK)) ? L"\r\r\n" : L"\r\n", TRUE, TRUE);
         }
         break;
     case '\t':
@@ -3817,31 +3526,26 @@ static LRESULT EDIT_WM_KeyDown(EDITSTATE *es, INT key)
         if (!(es->style & ES_READONLY) && !(shift && control)) {
             if (es->selection_start != es->selection_end) {
                 if (shift)
-                    SendMessageW(es->hwndSelf, WM_CUT, 0, 0);
+                    SendMessageW (es->hwndSelf, WM_CUT, 0, 0);
 ////////////////////EDIT_WM_Cut(es);
                 else
                     SendMessageW (es->hwndSelf, WM_CLEAR, 0, 0);
 ////////////////////EDIT_WM_Clear(es);
             } else {
-                if (shift) {
+                EDIT_EM_SetSel(es, (UINT)-1, 0, FALSE);
+
+                if (shift)
                     /* delete character left of caret */
-                    EDIT_EM_SetSel(es, (UINT)-1, 0, FALSE);
                     EDIT_MoveBackward(es, TRUE);
-                    SendMessageW (es->hwndSelf, WM_CLEAR, 0, 0);
-////////////////////EDIT_WM_Clear(es);
-                } else if (control) {
+                else if (control)
                     /* delete to end of line */
-                    EDIT_EM_SetSel(es, (UINT)-1, 0, FALSE);
                     EDIT_MoveEnd(es, TRUE, FALSE);
-                    SendMessageW (es->hwndSelf, WM_CLEAR, 0, 0);
-////////////////////EDIT_WM_Clear(es);
-                } else {
+                else
                     /* delete character right of caret */
-                    EDIT_EM_SetSel(es, (UINT)-1, 0, FALSE);
                     EDIT_MoveForward(es, TRUE);
-                    SendMessageW (es->hwndSelf, WM_CLEAR, 0, 0);
-////////////////////EDIT_WM_Clear(es);
-                }
+
+////////////////EDIT_WM_Clear(es);
+                SendMessageW (es->hwndSelf, WM_CLEAR, 0, 0);
             }
         }
         break;
@@ -3863,30 +3567,32 @@ static LRESULT EDIT_WM_KeyDown(EDITSTATE *es, INT key)
         /* If the edit doesn't want the return send a message to the default object */
         if(!(es->style & ES_MULTILINE) || !(es->style & ES_WANTRETURN))
         {
-        HWND hwndParent;
-        DWORD dw;
+            HWND hwndParent;
+            DWORD dw;
 
-                if (!EDIT_IsInsideDialog(es)) return 1;
-                if (control) break;
-                hwndParent = GetParent(es->hwndSelf);
-                dw = (UINT) SendMessageW( hwndParent, DM_GETDEFID, 0, 0 );
-        if (HIWORD(dw) == DC_HASDEFID)
-        {
-            SendMessageW( hwndParent, WM_COMMAND,
-                  MAKEWPARAM( LOWORD(dw), BN_CLICKED ),
-                  (LPARAM)GetDlgItem( hwndParent, LOWORD(dw) ) );
+            if (!EDIT_IsInsideDialog(es)) return 1;
+            if (control) break;
+            hwndParent = GetParent(es->hwndSelf);
+            dw = (UINT) SendMessageW( hwndParent, DM_GETDEFID, 0, 0 );
+
+            if (HIWORD(dw) == DC_HASDEFID)
+            {
+                SendMessageW( hwndParent, WM_COMMAND,
+                      MAKEWPARAM( LOWORD(dw), BN_CLICKED ),
+                      (LPARAM)GetDlgItem( hwndParent, LOWORD(dw) ) );
+            } else
+                SendMessageW (hwndParent, WM_COMMAND, GET_WM_COMMAND_MPS (IDOK, (HANDLE_PTR) GetDlgItem (hwndParent, IDOK), 0));
         }
-                else
-                    SendMessageW (hwndParent, WM_COMMAND, GET_WM_COMMAND_MPS (IDOK, (HANDLE_PTR) GetDlgItem (hwndParent, IDOK), 0));
-        }
+
         break;
-        case VK_ESCAPE:
+
+    case VK_ESCAPE:
         if (!(es->style & ES_MULTILINE))
-                SendMessageW(GetParent(es->hwndSelf), WM_COMMAND, GET_WM_COMMAND_MPS (IDCANCEL, (LPARAM) GetDlgItem (GetParent (es->hwndSelf), IDCANCEL), 0));
-            break;
-        case VK_TAB:
-            SendMessageW(es->hwndParent, WM_NEXTDLGCTL, shift, 0);
-            break;
+            SendMessageW(GetParent(es->hwndSelf), WM_COMMAND, GET_WM_COMMAND_MPS (IDCANCEL, (LPARAM) GetDlgItem (GetParent (es->hwndSelf), IDCANCEL), 0));
+        break;
+    case VK_TAB:
+        SendMessageW(es->hwndParent, WM_NEXTDLGCTL, shift, 0);
+        break;
     }
     return 0;
 } // End EDIT_WM_KeyDown
@@ -4653,9 +4359,6 @@ static LRESULT EDIT_WM_HScroll(EDITSTATE *es, INT action, INT pos)
      *  although it's also a regular control message.
      */
     case EM_GETTHUMB: /* this one is used by NT notepad */
-#ifdef _WIN16
-    case EM_GETTHUMB16:
-#endif
     {
         LRESULT ret;
         if(GetWindowLongW( es->hwndSelf, GWL_STYLE ) & WS_HSCROLL)
@@ -4669,12 +4372,6 @@ static LRESULT EDIT_WM_HScroll(EDITSTATE *es, INT action, INT pos)
         TRACE("EM_GETTHUMB: returning %ld\n", ret);
         return ret;
     }
-#ifdef _WIN16
-    case EM_LINESCROLL16:
-        TRACE("EM_LINESCROLL16\n");
-        dx = pos;
-        break;
-#endif
 
     default:
 //      ERR("undocumented WM_HSCROLL action %d (0x%04x), please report\n",
@@ -4781,9 +4478,6 @@ static LRESULT EDIT_WM_VScroll(EDITSTATE *es, INT action, INT pos)
      *  although it's also a regular control message.
      */
     case EM_GETTHUMB: /* this one is used by NT notepad */
-#ifdef _WIN16
-    case EM_GETTHUMB16:
-#endif
     {
         LRESULT ret;
         if(GetWindowLongW( es->hwndSelf, GWL_STYLE ) & WS_VSCROLL)
@@ -4797,12 +4491,6 @@ static LRESULT EDIT_WM_VScroll(EDITSTATE *es, INT action, INT pos)
         TRACE("EM_GETTHUMB: returning %ld\n", ret);
         return ret;
     }
-#ifdef _WIN16
-    case EM_LINESCROLL16:
-        TRACE("EM_LINESCROLL16 %d\n", pos);
-        dy = pos;
-        break;
-#endif
 
     default:
 //      ERR("undocumented WM_VSCROLL action %d (0x%04x), please report\n",
@@ -5146,17 +4834,6 @@ static LRESULT EDIT_WM_Destroy(EDITSTATE *es)
     if (es->hloc32A) {
         LocalFree(es->hloc32A);
     }
-#ifdef _WIN16
-    if (es->hloc16) {
-        STACK16FRAME* stack16 = MapSL(PtrToUlong(NtCurrentTeb()->WOW32Reserved));
-        HANDLE16 oldDS = stack16->ds;
-
-        stack16->ds = GetWindowLongPtrW( es->hwndSelf, GWLP_HINSTANCE );
-        while (LocalUnlock16(es->hloc16)) ;
-        LocalFree16(es->hloc16);
-        stack16->ds = oldDS;
-    }
-#endif
 
     if (es->undo_text)
         HeapFree(GetProcessHeap(), 0, es->undo_text);
@@ -5212,30 +4889,25 @@ static LRESULT EditWndProc_common( HWND hwnd, UINT msg,
     if (es && (msg != WM_DESTROY)) EDIT_LockBuffer(es);
 
     switch (msg) {
-#ifdef _WIN16
-    case EM_GETSEL16:
-        wParam = 0;
-        lParam = 0;
-        /* fall through */
-#endif
     case EM_GETSEL:
         result = EDIT_EM_GetSel(es, (PUINT)wParam, (PUINT)lParam);
         break;
 
-#ifdef _WIN16
-    case EM_SETSEL16:
-        if ((short)LOWORD(lParam) == -1)
-            EDIT_EM_SetSel(es, (UINT)-1, 0, FALSE);
-        else
-            EDIT_EM_SetSel(es, LOWORD(lParam), HIWORD(lParam), FALSE);
-        if (!wParam)
-            EDIT_EM_ScrollCaret(es);
-        result = 1;
-        break;
-#endif
     case MYWM_LINE_HEIGHT:
         result = es->line_height;
         break;
+
+    case MYEM_ISLINECONT:
+    {
+        // Is line # wParam a continuation of the previous line?
+        INT     line_index =  EDIT_EM_LineIndex(es, (INT) wParam);
+        LPWCHAR p;
+
+        p = strchrW (&es->text[line_index], L'\r');
+        result = (p NE NULL && p[1] EQ L'\r');
+
+        break;
+    } // End MYEM_ISLINECONT
 
     case MYWM_SELECTALL:
     case EM_SETSEL:
@@ -5244,37 +4916,11 @@ static LRESULT EditWndProc_common( HWND hwnd, UINT msg,
         result = 1;
         break;
 
-#ifdef _WIN16
-    case EM_GETRECT16:
-        if (lParam)
-                {
-                    RECT16 *r16 = MapSL(lParam);
-                    r16->left   = es->format_rect.left;
-                    r16->top    = es->format_rect.top;
-                    r16->right  = es->format_rect.right;
-                    r16->bottom = es->format_rect.bottom;
-                }
-        break;
-#endif
     case EM_GETRECT:
         if (lParam)
             CopyRect((LPRECT)lParam, &es->format_rect);
         break;
 
-#ifdef _WIN16
-    case EM_SETRECT16:
-        if ((es->style & ES_MULTILINE) && lParam) {
-            RECT rc;
-            RECT16 *r16 = MapSL(lParam);
-            rc.left   = r16->left;
-            rc.top    = r16->top;
-            rc.right  = r16->right;
-            rc.bottom = r16->bottom;
-            EDIT_SetRectNP(es, &rc);
-            EDIT_UpdateText(es, NULL, TRUE);
-        }
-        break;
-#endif
     case EM_SETRECT:
         if ((es->style & ES_MULTILINE) && lParam) {
             EDIT_SetRectNP(es, (LPRECT)lParam);
@@ -5282,59 +4928,28 @@ static LRESULT EditWndProc_common( HWND hwnd, UINT msg,
         }
         break;
 
-#ifdef _WIN16
-    case EM_SETRECTNP16:
-        if ((es->style & ES_MULTILINE) && lParam) {
-            RECT rc;
-            RECT16 *r16 = MapSL(lParam);
-            rc.left   = r16->left;
-            rc.top    = r16->top;
-            rc.right  = r16->right;
-            rc.bottom = r16->bottom;
-            EDIT_SetRectNP(es, &rc);
-        }
-        break;
-#endif
     case EM_SETRECTNP:
         if ((es->style & ES_MULTILINE) && lParam)
             EDIT_SetRectNP(es, (LPRECT)lParam);
         break;
 
-#ifdef _WIN16
-    case EM_SCROLL16:
-#endif
     case EM_SCROLL:
         result = EDIT_EM_Scroll(es, (INT)wParam);
                 break;
 
-#ifdef _WIN16
-    case EM_LINESCROLL16:
-        wParam = (WPARAM)(INT)(SHORT)HIWORD(lParam);
-        lParam = (LPARAM)(INT)(SHORT)LOWORD(lParam);
-        /* fall through */
-#endif
     case EM_LINESCROLL:
         result = (LRESULT)EDIT_EM_LineScroll(es, (INT)wParam, (INT)lParam);
         break;
 
-#ifdef _WIN16
-    case EM_SCROLLCARET16:
-#endif
     case EM_SCROLLCARET:
         EDIT_EM_ScrollCaret(es);
         result = 1;
         break;
 
-#ifdef _WIN16
-    case EM_GETMODIFY16:
-#endif
     case EM_GETMODIFY:
         result = ((es->flags & EF_MODIFIED) != 0);
         break;
 
-#ifdef _WIN16
-    case EM_SETMODIFY16:
-#endif
     case EM_SETMODIFY:
         if (wParam)
             es->flags |= EF_MODIFIED;
@@ -5342,44 +4957,22 @@ static LRESULT EditWndProc_common( HWND hwnd, UINT msg,
                         es->flags &= ~(EF_MODIFIED | EF_UPDATE);  /* reset pending updates */
         break;
 
-#ifdef _WIN16
-    case EM_GETLINECOUNT16:
-#endif
     case EM_GETLINECOUNT:
         result = (es->style & ES_MULTILINE) ? es->line_count : 1;
         break;
 
-#ifdef _WIN16
-    case EM_LINEINDEX16:
-        if ((INT16)wParam == -1)
-            wParam = (WPARAM)-1;
-        /* fall through */
-#endif
     case EM_LINEINDEX:
         result = (LRESULT)EDIT_EM_LineIndex(es, (INT)wParam);
         break;
 
-#ifdef _WIN16
-    case EM_SETHANDLE16:
-        EDIT_EM_SetHandle16(es, (HLOCAL16)wParam);
-        break;
-#endif
     case EM_SETHANDLE:
         EDIT_EM_SetHandle(es, (HLOCAL)wParam);
         break;
 
-#ifdef _WIN16
-    case EM_GETHANDLE16:
-        result = (LRESULT)EDIT_EM_GetHandle16(es);
-        break;
-#endif
     case EM_GETHANDLE:
         result = (LRESULT)EDIT_EM_GetHandle(es);
         break;
 
-#ifdef _WIN16
-    case EM_GETTHUMB16:
-#endif
     case EM_GETTHUMB:
         result = EDIT_EM_GetThumb(es);
         break;
@@ -5402,19 +4995,10 @@ static LRESULT EditWndProc_common( HWND hwnd, UINT msg,
         result = DefWindowProcW(hwnd, msg, wParam, lParam);
         break;
 
-#ifdef _WIN16
-    case EM_LINELENGTH16:
-#endif
     case EM_LINELENGTH:
         result = (LRESULT)EDIT_EM_LineLength(es, (INT)wParam);
         break;
 
-#ifdef _WIN16
-    case EM_REPLACESEL16:
-        lParam = (LPARAM)MapSL(lParam);
-        unicode = FALSE;  /* 16-bit message is always ascii */
-        /* fall through */
-#endif
     case EM_REPLACESEL:
     {
         LPWSTR textW;
@@ -5437,33 +5021,18 @@ static LRESULT EditWndProc_common( HWND hwnd, UINT msg,
         break;
     }
 
-#ifdef _WIN16
-    case EM_GETLINE16:
-        lParam = (LPARAM)MapSL(lParam);
-        unicode = FALSE;  /* 16-bit message is always ascii */
-        /* fall through */
-#endif
     case EM_GETLINE:
         result = (LRESULT)EDIT_EM_GetLine(es, (INT)wParam, (LPWSTR)lParam, unicode);
         break;
 
-#ifdef _WIN16
-    case EM_LIMITTEXT16:
-#endif
     case EM_SETLIMITTEXT:
         EDIT_EM_SetLimitText(es, (INT)wParam);
         break;
 
-#ifdef _WIN16
-    case EM_CANUNDO16:
-#endif
     case EM_CANUNDO:
         result = (LRESULT)EDIT_EM_CanUndo(es);
         break;
 
-#ifdef _WIN16
-    case EM_UNDO16:
-#endif
     case EM_UNDO:
     case WM_UNDO:
         result = (LRESULT)EDIT_EM_Undo(es);
@@ -5474,34 +5043,18 @@ static LRESULT EditWndProc_common( HWND hwnd, UINT msg,
 
         break;
 
-#ifdef _WIN16
-    case EM_FMTLINES16:
-#endif
     case EM_FMTLINES:
         result = (LRESULT)EDIT_EM_FmtLines(es, (BOOL)wParam);
         break;
 
-#ifdef _WIN16
-    case EM_LINEFROMCHAR16:
-#endif
     case EM_LINEFROMCHAR:
         result = (LRESULT)EDIT_EM_LineFromChar(es, (INT)wParam);
         break;
 
-#ifdef _WIN16
-    case EM_SETTABSTOPS16:
-        result = (LRESULT)EDIT_EM_SetTabStops16(es, (INT)wParam, MapSL(lParam));
-        break;
-#endif
     case EM_SETTABSTOPS:
         result = (LRESULT)EDIT_EM_SetTabStops(es, (INT)wParam, (LPINT)lParam);
         break;
 
-#ifdef _WIN16
-    case EM_SETPASSWORDCHAR16:
-        unicode = FALSE;  /* 16-bit message is always ascii */
-        /* fall through */
-#endif
     case EM_SETPASSWORDCHAR:
     {
         WCHAR charW = 0;
@@ -5518,25 +5071,14 @@ static LRESULT EditWndProc_common( HWND hwnd, UINT msg,
         break;
     }
 
-#ifdef _WIN16
-    case EM_EMPTYUNDOBUFFER16:
-#endif
     case EM_EMPTYUNDOBUFFER:
         EDIT_EM_EmptyUndoBuffer(es);
         break;
 
-#ifdef _WIN16
-    case EM_GETFIRSTVISIBLELINE16:
-        result = es->y_offset;
-        break;
-#endif
     case EM_GETFIRSTVISIBLELINE:
         result = (es->style & ES_MULTILINE) ? es->y_offset : es->x_offset;
         break;
 
-#ifdef _WIN16
-    case EM_SETREADONLY16:
-#endif
     case EM_SETREADONLY:
         if (wParam) {
                     SetWindowLongW( hwnd, GWL_STYLE,
@@ -5550,29 +5092,14 @@ static LRESULT EditWndProc_common( HWND hwnd, UINT msg,
                 result = 1;
         break;
 
-#ifdef _WIN16
-    case EM_SETWORDBREAKPROC16:
-        EDIT_EM_SetWordBreakProc16(es, (EDITWORDBREAKPROC16)lParam);
-        break;
-#endif
     case EM_SETWORDBREAKPROC:
         EDIT_EM_SetWordBreakProc(es, (void *)lParam);
         break;
 
-#ifdef _WIN16
-    case EM_GETWORDBREAKPROC16:
-        result = (LRESULT)es->word_break_proc16;
-        break;
-#endif
     case EM_GETWORDBREAKPROC:
         result = (LRESULT)es->word_break_proc;
         break;
 
-#ifdef _WIN16
-    case EM_GETPASSWORDCHAR16:
-        unicode = FALSE;  /* 16-bit message is always ascii */
-        /* fall through */
-#endif
     case EM_GETPASSWORDCHAR:
     {
         if(unicode)

@@ -473,7 +473,7 @@ void EraseSTE
 //***************************************************************************
 //  $EraseableName
 //
-//  Return a one iff the name is erasable
+//  Return TRUE iff the name is erasable
 //***************************************************************************
 
 APLBOOL EraseableName
@@ -486,8 +486,9 @@ APLBOOL EraseableName
     LPAPLCHAR lpMemName;        // Ptr to name global memory
     APLBOOL   bRet;             // TRUE iff eraseable name
 
-    // Initialize the return value for []DM
-    *lpbQuadDM = FALSE;
+    // Initialize the return value for []DM & []EM
+    *lpbQuadDM =
+    *lpbQuadEM = FALSE;
 
     // Split cases based upon the Name Type
     switch (lpSymEntry->stFlags.stNameType)
@@ -501,7 +502,7 @@ APLBOOL EraseableName
         case NAMETYPE_TRN:
             // If the name is suspended or pendent, it's not eraseable
             if (IzitSusPendent (lpSymEntry))
-                return 0;
+                return FALSE;
 
             // Get the name global memory handle
             htGlbName = lpSymEntry->stHshEntry->htGlbName;
@@ -515,16 +516,22 @@ APLBOOL EraseableName
             // If it's a valid name, ...
             if (bRet)
             {
+                UBOOL bQuadZ;
+
                 // Save flag of whether or not the name is []DM
                 *lpbQuadDM = lstrcmpiW (lpMemName, $QUAD_DM) EQ 0;
 
                 // Save flag of whether or not the name is []EM
                 *lpbQuadEM = lstrcmpiW (lpMemName, $QUAD_EM) EQ 0;
 
+                // Save flag of whether or not the name is []Z
+                   bQuadZ  = lstrcmpiW (lpMemName, $AFORESULT) EQ 0;
+
                 // Not if it's a system name
-                //   but []DM and []EM are ok
+                //   but []DM, []EM, and []Z are ok
                 bRet = (*lpbQuadDM
                      || *lpbQuadEM
+                     ||    bQuadZ
                      || !IsSysName (lpMemName));
             } // End IF
 
@@ -535,7 +542,7 @@ APLBOOL EraseableName
 
 ////////case NAMETYPE_LST:
         defstop
-            return 0;
+            return FALSE;
     } // End SWITCH
 } // End EraseableName
 

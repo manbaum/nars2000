@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -252,10 +252,10 @@ BEGIN
 END
 
 #define CD_CX       394
-#define CD_CY       333
+#define CD_CY       343
 
 #define PP_CX       300
-#define PP_CY       298
+#define PP_CY       308
 
 IDD_CUSTOMIZE DIALOGEX DISCARDABLE  0, 0, CD_CX, CD_CY
 STYLE DS_MODALFRAME | DS_SHELLFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_VISIBLE
@@ -265,9 +265,9 @@ BEGIN
     LTEXT           "&Category",IDC_STATIC  ,  5,  5, 50,  8,WS_TABSTOP
     LISTBOX                     IDC_CUST_LB ,  5, 15, 80,293,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        ""         ,IDC_GROUPBOX, 90, 11,PP_CX,PP_CY
-    DEFPUSHBUTTON   "OK",       IDOK        , 15,315, 50, 14
-    PUSHBUTTON      "Cancel"   ,IDCANCEL    , 75,315, 50, 14
-    PUSHBUTTON      "Apply"    ,IDC_APPLY   ,135,315, 50, 14,WS_DISABLED
+    DEFPUSHBUTTON   "OK",       IDOK        , 15,320, 50, 14
+    PUSHBUTTON      "Cancel"   ,IDCANCEL    , 75,320, 50, 14
+    PUSHBUTTON      "Apply"    ,IDC_APPLY   ,135,320, 50, 14,WS_DISABLED
 END
 
 IDD_PROPPAGE_CLEARWS_VALUES DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
@@ -585,6 +585,7 @@ BEGIN
 
     LTEXT           "Unicode"      , IDC_STATIC          , 85,110, 50, 14
     EDITTEXT                         IDC_KEYB_EC_UNICODE , 85,120, 30, 14
+    LTEXT           "Char"         , IDC_STATIC          ,130,110, 30, 14
     PUSHBOX         " "            , IDC_KEYB_BN_UNICODE ,130,120, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
     AUTORADIOBUTTON "Dec"          , IDC_KEYB_RB_DEC     , 85,135, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
     AUTORADIOBUTTON "Hex"          , IDC_KEYB_RB_HEX     ,120,135, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP
@@ -798,18 +799,25 @@ BEGIN
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR23,160,240, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS23,215,240,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT24      ,  5,250, 90,  9    // "Window Text"
+    LTEXT           ""                          , IDC_SYNTCLR_LT24      ,  5,250, 90,  9    // "Line Continuation"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK24, 97,250,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR24,105,250, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK24,152,250,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR24,160,250, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
-////AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS24,215,250,  8, 10
+    AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS24,215,250,  8, 10
 
-    AUTOCHECKBOX    "Enable Function Coloring"  , IDC_SYNTCLR_XB_CLRFCNS,  5,265,130, 10
-    AUTOCHECKBOX    "Enable Session Coloring"   , IDC_SYNTCLR_XB_CLRSESS,  5,275,130, 10
-    AUTOCHECKBOX "Enable Coloring When Printing", IDC_SYNTCLR_XB_CLRPRNT,  5,285,130, 10
+    LTEXT           ""                          , IDC_SYNTCLR_LT25      ,  5,260, 90,  9    // "Window Text"
+    LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK25, 97,260,  8,  8, SS_BITMAP
+    PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR25,105,260, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
+    LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK25,152,260,  8,  8, SS_BITMAP
+    PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR25,160,260, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
+////AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS25,215,260,  8, 10
 
-    PUSHBUTTON      "Restore Defaults"          , IDC_SYNTCLR_BN_RESTORE,140,268, 70, 14
+    AUTOCHECKBOX    "Enable Function Coloring"  , IDC_SYNTCLR_XB_CLRFCNS,  5,275,130, 10
+    AUTOCHECKBOX    "Enable Session Coloring"   , IDC_SYNTCLR_XB_CLRSESS,  5,285,130, 10
+    AUTOCHECKBOX "Enable Coloring When Printing", IDC_SYNTCLR_XB_CLRPRNT,  5,295,130, 10
+
+    PUSHBUTTON      "Restore Defaults"          , IDC_SYNTCLR_BN_RESTORE,140,278, 70, 14
 END
 
 IDD_PROPPAGE_SYSTEM_VAR_RESET DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
@@ -909,6 +917,20 @@ BEGIN
     COMBOBOX        IDC_USER_PREFS_CB_UPDFRQ             , 10,227, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Frequency of check for new updates",
                     IDC_STATIC                           ,100,227,160, 10
+
+    LTEXT           "Unicode"      , IDC_STATIC          , 10,245, 50, 14
+    CONTROL         ""               IDC_USER_PREFS_EC_UNICODE , ECWNDCLASS, WS_BORDER | WS_TABSTOP
+                                                         , 10,255, 30, 14
+    LTEXT           "Char"         , IDC_STATIC          , 55,245, 30, 14
+    CONTROL         ""             , IDC_USER_PREFS_BN_UNICODE , ECWNDCLASS, WS_BORDER | WS_TABSTOP
+                                                         , 55,255, 14, 14
+    AUTORADIOBUTTON "Dec"          , IDC_USER_PREFS_RB_DEC
+                                                         , 10,270, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
+    AUTORADIOBUTTON "Hex"          , IDC_USER_PREFS_RB_HEX
+                                                         , 45,270, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP
+    LTEXT           "Line Continuation Marker",
+                                     IDC_STATIC          , 75,257,120, 14
+
 END
 
 
@@ -1262,7 +1284,6 @@ IDI_PM_SMALL            ICON    DISCARDABLE     "Images\\PM.ico"
 //
 // Bitmaps
 //
-IDB_LINECONT            BITMAP  DISCARDABLE     "Images\\LineCont.bmp"
 IDB_WORKSPACE           BITMAP  DISCARDABLE     "Images\\Workspace.bmp"
 IDB_EDIT                BITMAP  DISCARDABLE     "Images\\Edit.bmp"
 IDB_OBJECTS             BITMAP  DISCARDABLE     "Images\\Objects.bmp"

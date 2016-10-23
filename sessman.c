@@ -88,7 +88,7 @@ void SetAttrs
     SetMapMode (hDC, MM_TEXT);
 
     // Select the font into the DC
-    if (hFont)
+    if (hFont NE NULL)
         SelectObject (hDC, hFont);
 
     // Set the color of the foreground text
@@ -270,128 +270,266 @@ UBOOL IzitLastLine
     (HWND hWndEC)           // Window handle of the Edit Ctrl
 
 {
-    UINT uLineCnt,
-         uLinePos,
-         uLineLen,
-         uCharPos;
+    UINT uLineNum,          // Current line #
+         uLineEnd,          // Ending line of the block containing uLineNum
+         uLineCnt;          // # lines in the Edit Ctrl
+
+    // Get the current line # (origin-0)
+    uLineNum = (DWORD) SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
+
+    // Get the last line # in this block (origin-0)
+    uLineEnd = GetBlockEndLine (hWndEC, uLineNum);
 
     // Get the # lines in the text
     uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 
-    // Get the line position of the last line
-    uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, (WPARAM) (uLineCnt - 1), 0);
-
-    // Get the length of the line
-    uLineLen = (UINT) SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
-
-    // Get the char position of the caret
-    uCharPos = GetCurCharPos (hWndEC);
-
-    return (uLinePos <= uCharPos) && (uCharPos <= (uLinePos + uLineLen));
+    return (uLineEnd EQ (uLineCnt - 1));
 } // End IzitlastLine
 
 
-//// //***************************************************************************
-//// //  $DrawLineCont
-//// //
-//// //  Draw a line continuation char
-//// //***************************************************************************
-////
-//// void DrawLineCont
-////     (HDC hDC,
-////      int iLineNum)
-////
-//// {
-////     DrawBitmap (hDC,
-////                 hBitMapLineCont,
-////                 0,
-////                 (iLineNum * GetFSIndAveCharSize (FONTENUM_SM)->cy)
-////               + (GetFSIndAveCharSize (FONTENUM_SM)->cy - bmLineCont.bmHeight) / 2   // Vertically centered
-////                );
-//// } // End DrawLineCont
+//***************************************************************************
+//  $WidthLC
+//
+//  Calculate the width of the Line Continuation marker
+//***************************************************************************
+
+UINT WidthLC
+    (FONTENUM fontEnum)             // Font enum index (see FONTENUM)
+
+{
+    HDC   hDC;                      // Temporary DC
+    RECT  rcScr = {0};              // Screen rectangle
+    WCHAR wcLC[2];                  // Temp save area for LC marker
+    HFONT hFontOld;                 // Old font handle
+
+    // Get a device context
+    hDC = MyGetDC (HWND_DESKTOP);
+
+    // Save LC char as string
+    wcLC[0] = uUserChar;
+    wcLC[1] = WC_EOS;
+
+    // Set the mapping mode
+    SetMapMode (hDC, MM_TEXT);
+
+    // Install the appropriate font
+    hFontOld = SelectObject (hDC, GetFSIndFontHandle (fontEnum));
+
+    // Calculate the width & height of the Line Continuation marker
+    //   in screen coordinates
+    DrawTextW (hDC,
+               wcLC,
+               1,
+              &rcScr,
+               0
+             | DT_CALCRECT
+             | DT_NOPREFIX
+             | DT_NOCLIP);
+    // Restore the old font
+    SelectObject (hDC, hFontOld);
+
+    // We no longer need this resource
+    MyReleaseDC (HWND_DESKTOP, hDC); hDC = NULL;
+
+    return rcScr.right - rcScr.left;
+} // End WidthLC
 
 
-//// //***************************************************************************
-//// //  $DrawBitmap
-//// //
-//// //  Draw a bitmap
-//// //***************************************************************************
-////
-//// void DrawBitmap
-////     (HDC     hDC,
-////      HBITMAP hBitmap,
-////      UINT    xDstOrg,
-////      UINT    yDstOrg) // Destin bit origin (upper left corner)
-////
-//// {
-////     BITMAP  bm;
-////     HDC     hDCMem;
-////     POINT   ptSize, ptOrg;
-////     HBITMAP hBitmapMem, hBitmapOld;
-////
-////     // Get the size of the bitmap
-////     GetObjectW (hBitmap, sizeof (BITMAP), (LPVOID) &bm);
-////
-////     // Create a compatible DC and bitmap
-////     hDCMem = MyCreateCompatibleDC (hDC);    // Get device context handle
-//// #ifdef USE_COPYIMAGE
-////     hBitmapMem = CopyImage (hBitmap, IMAGE_BITMAP, 0, 0, LR_COPYRETURNORG);
-////     hBitmapOld = SelectObject (hDCMem, hBitmapMem);
-//// #else
-////     // To avoid screen flicker, we use a temporary DC
-////     hBitmapMem = MyCreateCompatibleBitmap (hDC,
-////                                            bm.bmWidth,
-////                                            bm.bmHeight);
-////     hBitmapOld = SelectObject (hDCMem, hBitmapMem);
-////
-////     {
-////         HDC hDCTmp;
-////         HBITMAP hBitmapTmp;
-////
-////         // Create a temporary compatible DC
-////         // and select our bitmap into it
-////         hDCTmp = MyCreateCompatibleDC (hDC);
-////         hBitmapTmp = SelectObject (hDCTmp, hBitmap);
-////
-////         // Copy the original bitmap from the temporary DC to the memory DC
-////         BitBlt (hDCMem,
-////                 0,
-////                 0,
-////                 bm.bmWidth,
-////                 bm.bmHeight,
-////                 hDCTmp,
-////                 0,
-////                 0,
-////                 SRCCOPY);
-////         SelectObject (hDCTmp, hBitmapTmp);
-////         MyDeleteDC (hDCTmp); hDCTmp = NULL;
-////     }
-//// #endif
-////     SetMapMode (hDCMem, GetMapMode (hDC));  // Set the mapping mode
-////
-////     // Convert the bitmap size from device units to logical units
-////     ptSize.x = bm.bmWidth;
-////     ptSize.y = bm.bmHeight;
-////     DPtoLP (hDC, &ptSize, 1);
-////
-////     ptOrg.x = ptOrg.y = 0;
-////     DPtoLP (hDCMem, &ptOrg, 1);
-////
-////     // Copy the memory DC to the screen DC
-////     BitBlt (hDC,
-////             xDstOrg, yDstOrg,
-////             ptSize.x, ptSize.y,
-////             hDCMem,
-////             ptOrg.x, ptOrg.y,
-////             SRCCOPY);
-////     // Put the old one in place before we delete the DC
-////     //   or we'll delete the new bitmap when we delete the DC.
-////     SelectObject (hDCMem, hBitmapOld);
-////
-////     // Free resources
-////     MyDeleteObject (hBitmapMem); hBitmapMem = NULL;
-////     MyDeleteDC (hDCMem); hDCMem = NULL;
-//// } // End DrawBitmap ()
+//***************************************************************************
+//  $DrawAllLineCont
+//
+//  Draw all line continuation markers
+//***************************************************************************
+
+void DrawAllLineCont
+    (HWND hWndEC)                   // Edit Ctrl window handle
+
+{
+    HWND     hWndParent;            // Parent window handle
+    UINT     uLineCnt,              // # lines in the Edit Ctrl
+             uLineTop,              // # of topmost visible line
+             uLeft;                 // Left margin in rcLC
+    HDC      hDC;                   // Window DC
+    RECT     rcLC;                  // Rectangle for the Line Continuation markers
+    FONTENUM fontEnum;              // Font enum index
+    HBRUSH   hBrush;                // Background brush
+
+    // Get the handle to the parent window (hWndFE or hWndSM)
+    hWndParent = GetParent (hWndEC);
+
+    // If our parent is SM, ...
+    if (IzitSM (hWndParent))
+    {
+        fontEnum = FONTENUM_SM;
+        uLeft = 0;
+    } else
+    if (IzitFE (hWndParent))
+    {
+        fontEnum = FONTENUM_FE;
+        uLeft = LftMarginsFE (hWndEC, FALSE);
+#ifdef DEBUG
+    } else
+    {
+        DbgBrk ();
+#endif
+    } // End IF/ELSE/...
+
+    // Get the window DC
+    hDC = MyGetDC (hWndEC);
+
+    // Get the # lines in the text
+    uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
+
+    // Get the # of the topmost visible line
+    uLineTop = (UINT) SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
+
+    // Get the client rectangle
+    GetClientRect (hWndEC, &rcLC);
+
+    // Fill in the rest of the rectangle
+    rcLC.left  = uLeft;
+    rcLC.right = rcLC.left + uWidthLC[fontEnum];
+
+    // If the background color is transparent, ...
+    if (gSyntaxColorLC.crBack EQ DEF_SCN_TRANSPARENT)
+    {
+        // Get the background brush
+        hBrush = (HBRUSH) GetClassLongPtrW (hWndEC, GCLP_HBRBACKGROUND);
+
+        // Fill in the rectangle with the background color
+        FillRect (hDC, &rcLC, hBrush);
+    } else
+    {
+        // Create a brush with the background color
+        hBrush = MyCreateSolidBrush (gSyntaxColorName[SC_LINECONT].syntClr.crBack);
+
+        // Fill in the rectangle with the background color
+        FillRect (hDC, &rcLC, hBrush);
+
+        // We no longer need this resource
+        MyDeleteObject (hBrush); hBrush = NULL;
+    } // End IF/ELSE
+
+    // We no longer need this resource
+    MyReleaseDC (hWndEC, hDC); hDC = NULL;
+
+    // Ensure topmost line has a preceding line
+    uLineTop = max (uLineTop, 1);
+
+    // Loop through the line #s
+    for (; uLineTop < uLineCnt; uLineTop++)
+    // If the preceding physical line continues to the current line, ...
+    if (SendMessageW (hWndEC, MYEM_ISLINECONT, uLineTop - 1, 0) EQ TRUE)
+        // Draw a Line Continuation marker
+        DrawLineCont (hWndEC, uLineTop);
+} // End DrawAllLineCont
+
+
+//***************************************************************************
+//  $DrawLineCont
+//
+//  Draw a line continuation marker
+//***************************************************************************
+
+void DrawLineCont
+    (HWND  hWndEC,                  // Edit Ctrl window handle
+     UINT  uLineNum)                // Line number
+
+{
+    HWND         hWndParent;        // Parent window handle
+    HDC          hDC;               // Screen DC
+    FONTENUM     fontEnum;          // Font enum index
+    SIZE         charSize;          // cx & cy of the average char in the font
+    UINT         uLineTop,          // # of topmost visible line
+                 uLeft;             // Left margin in rcLC
+    RECT         rcLC;              // Rectangle for the Line Continuation char
+    WCHAR        wszTemp[2];        // Temp area
+    HFONT        hFontOld;          // Handle to the old font
+
+    // Get the handle to the parent window (hWndFE or hWndSM)
+    hWndParent = GetParent (hWndEC);
+
+    // If our parent is SM, ...
+    if (IzitSM (hWndParent))
+    {
+        fontEnum = FONTENUM_SM;
+        uLeft = 0;
+    } else
+    if (IzitFE (hWndParent))
+    {
+        fontEnum = FONTENUM_FE;
+        uLeft = LftMarginsFE (hWndEC, FALSE);
+#ifdef DEBUG
+    } else
+    {
+        DbgBrk ();
+#endif
+    } // End IF/ELSE/...
+
+    // Get a DC for the Edit Ctrl
+    hDC = MyGetDC (hWndEC);
+
+    // Put the fontEnum font into effect
+    hFontOld = SelectObject (hDC, GetFSIndFontHandle (fontEnum));
+
+    // Get the font average char size
+    charSize = *GetFSIndAveCharSize (fontEnum);
+
+    // Get the # of the topmost visible line
+    uLineTop = (UINT) SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
+
+    rcLC.top    = (uLineNum - uLineTop) * charSize.cy;
+    rcLC.left   = uLeft;
+    rcLC.right  = rcLC.left + uWidthLC[fontEnum];
+    rcLC.bottom = rcLC.top  + charSize.cy;
+
+    // Set the foreground color
+    SetTextColor (hDC, gSyntaxColorLC.crFore);
+
+    // If the background color is not transparent, ...
+    if (gSyntaxColorLC.crBack NE DEF_SCN_TRANSPARENT)
+        // Set it
+        SetBkColor (hDC, gSyntaxColorLC.crBack);
+
+    // Save LC char as string
+    wszTemp[0] = uUserChar;
+    wszTemp[1] = L'\0';
+
+    // Draw the Line Continuation marker
+    DrawTextW (hDC,
+               wszTemp,
+               1,
+              &rcLC,
+               0
+             | DT_SINGLELINE
+             | DT_NOPREFIX
+             | DT_VCENTER);
+    // Restore the old font
+    SelectObject (hDC, hFontOld);
+
+    // We no longer need this resource
+    MyReleaseDC (hWndEC, hDC); hDC = NULL;
+} // End DrawLineCont
+
+
+//***************************************************************************
+//  $SetMarginsSM
+//
+//  Set the margins for a Session Manager window
+//***************************************************************************
+
+void SetMarginsSM
+    (HWND hWndEC)           // Window handle to the Edit Ctrl
+
+{
+    UINT uLeft;             // Left margin
+
+    // Make room for the Line Continuation markers
+    uLeft = uWidthLC[FONTENUM_SM];
+
+    // Tell the Edit Ctrl about it
+    SendMessageW (hWndEC, EM_SETMARGINS, EC_LEFTMARGIN, MAKELONG (uLeft, 0));
+} // End SetMarginsSM
 
 
 //***************************************************************************
@@ -401,7 +539,7 @@ UBOOL IzitLastLine
 //***************************************************************************
 
 void MoveCaretEOB
-    (HWND hWndEC)           // Window handle of Edit Ctrl
+    (HWND  hWndEC)          // Window handle of Edit Ctrl
 
 {
     UINT uLineCnt,
@@ -412,7 +550,7 @@ void MoveCaretEOB
     // Get the # lines in the text
     uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 
-    // Get the initial char pos of the last line
+    // Get the initial char pos of the last line (origin-0)
     uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uLineCnt - 1, 0);
 
     // Get the length of the last line
@@ -456,7 +594,7 @@ void DisplayPrompt
     ForceSendCursorMsg (hWndEC, FALSE);
 
     // Check for exiting semaphore
-    if (lpMemPTD->hExitphore)
+    if (lpMemPTD->hExitphore NE NULL)
     {
         // Start executing at the Tab Delete code
         MyReleaseSemaphore (lpMemPTD->hExitphore, 1, NULL);
@@ -1304,8 +1442,11 @@ WM_NCCREATE_FAIL:
             // Save the Window Background brush
             SetClassLongPtrW (hWndEC, GCLP_HBRBACKGROUND, (HANDLE_PTR) ghBrushBG);
 
-////////////// Set the soft-break flag (not supported by WineHQ edit ctrl)
-////////////SendMessageW (hWndEC, EM_FMTLINES, TRUE, 0);
+            // Set the margins for a Session Manager window
+            SetMarginsSM (hWndEC);
+
+            // Set the soft-break flag
+            SendMessageW (hWndEC, EM_FMTLINES, TRUE, 0);
 
             // Paint the window
             ShowWindow (hWndEC, SW_SHOWNORMAL);
@@ -1437,7 +1578,7 @@ NORMAL_EXIT:
 #ifdef DEBUG
         case MYWM_INIT_SMDB:
             // If the Debugger window handle is active, ...
-            if (lpMemPTD->hWndDB)
+            if (lpMemPTD->hWndDB NE NULL)
                 PostMessageW (hWnd, MYWM_KEYDOWN, VK_F9, 0);
             else
                 PostMessageW (hWnd, MYWM_INIT_SMDB, 0, 0);
@@ -1504,7 +1645,7 @@ NORMAL_EXIT:
             } else
             {
                 // If the SI level is for Quad Input
-                if (lpMemPTD->lpSISCur
+                if (lpMemPTD->lpSISCur NE NULL
                  && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
                     PostMessageW (hWnd, MYWM_QUOTEQUAD, FALSE, 105);
                 else
@@ -1575,6 +1716,12 @@ NORMAL_EXIT:
 
         case WM_SETFONT:            // hFont = (HFONT) wParam;
                                     // fRedraw = LOWORD (lParam);
+            // Changing the font also means changing the size
+            //   of the margins as the character width might change
+            SetMarginsSM (hWndEC);
+
+            // Fall through to common code
+
         case WM_KILLFOCUS:          // hwndGainFocus = (HWND) wParam; // handle of window gaining focus
             // Pass these messages through to the EditCtrl
             SendMessageW (hWndEC, message, wParam, lParam);
@@ -1632,7 +1779,13 @@ NORMAL_EXIT:
         {
             UINT uLineLen,
                  uLineCnt;
-            UBOOL bRet;
+            UBOOL bRet,
+                  ksCtrl,
+                  ksShift;
+
+            // Set the shift-key state
+            ksCtrl  = (GetKeyState (VK_CONTROL) & BIT15) ? TRUE : FALSE;
+            ksShift = (GetKeyState (VK_SHIFT  ) & BIT15) ? TRUE : FALSE;
 
             // Special cases for SM windows:
             //   * Up/Dn arrows:
@@ -1643,7 +1796,7 @@ NORMAL_EXIT:
             //     * Pass changed line to parent for execution
             //
             //   * Shift-CR
-            //     * Insert a soft-break (line continuation) ***FIXME*** -- Not done as yet
+            //     * Insert a soft-break (line continuation)
 
             switch (nVirtKey)
             {
@@ -1652,17 +1805,17 @@ NORMAL_EXIT:
                     EnterCriticalSection (&CSOPL);
 
                     // If there's a current SIS level, ...
-                    if (lpMemPTD->lpPLCur)
+                    if (lpMemPTD->lpPLCur NE NULL)
                     {
                         HANDLE hWaitEvent = lpMemPTD->hWaitEvent;
 
                         // If there's a delay active, ...
-                        if (lpMemPTD->hSemaDelay)
+                        if (lpMemPTD->hSemaDelay NE NULL)
                             // Release the semaphore
                             MyReleaseSemaphore (lpMemPTD->hSemaDelay, 1, NULL);
                         else
                         // If there's a wait event active, ...
-                        if (hWaitEvent)
+                        if (hWaitEvent NE NULL)
                         {
                             // Clear the event handle
                             lpMemPTD->hWaitEvent = NULL;
@@ -1686,75 +1839,120 @@ NORMAL_EXIT:
                     {
                         // If we're not on the last line,
                         //   copy it and append it to the buffer
-                        if (!IzitLastLine (hWndEC))
+                        if (ksShift || ksCtrl || !IzitLastLine (hWndEC))
                         {
                             UINT    uLastNum;
                             LPWCHAR lpwTmpLine;
 
-                            // Get the line length of a given line #
-                            uLineLen = GetLineLength (hWndEC, uLineNum);
-
-                            // Allocate space for the line including a terminating CR/LF/zero
-                            lpwTmpLine =
-                              DbgGlobalAlloc (GPTR, (uLineLen + 3) * sizeof (lpwTmpLine[0]));
-
-                            // Tell EM_GETLINE maximum # chars in the buffer
-                            ((LPWORD) lpwTmpLine)[0] = uLineLen;
-
-                            // Get the current line
-                            SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwTmpLine);
-
-                            // Append CRLF
-                            strcatW (lpwTmpLine, WS_CRLF);
-
-                            // Move the text caret to the end of the buffer
-                            MoveCaretEOB (hWndEC);
-
-                            // Get the # of the last line
-                            uLastNum = (UINT) SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
-
-                            // Replace the last line in the buffer
-                            ReplaceLine (hWndEC, lpwTmpLine, uLastNum);
-
-                            // We no longer need this storage
-                            DbgGlobalFree (lpwTmpLine); lpwTmpLine = NULL;
-
-                            // If the current line is valid, ...
-                            // ***FIXME*** -- happens at top of buffer in timing glitch
-                            //                when the CR is handled before hGlbCurLine is saved
-                            if (lpMemPTD->hGlbCurLine NE NULL)
+                            // If we're inserting a soft line-break, ...
+                            if (ksShift)
                             {
-                                // Lock the memory to get a ptr to it
-                                lpwCurLine = MyGlobalLock (lpMemPTD->hGlbCurLine);
+                                POINT ptCaret;                  // The caret position
+                                UINT  uCharPos;                 // The line position (start of line)
 
-                                // Restore the original of the current line
-                                ReplaceLine (hWndEC, lpwCurLine, uLineNum);
+                                // Get the char index (from the beginning of the edit text) given
+                                //   a point in screen coordinates
 
-                                // We no longer need this ptr
-                                MyGlobalUnlock (lpMemPTD->hGlbCurLine); lpwCurLine = NULL;
-                            } // End IF
+                                // Get the caret position in client coords
+                                GetCaretPos (&ptCaret);
 
-                            // Move the text caret to the end of the buffer
-                            MoveCaretEOB (hWndEC);
+                                // Get the position of the char under the caret
+                                CharFromPos (hWndEC, SendMessageW (hWndEC, EM_CHARFROMPOS, 0, MAKELPARAM (ptCaret.x, ptCaret.y)), NULL, &uCharPos);
 
-                            // Get the current line #
-                            uLineNum = uLastNum;
+                                // Select the insertion point
+                                SendMessageW (hWndEC, EM_SETSEL, uCharPos, uCharPos);
+
+                                // Split the line at the current position as a Line Continuation
+                                SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) WS_CRCRLF);
+                            } else
+                            {
+                                // If we're not on the last line, ...
+                                if (!IzitLastLine (hWndEC))
+                                {
+                                    UINT uLineBeg;
+
+                                    // Get the line # of the start of a block of a Line Continuations
+                                    uLineBeg = GetBlockStartLine (hWndEC, uLineNum);
+
+                                    // Get the overall block length
+                                    uLineLen = GetBlockLength (hWndEC, uLineBeg);
+
+                                    // Allocate space for the line including the terminating zero
+                                    lpwTmpLine =
+                                      DbgGlobalAlloc (GPTR, (uLineLen + strcountof (WS_CRLF) + 1)   // "+ 1" for the terminating zero
+                                                           * sizeof (lpwTmpLine[0]));
+
+                                    // Check for error
+                                    if (lpwTmpLine EQ NULL)
+                                    {
+                                        MBW (L"MYWM_KEYDOWN/VK_RETURN:  Unable to allocate memory for block of lines in the Session Manager");
+
+                                        return FALSE;
+                                    } // End IF
+
+                                    // Copy a block of lines
+                                    CopyBlockLines (hWndEC, uLineBeg, lpwTmpLine);
+
+                                    Assert (lpwTmpLine[uLineLen] EQ WC_EOS);
+
+////////////////////////////////////// Ensure properly terminated
+////////////////////////////////////lpwTmpLine[uLineLen] = WC_EOS;      // Unnecessary as GPTR fills with zeros
+
+                                    // If it's not Ctrl-CR, ...
+                                    if (!ksCtrl)
+                                        // Append CRLF
+                                        strcatW (lpwTmpLine, WS_CRLF);
+
+                                    // Move the text caret to the end of the buffer
+                                    MoveCaretEOB (hWndEC);
+
+                                    // Get the # of the last line
+                                    uLastNum = (UINT) SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
+
+                                    // Replace the last line in the buffer
+                                    ReplaceLine (hWndEC, lpwTmpLine, uLastNum);
+
+                                    // We no longer need this storage
+                                    DbgGlobalFree (lpwTmpLine); lpwTmpLine = NULL;
+                                } // End IF
+
+                                Assert (lpMemPTD->hGlbCurLine NE NULL);
+
+                                // If the current line is valid, ...
+                                // ***FIXME*** -- happens at top of buffer in timing glitch
+                                //                when the CR is handled before hGlbCurLine is saved
+                                if (lpMemPTD->hGlbCurLine NE NULL)
+                                {
+                                    // Lock the memory to get a ptr to it
+                                    lpwCurLine = MyGlobalLock (lpMemPTD->hGlbCurLine);
+
+                                    // Restore the original of the current line
+                                    ReplaceLine (hWndEC, lpwCurLine, uLineNum);
+
+                                    // We no longer need this ptr
+                                    MyGlobalUnlock (lpMemPTD->hGlbCurLine); lpwCurLine = NULL;
+                                } // End IF
+
+                                // Move the text caret to the end of the buffer
+                                MoveCaretEOB (hWndEC);
+
+                                // Get the current line #
+                                uLineNum = uLastNum;
+                            } // End IF/ELSE
                         } // End IF
                     } // End IF
 
                     // If we're in Quote-Quad input, ...
-                    if (lpMemPTD->lpSISCur
+                    if (lpMemPTD->lpSISCur NE NULL
                      && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QQUAD)
-                    {
                         // Format QQ input and save in global memory
                         FormatQQuadInput (uLineNum, hWndEC, lpMemPTD);
-
-                        bRet = TRUE;        // Mark as not ImmExecLine material
-                    } // End IF
-
+                    else
                     // Execute the line if no other program is active
-                    if (!bRet)
-                        ImmExecLine (uLineNum, hWndEC);
+                    //   and not a soft line-break,
+                    //   and not copy w/o execute
+                    if (!bRet && !ksShift && !ksCtrl)
+                        ImmExecLine (hWndEC, uLineNum);
                     break;
 
                 case VK_UP:
@@ -2052,17 +2250,17 @@ NORMAL_EXIT:
             FreeGlobalStorage (lpMemPTD);
 #ifdef DEBUG
             // If the debugger is still active, close it
-            if (lpMemPTD->hWndDB)
+            if (lpMemPTD->hWndDB NE NULL)
                 SendMessageW (lpMemPTD->hWndMC, WM_MDIDESTROY, (WPARAM) lpMemPTD->hWndDB, 0);
 #endif
 ////////////// *************** lptkStackBase ***************************
-////////////if (lpMemPTD->lptkStackBase)
+////////////if (lpMemPTD->lptkStackBase NE NULL)
 ////////////{
 ////////////    MyVirtualFree (lpMemPTD->lptkStackBase, 0, MEM_RELEASE); lpMemPTD->lptkStackBase = NULL;
 ////////////} // End IF
 
             // *************** hGlbCurLine *****************************
-            if (lpMemPTD->hGlbCurLine)
+            if (lpMemPTD->hGlbCurLine NE NULL)
             {
                 DbgGlobalFree (lpMemPTD->hGlbCurLine); lpMemPTD->hGlbCurLine = NULL;
             } // End IF
@@ -2070,12 +2268,12 @@ NORMAL_EXIT:
             // *************** PTDMEMVIRTENUM Entries ******************
             // Get the MemVirtStr ptr
             (HANDLE_PTR) lpLclMemVirtStr = GetWindowLongPtrW (hWnd, GWLSF_LPMVS);
-            if (lpLclMemVirtStr)
+            if (lpLclMemVirtStr NE NULL)
             {
                 UINT uCnt;                  // Loop counter
 
                 // If it's valid, ...
-                if (lpMemPTD->lphtsPTD)
+                if (lpMemPTD->lphtsPTD NE NULL)
                 {
                     // Free the hash & sym tabs
                     FreeHshSymTabs (lpMemPTD->lphtsPTD, TRUE); lpMemPTD->lphtsPTD = NULL;
@@ -2114,7 +2312,7 @@ NORMAL_EXIT:
 
 #ifndef UNISCRIBE
             // Release the FontLink ptr
-            if (lpMemPTD->lpFontLink)
+            if (lpMemPTD->lpFontLink NE NULL)
             {
                 IMLangFontLink_Release (lpMemPTD->lpFontLink); lpMemPTD->lpFontLink = NULL;
             } // End IF
@@ -2157,7 +2355,7 @@ void MoveToLine
 
     // If there's a previous current line global memory handle,
     //   free it
-    if (lpMemPTD->hGlbCurLine)
+    if (lpMemPTD->hGlbCurLine NE NULL)
     {
         DbgGlobalFree (lpMemPTD->hGlbCurLine); lpMemPTD->hGlbCurLine = NULL;
     } // End IF

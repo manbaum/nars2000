@@ -393,16 +393,17 @@ default:        \
 #define GWLDB_EXTRA     GWLDB_HWNDLB   + 1 * sizeof (HANDLE_PTR)    // Total # extra bytes
 
 // Define common offset between the Session Manager and Function Editor
-#define GWLSF_PERTAB    0                                           // Ptr to PerTabData global memory
-#define GWLSF_HWNDEC    GWLSF_PERTAB   + 1 * sizeof (HANDLE_PTR)    // ...           Edit Control window
-#define GWLSF_UNDO_BEG  GWLSF_HWNDEC   + 1 * sizeof (HANDLE_PTR)    // ...                beginning
-#define GWLSF_UNDO_NXT  GWLSF_UNDO_BEG + 1 * sizeof (HANDLE_PTR)    // ...                next
-#define GWLSF_UNDO_LST  GWLSF_UNDO_NXT + 1 * sizeof (HANDLE_PTR)    // ...                last
-#define GWLSF_UNDO_GRP  GWLSF_UNDO_LST + 1 * sizeof (HANDLE_PTR)    // Value of next Undo group index
-#define GWLSF_LASTKEY   GWLSF_UNDO_GRP + 1 * sizeof (long)          // Value of last WM_KEYDOWN key
-#define GWLSF_CHANGED   GWLSF_LASTKEY  + 1 * sizeof (long)          // Boolean of whether or not the text has changed
-#define GWLSF_FLN       GWLSF_CHANGED  + 1 * sizeof (long)          // Boolean of whether or not function line #s are to be displayed
-#define GWLSF_LPMVS     GWLSF_FLN      + 1 * sizeof (long)          // Ptr to LPMEMVIRTSTR
+#define GWLSF_PERTAB     0                                           // Ptr to PerTabData global memory
+#define GWLSF_HWNDEC     GWLSF_PERTAB     + 1 * sizeof (HANDLE_PTR)  // ...   Edit Control window
+#define GWLSF_HGLBDFNHDR GWLSF_HWNDEC     + 1 * sizeof (HANDLE_PTR)  // ...   pre-existing function global memory handle (may be NULL)
+#define GWLSF_UNDO_BEG   GWLSF_HGLBDFNHDR + 1 * sizeof (HANDLE_PTR)  // ...                beginning
+#define GWLSF_UNDO_NXT   GWLSF_UNDO_BEG   + 1 * sizeof (HANDLE_PTR)  // ...                next
+#define GWLSF_UNDO_LST   GWLSF_UNDO_NXT   + 1 * sizeof (HANDLE_PTR)  // ...                last
+#define GWLSF_UNDO_GRP   GWLSF_UNDO_LST   + 1 * sizeof (HANDLE_PTR)  // Value of next Undo group index
+#define GWLSF_LASTKEY    GWLSF_UNDO_GRP   + 1 * sizeof (long)        // Value of last WM_KEYDOWN key
+#define GWLSF_CHANGED    GWLSF_LASTKEY    + 1 * sizeof (long)        // Boolean of whether or not the text has changed
+#define GWLSF_FLN        GWLSF_CHANGED    + 1 * sizeof (long)        // Boolean of whether or not function line #s are to be displayed
+#define GWLSF_LPMVS      GWLSF_FLN        + 1 * sizeof (long)        // Ptr to LPMEMVIRTSTR
 
 // Define offsets in SMWNDCLASS window extra bytes
 #define GWLSM_EXTRA     GWLSF_LPMVS    + 1 * sizeof (HANDLE_PTR)    // Total # extra bytes
@@ -512,6 +513,7 @@ default:        \
 #define EOL_LEN         2           // Length of EOL ("\r\n")
 
 #define WC_EOS          L'\0'       // 00:  End-of-string
+#define WC_BEL          L'\x0007'   // 07:  Bell
 #define WC_BS           L'\b'       // 08:  Backspace
 #define WC_HT           L'\t'       // 09:  Horizontal Tab
 #define WC_LF           L'\n'       // 0A:  Linefeed
@@ -520,6 +522,7 @@ default:        \
 #define WC_DQ           L'\"'       // 22:  Double Quote
 #define WC_SQ           L'\''       // 27:  Single Quote
 #define WC_SLOPE        L'\\'       // 5C:  Slope
+#define WC_LC           L'\x27A5'   // 27A5:  Line Continuation marker
 
 #define WS_BS           L"\b"       // 08:  Backspace
 #define WS_HT           L"\t"       // 09:  Horizontal Tab
@@ -529,8 +532,10 @@ default:        \
 #define WS_DQ           L"\""       // 22:  Double Quote
 #define WS_SQ           L"\'"       // 27:  Single Quote
 #define WS_SLOPE        L"\\"       // 5C:  Slope
+#define WS_LC           L"\x27A5"   // 27A5:  Line Continuation marker
 
-#define WS_CRLF         L"\r\n"     // 0D0A:  CR/LF
+#define WS_CRLF         L"\r\n"     // 0D0A:    CR/LF    (hard line-break)
+#define WS_CRCRLF       L"\r\r\n"   // 0D0D0A:  CR/CR/LF (soft line-break)
 
 #define DEF_UNDERFLOW       L'_'    // Default underflow char
 #define DEF_UNDERFLOW_WS    L"_"    // ...
@@ -564,6 +569,7 @@ default:        \
 #define strncmpiW       _wcsnicmp
 #define strpbrkW        wcspbrk
 #define strspnW         wcsspn
+#define strcspnW        wcscspn
 #define strtolW         wcstol
 #define isspaceW        iswspace
 #define atofW           _wtof

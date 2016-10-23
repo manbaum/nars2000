@@ -202,6 +202,37 @@ UBOOL CreateFcnWindow
 
 
 //***************************************************************************
+//  $LftMarginsFE
+//
+//  Return the left margin for a Function Editor window
+//***************************************************************************
+
+UINT LftMarginsFE
+    (HWND  hWndEC,          // Window handle to the Edit Ctrl
+     UBOOL bIncludeLC)      // TRUE iff we should include the Line Continuation markers
+
+{
+    UINT uLeft;             // Left margin
+    HWND hWndParent;        // Window handle of parent
+
+    // Get the window handle of the parent window
+    hWndParent = GetParent (hWndEC);
+
+    Assert (IzitFE (hWndParent));
+
+    // Make room for Line Continuation markers
+    uLeft = bIncludeLC ? uWidthLC[FONTENUM_FE] : 0;
+
+    // If we're displaying function line #s, ...
+    if (GetWindowLongW (hWndParent, GWLSF_FLN))
+        // Make room for the function line numbers and
+        uLeft += FCN_INDENT * GetFSIndAveCharSize (FONTENUM_FE)->cx;
+    // Plus a small indent to get away from the border
+    return uLeft + 2;
+} // End LftMarginsFE
+
+
+//***************************************************************************
 //  $SetMarginsFE
 //
 //  Set the margins for a Function Editor window
@@ -213,14 +244,89 @@ void SetMarginsFE
 {
     UINT uLeft;             // Left margin
 
-    // If we're not displaying function line #s, ...
-    if (!GetWindowLongW (GetParent (hWndEC), GWLSF_FLN))
-        uLeft = 2;
-    else
-        uLeft = FCN_INDENT * GetFSIndAveCharSize (FONTENUM_FE)->cx;
+    // Return the left margin
+    uLeft = LftMarginsFE (hWndEC, TRUE);
+
     // Tell the Edit Ctrl about it
     SendMessageW (hWndEC, EM_SETMARGINS, EC_LEFTMARGIN, MAKELONG (uLeft, 0));
 } // End SetMarginsFE
+
+
+//***************************************************************************
+//  $IzitAFE
+//
+//  Is this is an Edit Ctrl from an AFO with bMakeAfe
+//***************************************************************************
+
+UBOOL IzitAFE
+    (HWND   hWndEC,                 // Window handel to Edit Ctrl
+     UBOOL  bAllow)                 // TRUE iff we should allow the operation regardless of the line #
+
+{
+    HGLOBAL      hGlbDfnHdr;        // User-defined function/operator header global memory handle
+    LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header global memory
+    UBOOL        bAFO = FALSE;      // TRUE iff this is an AFO
+
+    if (!IzitFE (GetParent (hWndEC)))
+        return FALSE;
+
+    // Get the previous function global memory handle (if any)
+    hGlbDfnHdr = (HGLOBAL) GetWindowLongPtrW (GetParent (hWndEC), GWLSF_HGLBDFNHDR);
+
+    // If the handle is valid, ...
+    if (hGlbDfnHdr NE NULL && !bAllow)
+    {
+        // Lock the memory to get a ptr to it
+        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+
+        // Save the flag
+        bAFO = lpMemDfnHdr->bAFO;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+    } // End IF
+
+    // If this is an AFO, ...
+    if (bAFO && !bAllow)
+    {
+        UINT uLineNum;
+
+        // Get the current line #
+        uLineNum = (UINT) SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
+
+        // If the selection is on the header (line 0), ...
+        if (uLineNum EQ 0)
+        {
+            MessageBeep (MB_ICONWARNING);
+
+            return TRUE;
+        } // End IF
+    } // End IF
+
+    return FALSE;
+} // End IzitAFE
+
+
+//***************************************************************************
+//  $ReplaceSel
+//
+//  Replace a selection in a FE Edit Ctrl
+//***************************************************************************
+
+void ReplaceSel
+    (HWND   hWndEC,                 // Window handel to Edit Ctrl
+     UBOOL  bAllow,                 // TRUE iff we should allow the operation regardless of the line #
+     LPARAM lParam)                 // Ptr to the replacement text
+
+{
+    // Izit an AFO called with bMakeAFE?
+    if (IzitAFE (hWndEC, bAllow))
+        // Pass on the message as a NOP
+        SendMessageW (hWndEC , EM_REPLACESEL, FALSE, (LPARAM) L"");
+    else
+        // Pass on the message
+        SendMessageW (hWndEC , EM_REPLACESEL, FALSE, lParam);
+} // End ReplaceSel
 
 
 //***************************************************************************
@@ -474,10 +580,14 @@ LRESULT APIENTRY FEWndProc
             } // End IF
 
             // Save in window extra bytes
-            SetWindowLongPtrW (hWnd, GWLSF_HWNDEC, (APLU3264) (LONG_PTR) hWndEC);
+            SetWindowLongPtrW (hWnd, GWLSF_HWNDEC    , (APLU3264) (LONG_PTR) hWndEC);
+            SetWindowLongPtrW (hWnd, GWLSF_HGLBDFNHDR, (APLU3264) (LONG_PTR) hGlbDfnHdr);
 
             // Set the paint hook
             SendMessageW (hWndEC, EM_SETPAINTHOOK, 0, (LPARAM) &LclECPaintHook);
+
+            // Set the soft-break flag
+            SendMessageW (hWndEC, EM_FMTLINES, TRUE, 0);
 
             // If there's a pre-existing function,
             //   read in its lines as the initial text
@@ -489,19 +599,41 @@ LRESULT APIENTRY FEWndProc
                                uLineNum;        // Line #
                 LPFCNLINE      lpFcnLines;      // Ptr to array function line structs (FCNLINE[numFcnLines])
 
-                // Get the function header text global memory handle
-                hGlbTxtLine = lpMemDfnHdr->hGlbTxtHdr;
+                // If this function is an AFO, ...
+                if (lpMemDfnHdr->bAFO)
+                {
+                    HGLOBAL hGlbName;           // Name text global memory handle
+                    LPWCHAR lpMemName;          // Ptr to the name's text
 
-                // Lock the memory to get a ptr to it
-                lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+                    Assert (lpSymName NE NULL);
 
-                // Append the text to the Edit Ctrl
-                SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) &lpMemTxtLine->C);
+                    // Get the global memory handle of the AFO name
+                    hGlbName = lpSymName->stHshEntry->htGlbName;
 
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
+                    // Lock the memory to get a ptr to it
+                    lpMemName = MyGlobalLock (hGlbName);
 
-                // Get the # lines in the function
+                    // Append the text to the Edit Ctrl
+                    ReplaceSel (hWndEC, TRUE, (LPARAM) lpMemName);
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbName); lpMemName = NULL;
+                } else
+                {
+                    // Get the function header text global memory handle
+                    hGlbTxtLine = lpMemDfnHdr->hGlbTxtHdr;
+
+                    // Lock the memory to get a ptr to it
+                    lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+
+                    // Append the text to the Edit Ctrl
+                    ReplaceSel (hWndEC, TRUE, (LPARAM) &lpMemTxtLine->C);
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
+                } // End IF/ELSE
+
+                // Get the # logical lines in the function
                 numFcnLines = lpMemDfnHdr->numFcnLines;
 
                 // Get ptr to array of function line structs (FCNLINE[numFcnLines])
@@ -511,7 +643,7 @@ LRESULT APIENTRY FEWndProc
                 for (uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
                 {
                     // Append a CRLF to the Edit Ctrl
-                    SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) WS_CRLF);
+                    ReplaceSel (hWndEC, TRUE, (LPARAM) WS_CRLF);
 
                     // Get the line text global memory handle
                     hGlbTxtLine = lpFcnLines->hGlbTxtLine;
@@ -520,7 +652,7 @@ LRESULT APIENTRY FEWndProc
                     lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
 
                     // Append the text to the Edit Ctrl
-                    SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) &lpMemTxtLine->C);
+                    ReplaceSel (hWndEC, TRUE, (LPARAM) &lpMemTxtLine->C);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
@@ -530,10 +662,9 @@ LRESULT APIENTRY FEWndProc
                 } // End FOR
             } else
                 // Set the initial text
-                SendMessageW (hWndEC,
-                              EM_REPLACESEL,
-                              FALSE,
-                              (LPARAM) (((LPFE_CREATESTRUCTW) (lpMDIcs->lParam))->lpwszLine));
+                ReplaceSel (hWndEC,
+                            TRUE,
+                   (LPARAM) (((LPFE_CREATESTRUCTW) (lpMDIcs->lParam))->lpwszLine));
             // Mark as no changes so far
             SetWindowLongW (hWnd, GWLSF_CHANGED, FALSE);
 
@@ -612,7 +743,7 @@ LRESULT APIENTRY FEWndProc
             CHECK_TEMP_OPEN
 
             // Get this window's function name (if any)
-            uNameLen = GetFunctionName (hWnd, lpwszTemp);
+            uNameLen = GetFunctionName (hWnd, lpwszTemp, NULL);
 
             if (uNameLen NE 0 && uNameLen EQ uLen)
                 lResult = (strncmpW (lpwszTemp, lpwName, uNameLen) EQ 0);
@@ -906,8 +1037,9 @@ LRESULT APIENTRY FEWndProc
 //***************************************************************************
 
 UINT GetFunctionName
-    (HWND    hWndFE,                // FE window handle
-     LPWCHAR lpwszTemp)             // Ptr to temporary storage
+    (HWND        hWndFE,            // FE window handle
+     LPWCHAR     lpwszTemp,         // Ptr to temporary storage
+     LPSYMENTRY *lplpSymName)       // Ptr to ptr to SYMENTRY (may be NULL)
 
 {
     HWND         hWndEC;            // Edit Ctrl window handle
@@ -940,6 +1072,10 @@ UINT GetFunctionName
         // Mark as no function name
         uNameLen = 0;
 
+    // If we're returning the SymEntry, ...
+    if (lplpSymName NE NULL)
+        *lplpSymName = lpSymName;
+
     return uNameLen;
 } // End GetFunctionName
 
@@ -967,7 +1103,7 @@ void SetFETitle
     CHECK_TEMP_OPEN
 
     // Get the function name (if any)
-    uNameLen = GetFunctionName (hWndFE, lpwszTemp);
+    uNameLen = GetFunctionName (hWndFE, lpwszTemp, NULL);
 
     // Ensure properly terminated
     //   and increment the name length to the next position
@@ -2217,6 +2353,18 @@ LRESULT WINAPI LclEditCtrlWndProc
                 } // End IF
             } // End IF
 
+            // If we're inside an AFE,
+            //   and it's a key to ignore, ...
+            // Note we test for the key first so as to avoid spurious beeps
+            //   if we're in an AFE but the keystroke is allowed
+            if (( nVirtKey EQ VK_DELETE
+              ||  nVirtKey EQ VK_RETURN
+              ||  nVirtKey EQ VK_TAB
+              ||  nVirtKey EQ VK_INSERT
+                )
+             && IzitAFE (hWnd, FALSE))
+                return FALSE;       // We handled the msg
+
             // Process the virtual key
             switch (nVirtKey)
             {
@@ -2339,8 +2487,6 @@ LRESULT WINAPI LclEditCtrlWndProc
                         return FALSE;
                     } // End IF
 
-                    // Insert WS_CRLF
-
                     // Get the char position of the caret
                     uCharPos = GetCurCharPos (hWnd);
 
@@ -2349,7 +2495,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                                 GWLSF_UNDO_NXT,             // Offset in hWnd extra bytes of lpUndoNxt
                                 undoDel,                    // Action
                                 uCharPos,                   // Beginning char position
-                                uCharPos + 2,               // Ending    ...
+                                uCharPos + 2 + ksShft,      // Ending    ...
                                 UNDO_NOGROUP,               // Group index
                                 0);                         // Character
                     // Get the formatting rectangle
@@ -2367,6 +2513,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                     // Less the # of the topmost visible line
                     uLineNum -= (DWORD) SendMessageW (hWnd, EM_GETFIRSTVISIBLELINE, 0, 0);
 
+                    rcPaint.left = 0;       // Include the left margins
                     rcPaint.top = (DWORD) uLineNum * GetFSIndAveCharSize (FONTENUM_FE)->cy;
                     rcPaint.bottom = rcPaint.top + GetFSIndAveCharSize (FONTENUM_FE)->cy;
 
@@ -2728,12 +2875,11 @@ LRESULT WINAPI LclEditCtrlWndProc
             //   has already been taken into consideration, so there's
             //   no need to obtain the shift state., and if the Alt key
             //   is down, then WM_SYSCHAR is called, not WM_CHAR.
-////////////ksShft  = (GetKeyState (VK_SHIFT)   & BIT15) ? TRUE : FALSE;
+            ksShft  = (GetKeyState (VK_SHIFT)   & BIT15) ? TRUE : FALSE;
             ksCtrl  = (GetKeyState (VK_CONTROL) & BIT15) ? TRUE : FALSE;
 ////////////ksMenu  = (GetKeyState (VK_MENU )   & BIT15) ? TRUE : FALSE;
 
 #ifdef DEBUG_WM_CHAR
-            ksShft  = (GetKeyState (VK_SHIFT)   & BIT15) ? TRUE : FALSE;
             ksMenu  = (GetKeyState (VK_MENU )   & BIT15) ? TRUE : FALSE;
             dprintfWL0 (L"WM_CHAR:      CharCode = %02X(%c), ScanCode = %02X, SCM = %u%u%u",
                          wchCharCode,
@@ -2757,8 +2903,10 @@ LRESULT WINAPI LclEditCtrlWndProc
             if (wchCharCode EQ WC_CR        // It's CR
              && IzitSM (GetParent (hWnd)))  // Parent is SM
             {
-                // If it's on the last line, move the caret to the EOL (EOB)
-                if (IzitLastLine (hWnd))
+                // If not Shift-CR and not Ctrl-CR and it's on the last line, move the caret to the EOL (EOB)
+                if (!ksShft
+                 && !ksCtrl
+                 && IzitLastLine (hWnd))
                     MoveCaretEOB (hWnd);        // Move to the End-of-Buffer
                 else
                 // Otherwise, let the SM handle copying and restoring the lines
@@ -2871,7 +3019,20 @@ LRESULT WINAPI LclEditCtrlWndProc
 ////////////    return FALSE;       // We handled the msg
 ////////////} // End IF
 
-            // Check for chars we meed to pass on (BS, LF, CR)
+            // Ensure we're not editing an AFO,
+            //   and this is not the function header line 0)
+
+            // If it's an AFE, ...
+            if (IzitAFE (hWnd, FALSE))
+            {
+                // Check for chars we need to ignore (BS, LF, CR)
+                if (!ksCtrl
+                 && (wchCharCode EQ WC_BS
+                  || wchCharCode EQ WC_LF
+                  || wchCharCode EQ WC_CR))
+                    return FALSE;       // We handled the msg
+            } else
+            // Check for chars we need to pass on (BS, LF, CR)
             if (!ksCtrl
              && (wchCharCode EQ WC_BS
               || wchCharCode EQ WC_LF
@@ -2947,7 +3108,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                         wChar[1] = WC_EOS;
 
                         // Insert the selection
-                        SendMessageW (hWnd, EM_REPLACESEL, (WPARAM) FALSE, (LPARAM) &wChar);
+                        ReplaceSel (hWnd, FALSE, (LPARAM) &wChar);
 
                         // Move to the line
                         MoveToLine (uLineNum, lpMemPTD, hWnd);
@@ -2969,7 +3130,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                         wChar[1] = WC_EOS;
 
                         // Replace the selection
-                        SendMessageW (hWnd, EM_REPLACESEL, (WPARAM) FALSE, (LPARAM) &wChar);
+                        ReplaceSel (hWnd, FALSE, (LPARAM) &wChar);
 
                         // Move to the line
                         MoveToLine (uLineNum, lpMemPTD, hWnd);
@@ -2988,7 +3149,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                         SendMessageW (hWnd, EM_SETSEL, uCharPosBeg, uCharPosEnd);
 
                         // Delete the selection
-                        SendMessageW (hWnd, EM_REPLACESEL, (WPARAM) FALSE, (LPARAM) L"");
+                        ReplaceSel (hWnd, FALSE, (LPARAM) L"");
 
                         // Move to the line
                         MoveToLine (uLineNum, lpMemPTD, hWnd);
@@ -3067,6 +3228,10 @@ LRESULT WINAPI LclEditCtrlWndProc
                                     // 0 = lParam
             // Delete selected chars and (if WM_CUT) copy to clipboard
 
+            // If it's an AFE ...
+            if (IzitAFE (hWnd, FALSE))
+                return FALSE;       // We handled the message
+
             // If from MF, pass on this message
             if (lpMemPTD EQ NULL)
                 break;
@@ -3111,6 +3276,10 @@ LRESULT WINAPI LclEditCtrlWndProc
 
         case WM_PASTE:              // bPasteAPL = (BOOL) wParam
                                     // 0 = lParam
+            // If it's an AFE ...
+            if (IzitAFE (hWnd, FALSE))
+                return FALSE;       // We handled the message
+
             // If we've not already laundered the input, do so now
             if (wParam)
                 // Run through the "Normal" processing
@@ -3286,7 +3455,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                         SendMessageW (hWnd, EM_SETSEL, uPos, uPos + uLen);
 
                         // Delete it
-                        SendMessageW (hWnd, EM_REPLACESEL, FALSE, (LPARAM) L"");
+                        ReplaceSel (hWnd, FALSE, (LPARAM) L"");
 
                         // Repaint the Edit Ctrl window so the name changes color
                         InvalidateRect (hWnd, NULL, FALSE);
@@ -3300,13 +3469,13 @@ LRESULT WINAPI LclEditCtrlWndProc
                         SendMessageW (hWnd, EM_SETSEL, uPos, uPos);
 
                         // Insert the leading semicolon
-                        SendMessageW (hWnd, EM_REPLACESEL, FALSE, (LPARAM) L";");
+                        ReplaceSel (hWnd, FALSE, (LPARAM) L";");
 
                         // Select the insertion point
                         SendMessageW (hWnd, EM_SETSEL, uPos + 1, uPos + 1);
 
                         // Insert the name
-                        SendMessageW (hWnd, EM_REPLACESEL, FALSE, (LPARAM) lpwGlbName);
+                        ReplaceSel (hWnd, FALSE, (LPARAM) lpwGlbName);
 
                         // Repaint the Edit Ctrl window so the name changes color
                         InvalidateRect (hWnd, NULL, FALSE);
@@ -3650,8 +3819,14 @@ LRESULT WINAPI LclEditCtrlWndProc
                                wParam,
                                lParam);     // Pass on down the line
     if (bDrawLineNums)
+    {
         // Draw the line #s
         DrawLineNumsFE (hWnd);
+
+        // Draw all Line Continuation markers
+        DrawAllLineCont (hWnd);
+    } // End IF
+
     return lResult;
 } // End LclEditCtrlWndProc
 
@@ -4384,13 +4559,13 @@ UBOOL IzitEOB
          uLinePos,
          uLineLen;
 
-    // Get the char position of the caret
+    // Get the char position of the caret (origin-0)
     uCharPos = GetCurCharPos (hWnd);
 
     // Get the # lines in the text
     uLineCnt = (UINT) SendMessageW (hWnd, EM_GETLINECOUNT, 0, 0);
 
-    // Get the initial char pos of the last line
+    // Get the initial char pos of the last line (origin-0)
     uLinePos = (UINT) SendMessageW (hWnd, EM_LINEINDEX, uLineCnt - 1, 0);
 
     // Get the length of the last line
@@ -4681,7 +4856,7 @@ void InsRepCharStr
     } // End IF/ELSE
 
     // Insert/replace the char string into the text
-    SendMessageW (hWnd, EM_REPLACESEL, (WPARAM) FALSE, (LPARAM) lpwch);
+    ReplaceSel (hWnd, (WPARAM) FALSE, (LPARAM) lpwch);
 
     // If our parent is not MF, ...
     if (!bParentMF)
@@ -4790,6 +4965,7 @@ void DrawLineNumsFE
     (HWND hWndEC)           // Edit Ctrl window handle
 
 {
+    HWND    hWndParent;     // Window handle of the parent (i.e. hWndFE)
     HDC     hDC,            // Device context
             hDCMem;         // Handle to memory device context
     HBITMAP hBitmap,        // Handle to compatible bitmap
@@ -4802,9 +4978,10 @@ void DrawLineNumsFE
             uLineCnt,       // # lines in the Edit Ctrl
             uLineTop,       // # of topmost visible line
             uCnt,           // Counter
+            uCntLC,         // Line Continuation counter
+            uLineNum,       // Line #
             line_height;    // The line height
     WCHAR   wszLineNum[FCN_INDENT + 1];  // Line # (e.g. L"[0000]\0"
-    HWND    hWndParent;     // Window handle of the parent (i.e. hWndFE)
     HBRUSH  hBrush;         // Brush for background color
 
     // Get the handle to the parent window (hWndFE)
@@ -4823,7 +5000,9 @@ void DrawLineNumsFE
 
     // Set the line number rectangle using the EC left margin as our right side
     rcItem = rcClient;
-    rcItem.right = LOWORD (SendMessageW (hWndEC, EM_GETMARGINS, 0, 0));
+
+    // Do not include the width for the Line Continuation markers as they are drawn separately
+    rcItem.right  = LftMarginsFE (hWndEC, FALSE);
 
     // Get a device context
     hDC = MyGetDC (hWndEC);
@@ -4848,7 +5027,7 @@ void DrawLineNumsFE
     FillRect (hDCMem, &rcItem, hBrush);
 
     // We no longer need this resource
-    MyDeleteObject (hBrush);
+    MyDeleteObject (hBrush); hBrush = NULL;
 
     // Get the # lines in the text
     uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
@@ -4863,13 +5042,26 @@ void DrawLineNumsFE
     uLineCnt -= uLineTop;
 
     // Loop through the line #s
-    for (uCnt = 0; uCnt < uLineCnt; uCnt++)
+    for (uCnt = uCntLC = 0; uCnt < uLineCnt; uCnt++)
     {
+        // Calculate the current line #
+        uLineNum = uCnt + uLineTop;
+
+        // If the preceding physical line does not continue to the current line, ...
+        if (uLineNum EQ 0
+         || SendMessageW (hWndEC, MYEM_ISLINECONT, uLineNum - 1, 0) EQ FALSE)
+        {
             // Format the line #
-        wsprintfW (wszLineNum,
+            MySprintfW (wszLineNum,
+                        sizeof (wszLineNum),
                        L"[%d]",
-                   uCnt + uLineTop);
+                        uLineNum - uCntLC);
             uLen = lstrlenW (wszLineNum);
+        } else
+        {
+            uLen = 0;
+            uCntLC++;
+        } // End IF/ELSE
 
         // Pad out to FCN_INDENT chars
         for (; uLen < FCN_INDENT; uLen++)
@@ -4914,7 +5106,7 @@ void DrawLineNumsFE
     FillRect (hDCMem, &rcClient, hBrush);
 
     // We no longer need this resource
-    MyDeleteObject (hBrush);
+    MyDeleteObject (hBrush); hBrush = NULL;
 
     // Copy the memory DC to the screen DC
     BitBlt (hDC,

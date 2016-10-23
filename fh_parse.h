@@ -55,7 +55,8 @@ typedef struct tagFCNLINE               // Function line structure, one per func
             bTrace:1,                   //      00000002:  Trace this line
             bEmpty:1,                   //      00000004:  Empty line
             bLabel:1,                   //      00000008:  Labeled line
-            :28;                        //      FFFFFFF0:  Available bits
+            bSysLbl:1,                  //      00000010:  System Labeled line
+            :27;                        //      FFFFFFE0:  Available bits
                                         // 10:  Length
 } FCNLINE, *LPFCNLINE;
 
@@ -65,14 +66,6 @@ typedef struct tagLBLENTRY              // Line label entries
     UINT       uLineNum1;               // 04:  Line # (origin-1)
 } LBLENTRY, *LPLBLENTRY;
 
-#ifdef DEBUG
-  // N.B.:  Whenever changing the above enum
-  //   be sure to make a corresponding change to
-  //   <cDfnTypeStr> below.
-
-  #define cDfnTypeStr     L"?12FIE!@%"
-#endif
-
 typedef enum tagFCN_VALENCES            // User-Defined Function/Operator Valence
 {
     FCNVALENCE_NIL = 0,                 // 00:  Niladic function
@@ -81,7 +74,13 @@ typedef enum tagFCN_VALENCES            // User-Defined Function/Operator Valenc
     FCNVALENCE_AMB,                     // 03:  Ambivalent ...
     FCNVALENCE_IMM,                     // 04:  Immediate execution
                                         // 05-07:  Available entries (3 bits)
-} FCN_VALENCES;
+} FCN_VALENCES, LPFCN_VALENCES;
+
+#define FCNVALENCE_LENGTH   FCNVALENCE_IMM  // # UDFO-related entries in the above enum
+
+// N.B.:  Whenever changing the above enum (tagFCN_VALENCES)
+//   be sure to make a corresponding change to
+//   <lpwFcnHdr>, <lpwOp1Hdr>, and <lpwOp2Hdr> in <savefcn.c>
 
 typedef enum tagSYSLBL_CON
 {

@@ -158,6 +158,48 @@ UBOOL CALLBACK EnumCallbackPassMsg
 
 
 //***************************************************************************
+//  $EnumCallbackDrawLineCont
+//
+//  EnumChildWindows callback to redraw the Line Continuation markers
+//
+//  lParam = unused
+//***************************************************************************
+
+UBOOL CALLBACK EnumCallbackDrawLineCont
+    (HWND   hWnd,           // Handle to child window
+     LPARAM lParam)         // Application-defined value
+
+{
+    // When an MDI child window is minimized, Windows creates two windows: an
+    // icon and the icon title.  The parent of the icon title window is set to
+    // the MDI client window, which confines the icon title to the MDI client
+    // area.  The owner of the icon title is set to the MDI child window.
+    if (GetWindow (hWnd, GW_OWNER) NE NULL)     // If it's an icon title window, ...
+        return TRUE;                    // skip it, and continue enumerating
+
+    // If the window is either SM or FE, ...
+    if (IzitSM (hWnd) || IzitFE (hWnd))
+    {
+        HWND hWndEC;
+
+        // Get the window handle to the Edit Ctrl
+        hWndEC = (HWND) GetWindowLongPtrW (hWnd, GWLSF_HWNDEC);
+
+        // If it's a SM window, ...
+        if (IzitSM (hWnd))
+            SetMarginsSM (hWndEC);
+        else
+            SetMarginsFE (hWndEC);
+
+        // Tell the SM or FE window to redraw its Line Continuation markers
+        DrawAllLineCont (hWndEC);
+    } // End IF
+
+    return TRUE;                        // Continue enumerating
+} // End EnumCallbackDrawLineCont
+
+
+//***************************************************************************
 //  $EnumCallbackSetFontW
 //
 //  EnumChildWindows callback to set a window's font
@@ -418,6 +460,7 @@ LRESULT WINAPI LclChooseFontSampleWndProc
 
 void CreateNewFontCom
     (HFONT        *lphFont,             // Ptr to in HFONT to create
+     FONTENUM      fontEnum,            // Font enum index (-1 = none)
      LPLOGFONTW    lplf,                // Ptr to in/out LOGFONTW to set
      LPCHOOSEFONTW lpcf,                // Ptr to in CHOOSEFONTW with iPointSize
      LPTEXTMETRICW lptm,                // Ptr to in TEXTMETRICWs
@@ -484,6 +527,11 @@ void CreateNewFontCom
 
     // Re-create the font
     *lphFont = MyCreateFontIndirectW (lplf);
+
+    // If we're to calculate the Line Continuation marker width, ...
+    if (fontEnum NE -1)
+        // Determine the charsize of the Line Continuation Marker
+        uWidthLC[fontEnum] = WidthLC (fontEnum);
 } // End CreateNewFontCom
 
 
@@ -499,6 +547,7 @@ void CreateNewFontTC
 {
     // Call common routine to set various variables
     CreateNewFontCom (&hFontTC,
+                       FONTENUM_TC,
                       &lfTC,
                       &cfTC,
                       &tmTC,
@@ -618,6 +667,7 @@ void CreateNewFontCC
 {
     // Call common routine to set various variables
     CreateNewFontCom (&hFontCC,
+                       FONTENUM_CC,
                       &lfCC,
                       &cfCC,
                       &tmCC,
@@ -659,6 +709,7 @@ void CreateNewFontLW
 {
     // Call common routine to set various variables
     CreateNewFontCom (&hFontLW,
+                       FONTENUM_LW,
                       &lfLW,
                       &cfLW,
                       &tmLW,
@@ -697,6 +748,7 @@ void CreateNewFontSM
 {
     // Call common routine to set various variables
     CreateNewFontCom (&hFontSM,
+                       FONTENUM_SM,
                       &lfSM,
                       &cfSM,
                       &tmSM,
@@ -859,6 +911,7 @@ void ApplyNewFontSM
 
     // Re-specify the alternate SM font
     CreateNewFontCom (&hFontAlt,
+                       -1,
                       &lfAlt,
                       &cfSM,
                       &tmAlt,
@@ -888,6 +941,7 @@ void CreateNewFontPR
 {
     // Call common routine to set various variables
     CreateNewFontCom (&hFontPR,
+                       FONTENUM_PR,
                       &lfPR,
                       &cfPR,
                       &tmPR,
@@ -924,6 +978,7 @@ void CreateNewFontFE
 {
     // Call common routine to set various variables
     CreateNewFontCom (&hFontFE,
+                       FONTENUM_FE,
                       &lfFE,
                       &cfFE,
                       &tmFE,
@@ -968,6 +1023,7 @@ void CreateNewFontME
 {
     // Call common routine to set various variables
     CreateNewFontCom (&hFontME,
+                       FONTENUM_ME,
                       &lfME,
                       &cfME,
                       &tmME,
@@ -1012,6 +1068,7 @@ void CreateNewFontVE
 {
     // Call common routine to set various variables
     CreateNewFontCom (&hFontVE,
+                       FONTENUM_VE,
                       &lfVE,
                       &cfVE,
                       &tmVE,
@@ -1311,14 +1368,6 @@ LRESULT APIENTRY MFWndProc
             ReadIniFileWnd (hWnd);
 
             // *************** Bitmaps *********************************
-            hBitmapLineCont = MyLoadBitmap (_hInstance, MAKEINTRESOURCE (IDB_LINECONT));
-            if (hBitmapLineCont NE NULL)
-            {
-                GetObjectW (hBitmapLineCont, sizeof (BITMAP), (LPVOID) &bmLineCont);
-
-                iLCWidth = 2 + bmLineCont.bmWidth + 2;  // Width of line continuation column
-            } // End IF
-
             hBitmapCheck  = MyLoadBitmap (NULL, MAKEINTRESOURCE (OBM_CHECK));
             if (hBitmapCheck NE NULL)
                 GetObjectW (hBitmapCheck, sizeof (BITMAP), (LPVOID) &bmCheck);
@@ -2627,6 +2676,7 @@ LRESULT APIENTRY MFWndProc
 #endif
                             // Create a new font for the printer
                             CreateNewFontCom (&hFontPR,
+                                               FONTENUM_PR,
                                               &lfPR,
                                               &cfPR,
                                               &tmPR,
@@ -2939,11 +2989,6 @@ LRESULT APIENTRY MFWndProc
             } // End IF
 
             // *************** Bitmaps *********************************
-            if (hBitmapLineCont NE NULL)
-            {
-                MyDeleteObject (hBitmapLineCont); hBitmapLineCont = NULL;
-            } // End IF
-
             if (hBitmapCheck NE NULL)
             {
                 MyDeleteObject (hBitmapCheck); hBitmapCheck = NULL;
@@ -4053,19 +4098,19 @@ int PASCAL WinMain
     // This is needed by Wine's EDITCTRL.C
     user32_module = hInstance;
 
-    PERFMON
+////PERFMON
 
     // Construct file name(s) based upon where the module is on disk
     GetModuleFileNames (hInstance);
 
-    PERFMON
+////PERFMON
 
     // Ensure the Application Data and workspaces
     //   directories are present
     if (!CreateAppDataDirs ())
         goto EXIT1;
 
-    PERFMON
+////PERFMON
 
     // Save initial state
     nMinState = nCmdShow;
@@ -4079,25 +4124,25 @@ int PASCAL WinMain
     // Save the thread type ('MF')
     TlsSetValue (dwTlsType, TLSTYPE_MF);
 
-    PERFMON
+////PERFMON
 
     // If there's a command line, parse it
     if (!ParseCommandLine (lpCmdLine))
         goto EXIT1;
 
-    PERFMON
+////PERFMON
 
     // Perform initializations that apply to a specific instance
     if (!InitInstance (hInstance))
         goto EXIT2;
 
-    PERFMON
+////PERFMON
 
     // Register the window class
     if (!InitApplication (hInstance))
         goto EXIT3;
 
-    PERFMON
+////PERFMON
 
     // Allocate Critical Section objects
     //   for use in dtoa.c (2),
@@ -4119,24 +4164,24 @@ int PASCAL WinMain
     // Mark as CSO defined
     bCSO = TRUE;
 
-    PERFMON
+////PERFMON
 
     // Create various permanent variables
     MakePermVars ();
 
-    PERFMON
+////PERFMON
 
     // Initialize all {symbol} names & values
     if (!InitSymbolNamesValues ())
         goto EXIT4;
 
-    PERFMON
+////PERFMON
 
     // Read in global .ini file values
     if (!ReadIniFileGlb ())
         goto EXIT4;
 
-    PERFMON
+////PERFMON
 
     // Initialize ChooseFontW arguments here
     //   so its settings will be present
@@ -4144,7 +4189,7 @@ int PASCAL WinMain
     //   the common dialog is called.
     InitChooseFont ();
 
-    PERFMON
+////PERFMON
 
     // Initialize global numeric constants
     InitGlbNumConstants ();
@@ -4152,7 +4197,7 @@ int PASCAL WinMain
     // Initialize tables for Primitive Fns, Operators, etc.
     InitPrimTabs ();
 
-    PERFMON
+////PERFMON
 
 #ifdef DEBUG
     InitFsaTabs ();
@@ -4161,7 +4206,7 @@ int PASCAL WinMain
     // Get and save the current Thread Id
     dwMainThreadId = GetCurrentThreadId ();
 
-    PERFMON
+////PERFMON
 
     //***************************************************************
     // Create the Master Frame window
@@ -4185,9 +4230,9 @@ int PASCAL WinMain
         goto EXIT5;
     } // End IF
 
-    PERFMON
+////PERFMON
 
-////PERFMONSHOW
+////PERFMONSHOW (NULL)
 
 #ifdef DEBUG
     __try

@@ -908,8 +908,8 @@ APLINT GetDlgItemInt64
 void CharFromPos
     (HWND    hWndEC,            // Edit Ctrl window handle
      LRESULT lResult,           // The result from SendMessage
-     LPLONG  lplLineNum,        // Ptr to Line #
-     LPLONG  lplCharPos)        // Ptr to Char Position
+     LPLONG  lplLineNum,        // Ptr to Line # (may be NULL)
+     LPLONG  lplCharPos)        // Ptr to Char Position (may be NULL)
 
 {
     LONG lLineNum,              // The line #
@@ -935,7 +935,9 @@ void CharFromPos
     } // End IF
 
     // Return the values
+    if (lplLineNum NE NULL)
         *lplLineNum = lLineNum;
+    if (lplCharPos NE NULL)
         *lplCharPos = lCharPos;
 } // End CharFromPos
 

@@ -891,6 +891,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     LPSYMENTRY    *lplpSymEntry;    // Ptr to 1st result STE
     HGLOBAL        hGlbTknHdr;      // Tokenized header global memory handle
     UBOOL          bRet,            // TRUE iff result is valid
+                   bFirstTime,      // TRUE iff this is the first time executing
                    bStopLine,       // TRUE iff we're stopping on this line
                    bTraceLine,      // TRUE iff we're tracing the line
                    bStopRestart;    // TRUE iff we're restarting a []STOPped line
@@ -948,6 +949,9 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     // Mark as not restarting a []STOPped line
     bStopRestart = FALSE;
 
+    // Mark as the first eime executing
+    bFirstTime = TRUE;
+
     // Loop through the function lines
     while (TRUE)
     {
@@ -973,6 +977,25 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
         // If the starting token # is outside the token count, ...
         if (uTknNum >= uTokenCnt)
             goto NEXTLINE;
+        // If this is not the first time,
+        //    and it's an AFO,
+        //    and the current line is a System Label, ...
+        if (!bFirstTime
+         && lpMemDfnHdr->bAFO
+         && lpFcnLines[uLineNum - 1].bSysLbl)
+        {
+            // Free any past result
+            EraseAfoResult (lpMemDfnHdr);
+
+            // Set the exit type
+            exitType = EXITTYPE_NONE;
+
+            break;
+        } // End IF
+
+        // Mark as no longer the first time
+        bFirstTime = FALSE;
+
 #ifdef DEBUG
         DisplayFcnLine (hGlbTxtLine, lpMemPTD, uLineNum);
 #endif
@@ -1099,6 +1122,7 @@ RESTART_AFTER_ERROR:
 
         // If we're suspended, resetting, or stopping:  break
         if (lpMemPTD->lpSISCur->bSuspended
+         || lpMemPTD->lpSISCur->bAfoValue
          || lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE)
             break;
 NEXTLINE:

@@ -55,7 +55,8 @@ typedef struct tagSIS_HEADER
                      bAFO:1,        //      00008000:  TRUE iff this level is an AFO
                      bMFO:1,        //      00010000:  TRUE iff this level is an MFO
                      bLclRL:1,      //      00020000:  TRUE iff []RL is localized in this AFO
-                     :14;           //      FFFC0000:  Available bits
+                     bAfoValue:1,   //      00040000:  TRUE iff an AFO returned a value
+                     :13;           //      FFF80000:  Available bits
     EVENT_TYPES      EventType;     // 20:  Event type (Major, Minor) (see EVENT_TYPES)
     UINT             CurLineNum,    // 24:  Current line # (origin-1)
                      NxtLineNum,    // 28:  Next    ...

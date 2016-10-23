@@ -578,7 +578,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // Single quote
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // Double ...
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // Diamond symbol
-  {TKROW_EXIT      , NULL        , fnUnkDone   , NULL        , scUnkDone   },     // Comment symbol
+  {TKROW_LBR_INIT  , NULL        , fnComDone   , NULL        , scComDone   },     // Comment symbol
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // System namespace
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // Del
   {TKROW_EXIT      , NULL        , fnUnkDone   , NULL        , scUnkDone   },     // EOL
@@ -821,8 +821,8 @@ UBOOL IsLocalName
                                         // (may be NULL if position not desired)
 
 {
-    static LPWCHAR  lpwBrkLead = L"({[ ]});" WS_UTF16_LEFTARROW,
-                    lpwBrkTerm = L"({[ ]});" WS_UTF16_LEFTARROW WS_UTF16_LAMP;
+    static LPWCHAR  lpwBrkLead = L"({[ ]});" WS_UTF16_LEFTARROW WS_CRLF,
+                    lpwBrkTerm = L"({[ ]});" WS_UTF16_LEFTARROW WS_CRLF WS_UTF16_LAMP;
     LPWCHAR         wp;                         // Ptr to temp char
     APLU3264        uLineLen;                   // Line length
     int (*lpStrncmpW) (const WCHAR *, const WCHAR *, size_t);
@@ -832,17 +832,14 @@ UBOOL IsLocalName
         // The given name can't be local
         return FALSE;
 
-    // Tell EM_GETLINE maximum # chars in the buffer
-    lpwszTemp[0] = (WORD) SendMessageW (hWndEC, EM_LINELENGTH, 0, 0);
+    // Get the overall block length
+    uLineLen = GetBlockLength (hWndEC, 0);
 
-    // Get the function header line
-    uLineLen = (APLU3264) SendMessageW (hWndEC, EM_GETLINE, 0, (LPARAM) lpwszTemp);
-
-    // Ensure the line is properly terminated
-    lpwszTemp[uLineLen] = WC_EOS;
+    // Copy the function header block
+    CopyBlockLines (hWndEC, 0, lpwszTemp);
 
     // Append a trailing marker
-    strcatW (lpwszTemp, WS_UTF16_LAMP);
+    strcpyW (&lpwszTemp[uLineLen], WS_UTF16_LAMP);
 
     // Copy the base of the line
     wp = lpwszTemp;
@@ -1633,12 +1630,20 @@ UBOOL fnDirIdent
      && lptkLocalVars->Orig.d.uLineNum NE 0)
     {
         // Is this name {alpha}?
-        if (lstrcmpW (lpwszStr, WS_UTF16_ALPHA) EQ 0)
-            lptkLocalVars->lpSF_Fcns->bRefAlpha = TRUE;
+        if (lstrcmpW (lpwszStr, $ALPHA) EQ 0)
+            lptkLocalVars->lpSF_Fcns->bRefAlpha   = TRUE;
+        else
+        // Is this name {alpha}{alpha}?
+        if (lstrcmpW (lpwszStr, $LOPER) EQ 0)
+            lptkLocalVars->lpSF_Fcns->bRefLftOper = TRUE;
         else
         // Is this name {omega}?
-        if (lstrcmpW (lpwszStr, WS_UTF16_OMEGA) EQ 0)
-            lptkLocalVars->lpSF_Fcns->bRefOmega = TRUE;
+        if (lstrcmpW (lpwszStr, $OMEGA) EQ 0)
+            lptkLocalVars->lpSF_Fcns->bRefOmega   = TRUE;
+        else
+        // Is this name {omega}{omega}?
+        if (lstrcmpW (lpwszStr, $ROPER) EQ 0)
+            lptkLocalVars->lpSF_Fcns->bRefRhtOper = TRUE;
     } // End IF
 
     // Lookup in or append to the symbol table
@@ -1789,7 +1794,7 @@ UBOOL fnAsnDone
                     {
                         // Mark the stmt as assignment into {alpha}
                         lptkLocalVars->lptkLastEOS->tkFlags.bSetAlpha = TRUE;
-                        if (lptkLocalVars->lpSF_Fcns->bAFO)
+                        if (bAFO)
                             lptkLocalVars->lpSF_Fcns->bSetAlpha = TRUE;
                     } // End IF
 
@@ -1799,7 +1804,7 @@ UBOOL fnAsnDone
                                               NULL,                     // Ptr to incoming stFlags (may be NULL)
                                               TRUE,                     // TRUE iff the name is to be local to the given HTS
                                               lptkLocalVars->lpHTS);    // Ptr to HshTab struc (may be NULL)
-                    if (lptkLocalVars->lpSF_Fcns->lplpLocalSTEs)
+                    if (lptkLocalVars->lpSF_Fcns->lplpLocalSTEs NE NULL)
                         // Save the LPSYMENTRY
                         *lptkLocalVars->lpSF_Fcns->lplpLocalSTEs++ = lptkCur->tkData.tkSym;
                     else
@@ -1998,8 +2003,18 @@ UBOOL fnClnDone
     // If the first token is a name, and
     //   this is the second token,
     //   then it's a label separator
-    if (lptkLocalVars->lptkStart[1].tkFlags.TknType EQ TKT_VARNAMED
-     && (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart) EQ 2)
+    // OR
+    // This is an AFO, and
+    // If the first token is a NOP, and
+    //   the next token is a sys name, and
+    //   this is the third token,
+    //   then it's a label separator
+    if ((lptkLocalVars->lptkStart[1].tkFlags.TknType EQ TKT_VARNAMED
+      && (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart) EQ 2)
+     || (lptkLocalVars->lpSF_Fcns->bAFO
+      && lptkLocalVars->lptkStart[1].tkFlags.TknType EQ TKT_NOP
+      && IsTknSysName (&lptkLocalVars->lptkStart[2], TRUE)
+      && (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart) EQ 3))
     {
         // Mark the data as a label separator
         tkFlags.TknType = TKT_LABELSEP;
@@ -2774,7 +2789,7 @@ UBOOL CheckConstantCopyLoad
     lptkPrv = &lptkLocalVars->lptkNext[-1];
 
     // Check for :CONSTANT during )COPY/)LOAD
-    if (lptkLocalVars->lpHeader->TokenCnt
+    if (lptkLocalVars->lpHeader->TokenCnt > 0
      && lptkPrv->tkFlags.TknType EQ TKT_COLON
      && lptkLocalVars->lpMemPTD->lpLoadWsGlbVarConv)
     {
@@ -5434,13 +5449,17 @@ __try
         else
             wchOrig = lpwszLine[uChar];
 
-        // Check for line continuation char
-        if (wchOrig EQ AC_LF
-         && tkLocalVars.State[0] NE TKROW_QUOTE1A
-         && tkLocalVars.State[0] NE TKROW_QUOTE2A)
+        // Check for Line Continuation
+        if (lpwszLine[uChar + 0] EQ WC_CR
+         && lpwszLine[uChar + 1] EQ WC_CR
+         && lpwszLine[uChar + 2] EQ WC_LF)
         {
             TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
             TOKEN_DATA tkData = {0};            // Token data  ...
+
+            // Skip over the CRCRLF ("- 1" because the FOR loop increments uChar)
+            uChar += strcountof (WS_CRCRLF) - 1;
+////////////tkLocalVars.uChar = uChar;          // Unnecessary as we "continue" from here
 
             // Mark as a symbol table constant
             tkFlags.TknType = TKT_LINECONT;
@@ -5749,7 +5768,7 @@ void Untokenize
 
         case TKT_GLBDFN:            // Placeholder for hGlbDfnHdr
             // Free the AFO
-            if (lpToken->tkData.tkGlbData
+            if (lpToken->tkData.tkGlbData NE NULL
              && FreeResultGlobalDfn (lpToken->tkData.tkGlbData))
             {
 #ifdef DEBUG_ZAP
@@ -6135,7 +6154,6 @@ UBOOL AppendNewToken_EM
         case TKT_RIGHTBRACKET  :
         case TKT_LEFTBRACE     :
         case TKT_RIGHTBRACE    :
-        case TKT_LINECONT      :
         case TKT_INPOUT        :
         case TKT_VARARRAY      :
         case TKT_SYS_NS        :
@@ -6225,6 +6243,7 @@ UBOOL AppendNewToken_EM
         case TKT_NOP           :
         case TKT_AFOGUARD      :
         case TKT_AFORETURN     :
+        case TKT_LINECONT      :
             break;
 
         case TKT_CS_NEC        :
@@ -6888,9 +6907,10 @@ void InitFsaTabs
 
 {
     // Ensure we calculated the lengths properly
-    InitFsaTabTK ();
-    InitFsaTabFS ();
-    InitFsaTabCR ();
+    InitFsaTabTK  ();
+    InitFsaTabFS  ();
+    InitFsaTabCR  ();
+    InitFsaTabAFO ();
 } // End InitFsaTabs
 #endif
 

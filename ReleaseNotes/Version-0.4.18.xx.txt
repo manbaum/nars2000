@@ -1,6 +1,17 @@
 Version 0.4.18.xx consists of the following Builds:
 
 
+Build #1568 -- Version 0.4.18.xx
+--------------------------------
+
+* Change Default Symbol For Alt-k From SingleQuote To DelTilde
+
+Directory trunk:
+
+KEYBOARDS.H:
+  Change the default symbol for Alt-k from a single quotemark to Del-Tilde.
+
+
 Build #1567 -- Version 0.4.18.xx
 --------------------------------
 

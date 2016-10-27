@@ -949,7 +949,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     // Mark as not restarting a []STOPped line
     bStopRestart = FALSE;
 
-    // Mark as the first eime executing
+    // Mark as the first time executing
     bFirstTime = TRUE;
 
     // Loop through the function lines

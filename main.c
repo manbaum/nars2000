@@ -4086,7 +4086,7 @@ int PASCAL WinMain
 #endif
     SetCursor (LoadCursor (NULL, MAKEINTRESOURCE (IDC_APPSTARTING)));
 
-    PERFMONINIT
+    PERFMONINIT (NULL)
 
     // Copy initial Syntax Colors as default
     for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)

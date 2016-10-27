@@ -458,7 +458,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-    if (hGlbRes NE NULL && lpMemRes NE NULL)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
@@ -484,7 +484,7 @@ WSFULL_EXIT:
 ERROR_EXIT:
     if (hGlbRes NE NULL)
     {
-        if (lpMemRes NE NULL)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
@@ -500,7 +500,7 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL;
     } // End IF
 
-    if (hGlbRht NE NULL && lpMemRht NE NULL)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;

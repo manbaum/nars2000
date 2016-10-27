@@ -2252,7 +2252,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 RespecifyNewQuadPW (hWnd, nWidth);
 
             PERFMON
-////////////PERFMONSHOW
+////////////PERFMONSHOW (NULL)
 
             break;
 #undef  nHeight

@@ -1727,7 +1727,8 @@ typedef struct tagOPTIONFLAGS
          bViewStatusBar      :1,    // 00400000:  ...      Status Bar is displayed
          bDefDispFcnLineNums :1,    // 00800000:  ...      Display function line #s
          bDispMPSuf:1,       :1,    // 01000000:  ...      Display multi-precision numbers with suffix 'x' or 'v'
-                             :5;    // FE000000:  Available bits
+         bOutputDebug:1,     :1,    // 02000000:  ...      Output Debugging is enabled
+                             :6;    // FC000000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 // N.B.:  Whenever changing the above struct (OPTIONFLAGS),
@@ -1756,6 +1757,7 @@ OPTIONFLAGS OptionFlags
     DEF_VIEWSTATUSBAR,
     DEF_DISPFCNLINENUMS,
     DEF_DISPMPSUF,
+    DEF_OUTPUTDEBUG,
    }
 #endif
 ;
@@ -1771,7 +1773,22 @@ LOGFONTW lfSM                           // LOGFONTW for the SM
  = {DEF_SMLOGFONT}
 #endif
 ,
-         lfFB                           // LOGFONTW for the FB
+         lfFB_SM                        // LOGFONTW for the FB for SM
+#ifdef DEFINE_VALUES
+ = {DEF_FBLOGFONT}
+#endif
+,
+         lfFB_FE                        // LOGFONTW for the FB for FE
+#ifdef DEFINE_VALUES
+ = {DEF_FBLOGFONT}
+#endif
+,
+         lfFB_PR_SM                     // LOGFONTW for the FB for PR for SM
+#ifdef DEFINE_VALUES
+ = {DEF_FBLOGFONT}
+#endif
+,
+         lfFB_PR_FE                     // LOGFONTW for the FB for PR for FE
 #ifdef DEFINE_VALUES
  = {DEF_FBLOGFONT}
 #endif
@@ -1800,16 +1817,6 @@ LOGFONTW lfSM                           // LOGFONTW for the SM
 #ifdef DEFINE_VALUES
  = {DEF_FELOGFONT}
 #endif
-,
-         lfME                           // LOGFONTW for the ME
-#ifdef DEFINE_VALUES
- = {DEF_MELOGFONT}
-#endif
-,
-         lfVE                           // LOGFONTW for the VE
-#ifdef DEFINE_VALUES
- = {DEF_VELOGFONT}
-#endif
 ;
 
 EXTERN
@@ -1818,32 +1825,38 @@ HFONT hFontTC,                          // Handle to font for the TC
       hFontAlt,                         // ...                    Alternate SM
 #endif
       hFontSM,                          // ...                    SM
+      hFontFB_SM,                       // ...                    FB for SM
+      hFontFB_FE,                       // ...                    FB for FE
+      hFontFB_PR_SM,                    // ...                    FB for PR for SM
+      hFontFB_PR_FE,                    // ...                    FB for PR for FE
       hFontLW,                          // ...                    LW
       hFontPR,                          // ...                    Printer
       hFontCC,                          // ...                    CC
-      hFontFE,                          // ...                    FE
-      hFontME,                          // ...                    ME
-      hFontVE;                          // ...                    VE
+      hFontFE;                          // ...                    FE
 
 EXTERN
 CHOOSEFONTW cfTC,                       // Global for ChooseFont for the TC
             cfSM,                       // ...                           SM
+            cfFB_SM,                    // ...                           FB for SM
+            cfFB_FE,                    // ...                           FB for FE
+            cfFB_PR_SM,                 // ...                           FB for PR for SM
+            cfFB_PR_FE,                 // ...                           FB for PR for FE
             cfLW,                       // ...                           LW
             cfPR,                       // ...                           Printer
             cfCC,                       // ...                           CC
-            cfFE,                       // ...                           FE
-            cfME,                       // ...                           ME
-            cfVE;                       // ...                           VE
+            cfFE;                       // ...                           FE
 
 EXTERN
 TEXTMETRICW tmTC,                       // Global for TEXTMETRICW for the TC
             tmSM,                       // ...                           SM
+            tmFB_SM,                    // ...                           FB for SM
+            tmFB_FE,                    // ...                           FB for FE
+            tmFB_PR_SM,                 // ...                           FB for PR for SM
+            tmFB_PR_FE,                 // ...                           FB for PR for FE
             tmLW,                       // ...                           LW
             tmPR,                       // ...                           Printer
             tmCC,                       // ...                           CC
-            tmFE,                       // ...                           FE
-            tmME,                       // ...                           ME
-            tmVE;                       // ...                           VE
+            tmFE;                       // ...                           FE
 
 typedef enum tagFONTENUM
 {
@@ -1853,10 +1866,14 @@ typedef enum tagFONTENUM
     FONTENUM_CC,                        // 03:  Crash Control window
     FONTENUM_TC,                        // 04:  Tab Control
     FONTENUM_LW,                        // 05:  Language Bar
-    FONTENUM_VE,                        // 06:  Vector Editor
-    FONTENUM_ME,                        // 07:  Matrix Editor
-    FONTENUM_LENGTH,                    // 08:  # entries in this enum
+    FONTENUM_LENGTH,                    // 06:  # entries in this enum
 } FONTENUM, *LPFONTENUM;
+
+#define FONTENUM_FB_SM      FONTENUM_LENGTH
+#define FONTENUM_FB_FE      FONTENUM_LENGTH + 1
+#define FONTENUM_FB_PR_SM   FONTENUM_LENGTH + 2
+#define FONTENUM_FB_PR_FE   FONTENUM_LENGTH + 3
+#define FONTENUMX_LENGTH    FONTENUM_LENGTH + 4
 
 EXTERN
 FONTENUM glbSameFontAs[FONTENUM_LENGTH];
@@ -1870,8 +1887,6 @@ void CreateNewFontFE (UBOOL);
 void CreateNewFontPR (UBOOL);
 void CreateNewFontCC (UBOOL);
 void CreateNewFontTC (UBOOL);
-void CreateNewFontME (UBOOL);
-void CreateNewFontVE (UBOOL);
 
 void ApplyNewFontSM (HFONT);
 void ApplyNewFontLW (HFONT);
@@ -1879,8 +1894,6 @@ void ApplyNewFontFE (HFONT);
 void ApplyNewFontPR (HFONT);
 void ApplyNewFontCC (HFONT);
 void ApplyNewFontTC (HFONT);
-void ApplyNewFontME (HFONT);
-void ApplyNewFontVE (HFONT);
 
 typedef struct tagFONTSTRUC
 {
@@ -1900,17 +1913,21 @@ typedef struct tagFONTSTRUC
     CHOOSEFONTW   cfLcl;                        // 28:  Local CHOOSEFONTW while Customize Dialog is running
 } FONTSTRUC, *LPFONTSTRUC;
 
+// So we can access and treat the Fallback font similar to other fonts,
+//    it is defined as an "extension" of the other fonts in the <fontStruc> array
 EXTERN
-FONTSTRUC fontStruc[FONTENUM_LENGTH]
+FONTSTRUC fontStruc[FONTENUMX_LENGTH]
 #ifdef DEFINE_VALUES
-= {{&lfSM, &cfSM, &tmSM, DEF_SMPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontSM, &CreateNewFontSM, &ApplyNewFontSM, L"Session Manager Font"   },  // Session Manager
-   {&lfFE, &cfFE, &tmFE, DEF_FEPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontFE, &CreateNewFontFE, &ApplyNewFontFE, L"Function Editor Font"   },  // Function Editor
-   {&lfPR, &cfPR, &tmPR, DEF_PRPTSIZE, {0, 0}, TRUE , FALSE, FALSE, &hFontPR, &CreateNewFontPR, &ApplyNewFontPR, L"Printer Font"           },  // Printer
-   {&lfCC, &cfCC, &tmCC, DEF_CCPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontCC, &CreateNewFontCC, &ApplyNewFontCC, L"Crash Window Font"      },  // Crash window
-   {&lfTC, &cfTC, &tmTC, DEF_TCPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontTC, &CreateNewFontTC, &ApplyNewFontTC, L"Tab Control Font"       },  // Tab Control
-   {&lfLW, &cfLW, &tmLW, DEF_LWPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontLW, &CreateNewFontLW, &ApplyNewFontLW, L"Language Bar Font"      },  // Language Bar
-   {&lfVE, &cfVE, &tmVE, DEF_VEPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontME, &CreateNewFontME, &ApplyNewFontME, L"Vector Editor Font"     },  // Vector Editor
-   {&lfME, &cfME, &tmME, DEF_MEPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontVE, &CreateNewFontVE, &ApplyNewFontVE, L"Matrix Editor Font"     },  // Matrix Editor
+= {{&lfSM       , &cfSM       , &tmSM       , DEF_SMPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontSM       , &CreateNewFontSM, &ApplyNewFontSM, L"Session Manager Font"    },  // Session Manager
+   {&lfFE       , &cfFE       , &tmFE       , DEF_FEPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontFE       , &CreateNewFontFE, &ApplyNewFontFE, L"Function Editor Font"    },  // Function Editor
+   {&lfPR       , &cfPR       , &tmPR       , DEF_PRPTSIZE, {0, 0}, TRUE , FALSE, FALSE, &hFontPR       , &CreateNewFontPR, &ApplyNewFontPR, L"Printer Font"            },  // Printer
+   {&lfCC       , &cfCC       , &tmCC       , DEF_CCPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontCC       , &CreateNewFontCC, &ApplyNewFontCC, L"Crash Window Font"       },  // Crash window
+   {&lfTC       , &cfTC       , &tmTC       , DEF_TCPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontTC       , &CreateNewFontTC, &ApplyNewFontTC, L"Tab Control Font"        },  // Tab Control
+   {&lfLW       , &cfLW       , &tmLW       , DEF_LWPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontLW       , &CreateNewFontLW, &ApplyNewFontLW, L"Language Bar Font"       },  // Language Bar
+   {&lfFB_SM    , &cfFB_SM    , &tmFB_SM    , DEF_FBPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontFB_SM    ,  NULL           ,  NULL          , L"Fallback Font for SM/FE" },  // Fallback Font for SM/FE
+   {&lfFB_FE    , &cfFB_FE    , &tmFB_FE    , DEF_FBPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontFB_FE    ,  NULL           ,  NULL          , L"Fallback Font for SM/FE" },  // Fallback Font for SM/FE
+   {&lfFB_PR_SM , &cfFB_PR_SM , &tmFB_PR_SM , DEF_FBPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontFB_PR_SM ,  NULL           ,  NULL          , L"Fallback Font for PR/SM" },  // Fallback Font for PR for SM
+   {&lfFB_PR_FE , &cfFB_PR_FE , &tmFB_PR_FE , DEF_FBPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontFB_PR_FE ,  NULL           ,  NULL          , L"Fallback Font for PR/FE" },  // Fallback Font for PR for FE
   }
 #endif
 ;

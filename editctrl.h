@@ -21,6 +21,7 @@
 ***************************************************************************/
 
 #define EM_SETPAINTHOOK     0x00BF
+#define EM_SETFALLBACKFONT  0x00C0
 
 #define GWLEC_ES            0
 #define GWLEC_PAINTHOOK     GWLEC_ES        + 1 * sizeof (HANDLE_PTR)   // Ptr to LclECPaintHook proc

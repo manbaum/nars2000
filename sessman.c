@@ -440,7 +440,6 @@ void DrawLineCont
     UINT         uLineTop,          // # of topmost visible line
                  uLeft;             // Left margin in rcLC
     RECT         rcLC;              // Rectangle for the Line Continuation char
-    WCHAR        wszTemp[2];        // Temp area
     HFONT        hFontOld;          // Handle to the old font
 
     // Get the handle to the parent window (hWndFE or hWndSM)
@@ -450,12 +449,12 @@ void DrawLineCont
     if (IzitSM (hWndParent))
     {
         fontEnum = FONTENUM_SM;
-        uLeft = 0;
+        uLeft    = 0;
     } else
     if (IzitFE (hWndParent))
     {
         fontEnum = FONTENUM_FE;
-        uLeft = LftMarginsFE (hWndEC, FALSE);
+        uLeft    = LftMarginsFE (hWndEC, FALSE);
 #ifdef DEBUG
     } else
     {
@@ -475,26 +474,149 @@ void DrawLineCont
     // Get the # of the topmost visible line
     uLineTop = (UINT) SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
 
-    rcLC.top    = (uLineNum - uLineTop) * charSize.cy;
-    rcLC.left   = uLeft;
-    rcLC.right  = rcLC.left + uWidthLC[fontEnum];
+    // Fill in the top/left of the RECT
+    rcLC.top  = (uLineNum - uLineTop) * charSize.cy;
+    rcLC.left = uLeft + uWidthLC[fontEnum];
+
+    // Handle via subroutine
+    DrawLineContSub (hWndEC, hDC, rcLC.left, rcLC.top, fontEnum EQ FONTENUM_PR);
+
+    // Restore the old font
+    SelectObject (hDC, hFontOld);
+
+    // We no longer need this resource
+    MyReleaseDC (hWndEC, hDC); hDC = NULL;
+} // End DrawLineCont
+
+
+//***************************************************************************
+//  $DrawLineContSub
+//
+//  Subroutine to DrawLineCont
+//***************************************************************************
+
+void DrawLineContSub
+    (HWND  hWndEC,              // Edit Ctrl window handle
+     HDC   hDC,                 // Device context
+     int   x,                   // Left side of RECT (NOT including the LC marker)
+     int   y,                   // Top  ...
+     UBOOL bPrinting)           // TRUE iff we're printing
+
+{
+    SIZE     charSize;          // cx & cy of the average char in the font
+    RECT     rcLC;              // Rectangle for the Line Continuation char
+    UBOOL    bSyntClr;          // TRUE iff we're Syntax Coloring
+    FONTENUM fontEnum;          // FONTENUM index
+    HFONT    hFontOld;          // Old font (to be resored)
+    UINT     uWidth;            // Width of the LC marker
+    int      mmOld;             // Old mapping mode
+    SIZE     GLP_DC,            // GetLogPixels[X|Y] (hDC)
+             GLP_NULL;          // GetLogPixels[X|Y] (NULL)
+    HFONT    hFontCur;          // Current font
+
+    // Set the mapping mode
+    mmOld = SetMapMode (hDC, MM_TEXT);
+
+    //If we're printing, ...
+    if (bPrinting)
+    {
+        LOGFONTW    lfPR;       // LOGFONT for PR
+        TEXTMETRICW tmPR;       // TEXTMETRICWs for the Printer Font
+
+        fontEnum = FONTENUM_PR;
+        bSyntClr = OptionFlags.bSyntClrPrnt;
+
+        // Get the font average char size
+        charSize = *GetFSIndAveCharSize (fontEnum);
+
+        // Get the width of the LC marker
+        uWidth = uWidthLC[fontEnum];
+
+        // Get the current font for PR
+        hFontCur = *fontStruc[glbSameFontAs[fontEnum]].lphFont;
+
+        // Get the LOGFONTW structure for the font
+        GetObjectW (hFontCur, sizeof (lfPR), &lfPR);
+
+        // Get the log pixels for DC and NULL
+////    GLP_DC.cx   = GetLogPixelsX (hDC);
+        GLP_DC.cy   = GetLogPixelsY (hDC);
+////    GLP_NULL.cx = GetLogPixelsX (NULL);
+        GLP_NULL.cy = GetLogPixelsY (NULL);
+
+        // Respecify the horizontal & vertical positions in printer coordinates
+        lfPR.lfHeight = MulDiv (lfPR.lfHeight, GLP_DC.cy, GLP_NULL.cy);
+
+        // Make a font of it
+        hFontCur = MyCreateFontIndirectW (&lfPR);
+
+        // Install the current font
+        hFontOld = SelectObject (hDC, hFontCur);
+
+        // Get the text metrics for this font
+        GetTextMetricsW (hDC, &tmPR);
+
+        // Convert the x & y & cx & cy values from screen coords to printer coords
+        x             = MulDiv (x            , tmPR.tmAveCharWidth, charSize.cx);
+        y             = MulDiv (y            , tmPR.tmHeight      , charSize.cy);
+        uWidth        = MulDiv (uWidth       , tmPR.tmAveCharWidth, charSize.cx);
+
+        charSize.cx   = MulDiv (charSize.cx  , tmPR.tmAveCharWidth, charSize.cx);
+        charSize.cy   = MulDiv (charSize.cy  , tmPR.tmHeight      , charSize.cy);
+    } else
+    {
+        // If our parent is SM, ...
+        if (IzitSM (GetParent (hWndEC)))
+        {
+            fontEnum = FONTENUM_SM;
+            bSyntClr = OptionFlags.bSyntClrSess;
+        } else
+        if (IzitFE (GetParent (hWndEC)))
+        {
+            fontEnum = FONTENUM_FE;
+            bSyntClr = OptionFlags.bSyntClrFcns;
+#ifdef DEBUG
+        } else
+        {
+            DbgBrk ();
+            bSyntClr = FALSE;
+#endif
+        } // End IF/ELSE/...
+
+        // Get the font average char size
+        charSize = *GetFSIndAveCharSize (fontEnum);
+
+        // Get the width of the LC marker
+        uWidth = uWidthLC[fontEnum];
+
+        // Get the current font
+        hFontCur = *fontStruc[glbSameFontAs[fontEnum]].lphFont;
+
+        // Install the current font
+        hFontOld = SelectObject (hDC, hFontCur);
+    } // End IF/ELSE
+
+    // Fill in the RECT
+    rcLC.top    = y;
+    rcLC.left   = x - uWidth;
+    rcLC.right  = x;
     rcLC.bottom = rcLC.top  + charSize.cy;
 
-    // Set the foreground color
-    SetTextColor (hDC, gSyntaxColorLC.crFore);
+    // If we're Syntax Coloring, ...
+    if (bSyntClr)
+    {
+        // Set the foreground color
+        SetTextColor (hDC, gSyntaxColorLC.crFore);
 
-    // If the background color is not transparent, ...
-    if (gSyntaxColorLC.crBack NE DEF_SCN_TRANSPARENT)
-        // Set it
-        SetBkColor (hDC, gSyntaxColorLC.crBack);
-
-    // Save LC char as string
-    wszTemp[0] = uUserChar;
-    wszTemp[1] = L'\0';
+        // If the background color is not transparent, ...
+        if (gSyntaxColorLC.crBack NE DEF_SCN_TRANSPARENT)
+            // Set it
+            SetBkColor (hDC, gSyntaxColorLC.crBack);
+    } // End IF
 
     // Draw the Line Continuation marker
     DrawTextW (hDC,
-               wszTemp,
+    (LPWCHAR) &uUserChar,
                1,
               &rcLC,
                0
@@ -504,9 +626,16 @@ void DrawLineCont
     // Restore the old font
     SelectObject (hDC, hFontOld);
 
-    // We no longer need this resource
-    MyReleaseDC (hWndEC, hDC); hDC = NULL;
-} // End DrawLineCont
+    // Restore the old mapping mode
+    SetMapMode (hDC, mmOld);
+
+    // If we're printing, ...
+    if (bPrinting)
+    {
+        // Delete the font we created
+        DeleteObject (hFontCur); hFontCur = NULL;
+    } // End IF
+} // End DrawLineContSub
 
 
 //***************************************************************************

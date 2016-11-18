@@ -143,7 +143,8 @@ I98=.\;$(SDK_INC);$(MSVC)INCLUDE;$(MS_INC);$(MPIR_INC);$(MPFR_INC);$(ECM_INC);$(
 
 MV=makever
 
-## Set the following to 1 to debug linker error 0x460 as in
+## Set the following to 1 to debug linker errors
+##   or call the MKxx batch file as in
 ##   mkn LINKDEBUG=1
 LINKDEBUG=0
 
@@ -238,7 +239,10 @@ OC=RET\COM\                     # Define output directory for common intermediat
 
 PDBFILE = $(B)$(ENAME).pdb
 
-FONT=$(NARSROOT)SImPL-Medium.ttf # Default APL TrueType font
+# Default APL TrueType font
+# Fallback font for Output Debugging
+FONT=$(NARSROOT)SImPL-Medium.ttf    \
+     $(NARSROOT)Fallback00-1F.ttf
 
 
 ALL:    DIR                 \
@@ -685,6 +689,7 @@ $(O)$(ENAME).exe:       $(OBJS)             \
                         $(GSL1_LIB)         \
                         $(GSL2_LIB)         \
                         $(CS_FILES)         \
+                        $(FONT)             \
                         makefile.inc        \
                         makefile.$(MFEXT)
         @echo >NUL @<<$(O)main.crf

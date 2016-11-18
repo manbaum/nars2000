@@ -185,10 +185,12 @@ UBOOL ArrayDisplay_EM
 
     // If the value is a character, ...
     if (IsImmChr (immType))
+    // If we're NOT Output Debugging, ...
+    if (!OptionFlags.bOutputDebug)
     // Split cases based upon the character value
     switch (aplChar)
     {
-        case TCBEL:
+        case WC_BEL:
             // Sound the alarum!
             MessageBeep (NEG1U);
 
@@ -197,7 +199,7 @@ UBOOL ArrayDisplay_EM
 
             break;
 
-        case TCHT:
+        case WC_HT:
             FillMemoryW (lpwszFormat, uTabStops, L' ');
 
             // Append a terminating zero
@@ -205,15 +207,11 @@ UBOOL ArrayDisplay_EM
 
             break;
 
-        case TCLF:
-        case TCNL:
+        case WC_LF:
+        case WC_CR:
         default:
-            // If the char is not printable, ...
-            if (aplChar < L' ')
-                // Empty the line
-                lpwszFormat[0] = WC_EOS;
             break;
-    } // End IF/SWITCH
+    } // End IF/IF/SWITCH
 
     // Display the line
     AppendLine (lpwszFormat, FALSE, bEndingCR);
@@ -759,36 +757,79 @@ UBOOL DisplayGlbArr_EM
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        // If the char is not printable, ...
-                        if (wcCur < L' ')
-                            uColCur--;      // Count it out
-
                         // Split cases based upon the character
                         switch (wcCur)
                         {
-                            case TCHT:          // []TCHT -- Move ahead to the next tab stop
-                                // *Insert* enough blanks to get to the next tabstop
-                                uTmp = uTabStops - (uCurPos % uTabStops);
-                                MoveMemoryW (&lpwszTemp[uCurPos + uTmp], &lpwszTemp[uCurPos], (APLU3264) uTmp);
-                                FillMemoryW (&lpwszTemp[uCurPos], (APLU3264) uTmp, L' ');
+                            case WC_HT:         // []TCHT -- Move ahead to the next tab stop
+                                // If we're NOT Output Debugging, ...
+                                if (!OptionFlags.bOutputDebug)
+                                {
+                                    // *Insert* enough blanks to get to the next tabstop
+                                    uTmp = uTabStops - (uCurPos % uTabStops);
+                                    MoveMemoryW (&lpwszTemp[uCurPos + uTmp], &lpwszTemp[uCurPos], (APLU3264) uTmp);
+                                    FillMemoryW (&lpwszTemp[uCurPos], (APLU3264) uTmp, L' ');
 
-                                // Increase the maximum width and current position by the # inserted blanks
-                                uMaxWidth += uTmp;
-                                uCurPos   += uTmp;
+                                    // Increase the maximum width and current position by the # inserted blanks
+                                    uMaxWidth += uTmp;
+                                    uCurPos   += uTmp;
+
+                                    break;
+                                } else
+                                {
+                                    // Fall through to common code
+                                } // End IF/ELSE
+
+                            case WC_BEL:        // []TCBEL -- Sound the alarum!
+                                // If we're NOT Output Debugging, ...
+                                if (!OptionFlags.bOutputDebug)
+                                {
+                                    MessageBeep (NEG1U);
+
+                                    break;
+                                } else
+                                {
+                                    // Fall through to common code
+                                } // End IF/ELSE
+
+                            case WC_BS:         // []TCBS -- Backspace if there's room
+                                // If we're NOT Output Debugging, ...
+                                if (!OptionFlags.bOutputDebug)
+                                {
+                                    if (uCurPos)
+                                        uCurPos--;
+                                    break;
+                                } else
+                                {
+                                    // Fall through to common code
+                                } // End IF/ELSE
+
+                            case WC_LF:         // []TCLF -- Start a new line
+                                // If we're NOT Output Debugging, ...
+                                if (!OptionFlags.bOutputDebug)
+                                {
+                                    // Zap the temp buffer at the maximum width
+                                    lpwszTemp[uMaxWidth] = WC_EOS;
+
+                                    // Output the line up to this point w/NL
+                                    AppendLine (lpwszTemp, FALSE, TRUE);
+
+                                    // Output enough blanks to get back to the current position
+                                    FillMemoryW (lpwszTemp, (APLU3264) uCurPos, L' ');
+
+                                    break;
+                                } else
+                                {
+                                    // Fall through to common code
+                                } // End IF/ELSE
+
+                            default:
+                                // Save the new char
+                                lpwszTemp[uCurPos++] = wcCur;
+                                uMaxWidth = max (uMaxWidth, uCurPos);
 
                                 break;
 
-                            case TCBEL:         // []TCBEL -- Sound the alarum!
-                                MessageBeep (NEG1U);
-
-                                break;
-
-                            case TCBS:          // []TCBS -- Backspace if there's room
-                                if (uCurPos)
-                                    uCurPos--;
-                                break;
-
-                            case TCNL:          // []TCNL -- Restart at the beginning of a new line
+                            case WC_CR:         // []TCNL -- Restart at the beginning of a new line
                                 // Zap the temp buffer at the maximum width
                                 lpwszTemp[uMaxWidth] = WC_EOS;
 
@@ -801,29 +842,6 @@ UBOOL DisplayGlbArr_EM
                                 uColCur   = 0;
                                 uColCur--;              // Count it out
                                 uOutLen = uQuadPW;      // Maximum output length
-
-                                break;
-
-                            case TCLF:          // []TCLF -- Start a new line
-                                // Zap the temp buffer at the maximum width
-                                lpwszTemp[uMaxWidth] = WC_EOS;
-
-                                // Output the line up to this point w/NL
-                                AppendLine (lpwszTemp, FALSE, TRUE);
-
-                                // Output enough blanks to get back to the current position
-                                FillMemoryW (lpwszTemp, (APLU3264) uCurPos, L' ');
-
-                                break;
-
-                            default:
-                                // If the char is printable, ...
-                                if (wcCur >= L' ')
-                                {
-                                    // Save the new char
-                                    lpwszTemp[uCurPos++] = wcCur;
-                                    uMaxWidth = max (uMaxWidth, uCurPos);
-                                } // End IF/ELSE
 
                                 break;
                         } // End SWITCH
@@ -933,6 +951,7 @@ LPAPLCHAR FormatImmed
 {
     LPVARARRAY_HEADER lpMemHdr;
     LPVOID            lpMemGlbNum;
+    WCHAR             wcCur;
 
     // Split cases based upon the immediate type
     switch (ImmType)
@@ -950,8 +969,16 @@ LPAPLCHAR FormatImmed
             break;
 
         case IMMTYPE_CHAR:
-            *lpaplChar++ = *(LPAPLCHAR) lpaplLongest;
-            *lpaplChar++ = L' ';                        // Append a blank to be deleted
+            // Save the char
+            wcCur = *(LPAPLCHAR) lpaplLongest;
+
+            // If we're Output Debugging, ...
+            if (OptionFlags.bOutputDebug
+             && wcCur EQ WC_EOS)
+                *lpaplChar++ = UTF16_REPLACEMENT0000;
+            else
+                *lpaplChar++ = *(LPAPLCHAR) lpaplLongest;
+            *lpaplChar++ = L' ';                // Append a blank to be deleted
 
             break;
 
@@ -972,7 +999,7 @@ LPAPLCHAR FormatImmed
             lpaplChar =
               FormatAplVfp (lpaplChar,          // Ptr to output save area
                 *(LPAPLVFP) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)),  // The value to format
-                            GetQuadPPV ()); // Use this many significant digits for VFP
+                            GetQuadPPV ());     // Use this many significant digits for VFP
             break;
 
         case IMMTYPE_ERROR:
@@ -1060,39 +1087,65 @@ LPAPLCHAR FormatImmedFC
             // Test for Terminal Control chars
             switch (wc)
             {
-                case TCBEL:     // Bel
-                    MessageBeep (NEG1U);    // Sound the alarum!
+                case WC_BEL:    // Bel
+                    // If we're NOT Output Debugging, ...
+                    if (!OptionFlags.bOutputDebug)
+                    {
+                        MessageBeep (NEG1U);    // Sound the alarum!
 
-                    // Fall through to common code
+                        // Fall through to common code
+                    } else
+                    {
+                        // Fall through to common code
+                    } // End IF/ELSE
 
-                case TCESC:     // Esc
-                case TCFF:      // FF
-                case TCNUL:     // NUL
-                case TCBS:      // BS
-                case TCNL:      // NL
-                    *lpaplChar++ = L' ';    // Append a blank to be deleted
+                case WC_ESC:    // Esc
+                case WC_FF:     // FF
+                case WC_EOS:    // NUL
+                case WC_BS:     // BS
+                case WC_CR:     // CR
+                    // If we're NOT Output Debugging, ...
+                    if (!OptionFlags.bOutputDebug)
+                    {
+                        *lpaplChar++ = L' ';    // Append a blank to be deleted
 
-                    break;          // Can't go any farther left
+                        break;                  // Can't go any farther left
+                    } else
+                    {
+                        // Fall through to common code
+                    } // End IF/ELSE
 
-                case TCHT:      // HT
-                    // We're always at the (virtual) left margin,
-                    //   so insert enough blanks for a TAB
-                    lpaplChar = FillMemoryW (lpaplChar, uTabStops + 1, L' ');
-///////////////////*lpaplChar++ = L' ';     // Append a blank to be deleted
+                case WC_HT:     // HT
+                    // If we're NOT Output Debugging, ...
+                    if (!OptionFlags.bOutputDebug)
+                    {
+                        // We're always at the (virtual) left margin,
+                        //   so insert enough blanks for a TAB
+                        lpaplChar = FillMemoryW (lpaplChar, uTabStops + 1, L' ');
+///////////////////////*lpaplChar++ = L' ';     // Append a blank to be deleted
 
-                    break;
+                        break;
+                    } else
+                    {
+                        // Fall through to common code
+                    } // End IF/ELSE
 
-                case TCLF:      // LF       // Handled during raw output
-                    *lpaplChar++ = wc;      // Append it
-                    *lpaplChar++ = L' ';    // Append a blank to be deleted
+                case WC_LF:     // LF       // Handled during raw output
+                    // If we're NOT Output Debugging, ...
+                    if (!OptionFlags.bOutputDebug)
+                    {
+                        *lpaplChar++ = wc;      // Append it
+                        *lpaplChar++ = L' ';    // Append a blank to be deleted
 
-                    break;
+                        break;
+                    } else
+                    {
+                        // Fall through to common code
+                    } // End IF/ELSE
 
                 default:
-                    if (wc >= 32)           // If none of the above but printable,
-                        *lpaplChar++ = wc;  //   append it
-
-                    *lpaplChar++ = L' ';    // Append a blank to be deleted
+                    *lpaplChar++ = wc;          // Append it
+                    *lpaplChar++ = L' ';        // Append a blank to be deleted
 
                     break;
             } // End SWITCH
@@ -1142,27 +1195,27 @@ LPAPLCHAR FormatImmedPtr
 
         case IMMTYPE_INT:
             lpaplChar =
-              FormatAplInt (lpaplChar,      // Ptr to output save area
-                *(LPAPLINT) lpaplLongest);  // The value to format
+              FormatAplInt (lpaplChar,      	// Ptr to output save area
+                *(LPAPLINT) lpaplLongest);  	// The value to format
             break;
 
         case IMMTYPE_CHAR:
             *lpaplChar++ = *(LPAPLCHAR) lpaplLongest;
-            *lpaplChar++ = L' ';                        // Append a blank to be deleted
+            *lpaplChar++ = L' ';                // Append a blank to be deleted
 
             break;
 
         case IMMTYPE_FLOAT:
             lpaplChar =
-              FormatAplFlt (lpaplChar,      // Ptr to output save area
-              *(LPAPLFLOAT) lpaplLongest,   // The value to format
-                            0);             // Use default significant digits
+              FormatAplFlt (lpaplChar,      	// Ptr to output save area
+              *(LPAPLFLOAT) lpaplLongest,   	// The value to format
+                            0);             	// Use default significant digits
             break;
 
         case IMMTYPE_RAT:
             lpaplChar =
-              FormatAplRat (lpaplChar,      // Ptr to output save area
-                *(LPAPLRAT) lpaplLongest);  // The value to format
+              FormatAplRat (lpaplChar,      	// Ptr to output save area
+                *(LPAPLRAT) lpaplLongest);  	// The value to format
             break;
 
         case IMMTYPE_VFP:
@@ -2698,7 +2751,7 @@ LPWCHAR DisplayTransferGlb2
     if (bNeedParens)
         *lpwszTemp++ = L')';
 
-    // We no longer this ptr
+    // We no longer need this ptr
     MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
 
     return lpwszTemp;
@@ -3173,35 +3226,63 @@ UBOOL CheckTermCodes
     switch (*lpwc)
     {
         case WC_BEL:    // Bel
-            // Sound the alarum!
-            MessageBeep (NEG1U);
+            // If we're NOT Output Debugging, ...
+            if (!OptionFlags.bOutputDebug)
+            {
+                // Sound the alarum!
+                MessageBeep (NEG1U);
 
-            break;
+                break;
+            } else
+            {
+                // Fall through to common code
+            } // End IF/ELSE
 
         case WC_HT:
-            // Insert a tab -- convert into insert N spaces
-            uSpaces = (((*lpuCurPos) / DEF_TABS) * DEF_TABS + DEF_TABS) - *lpuCurPos;
+            // If we're NOT Output Debugging, ...
+            if (!OptionFlags.bOutputDebug)
+            {
+                // Insert a tab -- convert into insert N spaces
+                uSpaces = (((*lpuCurPos) / DEF_TABS) * DEF_TABS + DEF_TABS) - *lpuCurPos;
 
-            Assert (uSpaces <= DEF_TABS);
+                Assert (uSpaces <= DEF_TABS);
 
-            // Fill with spaces
-            FillMemoryW (*lplpaplChar, (APLU3264) uSpaces, L' ');
+                // Fill with spaces
+                FillMemoryW (*lplpaplChar, (APLU3264) uSpaces, L' ');
 
-            // Skip over the spaces
-            (*lplpaplChar) += uSpaces;
-            (*lpuCurPos)   += uSpaces;
-            (*lpuMaxPos)   = max (*lpuMaxPos, *lpuCurPos);
+                // Skip over the spaces
+                (*lplpaplChar) += uSpaces;
+                (*lpuCurPos)   += uSpaces;
+                (*lpuMaxPos)   = max (*lpuMaxPos, *lpuCurPos);
 
-            break;
+                break;
+            } else
+            {
+                // Fall through to common code
+            } // End IF/ELSE
 
         case WC_BS:
-            // If there's room to backspace, ...
-            if (lpuCurPos[0] > uIniPos)
+            // If we're NOT Output Debugging, ...
+            if (!OptionFlags.bOutputDebug)
             {
-                // Back up one position
-                (*lplpaplChar)--;
-                (*lpuCurPos)--;
-            } // End IF
+                // If there's room to backspace, ...
+                if (lpuCurPos[0] > uIniPos)
+                {
+                    // Back up one position
+                    (*lplpaplChar)--;
+                    (*lpuCurPos)--;
+                } // End IF
+
+                break;
+            } else
+            {
+                // Fall through to common code
+            } // End IF/ELSE
+
+        default:
+            *(*lplpaplChar)++ = *lpwc;
+            (*lpuCurPos)++;
+            (*lpuMaxPos)      = max (*lpuMaxPos, *lpuCurPos);
 
             break;
 
@@ -3254,17 +3335,10 @@ UBOOL CheckTermCodes
 
             break;
 
-////////case WC_ESC:                // Ignore these chars
-////////case WC_LF:                 // ...
-////////case WC_FF:                 // ...
-////////case WC_NUL:                // ...
-        default:
-            if (*lpwc >= L' ')      // Ignore unprintable chars
-            {
-                *(*lplpaplChar)++ = *lpwc;
-                (*lpuCurPos)++;
-                (*lpuMaxPos)      = max (*lpuMaxPos, *lpuCurPos);
-            } // End IF
+        case WC_EOS:
+            *(*lplpaplChar)++ = UTF16_REPLACEMENT0000;
+            (*lpuCurPos)++;
+            (*lpuMaxPos)      = max (*lpuMaxPos, *lpuCurPos);
 
             break;
     } // End SWITCH

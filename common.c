@@ -605,6 +605,24 @@ void FillBitMemory
 } // End FillBitMemory
 
 
+#ifdef NEED_IOB_FUNC
+//***************************************************************************
+//  $__iob_func
+//***************************************************************************
+
+//FILE _iob[] = {*stdin, *stdout, *stderr};
+
+FILE * __cdecl __iob_func
+    (void)
+
+{
+    DbgStop ();
+    return NULL;
+////return _iob;
+} // End __iob_func
+#endif
+
+
 #ifdef DEBUG
 //***************************************************************************
 //  $nop

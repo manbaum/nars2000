@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1486,7 +1486,7 @@ APLMPI PrimeFactor
                                                                                                         \
         swprintf (wszTemp,                                                                              \
                  countof (wszTemp),                                                                     \
-                 L"B1 = %.20g, B2 = %.20g, N = %d, Bits = %I64d, D = %d",                               \
+                 L"B1 = %.20g, B2 = %.20g, N = %d, Bits = %I64d, D = %I64d",                            \
                  dB1, dB2, N, bits, digs);                                                              \
         DbgMsgW (wszTemp);                                                                              \
     }

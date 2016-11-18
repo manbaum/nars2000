@@ -24,10 +24,11 @@
 //   various APL systems to NARS.
 
 #define NA      UTF16_REPLACEMENTCHAR
-#define SAME    0xFFFF
+#define SAME    0xFFFE
 
 WCHAR uniTransTab[][UNITRANS_LENGTH] =
 {// APL+Win    ISO     APL2  Dyalog  PC3270  Normal  NARS
+    {0x0000, 0x0000, 0x0000, 0x0000, 0x0000,   NA  , UTF16_REPLACEMENT0000     },   // 0xFFFF               Missing from ISO charset
     {  NA  , 0x00C3,   NA  ,   NA  , 0x00A0,   NA  , UTF16_A_                  },   // A underbar
     {  NA  , 0x00C4,   NA  ,   NA  , 0x00E2,   NA  , UTF16_B_                  },   // B underbar
     {  NA  , 0x00C5,   NA  ,   NA  , 0x00E4,   NA  , UTF16_C_                  },   // C underbar

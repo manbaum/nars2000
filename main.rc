@@ -402,27 +402,6 @@ BEGIN
     AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6D,165,140,15, 8
     AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6E,180,140,15, 8
     AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO6F,195,140,15, 8
-////
-////PUSHBUTTON      "Change =>"      ,IDC_FONTS7       ,  5,152,45,14
-////LTEXT           "Vector Editor"  ,IDC_FONTS_LT7    , 55,155,60, 8, SS_NOTIFY | SS_LEFT | WS_GROUP
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7A,120,155,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7B,135,155,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7C,150,155,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7D,165,155,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7E,180,155,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7F,195,155,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO7G,210,155,15, 8
-////
-////PUSHBUTTON      "Change =>"      ,IDC_FONTS8       ,  5,167,45,14
-////LTEXT           "Matrix Editor"  ,IDC_FONTS_LT8    , 55,170,60, 8, SS_NOTIFY | SS_LEFT | WS_GROUP
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8A,120,170,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8B,135,170,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8C,150,170,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8D,165,170,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8E,180,170,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8F,195,170,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8G,210,170,15, 8
-////AUTORADIOBUTTON ""               ,IDC_FONTS_RADIO8H,240,170,15, 8
 END
 
 IDD_PROPPAGE_KEYBS DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
@@ -907,29 +886,31 @@ BEGIN
                     IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS , 10,169,260, 10
     AUTOCHECKBOX    "Display multi-precision numbers with suffix 'x' or 'v'",
                     IDC_USER_PREFS_XB_DISPMPSUF          , 10,182,260, 10
+    AUTOCHECKBOX    "Enable output debugging",
+                    IDC_USER_PREFS_XB_OUTPUTDEBUG        , 10,195,260, 10
 
-    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTPASTE       , 10,195, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTPASTE       , 10,208, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Default translation on Paste (Ctrl-V)",
-                    IDC_STATIC                           ,100,195,160, 10
-    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTCOPY        , 10,211, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
+                    IDC_STATIC                           ,100,208,160, 10
+    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTCOPY        , 10,224, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Default translation on Copy (Ctrl-C)",
-                    IDC_STATIC                           ,100,211,160, 10
-    COMBOBOX        IDC_USER_PREFS_CB_UPDFRQ             , 10,227, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
+                    IDC_STATIC                           ,100,224,160, 10
+    COMBOBOX        IDC_USER_PREFS_CB_UPDFRQ             , 10,240, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Frequency of check for new updates",
-                    IDC_STATIC                           ,100,227,160, 10
+                    IDC_STATIC                           ,100,240,160, 10
 
-    LTEXT           "Unicode"      , IDC_STATIC          , 10,245, 50, 14
+    LTEXT           "Unicode"      , IDC_STATIC          , 10,258, 50, 14
     CONTROL         ""               IDC_USER_PREFS_EC_UNICODE , ECWNDCLASS, WS_BORDER | WS_TABSTOP
-                                                         , 10,255, 30, 14
-    LTEXT           "Char"         , IDC_STATIC          , 55,245, 30, 14
+                                                         , 10,268, 30, 14
+    LTEXT           "Char"         , IDC_STATIC          , 55,258, 30, 14
     CONTROL         ""             , IDC_USER_PREFS_BN_UNICODE , ECWNDCLASS, WS_BORDER | WS_TABSTOP
-                                                         , 55,255, 14, 14
+                                                         , 55,268, 14, 14
     AUTORADIOBUTTON "Dec"          , IDC_USER_PREFS_RB_DEC
-                                                         , 10,270, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
+                                                         , 10,283, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
     AUTORADIOBUTTON "Hex"          , IDC_USER_PREFS_RB_HEX
-                                                         , 45,270, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP
+                                                         , 45,283, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP
     LTEXT           "Line Continuation Marker",
-                                     IDC_STATIC          , 75,257,120, 14
+                                     IDC_STATIC          , 75,280,120, 14
 
 END
 

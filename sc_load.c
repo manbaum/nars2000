@@ -1564,7 +1564,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
             for (uObj = 0; uObj < aplRankObj; uObj++)
             {
                 // Scan in the next dimension
-                sscanfW (lpwSrc, SCANFSTR_APLUINT, lpMemObj);
+                sscanfW (lpwSrc, SCANFSTR_APLUINT, (LPAPLINT) lpMemObj);
 
                 // Skip to the next field
                 lpwSrc = SkipPastCharW (lpwSrc, L' ');
@@ -1998,7 +1998,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                 wszTimeStamp,           // Ptr to the default value
                                 lpDict);                // Ptr to workspace dictionary
             // Convert the CreationTime string to time
-            sscanfW (lpwszProf, SCANFSTR_TIMESTAMP, &ftCreation);
+            sscanfW (lpwszProf, SCANFSTR_TIMESTAMP, (LPAPLINT) &ftCreation);
 
             // Get the LastModTime string
             lpwszProf =
@@ -2007,7 +2007,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                 wszTimeStamp,           // Ptr to the default value
                                 lpDict);                // Ptr to workspace dictionary
             // Convert the LastModTime string to time
-            sscanfW (lpwszProf, SCANFSTR_TIMESTAMP, &ftLastMod);
+            sscanfW (lpwszProf, SCANFSTR_TIMESTAMP, (LPAPLINT) &ftLastMod);
 
             // If it's a user-defined or AFO, ...
             if (bUserDefined

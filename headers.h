@@ -75,7 +75,6 @@
 #include "grade.h"
 #include "sis.h"
 #include "editctrl.h"
-#include "termcode.h"
 #include "qf.h"
 #include "fmtspec.h"
 #ifndef REAL_MPIFNS

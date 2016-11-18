@@ -114,6 +114,7 @@
 #define UTF16_LDC_DB_HORZ_U       0x2569        // LDC double horizontal and up
 #define UTF16_LDC_DB_CROSS        0x256C        // LDC double horizontal and vertical
 #define UTF16_REPLACEMENTCHAR     0xFFFD        // Replacement char for unknown
+#define UTF16_REPLACEMENT0000     0xFFFF        // Replacement char for U+0000
 
 // The alphabet, unshifted
 #define UTF16_ALPHA               0x237A        // Alt-'a' - alpha
@@ -393,6 +394,7 @@
 #define WS_UTF16_LDC_DB_HORZ_U       L"\x2569"  // LDC double horizontal and up
 #define WS_UTF16_LDC_DB_CROSS        L"\x256C"  // LDC double horizontal and vertical
 #define WS_UTF16_REPLACEMENTCHAR     L"\xFFFD"  // Replacement char for unknown
+#define WS_UTF16_REPLACEMENT0000     L"\xFFFF"  // Replacement char for U+0000
 
 // The alphabet, unshifted
 #define WS_UTF16_ALPHA               L"\x237A"  // Alt-'a' - alpha

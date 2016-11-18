@@ -152,7 +152,7 @@ void DisplayWorkspaceStamp
                         wszTimeStamp,           // Ptr to the default value
                         lpDict);                // Ptr to the file name
     // Convert the CreationTime string to time
-    sscanfW (lpwszProf, SCANFSTR_TIMESTAMP, &ftCreation);
+    sscanfW (lpwszProf, SCANFSTR_TIMESTAMP, (LPAPLINT) &ftCreation);
 
     if (OptionFlags.bUseLocalTime)
         // Convert to local filetime

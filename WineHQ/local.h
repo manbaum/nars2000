@@ -54,6 +54,9 @@ extern int __cdecl dprintfWL9 (unsigned short *lpwszFmt,...);
 extern int gDbgLvl;
 #endif
 
+extern HFONT hFontPR;
+void DrawLineContSub (HWND, HDC, int, int, int);
+
 #define MP_RAT          int // For APLRAT in "types.h"
 #define __mpfr_struct   int // For APLVFP in "types.h"
 #include "enums.h"
@@ -64,6 +67,7 @@ extern int gDbgLvl;
 #include "types.h"
 #include "editctrl.h"
 #include "resource.h"
+#include "unicode.h"
 
 #ifdef DEBUG
   #define   LCLODSAPI   ODSAPI

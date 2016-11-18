@@ -1557,6 +1557,15 @@ INT_PTR CALLBACK CustomizeDlgProc
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_REVDBLCLK          , OptionFlags.bRevDblClk          );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS , OptionFlags.bDefDispFcnLineNums );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_DISPMPSUF          , OptionFlags.bDispMPSuf          );
+                        CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_OUTPUTDEBUG        , OptionFlags.bOutputDebug        );
+
+                        // If any of the Fallback fonts are not available, ...
+                        if (hFontFB_SM    EQ NULL
+                         || hFontFB_FE    EQ NULL
+                         || hFontFB_PR_SM EQ NULL
+                         || hFontFB_PR_FE EQ NULL)
+                            // Grey out the checkbox
+                            EnableWindow (GetDlgItem (hWndProp, IDC_USER_PREFS_XB_OUTPUTDEBUG), FALSE);
 
                         // Tell the control about the Unicode bases
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_RB_DEC, uUserUnibase EQ 10);
@@ -2273,10 +2282,10 @@ INT_PTR CALLBACK CustomizeDlgProc
         case WM_NOTIFY:             // idCtl = (int) wParam;
         {                           // pnmh = (LPNMHDR) lParam;
 #ifdef DEBUG
-            int     idCtl = (int) wParam;
-            LPNMHDR lpnmh = (LPNMHDR) lParam;
+            APLI3264 idCtl = (APLI3264) wParam;
+            LPNMHDR  lpnmh = (LPNMHDR) lParam;
 #else
-  #define idCtl   ((int) wParam)
+  #define idCtl   ((APLI3264) wParam)
   #define lpnmh   ((LPNMHDR) lParam)
 #endif
             // Split cases based upon the notification code
@@ -3098,6 +3107,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         OptionFlags.bRevDblClk           = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_REVDBLCLK          );
                         OptionFlags.bDefDispFcnLineNums  = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS );
                         OptionFlags.bDispMPSuf           = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_DISPMPSUF          );
+                        OptionFlags.bOutputDebug         = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_OUTPUTDEBUG        );
 
                         // Get the window handle for the Paste & Copy combo boxes
                         hWndProp1 = GetDlgItem (hWndProp, IDC_USER_PREFS_CB_DEFAULTPASTE);
@@ -3127,6 +3137,9 @@ INT_PTR CALLBACK CustomizeDlgProc
 
                         // Redraw the Line Continuations markers in SM and FE windows
                         EnumChildWindows (hWndMF, &EnumCallbackDrawLineCont, 0);
+
+                        // Respecify the Fallback font
+                        EnumChildWindows (hWndMF, &EnumCallbackFallbackFont, 0);
                     } // End IF
 
                     // Disable the Apply button
@@ -4877,6 +4890,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                 case IDC_USER_PREFS_XB_REVDBLCLK:
                 case IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS:
                 case IDC_USER_PREFS_XB_DISPMPSUF:
+                case IDC_USER_PREFS_XB_OUTPUTDEBUG:
                     // We care about BN_CLICKED only
                     if (BN_CLICKED EQ cmdCtl)
                         // Enable the Apply button
@@ -5731,6 +5745,67 @@ UBOOL CALLBACK EnumCallbackRepaint
 
 
 //***************************************************************************
+//  $EnumCallbackFallbackFont
+//
+//  EnumChildWindows callback to respecify the Fallback font for all EC windows
+//***************************************************************************
+
+UBOOL CALLBACK EnumCallbackFallbackFont
+    (HWND   hWnd,           // Handle to child window
+     LPARAM lParam)         // Application-defined value
+
+{
+    UBOOL bSM, bFE;
+
+    // When an MDI child window is minimized, Windows creates two windows: an
+    // icon and the icon title.  The parent of the icon title window is set to
+    // the MDI client window, which confines the icon title to the MDI client
+    // area.  The owner of the icon title is set to the MDI child window.
+    if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
+        return TRUE;                    // skip it, and continue enumerating
+
+    // Determine the type of parent
+    bSM = IzitSM (hWnd);
+    bFE = IzitFE (hWnd);
+
+    // If it's a Session Manager or Function Editor window, ...
+    if (bSM || bFE)
+    {
+        HWND hWndEC;
+        HFONT hFontFB_PR,
+              hFontFB_SF;
+
+        // Get the handle to the Edit Ctrl
+        hWndEC = (HWND) GetWindowLongPtrW (hWnd, GWLSF_HWNDEC);
+
+        // If it's SM, ...
+        if (bSM)
+        {
+            hFontFB_PR = hFontFB_PR_SM;
+            hFontFB_SF = hFontFB_SM;
+        } else
+        {
+            hFontFB_PR = hFontFB_PR_FE;
+            hFontFB_SF = hFontFB_FE;
+        } // End IF/ELSE
+
+        // Tell 'em about the Fallback font
+        SendMessageW (hWndEC,
+                      EM_SETFALLBACKFONT,
+                      (WPARAM) (OptionFlags.bOutputDebug ? hFontFB_PR : NULL),
+                      (LPARAM) (OptionFlags.bOutputDebug ? hFontFB_SF : NULL));
+        // Invalidate the Client Area
+        InvalidateRect (hWndEC, NULL, FALSE);
+
+        // Update it
+        UpdateWindow (hWndEC);
+    } // End IF
+
+    return TRUE;        // Keep on truckin'
+} // End EnumCallbackFallbackFont
+
+
+//***************************************************************************
 //  $FillSyntaxColor
 //
 //  Fill in a button with a Syntax Color
@@ -6036,6 +6111,37 @@ LPWSTR GetFontWeightW
             return L"";
     } // End SWITCH
 } // End GetFontWeightW
+
+
+//***************************************************************************
+//  $GetLogPixelsX
+//
+//  Return the current iLogPixelsX
+//***************************************************************************
+
+int GetLogPixelsX
+    (HDC hDC)                           // Device Context to use (may be NULL)
+
+{
+    int iLogPixelsX;                    // # horizontal pixels per inch in the DC
+
+    if (hDC NE NULL)
+        // Get the # pixels per horizontal inch
+        iLogPixelsX = GetDeviceCaps (hDC, LOGPIXELSX);
+    else
+    {
+        // Get a new device context
+        hDC = MyGetDC (HWND_DESKTOP);
+
+        // Get the # pixels per horizontal inch
+        iLogPixelsX = GetDeviceCaps (hDC, LOGPIXELSX);
+
+        // Release the one we just created
+        MyReleaseDC (HWND_DESKTOP, hDC); hDC = NULL;
+    } // End IF/ELSE
+
+    return iLogPixelsX;
+} // End GetLogPixelsX
 
 
 //***************************************************************************

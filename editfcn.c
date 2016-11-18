@@ -28,6 +28,7 @@
 #include "scancodes.h"
 #include "debug.h"              // For xxx_TEMP_OPEN macros
 
+extern DWORD LclGetTabbedTextExtentW (HFONT, HFONT, HDC, LPWSTR, int, int, const LPINT);
 
 // ToDo
 /*
@@ -1365,22 +1366,78 @@ int LclECPaintHook
 {
     RECT             rcScr,                 // Rect for actual width/height in screen coordinates
                      rcAct;                 // ...                             printer/screen ...
-    HFONT            hFontOld;              // Old font from the incoming screen/printer DC
+    HFONT            hFontFB_NP,            // HFONT for Fallback font for NOT printing either SM or FE (whichever is active)
+                     hFontFB_PR,            // ...                     for printing     either ...
+                     hFontOld,              // Original font for restore in case we're Output Debugging
+                     hFontCur,              // Current  ...
+                     hFontNP,               // HFONT for non-printing
+                     // Use the following two fonts (when printing or NOT printing)
+                     hFontScrRG,            // HFONT for Regular chars -- in screen coordinates (if printing)
+                     hFontScrFB;            // ...       Fallback chars   ...
     HGLOBAL          hGlbClr = NULL;        // Syntax Color global memory handle
     LPCLRCOL         lpMemClrIni = NULL;    // Ptr to Syntax Colors/Column Indices global memory
-    long             cxAveChar;             // Width of average char in given screen
+    long             cxAveChar,             // Width of average char in given screen
+                     cxAveWidth,            //                       for a temp
+                     cxAveFB;               // ...                   for hFontFB_SF or hFontFB_PR
+    UINT             uCnt;                  // Loop counter
+    WCHAR            wcCur;                 // Current char
 #ifndef UNISCRIBE
     LPPERTABDATA     lpMemPTD;              // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 #endif
+    if (IzitSM (GetParent (hWndEC)))
+    {
+        // Setup Fallback fonts for printing and non-printing
+        hFontFB_PR = hFontFB_PR_SM;
+        hFontFB_NP = hFontFB_SM;
+        hFontNP    = hFontSM;
+    } else
+    if (IzitFE (GetParent (hWndEC)))
+    {
+        // Setup Fallback fonts for printing and non-printing
+        hFontFB_PR = hFontFB_PR_FE;
+        hFontFB_NP = hFontFB_FE;
+        hFontNP    = hFontFE;
+#ifdef DEBUG
+    } else
+    {
+        DbgBrk ();
+#endif
+    } // End IF/ELSE/...
+
+    // If we're printing, ...
+    if (lFlags & PRF_PRINTCLIENT)
+    {
+        LOGFONTW lfPR,                  // LOGFONT for PR
+                 lfFB_PR;               // ...         FB_PR
+
+        // Get the LOGFONTW structure for the font
+        GetObjectW (hFontPR   , sizeof (lfPR)   , &lfPR   );
+        GetObjectW (hFontFB_PR, sizeof (lfFB_PR), &lfFB_PR);
+
+        // Convert the font from screen coords to printer coords
+        lfPR   .lfHeight = MulDiv (lfPR   .lfHeight, GetLogPixelsY (hDC), GetLogPixelsY (NULL));
+        lfFB_PR.lfHeight = MulDiv (lfFB_PR.lfHeight, GetLogPixelsY (hDC), GetLogPixelsY (NULL));
+
+        // Use the following two fonts when printing
+        // Make a font of it
+        hFontScrRG = MyCreateFontIndirectW (&lfPR   );
+        hFontScrFB = MyCreateFontIndirectW (&lfFB_PR);
+    } else
+    {
+        // Use the following two fonts when NOT printing
+        hFontScrRG = hFontNP;
+        hFontScrFB = hFontFB_NP;
+    } // End IF/ELSE
+
     // If we're not displaying in reverse color, ...
     if (!rev)
     {
         // If we're to Syntax Color the line, ...
-         if ((IzitSM (GetParent (hWndEC)) && OptionFlags.bSyntClrSess)
-          || (IzitFE (GetParent (hWndEC)) && OptionFlags.bSyntClrFcns))
+        if ((IzitSM (GetParent (hWndEC)) && OptionFlags.bSyntClrSess)
+         || (IzitFE (GetParent (hWndEC)) && OptionFlags.bSyntClrFcns))
         {
             // If we're printing a session, ...
             if (!((IzitSM (GetParent (hWndEC)) && OptionFlags.bSyntClrSess)
@@ -1423,61 +1480,120 @@ int LclECPaintHook
     rcScr.right  =
     rcScr.bottom = 0;
 
-    // Calculate the width & height of the line
-    //   in screen coordinates
-    DrawTextW (hDC,
-              &lpwsz[uCol],
-               uLen,
-              &rcScr,
-               0
-             | DT_CALCRECT
-             | DT_NOPREFIX
-             | DT_NOCLIP);
+    // Save the current font in case we are Output Debugging
+    hFontOld =
+    hFontCur = GetCurrentObject (hDC, OBJ_FONT);
+
+    // If we're Output Debugging, ...
+    if (OptionFlags.bOutputDebug)
+    {
+        // Zero the temp coordinates
+        SetRectEmpty (&rcAct);
+
+        // Start off rcScr.right at the left
+        rcScr.right = rcScr.left;
+
+        // Loop through the chars
+        for (uCnt = 0; uCnt < uLen; uCnt++)
+        {
+            // Get the char
+            wcCur = lpwsz[uCnt];
+
+            // If the char is a Fallback char and
+            //   we're Output Debugging, ...
+            if ((wcCur < L' '
+              || wcCur EQ UTF16_REPLACEMENT0000)
+             && OptionFlags.bOutputDebug
+             && hFontScrFB NE NULL)
+            {
+                // If it's a replacement for WC_EOS, ...
+                if (wcCur EQ UTF16_REPLACEMENT0000)
+                    wcCur = WC_EOS;
+                // Shift the value into the Fallback font range
+                wcCur += L' ';
+
+                // Select the Fallback font
+                SelectObject (hDC, hFontScrFB);
+
+                // Calculate the width & height of the char
+                //   in screen coordinates
+                DrawTextW (hDC,
+                          &wcCur,
+                           1,
+                          &rcAct,
+                           0
+                         | DT_CALCRECT
+                         | DT_NOPREFIX
+                         | DT_NOCLIP);
+                // Restore the current font
+                SelectObject (hDC, hFontCur);
+            } else
+                // Calculate the width & height of the char
+                //   in screen coordinates
+                DrawTextW (hDC,
+                          &wcCur,
+                           1,
+                          &rcAct,
+                           0
+                         | DT_CALCRECT
+                         | DT_NOPREFIX
+                         | DT_NOCLIP);
+            // Accumulate as the screen coordinates
+            rcScr.right += rcAct.right - rcAct.left;
+            rcScr.bottom = max (rcScr.bottom, rcAct.bottom);
+        } // End FOR
+    } else
+        // Calculate the width & height of the line
+        //   in screen coordinates
+        DrawTextW (hDC,
+                  &lpwsz[uCol],
+                   uLen,
+                  &rcScr,
+                   0
+                 | DT_CALCRECT
+                 | DT_NOPREFIX
+                 | DT_NOCLIP);
     // Copy the screen coordinates
     //   in case we're not printing, or
     //   if we are, to initialize the struc
     rcAct = rcScr;
 
+    // If we're printing, ...
     if (lFlags & PRF_PRINTCLIENT)
     {
-        LOGFONTW lf;
-        HFONT    hFontTmp;
-        TEXTMETRICW tm;                 // TEXTMETRICWs for the Printer Font
+        TEXTMETRICW tmPR;               // TEXTMETRICWs for the Printer Font
+        DWORD       dwTmp;
 
-        // Get the LOGFONTW structure for the font
-        GetObjectW (hFontPR, sizeof (lf), &lf);
-
-        // Convert the font from screen coords to printer coords
-        lf.lfHeight = MulDiv (lf.lfHeight, GetLogPixelsY (hDC), GetLogPixelsY (NULL));
-
-        // Make a font of it
-        hFontTmp = MyCreateFontIndirectW (&lf);
+        // Respecify the current font
+        hFontCur = hFontScrRG;
 
         // Use the printer font
-        hFontOld = SelectObject (hDC, hFontTmp);
+        SelectObject (hDC, hFontScrRG);
 
         // Get the text metrics for this font
-        GetTextMetricsW (hDC, &tm);
+        GetTextMetricsW (hDC, &tmPR);
 
         // Respecify the horizontal & vertical positions in printer coordinates
-        rcAct.top  = MulDiv (tm.tmHeight      , rcAct.top , line_height);
-        rcAct.left = MulDiv (tm.tmAveCharWidth, rcAct.left, char_width );
+        rcAct.top  = MulDiv (tmPR.tmHeight      , rcAct.top , line_height);
+        rcAct.left = MulDiv (tmPR.tmAveCharWidth, rcAct.left, char_width );
 
         // Calculate the width & height of the line
         //   in printer coordinates
-        DrawTextW (hDC,
-                  &lpwsz[uCol],
-                   uLen,
-                  &rcAct,
-                   0
-                 | DT_CALCRECT
-                 | DT_NOPREFIX
-                 | DT_NOCLIP);
+        dwTmp = LclGetTabbedTextExtentW (hFontScrRG,    // HFONT for regular chars
+                                         hFontScrFB,    // ...       Fallback ...
+                                         hDC,           // Device context
+                                        &lpwsz[uCol],   // Ptr to string
+                                         uLen,          // Length of string
+                                         0, NULL);      // No tabs
         // Get the actual character width (rounded up)
+        rcAct.right = rcAct.left + LOWORD (dwTmp);
         cxAveChar = ((uLen - 1) + (rcAct.right - rcAct.left)) / uLen;
     } else
         // Get the actual character width (rounded up)
         cxAveChar = ((uLen - 1) + (rcScr.right - rcScr.left)) / uLen;
+
+    // Recalculate the average char width of the Fallback font
+    cxAveFB = RecalcAveCharWidth (hFontScrFB);
 
 #ifndef UNISCRIBE
     // On some systems when the alternate font isn't the same
@@ -1490,18 +1606,14 @@ int LclECPaintHook
      || FAILED (DrawTextFL (lpMemPTD->lpFontLink, hDC, &rcAct, lpwsz, uLen, cxAveChar)))
         OneDrawTextW (hDC, &rcAct, &lpwsz, uLen, cxAveChar);
 #else
-    // If we're syntax coloring, ...
-    if (hGlbClr NE NULL)
     {
         UINT     uAlignPrev;                // Previous value for TextAlign
         COLORREF clrBackDef;                // Default background color
         LPWCHAR  lpwCur;                    // Ptr to current character
+          WCHAR    wcCur;                   // The current char
 
         // Get the default background color for this DC
         clrBackDef = GetBkColor (hDC);
-
-        // Select the current font into the DC
-        SelectObject (hDC, GetCurrentObject (hDC, OBJ_FONT));
 
         // Set the initial position
         MoveToEx (hDC,
@@ -1509,26 +1621,54 @@ int LclECPaintHook
                   rcAct.top,
                   NULL);
         // Set the TextAlign state
-        uAlignPrev = SetTextAlign (hDC, TA_UPDATECP | GetTextAlign (hDC));
+        uAlignPrev = GetTextAlign (hDC);
+        uAlignPrev = SetTextAlign (hDC, TA_UPDATECP | uAlignPrev);
 
         // Get a ptr to the current char
         lpwCur = &lpwsz[uCol];
+        wcCur = *lpwCur;
 
         // Loop through the characters
         while (uLen--)
         {
-            // Set the foreground color
-            SetTextColor (hDC, lpMemClrIni[uCol].syntClr.crFore);
+            // If we're syntax coloring, ...
+            if (hGlbClr NE NULL)
+            {
+                // Set the foreground color
+                SetTextColor (hDC, lpMemClrIni[uCol].syntClr.crFore);
 
-            // Set the background color
-            if (lpMemClrIni[uCol].syntClr.crBack EQ DEF_SCN_TRANSPARENT)
-                SetBkColor (hDC, clrBackDef);
-            else
-                SetBkColor (hDC, lpMemClrIni[uCol].syntClr.crBack);
+                // Set the background color
+                if (lpMemClrIni[uCol].syntClr.crBack EQ DEF_SCN_TRANSPARENT)
+                    SetBkColor (hDC, clrBackDef);
+                else
+                    SetBkColor (hDC, lpMemClrIni[uCol].syntClr.crBack);
+            } // End IF
+
+            // If the char is a Fallback char and
+            //   we're Output Debugging, ...
+            if ((wcCur < L' '
+              || wcCur EQ UTF16_REPLACEMENT0000)
+             && OptionFlags.bOutputDebug
+             && hFontScrFB NE NULL)
+            {
+                // If it's a replacement for WC_EOS, ...
+                if (wcCur EQ UTF16_REPLACEMENT0000)
+                    wcCur = WC_EOS;
+                // Shift the value into the Fallback font range
+                wcCur += L' ';
+
+                // Put the Fallback font into effect
+                SelectObject (hDC, hFontScrFB);
+
+                // Save as the average char width
+                cxAveWidth = cxAveFB;
+            } else
+                // Save as the average char width
+                cxAveWidth = cxAveChar;
 
             // Draw the line for real
             DrawTextW (hDC,
-                       lpwCur,
+                      &wcCur,
                        1,
                       &rcAct,
                        0
@@ -1537,24 +1677,30 @@ int LclECPaintHook
                      | DT_NOCLIP);
             // Skip to the next char
             lpwCur = CharNextW (lpwCur);
+            wcCur = *lpwCur;
             uCol++;
+            rcAct.left  += cxAveWidth;
+            rcAct.right  = rcAct.left + cxAveWidth;
+
+            // Restore the current font
+            SelectObject (hDC, hFontCur);
         } // End WHILE
 
         // Restore TextAlign state
         SetTextAlign (hDC, uAlignPrev);
-    } else
-        // Draw the line for real
-        DrawTextW (hDC,
-                  &lpwsz[uCol],
-                   uLen,
-                  &rcAct,
-                   0
-                 | DT_SINGLELINE
-                 | DT_NOPREFIX
-                 | DT_NOCLIP);
+
+        // Restore the current font
+        SelectObject (hDC, hFontCur);
+    } // End Nothing
 #endif
+    // If we're printing, ...
     if (lFlags & PRF_PRINTCLIENT)
+    {
         SelectObject (hDC, hFontOld);
+
+        DeleteObject (hFontScrRG); hFontScrRG = NULL;
+        DeleteObject (hFontScrFB); hFontScrFB = NULL;
+    } // End IF
 
     // Unlock and free (and set to NULL) a global name and ptr
     UnlFreeGlbName (hGlbClr, lpMemClrIni);
@@ -3499,6 +3645,8 @@ LRESULT WINAPI LclEditCtrlWndProc
                     uLen,           // # words in each row of the text caret (1+(sizeChar.cx-1)/16)
                     uCnt;           // Loop counter
             HWND    hWndParent;     // Handle of parent window
+            HFONT   hFontFB,        // HFONT for Fallback font for either SM or FE (whichever is active)
+                    hFontFB_PR;     // ...                     for printing for either ...
             SIZE    sizeChar;       // cx & cy of the average char
 
             // Get the caret replace bitmap handle (if any)
@@ -3516,17 +3664,28 @@ LRESULT WINAPI LclEditCtrlWndProc
 
             // Use the appropriate FONTENUM_xx value
             if (IzitSM (hWndParent))
+            {
                 fontEnum = FONTENUM_SM;
-            else
-            if (IzitFE (hWndParent))
+
+                // Setup Fallback fonts for printing and non-printing
+                hFontFB_PR = hFontFB_PR_SM;
+                hFontFB    = hFontFB_SM;
+            } else
+            if (IzitSM (hWndParent)
+             || IzitDialog (hWndParent))
+            {
                 fontEnum = FONTENUM_FE;
-            else
-            if (IzitDialog (hWndParent))
-                fontEnum = FONTENUM_SM;
+
+                // Setup Fallback fonts for printing and non-printing
+                hFontFB_PR = hFontFB_PR_FE;
+                hFontFB    = hFontFB_FE;
 #ifdef DEBUG
-            else
-                DbgStop ();         // #ifdef DEBUG
+            } else
+            {
+                DbgStop ();             // #ifdef DEBUG
 #endif
+            } // End IF/ELSE/...
+
             // Get the caret width and height
             sizeChar = *GetFSIndAveCharSize (fontEnum);
 
@@ -3560,6 +3719,11 @@ LRESULT WINAPI LclEditCtrlWndProc
             if (IzitSM (hWndParent))
                 // Change []PW to track the new width
                 RespecifyNewQuadPW (hWnd, 0);
+
+            // If we're Output debugging, ...
+            if (OptionFlags.bOutputDebug)
+                // Tell the EC about our Fallback font
+                SendMessageW (hWnd, EM_SETFALLBACKFONT, (WPARAM) hFontFB_PR, (LPARAM) hFontFB);
 
             break;                  // Pass on to the Edit Ctrl
         } // End WM_SETFONT

@@ -100,6 +100,8 @@ WINE_DECLARE_DEBUG_CHANNEL(relay);
 #define EF_USE_SOFTBRK      0x0100  /* Enable soft breaks in text. */
 #define EF_APP_HAS_HANDLE       0x0200  /* Set when an app sends EM_[G|S]ETHANDLE.  We are in sole control of
                                            the text buffer if this is clear. */
+#define EF_PRINTING     0x8000  // TRUE iff we're printing
+
 typedef enum
 {
     END_0 = 0,          /* line ends with terminating '\0' character */
@@ -125,36 +127,36 @@ typedef struct tagEDITSTATE
     UINT text_length;       /* cached length of text buffer (in WCHARs) - use get_text_length() to retrieve */
     UINT buffer_size;       /* the size of the buffer in characters */
     UINT buffer_limit;      /* the maximum size to which the buffer may grow in characters */
-    HFONT font;         /* NULL means standard system font */
+    HFONT font;             /* NULL means standard system font */
     INT x_offset;           /* scroll offset    for multi lines this is in pixels
                                 for single lines it's in characters */
     INT line_height;        /* height of a screen line in pixels */
     INT char_width;         /* average character width in pixels */
     DWORD style;            /* sane version of wnd->dwStyle */
-    WORD flags;         /* flags that are not in es->style or wnd->flags (EF_XXX) */
-    INT undo_insert_count;      /* number of characters inserted in sequence */
+    WORD flags;             /* flags that are not in es->style or wnd->flags (EF_XXX) */
+    INT undo_insert_count;  /* number of characters inserted in sequence */
     UINT undo_position;     /* character index of the insertion and deletion */
     LPWSTR undo_text;       /* deleted text */
-    UINT undo_buffer_size;      /* size of the deleted text buffer */
-    INT selection_start;        /* == selection_end if no selection */
+    UINT undo_buffer_size;  /* size of the deleted text buffer */
+    INT selection_start;    /* == selection_end if no selection */
     INT selection_end;      /* == current caret position */
-    WCHAR password_char;        /* == 0 if no password char, and for multi line controls */
+    WCHAR password_char;    /* == 0 if no password char, and for multi line controls */
     INT left_margin;        /* in pixels */
     INT right_margin;       /* in pixels */
     RECT format_rect;
     INT text_width;         /* width of the widest line in pixels for multi line controls
-                       and just line width for single line controls */
+                               and just line width for single line controls */
     INT region_posx;        /* Position of cursor relative to region: */
     INT region_posy;        /* -1: to left, 0: within, 1: to right */
-    void *word_break_proc;      /* 32-bit word break proc: ANSI or Unicode */
+    void *word_break_proc;  /* 32-bit word break proc: ANSI or Unicode */
     INT line_count;         /* number of lines */
     INT y_offset;           /* scroll offset in number of lines */
-    BOOL bCaptureState;         /* flag indicating whether mouse was captured */
+    BOOL bCaptureState;     /* flag indicating whether mouse was captured */
     BOOL bEnableState;      /* flag keeping the enable state */
     HWND hwndSelf;          /* the our window handle */
     HWND hwndParent;        /* Handle of parent for sending EN_* messages.
-                           Even if parent will change, EN_* messages
-                       should be sent to the first parent. */
+                               Even if parent will change, EN_* messages
+                               should be sent to the first parent. */
     HWND hwndListBox;       /* handle of ComboBox's listbox or NULL */
     /*
      *  only for multi line controls
@@ -162,10 +164,12 @@ typedef struct tagEDITSTATE
     INT lock_count;         /* amount of re-entries in the EditWndProc */
     INT tabs_count;
     LPINT tabs;
-    LINEDEF *first_line_def;    /* linked list of (soft) linebreaks */
+    LINEDEF *first_line_def; /* linked list of (soft) linebreaks */
     HLOCAL hloc32W;         /* our unicode local memory block */
     HLOCAL hloc32A;         /* alias for ANSI control receiving EM_GETHANDLE
-                       or EM_SETHANDLE */
+                               or EM_SETHANDLE */
+    HFONT hFontFB,          // Fallback font handle for NOT printing (NULL = not Output Debugging)
+          hFontFB_PR;       // ...                          printing ...
 #if USE_IME
     /*
      * IME Data
@@ -385,6 +389,96 @@ static INT EDIT_CallWordBreakProc(EDITSTATE *es, INT start, INT index, INT count
 
 /*********************************************************************
  *
+ *  LclGetTabbedTextExtentW
+ *
+ *  Local version of GetTabbedTextExtentW
+ *
+ */
+
+DWORD LclGetTabbedTextExtentW
+    (HFONT       hFontScrRG,                // HFONT for regular chars
+     HFONT       hFontScrFB,                // ...       Fallback ...
+     HDC         hDC,
+     LPWSTR      lpString,
+     int         nCount,
+     int         nTabPositions,
+     const LPINT lpnTabStopPositions)
+
+{
+typedef struct tagHILO
+{
+    WORD hi,
+         lo;
+} HILO;
+
+    HILO  dwRet = {0, 0};
+    DWORD dwTmp;
+    int   iCnt;
+    UBOOL bFallback = FALSE;
+    HFONT hFontCur = GetCurrentObject (hDC, OBJ_FONT);
+
+    // Loop through the characters
+    for (iCnt = 0; iCnt < nCount; iCnt++)
+    {
+        WCHAR wcCur = lpString[iCnt];
+
+        // If we're Output Debugging,
+        //   and the character is in the Output Debugging range, ...
+        if (hFontScrFB NE NULL
+         && ((wcCur < L' ')
+          || (wcCur EQ UTF16_REPLACEMENT0000)))
+        {
+            // Mark as Fallback in effect for this line
+            bFallback = TRUE;
+
+            // Select the Fallback font
+            SelectObject (hDC, hFontScrFB);
+
+            // If it's a replacement for WC_EOS, ...
+            if (wcCur EQ UTF16_REPLACEMENT0000)
+                wcCur = WC_EOS;
+            // Shift the value into the Fallback font range
+            wcCur += L' ';
+
+            // Calculate the height & width of the current character
+            dwTmp = GetTabbedTextExtentW (hDC, &wcCur, 1, nTabPositions, lpnTabStopPositions);
+
+            // The height is the max, the width is the sum
+            dwRet.hi  = max (dwRet.hi, HIWORD (dwTmp));
+            dwRet.lo += LOWORD (dwTmp);
+
+            // Restore the current font
+            SelectObject (hDC, hFontCur);
+        } else
+        {
+            // Calculate the height & width of the current character
+            dwTmp = GetTabbedTextExtentW (hDC, &wcCur, 1, nTabPositions, lpnTabStopPositions);
+
+            // The height is the max, the width is the sum
+            dwRet.hi  = max (dwRet.hi, HIWORD (dwTmp));
+            dwRet.lo += LOWORD (dwTmp);
+        } // End IF/ELSE
+    } // End FOR
+
+    // If we did NOT use Fallback, ...
+    if (!bFallback)
+    {
+        // Calculate the length all at once
+        dwTmp = GetTabbedTextExtentW (hDC, lpString, nCount, nTabPositions, lpnTabStopPositions);
+
+        if (nCount NE 0)
+        {
+            if (dwTmp NE (dwRet.lo + (dwRet.hi << 16)))
+                DbgBrk ();
+        } // End IF
+    } // End IF
+
+    return dwRet.lo + (dwRet.hi << 16);
+} // End LclGetTabbedTextExtentW
+
+
+/*********************************************************************
+ *
  *  EDIT_BuildLineDefs_ML
  *
  *  Build linked list of text lines.
@@ -485,8 +579,11 @@ static void EDIT_BuildLineDefs_ML(EDITSTATE *es, INT istart, INT iend, INT delta
 
         /* Find end of line */
         cp = current_position;
-        while (*cp) {
-                    if (*cp == '\n') break;
+        while (*cp)
+        {
+            if (*cp == '\n'
+             && es->hFontFB EQ NULL)
+                break;
             if ((*cp == '\r') && (*(cp + 1) == '\n'))
                 break;
             cp++;
@@ -508,7 +605,7 @@ static void EDIT_BuildLineDefs_ML(EDITSTATE *es, INT istart, INT iend, INT delta
         }
 
         /* Calculate line width */
-        current_line->width = (INT)LOWORD(GetTabbedTextExtentW(dc,
+        current_line->width = (INT)LOWORD(LclGetTabbedTextExtentW(es->font, es->hFontFB, dc,
                     current_position, current_line->net_length,
                     es->tabs_count, es->tabs));
 
@@ -521,7 +618,7 @@ static void EDIT_BuildLineDefs_ML(EDITSTATE *es, INT istart, INT iend, INT delta
                 prev = next;
                 next = EDIT_CallWordBreakProc(es, (UINT) (current_position - es->text),
                         prev + 1, current_line->net_length, WB_RIGHT);
-                current_line->width = (INT)LOWORD(GetTabbedTextExtentW(dc,
+                current_line->width = (INT)LOWORD(LclGetTabbedTextExtentW(es->font, es->hFontFB, dc,
                             current_position, next, es->tabs_count, es->tabs));
             } while (current_line->width <= fw);
             if (!prev) { /* Didn't find a line break so force a break */
@@ -529,7 +626,7 @@ static void EDIT_BuildLineDefs_ML(EDITSTATE *es, INT istart, INT iend, INT delta
                 do {
                     prev = next;
                     next++;
-                    current_line->width = (INT)LOWORD(GetTabbedTextExtentW(dc,
+                    current_line->width = (INT)LOWORD(LclGetTabbedTextExtentW(es->font, es->hFontFB, dc,
                                 current_position, next, es->tabs_count, es->tabs));
                 } while (current_line->width <= fw);
                 if (!prev)
@@ -554,7 +651,7 @@ static void EDIT_BuildLineDefs_ML(EDITSTATE *es, INT istart, INT iend, INT delta
 
             current_line->net_length = prev;
             current_line->ending = END_WRAP;
-            current_line->width = (INT)LOWORD(GetTabbedTextExtentW(dc, current_position,
+            current_line->width = (INT)LOWORD(LclGetTabbedTextExtentW(es->font, es->hFontFB, dc, current_position,
                     current_line->net_length, es->tabs_count, es->tabs));
             }
             else if (current_line == start_line &&
@@ -631,7 +728,7 @@ static void EDIT_BuildLineDefs_ML(EDITSTATE *es, INT istart, INT iend, INT delta
         if ((es->style & ES_CENTER) || (es->style & ES_RIGHT))
             rc.left = es->format_rect.left;
         else
-            rc.left = es->format_rect.left + (INT)LOWORD(GetTabbedTextExtentW(dc,
+            rc.left = es->format_rect.left + (INT)LOWORD(LclGetTabbedTextExtentW(es->font, es->hFontFB, dc,
                     es->text + nstart_index, istart - nstart_index,
                     es->tabs_count, es->tabs)) - es->x_offset; /* Adjust for horz scroll */
         rc.right = es->format_rect.right;
@@ -773,7 +870,7 @@ static INT EDIT_CharFromPos(EDITSTATE *es, INT x, INT y, LPBOOL after_wrap)
                     while (low < high - 1)
                     {
                         INT mid = (low + high) / 2;
-                        INT x_now = LOWORD(GetTabbedTextExtentW(dc, es->text + line_index, mid - line_index, es->tabs_count, es->tabs));
+                        INT x_now = LOWORD(LclGetTabbedTextExtentW(es->font, es->hFontFB, dc, es->text + line_index, mid - line_index, es->tabs_count, es->tabs));
                         if (x_now > x) {
                             high = mid;
                             x_high = x_now;
@@ -1033,19 +1130,19 @@ static LRESULT EDIT_EM_PosFromChar(EDITSTATE *es, INT index, BOOL after_wrap)
         w = es->format_rect.right - es->format_rect.left;
         if (es->style & ES_RIGHT)
         {
-            x = LOWORD(GetTabbedTextExtentW(dc, es->text + li + (index - li), ll - (index - li),
+            x = LOWORD(LclGetTabbedTextExtentW(es->font, es->hFontFB, dc, es->text + li + (index - li), ll - (index - li),
                 es->tabs_count, es->tabs)) - es->x_offset;
             x = w - x;
         }
         else if (es->style & ES_CENTER)
         {
-            x = LOWORD(GetTabbedTextExtentW(dc, es->text + li, index - li,
+            x = LOWORD(LclGetTabbedTextExtentW(es->font, es->hFontFB, dc, es->text + li, index - li,
                 es->tabs_count, es->tabs)) - es->x_offset;
             x += (w - lw) / 2;
         }
         else /* ES_LEFT */
         {
-            x = LOWORD(GetTabbedTextExtentW(dc, es->text + li, index - li,
+            x = LOWORD(LclGetTabbedTextExtentW(es->font, es->hFontFB, dc, es->text + li, index - li,
                 es->tabs_count, es->tabs)) - es->x_offset;
         }
     } else {
@@ -1136,16 +1233,16 @@ static void EDIT_LockBuffer(EDITSTATE *es)
 
         if(es->hloc32W)
         {
-        if(es->hloc32A)
+            if(es->hloc32A)
+            {
+                TRACE("Synchronizing with 32-bit ANSI buffer\n");
+                textA = LocalLock(es->hloc32A);
+                countA = (UINT) lstrlenA(textA) + 1;
+            }
+        } else
         {
-            TRACE("Synchronizing with 32-bit ANSI buffer\n");
-            textA = LocalLock(es->hloc32A);
-            countA = (UINT) lstrlenA(textA) + 1;
-        }
-        }
-        else {
-//      ERR("no buffer ... please report\n");
-        return;
+//          ERR("no buffer ... please report\n");
+            return;
         }
 
         if(textA)
@@ -2087,6 +2184,8 @@ static INT EDIT_PaintText(EDITSTATE *es, HDC dc, INT x, INT y, INT line, INT col
     INT li;
     INT BkMode;
     SIZE size;
+    INT line_height,
+        char_width;
 
     if (!count)
         return 0;
@@ -2113,13 +2212,35 @@ static INT EDIT_PaintText(EDITSTATE *es, HDC dc, INT x, INT y, INT line, INT col
             }
 #endif
     }
+
+    // If we're printing, ...
+    if (lFlags & PRF_PRINTCLIENT)
+    {
+        TEXTMETRICW tm;
+        HFONT       old_font;
+        HDC         hDC = GetDC (es->hwndSelf);
+
+        old_font = SelectObject (hDC, hFontPR);
+
+        GetTextMetricsW (hDC, &tm);
+
+        line_height = tm.tmHeight;
+        char_width  = tm.tmAveCharWidth;
+
+        ReleaseDC (es->hwndSelf, hDC); hDC = NULL;
+    } else
+    {
+        line_height = es->line_height;
+        char_width  = es->char_width;
+    } // End IF/ELSE
+
     li = EDIT_EM_LineIndex(es, line);
     if (es->style & ES_MULTILINE) {
         LPPAINTHOOK lpPaintHook;
 
         (HANDLE_PTR) lpPaintHook = GetWindowLongPtrW (es->hwndSelf, GWLEC_PAINTHOOK);
         if (lpPaintHook)
-            ret = (INT)LOWORD((*lpPaintHook) (es->hwndSelf, dc, x, y, es->text + li, col, count, lFlags, es->line_height, es->char_width, rev));
+            ret = (INT)LOWORD((*lpPaintHook) (es->hwndSelf, dc, x, y, es->text + li, col, count, lFlags, line_height, char_width, rev));
         else
             ret = (INT)LOWORD(TabbedTextOutW(dc, x, y, es->text + li + col, count,
                         es->tabs_count, es->tabs, es->format_rect.left - es->x_offset));
@@ -2129,7 +2250,7 @@ static INT EDIT_PaintText(EDITSTATE *es, HDC dc, INT x, INT y, INT line, INT col
 
         (HANDLE_PTR) lpPaintHook = GetWindowLongPtrW (es->hwndSelf, GWLEC_PAINTHOOK);
         if (lpPaintHook)
-            ret = (INT)LOWORD((*lpPaintHook) (es->hwndSelf, dc, x, y, text + li, col, count, lFlags, es->line_height, es->char_width, rev));
+            ret = (INT)LOWORD((*lpPaintHook) (es->hwndSelf, dc, x, y, text + li, col, count, lFlags, line_height, char_width, rev));
         else
             TextOutW(dc, x, y, text + li + col, count);
         GetTextExtentPoint32W(dc, text + li + col, count, &size);
@@ -2194,12 +2315,25 @@ static void EDIT_PaintLine(EDITSTATE *es, HDC dc, INT line, BOOL rev, long lFlag
     e = max(es->selection_start, es->selection_end);
     s = min(li + ll, max(li, s));
     e = min(li + ll, max(li, e));
+
+    // If we're printing from the start of the line, and
+    //    this line is a Line Continuation, ...
+    if ((lFlags & PRF_PRINTCLIENT)
+     && (x EQ es->left_margin)
+     && line NE 0
+     && SendMessageW (es->hwndSelf, MYEM_ISLINECONT, line - 1, 0)
+       )
+        // Draw the Line Continuation marker
+        DrawLineContSub (es->hwndSelf, dc, x, y, TRUE);
+
     if (rev && (s != e) &&
-            ((es->flags & EF_FOCUSED) || (es->style & ES_NOHIDESEL))) {
+            ((es->flags & EF_FOCUSED) || (es->style & ES_NOHIDESEL)))
+    {
         if (!(lFlags & PRF_SELECTION))
             x += EDIT_PaintText(es, dc, x, y, line, 0, s - li, FALSE, lFlags);
         else
             x += (s - li) * es->char_width;
+        // REVERSE handled here
         x += EDIT_PaintText(es, dc, x, y, line, s - li, e - s, !(lFlags & PRF_SELECTION), lFlags);
         if (!(lFlags & PRF_SELECTION))
             x += EDIT_PaintText(es, dc, x, y, line, e - li, li + ll - e, FALSE, lFlags);
@@ -2559,8 +2693,8 @@ static void EDIT_EM_ReplaceSel(EDITSTATE *es, BOOL can_undo, LPCWSTR lpsz_replac
         memcpy(buf, es->text + s, bufl * sizeof(WCHAR));
         buf[bufl] = 0; /* ensure 0 termination */
         /* now delete */
-        strcpyW(es->text + s, es->text + e);
-                text_buffer_changed(es);
+        strcpyW (es->text + s, es->text + e);
+                 text_buffer_changed(es);
     }
     if (strl) {
         /* there is an insertion */
@@ -2587,7 +2721,7 @@ static void EDIT_EM_ReplaceSel(EDITSTATE *es, BOOL can_undo, LPCWSTR lpsz_replac
         /* if text is too long undo all changes */
         if (honor_limit && !(es->style & ES_AUTOVSCROLL) && (es->line_count > vlc)) {
             if (strl)
-                strcpyW(es->text + e, es->text + e + strl);
+                strcpyW (es->text + e, es->text + e + strl);
             if (e != s)
                 for (i = 0 , p = es->text ; i < e - s ; i++)
                     p[i + s] = buf[i];
@@ -2606,7 +2740,7 @@ static void EDIT_EM_ReplaceSel(EDITSTATE *es, BOOL can_undo, LPCWSTR lpsz_replac
         /* remove chars that don't fit */
         if (honor_limit && !(es->style & ES_AUTOHSCROLL) && (es->text_width > fw)) {
             while ((es->text_width > fw) && s + strl >= s) {
-                strcpyW(es->text + s + strl - 1, es->text + s + strl);
+                strcpyW (es->text + s + strl - 1, es->text + s + strl);
                 strl--;
                 EDIT_CalcLineWidth_SL(es);
             }
@@ -2969,7 +3103,7 @@ static BOOL EDIT_EM_Undo(EDITSTATE *es)
 
     utext = HeapAlloc(GetProcessHeap(), 0, (ulength + 1) * sizeof(WCHAR));
 
-    strcpyW(utext, es->undo_text);
+    strcpyW (utext, es->undo_text);
 
     TRACE("before UNDO:insertion length = %d, deletion buffer = %s\n",
              es->undo_insert_count, debugstr_w(utext));
@@ -3131,15 +3265,23 @@ static LRESULT EDIT_WM_Char(EDITSTATE *es, WCHAR c)
              * special case.
              */
             if ((es->style & ES_MULTILINE) && !(es->style & ES_WANTRETURN))
-                if (EDIT_IsInsideDialog(es))
-        break;
+            if (EDIT_IsInsideDialog(es))
+                break;
     case '\n':
         if (es->style & ES_MULTILINE) {
             if (es->style & ES_READONLY) {
                 EDIT_MoveHome(es, FALSE, FALSE);
                 EDIT_MoveDown_ML(es, FALSE);
             } else
+            if (c EQ '\r' || es->hFontFB EQ NULL)
                 EDIT_EM_ReplaceSel(es, TRUE, (shift && (es->flags & EF_USE_SOFTBRK)) ? L"\r\r\n" : L"\r\n", TRUE, TRUE);
+            else
+            {
+                WCHAR str[2];
+                str[0] = c;
+                str[1] = '\0';
+                EDIT_EM_ReplaceSel(es, TRUE, str, TRUE, TRUE);
+            }
         }
         break;
     case '\t':
@@ -3192,7 +3334,10 @@ static LRESULT EDIT_WM_Char(EDITSTATE *es, WCHAR c)
             str[0] = c;
             str[1] = '\0';
             EDIT_EM_ReplaceSel(es, TRUE, str, TRUE, TRUE);
-        }
+        } else
+        {
+            c++;
+        } // End IF/ELSE
         break;
     }
     return 1;
@@ -3361,8 +3506,8 @@ static INT EDIT_WM_GetText(const EDITSTATE *es, INT count, LPWSTR dst, BOOL unic
 
     if(unicode)
     {
-    strcpynW (dst, es->text, count);
-    return lstrlenW(dst);
+        strcpynW (dst, es->text, count);
+        return lstrlenW(dst);
     }
     else
     {
@@ -3845,7 +3990,7 @@ static void EDIT_WM_Paint2(EDITSTATE *es, HDC dc, HDC dcbg, long lFlags)
             IntersectClipRect(dc, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom);
     } // End IF
 
-    if (es->font)
+    if (es->font NE NULL)
         old_font = SelectObject(dc, es->font);
 
     if (!es->bEnableState)
@@ -4982,11 +5127,16 @@ static LRESULT EditWndProc_common( HWND hwnd, UINT msg,
         SetWindowLongPtrW (hwnd, GWLEC_PAINTHOOK, lParam);
         break;
 
+    case EM_SETFALLBACKFONT:
+        es->hFontFB_PR = (HFONT) wParam;
+        es->hFontFB    = (HFONT) lParam;
+        break;
+
     /* these messages missing from specs */
     case WM_USER+15:
-////case 0x00bf:
+////case 0x00bf:        // EM_SETPAINTHOOK
     case WM_USER+16:
-    case 0x00c0:
+////case 0x00c0:        // EM_SETFALLBACKFONT
     case WM_USER+19:
     case 0x00c3:
     case WM_USER+26:
@@ -5339,8 +5489,26 @@ static LRESULT EditWndProc_common( HWND hwnd, UINT msg,
     case WM_PAINT:
         lParam = 0;
     case WM_PRINTCLIENT:
-            EDIT_WM_Paint(es, (HDC)wParam, (long) lParam);
+    {
+        INT bPrinting;
+
+        // Save old printing flag
+        bPrinting = es->flags & EF_PRINTING;
+
+        // Clear and set flag for printing
+        es->flags &= ~EF_PRINTING;
+        if (lParam & PRF_PRINTCLIENT)
+            es->flags |= EF_PRINTING;
+
+        // Call WM_PRINT routine
+        EDIT_WM_Paint(es, (HDC)wParam, (long) lParam);
+
+        // Restore old flag for printing
+        es->flags &= ~EF_PRINTING;
+        es->flags |= bPrinting;
+
         break;
+    } // End WM_PRINT & WM_PRINTCLIENT
 
     case WM_PASTE:
         EDIT_WM_Paste(es);

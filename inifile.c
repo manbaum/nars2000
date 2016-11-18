@@ -87,11 +87,9 @@
 #define KEYNAME_QUADSA                  L"QuadSA"
 
 #define KEYNAME_LOGFONTFE               L"LogFontFE"
-#define KEYNAME_LOGFONTME               L"LogFontME"
 #define KEYNAME_LOGFONTPR               L"LogFontPR"
 #define KEYNAME_LOGFONTSM               L"LogFontSM"
 #define KEYNAME_LOGFONTTC               L"LogFontTC"
-#define KEYNAME_LOGFONTVE               L"LogFontVE"
 
 #define KEYNAME_ADJUSTPW                L"AdjustPW"
 #define KEYNAME_UNDERBARTOLOWERCASE     L"UnderbarToLowercase"
@@ -112,6 +110,7 @@
 #define KEYNAME_VIEWSTATUSBAR           L"ViewStatusBar"
 #define KEYNAME_DEFDISPFCNLINENUMS      L"DefDispFcnLineNums"
 #define KEYNAME_DISPMPSUF               L"DisplayMPSuffix"
+#define KEYNAME_OUTPUTDEBUG             L"OutputDebug"
 
 #define KEYNAME_SC_GLBNAME              L"GlbName"
 #define KEYNAME_SC_LCLNAME              L"LclName"
@@ -557,12 +556,10 @@ UBOOL ReadIniFileGlb
     //***************************************************************
 
     // Read in the LOGFONTW strucs
-    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTFE, &lfFE);
-    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTME, &lfME);
-    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTPR, &lfPR);
-    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTSM, &lfSM);
-    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTTC, &lfTC);
-    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTVE, &lfVE);
+    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTFE    , &lfFE   );
+    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTPR    , &lfPR   );
+    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTSM    , &lfSM   );
+    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTTC    , &lfTC   );
 
     //***************************************************************
     // Read in the [SameFontAs] section
@@ -704,6 +701,12 @@ UBOOL ReadIniFileGlb
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
                              KEYNAME_DISPMPSUF,     // Ptr to the key name
                              DEF_DISPMPSUF,         // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bOutputDebug
+    OptionFlags.bOutputDebug =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_OUTPUTDEBUG,   // Ptr to the key name
+                             DEF_OUTPUTDEBUG,       // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     // Read in the Line Continuation char as an integer
     uUserChar =
@@ -1473,15 +1476,13 @@ void GetPrivateProfileLogFontW
                               countof (wszTemp) - 1,// Count of the output buffer
                               lpwszIniFile);        // Ptr to the file name
     // If the new value is present, ...
-    if (wszTemp[0])
+    if (wszTemp[0] NE WC_EOS)
     {
-        // Note that this works for little-endian formats only as
-        //   the .lfItalic and following numeric fields are BYTE
-        //   but there is no way to tell sscanfW about that, so it
-        //   treats them as four-byte ints overwiting the next three
-        //   bytes each time it scans a number which is actually
-        //   a one-byte int.  As this happens sequentially and the
-        //   last field is the FaceName, there is no harm.
+        int lfTmp[8];
+
+        // Because many of the fields in a LOGFONT struc are BYTE wide,
+        //   we use the following artifice of temporary INT wide fields
+        //   so that sscanfW doesn't write into date beyond the BYTE.
         sscanfW (wszTemp,
                  FMTSTR_LOGFONT_INP,
                 &lplfFont->lfHeight,
@@ -1489,15 +1490,25 @@ void GetPrivateProfileLogFontW
                 &lplfFont->lfEscapement,
                 &lplfFont->lfOrientation,
                 &lplfFont->lfWeight,
-                &lplfFont->lfItalic,
-                &lplfFont->lfUnderline,
-                &lplfFont->lfStrikeOut,
-                &lplfFont->lfCharSet,
-                &lplfFont->lfOutPrecision,
-                &lplfFont->lfClipPrecision,
-                &lplfFont->lfQuality,
-                &lplfFont->lfPitchAndFamily,
+                &lfTmp[0],                  // &lplfFont->lfItalic,
+                &lfTmp[1],                  // &lplfFont->lfUnderline,
+                &lfTmp[2],                  // &lplfFont->lfStrikeOut,
+                &lfTmp[3],                  // &lplfFont->lfCharSet,
+                &lfTmp[4],                  // &lplfFont->lfOutPrecision,
+                &lfTmp[5],                  // &lplfFont->lfClipPrecision,
+                &lfTmp[6],                  // &lplfFont->lfQuality,
+                &lfTmp[7],                  // &lplfFont->lfPitchAndFamily,
                 &lplfFont->lfFaceName);
+        // Copy the temp fields into the byte fields in lplfFont
+        lplfFont->lfItalic          = (BYTE) lfTmp[0];
+        lplfFont->lfUnderline       = (BYTE) lfTmp[1];
+        lplfFont->lfStrikeOut       = (BYTE) lfTmp[2];
+        lplfFont->lfCharSet         = (BYTE) lfTmp[3];
+        lplfFont->lfOutPrecision    = (BYTE) lfTmp[4];
+        lplfFont->lfClipPrecision   = (BYTE) lfTmp[5];
+        lplfFont->lfQuality         = (BYTE) lfTmp[6];
+        lplfFont->lfPitchAndFamily  = (BYTE) lfTmp[7];
+
         // If the facename contains an embedded blank, sscanfW misses
         //   the tail of the name so we do it over again here
         strcpyW (lplfFont->lfFaceName, strchrW (wszTemp, WC_SQ) + 1);
@@ -1899,6 +1910,7 @@ void ReadIniFileWnd
     RECT  rcDtop;           // Rectangle for desktop
     POINT PosCtr;           // x- and y- positions
     WCHAR wszTemp[128];     // Temporary buffer
+    UINT  uTmp[3];          // Temp UINTs for sscanfW
 
     // Read in the values from the [General] section
 
@@ -1975,9 +1987,13 @@ void ReadIniFileWnd
     // Convert the date to SYSTEMTIME format
     sscanfW (wszTemp,
              FMTSTR_UPDCHK,
-            &gstUpdChk.wYear,
-            &gstUpdChk.wMonth,
-            &gstUpdChk.wDay);
+            &uTmp[0],           // &gstUpdChk.wYear,
+            &uTmp[1],           // &gstUpdChk.wMonth,
+            &uTmp[2]);          // &gstUpdChk.wDay,
+    // Copy the temps to the SYSTEMTIME struc
+    gstUpdChk.wYear     = (WORD)uTmp[0];
+    gstUpdChk.wMonth    = (WORD)uTmp[1];
+    gstUpdChk.wDay      = (WORD)uTmp[2];
 } // End ReadIniFileWnd
 
 
@@ -1997,13 +2013,14 @@ void SaveIniFile
                   uCnt2,                            // ...
                   uCol,                             // ...
                   uLen,                             // Length value
-                  uTmp;                             // Temp var
+                  uVal;                             // Temp var
     LPVOID        lpMemObj;                         // Ptr to object global memory
     LPAPLCHAR     lpaplChar;                        // Ptr to output save area
     APLNELM       aplNELMObj;                       // Object NELM
     WCHAR       (*lpwszRecentFiles)[][_MAX_PATH];   // Ptr to list of recent files
     LPKEYBLAYOUTS lpKeybLayouts;                    // Ptr to keyboard layouts global memory
     LPWSZLIBDIRS  lpwszLibDirs;                     // Ptr to LibDirs
+    UINT          uTmp[3];                          // Temp UINTs for sscanfW
 
     //*********************************************************
     // Write out [LibDirs] section entries
@@ -2114,13 +2131,18 @@ void SaveIniFile
                                 KEYNAME_UPDFRQ,             // Ptr to the key name
                                 gszUpdFrq,                  // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
+    // Copy the SYSTEMTIME struc to the temps
+    (WORD)uTmp[0]    = gstUpdChk.wYear ;
+    (WORD)uTmp[1]    = gstUpdChk.wMonth;
+    (WORD)uTmp[2]    = gstUpdChk.wDay  ;
+
     // Format the update check date
     MySprintfW (wszTemp,
                 sizeof (wszTemp),
                 FMTSTR_UPDCHK,
-                gstUpdChk.wYear,
-                gstUpdChk.wMonth,
-                gstUpdChk.wDay);
+                uTmp[0],
+                uTmp[1],
+                uTmp[2]);
     // Write out the update check date
     WritePrivateProfileStringW (SECTNAME_GENERAL,           // Ptr to the section name
                                 KEYNAME_UPDCHK,             // Ptr to the key name
@@ -2150,11 +2172,6 @@ void SaveIniFile
                                  KEYNAME_LOGFONTFE,         // Ptr to the key name
                                 &lfFE,                      // Ptr to LOGFONTW
                                  lpwszIniFile);             // Ptr to the file name
-    // Write out the LOGFONTW struc for ME
-    WritePrivateProfileLogfontW (SECTNAME_FONTS,            // Ptr to the section name
-                                 KEYNAME_LOGFONTME,         // Ptr to the key name
-                                &lfME,                      // Ptr to LOGFONTW
-                                 lpwszIniFile);             // Ptr to the file name
     // Write out the LOGFONTW struc for PR
     WritePrivateProfileLogfontW (SECTNAME_FONTS,            // Ptr to the section name
                                  KEYNAME_LOGFONTPR,         // Ptr to the key name
@@ -2169,11 +2186,6 @@ void SaveIniFile
     WritePrivateProfileLogfontW (SECTNAME_FONTS,            // Ptr to the section name
                                  KEYNAME_LOGFONTTC,         // Ptr to the key name
                                 &lfTC,                      // Ptr to LOGFONTW
-                                 lpwszIniFile);             // Ptr to the file name
-    // Write out the LOGFONTW struc for VE
-    WritePrivateProfileLogfontW (SECTNAME_FONTS,            // Ptr to the section name
-                                 KEYNAME_LOGFONTVE,         // Ptr to the key name
-                                &lfVE,                      // Ptr to LOGFONTW
                                  lpwszIniFile);             // Ptr to the file name
     //*********************************************************
     // Write out [SameFontAs] section entries
@@ -2396,6 +2408,16 @@ void SaveIniFile
     // Write out bDispMPSuf
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
                                 KEYNAME_DISPMPSUF,          // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    //******************* bOutputDebug ************************
+    // Format bOutputDebug
+    wszTemp[0] = L'0' + OptionFlags.bOutputDebug;
+    wszTemp[1] = WC_EOS;
+
+    // Write out bOutputDebug
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
+                                KEYNAME_OUTPUTDEBUG,        // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* uUserChar ***************************
@@ -2903,11 +2925,11 @@ void SaveIniFile
     lpwszRecentFiles = MyGlobalLock (hGlbRecentFiles);
 
     // Loop through the Recent Files
-    for (uTmp = uCnt = 0; uCnt < uNumRecentFiles; uCnt++)
+    for (uVal = uCnt = 0; uCnt < uNumRecentFiles; uCnt++)
     if ((*lpwszRecentFiles)[uCnt][0])
     {
         // Count in another valid Recent File
-        uTmp++;
+        uVal++;
 
         // Format the keyname
         MySprintfW (wszKey,
@@ -2928,7 +2950,7 @@ void SaveIniFile
     MySprintfW (wszKey,
                 sizeof (wszKey),
                L"%u",
-                uTmp);
+                uVal);
     // Write it out
     WritePrivateProfileStringW (SECTNAME_RECENTFILES,       // Ptr to the section name
                                 KEYNAME_COUNT,              // Ptr to the key name

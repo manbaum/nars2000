@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2013 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,7 +39,6 @@
 #define KEYNAME_USERDEFINED             L"UserDefined"
 #define KEYNAME_AFO                     L"AFO"
 #define KEYNAME_MONINFO                 L"MonInfo"
-#define KEYNAME_WSID                    L"WSID"
 
 // Workspace Version string
 #define WS_VERSTR               L"0.01"

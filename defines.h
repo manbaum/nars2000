@@ -56,7 +56,7 @@
   #define DEF_ASFONTNAME    L"Code2000"         // Default Alternate SM font
 #endif
 #define DEF_SMFONTNAME      DEF_APLFONT_INTNAME
-#define DEF_FBFONTNAME      DEF_APLFONT_INTNAME
+#define DEF_FBFONTNAME      L"Fallback00-1F"
 #define DEF_LWFONTNAME      DEF_APLFONT_INTNAME
 #define DEF_PRFONTNAME      DEF_APLFONT_INTNAME
 #define DEF_CCFONTNAME      DEF_APLFONT_INTNAME
@@ -187,6 +187,7 @@
 #define DEF_VIEWSTATUSBAR           TRUE
 #define DEF_DISPFCNLINENUMS         TRUE
 #define DEF_DISPMPSUF               FALSE
+#define DEF_OUTPUTDEBUG             FALSE
 
 
 // Range limits for []vars
@@ -519,6 +520,7 @@ default:        \
 #define WC_LF           L'\n'       // 0A:  Linefeed
 #define WC_FF           L'\f'       // 0C:  FormFeed
 #define WC_CR           L'\r'       // 0D:  Carriage Return
+#define WC_ESC          L'\x001B'   // 1B:  Escape
 #define WC_DQ           L'\"'       // 22:  Double Quote
 #define WC_SQ           L'\''       // 27:  Single Quote
 #define WC_SLOPE        L'\\'       // 5C:  Slope

@@ -116,8 +116,8 @@ typedef struct tagPERTABDATA
     LPWCHAR      lpwszFormat,               // Ptr to formatting save area
                  lpwszBaseTemp,             // Ptr to base of lpwszTemp
                  lpwszTemp;                 // Ptr to temporary  ...
-    UINT         uTempMaxSize,              // Maximum size of lpwszTemp
-                 uExecDepth,                // Execution depth
+    APLI3264     iTempMaxSize;              // Maximum size of lpwszTemp
+    UINT         uExecDepth,                // Execution depth
                  uErrLine;                  // Error line # from []FX for )IN
     APLU3264     RegisterEBP;               // Register EBP/RBP from an exception
     LPTOKEN      lptkCSIni,                 // Ptr to start of CtrlStruc token stack (static)

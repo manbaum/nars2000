@@ -39,11 +39,11 @@
 #include <mpir.h>
 #include <mpfr.h>
 #include "classnames.h"
+#include "perfmon.h"
 #include "defines.h"
 #include "enums.h"
 #include "types.h"
 #include "macros.h"
-#include "perfmon.h"
 #include "uniscribe.h"
 #include "aplerrors.h"
 #include "resdebug.h"
@@ -83,6 +83,7 @@
 #include "malloc.h"
 #include "qf_dr.h"
 #include "hungarian.h"
+#include "sc_save.h"
 #include "cr_proc.h"
 #include "afofns.h"
 

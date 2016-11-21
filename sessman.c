@@ -1466,7 +1466,7 @@ WM_NCCREATE_FAIL:
                           MEM_RESERVE,
                           PAGE_READWRITE);
             // Save the maximum size
-            lpMemPTD->uTempMaxSize = lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].MaxSize;
+            lpMemPTD->iTempMaxSize = lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].MaxSize;
 
             if (lpLclMemVirtStr[PTDMEMVIRT_WSZTEMP].IniAddr EQ NULL)
             {

@@ -137,7 +137,7 @@ typedef struct tagLW_PARAMS         // LoadWorkspace & AFO struc
                   lpwBuffer,        // 04:  Ptr to temporary buffer
                   lpMemUndoTxt;     // 08:  Ptr to Undo Buffer in text format
     LPDICTIONARY  lpDict;           // 0C:  Ptr to workspace dictionary
-    UINT          uMaxSize;         // 10:  Maximum size of lpwBuffer
+    APLI3264      iMaxSize;         // 10:  Maximum size of lpwBuffer
     FILETIME      ftCreation,       // 14:  Function Creation Time
                   ftLastMod;        // 18:  Function Last Modification Time
     LPWCHAR       lpwszVersion;     // 1C:  Ptr to workspace version text

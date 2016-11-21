@@ -556,10 +556,10 @@ UBOOL ReadIniFileGlb
     //***************************************************************
 
     // Read in the LOGFONTW strucs
-    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTFE    , &lfFE   );
-    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTPR    , &lfPR   );
-    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTSM    , &lfSM   );
-    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTTC    , &lfTC   );
+    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTFE, &lfFE);
+    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTPR, &lfPR);
+    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTSM, &lfSM);
+    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTTC, &lfTC);
 
     //***************************************************************
     // Read in the [SameFontAs] section
@@ -3262,6 +3262,30 @@ void WritePrivateProfileGlbCharW
 
 
 //***************************************************************************
+//  $ProfileInit_EM
+//
+//  Initialize a .ini profile
+//***************************************************************************
+
+LPDICTIONARY ProfileInit_EM
+    (LPWSTR       lpwszDPFE,        // Ptr to workspace DPFE
+     LPWCHAR     *lplpwErrMsg)      // Ptr to ptr to error message text
+
+{
+    LPDICTIONARY lpDict;            // Ptr to workspace dictionary
+
+    // Initialize the parser dictionary
+    lpDict = iniparser_init (lpwszDPFE);
+    if (lpDict EQ NULL)
+        *lplpwErrMsg = L"No room for Dictionary";
+    else
+        *lplpwErrMsg = NULL;
+
+    return lpDict;
+} // End ProfileInit_EM
+
+
+//***************************************************************************
 //  $ProfileLoad_EM
 //
 //  Load a .ini profile
@@ -3614,12 +3638,33 @@ UBOOL ProfileWrite
     (LPDICTIONARY lpDict)       // Ptr to workspace dictionary
 
 {
+    WCHAR wszDrive[_MAX_DRIVE],
+          wszDir  [_MAX_DIR],
+          wszFname[_MAX_FNAME],
+          wszExt  [_MAX_EXT],
+          wszPath [_MAX_PATH];
     HANDLE hFile;               // File handle from CreateFileW
 ////DWORD  dwBytesOut;          // # bytes written out
 
+    // Split out the drive and path from the module filename
+    _wsplitpath (lpDict->lpwszDPFE, wszDrive, wszDir, wszFname, wszExt);
+
+    // Form the destination path
+    lstrcpyW (wszPath, wszDrive);
+    lstrcatW (wszPath, wszDir  );
+
+    // Append a backslash if not already present
+    if (wszPath[lstrlenW (wszPath) - 1] NE '\\')
+        lstrcatW (wszPath, L"\\"   );
+
+    // Append the temp filename
+    GetTempFileNameW (wszPath,                      // Temp path
+                     L"",                           // Prefix string
+                      0,                            // Unique ID (0 = none)
+                      wszPath);                     // Output buffer
     // Create (or truncate the file)
     hFile =
-      CreateFileW (lpDict->lpwszDPFE,               // lpwFileName
+      CreateFileW (wszPath,                         // lpwFileName
                    GENERIC_READ | GENERIC_WRITE,    // dwDesiredAccess
                    FILE_SHARE_READ,                 // dwShareMode
                    NULL,                            // lpSecurityAttributes
@@ -3627,7 +3672,14 @@ UBOOL ProfileWrite
                    FILE_ATTRIBUTE_NORMAL,           // dwFlagsAndAttributes
                    NULL);                           // hTemplateFile
     if (hFile EQ INVALID_HANDLE_VALUE)
+    {
+#ifdef DEBUG
+        DWORD dwErrCode = GetLastError ();
+
+        DbgBrk ();
+#endif
         return FALSE;
+    } // End IF
 
 ////// Write out the BOM for UTF-16
 ////WriteFile (hFile, UTF16LE_BOM, strcountof (UTF16LE_BOM), &dwBytesOut, NULL);
@@ -3637,6 +3689,12 @@ UBOOL ProfileWrite
 
     // Close it after creating the file
     CloseHandle (hFile); hFile = NULL;
+
+    // Delete the old file
+    DeleteFileW (lpDict->lpwszDPFE);
+
+    // Rename the temp file
+    MoveFileW (wszPath, lpDict->lpwszDPFE);
 
     return TRUE;
 } // End ProfileWrite

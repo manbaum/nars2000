@@ -63,8 +63,8 @@ UBOOL CmdIn_EM
 #define wszTempLen      countof (wszTemp)
     UINT          uLen,                     // Length of output save area in WCHARs
                   uOldRecNo,                // Starting record # in file (for range display)
-                  uRecNo = 0,               // Record # in file
-                  uMaxSize;                 // Maximum size of lpwszTemp
+                  uRecNo = 0;               // Record # in file
+    APLI3264      iMaxSize;                 // Maximum size of lpwszTemp
     UBOOL         bRet = FALSE,             // TRUE iff the result is valid
                   bIsEBCDIC;                // TRUE iff the orignial .atf file is in EBCDIC format
     FILETIME      ftCreation;               // Creation timestamp
@@ -78,7 +78,7 @@ UBOOL CmdIn_EM
     // Get ptr to temporary storage & maximum size
     lpwszOrigTemp =
     lpwszTemp     = lpMemPTD->lpwszTemp;
-    uMaxSize      = lpMemPTD->uTempMaxSize;
+    iMaxSize      = lpMemPTD->iTempMaxSize;
     hWndSM        = lpMemPTD->hWndSM;
     lpwszFormat   = lpMemPTD->lpwszFormat;
 
@@ -192,7 +192,7 @@ UBOOL CmdIn_EM
         CHECK_TEMP_OPEN
 
         // Copy and translate the next record into lpwszTemp
-        lpAtfView = CmdInCopyAndTranslate_EM (lpAtfView, &dwAtfFileSize, lpwszTemp, uMaxSize, &uLen, &ftCreation, &uRecNo, bIsEBCDIC);
+        lpAtfView = CmdInCopyAndTranslate_EM (lpAtfView, &dwAtfFileSize, lpwszTemp, iMaxSize, &uLen, &ftCreation, &uRecNo, bIsEBCDIC);
 
         // Protect the text
         lpMemPTD->lpwszTemp += lstrlenW (lpMemPTD->lpwszTemp);
@@ -1183,7 +1183,7 @@ LPUCHAR CmdInCopyAndTranslate_EM
     (LPUCHAR    lpAtfView,                  // Ptr to incoming data
      LPDWORD    lpdwAtfFileSize,            // Ptr to file size
      LPWCHAR    lpwszTemp,                  // Ptr to output save area
-     UINT       uMaxSize,                   // Size of output save area in bytes
+     APLI3264   iMaxSize,                   // Size of output save area in bytes
      LPUINT     lpuLen,                     // Ptr to length of record in output save area (in WCHARs)
      FILETIME  *lpftCreation,               // Ptr to timestamp (if any)
      LPUINT     lpuRecNo,                   // Ptr to record count so far

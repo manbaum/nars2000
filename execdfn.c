@@ -842,10 +842,10 @@ void _CheckSymEntries
                            uLineNum);
                 AppendLine (lpMemPTD->lpwszTemp, FALSE, TRUE);
 
-                FormatSTE (lpSymEntryNxt, lpMemPTD->lpwszTemp, lpMemPTD->uTempMaxSize);
+                FormatSTE (lpSymEntryNxt, lpMemPTD->lpwszTemp, lpMemPTD->iTempMaxSize);
                 AppendLine (lpMemPTD->lpwszTemp, FALSE, TRUE);
 
-                FormatHTE (lpSymEntryNxt->stHshEntry, lpMemPTD->lpwszTemp, lpMemPTD->uTempMaxSize, 0);
+                FormatHTE (lpSymEntryNxt->stHshEntry, lpMemPTD->lpwszTemp, lpMemPTD->iTempMaxSize, 0);
                 AppendLine (lpMemPTD->lpwszTemp, FALSE, TRUE);
 
                 // Display message for unhandled exception

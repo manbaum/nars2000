@@ -75,10 +75,10 @@
 
 typedef struct tagSAVEDWSGLBVARPARM
 {
-    LPAPLCHAR   lpMemSaveWSID;          // Ptr to saved WS file DPFE
-    LPUINT      lpuGlbCnt;              // Ptr to [Globals] count
-    LPSYMENTRY  lpSymEntry;             // Ptr to this global's SYMENTRY
-    LPSYMENTRY *lplpSymLink;            // Ptr to ptr to SYMENTRY link
+    LPDICTIONARY lpDict;                // Ptr to the dictionary
+    LPUINT       lpuGlbCnt;             // Ptr to [Globals] count
+    LPSYMENTRY   lpSymEntry;            // Ptr to this global's SYMENTRY
+    LPSYMENTRY  *lplpSymLink;           // Ptr to ptr to SYMENTRY link
 } SAVEDWSGLBVARPARM, *LPSAVEDWSGLBVARPARM;
 
 typedef LPAPLCHAR (*LPSAVEDWSGLBVARCONV) (LPAPLCHAR, HGLOBAL, LPSAVEDWSGLBVARPARM);
@@ -87,7 +87,7 @@ typedef LPAPLCHAR (*LPSAVEDWSGLBVARCONV) (LPAPLCHAR, HGLOBAL, LPSAVEDWSGLBVARPAR
 typedef struct tagLOADWSGLBVARPARM
 {
     LPWCHAR       lpwSrc;               // Ptr to next available byte
-    UINT          uMaxSize;             // Maximum size of lpwSrc
+    APLI3264      iMaxSize;             // Maximum size of lpwSrc
     HWND          hWndEC;               // Edit Control window handle
     LPSYMENTRY   *lplpSymLink;          // Ptr to ptr to SYMENTRY link
     LPWCHAR       lpwszVersion;         // Ptr to workspace version text
@@ -100,11 +100,11 @@ typedef HGLOBAL (*LPLOADWSGLBVARCONV) (UINT, LPLOADWSGLBVARPARM);
 
 typedef struct tagSAVEDWSGLBFCNPARM
 {
-    LPAPLCHAR   lpMemSaveWSID;          // Ptr to saved WS file DPFE
-    LPAPLCHAR   lpwszFcnTypeName;       // Ptr to the function section name as F nnn.Name where nnn is the count
-    LPUINT      lpuGlbCnt;              // Ptr to [Globals] count
-    LPSYMENTRY  lpSymEntry;             // Ptr to this global's SYMENTRY
-    LPSYMENTRY *lplpSymLink;            // Ptr to ptr to SYMENTRY link
+    LPDICTIONARY lpDict;                // Ptr to the dictionary
+    LPAPLCHAR    lpwszFcnTypeName;      // Ptr to the function section name as F nnn.Name where nnn is the count
+    LPUINT       lpuGlbCnt;             // Ptr to [Globals] count
+    LPSYMENTRY   lpSymEntry;            // Ptr to this global's SYMENTRY
+    LPSYMENTRY  *lplpSymLink;           // Ptr to ptr to SYMENTRY link
 } SAVEDWSGLBFCNPARM, *LPSAVEDWSGLBFCNPARM;
 
 typedef LPAPLCHAR (*LPSAVEDWSGLBFCNCONV) (LPAPLCHAR, HGLOBAL, LPSAVEDWSGLBFCNPARM);

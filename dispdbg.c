@@ -95,7 +95,7 @@ void DisplayHshTab
 void FormatHTE
     (LPHSHENTRY lpHshEntry,             // Ptr to hash entry struc
      LPWCHAR    lpwszTemp,              // Ptr to output save area
-     UINT       uTempMaxSize,           // Maximum size of wszTemp
+     APLI3264   iTempMaxSize,           // Maximum size of wszTemp
      UINT       i)                      // Hash Table Entry
 
 {
@@ -125,7 +125,7 @@ void FormatHTE
     if (lpHshEntry EQ NULL)
     {
         MySprintfW (lpwszTemp,
-                    uTempMaxSize,
+                    iTempMaxSize,
                    L"HT:%3d ***INVALID HSHENTRY (NULL)***",
                     i);
         return;
@@ -155,7 +155,7 @@ void FormatHTE
         lpSymEntry = lpHshEntry->htSymEntry;
         if (lpSymEntry->stFlags.Imm)
             MySprintfW (lpwszTemp,
-                        uTempMaxSize,
+                        iTempMaxSize,
                        L"HT:%3d uH=%08X, uH&M=%d, <%s>, ull=%I64X, Sym=%p",
                         i,
                         lpHshEntry->uHash,
@@ -172,7 +172,7 @@ void FormatHTE
             lpwGlbName = GlobalLock (lpHshEntry->htGlbName); Assert (lpwGlbName NE NULL);
 
             MySprintfW (lpwszTemp,
-                        uTempMaxSize,
+                        iTempMaxSize,
                        L"HT:%3d uH=%08X, uH&M=%d, <%s>, <%s>, Sym=%p, %p-%p",
                         i,
                         lpHshEntry->uHash,
@@ -187,7 +187,7 @@ void FormatHTE
         } // End IF/ELSE/IF
     } else
         MySprintfW (lpwszTemp,
-                    uTempMaxSize,
+                    iTempMaxSize,
                    L"HT:%3d (EMPTY) <%s>, Sym=%p, <%p-%p>",
                     i,
                    &wszFlags[1],
@@ -265,7 +265,7 @@ void DisplaySymTab
 void FormatSTE
     (LPSYMENTRY lpSymEntry,             // Ptr to the SYMENTRY to format
      LPWCHAR    lpwszTemp,              // Ptr to output save area
-     UINT       uTempMaxSize)           // Maximum size of wszTemp
+     APLI3264   iTempMaxSize)           // Maximum size of wszTemp
 
 {
     WCHAR   wszFlags[128] = {WC_EOS};
@@ -370,7 +370,7 @@ void FormatSTE
         if (lpSymEntry->stFlags.Imm)
         {
             MySprintfW (lpwszTemp,
-                        uTempMaxSize,
+                        iTempMaxSize,
                        L"ST:%p <%s> <%s>, ull=%I64X, Hsh=%p, Prv=%p",
                         lpSymEntry,
                         wszName,
@@ -388,7 +388,7 @@ void FormatSTE
             if (lpHshEntry)
             {
                 MySprintfW (lpwszTemp,
-                            uTempMaxSize,
+                            iTempMaxSize,
                            L"ST:%p <%s>, <%s>, Data=%p, Hsh=%p, Prv=%p",
                             lpSymEntry,
                             wszName,
@@ -398,7 +398,7 @@ void FormatSTE
                             lpPrvEntry);
             } else
                 MySprintfW (lpwszTemp,
-                            uTempMaxSize,
+                            iTempMaxSize,
                            L"ST:%p <******>, <%s>, Hsh=0, Prv=%p",
                             lpSymEntry,
                            &wszFlags[1],
@@ -406,7 +406,7 @@ void FormatSTE
         } // End IF/ELSE/IF
     } else
         MySprintfW (lpwszTemp,
-                    uTempMaxSize,
+                    iTempMaxSize,
                    L"ST:%p (EMPTY) <%s>, Hsh=%p, Prv=%p",
                     lpSymEntry,
                    &wszFlags[1],
@@ -790,7 +790,7 @@ void DisplayGlobals
                     {
                         // Copy a default name
                         MySprintfW (lpMemPTD->lpwszTemp,
-                                    lpMemPTD->uTempMaxSize,
+                                    lpMemPTD->iTempMaxSize,
                                    L"***BAD PTR***:  steFcnName (%p)",
                                     lpHeader->steFcnName);
                         DbgNop ();      // We should never get here

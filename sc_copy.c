@@ -53,7 +53,7 @@ UBOOL CmdCopy_EM
     LPWCHAR      lpwCmd,                    // Ptr to command line
                  lpwErrMsg,                 // Ptr to (constant) error message text
                  lpwNotFound;               // Ptr to list of names not found
-    UINT         uMaxSize;                  // Maximum size of lpwszTemp
+    APLI3264     iMaxSize;                  // Maximum size of lpwszTemp
     int          iCurTabID,                 // Tab ID
                  iSrcTabID,                 // Source tab ID
                  iSrcTabIndex,              // Source tab index
@@ -68,7 +68,7 @@ UBOOL CmdCopy_EM
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    uMaxSize  = lpMemPTD->uTempMaxSize;
+    iMaxSize  = lpMemPTD->iTempMaxSize;
 
     // Get the Session Manager's hWndEC
     hWndEC = GetThreadSMEC ();
@@ -196,7 +196,7 @@ UBOOL CmdCopy_EM
                             wszVersion,             // Ptr to workspace version text
                             lpDict,                 // Ptr to workspace dictionary
                             lpMemPTD,               // Ptr to PerTabData global memory
-                            uMaxSize)               // Maximum size of lpMemPTD->lpwszTemp
+                            iMaxSize)               // Maximum size of lpMemPTD->lpwszTemp
                     EQ -1)                          // If it's an error, ...
                 goto ERRMSG_EXIT;
 
@@ -210,7 +210,7 @@ UBOOL CmdCopy_EM
                                 wszVersion,             // Ptr to workspace version text
                                 lpDict,                 // Ptr to workspace dictionary
                                 lpMemPTD,               // Ptr to PerTabData global memory
-                                uMaxSize))              // Maximum size of lpMemPTD->lpwszTemp
+                                iMaxSize))              // Maximum size of lpMemPTD->lpwszTemp
             {
                 case -1:        // We encountered an error
                 case 1:         // No match???
@@ -251,18 +251,16 @@ UBOOL CmdCopy_EM
                                     wszVersion,     // Ptr to workspace version text
                                     lpDict,         // Ptr to workspace dictionary
                                     lpMemPTD,       // Ptr to PerTabData global memory
-                                    uMaxSize))      // Maximum size of lpMemPTD->lpwszTemp
+                                    iMaxSize))      // Maximum size of lpMemPTD->lpwszTemp
                 {
-                    case -1:
+                    case -1:        // We encountered an error
                         goto ERRMSG_EXIT;
 
-                    case 0:
-                        // We found a match, so look for the next name
-                        continue;
+                    case 0:         // We found a match
+                        continue;   // Look for the next name
 
-                    case 1:
-                        // No match, keep processing
-                        break;
+                    case 1:         // No match
+                        break;      // Keep processing
 
                     defstop
                         break;
@@ -279,7 +277,7 @@ UBOOL CmdCopy_EM
                                     wszVersion,     // Ptr to workspace version text
                                     lpDict,         // Ptr to workspace dictionary
                                     lpMemPTD,       // Ptr to PerTabData sglobal memory
-                                    uMaxSize))      // Maximum size of lpMemPTD->lpwszTemp
+                                    iMaxSize))      // Maximum size of lpMemPTD->lpwszTemp
                 {
                     case -1:        // We encountered an error
                         goto ERRMSG_EXIT;
@@ -323,7 +321,7 @@ UBOOL CmdCopy_EM
         AppendLine (lpwszTail, FALSE, TRUE);
     } // End IF
 
-    // Mark as successfull
+    // Mark as successful
     bRet = TRUE;
 
     goto NORMAL_EXIT;
@@ -411,7 +409,7 @@ int CopyWsVars
      LPWCHAR       lpwszVersion,            // Ptr to workspace version text
      LPDICTIONARY  lpDict,                  // Ptr to workspace dictionary
      LPPERTABDATA  lpMemPTD,                // Ptr to PerTabData global memory
-     UINT          uMaxSize)                // Maximum size of lpMemPTD->lpwszTemp
+     APLI3264      iMaxSize)                // Maximum size of lpMemPTD->lpwszTemp
 
 {
     WCHAR        wszCount[8];               // Save area for formatted uSymVar/Fcn counter
@@ -459,6 +457,9 @@ int CopyWsVars
         // Find the separator after the name and zap it
         lpwDataInWrk = strchrW (lpwNameInWrk, L'=');
         *lpwDataInWrk++ = WC_EOS;
+
+#define lpwSrcStart     lpwNameInWrk
+#define lpwSrc          lpwDataInWrk
 
         // Convert the {name}s and other chars to UTF16_xxx
         ConvertNameInPlace (lpwNameInWrk);
@@ -518,9 +519,10 @@ int CopyWsVars
             // Parse the value into aplLongestObj and aplTypeObj
             lpwDataInWrk =
               ParseSavedWsVar_EM (lpwDataInWrk,     // Ptr to input buffer
-                                  uMaxSize - (APLU3264) ((LPBYTE) lpwDataInWrk - (LPBYTE) lpMemPTD->lpwszTemp), // Maximum size of lpwDataInWrk
+                                  iMaxSize - (APLU3264) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart),  // Maximum size of lpwSrc
                                  &lpaplLongestObj,  // Ptr to ptr to output element
                                  &aplTypeObj,       // Ptr to storage type (may be NULL)
+                                  lpSymEntry,       // Ptr to SYMENTRY of the source (may be NULL)
                                  &bImmed,           // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
                                   FALSE,            // TRUE iff to save SymTabAppend values, FALSE to save values directly
                                   TRUE,             // TRUE iff this is called from )COPY
@@ -563,6 +565,8 @@ ERROR_EXIT:
 ERRMSG_EXIT:
     // Mark as in error
     return -1;
+#undef  lpwSrc
+#undef  lpwSrcStart
 } // End CopyWsVars
 
 
@@ -581,7 +585,7 @@ int CopyWsFcns
      LPWCHAR       lpwszVersion,            // Ptr to workspace version text
      LPDICTIONARY  lpDict,                  // Ptr to workspace dictionary
      LPPERTABDATA  lpMemPTD,                // Ptr to PerTabData global memory
-     UINT          uMaxSize)                // Maximum size of lpMemPTD->lpwszTemp
+     APLI3264      iMaxSize)                // Maximum size of lpMemPTD->lpwszTemp
 
 {
     WCHAR        wszCount[8];               // Save area for formatted uSymVar/Fcn counter
@@ -616,6 +620,9 @@ int CopyWsFcns
         // Point to the name in the workspace
         lpwNameInWrk = lpMemPTD->lpwszTemp;
         CHECK_TEMP_OPEN
+
+#define lpwSrcStart     lpwNameInWrk
+#define lpwSrc          lpwDataInWrk
 
         // Read the next string
         lpwszProf =
@@ -675,7 +682,7 @@ int CopyWsFcns
 
             // Parse the line into lpSymEntry->stData
             bRet = ParseSavedWsFcn_EM (lpwDataInWrk,      // Ptr to input buffer
-                                       uMaxSize - (APLU3264) ((LPBYTE) lpwDataInWrk - (LPBYTE) lpMemPTD->lpwszTemp), // Maximum size of lpwDataInWrk
+                                       iMaxSize - (APLU3264) ((LPBYTE) lpwSrc - (LPBYTE) lpwSrcStart),  // Maximum size of lpwSrc
                                        lpSymEntry,        // Ptr to STE for the object
                                        nameType,          // Function name type (see NAME_TYPES)
                                        hWndEC,            // Edit Ctrl window handle
@@ -706,6 +713,8 @@ ERROR_EXIT:
 ERRMSG_EXIT:
     // Mark as in error
     return -1;
+#undef  lpwSrc
+#undef  lpwSrcStart
 } // End CopyWsFcns
 
 

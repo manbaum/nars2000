@@ -647,7 +647,8 @@ LPAPLUINT AttributeFixTime
 {
     HGLOBAL    hGlbObj = NULL;              // Object global memory handle
     LPVOID     lpMemHdrObj = NULL;          // Ptr to object global memory
-    FILETIME   ftLastMod;                   // FILETIME of last modification
+    FILETIME   ftLastMod,                   // FILETIME of last modification
+               ftLocalTime;                 // ...         local time
     SYSTEMTIME systemTime;                  // Current system (UTC) time
 
     // Split cases based upon the name type
@@ -698,8 +699,11 @@ LPAPLUINT AttributeFixTime
                     MyGlobalUnlock (hGlbObj); lpMemHdrObj = NULL;
                 } // End IF
 
-                // Convert the last mod time to system time so we can display it
-                FileTimeToSystemTime (&ftLastMod, &systemTime);
+                // Convert the last mod time to local time
+                FileTimeToLocalFileTime (&ftLastMod  , &ftLocalTime);
+
+                // Convert the local time to system time so we can display it
+                FileTimeToSystemTime    (&ftLocalTime, &systemTime);
 
                 *lpMemDataRes++ = systemTime.wYear;         // [1] = Year
                 *lpMemDataRes++ = systemTime.wMonth;        // [2] = Month

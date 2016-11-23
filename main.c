@@ -544,14 +544,17 @@ UBOOL CreateNewFontCom
             // Set the point size to that of the parent font
             cfFB_SM.iPointSize = fontStruc[fontEnum].lpcf->iPointSize;
 
-            CreateNewFontCom (&hFontFB_SM,
-                               FONTENUM_FB_SM,
-                              &lfFB_SM,
-                              &cfFB_SM,
-                              &tmFB_SM,
-                              &GetFSDirAveCharSize (FONTENUM_FB_SM)->cx,
-                              &GetFSDirAveCharSize (FONTENUM_FB_SM)->cy);
-            GetFSDirAveCharSize (FONTENUM_FB_SM)->cx = RecalcAveCharWidth (hFontFB_SM);
+            if (CreateNewFontCom (&hFontFB_SM,
+                                   FONTENUM_FB_SM,
+                                  &lfFB_SM,
+                                  &cfFB_SM,
+                                  &tmFB_SM,
+                                  &GetFSDirAveCharSize (FONTENUM_FB_SM)->cx,
+                                  &GetFSDirAveCharSize (FONTENUM_FB_SM)->cy))
+                // Recalculate the average char width
+                GetFSDirAveCharSize (FONTENUM_FB_SM)->cx = RecalcAveCharWidth (hFontFB_SM);
+            else
+                OptionFlags.bOutputDebug = FALSE;
         } // End IF
 
         // If this is FONTENUM_FE, also create FB_FE
@@ -560,14 +563,17 @@ UBOOL CreateNewFontCom
             // Set the point size to that of the parent font
             cfFB_FE.iPointSize = fontStruc[fontEnum].lpcf->iPointSize;
 
-            CreateNewFontCom (&hFontFB_FE,
-                               FONTENUM_FB_FE,
-                              &lfFB_FE,
-                              &cfFB_FE,
-                              &tmFB_FE,
-                              &GetFSDirAveCharSize (FONTENUM_FB_FE)->cx,
-                              &GetFSDirAveCharSize (FONTENUM_FB_FE)->cy);
-            GetFSDirAveCharSize (FONTENUM_FB_FE)->cx = RecalcAveCharWidth (hFontFB_FE);
+            if (CreateNewFontCom (&hFontFB_FE,
+                                   FONTENUM_FB_FE,
+                                  &lfFB_FE,
+                                  &cfFB_FE,
+                                  &tmFB_FE,
+                                  &GetFSDirAveCharSize (FONTENUM_FB_FE)->cx,
+                                  &GetFSDirAveCharSize (FONTENUM_FB_FE)->cy))
+                // Recalculate the average char width
+                GetFSDirAveCharSize (FONTENUM_FB_FE)->cx = RecalcAveCharWidth (hFontFB_FE);
+            else
+                OptionFlags.bOutputDebug = FALSE;
         } // End IF
 
         // If this is FONTENUM_PR, also create FB_PR_SM and FB_PR_FE
@@ -578,26 +584,30 @@ UBOOL CreateNewFontCom
             cfFB_PR_FE.iPointSize = fontStruc[fontEnum].lpcf->iPointSize;
 
             // Create the font
-            CreateNewFontCom (&hFontFB_PR_SM,
-                               FONTENUM_FB_PR_SM,
-                              &lfFB_PR_SM,
-                              &cfFB_PR_SM,
-                              &tmFB_PR_SM,
-                              &GetFSDirAveCharSize (FONTENUM_FB_PR_SM)->cx,
-                              &GetFSDirAveCharSize (FONTENUM_FB_PR_SM)->cy);
-            // Recalculate the average char width
-            GetFSDirAveCharSize (FONTENUM_FB_PR_SM)->cx = RecalcAveCharWidth (hFontFB_PR_SM);
+            if (CreateNewFontCom (&hFontFB_PR_SM,
+                                   FONTENUM_FB_PR_SM,
+                                  &lfFB_PR_SM,
+                                  &cfFB_PR_SM,
+                                  &tmFB_PR_SM,
+                                  &GetFSDirAveCharSize (FONTENUM_FB_PR_SM)->cx,
+                                  &GetFSDirAveCharSize (FONTENUM_FB_PR_SM)->cy))
+                // Recalculate the average char width
+                GetFSDirAveCharSize (FONTENUM_FB_PR_SM)->cx = RecalcAveCharWidth (hFontFB_PR_SM);
+            else
+                OptionFlags.bOutputDebug = FALSE;
 
             // Create the font
-            CreateNewFontCom (&hFontFB_PR_FE,
-                               FONTENUM_FB_PR_FE,
-                              &lfFB_PR_FE,
-                              &cfFB_PR_FE,
-                              &tmFB_PR_FE,
-                              &GetFSDirAveCharSize (FONTENUM_FB_PR_FE)->cx,
-                              &GetFSDirAveCharSize (FONTENUM_FB_PR_FE)->cy);
-            // Recalculate the average char width
-            GetFSDirAveCharSize (FONTENUM_FB_PR_FE)->cx = RecalcAveCharWidth (hFontFB_PR_FE);
+            if (CreateNewFontCom (&hFontFB_PR_FE,
+                                   FONTENUM_FB_PR_FE,
+                                  &lfFB_PR_FE,
+                                  &cfFB_PR_FE,
+                                  &tmFB_PR_FE,
+                                  &GetFSDirAveCharSize (FONTENUM_FB_PR_FE)->cx,
+                                  &GetFSDirAveCharSize (FONTENUM_FB_PR_FE)->cy))
+                // Recalculate the average char width
+                GetFSDirAveCharSize (FONTENUM_FB_PR_FE)->cx = RecalcAveCharWidth (hFontFB_PR_FE);
+            else
+                OptionFlags.bOutputDebug = FALSE;
         } // End IF
     } // End IF
 

@@ -3671,7 +3671,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 hFontFB_PR = hFontFB_PR_SM;
                 hFontFB    = hFontFB_SM;
             } else
-            if (IzitSM (hWndParent)
+            if (IzitFE (hWndParent)
              || IzitDialog (hWndParent))
             {
                 fontEnum = FONTENUM_FE;

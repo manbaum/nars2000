@@ -2823,7 +2823,7 @@ APLUINT GetQuadPP
     (void)
 
 {
-    return min (DEF_MAX_QUADPP64, GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger);
+    return min (DEF_MAX_QUADPP_IEEE, GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger);
 } // End GetQuadPP
 
 
@@ -2838,7 +2838,7 @@ void SetQuadPPV
 
 {
     GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger=
-      min (DEF_MAX_QUADPPVFP, uQuadPPV);
+      min (DEF_MAX_QUADPP_VFP, uQuadPPV);
 } // End SetQuadPPV
 
 

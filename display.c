@@ -1651,7 +1651,7 @@ LPAPLCHAR FormatAplFltFC
                          (int) -nDigits,            // # significant digits
                                 s,                  // Ptr to raw formatted number
                                 decpt,              // Exponent
-                                DEF_MAX_QUADPP64,   // Maximum # significant digits
+                                DEF_MAX_QUADPP_IEEE,// Maximum # significant digits
                                 aplCharDecimal,     // Char to use as decimal separator
                                 aplCharOverbar);    // Char to use as overbar
                 break;
@@ -1661,7 +1661,7 @@ LPAPLCHAR FormatAplFltFC
                 //   to the right of the decimal point
 
                 // Get the maximum # significant digits
-                iSigDig = DEF_MAX_QUADPP64;
+                iSigDig = DEF_MAX_QUADPP_IEEE;
 
                 // Handle numbers between 0 and 1
                 if (decpt <= 0)
@@ -1772,12 +1772,12 @@ LPAPLCHAR FormatAplFltFC
 
                     // Copy no more than nDigits
 
-                    // No more than DEF_MAX_QUADPP64 digits
+                    // No more than DEF_MAX_QUADPP_IEEE digits
                     if (nDigits)
-                        nSigDig = min (nDigits, DEF_MAX_QUADPP64);
+                        nSigDig = min (nDigits, DEF_MAX_QUADPP_IEEE);
                     else
                     {
-                        nSigDig = DEF_MAX_QUADPP64;
+                        nSigDig = DEF_MAX_QUADPP_IEEE;
                         nDigits = decpt;
                     } // End IF/ELSE
 
@@ -1833,7 +1833,7 @@ LPAPLCHAR FormatAplFltFC
                               (int) nDigits,            // # significant digits
                                     s,                  // Ptr to raw formatted number
                                     decpt,              // Exponent
-                                    DEF_MAX_QUADPP64,   // Maximum # significant digits
+                                    DEF_MAX_QUADPP_IEEE,// Maximum # significant digits
                                     aplCharDecimal,     // Char to use as decimal separator
                                     aplCharOverbar);    // Char to use as overbar
                 else
@@ -2273,7 +2273,7 @@ LPAPLCHAR FormatAplVfpFC
                      (int) -nDigits,            // # significant digits
                             lpRawFmt,           // Ptr to raw formatted number
                             expptr,             // Exponent
-                            DEF_MAX_QUADPPVFP,  // Maximum # significant digits
+                            DEF_MAX_QUADPP_VFP, // Maximum # significant digits
                             aplCharDecimal,     // Char to use as decimal separator
                             aplCharOverbar);    // Char to use as overbar
         } else
@@ -2529,7 +2529,7 @@ LPWCHAR DisplayTransferImm2
           FormatImmedFC (lpwszTemp,                         // Ptr to input string
                          lpSymEntry->stFlags.ImmType,       // Immediate type
                         &lpSymEntry->stData.stLongest,      // Ptr to value to format
-                         DEF_MAX_QUADPP64,                  // # significant digits
+                         DEF_MAX_QUADPP_IEEE,               // # significant digits
                          UTF16_DOT,                         // Char to use as decimal separator
                          UTF16_OVERBAR,                     // Char to use as overbar
                          FLTDISPFMT_RAWFLT,                 // Float display format
@@ -2681,7 +2681,7 @@ LPWCHAR DisplayTransferGlb2
                 lpwszTemp =
                   FormatAplFltFC (lpwszTemp,            // Ptr to output save area
                    *((LPAPLFLOAT) lpMemArg)++,          // Ptr to float value
-                                  DEF_MAX_QUADPP64,     // # significant digits
+                                  DEF_MAX_QUADPP_IEEE,  // # significant digits
                                   L'.',                 // Char to use as decimal separator
                                   UTF16_OVERBAR,        // Char to use as overbar
                                   FLTDISPFMT_RAWFLT,    // Float display format

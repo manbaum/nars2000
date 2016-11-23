@@ -950,7 +950,7 @@ void InitPointSize
 
 {
     // Set the UpDown Ctrl position
-    SendMessageW (hWndUD_FW, UDM_SETPOS, 0, MAKELONG (cfSM.iPointSize / 10, 0));
+    SendMessageW (hWndUD_FW, UDM_SETPOS32, 0, cfSM.iPointSize / 10);
 } // End InitPointSize
 
 

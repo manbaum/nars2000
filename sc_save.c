@@ -399,14 +399,14 @@ UBOOL CmdSave_EM
                                     // Ensure we format with full precision in case it's floating point
                                     uQuadPP = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger;
                                     if (IsImmFlt (stFlags.ImmType))
-                                        lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger = DEF_MAX_QUADPP64;
+                                        lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger = DEF_MAX_QUADPP_IEEE;
 
                                     // Format the value
                                     lpaplChar =
                                       FormatImmedFC (lpaplChar,                         // Ptr to input string
                                                      stFlags.ImmType,                   // Immediate type
                                                     &lpSymEntry->stData.stLongest,      // Ptr to value to format
-                                                     DEF_MAX_QUADPP64,                  // Precision to use
+                                                     DEF_MAX_QUADPP_IEEE,               // Precision to use
                                                      UTF16_DOT,                         // Char to use as decimal separator
                                                      UTF16_BAR,                         // Char to use as overbar
                                                      FLTDISPFMT_RAWFLT,                 // Float display format
@@ -1487,7 +1487,7 @@ LPAPLCHAR SavedWsFormGlbVar
                     lpaplChar =
                       FormatAplFltFC (lpaplChar,            // Ptr to output save area
                                     *(LPAPLFLOAT) lpMemObj, // The value to format
-                                      DEF_MAX_QUADPP64,     // Precision to use
+                                      DEF_MAX_QUADPP_IEEE,  // Precision to use
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_BAR,            // Char to use as overbar
                                       FLTDISPFMT_RAWFLT,    // Float display format
@@ -1595,14 +1595,14 @@ LPAPLCHAR SavedWsFormGlbVar
                                 // Ensure we format with full precision in case it's floating point
                                 uQuadPP = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger;
                                 if (IsImmFlt (stFlags.ImmType))
-                                    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger = DEF_MAX_QUADPP64;
+                                    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger = DEF_MAX_QUADPP_IEEE;
 
                                 // Format the value
                                 lpaplChar =
                                   FormatImmedFC (lpaplChar,                             // Ptr to input string
                                                  stFlags.ImmType,                       // Immediate type
                                                 &lpSymEntry->stData.stLongest,          // Ptr to value to format
-                                                 DEF_MAX_QUADPP64,                      // Precision to use
+                                                 DEF_MAX_QUADPP_IEEE,                   // Precision to use
                                                  UTF16_DOT,                             // Char to use as decimal separator
                                                  UTF16_BAR,                             // Char to use as overbar
                                                  FLTDISPFMT_RAWFLT,                     // Float display format

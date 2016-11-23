@@ -738,7 +738,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         lpMemChr =
                           FormatAplFltFC (lpwszGlbTemp,                 // Ptr to output save area
                                           fQuadCT_CWS,                  // The value to format
-                                          DEF_MAX_QUADPP64,             // Precision to use
+                                          DEF_MAX_QUADPP_IEEE,          // Precision to use
                                           L'.',                         // Char to use as decimal separator
                                           UTF16_OVERBAR,                // Char to use as overbar
                                           FLTDISPFMT_RAWFLT,            // Float display format
@@ -868,7 +868,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         SendMessageW (hWnd_UD, UDM_SETRANGE32, DEF_MIN_QUADFPC, DEF_MAX_QUADFPC);
 
                         // Set the initial position
-                        SendMessageW (hWnd_UD, UDM_SETPOS, 0, MAKELONG (uQuadFPC_CWS, 0));
+                        SendMessageW (hWnd_UD, UDM_SETPOS32, 0, (LPARAM) uQuadFPC_CWS);
 
                         //***************************************************************
                         // []IC -- CLEAR WS Values
@@ -922,7 +922,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         SendMessageW (hWnd_UD, UDM_SETRANGE32, DEF_MIN_QUADIO,  DEF_MAX_QUADIO );
 
                         // Set the initial position
-                        SendMessageW (hWnd_UD, UDM_SETPOS, 0, MAKELONG (bQuadIO_CWS, 0));
+                        SendMessageW (hWnd_UD, UDM_SETPOS32, 0, bQuadIO_CWS);
 
                         //***************************************************************
                         // []LX -- CLEAR WS Values
@@ -980,10 +980,10 @@ INT_PTR CALLBACK CustomizeDlgProc
                         hWnd_UD = GetDlgItem (hWndProp, IDC_CLEARWS_PP_UD);
 
                         // Set the range
-                        SendMessageW (hWnd_UD, UDM_SETRANGE32, DEF_MIN_QUADPP,  DEF_MAX_QUADPPVFP);
+                        SendMessageW (hWnd_UD, UDM_SETRANGE32, DEF_MIN_QUADPP,  DEF_MAX_QUADPP_UDM);
 
                         // Set the initial position
-                        SendMessageW (hWnd_UD, UDM_SETPOS, 0, MAKELONG (uQuadPP_CWS, 0));
+                        SendMessageW (hWnd_UD, UDM_SETPOS32, 0, (LPARAM) uQuadPP_CWS);
 
                         //***************************************************************
                         // []PW -- CLEAR WS Values
@@ -996,7 +996,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         SendMessageW (hWnd_UD, UDM_SETRANGE32, DEF_MIN_QUADPW,  DEF_MAX_QUADPW );
 
                         // Set the initial position
-                        SendMessageW (hWnd_UD, UDM_SETPOS, 0, MAKELONG (uQuadPW_CWS, 0));
+                        SendMessageW (hWnd_UD, UDM_SETPOS32, 0, (LPARAM) uQuadPW_CWS);
 
                         //***************************************************************
                         // []RL -- CLEAR WS Values

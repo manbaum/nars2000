@@ -529,7 +529,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                                 lpwszTemp =
                                   FormatAplFltFC (lpwszTemp,                    // Ptr to output save area
                                                   lpSymEntry->stData.stFloat,   // The value to format
-                                                  DEF_MAX_QUADPP64,             // Precision to use
+                                                  DEF_MAX_QUADPP_IEEE,          // Precision to use
                                                   L'.',                         // Char to use as decimal separator
                                                   UTF16_OVERBAR,                // Char to use as overbar
                                                   FLTDISPFMT_RAWFLT,            // Float display format
@@ -566,7 +566,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                                     lpwszTemp =
                                       FormatAplFltFC (lpwszTemp,                    // Ptr to output save area
                                                      *(LPAPLFLOAT) &aplLongestItm,  // The value to format
-                                                      DEF_MAX_QUADPP64,             // Precision to use
+                                                      DEF_MAX_QUADPP_IEEE,          // Precision to use
                                                       L'.',                         // Char to use as decimal separator
                                                       UTF16_OVERBAR,                // Char to use as overbar
                                                       FLTDISPFMT_RAWFLT,            // Float display format

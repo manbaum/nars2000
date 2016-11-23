@@ -493,7 +493,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
             // Validate the value
             if (!ValidateIntegerTest (&aplIntegerRhtOpr,
                                        DEF_MIN_QUADPP,      // Minimum value
-                                       DEF_MAX_QUADPPVFP,   // Maximum ...   for VFPs
+                                       DEF_MAX_QUADPP_VFP,  // Maximum ...   for VFPs
                                        bRangeLimit.PP))     // TRUE iff range limiting
                 goto RIGHT_OPERAND_DOMAIN_EXIT;
 

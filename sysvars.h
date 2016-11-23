@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -72,8 +72,9 @@
 #define DEF_MAX_QUADIO      1                   // Maximum ...
 
 #define DEF_MIN_QUADPP      1                   // Minimum value for []PP
-#define DEF_MAX_QUADPP64    17                  // Maximum ...            for IEEE 64-bits
-#define DEF_MAX_QUADPPVFP   INT_MAX             // Maximum ...            for VFP numbers
+#define DEF_MAX_QUADPP_IEEE 17                  // Maximum ...            for IEEE 64-bits
+#define DEF_MAX_QUADPP_VFP  INT32_MAX           // Maximum ...            for VFP numbers
+#define DEF_MAX_QUADPP_UDM (INT32_MAX - 1)      // Maximum ...            for use with UDM_SETRANGE32
 
 #define DEF_MIN_QUADPW     30                   // Minimum value for []PW
 #define DEF_MAX_QUADPW    255                   // Maximum ...

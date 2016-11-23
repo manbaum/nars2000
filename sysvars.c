@@ -3377,7 +3377,7 @@ UBOOL ValidSetPP_EM
                                DEF_MIN_QUADPP,      // Minimum value
                bResetVars.PP ? DEF_QUADPP_CWS
                              : (UINT) uQuadPP_CWS,  // Default ...
-                               DEF_MAX_QUADPPVFP,   // Maximum ...
+                               DEF_MAX_QUADPP_VFP,  // Maximum ...
                                bRangeLimit.PP);     // TRUE iff range limiting
 } // End ValidSetPP_EM
 
@@ -3387,7 +3387,7 @@ UBOOL ValidSetPP_EM
 //
 //  Validate a single value before assigning it to a position in []PP.
 //
-//  We allow any number between DEF_MIN_QUADPP and DEF_MAX_QUADPPVFP inclusive.
+//  We allow any number between DEF_MIN_QUADPP and DEF_MAX_QUADPP_VFP inclusive.
 //***************************************************************************
 
 UBOOL ValidNdxPP
@@ -3447,7 +3447,7 @@ UBOOL ValidNdxPP
     return
       ValidateIntegerTest ((LPAPLINT) lpaplLongestRht,      // Ptr to the integer to test
                            DEF_MIN_QUADPP,                  // Low range value (inclusive)
-                           DEF_MAX_QUADPPVFP,               // High ...
+                           DEF_MAX_QUADPP_VFP,              // High ...
                            bRangeLimit.PP);                 // TRUE iff we're range limiting
 } // End ValidNdxPP
 

@@ -2458,7 +2458,7 @@ void SaveIniFile
     lpaplChar =
      FormatAplFltFC (wszTemp,                               // Ptr to output save area
                      fQuadCT_CWS,                           // The value to format
-                     DEF_MAX_QUADPP64,                      // Precision to use
+                     DEF_MAX_QUADPP_IEEE,                   // Precision to use
                      L'.',                                  // Char to use as decimal separator
                      L'-',                                  // Char to use as overbar
                      FLTDISPFMT_RAWFLT,                     // Float display format

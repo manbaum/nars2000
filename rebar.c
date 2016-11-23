@@ -1653,8 +1653,8 @@ LRESULT APIENTRY FW_RBWndProc
             SendMessageW (hWndTT, TTM_ADDTOOLW, 0, (LPARAM) &tti);
 
             // Set the range of point sizes and initial value
-            SendMessageW (hWndUD_FW, UDM_SETRANGE, 0, MAKELONG (MAX_PTSIZE,  MIN_PTSIZE));
-            SendMessageW (hWndUD_FW, UDM_SETPOS,   0, MAKELONG (cfSM.iPointSize / 10, 0));
+            SendMessageW (hWndUD_FW, UDM_SETRANGE32, MIN_PTSIZE, MAX_PTSIZE);
+            SendMessageW (hWndUD_FW, UDM_SETPOS32,   0         , cfSM.iPointSize / 10);
 
             // Initialize window-specific resources
             FW_RB_Create (hWnd);

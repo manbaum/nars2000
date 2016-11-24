@@ -120,7 +120,7 @@ UBOOL SaveFunction
 
     // Fill in common values
     SF_Fcns.bDisplayErr     = TRUE;                 // Display Errors
-////SF_Fcns.bAFO            = FALSE;            	// Parsing an AFO (already zero from = {0})
+////SF_Fcns.bAFO            = FALSE;                // Parsing an AFO (already zero from = {0})
     SF_Fcns.SF_LineLen      = SF_LineLenFE;         // Ptr to line length function
     SF_Fcns.SF_ReadLine     = SF_ReadLineFE;        // Ptr to read line function
     SF_Fcns.SF_IsLineCont   = SF_IsLineContFE;      // Ptr to Is Line Continued function
@@ -130,7 +130,7 @@ UBOOL SaveFunction
     SF_Fcns.SF_LastModTime  = SF_LastModTimeCom;    // Ptr to get function creation time
     SF_Fcns.SF_UndoBuffer   = SF_UndoBufferFE;      // Ptr to get function Undo Buffer global memory handle
     SF_Fcns.LclParams       = &LW_Params;           // Ptr to local parameters in case it's an AFO
-    SF_Fcns.sfTypes         = SFTYPES_FE;       	// Caller type
+    SF_Fcns.sfTypes         = SFTYPES_FE;           // Caller type
 
     // Call common routine
     return SaveFunctionCom (hWndFE,                 // Function Edit window handle (not-[]FX only)
@@ -261,6 +261,7 @@ UINT SF_LineLenFE
     if (uLineNum EQ 0
      || SendMessageW (hWndEC, MYEM_ISLINECONT, uLineNum - 1, 0) EQ FALSE)
         // Get the overall block length
+        //   not including a terminating zero
         return GetBlockLength (hWndEC, uLineNum);
     else
         return 0;

@@ -228,8 +228,7 @@ UINT LftMarginsFE
     if (GetWindowLongW (hWndParent, GWLSF_FLN))
         // Make room for the function line numbers and
         uLeft += FCN_INDENT * GetFSIndAveCharSize (FONTENUM_FE)->cx;
-    // Plus a small indent to get away from the border
-    return uLeft + 2;
+    return uLeft;
 } // End LftMarginsFE
 
 
@@ -897,6 +896,8 @@ LRESULT APIENTRY FEWndProc
             switch (wNotifyCode)
             {
                 UBOOL bChanged;
+                UINT  iLinePos,
+                      iLineNum;
 
                 case EN_CHANGE:                     // idEditCtrl = (int) LOWORD(wParam); // identifier of Edit Ctrl
                                                     // hwndEditCtrl = (HWND) lParam;      // handle of Edit Ctrl
@@ -924,14 +925,20 @@ LRESULT APIENTRY FEWndProc
                         // Write out the FE window title
                         SetFETitle (hWnd);
 
-                    // If the cursor is on line #0 (the function header),
+                    // Get the char index of the first char in the current line
+                    iLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, -1, 0);
+
+                    // Get the line number that contains the specified position
+                    iLineNum = (UINT) SendMessageW (hWndEC, EM_LINEFROMCHAR, iLinePos, 0);
+
+                    // If the cursor is in block #0 (the function header),
                     //   the user might have changed the name of the function,
                     //   so we need to rewrite the Function Editor window title,
                     //   or if Syntax Coloring is in effect, the user might
                     //   have changed the localization status of a var,
                     //   so we need to repaint the whole window to reflect
                     //   the possible change in syntax colors.
-                    if (0 EQ SendMessageW (hWndEC, EM_LINEINDEX, -1, 0))
+                    if (0 EQ GetBlockStartLine (hWndEC, iLineNum))
                     {
                         // If the Changed flag didn't change, ...
                         if (bChanged)
@@ -1051,13 +1058,17 @@ UINT GetFunctionName
     // Get the handle to the Edit Ctrl
     (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWndFE, GWLSF_HWNDEC);
 
+    // Get the overall block length
+    //   not including a terminating zero
+    uLineLen = GetBlockLength (hWndEC, 0);
+
     // Tell EM_GETLINE maximum # chars in the buffer
     // The output array is a temporary so we don't have to
     //   worry about overwriting outside the allocated buffer
-    ((LPWORD) lpwszTemp)[0] = (WORD) SendMessageW (hWndEC, EM_LINELENGTH, 0, 0);
+    ((LPWORD) lpwszTemp)[0] = (WORD) (uLineLen * sizeof (WCHAR));
 
-    // Get the contents of the line
-    uLineLen = (UINT) SendMessageW (hWndEC, EM_GETLINE, 0, (LPARAM) lpwszTemp);
+    // Copy a block of lines
+    CopyBlockLines (hWndEC, 0, lpwszTemp);
 
     // Ensure the line is properly terminated
     lpwszTemp[uLineLen] = WC_EOS;
@@ -4023,7 +4034,10 @@ void RespecifyNewQuadPW
             nWidth = rc.right - rc.left;
         } // End IF
 
-        // Calculate new width in chars
+        // Less the left margin for SM
+        nWidth -= LftMarginsSM ();
+
+        // Calculate the floor of the new width in chars
         aplInteger = nWidth / GetFSIndAveCharSize (FONTENUM_SM)->cx;
 
         // Validate the incoming value

@@ -832,11 +832,9 @@ UBOOL IsLocalName
         // The given name can't be local
         return FALSE;
 
-    // Get the overall block length
-    uLineLen = GetBlockLength (hWndEC, 0);
-
     // Copy the function header block
-    CopyBlockLines (hWndEC, 0, lpwszTemp);
+    //   not including a terminating zero
+    uLineLen = CopyBlockLines (hWndEC, 0, lpwszTemp);   // ***FIXME*** -- buffer overflow???
 
     // Append a trailing marker
     strcpyW (&lpwszTemp[uLineLen], WS_UTF16_LAMP);

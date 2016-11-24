@@ -161,15 +161,18 @@ UINT GetBlockEndLine
 //  $GetBlockLength
 //
 //  Return the length in WCHARs of a block including CR/CR/LFs
+//
+//  Note that this function does not include a terminating zero
+//    in the returned length
 //***************************************************************************
 
 UINT GetBlockLength
-    (HWND hWndEC,                           // Handle of Edit Ctrl window
-     UINT uLineNum)                         // Starting line #
+    (HWND hWndEC,           // Handle of Edit Ctrl window
+     UINT uLineNum)         // Starting line #
 
 {
-    UINT         uLinePos,                  // Char position of start of line
-                 uLineLen = 0;              // Line length
+    UINT uLinePos,          // Char position of start of line
+         uLineLen = 0;      // Line length
 
     // While the current physical line continues to the next line, ...
     while (SendMessageW (hWndEC, MYEM_ISLINECONT, uLineNum, 0) EQ TRUE)
@@ -197,7 +200,7 @@ UINT GetBlockLength
 
 
 //***************************************************************************
-//  $GetBlockLineCountFE
+//  $GetLogicalLineCountFE
 //
 //  Return the # logical lines in a function (excluding the header
 //    which might itself take up more than one line)
@@ -230,14 +233,22 @@ UINT GetLogicalLineCountFE
 //  $CopyBlockLines
 //
 //  Copy a block of lines
+//
+//  Note that this function does not copy a terminating zero
+//    nor is it included in the returned length
 //***************************************************************************
 
-void CopyBlockLines
+UINT CopyBlockLines
     (HWND    hWndEC,                        // Handle of Edit Ctrl window
      UINT    uLineNum,                      // Starting line #
      LPWCHAR lpwszLine)                     // Ptr to output buffer
 
 {
+    UINT uLineLen,                          // Line length
+         uBlockLen = 0;                     // Block length
+
+    Assert (IzitSM (GetParent (hWndEC)) || IzitFE (GetParent (hWndEC)));
+
     // While the current physical line continues to the next line, ...
     while (SendMessageW (hWndEC, MYEM_ISLINECONT, uLineNum, 0) EQ TRUE)
     {
@@ -248,13 +259,19 @@ void CopyBlockLines
         ((LPWORD) lpwszLine)[0] = (WORD) -1;
 
         // Get the contents of the line
-        SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwszLine);
+        uLineLen = (UINT) SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwszLine);
+
+        // Accumulate
+        uBlockLen += uLineLen;
 
         // Skip to the next line ptr
-        lpwszLine = &lpwszLine[lstrlenW (lpwszLine)];
+        lpwszLine = &lpwszLine[uLineLen];
 
         // Append and skip over a Line Continuation marker
         lstrcpyW (lpwszLine, WS_CRCRLF); lpwszLine += strcountof (WS_CRCRLF);
+
+        // Accumulate in result
+        uBlockLen += uLineLen + strcountof (WS_CRCRLF);
 
         // Skip to the next line
         uLineNum++;
@@ -269,7 +286,10 @@ void CopyBlockLines
     ((LPWORD) lpwszLine)[0] = (WORD) -1;
 
     // Get the contents of the line
-    SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwszLine);
+    uLineLen = (UINT) SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwszLine);
+
+    // Accumulate in result
+    return uBlockLen + uLineLen;
 } // End CopyBlockLines
 
 
@@ -305,6 +325,7 @@ void ImmExecLine
     uLineBeg = GetBlockStartLine (hWndEC, uLineNum);
 
     // Get the overall block length
+    //   not including a terminating zero
     uLineLen = GetBlockLength (hWndEC, uLineBeg);
 
     // Allocate virtual memory for the line (along with its continuations)
@@ -322,6 +343,7 @@ void ImmExecLine
     } // End IF
 
     // Copy a block of lines
+    //   not including a terminating zero
     CopyBlockLines (hWndEC, uLineBeg, lpwszCompLine);
 
     // Ensure properly terminated

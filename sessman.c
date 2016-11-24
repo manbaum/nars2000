@@ -639,6 +639,21 @@ void DrawLineContSub
 
 
 //***************************************************************************
+//  $LftMarginsSM
+//
+//  Return the left margin for a Session Manager window
+//***************************************************************************
+
+UINT LftMarginsSM
+    (void)
+
+{
+    // Make room for Line Continuation markers
+    return uWidthLC[FONTENUM_SM];
+} // End LftMarginsSM
+
+
+//***************************************************************************
 //  $SetMarginsSM
 //
 //  Set the margins for a Session Manager window
@@ -650,8 +665,8 @@ void SetMarginsSM
 {
     UINT uLeft;             // Left margin
 
-    // Make room for the Line Continuation markers
-    uLeft = uWidthLC[FONTENUM_SM];
+    // Calculate the left margin for the SM
+    uLeft = LftMarginsSM ();
 
     // Tell the Edit Ctrl about it
     SendMessageW (hWndEC, EM_SETMARGINS, EC_LEFTMARGIN, MAKELONG (uLeft, 0));
@@ -2017,6 +2032,7 @@ NORMAL_EXIT:
                                     } // End IF
 
                                     // Copy a block of lines
+                                    //   not including a terminating zero
                                     CopyBlockLines (hWndEC, uLineBeg, lpwTmpLine);
 
                                     Assert (lpwTmpLine[uLineLen] EQ WC_EOS);

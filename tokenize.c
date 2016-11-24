@@ -833,7 +833,7 @@ UBOOL IsLocalName
         return FALSE;
 
     // Copy the function header block
-    //   not including a terminating zero
+    //   including a terminating zero if there's enough room
     uLineLen = CopyBlockLines (hWndEC, 0, lpwszTemp);   // ***FIXME*** -- buffer overflow???
 
     // Append a trailing marker

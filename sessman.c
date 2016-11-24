@@ -2016,9 +2016,10 @@ NORMAL_EXIT:
                                     uLineBeg = GetBlockStartLine (hWndEC, uLineNum);
 
                                     // Get the overall block length
+                                    //   not including a terminating zero
                                     uLineLen = GetBlockLength (hWndEC, uLineBeg);
 
-                                    // Allocate space for the line including the terminating zero
+                                    // Allocate space for the line including the terminating CRLF and zero
                                     lpwTmpLine =
                                       DbgGlobalAlloc (GPTR, (uLineLen + strcountof (WS_CRLF) + 1)   // "+ 1" for the terminating zero
                                                            * sizeof (lpwTmpLine[0]));
@@ -2032,7 +2033,7 @@ NORMAL_EXIT:
                                     } // End IF
 
                                     // Copy a block of lines
-                                    //   not including a terminating zero
+                                    //   including a terminating zero if there's enough room
                                     CopyBlockLines (hWndEC, uLineBeg, lpwTmpLine);
 
                                     Assert (lpwTmpLine[uLineLen] EQ WC_EOS);

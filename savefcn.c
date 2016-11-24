@@ -708,6 +708,7 @@ void SF_ReadLineFE
     if (uLineNum EQ 0
      || SendMessageW (hWndEC, MYEM_ISLINECONT, uLineNum - 1, 0) EQ FALSE)
         // Copy a block of lines
+        //   including a terminating zero if there's enough room
         CopyBlockLines (hWndEC, uLineNum, lpMemLine);
     else
         lpMemLine[0] = WC_EOS;

@@ -234,8 +234,8 @@ UINT GetLogicalLineCountFE
 //
 //  Copy a block of lines
 //
-//  Note that this function does not copy a terminating zero
-//    nor is it included in the returned length
+//  Note that this function copies a terminating zero if there's enough room
+//    but it is not included in the returned length
 //***************************************************************************
 
 UINT CopyBlockLines
@@ -260,9 +260,6 @@ UINT CopyBlockLines
 
         // Get the contents of the line
         uLineLen = (UINT) SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwszLine);
-
-        // Accumulate
-        uBlockLen += uLineLen;
 
         // Skip to the next line ptr
         lpwszLine = &lpwszLine[uLineLen];
@@ -343,7 +340,7 @@ void ImmExecLine
     } // End IF
 
     // Copy a block of lines
-    //   not including a terminating zero
+    //   including a terminating zero if there's enough room
     CopyBlockLines (hWndEC, uLineBeg, lpwszCompLine);
 
     // Ensure properly terminated

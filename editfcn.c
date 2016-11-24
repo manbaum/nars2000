@@ -1068,6 +1068,7 @@ UINT GetFunctionName
     ((LPWORD) lpwszTemp)[0] = (WORD) (uLineLen * sizeof (WCHAR));
 
     // Copy a block of lines
+    //   including a terminating zero if there's enough room
     CopyBlockLines (hWndEC, 0, lpwszTemp);
 
     // Ensure the line is properly terminated

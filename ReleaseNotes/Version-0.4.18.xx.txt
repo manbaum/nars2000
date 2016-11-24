@@ -1,6 +1,21 @@
 Version 0.4.18.xx consists of the following Builds:
 
 
+Build #1575--Version0.4.18.xx
+--------------------------------
+
+* Allow []PW To Be As Large As Possible (2*31)-2
+
+Directory trunk:
+
+SC_LIB.C:
+  In <DisplayLibNames>, now that []PW can be much larger, allocate space for the line
+    dynamically as opposed to statically.
+
+SYSVARS.H:
+  Allow []PW to be as large as (2*31)-2.
+
+
 Build #1574--Version0.4.18.xx
 --------------------------------
 

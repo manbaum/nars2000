@@ -444,7 +444,7 @@ void DisplayLibNames
      UINT     uNameCnt)                     // # names
 
 {
-    WCHAR   wszLine[DEF_MAX_QUADPW];        // Save area for output line
+    LPWCHAR lpwszLine;                      // Ptr to temp line
     UINT    uCnt,                           // Loop counter
             uLineChar,                      // Current char # in output line
             uNameLen,                       // Length of the current name
@@ -463,55 +463,65 @@ void DisplayLibNames
         // Get the current value of []PW
         uQuadPW = (UINT) GetQuadPW ();
 
-        // Initialize the output area
-        FillMemoryW (wszLine, uQuadPW, L' ');
+        // Allocate space for one line
+        lpwszLine = MyGlobalAlloc (GPTR, sizeof (WCHAR) * (uQuadPW + 1));
 
-        // Display the names
-        for (bLineCont = FALSE, uLineChar = LINE_INDENT, uCnt = 0;
-             uCnt < uNameCnt;
-             uCnt++)
+        // Check for errors
+        if (lpwszLine NE NULL)
         {
-            // Point to the name
-            lpMemName = lplpwszPtr[uCnt];
+            // Initialize the output area
+            FillMemoryW (lpwszLine, uQuadPW, L' ');
 
-            // Get the name length
-            uNameLen = lstrlenW (lpMemName);
+            // Display the names
+            for (bLineCont = FALSE, uLineChar = LINE_INDENT, uCnt = 0;
+                 uCnt < uNameCnt;
+                 uCnt++)
+            {
+                // Point to the name
+                lpMemName = lplpwszPtr[uCnt];
 
-            // If the line is too long, skip to the next one
-            if ((uLineChar + uNameLen) > uQuadPW
-             && uLineChar > LINE_INDENT)
+                // Get the name length
+                uNameLen = lstrlenW (lpMemName);
+
+                // If the line is too long, skip to the next one
+                if ((uLineChar + uNameLen) > uQuadPW
+                 && uLineChar > LINE_INDENT)
+                {
+                    // Ensure properly terminated
+                    lpwszLine[min (uLineChar, uQuadPW)] = WC_EOS;
+
+                    // Output the current line
+                    AppendLine (lpwszLine, bLineCont, TRUE);
+
+                    // Mark all lines from here on as continuations
+                    bLineCont = TRUE;
+
+                    // Re-initialize the output area
+                    FillMemoryW (lpwszLine, uQuadPW, L' ');
+
+                    // Re-initialize the char counter
+                    uLineChar = LINE_INDENT;
+                } // End IF
+
+                // Copy the name to the output area
+                CopyMemoryW (&lpwszLine[uLineChar], lpMemName, uNameLen);
+
+                // Skip to the next name boundary
+                uLineChar += NAME_WIDTH * (1 + uNameLen / NAME_WIDTH);
+            } // End FOR
+
+            // If there's still text in the buffer, output it
+            if (uLineChar > LINE_INDENT)
             {
                 // Ensure properly terminated
-                wszLine[min (uLineChar, uQuadPW)] = WC_EOS;
+                lpwszLine[min (uLineChar, uQuadPW)] = WC_EOS;
 
                 // Output the current line
-                AppendLine (wszLine, bLineCont, TRUE);
-
-                // Mark all lines from here on as continuations
-                bLineCont = TRUE;
-
-                // Re-initialize the output area
-                FillMemoryW (wszLine, uQuadPW, L' ');
-
-                // Re-initialize the char counter
-                uLineChar = LINE_INDENT;
+                AppendLine (lpwszLine, TRUE, TRUE);
             } // End IF
 
-            // Copy the name to the output area
-            CopyMemoryW (&wszLine[uLineChar], lpMemName, uNameLen);
-
-            // Skip to the next name boundary
-            uLineChar += NAME_WIDTH * (1 + uNameLen / NAME_WIDTH);
-        } // End FOR
-
-        // If there's still text in the buffer, output it
-        if (uLineChar > LINE_INDENT)
-        {
-            // Ensure properly terminated
-            wszLine[min (uLineChar, uQuadPW)] = WC_EOS;
-
-            // Output the current line
-            AppendLine (wszLine, TRUE, TRUE);
+            // We no longer need this storage
+            MyGlobalFree (lpwszLine); lpwszLine = NULL;
         } // End IF
     } // End IF
 } // End DisplayLibNames

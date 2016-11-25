@@ -564,6 +564,9 @@
 #define mpfr_get_ctsx(a,b,c)        _mpfr_get_ctsx (a, b, c, FALSE)
 #define mpfr_cmp_ct(a,b,c)          _mpfr_cmp_ct (&a, &b, c, FALSE)
 
+// Define macro for detecting a character in the range for Output Debugging
+#define IsOutDbg(a)             ((L' ' > (UCHAR) a) || (a) EQ UTF16_REPLACEMENT0000)
+
 
 //***************************************************************************
 //  End of File: macros.h

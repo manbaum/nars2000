@@ -425,8 +425,7 @@ typedef struct tagHILO
         // If we're Output Debugging,
         //   and the character is in the Output Debugging range, ...
         if (hFontScrFB NE NULL
-         && ((wcCur < L' ')
-          || (wcCur EQ UTF16_REPLACEMENT0000)))
+         && IsOutDbg (wcCur))
         {
             // Mark as Fallback in effect for this line
             bFallback = TRUE;

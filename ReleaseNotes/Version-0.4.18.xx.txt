@@ -1,7 +1,25 @@
 Version 0.4.18.xx consists of the following Builds:
 
 
-Build #1576--Version0.4.18.xx
+Build #1577 -- Version 0.4.18.xx
+--------------------------------
+
+* Use Macro To Detect Chars For Output Debugging
+
+Directory trunk:
+
+EDITFCN.C:
+MACROS.H:
+  Use macro to detect chars for Output Debugging.
+
+Directory trunk\WineHQ:
+
+EDITCTRL.C:
+LOCAL.H:
+  Use macro to detect chars for Output Debugging.
+
+
+Build #1576 -- Version 0.4.18.xx
 --------------------------------
 
 * Fix Bug Of Duplicate Accumulation In <CopyBlockLines>
@@ -19,7 +37,7 @@ IMMEXEC.C:
   Improve comments.
 
 
-Build #1575--Version0.4.18.xx
+Build #1575 -- Version 0.4.18.xx
 --------------------------------
 
 * Allow []PW To Be As Large As Possible (2*31)-2
@@ -34,7 +52,7 @@ SYSVARS.H:
   Allow []PW to be as large as (2*31)-2.
 
 
-Build #1574--Version0.4.18.xx
+Build #1574 -- Version 0.4.18.xx
 --------------------------------
 
 * Fix Bug When Editing A Logical Line In A Function Header
@@ -63,7 +81,7 @@ TOKENIZE.C:
   In <IsLocalName>, use the result of <CopyBlockLines> as opposed to calling a separate function.
 
 
-Build #1573--Version0.4.18.xx
+Build #1573 -- Version 0.4.18.xx
 --------------------------------
 
 * Fix Bug When Creating Fallback Font
@@ -77,7 +95,7 @@ MAIN.C:
   In <CreateNewFontCom>, test for failure of that function when calling itself for Fallback fonts.
 
 
-Build #1572--Version0.4.18.xx
+Build #1572 -- Version 0.4.18.xx
 --------------------------------
 
 * Fix Bug Of Passing Too Large A Limit To UpDown Control For []PP
@@ -104,7 +122,7 @@ REBAR.C:
   Use UDM_SETPOS32 instead of UDM_SETPOS and UDM_SETRANGE32 instead of UDM_SETRANGE to be consistent.
 
 
-Build #1571--Version0.4.18.xx
+Build #1571 -- Version 0.4.18.xx
 --------------------------------
 
 * Display Function Fix Time As Local Time
@@ -116,7 +134,7 @@ QF_AT.C:
     before converting it to system time.
 
 
-Build #1570--Version0.4.18.xx
+Build #1570 -- Version 0.4.18.xx
 --------------------------------
 
 * Replace Size-Limited Windows API Functions For Writing Private Profiles

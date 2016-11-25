@@ -68,6 +68,7 @@ void DrawLineContSub (HWND, HDC, int, int, int);
 #include "editctrl.h"
 #include "resource.h"
 #include "unicode.h"
+#include "macros.h"
 
 #ifdef DEBUG
   #define   LCLODSAPI   ODSAPI

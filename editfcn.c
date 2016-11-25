@@ -1513,8 +1513,7 @@ int LclECPaintHook
 
             // If the char is a Fallback char and
             //   we're Output Debugging, ...
-            if ((wcCur < L' '
-              || wcCur EQ UTF16_REPLACEMENT0000)
+            if (IsOutDbg (wcCur)
              && OptionFlags.bOutputDebug
              && hFontScrFB NE NULL)
             {
@@ -1658,8 +1657,7 @@ int LclECPaintHook
 
             // If the char is a Fallback char and
             //   we're Output Debugging, ...
-            if ((wcCur < L' '
-              || wcCur EQ UTF16_REPLACEMENT0000)
+            if (IsOutDbg (wcCur)
              && OptionFlags.bOutputDebug
              && hFontScrFB NE NULL)
             {

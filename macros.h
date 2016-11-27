@@ -565,7 +565,7 @@
 #define mpfr_cmp_ct(a,b,c)          _mpfr_cmp_ct (&a, &b, c, FALSE)
 
 // Define macro for detecting a character in the range for Output Debugging
-#define IsOutDbg(a)             ((L' ' > (UCHAR) a) || (a) EQ UTF16_REPLACEMENT0000)
+#define IsOutDbg(a)             ((L' ' > (unsigned) a) || (a) EQ UTF16_REPLACEMENT0000)
 
 
 //***************************************************************************

@@ -842,6 +842,7 @@ typedef struct tagSTART_ADDRESSES
     "SysFnNERASE_EM_YY"         , (LPUCHAR) &SysFnNERASE_EM_YY          ,
     "SysFnMonNERASE_EM_YY"      , (LPUCHAR) &SysFnMonNERASE_EM_YY       ,
     "SysFnDydNERASE_EM_YY"      , (LPUCHAR) &SysFnDydNERASE_EM_YY       ,
+    "SysFnNINFO_EM_YY"          , (LPUCHAR) &SysFnNINFO_EM_YY           ,
     "SysFnNLOCK_EM_YY"          , (LPUCHAR) &SysFnNLOCK_EM_YY           ,
     "SysFnMonNLOCK_EM_YY"       , (LPUCHAR) &SysFnMonNLOCK_EM_YY        ,
     "SysFnDydNLOCK_EM_YY"       , (LPUCHAR) &SysFnDydNLOCK_EM_YY        ,

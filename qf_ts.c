@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -44,11 +44,8 @@ LPPL_YYSTYPE SysFnTS_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    SYSTEMTIME   SystemTime;        // Struct for the system time
-    APLUINT      ByteRes;           // # bytes in the result
-    HGLOBAL      hGlbRes;           // Result global memory handle
-    LPVOID       lpMemRes;          // Ptr to result global memory
     LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    HGLOBAL      hGlbRes = NULL;    // Result global memory handle
 
     // This function is niladic
     Assert (lptkLftArg EQ NULL && lptkRhtArg EQ NULL);
@@ -59,6 +56,53 @@ LPPL_YYSTYPE SysFnTS_EM_YY
     //***************************************************************
     if (lptkAxis NE NULL)
         goto AXIS_SYNTAX_EXIT;
+
+    // Allocate space for the timestamp
+    hGlbRes = TimestampAllocate (NULL);
+
+    // Check for error
+    if (hGlbRes EQ NULL)
+        goto WSFULL_EXIT;
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+} // End SysFnTS_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $TimestampAllocate
+//
+//  Allocate space for a timestamp and fil it in if requested
+//***************************************************************************
+
+HGLOBAL TimestampAllocate
+    (LPSYSTEMTIME lpSystemTime)         // Ptr to incoming systemTime (may be null)
+
+{
+    SYSTEMTIME   SystemTime;        // Struct for the system time
+    APLUINT      ByteRes;           // # bytes in the result
+    HGLOBAL      hGlbRes = NULL;    // Result global memory handle
+    LPAPLINT     lpMemRes;          // Ptr to result global memory
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_INT, 7, 1);
@@ -92,48 +136,32 @@ LPPL_YYSTYPE SysFnTS_EM_YY
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayDataFmBase (lpMemRes);
 
-    // Get the current time
-    if (OptionFlags.bUseLocalTime)
-        GetLocalTime  (&SystemTime);
-    else
-        GetSystemTime (&SystemTime);
+    // If we're to use the current time, ...
+    if (lpSystemTime EQ NULL)
+    {
+        // Get the current time
+        if (OptionFlags.bUseLocalTime)
+            GetLocalTime  (&SystemTime);
+        else
+            GetSystemTime (&SystemTime);
+        // Point to it
+        lpSystemTime = &SystemTime;
+    } // End IF
 
-#define lpMemData   ((LPAPLINT) lpMemRes)
-    lpMemData[0] = SystemTime.wYear;
-    lpMemData[1] = SystemTime.wMonth;
-    lpMemData[2] = SystemTime.wDay;
-    lpMemData[3] = SystemTime.wHour;
-    lpMemData[4] = SystemTime.wMinute;
-    lpMemData[5] = SystemTime.wSecond;
-    lpMemData[6] = SystemTime.wMilliseconds;
-#undef  lpMemData
+    // Save the timestamp in the result
+    lpMemRes[0] = lpSystemTime->wYear;
+    lpMemRes[1] = lpSystemTime->wMonth;
+    lpMemRes[2] = lpSystemTime->wDay;
+    lpMemRes[3] = lpSystemTime->wHour;
+    lpMemRes[4] = lpSystemTime->wMinute;
+    lpMemRes[5] = lpSystemTime->wSecond;
+    lpMemRes[6] = lpSystemTime->wMilliseconds;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    // Fill in the result token
-    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
-    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-
-    return lpYYRes;
-
-AXIS_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                               lptkAxis);
-    return NULL;
-
 WSFULL_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                               lptkFunc);
-    return NULL;
-} // End SysFnTS_EM_YY
-#undef  APPEND_NAME
+    return hGlbRes;
+} // End TimestampAllocate
 
 
 //***************************************************************************

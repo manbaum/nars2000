@@ -95,6 +95,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"nc"       ,      1,      FALSE, TRUE , SysFnNC_EM_YY       , 0              },    // Name Classification
     {WS_UTF16_QUAD L"ncreate"  ,      1,      FALSE, FALSE, SysFnNCREATE_EM_YY  , 0              },    // Create And Open A Native File
     {WS_UTF16_QUAD L"nerase"   ,      1,      FALSE, FALSE, SysFnNERASE_EM_YY   , 0              },    // Erase An Open Native File
+    {WS_UTF16_QUAD L"ninfo"    ,      1,      FALSE, FALSE, SysFnNINFO_EM_YY    , 0              },    // File Information
     {WS_UTF16_QUAD L"nl"       ,      1,      FALSE, TRUE , SysFnNL_EM_YY       , 0              },    // Name List
     {WS_UTF16_QUAD L"nlock"    ,      1,      FALSE, FALSE, SysFnNLOCK_EM_YY    , 0              },    // Lock An Open Native File
     {WS_UTF16_QUAD L"nread"    ,      1,      FALSE, FALSE, SysFnNREAD_EM_YY    , 0              },    // Read Data From An Open Native File

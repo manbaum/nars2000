@@ -1308,7 +1308,7 @@ HGLOBAL AllocateGlobalArray
 
 {
     APLUINT           ByteRes;              // # bytes in result
-    HGLOBAL           hGlbRes;              // Result global memory handle
+    HGLOBAL           hGlbRes = NULL;       // Result global memory handle
     LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result global memory data
 
     // Allocate space for this array

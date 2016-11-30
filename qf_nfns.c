@@ -786,7 +786,8 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
 
 {
     APLSTYPE          aplTypeLft,           // Left arg storage type
-                      aplTypeRht;           // Right ...
+                      aplTypeRht,           // Right ...
+                      aplTypeRes;           // Result ...
     APLNELM           aplNELMLft,           // Left arg NELM
                       aplNELMRht;           // Right ...
     APLRANK           aplRankLft,           // Left arg Rank
@@ -910,8 +911,11 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
             goto RIGHT_DOMAIN_EXIT;
     } // End IF
 
+    // Calculate the result storage type
+    aplTypeRes = IsEmpty (aplNELMLft) ? ARRAY_BOOL : ARRAY_NESTED;
+
     // Calculate space needed for the result
-    ByteRes = CalcArraySize (ARRAY_NESTED, aplNELMLft, aplRankLft);
+    ByteRes = CalcArraySize (aplTypeRes, aplNELMLft, aplRankLft);
 
     // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
@@ -928,7 +932,7 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
 #define lpHeader    lpMemHdrRes
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = ARRAY_NESTED;
+    lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
 ////lpHeader->SysVar     = FALSE;       // Already zero from GHND
     lpHeader->RefCnt     = 1;

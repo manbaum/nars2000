@@ -266,7 +266,8 @@ UBOOL LoadWorkspace_EM
     APLI3264     hFile;                 // File handle
     WCHAR        wszDir  [_MAX_DIR],
                  wszDrive[_MAX_DRIVE],
-                 wszDPFE [_MAX_PATH] = {WC_EOS};
+                 wszDPFE [_MAX_PATH] = {WC_EOS},
+                 wszDPFE2[_MAX_PATH];
     LPDICTIONARY lpDict = NULL;         // Ptr to workspace dictionary
     LPWCHAR      lpwszProf;             // Ptr to profile string
     VARS_TEMP_OPEN
@@ -883,10 +884,22 @@ UBOOL LoadWorkspace_EM
     // Delete the symbol table entries for vars/fcns we allocated of the form FMTSTR_GLBCNT
     DeleteGlobalLinks (lpSymLink);
 
+    // Convert the given workspace name into a canonical form (without WS_WKSEXT)
+    MakeWorkspaceNameCanonical (wszDPFE2, wszDPFE, NULL);
+
+    // Display the indent
+    AppendLine (wszIndent, FALSE, FALSE);
+
+    // Display the )LOAD command
+    AppendLine (L")LOAD ", FALSE, FALSE);
+
+    // Display the workspace name
+    AppendLine (wszDPFE2, FALSE, TRUE);
+
     // Display the workspace timestamp
     DisplayWorkspaceStamp (lpDict);
 WSID_EXIT:
-    // Set the value of the new []WSID as wszDPFE
+    // Save wszDPFE as the value of the new []WSID
     bRet = SaveNewWsid_EM (wszDPFE);
 
     goto NORMAL_EXIT;

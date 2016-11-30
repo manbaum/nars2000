@@ -156,7 +156,7 @@ UBOOL CmdSave_EM
             // We no longer need this ptr
             MyGlobalUnlock (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemOldWSID = NULL;
 
-            // Set the value of the new []WSID as wszTailDPFE
+            // Save wszTailDPFE as the value of the new []WSID
             if (!SaveNewWsid_EM (wszTailDPFE))
                 goto ERROR_EXIT;
         } // End IF
@@ -609,7 +609,7 @@ UBOOL CmdSave_EM
     lpwszOrigTemp = lpMemPTD->lpwszTemp;
     lpMemPTD->lpwszTemp += lstrlenW (lpMemPTD->lpwszTemp);
 
-    // Set the value of the new []WSID as wszTailDPFE
+    // Save lpMemSaveWSID as the value of the new []WSID
     if (!SaveNewWsid_EM (lpMemSaveWSID))
         goto ERROR_EXIT;
 

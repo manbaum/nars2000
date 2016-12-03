@@ -461,16 +461,8 @@ typedef struct tagHILO
 
     // If we did NOT use Fallback, ...
     if (!bFallback)
-    {
         // Calculate the length all at once
-        dwTmp = GetTabbedTextExtentW (hDC, lpString, nCount, nTabPositions, lpnTabStopPositions);
-
-        if (nCount NE 0)
-        {
-            if (dwTmp NE (dwRet.lo + (dwRet.hi << 16)))
-                DbgBrk ();
-        } // End IF
-    } // End IF
+        return GetTabbedTextExtentW (hDC, lpString, nCount, nTabPositions, lpnTabStopPositions);
 
     return dwRet.lo + (dwRet.hi << 16);
 } // End LclGetTabbedTextExtentW

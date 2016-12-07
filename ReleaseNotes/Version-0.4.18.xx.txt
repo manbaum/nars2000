@@ -1,14 +1,28 @@
 Version 0.4.18.xx consists of the following Builds:
 
 
+Build #1584 -- Version 0.4.18.xx
+--------------------------------
+
+* Implement "Copy" Button In The About Box
+
+Directory trunk:
+
+MAIN.RC:
+RESOURCE.H:
+VER.C:
+UNICODE.H:
+  Implement "Copy" button in the About box.
+
+
 Build #1583 -- Version 0.4.18.xx
 --------------------------------
 
 * Remove Unguarded DEBUG Statement
 
-Directory trunk:
+Directory trunk\WineHQ:
 
-QF_NFNS.C:
+EDITCTRL.C:
   In <LclGetTabbedTextExtentW>, remove unguarded DEBUG statement.
 
 

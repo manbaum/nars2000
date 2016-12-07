@@ -169,6 +169,8 @@
 #define IDC_FILEVER                              804
 #define IDC_LOADEDFROM                           805
 #define IDC_VERSION2                             806
+#define IDC_ABOUT_COPY                           807
+#define IDC_ABOUT_NOTE                           808
 
 #define IDC_APPLY                                810
 #define IDC_CUST_LB                              811

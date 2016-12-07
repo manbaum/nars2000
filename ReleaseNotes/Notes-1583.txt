@@ -3,7 +3,7 @@ Build #1583 -- Version 0.4.18.xx
 
 * Remove Unguarded DEBUG Statement
 
-Directory trunk:
+Directory trunk\WineHQ:
 
-QF_NFNS.C:
+EDITCTRL.C:
   In <LclGetTabbedTextExtentW>, remove unguarded DEBUG statement.

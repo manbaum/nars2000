@@ -113,6 +113,8 @@
 #define UTF16_LDC_DB_HORZ_D       0x2566        // LDC double horizontal and down
 #define UTF16_LDC_DB_HORZ_U       0x2569        // LDC double horizontal and up
 #define UTF16_LDC_DB_CROSS        0x256C        // LDC double horizontal and vertical
+#define UTF16_CHECKMARKLIGHT      0x2713        // Light check mark
+#define UTF16_CHECKMARKHEAVY      0x2714        // Heavy check mark
 #define UTF16_REPLACEMENTCHAR     0xFFFD        // Replacement char for unknown
 #define UTF16_REPLACEMENT0000     0xFFFF        // Replacement char for U+0000
 
@@ -393,6 +395,8 @@
 #define WS_UTF16_LDC_DB_HORZ_D       L"\x2566"  // LDC double horizontal and down
 #define WS_UTF16_LDC_DB_HORZ_U       L"\x2569"  // LDC double horizontal and up
 #define WS_UTF16_LDC_DB_CROSS        L"\x256C"  // LDC double horizontal and vertical
+#define WS_UTF16_CHECKMARKLIGHT      L"\x2713"  // Light check mark
+#define WS_UTF16_CHECKMARKHEAVY      L"\x2714"  // Heavy check mark
 #define WS_UTF16_REPLACEMENTCHAR     L"\xFFFD"  // Replacement char for unknown
 #define WS_UTF16_REPLACEMENT0000     L"\xFFFF"  // Replacement char for U+0000
 

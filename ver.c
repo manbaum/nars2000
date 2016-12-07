@@ -363,6 +363,72 @@ APLU3264 CALLBACK AboutDlgProc
                     PostMessageW (hDlg, WM_CLOSE, 0, 0);
 
                     DlgMsgDone (hDlg);      // We handled the msg
+
+                case IDC_ABOUT_COPY:
+                {
+                    DWORD   dwSizeDst,
+                            dwSizeNxt;
+                    HGLOBAL hGlbDst;
+                    LPWCHAR lpMemDst;
+
+                    // Copy the version # and version2 text to the clipboard
+
+                    // Get the text lengths ("+ 1" for WS_LF)
+                    dwSizeDst = GetWindowTextLengthW (GetDlgItem (hDlg, IDC_VERSION   )) + 1 + 1;   // Does NOT end with a LF
+                    dwSizeDst +=GetWindowTextLengthW (GetDlgItem (hDlg, IDC_VERSION2  )) + 1    ;   // Does     end with a LF
+                    dwSizeDst +=GetWindowTextLengthW (GetDlgItem (hDlg, IDC_ABOUT_NOTE));           // Does NOT end with a LF
+                    // Note we do not use MyGlobalAlloc or DbgGlobalAlloc here as the global memory handle
+                    //   is to be placed onto the clipboard at which point the system
+                    //   will own the handle
+
+                    // Allocate space for the text "+ 1" for the terminaing zero
+                    hGlbDst = GlobalAlloc (GHND | GMEM_DDESHARE, (dwSizeDst + 1) * sizeof (WCHAR));
+
+                    // Check for error
+                    if (hGlbDst NE NULL)
+                    {
+                        // Open the clipboard so we can write to it
+                        OpenClipboard (hDlg);
+
+                        // Lock the memory to get a ptr to it
+                        lpMemDst = GlobalLock (hGlbDst);
+
+                        // Copy the version text to global memory
+                        dwSizeNxt = GetWindowTextW (GetDlgItem (hDlg, IDC_VERSION), lpMemDst, 1 + dwSizeDst);
+
+                        // Append two LFs
+                        lstrcpyW (&lpMemDst[dwSizeNxt], WS_LF); dwSizeNxt++;
+                        lstrcpyW (&lpMemDst[dwSizeNxt], WS_LF); dwSizeNxt++;
+
+                        // Copy the version2 text to global memory
+                        dwSizeNxt += GetWindowTextW (GetDlgItem (hDlg, IDC_VERSION2), &lpMemDst[dwSizeNxt], 1 + dwSizeDst - dwSizeNxt);
+
+                        // Append one LF
+                        lstrcpyW (&lpMemDst[dwSizeNxt], WS_LF); dwSizeNxt++;
+
+                        // Copy the (C) text to global memory
+                        dwSizeNxt += GetWindowTextW (GetDlgItem (hDlg, IDC_ABOUT_NOTE), &lpMemDst[dwSizeNxt], 1 + dwSizeDst - dwSizeNxt);
+
+                        Assert (dwSizeNxt EQ dwSizeDst);
+
+                        // We no longer need this ptr
+                        GlobalUnlock (hGlbDst); lpMemDst = NULL;
+
+                        // Empty the clipboard
+                        EmptyClipboard ();
+
+                        // Place the changed data onto the clipboard
+                        SetClipboardData (CF_UNICODETEXT, hGlbDst); hGlbDst = NULL;
+
+                        // We're finished with the clipboard
+                        CloseClipboard ();
+
+                        // Change the text on the button
+                        SetWindowTextW (GetDlgItem (hDlg, IDC_ABOUT_COPY), WS_UTF16_CHECKMARKLIGHT L" Copied");
+                    } else
+                        MBW (L"Unable to allocate memory for the clipboard text");
+                    break;
+                } // End case IDC_ABOUT_COPY
             } // End switch (wParam)
 
             break;

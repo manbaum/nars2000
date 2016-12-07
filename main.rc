@@ -219,8 +219,9 @@ BEGIN
     LTEXT           "NARS2000 (WinXX)#%u.%u%u"
                               , IDC_VERSION   , 10,  8,135, 14, NOT WS_GROUP
     LTEXT           ""        , IDC_VERSION2  , 10, 25,210,108
+    PUSHBUTTON      "Copy"    , IDC_ABOUT_COPY, 165,80, 50, 14
     LTEXT           "Copyright \xA9 2006-2016 Sudley Place Software\nAll rights reserved."
-                              , IDC_STATIC    , 10,108,170, 18, NOT WS_GROUP
+                              , IDC_ABOUT_NOTE, 10,108,170, 18, NOT WS_GROUP
     ICON            IDI_NARS  , IDC_LOADEDFROM,180, 25,  0,  0, SS_NOTIFY | SS_REALSIZEIMAGE
     LTEXT           "This program is released under version 3 of the GNU GPL license or any later version.  For more details, see"
                               , IDC_STATIC    , 10,133,200, 20

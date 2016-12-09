@@ -601,6 +601,8 @@ UBOOL AfoDetectResize
         GlobalUnlock (lpafoDetectStr->hGlbLineStr);
 
         // Reallocate the AFOLINE_STR
+        //   moving the old data to the new location, and
+        //   freeing the old global memory
         hGlbLineStr =
           GlobalReAlloc (lpafoDetectStr->hGlbLineStr,
                           (lpafoDetectStr->uLineStrCnt + AFOLINESTR_INCR) * sizeof (AFOLINE_STR),

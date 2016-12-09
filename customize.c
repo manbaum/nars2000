@@ -3937,8 +3937,10 @@ INT_PTR CALLBACK CustomizeDlgProc
                             MyGlobalUnlock (hLclKeybLayouts); lpLclKeybLayouts = NULL;
 
                             // Reallocate up the struc
+                            //   moving the old data to the new location, and
+                            //   freeing the old global memory
                             hGlbReAlloc =
-                              MyGlobalReAlloc (hLclKeybLayouts, (uLclKeybLayoutCount + 1) * sizeof (KEYBLAYOUTS), GMEM_MOVEABLE | GMEM_ZEROINIT);
+                              MyGlobalReAlloc (hLclKeybLayouts, (uLclKeybLayoutCount + 1) * sizeof (KEYBLAYOUTS), GHND);
 
                             // If it failed, ...
                             if (hGlbReAlloc EQ NULL)

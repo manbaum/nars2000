@@ -1539,7 +1539,9 @@ UBOOL PN_VectorAcc
         // Calculate the new maximum length
         uMaxLen = lppnLocalVars->uGlbVectorMaxLen + PNVECTOR_INCR;
 
-        // Attempt to reallocate the storage in place
+        // Attempt to reallocate the storage
+        //   moving the old data to the new location, and
+        //   freeing the old global memory
         lppnLocalVars->hGlbVector =
           MyGlobalReAlloc (lppnLocalVars->hGlbVector,
                            uMaxLen * sizeof (PN_VECTOR),

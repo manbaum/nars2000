@@ -1237,10 +1237,13 @@ UBOOL ResizeFactorStruc
         // Calculate the new length
         uLen = (lpMemTmp->uMaxEntry + INIT_FACTOR_INC) * sizeof (APLMPI);
 
+        // Reallocate up the struc
+        //   moving the old data to the new location, and
+        //   freeing the old global memory
         hGlbMem =
           MyGlobalReAlloc (lpMemTmp->hGlbMem,
                            uLen,
-                           GMEM_MOVEABLE | GMEM_ZEROINIT);
+                           GHND);
         if (hGlbMem)
             // Lock the memory to get a ptr to it
             lpMemNew = MyGlobalLock (hGlbMem);

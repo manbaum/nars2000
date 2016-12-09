@@ -487,10 +487,12 @@ UBOOL HshTabResize_EM
     if (lpHTS->bGlbHshSymTabs)
     {
         // First, attempt to reallocate in place
+        //   moving the old data to the new location, and
+        //   freeing the old global memory
         lpHshTabNew =
           MyGlobalReAlloc (lpHTS->lpHshTab,         // At this address
                            iHshTabNewNelm * sizeof (lpHTS->lpHshTab[0]),
-                           GMEM_MOVEABLE | GMEM_ZEROINIT);
+                           GHND);
         // If it didn't succeed, ...
         if (lpHshTabNew EQ NULL)
             // Allocate anew
@@ -658,10 +660,12 @@ UBOOL SymTabResize_EM
     // If the Hsh & Sym tabs are from global (not virtual) memory, ...
     if (lpHTS->bGlbHshSymTabs)
         // Attempt to reallocate in place
+        //   moving the old data to the new location, and
+        //   freeing the old global memory
         lpSymTabNew =
           MyGlobalReAlloc (lpHTS->lpSymTab,     // At this address
                            iSymTabNewNelm * sizeof (lpHTS->lpSymTab[0]),
-                           GMEM_MOVEABLE | GMEM_ZEROINIT);
+                           GHND);
     else
         // Attempt to reallocate in place
         lpSymTabNew =

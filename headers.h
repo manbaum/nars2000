@@ -86,6 +86,7 @@
 #include "sc_save.h"
 #include "cr_proc.h"
 #include "afofns.h"
+#include "qf_nfns.h"
 
 #pragma pack(pop)
 

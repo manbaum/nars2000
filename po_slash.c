@@ -3040,9 +3040,12 @@ UBOOL PrimOpDydSlashInsertDim_EM
         goto WSFULL_EXIT;
 
     // Resize the global memory to include a new dimension
-    *lphGlbRes = MyGlobalReAlloc (hGlbTmp,
-                                  (APLU3264) ByteRes,
-                                  GHND);
+    //   moving the old data to the new location, and
+    //   freeing the old global memory
+    *lphGlbRes =
+      MyGlobalReAlloc (hGlbTmp,
+            (APLU3264) ByteRes,
+                       GHND);
     // Check for errors
     if (*lphGlbRes EQ NULL)
         goto WSFULL_EXIT;

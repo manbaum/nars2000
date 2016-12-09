@@ -521,8 +521,10 @@ APLI3264 TranslateArrayTypeToSizeof
         case ARRAY_VFP:
             return sizeof (APLVFP);
 
-        case ARRAY_HETERO:
         case ARRAY_NESTED:
+        case ARRAY_HETERO:
+            return sizeof (LPVOID);
+
         case ARRAY_LIST:
             return -1;
 

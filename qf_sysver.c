@@ -196,7 +196,8 @@ LPPL_YYSTYPE SysFnSYSVER_EM_YY
 ////////    goto WSFULL_EXIT;
 
         // Re-allocate the global downwards
-        hGlbRes = MyGlobalReAlloc (hGlbRes, (APLU3264) ByteRes, GMEM_MOVEABLE);
+        hGlbRes =
+          MyGlobalReAlloc (hGlbRes, (APLU3264) ByteRes, GMEM_MOVEABLE);
     } else
     if (aplNELMRes > SYSVER_NELM)
         // We should never get here

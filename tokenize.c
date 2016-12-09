@@ -719,6 +719,8 @@ UBOOL CheckResizeNum_EM
         iNumLim = lptkLocalVars->iNumLim + DEF_NUM_INCRNELM;
 
         // Attempt to realloc to that size
+        //   moving the old data to the new location, and
+        //   freeing the old global memory
         hGlbNum =
           MyGlobalReAlloc (lptkLocalVars->hGlbNum, iNumLim * sizeof (char), GMEM_MOVEABLE);
         if (hGlbNum EQ NULL)
@@ -777,6 +779,8 @@ UBOOL CheckResizeStr_EM
         iStrLim = lptkLocalVars->iStrLim + DEF_STR_INCRNELM;
 
         // Attempt to realloc to that size
+        //   moving the old data to the new location, and
+        //   freeing the old global memory
         hGlbStr =
           MyGlobalReAlloc (lptkLocalVars->hGlbStr, iStrLim * sizeof (APLCHAR), GMEM_MOVEABLE);
         if (hGlbStr EQ NULL)
@@ -5557,7 +5561,7 @@ __try
                     tkLocalVars.lptkLastEOS = NULL;
                 } // End IF
 
-                // Reallocate the tokenized line to the actual size
+                // Reallocate the tokenized line down to the actual size
                 tkLocalVars.hGlbToken =
                   MyGlobalReAlloc (tkLocalVars.hGlbToken,
                                    sizeof (TOKEN_HEADER)
@@ -6057,9 +6061,12 @@ UBOOL AppendNewToken_EM
         uOldSize = MyGlobalSize (lptkLocalVars->hGlbToken);
 
         // Increase the size by DEF_TOKEN_RESIZE
-        hGlbToken = MyGlobalReAlloc (lptkLocalVars->hGlbToken,
-                                     uOldSize + DEF_TOKEN_RESIZE,
-                                     GMEM_ZEROINIT);
+        //   moving the old data to the new location, and
+        //   freeing the old global memory
+        hGlbToken =
+          MyGlobalReAlloc (lptkLocalVars->hGlbToken,
+                           uOldSize + DEF_TOKEN_RESIZE,
+                           GMEM_ZEROINIT);
         if (hGlbToken EQ NULL)
         {
             LPVOID lpMemOld,        // Temp ptrs

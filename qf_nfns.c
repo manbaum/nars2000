@@ -1560,14 +1560,13 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
                             AccessMode = GENERIC_READ;
                             ShareMode  = FILE_SHARE_READ;
                             uFlags     = 0
-                                       | FILE_FLAG_OPEN_REPARSE_POINT
                                        | FILE_FLAG_BACKUP_SEMANTICS;
 
                             // Attempt to open the file as a symbolic link
                             hFileLink =
                               CreateFileW (lpMemRht,                // Ptr to Drive, path, filename
-                                   (DWORD) AccessMode,              // Desired access
-                                   (DWORD) ShareMode,               // Shared access
+                                           AccessMode,              // Desired access
+                                           ShareMode,               // Shared access
                                            NULL,                    // Security attributes
                                            OPEN_EXISTING,           // Create/open flags
                                            uFlags,                  // File attributes & flags
@@ -1681,7 +1680,14 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
                                lpMemRes[uLft] = MakePtrTypeGlb (hGlbV0Char);
 #undef  UNC_COUNT
 #undef  UNC_PREFIX
+                            // If we're not wildcarding, ...
+                            if (!bWildcard)
+                            {
+                                // We no longer need this handle
+                                CloseHandle (hFileLink); hFileLink = NULL;
+                            } // End IF
                         } else
+                        // If we're wildcarding, ...
                         if (bWildcard)
                         {
                             // Save '' as the result
@@ -1691,6 +1697,7 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
                             // Not a Symbolic Link:  return ''
                             lpMemRes[uLft] = MakePtrTypeGlb (hGlbV0Char);
                     } else
+                    // If we're wildcarding, ...
                     if (bWildcard)
                     {
                         // Save '' as the result
@@ -1703,6 +1710,7 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
                     break;
 
                 default:
+                    // If we're wildcarding, ...
                     if (bWildcard)
                     {
                         // Save {zilde} as the result

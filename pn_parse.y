@@ -151,6 +151,23 @@ Integer:
                                     }
     ;
 
+// Unsigned integer
+UnInteger:
+              Digit                 {DbgMsgWP (L"%%UnInteger:  Digit");
+                                     // Mark starting offset
+                                     $1.uNumAcc = lppnLocalVars->uNumAcc;
+
+                                     // Accumulate the digit
+                                     PN_NumAcc (lppnLocalVars, $1.chCur);
+
+                                     $$ = $1;
+                                    }
+    | Integer Digit                 {DbgMsgWP (L"%%UnInteger:  Integer Digit");
+                                     // Accumulate the digit
+                                     PN_NumAcc (lppnLocalVars, $2.chCur);
+                                    }
+    ;
+
 AlphaInt:
                Alphabet             {DbgMsgWP (L"%%AlphaInt:  Alphabet");
                                      lppnLocalVars->uAlpAcc = 0;
@@ -209,6 +226,15 @@ Decimal:
                                     }
     ;
 
+UnIntPoint:
+      UnInteger                     {DbgMsgWP (L"%%UnIntPoint:  UnInteger");
+                                     // Calculate the number
+                                     PN_NumCalc (lppnLocalVars, &$1, FALSE);
+
+                                     $$ = $1;
+                                    }
+    ;
+
 DecPoint:
       Integer                       {DbgMsgWP (L"%%DecPoint:  Integer");
                                      // Terminate the argument
@@ -251,22 +277,34 @@ DecPoint:
 DecConstants:
           INF                       {DbgMsgWP (L"%%DecConstants:  INF");
                                      // Set constant infinity
-                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_FLT, $1.uNumStart,  1);
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_FLT, $1.uNumStart,  1, NULL);
                                     }
     | OVR INF                       {DbgMsgWP (L"%%DecConstants:  OVR INF");
                                      // Set constant infinity
-                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_FLT, $1.uNumStart, -1);
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_FLT, $1.uNumStart, -1, NULL);
                                     }
     ;
 
 VfpConstants:
           INF DEF_VFPSEP            {DbgMsgWP (L"%%VfpConstants:  INF 'v'");
                                      // Set constant infinity
-                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_VFP, $1.uNumStart,  1);
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_VFP, $1.uNumStart,  1, NULL);
+                                    }
+    |     INF DEF_VFPSEP UnIntPoint {DbgMsgWP (L"%%VfpConstants:  INF 'v' UnIntPoint");
+                                     // Set constant infinity
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_VFP, $1.uNumStart,  1, &$3.at.aplInteger);
                                     }
     | OVR INF DEF_VFPSEP            {DbgMsgWP (L"%%VfpConstants:  OVR INF 'v'");
                                      // Set constant infinity
-                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_VFP, $1.uNumStart, -1);
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_VFP, $1.uNumStart, -1, NULL);
+                                     if (lppnLocalVars->bYYERROR)
+                                        YYERROR;
+                                    }
+    | OVR INF DEF_VFPSEP UnIntPoint {DbgMsgWP (L"%%VfpConstants:  OVR INF 'v' UnIntPoint");
+                                     // Set constant infinity
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_VFP, $1.uNumStart, -1, &$4.at.aplInteger);
+                                     if (lppnLocalVars->bYYERROR)
+                                        YYERROR;
                                     }
     ;
 
@@ -291,12 +329,12 @@ RatConstantsInt:
           INF  DEF_RATSEP RatArgs   {DbgMsgWP (L"%%RatConstantsInt:  INF 'r' RatArgs");
                                      // Set constant infinity
                                      //   taking into account negative integer and -0
-                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT, $1.uNumStart,  1 - 2 * (lppnLocalVars->lpszNumAccum[0] EQ OVERBAR1));
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT, $1.uNumStart,  1 - 2 * (lppnLocalVars->lpszNumAccum[0] EQ OVERBAR1), NULL);
                                     }
     | OVR INF  DEF_RATSEP RatArgs   {DbgMsgWP (L"%%RatConstantsInt:  OVR INF 'r' RatArgs");
                                      // Set constant infinity
                                      //   taking into account negative integer and -0
-                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT, $1.uNumStart,  (2 * (lppnLocalVars->lpszNumAccum[0] EQ OVERBAR1)) - 1);
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT, $1.uNumStart,  (2 * (lppnLocalVars->lpszNumAccum[0] EQ OVERBAR1)) - 1, NULL);
                                     }
     | RatArgs  DEF_RATSEP INF       {DbgMsgWP (L"%%RatConstantsInt:  RatArgs 'r' INF");
                                      // If the integer is signed, ...
@@ -341,11 +379,11 @@ RatConstantsInt:
 RatConstantsExt:
           INF EXT                   {DbgMsgWP (L"%%RatConstantsExt:  INF 'x'");
                                      // Set constant infinity
-                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT, $1.uNumStart,  1);
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT, $1.uNumStart,  1, NULL);
                                     }
     | OVR INF EXT                   {DbgMsgWP (L"%%RatConstantsExt:  OVR INF 'x'");
                                      // Set constant infinity
-                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT, $1.uNumStart, -1);
+                                     $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT, $1.uNumStart, -1, NULL);
                                     }
     ;
 
@@ -427,7 +465,14 @@ ExpPoint:
 VfpPoint:
       DecPoint DEF_VFPSEP           {DbgMsgWP (L"%%VfpPoint:  DecPoint 'v'");
                                      // Make it into a VfpPoint number
-                                     lppnLocalVars->lpYYRes = PN_MakeVfpPoint   (&$1, NULL, lppnLocalVars);
+                                     lppnLocalVars->lpYYRes = PN_MakeVfpPoint   (&$1, NULL, lppnLocalVars, NULL);
+                                     if (lppnLocalVars->lpYYRes EQ NULL)
+                                         YYERROR2;
+                                     $$ = *lppnLocalVars->lpYYRes;
+                                    }
+    | DecPoint DEF_VFPSEP UnIntPoint{DbgMsgWP (L"%%VfpPoint:  DecPoint 'v' UnIntPoint");
+                                     // Make it into a VfpPoint number
+                                     lppnLocalVars->lpYYRes = PN_MakeVfpPoint   (&$1, NULL, lppnLocalVars, &$3.at.aplInteger);
                                      if (lppnLocalVars->lpYYRes EQ NULL)
                                          YYERROR2;
                                      $$ = *lppnLocalVars->lpYYRes;
@@ -438,7 +483,18 @@ VfpPoint:
                                      PN_NumAcc (lppnLocalVars, '\0');
 
                                      // Make it into a VfpPoint number
-                                     lppnLocalVars->lpYYRes = PN_MakeVfpPoint   (&$1, &$3,  lppnLocalVars);
+                                     lppnLocalVars->lpYYRes = PN_MakeVfpPoint   (&$1, &$3,  lppnLocalVars, NULL);
+                                     if (lppnLocalVars->lpYYRes EQ NULL)
+                                         YYERROR2;
+                                     $$ = *lppnLocalVars->lpYYRes;
+                                    }
+    | DecPoint 'e' Integer DEF_VFPSEP UnIntPoint
+                                    {DbgMsgWP (L"%%VfpPoint:  DecPoint 'e' Integer 'v'");
+                                     // Terminate the (Exponent) argument
+                                     PN_NumAcc (lppnLocalVars, '\0');
+
+                                     // Make it into a VfpPoint number
+                                     lppnLocalVars->lpYYRes = PN_MakeVfpPoint   (&$1, &$3,  lppnLocalVars, &$5.at.aplInteger);
                                      if (lppnLocalVars->lpYYRes EQ NULL)
                                          YYERROR2;
                                      $$ = *lppnLocalVars->lpYYRes;
@@ -449,7 +505,18 @@ VfpPoint:
                                      PN_NumAcc (lppnLocalVars, '\0');
 
                                      // Make it into a VfpPoint number
-                                     lppnLocalVars->lpYYRes = PN_MakeVfpPoint   (&$1, &$3,  lppnLocalVars);
+                                     lppnLocalVars->lpYYRes = PN_MakeVfpPoint   (&$1, &$3,  lppnLocalVars, NULL);
+                                     if (lppnLocalVars->lpYYRes EQ NULL)
+                                         YYERROR2;
+                                     $$ = *lppnLocalVars->lpYYRes;
+                                    }
+    | DecPoint 'E' Integer DEF_VFPSEP UnIntPoint
+                                    {DbgMsgWP (L"%%VfpPoint:  DecPoint 'E' Integer 'v'");
+                                     // Terminate the (Exponent) argument
+                                     PN_NumAcc (lppnLocalVars, '\0');
+
+                                     // Make it into a VfpPoint number
+                                     lppnLocalVars->lpYYRes = PN_MakeVfpPoint   (&$1, &$3,  lppnLocalVars, &$5.at.aplInteger);
                                      if (lppnLocalVars->lpYYRes EQ NULL)
                                          YYERROR2;
                                      $$ = *lppnLocalVars->lpYYRes;

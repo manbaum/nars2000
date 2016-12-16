@@ -1432,7 +1432,8 @@ LPPN_YYSTYPE PN_MakePiPoint
 LPPN_YYSTYPE PN_MakeVfpPoint
     (LPPN_YYSTYPE  lpYYArg,             // The mantissa part
      LPPN_YYSTYPE  lpYYExponent,        // The exponent part (may be NULL)
-     LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
+     LPPNLOCALVARS lppnLocalVars,       // Ptr to local pnLocalVars
+     LPAPLINT      lpiVfpPrec)          // Ptr to VFP precision (may be NULL)
 
 {
     UINT      uNumAcc,                  // Starting offset
@@ -1476,6 +1477,22 @@ LPPN_YYSTYPE PN_MakeVfpPoint
 
     // Get and save the current precision
     uOldPrec = mpfr_get_default_prec ();
+
+    if (lpiVfpPrec NE NULL && *lpiVfpPrec NE 0)
+    {
+        // Validate the desired precision
+        if (!ValidateIntegerTest (lpiVfpPrec,           // Ptr to the integer to test
+                                  DEF_MIN_QUADFPC,      // Low range value (inclusive)
+                                  DEF_MAX_QUADFPC,      // High ...
+                                  bRangeLimit.FPC))     // TRUE iff we're range limiting
+        {
+            // Mark as invalid result
+            lppnLocalVars->bYYERROR = TRUE;
+
+            return NULL;
+        } else
+            uNewPrec = (UINT) *lpiVfpPrec;
+    } // End IF
 
     // Set the default precision to the larger ...
     mpfr_set_default_prec (max (uNewPrec, uOldPrec));
@@ -1932,10 +1949,12 @@ PN_YYSTYPE PN_SetInfinity
     (LPPNLOCALVARS lppnLocalVars,       // Ptr to local pnLocalVars
      PNNUMTYPE     pnNumType,           // The suggested PN_NUMTYPE_xx
      int           uNumStart,           // The starting offset in lpszStart
-     int           iInfSgn)             // The sign of infinity (1 for positive, -1 for negative)
+     int           iInfSgn,             // The sign of infinity (1 for positive, -1 for negative)
+     LPAPLINT      lpiVfpPrec)          // Ptr to VFP Precision (NULL = none, ptr to 0 = default)
 
 {
-    PN_YYSTYPE pnYYRes = {0};           // The result
+    PN_YYSTYPE  pnYYRes = {0};          // The result
+    mpfr_prec_t uDefPrec;               // Default VFP precision
 
     Assert (iInfSgn EQ 1 || iInfSgn EQ -1);
 
@@ -1961,8 +1980,26 @@ PN_YYSTYPE PN_SetInfinity
             break;
 
         case PN_NUMTYPE_VFP:
+            if (lpiVfpPrec NE NULL && *lpiVfpPrec NE 0)
+            {
+                // Validate the desired precision
+                if (!ValidateIntegerTest (lpiVfpPrec,           // Ptr to the integer to test
+                                          DEF_MIN_QUADFPC,      // Low range value (inclusive)
+                                          DEF_MIN_QUADFPC,      // High ...
+                                          bRangeLimit.FPC))     // TRUE iff we're range limiting
+                {
+                    // Mark as invalid result
+                    lppnLocalVars->bYYERROR = TRUE;
+
+                    break;
+                } else
+                    uDefPrec = (UINT) *lpiVfpPrec;
+            } else
+                // Use the default precision
+                uDefPrec = mpfr_get_default_prec ();
+
             // Initialize the VFP
-            mpfr_init (&pnYYRes.at.aplVfp);
+            mpfr_init2 (&pnYYRes.at.aplVfp, uDefPrec);
 
             // Mark as +/- infinity
             mpfr_set_inf (&pnYYRes.at.aplVfp, iInfSgn);

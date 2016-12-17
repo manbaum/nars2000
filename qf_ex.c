@@ -383,7 +383,7 @@ NORMAL_EXIT:
 //  $ExpungeName
 //
 //  Expunge a given name and
-//    return a one iff successful
+//    return TRUE iff successful
 //***************************************************************************
 
 APLBOOL ExpungeName
@@ -429,8 +429,17 @@ APLBOOL ExpungeName
         // If the STE is not immediate and has a value, ...
         if (!lpSymEntry->stFlags.Imm
          && lpSymEntry->stFlags.Value)
+        {
+            // If the name is that of a UDFO/AFO, ...
+            if (lpSymEntry->stFlags.UsrDfn)
+            {
+                // Enumerate all Function Editor windows
+                 EnumChildWindows (hWndMF, &EnumCallbackExpPrevGlb, (LPARAM) (lpSymEntry->stData.stGlbData));
+            } // End IF
+
             // Free the global memory handle
             FreeResultGlobalDFLV (lpSymEntry->stData.stGlbData);
+        } // End IF
 
         // Erase the Symbol Table Entry
         //   unless it's a []var
@@ -439,6 +448,45 @@ APLBOOL ExpungeName
 
     return TRUE;
 } // End ExpungeName
+
+
+//***************************************************************************
+//  $EnumCallbackExpPrevGlb
+//
+//  EnumChildWindows callback to expunge a matching previous FE window
+//   global memory handle
+//***************************************************************************
+
+UBOOL CALLBACK EnumCallbackExpPrevGlb
+    (HWND   hWnd,           // Handle to child window
+     LPARAM lParam)         // Application-defined value
+
+{
+    // When an MDI child window is minimized, Windows creates two windows: an
+    // icon and the icon title.  The parent of the icon title window is set to
+    // the MDI client window, which confines the icon title to the MDI client
+    // area.  The owner of the icon title is set to the MDI child window.
+    if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
+        return TRUE;                    // skip it, and continue enumerating
+
+    // If it's a Function Editor window, ...
+    if (IzitFE (hWnd))
+    {
+        HGLOBAL hGlbDfnHdr;             // User-defined function/operator header global memory handle
+
+        // Get the previous function global memory handle (if any)
+        hGlbDfnHdr = (HGLOBAL) GetWindowLongPtrW (hWnd, GWLSF_HGLBDFNHDR);
+
+        Assert (GetPtrTypeDir (MakeGlbFromVal (lParam)) EQ PTRTYPE_HGLOBAL);
+
+        // If they match, ...
+        if (ClrPtrTypeDir (hGlbDfnHdr) EQ ClrPtrTypeDir (MakeGlbFromVal (lParam)))
+            // Zap the previous global memory handle
+            SetWindowLongPtrW (hWnd, GWLSF_HGLBDFNHDR, (HANDLE_PTR) NULL);
+    } // End IF
+
+    return TRUE;        // Keep on truckin'
+} // End EnumCallbackExpPrevGlb
 
 
 //***************************************************************************

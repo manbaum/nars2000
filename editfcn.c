@@ -884,7 +884,7 @@ LRESULT APIENTRY FEWndProc
 
 #define wNotifyCode     (HIWORD (wParam))
 #define wID             (LOWORD (wParam))
-#define hWndCtrl        (*(HWND *) &lParam)
+#define hWndCtrl        MakeGlbFromVal (lParam)
         case WM_COMMAND:            // wNotifyCode = HIWORD (wParam); // Notification code
                                     // wID = LOWORD (wParam);         // Item, control, or accelerator identifier
                                     // hwndCtrl = (HWND) lParam;      // Handle of control

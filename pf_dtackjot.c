@@ -1049,7 +1049,7 @@ LPAPLCHAR CompileArrHetero
 
                 case PTRTYPE_HGLOBAL:
                     // Get the attributes of the global memory handle
-                    AttrsOfGlb (*(HGLOBAL *) lpMem, &aplTypeItm, NULL, NULL, NULL);
+                    AttrsOfGlb (MakeGlbFromPtr (lpMem), &aplTypeItm, NULL, NULL, NULL);
 
                     // Save the immediate type
                     immTypeCur = TranslateArrayTypeToImmType (aplTypeItm);

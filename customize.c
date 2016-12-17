@@ -3182,7 +3182,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                             } else
                             {
                                 // Get the Property Page window handle
-                                hWndProp = *(HWND *) &uIDD;
+                                hWndProp = MakeGlbFromVal (uIDD);
 
                                 // Set the group box text
                                 SetDlgItemTextW (hDlg, IDC_GROUPBOX, custStruc[uSel].lpwTitle);

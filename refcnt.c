@@ -210,7 +210,7 @@ int IncrRefCntInd_PTB
     (LPVOID lpMem)
 
 {
-    HGLOBAL hGlb = *(HGLOBAL *) lpMem;
+    HGLOBAL hGlb = MakeGlbFromPtr (lpMem);
 
     // If the global memory handle is that of a function array, ...
     if (IsGlbFcnArray (hGlb))
@@ -250,7 +250,7 @@ int DecrRefCntInd_PTB
     (LPVOID lpMem)
 
 {
-    HGLOBAL hGlb = *(HGLOBAL *) lpMem;
+    HGLOBAL hGlb = MakeGlbFromPtr (lpMem);
 
     // If the global memory handle is that of a function array, ...
     if (IsGlbFcnArray (hGlb))

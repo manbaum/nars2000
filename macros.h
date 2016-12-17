@@ -446,6 +446,10 @@
 #define CopySymGlbNumDirAsGlb(hGlb,aplType,lptkFunc)    CopySymGlbNumDir_PTB (MakePtrTypeGlb (hGlb), aplType, lptkFunc)
 #define CopySymGlbInd_PTB(lpSymGlb)                     CopySymGlbDir_PTB (*(LPAPLNESTED) lpSymGlb)
 
+// Macro to convert a number into a global handle
+#define MakeGlbFromPtr(a)                  (*(HGLOBAL *)   (a))
+#define MakeGlbFromVal(a)                  MakeGlbFromPtr(&(a))
+
 // Macros to check on ptr NULL
 #define IsPtrNullDir(lpMem)                                             ( (lpMem)  EQ NULL)
 #define IsPtrNullInd(lpMem)         (IsPtrNullDir (lpMem) || (*(LPVOID *) (lpMem)) EQ NULL)

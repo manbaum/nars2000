@@ -45,6 +45,19 @@ MAGIC_FCNOPR MFO_DydVOFact =
 };
 
 
+static LPAPLCHAR MonExecuteBody[] =
+{L"⎕PRO:",
+ L"⎕FPC←L",
+ L"Z←⍎R",
+};
+
+MAGIC_FCNOPR MFO_MonExecute =
+{L"Z←L " MFON_MonExecute L" R;⎕FPC",
+ MonExecuteBody,
+ countof (MonExecuteBody),
+};
+
+
 //***************************************************************************
 //  End of File: mf_variant.h
 //***************************************************************************

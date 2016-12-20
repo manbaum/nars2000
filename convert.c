@@ -824,10 +824,11 @@ LPWCHAR ConvertNameInPlace
 APLINT ConvertToInteger_SCT
     (APLSTYPE   aplTypeArg,             // Argument storage type
      LPVOID     lpMemArg,               // ...      global memory ptr
-     APLUINT    uArg,                   // Index into <lpSymGlbArg>
+     APLUINT    uArg,                   // Index into <lpMemArg>
      LPUBOOL    lpbRet)                 // Ptr to TRUE iff the result is valid
 
 {
+    LPSYMENTRY lpSymEntry;              // Ptr to STE
 //  ALLTYPES atArg = {0};
 
     // Mark as using SYS_CT
@@ -859,6 +860,25 @@ APLINT ConvertToInteger_SCT
 
         case ARRAY_HETERO:
         case ARRAY_NESTED:
+            // Get the element in question
+            lpSymEntry = ((LPAPLHETERO) lpMemArg)[uArg];
+
+            // Split cases based upon the ptr type bits
+            switch (GetPtrTypeDir (lpSymEntry))
+            {
+                case PTRTYPE_STCONST:
+                    return
+                      ConvertToInteger_SCT (TranslateImmTypeToArrayType (lpSymEntry->stFlags.ImmType),
+                                           &lpSymEntry->stData.stLongest,
+                                            0,
+                                            lpbRet);
+                case PTRTYPE_HGLOBAL:
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
             *lpbRet = FALSE;
 
             return 0;

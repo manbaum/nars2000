@@ -5214,7 +5214,7 @@ UBOOL NfnsArgAplint
      LPAPLINT     lpAplint)             // Ptr to result
 
 {
-    UBOOL bRet = FALSE;                 // TRUE iff the result is valid
+    UBOOL bRet = TRUE;                  // TRUE iff the result is valid
 
     // If the index is in range, ...
     if (uIndex < aplNELM)
@@ -5222,7 +5222,7 @@ UBOOL NfnsArgAplint
         *lpAplint =
           ConvertToInteger_SCT (aplType,    // Arg storage type
                                 lpMem,      // Ptr to global memory data
-                                0,          // Index # into lpMem
+                                uIndex,     // Index # into lpMem
                                &bRet);      // Ptr to TRUE iff the result is valid
     return bRet;
 } // End NfnsArgAplint

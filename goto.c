@@ -215,7 +215,7 @@ EXIT_TYPES GotoLine_EM
     // If we're at a UDFO layer, ...
     if (lpSISCur NE NULL)
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (lpSISCur->hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLockDfn (lpSISCur->hGlbDfnHdr);
 
     if (lpSISCur NE NULL
      && aplIntegerRht > 0

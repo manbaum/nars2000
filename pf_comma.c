@@ -384,7 +384,7 @@ LPPL_YYSTYPE PrimFnMonCommaScalar_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -409,7 +409,7 @@ LPPL_YYSTYPE PrimFnMonCommaScalar_EM_YY
     if (hGlbRht)
     {
         // Lock the memory to get a handle to it
-        lpMemRht = MyGlobalLock (hGlbRht);
+        lpMemRht = MyGlobalLockVar (hGlbRht);
 
         // Skip over the header and dimensions to the data
         lpMemRht = VarArrayDataFmBase (lpMemRht);
@@ -653,7 +653,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpMemRht = lpMemHdrRht = MyGlobalLock (hGlbRht);
+    lpMemRht = lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
     // Get the Array Type and NELM
@@ -671,7 +671,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     if (hGlbAxis)
     {
         // Lock the memory to get a ptr to it
-        lpMemAxisHead = MyGlobalLock (hGlbAxis);
+        lpMemAxisHead = MyGlobalLockInt (hGlbAxis);
 
         // Point to the grade-up of the first
         //   <aplRankRht> values in lpMemAxis
@@ -724,7 +724,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -910,7 +910,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemWVec = MyGlobalLock (hGlbWVec);
+        lpMemWVec = MyGlobalLock000 (hGlbWVec);
 
         // Loop through the dimensions of the right arg in reverse
         //   order {backscan} and compute the cumulative product
@@ -940,7 +940,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemOdo = MyGlobalLock (hGlbOdo);
+        lpMemOdo = MyGlobalLock000 (hGlbOdo);
 
         // Split cases based upon the storage type of the right arg/result
         switch (aplTypeRht)
@@ -1579,7 +1579,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemRes = MyGlobalLock (hGlbRes);
+            lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
             // Fill in the header
@@ -1662,7 +1662,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header

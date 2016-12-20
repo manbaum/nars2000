@@ -324,7 +324,7 @@ UBOOL DisplayGlbArr_EM
         FillMemory (lpaplCharIni, 1024, 0xFF);
 #endif
         // Lock the memory to get a ptr to it
-        lpMemHdrArr = MyGlobalLock (hGlbArr);
+        lpMemHdrArr = MyGlobalLockVar (hGlbArr);
 
 #define lpHeader    lpMemHdrArr
         // Get the Array Type, NELM, and Rank
@@ -1006,7 +1006,7 @@ LPAPLCHAR FormatImmed
             Assert (GetPtrTypeDir (lpaplLongest) EQ PTRTYPE_HGLOBAL);
 
             // Lock the memory to get a ptr to it
-            lpMemHdr = MyGlobalLock (lpaplLongest);
+            lpMemHdr = MyGlobalLockVar (lpaplLongest);
 
             // Skip over the header and dimensions to the data
             lpMemGlbNum = VarArrayDataFmBase (lpMemHdr);
@@ -1195,8 +1195,8 @@ LPAPLCHAR FormatImmedPtr
 
         case IMMTYPE_INT:
             lpaplChar =
-              FormatAplInt (lpaplChar,      	// Ptr to output save area
-                *(LPAPLINT) lpaplLongest);  	// The value to format
+              FormatAplInt (lpaplChar,          // Ptr to output save area
+                *(LPAPLINT) lpaplLongest);      // The value to format
             break;
 
         case IMMTYPE_CHAR:
@@ -1207,15 +1207,15 @@ LPAPLCHAR FormatImmedPtr
 
         case IMMTYPE_FLOAT:
             lpaplChar =
-              FormatAplFlt (lpaplChar,      	// Ptr to output save area
-              *(LPAPLFLOAT) lpaplLongest,   	// The value to format
-                            0);             	// Use default significant digits
+              FormatAplFlt (lpaplChar,          // Ptr to output save area
+              *(LPAPLFLOAT) lpaplLongest,       // The value to format
+                            0);                 // Use default significant digits
             break;
 
         case IMMTYPE_RAT:
             lpaplChar =
-              FormatAplRat (lpaplChar,      	// Ptr to output save area
-                *(LPAPLRAT) lpaplLongest);  	// The value to format
+              FormatAplRat (lpaplChar,          // Ptr to output save area
+                *(LPAPLRAT) lpaplLongest);      // The value to format
             break;
 
         case IMMTYPE_VFP:
@@ -2561,7 +2561,7 @@ LPWCHAR DisplayTransferGlb2
     UBOOL    bNeedParens = FALSE;           // TRUE iff this level needs surrounding parens
 
     // Lock the memory to get a ptr to it
-    lpMemArg = MyGlobalLock (hGlbArg);
+    lpMemArg = MyGlobalLockVar (hGlbArg);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemArg)
     // Get the Array Type, NELM, and Rank
@@ -2789,14 +2789,14 @@ LPWCHAR DisplayTransferFcn2
         hGlbDfnHdr = lpSymEntry->stData.stGlbData;
 
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
         // Save creation time if requested
         if (lpftCreation)
             *lpftCreation = lpMemDfnHdr->ftCreation;
 
         // Lock the memory to get a ptr to it
-        lpMemTxtLine = MyGlobalLock (lpMemDfnHdr->hGlbTxtHdr);
+        lpMemTxtLine = MyGlobalLockTxt (lpMemDfnHdr->hGlbTxtHdr);
 
         // Display the function header
         lpwszTemp =
@@ -2822,7 +2822,7 @@ LPWCHAR DisplayTransferFcn2
             if (hGlbTxtLine)
             {
                 // Lock the memory to get a ptr to it
-                lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+                lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
 
                 // Display the function line
                 lpwszTemp =
@@ -2903,7 +2903,7 @@ APLCHAR GetQuadFCValue
     hGlbQuadFC = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_FC]->stData.stGlbData;
 
     // Lock the memory to get a ptr to it
-    lpMemQuadFC = MyGlobalLock (hGlbQuadFC);
+    lpMemQuadFC = MyGlobalLockVar (hGlbQuadFC);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemQuadFC)
     // Get the array NELM and rank
@@ -2954,7 +2954,7 @@ APLINT GetQuadICValue
     hGlbQuadIC = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_IC]->stData.stGlbData;
 
     // Lock the memory to get a ptr to it
-    lpMemQuadIC = MyGlobalLock (hGlbQuadIC);
+    lpMemQuadIC = MyGlobalLockVar (hGlbQuadIC);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemQuadIC)
     // Get the array Type, NELM, and rank

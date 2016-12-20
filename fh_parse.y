@@ -652,7 +652,7 @@ UBOOL ParseFcnHeader
         lpfhLocalVars->hGlbTknHdr = hGlbTknHdr;
 
         // Lock the memory to get a ptr to it
-        lpfhLocalVars->lpHeader  = MyGlobalLock (lpfhLocalVars->hGlbTknHdr);
+        lpfhLocalVars->lpHeader  = MyGlobalLockTkn (lpfhLocalVars->hGlbTknHdr);
 
         // Initialize the base & next strand ptrs
         lpfhLocalVars->lpYYStrandBase =

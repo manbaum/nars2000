@@ -669,7 +669,7 @@ void UTRelockAndSet
 
 {
     // Lock the memory to get a ptr to it
-    lptkLocalVars->lpHeader  = MyGlobalLock (lptkLocalVars->hGlbToken);
+    lptkLocalVars->lpHeader  = MyGlobalLockTkn (lptkLocalVars->hGlbToken);
     lptkLocalVars->lptkStart = TokenBaseToStart (lptkLocalVars->lpHeader);  // Skip over TOKEN_HEADER
     lptkLocalVars->lptkNext  = &lptkLocalVars->lptkStart[lptkLocalVars->lpHeader->TokenCnt];
 } // End UTRelockAndSet
@@ -1136,7 +1136,7 @@ UBOOL fnAlpha
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpwszStr = MyGlobalLock (lptkLocalVars->hGlbStr);
+    lpwszStr = MyGlobalLockPad (lptkLocalVars->hGlbStr);
 
     // Save the current char
     lpwszStr[lptkLocalVars->iStrLen++] = *lptkLocalVars->lpwszCur;
@@ -1178,7 +1178,7 @@ UBOOL scAlpha
     lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Lock the memory to get a ptr to it
-    lpwszStr = MyGlobalLock (lptkLocalVars->hGlbStr);
+    lpwszStr = MyGlobalLockPad (lptkLocalVars->hGlbStr);
 
     // Check for need to resize hGlbStr
     bRet = CheckResizeStr_EM (lptkLocalVars);
@@ -1389,7 +1389,7 @@ UBOOL fnAlpDone
     lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Lock the memory to get a ptr to it
-    lpwszStr = MyGlobalLock (lptkLocalVars->hGlbStr);
+    lpwszStr = MyGlobalLockPad (lptkLocalVars->hGlbStr);
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
@@ -1598,7 +1598,7 @@ UBOOL fnDirIdent
     lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Lock the memory to get a ptr to it
-    lpwszStr = MyGlobalLock (lptkLocalVars->hGlbStr);
+    lpwszStr = MyGlobalLockPad (lptkLocalVars->hGlbStr);
 
     // Save the current character in the string
     lpwszStr[0] = lptkLocalVars->lpwszCur[0];
@@ -1776,7 +1776,7 @@ UBOOL fnAsnDone
                 hGlbName = lptkCur->tkData.tkSym->stHshEntry->htGlbName;
 
                 // Lock the memory to get a ptr to it
-                lpwszName = MyGlobalLock (hGlbName);
+                lpwszName = MyGlobalLockWsz (hGlbName);
 
                 // If this is []RL, ...
                 if (lstrcmpiW (lpwszName, $QUAD_RL) EQ 0)
@@ -1830,7 +1830,7 @@ UBOOL fnAsnDone
                         hGlbName2 = lptkCur2->tkData.tkSym->stHshEntry->htGlbName;
 
                         // Lock the memory to get a ptr to it
-                        lpwszName2 = MyGlobalLock (hGlbName2);
+                        lpwszName2 = MyGlobalLockWsz (hGlbName2);
 
                         // If it's the same name, ...
                         if (lstrcmpW (lpwszName, lpwszName2) EQ 0)
@@ -2556,7 +2556,7 @@ UBOOL fnPointSub
 #endif
 
     // Lock the memory to get a ptr to it
-    lpszNum = MyGlobalLock (lptkLocalVars->hGlbNum);
+    lpszNum = MyGlobalLockPad (lptkLocalVars->hGlbNum);
 
     // Check for need to resize hGlbNum
     bRet = CheckResizeNum_EM (lptkLocalVars);
@@ -2609,7 +2609,7 @@ UBOOL fnPointDone
     lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Lock the memory to get a ptr to it
-    lpszNum = MyGlobalLock (lptkLocalVars->hGlbNum);
+    lpszNum = MyGlobalLockPad (lptkLocalVars->hGlbNum);
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
@@ -2649,7 +2649,7 @@ UBOOL fnPointDone
                 LPVOID lpMemRes;
 
                 // Lock the memory to get a ptr to it
-                lpMemRes = MyGlobalLock (pnLocalVars.hGlbRes);
+                lpMemRes = MyGlobalLockVar (pnLocalVars.hGlbRes);
 
                 // Skip over the header and dimensions
                 lpMemRes = VarArrayDataFmBase (lpMemRes);
@@ -2832,7 +2832,7 @@ UBOOL CheckConstantCopyLoad
                 LPDFN_HEADER lpMemDfnHdr;
 
                 // Lock the memory to get a ptr to it
-                lpMemDfnHdr = MyGlobalLock (hGlbObj);
+                lpMemDfnHdr = MyGlobalLockDfn (hGlbObj);
 
                 // Set the tkSynObj value from the UDFO header
                 lptkPrv->tkSynObj = TranslateDfnTypeToSOType (lpMemDfnHdr);
@@ -2912,7 +2912,7 @@ UBOOL scPointDone
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
     // Lock the memory to get a ptr to it
-    lpszNum = MyGlobalLock (lptkLocalVars->hGlbNum);
+    lpszNum = MyGlobalLockPad (lptkLocalVars->hGlbNum);
 
     // Get the number of chars
     uLen = lptkLocalVars->iNumLen;
@@ -3801,7 +3801,7 @@ UBOOL fnQuoAccumSub
     if (bRet)
     {
         // Lock the memory to get a ptr to it
-        lpwszStr = MyGlobalLock (lptkLocalVars->hGlbStr);
+        lpwszStr = MyGlobalLockPad (lptkLocalVars->hGlbStr);
 
         // Save the current char
         lpwszStr[lptkLocalVars->iStrLen++] = *lptkLocalVars->lpwszCur;
@@ -4023,7 +4023,7 @@ UBOOL fnQuoDoneSub
     lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Lock the memory to get a ptr to it
-    lpwszStr = MyGlobalLock (lptkLocalVars->hGlbStr);
+    lpwszStr = MyGlobalLockPad (lptkLocalVars->hGlbStr);
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
@@ -4096,7 +4096,7 @@ UBOOL fnQuoDoneSub
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpwsz = MyGlobalLock (hGlb);
+        lpwsz = MyGlobalLock000 (hGlb);
 
         // Setup the header, and copy
         //   the string to the global memory
@@ -5354,7 +5354,7 @@ __try
     } // End IF
 
     // Lock the memory to get a ptr to it
-    tkLocalVars.lpHeader  = MyGlobalLock (tkLocalVars.hGlbToken);
+    tkLocalVars.lpHeader  = MyGlobalLock000 (tkLocalVars.hGlbToken);
 
     // Set variables in the token header
     tkLocalVars.lpHeader->Sig.nature = TOKEN_HEADER_SIGNATURE;
@@ -6085,8 +6085,8 @@ UBOOL AppendNewToken_EM
             } // End IF
 
             // Lock the memory to get a ptr to it
-            lpMemOld = MyGlobalLock (lptkLocalVars->hGlbToken);
-            lpMemNew = MyGlobalLock (hGlbToken);
+            lpMemOld = MyGlobalLockTkn (lptkLocalVars->hGlbToken);
+            lpMemNew = MyGlobalLock000 (hGlbToken);
 
             // Copy the old data to the new location
             CopyMemory (lpMemNew, lpMemOld, uOldSize);

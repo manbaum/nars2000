@@ -56,7 +56,7 @@ LPPL_YYSTYPE PrimFnLeftShoe_EM_YY
         return PrimFnMonLeftShoe_EM_YY             (lptkFunc, lptkRhtArg, lptkAxis);
     else
         return PrimFnDydLeftShoe_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
-} // End PrimFnLeftShoe_EM
+} // End PrimFnLeftShoe_EM_YY
 #undef  APPEND_NAME
 
 
@@ -331,7 +331,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     aplRankRes = aplRankRht - aplNELMAxis;
 
     // Lock the memory to get a ptr to it
-    lpMemRht = MyGlobalLock (hGlbRht);
+    lpMemRht = MyGlobalLockVar (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
     // Get the Array Type and NELM
@@ -363,7 +363,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
     if (lptkAxis NE NULL)
     {
         // Lock the memory to get a ptr to it
-        lpMemAxisHead = MyGlobalLock (hGlbAxis);
+        lpMemAxisHead = MyGlobalLockInt (hGlbAxis);
 
         // Point to the grade-up of the first
         //   <aplRankRht> values in lpMemAxisHead
@@ -399,7 +399,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -504,7 +504,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                             goto WSFULL_EXIT;
 
                         // Lock the memory to get a ptr to it
-                        lpMemProto = MyGlobalLock (hSymGlbProto);
+                        lpMemProto = MyGlobalLock000 (hSymGlbProto);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemProto)
                         // Fill in the header
@@ -562,7 +562,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemWVec = MyGlobalLock (hGlbWVec);
+        lpMemWVec = MyGlobalLock000 (hGlbWVec);
 
         // Loop through the dimensions of the right arg in reverse
         //   order {backscan} and compute the cumulative product
@@ -592,7 +592,7 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemOdo = MyGlobalLock (hGlbOdo);
+        lpMemOdo = MyGlobalLock000 (hGlbOdo);
 
         //***************************************************************
         // Calculate space needed for each subarray.
@@ -1244,7 +1244,7 @@ UBOOL PrimFnMonLeftShoeProto_EM
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemProto = MyGlobalLock (*lphGlbProto);
+    lpMemProto = MyGlobalLock000 (*lphGlbProto);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemProto)
     // Fill in the header
@@ -1343,7 +1343,7 @@ UBOOL PrimFnMonLeftShoeGlbSub_EM
     *lpMemRes = MakePtrTypeGlb (*lphGlbSub);
 
     // Lock the memory to get a ptr to it
-    *lplpMemSub = MyGlobalLock (*lphGlbSub);
+    *lplpMemSub = MyGlobalLock000 (*lphGlbSub);
 
 #define lpHeader    (*(LPVARARRAY_HEADER *) lplpMemSub)
     // Fill in the subarray header
@@ -1526,7 +1526,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
         goto RIGHT_RANK_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRht = MyGlobalLock (hGlbRht);
+    lpMemRht = MyGlobalLockVar (hGlbRht);
 
     // Skip over the header to the dimension
     lpMemDimRht = VarArrayBaseToDim (lpMemRht);
@@ -1726,7 +1726,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -1833,7 +1833,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
                             goto WSFULL_EXIT;
 
                         // Lock the memory to get a ptr to it
-                        lpMemPro = MyGlobalLock (hGlbPro);
+                        lpMemPro = MyGlobalLock000 (hGlbPro);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemPro)
                         // Fill in the header
@@ -2169,7 +2169,7 @@ UBOOL PrimFnDydLeftShoeAppend_EM
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemItm = MyGlobalLock (hGlbItm);
+        lpMemItm = MyGlobalLock000 (hGlbItm);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemItm)
         // Fill in the header

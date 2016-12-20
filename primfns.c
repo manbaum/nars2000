@@ -111,7 +111,7 @@ UBOOL GetTknOpType
                 LPDFN_HEADER  lpMemDfnHdr;      // Ptr to user-defined function/operator header ...
 
                 // Lock the memory to get a ptr to it
-                lpMemDfnHdr = MyGlobalLock (hGlbData);
+                lpMemDfnHdr = MyGlobalLockDfn (hGlbData);
 
                 // Get the DFNTYPE_xxx
                 bRet = (lpMemDfnHdr->DfnType EQ dfnType);
@@ -324,7 +324,7 @@ APLRANK RankOfGlb
     APLRANK aplRank;
 
     // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlb);
+    lpMem = MyGlobalLockVar (hGlb);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
     // Get the Rank
@@ -723,7 +723,7 @@ UBOOL PrimScalarFnDydAllocate_EM
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (*lphGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header
@@ -861,7 +861,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
         return NULL;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrArr = MyGlobalLock (hGlbArr);
+    lpMemHdrArr = MyGlobalLockVar (hGlbArr);
 
 #define lpHeader        lpMemHdrArr
     aplType = lpHeader->ArrType;
@@ -931,7 +931,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
                         goto WSFULL_EXIT;
 
                     // Lock the memory to get a ptr to it
-                    lpMemHdrTmp = MyGlobalLock (hGlbTmp);
+                    lpMemHdrTmp = MyGlobalLock000 (hGlbTmp);
 
 #define lpHeader    lpMemHdrTmp
                     // Fill in the header
@@ -1089,7 +1089,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemHdrRes = MyGlobalLock (hGlbRes);
+            lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
             // Fill in the header
@@ -1315,7 +1315,7 @@ HGLOBAL MakeDydPrototype_EM_PTB
             return NULL;
 
         // Lock the memory to get a ptr to it
-        lpMemAxisHead = MyGlobalLock (hGlbAxis);
+        lpMemAxisHead = MyGlobalLockInt (hGlbAxis);
 
         // Get pointer to the axis tail (where the [X] values are)
         lpMemAxisTail = &lpMemAxisHead[aplRankRes - aplNELMAxis];
@@ -1340,11 +1340,11 @@ HGLOBAL MakeDydPrototype_EM_PTB
 
     // Lock the memory to get a ptr to it
     if (hGlbLft)
-        lpMemHdrLft = MyGlobalLock (hGlbLft);
+        lpMemHdrLft = MyGlobalLockVar (hGlbLft);
 
     // Lock the memory to get a ptr to it
     if (hGlbRht)
-        lpMemHdrRht = MyGlobalLock (hGlbRht);
+        lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
     // Get a ptr to the Primitive Function Flags
     lpPrimFlags = GetPrimFlagsPtr (lptkFunc);
@@ -1393,7 +1393,7 @@ HGLOBAL MakeDydPrototype_EM_PTB
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemHdrRes = MyGlobalLock (hGlbRes);
+        lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
         // Fill in the header
@@ -1502,7 +1502,7 @@ HGLOBAL MakeDydPrototype_EM_PTB
             aplNELMRes = max (aplNELMRes, 1);
 
         // Lock the memory to get a ptr to it
-        lpMemHdrRes = MyGlobalLock (hGlbRes);
+        lpMemHdrRes = MyGlobalLockVar (hGlbRes);
 
         // Skip over the header to the dimensions
         lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
@@ -1536,7 +1536,7 @@ HGLOBAL MakeDydPrototype_EM_PTB
                     goto WSFULL_EXIT;
 
                 // Lock the memory to get a ptr to it
-                lpMemWVec = MyGlobalLock (hGlbWVec);
+                lpMemWVec = MyGlobalLock000 (hGlbWVec);
 
                 // Loop through the dimensions of the result in reverse
                 //   order {backscan} and compute the cumulative product
@@ -1566,7 +1566,7 @@ HGLOBAL MakeDydPrototype_EM_PTB
                     goto WSFULL_EXIT;
 
                 // Lock the memory to get a ptr to it
-                lpMemOdo = MyGlobalLock (hGlbOdo);
+                lpMemOdo = MyGlobalLock000 (hGlbOdo);
             } // End IF
 
             // Loop through the elements of the result
@@ -1736,7 +1736,7 @@ UBOOL IsFirstSimpleGlb
     Assert (IsGlbTypeVarDir_PTB (*lphGlbRht));
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLock (*lphGlbRht);
+    lpMemHdrRht = MyGlobalLockVar (*lphGlbRht);
 
 #define lpHeader        lpMemHdrRht
     // Get the Array Type and Rank
@@ -1941,8 +1941,8 @@ HGLOBAL CopyArray_EM
         vfoHdrPtrs.lpMemVFO =
 #endif
         // Lock both memory blocks
-        lpMemDst = MyGlobalLock (hGlbDst);
-        lpMemSrc = MyGlobalLock (hGlbSrc);
+        lpMemDst = MyGlobalLock000 (hGlbDst);
+        lpMemSrc = MyGlobalLock    (hGlbSrc);
 
         // Copy source to destin
         CopyMemory (lpMemDst, lpMemSrc, dwSize);
@@ -2281,7 +2281,7 @@ HGLOBAL CopyGlbAsType_EM
     AttrsOfGlb (hGlbArg, &aplTypeArg, &aplNELMArg, &aplRankArg, NULL);
 
     // Lock the memory to get a ptr to it
-    lpMemHdrArg = MyGlobalLock (hGlbArg);
+    lpMemHdrArg = MyGlobalLockVar (hGlbArg);
 
     // Calculate space for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMArg, aplRankArg);
@@ -2296,7 +2296,7 @@ HGLOBAL CopyGlbAsType_EM
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
     // Fill in the header
@@ -3520,7 +3520,7 @@ UBOOL IsTknTrain
      && IsTknFcnArray (lpToken))
     {
         // Lock the memory to get a ptr to it
-        lpMemFcn = MyGlobalLock (hGlbFcn);
+        lpMemFcn = MyGlobalLockFcn (hGlbFcn);
 
         // Is the token a Train?
         bRet = (lpMemFcn->fnNameType EQ NAMETYPE_TRN);
@@ -3732,7 +3732,7 @@ UBOOL IsTknSysName
     htGlbName = lptkVar->tkData.tkSym->stHshEntry->htGlbName;
 
     // Lock the memory to get a ptr to it
-    lpMemName = MyGlobalLock (htGlbName);
+    lpMemName = MyGlobalLockWsz (htGlbName);
 
     // Izit a sys name?
     bRet = IsSysName (lpMemName);

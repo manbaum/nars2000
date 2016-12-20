@@ -223,7 +223,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
 
         case ARRAY_RAT:
             // Lock the memory to get a ptr to it
-            lpMemRht = MyGlobalLock (hGlbRht);
+            lpMemRht = MyGlobalLockVar (hGlbRht);
 
             // Skip over the header and dimensions to the data
             lpMemRht = VarArrayDataFmBase (lpMemRht);
@@ -247,7 +247,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
 
         case ARRAY_VFP:
             // Lock the memory to get a ptr to it
-            lpMemRht = MyGlobalLock (hGlbRht);
+            lpMemRht = MyGlobalLockVar (hGlbRht);
 
             // Skip over the header and dimensions to the data
             lpMemRht = VarArrayDataFmBase (lpMemRht);
@@ -288,7 +288,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
     // Lock the memory to get a ptr to it
     memTmp.lpMemOrg =
     memTmp.lpMemNxt =
-      MyGlobalLock (memTmp.hGlbMem);
+      MyGlobalLock000 (memTmp.hGlbMem);
 
     // Initialize the # allocated entries
     memTmp.uMaxEntry = INIT_FACTOR_CNT;
@@ -333,7 +333,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -643,7 +643,7 @@ RESTART_RAT:
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -1246,7 +1246,7 @@ UBOOL ResizeFactorStruc
                            GHND);
         if (hGlbMem)
             // Lock the memory to get a ptr to it
-            lpMemNew = MyGlobalLock (hGlbMem);
+            lpMemNew = MyGlobalLockInt (hGlbMem);
         else
         {
             // Attempt to allocate a new struc
@@ -1255,10 +1255,10 @@ UBOOL ResizeFactorStruc
             if (hGlbMem)
             {
                 // Lock the old memory to get a ptr to it
-                lpMemTmp->lpMemOrg = MyGlobalLock (lpMemTmp->hGlbMem);
+                lpMemTmp->lpMemOrg = MyGlobalLock000 (lpMemTmp->hGlbMem);
 
                 // Lock the new memory to get a ptr to it
-                lpMemNew = MyGlobalLock (hGlbMem);
+                lpMemNew = MyGlobalLock000 (hGlbMem);
 
                 // Copy the factors in the old memory to the new memory
                 CopyMemory (lpMemNew,

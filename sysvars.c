@@ -150,7 +150,7 @@ void MakePermVars
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpHeader = MyGlobalLock (hGlbQuadA);
+    lpHeader = MyGlobalLock000 (hGlbQuadA);
 
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
@@ -189,7 +189,7 @@ void MakePermVars
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpHeader = MyGlobalLock (hGlbQuadD);
+    lpHeader = MyGlobalLock000 (hGlbQuadD);
 
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
@@ -225,7 +225,7 @@ void MakePermVars
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpHeader = MyGlobalLock (hGlbZilde);
+    lpHeader = MyGlobalLock000 (hGlbZilde);
 
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
@@ -252,7 +252,7 @@ void MakePermVars
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpHeader = MyGlobalLock (hGlb0by0);
+    lpHeader = MyGlobalLock000 (hGlb0by0);
 
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
@@ -283,7 +283,7 @@ void MakePermVars
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpHeader = MyGlobalLock (hGlb3by0);
+    lpHeader = MyGlobalLock000 (hGlb3by0);
 
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
@@ -426,7 +426,7 @@ HGLOBAL MakePermVectorCom
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpHeader = MyGlobalLock (hGlbRes);
+    lpHeader = MyGlobalLock000 (hGlbRes);
 
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
@@ -820,7 +820,7 @@ UBOOL ValidateCharDT_EM
     hGlbRht = ClrPtrTypeDir (hGlbRht);
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLock (hGlbRht);
+    lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
 #define lpHeader    lpMemHdrRht
     // Get the Array Type, NELM, and Rank
@@ -1083,7 +1083,7 @@ UBOOL ValidateInteger_EM
     Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLock (hGlbRht);
+    lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
 #define lpHeader    lpMemHdrRht
     // Get the Array Type, NELM, and Rank
@@ -1410,7 +1410,7 @@ UBOOL ValidateFloat_EM
     Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLock (hGlbRht);
+    lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
 #define lpHeader    lpMemHdrRht
     // Get the Array Type, NELM, and Rank
@@ -1698,7 +1698,7 @@ UBOOL ValidateCharVector_EM
     Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLock (hGlbRht);
+    lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
 #define lpHeader    lpMemHdrRht
     // Get the right arg Type, NELM, and Rank
@@ -1810,7 +1810,7 @@ ALLOC_VECTOR:
         goto DOMAIN_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header values
@@ -2070,7 +2070,7 @@ UBOOL ValidateIntegerVector_EM
     Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLock (hGlbRht);
+    lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
 #define lpHeader    lpMemHdrRht
     // Get the Array Type, NELM, and Rank
@@ -2219,7 +2219,7 @@ UBOOL ValidateIntegerVector_EM
             if (hGlbRes NE NULL)
             {
                 // Lock the memory to get a ptr to it
-                lpMemHdrRes = MyGlobalLock (hGlbRes);
+                lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
                 // Fill in the header values
@@ -2313,7 +2313,7 @@ MAKE_VECTOR:
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header values
@@ -2994,7 +2994,7 @@ void SetCurrentFeature
     LPVARARRAY_HEADER lpMemHdr;     // Ptr to array header
 
     // Lock the memory to get a ptr to it
-    lpMemHdr = MyGlobalLock (hGlbFEATURE);
+    lpMemHdr = MyGlobalLockVar (hGlbFEATURE);
 
     // Skip over the header and dimensions to the data
     // Save the values in the PTD
@@ -3555,7 +3555,7 @@ UBOOL ValidSetPR_EM
     Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLock (hGlbRht);
+    lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
 #define lpHeader    lpMemHdrRht
     // Check for scalar or vector
@@ -3903,7 +3903,7 @@ UBOOL ValidSetSA_EM
     Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLock (hGlbRht);
+    lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
 #define lpHeader    lpMemHdrRht
     // Get the Array Type, NELM, and Rank
@@ -4052,7 +4052,7 @@ void ValidPostWSID
     LPAPLCHAR lpMemHdrWSID;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrWSID = MyGlobalLock (lptkNamArg->tkData.tkGlbData);
+    lpMemHdrWSID = MyGlobalLockVar (lptkNamArg->tkData.tkGlbData);
 
     // Skip over the header and dimensions to the data
     // Tell the Tab Ctrl about the new workspace name

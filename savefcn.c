@@ -96,7 +96,7 @@ UBOOL SaveFunction
         VARS_TEMP_OPEN
 
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
         // Save the AFO flag
         SF_Fcns.bAFO     = lpMemDfnHdr->bAFO;       // Parsing an AFO
@@ -322,7 +322,7 @@ UINT SF_LineLenM
     lpFX_Params = lpSF_Fcns->LclParams;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLock (lpFX_Params->hGlbRht);
+    lpMemHdrRht = MyGlobalLockVar (lpFX_Params->hGlbRht);
 
     // Skip over the header to the data
     lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
@@ -372,7 +372,7 @@ UINT SF_LineLenN
     lpFX_Params = lpSF_Fcns->LclParams;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLock (lpFX_Params->hGlbRht);
+    lpMemHdrRht = MyGlobalLockVar (lpFX_Params->hGlbRht);
 
     // Skip over the header to the data
     lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
@@ -430,7 +430,7 @@ UINT SF_LineLenAFO
     lpFX_Params = lpSF_Fcns->LclParams;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLock (lpFX_Params->hGlbRht);
+    lpMemHdrRht = MyGlobalLockVar (lpFX_Params->hGlbRht);
 
     // Skip over the header to the data
     lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
@@ -675,7 +675,7 @@ void SF_ReadLineAN
             LPMEMTXT_UNION lpMemTxtLine;
 
             // Lock the memory to get a ptr to it
-            lpMemTxtLine = MyGlobalLock (lpLW_Params->lpplLocalVars->hGlbTxtLine);
+            lpMemTxtLine = MyGlobalLockPad (lpLW_Params->lpplLocalVars->hGlbTxtLine);
 
             // Copy the line to the caller's memory
             //   with room for the trailing zero
@@ -785,7 +785,7 @@ void SF_ReadLineM
     lpFX_Params = lpSF_Fcns->LclParams;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLock (lpFX_Params->hGlbRht);
+    lpMemHdrRht = MyGlobalLockVar (lpFX_Params->hGlbRht);
 
     // Skip over the header to the data
     lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
@@ -840,7 +840,7 @@ void SF_ReadLineN
     lpFX_Params = lpSF_Fcns->LclParams;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLock (lpFX_Params->hGlbRht);
+    lpMemHdrRht = MyGlobalLockVar (lpFX_Params->hGlbRht);
 
     // Skip over the header to the data
     lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
@@ -860,7 +860,7 @@ void SF_ReadLineN
             hGlbItmRht = lpMemRht[uLineNum];
 
             // Lock the memory to get a ptr to it
-            lpMemHdrItmRht = MyGlobalLock (hGlbItmRht);
+            lpMemHdrItmRht = MyGlobalLockVar (hGlbItmRht);
 
             // Get the NELM (line length)
 #define lpHeader        lpMemHdrItmRht
@@ -931,7 +931,7 @@ void SF_ReadLineSV
     } else
     {
         // Lock the memory to get a ptr to it
-        lpMemHdrRht = MyGlobalLock (lpFX_Params->hGlbRht);
+        lpMemHdrRht = MyGlobalLockVar (lpFX_Params->hGlbRht);
 
         // Skip over the header to the data
         lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
@@ -1354,7 +1354,7 @@ HGLOBAL SF_UndoBufferCom
         LPDFN_HEADER lpMemDfnHdr;
 
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (lpSF_Fcns->hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLockDfn (lpSF_Fcns->hGlbDfnHdr);
 
         Assert (lpMemDfnHdr->Sig.nature EQ DFN_HEADER_SIGNATURE);
 
@@ -1423,7 +1423,7 @@ HGLOBAL SF_UndoBufferFE
             } // End IF
 
             // Lock the memory to get a ptr to it
-            lpMemUndo = MyGlobalLock (hGlbUndoBuff);
+            lpMemUndo = MyGlobalLock000 (hGlbUndoBuff);
 
             // Copy the Undo Buffer to global memory
             CopyMemory (lpMemUndo, lpUndoBeg, (lpUndoLst - lpUndoBeg) * sizeof (UNDO_BUF));
@@ -1500,7 +1500,7 @@ HGLOBAL SF_UndoBufferLW
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpMemUndoBin = MyGlobalLock (hGlbUndoBuff);
+    lpMemUndoBin = MyGlobalLock000 (hGlbUndoBuff);
 
     // Parse the Undo Buffer entries
     while (*lpMemUndoTxt NE '\0')
@@ -1849,7 +1849,7 @@ UBOOL SaveFunctionCom
     if (uLineLen NE 0)
     {
         // Lock the memory to get a ptr to it
-        lpMemTxtLine = MyGlobalLock (hGlbTxtHdr);
+        lpMemTxtLine = MyGlobalLock000 (hGlbTxtHdr);    // ->U not assigned as yet
 
         // Save the line length
         lpMemTxtLine->U = uLineLen;
@@ -2030,7 +2030,7 @@ UBOOL SaveFunctionCom
             if (IsGlbTypeDfnDir_PTB (MakePtrTypeGlb (hGlbOldDfn)))
             {
                 // Lock the memory to get a ptr to it
-                lpMemDfnHdr = MyGlobalLock (hGlbOldDfn);
+                lpMemDfnHdr = MyGlobalLockDfn (hGlbOldDfn);
 
                 // Get the creation time
                 ftCreation = lpMemDfnHdr->ftCreation;
@@ -2044,7 +2044,7 @@ UBOOL SaveFunctionCom
                 LPFCNARRAY_HEADER lpMemHdrFcn;  // Ptr to FCNARRAY header
 
                 // Lock the memory to get a ptr to it
-                lpMemHdrFcn = MyGlobalLock (hGlbOldDfn);
+                lpMemHdrFcn = MyGlobalLockDfn (hGlbOldDfn);
 
                 // Get the creation time
                 ftCreation = lpMemHdrFcn->ftCreation;
@@ -2160,7 +2160,7 @@ UBOOL SaveFunctionCom
 ////        hGlbRC2 = hGlbDfnHdr;
 #endif
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLock000 (hGlbDfnHdr);
 
         // Save numbers in global memory
         lpMemDfnHdr->numResultSTE = numResultSTE;
@@ -2562,7 +2562,7 @@ ERROR_EXIT:
         LPTOKEN_HEADER lpMemTknHdr;         // Ptr to tokenized line header global memory
 
         // Lock the memory to get a ptr to it
-        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+        lpMemTknHdr = MyGlobalLockTkn (hGlbTknHdr);
 
         // Free the tokens
         Untokenize (lpMemTknHdr);
@@ -2671,7 +2671,7 @@ UINT SaveFunctionLine
         lpFcnLines->hGlbTxtLine = hGlbTxtLine;
 
     // Lock the memory to get a ptr to it
-    lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+    lpMemTxtLine = MyGlobalLock000 (hGlbTxtLine);   // ->U not assigned as yet
 
     // Save the line length
     lpMemTxtLine->U = uLineLen;
@@ -2805,7 +2805,7 @@ UINT SaveFunctionLine
     uTknSize = (UINT) MyGlobalSize (hGlbTknHdr);
 
     // Lock the memory to get a ptr to it
-    lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+    lpMemTknHdr = MyGlobalLockTkn (hGlbTknHdr);
 
     // If we're not sizing, ...
     if (lpFcnLines NE NULL)
@@ -2856,7 +2856,7 @@ void FindSILocalizedName
     LPSYMENTRY   lpSymEntry;            // Ptr to next localized LPSYMENTRY on the SIS
 
     // Lock the name to get a ptr to it
-    lpwFcnName = MyGlobalLock ((*lplpSym)->stHshEntry->htGlbName);
+    lpwFcnName = MyGlobalLockWsz ((*lplpSym)->stHshEntry->htGlbName);
 
     // Loop backwards through the SI levels
     for (lpSISCur = lpMemPTD->lpSISCur;
@@ -2883,7 +2883,7 @@ void FindSILocalizedName
                 for (numSym = 0; numSym < numSymEntries; numSym++, lpSymEntry++)
                 {
                     // Lock the name to get a ptr to it
-                    lpwSymName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+                    lpwSymName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
 
                     // Compare the STE names
                     if (lstrcmpW (lpwFcnName, lpwSymName) EQ 0)
@@ -2966,7 +2966,7 @@ void SaveSymEntry
         LPTOKEN        lpMemTknLine;    // Ptr to line of tokens
 
         // Lock the memory to get a ptr to it
-        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+        lpMemTknHdr = MyGlobalLockTkn (hGlbTknHdr);
 
         // Skip over the token header
         lpMemTknLine = TokenBaseToStart (lpMemTknHdr);
@@ -3003,7 +3003,7 @@ UBOOL IsLineEmpty
         return TRUE;
 
     // Lock the memory to get a ptr to it
-    lptkLine = MyGlobalLock (hGlbTknHdr);
+    lptkLine = MyGlobalLockTkn (hGlbTknHdr);
 
     // Skip over the TOKEN_HEADER
     lptkLine = TokenBaseToStart (lptkLine);
@@ -3159,7 +3159,7 @@ UBOOL GetLabelNums
                     hGlbName = lptkLine[uCnt].tkData.tkSym->stHshEntry->htGlbName;
 
                     // Lock the memory to get a ptr to it
-                    lpMemName = MyGlobalLock (hGlbName);
+                    lpMemName = MyGlobalLockWsz (hGlbName);
 
                     if (lstrcmpiW (lpMemName, $QUAD_ID ) EQ 0)
                     {
@@ -3317,18 +3317,18 @@ void ErrLabelNums
               lpMemName;            // Ptr to function name
 
     // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlbName);
+    lpMem = MyGlobalLockWsz (hGlbName);
 
     // Lock the memory to get a ptr to it
-    lpMemName = MyGlobalLock (lpMemDfnHdr->steFcnName->stHshEntry->htGlbName);
+    lpMemName = MyGlobalLockWsz (lpMemDfnHdr->steFcnName->stHshEntry->htGlbName);
 
-        // Format the error message
-        MySprintfW (wszTemp,
-                    sizeof (wszTemp),
-                   L"Duplicate label <%s> in <%s> on line # %d",
-                    lpMem,
-                    lpMemName,
-                    uLineNum1);
+    // Format the error message
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
+               L"Duplicate label <%s> in <%s> on line # %d",
+                lpMem,
+                lpMemName,
+                uLineNum1);
     // We no longer need these ptrs
     MyGlobalUnlock (lpMemDfnHdr->steFcnName->stHshEntry->htGlbName); lpMemName = NULL;
     MyGlobalUnlock (hGlbName); lpMem = NULL;

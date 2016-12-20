@@ -169,7 +169,7 @@ void EraseAfoResult
     LPTOKEN        lpMemTknData;
 
     // Lock the memory to get a ptr to it
-    lpMemTknHdr = MyGlobalLock (lpMemDfnHdr->hGlbTknHdr);
+    lpMemTknHdr = MyGlobalLockTkn (lpMemDfnHdr->hGlbTknHdr);
 
     // Skip over the TOKEN_HEADER
     lpMemTknData = TokenBaseToStart (lpMemTknHdr);
@@ -201,7 +201,7 @@ void AfoReturn
     LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator header global memory
 
     // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLock (lpplLocalVars->hGlbDfnHdr);
+    lpMemDfnHdr = MyGlobalLockDfn (lpplLocalVars->hGlbDfnHdr);
 
     // If the token has No Value, ...
     if (IsTokenNoValue (&lpYYRhtArg->tkToken))
@@ -434,7 +434,7 @@ UBOOL AfoDisplay_EM
     UBOOL          bRet;
 
     // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+    lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
     Assert (lpMemDfnHdr NE NULL);
 
@@ -442,7 +442,7 @@ UBOOL AfoDisplay_EM
     lpMemDfnHdr->bAfoNoDispRes = (lptkSrc->tkFlags.NoDisplay || bNoDisplay);
 
     // Lock the memory to get a ptr to it
-    lpMemTknHdr = MyGlobalLock (lpMemDfnHdr->hGlbTknHdr);
+    lpMemTknHdr = MyGlobalLockTkn (lpMemDfnHdr->hGlbTknHdr);
 
     // Skip over the TOKEN_HEADER
     lpMemTknData = TokenBaseToStart (lpMemTknHdr);

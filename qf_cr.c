@@ -232,7 +232,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
                     hGlbTxtLine = ((LPFCNARRAY_HEADER) lpMemHdrFcn)->hGlbTxtLine;
 
                     // Lock the memory to get a ptr to it
-                    lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+                    lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
 
                     // Get the length of the line text
                     aplNELMRes = lpMemTxtLine->U;
@@ -288,7 +288,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
                             hGlbTxtLine = lpFcnLines->hGlbTxtLine;
 
                             // Lock the memory to get a ptr to it
-                            lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+                            lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
 
                             // If this isn't the first line, ...
                             if (uLine > 0)
@@ -325,7 +325,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
                     } else
                     {
                         // Lock the memory to get a ptr to it
-                        lpMemTxtLine = MyGlobalLock (lpMemDfnHdr->hGlbTxtHdr);
+                        lpMemTxtLine = MyGlobalLockTxt (lpMemDfnHdr->hGlbTxtHdr);
 
                         // Get the length of the function header text
                         uMaxLineLen = lpMemTxtLine->U;
@@ -345,7 +345,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
                                 if (hGlbTxtLine NE NULL)
                                 {
                                     // Lock the memory to get a ptr to it
-                                    lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+                                    lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
 
                                     // Find the length of the longest line
                                     uMaxLineLen = max (uMaxLineLen, lpMemTxtLine->U);
@@ -378,7 +378,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
                             goto WSFULL_EXIT;
 
                         // Lock the memory to get a ptr to it
-                        lpMemHdrRes = MyGlobalLock (hGlbRes);
+                        lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
                         // Fill in the header
@@ -541,7 +541,7 @@ LPVOID SysFnCR_Copy_EM
     APLUINT           ByteRes;              // # bytes in the result
 
     // Lock the memory to get a ptr to it
-    lpMemTxtLine = MyGlobalLock (hGlbTxt);
+    lpMemTxtLine = MyGlobalLockTxt (hGlbTxt);
 
     // Split cases based upon the result rank (1 or 2)
     if (IsVector (aplRankRes))
@@ -559,7 +559,7 @@ LPVOID SysFnCR_Copy_EM
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemHdrCpy = MyGlobalLock (hGlbCpy);
+        lpMemHdrCpy = MyGlobalLock000 (hGlbCpy);
 
 #define lpHeader        lpMemHdrCpy
         // Fill in the header
@@ -671,7 +671,7 @@ HGLOBAL SysFnMonCR_ALLOC_EM
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
     // Fill in the header
@@ -743,7 +743,7 @@ LPAPLCHAR CopySteName
     Assert (IsValidHandle (lpSymEntry->stHshEntry->htGlbName                                 ));
 
     // Lock the memory to get a ptr to it
-    lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+    lpMemName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
 
     // Get the name length
     uNameLen = lstrlenW (lpMemName);
@@ -786,7 +786,7 @@ LPAPLCHAR ConvSteName
     Assert (IsValidHandle (lpSymEntry->stHshEntry->htGlbName                                 ));
 
     // Lock the memory to get a ptr to it
-    lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+    lpMemName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
 
     // Get the name length
     uNameLen = lstrlenW (lpMemName);

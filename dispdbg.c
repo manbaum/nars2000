@@ -487,9 +487,9 @@ void DisplayGlobals
             continue;
         } // End IF
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+#define lpHeader    ((LPHEADER_SIGNATURE) lpMem)
         // Split cases based upon the array signature
-        switch (lpHeader->Sig.nature)
+        switch (lpHeader->nature)
 #undef  lpHeader
         {
             case VARARRAY_HEADER_SIGNATURE:
@@ -953,7 +953,7 @@ LPWCHAR DisplayGlbVarSub
     } else
     {
         // Lock the memory to get a ptr to it
-        lpHdrGlb = MyGlobalLock (hGlb);
+        lpHdrGlb = MyGlobalLockVar (hGlb);
 
         // Skip over the header and dimensions to the data
         lpMemGlb = VarArrayDataFmBase (lpHdrGlb);
@@ -1584,7 +1584,7 @@ LPWCHAR DisplayFcnGlb
     NAME_TYPES        fnNameType;               // Function array name type
 
     // Lock the memory to get a ptr to it
-    lpHeader = MyGlobalLock (hGlbFcnArr);
+    lpHeader = MyGlobalLockFcn (hGlbFcnArr);
 
     // Get the NELM and NAMETYPE_xxx
     tknNELM    = lpHeader->tknNELM;
@@ -1923,7 +1923,7 @@ LPWCHAR DisplayFcnSub
 
                         case DFN_HEADER_SIGNATURE:
                             // Lock the memory to get a ptr to it
-                            lpMemDfnHdr = MyGlobalLock (hGlbData);
+                            lpMemDfnHdr = MyGlobalLockDfn (hGlbData);
 
                             // Append the function name from the symbol table
                             lpaplChar = CopySteName (lpaplChar, lpMemDfnHdr->steFcnName, NULL);
@@ -2053,7 +2053,7 @@ LPWCHAR DisplayFcnSub
                  || IsGlbTypeDfnDir_PTB (hGlbData));
 
             // Lock the memory to get a ptr to it
-            lpMemData = MyGlobalLock (hGlbData);
+            lpMemData = MyGlobalLockFcn (hGlbData);
 
             // Split cases based upon the array signature
             switch (GetSignatureMem (lpMemData))
@@ -2217,7 +2217,7 @@ LPWCHAR DisplayFcnSub
             hGlbData = GetGlbHandle (&lpYYMem->tkToken);
 
             // Lock the memory to get a ptr to it
-            lpMemDfnHdr = MyGlobalLock (hGlbData);
+            lpMemDfnHdr = MyGlobalLockDfn (hGlbData);
 
             // Display the function name
             lpaplChar =
@@ -2247,7 +2247,7 @@ LPWCHAR DisplayFcnSub
             hGlbData = GetGlbHandle (&lpYYMem->tkToken);
 
             // Lock the memory to get a ptr to it
-            lpMemDfnHdr = MyGlobalLock (hGlbData);
+            lpMemDfnHdr = MyGlobalLockDfn (hGlbData);
 
             // Get the token count to the left operand
             TknLftCount = 1 + bAxisOper;    // Skip over the function & axis (if any)
@@ -2295,7 +2295,7 @@ LPWCHAR DisplayFcnSub
             hGlbData = GetGlbHandle (&lpYYMem->tkToken);
 
             // Lock the memory to get a ptr to it
-            lpMemDfnHdr = MyGlobalLock (hGlbData);
+            lpMemDfnHdr = MyGlobalLockDfn (hGlbData);
 
             // Get the token count to the right operand
             TknRhtCount = 1 + bAxisOper;    // Skip over the function & axis (if any)
@@ -2409,7 +2409,7 @@ LPWCHAR DisplayVarSub
            && IsMultiNELM (aplNELM))))
         {
             // Lock the memory to get a ptr to it
-            lpMemData = MyGlobalLock (hGlbData);
+            lpMemData = MyGlobalLockVar (hGlbData);
 
             // Skip over the header and dimensions to the data
             lpMemData = VarArrayDataFmBase (lpMemData);
@@ -2566,10 +2566,10 @@ void DisplayFcnLine
     // If the handle is valid, ...
     if (hGlbTxtLine)
         // Lock the memory to get a ptr to it
-        lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+        lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
 
     // Lock the memory to get a ptr to it
-    lpMemFcnName = MyGlobalLock (lpMemPTD->lpSISCur->hGlbFcnName);
+    lpMemFcnName = MyGlobalLockWsz (lpMemPTD->lpSISCur->hGlbFcnName);
 
     if (uLineNum EQ NEG1U)
         wsprintfW (lpMemPTD->lpwszTemp,
@@ -2883,7 +2883,7 @@ void DisplayFcnHdr
             hGlbName = lpfhLocalVars->lpYYResult[uItm].tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
             // Lock the memory to get a ptr to it
-            lpMemName = MyGlobalLock (hGlbName);
+            lpMemName = MyGlobalLockWsz (hGlbName);
 
             // Copy the name
             MyStrcatW (wszTemp,
@@ -2935,7 +2935,7 @@ void DisplayFcnHdr
             hGlbName = lpfhLocalVars->lpYYLftArg[uItm].tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
             // Lock the memory to get a ptr to it
-            lpMemName = MyGlobalLock (hGlbName);
+            lpMemName = MyGlobalLockWsz (hGlbName);
 
             // Copy the name
             MyStrcatW (wszTemp,
@@ -2986,7 +2986,7 @@ void DisplayFcnHdr
                 hGlbName = lpfhLocalVars->lpYYLftOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
                 // Lock the memory to get a ptr to it
-                lpMemName = MyGlobalLock (hGlbName);
+                lpMemName = MyGlobalLockWsz (hGlbName);
 
                 // Copy the name
                 MyStrcatW (wszTemp,
@@ -3011,7 +3011,7 @@ void DisplayFcnHdr
                 hGlbName = lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
                 // Lock the memory to get a ptr to it
-                lpMemName = MyGlobalLock (hGlbName);
+                lpMemName = MyGlobalLockWsz (hGlbName);
 
                 // Copy the name
                 MyStrcatW (wszTemp,
@@ -3039,7 +3039,7 @@ void DisplayFcnHdr
                     hGlbName = lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
                     // Lock the memory to get a ptr to it
-                    lpMemName = MyGlobalLock (hGlbName);
+                    lpMemName = MyGlobalLockWsz (hGlbName);
 
                     // Copy the name
                     MyStrcatW (wszTemp,
@@ -3073,7 +3073,7 @@ void DisplayFcnHdr
                     hGlbName = lpfhLocalVars->lpYYRhtOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
                     // Lock the memory to get a ptr to it
-                    lpMemName = MyGlobalLock (hGlbName);
+                    lpMemName = MyGlobalLockWsz (hGlbName);
 
                     // Copy the name
                     MyStrcatW (wszTemp,
@@ -3102,7 +3102,7 @@ void DisplayFcnHdr
                 hGlbName = lpfhLocalVars->lpYYFcnName->tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
                 // Lock the memory to get a ptr to it
-                lpMemName = MyGlobalLock (hGlbName);
+                lpMemName = MyGlobalLockWsz (hGlbName);
 
                 // Copy the name
                 MyStrcatW (wszTemp,
@@ -3130,7 +3130,7 @@ void DisplayFcnHdr
                     hGlbName = lpfhLocalVars->lpYYAxisOpr->tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
                     // Lock the memory to get a ptr to it
-                    lpMemName = MyGlobalLock (hGlbName);
+                    lpMemName = MyGlobalLockWsz (hGlbName);
 
                     // Copy the name
                     MyStrcatW (wszTemp,
@@ -3183,7 +3183,7 @@ void DisplayFcnHdr
             hGlbName = lpfhLocalVars->lpYYRhtArg[uItm].tkToken.tkData.tkSym->stHshEntry->htGlbName;
 
             // Lock the memory to get a ptr to it
-            lpMemName = MyGlobalLock (hGlbName);
+            lpMemName = MyGlobalLockWsz (hGlbName);
 
             // Copy the name
             MyStrcatW (wszTemp,
@@ -3208,6 +3208,82 @@ void DisplayFcnHdr
     // Display it in the debug window
     DbgMsgW (wszTemp);
 } // End DisplayFcnHdr
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $ValidObj
+//
+//  Validate that the HGLOBAL is as specified
+//***************************************************************************
+
+HGLOBAL _ValidObj
+    (HGLOBAL hMem,          // Address of the global memory object
+     UINT    uSig)          // Signature of   ...
+
+{
+    LPVOID  lpMem;
+    UINT    uLen,
+            uSiz;
+
+    // Lock the memory to get a ptr to it
+    lpMem = GlobalLock (ClrPtrTypeDir(hMem));
+
+    // Split cases based upon the signature
+    switch (uSig)
+    {
+        case 0:             // 000:  Check for zero signature dword
+            Assert (((LPHEADER_SIGNATURE) lpMem)->nature EQ 0);
+
+            break;
+
+        case 100:           // 100:  Check for zero signature word
+            Assert (LOWORD (((LPHEADER_SIGNATURE) lpMem)->nature) EQ 0);
+
+            break;
+
+        case 1:             // Wsz:  No signature -- check for wide character vector
+            // Get the interior length
+            // "+ 1" for the terminating zero
+            uLen = (lstrlenW (lpMem) + 1) * sizeof (WCHAR);
+
+            // Get the overall size
+            uSiz = GlobalSize (ClrPtrTypeDir(hMem));
+
+            Assert (uLen EQ uSiz);
+
+            break;
+
+        case 2:             // Int:  no checks
+            break;
+
+        case 3:             // Txt:  LPMEMTXT_UNION
+#define lpTxt       ((LPMEMTXT_UNION) lpMem)
+            // Get the interior length
+            // "+ 1" for the terminating zero
+            uLen = sizeof (lpTxt->U)
+                 + (lstrlenW (&lpTxt->C) + 1) * sizeof (WCHAR);
+
+            // Get the overall size
+            uSiz = GlobalSize (ClrPtrTypeDir(hMem));
+
+            Assert (uLen EQ uSiz);
+#undef  lpTxt
+            break;
+
+        default:            // All other signatures
+            Assert (((LPHEADER_SIGNATURE) lpMem)->nature EQ uSig
+                 || ((LPHEADER_SIGNATURE) lpMem)->nature EQ 0);
+
+            break;
+    } // End SWITCH
+
+    // We no longer need this ptr
+    GlobalUnlock (ClrPtrTypeDir(hMem)); lpMem = NULL;
+
+    return hMem;
+} // End _ValidObj
 #endif
 
 

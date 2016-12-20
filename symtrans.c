@@ -129,7 +129,7 @@ UINT SymTrans
             hGlbFcn = lptkFunc->tkData.tkGlbData;
 
             // Lock the memory to get a ptr to it
-            lpMemFcn = MyGlobalLock (hGlbFcn);
+            lpMemFcn = MyGlobalLockFcn (hGlbFcn);
 
             // Skip over the header to the data (PL_YYSTYPEs)
             lpMemFcn = FcnArrayBaseToData (lpMemFcn);

@@ -352,7 +352,7 @@ UBOOL InAsciiFile_EM
         htGlbName = SF_Fcns.lpSymName->stHshEntry->htGlbName;
 
         // Lock the memory to get a ptr to it
-        lpMemName = MyGlobalLock (htGlbName);
+        lpMemName = MyGlobalLockWsz (htGlbName);
 
         // Get the name length plus the leading blanks
         uNameLen = 2 + lstrlenW (lpMemName);

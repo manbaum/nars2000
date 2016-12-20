@@ -253,7 +253,7 @@ UBOOL CmdFNOV_EM
             ;
 
         // Lock the memory to get a ptr to it
-        lpMemName = MyGlobalLock (lpGlbEntry->stHshEntry->htGlbName);
+        lpMemName = MyGlobalLockWsz (lpGlbEntry->stHshEntry->htGlbName);
 
         // Check against leading and trailing ranges
         if ((lpwszLeadRange[0] EQ WC_EOS
@@ -296,7 +296,7 @@ UBOOL CmdFNOV_EM
          uSymNum++)
     {
         // Lock the memory to get a ptr to it
-        lpMemName = MyGlobalLock (lpSymSort[uSymNum]->stHshEntry->htGlbName);
+        lpMemName = MyGlobalLockWsz (lpSymSort[uSymNum]->stHshEntry->htGlbName);
 
         // Get the name length
         uNameLen = lstrlenW (lpMemName);

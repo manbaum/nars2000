@@ -320,7 +320,7 @@ typedef struct tagFCNARRAY_HEADER
 } FCNARRAY_HEADER, *LPFCNARRAY_HEADER;
 
 // Named strand header
-#define VARNAMED_HEADER_SIGNATURE   'RTSN'
+#define VARNAMED_HEADER_SIGNATURE   ' MNV'
 
 typedef struct tagVARNAMED_HEADER
 {

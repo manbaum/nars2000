@@ -117,7 +117,7 @@ HGLOBAL TimestampAllocate
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header

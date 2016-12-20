@@ -2668,8 +2668,8 @@ LRESULT APIENTRY MFWndProc
 ////////////////////////////
 ////////////////////////////} // End IF
 #ifdef DEBUG
-                            lpDevMode  = MyGlobalLock (pdex.hDevMode);
-                            lpDevNames = MyGlobalLock (pdex.hDevNames);
+                            lpDevMode  = MyGlobalLockWsz (pdex.hDevMode);
+                            lpDevNames = MyGlobalLockWsz (pdex.hDevNames);
 #endif
                             // If the Edit Ctrl is from SM, ...
                             if (IzitSM (GetParent (hWndEC)))

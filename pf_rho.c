@@ -275,7 +275,7 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
 
     // Lock the memory to get a ptr to it
-    lpMemRht = MyGlobalLock (hGlbRht);
+    lpMemRht = MyGlobalLockVar (hGlbRht);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRht)
     // Get the rank
@@ -300,7 +300,7 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+        lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
         // Fill in the header
@@ -545,7 +545,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -1282,7 +1282,7 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemLft = MyGlobalLock (hGlbLft);
+    lpMemLft = MyGlobalLockVar (hGlbLft);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemLft)
     aplTypeLft = lpHeader->ArrType;
@@ -1617,7 +1617,7 @@ void PrimFnDydRhoLftGlbCopyDim
     UBOOL    bRet;          // TRUE iff the result is valid
 
     // Lock the memory to get a ptr to it
-    lpMemLft = MyGlobalLock (hGlbLft);
+    lpMemLft = MyGlobalLockVar (hGlbLft);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemLft)
 
@@ -1733,7 +1733,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
     lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Lock the memory to get a ptr to it
-    lpMemRhtBase = MyGlobalLock (hGlbRht);
+    lpMemRhtBase = MyGlobalLockVar (hGlbRht);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRhtBase)
 

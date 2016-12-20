@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -239,7 +239,7 @@ APLINT PrimFnMonEqualUnderBarGlb_PTB
             Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
             // Lock the memory to get a ptr to it
-            lpMemRht = MyGlobalLock (hGlbRht);
+            lpMemRht = MyGlobalLockVar (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
             // Get the Array Type, NELM, and Rank
@@ -1727,7 +1727,7 @@ UBOOL PrimFnDydEqualUnderbarNested
                 hGlbSub = *(LPAPLNESTED) lpMemLft;
 
                 // Lock the memory to get a ptr to it
-                lpMemLft = MyGlobalLock (hGlbSub);
+                lpMemLft = MyGlobalLockVar (hGlbSub);
 
                 // Skip over the header and dimensions to the data
                 lpMemLft = VarArrayDataFmBase (lpMemLft);
@@ -1753,7 +1753,7 @@ UBOOL PrimFnDydEqualUnderbarNested
                 hGlbSub = *(LPAPLNESTED) lpMemRht;
 
                 // Lock the memory to get a ptr to it
-                lpMemRht = MyGlobalLock (hGlbSub);
+                lpMemRht = MyGlobalLockVar (hGlbSub);
 
                 // Skip over the header and dimensions to the data
                 lpMemRht = VarArrayDataFmBase (lpMemRht);
@@ -1825,8 +1825,8 @@ UBOOL PrimFnDydEqualUnderbarNested
                     return FALSE;
 
                 // Lock the memory to get a ptr to it
-                lpMemLft2 = MyGlobalLock (ClrPtrTypeInd (lpMemLft));
-                lpMemRht2 = MyGlobalLock (ClrPtrTypeInd (lpMemRht));
+                lpMemLft2 = MyGlobalLockVar (ClrPtrTypeInd (lpMemLft));
+                lpMemRht2 = MyGlobalLockVar (ClrPtrTypeInd (lpMemRht));
 
                 // Split based upon Simple vs. Hetero vs. Nested
                 switch (2 * IsNested (aplTypeLft)

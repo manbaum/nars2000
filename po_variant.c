@@ -1391,7 +1391,7 @@ UBOOL PrimOpVariantValidateGlb_EM
 
         case PTRTYPE_HGLOBAL:
             // Lock the memory to get a ptr to it
-            lpMemRhtOpr = MyGlobalLock (hGlbRhtOpr);
+            lpMemRhtOpr = MyGlobalLockVar (hGlbRhtOpr);
 
             // Get the storage type
             aplTypeRhtOpr = ((LPVARARRAY_HEADER) lpMemRhtOpr)->ArrType;
@@ -1658,7 +1658,7 @@ VARIANTKEYS PrimOpVariantValKeyGlb_EM
     LPAPLCHAR   lpMemKey;               // Ptr to key global memory
 
     // Lock the memory to get a ptr to it
-    lpMemKey = MyGlobalLock (hGlbKey);
+    lpMemKey = MyGlobalLockVar (hGlbKey);
 
     // Skip over header and dimensions to the data
     lpMemKey = VarArrayDataFmBase (lpMemKey);

@@ -510,7 +510,7 @@ RESTART_ALLOC:
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header values
@@ -1321,7 +1321,7 @@ RESTART_EXCEPTION:
                             hGlbTmp = tkRhtArg.tkData.tkGlbData;
 
                             // Lock the memory to get a ptr to it
-                            lpSymGlbRht = MyGlobalLock (hGlbTmp);
+                            lpSymGlbRht = MyGlobalLockVar (hGlbTmp);
 
                             // Skip over the header and dimensions to the data
                             lpSymGlbRht = VarArrayDataFmBase (lpSymGlbRht);
@@ -1348,7 +1348,7 @@ RESTART_EXCEPTION:
                             hGlbTmp = tkRhtArg.tkData.tkGlbData;
 
                             // Lock the memory to get a ptr to it
-                            lpSymGlbRht = MyGlobalLock (hGlbTmp);
+                            lpSymGlbRht = MyGlobalLockVar (hGlbTmp);
 
                             // Skip over the header and dimensions to the data
                             lpSymGlbRht = VarArrayDataFmBase (lpSymGlbRht);
@@ -2475,7 +2475,7 @@ RESTART_ALLOC:
         // Save a ptr to the array header
         // Note that PrimOpDydSlashAllocate returns a ptr to the data
         //   so we have to relock/unlock
-        lpMemHdrRes = MyGlobalLock (hGlbRes); MyGlobalUnlock (hGlbRes);
+        lpMemHdrRes = MyGlobalLockVar (hGlbRes); MyGlobalUnlock (hGlbRes);
 
         // Skip over the header and dimensions to the data
         lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
@@ -2749,7 +2749,7 @@ RESTART_EXCEPTION:
 
                             case ARRAY_RAT:
                                 // Lock the memory to get a ptr to it
-                                lpMemRat = MyGlobalLock (tkRhtArg.tkData.tkGlbData);
+                                lpMemRat = MyGlobalLockVar (tkRhtArg.tkData.tkGlbData);
 
                                 // Skip over the header and dimensions to the data
                                 lpMemRat = VarArrayDataFmBase (lpMemRat);
@@ -2766,7 +2766,7 @@ RESTART_EXCEPTION:
 
                             case ARRAY_VFP:
                                 // Lock the memory to get a ptr to it
-                                lpMemVfp = MyGlobalLock (tkRhtArg.tkData.tkGlbData);
+                                lpMemVfp = MyGlobalLockVar (tkRhtArg.tkData.tkGlbData);
 
                                 // Skip over the header and dimensions to the data
                                 lpMemVfp = VarArrayDataFmBase (lpMemVfp);
@@ -2962,7 +2962,7 @@ UBOOL PrimOpDydSlashInsertDim_EM
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemHdrRes = MyGlobalLock (hGlbTmp);
+        lpMemHdrRes = MyGlobalLock000 (hGlbTmp);
 
 #define lpHeader    lpMemHdrRes
         // Fill in the header values
@@ -3059,7 +3059,7 @@ UBOOL PrimOpDydSlashInsertDim_EM
         lpYYRes->tkToken.tkData.tkGlbData = *lphGlbRes;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+    lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
 
     // Move the memory upwards to make room for a new dimension
     // Use MoveMemory as the source and destin blocks overlap
@@ -3135,7 +3135,7 @@ UBOOL PrimOpDydSlashAllocate_EM
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    *lplpMemRes = MyGlobalLock (*lphGlbRes);
+    *lplpMemRes = MyGlobalLock000 (*lphGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) *lplpMemRes)
     // Fill in the header values

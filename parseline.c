@@ -1196,7 +1196,7 @@ void ConvertHY2PFO
             hGlbFcn = GetGlbHandle (&lpYYArg->tkToken);
 
             // Lock the memory to get a ptr to it
-            lpMemFcnStr = MyGlobalLock (hGlbFcn);
+            lpMemFcnStr = MyGlobalLockFcn (hGlbFcn);
 
             Assert (((LPFCNARRAY_HEADER) lpMemFcnStr)->RefCnt EQ 1);
 
@@ -1497,7 +1497,7 @@ LPPL_YYSTYPE plRedGO_A
         if (lpplLocalVars->bTraceLine)
         {
             // Save the last right object (GOTO target) for tracing
-            lpMemPTD->YYResExec = *lpplYYLstRht;
+            CopyAll (&lpMemPTD->YYResExec, lpplYYLstRht);
 
             // Tell the caller to free the var after tracing
             lpplLocalVars->bTraceFree = TRUE;
@@ -1506,7 +1506,7 @@ LPPL_YYSTYPE plRedGO_A
             // Make a PL_YYSTYPE NoValue entry
             lpYYVar =
               MakeNoValue_YY (&lpplYYLstRht->tkToken);
-            lpMemPTD->YYResExec = *lpYYVar;
+            CopyAll (&lpMemPTD->YYResExec, lpYYVar);
             YYFree (lpYYVar); lpYYVar = NULL;
         } // End IF/ELSE
 
@@ -1759,8 +1759,8 @@ LPPL_YYSTYPE plRedCSF_NAM
     Assert (lpMemPTD->ForName .tkToken.tkFlags.TknType EQ TKT_UNUSED);
 
     // Save the :FOR token and the NAM token
-    lpMemPTD->ForToken = *lpplYYCurObj;
-    lpMemPTD->ForName  = *lpplYYLstRht;
+    CopyAll (&lpMemPTD->ForToken, lpplYYCurObj);
+    CopyAll (&lpMemPTD->ForName , lpplYYLstRht);
 
     // Free the last right object
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
@@ -1969,7 +1969,7 @@ LPPL_YYSTYPE plRedMF_A
     if (lpplYYCurObj->lpplYYArgCurry NE NULL)
     {
         // Copy the left arg token ptr
-        tkLftArg = lpplYYCurObj->lpplYYArgCurry->tkToken;
+        CopyAll (&tkLftArg, &lpplYYCurObj->lpplYYArgCurry->tkToken);
         lptkLftArg = &tkLftArg;
 
         // YYFree the curried arg
@@ -2182,7 +2182,7 @@ LPPL_YYSTYPE plRedCS1_A
     TOKEN        tkToken;               // The incoming token
 
     // Save the token type
-    tkToken = lpplYYCurObj->tkToken;
+    CopyAll (&tkToken, &lpplYYCurObj->tkToken);
 
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
@@ -3986,7 +3986,7 @@ EXIT_TYPES ParseLine
     if (hGlbDfnHdr NE NULL)
     {
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
         // Save value in LocalVars
         plLocalVars.bAFO          = lpMemDfnHdr->bAFO;
@@ -4114,7 +4114,7 @@ PARSELINE_START:
                 LPWCHAR lpwszLine2;
 
                 if (hGlbTxtLine NE NULL)
-                    lpwszLine2 = MyGlobalLock (hGlbTxtLine);
+                    lpwszLine2 = MyGlobalLockWsz (hGlbTxtLine);
                 else
                     lpwszLine2 = lpwszLine - 2;
                 dprintfWL0 (L"Starting line(%d/%d):  %s",
@@ -5390,7 +5390,7 @@ PARSELINE_END:
             LPMEMTXT_UNION lpMemTxtLine;    // Ptr to header/line text global memory
 
             // Lock the memory to get a ptr to it
-            lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+            lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
 
             // Create []DM & []EM
             ErrorMessageDirect (lpMemPTD->lpwszErrorMessage,    // Ptr to error message text
@@ -5466,7 +5466,7 @@ NORMAL_EXIT:
             LPMEMTXT_UNION lpMemTxtLine;    // Ptr to header/line text global memory
 
             // Lock the memory to get a ptr to it
-            lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+            lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
 
             // Display the function line
             DbgMsgW2 (&lpMemTxtLine->C);
@@ -5783,7 +5783,7 @@ PL_YYLEX_START:
 #endif
 
     // Return the current token
-    lpplYYLval->tkToken         = *lpplLocalVars->lptkNext;
+    CopyAll (&lpplYYLval->tkToken, lpplLocalVars->lptkNext);
 
     // Initialize the rest of the fields
 ////lpplYYLval->TknCount        =               // Already zero from ZeroMemory
@@ -5847,7 +5847,7 @@ PL_YYLEX_FCNNAMED:
                             {
                                 case FCNARRAY_HEADER_SIGNATURE:
                                     // Lock the memory to get a ptr to it
-                                    lpMemHdrFcn = MyGlobalLock (hGlbFcn);
+                                    lpMemHdrFcn = MyGlobalLockFcn (hGlbFcn);
 
                                     // Convert this to an unnamed global fcn array
                                     lpplYYLval->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
@@ -5864,7 +5864,7 @@ PL_YYLEX_FCNNAMED:
 
                                 case DFN_HEADER_SIGNATURE:
                                     // Lock the memory to get a ptr to it
-                                    lpMemDfnHdr = MyGlobalLock (hGlbFcn);
+                                    lpMemDfnHdr = MyGlobalLockDfn (hGlbFcn);
 
 #if FALSE       // Enable this code when we have a TKT_FCNDFN (unnamed FCN DFN)
                                     // Convert this to an unnamed global fcn array
@@ -5988,7 +5988,10 @@ PL_YYLEX_FCNNAMED:
                                 lpYYRht2 = lpplLocalVars->lpMemPTD->lpplRhtStk[-(I + 1)];
                                 lptkRht2 = &lpYYRht2->tkToken;
 
-                                if ((lptkRht1 NE NULL) && ((lptkRht1->tkSynObj EQ soRP) || (lptkRht1->tkSynObj EQ soNR) || (lptkRht1->tkSynObj EQ soNNR))
+                                if ((lptkRht1 NE NULL)
+                                  && ((lptkRht1->tkSynObj EQ soRP)
+                                   || (lptkRht1->tkSynObj EQ soNR)
+                                   || (lptkRht1->tkSynObj EQ soNNR))
                                   && (lptkRht2 NE NULL) && (lptkRht2->tkSynObj EQ soSPA)
                                   && (lpYYRht2->lpplYYFcnCurry NE NULL))
                                 {
@@ -6365,7 +6368,7 @@ PL_YYLEX_OP1NAMED:
                                 DbgBrk ();      // How do we ever get here?
 
                                 // Lock the memory to get a ptr to it
-                                lpMemHdrFcn = MyGlobalLock (hGlbFcn);
+                                lpMemHdrFcn = MyGlobalLockFcn (hGlbFcn);
 
                                 // Convert this to an unnamed global fcn array
                                 lpplYYLval->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
@@ -6382,7 +6385,7 @@ PL_YYLEX_OP1NAMED:
 
                             case DFN_HEADER_SIGNATURE:
                                 // Lock the memory to get a ptr to it
-                                lpMemDfnHdr = MyGlobalLock (hGlbFcn);
+                                lpMemDfnHdr = MyGlobalLockDfn (hGlbFcn);
 
 #if FALSE       // Enable this code when we have a TKT_OP1DFN (unnamed OP1 DFN)
                                 // Convert this to an unnamed global fcn array
@@ -6453,7 +6456,7 @@ PL_YYLEX_OP2NAMED:
                                 DbgBrk ();      // How do we ever get here?
 
                                 // Lock the memory to get a ptr to it
-                                lpMemHdrFcn = MyGlobalLock (hGlbFcn);
+                                lpMemHdrFcn = MyGlobalLockFcn (hGlbFcn);
 
                                 // Convert this to an unnamed global fcn array
                                 lpplYYLval->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
@@ -6470,7 +6473,7 @@ PL_YYLEX_OP2NAMED:
 
                             case DFN_HEADER_SIGNATURE:
                                 // Lock the memory to get a ptr to it
-                                lpMemDfnHdr = MyGlobalLock (hGlbFcn);
+                                lpMemDfnHdr = MyGlobalLockDfn (hGlbFcn);
 
 #if FALSE       // Enable this code when we have a TKT_OP2DFN (unnamed OP2 DFN)
                                 // Convert this to an unnamed global fcn array
@@ -6531,15 +6534,17 @@ PL_YYLEX_OP3NAMED:
                             lpplYYLval->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
 
                             // Copy the memory in case the hybrid changes to a function or operator
-                            lpplYYLval->tkToken.tkData .tkGlbData = CopyArray_EM (lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData, NULL);    //lptkFunc);
+                            lpplYYLval->tkToken.tkData .tkGlbData =
+                              CopyArray_EM (lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData, NULL);
 
                             // If it succeeded, ...
                             if (lpplYYLval->tkToken.tkData.tkGlbData NE NULL)
                                 // Make it a global ptr
                                 lpplYYLval->tkToken.tkData.tkGlbData = MakePtrTypeGlb (lpplYYLval->tkToken.tkData.tkGlbData);
-////                        else
-////                            goto WSFULL_EXIT;       // ***FIXME***
-
+#ifdef DEBUG
+                            else
+                                DbgBrk ();              // #ifdef DEBUG -- ***FIXME***
+#endif
                             //***************************************************************************
                             // N.B.:  By not incrementing the RefCnt, this array will be deleted at the end
                             //***************************************************************************
@@ -6976,7 +6981,7 @@ NAME_TYPES plSetDfn
     {
         case DFN_HEADER_SIGNATURE:
             // Lock the memory to get a ptr to it
-            lpMemDfnHdr = MyGlobalLock (hGlbUDFO);
+            lpMemDfnHdr = MyGlobalLockDfn (hGlbUDFO);
 
             // Get the AFO flag
             bAFO = lpMemDfnHdr->bAFO;
@@ -6994,7 +6999,7 @@ NAME_TYPES plSetDfn
 
         case FCNARRAY_HEADER_SIGNATURE:
             // Lock the memory to get a otr to it
-            lpMemHdrFcn = MyGlobalLock (hGlbUDFO);
+            lpMemHdrFcn = MyGlobalLockFcn (hGlbUDFO);
 
             // Mark as not an AFO
             bAFO = FALSE;
@@ -7098,7 +7103,7 @@ LPPL_YYSTYPE ExecuteCS0
     TOKEN        tkToken;               // The incoming token
 
     // Save the token type
-    tkToken = lpplYYCurObj->tkToken;
+    CopyAll (&tkToken, &lpplYYCurObj->tkToken);
 
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
@@ -7255,10 +7260,10 @@ LPPL_YYSTYPE ExecuteCS0
             lpYYVar = YYAlloc ();
 
             // Copy a constant 0 as the last right object
-            lpYYTmp->tkToken = tkZero;
+            CopyAll (&lpYYTmp->tkToken, &tkZero);
 
             // Make the token into a YYSTYPE
-            lpYYVar->tkToken = tkToken;
+            CopyAll (&lpYYVar->tkToken, &tkToken);
 
             // Call common {goto} code
             lpYYRes = plRedGO_A (lpplLocalVars, lpYYVar, lpYYTmp, soEOS);

@@ -442,7 +442,7 @@ RESTART_ALLOC:
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemRes = lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header values
@@ -764,7 +764,7 @@ RESTART_EXCEPTION:
 
                             case ARRAY_RAT:
                                 // Lock the memory to get a ptr to it
-                                lpMemRat = MyGlobalLock (tkLftArg.tkData.tkGlbData);
+                                lpMemRat = MyGlobalLockVar (tkLftArg.tkData.tkGlbData);
 
                                 // Skip over the header and dimensions to the data
                                 lpMemRat = VarArrayDataFmBase (lpMemRat);
@@ -779,7 +779,7 @@ RESTART_EXCEPTION:
 
                             case ARRAY_VFP:
                                 // Lock the memory to get a ptr to it
-                                lpMemVfp = MyGlobalLock (tkLftArg.tkData.tkGlbData);
+                                lpMemVfp = MyGlobalLockVar (tkLftArg.tkData.tkGlbData);
 
                                 // Skip over the header and dimensions to the data
                                 lpMemVfp = VarArrayDataFmBase (lpMemVfp);
@@ -1003,7 +1003,7 @@ RESTART_EXCEPTION:
 
                                 case ARRAY_RAT:
                                     // Lock the memory to get a ptr to it
-                                    lpMemRat = MyGlobalLock (tkLftArg.tkData.tkGlbData);
+                                    lpMemRat = MyGlobalLockVar (tkLftArg.tkData.tkGlbData);
 
                                     // Skip over the header and dimensions to the data
                                     lpMemRat = VarArrayDataFmBase (lpMemRat);
@@ -1018,7 +1018,7 @@ RESTART_EXCEPTION:
 
                                 case ARRAY_VFP:
                                     // Lock the memory to get a ptr to it
-                                    lpMemVfp = MyGlobalLock (tkLftArg.tkData.tkGlbData);
+                                    lpMemVfp = MyGlobalLockVar (tkLftArg.tkData.tkGlbData);
 
                                     // Skip over the header and dimensions to the data
                                     lpMemVfp = VarArrayDataFmBase (lpMemVfp);
@@ -1347,7 +1347,7 @@ RESTART_EXCEPTION:
 
                             case ARRAY_RAT:
                                 // Lock the memory to get a ptr to it
-                                lpMemRat = MyGlobalLock (tkRhtArg.tkData.tkGlbData);
+                                lpMemRat = MyGlobalLockVar (tkRhtArg.tkData.tkGlbData);
 
                                 // Skip over the header and dimensions to the data
                                 lpMemRat = VarArrayDataFmBase (lpMemRat);
@@ -1362,7 +1362,7 @@ RESTART_EXCEPTION:
 
                             case ARRAY_VFP:
                                 // Lock the memory to get a ptr to it
-                                lpMemVfp = MyGlobalLock (tkRhtArg.tkData.tkGlbData);
+                                lpMemVfp = MyGlobalLockVar (tkRhtArg.tkData.tkGlbData);
 
                                 // Skip over the header and dimensions to the data
                                 lpMemVfp = VarArrayDataFmBase (lpMemVfp);

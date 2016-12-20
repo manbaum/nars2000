@@ -288,7 +288,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
             LPPL_YYSTYPE lpYYRes2;          // Secondary result
 
             // Lock the memory to get a ptr to it
-            lpMemRes = MyGlobalLock (hGlbRes);
+            lpMemRes = MyGlobalLockVar (hGlbRes);
 
             // Skip over the header to the data
             lpMemRes = VarArrayDataFmBase (lpMemRes);

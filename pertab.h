@@ -82,9 +82,13 @@ typedef struct tagPERTABDATA
                  bTempOpen:1,               // 00000010:  TRUE if lpwszTemp is open and open-ended
                  :27;                       // FFFFFFE0:  Available bits
     HGLOBAL      hGlbCurLine;               // Current line global memory handle
-    LPWCHAR      lpwszTempName;             // Ptr to current name with lpwszTemp open
-    LPWCHAR      lpwszErrorMessage;         // Ptr to error message to signal
-    LPWCHAR      lpwszQuadErrorMsg;         // Used for []ERROR/[]ES messages
+#ifdef DEBUG
+    LPWCHAR      lpwszTempName,             // Ptr to current name with lpwszTemp open
+                 lpwszFILE,                 // Ptr to current __FILE__ for lpwszTemp open
+                 lpwszLINE;                 // Ptr to current __LINE__ for lpwszTemp open
+#endif
+    LPWCHAR      lpwszErrorMessage,         // Ptr to error message to signal
+                 lpwszQuadErrorMsg;         // Used for []ERROR/[]ES messages
     UINT         uCaret;                    // Position of the caret in the current line on error
     int          crIndex;                   // Tab's color index
     APLINT       uQuadMF;                   // []MF timer value (8 bytes)

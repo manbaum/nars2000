@@ -156,7 +156,7 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define aplNELMRes  3
 
@@ -429,7 +429,7 @@ HGLOBAL AllocateET_EM
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrTmp = MyGlobalLock (hGlbTmp);
+    lpMemHdrTmp = MyGlobalLock000 (hGlbTmp);
 
 #define lpHeader    lpMemHdrTmp
     // Fill in the header values

@@ -243,7 +243,7 @@ LPPL_YYSTYPE PrimFnMonUpArrow_EM_YY
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
         lpYYRes->tkToken.tkFlags.ImmType   = immType;
-////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
+////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkLongest  = aplLongest;
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
     } // End IF/ELSE
@@ -369,7 +369,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
                           &hGlbAxis))       // Return HGLOBAL with APLINT axis values
             return NULL;
         // Lock the memory to get a ptr to it
-        lpMemAxisHead = MyGlobalLock (hGlbAxis);
+        lpMemAxisHead = MyGlobalLockInt (hGlbAxis);
 
         // Get pointer to the axis tail (where the [X] values are)
         lpMemAxisTail = &lpMemAxisHead[aplRankRes - aplNELMAxis];
@@ -448,7 +448,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemTmpLft = MyGlobalLock (hGlbTmpLft);
+    lpMemTmpLft = MyGlobalLockInt (hGlbTmpLft);
 
     // The storage type of the result is the same as that of the right arg
     //   unless the right arg is hetero and the result is a singleton, or
@@ -481,7 +481,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -580,7 +580,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemWVecRht = MyGlobalLock (hGlbWVecRht);
+    lpMemWVecRht = MyGlobalLock000 (hGlbWVecRht);
 
     // Loop through the dimensions of the right arg in reverse
     //   order {backscan} and compute the cumulative product
@@ -612,7 +612,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemOdoRht = MyGlobalLock (hGlbOdoRht);
+    lpMemOdoRht = MyGlobalLock000 (hGlbOdoRht);
 
     // Initialize the right arg odometer array
     CopyMemory (lpMemOdoRht, lpMemLoHiRht, (APLU3264) aplRankRes * sizeof (APLUINT));
@@ -633,7 +633,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemWVecRes = MyGlobalLock (hGlbWVecRes);
+    lpMemWVecRes = MyGlobalLock000 (hGlbWVecRes);
 
     // Loop through the dimensions of the result in reverse
     //   order {backscan} and compute the cumulative product
@@ -664,7 +664,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemOdoRes = MyGlobalLock (hGlbOdoRes);
+    lpMemOdoRes = MyGlobalLock000 (hGlbOdoRes);
 
     // Initialize the result odometer array
     CopyMemory (lpMemOdoRes, lpMemLoHiRes, (APLU3264) aplRankRes * sizeof (APLUINT));

@@ -339,7 +339,7 @@ UBOOL SaveNewWsid_EM
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemNewWSID = MyGlobalLock (hGlbWSID);
+        lpMemNewWSID = MyGlobalLock000 (hGlbWSID);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemNewWSID)
         // Fill in the header

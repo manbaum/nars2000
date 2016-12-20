@@ -869,7 +869,7 @@ void DisplayException
             case DFNTYPE_OP2:
             case DFNTYPE_FCN:
                 // Lock the memory to get a ptr to it
-                lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
+                lpMemName = MyGlobalLockWsz (lpSISCur->hGlbFcnName);
 
                 // Format the Name, Line #, and Suspension marker
                 MySprintfW (wszTemp,

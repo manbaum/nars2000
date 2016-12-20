@@ -922,7 +922,7 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header values
@@ -1018,7 +1018,7 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
                         goto WSFULL_EXIT;
 
                     // Lock the memory to get a ptr to it
-                    lpMemHdrTmp = MyGlobalLock (hGlbTmp);
+                    lpMemHdrTmp = MyGlobalLock000 (hGlbTmp);
 
 #define lpHeader    lpMemHdrTmp
                     // Fill in the header values
@@ -1142,7 +1142,7 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
                         if (!NPropCheckResize (&propStr[aplIntegerLft], propArrType[aplIntegerLft]))
                             goto WSFULL_EXIT;
                         // Lock the memory to get a ptr to it
-                        lpMemHdrTmp = MyGlobalLock (propStr[aplIntegerLft].hWildGlb);
+                        lpMemHdrTmp = MyGlobalLockVar (propStr[aplIntegerLft].hWildGlb);
 
                         // Skip over the header and dimensions to the data
                         lpMemTmp = VarArrayDataFmBase (lpMemHdrTmp);
@@ -1197,7 +1197,7 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
                         if (!NPropCheckResize (&propStr[aplIntegerLft], propArrType[aplIntegerLft]))
                             goto WSFULL_EXIT;
                         // Lock the memory to get a ptr to it
-                        lpMemHdrTmp = MyGlobalLock (propStr[aplIntegerLft].hWildGlb);
+                        lpMemHdrTmp = MyGlobalLockVar (propStr[aplIntegerLft].hWildGlb);
 
                         // Skip over the header and dimensions to the data
                         lpMemTmp = VarArrayDataFmBase (lpMemHdrTmp);
@@ -1239,7 +1239,7 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
                         if (!NPropCheckResize (&propStr[aplIntegerLft], propArrType[aplIntegerLft]))
                             goto WSFULL_EXIT;
                         // Lock the memory to get a ptr to it
-                        lpMemHdrTmp = MyGlobalLock (propStr[aplIntegerLft].hWildGlb);
+                        lpMemHdrTmp = MyGlobalLockVar (propStr[aplIntegerLft].hWildGlb);
 
                         // Skip over the header and dimensions to the data
                         lpMemTmp = VarArrayDataFmBase (lpMemHdrTmp);
@@ -1296,7 +1296,7 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
                         if (!NPropCheckResize (&propStr[aplIntegerLft], propArrType[aplIntegerLft]))
                             goto WSFULL_EXIT;
                         // Lock the memory to get a ptr to it
-                        lpMemHdrTmp = MyGlobalLock (propStr[aplIntegerLft].hWildGlb);
+                        lpMemHdrTmp = MyGlobalLockVar (propStr[aplIntegerLft].hWildGlb);
 
                         // Skip over the header and dimensions to the data
                         lpMemTmp = VarArrayDataFmBase (lpMemHdrTmp);
@@ -1340,7 +1340,7 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
                         goto WSFULL_EXIT;
 
                     // Lock the memory to get a ptr to it
-                    lpMemHdrTmp = MyGlobalLock (hGlbTmp);
+                    lpMemHdrTmp = MyGlobalLockVar (hGlbTmp);
 
                     // Copy the item data to global memory
                     CopyMemory (VarArrayDataFmBase (lpMemHdrTmp),
@@ -1362,7 +1362,7 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
                         if (!NPropCheckResize (&propStr[aplIntegerLft], propArrType[aplIntegerLft]))
                             goto WSFULL_EXIT;
                         // Lock the memory to get a ptr to it
-                        lpMemHdrTmp = MyGlobalLock (propStr[aplIntegerLft].hWildGlb);
+                        lpMemHdrTmp = MyGlobalLockVar (propStr[aplIntegerLft].hWildGlb);
 
                         // Skip over the header and dimensions to the data
                         lpMemTmp = VarArrayDataFmBase (lpMemHdrTmp);
@@ -1442,7 +1442,7 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
                         goto WSFULL_EXIT;
 
                     // Lock the memory to get a ptr to it
-                    lpMemHdrTmp = MyGlobalLock (hGlbTmp);
+                    lpMemHdrTmp = MyGlobalLock000 (hGlbTmp);
 
 #define lpHeader    lpMemHdrTmp
                     // Fill in the header
@@ -1486,7 +1486,7 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
                         if (!NPropCheckResize (&propStr[aplIntegerLft], propArrType[aplIntegerLft]))
                             goto WSFULL_EXIT;
                         // Lock the memory to get a ptr to it
-                        lpMemHdrTmp = MyGlobalLock (propStr[aplIntegerLft].hWildGlb);
+                        lpMemHdrTmp = MyGlobalLockVar (propStr[aplIntegerLft].hWildGlb);
 
                         // Skip over the header and dimensions to the data
                         lpMemTmp = VarArrayDataFmBase (lpMemHdrTmp);
@@ -1516,7 +1516,7 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
                         if (!NPropCheckResize (&propStr[aplIntegerLft], propArrType[aplIntegerLft]))
                             goto WSFULL_EXIT;
                         // Lock the memory to get a ptr to it
-                        lpMemHdrTmp = MyGlobalLock (propStr[aplIntegerLft].hWildGlb);
+                        lpMemHdrTmp = MyGlobalLockVar (propStr[aplIntegerLft].hWildGlb);
 
                         // Skip over the header and dimensions to the data
                         lpMemTmp = VarArrayDataFmBase (lpMemHdrTmp);
@@ -1609,7 +1609,7 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
                                         goto WSFULL_EXIT;
 
                                     // Lock the memory to get a ptr to it
-                                    lpMemHdrTmp = MyGlobalLock (hGlbTmp);
+                                    lpMemHdrTmp = MyGlobalLockVar (hGlbTmp);
 
                                     // Skip over the header & dimensions
                                     lpMemTmp = VarArrayDataFmBase (lpMemHdrTmp);
@@ -1966,7 +1966,7 @@ UBOOL NfnsSaveGlb
     if (!NPropCheckResize (lpPropStr, propArrType[aplIntegerLft]))
         return FALSE;
     // Lock the memory to get a ptr to it
-    lpMemHdrTmp = MyGlobalLock (lpPropStr->hWildGlb);
+    lpMemHdrTmp = MyGlobalLockVar (lpPropStr->hWildGlb);
 
     // Skip over the header and dimensions to the data
     lpMemTmp = VarArrayDataFmBase (lpMemHdrTmp);
@@ -2015,7 +2015,7 @@ UBOOL NPropInitAlloc
         return FALSE;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (lpPropStr->hWildGlb);
+    lpMemHdrRes = MyGlobalLock000 (lpPropStr->hWildGlb);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header values
@@ -2088,8 +2088,8 @@ UBOOL NPropCheckResize
             if (hWildGlb EQ NULL)
                 return FALSE;
             // Lock the old & new memory to get a ptr to it
-            lpMemHdrOld = MyGlobalLock (lpPropStr->hWildGlb);
-            lpMemHdrNew = MyGlobalLock (           hWildGlb);
+            lpMemHdrOld = MyGlobalLockVar (lpPropStr->hWildGlb);
+            lpMemHdrNew = MyGlobalLock000 (           hWildGlb);
 
             // Copy the old data to the new location
             CopyMemory (lpMemHdrNew, lpMemHdrOld, MyGlobalSize (lpPropStr->hWildGlb));
@@ -2106,7 +2106,7 @@ UBOOL NPropCheckResize
     } // End IF
 
     // Lock the new memory to get a ptr to it
-    lpMemHdrNew = MyGlobalLock (lpPropStr->hWildGlb);
+    lpMemHdrNew = MyGlobalLockVar (lpPropStr->hWildGlb);
 
     // Count in one more item
     lpMemHdrNew->NELM++;
@@ -2604,7 +2604,7 @@ LPPL_YYSTYPE SysFnNNAMES_EM_YY
     for (uMaxLen = uCnt = 0; uCnt < lpNfnsHdr->nTieNums; uCnt++)
     {
         // Lock the memory to get a ptr to it
-        lpMemHdrFile = MyGlobalLock (lpNfnsMem->hGlbFileName);
+        lpMemHdrFile = MyGlobalLockVar (lpNfnsMem->hGlbFileName);
 
         // Get the maximum length
         uMaxLen = max (uMaxLen, lpMemHdrFile->NELM);
@@ -2629,7 +2629,7 @@ LPPL_YYSTYPE SysFnNNAMES_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header values
@@ -2658,7 +2658,7 @@ LPPL_YYSTYPE SysFnNNAMES_EM_YY
     for (uCnt = 0; uCnt < lpNfnsHdr->nTieNums; uCnt++)
     {
         // Lock the memory to get a ptr to it
-        lpMemHdrFile = MyGlobalLock (lpNfnsMem->hGlbFileName);
+        lpMemHdrFile = MyGlobalLockVar (lpNfnsMem->hGlbFileName);
 
         // Get the filename length
         uLen = lpMemHdrFile->NELM;
@@ -2780,7 +2780,7 @@ LPPL_YYSTYPE SysFnNNUMS_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header values
@@ -3136,7 +3136,7 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header values
@@ -4944,7 +4944,7 @@ LPPL_YYSTYPE SysFnMonNUNTIE_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
     // Fill in the header values
     lpMemHdrRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
@@ -5418,7 +5418,7 @@ UBOOL NfnsArgConv
 
                 case PTRTYPE_HGLOBAL:
                     // Lock the mmory to get a ptr to it
-                    lpMemHdr = MyGlobalLock (lpSymGlb);
+                    lpMemHdr = MyGlobalLockVar (lpSymGlb);
 
                     bRet = (IsSimpleChar (lpMemHdr->ArrType)
                          && IsVector (lpMemHdr->Rank))
@@ -5693,7 +5693,7 @@ typedef struct tagCONV_CODES
     };
 
     // Lock the memory to get a ptr to it
-    lpMemHdr = MyGlobalLock (hGlb);
+    lpMemHdr = MyGlobalLockVar (hGlb);
 
     // Check the rank
     if (!IsVector (lpMemHdr->Rank))
@@ -5781,7 +5781,7 @@ APLINT GetNextTieNum_EM
         if (hGlbTie NE NULL)
         {
             // Lock the memory to get a ptr to it
-            lpMemTie = MyGlobalLock (hGlbTie);
+            lpMemTie = MyGlobalLock000 (hGlbTie);
 
             // Loop through the tie numbers
             for (uCnt = 0; uCnt < lpNfnsHdr->nTieNums; uCnt++)
@@ -5906,7 +5906,8 @@ UBOOL InitGlbNfns_EM
     Assert (lpMemPTD->hGlbNfns EQ NULL);
 
     // Allocate the initial entry
-    lpMemPTD->hGlbNfns = DbgGlobalAlloc (GHND, sizeof (NFNSHDR) + DEF_NFNS_INIT * sizeof (NFNSDATA));
+    lpMemPTD->hGlbNfns =
+      DbgGlobalAlloc (GHND, sizeof (NFNSHDR) + DEF_NFNS_INIT * sizeof (NFNSDATA));
 
     if (lpMemPTD->hGlbNfns NE NULL)
     {
@@ -5918,6 +5919,7 @@ UBOOL InitGlbNfns_EM
         lpNfnsHdr = InitLockNfns (lptkFunc, lpMemPTD);
 
         // Initialize the struc
+        lpNfnsHdr->Sig.nature    = NFNS_HEADER_SIGNATURE;
 ////////lpNfnsHdr->nTieNums      = 0;               // Already zero from GHND
         lpNfnsHdr->nMax          = DEF_NFNS_INIT;
 ////////lpNfnsHdr->offFirstFree  = 0;               // Already zero from GHND
@@ -5982,7 +5984,7 @@ UBOOL IncrGlbNfns
     if (hGlbNfns EQ NULL)
     {
         // Lock the original memory to get a ptr to it
-        *lplpNfnsHdr = MyGlobalLock (lpMemPTD->hGlbNfns);
+        *lplpNfnsHdr = MyGlobalLockNfn (lpMemPTD->hGlbNfns);
 
         return FALSE;
     } // End IF
@@ -6328,7 +6330,7 @@ LPPL_YYSTYPE NfnsEraseRenameResize_EM
     lpNfnsMem = &lpNfnsHdr->aNfnsData[uTie];
 
     // Lock the memory to get a ptr to it
-    lpMemHdrFile = MyGlobalLock (lpNfnsMem->hGlbFileName);
+    lpMemHdrFile = MyGlobalLockVar (lpNfnsMem->hGlbFileName);
 
     // Skip over the header and dimensions
     lpMemFile = VarArrayDataFmBase (lpMemHdrFile);
@@ -7382,7 +7384,7 @@ LPVOID InitLockNfns
      && !InitGlbNfns_EM (lptkFunc, lpMemPTD))
         return NULL;
 
-    return MyGlobalLock (lpMemPTD->hGlbNfns);
+    return MyGlobalLockNfn (lpMemPTD->hGlbNfns);
 } // End InitLockNfns
 
 

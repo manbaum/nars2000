@@ -653,7 +653,7 @@ UBOOL TransferInverseFcn2_EM
             Assert (IsGlbTypeDfnDir_PTB (hGlbDfnHdr));
 
             // Lock the memory to get a ptr to it
-            lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+            lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
             // Save creation time
             lpMemDfnHdr->ftCreation = *lpftCreation;
@@ -837,7 +837,7 @@ UBOOL TransferInverseChr1_EM
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+        lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
         // Fill in the header

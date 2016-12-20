@@ -421,8 +421,8 @@ UINT YYCountFcnStr
         TknCount += YYCountFcnStr (lpYYArg->lpplYYOpRCurry);
     if (lpYYArg->lpplYYFcnCurry)
         TknCount += YYCountFcnStr (lpYYArg->lpplYYFcnCurry);
-    if (IsTknTrain    (&lpYYArg->tkToken)
-     || IsTknFcnArray (&lpYYArg->tkToken))
+    if (IsTknFcnArray (&lpYYArg->tkToken)
+     || IsTknTrain    (&lpYYArg->tkToken))
     {
         HGLOBAL           hGlbFcn;      // Global memory handle
         LPFCNARRAY_HEADER lpMemFcn;     // Ptr to global memory
@@ -431,7 +431,7 @@ UINT YYCountFcnStr
         hGlbFcn = lpYYArg->tkToken.tkData.tkGlbData;
 
         // Lock the memory to get a ptr to it
-        lpMemFcn = MyGlobalLock (hGlbFcn);
+        lpMemFcn = MyGlobalLockFcn (hGlbFcn);
 
         Assert (lpMemFcn->tknNELM NE 0);
 
@@ -521,7 +521,7 @@ LPPL_YYSTYPE YYCopyFcnStr
         lpYYHdrArgI = (LPVOID)
 #endif
         // Lock the memory to get a ptr to it
-        lpYYArgI = MyGlobalLock (lpYYArg->tkToken.tkData.tkGlbData);
+        lpYYArgI = MyGlobalLockFcn (lpYYArg->tkToken.tkData.tkGlbData);
 
         // Skip over the header to the data (PL_YYSTYPEs)
         lpYYArgI = FcnArrayBaseToData (lpYYArgI);

@@ -213,7 +213,7 @@ int HeNe_cmp
 
         case PTRTYPE_HGLOBAL:
             // Get a ptr to the array header
-            lpMemHdrLft = MyGlobalLock (lpSymGlbLft);
+            lpMemHdrLft = MyGlobalLockVar (lpSymGlbLft);
 
             // Get the storage type
             aplTypeLft = lpMemHdrLft->ArrType;
@@ -262,7 +262,7 @@ int HeNe_cmp
 
         case PTRTYPE_HGLOBAL:
             // Get a ptr to the array header
-            lpMemHdrRht = MyGlobalLock (lpSymGlbRht);
+            lpMemHdrRht = MyGlobalLockVar (lpSymGlbRht);
 
             // Get the storage type
             aplTypeRht = lpMemHdrRht->ArrType;
@@ -470,7 +470,7 @@ int HeNe_cmpsub
     int               iDiff;            // The result
 
     // Lock the memory to get a ptr to it
-    lpMemHdr = MyGlobalLock (hGlb);
+    lpMemHdr = MyGlobalLockVar (hGlb);
 
     // Skip over the headers and dimensions to the data
     lpMem = VarArrayDataFmBase (lpMemHdr);

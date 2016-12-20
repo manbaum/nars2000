@@ -158,7 +158,7 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header
@@ -556,7 +556,7 @@ APLBOOL EraseableName
             htGlbName = lpSymEntry->stHshEntry->htGlbName;
 
             // Lock the memory to get a ptr to it
-            lpMemName = MyGlobalLock (htGlbName);
+            lpMemName = MyGlobalLockWsz (htGlbName);
 
             // Izit a valid name?
             bRet = IsValidName (lpMemName, lstrlenW (lpMemName));
@@ -623,7 +623,7 @@ APLBOOL IzitSusPendent
     htGlbName = lpSymEntry->stHshEntry->htGlbName;
 
     // Lock the memory to get a ptr to it
-    lpMemName = MyGlobalLock (htGlbName);
+    lpMemName = MyGlobalLockWsz (htGlbName);
 
     while (lpSISCur && !bRet)
     {
@@ -640,7 +640,7 @@ APLBOOL IzitSusPendent
             case DFNTYPE_OP2:
             case DFNTYPE_FCN:
                 // Lock the memory to get a ptr to it
-                lpFcnName = MyGlobalLock (lpSISCur->hGlbFcnName);
+                lpFcnName = MyGlobalLockWsz (lpSISCur->hGlbFcnName);
 
                 // Compare the names
                 bRet = (lstrcmpW (lpMemName, lpFcnName) EQ 0);

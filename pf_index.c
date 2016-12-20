@@ -163,7 +163,31 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             aplRankSub    = aplRankLst;
 
             hGlbSub       = hGlbLst;
-            lpMemSub      = MyGlobalLock (hGlbSub);
+
+            // Split cases based upon the token type
+            switch (lptkLstArg->tkFlags.TknType)
+            {
+                case TKT_LSTARRAY:
+                    // Lock the memory to get a ptr to it
+                    lpMemSub = MyGlobalLockLst (hGlbSub);
+
+                    break;
+
+                case TKT_VARARRAY:
+                    // Lock the memory to get a ptr to it
+                    lpMemSub = MyGlobalLockVar (hGlbSub);
+
+                    break;
+
+                case TKT_AXISARRAY:
+                    // Lock the memory to get a ptr to it
+                    lpMemSub = MyGlobalLockVar (hGlbSub);
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
         } // End IF/ELSE
 
         // Handle obvious DOMAIN ERRORs
@@ -260,7 +284,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemRes = MyGlobalLock (hGlbRes);
+            lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
             // Fill in the header
@@ -646,7 +670,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
 
                             case ARRAY_RAT:
                                 // Lock the memory to get a ptr to it
-                                lpSymTmp = MyGlobalLock (lpYYItm->tkToken.tkData.tkGlbData);
+                                lpSymTmp = MyGlobalLockVar (lpYYItm->tkToken.tkData.tkGlbData);
 
                                 // Save the value in the result
                                 *((LPAPLRAT) lpMemRes)++ = *(LPAPLRAT) VarArrayDataFmBase (lpSymTmp);
@@ -661,7 +685,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
 
                             case ARRAY_VFP:
                                 // Lock the memory to get a ptr to it
-                                lpSymTmp = MyGlobalLock (lpYYItm->tkToken.tkData.tkGlbData);
+                                lpSymTmp = MyGlobalLockVar (lpYYItm->tkToken.tkData.tkGlbData);
 
                                 // Save the value in the result
                                 *((LPAPLVFP) lpMemRes)++ = *(LPAPLVFP) VarArrayDataFmBase (lpSymTmp);
@@ -912,7 +936,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -968,7 +992,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
 
                 case PTRTYPE_HGLOBAL:
                     // Lock the memory to get a ptr to it
-                    lpMemSub = MyGlobalLock (hGlbSub);
+                    lpMemSub = MyGlobalLockVar (hGlbSub);
 
                     // Skip over the header and dimensions to the data
                     lpMemSub = VarArrayDataFmBase (lpMemSub);
@@ -999,7 +1023,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
 
                 case PTRTYPE_HGLOBAL:
                     // Lock the memory to get a ptr to it
-                    lpMemSub = MyGlobalLock (hGlbSub);
+                    lpMemSub = MyGlobalLockVar (hGlbSub);
 
                     // Skip over the header and dimensions to the data
                     lpMemSub = VarArrayDataFmBase (lpMemSub);
@@ -1132,11 +1156,11 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes    = MyGlobalLock (hGlbRes);
+    lpMemRes    = MyGlobalLock000 (hGlbRes);
     lpMemHdrLst =
-    lpMemLst    = MyGlobalLock (hGlbLst);
+    lpMemLst    = MyGlobalLockVar (hGlbLst);
     lpMemHdrNam =
-    lpMemNam    = MyGlobalLock (hGlbNam);
+    lpMemNam    = MyGlobalLockVar (hGlbNam);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -1443,7 +1467,7 @@ LPPL_YYSTYPE ArrayIndexRefNamImmed_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -1641,7 +1665,7 @@ UBOOL ArrayIndexValidZilde_EM
                 } else
                 {
                     // Lock the memory to get a ptr to it
-                    lpMemSub = MyGlobalLock (hGlbSub);
+                    lpMemSub = MyGlobalLockVar (hGlbSub);
 
                     // Skip over the header and dimensions to the data
                     lpMemSub = VarArrayDataFmBase (lpMemSub);
@@ -1780,7 +1804,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemLstNew = MyGlobalLock (hGlbLstNew);
+        lpMemLstNew = MyGlobalLock000 (hGlbLstNew);
 
 #define lpHeader        ((LPLSTARRAY_HEADER) lpMemLstNew)
         // Fill in the header
@@ -1839,7 +1863,7 @@ LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemAxis = MyGlobalLock (hGlbAxis);
+        lpMemAxis = MyGlobalLock000 (hGlbAxis);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemAxis)
         // Fill in the header
@@ -2271,7 +2295,7 @@ UBOOL ArrayIndexSetNamImmed_EM
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -2729,7 +2753,7 @@ HGLOBAL ArrayIndexSetNoLst_EM
             goto ERROR_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+        lpMemRes = MyGlobalLockVar (hGlbRes);
 
         // Skip over the header to the data
         lpMemRes = VarArrayDataFmBase (lpMemRes);
@@ -2980,7 +3004,7 @@ UBOOL ArrayIndexSetSingLst_EM
             // Set the vars for an HGLOBAL
             hGlbSubLst = lptkLstArg->tkData.tkGlbData;
             AttrsOfGlb (hGlbSubLst, &aplTypeSubLst, &aplNELMSubLst, &aplRankSubLst, NULL);
-            lpMemSubLst = MyGlobalLock (hGlbSubLst);
+            lpMemSubLst = MyGlobalLockVar (hGlbSubLst);
 
             break;
 
@@ -3169,7 +3193,7 @@ UBOOL ArrayIndexSetSingLst_EM
         hGlbNam = *lphGlbRes;
 
         // Lock the memory to get a ptr to it
-        lpMemNam = MyGlobalLock (hGlbNam);
+        lpMemNam = MyGlobalLockVar (hGlbNam);
 
         // Skip over the header to the data
         lpMemNam = VarArrayDataFmBase (lpMemNam);
@@ -3312,7 +3336,7 @@ UBOOL ArrayIndexSetSingLst_EM
         aplTypeNam = aTypePromote[aplTypeNam][aplTypeRes];
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (*lphGlbRes);
+    lpMemRes = MyGlobalLockVar (*lphGlbRes);
 
     // Skip over the header to the dimensions
     lpMemDimRes = VarArrayBaseToDim (lpMemRes);
@@ -3760,7 +3784,7 @@ UBOOL ArrayIndexSetVector_EM
 
                 case PTRTYPE_HGLOBAL:
                     // Lock the memory to get a ptr to it
-                    lpMemSubLst2 = MyGlobalLock (hGlbSubLst);
+                    lpMemSubLst2 = MyGlobalLockVar (hGlbSubLst);
 
                     // Get the type and rank
                     aplTypeSubLst2 = ((LPVARARRAY_HEADER) lpMemSubLst2)->ArrType;
@@ -4113,7 +4137,7 @@ UBOOL ArrayIndexSetRect_EM
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemHdrLstNew = MyGlobalLock (hGlbLstNew);
+        lpMemHdrLstNew = MyGlobalLock000 (hGlbLstNew);
 
 #define lpHeader        lpMemHdrLstNew
         // Fill in the header
@@ -4172,7 +4196,7 @@ UBOOL ArrayIndexSetRect_EM
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemHdrAxis = MyGlobalLock (hGlbAxis);
+        lpMemHdrAxis = MyGlobalLock000 (hGlbAxis);
 
 #define lpHeader        lpMemHdrAxis
         // Fill in the header

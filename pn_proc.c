@@ -1577,8 +1577,8 @@ UBOOL PN_VectorAcc
             if (hGlbVector EQ NULL)    // ***FIXME*** do we need to free the hGlbVector storage???
                 goto WSFULL_EXIT;
             // Lock the two global memory areas and copy old to new
-            lpMemVectorOld = MyGlobalLock (lppnLocalVars->hGlbVector);
-            lpMemVectorNew = MyGlobalLock (               hGlbVector);
+            lpMemVectorOld = MyGlobalLock    (lppnLocalVars->hGlbVector);
+            lpMemVectorNew = MyGlobalLock000 (               hGlbVector);
             CopyMemory (lpMemVectorNew,
                         lpMemVectorOld,
                         lppnLocalVars->uGlbVectorMaxLen * sizeof (PN_VECTOR));
@@ -1751,7 +1751,7 @@ UBOOL PN_VectorRes
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lppnLocalVars->lpMemHdrRes = MyGlobalLock (lppnLocalVars->hGlbRes);
+        lppnLocalVars->lpMemHdrRes = MyGlobalLock000 (lppnLocalVars->hGlbRes);
 
 #define lpHeader        lppnLocalVars->lpMemHdrRes
         // Fill in the header

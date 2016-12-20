@@ -709,7 +709,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         //***************************************************************
 
                         // Lock the memory to get a ptr to it
-                        lpMemChr = MyGlobalLock (hGlbQuadALX_CWS);
+                        lpMemChr = MyGlobalLockVar (hGlbQuadALX_CWS);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemChr)
                         // Get the NELM
@@ -769,7 +769,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         //***************************************************************
 
                         // Lock the memory to get a ptr to it
-                        lpMemChr = MyGlobalLock (hGlbQuadELX_CWS);
+                        lpMemChr = MyGlobalLockVar (hGlbQuadELX_CWS);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemChr)
                         // Get the NELM
@@ -795,7 +795,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         //***************************************************************
 
                         // Lock the memory to get a ptr to it
-                        lpMemChr = MyGlobalLock (hGlbQuadFC_CWS);
+                        lpMemChr = MyGlobalLockVar (hGlbQuadFC_CWS);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemChr)
                         // Get the NELM
@@ -833,7 +833,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                             SendMessageW (hWndFEATURE_CB2, CB_ADDSTRING, 0, (LPARAM) (HANDLE_PTR) (uCnt ? L"TRUE" : L"FALSE"));
 
                         // Lock the memory to get a ptr to it
-                        lpMemInt = MyGlobalLock (hGlbQuadFEATURE_CWS);
+                        lpMemInt = MyGlobalLockVar (hGlbQuadFEATURE_CWS);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemInt)
                         // Get the NELM
@@ -887,7 +887,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                             SendMessageW (hWndIC_CB2, CB_ADDSTRING, 0, (LPARAM) (HANDLE_PTR) icIndexValues[uCnt]);
 
                         // Lock the memory to get a ptr to it
-                        lpMemInt = MyGlobalLock (hGlbQuadIC_CWS);
+                        lpMemInt = MyGlobalLockVar (hGlbQuadIC_CWS);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemInt)
                         // Get the NELM
@@ -929,7 +929,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         //***************************************************************
 
                         // Lock the memory to get a ptr to it
-                        lpMemChr = MyGlobalLock (hGlbQuadLX_CWS);
+                        lpMemChr = MyGlobalLockVar (hGlbQuadLX_CWS);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemChr)
                         // Get the NELM
@@ -1174,7 +1174,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         } // End IF
 
                         // Lock the memory to get a ptr to it
-                        lpLclKeybLayouts = MyGlobalLock (hLclKeybLayouts);
+                        lpLclKeybLayouts = MyGlobalLock000 (hLclKeybLayouts);
 
                         // Copy the global layouts to local memory
                         CopyMemory (lpLclKeybLayouts, lpGlbKeybLayouts, uKeybSize);
@@ -2807,7 +2807,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         else
                         {
                             // Lock the memory to get a ptr to it
-                            lpwszLibDirs = MyGlobalLock (hGlb);
+                            lpwszLibDirs = MyGlobalLock000 (hGlb);
 
                             // Save the count
                             uNumLibDirs = uCnt;
@@ -2936,7 +2936,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         } // End IF
 
                         // Lock the memory to get a ptr to it
-                        lpGlbKeybLayouts = MyGlobalLock (hGlbKeybLayouts);
+                        lpGlbKeybLayouts = MyGlobalLock000 (hGlbKeybLayouts);
 
                         // Copy the local values to the global copy
                         CopyMemory (lpGlbKeybLayouts, lpLclKeybLayouts, uKeybSize);
@@ -5901,7 +5901,7 @@ void GetClearWsChrValue
      && GetRefCntGlb (*lphGlbVal) EQ 1)
     {
         // Lock the memory to get a ptr to it
-        lpMemChr = MyGlobalLock (*lphGlbVal);
+        lpMemChr = MyGlobalLockVar (*lphGlbVal);
 
         // Skip over the header and dimensions to the data
         lpMemChr = VarArrayDataFmBase (lpMemChr);
@@ -5956,7 +5956,7 @@ void GetClearWsComValue
         *lphGlbRes = hGlbCom;
 
         // Lock the memory to get a ptr to it
-        lpMemCom = MyGlobalLock (hGlbCom);
+        lpMemCom = MyGlobalLock000 (hGlbCom);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemCom)
         // Fill in the header values

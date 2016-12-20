@@ -818,7 +818,7 @@ void FormatQQuadInput
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -2067,7 +2067,7 @@ NORMAL_EXIT:
                                 if (lpMemPTD->hGlbCurLine NE NULL)
                                 {
                                     // Lock the memory to get a ptr to it
-                                    lpwCurLine = MyGlobalLock (lpMemPTD->hGlbCurLine);
+                                    lpwCurLine = MyGlobalLockWsz (lpMemPTD->hGlbCurLine);
 
                                     // Restore the original of the current line
                                     ReplaceLine (hWndEC, lpwCurLine, uLineNum);
@@ -2135,7 +2135,7 @@ NORMAL_EXIT:
                     static WCHAR wFcn[32] = L"test";
                     extern HGLOBAL hGlbRC1,
                                    hGlbRC2;
-                    DbgBrk ();          // #ifdfef DEBUG
+                    DbgBrk ();          // #ifdef DEBUG
 
                     // Set the flags for what we're looking up
                     stFlags.Inuse   = TRUE;
@@ -2516,7 +2516,7 @@ void MoveToLine
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpwCurLine = MyGlobalLock (lpMemPTD->hGlbCurLine);
+    lpwCurLine = MyGlobalLock000 (lpMemPTD->hGlbCurLine);
 
     // Tell EM_GETLINE maximum # chars in the buffer
     ((LPWORD) lpwCurLine)[0] = uLineLen;

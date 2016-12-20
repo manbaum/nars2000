@@ -323,7 +323,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
         // Lock the memory to get a ptr to it
         //   and check for empty (char) case
         if (!IsEmpty (aplNELMLft))
-            lpMemRep = MyGlobalLock (hGlbRep);
+            lpMemRep = MyGlobalLock000 (hGlbRep);
 
         // Skip over the header to the data
         lpMemLft = VarArrayDataFmBase (lpMemLft);
@@ -443,7 +443,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
         if (!IsEmpty (aplNELMLft))
         {
             MyGlobalUnlock (hGlbRep); lpMemRep = NULL;
-            lpMemRep = MyGlobalLock (hGlbRep);
+            lpMemRep = MyGlobalLockInt (hGlbRep);
         } // End IF
 
         // We no longer need this ptr
@@ -478,7 +478,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header values

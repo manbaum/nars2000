@@ -387,7 +387,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+        lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
         // Fill in the header
@@ -479,7 +479,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                     hGlbItm = lpSymEntry->stData.stGlbData;
 
                     // Lock the memory to get a ptr to it
-                    lpMemItm = MyGlobalLock (hGlbItm);
+                    lpMemItm = MyGlobalLockVar (hGlbItm);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemItm)
                     // Get the type, NELM, and Rank
@@ -667,10 +667,10 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                 hGlbDfnHdr = lpSymEntry->stData.stGlbData;
 
                 // Lock the memory to get a ptr to it
-                lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+                lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
                 // Lock the memory to get a ptr to it
-                lpMemTxtLine = MyGlobalLock (lpMemDfnHdr->hGlbTxtHdr);
+                lpMemTxtLine = MyGlobalLock000 (lpMemDfnHdr->hGlbTxtHdr);   // ->U not assigned as yet
 
                 // Get the length of the function header text
                 uMaxLineLen = lpMemTxtLine->U;
@@ -693,7 +693,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                     if (hGlbTxtLine)
                     {
                         // Lock the memory to get a ptr to it
-                        lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+                        lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
 
                         // Find the length of the longest line
                         uMaxLineLen = max (uMaxLineLen, lpMemTxtLine->U);
@@ -771,7 +771,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+        lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
         // Fill in the header
@@ -1090,7 +1090,7 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header

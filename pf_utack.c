@@ -96,7 +96,7 @@ LPPL_YYSTYPE PrimProtoFnUpTack_EM_YY
     //***************************************************************
 
     // Convert to a prototype
-    return PrimProtoFnMixed_EM_YY (&PrimFnUpTack_EM_YY,   // Ptr to primitive function routine
+    return PrimProtoFnMixed_EM_YY (&PrimFnUpTack_EM_YY,     // Ptr to primitive function routine
                                     lptkLftArg,             // Ptr to left arg token
                                     lptkFunc,               // Ptr to function token
                                     lptkRhtArg,             // Ptr to right arg token
@@ -347,7 +347,7 @@ RESTART_EXCEPTION:
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header

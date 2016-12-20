@@ -328,7 +328,7 @@ HGLOBAL Init1MagicFunction
     if (uLineLen NE 0)
     {
         // Lock the memory to get a ptr to it
-        lpMemTxtLine = MyGlobalLock (hGlbTxtHdr);
+        lpMemTxtLine = MyGlobalLock000 (hGlbTxtHdr);    // ->U not assigned as yet
 
         // Save the line length
         lpMemTxtLine->U = uLineLen;
@@ -476,7 +476,7 @@ HGLOBAL Init1MagicFunction
         } // End IF
 
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLock000 (hGlbDfnHdr);
 
         // Save numbers in global memory
         lpMemDfnHdr->numResultSTE = numResultSTE;
@@ -672,7 +672,7 @@ ERROR_EXIT:
         LPTOKEN_HEADER lpMemTknHdr;
 
         // Lock the memory to get a ptr to it
-        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+        lpMemTknHdr = MyGlobalLockTkn (hGlbTknHdr);
 
         // Free the tokens
         Untokenize (lpMemTknHdr);
@@ -817,7 +817,7 @@ void ExecNilMFO
                    NULL,                        // Ptr to common struc (may be NULL if unused)
                    TRUE);                       // TRUE iff we're tokenizing a Magic Function/Operator
     // Lock the memory to get a ptr to it
-    lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+    lpMemTknHdr = MyGlobalLockTkn (hGlbTknHdr);
 
     // Execute the line
 ////exitType =
@@ -849,7 +849,7 @@ void ExecNilMFO
     Assert (lpSymEntry);
 
     // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLock (lpSymEntry->stData.stGlbData);
+    lpMemDfnHdr = MyGlobalLockDfn (lpSymEntry->stData.stGlbData);
 
     // Free the globals in the struc
     //   but don't Untokenize the function lines

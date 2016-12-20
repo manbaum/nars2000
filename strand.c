@@ -477,7 +477,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                     Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
                     // Lock the memory to get a ptr to it
-                    lpMemStr = MyGlobalLock (hGlbData);
+                    lpMemStr = MyGlobalLockVar (hGlbData);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemStr)
                     if (IsScalar (lpHeader->Rank))
@@ -533,7 +533,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
                 Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
                 // Lock the memory to get a ptr to it
-                lpMemStr = MyGlobalLock (hGlbData);
+                lpMemStr = MyGlobalLockVar (hGlbData);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemStr)
                 if (IsScalar (lpHeader->Rank))
@@ -832,7 +832,7 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
     lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
     // Lock the memory to get a ptr to it
-    lpMemStr = MyGlobalLock (hGlbStr);
+    lpMemStr = MyGlobalLock000 (hGlbStr);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemStr)
     // Fill in the header
@@ -1695,7 +1695,7 @@ HGLOBAL MakeGlbEntry_EM
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -1860,7 +1860,7 @@ UBOOL UnFcnStrand_EM
             lpYYRes->tkToken.tkCharIndex       = lpYYArg->tkToken.tkCharIndex;
 
             // Lock the memory to get a ptr to it
-            lpMemHdrStr = MyGlobalLock (hGlbStr);
+            lpMemHdrStr = MyGlobalLock000 (hGlbStr);
 
             // Fill in the header
             lpMemHdrStr->Sig.nature  = FCNARRAY_HEADER_SIGNATURE;
@@ -1985,7 +1985,7 @@ void MakeTxtLine
     if (lpHeader->hGlbTxtLine)
     {
         // Lock the memory to get a ptr to it
-        lpMemTxtLine = MyGlobalLock (lpHeader->hGlbTxtLine);
+        lpMemTxtLine = MyGlobalLock000 (lpHeader->hGlbTxtLine); // ->U not assigned as yet
 
         // Save the line length
         lpMemTxtLine->U = uLineLen;
@@ -2365,7 +2365,7 @@ LPPL_YYSTYPE MakeNameStrand_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lpYYStrand->tkToken.tkCharIndex;
 
     // Lock the memory to get a ptr to it
-    lpMemStr = MyGlobalLock (hGlbStr);
+    lpMemStr = MyGlobalLock000 (hGlbStr);
 
 #define lpHeader    ((LPVARNAMED_HEADER) lpMemStr)
     // Fill in the header
@@ -2679,7 +2679,7 @@ LPPL_YYSTYPE MakeList_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemLst = MyGlobalLock (hGlbLst);
+    lpMemLst = MyGlobalLock000 (hGlbLst);
 
 #define lpHeader    ((LPLSTARRAY_HEADER) lpMemLst)
     // Fill in the header

@@ -75,7 +75,7 @@ void BreakMessage
         if (lpSISCur NE NULL)
         {
             // Lock the memory to get a ptr to it
-            lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
+            lpMemName = MyGlobalLockWsz (lpSISCur->hGlbFcnName);
 
 ////////////// Copy the leading text
 ////////////strcpyW (lpMemPTD->lpwszTemp, ERRMSG_ELLIPSIS WS_CR);
@@ -119,7 +119,7 @@ void BreakMessage
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header
@@ -209,7 +209,7 @@ HGLOBAL AppendFcnNameLineNum
     if (lpSISCur->hGlbFcnName)
     {
         // Lock the memory to get a ptr to it
-        lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
+        lpMemName = MyGlobalLockWsz (lpSISCur->hGlbFcnName);
 
         // Format the name and line #
         *lpuNameLen =
@@ -232,7 +232,7 @@ HGLOBAL AppendFcnNameLineNum
     if (lpSISCur->hGlbDfnHdr NE NULL)
     {
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (lpSISCur->hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLockDfn (lpSISCur->hGlbDfnHdr);
 
         // Get a ptr to the line # in error
         if (lpSISCur->CurLineNum EQ 0)
@@ -346,7 +346,7 @@ void ErrorMessageDirect
                     if (hGlbTxtLine NE NULL)
                     {
                         // Lock the memory to get a ptr to it
-                        lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+                        lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
 
                         // Ptr to the text
                         lpwszLine = &lpMemTxtLine->C;
@@ -391,7 +391,7 @@ void ErrorMessageDirect
                         if (hGlbTxtLine NE NULL)
                         {
                             // Lock the memory to get a ptr to it
-                            lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+                            lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
 
                             // Zap trailing blank
                             lpMemPTD->lpwszTemp[lstrlenW (lpMemPTD->lpwszTemp) - 1] = WC_EOS;
@@ -471,7 +471,7 @@ void ErrorMessageDirect
         goto WSFULL_DM_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header
@@ -556,7 +556,7 @@ void ErrorMessageDirect
     if (hGlbRes EQ NULL)
         goto WSFULL_EM_EXIT;
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header

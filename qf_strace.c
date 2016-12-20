@@ -221,7 +221,7 @@ LPPL_YYSTYPE SysFnMonSTRACE_EM_YY
         goto DOMAIN_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLock (lpSymEntry->stData.stGlbData);
+    lpMemDfnHdr = MyGlobalLockDfn (lpSymEntry->stData.stGlbData);
 
     // Get ptr to array of function line structs (FCNLINE[numFcnLines])
     lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
@@ -254,7 +254,7 @@ LPPL_YYSTYPE SysFnMonSTRACE_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header
@@ -495,7 +495,7 @@ LPPL_YYSTYPE SysFnDydSTRACE_EM_YY
         goto RIGHT_DOMAIN_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLock (lpSymEntry->stData.stGlbData);
+    lpMemDfnHdr = MyGlobalLockDfn (lpSymEntry->stData.stGlbData);
 
     // Get ptr to array of function line structs (FCNLINE[numFcnLines])
     lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
@@ -675,7 +675,7 @@ void TraceLine
                         Assert (IsGlbTypeDfnDir_PTB (lptkFunc->tkData.tkGlbData));
 
                         // Lock the memory to get a ptr to it
-                        lpMemDfnHdr = MyGlobalLock (lptkFunc->tkData.tkGlbData);
+                        lpMemDfnHdr = MyGlobalLockDfn (lptkFunc->tkData.tkGlbData);
 
                         // Get the function name global memory handle
                         htGlbName = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
@@ -693,7 +693,7 @@ void TraceLine
                 htGlbName = lpSISCur->hGlbFcnName;
 
             // Lock the memory to get a ptr to it
-            lpMemName = MyGlobalLock (htGlbName);
+            lpMemName = MyGlobalLockWsz (htGlbName);
 
             CHECK_TEMP_OPEN
 
@@ -796,7 +796,7 @@ void TraceExit
         htGlbName = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
 
     // Lock the memory to get a ptr to it
-    lpMemName = MyGlobalLock (htGlbName);
+    lpMemName = MyGlobalLockWsz (htGlbName);
 
     CHECK_TEMP_OPEN
 
@@ -862,7 +862,7 @@ UBOOL DisplayTraceResult
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrItm = MyGlobalLock (hGlbItm);
+    lpMemHdrItm = MyGlobalLockWsz (hGlbItm);
 
     // Copy the item data to global memory
     CopyMemory (VarArrayDataFmBase (lpMemHdrItm),
@@ -874,7 +874,7 @@ UBOOL DisplayTraceResult
     EXIT_TEMP_OPEN
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLockVar (hGlbRes);
 
     // Skip over the header and dimension to the data
     lpMemRes = VarArrayDataFmBase (lpMemHdrRes);

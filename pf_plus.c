@@ -515,7 +515,7 @@ UBOOL PrimFnDydPlusAPA_EM
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (*lphGlbRes);
+    lpMemRes = MyGlobalLockVar (*lphGlbRes);
 
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayDataFmBase (lpMemRes);

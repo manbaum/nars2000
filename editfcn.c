@@ -277,7 +277,7 @@ UBOOL IzitAFE
     if (hGlbDfnHdr NE NULL && !bAllow)
     {
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
         // Save the flag
         bAFO = lpMemDfnHdr->bAFO;
@@ -456,7 +456,7 @@ LRESULT APIENTRY FEWndProc
                     hGlbDfnHdr = lpSymName->stData.stGlbData;
 
                     // Lock the memory to get a ptr to it
-                    lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+                    lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
                 } // End IF/ELSE
             } // End IF
 
@@ -611,7 +611,7 @@ LRESULT APIENTRY FEWndProc
                     hGlbName = lpSymName->stHshEntry->htGlbName;
 
                     // Lock the memory to get a ptr to it
-                    lpMemName = MyGlobalLock (hGlbName);
+                    lpMemName = MyGlobalLockWsz (hGlbName);
 
                     // Append the text to the Edit Ctrl
                     ReplaceSel (hWndEC, TRUE, (LPARAM) lpMemName);
@@ -624,7 +624,7 @@ LRESULT APIENTRY FEWndProc
                     hGlbTxtLine = lpMemDfnHdr->hGlbTxtHdr;
 
                     // Lock the memory to get a ptr to it
-                    lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+                    lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
 
                     // Append the text to the Edit Ctrl
                     ReplaceSel (hWndEC, TRUE, (LPARAM) &lpMemTxtLine->C);
@@ -649,7 +649,7 @@ LRESULT APIENTRY FEWndProc
                     hGlbTxtLine = lpFcnLines->hGlbTxtLine;
 
                     // Lock the memory to get a ptr to it
-                    lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+                    lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
 
                     // Append the text to the Edit Ctrl
                     ReplaceSel (hWndEC, TRUE, (LPARAM) &lpMemTxtLine->C);
@@ -1174,7 +1174,7 @@ UBOOL SyntaxColor
         goto CRIT_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpSyntClr = MyGlobalLock (hSyntClr);
+    lpSyntClr = MyGlobalLock000 (hSyntClr);
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -1464,7 +1464,7 @@ int LclECPaintHook
                 if (hGlbClr NE NULL)
                 {
                     // Lock the memory to get a ptr to it
-                    lpMemClrIni = MyGlobalLock (hGlbClr);
+                    lpMemClrIni = MyGlobalLock000 (hGlbClr);
 
                     // Syntax color the line
                     if (!SyntaxColor (lpwsz, uCol + uLen, lpMemClrIni, hWndEC))
@@ -2253,7 +2253,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                     case NAMETYPE_OP3:
                     case NAMETYPE_TRN:
                         // Lock the memory to get a ptr to it
-                        lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+                        lpMemName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
 
                         // Get ptr to formatting save area
                         lpwszFormat = lpMemPTD->lpwszFormat;
@@ -3583,7 +3583,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 CHECK_TEMP_OPEN
 
                 // Lock the memory to get a ptr to it
-                lpwGlbName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+                lpwGlbName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
 
                 // Get the name length
                 uLen = lstrlenW (lpwGlbName);
@@ -4189,8 +4189,8 @@ HGLOBAL CopyGlbMemory
         if (hGlbDst NE NULL)
         {
             // Lock both memory blocks
-            lpMemDst = MyGlobalLock (hGlbDst);
-            lpMemSrc = MyGlobalLock (hGlbSrc);
+            lpMemDst = MyGlobalLock000 (hGlbDst);
+            lpMemSrc = MyGlobalLock    (hGlbSrc);
 
             // Copy source to destin
             CopyMemory (lpMemDst, lpMemSrc, dwSize);
@@ -4493,7 +4493,7 @@ void PasteAPLChars_EM
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpMemFmts = MyGlobalLock (hGlbFmts);
+    lpMemFmts = MyGlobalLock000 (hGlbFmts);
 
     // Enumerate the clipboard formats and save the format # and handle
     for (uFmtNum = uFmt = 0; uFmt < uCount; uFmt++)
@@ -5463,7 +5463,7 @@ NORMAL_EXIT:
         LPTOKEN_HEADER lpMemTknHdr;
 
         // Lock the memory to get a ptr to it
-        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+        lpMemTknHdr = MyGlobalLockTkn (hGlbTknHdr);
 
         // Free the tokens
         Untokenize (lpMemTknHdr);

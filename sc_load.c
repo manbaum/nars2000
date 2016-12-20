@@ -285,7 +285,7 @@ UBOOL LoadWorkspace_EM
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpwszDPFE = MyGlobalLock (hGlbDPFE);
+    lpwszDPFE = MyGlobalLockWsz (hGlbDPFE);
 
     // Check for CLEAR WS
     if (lpwszDPFE[0] EQ WC_EOS)
@@ -461,7 +461,7 @@ UBOOL LoadWorkspace_EM
                     hGlbDfnHdr = lpSymEntry->stData.stGlbData;
 
                     // Lock the memory to get a ptr to it
-                    lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+                    lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
                     // Get suspended state
                     bSuspended = strchrW (lpwFcnLine, L'*') NE NULL;
@@ -681,7 +681,7 @@ UBOOL LoadWorkspace_EM
                             if (tkNam.tkData.tkSym->stFlags.DfnSysLabel)
                             {
                                 // Lock the memory to get a ptr to it
-                                lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+                                lpMemName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
 
                                 // Format the error message text
                                 MySprintfW (wszTemp,
@@ -710,7 +710,7 @@ UBOOL LoadWorkspace_EM
                                 else
                                 {
                                     // Lock the memory to get a ptr to it
-                                    lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+                                    lpMemName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
 
                                     // Format the error message text
                                     MySprintfW (wszTemp,
@@ -955,7 +955,7 @@ UBOOL IsSymSysName
     UBOOL   bRet;                       // TRUE iff the result is valid
 
     // Lock the memory to get a ptr to it
-    lpwGlbName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+    lpwGlbName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
 
     // Compare the names
     bRet = lstrcmpiW (lpwGlbName, wszSysName) EQ 0;
@@ -1065,7 +1065,7 @@ UBOOL ParseSavedWsFcn_EM
 
             case DFN_HEADER_SIGNATURE:
                 // Lock the memory to get a ptr to it
-                lpMemDfnHdr = MyGlobalLock (hGlbObj);
+                lpMemDfnHdr = MyGlobalLockDfn (hGlbObj);
 
                 // Mark as valued and user-defined function/operator
                 lpSymObj->stFlags.Value  =
@@ -1095,7 +1095,7 @@ UBOOL ParseSavedWsFcn_EM
             LPDFN_HEADER lpMemDfnHdr;   // Ptr to DFN_HEADER global memory
 
             // Lock the memory to get a ptr to it
-            lpMemDfnHdr = MyGlobalLock (hGlbOld);
+            lpMemDfnHdr = MyGlobalLockDfn (hGlbOld);
 
             // Save the STE flags as the STE is still active
             lpMemDfnHdr->SaveSTEFlags = TRUE;
@@ -1250,7 +1250,7 @@ LPWCHAR ParseSavedWsVar_EM
             Assert (IsGlbTypeVarDir_PTB (hGlbObj));
 
             // Lock the memory to get a ptr to it
-            lpMemHdrObj = MyGlobalLock (hGlbObj);
+            lpMemHdrObj = MyGlobalLockVar (hGlbObj);
 
             // Save the storage type
 #define lpHeader        lpMemHdrObj
@@ -1575,7 +1575,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemHdrObj = MyGlobalLock (hGlbObj);
+            lpMemHdrObj = MyGlobalLock000 (hGlbObj);
 
 #define lpHeader        lpMemHdrObj
             // Fill in the header
@@ -1956,7 +1956,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 hGlbObj = CopySymGlbDirAsGlb (hGlbChk);
 
                 // Lock the memory to get a ptr to it
-                lpMemHdrChk = MyGlobalLock (hGlbChk);
+                lpMemHdrChk = MyGlobalLockVar (hGlbChk);
 
                 // Mark if this is a PERMNDX_xxx value
                 bPermNdx = (lpMemHdrChk->PermNdx NE PERMNDX_NONE);
@@ -2121,7 +2121,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                     LPINTMONINFO lpMemMonInfo;          // Ptr to function line monitoring info
 
                     // Lock the memory to get a ptr to it
-                    lpMemDfnHdr = MyGlobalLock (SF_Fcns.hGlbDfnHdr);
+                    lpMemDfnHdr = MyGlobalLockDfn (SF_Fcns.hGlbDfnHdr);
 
                     // Allocate space for the monitor info
                     lpMemDfnHdr->hGlbMonInfo =
@@ -2129,7 +2129,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                     if (lpMemDfnHdr->hGlbMonInfo)
                     {
                         // Lock the memory to get a ptr to it
-                        lpMemMonInfo = MyGlobalLock (lpMemDfnHdr->hGlbMonInfo);
+                        lpMemMonInfo = MyGlobalLock000 (lpMemDfnHdr->hGlbMonInfo);
 
                         // Loop through the function header & lines
                         for (uCnt = 0; uCnt < uLineCnt; uCnt++, lpMemMonInfo++)
@@ -2387,8 +2387,8 @@ UBOOL CompareGlobals
         return FALSE;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrGlb1 = MyGlobalLock (hGlb1);
-    lpMemHdrGlb2 = MyGlobalLock (hGlb2);
+    lpMemHdrGlb1 = MyGlobalLockVar (hGlb1);
+    lpMemHdrGlb2 = MyGlobalLockVar (hGlb2);
 
     // Get the storage type and NELM
     aplType = lpMemHdrGlb1->ArrType;

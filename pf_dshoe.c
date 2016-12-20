@@ -263,7 +263,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+        lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
         // Fill in the header
@@ -393,7 +393,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemRes = MyGlobalLock (hGlbRes);
+            lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
             // Fill in the header
@@ -483,7 +483,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             YYFree (lpYYRes); lpYYRes = NULL;
 
             // Lock the memory to get a ptr to it
-            lpMemGup = MyGlobalLock (hGlbGup);
+            lpMemGup = MyGlobalLockVar (hGlbGup);
 
             // Skip over the header and dimensions to the data
             lpMemGup = VarArrayDataFmBase (lpMemGup);
@@ -625,7 +625,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemTmp = MyGlobalLock (hGlbTmp);
+            lpMemTmp = MyGlobalLock000 (hGlbTmp);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemTmp)
             // Fill in the header
@@ -683,7 +683,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             YYFree (lpYYRes); lpYYRes = NULL;
 
             // Lock the memory to get a ptr to it
-            lpMemGup = MyGlobalLock (hGlbGup);
+            lpMemGup = MyGlobalLockVar (hGlbGup);
 
             // Skip over the header and dimensions to the data
             lpMemGup = VarArrayDataFmBase (lpMemGup);
@@ -701,7 +701,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemRes = MyGlobalLock (hGlbRes);
+            lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
             // Fill in the header

@@ -265,7 +265,7 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header
@@ -584,7 +584,7 @@ LPAPLUINT AttributeValences
                 hGlbObj = lpSymEntry->stData.stGlbData;
 
                 // Lock the memory to get a ptr to it
-                lpMemHdrObj = MyGlobalLock (hGlbObj);
+                lpMemHdrObj = MyGlobalLockDfn (hGlbObj);
 
 #define lpHeader    lpMemHdrObj
                 *lpMemDataRes++ = lpHeader->numResultSTE > 0;   // [1] = Explicit result (0 or 1)
@@ -681,7 +681,7 @@ LPAPLUINT AttributeFixTime
                 hGlbObj = lpSymEntry->stData.stGlbData;
 
                 // Lock the memory to get a ptr to it
-                lpMemHdrObj = MyGlobalLock (hGlbObj);
+                lpMemHdrObj = MyGlobalLockDfn (hGlbObj);
 
                 // If it's a user-defined function/operator
                 if (lpSymEntry->stFlags.UsrDfn)
@@ -774,7 +774,7 @@ LPAPLUINT AttributeExecProp
                 LPDFN_HEADER lpMemDfnHdr;
 
                 // Lock the memory to get a ptr to it
-                lpMemDfnHdr = MyGlobalLock (lpSymEntry->stData.stGlbData);
+                lpMemDfnHdr = MyGlobalLockDfn (lpSymEntry->stData.stGlbData);
 
                 // If it's a Magic Function/Operator,
                 //   or AFO, ...
@@ -945,7 +945,7 @@ APLINT CalcSymEntrySize
         if (lpSymEntry->stFlags.UsrDfn)
         {
             // Lock the memory to get a ptr to it
-            lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+            lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
             // Get # function lines
             uNumFcnLines = lpMemDfnHdr->numFcnLines;
@@ -1054,7 +1054,7 @@ APLUINT CalcGlbVarSize
     aplSize += MyGlobalSize (hGlbData);
 
     // Lock the memory to get a ptr to it
-    lpMemHdrData = MyGlobalLock (hGlbData);
+    lpMemHdrData = MyGlobalLockVar (hGlbData);
 
 #define lpHeader        lpMemHdrData
     // Get the Array Type, NELM, and Rank
@@ -1153,7 +1153,7 @@ APLUINT CalcGlbFcnSize
     aplSize += MyGlobalSize (hGlbData);
 
     // Lock the memory to get a ptr to it
-    lpMemHdrData = MyGlobalLock (hGlbData);
+    lpMemHdrData = MyGlobalLockFcn (hGlbData);
 
 #define lpHeader        lpMemHdrData
     // Get the text ptr

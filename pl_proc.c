@@ -245,7 +245,7 @@ void ArrExprCheckCaller
 ///         hGlbNameVars = lptkNameVars->tkData.tkGlbData;
 ///
 ///         // Lock the memory to get a ptr to it
-///         lpMemNameVars = MyGlobalLock (hGlbNameVars);
+///         lpMemNameVars = MyGlobalLockVnm (hGlbNameVars);
 ///
 ///         // Ensure there is only one name
 ///         bRet = (((LPVARNAMED_HEADER) lpMemNameVars)->NELM EQ 1);
@@ -287,7 +287,7 @@ void ArrExprCheckCaller
 ///                         uCharIndex = lptkNameVars->tkCharIndex;
 ///
 ///                         // Lock the memory to get a ptr to it
-///                         lpMemData = MyGlobalLock (lpYYRes->tkToken.tkData.tkGlbData);
+///                         lpMemData = MyGlobalLockVar (lpYYRes->tkToken.tkData.tkGlbData);
 ///
 ///                         // Mark as a Selective Specification array
 ///                         lpMemData->bSelSpec = TRUE;
@@ -356,7 +356,7 @@ void ArrExprCheckCaller
 ///         hGlbArg = lptkArg->tkData.tkGlbData;
 ///
 ///         // Lock the memory to get a ptr to it
-///         lpMemHdr = MyGlobalLock (hGlbArg);
+///         lpMemHdr = MyGlobalLockVar (hGlbArg);
 ///
 ///         // Get the Selective Specification array bit
 ///         bRet = lpMemHdr->bSelSpec;

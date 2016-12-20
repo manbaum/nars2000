@@ -2187,14 +2187,17 @@ typedef struct tagNFNSDATA
                                     // 24:  Length
 } NFNSDATA, *LPNFNSDATA;
 
+#define NFNS_HEADER_SIGNATURE   'SNFN'
+
 typedef struct tagNFNSHDR
 {
-    UINT     nTieNums,              // 00:  # active tie numbers
-             nMax,                  // 04:  Maximum # NFNSDATA structs
-             offFirstFree,          // 08:  Offset from aNfnsData[0] of the first free entry
-             offFirstInuse;         // 0C:  ...                                   in use ...
-    NFNSDATA aNfnsData[];           // 10:  Array of NFNSDATA structs
-                                    // 14:  Length
+    HEADER_SIGNATURE Sig;           // 00:  NFNSHDR signature
+    UINT             nTieNums,      // 04:  # active tie numbers
+                     nMax,          // 08:  Maximum # NFNSDATA structs
+                     offFirstFree,  // 0C:  Offset from aNfnsData[0] of the first free entry
+                     offFirstInuse; // 10:  ...                                   in use ...
+    NFNSDATA         aNfnsData[];   // 14:  Array of NFNSDATA structs
+                                    // 18:  Length
 } NFNSHDR, *LPNFNSHDR;
 
 #define DEF_NFNS_INIT       100     // Inital allocation of aNfnsData

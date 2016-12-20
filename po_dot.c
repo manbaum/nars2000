@@ -779,7 +779,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemTmp = MyGlobalLock (hGlbTmp);
+            lpMemTmp = MyGlobalLock000 (hGlbTmp);
 
             // Loop through the entire right arg
             for (uCol = 0; uCol < aplNELMRht; uCol++)
@@ -805,7 +805,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemTmp = MyGlobalLock (hGlbTmp);
+            lpMemTmp = MyGlobalLock000 (hGlbTmp);
 
             // Loop through the entire right arg
             for (uCol = 0; uCol < aplNELMRht; uCol++)
@@ -894,7 +894,7 @@ MINDOTPLUS:
                     goto WSFULL_EXIT;
 
                 // Lock the memory to get a ptr to it
-                lpMemHdrRes = MyGlobalLock (hGlbRes);
+                lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
                 // Fill in the header
@@ -969,7 +969,7 @@ MINDOTPLUS:
                     goto WSFULL_EXIT;
 
                 // Lock the memory to get a ptr to it
-                lpMemHdrRes = MyGlobalLock (hGlbRes);
+                lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
                 // Fill in the header
@@ -1044,7 +1044,7 @@ MINDOTPLUS:
                     goto WSFULL_EXIT;
 
                 // Lock the memory to get a ptr to it
-                lpMemHdrRes = MyGlobalLock (hGlbRes);
+                lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
                 // Fill in the header
@@ -1125,7 +1125,7 @@ MINDOTPLUS:
                     goto WSFULL_EXIT;
 
                 // Lock the memory to get a ptr to it
-                lpMemHdrRes = MyGlobalLock (hGlbRes);
+                lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
                 // Fill in the header
@@ -1366,7 +1366,7 @@ UBOOL IzitMinMaxAfo
         hGlbDfnHdr = GetGlbHandle (&lpYYFcnStrLft->tkToken);
 
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
         // If it's an AFO, ...
         if (lpMemDfnHdr->bAFO)
@@ -1936,7 +1936,7 @@ RESTART_INNERPROD_RES:
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
     // Fill in the header
@@ -2542,7 +2542,7 @@ RESTART_INNERPROD_RES:
                             MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
 
                             // Lock the memory to get a ptr to it
-                            lpMemHdrLft = MyGlobalLock (hGlbLft);
+                            lpMemHdrLft = MyGlobalLockVar (hGlbLft);
                         } // End IF
 
                         if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
@@ -2551,7 +2551,7 @@ RESTART_INNERPROD_RES:
                             MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
 
                             // Lock the memory to get a ptr to it
-                            lpMemHdrRht = MyGlobalLock (hGlbRht);
+                            lpMemHdrRht = MyGlobalLockVar (hGlbRht);
                         } // End IF
 
                         // Save as the new storage type
@@ -2702,7 +2702,7 @@ RESTART_INNERPROD_RES:
                                 MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
 
                                 // Lock the memory to get a ptr to it
-                                lpMemHdrLft = MyGlobalLock (hGlbLft);
+                                lpMemHdrLft = MyGlobalLockVar (hGlbLft);
                             } // End IF
 
                             if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
@@ -2711,7 +2711,7 @@ RESTART_INNERPROD_RES:
                                 MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
 
                                 // Lock the memory to get a ptr to it
-                                lpMemHdrRht = MyGlobalLock (hGlbRht);
+                                lpMemHdrRht = MyGlobalLockVar (hGlbRht);
                             } // End IF
 
                             // Save as the new storage type

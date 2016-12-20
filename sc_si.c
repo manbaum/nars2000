@@ -125,7 +125,7 @@ UBOOL CmdSiSinlCom_EM
                     break;
 #endif
                 // Lock the memory to get a ptr to it
-                lpMemName = MyGlobalLock (lpSISCur->hGlbFcnName);
+                lpMemName = MyGlobalLockWsz (lpSISCur->hGlbFcnName);
 
                 // If it's CmdSave_EM, ...
                 if (lpDict NE NULL)

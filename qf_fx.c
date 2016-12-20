@@ -202,7 +202,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                             APLNELM           aplNELMItmRht;            // Right arg item NELM
 
                             // Lock the memory to get a ptr to it
-                            lpMemHdrItmRht = MyGlobalLock (hGlbItmRht);
+                            lpMemHdrItmRht = MyGlobalLockVar (hGlbItmRht);
 
                             // Get the array NELM
 #define lpHeader        lpMemHdrItmRht
@@ -324,7 +324,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
         htGlbName = SF_Fcns.lpSymName->stHshEntry->htGlbName;
 
         // Lock the memory to get a ptr to it
-        lpMemName = MyGlobalLock (htGlbName);
+        lpMemName = MyGlobalLockWsz (htGlbName);
 
         // Get the length
         uNameLen = lstrlenW (lpMemName);
@@ -348,7 +348,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemHdrRes = MyGlobalLock (hGlbRes);
+        lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
         // Fill in the header

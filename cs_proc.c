@@ -52,12 +52,12 @@ void CS_ChangeTokenType
         hGlbTknHdr = lpcsLocalVars->hGlbImmExec;
 
         // Lock the memory to get a ptr to it
-        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+        lpMemTknHdr = MyGlobalLockTkn (hGlbTknHdr);
     } else
     // It's a defined function/operator
     {
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (lpcsLocalVars->hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLockDfn (lpcsLocalVars->hGlbDfnHdr);
 
         // Get ptr to array of function line structs (FCNLINE[numFcnLines])
         lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
@@ -120,12 +120,12 @@ void CS_ChainTokens
         hGlbTknHdr = lpcsLocalVars->hGlbImmExec;
 
         // Lock the memory to get a ptr to it
-        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+        lpMemTknHdr = MyGlobalLockTkn (hGlbTknHdr);
     } else
     // It's a defined function/operator
     {
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (lpcsLocalVars->hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLockDfn (lpcsLocalVars->hGlbDfnHdr);
 
         // Get ptr to array of function line structs (FCNLINE[numFcnLines])
         lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
@@ -274,12 +274,12 @@ void CS_SetTokenCLIndex
         hGlbTknHdr = lpcsLocalVars->hGlbImmExec;
 
         // Lock the memory to get a ptr to it
-        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+        lpMemTknHdr = MyGlobalLockTkn (hGlbTknHdr);
     } else
     // It's a defined function/operator
     {
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (lpcsLocalVars->hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLockDfn (lpcsLocalVars->hGlbDfnHdr);
 
         // Get ptr to array of function line structs (FCNLINE[numFcnLines])
         lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
@@ -1440,7 +1440,7 @@ UBOOL CS_SELECT_Stmt_EM
                     hGlbDfnHdr = GetDfnHdrHandle (lpplLocalVars);
 
                     // Lock the memory to get a ptr to it
-                    lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+                    lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
                     // Get the given line's tokenized global memory handle
                     lpMemTknHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, offTknHdr);
@@ -1790,7 +1790,7 @@ void CS_GetToken_COM
         hGlbDfnHdr = GetDfnHdrHandle (lpplLocalVars);
 
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
         // Get ptr to array of function line structs (FCNLINE[numFcnLines])
         lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);

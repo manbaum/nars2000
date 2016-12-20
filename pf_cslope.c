@@ -218,7 +218,7 @@ LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemLft = MyGlobalLock (hGlbLft);
+    lpMemLft = MyGlobalLock000 (hGlbLft);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemLft)
     // Fill in the header values
@@ -437,7 +437,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     aplRankRes++;
 
     // Lock the memory to get a ptr to it
-    lpMemAxisHead = MyGlobalLock (hGlbAxis);
+    lpMemAxisHead = MyGlobalLockInt (hGlbAxis);
 
     // Point to the grade-up of the first
     //   <aplRankRht> values in lpMemAxisHead
@@ -487,7 +487,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header values
@@ -539,9 +539,9 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     ByteRes = aplRankRht * sizeof (APLUINT);
 
     // In case the result is a scalar, allocate at least
-    //   one byte so the GlobalLock doesn't fail -- Windows
+    //   four bytes so the GlobalLock doesn't fail -- Windows
     //   doesn't handle the empty case well.
-    ByteRes = max (ByteRes, 1);
+    ByteRes = max (ByteRes, 4);
 
     // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
@@ -556,7 +556,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemWVec = MyGlobalLock (hGlbWVec);
+    lpMemWVec = MyGlobalLock000 (hGlbWVec);
 
     // Loop through the dimensions of the result in reverse
     //   order {backscan} and compute the cumulative product
@@ -574,9 +574,9 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     ByteRes = aplRankRes * sizeof (APLUINT);
 
     // In case the result is a scalar, allocate at least
-    //   one byte so the GlobalLock doesn't fail -- Windows
+    //   four bytes so the GlobalLock doesn't fail -- Windows
     //   doesn't handle the empty case well.
-    ByteRes = max (ByteRes, 1);
+    ByteRes = max (ByteRes, 4);
 
     // Check for overflow
     if (ByteRes NE (APLU3264) ByteRes)
@@ -591,7 +591,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemOdo = MyGlobalLock (hGlbOdo);
+    lpMemOdo = MyGlobalLock000 (hGlbOdo);
 
     // Copy the data to the result
 

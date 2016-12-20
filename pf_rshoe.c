@@ -366,7 +366,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
         aplNELMNstRht = aplNELMRht;
 
     // Lock the memory to get a ptr to it
-    lpMemRht = MyGlobalLock (hGlbRht);
+    lpMemRht = MyGlobalLockVar (hGlbRht);
 
     // Skip over the header to the dimensions
     lpMemDimRht = VarArrayBaseToDim (lpMemRht);
@@ -475,7 +475,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemDimCom = MyGlobalLock (hGlbDimCom);
+    lpMemDimCom = MyGlobalLockInt (hGlbDimCom); // Might be only 1 byte
 
     // Initialize the result storage type
     //   and type of first simple scalar
@@ -510,7 +510,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                 if (!IsScalar (aplRankSub))
                 {
                     // Lock the memory to get a ptr to it
-                    lpMemSub = MyGlobalLock (((LPAPLNESTED) lpMemRht)[uRht]);
+                    lpMemSub = MyGlobalLockVar (((LPAPLNESTED) lpMemRht)[uRht]);
 
                     // Skip over the header to the dimensions
                     lpMemSub = VarArrayBaseToDim (lpMemSub);
@@ -572,7 +572,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -633,7 +633,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                 case ARRAY_HETERO:
                 case ARRAY_NESTED:
                     // Lock the memory to get a ptr to it
-                    lpMemSub = MyGlobalLock (hGlbSub);
+                    lpMemSub = MyGlobalLockVar (hGlbSub);
 
                     // Skip over the header and dimensions to the data
                     lpMemSub = VarArrayDataFmBase (lpMemSub);
@@ -809,7 +809,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                     hGlbSub = ((LPAPLNESTED) lpMemRht)[uRht];
 
                     // Lock the memory to get a ptr to it
-                    lpMemSub = MyGlobalLock (hGlbSub);
+                    lpMemSub = MyGlobalLockVar (hGlbSub);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemSub)
                     // Get the Array Type, NELM, and Rank
@@ -1195,7 +1195,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                     hGlbSub = ((LPAPLNESTED) lpMemRht)[uRht];
 
                     // Lock the memory to get a ptr to it
-                    lpMemSub = MyGlobalLock (hGlbSub);
+                    lpMemSub = MyGlobalLockVar (hGlbSub);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemSub)
                     // Get the Array Type, NELM, and Rank
@@ -1723,7 +1723,7 @@ NORMAL_EXIT:
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemLft = MyGlobalLock (hGlbLft);
+        lpMemLft = MyGlobalLock000 (hGlbLft);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemLft)
         // Fill in the header
@@ -1743,7 +1743,7 @@ NORMAL_EXIT:
         lpMemLft = VarArrayDataFmBase (lpMemLft);
 
         // Lock the memory to get a ptr to it
-        lpMemAxisHead = MyGlobalLock (hGlbAxis);
+        lpMemAxisHead = MyGlobalLockInt (hGlbAxis);
 
         // Copy the values from lpMemAxisHead
         CopyMemory (lpMemLft, lpMemAxisHead, (APLU3264) aplRankRes * sizeof (APLUINT));
@@ -2319,7 +2319,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
 
         case IMMTYPE_RAT:
             // Lock the memory to get a ptr to it
-            lpMemLft = MyGlobalLock (hGlbLft);
+            lpMemLft = MyGlobalLockVar (hGlbLft);
 
             // If it's not a scalar/vector singleton, ...
             if (IsMultiRank (((LPVARARRAY_HEADER) lpMemLft)->Rank)
@@ -2339,7 +2339,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
 
         case IMMTYPE_VFP:
             // Lock the memory to get a ptr to it
-            lpMemLft = MyGlobalLock (hGlbLft);
+            lpMemLft = MyGlobalLockVar (hGlbLft);
 
             // If it's not a scalar/vector singleton, ...
             if (IsMultiRank (((LPVARARRAY_HEADER) lpMemLft)->Rank)
@@ -2481,7 +2481,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
     bQuadIO = GetQuadIO ();
 
     // Lock the memory to get a ptr to it
-    lpMemLft = MyGlobalLock (hGlbLft);
+    lpMemLft = MyGlobalLockVar (hGlbLft);
 
     // Skip over the header and dimensions to the data
     lpMemLft = VarArrayDataFmBase (lpMemLft);
@@ -2517,7 +2517,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
         AttrsOfGlb (hGlbRht, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
         // Lock the memory to get a ptr to it
-        lpMemRht = MyGlobalLock (hGlbRht);
+        lpMemRht = MyGlobalLockVar (hGlbRht);
 
         // Skip over the header to the dimensions
         lpMemDimRht = VarArrayBaseToDim (lpMemRht);
@@ -2561,7 +2561,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                 goto DOMAIN_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemSubLft = MyGlobalLock (hGlbSubLft);
+            lpMemSubLft = MyGlobalLockVar (hGlbSubLft);
 
             // Skip over the header and dimensions to the data
             lpMemSubLft = VarArrayDataFmBase (lpMemSubLft);
@@ -2859,7 +2859,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                 //   with <aplLongestSet> or <hGlbSet> depending upon <aplTypeSet>
 
                 // Lock the memory to get a ptr to it
-                lpMemRht = MyGlobalLock (hGlbRht);
+                lpMemRht = MyGlobalLockVar (hGlbRht);
 
                 // Skip over the header and dimensions to the data
                 lpMemRht = VarArrayDataFmBase (lpMemRht);
@@ -2966,7 +2966,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                     aplTypeRht = aplTypePro;
 
                     // Lock the memory to get a ptr to it
-                    lpMemPrvRht = MyGlobalLock (hGlbPrvRht);
+                    lpMemPrvRht = MyGlobalLockVar (hGlbPrvRht);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemPrvRht)
                     // Get the rank of the previous right arg global
@@ -2984,7 +2984,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                 } // End IF
 
                 // Lock the memory to get a ptr to it
-                lpMemRht = MyGlobalLock (hGlbRht);
+                lpMemRht = MyGlobalLockVar (hGlbRht);
 
                 // Get the array rank
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRht)

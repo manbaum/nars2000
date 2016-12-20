@@ -498,8 +498,10 @@
 #define strsizeof(a)                (sizeof (a) - 1)
 
 // Wide char versions
-#define CopyMemoryW(dst,src,len)    CopyMemory (dst, src, (len) * sizeof (WCHAR))
-#define MoveMemoryW(dst,src,len)    MoveMemory (dst, src, (len) * sizeof (WCHAR))
+#define CopyMemoryW(dst,src,len)    CopyMemory ((dst), (src), (len) * sizeof (WCHAR))
+#define MoveMemoryW(dst,src,len)    MoveMemory ((dst), (src), (len) * sizeof (WCHAR))
+// Define macro to copy a entire var to a named var
+#define CopyAll(dst,src)            CopyMemory ((dst), (src), sizeof (*dst));
 
 // Macros for returning a result from a Dialog
 #define DlgReturn(hDlg,lRet)        SetWindowLongPtr (hDlg, DWLP_MSGRESULT, lRet);  \

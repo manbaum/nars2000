@@ -460,7 +460,7 @@ EXIT_TYPES ImmExecStmt
     ieThread.bActOnErrors   = bActOnErrors;
 
     // Lock the memory to get a ptr to it
-    lpMemWFSO = MyGlobalLock (hGlbWFSO);
+    lpMemWFSO = MyGlobalLock000 (hGlbWFSO);
 
     // Fill in the struct
     lpMemWFSO->lpMemPTD = ieThread.lpMemPTD;
@@ -649,7 +649,7 @@ DWORD WINAPI ImmExecStmtInThread
         ForceSendCursorMsg (hWndEC, TRUE);
 
         // Lock the memory to get a ptr to it
-        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+        lpMemTknHdr = MyGlobalLockTkn (hGlbTknHdr);
 
         // Execute the line
         exitType =
@@ -871,7 +871,7 @@ DWORD WINAPI ImmExecStmtInThread
         resetFlag = lpMemPTD->lpSISCur->ResetFlag;
 UNTOKENIZE_EXIT:
         // Lock the memory to get a ptr to it
-        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+        lpMemTknHdr = MyGlobalLockTkn (hGlbTknHdr);
 
         // Free the tokens
         Untokenize (lpMemTknHdr);

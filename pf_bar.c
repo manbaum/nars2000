@@ -289,7 +289,7 @@ UBOOL PrimFnMonBarAPA_EM
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+    lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
 
 #define lpHeader    lpMemHdrRes
     aplNELMRes = lpHeader->NELM;
@@ -584,7 +584,7 @@ UBOOL PrimFnDydBarAPA_EM
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+    lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
 
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayDataFmBase (lpMemHdrRes);

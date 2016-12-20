@@ -90,7 +90,7 @@ UBOOL CmdSave_EM
     lpMemPTD = GetMemPTD ();
 
     // Lock the memory to get a ptr to it
-    lpMemOldWSID = MyGlobalLock (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData);
+    lpMemOldWSID = MyGlobalLockVar (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemOldWSID)
     // Get the NELM and Rank
@@ -210,7 +210,7 @@ UBOOL CmdSave_EM
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemCnt = MyGlobalLock (hGlbCnt);
+    lpMemCnt = MyGlobalLock000 (hGlbCnt);
 
     // The format of a saved ws is as an .ini file
     //   (named *.ws.nars) with the following sections:
@@ -328,7 +328,7 @@ UBOOL CmdSave_EM
             hGlbName = lpSymEntry->stHshEntry->htGlbName;
 
             // Lock the memory to get a ptr to it
-            lpMemName = MyGlobalLock (hGlbName);
+            lpMemName = MyGlobalLockWsz (hGlbName);
 
             // Format the text as an ASCII string with non-ASCII chars
             //   represented as either {symbol} or {\xXXXX} where XXXX is
@@ -1277,7 +1277,7 @@ void WriteFunctionLine
                L"%d",
                 uLineNum);
     // Lock the memory to get a ptr to it
-    lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+    lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
 
     // Format the text as an ASCII string with non-ASCII chars
     //   represented as either {symbol} or {\xXXXX} where XXXX is
@@ -1345,9 +1345,6 @@ LPAPLCHAR SavedWsFormGlbVar
     Assert (IsGlbTypeVarDir_PTB (hGlbObj)
          || bUsrDfn);
 
-    // Lock the memory to get a ptr to it
-    lpMemObj = MyGlobalLock (hGlbObj);
-
     // Format the hGlbObj
     MySprintfW (wszGlbObj,
                 sizeof (wszGlbObj),
@@ -1364,6 +1361,9 @@ LPAPLCHAR SavedWsFormGlbVar
     {
         if (bUsrDfn)
         {
+            // Lock the memory to get a ptr to it
+            lpMemObj = MyGlobalLockDfn (hGlbObj);
+
             // Copy the STE name instead as we don't use :nnn convention in
             //   function arrays
 #define lpHeader        ((LPDFN_HEADER) lpMemObj)
@@ -1390,6 +1390,9 @@ LPAPLCHAR SavedWsFormGlbVar
     *lpaplChar++ = L'V';
     *lpaplChar++ = L' ';
 
+    // Lock the memory to get a ptr to it
+    lpMemObj = MyGlobalLockVar (hGlbObj);
+
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemObj)
     // Get the array attributes
     aplTypeObj = lpHeader->ArrType;
@@ -1407,7 +1410,7 @@ LPAPLCHAR SavedWsFormGlbVar
                          TranslateArrayTypeToChar (aplTypeObj), // Object storage type as WCHAR
                          aplNELMObj,                            // Object NELM
                          aplRankObj,                            // Object rank
-                         VarArrayBaseToDim (lpMemObj),          // Ptr to object dimensions
+                         VarArrayBaseToDim (lpHeader),          // Ptr to object dimensions
                         &uCommPrec,                             // Ptr to common VFP array precision (0 if none) (may be NULL)
                          lpHeader);                             // Ptr to array header
 #undef  lpHeader

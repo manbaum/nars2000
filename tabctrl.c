@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -197,7 +197,7 @@ UBOOL CreateNewTab
         return FALSE;
 
     // Lock the memory to get a ptr to it
-    lpwszDPFE = MyGlobalLock (hGlbDPFE);
+    lpwszDPFE = MyGlobalLock100 (hGlbDPFE);
 
     // Copy the workspace name to global memory
     CopyMemoryW (lpwszDPFE, lpwsz, uLen);
@@ -915,7 +915,7 @@ void FreeGlobalStorage
         UINT         uCnt;              // Loop counter
 
         // Lock the memory to get a ptr to it
-        lpNfnsHdr = MyGlobalLock (lpMemPTD->hGlbNfns);
+        lpNfnsHdr = MyGlobalLockNfn (lpMemPTD->hGlbNfns);
 
         // Point to the first entry in use
         lpNfnsMem = &lpNfnsHdr->aNfnsData[lpNfnsHdr->offFirstInuse];
@@ -971,7 +971,7 @@ void FreeGlobalStorage
                 if (hGlbData)
                 {
                     // Lock the memory to get a ptr to it
-                    lpMemDfnHdr = MyGlobalLock (hGlbData);
+                    lpMemDfnHdr = MyGlobalLockDfn (hGlbData);
 
                     // Free the globals in the struc
                     FreeResultGlobalDfnStruc (lpMemDfnHdr, TRUE);
@@ -1577,7 +1577,7 @@ LPAPLCHAR PointToWsName
         if (hGlbWSID)
         {
             // Lock the memory to get a ptr to it
-            lpMemWSID = MyGlobalLock (hGlbWSID);
+            lpMemWSID = MyGlobalLockVar (hGlbWSID);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemWSID)
             // Get the NELM and rank

@@ -469,7 +469,7 @@ __try
             if (hGlbFormat2)
             {
                 // Lock the memory to get a ptr to it
-                lpwszFormat2 = MyGlobalLock (hGlbFormat2);
+                lpwszFormat2 = MyGlobalLock000 (hGlbFormat2);
 
                 // If there's an old save area, ...
                 if (hGlbFormat)
@@ -544,7 +544,7 @@ __try
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -1322,7 +1322,7 @@ LPAPLCHAR CompileArrNested
 
             case PTRTYPE_HGLOBAL:
                 // Lock the memory to get a ptr to it
-                lpTmp = MyGlobalLock (((LPAPLHETERO) lpMem)[aplDimCol]);
+                lpTmp = MyGlobalLockVar (((LPAPLHETERO) lpMem)[aplDimCol]);
 
                 // Use the larger rank
                 aplRowRankNxt = max (aplRowRankNxt, lpTmp->Rank);
@@ -1568,7 +1568,7 @@ LPAPLCHAR CompileArrNestedGlb
     AttrsOfGlb (hGlb, &aplType, &aplNELM, &aplRank, NULL);
 
     // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlb);
+    lpMem = MyGlobalLockVar (hGlb);
 
     // Skip over the header to the dimensions
     lpMemDim = VarArrayBaseToDim (lpMem);
@@ -3592,7 +3592,7 @@ LPAPLCHAR FormatArrNestedGlb
     AttrsOfGlb (hGlb, &aplType, NULL, &aplRank, NULL);
 
     // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlb);
+    lpMem = MyGlobalLockVar (hGlb);
 
     // Skip over the header to the dimensions
     lpMemDim = VarArrayBaseToDim (lpMem);
@@ -3846,7 +3846,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     //   and check the left arg for valid values
 
     // Lock the memory to get a ptr to it
-    lpMemWidPrc = MyGlobalLock (hGlbWidPrc);
+    lpMemWidPrc = MyGlobalLock000 (hGlbWidPrc);
 
     if (hGlbLft)
         // Skip over the header to the data
@@ -4258,7 +4258,7 @@ __try
                         // The item must be a char vector
 
                         // Lock the memory to get a ptr to it
-                        lpMemItmRht = MyGlobalLock (hGlbItmRht);
+                        lpMemItmRht = MyGlobalLockVar (hGlbItmRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemItmRht)
                         // Get the array parameters
@@ -4466,7 +4466,7 @@ __try
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header

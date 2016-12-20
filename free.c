@@ -434,7 +434,7 @@ UBOOL FreeResultGlobalLst
     Assert (IsGlbTypeLstDir_PTB (MakePtrTypeGlb (hGlbData)));
 
     // Lock the memory to get a ptr to it
-    lpMemLst = MyGlobalLock (hGlbData);
+    lpMemLst = MyGlobalLockLst (hGlbData);
 
 #define lpHeader    ((LPLSTARRAY_HEADER) lpMemLst)
     // Get the NELM
@@ -533,7 +533,7 @@ UBOOL FreeResultGlobalVarSub
     Assert (IsGlbTypeVarDir_PTB (MakePtrTypeGlb (hGlbData)));
 
     // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlbData);
+    lpMem = MyGlobalLockVar (hGlbData);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
     // If the var is not permanent, ...
@@ -680,7 +680,7 @@ UBOOL FreeResultGlobalFcn
     Assert (IsGlbTypeFcnDir_PTB (MakePtrTypeGlb (hGlbData)));
 
     // Lock the memory to get a ptr to it
-    lpMemHdr = MyGlobalLock (hGlbData);
+    lpMemHdr = MyGlobalLockFcn (hGlbData);
 
     // Get the RefCnt, NELM, and line text handle
     RefCnt      = lpMemHdr->RefCnt;
@@ -900,7 +900,7 @@ UBOOL FreeResultGlobalDfn
     Assert (IsGlbTypeDfnDir_PTB (MakePtrTypeGlb (hGlbData)));
 
     // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLock (hGlbData);
+    lpMemDfnHdr = MyGlobalLockDfn (hGlbData);
 
     // Get the reference count
     RefCnt = lpMemDfnHdr->RefCnt;
@@ -1060,7 +1060,7 @@ UBOOL IzitQuadDM
         htGlbName = lptkName->tkData.tkSym->stHshEntry->htGlbName;
 
         // Lock the memory to get a ptr to it
-        lpMemName = MyGlobalLock (htGlbName);
+        lpMemName = MyGlobalLockWsz (htGlbName);
 
         // Save flag of whether or not the name is []DM
         bRet = lstrcmpiW (lpMemName, $QUAD_DM) EQ 0;

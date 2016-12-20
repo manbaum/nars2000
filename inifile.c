@@ -519,7 +519,7 @@ UBOOL ReadIniFileGlb
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpwszLibDirs = MyGlobalLock (hGlbLibDirs);
+    lpwszLibDirs = MyGlobalLock000 (hGlbLibDirs);
 
     // Check for no LibDirs
     if (uNumLibDirs EQ 0)
@@ -816,7 +816,7 @@ UBOOL ReadIniFileGlb
         LPAPLINT lpMemQuadIC;
 
         // Lock the memory to get a ptr to it
-        lpMemQuadIC = MyGlobalLock (hGlbQuadIC_CWS);
+        lpMemQuadIC = MyGlobalLockVar (hGlbQuadIC_CWS);
 
         // Skip over the header and dimensions to the data
         lpMemQuadIC = VarArrayDataFmBase (lpMemQuadIC);
@@ -1125,7 +1125,7 @@ UBOOL ReadIniFileGlb
         return FALSE;           // Stop the whole process
 
     // Lock the memory to get a ptr to it
-    lpwszRecentFiles = MyGlobalLock (hGlbRecentFiles);
+    lpwszRecentFiles = MyGlobalLock000 (hGlbRecentFiles);
 
     // Loop through the Recent Files
     for (uCnt = 0; uCnt < uNumRecentFiles; uCnt++)
@@ -1168,7 +1168,7 @@ UBOOL ReadIniFileGlb
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpKeybLayouts = MyGlobalLock (hGlbKeybLayouts);
+    lpKeybLayouts = MyGlobalLock000 (hGlbKeybLayouts);
 
     // Get the Unicode base for typed chars (10 or 16)
     uKeybUnibase =
@@ -1678,7 +1678,7 @@ HGLOBAL GetPrivateProfileGlbComW
         return hGlbRes;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header values
@@ -1711,7 +1711,7 @@ HGLOBAL GetPrivateProfileGlbComW
         LPVOID            lpMemDef;             // Ptr to default values
 
         // Lock the memory to get a ptr to it
-        lpMemHdrDef = MyGlobalLock (hDefVal);
+        lpMemHdrDef = MyGlobalLockVar (hDefVal);
 
         // Skip over the header & dimensions to the data
         lpMemDef = VarArrayDataFmBase (lpMemHdrDef);
@@ -2498,7 +2498,7 @@ void SaveIniFile
                                  lpwszIniFile);
     //************************ []FEATURE **********************
     // Lock the memory to get a ptr to it
-    lpMemObj = MyGlobalLock (hGlbQuadFEATURE_CWS);
+    lpMemObj = MyGlobalLockVar (hGlbQuadFEATURE_CWS);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemObj)
     // Get the # bytes
@@ -2542,7 +2542,7 @@ void SaveIniFile
                                 lpwszIniFile);              // Ptr to the file name
     //************************ []IC ***************************
     // Lock the memory to get a ptr to it
-    lpMemObj = MyGlobalLock (hGlbQuadIC_CWS);
+    lpMemObj = MyGlobalLockVar (hGlbQuadIC_CWS);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemObj)
     // Get the # bytes
@@ -3222,7 +3222,7 @@ void WritePrivateProfileGlbCharW
     APLNELM   aplNELMObj;                   // Object NELM
 
     // Lock the memory to get a ptr to it
-    lpMemObj = MyGlobalLock (hGlbObj);
+    lpMemObj = MyGlobalLockVar (hGlbObj);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemObj)
     // Get the NELM

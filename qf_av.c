@@ -116,7 +116,7 @@ void MakeQuadAV
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpHeader = MyGlobalLock (hGlbQuadAV);
+    lpHeader = MyGlobalLock000 (hGlbQuadAV);
 
     // Fill in the header values
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;

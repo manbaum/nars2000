@@ -501,7 +501,7 @@ LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
             return NULL;
 
         // Lock the memory to get a ptr to it
-        lpMemAxisHead = MyGlobalLock (hGlbAxis);
+        lpMemAxisHead = MyGlobalLockInt (hGlbAxis);
 
         // Get pointer to the axis tail (where the [X] values are)
         lpMemAxisTail = &lpMemAxisHead[aplRankRht - aplNELMAxis];
@@ -595,7 +595,7 @@ LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
     // Fill in the header
@@ -826,7 +826,7 @@ UBOOL PrimIdentFnScalarCommon_EM
                 hGlbItm = lpMemRht[uRht];
 
                 // Lock the memory to get a ptr to it
-                lpMemHdrItm = MyGlobalLock (hGlbItm);
+                lpMemHdrItm = MyGlobalLockVar (hGlbItm);
 
                 // Get the item's attributes
 #define lpHeader        lpMemHdrItm
@@ -851,7 +851,7 @@ UBOOL PrimIdentFnScalarCommon_EM
                         goto ERROR_EXIT;
 
                     // Lock the memory to get a ptr to it
-                    lpMemAxisHead = MyGlobalLock (hGlbAxis);
+                    lpMemAxisHead = MyGlobalLockInt (hGlbAxis);
 
                     // Get pointer to the axis tail (where the [X] values are)
                     lpMemAxisTail = &lpMemAxisHead[aplRankItm - aplNELMAxis];
@@ -917,7 +917,7 @@ UBOOL PrimIdentFnScalarCommon_EM
                     goto WSFULL_EXIT;
 
                 // Lock the memory to get a ptr to it
-                lpMemHdrRes2 = MyGlobalLock (hGlbRes2);
+                lpMemHdrRes2 = MyGlobalLock000 (hGlbRes2);
 
 #define lpHeader        lpMemHdrRes2
                 // Fill in the header
@@ -1712,7 +1712,7 @@ HGLOBAL PrimFnMonGlb_EM
     lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLock (hGlbRht);
+    lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
 #define lpHeader    lpMemHdrRht
     // Get the Array Type, NELM, and Rank
@@ -1784,7 +1784,7 @@ HGLOBAL PrimFnMonGlb_EM
                         MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
 
                         // Lock the memory to get a ptr to it
-                        lpMemHdrRht = MyGlobalLock (hGlbRht);
+                        lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
                         if (hGlbRes NE NULL)
                         {
@@ -1818,7 +1818,7 @@ HGLOBAL PrimFnMonGlb_EM
                         MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
 
                         // Lock the memory to get a ptr to it
-                        lpMemHdrRht = MyGlobalLock (hGlbRht);
+                        lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
                         if (hGlbRes NE NULL)
                         {
@@ -1855,7 +1855,7 @@ HGLOBAL PrimFnMonGlb_EM
                         MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
 
                         // Lock the memory to get a ptr to it
-                        lpMemHdrRht = MyGlobalLock (hGlbRht);
+                        lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
                         if (hGlbRes NE NULL)
                         {
@@ -1895,7 +1895,7 @@ RESTART_EXCEPTION:
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header
@@ -2697,7 +2697,7 @@ RESTART_EXCEPTION:
                     MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
 
                     // Lock the memory to get a ptr to it
-                    lpMemHdrRht = MyGlobalLock (hGlbRht);
+                    lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
@@ -2728,7 +2728,7 @@ RESTART_EXCEPTION:
                     MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
 
                     // Lock the memory to get a ptr to it
-                    lpMemHdrRht = MyGlobalLock (hGlbRht);
+                    lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
@@ -2762,7 +2762,7 @@ RESTART_EXCEPTION:
                     MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
 
                     // Lock the memory to get a ptr to it
-                    lpMemHdrRht = MyGlobalLock (hGlbRht);
+                    lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
@@ -2935,7 +2935,7 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
             return NULL;
 
         // Lock the memory to get a ptr to it
-        lpMemAxisHead = MyGlobalLock (hGlbAxis);
+        lpMemAxisHead = MyGlobalLockInt (hGlbAxis);
 
         // Get pointer to the axis tail (where the [X] values are)
         lpMemAxisTail = &lpMemAxisHead[aplRankRes - aplNELMAxis];
@@ -3289,7 +3289,7 @@ UBOOL PrimFnDydSimpNest_EM
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+    lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
 
     // Skip over the header to the dimensions
     lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
@@ -3318,7 +3318,7 @@ UBOOL PrimFnDydSimpNest_EM
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemWVec = MyGlobalLock (hGlbWVec);
+        lpMemWVec = MyGlobalLock000 (hGlbWVec);
 
         // Loop through the dimensions of the result in reverse
         //   order {backscan} and compute the cumulative product
@@ -3348,7 +3348,7 @@ UBOOL PrimFnDydSimpNest_EM
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemOdo = MyGlobalLock (hGlbOdo);
+        lpMemOdo = MyGlobalLock000 (hGlbOdo);
     } // End IF
 
     // Loop through the result
@@ -3655,7 +3655,7 @@ UBOOL PrimFnDydNestSimp_EM
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+    lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
 
     // Skip over the header to the dimensions
     lpMemDimLft = VarArrayBaseToDim (lpMemHdrLft);
@@ -3684,7 +3684,7 @@ UBOOL PrimFnDydNestSimp_EM
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemWVec = MyGlobalLock (hGlbWVec);
+        lpMemWVec = MyGlobalLock000 (hGlbWVec);
 
         // Loop through the dimensions of the result in reverse
         //   order {backscan} and compute the cumulative product
@@ -3714,7 +3714,7 @@ UBOOL PrimFnDydNestSimp_EM
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemOdo = MyGlobalLock (hGlbOdo);
+        lpMemOdo = MyGlobalLock000 (hGlbOdo);
     } // End IF
 
     // Loop through the result
@@ -3966,7 +3966,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
     hGlbLft = aplNestedLft;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrLft = MyGlobalLock (hGlbLft);
+    lpMemHdrLft = MyGlobalLockVar (hGlbLft);
 
 #define lpHeader    lpMemHdrLft
     // Get the Array Type, NELM, and Rank
@@ -4026,7 +4026,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLockVar (hGlbRes);
 
     // Skip over the header and dimensions to the data
     lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
@@ -4289,7 +4289,7 @@ UBOOL PrimFnDydNestNest_EM
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+    lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
 
     // Skip over the headers and dimensions to the data
     lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
@@ -6850,7 +6850,7 @@ RESTART_EXCEPTION:
                         goto ERROR_EXIT;
 
                     // Lock the memory to get a ptr to it
-                    lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                    lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
 
                     // Restart the pointer
                     lpMemRht = lpMemRhtStart;
@@ -6894,7 +6894,7 @@ RESTART_EXCEPTION:
                         goto ERROR_EXIT;
 
                     // Lock the memory to get a ptr to it
-                    lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                    lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
 
                     // Restart the pointer
                     lpMemRht = lpMemRhtStart;
@@ -6942,7 +6942,7 @@ RESTART_EXCEPTION:
                             goto ERROR_EXIT;
 
                         // Lock the memory to get a ptr to it
-                        lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                        lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
                     } else
                     // The previous result must have been INT which is
                     //   the same size as FLOAT, so there's no need to
@@ -9466,7 +9466,7 @@ RESTART_EXCEPTION:
                         goto ERROR_EXIT;
 
                     // Lock the memory to get a ptr to it
-                    lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                    lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
 
                     // Restart the pointer
                     lpMemLft = lpMemLftStart;
@@ -9510,7 +9510,7 @@ RESTART_EXCEPTION:
                         goto ERROR_EXIT;
 
                     // Lock the memory to get a ptr to it
-                    lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                    lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
 
                     // Restart the pointer
                     lpMemLft = lpMemLftStart;
@@ -9558,7 +9558,7 @@ RESTART_EXCEPTION:
                             goto ERROR_EXIT;
 
                         // Lock the memory to get a ptr to it
-                        lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                        lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
                     } else
                     // The previous result must have been INT which is
                     //   the same size as FLOAT, so there's no need to
@@ -9684,7 +9684,7 @@ HGLOBAL PrimFnDydSiScNest_EM
     hGlbRht = aplNestedRht;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLock (hGlbRht);
+    lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
 #define lpHeader    lpMemHdrRht
     // Get the Array Type, NELM, and Rank
@@ -9744,7 +9744,7 @@ HGLOBAL PrimFnDydSiScNest_EM
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLockVar (hGlbRes);
 
     // Skip over the header and dimensions to the data
     lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
@@ -10372,7 +10372,7 @@ RESTART_EXCEPTION_IMMED:
                     if (hGlbTmp EQ NULL)
                         goto WSFULL_EXIT;
                     // Lock the memory to get a ptr to it
-                    lpMemHdrRes = MyGlobalLock (hGlbTmp);
+                    lpMemHdrRes = MyGlobalLock000 (hGlbTmp);
 
 #define lpHeader        lpMemHdrRes
                     // Fill in the header
@@ -10389,7 +10389,7 @@ RESTART_EXCEPTION_IMMED:
                     hGlbTmp = *lphGlbRes;
 
                     // Lock the memory to get a ptr to it
-                    lpMemHdrRes = MyGlobalLock (hGlbTmp);
+                    lpMemHdrRes = MyGlobalLockVar (hGlbTmp);
 
                     // In case we promoted the result, ...
                     lpMemHdrRes->ArrType = aplTypeRes;
@@ -10495,7 +10495,7 @@ RESTART_EXCEPTION_IMMED:
                     if (hGlbTmp EQ NULL)
                         goto WSFULL_EXIT;
                     // Lock the memory to get a ptr to it
-                    lpMemHdrRes = MyGlobalLock (hGlbTmp);
+                    lpMemHdrRes = MyGlobalLock000 (hGlbTmp);
 
 #define lpHeader        lpMemHdrRes
                     // Fill in the header
@@ -10512,7 +10512,7 @@ RESTART_EXCEPTION_IMMED:
                     hGlbTmp = *lphGlbRes;
 
                     // Lock the memory to get a ptr to it
-                    lpMemHdrRes = MyGlobalLock (hGlbTmp);
+                    lpMemHdrRes = MyGlobalLockVar (hGlbTmp);
 
                     // In case we promoted the result, ...
                     lpMemHdrRes->ArrType = aplTypeRes;
@@ -10913,7 +10913,7 @@ UBOOL PrimFnDydSimpSimp_EM
 
     // Lock the memory to get a ptr to it
     if (*lphGlbRes)
-        lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+        lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
 
     if (IsSingleton (aplNELMLft)
      && IsSingleton (aplNELMRht))
@@ -11498,7 +11498,7 @@ RESTART_EXCEPTION_SINGLETON:
                                 goto ERROR_EXIT;
 
                             // Lock the memory to get a ptr to it
-                            lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                            lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
 
                             // Tell the header about it
                             lpMemHdrRes->ArrType = aplTypeRes;
@@ -11542,7 +11542,7 @@ RESTART_EXCEPTION_SINGLETON:
                                 goto ERROR_EXIT;
 
                             // Lock the memory to get a ptr to it
-                            lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                            lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
 
                             // Tell the header about it
                             lpMemHdrRes->ArrType = aplTypeRes;
@@ -11590,7 +11590,7 @@ RESTART_EXCEPTION_SINGLETON:
                                     goto ERROR_EXIT;
 
                                 // Lock the memory to get a ptr to it
-                                lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                                lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
                             } else
                             // The previous result must have been INT which is
                             //   the same size as FLOAT, so there's no need to
@@ -11794,7 +11794,7 @@ RESTART_EXCEPTION_SINGLETON:
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemWVec = MyGlobalLock (hGlbWVec);
+            lpMemWVec = MyGlobalLock000 (hGlbWVec);
 
             // Loop through the dimensions of the result in reverse
             //   order {backscan} and compute the cumulative product
@@ -11824,7 +11824,7 @@ RESTART_EXCEPTION_SINGLETON:
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemOdo = MyGlobalLock (hGlbOdo);
+            lpMemOdo = MyGlobalLock000 (hGlbOdo);
 RESTART_EXCEPTION_AXIS:
             // Skip over the header and dimensions to the data
             lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
@@ -13074,7 +13074,7 @@ RESTART_EXCEPTION_AXIS:
                                 goto ERROR_EXIT;
 
                             // Lock the memory to get a ptr to it
-                            lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                            lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
 
                             // Tell the header about it
                             lpMemHdrRes->ArrType = aplTypeRes;
@@ -13122,7 +13122,7 @@ RESTART_EXCEPTION_AXIS:
                                 goto ERROR_EXIT;
 
                             // Lock the memory to get a ptr to it
-                            lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                            lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
 
                             // Tell the header about it
                             lpMemHdrRes->ArrType = aplTypeRes;
@@ -13174,7 +13174,7 @@ RESTART_EXCEPTION_AXIS:
                                     goto ERROR_EXIT;
 
                                 // Lock the memory to get a ptr to it
-                                lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                                lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
                             } else
                             // The previous result must have been INT which is
                             //   the same size as FLOAT, so there's no need to
@@ -14507,7 +14507,7 @@ RESTART_EXCEPTION_NOAXIS:
                                 goto ERROR_EXIT;
 
                             // Lock the memory to get a ptr to it
-                            lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                            lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
 
                             // Skip over the header and dimension to the data
                             lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
@@ -14555,7 +14555,7 @@ RESTART_EXCEPTION_NOAXIS:
                                 goto ERROR_EXIT;
 
                             // Lock the memory to get a ptr to it
-                            lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                            lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
 
                             // Skip over the header and dimension to the data
                             lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
@@ -14607,7 +14607,7 @@ RESTART_EXCEPTION_NOAXIS:
                                     goto ERROR_EXIT;
 
                                 // Lock the memory to get a ptr to it
-                                lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+                                lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
                             } else
                             // The previous result must have been INT which is
                             //   the same size as FLOAT, so there's no need to

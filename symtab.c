@@ -2071,7 +2071,7 @@ LPSYMENTRY SymTabHTSLookupNameLength
                 Assert (lpHshEntry->htGlbName NE NULL);
 
                 // Lock the memory to get a ptr to it
-                lpwGlbName = MyGlobalLock (lpHshEntry->htGlbName);
+                lpwGlbName = MyGlobalLockWsz (lpHshEntry->htGlbName);
 
 #define ToLowerUnd(wch)     ((UTF16_A_ <= wch && wch <= UTF16_Z_) ? L'a' + (wch - UTF16_A_) : wch)
 
@@ -2836,7 +2836,7 @@ LPSYMENTRY SymTabHTSAppendNewName_EM
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpwGlbName = MyGlobalLock (lpHshEntryDest->htGlbName);
+    lpwGlbName = MyGlobalLock000 (lpHshEntryDest->htGlbName);
 
     // Copy the name to the global memory
     strcpyW (lpwGlbName, lpwszString);

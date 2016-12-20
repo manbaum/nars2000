@@ -244,7 +244,7 @@ LPPL_YYSTYPE PrimIdentFnDomino_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header values
@@ -618,7 +618,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header values
@@ -775,7 +775,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemTmp = MyGlobalLock (hGlbTmp);
+            lpMemTmp = MyGlobalLock000 (hGlbTmp);
 
             // Loop through the rows and cols
             for (uRow = 0; uRow < uNumRows; uRow++)
@@ -1177,7 +1177,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemHdrRes = MyGlobalLock (hGlbRes);
+        lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
         // Fill in the header values
@@ -1327,8 +1327,8 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                 goto WSFULL_EXIT;
 
             // Lock the memory to get ptrs to 'em
-            lpMemTmpLft = MyGlobalLock (hGlbTmpLft);
-            lpMemTmpRht = MyGlobalLock (hGlbTmpRht);
+            lpMemTmpLft = MyGlobalLock000 (hGlbTmpLft);
+            lpMemTmpRht = MyGlobalLock000 (hGlbTmpRht);
 
             // Loop through the left arg rows and cols
             for (uRow = 0; uRow < uNumRowsLft; uRow++)
@@ -1656,7 +1656,7 @@ UBOOL GaussJordan
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemAux = MyGlobalLock (hGlbAux);
+    lpMemAux = MyGlobalLock000 (hGlbAux);
 
     // Loop through the rows and cols
     for (uRow = 0; uRow < uNumRows; uRow++)
@@ -1674,7 +1674,7 @@ UBOOL GaussJordan
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemInd = MyGlobalLock (hGlbInd);
+    lpMemInd = MyGlobalLock000 (hGlbInd);
 
     // Populate the index vector with {iota}uNumRows
     for (uRow = 0; uRow < uNumRows; uRow++)

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -240,7 +240,7 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+        lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
         // Fill in the header
@@ -345,7 +345,7 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemDimTmp = MyGlobalLock (hGlbDimTmp);
+        lpMemDimTmp = MyGlobalLock000 (hGlbDimTmp);
 
         // Fill in the leading padding (1s)
         for (uRes = 0; uRes < (aplRankRht - aplRankLft); uRes++)
@@ -366,7 +366,7 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemKmpNext = MyGlobalLock (hGlbKmpNext);
+    lpMemKmpNext = MyGlobalLock000 (hGlbKmpNext);
 
     // Calculate space needed for the result
     ByteRes = aplRankRht * sizeof (APLUINT);
@@ -383,7 +383,7 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemDimDiff = MyGlobalLock (hGlbDimDiff);
+    lpMemDimDiff = MyGlobalLock000 (hGlbDimDiff);
 
     // Ensure the left arg dimensions are <= the right arg dimensions
     //   and save the difference for later use
@@ -413,7 +413,7 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemWVecRht = MyGlobalLock (hGlbWVecRht);
+    lpMemWVecRht = MyGlobalLock000 (hGlbWVecRht);
 
     // Loop through the dimensions of the right arg in reverse
     //   order {backscan} and compute the cumulative product
@@ -444,7 +444,7 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemOdoRht = MyGlobalLock (hGlbOdoRht);
+    lpMemOdoRht = MyGlobalLock000 (hGlbOdoRht);
 
     // Calculate space needed for the result
     ByteRes = aplRankRht * sizeof (APLUINT);
@@ -464,7 +464,7 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemWVecTst = MyGlobalLock (hGlbWVecTst);
+    lpMemWVecTst = MyGlobalLock000 (hGlbWVecTst);
 
     // Copy the right arg weighting vector
     CopyMemory (lpMemWVecTst, lpMemWVecRht, (APLU3264) ByteRes);
@@ -485,7 +485,7 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemOdoTst = MyGlobalLock (hGlbOdoTst);
+    lpMemOdoTst = MyGlobalLock000 (hGlbOdoTst);
 
     // Split cases based upon the left & right arg storage types
     if (IsSimpleBool (aplTypeLft) && IsSimpleBool (aplTypeRht))
@@ -771,7 +771,7 @@ NOMATCH:
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemRes = MyGlobalLock (hGlbRes);
+            lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
             // Fill in the header

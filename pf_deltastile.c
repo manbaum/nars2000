@@ -346,7 +346,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -518,7 +518,7 @@ HGLOBAL MakeEncloseZilde
         return NULL;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -904,7 +904,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemTTHandles = MyGlobalLock (hGlbTTHandles);
+    lpMemTTHandles = MyGlobalLock000 (hGlbTTHandles);
 
     // Allocate 16-bit arrays of APLCHARs for the translate tables,
     //   one per left arg dimension
@@ -924,7 +924,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemTTHandles[uDim].lpMemTT = MyGlobalLock (lpMemTTHandles[uDim].hGlbTT);
+        lpMemTTHandles[uDim].lpMemTT = MyGlobalLock000 (lpMemTTHandles[uDim].hGlbTT);
 
         // Fill with 0xFFs as identity element for min comparisons
         FillMemory (lpMemTTHandles[uDim].lpMemTT, APLCHAR_SIZE * sizeof (APLCHAR), 0xFF);
@@ -1014,7 +1014,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header

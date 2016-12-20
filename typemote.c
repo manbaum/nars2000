@@ -160,7 +160,7 @@ void TypeDemote
     hGlbRes = hGlbRht;
 
     // Lock the memory to get a ptr to it
-    lpMemRht = lpMemRhtHdr = MyGlobalLock (hGlbRht);
+    lpMemRht = lpMemRhtHdr = MyGlobalLockVar (hGlbRht);
 
     // Get the Type, NELM, and Rank
     aplTypeRht = lpMemRhtHdr->ArrType;
@@ -250,7 +250,7 @@ void TypeDemote
                                 hGlbSub = ClrPtrTypeInd (lpMemRht);
 
                                 // Lock the memory to get a handle on it
-                                lpMemSub = MyGlobalLock (hGlbSub);
+                                lpMemSub = MyGlobalLockVar (hGlbSub);
 
                                 // Skip over the header and dimensions to the data
                                 lpMemSub = VarArrayDataFmBase (lpMemSub);
@@ -276,7 +276,7 @@ void TypeDemote
                                 hGlbSub = ClrPtrTypeInd (lpMemRht);
 
                                 // Lock the memory to get a handle on it
-                                lpMemSub = MyGlobalLock (hGlbSub);
+                                lpMemSub = MyGlobalLockVar (hGlbSub);
 
                                 // Skip over the header and dimensions to the data
                                 lpMemSub = VarArrayDataFmBase (lpMemSub);
@@ -308,7 +308,7 @@ void TypeDemote
                         hGlbSub = ClrPtrTypeInd (lpMemRht);
 
                         // Lock the memory to get a handle on it
-                        lpMemSub = MyGlobalLock (hGlbSub);
+                        lpMemSub = MyGlobalLockVar (hGlbSub);
 
                         Assert (IsScalar (((LPVARARRAY_HEADER) lpMemSub)->Rank));
 
@@ -360,7 +360,6 @@ void TypeDemote
                     defstop
                         break;
                 } // End SWITCH
-
 
                 break;
 
@@ -603,7 +602,7 @@ UNLOCK_EXIT:
             if (hGlbRes)
             {
                 // Lock the memory to get a ptr to it
-                lpMemRes = MyGlobalLock (hGlbRes);
+                lpMemRes = MyGlobalLock000 (hGlbRes);
 
                 // Copy source to destin
                 CopyMemory (lpMemRes, lpMemRht, dwSize);
@@ -691,7 +690,7 @@ UNLOCK_EXIT:
         if (hGlbRes EQ NULL)
             goto WSFULL_EXIT;
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+        lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
         // Fill in the header
@@ -746,7 +745,7 @@ UNLOCK_EXIT:
         if (hGlbRes EQ NULL)
             goto WSFULL_EXIT;
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+        lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
         // Fill in the header
@@ -974,11 +973,11 @@ void DemoteData
 
                             case PTRTYPE_HGLOBAL:
                                 // Lock the memory to get a ptr to it
-                                lpMemHdr = MyGlobalLock (lpSymGlbSub);
+                                lpMemHdr = MyGlobalLockVar (lpSymGlbSub);
 
                                 Assert (lpMemHdr->Rank EQ 0);
 
-                                // Skip over the header & dimensions to the data
+                                // Skip over the header and dimensions to the data
                                 lpMemSub = VarArrayDataFmBase (lpMemHdr);
 
                                 // Split cases based upon the storage type
@@ -1076,11 +1075,11 @@ void DemoteData
 
                             case PTRTYPE_HGLOBAL:
                                 // Lock the memory to get a ptr to it
-                                lpMemHdr = MyGlobalLock (lpSymGlbSub);
+                                lpMemHdr = MyGlobalLockVar (lpSymGlbSub);
 
                                 Assert (lpMemHdr->Rank EQ 0);
 
-                                // Skip over the header & dimensions to the data
+                                // Skip over the header and dimensions to the data
                                 lpMemSub = VarArrayDataFmBase (lpMemHdr);
 
                                 // Split cases based upon the storage type
@@ -1162,11 +1161,11 @@ void DemoteData
 
                             case PTRTYPE_HGLOBAL:
                                 // Lock the memory to get a ptr to it
-                                lpMemHdr = MyGlobalLock (lpSymGlbSub);
+                                lpMemHdr = MyGlobalLockVar (lpSymGlbSub);
 
                                 Assert (lpMemHdr->Rank EQ 0);
 
-                                // Skip over the header & dimensions to the data
+                                // Skip over the header and dimensions to the data
                                 lpMemSub = VarArrayDataFmBase (lpMemHdr);
 
                                 // Split cases based upon the storage type
@@ -1267,7 +1266,7 @@ void DemoteData
 
                             case PTRTYPE_HGLOBAL:
                                 // Lock the memory to get a ptr to it
-                                lpMemHdr = MyGlobalLock (lpSymGlbSub);
+                                lpMemHdr = MyGlobalLockVar (lpSymGlbSub);
 
                                 Assert (lpMemHdr->Rank EQ 0);
 
@@ -1340,7 +1339,7 @@ void DemoteData
 
                             case PTRTYPE_HGLOBAL:
                                 // Lock the memory to get a ptr to it
-                                lpMemHdr = MyGlobalLock (lpSymGlbSub);
+                                lpMemHdr = MyGlobalLockVar (lpSymGlbSub);
 
                                 Assert (lpMemHdr->Rank EQ 0);
 
@@ -1500,7 +1499,7 @@ UBOOL TypePromoteGlb_EM
     hGlbArg = *lphGlbArg;
 
     // Lock the memory to get a ptr to it
-    lpMemArg = MyGlobalLock (hGlbArg);
+    lpMemArg = MyGlobalLockVar (hGlbArg);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemArg)
     // Get the Array Type and NELM
@@ -1519,7 +1518,7 @@ UBOOL TypePromoteGlb_EM
         goto NORMAL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -2249,7 +2248,7 @@ void TPT_RAT2VFP
     hGlbRat = lptkArg->tkData.tkGlbData;
 
     // Lock the memory to get a ptr to it
-    lpMemRat = MyGlobalLock (hGlbRat);
+    lpMemRat = MyGlobalLockVar (hGlbRat);
 
     Assert (IsScalar (((LPVARARRAY_HEADER) lpMemRat)->Rank));
 

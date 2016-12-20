@@ -324,7 +324,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
      && nameClasses & (APLINT) (BIT0 << CalcNameClass (lpSymEntry)))    // It's in one of the specified name classes
     {
         // Lock the memory to get a ptr to it
-        lpMemName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+        lpMemName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
 
         // If there's a left arg, ensure the first char of the name
         //   is in the left arg
@@ -373,7 +373,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header

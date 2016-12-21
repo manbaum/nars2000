@@ -90,8 +90,6 @@ typedef enum tagWINDOWCLASS     // Window Classes
     WINDOWCLASS_RB      ,       // 01:  Rebar
     WINDOWCLASS_SM      ,       // 02:  Session Manager
     WINDOWCLASS_FE      ,       // 03:  Function Editor
-    WINDOWCLASS_VE      ,       // 04:  Vector Editor
-    WINDOWCLASS_ME      ,       // 05:  Matrix Editor
 } WINDOWCLASS, *LPWINDOWCLASS;
 
 

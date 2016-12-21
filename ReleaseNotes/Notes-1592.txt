@@ -12,6 +12,6 @@ MACROS.H:
 PN_PROC.C:
   Change meaning of specified precision (e.g., 1v64) to exactly that precision.
 
-QF_RD.C:
-QF_RD.H:
+QF_DR.C:
+QF_DR.H:
   Implement 3 []DR to return the (lowest) precision of the argument.

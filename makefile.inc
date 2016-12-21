@@ -175,7 +175,8 @@ VERSION_FLAGS = /D "NTDDI_VERSION=NTDDI_WINXP" /D "_WIN32_WINNT=_WIN32_WINNT_WIN
 CFLAGS_WEXE = /nologo /GA /W3 /WX /Oy- /Ot $(CFLAGS_DEBUG) /D "_WIN32" /c /D "_CRT_SECURE_NO_WARNINGS"
 CFLAGS_WEXE = $(CFLAGS_WEXE) $(VERSION_FLAGS) /D "_MBCS" /Qpar /O2
 ##CFLAGS_WEXE = $(CFLAGS_WEXE) /GL
-LFLAGS_WEXE = /NOLOGO /MAP /LARGEADDRESSAWARE /OPT:REF /DYNAMICBASE:NO /MANIFEST:NO /SUBSYSTEM:WINDOWS /IGNOREIDL /NXCOMPAT /DEBUG /LTCG
+LFLAGS_WEXE2 = /NOLOGO /MAP /LARGEADDRESSAWARE /OPT:REF /DYNAMICBASE:NO /MANIFEST:NO /SUBSYSTEM:WINDOWS /IGNOREIDL /NXCOMPAT /DEBUG
+LFLAGS_WEXE  = $(LFLAGS_WEXE2) /LTCG
 !if "$(WIN)" == "64"
 CFLAGS_WEXE = $(CFLAGS_WEXE) /D "_AMD64_" /D "_M_AMD64" /D "_WIN64" /Gd
 LFLAGS_WEXE = $(LFLAGS_WEXE) /MACHINE:X64
@@ -489,8 +490,6 @@ $(O)dictionary.obj:     $(@B).c         $(DICTIONARY_DEP)
 $(O)dispdbg.obj:        $(@B).c         $(DISPDBG_DEP)
 $(O)display.obj:        $(@B).c         $(DISPLAY_DEP)
 $(O)editfcn.obj:        $(@B).c         $(EDITFCN_DEP)
-$(O)editmat.obj:        $(@B).c         $(EDITMAT_DEP)
-$(O)editvec.obj:        $(@B).c         $(EDITVEC_DEP)
 $(O)errmsg.obj:         $(@B).c         $(ERRMSG_DEP)
 $(O)except.obj:         $(@B).c         $(EXCEPT_DEP)
 $(O)execdfn.obj:        $(@B).c         $(EXECDFN_DEP)
@@ -738,10 +737,9 @@ $**
 /MAP:$(OC)$(MV).map
 kernel32.lib user32.lib version.lib libcmt.lib
 /DEF:$(MV).def
-/LTCG:off
 <<KEEP
         @if exist $@ del $@
-        @$(LD) $(LFLAGS_WEXE) @$(OC)$(MV).crf
+        @$(LD) $(LFLAGS_WEXE2) @$(OC)$(MV).crf
         @del $(OC)$(@B).exp
         @del $(OC)$(@B).lib
 

@@ -219,12 +219,6 @@ typedef struct tagSTART_ADDRESSES
     "GetVkState"                , (LPUCHAR) &GetVkState                 ,
     "LclEditCtrlWndProc"        , (LPUCHAR) &LclEditCtrlWndProc         ,
 
-    // editmat.c
-    "MEWndProc"                 , (LPUCHAR) &MEWndProc                  ,
-
-    // editvec.c
-    "VEWndProc"                 , (LPUCHAR) &VEWndProc                  ,
-
     // errmsg.c
     "BreakMessage"              , (LPUCHAR) &BreakMessage               ,
     "ErrorMessageDirect"        , (LPUCHAR) &ErrorMessageDirect         ,

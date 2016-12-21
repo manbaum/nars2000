@@ -95,8 +95,6 @@ WCHAR wszMFTitle[]          = WS_APPNAME WS_BITSIZE WS_APPEND_DEBUG,            
 char pszNoRegMFWndClass[]   = "Unable to register window class <" MFWNDCLASS        ">.",
      pszNoRegSMWndClass[]   = "Unable to register window class <" SMWNDCLASS        ">.",
      pszNoRegFEWndClass[]   = "Unable to register window class <" FEWNDCLASS        ">.",
-     pszNoRegMEWndClass[]   = "Unable to register window class <" MEWNDCLASS        ">.",
-     pszNoRegVEWndClass[]   = "Unable to register window class <" VEWNDCLASS        ">.",
      pszNoRegECWndClass[]   = "Unable to register window class <" ECWNDCLASS        ">.",
      pszNoRegCCWndClass[]   = "Unable to register window class <" CCWNDCLASS        ">.",
      pszNoRegPBWndClass[]   = "Unable to register window class <" PBWNDCLASS        ">.",
@@ -3349,48 +3347,6 @@ UBOOL InitApplication
     if (!RegisterClassExW (&wcw))
     {
         MB (pszNoRegFEWndClass);
-        return FALSE;
-    } // End IF
-
-    // Fill in Matrix Editor window class structure
-    wcw.style           = CS_DBLCLKS;
-    wcw.lpfnWndProc     = (WNDPROC) MEWndProc;
-    wcw.cbClsExtra      = 0;
-    wcw.cbWndExtra      = GWLME_EXTRA;
-    wcw.hInstance       = hInstance;
-    wcw.hIcon           = hIconME_Large;
-    wcw.hIconSm         = hIconME_Small;
-    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
-    wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
-////wcw.lpszMenuName    = MAKEINTRESOURCEW (IDR_MEMENU);
-    wcw.lpszMenuName    = NULL;
-    wcw.lpszClassName   = LMEWNDCLASS;
-
-    // Register the Matrix Editor window class
-    if (!RegisterClassExW (&wcw))
-    {
-        MB (pszNoRegMEWndClass);
-        return FALSE;
-    } // End IF
-
-    // Fill in Vector Editor window class structure
-    wcw.style           = CS_DBLCLKS;
-    wcw.lpfnWndProc     = (WNDPROC) VEWndProc;
-    wcw.cbClsExtra      = 0;
-    wcw.cbWndExtra      = GWLVE_EXTRA;
-    wcw.hInstance       = hInstance;
-    wcw.hIcon           = hIconVE_Large;
-    wcw.hIconSm         = hIconVE_Small;
-    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
-    wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
-////wcw.lpszMenuName    = MAKEINTRESOURCEW (IDR_VEMENU);
-    wcw.lpszMenuName    = NULL;
-    wcw.lpszClassName   = LVEWNDCLASS;
-
-    // Register the Vector Editor window class
-    if (!RegisterClassExW (&wcw))
-    {
-        MB (pszNoRegVEWndClass);
         return FALSE;
     } // End IF
 #ifdef DEBUG

@@ -1196,16 +1196,6 @@ char pszNoInsertTCTab[]
 #ifdef DEFINE_VALUES
  = "Unable to create Function Editor window"
 #endif
-,
-     pszNoCreateMEWnd[]
-#ifdef DEFINE_VALUES
- = "Unable to create Matrix Editor window"
-#endif
-,
-     pszNoCreateVEWnd[]
-#ifdef DEFINE_VALUES
- = "Unable to create Vector Editor window"
-#endif
 ;
 
 EXTERN
@@ -1236,16 +1226,6 @@ WCHAR wszMCTitle[]                      // MDI Client ... (for debugging purpose
       wszFETitle[]                      // Function Editor ...
 #ifdef DEFINE_VALUES
  = WS_APPNAME L" [%s]%c"
-#endif
-,
-      wszMETitle[]                      // Matrix Editor ...
-#ifdef DEFINE_VALUES
- = WS_APPNAME L" Matrix Editor" WS_APPEND_DEBUG
-#endif
-,
-      wszVETitle[]                      // Vector Editor ...
-#ifdef DEFINE_VALUES
- = WS_APPNAME L" Vector Editor" WS_APPEND_DEBUG
 #endif
 ;
 

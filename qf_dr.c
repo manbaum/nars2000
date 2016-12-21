@@ -238,6 +238,9 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
                 hGlbRes = SysFnDR_CharToInt_EM (lptkRhtArg, lptkFunc, &bScalar);
             break;
 
+        case DR_GETPREC:
+            return SysFnDR_GetPrec_EM_YY (lptkRhtArg, lptkFunc);
+
         case DR_BOOL:
             return SysFnDR_Convert_EM_YY (ARRAY_BOOL,  lptkRhtArg, lptkFunc);
 
@@ -338,6 +341,148 @@ LEFT_DOMAIN_EXIT:
                                lptkLftArg);
     return NULL;
 } // End SysFnDydDR_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $SysFnDR_GetPrec_EM_YY
+//
+//  Return the lowest precision in the right arg
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SysFnDR_GetPrec_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE SysFnDR_GetPrec_EM_YY
+    (LPTOKEN  lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN  lptkFunc)             // Ptr to function token
+
+{
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
+    APLSTYPE          aplTypeRht;           // Right arg storage type
+    IMM_TYPES         immTypeRes;           // Result immediate storage type
+    APLNELM           aplNELMRht;           // Right arg NELM
+    APLLONGEST        aplLongestRht;        // Right arg as immediate
+    HGLOBAL           hGlbRht = NULL;       // Right arg global memory handle
+    LPVARARRAY_HEADER lpMemHdrRht = NULL;   // Ptr to right arg global memory
+    LPAPLVFP          lpMemRht;             // Ptr to VFP global memory data
+    APLINT            aplIntegerRes;        // The result
+    UINT              uCnt;                 // Loop counter
+    APLINT            aplPrec;              // Temporary for the precision
+    int               iHCDim;               // HC Dimension (1, 2, 4, 8)
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, NULL, NULL);
+
+    // Get right arg's global ptrs
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
+
+    // If the array is empty, ...
+    if (IsEmpty (aplNELMRht))
+    {
+        // Return the numeric precision
+        aplIntegerRes = POS_INFINITY;
+        immTypeRes    = IMMTYPE_FLOAT;
+    } else
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+            // Return the numeric precision
+            aplIntegerRes = 1;
+            immTypeRes    = IMMTYPE_BOOL;
+
+            break;
+
+        case ARRAY_INT:
+        case ARRAY_APA:
+        case ARRAY_FLOAT:
+////////case ARRAY_HC2I:
+////////case ARRAY_HC4I:
+////////case ARRAY_HC8I:
+////////case ARRAY_HC2F:
+////////case ARRAY_HC4F:
+////////case ARRAY_HC8F:
+            // Return the numeric precision
+            aplIntegerRes = 64;
+            immTypeRes    = IMMTYPE_INT;
+
+            break;
+
+        case ARRAY_RAT:
+////////case ARRAY_HC2R:
+////////case ARRAY_HC4R:
+////////case ARRAY_HC8R:
+            // Return the numeric precision
+            aplIntegerRes = POS_INFINITY;
+            immTypeRes    = IMMTYPE_FLOAT;
+
+            break;
+
+        case ARRAY_VFP:
+////////case ARRAY_HC2V:
+////////case ARRAY_HC4V:
+////////case ARRAY_HC8V:
+////////    // Get the HC Dimension (1, 2, 4, 8)
+////////    iHCDim = TranslateArrayTypeToHCDim (aplType);
+            iHCDim = 1;
+
+            // Skip over the header and dimensions to the data
+            lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+
+            // Set to identity element for Floor
+            aplIntegerRes = MAX_APLINT;
+            immTypeRes    = IMMTYPE_INT;
+
+            // Loop through the array looking for the lowest precision
+            for (uCnt = 0; uCnt < (aplNELMRht * iHCDim); uCnt++)
+            {
+                // Get the precision
+                aplPrec = mpfr_get_prec (&lpMemRht[uCnt]);
+
+                // Use the smaller
+                aplIntegerRes = min (aplIntegerRes, aplPrec);
+            } // End FOR
+
+            break;
+
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+        case ARRAY_CHAR:
+            // Return the numeric precision
+            // ***FIXME*** -- should this be an error?
+            aplIntegerRes = 0;
+            immTypeRes    = IMMTYPE_INT;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    lpYYRes->tkToken.tkFlags.ImmType   = immTypeRes;
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkInteger  = aplIntegerRes;
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+//ERROR_EXIT:
+    // If the right arg is a global, ...
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
+    } // End IF
+
+    return lpYYRes;
+} // End SysFnDR_GetPrec_EM_YY
 #undef  APPEND_NAME
 
 

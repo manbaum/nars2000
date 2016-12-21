@@ -1484,7 +1484,7 @@ LPPN_YYSTYPE PN_MakeVfpPoint
         if (!ValidateIntegerTest (lpiVfpPrec,           // Ptr to the integer to test
                                   DEF_MIN_QUADFPC,      // Low range value (inclusive)
                                   DEF_MAX_QUADFPC,      // High ...
-                                  bRangeLimit.FPC))     // TRUE iff we're range limiting
+                                  TRUE))                // TRUE iff we're range limiting
         {
             // Mark as invalid result
             lppnLocalVars->bYYERROR = TRUE;
@@ -1492,10 +1492,12 @@ LPPN_YYSTYPE PN_MakeVfpPoint
             return NULL;
         } else
             uNewPrec = (UINT) *lpiVfpPrec;
-    } // End IF
+    } else
+        // Set the precision to the default
+        uNewPrec = uOldPrec;
 
-    // Set the default precision to the larger ...
-    mpfr_set_default_prec (max (uNewPrec, uOldPrec));
+    // Set the default precision
+    mpfr_set_default_prec (uNewPrec);
 
     // Use MPFR routine
     mpfr_init_set_str (&lpYYArg->at.aplVfp, &lpszNumAccum[uNumAcc], 10, MPFR_RNDN);
@@ -1986,7 +1988,7 @@ PN_YYSTYPE PN_SetInfinity
                 if (!ValidateIntegerTest (lpiVfpPrec,           // Ptr to the integer to test
                                           DEF_MIN_QUADFPC,      // Low range value (inclusive)
                                           DEF_MIN_QUADFPC,      // High ...
-                                          bRangeLimit.FPC))     // TRUE iff we're range limiting
+                                          TRUE))                // TRUE iff we're range limiting
                 {
                     // Mark as invalid result
                     lppnLocalVars->bYYERROR = TRUE;

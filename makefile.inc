@@ -738,6 +738,7 @@ $**
 /MAP:$(OC)$(MV).map
 kernel32.lib user32.lib version.lib libcmt.lib
 /DEF:$(MV).def
+/LTCG:off
 <<KEEP
         @if exist $@ del $@
         @$(LD) $(LFLAGS_WEXE) @$(OC)$(MV).crf

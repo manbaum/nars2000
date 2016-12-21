@@ -1,6 +1,36 @@
 Version 0.4.18.xx consists of the following Builds:
 
 
+Build #1593 -- Version 0.4.18.xx
+--------------------------------
+
+* Miscellaneous Changes
+
+Directory trunk:
+
+MAKEFILE.INC:
+  Insert /LCTG:off in <MakeVer> link command line to avoid spurious error message.
+
+
+Build #1592 -- Version 0.4.18.xx
+--------------------------------
+
+* Change Meaning Of Specified Precision (e.g., 1v64)
+* Implement Get Precision Function In []DR
+
+Directory trunk:
+
+MACROS.H:
+  Define <CopyAll> macro omitted from previous build.
+
+PN_PROC.C:
+  Change meaning of specified precision (e.g., 1v64) to exactly that precision.
+
+QF_RD.C:
+QF_RD.H:
+  Implement 3 []DR to return the (lowest) precision of the argument.
+
+
 Build #1591 -- Version 0.4.18.xx
 --------------------------------
 

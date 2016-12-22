@@ -1,6 +1,18 @@
 Version 0.4.18.xx consists of the following Builds:
 
 
+Build #1597 -- Version 0.4.18.xx
+--------------------------------
+
+* Implement DEBUG Checks On MyGlobalLock, Part 2
+
+Directory trunk:
+
+QF_STRACE.C:
+SESSMAN.C:
+  Fix erroneous <MyGlobalLockXXX> specifiers.
+
+
 Build #1596 -- Version 0.4.18.xx
 --------------------------------
 

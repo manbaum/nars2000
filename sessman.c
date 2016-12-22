@@ -2516,7 +2516,7 @@ void MoveToLine
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpwCurLine = MyGlobalLock000 (lpMemPTD->hGlbCurLine);
+    lpwCurLine = MyGlobalLockInt (lpMemPTD->hGlbCurLine);   // Might be only 1 byte
 
     // Tell EM_GETLINE maximum # chars in the buffer
     ((LPWORD) lpwCurLine)[0] = uLineLen;

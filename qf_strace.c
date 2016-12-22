@@ -862,7 +862,7 @@ UBOOL DisplayTraceResult
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrItm = MyGlobalLockWsz (hGlbItm);
+    lpMemHdrItm = MyGlobalLockVar (hGlbItm);
 
     // Copy the item data to global memory
     CopyMemory (VarArrayDataFmBase (lpMemHdrItm),

@@ -340,8 +340,6 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     <ClCompile Include="display.c" />
     <ClCompile Include="dtoa.c" />
     <ClCompile Include="editfcn.c" />
-    <ClCompile Include="editmat.c" />
-    <ClCompile Include="editvec.c" />
     <ClCompile Include="errmsg.c" />
     <ClCompile Include="except.c" />
     <ClCompile Include="execdfn.c" />

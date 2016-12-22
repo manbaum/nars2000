@@ -2380,7 +2380,7 @@ UBOOL SaveFunctionCom
 
         // Save flag if Ctrl Strucs in AFOs
         lpMemDfnHdr->bAfoCtrlStruc = (lpSF_Fcns->bAFO
-                                    && csLocalVars.bMainStmt);
+                                   && csLocalVars.bMainStmt);
         // Check for line labels ([]ID, etc.)
         if (!GetLabelNums (lpMemDfnHdr, hWndEC, hWndFE NE NULL, lpSF_Fcns))
             goto ERROR_EXIT;
@@ -2388,6 +2388,9 @@ UBOOL SaveFunctionCom
         // If there was a previous function, ...
         if (hGlbOldDfn NE NULL)
         {
+            // Zap the previous global memory handle
+            SetWindowLongPtrW (hWndFE, GWLSF_HGLBDFNHDR, (HANDLE_PTR) NULL);
+
             // Free it
             FreeResultGlobalDFLV (hGlbOldDfn); hGlbOldDfn = NULL;
         } // End IF

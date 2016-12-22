@@ -259,7 +259,7 @@ void SetMarginsFE
 //***************************************************************************
 
 UBOOL IzitAFE
-    (HWND   hWndEC,                 // Window handel to Edit Ctrl
+    (HWND   hWndEC,                 // Window handle to Edit Ctrl
      UBOOL  bAllow)                 // TRUE iff we should allow the operation regardless of the line #
 
 {
@@ -314,7 +314,7 @@ UBOOL IzitAFE
 //***************************************************************************
 
 void ReplaceSel
-    (HWND   hWndEC,                 // Window handel to Edit Ctrl
+    (HWND   hWndEC,                 // Window handle to Edit Ctrl
      UBOOL  bAllow,                 // TRUE iff we should allow the operation regardless of the line #
      LPARAM lParam)                 // Ptr to the replacement text
 
@@ -710,16 +710,23 @@ LRESULT APIENTRY FEWndProc
 
         case MYWM_INIT_EC:
         {
-            UINT uLineLen;      // Line length
+            UINT  uLineLen;     // Line length
+            UBOOL bAFO;         // TRUE iff this window is an AFO
 
             // Write out the FE window title
-            SetFETitle (hWnd);
+            bAFO = SetFETitle (hWnd);
 
             // Draw the line #s
             DrawLineNumsFE (hWndEC);
 
-            // Set the caret to the end of the function header
-            uLineLen = (UINT) SendMessageW (hWndEC, EM_LINELENGTH, 0, 0);
+            // Get the length of the function header block
+            uLineLen = GetBlockLength (hWndEC, 0);
+
+            // If it's an AFO, ...
+            if (bAFO)
+                // Plus the line terminator and the length of the first line
+                uLineLen  = sizeof (WS_CRLF) + GetBlockLength (hWndEC, 1);
+            // Set the caret to that character
             SendMessageW (hWndEC, EM_SETSEL, uLineLen, uLineLen);
 
             return FALSE;           // We handled the msg
@@ -1099,13 +1106,15 @@ UINT GetFunctionName
 //  Write out the FE window title including the function name (if any)
 //***************************************************************************
 
-void SetFETitle
+UBOOL SetFETitle
     (HWND hWndFE)                   // FE window handle
 
 {
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPWCHAR      lpwszTemp;         // Ptr to temporary storage
     UINT         uNameLen;          // Function name length
+    UBOOL        bAFO = FALSE;      // TRUE iff we're editing an AFO
+    HGLOBAL      hGlbDfnHdr;        // Global memory handle of the previous function
     VARS_TEMP_OPEN
 
     // Get ptr to PerTabData global memory
@@ -1122,15 +1131,37 @@ void SetFETitle
     //   and increment the name length to the next position
     lpwszTemp[uNameLen++] = WC_EOS;
 
+    // Get the handle of the previous function
+    // If we're editing an AFO, then we can be doing that only
+    //   if there was a previous function.
+    hGlbDfnHdr = (HGLOBAL) GetWindowLongPtrW (hWndFE, GWLSF_HGLBDFNHDR);
+
+    // If it's valid, ...
+    if (hGlbDfnHdr NE NULL)
+    {
+        LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header global memory
+
+        // Lock the memory to get a ptr to it
+        lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
+
+        // Save the AFO flag
+        bAFO = lpMemDfnHdr->bAFO;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+    } // End IF
+
     // Format the new title in the memory following the name
     wsprintfW (&lpwszTemp[uNameLen],
-                wszFETitle,
+                bAFO ? wszFETitle2 : wszFETitle,
                 lpwszTemp,
                 L" *"[GetWindowLongW (hWndFE, GWLSF_CHANGED)]);
     // Rewrite the window title with the (new?) function name
     SetWindowTextW (hWndFE, &lpwszTemp[uNameLen]);
 
     EXIT_TEMP_OPEN
+
+    return bAFO;
 } // End SetFETitle
 
 

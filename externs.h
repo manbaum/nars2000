@@ -1227,6 +1227,11 @@ WCHAR wszMCTitle[]                      // MDI Client ... (for debugging purpose
 #ifdef DEFINE_VALUES
  = WS_APPNAME L" [%s]%c"
 #endif
+,
+      wszFETitle2[]                     // Function Editor for AFOs ...
+#ifdef DEFINE_VALUES
+ = WS_APPNAME L" [%s" WS_UTF16_LEFTARROW L"{...}]%c"
+#endif
 ;
 
 typedef enum tagMEMVIRTENUM

@@ -217,7 +217,6 @@
 #define SIGN_APLVFP(a)      (gAllowNeg0 ? ((a)->_mpfr_sign < 0)                     \
                                         : (mpfr_sgn (a) < 0))       // ...            APLVFP
 
-#define mpfr_sgn0(a)        (signumint ((a)->_mpfr_sign))
 #define signumrat            mpq_sgn
 
 // Define macro to detect -0.0

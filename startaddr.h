@@ -965,13 +965,51 @@ typedef struct tagSTART_ADDRESSES
 
     // refcnt.c
 
-#ifdef DEBUG
+#if RESDEBUG
     // resdebug.c
     "_SaveObj"                  , (LPUCHAR) &_SaveObj                   ,
-/// ...
+    "_DeleObj"                  , (LPUCHAR) &_DeleObj                   ,
+    "OverLapMemory"             , (LPUCHAR) &OverLapMemory              ,
+    "LastTouch"                 , (LPUCHAR) &LastTouch                  ,
+    "_MyCloseSemaphore"         , (LPUCHAR) &_MyCloseSemaphore          ,
+    "_MyCreateCompatibleBitmap" , (LPUCHAR) &_MyCreateCompatibleBitmap  ,
+    "_MyCreateCompatibleDC"     , (LPUCHAR) &_MyCreateCompatibleDC      ,
+    "_MyCreatePen"              , (LPUCHAR) &_MyCreatePen               ,
+    "_MyCreateFontIndirect"     , (LPUCHAR) &_MyCreateFontIndirect      ,
+    "_MyCreateFontIndirectW"    , (LPUCHAR) &_MyCreateFontIndirectW     ,
+    "_MyCreatePolygonRgn"       , (LPUCHAR) &_MyCreatePolygonRgn        ,
+    "_MyCreateRectRgnIndirect"  , (LPUCHAR) &_MyCreateRectRgnIndirect   ,
+    "_MyCreateSemaphoreW"       , (LPUCHAR) &_MyCreateSemaphoreW        ,
+    "_MyCreateSolidBrush"       , (LPUCHAR) &_MyCreateSolidBrush        ,
+    "_MyDeleteDC"               , (LPUCHAR) &_MyDeleteDC                ,
+    "_MyDeleteObject"           , (LPUCHAR) &_MyDeleteObject            ,
+    "_MyGetDC"                  , (LPUCHAR) &_MyGetDC                   ,
+    "_MyGetWindowDC"            , (LPUCHAR) &_MyGetWindowDC             ,
+    "_MyLoadBitmap"             , (LPUCHAR) &_MyLoadBitmap              ,
+    "_MyLoadImage"              , (LPUCHAR) &_MyLoadImage               ,
+    "_MyReleaseDC"              , (LPUCHAR) &_MyReleaseDC               ,
+    "_MyReleaseSemaphore"       , (LPUCHAR) &_MyReleaseSemaphore        ,
+    "_MyGlobalAlloc"            , (LPUCHAR) &_MyGlobalAlloc             ,
+    "_MyGlobalHandle"           , (LPUCHAR) &_MyGlobalHandle            ,
+    "_MyGlobalLock"             , (LPUCHAR) &_MyGlobalLock              ,
+    "_MyGlobalLockNS"           , (LPUCHAR) &_MyGlobalLockNS            ,
+    "_MyGlobalLockSub"          , (LPUCHAR) &_MyGlobalLockSub           ,
+    "_MyGlobalUnlock"           , (LPUCHAR) &_MyGlobalUnlock            ,
+    "_MyGlobalSize"             , (LPUCHAR) &_MyGlobalSize              ,
+    "_MyGlobalFlags"            , (LPUCHAR) &_MyGlobalFlags             ,
+    "_MyGlobalReAlloc"          , (LPUCHAR) &_MyGlobalReAlloc           ,
+    "_MyGlobalFree"             , (LPUCHAR) &_MyGlobalFree              ,
+    "_MyHeapAlloc"              , (LPUCHAR) &_MyHeapAlloc               ,
+    "_MyHeapReAlloc"            , (LPUCHAR) &_MyHeapReAlloc             ,
+    "_MyHeapFree"               , (LPUCHAR) &_MyHeapFree                ,
+    "_MyVirtualAlloc"           , (LPUCHAR) &_MyVirtualAlloc            ,
+    "_MyVirtualFree"            , (LPUCHAR) &_MyVirtualFree             ,
+    "_MyQueryObject"            , (LPUCHAR) &_MyQueryObject             ,
+    "_MyWaitForSemaphore"       , (LPUCHAR) &_MyWaitForSemaphore        ,
+    "_MyWaitForThread"          , (LPUCHAR) &_MyWaitForThread           ,
     "_CheckMemStat"             , (LPUCHAR) &_CheckMemStat              ,
-
 #endif
+
     // savefcn.c
     "SaveFunction"              , (LPUCHAR) &SaveFunction               ,
     "SaveFunctionCom"           , (LPUCHAR) &SaveFunctionCom            ,

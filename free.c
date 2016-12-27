@@ -674,7 +674,7 @@ UBOOL FreeResultGlobalFcn
     UBOOL             bRet;         // TRUE iff result is valid
     LPPL_YYSTYPE      lpYYToken;    // Ptr to function array token
     HGLOBAL          *lphGlbLcl,    // Ptr to global memory handle
-                      hGlbTxtLine;  // Line text gobal memory handle
+                      hGlbTxtLine;  // Line text global memory handle
 
     // Data is an valid HGLOBAL function array
     Assert (IsGlbTypeFcnDir_PTB (MakePtrTypeGlb (hGlbData)));

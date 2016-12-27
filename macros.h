@@ -527,6 +527,10 @@
 // Define macro for inverting VFP numbers
 #define mpfr_inv(rop,op,rnd)    mpfr_si_div (rop, 1, op, rnd)
 
+// Define macros for converting 64-bit integers to MPFR
+#define mpfr_set_sx     mpfr_set_sj
+#define mpfr_set_ux     mpfr_set_uj
+
 // Define macros for extracting the left and right operands from operators
 #define GetMonLftOper(lpYYFcnStrOpr,lptkAxisOpr)    &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)]
 #define GetDydLftOper(lpYYFcnStrRht)                &lpYYFcnStrRht[lpYYFcnStrRht->TknCount]

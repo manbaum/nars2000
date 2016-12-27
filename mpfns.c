@@ -1367,38 +1367,6 @@ void mpfr_init_set_q
 
 
 //***************************************************************************
-//  $mpfr_set_sx
-//
-//  Save an APLINT value as a Variable FP
-//***************************************************************************
-
-void mpfr_set_sx
-    (mpfr_ptr   dest,
-     APLINT     val,
-     mpfr_rnd_t rnd)
-
-{
-    ISPLIT apliSplit;
-
-    // Save the (non-negative) value to split
-    apliSplit.aplInt = abs64 (val);
-
-    // Set the upper-DWORD of the arg into the lower-DWORD of the result
-    mpfr_set_ui (dest, apliSplit.hi, rnd);
-
-    // Shift to the upper DWORD of the result
-    mpfr_mul_2ui (dest, dest, 32, MPFR_RNDN);
-
-    // Add in the low-order DWORD of the arg
-    mpfr_add_ui (dest, dest, apliSplit.lo, MPFR_RNDN);
-
-    // Adjust the sign
-    if (signumint (val) < 0)
-        mpfr_neg (dest, dest, MPFR_RNDN);
-} // End mpfr_set_sx
-
-
-//***************************************************************************
 //  $mpfr_get_sx
 //
 //  Convert a VFP to an APLINT
@@ -1409,19 +1377,19 @@ APLINT mpfr_get_sx
      LPUBOOL lpbRet)        // TRUE iff the result is valid (may be NULL)
 
 {
-    APLRAT mpqTmp = {0};
-    APLINT aplInteger;
+     UBOOL bRet;
 
-    // Convert the number to RAT
-    mpq_init_set_fr (&mpqTmp, src);
+     if (lpbRet EQ NULL)
+         lpbRet = &bRet;
+     // See if it fits
+     *lpbRet = mpfr_fits_intmax_p (src, MPFR_RNDN);
 
-    // Get the integer within
-    aplInteger = mpq_get_sx (&mpqTmp, lpbRet);
-
-    // We no longer need this storage
-    Myq_clear (&mpqTmp);
-
-    return aplInteger;
+     // If the fractional part is zero and the integer part is in range, ...
+     if (*lpbRet)
+         return mpfr_get_sj (src, MPFR_RNDN);
+     else
+         // Return a known value
+         return 0;
 } // End mpfr_get_sx
 
 

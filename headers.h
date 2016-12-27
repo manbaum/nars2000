@@ -90,7 +90,6 @@
 
 #pragma pack(pop)
 
-#undef  mpfr_set_sj
 #undef  mpfr_init_set       // The mpfr_init_set* functions are implemented
 #undef  mpfr_init_set_ui    //   as macros which causes a problem when used
 #undef  mpfr_init_set_si    //   as mpfr_init_set_q ((LPAPLVFP) lpMemRes)++, ...

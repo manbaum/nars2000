@@ -1304,7 +1304,8 @@ HGLOBAL AllocateGlobalArray
     (APLSTYPE aplTypeRes,       // Result storage type
      APLNELM  aplNELMRes,       // ...    NELM
      APLRANK  aplRankRes,       // ...    Rank
-     LPAPLDIM lpaplDimRes)      // Ptr to result dimension(s) (may be NULL for scalar)
+     LPAPLDIM lpaplDimRes)      // Ptr to result dimension(s)
+                                // (may be NULL for scalar or temporary APV)
 
 {
     APLUINT           ByteRes;              // # bytes in result
@@ -1337,10 +1338,12 @@ HGLOBAL AllocateGlobalArray
     lpHeader->Rank       = aplRankRes;
 #undef  lpHeader
 
-    // Fill in the dimension(s)
-    CopyMemory (VarArrayBaseToDim (lpMemHdrRes),
-                lpaplDimRes,
-                (APLU3264) (aplRankRes * sizeof (lpaplDimRes[0])));
+    // If the dimension ptr is valid, ...
+    if (lpaplDimRes NE NULL)
+        // Fill in the dimension(s)
+        CopyMemory (VarArrayBaseToDim (lpMemHdrRes),
+                    lpaplDimRes,
+                    (APLU3264) (aplRankRes * sizeof (lpaplDimRes[0])));
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 WSFULL_EXIT:

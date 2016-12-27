@@ -190,7 +190,8 @@ typedef struct tagTKFLAGS
          bAfoArgs:1,        // 00020000:  TRUE iff this stmt references {alpha} or {omega}
          bGuardStmt:1,      // 00040000:  TRUE iff this stmt is an AFO Guard
          bAssignName:1,     // 00080000:  TRUE iff this token is a name that is the target of an assignment
-         :12;               // FFF00000:  Available bits
+         bTempAPV:1,        // 00100000:  TRUE iff this is a temporary APV used in place of an elided index
+         :11;               // FFE00000:  Available bits
 } TKFLAGS, *LPTKFLAGS;
 
 // N.B.:  Whenever changing the above enum (TKFLAGS),
@@ -235,6 +236,7 @@ typedef union tagTOKEN_DATA
            };
     APLBOOL    tkBoolean;           // 00:  ...     an APLBOOL
     APLINT     tkInteger;           // 00:  ...     an APLINT
+    APLAPA     tkAPA;               // 00:  ...     an APLAPA
     ANON_CTRL_STRUC;                // 00:  ...     Ctrl Struc data (8 bytes)
     struct tagTOKEN
               *lptkCSLink;          // 00:  ...     Ptr to previous token at start of stmt

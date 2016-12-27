@@ -405,7 +405,6 @@ typedef struct tagSTART_ADDRESSES
     "mpfr_init_set_d"           , (LPUCHAR) &mpfr_init_set_d            ,
     "mpfr_init_set_z"           , (LPUCHAR) &mpfr_init_set_z            ,
     "mpfr_init_set_q"           , (LPUCHAR) &mpfr_init_set_q            ,
-    "mpfr_set_sx"               , (LPUCHAR) &mpfr_set_sx                ,
     "mpfr_get_sx"               , (LPUCHAR) &mpfr_get_sx                ,
     "mpfr_get_sctsx"            , (LPUCHAR) &mpfr_get_sctsx             ,
     "_mpfr_get_ctsx"            , (LPUCHAR) &_mpfr_get_ctsx             ,

@@ -617,14 +617,18 @@ typedef union tagGLBSYM
 EXTERN
 const TOKEN tkZero
 #ifdef DEFINE_VALUES
- = {{TKT_VARIMMED, FALSE, IMMTYPE_BOOL}, soA}
+ = {{TKT_VARIMMED, FALSE, IMMTYPE_BOOL},    // tkFlags
+    soA,                                    // tkSynObj
+    0}                                      // tkData
 #endif
 ;
 
 EXTERN
 const TOKEN tkBlank
 #ifdef DEFINE_VALUES
- = {{TKT_VARIMMED, FALSE, IMMTYPE_CHAR}, soA, (LPSYMENTRY) L' '}
+ = {{TKT_VARIMMED, FALSE, IMMTYPE_CHAR},    // tkFlags
+    soA,                                    // tkSynObj
+    (LPSYMENTRY) L' '}                      // tkData
 #endif
 ;
 

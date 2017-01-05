@@ -260,7 +260,8 @@
 #define PUSHRIGHT(a)                *lpMemPTD->lpplRhtStk++ = (a)
 #define LBIND(lftSynObj,curSynObj)  _BIND (lftSynObj, curSynObj)    // ((IsValidSO (lftSynObj && IsValidSO (curSynObj)) ? plBndStr[lftSynObj][curSynObj] : (DbgBrk (), 0xCCC))
 #define RBIND(curSynObj,rhtSynObj)  _BIND (curSynObj, rhtSynObj)    // ((IsValidSO (curSynObj && IsValidSO (rhtSynObj)) ? plBndStr[curSynObj][rhtSynObj] : (DbgBrk (), 0xFFF))
-#define LFTSYNOBJ                   (lpplOrgLftStk < &lpMemPTD->lpplLftStk[-1]) ? lpMemPTD->lpplLftStk[-1]->tkToken.tkSynObj : GetLftSynObj (&plLocalVars)
+#define LFTTOKEN                   ((lpplOrgLftStk < &lpMemPTD->lpplLftStk[-1]) ? lpMemPTD->lpplLftStk[-1]->tkToken : GetLftToken  (&plLocalVars))
+#define LFTSYNOBJ                   (LFTTOKEN.tkSynObj)
 #define CURSYNOBJ                    lpplYYCurObj->tkToken.tkSynObj
 #define RHTSYNOBJ                    lpMemPTD->lpplRhtStk[-1]->tkToken.tkSynObj
 #define RH2SYNOBJ                   ((RSTACKLEN > 1) ? lpMemPTD->lpplRhtStk[-2]->tkToken.tkSynObj : soNONE)
@@ -269,6 +270,7 @@
 #define LSTACKLEN2                  (lpplLocalVars->lpMemPTD->lpplLftStk - lpplLocalVars->lpMemPTD->lpplOrgLftStk)
 #define RSTACKLEN                   (lpMemPTD->lpplRhtStk - lpplOrgRhtStk)
 #define RSTACKLEN2                  (lpplLocalVars->lpMemPTD->lpplRhtStk - lpplLocalVars->lpMemPTD->lpplOrgRhtStk)
+#define IsTknTypeNamedVar(a)        ((a) EQ TKT_VARNAMED)
 
 #ifdef DEBUG
 //#define DEBUG_TRACE
@@ -1960,20 +1962,32 @@ LPPL_YYSTYPE plRedMF_A
 {
     TOKEN        tkLftArg = {0};        // Copy of left arg token
     LPTOKEN      lptkLftArg;            // Ptr to copy of left arg token
-    LPPL_YYSTYPE lpYYRes;               // Ptr to the result
+    LPPL_YYSTYPE lpYYRes,               // Ptr to the result
+                *lplpYYArgCurry = NULL; // Ptr to ptr to Arg curry (if any)
 
     // Ensure that the current object is a function
     Assert (IsTknFcnOpr (&lpplYYCurObj->tkToken));
 
-    // If the left arg is present, ...
+    // If this function has a curried arg, ...
     if (lpplYYCurObj->lpplYYArgCurry NE NULL)
+        // Point to the curried arg
+        lplpYYArgCurry = &lpplYYCurObj->lpplYYArgCurry;
+    else
+    // If there is a curried function with a curried arg, ...
+    if (lpplYYCurObj->lpplYYFcnCurry NE NULL
+     && lpplYYCurObj->lpplYYFcnCurry->lpplYYArgCurry)
+        // Point to the curried arg
+        lplpYYArgCurry = &lpplYYCurObj->lpplYYFcnCurry->lpplYYArgCurry;
+
+    // If a left arg is present, ...
+    if (lplpYYArgCurry NE NULL)
     {
         // Copy the left arg token ptr
-        CopyAll (&tkLftArg, &lpplYYCurObj->lpplYYArgCurry->tkToken);
+        CopyAll (&tkLftArg, &(*lplpYYArgCurry)->tkToken);
         lptkLftArg = &tkLftArg;
 
         // YYFree the curried arg
-        YYFree (lpplYYCurObj->lpplYYArgCurry); lpplYYCurObj->lpplYYArgCurry = NULL;
+        YYFree (*lplpYYArgCurry); *lplpYYArgCurry = NULL;
 
         // If the left arg is a named var, ...
         if (IsTknNamedVar (lptkLftArg))
@@ -4111,21 +4125,23 @@ PARSELINE_START:
             lpplYYCurObj = POPLEFT; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
 #ifdef DEBUG_START
             {
-                LPWCHAR lpwszLine2;
+                LPMEMTXT_UNION lpMemTxtLine;    // Ptr to header/line text global memory
 
                 if (hGlbTxtLine NE NULL)
-                    lpwszLine2 = MyGlobalLockWsz (hGlbTxtLine);
+                    lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
                 else
-                    lpwszLine2 = lpwszLine - 2;
+                    // Make it look like LPMEMTXT_UNION as all we need to do
+                    //   is reference ->C which is two WCHARs in
+                    lpMemTxtLine = (LPMEMTXT_UNION) (lpwszLine - 2);
                 dprintfWL0 (L"Starting line(%d/%d):  %s",
                             uLineNum,
                             uTknNum,
-                           &lpwszLine2[2]);
+                           &lpMemTxtLine->C);
                 TRACE (L"Starting:", L"", CURSYNOBJ, RHTSYNOBJ);
 
                 if (hGlbTxtLine NE NULL)
                 {
-                    MyGlobalUnlock (hGlbTxtLine); lpwszLine2 = NULL;
+                    MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
                 } // End IF
             }
 #endif
@@ -4195,19 +4211,21 @@ PARSELINE_SCAN1:
 
             TRACE (L"Binding: ", L"", CURSYNOBJ, RHTSYNOBJ);
 
-            // If lftSynObj is soA   and
+            // If lftSynObj is soNAM and
             //    curSynObj is soIDX and
             //    rhtSynObj is soF   and
-            //    rh2SynObj is soMOP, ...
-            if (lftSynObj EQ soA
+            //    rh2SynObj is soMOP or rh2SynObj is soSPA, ...
+            if ((lftSynObj EQ soNAM
+              || (lftSynObj EQ soA
+               && IsTknTypeNamedVar (LFTTOKEN.tkFlags.TknType)))
              && curSynObj EQ soIDX
              && rhtSynObj EQ soF
-             && RH2SYNOBJ EQ soMOP)
+             && (RH2SYNOBJ EQ soMOP || RH2SYNOBJ EQ soSPA))
             {
                 // This case handles
-                //     A IDX F MOP ... MOP SPA
+                //     NAM IDX F MOP ... MOP SPA
                 //   by transforming it into
-                //     A ADX F MOP ... MOP SPA
+                //     NAM ADX F MOP ... MOP SPA
                 //   and left shifting it so that
                 //     ADX F MOP
                 //   is handled next and it is reduced to
@@ -4215,6 +4233,8 @@ PARSELINE_SCAN1:
                 //   because (IDX F) > (F MOP)
                 //   and     (ADX F) < (F MOP)
                 //   so F MOP is the next pair to be reduced.
+                // This case also handles the case of NAM IDX F SPA
+                //   same as the above but with SPA in place of MOP.
                 lpplYYCurObj->tkToken.tkSynObj = soADX;
 
                 goto LEFTSHIFT;
@@ -4952,7 +4972,9 @@ PARSELINE_DONE:
              || (curSynObj EQ soHY   && oldLstSynObj EQ soSPHY);
 
             // Set flag for sink
-            bSink = (curSynObj EQ soSPA) && !bAssignName;
+            bSink = !bAssignName
+                 && (curSynObj EQ soSPA)
+                 && (lpplYYCurObj->lpplYYFcnCurry EQ NULL);
 
             // Check for SYNTAX ERROR
             if ( curSynObj EQ soA
@@ -5700,16 +5722,16 @@ LPPL_YYSTYPE pl_yylex
 
 
 //***************************************************************************
-//  $GetLftSynObj
+//  $GetLftToken
 //
-//  Return the left stack SynObj value without popping the token stack
+//  Return the left stack token without popping the token stack
 //***************************************************************************
 
-SO_ENUM GetLftSynObj
+TOKEN GetLftToken
     (LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
 
 {
-    SO_ENUM tkSynObj = soEOS;       // The result
+    TOKEN tkLftStk = {0};           // The result
 
     if (lpplLocalVars->lptkStart < lpplLocalVars->lptkNext)
     {
@@ -5718,24 +5740,11 @@ SO_ENUM GetLftSynObj
         // Get the PL_YYSTYPE result
         pl_yylexCOM (lpplLocalVars, &plYYLval, TRUE);
 
-        if (plYYLval.tkToken.tkSynObj NE soNONE)
-        {
-            // If the token is named,
-            //   and not assigned into, ...
-            if (IsTknNamed (&plYYLval.tkToken)
-             && !plYYLval.tkToken.tkFlags.bAssignName
-             &&  plYYLval.tkToken.tkSynObj NE soVALR
-             &&  plYYLval.tkToken.tkSynObj NE soSYNR)
-                // Get the matching tkSynObj
-                tkSynObj = TranslateNameTypeToSOType (plYYLval.tkToken.tkData.tkSym->stFlags.stNameType);
-            else
-                // Get the result
-                tkSynObj = plYYLval.tkToken.tkSynObj;
-        } // End IF
+        tkLftStk = plYYLval.tkToken;
     } // End IF
 
-    return tkSynObj;
-} // End GetLftSynObj
+    return tkLftStk;
+} // End GetLftToken
 
 
 //***************************************************************************
@@ -5929,14 +5938,20 @@ PL_YYLEX_FCNNAMED:
                     {
                         LPPL_YYSTYPE lpYYRht0 = NULL,
                                      lpYYRht1 = NULL,
-                                     lpYYRht2 = NULL;
+                                     lpYYRht2 = NULL,
+                                     lpYYRht3 = NULL,
+                                     lpYYRht4 = NULL;
                         LPTOKEN      lptkRht0 = NULL,
                                      lptkRht1 = NULL,
-                                     lptkRht2 = NULL;
+                                     lptkRht2 = NULL,
+                                     lptkRht3 = NULL,
+                                     lptkRht4 = NULL;
                         UBOOL        bAssignName;
 
-                        // If it's a System Var, ...
-                        if (lpplYYLval->tkToken.tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS)
+                        // If it's a System Var,
+                        //   but not a System Label, ...
+                        if (lpplYYLval->tkToken.tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS
+                         && !lpplYYLval->tkToken.tkData.tkSym->stFlags.DfnSysLabel)
                             // Copy the current value from the most local HTS
                             lpplYYLval->tkToken.tkData.tkSym =
                               lpMemPTD->lphtsPTD->lpSymQuad[lpplYYLval->tkToken.tkData.tkSym->stFlags.SysVarValid];
@@ -5953,16 +5968,45 @@ PL_YYLEX_FCNNAMED:
                             lptkRht1 = &lpYYRht1->tkToken;
                         } // End IF
 
-                        bAssignName = (lpplYYLval->tkToken.tkFlags.bAssignName
-                                    || ((lptkRht1 NE NULL)
+                        if (RSTACKLEN2 > 2)
+                        {
+                            lpYYRht2 = lpplLocalVars->lpMemPTD->lpplRhtStk[-2];
+                            lptkRht2 = &lpYYRht2->tkToken;
+                        } // End IF
+
+                        if (RSTACKLEN2 > 3)
+                        {
+                            lpYYRht3 = lpplLocalVars->lpMemPTD->lpplRhtStk[-3];
+                            lptkRht3 = &lpYYRht3->tkToken;
+                        } // End IF
+
+                        if (RSTACKLEN2 > 4)
+                        {
+                            lpYYRht4 = lpplLocalVars->lpMemPTD->lpplRhtStk[-4];
+                            lptkRht4 = &lpYYRht4->tkToken;
+                        } // End IF
+
+                        bAssignName = lpplYYLval->tkToken.tkFlags.bAssignName;
+
+                        bAssignName |= ((lptkRht1 NE NULL)
                                      && ((lptkRht1->tkSynObj EQ soSPA) || (lptkRht1->tkSynObj EQ soISPA))
-                                     && (lpYYRht1->lpplYYFcnCurry NE NULL)))
+                                     && (lpYYRht1->lpplYYFcnCurry NE NULL))
                                       ;
-                        //                                          RhtStk1 RhtStk2
-                        // Late catch of NAM          F {is} A       SPA
-                        //   and         NAM [A]      F {is} A      ISPA
-                        //   and        (NAM ... NAM) F {is} A       RP       SPA
-                        //                                            A        RP     SPA
+                        bAssignName |= ((lptkRht1 NE NULL)
+                                     && (lptkRht1->tkSynObj EQ soIDX)
+                                     && (lptkRht2 NE NULL)
+                                     && (lptkRht2->tkSynObj EQ soF)
+                                     && (lptkRht3 NE NULL)
+                                     && (lptkRht3->tkSynObj EQ soMOP)
+                                     && (lptkRht4 NE NULL)
+                                     && (lptkRht4->tkSynObj EQ soSPA))
+                                      ;
+                        //                                              RhtStk1 RhtStk2 RhtStk3 RhtStk4
+                        // Late catch of NAM          F     {is} A       SPA
+                        //   and         NAM [A]      F     {is} A      ISPA
+                        //   and         NAM [A]      F MOP {is} A       IDX       F      MOP     SPA
+                        //   and        (NAM ... NAM) F     {is} A       RP       SPA
+                        //                                                A        RP     SPA
                         if (bAssignName)
                         {
                             // Mark as being assigned into
@@ -6543,7 +6587,10 @@ PL_YYLEX_OP3NAMED:
                                 lpplYYLval->tkToken.tkData.tkGlbData = MakePtrTypeGlb (lpplYYLval->tkToken.tkData.tkGlbData);
 #ifdef DEBUG
                             else
+                            {
                                 DbgBrk ();              // #ifdef DEBUG -- ***FIXME***
+////                            goto WSFULL_EXIT;       // ***FIXME***
+                            } // End IF/ELSE
 #endif
                             //***************************************************************************
                             // N.B.:  By not incrementing the RefCnt, this array will be deleted at the end

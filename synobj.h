@@ -96,7 +96,7 @@ typedef enum tagSO_ENUM
 	soNNR    , 			// 3B:  NAM NAM)                                               
 	soLNR    , 			// 3C:  (NAM NAM)                                              
 	soISPA   , 			// 3D:  IDX SPA                                                
-	soADX    , 			// 3E:  A IDX F MOP SPA => A ADX F MOP SPA & left shift        
+	soADX    , 			// 3E:  NAM IDX F MOP SPA => NAM ADX F MOP SPA & left shift    
 	soSYNR   , 			// 3F:  SYNTAX ERROR                                           
 	soVALR   , 			// 40:  VALUE ERROR                                            
 	soNVAL   , 			// 41:  No Value                                               
@@ -174,7 +174,7 @@ LPWCHAR soNames[]
 	L"NNR" ,			// 3B:  NAM NAM)                                               
 	L"LNR" ,			// 3C:  (NAM NAM)                                              
 	L"ISPA",			// 3D:  IDX SPA                                                
-	L"ADX" ,			// 3E:  A IDX F MOP SPA => A ADX F MOP SPA & left shift        
+	L"ADX" ,			// 3E:  NAM IDX F MOP SPA => NAM ADX F MOP SPA & left shift    
 	L"SYNR",			// 3F:  SYNTAX ERROR                                           
 	L"VALR",			// 40:  VALUE ERROR                                            
 	L"NVAL",			// 41:  No Value                                               

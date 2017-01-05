@@ -109,6 +109,9 @@ VOID CALLBACK WaitForImmExecStmt
         // Display the default prompt
         DisplayPrompt (lpMemWFSO->hWndEC, 10);
 
+    // Free the MPFR cache
+    mpfr_free_cache ();
+
     // Unlock and free (and set to NULL) a global name and ptr
     UnlFreeGlbName (hGlbWFSO, lpMemWFSO);
 #undef  hGlbWFSO
@@ -520,6 +523,24 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
+//  $InitPerThreadVars
+//
+//  Initialize per-thread vars
+//***************************************************************************
+
+void InitPerThreadVars
+    (LPPERTABDATA lpMemPTD)                 // Ptr to PerTabData global memory
+
+{
+    // Set the MPFR default precision
+    mpfr_set_default_prec ((mpfr_prec_t) lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_FPC]->stData.stInteger);
+
+    // Set the MPFR default rounding mode
+    mpfr_set_default_rounding_mode (MPFR_RNDN);
+} // InitPerThreadVars
+
+
+//***************************************************************************
 //  $ImmExecStmtInThread
 //
 //  Execute a line (sys/user command, fn defn, etc.)
@@ -571,6 +592,9 @@ DWORD WINAPI ImmExecStmtInThread
 
         // Save ptr to PerTabData global memory
         TlsSetValue (dwTlsPerTabData, lpMemPTD);
+
+        // Initialize per-thread vars
+        InitPerThreadVars (lpMemPTD);
 
         dprintfWL9 (L"--Starting thread in <ImmExecStmtInThread>.");
 

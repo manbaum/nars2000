@@ -282,6 +282,7 @@ void YYCopyToMem
     // Zap any curried values
     lpYYDst->lpplYYIdxCurry =
     lpYYDst->lpplYYOpRCurry =
+////lpYYDst->lpplYYArgCurry =           // Allowed as in (4{rho}){each}1 2 3
     lpYYDst->lpplYYFcnCurry = NULL;
 } // End YYCopyToMem
 
@@ -485,6 +486,7 @@ UINT YYCountFcnTrn
 //  $YYCopyFcnStr
 //
 //  Copy the tokens in a function strand
+//    returning a ptr to the next entry
 //***************************************************************************
 
 LPPL_YYSTYPE YYCopyFcnStr

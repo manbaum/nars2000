@@ -476,7 +476,7 @@ LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
     lpPrimFlags = GetPrimFlagsPtr (lptkFunc);
 
     // If there's an identity element, ...
-    if (lpPrimFlags && lpPrimFlags->IdentElem)
+    if (lpPrimFlags NE NULL && lpPrimFlags->IdentElem)
         lpPrimIdent = &PrimIdent[lpPrimFlags->Index];
     else
         goto DOMAIN_EXIT;
@@ -641,12 +641,12 @@ LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
 
                 case ARRAY_RAT:
                     for (uRht = 0; uRht < aplNELMRes; uRht++)
-                        mpq_init   (((LPAPLRAT) lpMemRes)++);
+                        mpq_init_set_sx (((LPAPLRAT) lpMemRes)++, lpPrimIdent->bIdentElem, 1);
                     break;
 
                 case ARRAY_VFP:
                     for (uRht = 0; uRht < aplNELMRes; uRht++)
-                        mpfr_init0 (((LPAPLVFP) lpMemRes)++);
+                        mpfr_init_set_si (((LPAPLVFP) lpMemRes)++, lpPrimIdent->bIdentElem, MPFR_RNDN);
                     break;
 
                 defstop
@@ -1949,7 +1949,7 @@ RESTART_EXCEPTION:
                         aplNELMRem = aplNELMRht;
 
                         // Check for optimized chunking
-                        if (lpPrimSpec->B64isB64)
+                        if (lpPrimSpec->B64isB64 NE NULL)
                         {
                             // Calculate the # 64-bit chunks
                             aplNELMTmp  = aplNELMRem / 64;
@@ -2072,7 +2072,7 @@ RESTART_EXCEPTION:
                         {
                             APLB64 aplB64APA;
 
-                            if (lpAPA->Off)
+                            if (lpAPA->Off NE 0)
                                 aplB64APA = 0xFFFFFFFFFFFFFFFF;
                             else
                                 aplB64APA = 0x0000000000000000;
@@ -3514,7 +3514,7 @@ WSFULL_EXIT:
 ERROR_EXIT:
     bRet = FALSE;
 
-    if (*lphGlbRes)
+    if (*lphGlbRes NE NULL)
     {
         if (lpMemHdrRes NE NULL)
         {
@@ -3526,7 +3526,7 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (*lphGlbRes); *lphGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (*lphGlbRes && lpMemRes)
+    if (*lphGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (*lphGlbRes); lpMemHdrRes = NULL;
@@ -3880,7 +3880,7 @@ WSFULL_EXIT:
 ERROR_EXIT:
     bRet = FALSE;
 
-    if (*lphGlbRes)
+    if (*lphGlbRes NE NULL)
     {
         if (lpMemHdrRes NE NULL)
         {
@@ -3892,7 +3892,7 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (*lphGlbRes); *lphGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (*lphGlbRes && lpMemRes)
+    if (*lphGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (*lphGlbRes); lpMemHdrRes = NULL;
@@ -9915,12 +9915,12 @@ HGLOBAL PrimFnDydSiScSiSc_EM
      APLINT     aplIntegerLft,      // ...      as integer
      APLFLOAT   aplFloatLft,        // ...         float
      APLCHAR    aplCharLft,         // ...         char
-     HGLOBAL    lpSymGlbLft,        // ...         Sym/Glb
+     HGLOBAL    lpSymGlbLft,        // ...         Sym/Glb (may be NULL)
      APLSTYPE   aplTypeRht,         // Right arg storage type
      APLINT     aplIntegerRht,      // ...       as integer
      APLFLOAT   aplFloatRht,        // ...          float
      APLCHAR    aplCharRht,         // ...          char
-     HGLOBAL    lpSymGlbRht,        // ...          Sym/Glb
+     HGLOBAL    lpSymGlbRht,        // ...          Sym/Glb (may be NULL)
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
@@ -9952,12 +9952,17 @@ HGLOBAL PrimFnDydSiScSiSc_EM
                                   NULL,
                                  &aplTypeRes,
                                   lpPrimSpec))
-        // Convert the immediate type and value in tkRes
-        //   into an LPSYMENTRY
-        return MakeSymEntry_EM (tkRes.tkFlags.ImmType,      // Immediate type
-                               &tkRes.tkData.tkLongest,     // Ptr to immediate value
-                                lptkFunc);                  // Ptr to function token
-    else
+    {
+        // If the result is an immediate, ...
+        if (IsTknImmed (&tkRes))
+            // Convert the immediate type and value in tkRes
+            //   into an LPSYMENTRY
+            return MakeSymEntry_EM (tkRes.tkFlags.ImmType,      // Immediate type
+                                   &tkRes.tkData.tkLongest,     // Ptr to immediate value
+                                    lptkFunc);                  // Ptr to function token
+        else
+            return tkRes.tkData.tkGlbData;
+    } else
         return NULL;
 
 DOMAIN_EXIT:

@@ -98,7 +98,7 @@ void TypeDemote
                       aplTypeRht,       // Right arg ...
                       aplTypeSub;       // Right arg item ...
     LPSYMENTRY        lpSymEntry;       // Ptr to Hetero item
-    LPVARARRAY_HEADER lpMemRhtHdr;      //
+    LPVARARRAY_HEADER lpMemHdrRht;      //
     SIZE_T            dwSize;           //
 
     // Split cases based upon the arg token type
@@ -160,15 +160,15 @@ void TypeDemote
     hGlbRes = hGlbRht;
 
     // Lock the memory to get a ptr to it
-    lpMemRht = lpMemRhtHdr = MyGlobalLockVar (hGlbRht);
+    lpMemRht = lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
     // Get the Type, NELM, and Rank
-    aplTypeRht = lpMemRhtHdr->ArrType;
-    aplNELMRht = lpMemRhtHdr->NELM;
-    aplRankRht = lpMemRhtHdr->Rank;
+    aplTypeRht = lpMemHdrRht->ArrType;
+    aplNELMRht = lpMemHdrRht->NELM;
+    aplRankRht = lpMemHdrRht->Rank;
 
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayDataFmBase (lpMemRhtHdr);
+    lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
     // If the right arg is a simple scalar,
     //   convert it to an immediate
@@ -391,7 +391,7 @@ void TypeDemote
         } // End SWITCH
 UNLOCK_EXIT:
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = lpMemRhtHdr = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemRht = lpMemHdrRht = NULL;
 
         // We no longer need this storage
         FreeResultGlobalVar (hGlbRht); hGlbRht = NULL;
@@ -592,8 +592,8 @@ UNLOCK_EXIT:
     {
         // If the reference count of this array is one, just
         //   change the array type from ARRAY_NESTED to ARRAY_HETERO.
-        if (lpMemRhtHdr->RefCnt EQ 1)
-            lpMemRhtHdr->ArrType = ARRAY_HETERO;
+        if (lpMemHdrRht->RefCnt EQ 1)
+            lpMemHdrRht->ArrType = ARRAY_HETERO;
         else
         {
             // Copy this array and change the type from ARRAY_NESTED to ARRAY_HETERO
@@ -661,7 +661,7 @@ UNLOCK_EXIT:
             } // End SWITCH
 
             // Skip over header and dimensions to the data
-            lpMemRht = VarArrayDataFmBase (lpMemRhtHdr);
+            lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
             // Demote the data in the right arg, copying it to the result
             DemoteData (aplTypeRes,
@@ -704,7 +704,7 @@ UNLOCK_EXIT:
 #undef  lpHeader
 
         // Skip over the header to the dimensions
-        lpMemRht = VarArrayBaseToDim (lpMemRhtHdr);
+        lpMemRht = VarArrayBaseToDim (lpMemHdrRht);
         lpMemRes = VarArrayBaseToDim (lpMemRes);
 
         // Copy the dimensions to the result
@@ -759,7 +759,7 @@ UNLOCK_EXIT:
 #undef  lpHeader
 
         // Skip over the header to the dimensions
-        lpMemRht = VarArrayBaseToDim (lpMemRhtHdr);
+        lpMemRht = VarArrayBaseToDim (lpMemHdrRht);
         lpMemRes = VarArrayBaseToDim (lpMemRes);
 
         // Copy the dimensions to the result
@@ -2805,7 +2805,7 @@ void TPA_NEST2NEST
      LPALLTYPES  lpAllTypes)
 
 {
-    lpAllTypes->aplNested = lpaplNested[uInt];
+    lpAllTypes->aplNested = CopySymGlbDir_PTB (((LPAPLNESTED) ClrPtrTypeDir (lpaplNested))[uInt]);
 } // TPA_NEST2NEST
 
 

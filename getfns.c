@@ -2102,7 +2102,8 @@ void GetNextValueGlb
             break;
     } // End SWITCH
 
-    Assert ((uSub < aplNELMSub)
+    Assert (aplNELMSub EQ 0
+         || (uSub < aplNELMSub)
          || ((uSub EQ 0) && IsNested (aplTypeSub)));
 
     // Get next value from global memory

@@ -3203,31 +3203,30 @@ UBOOL GetLabelNums
 
                         // Mark as a System Label
                         lpFcnLines->bSysLbl = TRUE;
-                    } else
-                    {
-                        // If there's a previous label, ...
-                        if (lpLstLabel NE NULL)
-                            // Save the line # of the next labeled line
-                            lpLstLabel->numNxtLabel1 = uLineNum1;
-                        else
-                            // Save the line # of the first labeled line
-                            lpMemDfnHdr->num1stLabel1 = uLineNum1;
-                        // Save as the ptr to the last labeled line
-                        lpLstLabel = lpFcnLines;
-
-                        // Create a ptr to the LBLENTRY
-                        lplpLblEntry[lpMemDfnHdr->numLblLines] = lpLblEntry++;
-
-                        // Save the LBLENTRY of the label
-                        lplpLblEntry[lpMemDfnHdr->numLblLines]->lpSymEntry = lptkLine[1].tkData.tkSym;
-                        lplpLblEntry[lpMemDfnHdr->numLblLines]->uLineNum1  = uLineNum1;
-
-                        // Mark as a labeled line
-                        lpLstLabel->bLabel = TRUE;
-
-                        // Count in another labeled line
-                        lpMemDfnHdr->numLblLines++;
                     } // End IF/ELSE/...
+
+                    // If there's a previous label, ...
+                    if (lpLstLabel NE NULL)
+                        // Save the line # of the next labeled line
+                        lpLstLabel->numNxtLabel1 = uLineNum1;
+                    else
+                        // Save the line # of the first labeled line
+                        lpMemDfnHdr->num1stLabel1 = uLineNum1;
+                    // Save as the ptr to the last labeled line
+                    lpLstLabel = lpFcnLines;
+
+                    // Create a ptr to the LBLENTRY
+                    lplpLblEntry[lpMemDfnHdr->numLblLines] = lpLblEntry++;
+
+                    // Save the LBLENTRY of the label
+                    lplpLblEntry[lpMemDfnHdr->numLblLines]->lpSymEntry = lptkLine[1].tkData.tkSym;
+                    lplpLblEntry[lpMemDfnHdr->numLblLines]->uLineNum1  = uLineNum1;
+
+                    // Mark as a labeled line
+                    lpLstLabel->bLabel = TRUE;
+
+                    // Count in another labeled line
+                    lpMemDfnHdr->numLblLines++;
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbName); lpMemName = NULL;

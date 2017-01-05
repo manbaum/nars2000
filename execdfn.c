@@ -1894,23 +1894,24 @@ LPSYMENTRY LocalizeLabels
 ////////////////lpSymEntrySrc->stData.stLongest = 0;        // stLongest set below via stInteger
 
                 // Initialize the SYMENTRY to an integer constant
-                lpSymEntrySrc->stFlags.Imm        = TRUE;
-                lpSymEntrySrc->stFlags.ImmType    = IMMTYPE_INT;
-                lpSymEntrySrc->stFlags.Inuse      = TRUE;
-                lpSymEntrySrc->stFlags.Value      = TRUE;
-                lpSymEntrySrc->stFlags.ObjName    = (lpSymEntryNxt->stFlags.ObjName EQ OBJNAME_SYS)
-                                                  ? OBJNAME_SYS
-                                                  : OBJNAME_USR;
-                lpSymEntrySrc->stFlags.stNameType = NAMETYPE_VAR;
-                lpSymEntrySrc->stFlags.DfnLabel   = TRUE;
-        lpSymEntrySrc->stData.stInteger   = uLineNum1;
+                lpSymEntrySrc->stFlags.Imm         = TRUE;
+                lpSymEntrySrc->stFlags.ImmType     = IMMTYPE_INT;
+                lpSymEntrySrc->stFlags.Inuse       = TRUE;
+                lpSymEntrySrc->stFlags.Value       = TRUE;
+                lpSymEntrySrc->stFlags.ObjName     = (lpSymEntryNxt->stFlags.ObjName EQ OBJNAME_SYS)
+                                                   ? OBJNAME_SYS
+                                                   : OBJNAME_USR;
+                lpSymEntrySrc->stFlags.stNameType  = NAMETYPE_VAR;
+                lpSymEntrySrc->stFlags.DfnLabel    = TRUE;
+                lpSymEntrySrc->stFlags.DfnSysLabel = (lpSymEntryNxt->stFlags.ObjName EQ OBJNAME_SYS);
+                lpSymEntrySrc->stData.stInteger    = uLineNum1;
 
                 // Set the ptr to the previous entry to the STE in its shadow chain
-                lpSymEntrySrc->stPrvEntry         = lpSymEntryNxt;
+                lpSymEntrySrc->stPrvEntry          = lpSymEntryNxt;
 
                 // Save the SI level for this SYMENTRY
                 Assert (lpMemPTD->SILevel);
-                lpSymEntrySrc->stSILevel          = lpMemPTD->SILevel - 1;
+                lpSymEntrySrc->stSILevel           = lpMemPTD->SILevel - 1;
 
                 // Skip to the next SYMENTRY
                 lpSymEntryNxt++;

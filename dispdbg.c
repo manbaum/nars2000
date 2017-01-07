@@ -3264,7 +3264,10 @@ HGLOBAL _ValidObj
             // "+ 1" for the terminating zero
             uLen = sizeof (lpTxt->U)
                  + (lstrlenW (&lpTxt->C) + 1) * sizeof (WCHAR);
-
+            // Handle the case of a line from an AFO which has the
+            //   trailing right brace truncated
+            if (((LPWCHAR) ByteAddr (lpTxt, uLen))[0] EQ L'}')
+                uLen += 2 * sizeof (WCHAR);
             // Get the overall size
             uSiz = GlobalSize (ClrPtrTypeDir(hMem));
 

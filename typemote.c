@@ -80,26 +80,28 @@ void TypeDemote
     (LPTOKEN lptkRhtArg)
 
 {
-    HGLOBAL           hGlbRht = NULL,   // Right arg global memory handle
-                      hGlbSub,          // Temp      ...
-                      hGlbRes = NULL;   // Result    ...
-    LPVOID            lpMemRht = NULL,  // Ptr to right arg global memory
-                      lpMemRes = NULL,  // Ptr to result    ...
-                      lpMemSub;         // Ptr to temp      ...
-    APLNELM           aplNELMRht,       // Right arg NELM
-                      aplNELMNstRht;    // Right arg NELM in case empty nested
-    APLRANK           aplRankRht,       // Right arg rank
-                      aplRankSub;       // Temp      ...
-    APLUINT           uRht,             // Right arg loop counter
-                      ByteRes;          // # bytes in the result
-    APLINT            aplInteger;       // Temporary integer
-    APLFLOAT          aplFloat;         // ...       float
-    APLSTYPE          aplTypeRes,       // Result storage type
-                      aplTypeRht,       // Right arg ...
-                      aplTypeSub;       // Right arg item ...
-    LPSYMENTRY        lpSymEntry;       // Ptr to Hetero item
-    LPVARARRAY_HEADER lpMemHdrRht;      //
-    SIZE_T            dwSize;           //
+    HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
+                      hGlbSub,              // Temp      ...
+                      hGlbRes = NULL;       // Result    ...
+    LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
+                      lpMemHdrRes = NULL,   // ...    result    ...
+                      lpMemHdrSub = NULL;   // ...    subitem   ...
+    LPVOID            lpMemRht,             // Ptr to right arg global memory
+                      lpMemRes,             // Ptr to result    ...
+                      lpMemSub;             // Ptr to temp      ...
+    APLNELM           aplNELMRht,           // Right arg NELM
+                      aplNELMNstRht;        // Right arg NELM in case empty nested
+    APLRANK           aplRankRht,           // Right arg rank
+                      aplRankSub;           // Temp      ...
+    APLUINT           uRht,                 // Right arg loop counter
+                      ByteRes;              // # bytes in the result
+    APLINT            aplInteger;           // Temporary integer
+    APLFLOAT          aplFloat;             // ...       float
+    APLSTYPE          aplTypeRes,           // Result storage type
+                      aplTypeRht,           // Right arg ...
+                      aplTypeSub;           // Right arg item ...
+    LPSYMENTRY        lpSymEntry;           // Ptr to Hetero item
+    SIZE_T            dwSize;               // GlobalSize of right arg
 
     // Split cases based upon the arg token type
     switch (lptkRhtArg->tkFlags.TknType)
@@ -160,7 +162,7 @@ void TypeDemote
     hGlbRes = hGlbRht;
 
     // Lock the memory to get a ptr to it
-    lpMemRht = lpMemHdrRht = MyGlobalLockVar (hGlbRht);
+    lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
     // Get the Type, NELM, and Rank
     aplTypeRht = lpMemHdrRht->ArrType;
@@ -250,10 +252,10 @@ void TypeDemote
                                 hGlbSub = ClrPtrTypeInd (lpMemRht);
 
                                 // Lock the memory to get a handle on it
-                                lpMemSub = MyGlobalLockVar (hGlbSub);
+                                lpMemHdrSub = MyGlobalLockVar (hGlbSub);
 
                                 // Skip over the header and dimensions to the data
-                                lpMemSub = VarArrayDataFmBase (lpMemSub);
+                                lpMemSub = VarArrayDataFmBase (lpMemHdrSub);
 
                                 // Copy the data
                                 lptkRhtArg->tkFlags.TknType  = TKT_VARARRAY;
@@ -264,7 +266,7 @@ void TypeDemote
                                                    TRUE,                    // TRUE iff we should initialize the target first
                                                    lptkRhtArg);             // Ptr to function token
                                 // We no longer need this ptr
-                                MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+                                MyGlobalUnlock (hGlbSub); lpMemHdrSub = NULL;
 
                                 // Check for error
                                 if (lptkRhtArg->tkData.tkGlbData EQ NULL)
@@ -276,10 +278,10 @@ void TypeDemote
                                 hGlbSub = ClrPtrTypeInd (lpMemRht);
 
                                 // Lock the memory to get a handle on it
-                                lpMemSub = MyGlobalLockVar (hGlbSub);
+                                lpMemHdrSub = MyGlobalLockVar (hGlbSub);
 
                                 // Skip over the header and dimensions to the data
-                                lpMemSub = VarArrayDataFmBase (lpMemSub);
+                                lpMemSub = VarArrayDataFmBase (lpMemHdrSub);
 
                                 // Copy the data
                                 lptkRhtArg->tkFlags.TknType  = TKT_VARARRAY;
@@ -290,7 +292,7 @@ void TypeDemote
                                                    TRUE,                    // TRUE iff we should initialize the target first
                                                    lptkRhtArg);             // Ptr to function token
                                 // We no longer need this ptr
-                                MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+                                MyGlobalUnlock (hGlbSub); lpMemHdrSub = NULL;
 
                                 // Check for error
                                 if (lptkRhtArg->tkData.tkGlbData EQ NULL)
@@ -308,15 +310,15 @@ void TypeDemote
                         hGlbSub = ClrPtrTypeInd (lpMemRht);
 
                         // Lock the memory to get a handle on it
-                        lpMemSub = MyGlobalLockVar (hGlbSub);
+                        lpMemHdrSub = MyGlobalLockVar (hGlbSub);
 
-                        Assert (IsScalar (((LPVARARRAY_HEADER) lpMemSub)->Rank));
+                        Assert (IsScalar (lpMemHdrSub->Rank));
 
                         // Get the array storage type
-                        aplTypeSub = ((LPVARARRAY_HEADER) lpMemSub)->ArrType;
+                        aplTypeSub = lpMemHdrSub->ArrType;
 
                         // Skip over the header and dimensions to the data
-                        lpMemSub = VarArrayDataFmBase (lpMemSub);
+                        lpMemSub = VarArrayDataFmBase (lpMemHdrSub);
 
                         // Split cases based upon the array storage type
                         switch (aplTypeSub)
@@ -348,7 +350,7 @@ void TypeDemote
                         } // End SWITCH
 
                         // We no longer need this ptr
-                        MyGlobalUnlock (hGlbSub); lpMemSub = NULL;
+                        MyGlobalUnlock (hGlbSub); lpMemHdrSub = NULL;
 
                         // Check for error
                         if (lptkRhtArg->tkData.tkGlbData EQ NULL)
@@ -391,7 +393,7 @@ void TypeDemote
         } // End SWITCH
 UNLOCK_EXIT:
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = lpMemHdrRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
 
         // We no longer need this storage
         FreeResultGlobalVar (hGlbRht); hGlbRht = NULL;
@@ -586,6 +588,10 @@ UNLOCK_EXIT:
     if (aplTypeRes EQ aplTypeRht)
         goto NORMAL_EXIT;
 
+    // Skip over header and dimensions to the data
+    //   as the above SWITCH stmt may have modified lpMemRht
+    lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+
     // Check for demotion from Nested to Hetero
     if (IsSimpleHet (aplTypeRes)
      && IsNested (aplTypeRht))
@@ -599,25 +605,25 @@ UNLOCK_EXIT:
             // Copy this array and change the type from ARRAY_NESTED to ARRAY_HETERO
             dwSize = MyGlobalSize (hGlbRht);
             hGlbRes = DbgGlobalAlloc (GHND, dwSize);
-            if (hGlbRes)
+            if (hGlbRes NE NULL)
             {
                 // Lock the memory to get a ptr to it
-                lpMemRes = MyGlobalLock000 (hGlbRes);
+                lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
                 // Copy source to destin
-                CopyMemory (lpMemRes, lpMemRht, dwSize);
+                CopyMemory (lpMemHdrRes, lpMemHdrRht, dwSize);
 
 #ifdef DEBUG_REFCNT
                 dprintfWL0 (L"##RefCnt=1 in " APPEND_NAME L": %p(res=1) (%S#%d)", hGlbRes, FNLN);
 #endif
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
                 // Set the reference count and array type
                 lpHeader->RefCnt  = 1;
                 lpHeader->ArrType = ARRAY_HETERO;
 #undef  lpHeader
                 // We no longer need these ptrs
-                MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-                MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+                MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+                MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
 
                 // Free the old array
                 FreeResultGlobalVar (hGlbRht); hGlbRht = NULL;
@@ -670,7 +676,7 @@ UNLOCK_EXIT:
                         aplNELMRht,
                         lpMemRht);
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+            MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
 
             // Free the old array
             FreeResultGlobalVar (hGlbRht); hGlbRht = NULL;
@@ -690,9 +696,9 @@ UNLOCK_EXIT:
         if (hGlbRes EQ NULL)
             goto WSFULL_EXIT;
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock000 (hGlbRes);
+        lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
         // Fill in the header
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = aplTypeRes;
@@ -705,7 +711,7 @@ UNLOCK_EXIT:
 
         // Skip over the header to the dimensions
         lpMemRht = VarArrayBaseToDim (lpMemHdrRht);
-        lpMemRes = VarArrayBaseToDim (lpMemRes);
+        lpMemRes = VarArrayBaseToDim (lpMemHdrRes);
 
         // Copy the dimensions to the result
         for (uRht = 0; uRht < aplRankRht; uRht++)
@@ -721,8 +727,8 @@ UNLOCK_EXIT:
                     aplNELMRht,
                     lpMemRht);
         // We no longer need these ptrs
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
 
         // Free the old array
         FreeResultGlobalVar (hGlbRht); hGlbRht = NULL;
@@ -745,9 +751,9 @@ UNLOCK_EXIT:
         if (hGlbRes EQ NULL)
             goto WSFULL_EXIT;
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock000 (hGlbRes);
+        lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
         // Fill in the header
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = aplTypeRes;
@@ -760,7 +766,7 @@ UNLOCK_EXIT:
 
         // Skip over the header to the dimensions
         lpMemRht = VarArrayBaseToDim (lpMemHdrRht);
-        lpMemRes = VarArrayBaseToDim (lpMemRes);
+        lpMemRes = VarArrayBaseToDim (lpMemHdrRes);
 
         // Copy the dimensions to the result
         for (uRht = 0; uRht < aplRankRht; uRht++)
@@ -776,8 +782,8 @@ UNLOCK_EXIT:
                     aplNELMRht,
                     lpMemRht);
         // We no longer need these ptrs
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
 
         // Free the old array
         FreeResultGlobalVar (hGlbRht); hGlbRht = NULL;
@@ -804,14 +810,17 @@ NORMAL_EXIT:
 
             break;
 
+        case TKT_VARIMMED:      // Handled above
+            break;
+
         defstop
             break;
     } // End SWITCH
 IMMED_EXIT:
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 } // End TypeDemote
 #undef  APPEND_NAME
@@ -868,18 +877,18 @@ HGLOBAL TypeDemoteGlb
 //***************************************************************************
 
 void DemoteData
-    (APLSTYPE aplTypeRes,           // Result storage type
-     LPVOID   lpMemRes,             // Ptr to result global memory
-     APLSTYPE aplTypeRht,           // Right arg storage type
-     APLNELM  aplNELMRht,           // Right arg NELM
-     LPVOID   lpMemRht)             // Ptr to right arg global memory
+    (APLSTYPE aplTypeRes,                   // Result storage type
+     LPVOID   lpMemRes,                     // Ptr to result global memory
+     APLSTYPE aplTypeRht,                   // Right arg storage type
+     APLNELM  aplNELMRht,                   // Right arg NELM
+     LPVOID   lpMemRht)                     // Ptr to right arg global memory
 
 {
-    APLUINT           uRht;         // Loop counter
-    UINT              uBitIndex;    // Bit index for looping through Booleans
-    LPSYMENTRY        lpSymGlbSub;  // Ptr to temp SYMENTRY/HGLOBAL
-    LPVOID            lpMemSub;     // Ptr to temp global memory
-    LPVARARRAY_HEADER lpMemHdr;     // Ptr to temp memory header
+    APLUINT           uRht;                 // Loop counter
+    UINT              uBitIndex;            // Bit index for looping through Booleans
+    LPSYMENTRY        lpSymGlbSub;          // Ptr to temp SYMENTRY/HGLOBAL
+    LPVOID            lpMemSub;             // Ptr to temp global memory
+    LPVARARRAY_HEADER lpMemHdrSub = NULL;   // Ptr to temp memory header
 
     // Split cases based upon the result's storage type
     // Note that the result is always of lower type than
@@ -973,21 +982,21 @@ void DemoteData
 
                             case PTRTYPE_HGLOBAL:
                                 // Lock the memory to get a ptr to it
-                                lpMemHdr = MyGlobalLockVar (lpSymGlbSub);
+                                lpMemHdrSub = MyGlobalLockVar (lpSymGlbSub);
 
-                                Assert (lpMemHdr->Rank EQ 0);
+                                Assert (IsScalar (lpMemHdrSub->Rank));
 
                                 // Skip over the header and dimensions to the data
-                                lpMemSub = VarArrayDataFmBase (lpMemHdr);
+                                lpMemSub = VarArrayDataFmBase (lpMemHdrSub);
 
                                 // Split cases based upon the storage type
-                                switch (lpMemHdr->ArrType)
+                                switch (lpMemHdrSub->ArrType)
                                 {
                                     case ARRAY_BOOL:    // Res = BOOL, Rht = BOOL
                                     case ARRAY_INT:     // Res = BOOL, Rht = INT
                                     case ARRAY_APA:     // Res = BOOL, Rht = APA
                                     case ARRAY_FLOAT:   // Res = BOOL, Rht = FLT
-                                        *((LPAPLBOOL) lpMemRes) |= GetNextInteger (lpMemSub, lpMemHdr->ArrType, uRht) << uBitIndex;
+                                        *((LPAPLBOOL) lpMemRes) |= GetNextInteger (lpMemSub, lpMemHdrSub->ArrType, uRht) << uBitIndex;
 
                                         break;
 
@@ -999,7 +1008,7 @@ void DemoteData
                                 } // End SWITCH
 
                                 // We no longer need this ptr
-                                MyGlobalUnlock (lpSymGlbSub); lpMemSub = NULL;
+                                MyGlobalUnlock (lpSymGlbSub); lpMemHdrSub = NULL;
 
                                 break;
 
@@ -1075,21 +1084,21 @@ void DemoteData
 
                             case PTRTYPE_HGLOBAL:
                                 // Lock the memory to get a ptr to it
-                                lpMemHdr = MyGlobalLockVar (lpSymGlbSub);
+                                lpMemHdrSub = MyGlobalLockVar (lpSymGlbSub);
 
-                                Assert (lpMemHdr->Rank EQ 0);
+                                Assert (IsScalar (lpMemHdrSub->Rank));
 
                                 // Skip over the header and dimensions to the data
-                                lpMemSub = VarArrayDataFmBase (lpMemHdr);
+                                lpMemSub = VarArrayDataFmBase (lpMemHdrSub);
 
                                 // Split cases based upon the storage type
-                                switch (lpMemHdr->ArrType)
+                                switch (lpMemHdrSub->ArrType)
                                 {
                                     case ARRAY_BOOL:    // Res = INT , Rht = BOOL
                                     case ARRAY_INT:     // Res = INT , Rht = INT
                                     case ARRAY_APA:     // Res = INT , Rht = APA
                                     case ARRAY_FLOAT:   // Res = INT , Rht = FLT
-                                        *((LPAPLINT) lpMemRes)++ = GetNextInteger (lpMemSub, lpMemHdr->ArrType, uRht);
+                                        *((LPAPLINT) lpMemRes)++ = GetNextInteger (lpMemSub, lpMemHdrSub->ArrType, uRht);
 
                                         break;
 
@@ -1101,7 +1110,7 @@ void DemoteData
                                 } // End SWITCH
 
                                 // We no longer need this ptr
-                                MyGlobalUnlock (lpSymGlbSub); lpMemSub = NULL;
+                                MyGlobalUnlock (lpSymGlbSub); lpMemHdrSub = NULL;
 
                                 break;
 
@@ -1161,21 +1170,21 @@ void DemoteData
 
                             case PTRTYPE_HGLOBAL:
                                 // Lock the memory to get a ptr to it
-                                lpMemHdr = MyGlobalLockVar (lpSymGlbSub);
+                                lpMemHdrSub = MyGlobalLockVar (lpSymGlbSub);
 
-                                Assert (lpMemHdr->Rank EQ 0);
+                                Assert (IsScalar (lpMemHdrSub->Rank));
 
                                 // Skip over the header and dimensions to the data
-                                lpMemSub = VarArrayDataFmBase (lpMemHdr);
+                                lpMemSub = VarArrayDataFmBase (lpMemHdrSub);
 
                                 // Split cases based upon the storage type
-                                switch (lpMemHdr->ArrType)
+                                switch (lpMemHdrSub->ArrType)
                                 {
                                     case ARRAY_BOOL:    // Res = FLT , Rht = BOOL
                                     case ARRAY_INT:     // Res = FLT , Rht = INT
                                     case ARRAY_APA:     // Res = FLT , Rht = APA
                                     case ARRAY_FLOAT:   // Res = FLT , Rht = FLT
-                                        *((LPAPLFLOAT) lpMemRes)++ = GetNextFloat (lpMemSub, lpMemHdr->ArrType, uRht);
+                                        *((LPAPLFLOAT) lpMemRes)++ = GetNextFloat (lpMemSub, lpMemHdrSub->ArrType, uRht);
 
                                         break;
 
@@ -1187,7 +1196,7 @@ void DemoteData
                                 } // End SWITCH
 
                                 // We no longer need this ptr
-                                MyGlobalUnlock (lpSymGlbSub); lpMemSub = NULL;
+                                MyGlobalUnlock (lpSymGlbSub); lpMemHdrSub = NULL;
 
                                 break;
 
@@ -1266,18 +1275,18 @@ void DemoteData
 
                             case PTRTYPE_HGLOBAL:
                                 // Lock the memory to get a ptr to it
-                                lpMemHdr = MyGlobalLockVar (lpSymGlbSub);
+                                lpMemHdrSub = MyGlobalLockVar (lpSymGlbSub);
 
-                                Assert (lpMemHdr->Rank EQ 0);
+                                Assert (IsScalar (lpMemHdrSub->Rank));
 
                                 // Skip over the header and dimensions to the data
-                                lpMemSub = VarArrayDataFmBase (lpMemHdr);
+                                lpMemSub = VarArrayDataFmBase (lpMemHdrSub);
 
                                 // Copy the data
                                 mpq_init_set (((LPAPLRAT) lpMemRes)++, (LPAPLRAT) lpMemSub);
 
                                 // We no longer need this ptr
-                                MyGlobalUnlock (lpSymGlbSub); lpMemSub = NULL;
+                                MyGlobalUnlock (lpSymGlbSub); lpMemHdrSub = NULL;
 
                                 break;
 
@@ -1339,18 +1348,18 @@ void DemoteData
 
                             case PTRTYPE_HGLOBAL:
                                 // Lock the memory to get a ptr to it
-                                lpMemHdr = MyGlobalLockVar (lpSymGlbSub);
+                                lpMemHdrSub = MyGlobalLockVar (lpSymGlbSub);
 
-                                Assert (lpMemHdr->Rank EQ 0);
+                                Assert (IsScalar (lpMemHdrSub->Rank));
 
                                 // Skip over the header and dimensions to the data
-                                lpMemSub = VarArrayDataFmBase (lpMemHdr);
+                                lpMemSub = VarArrayDataFmBase (lpMemHdrSub);
 
                                 // Copy the data
                                 mpfr_init_copy (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) lpMemSub);
 
                                 // We no longer need this ptr
-                                MyGlobalUnlock (lpSymGlbSub); lpMemSub = NULL;
+                                MyGlobalUnlock (lpSymGlbSub); lpMemHdrSub = NULL;
 
                                 break;
 
@@ -1484,24 +1493,28 @@ UBOOL TypePromoteGlb_EM
      LPTOKEN  lptkFunc)             // Ptr to function token
 
 {
-    HGLOBAL    hGlbArg,             // Arg    ...
-               hGlbRes = NULL;      // Result global memory handle
-    UBOOL      bRet = FALSE;        // TRUE iff the result is valid
-    LPVOID     lpMemArg,            // Ptr to global memory
-               lpMemRes = NULL;     // Ptr to result global memory
-    APLSTYPE   aplTypeArg;          // Arg storage type of HGLOBAL
-    APLNELM    aplNELMArg;          // Arg NELM         ...
-    APLRANK    aplRankArg;          // Arg Rank         ...
-    APLUINT    ByteRes;             // # bytes in the result
-    LPSYMENTRY lpSymTmp;            // Ptr to temporary LPSYMENTRY
+    HGLOBAL           hGlbArg,              // Arg    ...
+                      hGlbRes = NULL;       // Result global memory handle
+    UBOOL             bRet = FALSE;         // TRUE iff the result is valid
+    LPVARARRAY_HEADER lpMemHdrArg = NULL,   // Ptr to arg header
+                      lpMemHdrRes = NULL;   // ...    result ...
+    LPAPLDIM          lpMemDimArg,          // ...    arg dimensions
+                      lpMemDimRes;          // ...    result ...
+    LPVOID            lpMemArg,             // ...    arg global memory
+                      lpMemRes;             // ...    result ...
+    APLSTYPE          aplTypeArg;           // Arg storage type of HGLOBAL
+    APLNELM           aplNELMArg;           // Arg NELM         ...
+    APLRANK           aplRankArg;           // Arg Rank         ...
+    APLUINT           ByteRes;              // # bytes in the result
+    LPSYMENTRY        lpSymTmp;             // Ptr to temporary LPSYMENTRY
 
     // Copy the HGLOBAL
     hGlbArg = *lphGlbArg;
 
     // Lock the memory to get a ptr to it
-    lpMemArg = MyGlobalLockVar (hGlbArg);
+    lpMemHdrArg = MyGlobalLockVar (hGlbArg);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemArg)
+#define lpHeader    lpMemHdrArg
     // Get the Array Type and NELM
     aplTypeArg = lpHeader->ArrType;
     aplNELMArg = lpHeader->NELM;
@@ -1518,9 +1531,9 @@ UBOOL TypePromoteGlb_EM
         goto NORMAL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock000 (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = aplTypeRes;
@@ -1532,15 +1545,15 @@ UBOOL TypePromoteGlb_EM
 #undef  lpHeader
 
     // Skip over the dimensions to the data
-    lpMemArg = VarArrayBaseToDim (lpMemArg);
-    lpMemRes = VarArrayBaseToDim (lpMemRes);
+    lpMemDimArg = VarArrayBaseToDim (lpMemHdrArg);
+    lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
 
     // Copy the arg dimensions to the result
-    CopyMemory (lpMemRes, lpMemArg, (APLU3264) BytesIn (ARRAY_INT, aplRankArg));
+    CopyMemory (lpMemDimRes, lpMemDimArg, (APLU3264) BytesIn (ARRAY_INT, aplRankArg));
 
-    // Skip over the dimensions to the data
-    lpMemArg = VarArrayDimToData (lpMemArg, aplRankArg);
-    lpMemRes = VarArrayDimToData (lpMemRes, aplRankArg);
+    // Skip over the header and dimensions to the data
+    lpMemArg = VarArrayDataFmBase (lpMemHdrArg);
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // Split cases based upon the result storage type
     switch (aplTypeRes)
@@ -1829,8 +1842,8 @@ UBOOL TypePromoteGlb_EM
     } // End SWITCH
 
     // We no longer need thess ptrs
-    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
-    MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
+    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+    MyGlobalUnlock (hGlbArg); lpMemHdrArg = NULL;
 
     // Free the old HGLOBAL
     FreeResultGlobalVar (hGlbArg); hGlbArg = NULL;
@@ -1841,16 +1854,16 @@ NORMAL_EXIT:
     // Mark as successful
     bRet = TRUE;
 ERROR_EXIT:
-    if (hGlbArg && lpMemArg)
+    if (hGlbArg NE NULL  && lpMemHdrArg NE NULL )
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
+        MyGlobalUnlock (hGlbArg); lpMemHdrArg = NULL;
     } // End IF
 
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL  && lpMemHdrRes NE NULL )
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
     return bRet;
@@ -2237,9 +2250,10 @@ void TPT_RAT2VFP
     (LPTOKEN lptkArg)
 
 {
-    HGLOBAL  hGlbRat;
-    LPAPLRAT lpMemRat;
-    APLVFP   aplVfp;
+    HGLOBAL           hGlbRat;
+    LPVARARRAY_HEADER lpMemHdrRat = NULL;
+    LPAPLRAT          lpMemRat;
+    APLVFP            aplVfp;
 
     Assert (lptkArg->tkFlags.TknType EQ TKT_VARARRAY);
     Assert (GetPtrTypeDir (lptkArg->tkData.tkGlbData) EQ PTRTYPE_HGLOBAL);
@@ -2248,18 +2262,18 @@ void TPT_RAT2VFP
     hGlbRat = lptkArg->tkData.tkGlbData;
 
     // Lock the memory to get a ptr to it
-    lpMemRat = MyGlobalLockVar (hGlbRat);
+    lpMemHdrRat = MyGlobalLockVar (hGlbRat);
 
-    Assert (IsScalar (((LPVARARRAY_HEADER) lpMemRat)->Rank));
+    Assert (IsScalar (lpMemHdrRat->Rank));
 
     // Skip over the header and dimensions to the data
-    lpMemRat = VarArrayDataFmBase (lpMemRat);
+    lpMemRat = VarArrayDataFmBase (lpMemHdrRat);
 
     // Convert the RAT to a VFP
     mpfr_init_set_q (&aplVfp, lpMemRat, MPFR_RNDN);
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbRat); lpMemRat = NULL;
+    MyGlobalUnlock (hGlbRat); lpMemHdrRat = NULL;
 
     // We no longer need this storage
     FreeResultGlobalVar (hGlbRat); hGlbRat = NULL;

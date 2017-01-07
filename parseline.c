@@ -194,6 +194,7 @@
 #define plRedNAM_NNR    plRedNAM_NR
 
 #define plRedLNR_SPNF   plRedLNR_SPA
+#define plRedLNR_ISPA   plRedLNR_SPA
 
 #define plRedLP_FR      plRedLP_Com
 #define plRedLP_MR      plRedLP_Com
@@ -239,7 +240,9 @@
 #define plRedSP_RBC     plRedSYNR
 #define plRedSP_EOS     plRedSYNR
 
-#define plRedADX_SPA    plRedIDX_SPA
+#define plRedNDX_SPA    plRedIDX_SPA
+
+#define plRedF_ISPA     plRedF_SPA
 
 #define STRICT
 #include <windows.h>
@@ -261,10 +264,11 @@
 #define LBIND(lftSynObj,curSynObj)  _BIND (lftSynObj, curSynObj)    // ((IsValidSO (lftSynObj && IsValidSO (curSynObj)) ? plBndStr[lftSynObj][curSynObj] : (DbgBrk (), 0xCCC))
 #define RBIND(curSynObj,rhtSynObj)  _BIND (curSynObj, rhtSynObj)    // ((IsValidSO (curSynObj && IsValidSO (rhtSynObj)) ? plBndStr[curSynObj][rhtSynObj] : (DbgBrk (), 0xFFF))
 #define LFTTOKEN                   ((lpplOrgLftStk < &lpMemPTD->lpplLftStk[-1]) ? lpMemPTD->lpplLftStk[-1]->tkToken : GetLftToken  (&plLocalVars))
-#define LFTSYNOBJ                   (LFTTOKEN.tkSynObj)
+#define LFTSYNOBJ                   (lpplOrgLftStk < &lpMemPTD->lpplLftStk[-1]) ? lpMemPTD->lpplLftStk[-1]->tkToken.tkSynObj : GetLftSynObj (&plLocalVars)
 #define CURSYNOBJ                    lpplYYCurObj->tkToken.tkSynObj
 #define RHTSYNOBJ                    lpMemPTD->lpplRhtStk[-1]->tkToken.tkSynObj
 #define RH2SYNOBJ                   ((RSTACKLEN > 1) ? lpMemPTD->lpplRhtStk[-2]->tkToken.tkSynObj : soNONE)
+#define RH3SYNOBJ                   ((RSTACKLEN > 2) ? lpMemPTD->lpplRhtStk[-3]->tkToken.tkSynObj : soNONE)
 #define LSTSYNOBJ                    lpplYYLstRht->tkToken.tkSynObj
 #define LSTACKLEN                   (lpMemPTD->lpplLftStk - lpplOrgLftStk)
 #define LSTACKLEN2                  (lpplLocalVars->lpMemPTD->lpplLftStk - lpplLocalVars->lpMemPTD->lpplOrgLftStk)
@@ -524,7 +528,7 @@ ERROR_EXIT:
 //***************************************************************************
 //  $plRedLNR_SPA
 //
-//  Reduce "LNR SPA"
+//  Reduce "LNR SPA" and "LNR ISPA"
 //***************************************************************************
 
 LPPL_YYSTYPE plRedLNR_SPA
@@ -3330,7 +3334,7 @@ ERROR_EXIT:
 //***************************************************************************
 //  $plRedF_SPA
 //
-//  Reduce "F SPA"
+//  Reduce "F SPA" and "F ISPA"
 //***************************************************************************
 
 LPPL_YYSTYPE plRedF_SPA
@@ -4214,28 +4218,28 @@ PARSELINE_SCAN1:
             // If lftSynObj is soNAM and
             //    curSynObj is soIDX and
             //    rhtSynObj is soF   and
-            //    rh2SynObj is soMOP or rh2SynObj is soSPA, ...
-            if ((lftSynObj EQ soNAM
-              || (lftSynObj EQ soA
-               && IsTknTypeNamedVar (LFTTOKEN.tkFlags.TknType)))
+            //    (rh2SynObj is soMOP and rh3SynObj is soSPA
+            //     or rh2SynObj is soSPA), ...
+            if (lftSynObj EQ soNAM
              && curSynObj EQ soIDX
              && rhtSynObj EQ soF
-             && (RH2SYNOBJ EQ soMOP || RH2SYNOBJ EQ soSPA))
+             && ((RH2SYNOBJ EQ soMOP && RH3SYNOBJ EQ soSPA)
+              || RH2SYNOBJ EQ soSPA))
             {
                 // This case handles
                 //     NAM IDX F MOP ... MOP SPA
                 //   by transforming it into
-                //     NAM ADX F MOP ... MOP SPA
+                //     NAM NDX F MOP ... MOP SPA
                 //   and left shifting it so that
-                //     ADX F MOP
+                //     NDX F MOP
                 //   is handled next and it is reduced to
-                //     ADX F  by  F MOP => F
+                //     NDX F  by  F MOP => F
                 //   because (IDX F) > (F MOP)
-                //   and     (ADX F) < (F MOP)
+                //   and     (NDX F) < (F MOP)
                 //   so F MOP is the next pair to be reduced.
                 // This case also handles the case of NAM IDX F SPA
                 //   same as the above but with SPA in place of MOP.
-                lpplYYCurObj->tkToken.tkSynObj = soADX;
+                lpplYYCurObj->tkToken.tkSynObj = soNDX;
 
                 goto LEFTSHIFT;
             } else
@@ -5722,6 +5726,47 @@ LPPL_YYSTYPE pl_yylex
 
 
 //***************************************************************************
+//  $GetLftSynObj
+//
+//  Return the left stack SynObj value without popping the token stack
+//***************************************************************************
+
+SO_ENUM GetLftSynObj
+    (LPPLLOCALVARS lpplLocalVars)   // Ptr to local plLocalVars
+
+{
+    SO_ENUM tkSynObj = soEOS;       // The result
+
+    if (lpplLocalVars->lptkStart < lpplLocalVars->lptkNext)
+    {
+        PL_YYSTYPE plYYLval = {0};  // Temporary YYRes
+
+        // Get the PL_YYSTYPE result
+        pl_yylexCOM (lpplLocalVars, &plYYLval, TRUE);
+
+        if (plYYLval.tkToken.tkSynObj NE soNONE)
+        {
+            // If the token is named,
+            //   and not assigned into, ...
+            if (IsTknNamed (&plYYLval.tkToken)
+             && !plYYLval.tkToken.tkFlags.bAssignName
+             &&  plYYLval.tkToken.tkSynObj NE soNAM
+             &&  plYYLval.tkToken.tkSynObj NE soVALR
+             &&  plYYLval.tkToken.tkSynObj NE soSYNR)
+                // Get the matching tkSynObj
+                tkSynObj = TranslateNameTypeToSOType (plYYLval.tkToken.tkData.tkSym->stFlags.stNameType);
+            else
+                // Get the result
+                tkSynObj = plYYLval.tkToken.tkSynObj;
+        } // End IF
+    } // End IF
+
+    return tkSynObj;
+} // End GetLftSynObj
+
+
+#if FALSE
+//***************************************************************************
 //  $GetLftToken
 //
 //  Return the left stack token without popping the token stack
@@ -5740,11 +5785,12 @@ TOKEN GetLftToken
         // Get the PL_YYSTYPE result
         pl_yylexCOM (lpplLocalVars, &plYYLval, TRUE);
 
-        tkLftStk = plYYLval.tkToken;
+        CopyAll (&tkLftStk, &plYYLval.tkToken);
     } // End IF
 
     return tkLftStk;
 } // End GetLftToken
+#endif
 
 
 //***************************************************************************
@@ -5936,13 +5982,11 @@ PL_YYLEX_FCNNAMED:
                     // If we should not restore the token stack ptr, ...
                     if (!bRestoreStk)
                     {
-                        LPPL_YYSTYPE lpYYRht0 = NULL,
-                                     lpYYRht1 = NULL,
+                        LPPL_YYSTYPE lpYYRht1 = NULL,
                                      lpYYRht2 = NULL,
                                      lpYYRht3 = NULL,
                                      lpYYRht4 = NULL;
-                        LPTOKEN      lptkRht0 = NULL,
-                                     lptkRht1 = NULL,
+                        LPTOKEN      lptkRht1 = NULL,
                                      lptkRht2 = NULL,
                                      lptkRht3 = NULL,
                                      lptkRht4 = NULL;
@@ -5956,57 +6000,99 @@ PL_YYLEX_FCNNAMED:
                             lpplYYLval->tkToken.tkData.tkSym =
                               lpMemPTD->lphtsPTD->lpSymQuad[lpplYYLval->tkToken.tkData.tkSym->stFlags.SysVarValid];
 
-                        if (RSTACKLEN2 > 0)
-                        {
-                            lpYYRht0 = lpplLocalVars->lpMemPTD->lpplRhtStk[ 0];
-                            lptkRht0 = &lpYYRht0->tkToken;
-                        } // End IF
-
-                        if (RSTACKLEN2 > 1)
-                        {
-                            lpYYRht1 = lpplLocalVars->lpMemPTD->lpplRhtStk[-1];
-                            lptkRht1 = &lpYYRht1->tkToken;
-                        } // End IF
-
-                        if (RSTACKLEN2 > 2)
-                        {
-                            lpYYRht2 = lpplLocalVars->lpMemPTD->lpplRhtStk[-2];
-                            lptkRht2 = &lpYYRht2->tkToken;
-                        } // End IF
-
-                        if (RSTACKLEN2 > 3)
-                        {
-                            lpYYRht3 = lpplLocalVars->lpMemPTD->lpplRhtStk[-3];
-                            lptkRht3 = &lpYYRht3->tkToken;
-                        } // End IF
-
-                        if (RSTACKLEN2 > 4)
-                        {
-                            lpYYRht4 = lpplLocalVars->lpMemPTD->lpplRhtStk[-4];
-                            lptkRht4 = &lpYYRht4->tkToken;
-                        } // End IF
-
+                        // Start with the AssignName value from Tokenize
                         bAssignName = lpplYYLval->tkToken.tkFlags.bAssignName;
 
-                        bAssignName |= ((lptkRht1 NE NULL)
-                                     && ((lptkRht1->tkSynObj EQ soSPA) || (lptkRht1->tkSynObj EQ soISPA))
-                                     && (lpYYRht1->lpplYYFcnCurry NE NULL))
-                                      ;
-                        bAssignName |= ((lptkRht1 NE NULL)
-                                     && (lptkRht1->tkSynObj EQ soIDX)
-                                     && (lptkRht2 NE NULL)
-                                     && (lptkRht2->tkSynObj EQ soF)
-                                     && (lptkRht3 NE NULL)
-                                     && (lptkRht3->tkSynObj EQ soMOP)
-                                     && (lptkRht4 NE NULL)
-                                     && (lptkRht4->tkSynObj EQ soSPA))
-                                      ;
-                        //                                              RhtStk1 RhtStk2 RhtStk3 RhtStk4
-                        // Late catch of NAM          F     {is} A       SPA
-                        //   and         NAM [A]      F     {is} A      ISPA
-                        //   and         NAM [A]      F MOP {is} A       IDX       F      MOP     SPA
-                        //   and        (NAM ... NAM) F     {is} A       RP       SPA
-                        //                                                A        RP     SPA
+                        // If not already marked so, ...
+                        if (!bAssignName)
+                        {
+                            if (RSTACKLEN2 > 1)
+                            {
+                                lpYYRht1 = lpplLocalVars->lpMemPTD->lpplRhtStk[-1];
+                                lptkRht1 = &lpYYRht1->tkToken;
+                            } // End IF
+
+                            if (RSTACKLEN2 > 2)
+                            {
+                                lpYYRht2 = lpplLocalVars->lpMemPTD->lpplRhtStk[-2];
+                                lptkRht2 = &lpYYRht2->tkToken;
+                            } // End IF
+
+                            if (RSTACKLEN2 > 3)
+                            {
+                                lpYYRht3 = lpplLocalVars->lpMemPTD->lpplRhtStk[-3];
+                                lptkRht3 = &lpYYRht3->tkToken;
+                            } // End IF
+
+                            if (RSTACKLEN2 > 4)
+                            {
+                                lpYYRht4 = lpplLocalVars->lpMemPTD->lpplRhtStk[-4];
+                                lptkRht4 = &lpYYRht4->tkToken;
+                            } // End IF
+
+                            // Late catch of                                  RhtStk1 RhtStk2 RhtStk3 RhtStk4
+                            //   #1          NAM          F        {is} A       SPA
+                            //   #2          NAM [A]      F        {is} A      ISPA
+                            //   #3          NAM [A]      F MOP    {is} A       IDX       F      MOP     SPA
+                            //   #4a        (NAM ... NAM) F        {is} A       RP        F      SPA
+                            //   #4b        (NAM ... NAM) F        {is} A       NR       SPA
+                            //   #4c        (NAM ... NAM) F        {is} A      NNR       SPA
+                            //   #5a        (NAM ... NAM) F MOP    {is} A       RP        F      MOP     SPA
+                            //   #5b        (NAM ... NAM) F MOP    {is} A       NR        F      SPA
+                            //   #5c        (NAM ... NAM) F MOP    {is} A      NNR        F      SPA
+                            //   #6a        (NAM ... NAM) F MOP[A] {is} A       RP        F      MOP     ISPA
+                            //   #6b        (NAM ... NAM) F MOP[A] {is} A       NR        F      ISPA
+                            //   #6c        (NAM ... NAM) F MOP[A] {is} A      NNR        F      ISPA
+
+                            // Check for #1 & #2
+                            bAssignName |= ((lptkRht1 NE NULL)
+                                         && ((lptkRht1->tkSynObj EQ soSPA) || (lptkRht1->tkSynObj EQ soISPA))
+                                         && (lpYYRht1->lpplYYFcnCurry NE NULL))
+                                          ;
+                            // Check for #3
+                            bAssignName |= ((lptkRht1 NE NULL)
+                                         && (lptkRht2 NE NULL)
+                                         && (lptkRht3 NE NULL)
+                                         && (lptkRht4 NE NULL)
+                                         && (lptkRht1->tkSynObj EQ soIDX)
+                                         && (lptkRht2->tkSynObj EQ soF)
+                                         && (lptkRht3->tkSynObj EQ soMOP)
+                                         && (lptkRht4->tkSynObj EQ soSPA))
+                                          ;
+                            // Check for #4a
+                            bAssignName |= ((lptkRht1 NE NULL)
+                                         && (lptkRht2 NE NULL)
+                                         && (lptkRht3 NE NULL)
+                                         && (lptkRht1->tkSynObj EQ soRP)
+                                         && (lptkRht2->tkSynObj EQ soF)
+                                         && (lptkRht3->tkSynObj EQ soSPA))
+                                          ;
+                            // Check for #4b & #4c
+                            bAssignName |= ((lptkRht1 NE NULL)
+                                         && (lptkRht2 NE NULL)
+                                         && ((lptkRht1->tkSynObj EQ soNR) || (lptkRht1->tkSynObj EQ soNNR))
+                                         && (lptkRht2->tkSynObj EQ soSPA))
+                                          ;
+                            // Check for #5a & #6a
+                            bAssignName |= ((lptkRht1 NE NULL)
+                                         && (lptkRht2 NE NULL)
+                                         && (lptkRht3 NE NULL)
+                                         && (lptkRht4 NE NULL)
+                                         && (lptkRht1->tkSynObj EQ soRP)
+                                         && (lptkRht2->tkSynObj EQ soF)
+                                         && (lptkRht3->tkSynObj EQ soMOP)
+                                         && ((lptkRht4->tkSynObj EQ soSPA) || (lptkRht4->tkSynObj EQ soISPA)))
+                                          ;
+                            // Check for #5b & #5c & #6b & #6c
+                            bAssignName |= ((lptkRht1 NE NULL)
+                                         && (lptkRht2 NE NULL)
+                                         && (lptkRht3 NE NULL)
+                                         && ((lptkRht1->tkSynObj EQ soNR) || (lptkRht1->tkSynObj EQ soNNR))
+                                         && (lptkRht2->tkSynObj EQ soF)
+                                         && ((lptkRht3->tkSynObj EQ soSPA) || (lptkRht3->tkSynObj EQ soISPA)))
+                                          ;
+                        } // End IF
+
                         if (bAssignName)
                         {
                             // Mark as being assigned into
@@ -6016,7 +6102,7 @@ PL_YYLEX_FCNNAMED:
                         {
                             int I;
 
-                            for (I = 1; RSTACKLEN2 > I; I++)
+                            for (I = 1; I < RSTACKLEN2; I++)
                             {
                                 lpYYRht1 = lpplLocalVars->lpMemPTD->lpplRhtStk[-I];
                                 lptkRht1 = &lpYYRht1->tkToken;
@@ -6033,10 +6119,11 @@ PL_YYLEX_FCNNAMED:
                                 lptkRht2 = &lpYYRht2->tkToken;
 
                                 if ((lptkRht1 NE NULL)
+                                  && (lptkRht2 NE NULL)
                                   && ((lptkRht1->tkSynObj EQ soRP)
                                    || (lptkRht1->tkSynObj EQ soNR)
                                    || (lptkRht1->tkSynObj EQ soNNR))
-                                  && (lptkRht2 NE NULL) && (lptkRht2->tkSynObj EQ soSPA)
+                                  && (lptkRht2->tkSynObj EQ soSPA)
                                   && (lpYYRht2->lpplYYFcnCurry NE NULL))
                                 {
                                     // Mark as being assigned into

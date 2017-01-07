@@ -432,7 +432,8 @@ typedef struct tagSTART_ADDRESSES
     // parseline.c
     "ParseLine"                 , (LPUCHAR) &ParseLine                  ,
     "pl_yylex"                  , (LPUCHAR) &pl_yylex                   ,
-    "GetLftToken"               , (LPUCHAR) &GetLftToken                ,
+    "GetLftSynObj"              , (LPUCHAR) &GetLftSynObj               ,
+////"GetLftToken"               , (LPUCHAR) &GetLftToken                ,
     "pl_yylexCOM"               , (LPUCHAR) &pl_yylexCOM                ,
 #ifdef DEBUG
     "PadMemoryW"                , (LPUCHAR) &PadMemoryW                 ,

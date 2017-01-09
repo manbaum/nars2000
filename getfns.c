@@ -1698,6 +1698,59 @@ APLFLOAT GetNextRatFltMem
 
 
 //***************************************************************************
+//  $GetNextVfpMem
+//
+//  Get the next item from an array as a VFP
+//***************************************************************************
+
+APLVFP GetNextVfpMem
+    (LPVOID   lpMemRht,
+     APLSTYPE aplTypeRht,
+     APLINT   uRht)
+
+{
+    APLVFP aplVfpRes;
+
+    // Initialize the temp
+    mpfr_init (&aplVfpRes);
+
+    // Split cases based upon the incoming storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            mpfr_set_sx (&aplVfpRes, GetNextInteger (lpMemRht, aplTypeRht, uRht), MPFR_RNDN);
+
+            break;
+
+        case ARRAY_FLOAT:
+            mpfr_set_d (&aplVfpRes, ((LPAPLFLOAT) lpMemRht)[uRht], MPFR_RNDN);
+
+            break;
+
+        case ARRAY_RAT:
+            mpfr_set_q (&aplVfpRes, &((LPAPLRAT) lpMemRht)[uRht], MPFR_RNDN);
+
+            break;
+
+        case ARRAY_VFP:
+            mpfr_copy (&aplVfpRes, &((LPAPLVFP) lpMemRht)[uRht]);
+
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_NESTED:
+        case ARRAY_HETERO:
+        defstop
+            break;
+    } // End SWITCH
+
+    return aplVfpRes;
+} // End GetNextVfpMem
+
+
+//***************************************************************************
 //  $GetNextVfpIntGlb
 //
 //  Get the next value from a VFP array global memory handle

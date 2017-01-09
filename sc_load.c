@@ -251,6 +251,7 @@ UBOOL LoadWorkspace_EM
                  wszSectName[15];       // ...                     section name (e.g., [Vars.nnn])
     UBOOL        bRet = FALSE,          // TRUE iff the result is valid
                  bImmed,                // TRUE iff the result of ParseSavedWsVar_EM is immediate
+                 bExecLX,               // TRUE iff execute []LX after successful load
                  bSuspended;            // TRUE iff the function is suspended
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     APLSTYPE     aplTypeObj;            // Object storage type
@@ -274,6 +275,9 @@ UBOOL LoadWorkspace_EM
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
+
+    // Save the bExecLX flag
+    bExecLX = lpMemPTD->bExecLX;
 
     // Check for CLEAR WS
     if (hGlbDPFE EQ NULL)
@@ -890,8 +894,13 @@ UBOOL LoadWorkspace_EM
     // Display the indent
     AppendLine (wszIndent, FALSE, FALSE);
 
-    // Display the )LOAD command
-    AppendLine (L")LOAD ", FALSE, FALSE);
+    // If we are loaded via )XLOAD, ...
+    if (bExecLX)
+        // Display the )LOAD command
+        AppendLine (L")LOAD ", FALSE, FALSE);
+    else
+        // Display the )XLOAD command
+        AppendLine (L")XLOAD ", FALSE, FALSE);
 
     // Display the workspace name
     AppendLine (wszDPFE2, FALSE, TRUE);

@@ -287,7 +287,6 @@ UBOOL WINAPI CreateNewTabInThread
     MSG          Msg;                   // Message for GetMessageW loop
     int          nThreads;
     WCHAR        wszTemp[32];           // Temporary storage
-    UBOOL        bExecLX;               // TRUE iff execute []LX after successful load
 
     // Store the thread type ('TC')
     TlsSetValue (dwTlsType, TLSTYPE_TC);
@@ -296,7 +295,7 @@ UBOOL WINAPI CreateNewTabInThread
     hWndParent    = lpcntThread->hWndParent;
     csSM.hGlbDPFE = lpcntThread->hGlbDPFE;      // Freed in sessman.c/WM_CREATE
     iTabIndex     = lpcntThread->iTabIndex;
-    bExecLX       = lpcntThread->bExecLX;
+    csSM.bExecLX  = lpcntThread->bExecLX;
     hThread       = lpcntThread->hThread;
 
     if (gCurTabID NE -1)
@@ -403,9 +402,6 @@ UBOOL WINAPI CreateNewTabInThread
     //   so it can be used by subsequent windows
     CreateDebuggerWindow (lpMemPTD);
 #endif
-
-    // Fill in the SM WM_CREATE data struct
-    csSM.bExecLX  = bExecLX;
 
     // Save hWndMC for use inside message loop
     //   so we can unlock the per-tab data memory

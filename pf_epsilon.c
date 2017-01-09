@@ -1622,6 +1622,8 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
     LPVARARRAY_HEADER lpMemHdrLft = NULL,   // Ptr to left arg header
                       lpMemHdrRht = NULL,   // ...    right ...
                       lpMemHdrRes = NULL;   // ...    result   ...
+    LPAPLDIM          lpMemDimLft,          // Ptr to left  arg dimensions
+                      lpMemDimRes;          // ...    result    ...
     LPVOID            lpMemLft,             // ...    left arg global memory
                       lpMemRht;             // ...    right ...
     LPAPLBOOL         lpMemRes;             // ...    result   ...
@@ -1686,19 +1688,21 @@ LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
 #undef  lpHeader
 
     // Skip over the header to the dimensions
-    lpMemRes = (LPAPLBOOL) VarArrayBaseToDim (lpMemHdrRes);
+    lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
+
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // Fill in the result's dimension
     if (lpMemHdrLft NE NULL)
     {
         // Skip over the header to the dimensions
-        lpMemLft = VarArrayBaseToDim (lpMemHdrLft);
+        lpMemDimLft = VarArrayBaseToDim (lpMemHdrLft);
 
         // Copy the left arg dimensions to the result
-        CopyMemory (lpMemRes, lpMemLft, (APLU3264) aplRankLft * sizeof (APLDIM));
+        CopyMemory (lpMemDimRes, lpMemDimLft, (APLU3264) aplRankLft * sizeof (APLDIM));
 
         // Skip over the header and dimensions to the data
-        lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
         lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
     } else
         // Point to the left arg immediate value
@@ -3831,7 +3835,7 @@ UBOOL PrimFnDydEpsilonOther_EM
                     } // End SWITCH
                 } // End IF/ELSE/...
             } else
-            // If the left item is simple and the right is global, ...
+            // If the left item is immediate and the right is global, ...
             if ((hGlbSubLft EQ NULL) && (hGlbSubRht NE NULL))
             {
                 TOKEN   tkSubLft = {0},         // Left arg item token
@@ -3925,7 +3929,7 @@ UBOOL PrimFnDydEpsilonOther_EM
                 if (bCmp)
                     goto SET_RESULT_BIT;
             } else
-            // If the left item is global and the right is simple, ...
+            // If the left item is global and the right is immediate, ...
             if ((hGlbSubLft NE NULL) && (hGlbSubRht EQ NULL))
             {
                 TOKEN   tkSubLft = {0},         // Left arg item token

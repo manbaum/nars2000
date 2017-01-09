@@ -597,6 +597,8 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     LPVARARRAY_HEADER lpMemHdrLft = NULL,   // Ptr to left arg header
                       lpMemHdrRht = NULL,   // ...    right ...
                       lpMemHdrRes = NULL;   // ...    result   ...
+    LPAPLDIM          lpMemDimRht,          // Ptr to right arg dimensions
+                      lpMemDimRes;          // ...    result   ...
     LPVOID            lpMemLft,             // Ptr to left arg global memory
                       lpMemRht;             // Ptr to right ...
     LPAPLUINT         lpMemRes;             // Ptr to result   ...
@@ -681,19 +683,21 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
 #undef  lpHeader
 
     // Skip over the header to the dimensions
-    lpMemRes = (LPAPLUINT) VarArrayBaseToDim (lpMemHdrRes);
+    lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
+
+    // Skip over the dimensions to the data
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // Fill in the result's dimension
     if (lpMemHdrRht NE NULL)
     {
         // Skip over the header to the dimensions
-        lpMemRht = VarArrayBaseToDim (lpMemHdrRht);
+        lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
 
-        // Copy the left arg dimensions to the result
-        CopyMemory (lpMemRes, lpMemRht, (APLU3264) aplRankRht * sizeof (APLDIM));
+        // Copy the right arg dimensions to the result
+        CopyMemory (lpMemDimRes, lpMemDimRht, (APLU3264) aplRankRht * sizeof (APLDIM));
 
-        // Skip over the dimensions to the data
-        lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+        // Skip over the header and dimensions to the data
         lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
     } else
         // Point to the right arg immediate value
@@ -922,7 +926,11 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     } // End IF/ELSE
 
     // Unlock the result global memory in case TypeDemote actually demotes
-    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+    } // End IF
 
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();

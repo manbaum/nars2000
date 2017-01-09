@@ -1,6 +1,18 @@
 Version 0.4.19.xx consists of the following Builds:
 
 
+Build #1609 -- Version 0.4.19.xx
+--------------------------------
+
+* Merge Epsilon And Iota Code With NewTypes
+
+Directory trunk:
+
+PF_EPSILON.C:
+PF_IOTA.C:
+  Merge Epsilon and Iota code with NewTypes.
+
+
 Build #1608 -- Version 0.4.19.xx
 --------------------------------
 

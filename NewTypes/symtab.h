@@ -69,11 +69,14 @@ http://portal.acm.org/citation.cfm?id=3324
 //   the same hash value.
 #define DEF_HSHTAB_EPB         8
 
+// Hash table size multiplier
+#define HSHTABSIZE_MUL        (1024 * DEF_HSHTAB_EPB)
+
 // Maximum hash table size (# entries)
 #ifdef _WIN64
-  #define DEF_HSHTAB_MAXNELM  ( 256 * 1024 * DEF_HSHTAB_EPB)
+  #define DEF_HSHTAB_MAXNELM  ( 256 * HSHTABSIZE_MUL)
 #else
-  #define DEF_HSHTAB_MAXNELM  (  64 * 1024 * DEF_HSHTAB_EPB)
+  #define DEF_HSHTAB_MAXNELM  (  64 * HSHTABSIZE_MUL)
 #endif
 
 #define DEF_AFO_HSHTAB_MAXNELM      (256 * DEF_HSHTAB_EPB)
@@ -203,11 +206,14 @@ typedef struct tagHSHTABSTR
 
 //********************* SYMBOL TABLE ****************************************
 
+// Symbol table size multiplier
+#define SYMTABSIZE_MUL        (1024)
+
 // Maximum symbol table size (# entries)
 #ifdef _WIN64
-  #define DEF_SYMTAB_MAXNELM  ( 256*1024)
+  #define DEF_SYMTAB_MAXNELM  ( 256 * SYMTABSIZE_MUL)
 #else
-  #define DEF_SYMTAB_MAXNELM  (  64*1024)
+  #define DEF_SYMTAB_MAXNELM  (  64 * SYMTABSIZE_MUL)
 #endif
 
 #define DEF_AFO_SYMTAB_MAXNELM          256

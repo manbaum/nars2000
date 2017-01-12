@@ -113,7 +113,10 @@
 #define UTF16_LDC_DB_HORZ_D       0x2566        // LDC double horizontal and down
 #define UTF16_LDC_DB_HORZ_U       0x2569        // LDC double horizontal and up
 #define UTF16_LDC_DB_CROSS        0x256C        // LDC double horizontal and vertical
+#define UTF16_CHECKMARKLIGHT      0x2713        // Light check mark
+#define UTF16_CHECKMARKHEAVY      0x2714        // Heavy check mark
 #define UTF16_REPLACEMENTCHAR     0xFFFD        // Replacement char for unknown
+#define UTF16_REPLACEMENT0000     0xFFFF        // Replacement char for U+0000
 
 // The alphabet, unshifted
 #define UTF16_ALPHA               0x237A        // Alt-'a' - alpha
@@ -283,8 +286,9 @@
 #define UTF16_CIRCLE2             0x26AA        // Circle (a.k.a. 0x25CB)
 #define UTF16_LEFTCARETUNDERBAR2  0x2A7D        // Not more2 (a.k.a. 0x2264)
 #define UTF16_RIGHTCARETUNDERBAR2 0x2A7E        // Not less2 (a.k.a. 0x2265)
-#define UTF16_DIAMOND2            0x2B26        // Diamond2 (a.k.a. 0x22C4)
+#define UTF16_DIAMOND2            0x25C7        // Diamond2 (a.k.a. 0x22C4)
 #define UTF16_DIAMOND3            0x25CA        // Diamond3 (a.k.a. 0x22C4)
+#define UTF16_DIAMOND4            0x2B26        // Diamond4 (a.k.a. 0x22C4)
 
 #define UTF16_A_                  0xE036        // A underbar
 #define UTF16_B_                  0xE037        // B underbar
@@ -391,7 +395,10 @@
 #define WS_UTF16_LDC_DB_HORZ_D       L"\x2566"  // LDC double horizontal and down
 #define WS_UTF16_LDC_DB_HORZ_U       L"\x2569"  // LDC double horizontal and up
 #define WS_UTF16_LDC_DB_CROSS        L"\x256C"  // LDC double horizontal and vertical
+#define WS_UTF16_CHECKMARKLIGHT      L"\x2713"  // Light check mark
+#define WS_UTF16_CHECKMARKHEAVY      L"\x2714"  // Heavy check mark
 #define WS_UTF16_REPLACEMENTCHAR     L"\xFFFD"  // Replacement char for unknown
+#define WS_UTF16_REPLACEMENT0000     L"\xFFFF"  // Replacement char for U+0000
 
 // The alphabet, unshifted
 #define WS_UTF16_ALPHA               L"\x237A"  // Alt-'a' - alpha
@@ -561,8 +568,9 @@
 #define WS_UTF16_CIRCLE2             L"\x26AA"  // Circle (a.k.a. 0x25CB)
 #define WS_UTF16_LEFTCARETUNDERBAR2  L"\x2A7D"  // Not more2 (a.k.a. 0x2264)
 #define WS_UTF16_RIGHTCARETUNDERBAR2 L"\x2A7E"  // Not less2 (a.k.a. 0x2265)
-#define WS_UTF16_DIAMOND2            L"\x2B26"  // Diamond2 (a.k.a. 0x22C4)
+#define WS_UTF16_DIAMOND2            L"\x25C7"  // Diamond2 (a.k.a. 0x22C4)
 #define WS_UTF16_DIAMOND3            L"\x25CA"  // Diamond3 (a.k.a. 0x22C4)
+#define WS_UTF16_DIAMOND4            L"\x2B26"  // Diamond4 (a.k.a. 0x22C4)
 
 #define WS_UTF16_A_                  L"\xE036"  // A underbar
 #define WS_UTF16_B_                  L"\xE037"  // B underbar

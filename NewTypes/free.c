@@ -365,7 +365,6 @@ void FreeResultSub
         case TKT_RIGHTBRACE:    // ...                    right brace in {}
         case TKT_SYNTERR:       // ...                    SYNTAX ERROR
         case TKT_EOL:           // ...                    EOL EXAMPLE:  {{alpha}{alpha} {omega}}{each}{zilde}
-        case TKT_ASSIGN:        // ...                    Close in middle of Quote-Quad input
             return;
 
         case TKT_STRNAMED:  // tkData contains an HGLOBAL of a strand of names
@@ -435,7 +434,7 @@ UBOOL FreeResultGlobalLst
     Assert (IsGlbTypeLstDir_PTB (MakePtrTypeGlb (hGlbData)));
 
     // Lock the memory to get a ptr to it
-    lpMemLst = MyGlobalLock (hGlbData);
+    lpMemLst = MyGlobalLockLst (hGlbData);
 
 #define lpHeader    ((LPLSTARRAY_HEADER) lpMemLst)
     // Get the NELM
@@ -534,7 +533,7 @@ UBOOL FreeResultGlobalVarSub
     Assert (IsGlbTypeVarDir_PTB (MakePtrTypeGlb (hGlbData)));
 
     // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlbData);
+    lpMem = MyGlobalLockVar (hGlbData);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMem)
     // If the var is not permanent, ...
@@ -747,13 +746,13 @@ UBOOL FreeResultGlobalFcn
     UBOOL             bRet;         // TRUE iff result is valid
     LPPL_YYSTYPE      lpYYToken;    // Ptr to function array token
     HGLOBAL          *lphGlbLcl,    // Ptr to global memory handle
-                      hGlbTxtLine;  // Line text gobal memory handle
+                      hGlbTxtLine;  // Line text global memory handle
 
     // Data is an valid HGLOBAL function array
     Assert (IsGlbTypeFcnDir_PTB (MakePtrTypeGlb (hGlbData)));
 
     // Lock the memory to get a ptr to it
-    lpMemHdr = MyGlobalLock (hGlbData);
+    lpMemHdr = MyGlobalLockFcn (hGlbData);
 
     // Get the RefCnt, NELM, and line text handle
     RefCnt      = lpMemHdr->RefCnt;
@@ -973,7 +972,7 @@ UBOOL FreeResultGlobalDfn
     Assert (IsGlbTypeDfnDir_PTB (MakePtrTypeGlb (hGlbData)));
 
     // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLock (hGlbData);
+    lpMemDfnHdr = MyGlobalLockDfn (hGlbData);
 
     // Get the reference count
     RefCnt = lpMemDfnHdr->RefCnt;
@@ -1111,6 +1110,40 @@ void FreeResultGlobalDfnStruc
     } // End WHILE
 } // End FreeResultGlobalDfnStruc
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $IzitQuadDM
+//
+//  Is the name of a token []DM?
+//***************************************************************************
+
+UBOOL IzitQuadDM
+    (LPTOKEN lptkName)          // Ptr to the token
+
+{
+    HGLOBAL    htGlbName;       // Name global memory handle
+    LPAPLCHAR  lpMemName;       // Ptr to name global memory
+    APLBOOL    bRet;            // TRUE iff eraseable name
+
+    if (IsTknNamed (lptkName))
+    {
+        // Get the name global memory handle
+        htGlbName = lptkName->tkData.tkSym->stHshEntry->htGlbName;
+
+        // Lock the memory to get a ptr to it
+        lpMemName = MyGlobalLockWsz (htGlbName);
+
+        // Save flag of whether or not the name is []DM
+        bRet = lstrcmpiW (lpMemName, $QUAD_DM) EQ 0;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (htGlbName); lpMemName = NULL;
+    } else
+        bRet = FALSE;
+
+    return bRet;
+} // End IzitQuadDM
 
 
 //***************************************************************************

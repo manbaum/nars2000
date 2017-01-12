@@ -282,6 +282,7 @@ void YYCopyToMem
     // Zap any curried values
     lpYYDst->lpplYYIdxCurry =
     lpYYDst->lpplYYOpRCurry =
+////lpYYDst->lpplYYArgCurry =           // Allowed as in (4{rho}){each}1 2 3
     lpYYDst->lpplYYFcnCurry = NULL;
 } // End YYCopyToMem
 
@@ -431,7 +432,7 @@ UINT YYCountFcnStr
         hGlbFcn = lpYYArg->tkToken.tkData.tkGlbData;
 
         // Lock the memory to get a ptr to it
-        lpMemFcn = MyGlobalLock (hGlbFcn);
+        lpMemFcn = MyGlobalLockFcn (hGlbFcn);
 
         Assert (lpMemFcn->tknNELM NE 0);
 
@@ -485,6 +486,7 @@ UINT YYCountFcnTrn
 //  $YYCopyFcnStr
 //
 //  Copy the tokens in a function strand
+//    returning a ptr to the next entry
 //***************************************************************************
 
 LPPL_YYSTYPE YYCopyFcnStr
@@ -521,7 +523,7 @@ LPPL_YYSTYPE YYCopyFcnStr
         lpYYHdrArgI = (LPVOID)
 #endif
         // Lock the memory to get a ptr to it
-        lpYYArgI = MyGlobalLock (lpYYArg->tkToken.tkData.tkGlbData);
+        lpYYArgI = MyGlobalLockFcn (lpYYArg->tkToken.tkData.tkGlbData);
 
         // Skip over the header to the data (PL_YYSTYPEs)
         lpYYArgI = FcnArrayBaseToData (lpYYArgI);

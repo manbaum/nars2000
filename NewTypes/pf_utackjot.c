@@ -277,7 +277,7 @@ LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
     APLRANK   aplRankRht;           // Right arg rank
 
     // Lock the memory to get a ptr to it
-    lpMemRht = MyGlobalLock (hGlbRht);
+    lpMemRht = MyGlobalLockVar (hGlbRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRht)
     // Get the NELM and Rank
@@ -522,7 +522,7 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+    lpMemTknHdr = MyGlobalLockTkn (hGlbTknHdr);
 
     // Fill the SIS struc, execute the line via ParseLine, and cleanup
     exitType =

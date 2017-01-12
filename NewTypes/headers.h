@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -79,7 +79,6 @@
 #include "grade.h"
 #include "sis.h"
 #include "editctrl.h"
-#include "termcode.h"
 #include "qf.h"
 #include "fmtspec.h"
 #ifndef REAL_MPIFNS
@@ -90,10 +89,11 @@
 #include "hungarian.h"
 #include "sc_save.h"
 #include "cr_proc.h"
+#include "afofns.h"
+#include "qf_nfns.h"
 
 #pragma pack(pop)
 
-#undef  mpfr_set_sj
 #undef  mpfr_init_set       // The mpfr_init_set* functions are implemented
 #undef  mpfr_init_set_ui    //   as macros which causes a problem when used
 #undef  mpfr_init_set_si    //   as mpfr_init_set_q ((LPAPLVFP) lpMemRes)++, ...

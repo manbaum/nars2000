@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -254,7 +254,7 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
                     goto WSFULL_EXIT;
 
                 // Lock the memory to get a ptr to it
-                lpMemRep = MyGlobalLock (hGlbRep);
+                lpMemRep = MyGlobalLock000 (hGlbRep);
 
                 break;
 
@@ -400,7 +400,7 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header values
@@ -439,7 +439,7 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemOdoRht = MyGlobalLock (hGlbOdoRht);
+        lpMemOdoRht = MyGlobalLock000 (hGlbOdoRht);
 
         // If the result is empty, ...
         if (IsEmpty (aplNELMRes))
@@ -712,7 +712,7 @@ UBOOL PrimFnMonIotaUnderbarNest_EM
         return FALSE;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrTmp = MyGlobalLock (hGlbTmp);
+    lpMemHdrTmp = MyGlobalLock000 (hGlbTmp);
 
 #define lpHeader    lpMemHdrTmp
     // Fill in the header values

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,8 +63,8 @@ UBOOL CmdIn_EM
 #define wszTempLen      countof (wszTemp)
     UINT          uLen,                     // Length of output save area in WCHARs
                   uOldRecNo,                // Starting record # in file (for range display)
-                  uRecNo = 0,               // Record # in file
-                  uMaxSize;                 // Maximum size of lpwszTemp
+                  uRecNo = 0;               // Record # in file
+    APLI3264      iMaxSize;                 // Maximum size of lpwszTemp
     UBOOL         bRet = FALSE,             // TRUE iff the result is valid
                   bIsEBCDIC;                // TRUE iff the orignial .atf file is in EBCDIC format
     FILETIME      ftCreation;               // Creation timestamp
@@ -78,7 +78,7 @@ UBOOL CmdIn_EM
     // Get ptr to temporary storage & maximum size
     lpwszOrigTemp =
     lpwszTemp     = lpMemPTD->lpwszTemp;
-    uMaxSize      = lpMemPTD->uTempMaxSize;
+    iMaxSize      = lpMemPTD->iTempMaxSize;
     hWndSM        = lpMemPTD->hWndSM;
     lpwszFormat   = lpMemPTD->lpwszFormat;
 
@@ -192,7 +192,7 @@ UBOOL CmdIn_EM
         CHECK_TEMP_OPEN
 
         // Copy and translate the next record into lpwszTemp
-        lpAtfView = CmdInCopyAndTranslate_EM (lpAtfView, &dwAtfFileSize, lpwszTemp, uMaxSize, &uLen, &ftCreation, &uRecNo, bIsEBCDIC);
+        lpAtfView = CmdInCopyAndTranslate_EM (lpAtfView, &dwAtfFileSize, lpwszTemp, iMaxSize, &uLen, &ftCreation, &uRecNo, bIsEBCDIC);
 
         // Protect the text
         lpMemPTD->lpwszTemp += lstrlenW (lpMemPTD->lpwszTemp);
@@ -653,7 +653,7 @@ UBOOL TransferInverseFcn2_EM
             Assert (IsGlbTypeDfnDir_PTB (hGlbDfnHdr));
 
             // Lock the memory to get a ptr to it
-            lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+            lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
             // Save creation time
             lpMemDfnHdr->ftCreation = *lpftCreation;
@@ -837,7 +837,7 @@ UBOOL TransferInverseChr1_EM
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+        lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
         // Fill in the header
@@ -1183,7 +1183,7 @@ LPUCHAR CmdInCopyAndTranslate_EM
     (LPUCHAR    lpAtfView,                  // Ptr to incoming data
      LPDWORD    lpdwAtfFileSize,            // Ptr to file size
      LPWCHAR    lpwszTemp,                  // Ptr to output save area
-     UINT       uMaxSize,                   // Size of output save area in bytes
+     APLI3264   iMaxSize,                   // Size of output save area in bytes
      LPUINT     lpuLen,                     // Ptr to length of record in output save area (in WCHARs)
      FILETIME  *lpftCreation,               // Ptr to timestamp (if any)
      LPUINT     lpuRecNo,                   // Ptr to record count so far

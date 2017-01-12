@@ -185,10 +185,12 @@ UBOOL ArrayDisplay_EM
 
     // If the value is a character, ...
     if (IsImmChr (immType))
+    // If we're NOT Output Debugging, ...
+    if (!OptionFlags.bOutputDebug)
     // Split cases based upon the character value
     switch (aplChar)
     {
-        case TCBEL:
+        case WC_BEL:
             // Sound the alarum!
             MessageBeep (NEG1U);
 
@@ -197,7 +199,7 @@ UBOOL ArrayDisplay_EM
 
             break;
 
-        case TCHT:
+        case WC_HT:
             FillMemoryW (lpwszFormat, uTabStops, L' ');
 
             // Append a terminating zero
@@ -205,15 +207,11 @@ UBOOL ArrayDisplay_EM
 
             break;
 
-        case TCLF:
-        case TCNL:
+        case WC_LF:
+        case WC_CR:
         default:
-            // If the char is not printable, ...
-            if (aplChar < L' ')
-                // Empty the line
-                lpwszFormat[0] = WC_EOS;
             break;
-    } // End IF/SWITCH
+    } // End IF/IF/SWITCH
 
     // Display the line
     AppendLine (lpwszFormat, FALSE, bEndingCR);
@@ -326,7 +324,7 @@ UBOOL DisplayGlbArr_EM
         FillMemory (lpaplCharIni, 1024, 0xFF);
 #endif
         // Lock the memory to get a ptr to it
-        lpMemHdrArr = MyGlobalLock (hGlbArr);
+        lpMemHdrArr = MyGlobalLockVar (hGlbArr);
 
 #define lpHeader    lpMemHdrArr
         // Get the Array Type, NELM, and Rank
@@ -775,36 +773,79 @@ UBOOL DisplayGlbArr_EM
                         if (CheckCtrlBreak (*lpbCtrlBreak))
                             goto ERROR_EXIT;
 
-                        // If the char is not printable, ...
-                        if (wcCur < L' ')
-                            uColCur--;      // Count it out
-
                         // Split cases based upon the character
                         switch (wcCur)
                         {
-                            case TCHT:          // []TCHT -- Move ahead to the next tab stop
-                                // *Insert* enough blanks to get to the next tabstop
-                                uTmp = uTabStops - (uCurPos % uTabStops);
-                                MoveMemoryW (&lpwszTemp[uCurPos + uTmp], &lpwszTemp[uCurPos], (APLU3264) uTmp);
-                                FillMemoryW (&lpwszTemp[uCurPos], (APLU3264) uTmp, L' ');
+                            case WC_HT:         // []TCHT -- Move ahead to the next tab stop
+                                // If we're NOT Output Debugging, ...
+                                if (!OptionFlags.bOutputDebug)
+                                {
+                                    // *Insert* enough blanks to get to the next tabstop
+                                    uTmp = uTabStops - (uCurPos % uTabStops);
+                                    MoveMemoryW (&lpwszTemp[uCurPos + uTmp], &lpwszTemp[uCurPos], (APLU3264) uTmp);
+                                    FillMemoryW (&lpwszTemp[uCurPos], (APLU3264) uTmp, L' ');
 
-                                // Increase the maximum width and current position by the # inserted blanks
-                                uMaxWidth += uTmp;
-                                uCurPos   += uTmp;
+                                    // Increase the maximum width and current position by the # inserted blanks
+                                    uMaxWidth += uTmp;
+                                    uCurPos   += uTmp;
+
+                                    break;
+                                } else
+                                {
+                                    // Fall through to common code
+                                } // End IF/ELSE
+
+                            case WC_BEL:        // []TCBEL -- Sound the alarum!
+                                // If we're NOT Output Debugging, ...
+                                if (!OptionFlags.bOutputDebug)
+                                {
+                                    MessageBeep (NEG1U);
+
+                                    break;
+                                } else
+                                {
+                                    // Fall through to common code
+                                } // End IF/ELSE
+
+                            case WC_BS:         // []TCBS -- Backspace if there's room
+                                // If we're NOT Output Debugging, ...
+                                if (!OptionFlags.bOutputDebug)
+                                {
+                                    if (uCurPos)
+                                        uCurPos--;
+                                    break;
+                                } else
+                                {
+                                    // Fall through to common code
+                                } // End IF/ELSE
+
+                            case WC_LF:         // []TCLF -- Start a new line
+                                // If we're NOT Output Debugging, ...
+                                if (!OptionFlags.bOutputDebug)
+                                {
+                                    // Zap the temp buffer at the maximum width
+                                    lpwszTemp[uMaxWidth] = WC_EOS;
+
+                                    // Output the line up to this point w/NL
+                                    AppendLine (lpwszTemp, FALSE, TRUE);
+
+                                    // Output enough blanks to get back to the current position
+                                    FillMemoryW (lpwszTemp, (APLU3264) uCurPos, L' ');
+
+                                    break;
+                                } else
+                                {
+                                    // Fall through to common code
+                                } // End IF/ELSE
+
+                            default:
+                                // Save the new char
+                                lpwszTemp[uCurPos++] = wcCur;
+                                uMaxWidth = max (uMaxWidth, uCurPos);
 
                                 break;
 
-                            case TCBEL:         // []TCBEL -- Sound the alarum!
-                                MessageBeep (NEG1U);
-
-                                break;
-
-                            case TCBS:          // []TCBS -- Backspace if there's room
-                                if (uCurPos)
-                                    uCurPos--;
-                                break;
-
-                            case TCNL:          // []TCNL -- Restart at the beginning of a new line
+                            case WC_CR:         // []TCNL -- Restart at the beginning of a new line
                                 // Zap the temp buffer at the maximum width
                                 lpwszTemp[uMaxWidth] = WC_EOS;
 
@@ -817,29 +858,6 @@ UBOOL DisplayGlbArr_EM
                                 uColCur   = 0;
                                 uColCur--;              // Count it out
                                 uOutLen = uQuadPW;      // Maximum output length
-
-                                break;
-
-                            case TCLF:          // []TCLF -- Start a new line
-                                // Zap the temp buffer at the maximum width
-                                lpwszTemp[uMaxWidth] = WC_EOS;
-
-                                // Output the line up to this point w/NL
-                                AppendLine (lpwszTemp, FALSE, TRUE);
-
-                                // Output enough blanks to get back to the current position
-                                FillMemoryW (lpwszTemp, (APLU3264) uCurPos, L' ');
-
-                                break;
-
-                            default:
-                                // If the char is printable, ...
-                                if (wcCur >= L' ')
-                                {
-                                    // Save the new char
-                                    lpwszTemp[uCurPos++] = wcCur;
-                                    uMaxWidth = max (uMaxWidth, uCurPos);
-                                } // End IF/ELSE
 
                                 break;
                         } // End SWITCH
@@ -949,6 +967,7 @@ LPAPLCHAR FormatImmed
 {
     LPVARARRAY_HEADER lpMemHdr;
     LPVOID            lpMemGlbNum;
+    WCHAR             wcCur;
 
     // Split cases based upon the immediate type
     switch (ImmType)
@@ -967,8 +986,16 @@ LPAPLCHAR FormatImmed
             break;
 
         case IMMTYPE_CHAR:
-            *lpaplChar++ = *(LPAPLCHAR) lpaplLongest;
-            *lpaplChar++ = L' ';                    // Append a blank to be deleted
+            // Save the char
+            wcCur = *(LPAPLCHAR) lpaplLongest;
+
+            // If we're Output Debugging, ...
+            if (OptionFlags.bOutputDebug
+             && wcCur EQ WC_EOS)
+                *lpaplChar++ = UTF16_REPLACEMENT0000;
+            else
+                *lpaplChar++ = *(LPAPLCHAR) lpaplLongest;
+            *lpaplChar++ = L' ';                // Append a blank to be deleted
 
             break;
 
@@ -989,7 +1016,7 @@ LPAPLCHAR FormatImmed
             lpaplChar =
               FormatAplVfp (lpaplChar,      // Ptr to output save area
                  (LPAPLVFP) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)),  // Ptr to the value to format
-                            GetQuadPPV ()); // Use this many significant digits for VFP
+                            GetQuadPPV ());     // Use this many significant digits for VFP
             break;
 
         case IMMTYPE_HC2I:
@@ -1074,7 +1101,7 @@ LPAPLCHAR FormatImmed
             Assert (GetPtrTypeDir (lpaplLongest) EQ PTRTYPE_HGLOBAL);
 
             // Lock the memory to get a ptr to it
-            lpMemHdr = MyGlobalLock (lpaplLongest);
+            lpMemHdr = MyGlobalLockVar (lpaplLongest);
 
             // Skip over the header and dimensions to the data
             lpMemGlbNum = VarArrayDataFmBase (lpMemHdr);
@@ -1155,39 +1182,65 @@ LPAPLCHAR FormatImmedFC
             // Test for Terminal Control chars
             switch (wc)
             {
-                case TCBEL:     // Bel
-                    MessageBeep (NEG1U);    // Sound the alarum!
+                case WC_BEL:    // Bel
+                    // If we're NOT Output Debugging, ...
+                    if (!OptionFlags.bOutputDebug)
+                    {
+                        MessageBeep (NEG1U);    // Sound the alarum!
 
-                    // Fall through to common code
+                        // Fall through to common code
+                    } else
+                    {
+                        // Fall through to common code
+                    } // End IF/ELSE
 
-                case TCESC:     // Esc
-                case TCFF:      // FF
-                case TCNUL:     // NUL
-                case TCBS:      // BS
-                case TCNL:      // NL
-                    *lpaplChar++ = L' ';    // Append a blank to be deleted
+                case WC_ESC:    // Esc
+                case WC_FF:     // FF
+                case WC_EOS:    // NUL
+                case WC_BS:     // BS
+                case WC_CR:     // CR
+                    // If we're NOT Output Debugging, ...
+                    if (!OptionFlags.bOutputDebug)
+                    {
+                        *lpaplChar++ = L' ';    // Append a blank to be deleted
 
-                    break;          // Can't go any farther left
+                        break;                  // Can't go any farther left
+                    } else
+                    {
+                        // Fall through to common code
+                    } // End IF/ELSE
 
-                case TCHT:      // HT
-                    // We're always at the (virtual) left margin,
-                    //   so insert enough blanks for a TAB
-                    lpaplChar = FillMemoryW (lpaplChar, uTabStops + 1, L' ');
-///////////////////*lpaplChar++ = L' ';     // Append a blank to be deleted
+                case WC_HT:     // HT
+                    // If we're NOT Output Debugging, ...
+                    if (!OptionFlags.bOutputDebug)
+                    {
+                        // We're always at the (virtual) left margin,
+                        //   so insert enough blanks for a TAB
+                        lpaplChar = FillMemoryW (lpaplChar, uTabStops + 1, L' ');
+///////////////////////*lpaplChar++ = L' ';     // Append a blank to be deleted
 
-                    break;
+                        break;
+                    } else
+                    {
+                        // Fall through to common code
+                    } // End IF/ELSE
 
-                case TCLF:      // LF       // Handled during raw output
-                    *lpaplChar++ = wc;      // Append it
-                    *lpaplChar++ = L' ';    // Append a blank to be deleted
+                case WC_LF:     // LF       // Handled during raw output
+                    // If we're NOT Output Debugging, ...
+                    if (!OptionFlags.bOutputDebug)
+                    {
+                        *lpaplChar++ = wc;      // Append it
+                        *lpaplChar++ = L' ';    // Append a blank to be deleted
 
-                    break;
+                        break;
+                    } else
+                    {
+                        // Fall through to common code
+                    } // End IF/ELSE
 
                 default:
-                    if (wc >= 32)           // If none of the above but printable,
-                        *lpaplChar++ = wc;  //   append it
-
-                    *lpaplChar++ = L' ';    // Append a blank to be deleted
+                    *lpaplChar++ = wc;          // Append it
+                    *lpaplChar++ = L' ';        // Append a blank to be deleted
 
                     break;
             } // End SWITCH
@@ -1237,27 +1290,27 @@ LPAPLCHAR FormatImmedPtr
 
         case IMMTYPE_INT:
             lpaplChar =
-              FormatAplInt (lpaplChar,      // Ptr to output save area
-                 (LPAPLINT) lpaplLongest);  // The value to format
+              FormatAplInt (lpaplChar,          // Ptr to output save area
+                 (LPAPLINT) lpaplLongest);      // The value to format
             break;
 
         case IMMTYPE_CHAR:
             *lpaplChar++ = *(LPAPLCHAR) lpaplLongest;
-            *lpaplChar++ = L' ';                        // Append a blank to be deleted
+            *lpaplChar++ = L' ';                // Append a blank to be deleted
 
             break;
 
         case IMMTYPE_FLOAT:
             lpaplChar =
-              FormatAplFlt (lpaplChar,      // Ptr to output save area
-               (LPAPLFLOAT) lpaplLongest,   // The value to format
-                            0);             // Use default significant digits
+              FormatAplFlt (lpaplChar,          // Ptr to output save area
+               (LPAPLFLOAT) lpaplLongest,       // The value to format
+                            0);                 // Use default significant digits
             break;
 
         case IMMTYPE_RAT:
             lpaplChar =
-              FormatAplRat (lpaplChar,      // Ptr to output save area
-                 (LPAPLRAT) lpaplLongest);  // The value to format
+              FormatAplRat (lpaplChar,          // Ptr to output save area
+                 (LPAPLRAT) lpaplLongest);      // The value to format
             break;
 
         case IMMTYPE_VFP:
@@ -1771,7 +1824,7 @@ LPAPLCHAR FormatAplFltFC
                          (int) -nDigits,            // # significant digits
                                 s,                  // Ptr to raw formatted number
                                 decpt,              // Exponent
-                                DEF_MAX_QUADPP64,   // Maximum # significant digits
+                                DEF_MAX_QUADPP_IEEE,// Maximum # significant digits
                                 aplCharDecimal,     // Char to use as decimal separator
                                 aplCharOverbar);    // Char to use as overbar
                 break;
@@ -1781,7 +1834,7 @@ LPAPLCHAR FormatAplFltFC
                 //   to the right of the decimal point
 
                 // Get the maximum # significant digits
-                iSigDig = DEF_MAX_QUADPP64;
+                iSigDig = DEF_MAX_QUADPP_IEEE;
 
                 // Handle numbers between 0 and 1
                 if (decpt <= 0)
@@ -1892,12 +1945,12 @@ LPAPLCHAR FormatAplFltFC
 
                     // Copy no more than nDigits
 
-                    // No more than DEF_MAX_QUADPP64 digits
+                    // No more than DEF_MAX_QUADPP_IEEE digits
                     if (nDigits)
-                        nSigDig = min (nDigits, DEF_MAX_QUADPP64);
+                        nSigDig = min (nDigits, DEF_MAX_QUADPP_IEEE);
                     else
                     {
-                        nSigDig = DEF_MAX_QUADPP64;
+                        nSigDig = DEF_MAX_QUADPP_IEEE;
                         nDigits = decpt;
                     } // End IF/ELSE
 
@@ -1953,7 +2006,7 @@ LPAPLCHAR FormatAplFltFC
                               (int) nDigits,            // # significant digits
                                     s,                  // Ptr to raw formatted number
                                     decpt,              // Exponent
-                                    DEF_MAX_QUADPP64,   // Maximum # significant digits
+                                    DEF_MAX_QUADPP_IEEE,// Maximum # significant digits
                                     aplCharDecimal,     // Char to use as decimal separator
                                     aplCharOverbar);    // Char to use as overbar
                 else
@@ -2396,7 +2449,7 @@ LPAPLCHAR FormatAplVfpFC
                      (int) -nDigits,                // # significant digits
                             lpRawFmt,               // Ptr to raw formatted number
                             expptr,                 // Exponent
-                            DEF_MAX_QUADPPVFP,      // Maximum # significant digits
+                            DEF_MAX_QUADPP_VFP, // Maximum # significant digits
                             aplCharDecimal,         // Char to use as decimal separator
                             aplCharOverbar);        // Char to use as overbar
         } else
@@ -3704,7 +3757,7 @@ LPWCHAR DisplayTransferImm2
           FormatImmedFC (lpwszTemp,                         // Ptr to input string
                          lpSymEntry->stFlags.ImmType,       // Immediate type
                         &lpSymEntry->stData.stLongest,      // Ptr to value to format
-                         DEF_MAX_QUADPP64,                  // # significant digits
+                         DEF_MAX_QUADPP_IEEE,               // # significant digits
                          UTF16_DOT,                         // Char to use as decimal separator
                          UTF16_OVERBAR,                     // Char to use as overbar
                          FLTDISPFMT_RAWFLT,                 // Float display format
@@ -3745,7 +3798,7 @@ LPWCHAR DisplayTransferGlb2
     SetOptionFlagsDisplay (&bJ4i, &bDisp0Imag, &bDispInfix, &bDispMPSuf);
 
     // Lock the memory to get a ptr to it
-    lpMemArg = MyGlobalLock (hGlbArg);
+    lpMemArg = MyGlobalLockVar (hGlbArg);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemArg)
     // Get the Array Type, NELM, and Rank
@@ -3865,7 +3918,7 @@ LPWCHAR DisplayTransferGlb2
                 lpwszTemp =
                   FormatAplFltFC (lpwszTemp,            // Ptr to output save area
                    *((LPAPLFLOAT) lpMemArg)++,          // Ptr to float value
-                                  DEF_MAX_QUADPP64,     // # significant digits
+                                  DEF_MAX_QUADPP_IEEE,  // # significant digits
                                   L'.',                 // Char to use as decimal separator
                                   UTF16_OVERBAR,        // Char to use as overbar
                                   FLTDISPFMT_RAWFLT,    // Float display format
@@ -3955,7 +4008,7 @@ LPWCHAR DisplayTransferGlb2
                 lpwszTemp =
                   FormatAplHC2F (lpwszTemp,             // Ptr to output save area
                     ((LPAPLHC2F) lpMemArg)++,           // Ptr to float value
-                                   DEF_MAX_QUADPP64);   // Precision to use
+                                   DEF_MAX_QUADPP_IEEE);// Precision to use
             break;
 
         case ARRAY_HC4F:
@@ -3964,7 +4017,7 @@ LPWCHAR DisplayTransferGlb2
                 lpwszTemp =
                   FormatAplHC4F (lpwszTemp,             // Ptr to output save area
                     ((LPAPLHC4F) lpMemArg)++,           // Ptr to float value
-                                 DEF_MAX_QUADPP64);     // Precision to use
+                                 DEF_MAX_QUADPP_IEEE);  // Precision to use
             break;
 
         case ARRAY_HC8F:
@@ -3973,7 +4026,7 @@ LPWCHAR DisplayTransferGlb2
                 lpwszTemp =
                   FormatAplHC8F (lpwszTemp,             // Ptr to output save area
                     ((LPAPLHC8F) lpMemArg)++,           // Ptr to float value
-                                 DEF_MAX_QUADPP64);     // Precision to use
+                                 DEF_MAX_QUADPP_IEEE);  // Precision to use
             break;
 
         case ARRAY_RAT :
@@ -4102,14 +4155,14 @@ LPWCHAR DisplayTransferFcn2
         hGlbDfnHdr = lpSymEntry->stData.stGlbData;
 
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
         // Save creation time if requested
         if (lpftCreation)
             *lpftCreation = lpMemDfnHdr->ftCreation;
 
         // Lock the memory to get a ptr to it
-        lpMemTxtLine = MyGlobalLock (lpMemDfnHdr->hGlbTxtHdr);
+        lpMemTxtLine = MyGlobalLockTxt (lpMemDfnHdr->hGlbTxtHdr);
 
         // Display the function header
         lpwszTemp =
@@ -4135,7 +4188,7 @@ LPWCHAR DisplayTransferFcn2
             if (hGlbTxtLine)
             {
                 // Lock the memory to get a ptr to it
-                lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+                lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
 
                 // Display the function line
                 lpwszTemp =
@@ -4216,7 +4269,7 @@ APLCHAR GetQuadFCValue
     hGlbQuadFC = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_FC]->stData.stGlbData;
 
     // Lock the memory to get a ptr to it
-    lpMemQuadFC = MyGlobalLock (hGlbQuadFC);
+    lpMemQuadFC = MyGlobalLockVar (hGlbQuadFC);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemQuadFC)
     // Get the array NELM and rank
@@ -4267,7 +4320,7 @@ APLINT GetQuadICValue
     hGlbQuadIC = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_IC]->stData.stGlbData;
 
     // Lock the memory to get a ptr to it
-    lpMemQuadIC = MyGlobalLock (hGlbQuadIC);
+    lpMemQuadIC = MyGlobalLockVar (hGlbQuadIC);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemQuadIC)
     // Get the array Type, NELM, and rank
@@ -4326,6 +4379,12 @@ UBOOL DisplayGlbVector
     APLINT    iSizeof;              // sizeof () datatype
     UBOOL     bRet = FALSE,         // TRUE iff we succeeded
               bBoolAPA = FALSE;     // TRUE iff the type is BOOL or APA
+    HWND      hWndSM,               // Window handle for the Session Manager
+              hWndEC;               // ...                                  Edit Ctrl
+
+    // Get the current SM window handle
+    hWndSM = GetMemPTD ()->hWndSM;
+    hWndEC = (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
 
     // Set initial values
     lpaplChar = lpaplCharIni;
@@ -4345,12 +4404,18 @@ UBOOL DisplayGlbVector
                      (uCnt < aplDimNCols) && (uCurPos < uQuadPW);
                      uCnt++, ((LPAPLCHAR) lpMemArr)++)
                     // Check for Terminal Control chars
-                    CheckTermCodes (*(LPAPLCHAR) lpMemArr,  // Current char to test
+                    if (CheckTermCodes ((LPAPLCHAR) lpMemArr,   // Ptr to current char to test
+                                        hWndEC,                 // EditCtrl window handle
                                     lpaplCharIni,           // Ptr to initial output save area
                                    &lpaplChar,              // Ptr to ptr to output save area
                                    &uCurPos,                // Ptr to current position
                                    &uMaxPos,                // Ptr to maximum position
-                                    uIniPos);               // Initial position
+                                        uIniPos))               // Initial position
+                    {
+                        // Skip over the next two chars
+                        uCnt                   += 2;
+                        ((LPAPLCHAR) lpMemArr) += 2;
+                    } // End FOR/IF
                 // Ensure properly terminated
                 lpaplChar[0] = WC_EOS;
 
@@ -4522,8 +4587,9 @@ ERROR_EXIT:
 //  Check a character for terminal Codes
 //***************************************************************************
 
-void CheckTermCodes
-    (WCHAR      wc,             // Temp var
+UBOOL CheckTermCodes
+    (LPWCHAR    lpwc,           // Ptr to Temp var
+     HWND       hWndEC,         // Window handle of the EditCtrl
      LPAPLCHAR  lpaplCharIni,   // Ptr to initial output save area
      LPAPLCHAR *lplpaplChar,    // Ptr to ptr to output save area
      APLUINT   *lpuCurPos,      // Ptr to current position
@@ -4531,45 +4597,74 @@ void CheckTermCodes
      APLUINT    uIniPos)        // Initial position
 
 {
-    APLUINT   uSpaces;          // # spaces to fill in for HT
+    APLUINT uSpaces;            // # spaces to fill in for HT
+    UBOOL   bRet = FALSE;       // TRUE iff the caller is to skip over CR, LF
 
     // Split cases based upon the char value
-    switch (wc)
+    switch (*lpwc)
     {
-        case TCBEL:     // Bel
-            // Sound the alarum!
-            MessageBeep (NEG1U);
-
-            break;
-
-        case TCHT:
-            // Insert a tab -- convert into insert N spaces
-            uSpaces = (((*lpuCurPos) / DEF_TABS) * DEF_TABS + DEF_TABS) - *lpuCurPos;
-
-            Assert (uSpaces <= DEF_TABS);
-
-            // Fill with spaces
-            FillMemoryW (*lplpaplChar, (APLU3264) uSpaces, L' ');
-
-            // Skip over the spaces
-            (*lplpaplChar) += uSpaces;
-            (*lpuCurPos)   += uSpaces;
-            (*lpuMaxPos)   = max (*lpuMaxPos, *lpuCurPos);
-
-            break;
-
-        case TCBS:
-            // If there's room to backspace, ...
-            if (lpuCurPos[0] > uIniPos)
+        case WC_BEL:    // Bel
+            // If we're NOT Output Debugging, ...
+            if (!OptionFlags.bOutputDebug)
             {
-                // Back up one position
-                (*lplpaplChar)--;
-                (*lpuCurPos)--;
-            } // End IF
+                // Sound the alarum!
+                MessageBeep (NEG1U);
+
+                break;
+            } else
+            {
+                // Fall through to common code
+            } // End IF/ELSE
+
+        case WC_HT:
+            // If we're NOT Output Debugging, ...
+            if (!OptionFlags.bOutputDebug)
+            {
+                // Insert a tab -- convert into insert N spaces
+                uSpaces = (((*lpuCurPos) / DEF_TABS) * DEF_TABS + DEF_TABS) - *lpuCurPos;
+
+                Assert (uSpaces <= DEF_TABS);
+
+                // Fill with spaces
+                FillMemoryW (*lplpaplChar, (APLU3264) uSpaces, L' ');
+
+                // Skip over the spaces
+                (*lplpaplChar) += uSpaces;
+                (*lpuCurPos)   += uSpaces;
+                (*lpuMaxPos)   = max (*lpuMaxPos, *lpuCurPos);
+
+                break;
+            } else
+            {
+                // Fall through to common code
+            } // End IF/ELSE
+
+        case WC_BS:
+            // If we're NOT Output Debugging, ...
+            if (!OptionFlags.bOutputDebug)
+            {
+                // If there's room to backspace, ...
+                if (lpuCurPos[0] > uIniPos)
+                {
+                    // Back up one position
+                    (*lplpaplChar)--;
+                    (*lpuCurPos)--;
+                } // End IF
+
+                break;
+            } else
+            {
+                // Fall through to common code
+            } // End IF/ELSE
+
+        default:
+            *(*lplpaplChar)++ = *lpwc;
+            (*lpuCurPos)++;
+            (*lpuMaxPos)      = max (*lpuMaxPos, *lpuCurPos);
 
             break;
 
-        case TCNL:
+        case WC_CR:
             // Ensure properly terminated
             lpaplCharIni[*lpuMaxPos - uIniPos] = WC_EOS;
 
@@ -4584,22 +4679,49 @@ void CheckTermCodes
             (*lpuMaxPos)   =
             (*lpuCurPos)   = uIniPos;
 
-            break;
-
-////////case TCESC:                 // Ignore these chars
-////////case TCLF:                  // ...
-////////case TCFF:                  // ...
-////////case TCNUL:                 // ...
-        default:
-            if (wc >= L' ')         // Ignore unprintable chars
+            // If this char is followed by WC_CR and WC_LF, ...
+            if (lpwc[1] EQ WC_CR
+             && lpwc[2] EQ WC_LF)
             {
-                *(*lplpaplChar)++ = wc;
-                (*lpuCurPos)++;
-                (*lpuMaxPos)      = max (*lpuMaxPos, *lpuCurPos);
+                UINT uCharPos,              // Current char position in the buffer
+                     uLineNum;              // Current line #
+
+                // The previous line ends with CR/LF and we need to change it
+                //   so that it ends with CR/CR/LF
+
+                // Get the indices of the selected text, and as
+                //   there is none, we need the leading position only
+                SendMessageW (hWndEC, EM_GETSEL, (WPARAM) &uCharPos, 0);
+
+                // Back up by 2 to the start of CR/LF
+                SendMessageW (hWndEC, EM_SETSEL, uCharPos - 2, uCharPos - 2);
+
+                // Insert another CR
+                SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) WS_CR);
+
+                // Reset the selection to the end
+                SendMessageW (hWndEC, EM_SETSEL, uCharPos + 1, uCharPos + 1);
+
+                // Get the current line # in the Edit Ctrl buffer
+                uLineNum = (UINT) SendMessageW (hWndEC, EM_LINEFROMCHAR, (WPARAM) -1, 0);
+
+                // Draw a Line Continuation marker
+                DrawLineCont (hWndEC, uLineNum);
+
+                bRet = TRUE;
             } // End IF
 
             break;
+
+        case WC_EOS:
+            *(*lplpaplChar)++ = UTF16_REPLACEMENT0000;
+            (*lpuCurPos)++;
+            (*lpuMaxPos)      = max (*lpuMaxPos, *lpuCurPos);
+
+            break;
     } // End SWITCH
+
+    return bRet;
 } // End CheckTermCodes
 
 

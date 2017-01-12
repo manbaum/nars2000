@@ -68,6 +68,7 @@ extern MAGIC_FCNOPR MFO_RoS3;
 extern MAGIC_FCNOPR MFO_MDIU;
 extern MAGIC_FCNOPR MFO_DetSing;
 extern MAGIC_FCNOPR MFO_DydVOFact;
+extern MAGIC_FCNOPR MFO_MonExecute;
 
 
 //***************************************************************************
@@ -306,12 +307,12 @@ HGLOBAL Init1MagicFunction
     uLineLen  = lstrlenW (lpMagicFcnOpr->Header);
 
     // Allocate space for the text
-    //   (the "sizeof (uLineLen)" is for the leading line length
+    //   (the "sizeof (lpMemTxtLine->U)" is for the leading line length
     //    and the "+ 1" is for the terminating zero)
     hGlbTxtHdr = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
     if (hGlbTxtHdr EQ NULL)
     {
-        MessageBox (hWndEC,
+        MessageBox (hWndMF,
                     "Insufficient memory to save the magic function/operator header text!!",
                     lpszAppName,
                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -324,10 +325,10 @@ HGLOBAL Init1MagicFunction
     //   on the call to EM_GETLINE.
 
     // If the line is non-empty, ...
-    if (uLineLen)
+    if (uLineLen NE 0)
     {
         // Lock the memory to get a ptr to it
-        lpMemTxtLine = MyGlobalLock (hGlbTxtHdr);
+        lpMemTxtLine = MyGlobalLock000 (hGlbTxtHdr);    // ->U not assigned as yet
 
         // Save the line length
         lpMemTxtLine->U = uLineLen;
@@ -369,7 +370,7 @@ HGLOBAL Init1MagicFunction
                     ERRMSG_SYNTAX_ERROR_IN_FUNCTION_HEADER,
                     lpMemPTD->uCaret);
         // Display the error message
-        MessageBoxW (hWndEC,
+        MessageBoxW (hWndMF,
                     wszTemp,
                     lpwszAppName,
                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -388,7 +389,7 @@ HGLOBAL Init1MagicFunction
                   PAGE_READWRITE);
     if (!lclMemVirtStr[0].IniAddr)
     {
-        MessageBox (hWndEC,
+        MessageBox (hWndMF,
                     "Insufficient memory to save the function header strand stack!!",
                     lpszAppName,
                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -406,7 +407,7 @@ HGLOBAL Init1MagicFunction
     // Parse the function header
     if (ParseFcnHeader (hWndEC, hGlbTknHdr, &fhLocalVars, TRUE))
     {
-        UINT         uLineNum,          // Current line # in the Edit Ctrl
+        UINT         uLineNum,          // Current line # in the Edit Ctrl (0 = header)
                      uOffset,           // Cumulative offset
                      numResultSTE,      // # result STEs (may be zero)
                      numLftArgSTE,      // # left arg ...
@@ -452,7 +453,7 @@ HGLOBAL Init1MagicFunction
         numFcnLines = lpMagicFcnOpr->numFcnLines;
 
         // Get size of tokenization of all lines (excluding the header)
-        for (uOffset = uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
+        for (uOffset = 0, uLineNum = 1; uLineNum <= numFcnLines; uLineNum++)
             // Size a function line
             if (SaveFunctionLine (NULL, lpMagicFcnOpr, NULL, uLineNum, NULL, hWndEC, NULL, &uOffset) EQ -1)
                 goto ERROR_EXIT;
@@ -467,7 +468,7 @@ HGLOBAL Init1MagicFunction
                               + uOffset);
         if (hGlbDfnHdr EQ NULL)
         {
-            MessageBox (hWndEC,
+            MessageBox (hWndMF,
                         "Insufficient memory to save the function header!!",
                         lpszAppName,
                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
@@ -475,7 +476,7 @@ HGLOBAL Init1MagicFunction
         } // End IF
 
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLock000 (hGlbDfnHdr);
 
         // Save numbers in global memory
         lpMemDfnHdr->numResultSTE = numResultSTE;
@@ -595,7 +596,7 @@ HGLOBAL Init1MagicFunction
         uOffset = lpMemDfnHdr->offTknLines;
 
         // Loop through the lines
-        for (uLineNum = 0; uLineNum < numFcnLines; uLineNum++)
+        for (uLineNum = 1; uLineNum <= numFcnLines; uLineNum++)
         {
             // Save a function line
             uLineLen =
@@ -671,7 +672,7 @@ ERROR_EXIT:
         LPTOKEN_HEADER lpMemTknHdr;
 
         // Lock the memory to get a ptr to it
-        lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+        lpMemTknHdr = MyGlobalLockTkn (hGlbTknHdr);
 
         // Free the tokens
         Untokenize (lpMemTknHdr);
@@ -777,6 +778,7 @@ UBOOL InitMagicFunctions
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MDIU             ]  = Init1MagicFunction (MFON_MDIU             , &MFO_MDIU             , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DetSing          ]  = Init1MagicFunction (MFON_DetSing          , &MFO_DetSing          , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydVOFact        ]  = Init1MagicFunction (MFON_DydVOFact        , &MFO_DydVOFact        , lpMemPTD, hWndEC, NULL));
+    bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonExecute       ]  = Init1MagicFunction (MFON_MonExecute       , &MFO_MonExecute       , lpMemPTD, hWndEC, NULL));
 
     return bRet;
 } // InitMagicFunctions
@@ -815,7 +817,7 @@ void ExecNilMFO
                    NULL,                        // Ptr to common struc (may be NULL if unused)
                    TRUE);                       // TRUE iff we're tokenizing a Magic Function/Operator
     // Lock the memory to get a ptr to it
-    lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+    lpMemTknHdr = MyGlobalLockTkn (hGlbTknHdr);
 
     // Execute the line
 ////exitType =
@@ -847,7 +849,7 @@ void ExecNilMFO
     Assert (lpSymEntry);
 
     // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLock (lpSymEntry->stData.stGlbData);
+    lpMemDfnHdr = MyGlobalLockDfn (lpSymEntry->stData.stGlbData);
 
     // Free the globals in the struc
     //   but don't Untokenize the function lines

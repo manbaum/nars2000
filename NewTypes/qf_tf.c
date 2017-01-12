@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -387,7 +387,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+        lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
         // Fill in the header
@@ -420,7 +420,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
         LPSYMENTRY     lpSymEntry;          // Ptr to SYMENTRY for name lookup
         LPWCHAR        lpwName;             // Ptr to name portion of array
         HGLOBAL        hGlbTxtLine;         // Line text ...
-        LPFCNLINE      lpFcnLines;          // Ptr to array of function line structs (FCNLINE[numFcnLines])
+        LPFCNLINE      lpFcnLines;          // Ptr to array of function line structs (FCNLINE[numLogLines])
         UINT           uNumLines,           // # function lines
                        uLine,               // Loop counter
                        uMaxLineLen;         // Length of the longest line
@@ -479,7 +479,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                     hGlbItm = lpSymEntry->stData.stGlbData;
 
                     // Lock the memory to get a ptr to it
-                    lpMemItm = MyGlobalLock (hGlbItm);
+                    lpMemItm = MyGlobalLockVar (hGlbItm);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemItm)
                     // Get the type, NELM, and Rank
@@ -529,7 +529,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                                 lpwszTemp =
                                   FormatAplFltFC (lpwszTemp,                    // Ptr to output save area
                                                   lpSymEntry->stData.stFloat,   // The value to format
-                                                  DEF_MAX_QUADPP64,             // Precision to use
+                                                  DEF_MAX_QUADPP_IEEE,          // Precision to use
                                                   L'.',                         // Char to use as decimal separator
                                                   UTF16_OVERBAR,                // Char to use as overbar
                                                   FLTDISPFMT_RAWFLT,            // Float display format
@@ -566,7 +566,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                                     lpwszTemp =
                                       FormatAplFltFC (lpwszTemp,                    // Ptr to output save area
                                                      *(LPAPLFLOAT) &aplLongestItm,  // The value to format
-                                                      DEF_MAX_QUADPP64,             // Precision to use
+                                                      DEF_MAX_QUADPP_IEEE,          // Precision to use
                                                       L'.',                         // Char to use as decimal separator
                                                       UTF16_OVERBAR,                // Char to use as overbar
                                                       FLTDISPFMT_RAWFLT,            // Float display format
@@ -667,10 +667,10 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                 hGlbDfnHdr = lpSymEntry->stData.stGlbData;
 
                 // Lock the memory to get a ptr to it
-                lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+                lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
                 // Lock the memory to get a ptr to it
-                lpMemTxtLine = MyGlobalLock (lpMemDfnHdr->hGlbTxtHdr);
+                lpMemTxtLine = MyGlobalLock000 (lpMemDfnHdr->hGlbTxtHdr);   // ->U not assigned as yet
 
                 // Get the length of the function header text
                 uMaxLineLen = lpMemTxtLine->U;
@@ -678,10 +678,10 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                 // We no longer need this ptr
                 MyGlobalUnlock (lpMemDfnHdr->hGlbTxtHdr); lpMemTxtLine = NULL;
 
-                // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+                // Get ptr to array of function line structs (FCNLINE[numLogLines])
                 lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
-                // Get # function lines
+                // Get # logical function lines
                 uNumLines = lpMemDfnHdr->numFcnLines;
 
                 // Run through the function lines looking for the longest
@@ -693,7 +693,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                     if (hGlbTxtLine)
                     {
                         // Lock the memory to get a ptr to it
-                        lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+                        lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
 
                         // Find the length of the longest line
                         uMaxLineLen = max (uMaxLineLen, lpMemTxtLine->U);
@@ -725,7 +725,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                 if (lpwszTemp EQ NULL)
                     goto ERROR_EXIT;
 
-                // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+                // Get ptr to array of function line structs (FCNLINE[numLogLines])
                 lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
                 // Run through the function lines copying each line text to the result
@@ -771,7 +771,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+        lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
         // Fill in the header
@@ -1090,7 +1090,7 @@ LPPL_YYSTYPE SysFnDydTF2_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -1313,10 +1313,13 @@ UBOOL TransferInverseFcn1_EM
     // Fill in common values
     SF_Fcns.SF_LineLen      = SF_LineLenTF1;        // Ptr to line length function
     SF_Fcns.SF_ReadLine     = SF_ReadLineTF1;       // Ptr to read line function
-    SF_Fcns.SF_NumLines     = SF_NumLinesTF1;       // Ptr to # lines function
+    SF_Fcns.SF_IsLineCont   = SF_IsLineContTF1;     // Ptr to Is Line Continued function
+    SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesTF1;    // Ptr to # physical lines function
+    SF_Fcns.SF_NumLogLines  = SF_NumLogLinesTF1;    // Ptr to # logical  ...
     SF_Fcns.SF_CreationTime = SF_CreationTimeTF1;   // Ptr to get function creation time
     SF_Fcns.SF_LastModTime  = SF_LastModTimeTF1;    // Ptr to get function last modification time
     SF_Fcns.SF_UndoBuffer   = SF_UndoBufferTF1;     // Ptr to get function Undo Buffer global memory handle
+    SF_Fcns.sfTypes         = SFTYPES_TF;           // Caller type
 
     // Save ptr to local parameters
     SF_Fcns.LclParams = &TF1_Params;

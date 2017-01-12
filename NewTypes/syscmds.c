@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,6 +47,8 @@ SYSCMDSTAB SysCmdsTab[]
     {L"erase"     ,     &CmdErase_EM    , SYSCMD_ERASE   },
     {L"exit"      ,     &CmdExit_EM     , SYSCMD_EXIT    },
     {L"fns"       ,     &CmdFns_EM      , SYSCMD_FNS     },
+    {L"fop"       ,     &CmdFops_EM     , SYSCMD_FOPS    },
+    {L"fops"      ,     &CmdFops_EM     , SYSCMD_FOPS    },
     {L"in"        ,     &CmdIn_EM       , SYSCMD_IN      },
     {L"inascii"   ,     &CmdInAscii_EM  , SYSCMD_INASCII },
     {L"lib"       ,     &CmdLib_EM      , SYSCMD_LIB     },

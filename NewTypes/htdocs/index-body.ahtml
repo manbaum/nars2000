@@ -614,7 +614,7 @@ Welcome to NARS2000</h1>
       opportunity to make a micro-payment to express your support.
     The <a class="linkleft" href="http://en.wikipedia.org/wiki/QR_code">QR Code</a> to the left
       allows you to send a tiny bit of money to my Bitcoin wallet, and by tiny bit, I mean
-      <span style="font-family: BTCFont">B</span>0.0005 (Bitcoins) which at the current rate is between 10 and 30 cents.
+      <span style="font-family: BTCFont">B</span>0.0005 (Bitcoins) which at the current rate is between 10 and 50 cents.
     This amount is the minimum some Bitcoin wallets allow you to transfer, below which the
       transaction might be delayed indefinitely, or ignored entirely.</p>
 

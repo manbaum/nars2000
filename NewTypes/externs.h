@@ -627,14 +627,18 @@ typedef union tagGLBSYM
 EXTERN
 const TOKEN tkZero
 #ifdef DEFINE_VALUES
- = {{TKT_VARIMMED, FALSE, IMMTYPE_BOOL}, soA}
+ = {{TKT_VARIMMED, FALSE, IMMTYPE_BOOL},    // tkFlags
+    soA,                                    // tkSynObj
+    0}                                      // tkData
 #endif
 ;
 
 EXTERN
 const TOKEN tkBlank
 #ifdef DEFINE_VALUES
- = {{TKT_VARIMMED, FALSE, IMMTYPE_CHAR}, soA, (LPSYMENTRY) L' '}
+ = {{TKT_VARIMMED, FALSE, IMMTYPE_CHAR},    // tkFlags
+    soA,                                    // tkSynObj
+    (LPSYMENTRY) L' '}                      // tkData
 #endif
 ;
 
@@ -1140,15 +1144,10 @@ EXTERN
 SIZE  MFSize;                           // Size of Master Frame Window window rectangle
 
 EXTERN
-HBITMAP hBitMapLineCont,                // Bitmap for the line continuation char
-        hBitMapCheck;                   // Bitmap for the marker used in Customize
+HBITMAP hBitmapCheck;                   // Bitmap for the marker used in Customize
 
 EXTERN
-int     iLCWidth;                       // Width of the line continuation column
-
-EXTERN
-BITMAP  bmLineCont,                     // Bitmap metrics for the line continuation char
-        bmCheck;                        // Bitmap metrics for the marker
+BITMAP  bmCheck;                        // Bitmap metrics for the marker
 
 EXTERN
 HCURSOR hCursorWait,                    // Hourglass cursor
@@ -1211,16 +1210,6 @@ char pszNoInsertTCTab[]
 #ifdef DEFINE_VALUES
  = "Unable to create Function Editor window"
 #endif
-,
-     pszNoCreateMEWnd[]
-#ifdef DEFINE_VALUES
- = "Unable to create Matrix Editor window"
-#endif
-,
-     pszNoCreateVEWnd[]
-#ifdef DEFINE_VALUES
- = "Unable to create Vector Editor window"
-#endif
 ;
 
 EXTERN
@@ -1253,14 +1242,9 @@ WCHAR wszMCTitle[]                      // MDI Client ... (for debugging purpose
  = WS_APPNAME L" [%s]%c"
 #endif
 ,
-      wszMETitle[]                      // Matrix Editor ...
+      wszFETitle2[]                     // Function Editor for AFOs ...
 #ifdef DEFINE_VALUES
- = WS_APPNAME L" Matrix Editor" WS_APPEND_DEBUG
-#endif
-,
-      wszVETitle[]                      // Vector Editor ...
-#ifdef DEFINE_VALUES
- = WS_APPNAME L" Vector Editor" WS_APPEND_DEBUG
+ = WS_APPNAME L" [%s" WS_UTF16_LEFTARROW L"{...}]%c"
 #endif
 ;
 
@@ -1436,12 +1420,14 @@ SYNTAXCOLORNAME gSyntaxColorName[SC_LENGTH]
     {{DEF_SC_UNMATCHGRP }, L"Unmatched Group"                   },  // 15:  Unmatched Grouping Symbols [] () {} ' "
     {{DEF_SC_UNNESTED   }, L"Improper Nesting"                  },  // 16:  Improperly Nested Grouping Symbols [] () {}
     {{DEF_SC_UNK        }, L"Unknown Symbols"                   },  // 17:  Unknown symbol
-    {{DEF_SC_WINTEXT    }, L"Window Text"                       },  // 18:  Window text
+    {{DEF_SC_LINECONT   }, L"Line Continuation"                 },  // 18:  Line Continuation
+    {{DEF_SC_WINTEXT    }, L"Window Text"                       },  // 19:  Window text
   }
 #endif
 ;
 
-#define gSyntaxColorText    gSyntaxColorName[SC_WINTEXT].syntClr
+#define gSyntaxColorText    gSyntaxColorName[SC_WINTEXT ].syntClr
+#define gSyntaxColorLC      gSyntaxColorName[SC_LINECONT].syntClr
 
 EXTERN
 HBRUSH ghBrushBG;           // Window background brush
@@ -1478,7 +1464,8 @@ UBOOL gSyntClrBGTrans[SC_LENGTH]
     FALSE,                  // 15:  Unmatched Grouping Symbols
     FALSE,                  // 16:  Improperly Nested Grouping Symbols
     FALSE,                  // 17:  Unknown symbol
-    FALSE,                  // 18:  Window background
+    TRUE,                   // 18:  Line Continuation
+    FALSE,                  // 19:  Window background
   }
 #endif
 ;
@@ -1744,10 +1731,11 @@ typedef struct tagOPTIONFLAGS
          bViewStatusBar      :1,    // 00400000:  ...      Status Bar is displayed
          bDefDispFcnLineNums :1,    // 00800000:  ...      Display function line #s
          bDispMPSuf:1,       :1,    // 01000000:  ...      Display multi-precision numbers with suffix 'x' or 'v'
-         bJ4i                :1,    // 02000000:  ...      Use 'J' instead of 'i' as Complex # separator on output
-         bDisp0Imag          :1,    // 04000000:  ...      Display all imaginary parts
-         bDispInfix          :1,    // 08000000:  ...      Display CHO numbers using infix notation
-                             :4;    // F0000000:  Available bits
+         bOutputDebug:1,     :1,    // 02000000:  ...      Output Debugging is enabled
+         bJ4i                :1,    // 04000000:  ...      Use 'J' instead of 'i' as Complex # separator on output
+         bDisp0Imag          :1,    // 08000000:  ...      Display all imaginary parts
+         bDispInfix          :1,    // 10000000:  ...      Display CHO numbers using infix notation
+                             :3;    // E0000000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 // N.B.:  Whenever changing the above struct (OPTIONFLAGS),
@@ -1776,6 +1764,7 @@ OPTIONFLAGS OptionFlags
     DEF_VIEWSTATUSBAR,
     DEF_DISPFCNLINENUMS,
     DEF_DISPMPSUF,
+    DEF_OUTPUTDEBUG,
     DEF_J4i,
     DEF_DISP0IMAG,
     DEF_DISPINFIX,
@@ -1794,7 +1783,22 @@ LOGFONTW lfSM                           // LOGFONTW for the SM
  = {DEF_SMLOGFONT}
 #endif
 ,
-         lfFB                           // LOGFONTW for the FB
+         lfFB_SM                        // LOGFONTW for the FB for SM
+#ifdef DEFINE_VALUES
+ = {DEF_FBLOGFONT}
+#endif
+,
+         lfFB_FE                        // LOGFONTW for the FB for FE
+#ifdef DEFINE_VALUES
+ = {DEF_FBLOGFONT}
+#endif
+,
+         lfFB_PR_SM                     // LOGFONTW for the FB for PR for SM
+#ifdef DEFINE_VALUES
+ = {DEF_FBLOGFONT}
+#endif
+,
+         lfFB_PR_FE                     // LOGFONTW for the FB for PR for FE
 #ifdef DEFINE_VALUES
  = {DEF_FBLOGFONT}
 #endif
@@ -1823,16 +1827,6 @@ LOGFONTW lfSM                           // LOGFONTW for the SM
 #ifdef DEFINE_VALUES
  = {DEF_FELOGFONT}
 #endif
-,
-         lfME                           // LOGFONTW for the ME
-#ifdef DEFINE_VALUES
- = {DEF_MELOGFONT}
-#endif
-,
-         lfVE                           // LOGFONTW for the VE
-#ifdef DEFINE_VALUES
- = {DEF_VELOGFONT}
-#endif
 ;
 
 EXTERN
@@ -1841,32 +1835,38 @@ HFONT hFontTC,                          // Handle to font for the TC
       hFontAlt,                         // ...                    Alternate SM
 #endif
       hFontSM,                          // ...                    SM
+      hFontFB_SM,                       // ...                    FB for SM
+      hFontFB_FE,                       // ...                    FB for FE
+      hFontFB_PR_SM,                    // ...                    FB for PR for SM
+      hFontFB_PR_FE,                    // ...                    FB for PR for FE
       hFontLW,                          // ...                    LW
       hFontPR,                          // ...                    Printer
       hFontCC,                          // ...                    CC
-      hFontFE,                          // ...                    FE
-      hFontME,                          // ...                    ME
-      hFontVE;                          // ...                    VE
+      hFontFE;                          // ...                    FE
 
 EXTERN
 CHOOSEFONTW cfTC,                       // Global for ChooseFont for the TC
             cfSM,                       // ...                           SM
+            cfFB_SM,                    // ...                           FB for SM
+            cfFB_FE,                    // ...                           FB for FE
+            cfFB_PR_SM,                 // ...                           FB for PR for SM
+            cfFB_PR_FE,                 // ...                           FB for PR for FE
             cfLW,                       // ...                           LW
             cfPR,                       // ...                           Printer
             cfCC,                       // ...                           CC
-            cfFE,                       // ...                           FE
-            cfME,                       // ...                           ME
-            cfVE;                       // ...                           VE
+            cfFE;                       // ...                           FE
 
 EXTERN
 TEXTMETRICW tmTC,                       // Global for TEXTMETRICW for the TC
             tmSM,                       // ...                           SM
+            tmFB_SM,                    // ...                           FB for SM
+            tmFB_FE,                    // ...                           FB for FE
+            tmFB_PR_SM,                 // ...                           FB for PR for SM
+            tmFB_PR_FE,                 // ...                           FB for PR for FE
             tmLW,                       // ...                           LW
             tmPR,                       // ...                           Printer
             tmCC,                       // ...                           CC
-            tmFE,                       // ...                           FE
-            tmME,                       // ...                           ME
-            tmVE;                       // ...                           VE
+            tmFE;                       // ...                           FE
 
 typedef enum tagFONTENUM
 {
@@ -1876,13 +1876,20 @@ typedef enum tagFONTENUM
     FONTENUM_CC,                        // 03:  Crash Control window
     FONTENUM_TC,                        // 04:  Tab Control
     FONTENUM_LW,                        // 05:  Language Bar
-    FONTENUM_VE,                        // 06:  Vector Editor
-    FONTENUM_ME,                        // 07:  Matrix Editor
-    FONTENUM_LENGTH,                    // 08:  # entries in this enum
+    FONTENUM_LENGTH,                    // 06:  # entries in this enum
 } FONTENUM, *LPFONTENUM;
+
+#define FONTENUM_FB_SM      FONTENUM_LENGTH
+#define FONTENUM_FB_FE      FONTENUM_LENGTH + 1
+#define FONTENUM_FB_PR_SM   FONTENUM_LENGTH + 2
+#define FONTENUM_FB_PR_FE   FONTENUM_LENGTH + 3
+#define FONTENUMX_LENGTH    FONTENUM_LENGTH + 4
 
 EXTERN
 FONTENUM glbSameFontAs[FONTENUM_LENGTH];
+
+EXTERN
+UINT uWidthLC[FONTENUM_LENGTH];
 
 void CreateNewFontSM (UBOOL);
 void CreateNewFontLW (UBOOL);
@@ -1890,8 +1897,6 @@ void CreateNewFontFE (UBOOL);
 void CreateNewFontPR (UBOOL);
 void CreateNewFontCC (UBOOL);
 void CreateNewFontTC (UBOOL);
-void CreateNewFontME (UBOOL);
-void CreateNewFontVE (UBOOL);
 
 void ApplyNewFontSM (HFONT);
 void ApplyNewFontLW (HFONT);
@@ -1899,8 +1904,6 @@ void ApplyNewFontFE (HFONT);
 void ApplyNewFontPR (HFONT);
 void ApplyNewFontCC (HFONT);
 void ApplyNewFontTC (HFONT);
-void ApplyNewFontME (HFONT);
-void ApplyNewFontVE (HFONT);
 
 typedef struct tagFONTSTRUC
 {
@@ -1920,17 +1923,21 @@ typedef struct tagFONTSTRUC
     CHOOSEFONTW   cfLcl;                        // 28:  Local CHOOSEFONTW while Customize Dialog is running
 } FONTSTRUC, *LPFONTSTRUC;
 
+// So we can access and treat the Fallback font similar to other fonts,
+//    it is defined as an "extension" of the other fonts in the <fontStruc> array
 EXTERN
-FONTSTRUC fontStruc[FONTENUM_LENGTH]
+FONTSTRUC fontStruc[FONTENUMX_LENGTH]
 #ifdef DEFINE_VALUES
-= {{&lfSM, &cfSM, &tmSM, DEF_SMPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontSM, &CreateNewFontSM, &ApplyNewFontSM, L"Session Manager Font"   },  // Session Manager
-   {&lfFE, &cfFE, &tmFE, DEF_FEPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontFE, &CreateNewFontFE, &ApplyNewFontFE, L"Function Editor Font"   },  // Function Editor
-   {&lfPR, &cfPR, &tmPR, DEF_PRPTSIZE, {0, 0}, TRUE , FALSE, FALSE, &hFontPR, &CreateNewFontPR, &ApplyNewFontPR, L"Printer Font"           },  // Printer
-   {&lfCC, &cfCC, &tmCC, DEF_CCPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontCC, &CreateNewFontCC, &ApplyNewFontCC, L"Crash Window Font"      },  // Crash window
-   {&lfTC, &cfTC, &tmTC, DEF_TCPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontTC, &CreateNewFontTC, &ApplyNewFontTC, L"Tab Control Font"       },  // Tab Control
-   {&lfLW, &cfLW, &tmLW, DEF_LWPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontLW, &CreateNewFontLW, &ApplyNewFontLW, L"Language Bar Font"      },  // Language Bar
-   {&lfVE, &cfVE, &tmVE, DEF_VEPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontME, &CreateNewFontME, &ApplyNewFontME, L"Vector Editor Font"     },  // Vector Editor
-   {&lfME, &cfME, &tmME, DEF_MEPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontVE, &CreateNewFontVE, &ApplyNewFontVE, L"Matrix Editor Font"     },  // Matrix Editor
+= {{&lfSM       , &cfSM       , &tmSM       , DEF_SMPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontSM       , &CreateNewFontSM, &ApplyNewFontSM, L"Session Manager Font"    },  // Session Manager
+   {&lfFE       , &cfFE       , &tmFE       , DEF_FEPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontFE       , &CreateNewFontFE, &ApplyNewFontFE, L"Function Editor Font"    },  // Function Editor
+   {&lfPR       , &cfPR       , &tmPR       , DEF_PRPTSIZE, {0, 0}, TRUE , FALSE, FALSE, &hFontPR       , &CreateNewFontPR, &ApplyNewFontPR, L"Printer Font"            },  // Printer
+   {&lfCC       , &cfCC       , &tmCC       , DEF_CCPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontCC       , &CreateNewFontCC, &ApplyNewFontCC, L"Crash Window Font"       },  // Crash window
+   {&lfTC       , &cfTC       , &tmTC       , DEF_TCPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontTC       , &CreateNewFontTC, &ApplyNewFontTC, L"Tab Control Font"        },  // Tab Control
+   {&lfLW       , &cfLW       , &tmLW       , DEF_LWPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontLW       , &CreateNewFontLW, &ApplyNewFontLW, L"Language Bar Font"       },  // Language Bar
+   {&lfFB_SM    , &cfFB_SM    , &tmFB_SM    , DEF_FBPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontFB_SM    ,  NULL           ,  NULL          , L"Fallback Font for SM/FE" },  // Fallback Font for SM/FE
+   {&lfFB_FE    , &cfFB_FE    , &tmFB_FE    , DEF_FBPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontFB_FE    ,  NULL           ,  NULL          , L"Fallback Font for SM/FE" },  // Fallback Font for SM/FE
+   {&lfFB_PR_SM , &cfFB_PR_SM , &tmFB_PR_SM , DEF_FBPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontFB_PR_SM ,  NULL           ,  NULL          , L"Fallback Font for PR/SM" },  // Fallback Font for PR for SM
+   {&lfFB_PR_FE , &cfFB_PR_FE , &tmFB_PR_FE , DEF_FBPTSIZE, {0, 0}, FALSE, FALSE, FALSE, &hFontFB_PR_FE ,  NULL           ,  NULL          , L"Fallback Font for PR/FE" },  // Fallback Font for PR for FE
   }
 #endif
 ;
@@ -1962,8 +1969,22 @@ typedef struct tagCUSTOMIZE
     UBOOL   bInitialized;       // TRUE iff the Groupbox has been initialized
 } CUSTOMIZE, *LPCUSTOMIZE;
 
+typedef enum tagALLCATS
+{
+    CAT_CLEARWS_VALUES = 0 ,        // 00:  CLEAR WS Values
+    CAT_DIRS               ,        // 01:  Directories
+    CAT_FONTS              ,        // 02:  Fonts
+    CAT_KEYBS              ,        // 03:  Keyboards
+    CAT_RANGE_LIMITS       ,        // 04:  Range Limits
+    CAT_SYNTAX_COLORING    ,        // 05:  Syntax Coloring
+    CAT_SYSTEM_VAR_RESET   ,        // 06:  System Var Reset
+    CAT_USER_PREFS         ,        // 07:  User Preferences
+    CAT_HC_PREFS           ,        // 08:  Hypercomplex Preferences
+    CAT_LENGTH             ,        // 09:  # entries in this enum
+} ALLCATS, *LPALLCATS;
+
 EXTERN
-CUSTOMIZE custStruc[]
+CUSTOMIZE custStruc[CAT_LENGTH] // **MUST** be in the same order as ALLCATS enum
 #ifdef DEFINE_VALUES
  =
 {   {L"CLEAR WS Values"         , NULL                        , IDD_PROPPAGE_CLEARWS_VALUES   ,  FALSE},  // 00
@@ -1990,11 +2011,15 @@ UINT custStrucLen
 #define DEF_INIT_CATEGORY   (IDD_PROPPAGE_FONTS - IDD_PROPPAGE_START)   // Fonts
 
 EXTERN
-int gInitCustomizeCategory
+ALLCATS gInitCustomizeCategory
 #ifdef DEFINE_VALUES
 = DEF_INIT_CATEGORY
 #endif
 ;
+
+EXTERN
+UINT uUserChar,             // Line Continuation marker
+     uUserUnibase;          // User Preferences Unicode base:  10 or 16
 
 typedef enum tagUNDO_ACTS
 {
@@ -2175,14 +2200,17 @@ typedef struct tagNFNSDATA
                                     // 24:  Length
 } NFNSDATA, *LPNFNSDATA;
 
+#define NFNS_HEADER_SIGNATURE   'SNFN'
+
 typedef struct tagNFNSHDR
 {
-    UINT     nTieNums,              // 00:  # active tie numbers
-             nMax,                  // 04:  Maximum # NFNSDATA structs
-             offFirstFree,          // 08:  Offset from aNfnsData[0] of the first free entry
-             offFirstInuse;         // 0C:  ...                                   in use ...
-    NFNSDATA aNfnsData[];           // 10:  Array of NFNSDATA structs
-                                    // 14:  Length
+    HEADER_SIGNATURE Sig;           // 00:  NFNSHDR signature
+    UINT             nTieNums,      // 04:  # active tie numbers
+                     nMax,          // 08:  Maximum # NFNSDATA structs
+                     offFirstFree,  // 0C:  Offset from aNfnsData[0] of the first free entry
+                     offFirstInuse; // 10:  ...                                   in use ...
+    NFNSDATA         aNfnsData[];   // 14:  Array of NFNSDATA structs
+                                    // 18:  Length
 } NFNSHDR, *LPNFNSHDR;
 
 #define DEF_NFNS_INIT       100     // Inital allocation of aNfnsData
@@ -2449,6 +2477,23 @@ TPF_ACTION aTypeFree[ARRAY_LENGTH + 1];
 
 EXTERN
 NTHPRIMESTR NthPrimeStr;        // Initialized in InitPrimeTabs
+
+
+//***************************************************************************
+//  Command line keyword values
+//***************************************************************************
+
+EXTERN
+size_t gSymTabSize
+#ifdef DEFINE_VALUES
+= {DEF_SYMTAB_MAXNELM}
+#endif
+,
+       gHshTabSize
+#ifdef DEFINE_VALUES
+= {DEF_HSHTAB_MAXNELM}
+#endif
+;
 
 
 //***************************************************************************

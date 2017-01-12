@@ -1864,7 +1864,7 @@ APLINT GetNextRatIntGlb
     Assert (IsGlbTypeVarDir_PTB (hGlbRat));
 
     // Lock the memory to get a ptr to it
-    lpMemRat = MyGlobalLock (hGlbRat);
+    lpMemRat = MyGlobalLockVar (hGlbRat);
 
     // Skip over the header and dimensions to the data
     lpMemRat = VarArrayDataFmBase (lpMemRat);
@@ -1940,6 +1940,59 @@ APLFLOAT GetNextRatFltMem
 
 
 //***************************************************************************
+//  $GetNextVfpMem
+//
+//  Get the next item from an array as a VFP
+//***************************************************************************
+
+APLVFP GetNextVfpMem
+    (LPVOID   lpMemRht,
+     APLSTYPE aplTypeRht,
+     APLINT   uRht)
+
+{
+    APLVFP aplVfpRes;
+
+    // Initialize the temp
+    mpfr_init (&aplVfpRes);
+
+    // Split cases based upon the incoming storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            mpfr_set_sx (&aplVfpRes, GetNextInteger (lpMemRht, aplTypeRht, uRht), MPFR_RNDN);
+
+            break;
+
+        case ARRAY_FLOAT:
+            mpfr_set_d (&aplVfpRes, ((LPAPLFLOAT) lpMemRht)[uRht], MPFR_RNDN);
+
+            break;
+
+        case ARRAY_RAT:
+            mpfr_set_q (&aplVfpRes, &((LPAPLRAT) lpMemRht)[uRht], MPFR_RNDN);
+
+            break;
+
+        case ARRAY_VFP:
+            mpfr_copy (&aplVfpRes, &((LPAPLVFP) lpMemRht)[uRht]);
+
+            break;
+
+        case ARRAY_CHAR:
+        case ARRAY_NESTED:
+        case ARRAY_HETERO:
+        defstop
+            break;
+    } // End SWITCH
+
+    return aplVfpRes;
+} // End GetNextVfpMem
+
+
+//***************************************************************************
 //  $GetNextVfpIntGlb
 //
 //  Get the next value from a VFP array global memory handle
@@ -1958,7 +2011,7 @@ APLINT GetNextVfpIntGlb
     Assert (IsGlbTypeVarDir_PTB (hGlbVfp));
 
     // Lock the memory to get a ptr to it
-    lpMemVfp = MyGlobalLock (hGlbVfp);
+    lpMemVfp = MyGlobalLockVar (hGlbVfp);
 
     // Skip over the header and dimensions to the data
     lpMemVfp = VarArrayDataFmBase (lpMemVfp);
@@ -2262,7 +2315,7 @@ void GetNextItemGlb
     LPVOID    lpMemSub;                     // Ptr to item global memory
 
     // Lock the memory to get a ptr to it
-    lpMemSub = MyGlobalLock (hGlbSub);
+    lpMemSub = MyGlobalLockVar (hGlbSub);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemSub)
     // Get the Array Type and Rank
@@ -2344,7 +2397,8 @@ void GetNextValueGlb
             break;
     } // End SWITCH
 
-    Assert ((uSub < aplNELMSub)
+    Assert (aplNELMSub EQ 0
+         || (uSub < aplNELMSub)
          || ((uSub EQ 0) && IsNested (aplTypeSub)));
 
     // Get next value from global memory
@@ -2877,7 +2931,7 @@ APLLONGEST GetGlbPtrs_LOCK
                 Assert (IsGlbTypeVarDir_PTB (*lphGlb));
 
                 // Lock the memory to get a ptr to it
-                lpMem = MyGlobalLock (*lphGlb);
+                lpMem = MyGlobalLockVar (*lphGlb);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMem)
                 // Get the type & NELM
@@ -2910,9 +2964,18 @@ APLLONGEST GetGlbPtrs_LOCK
                 // stData is a valid HGLOBAL function array
                 Assert (IsGlbTypeFcnDir_PTB (*lphGlb)
                      || IsGlbTypeDfnDir_PTB (*lphGlb));
-
-                // Lock the memory to get a ptr to it
-                lpMem = MyGlobalLock (*lphGlb);
+                // Split cases based upon the type
+                if (IsGlbTypeFcnDir_PTB (*lphGlb))
+                    // Lock the memory to get a ptr to it
+                    lpMem = MyGlobalLockFcn (*lphGlb);
+                else
+                if (IsGlbTypeDfnDir_PTB (*lphGlb))
+                    // Lock the memory to get a ptr to it
+                    lpMem = MyGlobalLockDfn (*lphGlb);
+#ifdef DEBUG
+                else
+                    DbgBrk ();
+#endif
 
                 // Get the pseudo-type & NELM
                 aplTypeMem = ARRAY_LIST;
@@ -2940,7 +3003,7 @@ APLLONGEST GetGlbPtrs_LOCK
             Assert (IsGlbTypeDfnDir_PTB (*lphGlb));
 
             // Lock the memory to get a ptr to it
-            lpMem = MyGlobalLock (*lphGlb);
+            lpMem = MyGlobalLockDfn (*lphGlb);
 
             // Get the pseudo-type & NELM
             aplTypeMem = ARRAY_LIST;
@@ -2963,7 +3026,7 @@ APLLONGEST GetGlbPtrs_LOCK
             *lphGlb = lpToken->tkData.tkGlbData;
 
             // Lock the memory to get a ptr to it
-            lpMem = MyGlobalLock (*lphGlb);
+            lpMem = MyGlobalLockFcn (*lphGlb);
 
             // Get the pseudo-type & NELM
             aplTypeMem = ARRAY_LIST;
@@ -2983,7 +3046,7 @@ APLLONGEST GetGlbPtrs_LOCK
             Assert (IsGlbTypeVarDir_PTB (*lphGlb));
 
             // Lock the memory to get a ptr to it
-            lpMem = MyGlobalLock (*lphGlb);
+            lpMem = MyGlobalLockVar (*lphGlb);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMem)
             // Get the type & NELM
@@ -2999,7 +3062,7 @@ APLLONGEST GetGlbPtrs_LOCK
             Assert (IsGlbTypeLstDir_PTB (*lphGlb));
 
             // Lock the memory to get a ptr to it
-            lpMem = MyGlobalLock (*lphGlb);
+            lpMem = MyGlobalLockLst (*lphGlb);
 
 #define lpHeader        ((LPLSTARRAY_HEADER) lpMem)
             // Get the type & NELM
@@ -3207,7 +3270,7 @@ APLUINT GetQuadPP
     (void)
 
 {
-    return min (DEF_MAX_QUADPP64, GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger);
+    return min (DEF_MAX_QUADPP_IEEE, GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger);
 } // End GetQuadPP
 
 
@@ -3222,7 +3285,7 @@ void SetQuadPPV
 
 {
     GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger=
-      min (DEF_MAX_QUADPPVFP, uQuadPPV);
+      min (DEF_MAX_QUADPP_VFP, uQuadPPV);
 } // End SetQuadPPV
 
 
@@ -3387,11 +3450,9 @@ LPPRIMFNS GetPrototypeFcnPtr
             // Get a ptr to the prototype function for the first symbol (an operator)
             return (LPPRIMFNS) PrimProtoOpsTab[SymTrans (lptkFunc)];
 
-        case TKT_FCNAFO:        // No prototypes
+        case TKT_FCNAFO:        // Handle as any other function
         case TKT_OP1AFO:        // ...
         case TKT_OP2AFO:        // ...
-            return NULL;
-
         case TKT_FCNNAMED:      // e.g. []VR{each}0{rho}{enclose}'abc'
         case TKT_OP1NAMED:      // ...
         case TKT_OP2NAMED:      // ...
@@ -3410,7 +3471,7 @@ LPPRIMFNS GetPrototypeFcnPtr
             {
                 case FCNARRAY_HEADER_SIGNATURE:
                     // Lock the memory to get a ptr to it
-                    lpMemFcn = MyGlobalLock (hGlbFcn);
+                    lpMemFcn = MyGlobalLockFcn (hGlbFcn);
 
                     // Skip over the header to the data
                     lpMemFcn = FcnArrayBaseToData (lpMemFcn);
@@ -3530,7 +3591,7 @@ LPPRIMFLAGS GetPrimFlagsPtr
                     hGlbFcn = lptkFunc->tkData.tkGlbData;
 
                     // Lock the memory to get a ptr to it
-                    lpMemFcn = MyGlobalLock (hGlbFcn);
+                    lpMemFcn = MyGlobalLockFcn (hGlbFcn);
 
                     // Skip over the header to the data
                     lpMemFcn = FcnArrayBaseToData (lpMemFcn);
@@ -3597,7 +3658,7 @@ IMM_TYPES GetImmTypeGlb
     IMM_TYPES         immTypeArg;
 
     // Lock the memory to get a ptr to it
-    lpMemArg = MyGlobalLock (hGlbArg);
+    lpMemArg = MyGlobalLockVar (hGlbArg);
 
     // Get the immediate type
     immTypeArg = TranslateArrayTypeToImmType (lpMemArg->ArrType);

@@ -1014,13 +1014,13 @@ void mpq_ceil
 //***************************************************************************
 //  $mpq_mod
 //
-//  Calculate aplLft % aplRht
+//  Calculate aplOpr mod (aplMod)
 //***************************************************************************
 
 void mpq_mod
-    (mpq_ptr dest,
-     mpq_ptr aplLft,
-     mpq_ptr aplRht)
+    (mpq_ptr dest,          // Destination
+     mpq_ptr aplOpr,        // Operand
+     mpq_ptr aplMod)        // Modulus
 
 {
     APLRAT aplTmp = {0};
@@ -1028,10 +1028,10 @@ void mpq_mod
     // Initialize the temp
     mpq_init (&aplTmp);
 
-    mpq_div   (&aplTmp,  aplLft,  aplRht);      // T = L / R
+    mpq_div   (&aplTmp,  aplOpr,  aplMod);      // T = L / R
     mpq_floor (&aplTmp, &aplTmp);               // T = floor (T)
-    mpq_mul   (&aplTmp,  aplRht, &aplTmp);      // T = R * T
-    mpq_sub   (dest   ,  aplLft, &aplTmp);      // Z = L - T
+    mpq_mul   (&aplTmp,  aplMod, &aplTmp);      // T = R * T
+    mpq_sub   (dest   ,  aplOpr, &aplTmp);      // Z = L - T
 
     // We no longer need this storage
     Myq_clear (&aplTmp);
@@ -1041,19 +1041,19 @@ void mpq_mod
 //***************************************************************************
 //  $mpq_mod_sx
 //
-//  Calculate aplLft % aplRht
+//  Calculate aplOpr % aplMod (a.k.a. aplMod | aplOpr)
 //***************************************************************************
 
 void mpq_mod_sx
-    (mpq_ptr dest,
-     mpq_ptr aplLft,
-     APLINT  aplRht)
+    (mpq_ptr dest,          // Destination
+     mpq_ptr aplOpr,        // Operand
+     APLINT  aplMod)        // Modulus
 
 {
     APLRAT aplDiv = {0};
 
-    mpq_init_set_sx (&aplDiv, aplRht, 1);
-    mpq_mod         ( dest,   aplLft, &aplDiv);
+    mpq_init_set_sx (&aplDiv, aplMod, 1);
+    mpq_mod         ( dest,   aplOpr, &aplDiv);
 
     // We no longer need this storage
     Myq_clear (&aplDiv);
@@ -1390,38 +1390,6 @@ void mpfr_init_set_q
 
 
 //***************************************************************************
-//  $mpfr_set_sx
-//
-//  Save an APLINT value as a Variable FP
-//***************************************************************************
-
-void mpfr_set_sx
-    (mpfr_ptr   dest,
-     APLINT     val,
-     mpfr_rnd_t rnd)
-
-{
-    ISPLIT apliSplit;
-
-    // Save the (non-negative) value to split
-    apliSplit.aplInt = abs64 (val);
-
-    // Set the upper-DWORD of the arg into the lower-DWORD of the result
-    mpfr_set_ui (dest, apliSplit.hi, rnd);
-
-    // Shift to the upper DWORD of the result
-    mpfr_mul_2ui (dest, dest, 32, MPFR_RNDN);
-
-    // Add in the low-order DWORD of the arg
-    mpfr_add_ui (dest, dest, apliSplit.lo, MPFR_RNDN);
-
-    // Adjust the sign
-    if (signumint (val) < 0)
-        mpfr_neg (dest, dest, MPFR_RNDN);
-} // End mpfr_set_sx
-
-
-//***************************************************************************
 //  $mpfr_get_sx
 //
 //  Convert a VFP to an APLINT
@@ -1432,19 +1400,19 @@ APLINT mpfr_get_sx
      LPUBOOL lpbRet)        // TRUE iff the result is valid (may be NULL)
 
 {
-    APLRAT mpqTmp = {0};
-    APLINT aplInteger;
+     UBOOL bRet;
 
-    // Convert the number to RAT
-    mpq_init_set_fr (&mpqTmp, src);
+     if (lpbRet EQ NULL)
+         lpbRet = &bRet;
+     // See if it fits
+     *lpbRet = mpfr_fits_intmax_p (src, MPFR_RNDN);
 
-    // Get the integer within
-    aplInteger = mpq_get_sx (&mpqTmp, lpbRet);
-
-    // We no longer need this storage
-    Myq_clear (&mpqTmp);
-
-    return aplInteger;
+     // If the fractional part is zero and the integer part is in range, ...
+     if (*lpbRet)
+         return mpfr_get_sj (src, MPFR_RNDN);
+     else
+         // Return a known value
+         return 0;
 } // End mpfr_get_sx
 
 
@@ -1480,7 +1448,7 @@ APLINT _mpfr_get_ctsx
            mpfTmp2 = {0},
            mpfSrc  = {0};
     APLINT aplInt = 0;
-    UBOOL  bRet;
+    UBOOL  bRet = TRUE;
 
     if (lpbRet EQ NULL)
         lpbRet = &bRet;
@@ -1510,22 +1478,14 @@ APLINT _mpfr_get_ctsx
 
         // Compare the number and its floor
         if (_mpfr_cmp_ct (&mpfSrc, &mpfTmp1, fQuadCT, bIntegerTest) EQ 0)
-        {
             // Return the floor
             aplInt = mpfr_get_sx (&mpfTmp1, lpbRet);
-
-            // Mark as within []CT
-            *lpbRet = TRUE;
-        } else
+        else
         // Compare the number and its ceiling
         if (_mpfr_cmp_ct (&mpfSrc, &mpfTmp2, fQuadCT, bIntegerTest) EQ 0)
-        {
             // Return the ceiling
             aplInt = mpfr_get_sx (&mpfTmp2, lpbRet);
-
-            // Mark as within []CT
-            *lpbRet = TRUE;
-        } else
+        else
         {
             // Return the floor even though it isn't within []CT
             aplInt = mpfr_get_sx (&mpfTmp1, lpbRet);
@@ -1574,13 +1534,13 @@ APLINT _mpfr_get_ctsx
 //***************************************************************************
 //  $mpfr_mod
 //
-//  Calculate aplLft % aplRht
+//  Calculate aplOpr % aplMod (a.k.a. aplMod | aplOpr)
 //***************************************************************************
 
 void mpfr_mod
-    (mpfr_ptr dest,          // Destination
-     mpfr_ptr aplOpr,        // Operand
-     mpfr_ptr aplMod)        // Modulus
+    (mpfr_ptr dest,         // Destination
+     mpfr_ptr aplOpr,       // Operand
+     mpfr_ptr aplMod)       // Modulus
 
 {
 #if FALSE                   // ***FIXME*** -- Check rounding
@@ -1623,19 +1583,19 @@ void mpfr_mod
 //***************************************************************************
 //  $mpfr_mod_sx
 //
-//  Calculate aplLft % aplRht
+//  Calculate aplOpr % aplMod (a.k.a. aplMod | aplOpr)
 //***************************************************************************
 
 void mpfr_mod_sx
-    (mpfr_ptr dest,
-     mpfr_ptr aplLft,
-     APLINT   aplRht)
+    (mpfr_ptr dest,         // Destination
+     mpfr_ptr aplOpr,       // Operand
+     APLINT   aplMod)       // Modulus
 
 {
     APLVFP aplDiv = {0};
 
-    mpfr_init_set_sx (&aplDiv, aplRht, 1);
-    mpfr_mod         ( dest,   aplLft, &aplDiv);
+    mpfr_init_set_sx (&aplDiv, aplMod, 1);
+    mpfr_mod         ( dest,   aplOpr, &aplDiv);
 
     // We no longer need this storage
     Myf_clear (&aplDiv);
@@ -1645,13 +1605,13 @@ void mpfr_mod_sx
 //***************************************************************************
 //  $mpfr_mod_sub
 //
-//  Calculate aplLft % aplRht
+//  Calculate aplOpr % aplMod (a.k.a. aplMod | aplOpr)
 //***************************************************************************
 
 void mpfr_mod_sub
-    (mpfr_ptr dest,          // Destination
-     mpfr_ptr aplOpr,        // Operand
-     mpfr_ptr aplMod)        // Modulus
+    (mpfr_ptr dest,         // Destination
+     mpfr_ptr aplOpr,       // Operand
+     mpfr_ptr aplMod)       // Modulus
 
 {
 ////#define MOD_DEBUG

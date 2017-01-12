@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,7 +39,6 @@
 #define KEYNAME_USERDEFINED             L"UserDefined"
 #define KEYNAME_AFO                     L"AFO"
 #define KEYNAME_MONINFO                 L"MonInfo"
-#define KEYNAME_WSID                    L"WSID"
 
 // Workspace Version string
 #define WS_VERSTR               L"0.02"
@@ -88,7 +87,7 @@ typedef LPAPLCHAR (*LPSAVEDWSGLBVARCONV) (LPAPLCHAR, HGLOBAL, LPSAVEDWSGLBVARPAR
 typedef struct tagLOADWSGLBVARPARM
 {
     LPWCHAR       lpwSrc;               // Ptr to next available byte
-    UINT          uMaxSize;             // Maximum size of lpwSrc
+    APLI3264      iMaxSize;             // Maximum size of lpwSrc
     HWND          hWndEC;               // Edit Control window handle
     LPSYMENTRY   *lplpSymLink;          // Ptr to ptr to SYMENTRY link
     LPWCHAR       lpwszVersion;         // Ptr to workspace version text

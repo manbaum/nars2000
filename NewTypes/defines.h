@@ -56,7 +56,7 @@
   #define DEF_ASFONTNAME    L"Code2000"         // Default Alternate SM font
 #endif
 #define DEF_SMFONTNAME      DEF_APLFONT_INTNAME
-#define DEF_FBFONTNAME      DEF_APLFONT_INTNAME
+#define DEF_FBFONTNAME      L"Fallback00-1F"
 #define DEF_LWFONTNAME      DEF_APLFONT_INTNAME
 #define DEF_PRFONTNAME      DEF_APLFONT_INTNAME
 #define DEF_CCFONTNAME      DEF_APLFONT_INTNAME
@@ -204,6 +204,7 @@
 #define DEF_VIEWSTATUSBAR           TRUE
 #define DEF_DISPFCNLINENUMS         TRUE
 #define DEF_DISPMPSUF               FALSE
+#define DEF_OUTPUTDEBUG             FALSE
 
 
 // Global Options for HC Preferences
@@ -298,10 +299,6 @@
 #endif
 #define  FEWNDCLASS     "FEClass"       // Function Editor ...
 #define LFEWNDCLASS    L"FEClass"       // ...
-#define  MEWNDCLASS     "MEClass"       // Matrix Editor ...
-#define LMEWNDCLASS    L"MEClass"       // ...
-#define  VEWNDCLASS     "VEClass"       // Vector Editor ...
-#define LVEWNDCLASS    L"VEClass"       // ...
 #define  ECWNDCLASS     "ECClass"       // Edit Ctrl ...
 #define LECWNDCLASS    L"ECClass"       // ...
 #define  CCWNDCLASS     "CCClass"       // Crash Control ...
@@ -419,7 +416,8 @@ default:        \
 // Define common offset between the Session Manager and Function Editor
 #define GWLSF_PERTAB    0                                           // Ptr to PerTabData global memory
 #define GWLSF_HWNDEC    GWLSF_PERTAB   + 1 * sizeof (HANDLE_PTR)    // ...           Edit Control window
-#define GWLSF_UNDO_BEG  GWLSF_HWNDEC   + 1 * sizeof (HANDLE_PTR)    // ...                beginning
+#define GWLSF_HGLBDFNHDR GWLSF_HWNDEC     + 1 * sizeof (HANDLE_PTR)  // ...   pre-existing function global memory handle (may be NULL)
+#define GWLSF_UNDO_BEG   GWLSF_HGLBDFNHDR + 1 * sizeof (HANDLE_PTR)  // ...                beginning
 #define GWLSF_UNDO_NXT  GWLSF_UNDO_BEG + 1 * sizeof (HANDLE_PTR)    // ...                next
 #define GWLSF_UNDO_LST  GWLSF_UNDO_NXT + 1 * sizeof (HANDLE_PTR)    // ...                last
 #define GWLSF_UNDO_GRP  GWLSF_UNDO_LST + 1 * sizeof (HANDLE_PTR)    // Value of next Undo group index
@@ -436,9 +434,6 @@ default:        \
 #define GWLFE_HWNDNXT   GWLFE_HWNDPRV  + 1 * sizeof (HANDLE_PTR)    // Previous ...
 #define GWLFE_EXTRA     GWLFE_HWNDNXT  + 1 * sizeof (HANDLE_PTR)    // Total # extra bytes
 
-// Define offsets in MEWNDCLASS window extra bytes
-#define GWLME_EXTRA     0                                           // Total # extra bytes
-
 // Define offsets in PMWNDCLASS window extra bytes
 #define GWLPM_HWNDLB    0                                           // Window handle of Listbox
 #define GWLPM_EXTRA     GWLPM_HWNDLB   + 1 * sizeof (HANDLE_PTR)    // Total # extra bytes
@@ -452,9 +447,6 @@ default:        \
 
 // Define offsets in LW_RBWNDCLASS window extra bytes
 #define GWLLW_RB_EXTRA  0                                           // Total # extra bytes
-
-// Define offsets in VEWNDCLASS window extra bytes
-#define GWLVE_EXTRA     0                                           // Total # extra bytes
 
 // Define offsets in CCWNDCLASS window extra bytes
 #define GWLCC_EXTRA     0                                           // Total # extra bytes
@@ -536,14 +528,17 @@ default:        \
 #define EOL_LEN         2           // Length of EOL ("\r\n")
 
 #define WC_EOS          L'\0'       // 00:  End-of-string
+#define WC_BEL          L'\x0007'   // 07:  Bell
 #define WC_BS           L'\b'       // 08:  Backspace
 #define WC_HT           L'\t'       // 09:  Horizontal Tab
 #define WC_LF           L'\n'       // 0A:  Linefeed
 #define WC_FF           L'\f'       // 0C:  FormFeed
 #define WC_CR           L'\r'       // 0D:  Carriage Return
+#define WC_ESC          L'\x001B'   // 1B:  Escape
 #define WC_DQ           L'\"'       // 22:  Double Quote
 #define WC_SQ           L'\''       // 27:  Single Quote
 #define WC_SLOPE        L'\\'       // 5C:  Slope
+#define WC_LC           L'\x27A5'   // 27A5:  Line Continuation marker
 
 #define WS_BS           L"\b"       // 08:  Backspace
 #define WS_HT           L"\t"       // 09:  Horizontal Tab
@@ -553,8 +548,10 @@ default:        \
 #define WS_DQ           L"\""       // 22:  Double Quote
 #define WS_SQ           L"\'"       // 27:  Single Quote
 #define WS_SLOPE        L"\\"       // 5C:  Slope
+#define WS_LC           L"\x27A5"   // 27A5:  Line Continuation marker
 
-#define WS_CRLF         L"\r\n"     // 0D0A:  CR/LF
+#define WS_CRLF         L"\r\n"     // 0D0A:    CR/LF    (hard line-break)
+#define WS_CRCRLF       L"\r\r\n"   // 0D0D0A:  CR/CR/LF (soft line-break)
 
 #define DEF_UNDERFLOW       L'_'    // Default underflow char
 #define DEF_UNDERFLOW_WS    L"_"    // ...
@@ -584,9 +581,11 @@ default:        \
 
 #define strchrW         wcschr
 #define strncmpW        wcsncmp
+#define strncmpi        _strnicmp
 #define strncmpiW       _wcsnicmp
 #define strpbrkW        wcspbrk
 #define strspnW         wcsspn
+#define strcspnW        wcscspn
 #define strtolW         wcstol
 #define isspaceW        iswspace
 #define atofW           _wtof

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -101,7 +101,8 @@ typedef struct tagPLLOCALVARS       // ParseLine Local Vars
                    bMFO:1,              //      00040000:  TRUE iff this is an MFO
                    bTraceLine:1,        //      00080000:  TRUE iff we're tracing this line
                    bTraceFree:1,        //      00100000:  TRUE iff we're to free the var after tracing
-                   :11;                 //      FFE00000:  Available bits
+                   bAfoValue:1,         //      00200000:  TRUE iff an AFO returned a value
+                   :10;                 //      FFC00000:  Available bits
     UBOOL          bCtrlBreak;          // 28:  TRUE iff Ctrl-Break pressed
     LPPL_YYSTYPE   lpYYStrArrStart[STRAND_LEN],   // 2C:  Strand stack start (static) (16 bytes)
                    lpYYStrArrBase [STRAND_LEN],   // 3C:  ...          base (dynamic) ...

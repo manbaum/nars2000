@@ -231,7 +231,7 @@
 #define IsAPLCharStile(a)           ((a) EQ UTF16_STILE              || (a) EQ UTF16_STILE2                                        )
 #define IsAPLCharTilde(a)           ((a) EQ UTF16_TILDE              || (a) EQ UTF16_TILDE2                                        )
 #define IsAPLCharCircle(a)          ((a) EQ UTF16_CIRCLE             || (a) EQ UTF16_CIRCLE2                                       )
-#define IsAPLCharDiamond(a)         ((a) EQ UTF16_DIAMOND            || (a) EQ UTF16_DIAMOND2             || (a) EQ UTF16_DIAMOND3 )
+#define IsAPLCharDiamond(a)         ((a) EQ UTF16_DIAMOND            || (a) EQ UTF16_DIAMOND2             || (a) EQ UTF16_DIAMOND3 || (a) EQ UTF16_DIAMOND4)
 #define IsAPLCharStar(a)            ((a) EQ UTF16_STAR               || (a) EQ UTF16_STAR2                                         )
 #define IsAPLCharJot(a)             ((a) EQ UTF16_JOT                || (a) EQ UTF16_JOT2                                          )
 #define IsAPLCharQuad(a)            ((a) EQ UTF16_QUAD               || (a) EQ UTF16_QUAD2                                         )
@@ -477,6 +477,10 @@
 #define CopySymGlbNumDirAsGlb(hGlb,aplType,lptkFunc)    CopySymGlbNumDir_PTB (MakePtrTypeGlb (hGlb), aplType, lptkFunc)
 #define CopySymGlbInd_PTB(lpSymGlb)                     CopySymGlbDir_PTB (*(LPAPLNESTED) lpSymGlb)
 
+// Macro to convert a number into a global handle
+#define MakeGlbFromPtr(a)                  (*(HGLOBAL *)   (a))
+#define MakeGlbFromVal(a)                  MakeGlbFromPtr(&(a))
+
 // Macros to check on ptr NULL
 #define IsPtrNullDir(lpMem)                                             ( (lpMem)  EQ NULL)
 #define IsPtrNullInd(lpMem)         (IsPtrNullDir (lpMem) || (*(LPVOID *) (lpMem)) EQ NULL)
@@ -525,8 +529,12 @@
 #define strsizeof(a)                (sizeof (a) - 1)
 
 // Wide char versions
-#define CopyMemoryW(dst,src,len)    CopyMemory (dst, src, (len) * sizeof (WCHAR))
-#define MoveMemoryW(dst,src,len)    MoveMemory (dst, src, (len) * sizeof (WCHAR))
+#define CopyMemoryW(dst,src,len)    CopyMemory ((dst), (src), (len) * sizeof (WCHAR))
+#define MoveMemoryW(dst,src,len)    MoveMemory ((dst), (src), (len) * sizeof (WCHAR))
+// Define macro to copy a entire var to a named var
+#define CopyAll(dst,src)            CopyMemory ((dst), (src), sizeof (*dst));
+// Define macro to copy a entire var to a named var
+#define CopyAll(dst,src)            CopyMemory ((dst), (src), sizeof (*dst));
 
 // Macros for returning a result from a Dialog
 #define DlgReturn(hDlg,lRet)        SetWindowLongPtr (hDlg, DWLP_MSGRESULT, lRet);  \
@@ -550,6 +558,10 @@
 
 // Define macro for inverting VFP numbers
 #define mpfr_inv(rop,op,rnd)    mpfr_si_div (rop, 1, op, rnd)
+
+// Define macros for converting 64-bit integers to MPFR
+#define mpfr_set_sx     mpfr_set_sj
+#define mpfr_set_ux     mpfr_set_uj
 
 // Define macros for extracting the left and right operands from operators
 #define GetMonLftOper(lpYYFcnStrOpr,lptkAxisOpr)    &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)]
@@ -595,6 +607,9 @@
 #define mpq_get_ctsx(a,b,c)         _mpq_get_ctsx (a, b, c, FALSE)
 #define mpfr_get_ctsx(a,b,c)        _mpfr_get_ctsx (a, b, c, FALSE)
 #define mpfr_cmp_ct(a,b,c)          _mpfr_cmp_ct (&a, &b, c, FALSE)
+
+// Define macro for detecting a character in the range for Output Debugging
+#define IsOutDbg(a)             ((L' ' > (unsigned) a) || (a) EQ UTF16_REPLACEMENT0000)
 
 
 //***************************************************************************

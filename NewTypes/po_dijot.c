@@ -263,7 +263,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
                                 ? LINENUM_PRO
                                 : LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
     // If the result is valid, finish the process with Conforming Disclose
-    if (lpYYRes && !IsTknImmed (&lpYYRes->tkToken))
+    if (lpYYRes NE NULL && !IsTknImmed (&lpYYRes->tkToken))
     {
         HGLOBAL     hGlbRes;                // Result global memory handle
         LPAPLNESTED lpMemRes;               // Ptr to result global memory
@@ -278,8 +278,8 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
         //   of the result global
         AttrsOfGlb (hGlbRes, &aplTypeRes, &aplNELMRes, &aplRankRes, NULL);
 
-        // If the result is not simple, ...
-        if (!IsSimple (aplTypeRes))
+        // If the result is nested, ...
+        if (IsNested (aplTypeRes))
         {
             APLRANK      uMinRank,          // Minimum rank across all items
                          uMaxRank;          // maximum ...
@@ -288,7 +288,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
             LPPL_YYSTYPE lpYYRes2;          // Secondary result
 
             // Lock the memory to get a ptr to it
-            lpMemRes = MyGlobalLock (hGlbRes);
+            lpMemRes = MyGlobalLockVar (hGlbRes);
 
             // Skip over the header to the data
             lpMemRes = VarArrayDataFmBase (lpMemRes);
@@ -414,7 +414,7 @@ RIGHT_OPERAND_DOMAIN_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (lpYYRes)
+    if (lpYYRes NE NULL)
     {
         // Free the first YYRes
         FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;

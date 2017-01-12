@@ -3818,7 +3818,7 @@ UBOOL PrimFnDydTimesAPA_EM
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (*lphGlbRes);
+    lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
 
 #define lpHeader    lpMemHdrRes
     aplNELMRes = lpHeader->NELM;

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@
         goto ERROR_EXIT##N##;                                                                                   \
                                                                                                                 \
     /* Lock the memory to get a ptr to it                                                                     */\
-    lpMemAux = MyGlobalLock (hGlbAux);                                                                          \
+    lpMemAux = MyGlobalLock000 (hGlbAux);                                                                       \
                                                                                                                 \
     /* Loop through the rows and cols                                                                         */\
     for (uRow = 0; uRow < uNumRows; uRow++)                                                                     \
@@ -60,7 +60,7 @@
         goto ERROR_EXIT##N##;                                                                                   \
                                                                                                                 \
     /* Lock the memory to get a ptr to it                                                                     */\
-    lpMemInd = MyGlobalLock (hGlbInd);                                                                          \
+    lpMemInd = MyGlobalLock000 (hGlbInd);                                                                       \
                                                                                                                 \
     /* Populate the index vector with {iota}uNumRows                                                          */\
     for (uRow = 0; uRow < uNumRows; uRow++)                                                                     \

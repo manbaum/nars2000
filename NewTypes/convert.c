@@ -758,7 +758,7 @@ int HeNe_cmp
 
         case PTRTYPE_HGLOBAL:
             // Get a ptr to the array header
-            lpMemHdrLft = MyGlobalLock (lpSymGlbLft);
+            lpMemHdrLft = MyGlobalLockVar (lpSymGlbLft);
 
             // Get the storage type
             aplTypeLft = lpMemHdrLft->ArrType;
@@ -807,7 +807,7 @@ int HeNe_cmp
 
         case PTRTYPE_HGLOBAL:
             // Get a ptr to the array header
-            lpMemHdrRht = MyGlobalLock (lpSymGlbRht);
+            lpMemHdrRht = MyGlobalLockVar (lpSymGlbRht);
 
             // Get the storage type
             aplTypeRht = lpMemHdrRht->ArrType;
@@ -943,7 +943,7 @@ int HeNe_cmp
                     // Char > Num
                     iDiff =  1;
                 else
-                // If the storage types sre both char, ...
+                // If the storage types are both char, ...
                 if (IsImmChr (immTypeLft) && IsImmChr (immTypeRht))
                     iDiff = lpSymGlbLft->stData.stChar -
                             lpSymGlbRht->stData.stChar;
@@ -1015,7 +1015,7 @@ int HeNe_cmpsub
     int               iDiff;            // The result
 
     // Lock the memory to get a ptr to it
-    lpMemHdr = MyGlobalLock (hGlb);
+    lpMemHdr = MyGlobalLockVar (hGlb);
 
     // Skip over the headers and dimensions to the data
     lpMem = VarArrayDataFmBase (lpMemHdr);
@@ -1837,6 +1837,33 @@ APLINT ConvertToInteger_SCT
 
     return atArg.aplInteger;
 } // End ConvertToInteger_SCT
+
+
+//***************************************************************************
+//  $ConvertToInteger_CT
+//
+//  Convert a value to an integer (if possible) using User []CT
+//***************************************************************************
+
+APLINT ConvertToInteger_CT
+    (APLSTYPE   aplTypeArg,             // Argument storage type
+     LPVOID     lpSymGlbArg,            // ...      global memory ptr
+     APLUINT    uArg,                   // Index into <lpSymGlbArg>
+     APLFLOAT   fQuadCT,                // []CT
+     LPUBOOL    lpbRet)                 // Ptr to TRUE iff the result is valid
+
+{
+    ALLTYPES atArg = {0};
+
+    // Mark as using []CT
+    atArg.enumCT  = ENUMCT_USER;
+    atArg.fQuadCT = fQuadCT;
+
+    // Attempt to convert the value in <lpSymGlbArg> to an INT using User []CT
+    (*aTypeActConvert[aplTypeArg][ARRAY_INT]) (lpSymGlbArg, uArg, &atArg, lpbRet);
+
+    return atArg.aplInteger;
+} // End ConvertToInteger_CT
 
 
 //***************************************************************************

@@ -425,7 +425,7 @@ HWND MakeWorkspaceWindow
         return NULL;                    // Stop the whole process
 
     hWndRes =
-      CreateWindowExW (0                    // Extended styles
+      CreateWindowExW (0L                   // Extended styles
                      | TBSTYLE_EX_DOUBLEBUFFER
                        ,
                        WC_TOOLBARW,         // Class name
@@ -614,7 +614,7 @@ HWND MakeEditWindow
         return NULL;                    // Stop the whole process
 
     hWndRes =
-      CreateWindowExW (0                    // Extended styles
+      CreateWindowExW (0L                   // Extended styles
                      | TBSTYLE_EX_DOUBLEBUFFER
                        ,
                        WC_TOOLBARW,         // Class name
@@ -803,7 +803,7 @@ HWND MakeObjectsWindow
         return NULL;                    // Stop the whole process
 
     hWndRes =
-      CreateWindowExW (0                    // Extended styles
+      CreateWindowExW (0L                   // Extended styles
                      | TBSTYLE_EX_DOUBLEBUFFER
                        ,
                        WC_TOOLBARW,         // Class name
@@ -1355,7 +1355,7 @@ HWND MakeFontWindow
     HWND hWndRes;                   // Result window handle
 
     hWndRes =
-      CreateWindowExW (0,                   // Extended styles
+      CreateWindowExW (0L,                  // Extended styles
                        LFW_RBWNDCLASS,      // Class
                        wszFW_RBTitle,       // Window title (for debugging purposes only)
                        0                    // Styles
@@ -1653,8 +1653,8 @@ LRESULT APIENTRY FW_RBWndProc
             SendMessageW (hWndTT, TTM_ADDTOOLW, 0, (LPARAM) &tti);
 
             // Set the range of point sizes and initial value
-            SendMessageW (hWndUD_FW, UDM_SETRANGE, 0, MAKELONG (MAX_PTSIZE,  MIN_PTSIZE));
-            SendMessageW (hWndUD_FW, UDM_SETPOS,   0, MAKELONG (cfSM.iPointSize / 10, 0));
+            SendMessageW (hWndUD_FW, UDM_SETRANGE32, MIN_PTSIZE, MAX_PTSIZE);
+            SendMessageW (hWndUD_FW, UDM_SETPOS32,   0         , cfSM.iPointSize / 10);
 
             // Initialize window-specific resources
             FW_RB_Create (hWnd);
@@ -2359,7 +2359,7 @@ HWND MakeLanguageWindow
     HWND hWndRes;                   // Result window handle
 
     hWndRes =
-      CreateWindowExW (0,                   // Extended styles
+      CreateWindowExW (0L,                  // Extended styles
                        LLW_RBWNDCLASS,      // Class
                        wszLW_RBTitle,       // Window title (for debugging purposes only)
                        0                    // Styles
@@ -2599,11 +2599,13 @@ typedef struct tagLANGCHARS
                                            L"Unicode:  0x2262 or 8802"},
         LANGCHARS_SEPARATOR
         {WS_UTF16_DOWNCARET         , {0}, L"DownCaret",
-                                           L"Or:  L" WS_UTF16_DOWNCARET L"R  or  L" WS_UTF16_DOWNCARET L"[X] R\n\n"
+                                           L"Or (Booleans):  L" WS_UTF16_DOWNCARET L"R  or  L" WS_UTF16_DOWNCARET L"[X] R\n"
+                                           L"GCD (Integer/Floats):\n\n"
                                            L"Keyboard:  Alt-'9'\n\n"
                                            L"Unicode:  0x2228 or 8744"},
         {WS_UTF16_UPCARET           , {0}, L"UpCaret",
-                                           L"And:  L" WS_UTF16_UPCARET L"R  or  L" WS_UTF16_UPCARET L"[X] R\n\n"
+                                           L"And (Booleans):  L" WS_UTF16_UPCARET L"R  or  L" WS_UTF16_UPCARET L"[X] R\n"
+                                           L"LCM (Integer/Floats):\n\n"
                                            L"Keyboard:  Alt-'0'\n\n"
                                            L"Unicode:  0x2227 or 8743"},
         {WS_UTF16_DOWNCARETTILDE    , {0}, L"DownCaretTilde",
@@ -2944,7 +2946,7 @@ typedef struct tagLANGCHARS
                                            L"as in 0.5g1 for " WS_UTF16_GAMMA WS_UTF16_COLONBAR L"2, or combining this with Rational point notation, 1r3g1 for " WS_UTF16_GAMMA WS_UTF16_COLONBAR L"3,"
                                            L" where " WS_UTF16_GAMMA L" is Euler-Mascheroni's Constant (0.5772156649015329...)."
                                            },
-        {L"i"                       , {0}, L"Complex Point Notation",
+        {L"iJ"                      , {0}, L"Complex Point Notation",
                                            L"This infix notation alllows you to enter numeric constants of the form 2.3i4.5 or 2.3J4.5 as a Complex number."
                                            L"  Alternate forms of Angle in Degrees (ad -- as in 1ad45 for magnitude 1 at an angle of 45 degrees) and Angle in Radians"
                                            L" (ar -- as in 2ar3 for magnitude 2 at an angle of 3 radians)."

@@ -553,7 +553,7 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
         YYFree (lpYYRes); lpYYRes = NULL;
 
         // Lock the memory to get a ptr to it
-        lpMemHdrGupLft = MyGlobalLock (hGlbGupLft);
+        lpMemHdrGupLft = MyGlobalLockVar (hGlbGupLft);
 
         // Skip over the header and dimensions to the data
         lpMemGupLft = VarArrayDataFmBase (lpMemHdrGupLft);
@@ -586,7 +586,7 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
         YYFree (lpYYRes); lpYYRes = NULL;
 
         // Lock the memory to get a ptr to it
-        lpMemHdrGupRht = MyGlobalLock (hGlbGupRht);
+        lpMemHdrGupRht = MyGlobalLockVar (hGlbGupRht);
 
         // Skip over the header and dimensions to the data
         lpMemGupRht = VarArrayDataFmBase (lpMemHdrGupRht);
@@ -613,7 +613,7 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
     // Fill in the header
@@ -1228,7 +1228,7 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
         YYFree (lpYYRes); lpYYRes = NULL;
 
         // Lock the memory to get a ptr to it
-        lpMemHdrGupLft = MyGlobalLock (hGlbGupLft);
+        lpMemHdrGupLft = MyGlobalLockVar (hGlbGupLft);
 
         // Skip over the header and dimensions to the data
         lpMemGupLft = VarArrayDataFmBase (lpMemHdrGupLft);
@@ -1261,7 +1261,7 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
         YYFree (lpYYRes); lpYYRes = NULL;
 
         // Lock the memory to get a ptr to it
-        lpMemHdrGupRht = MyGlobalLock (hGlbGupRht);
+        lpMemHdrGupRht = MyGlobalLockVar (hGlbGupRht);
 
         // Skip over the header and dimensions to the data
         lpMemGupRht = VarArrayDataFmBase (lpMemHdrGupRht);
@@ -1285,7 +1285,7 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
     // Fill in the header
@@ -1916,7 +1916,7 @@ LPPL_YYSTYPE PrimFnDydMM_EM_YY
         YYFree (lpYYRes); lpYYRes = NULL;
 
         // Lock the memory to get a ptr to it
-        lpMemHdrGupLft = MyGlobalLock (hGlbGupLft);
+        lpMemHdrGupLft = MyGlobalLockVar (hGlbGupLft);
 
         // Skip over the header and dimensions to the data
         lpMemGupLft = VarArrayDataFmBase (lpMemHdrGupLft);
@@ -1944,7 +1944,7 @@ LPPL_YYSTYPE PrimFnDydMM_EM_YY
         YYFree (lpYYRes); lpYYRes = NULL;
 
         // Lock the memory to get a ptr to it
-        lpMemHdrGupRht = MyGlobalLock (hGlbGupRht);
+        lpMemHdrGupRht = MyGlobalLockVar (hGlbGupRht);
 
         // Skip over the header and dimensions to the data
         lpMemGupRht = VarArrayDataFmBase (lpMemHdrGupRht);

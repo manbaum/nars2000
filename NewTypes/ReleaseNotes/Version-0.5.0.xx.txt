@@ -1,6 +1,14 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1613 -- Version 0.5.0.xx
+--------------------------------
+
+* Merge With 0.4.* Branch
+
+Many files (324) from the 0.4.* branch.
+
+
 Build #1517 -- Version 0.5.0.xx
 --------------------------------
 

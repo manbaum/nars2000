@@ -487,7 +487,7 @@ void GetOperands
     LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header
 
     // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLock (hGlbFcn);
+    lpMemDfnHdr = MyGlobalLockDfn (hGlbFcn);
 
     // If there's a left operand, ...
     if (lpMemDfnHdr->steLftOpr NE NULL)
@@ -753,7 +753,7 @@ LPPL_YYSTYPE ExecFcnGlb_EM_YY
     LPTOKEN           lptkAxis2;            // Ptr to secondary axis token (may be NULL)
 
     // Lock the memory to get a ptr to it
-    lpMemHdrFcn = MyGlobalLock (hGlbFcn);
+    lpMemHdrFcn = MyGlobalLockFcn (hGlbFcn);
 
 #define lpHeader            lpMemHdrFcn
     // Save the NAMETYPE_xxx and # tokens

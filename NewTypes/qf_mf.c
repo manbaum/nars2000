@@ -235,7 +235,7 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
             Assert (IsGlbTypeDfnDir_PTB (hGlbDfnHdr));
 
             // Lock the memory to get a ptr to it
-            lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+            lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
             // Get the MonInfo global memory handle
             hGlbMonInfo = lpMemDfnHdr->hGlbMonInfo;
@@ -276,7 +276,7 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
     if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
     // Lock the memory to get a ptr to it
-    lpMemHdrResUnion = MyGlobalLock (hGlbRes);
+    lpMemHdrResUnion = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrResUnion
     // Fill in the header
@@ -664,7 +664,7 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
     if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
     // Fill in the header
@@ -911,7 +911,7 @@ UBOOL ToggleMonInfo
     Assert (IsGlbTypeDfnDir_PTB (hGlbDfnHdr));
 
     // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+    lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
     // Get # lines including the header
     uLineCnt = lpMemDfnHdr->numFcnLines + 1;

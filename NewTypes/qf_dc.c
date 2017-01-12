@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -259,7 +259,7 @@ LPPL_YYSTYPE SysFnMonDC_ToHC_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLockVar (hGlbRes);
 
     // Fill in the header
     lpMemHdrRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
@@ -277,7 +277,7 @@ LPPL_YYSTYPE SysFnMonDC_ToHC_EM_YY
     if (hGlbRht NE NULL)
     {
         // Lock the memory to get a ptr to it
-        lpMemHdrRht = MyGlobalLock (hGlbRht);
+        lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
         // Fill in the dimensions
         if (aplRankRes)
@@ -483,7 +483,7 @@ LPPL_YYSTYPE SysFnMonDC_ToSimp_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLockVar (hGlbRes);
 
     // Fill in the header
     lpMemHdrRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
@@ -495,7 +495,7 @@ LPPL_YYSTYPE SysFnMonDC_ToSimp_EM_YY
     lpMemHdrRes->Rank       = aplRankRes;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLock (hGlbRht);
+    lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
     // Fill in the dimensions
     if (aplRankRes)
@@ -716,7 +716,7 @@ LPPL_YYSTYPE SysFnDydDC_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLockVar (hGlbRes);
 
     // Fill in the header
     lpMemHdrRes->Sig.nature = VARARRAY_HEADER_SIGNATURE;
@@ -734,7 +734,7 @@ LPPL_YYSTYPE SysFnDydDC_EM_YY
     if (hGlbRht NE NULL)
     {
         // Lock the memory to get a ptr to it
-        lpMemHdrRht = MyGlobalLock (hGlbRht);
+        lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
         // Fill in the dimensions
         if (aplRankRes)

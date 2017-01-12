@@ -282,7 +282,8 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
      UBOOL        bPrototyping)             // TRUE iff protoyping
 
 {
-    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to result
+    LPTOKEN           lptkAxisOpr;          // Ptr to axis token (may be NULL)
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
 ////                  lpYYRes2;             // Ptr to secondary result
     LPTOKEN           lptkAxisLft;          // Ptr to axis token on the left operand
     APLSTYPE          aplTypeRhtOpr;        // Right operand storage type
@@ -497,7 +498,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
             // Validate the value
             if (!ValidateIntegerTest (&aplIntegerRhtOpr,
                                        DEF_MIN_QUADPP,      // Minimum value
-                                       DEF_MAX_QUADPPVFP,   // Maximum ...   for VFPs
+                                       DEF_MAX_QUADPP_VFP,  // Maximum ...   for VFPs
                                        bRangeLimit.PP))     // TRUE iff range limiting
                 goto RIGHT_OPERAND_DOMAIN_EXIT;
 
@@ -949,6 +950,44 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
                                           lpYYFcnStrOpr,            // Ptr to function strand
                                           lptkRhtArg,               // Ptr to right arg token
                                          &lpYYFcnStrRht->tkToken,   // Ptr to axis token (from right operand)
+                                          hGlbMFO,                  // Magic function/operator global memory handle
+                                          NULL,                     // Ptr to HSHTAB struc (may be NULL)
+                                          bPrototyping
+                                        ? LINENUM_PRO
+                                        : LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
+            break;
+
+        // []FPC:  Execute
+        case UTF16_UPTACKJOT:
+            // Validate the right operand as
+            //   a simple numeric scalar or one-element vector
+            if (IsMultiRank (aplRankRhtOpr))
+                goto RIGHT_OPERAND_RANK_EXIT;
+            if (aplNELMRhtOpr NE 1)
+                goto RIGHT_OPERAND_LENGTH_EXIT;
+            if (!IsNumeric (aplTypeRhtOpr))
+                goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+            // Ensure there's no left arg
+            if (lptkLftArg NE NULL)
+                goto LEFT_VALENCE_EXIT;
+
+            // Check for axis operator
+            lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
+
+            // Set ptr to right operand,
+            //   skipping over the operator and axis token (if present)
+            lptkLftArg = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr).tkToken;
+
+            // Get the magic function/operator global memory handle
+            hGlbMFO = lpMemPTD->hGlbMFO[MFOE_MonExecute];
+
+            lpYYRes =
+              ExecuteMagicFunction_EM_YY (lptkLftArg,               // Ptr to left arg token
+                                         &lpYYFcnStrOpr->tkToken,   // Ptr to function token
+                                          lpYYFcnStrOpr,            // Ptr to function strand
+                                          lptkRhtArg,               // Ptr to right arg token
+                                          lptkAxisOpr,              // Ptr to axis token
                                           hGlbMFO,                  // Magic function/operator global memory handle
                                           NULL,                     // Ptr to HSHTAB struc (may be NULL)
                                           bPrototyping
@@ -1695,7 +1734,7 @@ UBOOL PrimOpVariantValidateGlb_EM
 
         case PTRTYPE_HGLOBAL:
             // Lock the memory to get a ptr to it
-            lpMemRhtOpr = MyGlobalLock (hGlbRhtOpr);
+            lpMemRhtOpr = MyGlobalLockVar (hGlbRhtOpr);
 
             // Get the storage type
             aplTypeRhtOpr = ((LPVARARRAY_HEADER) lpMemRhtOpr)->ArrType;
@@ -1962,7 +2001,7 @@ VARIANTKEYS PrimOpVariantValKeyGlb_EM
     LPAPLCHAR   lpMemKey;               // Ptr to key global memory
 
     // Lock the memory to get a ptr to it
-    lpMemKey = MyGlobalLock (hGlbKey);
+    lpMemKey = MyGlobalLockVar (hGlbKey);
 
     // Skip over header and dimensions to the data
     lpMemKey = VarArrayDataFmBase (lpMemKey);

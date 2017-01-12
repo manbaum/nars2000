@@ -113,7 +113,7 @@ RESDEBUG=1
 CFLAGS_DEBUG=/Zi /D "DEBUG"
 BUILD_DIR=Debug
 DEBUG_LIBSUFFIX=d
-LFLAGS_NDEF=/NODEFAULTLIB:libcmt.lib
+LFLAGS_NDEF=/NODEFAULTLIB:libcmt.lib /SAFESEH:NO
 !else
 RESDEBUG=0
 CFLAGS_DEBUG=/Zi
@@ -151,7 +151,8 @@ I98=.\;$(SDK_INC);$(MSVC)INCLUDE;$(MS_INC);$(MPC_INC);$(MPIR_INC);$(MPFR_INC);$(
 
 MV=makever
 
-## Set the following to 1 to debug linker error 0x460 as in
+## Set the following to 1 to debug linker errors
+##   or call the MKxx batch file as in
 ##   mkn LINKDEBUG=1
 LINKDEBUG=0
 
@@ -183,7 +184,8 @@ VERSION_FLAGS = /D "NTDDI_VERSION=NTDDI_WINXP" /D "_WIN32_WINNT=_WIN32_WINNT_WIN
 CFLAGS_WEXE = /nologo /GA /W3 /WX /Oy- /Ot $(CFLAGS_DEBUG) /D "_WIN32" /c /D "_CRT_SECURE_NO_WARNINGS"
 CFLAGS_WEXE = $(CFLAGS_WEXE) $(VERSION_FLAGS) /D "_MBCS" /Qpar /O2
 ##CFLAGS_WEXE = $(CFLAGS_WEXE) /GL
-LFLAGS_WEXE = /NOLOGO /MAP /LARGEADDRESSAWARE /OPT:REF /DYNAMICBASE:NO /MANIFEST:NO /SUBSYSTEM:WINDOWS /IGNOREIDL /NXCOMPAT /DEBUG /LTCG
+LFLAGS_WEXE2 = /NOLOGO /MAP /LARGEADDRESSAWARE /OPT:REF /DYNAMICBASE:NO /MANIFEST:NO /SUBSYSTEM:WINDOWS /IGNOREIDL /NXCOMPAT /DEBUG
+LFLAGS_WEXE  = $(LFLAGS_WEXE2) /LTCG
 !if "$(WIN)" == "64"
 CFLAGS_WEXE = $(CFLAGS_WEXE) /D "_AMD64_" /D "_M_AMD64" /D "_WIN64" /Gd
 LFLAGS_WEXE = $(LFLAGS_WEXE) /MACHINE:X64
@@ -199,6 +201,7 @@ LIBS_WEXE =                     \
             comctl32.lib        \
             wininet.lib         \
             oldnames.lib        \
+            MSImg32.lib         \
             ole32.lib           \
             uuid.lib            \
             winspool.lib        \
@@ -247,7 +250,10 @@ OC=RET\COM\                     # Define output directory for common intermediat
 
 PDBFILE = $(B)$(ENAME).pdb
 
-FONT=$(NARSROOT)SImPL-Medium.ttf # Default APL TrueType font
+# Default APL TrueType font
+# Fallback font for Output Debugging
+FONT=$(NARSROOT)SImPL-Medium.ttf    \
+     $(NARSROOT)Fallback00-1F.ttf
 
 
 ALL:    DIR                 \
@@ -425,7 +431,6 @@ ICONS=$(A)About.ico     \
       $(A)SM.ico        \
       $(A)VE.ico        \
       $(A)WC.ico        \
-      $(A)LineCont.bmp  \
       $(A)Workspace.bmp \
       $(A)Edit.bmp      \
       $(A)Objects.bmp
@@ -495,8 +500,6 @@ $(O)dictionary.obj:     $(@B).c         $(DICTIONARY_DEP)
 $(O)dispdbg.obj:        $(@B).c         $(DISPDBG_DEP)
 $(O)display.obj:        $(@B).c         $(DISPLAY_DEP)
 $(O)editfcn.obj:        $(@B).c         $(EDITFCN_DEP)
-$(O)editmat.obj:        $(@B).c         $(EDITMAT_DEP)
-$(O)editvec.obj:        $(@B).c         $(EDITVEC_DEP)
 $(O)errmsg.obj:         $(@B).c         $(ERRMSG_DEP)
 $(O)except.obj:         $(@B).c         $(EXCEPT_DEP)
 $(O)execdfn.obj:        $(@B).c         $(EXECDFN_DEP)
@@ -521,6 +524,9 @@ $(O)iniparser.obj:      $(@B).c         $(INIPARSER_DEP)
 $(O)initdata.obj:       $(@B).c         $(INITDATA_DEP)
 $(O)main.obj:           $(@B).c         $(MAIN_DEP)
 $(O)malloc.obj:         $(@B).c         $(MALLOC_DEP)
+        @Set INCLUDE=$(I98);$(O)
+        @if exist $@ del $@
+        @$(CC) $(CFLAGS_WEXE) /D USE_LOCKS=1 /Fo$@ $(LIST) %s
 $(O)mpci.obj:           $(@B).c         $(MPCI_DEP)
 $(O)mphi.obj:           $(@B).c         $(MPHI_DEP)
 $(O)mpoi.obj:           $(@B).c         $(MPOI_DEP)
@@ -706,6 +712,7 @@ $(O)$(ENAME).exe:       $(OBJS)             \
                         $(GSL1_LIB)         \
                         $(GSL2_LIB)         \
                         $(CS_FILES)         \
+                        $(FONT)             \
                         makefile.inc        \
                         makefile.$(MFEXT)
         @echo >NUL @<<$(O)main.crf
@@ -756,7 +763,7 @@ kernel32.lib user32.lib version.lib libcmt.lib
 /DEF:$(MV).def
 <<KEEP
         @if exist $@ del $@
-        @$(LD) $(LFLAGS_WEXE) @$(OC)$(MV).crf
+        @$(LD) $(LFLAGS_WEXE2) @$(OC)$(MV).crf
         @del $(OC)$(@B).exp
         @del $(OC)$(@B).lib
 

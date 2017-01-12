@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -196,7 +196,7 @@ LPPL_YYSTYPE PrimIdentFnCircleStile_EM_YY
         hGlbRht = lptkRhtArg->tkData.tkGlbData;
 
         // Lock the memory to get a ptr to it
-        lpMemRht = MyGlobalLock (hGlbRht);
+        lpMemRht = MyGlobalLockVar (hGlbRht);
 
         // Skip over the header to the dimensions
         lpMemDimRht = VarArrayBaseToDim (lpMemRht);
@@ -219,7 +219,7 @@ LPPL_YYSTYPE PrimIdentFnCircleStile_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock (hGlbRes);
+        lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
         // Fill in the header values
@@ -410,7 +410,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header values
@@ -874,7 +874,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
         // If the left arg is non-empty, ...
         if (ByteRes)
             // Lock the memory to get a ptr to it
-            lpMemRot = lpMemRotIni = MyGlobalLock (hGlbRot);
+            lpMemRot = lpMemRotIni = MyGlobalLock000 (hGlbRot);
         else
             // The left arg is empty and W doesn't handle
             //   locking empty storage, so we just NULL the ptrs
@@ -964,7 +964,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header values

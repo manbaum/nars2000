@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #include <windows.h>
 #include "headers.h"
 
-#define DEBUG_HEAP
+//#define DEBUG_HEAP
 //#define DEBUG_SEMAPHORE
 //#define DEBUG_THREAD
 
@@ -1587,7 +1587,7 @@ UBOOL _MyHeapFree
 
 LPVOID _MyVirtualAlloc
     (LPVOID lpAddress,          // Address of region to reserve or commit
-     DWORD  dwSize,             // Size of region
+     size_t dwSize,             // Size of region
      DWORD  flAllocationType,   // Type of allocation
      DWORD  flProtect,          // Type of access protection
      UINT   uLine)              // Line #
@@ -1839,9 +1839,6 @@ void _CheckMemStat
 ////    DbgBrk ();              // #ifdef DEBUG
 ////
 #if defined (DEBUG) && defined (DEBUG_HEAP)
-    // Attempt to allocate some memory
-    GlobalFree (GlobalAlloc (GHND, 0x1C));
-
     if (!HeapValidate (GetProcessHeap (), 0, NULL))
         DbgBrk ();              // #ifdef DEBUG
 #endif

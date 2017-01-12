@@ -158,8 +158,8 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
 
     // If the left arg is a global, ...
     if (hGlbLft NE NULL)
-        // Set the ptr type bits
-        hGlbLft = MakePtrTypeGlb (hGlbLft);
+        // Skip over the header & dimensions to the data
+        lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
     else
         // The left arg is an immediate
         lpMemLft = &aplLongestLft;
@@ -251,7 +251,7 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header
@@ -571,7 +571,7 @@ LPAPLUINT AttributeValences
                 hGlbObj = lpSymEntry->stData.stGlbData;
 
                 // Lock the memory to get a ptr to it
-                lpMemHdrObj = MyGlobalLock (hGlbObj);
+                lpMemHdrObj = MyGlobalLockDfn (hGlbObj);
 
 #define lpHeader    lpMemHdrObj
                 *lpMemDataRes++ = lpHeader->numResultSTE > 0;   // [1] = Explicit result (0 or 1)
@@ -633,7 +633,8 @@ LPAPLUINT AttributeFixTime
 
 {
     HGLOBAL    hGlbObj = NULL;              // Object global memory handle
-    FILETIME   ftLastMod;                   // FILETIME of last modification
+    FILETIME   ftLastMod,                   // FILETIME of last modification
+               ftLocalTime;                 // ...         local time
     SYSTEMTIME systemTime;                  // Current system (UTC) time
 
     // Split cases based upon the name type
@@ -668,7 +669,7 @@ LPAPLUINT AttributeFixTime
                 hGlbObj = lpSymEntry->stData.stGlbData;
 
                 // Lock the memory to get a ptr to it
-                lpMemHdrObj = MyGlobalLock (hGlbObj);
+                lpMemHdrObj = MyGlobalLockDfn (hGlbObj);
 
                 // If it's a user-defined function/operator
                 if (lpSymEntry->stFlags.UsrDfn)
@@ -686,8 +687,15 @@ LPAPLUINT AttributeFixTime
                     MyGlobalUnlock (hGlbObj); lpMemHdrObj = NULL;
                 } // End IF
 
-                // Convert the last mod time to system time so we can display it
-                FileTimeToSystemTime (&ftLastMod, &systemTime);
+                // If we're to use local time (instead of GMT), ...
+                if (OptionFlags.bUseLocalTime)
+                    // Convert the last mod time to local time
+                    FileTimeToLocalFileTime (&ftLastMod  , &ftLocalTime);
+                else
+                    // Copy last mod time as local Time
+                    ftLocalTime = ftLastMod;
+                // Convert the local time to system time so we can display it
+                FileTimeToSystemTime    (&ftLocalTime, &systemTime);
 
                 *lpMemDataRes++ = systemTime.wYear;         // [1] = Year
                 *lpMemDataRes++ = systemTime.wMonth;        // [2] = Month
@@ -754,7 +762,7 @@ LPAPLUINT AttributeExecProp
                 LPDFN_HEADER lpMemDfnHdr;
 
                 // Lock the memory to get a ptr to it
-                lpMemDfnHdr = MyGlobalLock (lpSymEntry->stData.stGlbData);
+                lpMemDfnHdr = MyGlobalLockDfn (lpSymEntry->stData.stGlbData);
 
                 // If it's a Magic Function/Operator,
                 //   or AFO, ...
@@ -925,7 +933,7 @@ APLINT CalcSymEntrySize
         if (lpSymEntry->stFlags.UsrDfn)
         {
             // Lock the memory to get a ptr to it
-            lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+            lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
             // Get # function lines
             uNumFcnLines = lpMemDfnHdr->numFcnLines;
@@ -1034,7 +1042,7 @@ APLUINT CalcGlbVarSize
     aplSize += MyGlobalSize (hGlbData);
 
     // Lock the memory to get a ptr to it
-    lpMemHdrData = MyGlobalLock (hGlbData);
+    lpMemHdrData = MyGlobalLockVar (hGlbData);
 
 #define lpHeader        lpMemHdrData
     // Get the Array Type, NELM, and Rank
@@ -1251,8 +1259,8 @@ APLUINT CalcGlbFcnSize
                                     //   it to be called serially.
 
 {
-    APLUINT           aplSize = 0;          // The result
-    HGLOBAL           hGlbTxtLine;          // Line text global memory handle
+    APLUINT           aplSize = 0;  // The result
+    HGLOBAL           hGlbTxtLine;  // Line text global memory handle
     LPFCNARRAY_HEADER lpMemHdrData; // Ptr to the global memory header
 
     // stData is a valid HGLOBAL function array
@@ -1261,7 +1269,7 @@ APLUINT CalcGlbFcnSize
     aplSize += MyGlobalSize (hGlbData);
 
     // Lock the memory to get a ptr to it
-    lpMemHdrData = MyGlobalLock (hGlbData);
+    lpMemHdrData = MyGlobalLockFcn (hGlbData);
 
 #define lpHeader        lpMemHdrData
     // Get the text ptr

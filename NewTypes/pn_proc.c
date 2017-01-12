@@ -3937,7 +3937,8 @@ LPPN_YYSTYPE PN_MakePiPoint
 LPPN_YYSTYPE PN_MakeVfpPoint
     (LPPN_YYSTYPE  lpYYArg,             // Ptr to the mantissa part
      LPPN_YYSTYPE  lpYYExponent,        // Ptr to the exponent part (may be NULL)
-     LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
+     LPPNLOCALVARS lppnLocalVars,       // Ptr to local pnLocalVars
+     LPAPLINT      lpiVfpPrec)          // Ptr to VFP precision (may be NULL)
 
 {
     UINT      uNumAcc,                  // Starting offset
@@ -3982,8 +3983,26 @@ LPPN_YYSTYPE PN_MakeVfpPoint
     // Get and save the current precision
     uOldPrec = mpfr_get_default_prec ();
 
-    // Set the default precision to the larger ...
-    mpfr_set_default_prec (max (uNewPrec, uOldPrec));
+    if (lpiVfpPrec NE NULL && *lpiVfpPrec NE 0)
+    {
+        // Validate the desired precision
+        if (!ValidateIntegerTest (lpiVfpPrec,           // Ptr to the integer to test
+                                  DEF_MIN_QUADFPC,      // Low range value (inclusive)
+                                  DEF_MAX_QUADFPC,      // High ...
+                                  TRUE))                // TRUE iff we're range limiting
+        {
+            // Mark as invalid result
+            lppnLocalVars->bYYERROR = TRUE;
+
+            return NULL;
+        } else
+            uNewPrec = (UINT) *lpiVfpPrec;
+    } else
+        // Set the precision to the default
+        uNewPrec = uOldPrec;
+
+    // Set the default precision
+    mpfr_set_default_prec (uNewPrec);
 
     // Use MPFR routine
     mpfr_init_set_str (&lpYYArg->at.aplVfp, &lpszNumAccum[uNumAcc], 10, MPFR_RNDN);
@@ -4259,7 +4278,7 @@ PN_YYSTYPE PN_MakeHc2Point
                         break;
                     } // End IF
 
-                    // Divide by Pi radions
+                    // Divide by Pi radians
                     aplFloat1 = lpC1->at.aplFloat / 180.0;
 
                     // Convert lpC1 from degrees to radians
@@ -4274,8 +4293,8 @@ PN_YYSTYPE PN_MakeHc2Point
                     // Make a temp copy of lpC0->at.aplInteger as a FLT as we overwrite it
                     aplFloat0 = (APLFLOAT) lpC0->at.aplInteger;
 
-                    // Multiply lpC0->at.aplFloat by sin/cos (lpC1->at.aplFloat) to get the result
-                    // ***FIXME*** -- Do we need to reduce the radians modulo Pi/2 ??
+                    // Multiply lpC0->at.aplFloat by cos/sin (lpC1->at.aplFloat) to get the result
+                    // ***FIXME*** -- Do we need to reduce the radians modulo 2*Pi ??
                     lpC0->at.aplHC2F.parts[0] = aplFloat0 * cos (lpC1->at.aplFloat);
                     lpC0->at.aplHC2F.parts[1] = aplFloat0 * sin (lpC1->at.aplFloat);
 
@@ -4362,7 +4381,7 @@ PN_YYSTYPE PN_MakeHc2Point
                         break;
                     } // End IF
 
-                    // Divide by Pi radions
+                    // Divide by Pi radians
                     aplFloat1 = aplFloat1 / 180.0;
 
                     // Convert lpC1 from degrees to radians
@@ -4375,7 +4394,7 @@ PN_YYSTYPE PN_MakeHc2Point
                     aplFloat0 = lpC0->at.aplFloat;
 
                     // Save the real & imaginary parts
-                    // ***FIXME*** -- Do we need to reduce the radians modulo Pi/2 ??
+                    // ***FIXME*** -- Do we need to reduce the radians modulo 2*Pi ??
                     lpC0->at.aplHC2F.parts[0] = aplFloat0 * cos (lpC1->at.aplFloat);
                     lpC0->at.aplHC2F.parts[1] = aplFloat0 * sin (lpC1->at.aplFloat);
 
@@ -4503,7 +4522,7 @@ PN_YYSTYPE PN_MakeHc2Point
 
                 case 'r':       // Radians
                     // Calculate the sin & cos of lpC1->at.aplVfp
-                    // ***FIXME*** -- Do we need to reduce the radians modulo Pi/2 ??
+                    // ***FIXME*** -- Do we need to reduce the radians modulo 2*Pi ??
                     aplHC2V.parts[0] = cosVfp (lpC1->at.aplVfp);
                     aplHC2V.parts[1] = sinVfp (lpC1->at.aplVfp);
 
@@ -4513,7 +4532,7 @@ PN_YYSTYPE PN_MakeHc2Point
                     // Initialize to 0
                     mpfr_init0 (&lpC0->at.aplHC2V.parts[1]);
 
-                    // Multiply lpC0->at.aplVfp by sin/cos (lpC1->at.aplVfp) to get the result
+                    // Multiply lpC0->at.aplVfp by cos/sin (lpC1->at.aplVfp) to get the result
                     mpfr_mul (&lpC0->at.aplHC2V.parts[0], &aplVfp0, &aplHC2V.parts[0], MPFR_RNDN);
                     mpfr_mul (&lpC0->at.aplHC2V.parts[1], &aplVfp0, &aplHC2V.parts[1], MPFR_RNDN);
 
@@ -4618,7 +4637,7 @@ PN_YYSTYPE PN_MakeHc2Point
 
                 case 'r':       // Radians
                     // Calculate the sin & cos of lpC1->at.aplVfp
-                    // ***FIXME*** -- Do we need to reduce the radians modulo Pi/2 ??
+                    // ***FIXME*** -- Do we need to reduce the radians modulo 2*Pi ??
                     aplHC2V.parts[0] = cosVfp (lpC1->at.aplVfp);
                     aplHC2V.parts[1] = sinVfp (lpC1->at.aplVfp);
 
@@ -4628,7 +4647,7 @@ PN_YYSTYPE PN_MakeHc2Point
                     // Initialize to 0
                     mpfr_init0 (&lpC0->at.aplHC2V.parts[1]);
 
-                    // Multiply lpC0->at.aplVfp by sin/cos (lpC1->at.aplVfp) to get the result
+                    // Multiply lpC0->at.aplVfp by cos/sin (lpC1->at.aplVfp) to get the result
                     mpfr_mul (&lpC0->at.aplHC2V.parts[0], &aplVfp0, &aplHC2V.parts[0], MPFR_RNDN);
                     mpfr_mul (&lpC0->at.aplHC2V.parts[1], &aplVfp0, &aplHC2V.parts[1], MPFR_RNDN);
 
@@ -4813,7 +4832,7 @@ LPPN_YYSTYPE SaveCoeff
     if (hGlbTmp NE NULL)
     {
         // Lock the memory to get a ptr to it
-        lpMemTmp = MyGlobalLock (hGlbTmp);
+        lpMemTmp = MyGlobalLock000 (hGlbTmp);
 
         // Copy the memory to the global
         CopyMemory (lpMemTmp, lpCoeff, sizeof (lpCoeff[0]));
@@ -5259,7 +5278,9 @@ UBOOL PN_VectorAcc
         // Calculate the new maximum length
         uMaxLen = lppnLocalVars->uGlbVectorMaxLen + PNVECTOR_INCR;
 
-        // Attempt to reallocate the storage in place
+        // Attempt to reallocate the storage
+        //   moving the old data to the new location, and
+        //   freeing the old global memory
         lppnLocalVars->hGlbVector =
           MyGlobalReAlloc (lppnLocalVars->hGlbVector,
                            uMaxLen * sizeof (PN_VECTOR),
@@ -5278,8 +5299,8 @@ UBOOL PN_VectorAcc
             if (hGlbVector EQ NULL)    // ***FIXME*** do we need to free the hGlbVector storage???
                 goto WSFULL_EXIT;
             // Lock the two global memory areas and copy old to new
-            lpMemVectorOld = MyGlobalLock (lppnLocalVars->hGlbVector);
-            lpMemVectorNew = MyGlobalLock (               hGlbVector);
+            lpMemVectorOld = MyGlobalLock    (lppnLocalVars->hGlbVector);
+            lpMemVectorNew = MyGlobalLock000 (               hGlbVector);
             CopyMemory (lpMemVectorNew,
                         lpMemVectorOld,
                         lppnLocalVars->uGlbVectorMaxLen * sizeof (PN_VECTOR));
@@ -5458,7 +5479,7 @@ UBOOL PN_VectorRes
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lppnLocalVars->lpMemHdrRes = MyGlobalLock (lppnLocalVars->hGlbRes);
+        lppnLocalVars->lpMemHdrRes = MyGlobalLock000 (lppnLocalVars->hGlbRes);
 
 #define lpHeader        lppnLocalVars->lpMemHdrRes
         // Fill in the header
@@ -5726,10 +5747,12 @@ PN_YYSTYPE PN_SetInfinity
     (LPPNLOCALVARS lppnLocalVars,       // Ptr to local pnLocalVars
      PNNUMTYPE     pnNumType,           // The suggested PN_NUMTYPE_xx
      int           uNumStart,           // The starting offset in lpszStart
-     int           iInfSgn)             // The sign of infinity (1 for positive, -1 for negative)
+     int           iInfSgn,             // The sign of infinity (1 for positive, -1 for negative)
+     LPAPLINT      lpiVfpPrec)          // Ptr to VFP Precision (NULL = none, ptr to 0 = default)
 
 {
-    PN_YYSTYPE pnYYRes = {0};           // The result
+    PN_YYSTYPE  pnYYRes = {0};          // The result
+    mpfr_prec_t uDefPrec;               // Default VFP precision
 
     Assert (iInfSgn EQ 1 || iInfSgn EQ -1);
 
@@ -5755,8 +5778,26 @@ PN_YYSTYPE PN_SetInfinity
             break;
 
         case PN_NUMTYPE_VFP:
+            if (lpiVfpPrec NE NULL && *lpiVfpPrec NE 0)
+            {
+                // Validate the desired precision
+                if (!ValidateIntegerTest (lpiVfpPrec,           // Ptr to the integer to test
+                                          DEF_MIN_QUADFPC,      // Low range value (inclusive)
+                                          DEF_MIN_QUADFPC,      // High ...
+                                          TRUE))                // TRUE iff we're range limiting
+                {
+                    // Mark as invalid result
+                    lppnLocalVars->bYYERROR = TRUE;
+
+                    break;
+                } else
+                    uDefPrec = (UINT) *lpiVfpPrec;
+            } else
+                // Use the default precision
+                uDefPrec = mpfr_get_default_prec ();
+
             // Initialize the VFP
-            mpfr_init (&pnYYRes.at.aplVfp);
+            mpfr_init2 (&pnYYRes.at.aplVfp, uDefPrec);
 
             // Mark as +/- infinity
             mpfr_set_inf (&pnYYRes.at.aplVfp, iInfSgn);

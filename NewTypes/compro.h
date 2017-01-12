@@ -45,8 +45,6 @@
   #include "dtoa.pro"
   ////lude "editctrl.pro"
   #include "editfcn.pro"
-  #include "editmat.pro"
-  #include "editvec.pro"
   #include "errmsg.pro"
   #include "except.pro"
   #include "execdfn.pro"

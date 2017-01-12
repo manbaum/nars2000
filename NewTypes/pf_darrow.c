@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2014 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -175,7 +175,7 @@ LPPL_YYSTYPE PrimIdentFnDownArrow_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header
@@ -337,7 +337,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
                           &hGlbAxis))       // Return HGLOBAL with APLINT axis values
             return NULL;
         // Lock the memory to get a ptr to it
-        lpMemAxisHead = MyGlobalLock (hGlbAxis);
+        lpMemAxisHead = MyGlobalLockInt (hGlbAxis);
 
         // Get pointer to the axis tail (where the [X] values are)
         lpMemAxisTail = &lpMemAxisHead[aplRankRes - aplNELMAxis];
@@ -418,7 +418,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemTmpLft = MyGlobalLock (hGlbTmpLft);
+    lpMemTmpLft = MyGlobalLockInt (hGlbTmpLft);
 
     // The storage type of the result is the same as that of the right arg
     //   unless the right arg is hetero and the result is a singleton, or
@@ -451,7 +451,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
     // Fill in the header
@@ -552,7 +552,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemWVecRht = MyGlobalLock (hGlbWVecRht);
+    lpMemWVecRht = MyGlobalLock000 (hGlbWVecRht);
 
     // Loop through the dimensions of the right arg in reverse
     //   order {backscan} and compute the cumulative product
@@ -584,7 +584,7 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemOdoRht = MyGlobalLock (hGlbOdoRht);
+    lpMemOdoRht = MyGlobalLock000 (hGlbOdoRht);
 
     // Initialize the odometer array
     CopyMemory (lpMemOdoRht, lpMemLoHiRht, (APLU3264) aplRankRes * sizeof (APLUINT));
@@ -952,7 +952,7 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
         return NULL;
 
     // Lock the memory to get a ptr to it
-    lpMemTmpLft  = MyGlobalLock (hGlbTmpLft);
+    lpMemTmpLft  = MyGlobalLock000 (hGlbTmpLft);
     lpMemTmpLoRht = &lpMemTmpLft   [aplRankRes];
     lpMemTmpHiRht = &lpMemTmpLoRht [aplRankRes];
     if (!bDownArrow)

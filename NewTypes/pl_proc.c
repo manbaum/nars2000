@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -143,6 +143,28 @@ void ArrExprCheckCaller
         // Copy the result
         lpYYRes = lpYYArg;
     else
+    // If it's []DM, ...
+    if (IzitQuadDM (&lpYYArg->tkToken))
+    {
+        // This DEBUG stmt probably never is triggered because
+        //    pl_yylex converts all unassigned named vars to temps
+        //    hence IzitQuadDM always returns FALSE.
+#ifdef DEBUG
+        DbgStop ();             // ***Probably never executed***
+#endif
+        // Alloc a new YYRes
+        lpYYRes = YYAlloc ();
+
+        // Copy the token
+        lpYYRes->tkToken = lpYYArg->tkToken;
+
+        // Change it to a unnamed var
+        lpYYRes->tkToken.tkFlags.TknType  = TKT_VARARRAY;
+        lpYYRes->tkToken.tkData.tkGlbData = lpYYRes->tkToken.tkData.tkSym->stData.stGlbData;
+
+        // Increment the refcnt
+        DbgIncrRefCntTkn (&lpYYRes->tkToken);   // EXAMPLE:  ***Probably never executed***
+    } else
         // Copy the function array incrementing the RefCnt
         lpYYRes = CopyPL_YYSTYPE_EM_YY (lpYYArg, FALSE);
 
@@ -223,7 +245,7 @@ void ArrExprCheckCaller
 ///         hGlbNameVars = lptkNameVars->tkData.tkGlbData;
 ///
 ///         // Lock the memory to get a ptr to it
-///         lpMemNameVars = MyGlobalLock (hGlbNameVars);
+///         lpMemNameVars = MyGlobalLockVnm (hGlbNameVars);
 ///
 ///         // Ensure there is only one name
 ///         bRet = (((LPVARNAMED_HEADER) lpMemNameVars)->NELM EQ 1);
@@ -265,7 +287,7 @@ void ArrExprCheckCaller
 ///                         uCharIndex = lptkNameVars->tkCharIndex;
 ///
 ///                         // Lock the memory to get a ptr to it
-///                         lpMemData = MyGlobalLock (lpYYRes->tkToken.tkData.tkGlbData);
+///                         lpMemData = MyGlobalLockVar (lpYYRes->tkToken.tkData.tkGlbData);
 ///
 ///                         // Mark as a Selective Specification array
 ///                         lpMemData->bSelSpec = TRUE;
@@ -334,7 +356,7 @@ void ArrExprCheckCaller
 ///         hGlbArg = lptkArg->tkData.tkGlbData;
 ///
 ///         // Lock the memory to get a ptr to it
-///         lpMemHdr = MyGlobalLock (hGlbArg);
+///         lpMemHdr = MyGlobalLockVar (hGlbArg);
 ///
 ///         // Get the Selective Specification array bit
 ///         bRet = lpMemHdr->bSelSpec;

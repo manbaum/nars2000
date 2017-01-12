@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 
 
 WCHAR wszVarFileInfo[] = WS_SLOPE L"VarFileInfo" WS_SLOPE L"Translation",
-      lpwszVersion[]   = WS_APPNAME L" (" WS_WINSTR L") # %s";
+      lpwszVersion[]   = WS_APPNAME L" (" WS_WINSTR L") Version # %s";
 
 HWND    hWndStatic;                 // Handle to static control
 WNDPROC lpfnOldStaticWndProc;       // Save area for old Static Control procedure
@@ -130,6 +130,23 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
+//  $uSub
+//
+//  unsigned subtraction
+//***************************************************************************
+
+UINT uSub
+    (UINT uLft,
+     UINT uRht)
+
+{
+    Assert (uLft > uRht);
+
+    return uLft - uRht;
+} // End uSub
+
+
+//***************************************************************************
 //  $AboutDlgProc
 //
 //  Just yer standard About box.
@@ -165,60 +182,70 @@ APLU3264 CALLBACK AboutDlgProc
             SetDlgItemTextW (hDlg, IDC_VERSION, wszTemp);
 
             // Copy the MPIR prefix to the text
-            MyStrcpyW (wszTemp, sizeof (wszTemp), L"MPIR #");
+            MyStrcpyW (wszTemp, sizeof (wszTemp), L"MPIR Version #");
 
             // Append the MPIR version #
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
-                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%S\n",
                          mpir_version);
 
             // Copy the GMP prefix to the text
-            MyStrcatW (wszTemp, sizeof (wszTemp), L"GMP #");
+            MyStrcatW (wszTemp, sizeof (wszTemp), L"GMP Version #");
 
             // Append the GMP version #
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
-                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%S\n",
                          gmp_version);
             // Copy the MPFR prefix to the text
-            MyStrcatW (wszTemp, sizeof (wszTemp), L"MPFR #");
+            MyStrcatW (wszTemp, sizeof (wszTemp), L"MPFR Version #");
 
             // Append the MPFR version #
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
-                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%S\n",
                          mpfr_get_version ());
             // Copy the ECM prefix to the text
-            MyStrcatW (wszTemp, sizeof (wszTemp), L"ECM #");
+            MyStrcatW (wszTemp, sizeof (wszTemp), L"ECM Version #");
 
             // Append the ECM version #
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
-                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%S\n",
                          ecm_version);
             // Copy the COMCTL32.DLL prefix to the text
-            MyStrcatW (wszTemp, sizeof (wszTemp), L"COMCTL32.DLL #");
+            MyStrcatW (wszTemp, sizeof (wszTemp), L"COMCTL32.DLL Version #");
 
             // Append the COMCTL32.DLL version #
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
-                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%s\n",
                          wszComctl32FileVer);
             // Copy the CRASHRPT.DLL prefix to the text
             MyStrcatW (wszTemp, sizeof (wszTemp), crsh_dll);
-            MyStrcatW (wszTemp, sizeof (wszTemp), L" #");
+            MyStrcatW (wszTemp, sizeof (wszTemp), L" Version #");
 
             // Append the CRASHRPT.DLL version #
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
-                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%s\n",
                          crsh_version);
             // Append the workspace version #
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
-                         sizeof (wszTemp) - (lstrlenW (wszTemp) * sizeof (wszTemp[0])),
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"Workspace version #%s\n",
                          WS_VERSTR);
+            // Append the SymTabSize
+            MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
+                        L"SymTabSize %u\n",
+                         gSymTabSize / SYMTABSIZE_MUL);
+            // Append the HshTabSize
+            MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
+                        L"HshTabSize %u\n",
+                         gHshTabSize / HSHTABSIZE_MUL);
             // Write out the secondary version string
             SetDlgItemTextW (hDlg, IDC_VERSION2, wszTemp);
 
@@ -336,6 +363,72 @@ APLU3264 CALLBACK AboutDlgProc
                     PostMessageW (hDlg, WM_CLOSE, 0, 0);
 
                     DlgMsgDone (hDlg);      // We handled the msg
+
+                case IDC_ABOUT_COPY:
+                {
+                    DWORD   dwSizeDst,
+                            dwSizeNxt;
+                    HGLOBAL hGlbDst;
+                    LPWCHAR lpMemDst;
+
+                    // Copy the version # and version2 text to the clipboard
+
+                    // Get the text lengths ("+ 1" for WS_LF)
+                    dwSizeDst = GetWindowTextLengthW (GetDlgItem (hDlg, IDC_VERSION   )) + 1 + 1;   // Does NOT end with a LF
+                    dwSizeDst +=GetWindowTextLengthW (GetDlgItem (hDlg, IDC_VERSION2  )) + 1    ;   // Does     end with a LF
+                    dwSizeDst +=GetWindowTextLengthW (GetDlgItem (hDlg, IDC_ABOUT_NOTE));           // Does NOT end with a LF
+                    // Note we do not use MyGlobalAlloc or DbgGlobalAlloc here as the global memory handle
+                    //   is to be placed onto the clipboard at which point the system
+                    //   will own the handle
+
+                    // Allocate space for the text "+ 1" for the terminaing zero
+                    hGlbDst = GlobalAlloc (GHND | GMEM_DDESHARE, (dwSizeDst + 1) * sizeof (WCHAR));
+
+                    // Check for error
+                    if (hGlbDst NE NULL)
+                    {
+                        // Open the clipboard so we can write to it
+                        OpenClipboard (hDlg);
+
+                        // Lock the memory to get a ptr to it
+                        lpMemDst = GlobalLock (hGlbDst);
+
+                        // Copy the version text to global memory
+                        dwSizeNxt = GetWindowTextW (GetDlgItem (hDlg, IDC_VERSION), lpMemDst, 1 + dwSizeDst);
+
+                        // Append two LFs
+                        lstrcpyW (&lpMemDst[dwSizeNxt], WS_LF); dwSizeNxt++;
+                        lstrcpyW (&lpMemDst[dwSizeNxt], WS_LF); dwSizeNxt++;
+
+                        // Copy the version2 text to global memory
+                        dwSizeNxt += GetWindowTextW (GetDlgItem (hDlg, IDC_VERSION2), &lpMemDst[dwSizeNxt], 1 + dwSizeDst - dwSizeNxt);
+
+                        // Append one LF
+                        lstrcpyW (&lpMemDst[dwSizeNxt], WS_LF); dwSizeNxt++;
+
+                        // Copy the (C) text to global memory
+                        dwSizeNxt += GetWindowTextW (GetDlgItem (hDlg, IDC_ABOUT_NOTE), &lpMemDst[dwSizeNxt], 1 + dwSizeDst - dwSizeNxt);
+
+                        Assert (dwSizeNxt EQ dwSizeDst);
+
+                        // We no longer need this ptr
+                        GlobalUnlock (hGlbDst); lpMemDst = NULL;
+
+                        // Empty the clipboard
+                        EmptyClipboard ();
+
+                        // Place the changed data onto the clipboard
+                        SetClipboardData (CF_UNICODETEXT, hGlbDst); hGlbDst = NULL;
+
+                        // We're finished with the clipboard
+                        CloseClipboard ();
+
+                        // Change the text on the button
+                        SetWindowTextW (GetDlgItem (hDlg, IDC_ABOUT_COPY), WS_UTF16_CHECKMARKLIGHT L" Copied");
+                    } else
+                        MBW (L"Unable to allocate memory for the clipboard text");
+                    break;
+                } // End case IDC_ABOUT_COPY
             } // End switch (wParam)
 
             break;

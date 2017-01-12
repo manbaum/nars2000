@@ -46,6 +46,7 @@
 #define DEF_SC_UNMATCHGRP      DEF_SCN_BLUE         , DEF_SCN_LIGHTCYAN
 #define DEF_SC_UNNESTED        DEF_SCN_BLUE         , DEF_SCN_LIGHTPINK
 #define DEF_SC_UNK             DEF_SCN_BLUE         , DEF_SCN_VIOLET
+#define DEF_SC_LINECONT        DEF_SCN_DODGERBLUE   , DEF_SCN_TRANSPARENT   
 #define DEF_SC_WINTEXT         DEF_SCN_BLACK        , DEF_SCN_WHITE
 
 // Syntax Coloring categories
@@ -76,15 +77,17 @@ typedef enum tagSC_TYPE
     SC_UNMATCHGRP,      // 15:  Unmatched Grouping Symbols [] () {} ' "
     SC_UNNESTED,        // 16:  Improperly Nested Grouping Symbols [] () {}
     SC_UNK,             // 17:  Unknown symbol
-    SC_WINTEXT,         // 18:  Window text
-    SC_LENGTH           // 19:  # entries in this enum
+    SC_LINECONT,        // 18:  Line Continuation
+    SC_WINTEXT,         // 19:  Window text
+    SC_LENGTH           // 1A:  # entries in this enum
                         //      Because this enum is origin-0, this value is the # valid columns.
 } SCTYPE, *LPSCTYPE;
 
 #define NUM_MATCHGRPS       4
 
-// N.B.:  Whenever changing the above enum (tagSC_TYPE),
+// N.B.:  Whenever changing the above enum (SC_TYPE),
 //   be sure to make a corresponding change to
+//   <DEF_SC_xxx> in <syntaxcolors.h> (above),
 //   <gSyntaxColorName> and <gSyntClrBGTrans> in <externs.h>,
 //   <KEYNAME_SC_xxx> and <aColorKeyNames> in <inifile.c>,
 //   <#define IDC_SYNTCLR_LTxx>,

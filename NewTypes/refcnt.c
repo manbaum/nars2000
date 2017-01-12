@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -73,6 +73,7 @@ int ChangeRefCntDir_PTB
 #ifdef DEBUG
             vfoHdrPtrs.lpMemVar =
 #endif
+            // Lock the memory to get a ptr to it
             lpSig = MyGlobalLock (hGlb);
 
             // Split cases based upon the array signature
@@ -169,6 +170,7 @@ int ChangeRefCntDir_PTB
                     return -1;
             } // End SWITCH
 
+            // We no longer need this ptr
             MyGlobalUnlock (hGlb); lpSig = NULL;
 
             return RefCnt;
@@ -210,7 +212,7 @@ int IncrRefCntInd_PTB
     (LPVOID lpMem)
 
 {
-    HGLOBAL hGlb = *(HGLOBAL *) lpMem;
+    HGLOBAL hGlb = MakeGlbFromPtr (lpMem);
 
     // If the global memory handle is that of a function array, ...
     if (IsGlbFcnArray (hGlb))
@@ -250,7 +252,7 @@ int DecrRefCntInd_PTB
     (LPVOID lpMem)
 
 {
-    HGLOBAL hGlb = *(HGLOBAL *) lpMem;
+    HGLOBAL hGlb = MakeGlbFromPtr (lpMem);
 
     // If the global memory handle is that of a function array, ...
     if (IsGlbFcnArray (hGlb))
@@ -416,7 +418,7 @@ int ChangeRefCntFcnArray
         DbgBrk ();      // #ifdef DEBUG
 #endif
     // Lock the memory to get a ptr to it
-    lpMemHdr = MyGlobalLock (hGlbFcn);
+    lpMemHdr = MyGlobalLockFcn (hGlbFcn);
 
     // Get the Type, RefCnt, NELM, and line text handle
     lpMemHdr->RefCnt += iChangeRefCnt;

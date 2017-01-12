@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -240,7 +240,7 @@ APLINT PrimFnMonEqualUnderBarGlb_PTB
             Assert (IsGlbTypeVarDir_PTB (hGlbRht));
 
             // Lock the memory to get a ptr to it
-            lpMemHdrRht = MyGlobalLock (hGlbRht);
+            lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
 #define lpHeader    lpMemHdrRht
             // Get the Array Type, NELM, and Rank
@@ -552,13 +552,13 @@ AXIS_SYNTAX_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    if (hGlbLft && lpMemHdrLft)
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemHdrRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
@@ -969,7 +969,7 @@ UBOOL PrimFnDydEqualUnderbarNested
                 hGlbSub = *(LPAPLNESTED) lpMemLft;
 
                 // Lock the memory to get a ptr to it
-                lpMemHdrLft = MyGlobalLock (hGlbSub);
+                lpMemHdrLft = MyGlobalLockVar (hGlbSub);
 
                 // Skip over the header and dimensions to the data
                 lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
@@ -995,7 +995,7 @@ UBOOL PrimFnDydEqualUnderbarNested
                 hGlbSub = *(LPAPLNESTED) lpMemRht;
 
                 // Lock the memory to get a ptr to it
-                lpMemHdrRht = MyGlobalLock (hGlbSub);
+                lpMemHdrRht = MyGlobalLockVar (hGlbSub);
 
                 // Skip over the header and dimensions to the data
                 lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
@@ -1067,8 +1067,8 @@ UBOOL PrimFnDydEqualUnderbarNested
                     return FALSE;
 
                 // Lock the memory to get a ptr to it
-                lpMemHdrLft2 = MyGlobalLock (ClrPtrTypeInd (lpMemLft));
-                lpMemHdrRht2 = MyGlobalLock (ClrPtrTypeInd (lpMemRht));
+                lpMemHdrLft2 = MyGlobalLockVar (ClrPtrTypeInd (lpMemLft));
+                lpMemHdrRht2 = MyGlobalLockVar (ClrPtrTypeInd (lpMemRht));
 
                 // Split based upon Simple vs. Hetero vs. Nested
                 switch (2 * IsNested (aplTypeLft)

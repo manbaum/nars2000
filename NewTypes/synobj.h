@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -96,10 +96,11 @@ typedef enum tagSO_ENUM
 	soNNR    , 			// 3B:  NAM NAM)                                               
 	soLNR    , 			// 3C:  (NAM NAM)                                              
 	soISPA   , 			// 3D:  IDX SPA                                                
-	soSYNR   , 			// 3E:  SYNTAX ERROR                                           
-	soVALR   , 			// 3F:  VALUE ERROR                                            
-	soNVAL   , 			// 40:  No Value                                               
-	soEOS    , 			// 41:  *MUST* be the highest numbered entry                   
+	soNDX    , 			// 3E:  NAM IDX F MOP SPA => NAM NDX F MOP SPA & left shift    
+	soSYNR   , 			// 3F:  SYNTAX ERROR                                           
+	soVALR   , 			// 40:  VALUE ERROR                                            
+	soNVAL   , 			// 41:  No Value                                               
+	soEOS    , 			// 42:  *MUST* be the highest numbered entry                   
 	soNONE = 999,		//999:  Filler for no entry
 } SO_ENUM, *LPSO_ENUM;
 
@@ -173,10 +174,11 @@ LPWCHAR soNames[]
 	L"NNR" ,			// 3B:  NAM NAM)                                               
 	L"LNR" ,			// 3C:  (NAM NAM)                                              
 	L"ISPA",			// 3D:  IDX SPA                                                
-	L"SYNR",			// 3E:  SYNTAX ERROR                                           
-	L"VALR",			// 3F:  VALUE ERROR                                            
-	L"NVAL",			// 40:  No Value                                               
-	L"EOS" ,			// 41:  *MUST* be the highest numbered entry                   
+	L"NDX" ,			// 3E:  NAM IDX F MOP SPA => NAM NDX F MOP SPA & left shift    
+	L"SYNR",			// 3F:  SYNTAX ERROR                                           
+	L"VALR",			// 40:  VALUE ERROR                                            
+	L"NVAL",			// 41:  No Value                                               
+	L"EOS" ,			// 42:  *MUST* be the highest numbered entry                   
   }
 #endif
 ;

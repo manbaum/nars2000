@@ -246,12 +246,6 @@ typedef struct tagSTART_ADDRESSES
     "GetVkState"                , (LPUCHAR) &GetVkState                 ,
     "LclEditCtrlWndProc"        , (LPUCHAR) &LclEditCtrlWndProc         ,
 
-    // editmat.c
-    "MEWndProc"                 , (LPUCHAR) &MEWndProc                  ,
-
-    // editvec.c
-    "VEWndProc"                 , (LPUCHAR) &VEWndProc                  ,
-
     // errmsg.c
     "BreakMessage"              , (LPUCHAR) &BreakMessage               ,
     "ErrorMessageDirect"        , (LPUCHAR) &ErrorMessageDirect         ,
@@ -445,22 +439,72 @@ typedef struct tagSTART_ADDRESSES
     "EnumCallbackPassMsg"       , (LPUCHAR) &EnumCallbackPassMsg        ,
     "MFWndProc"                 , (LPUCHAR) &MFWndProc                  ,
 
+    // malloc.c
+    "dlfree"                    , (LPUCHAR) &dlfree                     ,
+    "dlmalloc"                  , (LPUCHAR) &dlmalloc                   ,
+    "dlrealloc"                 , (LPUCHAR) &dlrealloc                  ,
+
     // mpfns.c
     "mp_alloc"                  , (LPUCHAR) &mp_alloc                   ,
     "mp_realloc"                , (LPUCHAR) &mp_realloc                 ,
     "mp_free"                   , (LPUCHAR) &mp_free                    ,
+    "mpz_invalid"               , (LPUCHAR) &mpz_invalid                ,
+    "mpq_invalid"               , (LPUCHAR) &mpq_invalid                ,
+    "mpfr_invalid"              , (LPUCHAR) &mpfr_invalid               ,
+    "mpz_QuadICValue"           , (LPUCHAR) &mpz_QuadICValue            ,
+    "mpz_init_set_fr"           , (LPUCHAR) &mpz_init_set_fr            ,
+    "mpz_cmp_sx"                , (LPUCHAR) &mpz_cmp_sx                 ,
+    "mpz_fits_sx_p"             , (LPUCHAR) &mpz_fits_sx_p              ,
+    "mpz_next_prime"            , (LPUCHAR) &mpz_next_prime             ,
+    "mpz_prev_prime"            , (LPUCHAR) &mpz_prev_prime             ,
+    "Myz_init"                  , (LPUCHAR) &Myz_init                   ,
+    "Myz_clear"                 , (LPUCHAR) &Myz_clear                  ,
+    "mpq_QuadICValue"           , (LPUCHAR) &mpq_QuadICValue            ,
     "mpq_init_set"              , (LPUCHAR) &mpq_init_set               ,
     "mpq_init_set_sx"           , (LPUCHAR) &mpq_init_set_sx            ,
     "mpq_init_set_si"           , (LPUCHAR) &mpq_init_set_si            ,
     "mpq_init_set_ui"           , (LPUCHAR) &mpq_init_set_ui            ,
     "mpq_init_set_d"            , (LPUCHAR) &mpq_init_set_d             ,
+    "mpq_init_set_fr"           , (LPUCHAR) &mpq_init_set_fr            ,
+    "mpq_init_set_z"            , (LPUCHAR) &mpq_init_set_z             ,
+    "mpq_init_set_str"          , (LPUCHAR) &mpq_init_set_str           ,
+    "mpq_get_sx"                , (LPUCHAR) &mpq_get_sx                 ,
+    "_mpq_get_ctsx"             , (LPUCHAR) &_mpq_get_ctsx              ,
     "mpq_set_sx"                , (LPUCHAR) &mpq_set_sx                 ,
+    "mpq_sub_ui"                , (LPUCHAR) &mpq_sub_ui                 ,
+    "mpq_floor"                 , (LPUCHAR) &mpq_floor                  ,
+    "mpq_ceil"                  , (LPUCHAR) &mpq_ceil                   ,
+    "mpq_mod"                   , (LPUCHAR) &mpq_mod                    ,
+    "mpq_mod_sx"                , (LPUCHAR) &mpq_mod_sx                 ,
+    "mpq_cmp_ct"                , (LPUCHAR) &mpq_cmp_ct                 ,
+    "Myq_init"                  , (LPUCHAR) &Myq_init                   ,
+    "Myq_clear"                 , (LPUCHAR) &Myq_clear                  ,
+    "mpq_integer_p"             , (LPUCHAR) &mpq_integer_p              ,
+    "mpfr_QuadICValue"          , (LPUCHAR) &mpfr_QuadICValue           ,
+    "mpfr_copy"                 , (LPUCHAR) &mpfr_copy                  ,
+    "mpfr_init_copy"            , (LPUCHAR) &mpfr_init_copy             ,
+    "mpfr_init_set"             , (LPUCHAR) &mpfr_init_set              ,
     "mpfr_init_set_sx"          , (LPUCHAR) &mpfr_init_set_sx           ,
+    "mpfr_init_set_ui"          , (LPUCHAR) &mpfr_init_set_ui           ,
+    "mpfr_init_set_si"          , (LPUCHAR) &mpfr_init_set_si           ,
+    "mpfr_init_set_d"           , (LPUCHAR) &mpfr_init_set_d            ,
+    "mpfr_init_set_z"           , (LPUCHAR) &mpfr_init_set_z            ,
+    "mpfr_init_set_q"           , (LPUCHAR) &mpfr_init_set_q            ,
     "mpfr_set_sx"               , (LPUCHAR) &mpfr_set_sx                ,
-    "mpfr_pow"                  , (LPUCHAR) &mpfr_pow                   ,
+    "mpfr_get_sx"               , (LPUCHAR) &mpfr_get_sx                ,
+    "mpfr_get_sctsx"            , (LPUCHAR) &mpfr_get_sctsx             ,
+    "_mpfr_get_ctsx"            , (LPUCHAR) &_mpfr_get_ctsx             ,
+    "mpfr_mod"                  , (LPUCHAR) &mpfr_mod                   ,
+    "mpfr_mod_sx"               , (LPUCHAR) &mpfr_mod_sx                ,
+    "mpfr_mod_sub"              , (LPUCHAR) &mpfr_mod_sub               ,
+    "_mpfr_cmp_ct"              , (LPUCHAR) &_mpfr_cmp_ct               ,
     "mpfr_ui_cmp"               , (LPUCHAR) &mpfr_ui_cmp                ,
     "mpfr_si_cmp"               , (LPUCHAR) &mpfr_si_cmp                ,
+    "Myf_init"                  , (LPUCHAR) &Myf_init                   ,
     "Myf_clear"                 , (LPUCHAR) &Myf_clear                  ,
+
+    // Functions internal to MPFR
+    "mpfr_pow"                  , (LPUCHAR) &mpfr_pow                   ,
 
     // mpifns.c
     "mp_get_invalid_functions"  , (LPUCHAR) &mp_get_invalid_functions   ,
@@ -474,6 +518,7 @@ typedef struct tagSTART_ADDRESSES
     "ParseLine"                 , (LPUCHAR) &ParseLine                  ,
     "pl_yylex"                  , (LPUCHAR) &pl_yylex                   ,
     "GetLftSynObj"              , (LPUCHAR) &GetLftSynObj               ,
+////"GetLftToken"               , (LPUCHAR) &GetLftToken                ,
     "pl_yylexCOM"               , (LPUCHAR) &pl_yylexCOM                ,
 #ifdef DEBUG
     "PadMemoryW"                , (LPUCHAR) &PadMemoryW                 ,
@@ -928,6 +973,7 @@ typedef struct tagSTART_ADDRESSES
     "SysFnNERASE_EM_YY"         , (LPUCHAR) &SysFnNERASE_EM_YY          ,
     "SysFnMonNERASE_EM_YY"      , (LPUCHAR) &SysFnMonNERASE_EM_YY       ,
     "SysFnDydNERASE_EM_YY"      , (LPUCHAR) &SysFnDydNERASE_EM_YY       ,
+    "SysFnNINFO_EM_YY"          , (LPUCHAR) &SysFnNINFO_EM_YY           ,
     "SysFnNLOCK_EM_YY"          , (LPUCHAR) &SysFnNLOCK_EM_YY           ,
     "SysFnMonNLOCK_EM_YY"       , (LPUCHAR) &SysFnMonNLOCK_EM_YY        ,
     "SysFnDydNLOCK_EM_YY"       , (LPUCHAR) &SysFnDydNLOCK_EM_YY        ,
@@ -1008,13 +1054,51 @@ typedef struct tagSTART_ADDRESSES
 
     // refcnt.c
 
-#ifdef DEBUG
+#if RESDEBUG
     // resdebug.c
     "_SaveObj"                  , (LPUCHAR) &_SaveObj                   ,
-/// ...
+    "_DeleObj"                  , (LPUCHAR) &_DeleObj                   ,
+    "OverLapMemory"             , (LPUCHAR) &OverLapMemory              ,
+    "LastTouch"                 , (LPUCHAR) &LastTouch                  ,
+    "_MyCloseSemaphore"         , (LPUCHAR) &_MyCloseSemaphore          ,
+    "_MyCreateCompatibleBitmap" , (LPUCHAR) &_MyCreateCompatibleBitmap  ,
+    "_MyCreateCompatibleDC"     , (LPUCHAR) &_MyCreateCompatibleDC      ,
+    "_MyCreatePen"              , (LPUCHAR) &_MyCreatePen               ,
+    "_MyCreateFontIndirect"     , (LPUCHAR) &_MyCreateFontIndirect      ,
+    "_MyCreateFontIndirectW"    , (LPUCHAR) &_MyCreateFontIndirectW     ,
+    "_MyCreatePolygonRgn"       , (LPUCHAR) &_MyCreatePolygonRgn        ,
+    "_MyCreateRectRgnIndirect"  , (LPUCHAR) &_MyCreateRectRgnIndirect   ,
+    "_MyCreateSemaphoreW"       , (LPUCHAR) &_MyCreateSemaphoreW        ,
+    "_MyCreateSolidBrush"       , (LPUCHAR) &_MyCreateSolidBrush        ,
+    "_MyDeleteDC"               , (LPUCHAR) &_MyDeleteDC                ,
+    "_MyDeleteObject"           , (LPUCHAR) &_MyDeleteObject            ,
+    "_MyGetDC"                  , (LPUCHAR) &_MyGetDC                   ,
+    "_MyGetWindowDC"            , (LPUCHAR) &_MyGetWindowDC             ,
+    "_MyLoadBitmap"             , (LPUCHAR) &_MyLoadBitmap              ,
+    "_MyLoadImage"              , (LPUCHAR) &_MyLoadImage               ,
+    "_MyReleaseDC"              , (LPUCHAR) &_MyReleaseDC               ,
+    "_MyReleaseSemaphore"       , (LPUCHAR) &_MyReleaseSemaphore        ,
+    "_MyGlobalAlloc"            , (LPUCHAR) &_MyGlobalAlloc             ,
+    "_MyGlobalHandle"           , (LPUCHAR) &_MyGlobalHandle            ,
+    "_MyGlobalLock"             , (LPUCHAR) &_MyGlobalLock              ,
+    "_MyGlobalLockNS"           , (LPUCHAR) &_MyGlobalLockNS            ,
+    "_MyGlobalLockSub"          , (LPUCHAR) &_MyGlobalLockSub           ,
+    "_MyGlobalUnlock"           , (LPUCHAR) &_MyGlobalUnlock            ,
+    "_MyGlobalSize"             , (LPUCHAR) &_MyGlobalSize              ,
+    "_MyGlobalFlags"            , (LPUCHAR) &_MyGlobalFlags             ,
+    "_MyGlobalReAlloc"          , (LPUCHAR) &_MyGlobalReAlloc           ,
+    "_MyGlobalFree"             , (LPUCHAR) &_MyGlobalFree              ,
+    "_MyHeapAlloc"              , (LPUCHAR) &_MyHeapAlloc               ,
+    "_MyHeapReAlloc"            , (LPUCHAR) &_MyHeapReAlloc             ,
+    "_MyHeapFree"               , (LPUCHAR) &_MyHeapFree                ,
+    "_MyVirtualAlloc"           , (LPUCHAR) &_MyVirtualAlloc            ,
+    "_MyVirtualFree"            , (LPUCHAR) &_MyVirtualFree             ,
+    "_MyQueryObject"            , (LPUCHAR) &_MyQueryObject             ,
+    "_MyWaitForSemaphore"       , (LPUCHAR) &_MyWaitForSemaphore        ,
+    "_MyWaitForThread"          , (LPUCHAR) &_MyWaitForThread           ,
     "_CheckMemStat"             , (LPUCHAR) &_CheckMemStat              ,
-
 #endif
+
     // savefcn.c
     "SaveFunction"              , (LPUCHAR) &SaveFunction               ,
     "SaveFunctionCom"           , (LPUCHAR) &SaveFunctionCom            ,
@@ -1429,7 +1513,6 @@ typedef struct tagSTART_ADDRESSES
 #else
     "_chkstk"                   , (LPUCHAR) &_chkstk                    ,
 #endif
-
 
     // trailer
     "<no name>"                 , (LPUCHAR) (HANDLE_PTR) -1             ,

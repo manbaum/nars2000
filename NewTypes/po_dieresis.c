@@ -125,7 +125,7 @@ LPPL_YYSTYPE PrimIdentOpDieresis_EM_YY
     HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
                       hGlbRes = NULL;       // Result    ...
     LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
-                      lpMemHdrRes = NULL;   // ...    result ...
+                      lpMemHdrRes = NULL;   // ...    result    ...
     LPAPLNESTED       lpMemRes;             // Ptr to result global memory
     LPPL_YYSTYPE      lpYYFcnStrLft,        // Ptr to left operand function strand
                       lpYYRes = NULL,       // Ptr to result
@@ -180,7 +180,7 @@ LPPL_YYSTYPE PrimIdentOpDieresis_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header values
@@ -372,7 +372,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                       hGlbRes = NULL,       // Result    ...
                       lpSymGlb;             // Ptr to global numeric
     LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
-                      lpMemHdrRes = NULL;   // ...    result ...
+                      lpMemHdrRes = NULL;   // ...    result    ...
     LPVOID            lpMemRht,             // Ptr to right arg global memory
                       lpMemRes;             // Ptr to result    ...
     APLUINT           uRht,                 // Right arg loop counter
@@ -501,7 +501,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header values
@@ -1303,7 +1303,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                           &hGlbAxis))       // Return HGLOBAL with APLINT axis values
             return NULL;
         // Lock the memory to get a ptr to it
-        lpMemAxisHead = MyGlobalLock (hGlbAxis);
+        lpMemAxisHead = MyGlobalLockInt (hGlbAxis);
 
         // Get pointer to the axis tail (where the [X] values are)
         lpMemAxisTail = &lpMemAxisHead[aplRankRes - aplNELMAxis];
@@ -1383,7 +1383,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
         goto ERROR_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLockVar (hGlbRes);
 
     // Fill in the arg tokens
     tkLftArg.tkCharIndex =
@@ -1468,7 +1468,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemWVec = MyGlobalLock (hGlbWVec);
+        lpMemWVec = MyGlobalLock000 (hGlbWVec);
 
         // Loop through the dimensions of the result in reverse
         //   order {backscan} and compute the cumulative product
@@ -1498,7 +1498,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemOdo = MyGlobalLock (hGlbOdo);
+        lpMemOdo = MyGlobalLock000 (hGlbOdo);
     } // End IF
 
     // Take into account nested prototypes

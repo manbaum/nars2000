@@ -236,7 +236,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
     // Lock the memory to get a ptr to it
     memTmp.lpMemOrg =
     memTmp.lpMemNxt =
-      MyGlobalLock (memTmp.hGlbMem);
+      MyGlobalLock000 (memTmp.hGlbMem);
 
     // Initialize the # allocated entries
     memTmp.uMaxEntry = INIT_FACTOR_CNT;
@@ -281,7 +281,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
     // Fill in the header
@@ -559,7 +559,7 @@ RESTART_RAT:
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
     // Fill in the header
@@ -1136,13 +1136,16 @@ UBOOL ResizeFactorStruc
         // Calculate the new length
         uLen = (lpMemTmp->uMaxEntry + INIT_FACTOR_INC) * sizeof (APLMPI);
 
+        // Reallocate up the struc
+        //   moving the old data to the new location, and
+        //   freeing the old global memory
         hGlbMem =
           MyGlobalReAlloc (lpMemTmp->hGlbMem,
                            uLen,
-                           GMEM_MOVEABLE | GMEM_ZEROINIT);
+                           GHND);
         if (hGlbMem NE NULL)
             // Lock the memory to get a ptr to it
-            lpMemNew = MyGlobalLock (hGlbMem);
+            lpMemNew = MyGlobalLockInt (hGlbMem);
         else
         {
             // Attempt to allocate a new struc
@@ -1151,10 +1154,10 @@ UBOOL ResizeFactorStruc
             if (hGlbMem NE NULL)
             {
                 // Lock the old memory to get a ptr to it
-                lpMemTmp->lpMemOrg = MyGlobalLock (lpMemTmp->hGlbMem);
+                lpMemTmp->lpMemOrg = MyGlobalLockInt (lpMemTmp->hGlbMem);
 
                 // Lock the new memory to get a ptr to it
-                lpMemNew = MyGlobalLock (hGlbMem);
+                lpMemNew = MyGlobalLock000 (hGlbMem);
 
                 // Copy the factors in the old memory to the new memory
                 CopyMemory (lpMemNew,
@@ -1385,7 +1388,7 @@ APLMPI PrimeFactor
                                                                                                         \
         swprintf (wszTemp,                                                                              \
                  countof (wszTemp),                                                                     \
-                 L"B1 = %.20g, B2 = %.20g, N = %d, Bits = %I64d, D = %d",                               \
+                 L"B1 = %.20g, B2 = %.20g, N = %d, Bits = %I64d, D = %I64d",                            \
                  dB1, dB2, N, bits, digs);                                                              \
         DbgMsgW (wszTemp);                                                                              \
     }

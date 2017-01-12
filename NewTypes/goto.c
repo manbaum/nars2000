@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -236,7 +236,7 @@ EXIT_TYPES GotoLine_EM
     // If we're at a UDFO layer, ...
     if (lpSISCur NE NULL)
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (lpSISCur->hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLockDfn (lpSISCur->hGlbDfnHdr);
 
     if (lpSISCur NE NULL
      && aplIntegerRht > 0

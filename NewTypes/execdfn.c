@@ -312,7 +312,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     bOldExecuting = lpMemPTD->bExecuting; SetExecuting (lpMemPTD, TRUE);
 
     // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+    lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
     // If we're executing an AFO, ...
     if (lpMemDfnHdr->bAFO)
@@ -594,7 +594,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     } // End __try/__except
 
     // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+    lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
 LEFT_UNLOCALIZE_EXIT:
 UNLOCALIZE_EXIT:
@@ -842,10 +842,10 @@ void _CheckSymEntries
                            uLineNum);
                 AppendLine (lpMemPTD->lpwszTemp, FALSE, TRUE);
 
-                FormatSTE (lpSymEntryNxt, lpMemPTD->lpwszTemp, lpMemPTD->uTempMaxSize);
+                FormatSTE (lpSymEntryNxt, lpMemPTD->lpwszTemp, lpMemPTD->iTempMaxSize);
                 AppendLine (lpMemPTD->lpwszTemp, FALSE, TRUE);
 
-                FormatHTE (lpSymEntryNxt->stHshEntry, lpMemPTD->lpwszTemp, lpMemPTD->uTempMaxSize, 0);
+                FormatHTE (lpSymEntryNxt->stHshEntry, lpMemPTD->lpwszTemp, lpMemPTD->iTempMaxSize, 0);
                 AppendLine (lpMemPTD->lpwszTemp, FALSE, TRUE);
 
                 // Display message for unhandled exception
@@ -891,6 +891,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     LPSYMENTRY    *lplpSymEntry;    // Ptr to 1st result STE
     HGLOBAL        hGlbTknHdr;      // Tokenized header global memory handle
     UBOOL          bRet,            // TRUE iff result is valid
+                   bFirstTime,      // TRUE iff this is the first time executing
                    bStopLine,       // TRUE iff we're stopping on this line
                    bTraceLine,      // TRUE iff we're tracing the line
                    bStopRestart;    // TRUE iff we're restarting a []STOPped line
@@ -904,7 +905,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     hGlbDfnHdr = lpMemPTD->lpSISCur->hGlbDfnHdr;
 
     // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+    lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
     // If monitoring is on, increment the function counter
     if (lpMemDfnHdr->MonOn)
@@ -948,6 +949,9 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     // Mark as not restarting a []STOPped line
     bStopRestart = FALSE;
 
+    // Mark as the first time executing
+    bFirstTime = TRUE;
+
     // Loop through the function lines
     while (TRUE)
     {
@@ -973,6 +977,25 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
         // If the starting token # is outside the token count, ...
         if (uTknNum >= uTokenCnt)
             goto NEXTLINE;
+        // If this is not the first time,
+        //    and it's an AFO,
+        //    and the current line is a System Label, ...
+        if (!bFirstTime
+         && lpMemDfnHdr->bAFO
+         && lpFcnLines[uLineNum - 1].bSysLbl)
+        {
+            // Free any past result
+            EraseAfoResult (lpMemDfnHdr);
+
+            // Set the exit type
+            exitType = EXITTYPE_NONE;
+
+            break;
+        } // End IF
+
+        // Mark as no longer the first time
+        bFirstTime = FALSE;
+
 #ifdef DEBUG
         DisplayFcnLine (hGlbTxtLine, lpMemPTD, uLineNum);
 #endif
@@ -1012,8 +1035,10 @@ RESTART_AFTER_ERROR:
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
         // If suspended,
+        //   and we're not resetting,
         //   and there's no parent []EA/[]EC control, ...
         if (lpMemPTD->lpSISCur->bSuspended
+         && lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_NONE
          && lpMemPTD->lpSISCur->lpSISErrCtrl EQ NULL)
         {
             HWND hWndEC;        // Edit Ctrl window handle
@@ -1052,7 +1077,7 @@ RESTART_AFTER_ERROR:
                     htGlbName = lpSISCur->hGlbFcnName;
 
                 // Lock the memory to get a ptr to it
-                lpMemName = MyGlobalLock (htGlbName);
+                lpMemName = MyGlobalLockWsz (htGlbName);
 
                 // Format the name and line #
                 wsprintfW (lpMemPTD->lpwszTemp,
@@ -1093,10 +1118,11 @@ RESTART_AFTER_ERROR:
         hGlbDfnHdr = lpMemPTD->lpSISCur->hGlbDfnHdr;
 
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
         // If we're suspended, resetting, or stopping:  break
         if (lpMemPTD->lpSISCur->bSuspended
+         || lpMemPTD->lpSISCur->bAfoValue
          || lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE)
             break;
 NEXTLINE:
@@ -1184,7 +1210,7 @@ NEXTLINE:
                                NULL,                    // Ptr to common struc (may be NULL if unused)
                                FALSE);                  // TRUE iff we're tokenizing a Magic Function/Operator
                 // Lock the memory to get a ptr to it
-                lpMemTknHdr = MyGlobalLock (hGlbTknHdr);
+                lpMemTknHdr = MyGlobalLockTkn (hGlbTknHdr);
 
                 // Execute the line
                 exitType =
@@ -1322,7 +1348,7 @@ NEXTLINE:
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemHdrRes = MyGlobalLock (hGlbRes);
+            lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
             // Fill in the header
@@ -1466,7 +1492,7 @@ UBOOL CheckDfnExitError_EM
         goto NORMAL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLock (lpSISCur->hGlbDfnHdr);
+    lpMemDfnHdr = MyGlobalLockDfn (lpSISCur->hGlbDfnHdr);
 
     // If the next line # would not exit the function, quit
     if (0 < lpSISCur->NxtLineNum
@@ -1490,7 +1516,7 @@ UBOOL CheckDfnExitError_EM
             if ((*lplpSymEntry)->stFlags.Value)
             {
                 // Lock the memory to get a ptr to it
-                lptkHdr = MyGlobalLock (lpMemDfnHdr->hGlbTknHdr);
+                lptkHdr = MyGlobalLockTkn (lpMemDfnHdr->hGlbTknHdr);
 
                 // Get ptr to the tokens in the line
                 lptkLine = TokenBaseToStart (lptkHdr);
@@ -1513,7 +1539,7 @@ UBOOL CheckDfnExitError_EM
 
         default:        // Multiple result names:  Ensure they all have a value and all are vars
             // Lock the memory to get a ptr to it
-            lptkHdr = MyGlobalLock (lpMemDfnHdr->hGlbTknHdr);
+            lptkHdr = MyGlobalLockTkn (lpMemDfnHdr->hGlbTknHdr);
 
             // Get ptr to the tokens in the line
             lptkLine = TokenBaseToStart (lptkHdr);
@@ -1634,10 +1660,11 @@ void UnlocalizeSTEs
         LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header
 
         // Lock the memory to get a ptr to it
-        lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+        lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
 #define FreeZapSte(ste)                                                                                             \
         if ( lpMemDfnHdr->ste NE NULL                                                                               \
+         && !lpMemDfnHdr->ste->stFlags.FcnDir                                                                       \
          && !lpMemDfnHdr->ste->stFlags.Imm                                                                          \
          &&  lpMemDfnHdr->ste->stData.stGlbData NE NULL)                                                            \
         {                                                                                                           \
@@ -1867,23 +1894,24 @@ LPSYMENTRY LocalizeLabels
 ////////////////lpSymEntrySrc->stData.stLongest = 0;        // stLongest set below via stInteger
 
                 // Initialize the SYMENTRY to an integer constant
-                lpSymEntrySrc->stFlags.Imm        = TRUE;
-                lpSymEntrySrc->stFlags.ImmType    = IMMTYPE_INT;
-                lpSymEntrySrc->stFlags.Inuse      = TRUE;
-                lpSymEntrySrc->stFlags.Value      = TRUE;
-                lpSymEntrySrc->stFlags.ObjName    = (lpSymEntryNxt->stFlags.ObjName EQ OBJNAME_SYS)
-                                                  ? OBJNAME_SYS
-                                                  : OBJNAME_USR;
-                lpSymEntrySrc->stFlags.stNameType = NAMETYPE_VAR;
-                lpSymEntrySrc->stFlags.DfnLabel   = TRUE;
-        lpSymEntrySrc->stData.stInteger   = uLineNum1;
+                lpSymEntrySrc->stFlags.Imm         = TRUE;
+                lpSymEntrySrc->stFlags.ImmType     = IMMTYPE_INT;
+                lpSymEntrySrc->stFlags.Inuse       = TRUE;
+                lpSymEntrySrc->stFlags.Value       = TRUE;
+                lpSymEntrySrc->stFlags.ObjName     = (lpSymEntryNxt->stFlags.ObjName EQ OBJNAME_SYS)
+                                                   ? OBJNAME_SYS
+                                                   : OBJNAME_USR;
+                lpSymEntrySrc->stFlags.stNameType  = NAMETYPE_VAR;
+                lpSymEntrySrc->stFlags.DfnLabel    = TRUE;
+                lpSymEntrySrc->stFlags.DfnSysLabel = (lpSymEntryNxt->stFlags.ObjName EQ OBJNAME_SYS);
+                lpSymEntrySrc->stData.stInteger    = uLineNum1;
 
                 // Set the ptr to the previous entry to the STE in its shadow chain
-                lpSymEntrySrc->stPrvEntry         = lpSymEntryNxt;
+                lpSymEntrySrc->stPrvEntry          = lpSymEntryNxt;
 
                 // Save the SI level for this SYMENTRY
                 Assert (lpMemPTD->SILevel);
-                lpSymEntrySrc->stSILevel          = lpMemPTD->SILevel - 1;
+                lpSymEntrySrc->stSILevel           = lpMemPTD->SILevel - 1;
 
                 // Skip to the next SYMENTRY
                 lpSymEntryNxt++;
@@ -2023,7 +2051,7 @@ UBOOL InitVarSTEs
                               i;                    // Loop counter
 
             // Lock the memory to get a ptr to it
-            lpMemHdrArg = MyGlobalLock (hGlbArg);
+            lpMemHdrArg = MyGlobalLockVar (hGlbArg);
 
 #define lpHeader        lpMemHdrArg
             aplTypeArg = lpHeader->ArrType;
@@ -2212,7 +2240,7 @@ UBOOL InitVarSTEs
                             goto WSFULL_EXIT;
 
                         // Lock the memory to get a ptr to it
-                        lpMemHdrRes = MyGlobalLock (hGlbRes);
+                        lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
                         // Fill in the header
@@ -2402,7 +2430,7 @@ UBOOL InitFcnSTEs
                     Assert (IsGlbTypeDfnDir_PTB (hGlbDfnHdr));
 
                     // Lock the memory to get a ptr to it
-                    lpMemDfnHdr = MyGlobalLock (hGlbDfnHdr);
+                    lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
                     // Clear the STE flags
                     *((UINT *) &(*lplpSymEntry)->stFlags) &= *(UINT *) &stFlagsClr;
@@ -2462,7 +2490,7 @@ UBOOL InitFcnSTEs
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemHdrRes = MyGlobalLock (hGlbRes);
+            lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader            lpMemHdrRes
             // Fill in the header

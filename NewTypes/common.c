@@ -605,6 +605,24 @@ void FillBitMemory
 } // End FillBitMemory
 
 
+#ifdef NEED_IOB_FUNC
+//***************************************************************************
+//  $__iob_func
+//***************************************************************************
+
+//FILE _iob[] = {*stdin, *stdout, *stderr};
+
+FILE * __cdecl __iob_func
+    (void)
+
+{
+    DbgStop ();
+    return NULL;
+////return _iob;
+} // End __iob_func
+#endif
+
+
 #ifdef DEBUG
 //***************************************************************************
 //  $nop
@@ -715,7 +733,7 @@ SIZE GetDlgUnitsInPixels
 
 void DrawBitmap
     (HDC     hDC,           // Destination DC
-     HBITMAP hBitMap,       // The bitmap to draw
+     HBITMAP hBitmap,       // The bitmap to draw
      UINT    xDstOrg,       // Destin bit origin
      UINT    yDstOrg)       // ...
 
@@ -723,19 +741,19 @@ void DrawBitmap
     BITMAP  bm;
     HDC     hDCMem;
     POINT   ptSize, ptOrg;
-    HBITMAP hOldBitmap;
+    HBITMAP hBitmapOld;
 
     // Get a Client Area DC for the bitmap
     hDCMem = MyCreateCompatibleDC (hDC);
 
     // Select the bitmap into the DC
-    hOldBitmap = SelectObject (hDCMem, hBitMap);
+    hBitmapOld = SelectObject (hDCMem, hBitmap);
 
     // Copy the mapping mode from the original DC
     SetMapMode (hDCMem, GetMapMode (hDC));
 
     // Get the size of the bitmap
-    GetObjectA (hBitMap, sizeof (BITMAP), (LPSTR) &bm);
+    GetObjectA (hBitmap, sizeof (BITMAP), (LPSTR) &bm);
 
     // Save it as a POINT
     ptSize.x = bm.bmWidth;
@@ -758,7 +776,7 @@ void DrawBitmap
             ptOrg.x, ptOrg.y,
             SRCCOPY);
     // Restore the old object
-    SelectObject (hDCMem, hOldBitmap);
+    SelectObject (hDCMem, hBitmapOld);
 
     // We no longer need this resource
     MyDeleteDC (hDCMem); hDCMem = NULL;
@@ -859,8 +877,8 @@ APLINT GetDlgItemInt64
 void CharFromPos
     (HWND    hWndEC,            // Edit Ctrl window handle
      LRESULT lResult,           // The result from SendMessage
-     LPLONG  lplLineNum,        // Ptr to Line #
-     LPLONG  lplCharPos)        // Ptr to Char Position
+     LPLONG  lplLineNum,        // Ptr to Line # (may be NULL)
+     LPLONG  lplCharPos)        // Ptr to Char Position (may be NULL)
 
 {
     LONG lLineNum,              // The line #
@@ -886,8 +904,10 @@ void CharFromPos
     } // End IF
 
     // Return the values
-    *lplLineNum = lLineNum;
-    *lplCharPos = lCharPos;
+    if (lplLineNum NE NULL)
+        *lplLineNum = lLineNum;
+    if (lplCharPos NE NULL)
+        *lplCharPos = lCharPos;
 } // End CharFromPos
 
 
@@ -1235,11 +1255,12 @@ HGLOBAL AllocateGlobalArray
     (APLSTYPE aplTypeRes,       // Result storage type
      APLNELM  aplNELMRes,       // ...    NELM
      APLRANK  aplRankRes,       // ...    Rank
-     LPAPLDIM lpaplDimRes)      // Ptr to result dimension(s) (may be NULL for scalar)
+     LPAPLDIM lpaplDimRes)      // Ptr to result dimension(s)
+                                // (may be NULL for scalar or temporary APV)
 
 {
     APLUINT           ByteRes;              // # bytes in result
-    HGLOBAL           hGlbRes;              // Result global memory handle
+    HGLOBAL           hGlbRes = NULL;       // Result global memory handle
     LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result global memory data
 
     // Allocate space for this array
@@ -1255,7 +1276,7 @@ HGLOBAL AllocateGlobalArray
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header
@@ -1268,10 +1289,12 @@ HGLOBAL AllocateGlobalArray
     lpHeader->Rank       = aplRankRes;
 #undef  lpHeader
 
-    // Fill in the dimension(s)
-    CopyMemory (VarArrayBaseToDim (lpMemHdrRes),
-                lpaplDimRes,
-                (APLU3264) (aplRankRes * sizeof (lpaplDimRes[0])));
+    // If the dimension ptr is valid, ...
+    if (lpaplDimRes NE NULL)
+        // Fill in the dimension(s)
+        CopyMemory (VarArrayBaseToDim (lpMemHdrRes),
+                    lpaplDimRes,
+                    (APLU3264) (aplRankRes * sizeof (lpaplDimRes[0])));
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 WSFULL_EXIT:

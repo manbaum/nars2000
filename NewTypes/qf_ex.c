@@ -158,7 +158,7 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header
@@ -383,7 +383,7 @@ NORMAL_EXIT:
 //  $ExpungeName
 //
 //  Expunge a given name and
-//    return a one iff successful
+//    return TRUE iff successful
 //***************************************************************************
 
 APLBOOL ExpungeName
@@ -429,8 +429,17 @@ APLBOOL ExpungeName
         // If the STE is not immediate and has a value, ...
         if (!lpSymEntry->stFlags.Imm
          && lpSymEntry->stFlags.Value)
+        {
+            // If the name is that of a UDFO/AFO, ...
+            if (lpSymEntry->stFlags.UsrDfn)
+            {
+                // Enumerate all Function Editor windows
+                 EnumChildWindows (hWndMF, &EnumCallbackExpPrevGlb, (LPARAM) (lpSymEntry->stData.stGlbData));
+            } // End IF
+
             // Free the global memory handle
             FreeResultGlobalDFLV (lpSymEntry->stData.stGlbData);
+        } // End IF
 
         // Erase the Symbol Table Entry
         //   unless it's a []var
@@ -439,6 +448,45 @@ APLBOOL ExpungeName
 
     return TRUE;
 } // End ExpungeName
+
+
+//***************************************************************************
+//  $EnumCallbackExpPrevGlb
+//
+//  EnumChildWindows callback to expunge a matching previous FE window
+//   global memory handle
+//***************************************************************************
+
+UBOOL CALLBACK EnumCallbackExpPrevGlb
+    (HWND   hWnd,           // Handle to child window
+     LPARAM lParam)         // Application-defined value
+
+{
+    // When an MDI child window is minimized, Windows creates two windows: an
+    // icon and the icon title.  The parent of the icon title window is set to
+    // the MDI client window, which confines the icon title to the MDI client
+    // area.  The owner of the icon title is set to the MDI child window.
+    if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
+        return TRUE;                    // skip it, and continue enumerating
+
+    // If it's a Function Editor window, ...
+    if (IzitFE (hWnd))
+    {
+        HGLOBAL hGlbDfnHdr;             // User-defined function/operator header global memory handle
+
+        // Get the previous function global memory handle (if any)
+        hGlbDfnHdr = (HGLOBAL) GetWindowLongPtrW (hWnd, GWLSF_HGLBDFNHDR);
+
+        Assert (GetPtrTypeDir (MakeGlbFromVal (lParam)) EQ PTRTYPE_HGLOBAL);
+
+        // If they match, ...
+        if (ClrPtrTypeDir (hGlbDfnHdr) EQ ClrPtrTypeDir (MakeGlbFromVal (lParam)))
+            // Zap the previous global memory handle
+            SetWindowLongPtrW (hWnd, GWLSF_HGLBDFNHDR, (HANDLE_PTR) NULL);
+    } // End IF
+
+    return TRUE;        // Keep on truckin'
+} // End EnumCallbackExpPrevGlb
 
 
 //***************************************************************************
@@ -473,7 +521,7 @@ void EraseSTE
 //***************************************************************************
 //  $EraseableName
 //
-//  Return a one iff the name is erasable
+//  Return TRUE iff the name is erasable
 //***************************************************************************
 
 APLBOOL EraseableName
@@ -486,8 +534,9 @@ APLBOOL EraseableName
     LPAPLCHAR lpMemName;        // Ptr to name global memory
     APLBOOL   bRet;             // TRUE iff eraseable name
 
-    // Initialize the return value for []DM
-    *lpbQuadDM = FALSE;
+    // Initialize the return value for []DM & []EM
+    *lpbQuadDM =
+    *lpbQuadEM = FALSE;
 
     // Split cases based upon the Name Type
     switch (lpSymEntry->stFlags.stNameType)
@@ -501,13 +550,13 @@ APLBOOL EraseableName
         case NAMETYPE_TRN:
             // If the name is suspended or pendent, it's not eraseable
             if (IzitSusPendent (lpSymEntry))
-                return 0;
+                return FALSE;
 
             // Get the name global memory handle
             htGlbName = lpSymEntry->stHshEntry->htGlbName;
 
             // Lock the memory to get a ptr to it
-            lpMemName = MyGlobalLock (htGlbName);
+            lpMemName = MyGlobalLockWsz (htGlbName);
 
             // Izit a valid name?
             bRet = IsValidName (lpMemName, lstrlenW (lpMemName));
@@ -515,16 +564,22 @@ APLBOOL EraseableName
             // If it's a valid name, ...
             if (bRet)
             {
+                UBOOL bQuadZ;
+
                 // Save flag of whether or not the name is []DM
                 *lpbQuadDM = lstrcmpiW (lpMemName, $QUAD_DM) EQ 0;
 
                 // Save flag of whether or not the name is []EM
                 *lpbQuadEM = lstrcmpiW (lpMemName, $QUAD_EM) EQ 0;
 
+                // Save flag of whether or not the name is []Z
+                   bQuadZ  = lstrcmpiW (lpMemName, $AFORESULT) EQ 0;
+
                 // Not if it's a system name
-                //   but []DM and []EM are ok
+                //   but []DM, []EM, and []Z are ok
                 bRet = (*lpbQuadDM
                      || *lpbQuadEM
+                     ||    bQuadZ
                      || !IsSysName (lpMemName));
             } // End IF
 
@@ -535,7 +590,7 @@ APLBOOL EraseableName
 
 ////////case NAMETYPE_LST:
         defstop
-            return 0;
+            return FALSE;
     } // End SWITCH
 } // End EraseableName
 
@@ -568,7 +623,7 @@ APLBOOL IzitSusPendent
     htGlbName = lpSymEntry->stHshEntry->htGlbName;
 
     // Lock the memory to get a ptr to it
-    lpMemName = MyGlobalLock (htGlbName);
+    lpMemName = MyGlobalLockWsz (htGlbName);
 
     while (lpSISCur && !bRet)
     {
@@ -585,7 +640,7 @@ APLBOOL IzitSusPendent
             case DFNTYPE_OP2:
             case DFNTYPE_FCN:
                 // Lock the memory to get a ptr to it
-                lpFcnName = MyGlobalLock (lpSISCur->hGlbFcnName);
+                lpFcnName = MyGlobalLockWsz (lpSISCur->hGlbFcnName);
 
                 // Compare the names
                 bRet = (lstrcmpW (lpMemName, lpFcnName) EQ 0);

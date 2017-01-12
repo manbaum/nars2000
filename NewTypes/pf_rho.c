@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -278,7 +278,7 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
     LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLock (hGlbRht);
+    lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
 #define lpHeader        lpMemHdrRht
     // Get the rank
@@ -303,7 +303,7 @@ LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemHdrRes = MyGlobalLock (hGlbRes);
+        lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
         // Fill in the header
@@ -562,7 +562,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
     // Fill in the header
@@ -1400,7 +1400,7 @@ UBOOL PrimFnDydRhoLftGlbValid_EM
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrLft = MyGlobalLock (hGlbLft);
+    lpMemHdrLft = MyGlobalLockVar (hGlbLft);
 
 #define lpHeader        lpMemHdrLft
     aplTypeLft = lpHeader->ArrType;
@@ -1750,7 +1750,7 @@ void PrimFnDydRhoLftGlbCopyDim
     UBOOL             bRet;         // TRUE iff the result is valid
 
     // Lock the memory to get a ptr to it
-    lpMemHdrLft = MyGlobalLock (hGlbLft);
+    lpMemHdrLft = MyGlobalLockVar (hGlbLft);
 
 #define lpHeader        lpMemHdrLft
 
@@ -1927,7 +1927,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
     lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRht  = MyGlobalLock (hGlbRht);
+    lpMemHdrRht  = MyGlobalLockVar (hGlbRht);
 
 #define lpHeader        lpMemHdrRht
 

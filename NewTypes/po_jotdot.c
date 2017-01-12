@@ -412,7 +412,7 @@ RESTART_JOTDOT:
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header
@@ -664,7 +664,7 @@ RESTART_JOTDOT:
                         case ARRAY_HC4I:
                         case ARRAY_HC8I:
                             // Lock the memory to get a ptr to it
-                            lpMemHdrSub = MyGlobalLock (tkRes.tkData.tkGlbData);
+                            lpMemHdrSub = MyGlobalLockVar (tkRes.tkData.tkGlbData);
 
                             // Skip over the header and dimensions to the data
                             lpMemSub = VarArrayDataFmBase (lpMemHdrSub);
@@ -694,7 +694,7 @@ RESTART_JOTDOT:
                         case ARRAY_HC4F:
                         case ARRAY_HC8F:
                             // Lock the memory to get a ptr to it
-                            lpMemHdrSub = MyGlobalLock (tkRes.tkData.tkGlbData);
+                            lpMemHdrSub = MyGlobalLockVar (tkRes.tkData.tkGlbData);
 
                             // Skip over the header and dimensions to the data
                             lpMemSub = VarArrayDataFmBase (lpMemHdrSub);
@@ -727,7 +727,7 @@ RESTART_JOTDOT:
                         case ARRAY_HC4R:
                         case ARRAY_HC8R:
                             // Lock the memory to get a ptr to it
-                            lpMemHdrSub = MyGlobalLock (tkRes.tkData.tkGlbData);
+                            lpMemHdrSub = MyGlobalLockVar (tkRes.tkData.tkGlbData);
 
                             // Skip over the header and dimensions to the data
                             lpMemSub = VarArrayDataFmBase (lpMemHdrSub);
@@ -752,7 +752,7 @@ RESTART_JOTDOT:
                         case ARRAY_HC4V:
                         case ARRAY_HC8V:
                             // Lock the memory to get a ptr to it
-                            lpMemHdrSub = MyGlobalLock (tkRes.tkData.tkGlbData);
+                            lpMemHdrSub = MyGlobalLockVar (tkRes.tkData.tkGlbData);
 
                             // Skip over the header and dimensions to the data
                             lpMemSub = VarArrayDataFmBase (lpMemHdrSub);

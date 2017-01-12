@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -245,7 +245,7 @@ LPPL_YYSTYPE PrimIdentFnDomino_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header values
@@ -795,7 +795,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header values
@@ -1045,7 +1045,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemTmp = MyGlobalLock (hGlbTmp);
+            lpMemTmp = MyGlobalLock000 (hGlbTmp);
 
             // Loop through the rows and cols
             for (uRow = 0; uRow < aplNELMRht; uRow++)
@@ -1096,7 +1096,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemTmp = MyGlobalLock (hGlbTmp);
+            lpMemTmp = MyGlobalLock000 (hGlbTmp);
 
             // Loop through the rows and cols
             for (uRow = 0; uRow < (aplNELMRht * iHCDimRht); uRow++)
@@ -1517,7 +1517,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemHdrRes = MyGlobalLock (hGlbRes);
+        lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
         // Fill in the header values
@@ -1882,8 +1882,8 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                 goto WSFULL_EXIT;
 
             // Lock the memory to get ptrs to 'em
-            lpMemTmpLft = MyGlobalLock (hGlbTmpLft);
-            lpMemTmpRht = MyGlobalLock (hGlbTmpRht);
+            lpMemTmpLft = MyGlobalLock000 (hGlbTmpLft);
+            lpMemTmpRht = MyGlobalLock000 (hGlbTmpRht);
 
             // Loop through the left arg rows and cols
             for (uRow = 0; uRow < uNumRowsLft; uRow++)

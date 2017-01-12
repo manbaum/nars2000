@@ -843,7 +843,7 @@ APLVFP GcdHC1V
     mpfr_abs (&aplLft, &aplVfpLft, MPFR_RNDN);
     mpfr_abs (&aplRht, &aplVfpRht, MPFR_RNDN);
 
-    while (mpfr_cmp_d (&aplLft, GCD_CT) <= 0)
+    while (mpfr_cmp_d (&aplLft, GCD_CT) >= 0)
     {
 ////////aplTmp = aplLft;
 ////////aplLft = aplRht % aplLft;

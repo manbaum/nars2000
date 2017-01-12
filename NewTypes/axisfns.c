@@ -118,7 +118,7 @@ UBOOL CheckAxisImm
             goto ERROR_EXIT;
 
         // Lock the memory to get a ptr it
-        *lplpAxisStart = *lplpAxisHead = MyGlobalLock (*lphGlbAxis);
+        *lplpAxisStart = *lplpAxisHead = MyGlobalLock000 (*lphGlbAxis);
 
         // Point to the start of the trailing axes
         lpAxisTail = &(*lplpAxisHead)[aplRankCmp - *lpaplNELM];
@@ -269,7 +269,7 @@ UBOOL CheckAxisGlb
     Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
     // Lock the memory to get a ptr to it
-    lpMemHdrData = MyGlobalLock (hGlbData);
+    lpMemHdrData = MyGlobalLockVar (hGlbData);
 
 #define lpHeader    lpMemHdrData
     // Get the Array Type, NELM, and Rank
@@ -308,7 +308,7 @@ UBOOL CheckAxisGlb
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        *lplpAxisStart = *lplpAxisHead = MyGlobalLock (*lphGlbAxis);
+        *lplpAxisStart = *lplpAxisHead = MyGlobalLock000 (*lphGlbAxis);
 
         // Point to the start of the trailing axes
         lpAxisTail = &(*lplpAxisHead)[aplRankCmp - *lpaplNELM];
@@ -331,7 +331,7 @@ UBOOL CheckAxisGlb
 
     // Lock the memory to get a ptr to the
     //   duplicate indices testing area
-    lpMemDup = MyGlobalLock (hGlbDup);
+    lpMemDup = MyGlobalLockInt (hGlbDup);       // Might be only 1 byte
 
     // Skip over the header and dimensions to the data
     lpMemData = VarArrayDataFmBase (lpMemHdrData);
@@ -427,7 +427,7 @@ UBOOL CheckAxisGlb
         // Unlock and lock the memory to reset the
         //   ptr to the start
         MyGlobalUnlock (hGlbDup); lpMemDup = NULL;
-        lpMemDup = MyGlobalLock (hGlbDup);
+        lpMemDup = MyGlobalLockInt (hGlbDup);   // Might be only 1 byte
 
         uBitMask = BIT0;
 
@@ -499,9 +499,16 @@ UBOOL CheckAxisGlb
 
     // If we allow duplicates, ...
     if (bRet && bAllowDups && aplRankCmp NE 0)
+    {
+        // Unlock and lock the memory to reset the
+        //   ptr to the start
+        MyGlobalUnlock (hGlbDup); lpMemDup = NULL;
+        lpMemDup = MyGlobalLockInt (hGlbDup);   // Might be only 1 byte
+
         // If so (it's slicing dyadic transpose), so the axes
         //   must be contiguous starting at []IO.
         bRet = (*lpMemDup & BIT0);
+    } // End IF
 
     goto NORMAL_EXIT;
 
@@ -616,7 +623,7 @@ UBOOL CheckAxis_EM
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemAxis = MyGlobalLock (*lphGlbAxis);
+        lpMemAxis = MyGlobalLock000 (*lphGlbAxis);
 
         // Fill the memory with [0, alpRankCmp-1]
         for (uCnt = 0; uCnt < aplRankCmp; uCnt++)

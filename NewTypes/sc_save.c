@@ -91,14 +91,14 @@ UBOOL CmdSave_EM
     lpw = SkipToCharDQW (lpwszTail, L' ');
 
     // Zap it in case there are trailing blanks
-    if (*lpw)
+    if (*lpw NE WC_EOS)
         *lpw = WC_EOS;
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // Lock the memory to get a ptr to it
-    lpMemOldWSID = MyGlobalLock (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData);
+    lpMemOldWSID = MyGlobalLockVar (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemOldWSID)
     // Get the NELM and Rank
@@ -117,7 +117,7 @@ UBOOL CmdSave_EM
     //   and a WS with the specified WS Name already exists,
     //   display an error
     //     "NOT SAVED, THIS WS IS ",[]WSID
-    if (*lpwszTail)
+    if (*lpwszTail NE WC_EOS)
     {
         // Convert the given workspace name into a canonical form (without WS_WKSEXT)
         MakeWorkspaceNameCanonical (wszTailDPFE, lpwszTail, lpwszWorkDir);
@@ -163,6 +163,10 @@ UBOOL CmdSave_EM
 
             // We no longer need this ptr
             MyGlobalUnlock (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemOldWSID = NULL;
+
+            // Save wszTailDPFE as the value of the new []WSID
+            if (!SaveNewWsid_EM (wszTailDPFE))
+                goto ERROR_EXIT;
         } // End IF
 
         // Save as the target WSID
@@ -180,7 +184,7 @@ UBOOL CmdSave_EM
         lpMemSaveWSID = wszWsidDPFE;
     } // End IF/ELSE
 
-    if (lpMemOldWSID)
+    if (lpMemOldWSID NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemOldWSID = NULL;
@@ -198,7 +202,7 @@ UBOOL CmdSave_EM
         MakeWorkspaceBackup (lpMemSaveWSID, SAVEBAK_EXT);
 
     // Note if the SI is non-empty
-    if (lpMemPTD->SILevel)
+    if (lpMemPTD->SILevel NE 0)
         ReplaceLastLineCRPmt (L"WARNING:  SI non-empty -- not restartable after )LOAD");
 
     // Calculate space needed for the two counters
@@ -214,7 +218,7 @@ UBOOL CmdSave_EM
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemCnt = MyGlobalLock (hGlbCnt);
+    lpMemCnt = MyGlobalLock000 (hGlbCnt);
 
     // The format of a saved ws is as an .ini file
     //   (named *.ws.nars) with the following sections:
@@ -320,7 +324,7 @@ UBOOL CmdSave_EM
         for (lpSymEntry = lpSymTabNext;
              lpSymEntry;
              lpSymEntry = lpSymEntry->stPrvEntry)
-        if (lpSymEntry->stHshEntry->htGlbName           // Must have a name (not steZero, etc.),
+        if (lpSymEntry->stHshEntry->htGlbName NE NULL   // Must have a name (not steZero, etc.),
          && lpSymEntry->stFlags.ObjName NE OBJNAME_MFO  // and not be a Magic Function/Operator,
          && lpSymEntry->stFlags.ObjName NE OBJNAME_LOD) // and not be a )LOAD HGLOBAL
         {
@@ -328,7 +332,7 @@ UBOOL CmdSave_EM
             hGlbName = lpSymEntry->stHshEntry->htGlbName;
 
             // Lock the memory to get a ptr to it
-            lpMemName = MyGlobalLock (hGlbName);
+            lpMemName = MyGlobalLockWsz (hGlbName);
 
             // Format the text as an ASCII string with non-ASCII chars
             //   represented as either {symbol} or {\xXXXX} where XXXX is
@@ -345,31 +349,10 @@ UBOOL CmdSave_EM
             // Get the flags
             stFlags = lpSymEntry->stFlags;
 
-            // Check for []WSID (if so, write out to [General] section and skip over it)
+            // Check for []WSID (if so, skip over it)
             if (lstrcmpiW (lpwszTemp, L"{quad}wsid") EQ 0)
-            {
-                HGLOBAL hGlbWSID;
-                LPWCHAR lpMemWSID;
-
-                // Get the global memory handle
-                hGlbWSID = lpSymEntry->stData.stGlbData;
-
-                // Lock the memory to get a ptr to it
-                lpMemWSID = MyGlobalLock (hGlbWSID);
-
-                // Skip oer the header and dimensions
-                lpMemWSID = VarArrayDataFmBase (lpMemWSID);
-
-                // Write out to the [General] section
-                ProfileSetString (SECTNAME_GENERAL,   // Ptr to the section name
-                                  KEYNAME_WSID,       // Ptr to the key name
-                                  lpMemWSID,          // Ptr to the key value
-                                  lpDict);            // Ptr to the dictionary
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbWSID); lpMemWSID = NULL;
-
                 continue;
-            } else
+            else
                 // Save the GlbData handle
                 stGlbData = lpSymEntry->stData.stGlbData;
 
@@ -420,14 +403,14 @@ UBOOL CmdSave_EM
                                     // Ensure we format with full precision in case it's floating point
                                     uQuadPP = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger;
                                     if (IsImmFlt (stFlags.ImmType))
-                                        lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger = DEF_MAX_QUADPP64;
+                                        lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger = DEF_MAX_QUADPP_IEEE;
 
                                     // Format the value
                                     lpaplChar =
                                       FormatImmedFC (lpaplChar,                         // Ptr to input string
                                                      stFlags.ImmType,                   // Immediate type
                                                     &lpSymEntry->stData.stLongest,      // Ptr to value to format
-                                                     DEF_MAX_QUADPP64,                  // Precision to use
+                                                     DEF_MAX_QUADPP_IEEE,               // Precision to use
                                                      UTF16_DOT,                         // Char to use as decimal separator
                                                      UTF16_BAR,                         // Char to use as overbar
                                                      FLTDISPFMT_RAWFLT,                 // Float display format
@@ -551,7 +534,7 @@ UBOOL CmdSave_EM
                         break;
                 } // End SWITCH
             } else
-            if (lpSymEntry->stSILevel)      // Must be suspended
+            if (lpSymEntry->stSILevel NE 0) // Must be suspended
             {
                 // Format the section name
                 MySprintfW (wszSectName,
@@ -630,7 +613,7 @@ UBOOL CmdSave_EM
     lpwszOrigTemp = lpMemPTD->lpwszTemp;
     lpMemPTD->lpwszTemp += lstrlenW (lpMemPTD->lpwszTemp);
 
-    // Set the value of the new []WSID as wszTailDPFE
+    // Save lpMemSaveWSID as the value of the new []WSID
     if (!SaveNewWsid_EM (lpMemSaveWSID))
         goto ERROR_EXIT;
 
@@ -678,7 +661,7 @@ NOTSAVED_CLEAR_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    if (lpMemOldWSID)
+    if (lpMemOldWSID NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData); lpMemOldWSID = NULL;
@@ -688,7 +671,7 @@ NORMAL_EXIT:
     UnlFreeGlbName (hGlbCnt, lpMemCnt);
 
     // If there's a dictionary, ...
-    if (lpDict)
+    if (lpDict NE NULL)
     {
         // Free the dictionary
         ProfileUnload (lpDict); lpDict = NULL;
@@ -1055,7 +1038,7 @@ LPAPLCHAR SavedWsFormGlbFcn
 #define lpUndoIni       lpaplChar       // Start of output save area
 
             // Write out the Undo buffer
-            if (lpMemDfnHdr->hGlbUndoBuff)
+            if (lpMemDfnHdr->hGlbUndoBuff NE NULL)
             {
                 LPUNDO_BUF lpMemUndo;               // Ptr to Undo Buffer global memory
                 SIZE_T     uUndoCount;              // # entries in the Undo Buffer
@@ -1113,7 +1096,7 @@ LPAPLCHAR SavedWsFormGlbFcn
 
                         default:
                             // Copy to string
-                            if (!(lpUndoChar = CharToSymbolName (lpMemUndo->Char)))
+                            if ((lpUndoChar = CharToSymbolName (lpMemUndo->Char)) EQ NULL)
                             {
                                 // Save as one-char string
                                 wcTmp[0] = lpMemUndo->Char;
@@ -1163,7 +1146,7 @@ LPAPLCHAR SavedWsFormGlbFcn
 
 
 
-            if (lpMemDfnHdr->hGlbMonInfo)
+            if (lpMemDfnHdr->hGlbMonInfo NE NULL)
             {
                 LPINTMONINFO lpMemMonInfo;          // Ptr to function line monitoring info
                 LPAPLCHAR    lpaplCharMon;          // Ptr to formatted monitor info
@@ -1264,7 +1247,7 @@ LPAPLCHAR SavedWsFormGlbFcn
     // Copy the formatted GlbCnt to the start of the buffer as the result
     strcpyW (lpaplChar, wszGlbCnt);
 NORMAL_EXIT:
-    if (hGlbObj && lpMemObj)
+    if (hGlbObj NE NULL && lpMemObj NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbObj); lpMemObj = NULL;
@@ -1298,7 +1281,7 @@ void WriteFunctionLine
                L"%d",
                 uLineNum);
     // Lock the memory to get a ptr to it
-    lpMemTxtLine = MyGlobalLock (hGlbTxtLine);
+    lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
 
     // Format the text as an ASCII string with non-ASCII chars
     //   represented as either {symbol} or {\xXXXX} where XXXX is
@@ -1368,9 +1351,6 @@ LPAPLCHAR SavedWsFormGlbVar
     Assert (IsGlbTypeVarDir_PTB (hGlbObj)
          || bUsrDfn);
 
-    // Lock the memory to get a ptr to it
-    lpMemObj = MyGlobalLock (hGlbObj);
-
     // Format the hGlbObj
     MySprintfW (wszGlbObj,
                 sizeof (wszGlbObj),
@@ -1387,6 +1367,9 @@ LPAPLCHAR SavedWsFormGlbVar
     {
         if (bUsrDfn)
         {
+            // Lock the memory to get a ptr to it
+            lpMemObj = MyGlobalLockDfn (hGlbObj);
+
             // Copy the STE name instead as we don't use :nnn convention in
             //   function arrays
 #define lpHeader        ((LPDFN_HEADER) lpMemObj)
@@ -1412,6 +1395,9 @@ LPAPLCHAR SavedWsFormGlbVar
     // Append the marker as a variable
     *lpaplChar++ = L'V';
     *lpaplChar++ = L' ';
+
+    // Lock the memory to get a ptr to it
+    lpMemObj = MyGlobalLockVar (hGlbObj);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemObj)
     // Get the array attributes
@@ -1516,7 +1502,7 @@ LPAPLCHAR SavedWsFormGlbVar
                     lpaplChar =
                       FormatAplFltFC (lpaplChar,            // Ptr to output save area
                                     *(LPAPLFLOAT) lpMemObj, // The value to format
-                                      DEF_MAX_QUADPP64,     // Precision to use
+                                      DEF_MAX_QUADPP_IEEE,  // Precision to use
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_BAR,            // Char to use as overbar
                                       FLTDISPFMT_RAWFLT,    // Float display format
@@ -1624,14 +1610,14 @@ LPAPLCHAR SavedWsFormGlbVar
                                 // Ensure we format with full precision in case it's floating point
                                 uQuadPP = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger;
                                 if (IsImmFlt (stFlags.ImmType))
-                                    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger = DEF_MAX_QUADPP64;
+                                    lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PP]->stData.stInteger = DEF_MAX_QUADPP_IEEE;
 
                                 // Format the value
                                 lpaplChar =
                                   FormatImmedFC (lpaplChar,                             // Ptr to input string
                                                  stFlags.ImmType,                       // Immediate type
                                                 &lpSymEntry->stData.stLongest,          // Ptr to value to format
-                                                 DEF_MAX_QUADPP64,                      // Precision to use
+                                                 DEF_MAX_QUADPP_IEEE,                   // Precision to use
                                                  UTF16_DOT,                             // Char to use as decimal separator
                                                  UTF16_BAR,                             // Char to use as overbar
                                                  FLTDISPFMT_RAWFLT,                     // Float display format
@@ -1831,7 +1817,7 @@ LPAPLCHAR SavedWsFormGlbVar
                     lpaplChar =
                       FormatAplHC2FFC (lpaplChar,               // Ptr to output save area
                                        lpMemObj,                // The value to format
-                                       DEF_MAX_QUADPP64,        // Precision to use
+                                       DEF_MAX_QUADPP_IEEE,     // Precision to use
                                        UTF16_DOT,               // Char to use as decimal separator
                                        UTF16_BAR,               // Char to use as overbar
                                        GetHC2Sep,               // Char to use as separator
@@ -1864,7 +1850,7 @@ LPAPLCHAR SavedWsFormGlbVar
                     lpaplChar =
                       FormatAplHCxFFC (lpaplChar,               // Ptr to output save area
                                        lpMemObj,                // Ptr to the value to format
-                                       DEF_MAX_QUADPP64,        // Precision to use
+                                       DEF_MAX_QUADPP_IEEE,     // Precision to use
                                        UTF16_DOT,               // Char to use as decimal separator
                                        UTF16_BAR,               // Char to use as overbar
                                        FLTDISPFMT_RAWFLT,       // Float display format
@@ -2021,7 +2007,7 @@ LPAPLCHAR SavedWsFormGlbVar
         } // End SWITCH
     } __except (CheckException (GetExceptionInformation (), L"CmdSave_EM #2"))
     {
-        if (hGlbObj && lpMemObj)
+        if (hGlbObj NE NULL && lpMemObj NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbObj); lpMemObj = NULL;
@@ -2074,7 +2060,7 @@ LPAPLCHAR SavedWsFormGlbVar
     // Copy the formatted GlbCnt to the start of the buffer as the result
     strcpyW (lpaplChar, wszGlbCnt);
 NORMAL_EXIT:
-    if (hGlbObj && lpMemObj)
+    if (hGlbObj NE NULL && lpMemObj NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbObj); lpMemObj = NULL;
@@ -2179,7 +2165,7 @@ LPAPLCHAR AppendArrayHeader
     APLRANK uObj;                   // Loop counter
 
     // If common VFP array precision requested, ...
-    if (lpuCommPrec)
+    if (lpuCommPrec NE NULL)
         // Initialize it as none
         *lpuCommPrec = 0;
 
@@ -2208,7 +2194,7 @@ LPAPLCHAR AppendArrayHeader
                           lpaplDimObj[uObj],    // The value to format
                           UTF16_BAR);           // Char to use as overbar
     // Append array properties
-    if (lpHeader)
+    if (lpHeader NE NULL)
     {
         // Append leading separator
         *lpaplChar++ = L'(';
@@ -2239,7 +2225,7 @@ LPAPLCHAR AppendArrayHeader
 
         // If common VFP array precision requested,
         //   and the array is non-empty, ...
-        if (lpuCommPrec
+        if (lpuCommPrec NE NULL
          && IsHCVfp (lpHeader->ArrType)
          && !IsEmpty (aplNELMObj))
         {

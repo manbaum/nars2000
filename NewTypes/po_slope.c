@@ -449,7 +449,7 @@ RESTART_ALLOC:
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader    lpMemHdrRes
     // Fill in the header values
@@ -811,7 +811,7 @@ RESTART_EXCEPTION:
 
                             default:
                                 // Lock the memory to get a ptr to it
-                                lpMemHdr = MyGlobalLock (tkLftArg.tkData.tkGlbData);
+                                lpMemHdr = MyGlobalLockVar (tkLftArg.tkData.tkGlbData);
 
                                 // Skip over the header and dimensions to the data
                                 lpMem = VarArrayDataFmBase (lpMemHdr);
@@ -903,7 +903,7 @@ RESTART_EXCEPTION:
                         (*aTypeTknPromote[aplTypeRht][aplTypeRes]) (&tkRhtArg);
 
                     // Execute the left operand between the left & right args
-                    if (lpPrimProtoLft)
+                    if (lpPrimProtoLft NE NULL)
                         // Note that we cast the function strand to LPTOKEN
                         //   to bridge the two types of calls -- one to a primitive
                         //   function which takes a function token, and one to a
@@ -922,7 +922,7 @@ RESTART_EXCEPTION:
                     FreeResultTkn (&tkLftArg);
 
                     // If it succeeded, ...
-                    if (lpYYRes)
+                    if (lpYYRes NE NULL)
                     {
                         // Check for NoValue
                         if (IsTokenNoValue (&lpYYRes->tkToken))
@@ -1081,7 +1081,7 @@ RESTART_EXCEPTION:
 
                                 default:
                                     // Lock the memory to get a ptr to it
-                                    lpMemHdr = MyGlobalLock (tkLftArg.tkData.tkGlbData);
+                                    lpMemHdr = MyGlobalLockVar (tkLftArg.tkData.tkGlbData);
 
                                     // Skip over the header and dimensions to the data
                                     lpMem = VarArrayDataFmBase (lpMemHdr);
@@ -1232,7 +1232,7 @@ RESTART_EXCEPTION:
                     FreeResultTkn (&tkRhtArg);
 
                     // If it succeeded, ...
-                    if (lpYYRes)
+                    if (lpYYRes NE NULL)
                     {
                         // Check for NoValue
                         if (IsTokenNoValue (&lpYYRes->tkToken))
@@ -1270,7 +1270,7 @@ RESTART_EXCEPTION:
                                               apaMulRht,    // APA multiplier (if needed)
                                              &tkLftArg);    // Ptr to token in which to place the value
                     // Execute the left operand between the left & right args
-                    if (lpPrimProtoLft)
+                    if (lpPrimProtoLft NE NULL)
                         // Note that we cast the function strand to LPTOKEN
                         //   to bridge the two types of calls -- one to a primitive
                         //   function which takes a function token, and one to a
@@ -1289,7 +1289,7 @@ RESTART_EXCEPTION:
                     FreeResultTkn (&tkLftArg);
 
                     // If it succeeded, ...
-                    if (lpYYRes)
+                    if (lpYYRes NE NULL)
                     {
                         // Check for NoValue
                         if (IsTokenNoValue (&lpYYRes->tkToken))
@@ -1419,8 +1419,11 @@ RESTART_EXCEPTION:
 #ifdef DEBUG
                                 DbgBrk ();              // ***TESTME***
 #endif
+                                // In case the current item was demoted in type, we blow it up again to the result
+                                (*aTypeActPromote[aplTypeTmp][aplTypeRes]) (&tkRhtArg.tkData.tkFloat, 0, &atTmp);
+
                                 // Save in the result as a FLOAT
-                                ((LPAPLFLOAT) lpMemRes)[uRht] = tkRhtArg.tkData.tkFloat;
+                                ((LPAPLFLOAT) lpMemRes)[uRht] = atTmp.aplFloat;
 
                                 break;
 
@@ -1457,7 +1460,7 @@ RESTART_EXCEPTION:
                             case ARRAY_HC4F:
                             case ARRAY_HC8F:
                                 // Lock the memory to get a ptr to it
-                                lpMemHdr = MyGlobalLock (tkRhtArg.tkData.tkGlbData);
+                                lpMemHdr = MyGlobalLockVar (tkRhtArg.tkData.tkGlbData);
 
                                 // Skip over the header and dimensions to the data
                                 lpMem = VarArrayDataFmBase (lpMemHdr);
@@ -1475,7 +1478,7 @@ RESTART_EXCEPTION:
                             case ARRAY_HC4R:
                             case ARRAY_HC8R:
                                 // Lock the memory to get a ptr to it
-                                lpMemHdr = MyGlobalLock (tkRhtArg.tkData.tkGlbData);
+                                lpMemHdr = MyGlobalLockVar (tkRhtArg.tkData.tkGlbData);
 
                                 // Skip over the header and dimensions to the data
                                 lpMem = VarArrayDataFmBase (lpMemHdr);
@@ -1495,7 +1498,7 @@ RESTART_EXCEPTION:
                             case ARRAY_HC4V:
                             case ARRAY_HC8V:
                                 // Lock the memory to get a ptr to it
-                                lpMemHdr = MyGlobalLock (tkRhtArg.tkData.tkGlbData);
+                                lpMemHdr = MyGlobalLockVar (tkRhtArg.tkData.tkGlbData);
 
                                 // Skip over the header and dimensions to the data
                                 lpMem = VarArrayDataFmBase (lpMemHdr);

@@ -171,7 +171,14 @@
         Myf_clear (&aplTmp);                                                            \
         Myf_clear (&aplDiv);                                                            \
         Myf_clear (&aplSin);                                                            \
-    } /* End IF */                                                                      \
+    } else                                                                              \
+    {                                                                                   \
+        /* Set the imaginary parts to zero */                                           \
+                                                                                        \
+        /* Loop through the imaginary parts */                                          \
+        for (i = 1; i < iHCDim; i++)                                                    \
+            mpfr_init0 (&aplRes.parts[i]);                                              \
+    } /* End IF/ELSE */                                                                 \
                                                                                         \
     /* We no longer need these resources */                                             \
     Myf_clear (&aplMul);                                                                \

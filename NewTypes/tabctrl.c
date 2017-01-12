@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -197,7 +197,7 @@ UBOOL CreateNewTab
         return FALSE;
 
     // Lock the memory to get a ptr to it
-    lpwszDPFE = MyGlobalLock (hGlbDPFE);
+    lpwszDPFE = MyGlobalLock100 (hGlbDPFE);
 
     // Copy the workspace name to global memory
     CopyMemoryW (lpwszDPFE, lpwsz, uLen);
@@ -287,7 +287,6 @@ UBOOL WINAPI CreateNewTabInThread
     MSG                Msg;                 // Message for GetMessageW loop
     int                nThreads;            // # threads
     WCHAR              wszTemp[32];         // Temporary storage
-    UBOOL              bExecLX;             // TRUE iff execute []LX after successful load
 
     // Store the thread type ('TC')
     TlsSetValue (dwTlsType, TLSTYPE_TC);
@@ -296,7 +295,7 @@ UBOOL WINAPI CreateNewTabInThread
     hWndParent    = lpcntThread->hWndParent;
     csSM.hGlbDPFE = lpcntThread->hGlbDPFE;      // Freed in sessman.c/WM_CREATE
     iTabIndex     = lpcntThread->iTabIndex;
-    bExecLX       = lpcntThread->bExecLX;
+    csSM.bExecLX  = lpcntThread->bExecLX;
     hThread       = lpcntThread->hThread;
 
     if (gCurTabID NE -1)
@@ -368,7 +367,7 @@ UBOOL WINAPI CreateNewTabInThread
 
     // Create the MDI client window
     lpMemPTD->hWndMC =
-      CreateWindowExW (0,                   // Extended styles
+      CreateWindowExW (0L,                  // Extended styles
                        WC_MDICLIENTW,       // Class name
                        wszMCTitle,          // Window title (for debugging purposes only)
                        0
@@ -403,9 +402,6 @@ UBOOL WINAPI CreateNewTabInThread
     //   so it can be used by subsequent windows
     CreateDebuggerWindow (lpMemPTD);
 #endif
-
-    // Fill in the SM WM_CREATE data struct
-    csSM.bExecLX  = bExecLX;
 
     // Save hWndMC for use inside message loop
     //   so we can unlock the per-tab data memory
@@ -915,7 +911,7 @@ void FreeGlobalStorage
         UINT         uCnt;              // Loop counter
 
         // Lock the memory to get a ptr to it
-        lpNfnsHdr = MyGlobalLock (lpMemPTD->hGlbNfns);
+        lpNfnsHdr = MyGlobalLockNfn (lpMemPTD->hGlbNfns);
 
         // Point to the first entry in use
         lpNfnsMem = &lpNfnsHdr->aNfnsData[lpNfnsHdr->offFirstInuse];
@@ -971,7 +967,7 @@ void FreeGlobalStorage
                 if (hGlbData)
                 {
                     // Lock the memory to get a ptr to it
-                    lpMemDfnHdr = MyGlobalLock (hGlbData);
+                    lpMemDfnHdr = MyGlobalLockDfn (hGlbData);
 
                     // Free the globals in the struc
                     FreeResultGlobalDfnStruc (lpMemDfnHdr, TRUE);
@@ -1577,7 +1573,7 @@ LPAPLCHAR PointToWsName
         if (hGlbWSID)
         {
             // Lock the memory to get a ptr to it
-            lpMemWSID = MyGlobalLock (hGlbWSID);
+            lpMemWSID = MyGlobalLockVar (hGlbWSID);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemWSID)
             // Get the NELM and rank

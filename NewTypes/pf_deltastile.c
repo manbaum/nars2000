@@ -258,10 +258,11 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
         case ARRAY_CHAR:
         case ARRAY_RAT:
         case ARRAY_VFP:
-            break;
-
         case ARRAY_HETERO:
         case ARRAY_NESTED:
+            break;
+
+        default:
         case ARRAY_HC2I:
         case ARRAY_HC2F:
         case ARRAY_HC2R:
@@ -278,9 +279,6 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
                 break;
             else
                 goto DOMAIN_EXIT;
-
-        defstop
-            break;
     } // End SWITCH
 
     // Check for scalar right arg
@@ -366,7 +364,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
     // Fill in the header
@@ -539,7 +537,7 @@ HGLOBAL MakeEncloseZilde
         return NULL;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
     // Fill in the header
@@ -928,7 +926,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemTTHandles = MyGlobalLock (hGlbTTHandles);
+    lpMemTTHandles = MyGlobalLock000 (hGlbTTHandles);
 
     // Allocate 16-bit arrays of APLCHARs for the translate tables,
     //   one per left arg dimension
@@ -948,7 +946,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemTTHandles[uDim].lpMemTT = MyGlobalLock (lpMemTTHandles[uDim].hGlbTT);
+        lpMemTTHandles[uDim].lpMemTT = MyGlobalLock000 (lpMemTTHandles[uDim].hGlbTT);
 
         // Fill with 0xFFs as identity element for min comparisons
         FillMemory (lpMemTTHandles[uDim].lpMemTT, APLCHAR_SIZE * sizeof (APLCHAR), 0xFF);
@@ -1038,7 +1036,7 @@ LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
     // Fill in the header

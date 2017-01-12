@@ -46,7 +46,7 @@ CRITICAL_SECTION CSOPthread;            // Critical Section Object for pthread
 extern int Debug = 1;
 #endif
 WCHAR crsh_dll[] = L"CRASHRPT.DLL",
-      crsh_version[32] = L" not loaded";
+      crsh_version[32] = L" ***NOT LOADED***";
 
 
 //************************** Data Area **************************************
@@ -95,8 +95,6 @@ WCHAR wszMFTitle[]          = WS_APPNAME WS_BITSIZE WS_APPEND_DEBUG,            
 char pszNoRegMFWndClass[]   = "Unable to register window class <" MFWNDCLASS        ">.",
      pszNoRegSMWndClass[]   = "Unable to register window class <" SMWNDCLASS        ">.",
      pszNoRegFEWndClass[]   = "Unable to register window class <" FEWNDCLASS        ">.",
-     pszNoRegMEWndClass[]   = "Unable to register window class <" MEWNDCLASS        ">.",
-     pszNoRegVEWndClass[]   = "Unable to register window class <" VEWNDCLASS        ">.",
      pszNoRegECWndClass[]   = "Unable to register window class <" ECWNDCLASS        ">.",
      pszNoRegCCWndClass[]   = "Unable to register window class <" CCWNDCLASS        ">.",
      pszNoRegPBWndClass[]   = "Unable to register window class <" PBWNDCLASS        ">.",
@@ -145,7 +143,7 @@ UBOOL CALLBACK EnumCallbackPassMsg
         // icon and the icon title.  The parent of the icon title window is set to
         // the MDI client window, which confines the icon title to the MDI client
         // area.  The owner of the icon title is set to the MDI child window.
-        if (GetWindow (hWndChild, GW_OWNER)) // If it's an icon title window, ...
+        if (GetWindow (hWndChild, GW_OWNER) NE NULL) // If it's an icon title window, ...
             continue;                       // skip it, and continue enumerating
 
         PostMessageW (hWndChild, ((LPENUMPASSMSG) lParam)->message,
@@ -155,6 +153,48 @@ UBOOL CALLBACK EnumCallbackPassMsg
 
     return TRUE;        // Keep on truckin'
 } // End EnumCallbackPassMsg
+
+
+//***************************************************************************
+//  $EnumCallbackDrawLineCont
+//
+//  EnumChildWindows callback to redraw the Line Continuation markers
+//
+//  lParam = unused
+//***************************************************************************
+
+UBOOL CALLBACK EnumCallbackDrawLineCont
+    (HWND   hWnd,           // Handle to child window
+     LPARAM lParam)         // Application-defined value
+
+{
+    // When an MDI child window is minimized, Windows creates two windows: an
+    // icon and the icon title.  The parent of the icon title window is set to
+    // the MDI client window, which confines the icon title to the MDI client
+    // area.  The owner of the icon title is set to the MDI child window.
+    if (GetWindow (hWnd, GW_OWNER) NE NULL)     // If it's an icon title window, ...
+        return TRUE;                    // skip it, and continue enumerating
+
+    // If the window is either SM or FE, ...
+    if (IzitSM (hWnd) || IzitFE (hWnd))
+    {
+        HWND hWndEC;
+
+        // Get the window handle to the Edit Ctrl
+        hWndEC = (HWND) GetWindowLongPtrW (hWnd, GWLSF_HWNDEC);
+
+        // If it's a SM window, ...
+        if (IzitSM (hWnd))
+            SetMarginsSM (hWndEC);
+        else
+            SetMarginsFE (hWndEC);
+
+        // Tell the SM or FE window to redraw its Line Continuation markers
+        DrawAllLineCont (hWndEC);
+    } // End IF
+
+    return TRUE;                        // Continue enumerating
+} // End EnumCallbackDrawLineCont
 
 
 //***************************************************************************
@@ -174,7 +214,7 @@ UBOOL CALLBACK EnumCallbackSetFontW
     // icon and the icon title.  The parent of the icon title window is set to
     // the MDI client window, which confines the icon title to the MDI client
     // area.  The owner of the icon title is set to the MDI child window.
-    if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
+    if (GetWindow (hWnd, GW_OWNER) NE NULL)     // If it's an icon title window, ...
         return TRUE;                    // skip it, and continue enumerating
 
     // Get the window's class name
@@ -237,19 +277,18 @@ void InitChooseFont
     int iLogPixelsY,            // # vertical pixels per inch in the DC
         fontEnum;               // Loop counter
 
+    // Get # vertical pixels per inch
+    // N.B.:  Do not use Printer DC here as that calculation is done
+    //        at printing time.  We need to use screen coordinates
+    //        for display purposes and convert to printer coords
+    //        only when printing.
+    iLogPixelsY = GetLogPixelsY (NULL);
+
     // Loop through the fonts
-    for (fontEnum = 0; fontEnum < FONTENUM_LENGTH; fontEnum++)
+    for (fontEnum = 0; fontEnum < FONTENUMX_LENGTH; fontEnum++)
     {
         // Zero the struc
         ZeroMemory (fontStruc[fontEnum].lpcf, sizeof (CHOOSEFONT));
-
-        // Get # vertical pixels per inch
-        // N.B.:  Do not use Printer DC here as that calculation is done
-        //        at printing time.  We need to use screen coordinates
-        //        for display purposes and convert to printer coords
-        //        only when printing.
-////////iLogPixelsY = GetLogPixelsY (hDC);
-        iLogPixelsY = GetLogPixelsY (NULL);
 
         // Convert from point size to pixels
         //   unless already set in which case
@@ -416,8 +455,9 @@ LRESULT WINAPI LclChooseFontSampleWndProc
 //  Subroutine to CreateNewFontXX to set various variables
 //***************************************************************************
 
-void CreateNewFontCom
+UBOOL CreateNewFontCom
     (HFONT        *lphFont,             // Ptr to in HFONT to create
+     FONTENUM      fontEnum,            // Font enum index (-1 = none)
      LPLOGFONTW    lplf,                // Ptr to in/out LOGFONTW to set
      LPCHOOSEFONTW lpcf,                // Ptr to in CHOOSEFONTW with iPointSize
      LPTEXTMETRICW lptm,                // Ptr to in TEXTMETRICWs
@@ -432,7 +472,7 @@ void CreateNewFontCom
           iOldMode;                     // Previous mapping mode
 
     // Delete the previous handle (if any)
-    if (*lphFont)
+    if (*lphFont NE NULL)
     {
         // Delete the font handle
         MyDeleteObject (*lphFont); *lphFont = NULL;
@@ -440,6 +480,10 @@ void CreateNewFontCom
 
     // Create the font
     *lphFont = MyCreateFontIndirectW (lplf);
+
+    // Check for error
+    if (*lphFont EQ NULL)
+        return FALSE;
 
     // Get a new device context or use the given one
     hDCTmp = MyGetDC (HWND_DESKTOP);
@@ -466,16 +510,16 @@ void CreateNewFontCom
     MyReleaseDC (HWND_DESKTOP, hDCTmp); hDCTmp = NULL;
 
     // New height in pixels
-    cyAveChar = MulDiv (lpcf->iPointSize / 10, iLogPixelsY, 72);
+    cyAveChar = MulDiv (lpcf->iPointSize, iLogPixelsY, 72 * 10);
 
     // New width (same aspect ratio as old)
-    if (lpcxAveChar)
+    if (lpcxAveChar NE NULL)
         *lpcxAveChar = MulDiv (lptm->tmAveCharWidth, cyAveChar, -lplf->lfHeight);
 
     // New height
     lplf->lfHeight = -cyAveChar;
 
-    if (lpcyAveChar)
+    if (lpcyAveChar NE NULL)
         *lpcyAveChar = lptm->tmHeight;
 
     // Now that we've calculated the correct height & width,
@@ -484,6 +528,88 @@ void CreateNewFontCom
 
     // Re-create the font
     *lphFont = MyCreateFontIndirectW (lplf);
+
+    // If this font is within normal bounds, ...
+    if (fontEnum NE -1
+     && fontEnum < FONTENUM_LENGTH)
+    {
+        // Determine the charsize of the Line Continuation Marker
+        uWidthLC[fontEnum] = WidthLC (fontEnum);
+
+        // If this is FONTENUM_SM, also create FB_SM
+        if (fontEnum EQ glbSameFontAs[FONTENUM_SM])
+        {
+            // Set the point size to that of the parent font
+            cfFB_SM.iPointSize = fontStruc[fontEnum].lpcf->iPointSize;
+
+            if (CreateNewFontCom (&hFontFB_SM,
+                                   FONTENUM_FB_SM,
+                                  &lfFB_SM,
+                                  &cfFB_SM,
+                                  &tmFB_SM,
+                                  &GetFSDirAveCharSize (FONTENUM_FB_SM)->cx,
+                                  &GetFSDirAveCharSize (FONTENUM_FB_SM)->cy))
+                // Recalculate the average char width
+                GetFSDirAveCharSize (FONTENUM_FB_SM)->cx = RecalcAveCharWidth (hFontFB_SM);
+            else
+                OptionFlags.bOutputDebug = FALSE;
+        } // End IF
+
+        // If this is FONTENUM_FE, also create FB_FE
+        if (fontEnum EQ glbSameFontAs[FONTENUM_FE])
+        {
+            // Set the point size to that of the parent font
+            cfFB_FE.iPointSize = fontStruc[fontEnum].lpcf->iPointSize;
+
+            if (CreateNewFontCom (&hFontFB_FE,
+                                   FONTENUM_FB_FE,
+                                  &lfFB_FE,
+                                  &cfFB_FE,
+                                  &tmFB_FE,
+                                  &GetFSDirAveCharSize (FONTENUM_FB_FE)->cx,
+                                  &GetFSDirAveCharSize (FONTENUM_FB_FE)->cy))
+                // Recalculate the average char width
+                GetFSDirAveCharSize (FONTENUM_FB_FE)->cx = RecalcAveCharWidth (hFontFB_FE);
+            else
+                OptionFlags.bOutputDebug = FALSE;
+        } // End IF
+
+        // If this is FONTENUM_PR, also create FB_PR_SM and FB_PR_FE
+        if (fontEnum EQ glbSameFontAs[FONTENUM_PR])
+        {
+            // Set the point size to that of the parent font
+            cfFB_PR_SM.iPointSize =
+            cfFB_PR_FE.iPointSize = fontStruc[fontEnum].lpcf->iPointSize;
+
+            // Create the font
+            if (CreateNewFontCom (&hFontFB_PR_SM,
+                                   FONTENUM_FB_PR_SM,
+                                  &lfFB_PR_SM,
+                                  &cfFB_PR_SM,
+                                  &tmFB_PR_SM,
+                                  &GetFSDirAveCharSize (FONTENUM_FB_PR_SM)->cx,
+                                  &GetFSDirAveCharSize (FONTENUM_FB_PR_SM)->cy))
+                // Recalculate the average char width
+                GetFSDirAveCharSize (FONTENUM_FB_PR_SM)->cx = RecalcAveCharWidth (hFontFB_PR_SM);
+            else
+                OptionFlags.bOutputDebug = FALSE;
+
+            // Create the font
+            if (CreateNewFontCom (&hFontFB_PR_FE,
+                                   FONTENUM_FB_PR_FE,
+                                  &lfFB_PR_FE,
+                                  &cfFB_PR_FE,
+                                  &tmFB_PR_FE,
+                                  &GetFSDirAveCharSize (FONTENUM_FB_PR_FE)->cx,
+                                  &GetFSDirAveCharSize (FONTENUM_FB_PR_FE)->cy))
+                // Recalculate the average char width
+                GetFSDirAveCharSize (FONTENUM_FB_PR_FE)->cx = RecalcAveCharWidth (hFontFB_PR_FE);
+            else
+                OptionFlags.bOutputDebug = FALSE;
+        } // End IF
+    } // End IF
+
+    return TRUE;
 } // End CreateNewFontCom
 
 
@@ -499,6 +625,7 @@ void CreateNewFontTC
 {
     // Call common routine to set various variables
     CreateNewFontCom (&hFontTC,
+                       FONTENUM_TC,
                       &lfTC,
                       &cfTC,
                       &tmTC,
@@ -618,6 +745,7 @@ void CreateNewFontCC
 {
     // Call common routine to set various variables
     CreateNewFontCom (&hFontCC,
+                       FONTENUM_CC,
                       &lfCC,
                       &cfCC,
                       &tmCC,
@@ -659,6 +787,7 @@ void CreateNewFontLW
 {
     // Call common routine to set various variables
     CreateNewFontCom (&hFontLW,
+                       FONTENUM_LW,
                       &lfLW,
                       &cfLW,
                       &tmLW,
@@ -697,6 +826,7 @@ void CreateNewFontSM
 {
     // Call common routine to set various variables
     CreateNewFontCom (&hFontSM,
+                       FONTENUM_SM,
                       &lfSM,
                       &cfSM,
                       &tmSM,
@@ -704,46 +834,8 @@ void CreateNewFontSM
                       &GetFSDirAveCharSize (FONTENUM_SM)->cy);
     // If we're applying, ...
     if (bApply)
-    {
-#define TXTLEN  100
-
-        HDC   hDC;
-        WCHAR wszTemp[TXTLEN + 1];
-        SIZE  sz;
-        HFONT oldhFont;
-
-        // The following code is necessary as the code in CreateNewFontCom
-        //   doesn't always calculate the correct average char width.
-        // ***FIXME*** I don't understand why, but this corrects it.
-
-        // Get a DC for the Session Manager
-        hDC = MyGetDC (HWND_DESKTOP);
-
-        // Set the font
-        oldhFont =
-          SelectObject (hDC, hFontSM);
-
-        // Set the mapping mode
-        SetMapMode (hDC, MM_TEXT);
-
-        // Fill the temp string with Quads
-        FillMemoryW (wszTemp, TXTLEN, UTF16_QUAD);
-
-        // Terminate it
-        wszTemp[TXTLEN] = WC_EOS;
-
-        // Get the size in pixels of TXTLEN Quads
-        GetTextExtentPoint32W (hDC, wszTemp, TXTLEN, &sz);
-
-        // Save as the "new" average char width of this font
-        GetFSDirAveCharSize (FONTENUM_SM)->cx = sz.cx / TXTLEN;
-
-        // Restore the old HFONT
-        SelectObject (hDC, oldhFont);
-
-        // We no longer need this resource
-        MyReleaseDC (HWND_DESKTOP, hDC); hDC = NULL;
-    } // End IF
+        // Re-calculate the average character width
+        GetFSDirAveCharSize (FONTENUM_SM)->cx = RecalcAveCharWidth (hFontSM);
 
     // Change the font name in the ComboBox in the Font Window
     InitFontName ();
@@ -758,6 +850,53 @@ void CreateNewFontSM
     if (bApply)
         ApplyNewFontEnum (FONTENUM_SM);
 } // End CreateNewFontSM
+
+
+//***************************************************************************
+//  $RecalcAveCharWidth
+//***************************************************************************
+
+long RecalcAveCharWidth
+    (HFONT hFont)
+
+{
+#define TXTLEN  128
+
+    HDC   hDC;
+    WCHAR wszTemp[TXTLEN];
+    SIZE  sz;
+    HFONT hFontOld;
+
+    // The following code is necessary as the code in CreateNewFontCom
+    //   doesn't always calculate the correct average char width.
+    // ***FIXME*** I don't understand why, but this corrects it.
+
+    // Get a DC for the Session Manager
+    hDC = MyGetDC (HWND_DESKTOP);
+
+    // Set the font
+    hFontOld =
+      SelectObject (hDC, hFont);
+
+    // Set the mapping mode
+    SetMapMode (hDC, MM_TEXT);
+
+    // Fill the temp string with spaces
+    FillMemoryW (wszTemp, TXTLEN, L' ');
+
+    // Get the size in pixels of TXTLEN spaces
+    GetTextExtentPoint32W (hDC, wszTemp, TXTLEN, &sz);
+
+    // Restore the old HFONT
+    SelectObject (hDC, hFontOld);
+
+    // We no longer need this resource
+    MyReleaseDC (HWND_DESKTOP, hDC); hDC = NULL;
+
+    // Return as the "new" average char width of this font
+    return sz.cx / TXTLEN;
+#undef  TXTLEN
+} // End RecalcAveCharWidth
 
 
 //***************************************************************************
@@ -819,7 +958,7 @@ void InitPointSize
 
 {
     // Set the UpDown Ctrl position
-    SendMessageW (hWndUD_FW, UDM_SETPOS, 0, MAKELONG (cfSM.iPointSize / 10, 0));
+    SendMessageW (hWndUD_FW, UDM_SETPOS32, 0, cfSM.iPointSize / 10);
 } // End InitPointSize
 
 
@@ -859,6 +998,7 @@ void ApplyNewFontSM
 
     // Re-specify the alternate SM font
     CreateNewFontCom (&hFontAlt,
+                       -1,
                       &lfAlt,
                       &cfSM,
                       &tmAlt,
@@ -888,6 +1028,7 @@ void CreateNewFontPR
 {
     // Call common routine to set various variables
     CreateNewFontCom (&hFontPR,
+                       FONTENUM_PR,
                       &lfPR,
                       &cfPR,
                       &tmPR,
@@ -924,6 +1065,7 @@ void CreateNewFontFE
 {
     // Call common routine to set various variables
     CreateNewFontCom (&hFontFE,
+                       FONTENUM_FE,
                       &lfFE,
                       &cfFE,
                       &tmFE,
@@ -954,94 +1096,6 @@ void ApplyNewFontFE
     // Refont the FE windows
     EnumChildWindows (hWndMF, &EnumCallbackSetFontW, (LPARAM) &enumSetFontW);
 } // End ApplyNewFontFE
-
-
-//***************************************************************************
-//  $CreateNewFontME
-//
-//  Create a new font for the ME windows.
-//***************************************************************************
-
-void CreateNewFontME
-    (UBOOL bApply)                      // TRUE iff we should apply the new font
-
-{
-    // Call common routine to set various variables
-    CreateNewFontCom (&hFontME,
-                      &lfME,
-                      &cfME,
-                      &tmME,
-                      &GetFSDirAveCharSize (FONTENUM_ME)->cx,
-                      &GetFSDirAveCharSize (FONTENUM_ME)->cy);
-    // If we are also applying the font, ...
-    if (bApply)
-        ApplyNewFontEnum (FONTENUM_ME);
-} // End CreateNewFontME
-
-
-//***************************************************************************
-//  $ApplyNewFontME
-//
-//  Apply the ME font to the appropriate windows
-//***************************************************************************
-
-void ApplyNewFontME
-    (HFONT hFont)                   // Font handle to use
-
-{
-    ENUMSETFONTW enumSetFontW;
-
-    // Initialize the struct
-    enumSetFontW.lpwClassName = LFEWNDCLASS;
-    enumSetFontW.hFont        = hFont;
-
-    // Refont the ME windows
-    EnumChildWindows (hWndMF, &EnumCallbackSetFontW, (LPARAM) &enumSetFontW);
-} // End ApplyNewFontME
-
-
-//***************************************************************************
-//  $CreateNewFontVE
-//
-//  Create a new font for the VE windows.
-//***************************************************************************
-
-void CreateNewFontVE
-    (UBOOL bApply)                      // TRUE iff we should apply the new font
-
-{
-    // Call common routine to set various variables
-    CreateNewFontCom (&hFontVE,
-                      &lfVE,
-                      &cfVE,
-                      &tmVE,
-                      &GetFSDirAveCharSize (FONTENUM_VE)->cx,
-                      &GetFSDirAveCharSize (FONTENUM_VE)->cy);
-    // If we are also applying the font, ...
-    if (bApply)
-        ApplyNewFontEnum (FONTENUM_VE);
-} // End CreateNewFontVE
-
-
-//***************************************************************************
-//  $ApplyNewFontVE
-//
-//  Apply the VE font to the appropriate windows
-//***************************************************************************
-
-void ApplyNewFontVE
-    (HFONT hFont)                   // Font handle to use
-
-{
-    ENUMSETFONTW enumSetFontW;
-
-    // Initialize the struct
-    enumSetFontW.lpwClassName = LFEWNDCLASS;
-    enumSetFontW.hFont        = hFont;
-
-    // Refont the VE windows
-    EnumChildWindows (hWndMF, &EnumCallbackSetFontW, (LPARAM) &enumSetFontW);
-} // End ApplyNewFontVE
 
 
 //***************************************************************************
@@ -1212,7 +1266,7 @@ UBOOL CALLBACK EnumCallbackRestoreAll
     // icon and the icon title.  The parent of the icon title window is set to
     // the MDI client window, which confines the icon title to the MDI client
     // area.  The owner of the icon title is set to the MDI child window.
-    if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
+    if (GetWindow (hWnd, GW_OWNER) NE NULL)     // If it's an icon title window, ...
         return TRUE;                    // skip it, and continue enumerating
 
     // Restore the window in case it's an icon
@@ -1311,17 +1365,9 @@ LRESULT APIENTRY MFWndProc
             ReadIniFileWnd (hWnd);
 
             // *************** Bitmaps *********************************
-            hBitMapLineCont = MyLoadBitmap (_hInstance, MAKEINTRESOURCE (IDB_LINECONT));
-            if (hBitMapLineCont)
-            {
-                GetObjectW (hBitMapLineCont, sizeof (BITMAP), (LPVOID) &bmLineCont);
-
-                iLCWidth = 2 + bmLineCont.bmWidth + 2;  // Width of line continuation column
-            } // End IF
-
-            hBitMapCheck  = MyLoadBitmap (NULL, MAKEINTRESOURCE (OBM_CHECK));
-            if (hBitMapCheck)
-                GetObjectW (hBitMapCheck, sizeof (BITMAP), (LPVOID) &bmCheck);
+            hBitmapCheck  = MyLoadBitmap (NULL, MAKEINTRESOURCE (OBM_CHECK));
+            if (hBitmapCheck NE NULL)
+                GetObjectW (hBitmapCheck, sizeof (BITMAP), (LPVOID) &bmCheck);
 
             // *************** Image Lists *****************************
             hImageListTC =
@@ -1332,7 +1378,7 @@ LRESULT APIENTRY MFWndProc
                               | ILC_MASK,       // Flags
                                 1,              // Max # images
                                 0);             // # images by which the list can grow
-            if (!hImageListTC)
+            if (hImageListTC EQ NULL)
                 return -1;          // Stop the whole process
 
             // Add the Close button icon to the image list
@@ -1376,8 +1422,6 @@ LRESULT APIENTRY MFWndProc
             CreateNewFontCC (TRUE);
             CreateNewFontTC (TRUE);
             CreateNewFontLW (TRUE);
-            CreateNewFontVE (TRUE);
-            CreateNewFontME (TRUE);
 
             // If we're to check for updates, ...
             if (guUpdFrq NE ENUM_UPDFRQ_NEVER)
@@ -1557,7 +1601,7 @@ LRESULT APIENTRY MFWndProc
                     lpMemPTD = GetPerTabPtr (uCnt);
 
                     // If it and the MDI Client's window handle are both valid, ...
-                    if (lpMemPTD && lpMemPTD->hWndMC)
+                    if (lpMemPTD NE NULL && lpMemPTD->hWndMC NE NULL)
                         // Position and size the MDI Child window to fit the
                         // tab control's display area
                         DeferWindowPos (hdwp,               // Handle to internal structure
@@ -2373,8 +2417,7 @@ LRESULT APIENTRY MFWndProc
                 case IDM_UPDATES:
                     // See if we have the latest version
                     CheckForUpdates (TRUE,
-                                     GetKeyState (VK_CONTROL) & BIT15);
-
+                                     (GetKeyState (VK_CONTROL) & BIT15) ? TRUE : FALSE);
                     return FALSE;       // We handled the msg
 
                 // The following messages come from the Tab Control.
@@ -2623,18 +2666,28 @@ LRESULT APIENTRY MFWndProc
 ////////////////////////////
 ////////////////////////////} // End IF
 #ifdef DEBUG
-                            lpDevMode  = MyGlobalLock (pdex.hDevMode);
-                            lpDevNames = MyGlobalLock (pdex.hDevNames);
+                            lpDevMode  = MyGlobalLockWsz (pdex.hDevMode);
+                            lpDevNames = MyGlobalLockWsz (pdex.hDevNames);
 #endif
-                            // Create a new font for the printer
-                            CreateNewFontCom (&hFontPR,
-                                              &lfPR,
-                                              &cfPR,
-                                              &tmPR,
-                                              &GetFSDirAveCharSize (FONTENUM_PR)->cx,
-                                              &GetFSDirAveCharSize (FONTENUM_PR)->cy);
-                            // This font is put into the DC by LclECPaintHook
-
+                            // If the Edit Ctrl is from SM, ...
+                            if (IzitSM (GetParent (hWndEC)))
+                                // Tell 'em about the Fallback font
+                                SendMessageW (hWndEC,
+                                              EM_SETFALLBACKFONT,
+                                              (WPARAM) (OptionFlags.bOutputDebug ? hFontFB_PR_SM : NULL),
+                                              (LPARAM) (OptionFlags.bOutputDebug ? hFontFB_SM    : NULL));
+                            else
+                            // If the Edit Ctrl is from FE, ...
+                            if (IzitFE (GetParent (hWndEC)))
+                                // Tell 'em about the Fallback font
+                                SendMessageW (hWndEC,
+                                              EM_SETFALLBACKFONT,
+                                              (WPARAM) (OptionFlags.bOutputDebug ? hFontFB_PR_FE : NULL),
+                                              (LPARAM) (OptionFlags.bOutputDebug ? hFontFB_FE    : NULL));
+#ifdef DEBUG
+                            else
+                                DbgBrk ();
+#endif
                             // Setup the DOCINFO struc for the print job
                             docInfo.cbSize       = sizeof (docInfo);
                             docInfo.lpszDocName  = WS_APPNAME;
@@ -2672,11 +2725,11 @@ LRESULT APIENTRY MFWndProc
                     } // End SWITCH
 
                     // Free allocated resources
-                    if (pdex.hDC)
+                    if (pdex.hDC NE NULL)
                         DeleteDC (pdex.hDC);
-                    if (pdex.hDevMode)
+                    if (pdex.hDevMode NE NULL)
                         GlobalFree (pdex.hDevMode);
-                    if (pdex.hDevNames)
+                    if (pdex.hDevNames NE NULL)
                         GlobalFree (pdex.hDevNames);
 
                     return FALSE;   // We handled the msg
@@ -2781,7 +2834,7 @@ LRESULT APIENTRY MFWndProc
             hWndSM = lpMemPTD->hWndSM;
 
             // If it's Quad input, and we're not resetting, ...
-            if (lpMemPTD->lpSISCur
+            if (lpMemPTD->lpSISCur NE NULL
              && lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_NONE
              && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
                 // Tell the SM to display the Quad Input Prompt
@@ -2817,24 +2870,24 @@ LRESULT APIENTRY MFWndProc
             } // End IF
 
             // If the Customize dialog box is still active, ...
-            if (ghDlgCustomize)
+            if (ghDlgCustomize NE NULL)
             {
                 // Ask 'em to close
                 SendMessageW (ghDlgCustomize, WM_CLOSE, 0, 0);
 
                 // If the Customize dialog box is still active, ...
-                if (ghDlgCustomize)
+                if (ghDlgCustomize NE NULL)
                     return FALSE;
             } // End IF
 
             // If the Updates dialog box is still active, ...
-            if (ghDlgUpdates)
+            if (ghDlgUpdates NE NULL)
             {
                 // Ask 'em to close
                 SendMessageW (ghDlgUpdates, WM_CLOSE, 0, 0);
 
                 // If the Updates dialog box is still active, ...
-                if (ghDlgUpdates)
+                if (ghDlgUpdates NE NULL)
                     return FALSE;
             } // End IF
 
@@ -2866,15 +2919,15 @@ LRESULT APIENTRY MFWndProc
             bMainDestroy = TRUE;
 
             // If the Customize dialog box is still active, ...
-            if (ghDlgCustomize)
+            if (ghDlgCustomize NE NULL)
                 // Destroy it
                 DestroyWindow (ghDlgCustomize);
             // If the Updates dialog box is still active, ...
-            if (ghDlgUpdates)
+            if (ghDlgUpdates NE NULL)
                 // Destroy it
                 DestroyWindow (ghDlgUpdates);
             // If the Keyboard Layout global memory is present, ...
-            if (hGlbKeybLayouts)
+            if (hGlbKeybLayouts NE NULL)
             {
                 DbgGlobalFree (hGlbKeybLayouts); hGlbKeybLayouts = NULL;
             } // End IF
@@ -2883,71 +2936,76 @@ LRESULT APIENTRY MFWndProc
             MF_Delete (hWnd);
 
             // Destroy the fonts
-            if (hFontTC)
+            if (hFontTC NE NULL)
             {
                 MyDeleteObject (hFontTC); hFontTC = NULL;
             } // End IF
 
-            if (hFontLW)
+            if (hFontLW NE NULL)
             {
                 MyDeleteObject (hFontLW); hFontLW = NULL;
             } // End IF
 
-            if (hFontSM)
+            if (hFontSM NE NULL)
             {
                 MyDeleteObject (hFontSM); hFontSM = NULL;
             } // End IF
 
-            if (hFontCC)
+            if (hFontFB_SM NE NULL)
+            {
+                MyDeleteObject (hFontFB_SM); hFontFB_SM = NULL;
+            } // End IF
+
+            if (hFontFB_FE NE NULL)
+            {
+                MyDeleteObject (hFontFB_FE); hFontFB_FE = NULL;
+            } // End IF
+
+            if (hFontFB_PR_SM NE NULL)
+            {
+                MyDeleteObject (hFontFB_PR_SM); hFontFB_PR_SM = NULL;
+            } // End IF
+
+            if (hFontFB_PR_FE NE NULL)
+            {
+                MyDeleteObject (hFontFB_PR_FE); hFontFB_PR_FE = NULL;
+            } // End IF
+
+            if (hFontCC NE NULL)
             {
                 MyDeleteObject (hFontCC); hFontCC = NULL;
             } // End IF
 
-            if (hFontFE)
+            if (hFontFE NE NULL)
             {
                 MyDeleteObject (hFontFE); hFontFE = NULL;
             } // End IF
 
-            if (hFontME)
-            {
-                MyDeleteObject (hFontME); hFontME = NULL;
-            } // End IF
-
-            if (hFontVE)
-            {
-                MyDeleteObject (hFontVE); hFontVE = NULL;
-            } // End IF
-
             // Destroy the image lists
-            if (hImageListOW)
+            if (hImageListOW NE NULL)
             {
                 ImageList_Destroy (hImageListOW); hImageListOW = NULL;
             } // End IF
 
-            if (hImageListED)
+            if (hImageListED NE NULL)
             {
                 ImageList_Destroy (hImageListED); hImageListED = NULL;
             } // End IF
 
-            if (hImageListWS)
+            if (hImageListWS NE NULL)
             {
                 ImageList_Destroy (hImageListWS); hImageListWS = NULL;
             } // End IF
 
-            if (hImageListTC)
+            if (hImageListTC NE NULL)
             {
                 ImageList_Destroy (hImageListTC); hImageListTC = NULL;
             } // End IF
 
             // *************** Bitmaps *********************************
-            if (hBitMapLineCont)
+            if (hBitmapCheck NE NULL)
             {
-                MyDeleteObject (hBitMapLineCont); hBitMapLineCont = NULL;
-            } // End IF
-
-            if (hBitMapCheck)
-            {
-                MyDeleteObject (hBitMapCheck); hBitMapCheck = NULL;
+                MyDeleteObject (hBitmapCheck); hBitmapCheck = NULL;
             } // End IF
 
             DeleteImageBitmaps ();
@@ -3107,7 +3165,7 @@ HWND GetActiveEC
 
     // Get the active MDI Client window handle
     hWndMC  = GetActiveMC (hWndTC);
-    if (hWndMC)
+    if (hWndMC NE NULL)
     {
         // Get the active MDI Child window handle
         hWndAct = (HWND) SendMessageW (hWndMC, WM_MDIGETACTIVE, 0, 0);
@@ -3193,7 +3251,7 @@ UBOOL CALLBACK EnumCallbackQueryClose
     // icon and the icon title.  The parent of the icon title window is set to
     // the MDI client window, which confines the icon title to the MDI client
     // area.  The owner of the icon title is set to the MDI child window.
-    if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
+    if (GetWindow (hWnd, GW_OWNER) NE NULL)     // If it's an icon title window, ...
         return TRUE;                    // skip it, and continue enumerating
 
     return (UINT) SendMessageW (hWnd, WM_QUERYENDSESSION, 0, 0);
@@ -3289,48 +3347,6 @@ UBOOL InitApplication
     if (!RegisterClassExW (&wcw))
     {
         MB (pszNoRegFEWndClass);
-        return FALSE;
-    } // End IF
-
-    // Fill in Matrix Editor window class structure
-    wcw.style           = CS_DBLCLKS;
-    wcw.lpfnWndProc     = (WNDPROC) MEWndProc;
-    wcw.cbClsExtra      = 0;
-    wcw.cbWndExtra      = GWLME_EXTRA;
-    wcw.hInstance       = hInstance;
-    wcw.hIcon           = hIconME_Large;
-    wcw.hIconSm         = hIconME_Small;
-    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
-    wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
-////wcw.lpszMenuName    = MAKEINTRESOURCEW (IDR_MEMENU);
-    wcw.lpszMenuName    = NULL;
-    wcw.lpszClassName   = LMEWNDCLASS;
-
-    // Register the Matrix Editor window class
-    if (!RegisterClassExW (&wcw))
-    {
-        MB (pszNoRegMEWndClass);
-        return FALSE;
-    } // End IF
-
-    // Fill in Vector Editor window class structure
-    wcw.style           = CS_DBLCLKS;
-    wcw.lpfnWndProc     = (WNDPROC) VEWndProc;
-    wcw.cbClsExtra      = 0;
-    wcw.cbWndExtra      = GWLVE_EXTRA;
-    wcw.hInstance       = hInstance;
-    wcw.hIcon           = hIconVE_Large;
-    wcw.hIconSm         = hIconVE_Small;
-    wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
-    wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
-////wcw.lpszMenuName    = MAKEINTRESOURCEW (IDR_VEMENU);
-    wcw.lpszMenuName    = NULL;
-    wcw.lpszClassName   = LVEWNDCLASS;
-
-    // Register the Vector Editor window class
-    if (!RegisterClassExW (&wcw))
-    {
-        MB (pszNoRegVEWndClass);
         return FALSE;
     } // End IF
 #ifdef DEBUG
@@ -3682,7 +3698,7 @@ UBOOL InitInstance
                   memVirtStr[MEMVIRT_WSZGLBTEMP].MaxSize,
                   MEM_RESERVE,      // memVirtStr
                   PAGE_READWRITE);
-    if (!memVirtStr[MEMVIRT_WSZGLBTEMP].IniAddr)
+    if (memVirtStr[MEMVIRT_WSZGLBTEMP].IniAddr EQ NULL)
     {
         // ***FIXME*** -- WS FULL before we got started???
         DbgMsgW (L"InitInstance:  GuardAlloc for <lpwszGlbTemp> failed");
@@ -3708,7 +3724,7 @@ UBOOL InitInstance
                   memVirtStr[MEMVIRT_GLBHSHTAB].MaxSize,
                   MEM_RESERVE,      // memVirtStr
                   PAGE_READWRITE);
-    if (!memVirtStr[MEMVIRT_GLBHSHTAB].IniAddr)
+    if (memVirtStr[MEMVIRT_GLBHSHTAB].IniAddr EQ NULL)
     {
         // ***FIXME*** -- WS FULL before we got started???
         DbgMsgW (L"InitInstance:  GuardAlloc for <lpGlbHshTab> failed");
@@ -3812,7 +3828,7 @@ void UninitInstance
     UINT uCnt;              // Loop counter
 
     // Delete the window background brush
-    if (ghBrushBG)
+    if (ghBrushBG NE NULL)
     {
         DeleteObject (ghBrushBG); ghBrushBG = NULL;
     } // End IF
@@ -3820,7 +3836,7 @@ void UninitInstance
 
     // *************** Temporary Storage ***********************
     for (uCnt = 0; uCnt < MEMVIRT_LENGTH; uCnt++)
-    if (memVirtStr[uCnt].IniAddr)
+    if (memVirtStr[uCnt].IniAddr NE NULL)
     {
         // Free the virtual storage
         MyVirtualFree (memVirtStr[uCnt].IniAddr, 0, MEM_RELEASE);
@@ -3828,6 +3844,68 @@ void UninitInstance
 
     // No need to destroy either the cursors or icons
 } // UninitInstance
+
+
+//***************************************************************************
+//  $TestCmdLine
+//
+//  Test the command line for a keyword
+//***************************************************************************
+
+UBOOL TestCmdLine
+    (LPCHAR  *lplpCmdLine,      // Ptr to ptr to command line
+     LPCHAR  lpKeyWord,         // Ptr to keyword
+     UINT    uMul,              // Multiplier
+     LPUBOOL lpbDone,           // Ptr to bDone var
+     LPUBOOL lpbRet,            // Ptr to bRet  var
+     size_t *lpOutput)          // Ptr to output save area
+
+{
+    size_t iSpn;
+    UINT   iVal;
+
+    // Find the trailing char
+    iSpn = strcspn (*lplpCmdLine, "= ");
+
+    // If it matches, ...
+    if (strncmpi (*lplpCmdLine, lpKeyWord, iSpn) EQ 0)
+    {
+        // Skip over the keyword
+        *lplpCmdLine += lstrlen (lpKeyWord);
+
+        // Skip over leading space
+        *lplpCmdLine = SkipWhite (*lplpCmdLine);
+
+        Assert ((*lplpCmdLine)[0] EQ '=');
+
+        // If it's not the correct separator, ...
+        if ((*lplpCmdLine)[0] NE '=')
+        {
+            *lpbDone = TRUE;
+            *lpbRet = FALSE;
+            MBW (L"Invalid command line argument -- missing '=' separator.");
+
+            return FALSE;
+        } else
+        {
+            // Skip over the separator
+            (*lplpCmdLine)++;
+
+////////////// Skip over leading space
+////////////*lplpCmdLine = SkipWhite (*lplpCmdLine);    // atoi does this
+
+            iVal = abs (atoi (*lplpCmdLine));
+            if (iVal NE 0)
+                *lpOutput = iVal * uMul;
+             // Skip over the digits
+             *lplpCmdLine += strspn (*lplpCmdLine, " 0123456789");
+
+            return TRUE;
+        } // End IF/ELSE
+    } // End IF
+
+    return FALSE;
+} // End TestCmdLine
 
 
 //***************************************************************************
@@ -3840,32 +3918,75 @@ UBOOL ParseCommandLine
     (LPSTR lpCmdLine)
 
 {
-    LPCHAR p;
-    WCHAR  wszTempDPFE[1024];
+    WCHAR  wszTempDPFE[1024];       // Temporary buffer
+    UBOOL  bRet = TRUE;             // TRUE iff the result is valid
 
     // If there's a command line, ...
-    if (lpCmdLine && lstrlen (lpCmdLine) NE 0)
+    if (lpCmdLine NE NULL && lstrlen (lpCmdLine) NE 0)
     {
+        LPCHAR p;                   // Temporary ptr
+        UBOOL  bDone = FALSE;       // TRUE iff we're bDone
+
         // Skip over leading space
         p = SkipWhite (lpCmdLine);
 
-        if (*p)
+        // Loop until bDone
+        while (!bDone)
+        // Split cases based upon the leading char
+        switch (*p)
         {
-            // Copy to temporary buffer
-            A2W (wszTempDPFE, p, sizeof (wszTempDPFE));
+            case '/':           // Check for common switch chars
+            case '-':           // ...
+                // Skip over the separator
+                p++;
 
-            // Convert the []WSID workspace name into a canonical form (without WS_WKSEXT)
-            MakeWorkspaceNameCanonical (wszLoadFile, wszTempDPFE, lpwszWorkDir);
+                // Test for various keywords
+                if (TestCmdLine (&p,
+                                 "symtabsize",
+                                 SYMTABSIZE_MUL,
+                                &bDone,
+                                &bRet,
+                                &gSymTabSize))
+                    break;
+                if (TestCmdLine (&p,
+                                 "hshtabsize",
+                                 HSHTABSIZE_MUL,
+                                &bDone,
+                                &bRet,
+                                &gHshTabSize))
+                    break;
 
-            // Append the common workspace extension
-            MyStrcatW (wszLoadFile, sizeof (wszLoadFile), WS_WKSEXT);
+                bDone = TRUE;
+                bRet = FALSE;
+                MBW (L"Unknown command line argument.");
 
-            // Mark as present
-            bCommandLine = TRUE;
-        } // End IF
+                break;
+
+            case AC_EOS:
+                bDone = TRUE;
+
+                break;
+
+            default:
+                // Copy to temporary buffer
+                A2W (wszTempDPFE, p, sizeof (wszTempDPFE));
+
+                // Convert the []WSID workspace name into a canonical form (without WS_WKSEXT)
+                MakeWorkspaceNameCanonical (wszLoadFile, wszTempDPFE, lpwszWorkDir);
+
+                // Append the common workspace extension
+                MyStrcatW (wszLoadFile, sizeof (wszLoadFile), WS_WKSEXT);
+
+                bDone = TRUE;
+
+                break;
+        } // End WHILE/SWITCH
+
+        // Mark as present
+        bCommandLine = TRUE;
     } // End IF
 
-    return TRUE;
+    return bRet;
 } // ParseCommandLine
 
 
@@ -3937,7 +4058,7 @@ int PASCAL WinMain
 #endif
     SetCursor (LoadCursor (NULL, MAKEINTRESOURCE (IDC_APPSTARTING)));
 
-    PERFMONINIT
+    PERFMONINIT (NULL)
 
     // Copy initial Syntax Colors as default
     for (uCnt = 0; uCnt < SC_LENGTH; uCnt++)

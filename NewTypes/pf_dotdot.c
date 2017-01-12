@@ -223,7 +223,7 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
     if (hGlbLft NE NULL)
     {
         // Lock the memory to get a ptr to it
-        lpMemHdrLft = MyGlobalLock (hGlbLft);
+        lpMemHdrLft = MyGlobalLockVar (hGlbLft);
 
         // Skip over the header and dimension
         lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
@@ -234,7 +234,7 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
     if (hGlbRht NE NULL)
     {
         // Lock the memory to get a ptr to it
-        lpMemHdrRht = MyGlobalLock (hGlbRht);
+        lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
         // Skip over the header and dimension
         lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
@@ -443,7 +443,7 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
     // Fill in the header
@@ -581,6 +581,8 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbRht); lpMemHdrRht  = NULL;
     } // End IF
 
+    // If the result is not HCxy, ...
+    if (!IsHCAny (aplTypeRes))
     // Split cases based upon the result storage type
     switch (aplTypeRes)
     {
@@ -613,7 +615,7 @@ NORMAL_EXIT:
 
         defstop
             break;
-    } // End SWITCH
+    } // End IF/SWITCH
 
     return lpYYRes;
 } // End PrimFnDydDotDot_YY

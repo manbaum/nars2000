@@ -83,9 +83,13 @@ typedef struct tagPERTABDATA
                  eHCMul:2,                  // 00000060:  Hypercomplex Arithmetic Multiplication choice (see tagENUM_HCMUL)
                  :25;                       // FFFFFF80:  Available bits
     HGLOBAL      hGlbCurLine;               // Current line global memory handle
-    LPWCHAR      lpwszTempName;             // Ptr to current name with lpwszTemp open
-    LPWCHAR      lpwszErrorMessage;         // Ptr to error message to signal
-    LPWCHAR      lpwszQuadErrorMsg;         // Used for []ERROR/[]ES messages
+#ifdef DEBUG
+    LPWCHAR      lpwszTempName,             // Ptr to current name with lpwszTemp open
+                 lpwszFILE,                 // Ptr to current __FILE__ for lpwszTemp open
+                 lpwszLINE;                 // Ptr to current __LINE__ for lpwszTemp open
+#endif
+    LPWCHAR      lpwszErrorMessage,         // Ptr to error message to signal
+                 lpwszQuadErrorMsg;         // Used for []ERROR/[]ES messages
     UINT         uCaret;                    // Position of the caret in the current line on error
     int          crIndex;                   // Tab's color index
     APLINT       uQuadMF;                   // []MF timer value (8 bytes)
@@ -117,8 +121,8 @@ typedef struct tagPERTABDATA
     LPWCHAR      lpwszFormat,               // Ptr to formatting save area
                  lpwszBaseTemp,             // Ptr to base of lpwszTemp
                  lpwszTemp;                 // Ptr to temporary  ...
-    UINT         uTempMaxSize,              // Maximum size of lpwszTemp
-                 uExecDepth,                // Execution depth
+    APLI3264     iTempMaxSize;              // Maximum size of lpwszTemp
+    UINT         uExecDepth,                // Execution depth
                  uErrLine;                  // Error line # from []FX for )IN
     APLU3264     RegisterEBP;               // Register EBP/RBP from an exception
     LPTOKEN      lptkCSIni,                 // Ptr to start of CtrlStruc token stack (static)

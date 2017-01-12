@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -190,7 +190,7 @@ UBOOL CmdOut_EM
                         // Check for []DM and []WSID and skip it if found
 
                         // Lock the memory to get a ptr to it
-                        lpwGlbName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+                        lpwGlbName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
 
                         // Compare the names
                         uCnt = lstrcmpiW (lpwGlbName, $QUAD_WSID) EQ 0
@@ -224,7 +224,7 @@ UBOOL CmdOut_EM
                         *lpwTemp++ = L'F';
 
                         // Lock the memory to get a ptr to it
-                        lpwGlbName = MyGlobalLock (lpSymEntry->stHshEntry->htGlbName);
+                        lpwGlbName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
 
                         // Copy the function name
                         strcpyW (lpwTemp, lpwGlbName);

@@ -473,7 +473,7 @@ __try
             if (hGlbFormat2)
             {
                 // Lock the memory to get a ptr to it
-                lpwszFormat2 = MyGlobalLock (hGlbFormat2);
+                lpwszFormat2 = MyGlobalLock000 (hGlbFormat2);
 
                 // If there's an old save area, ...
                 if (hGlbFormat)
@@ -548,7 +548,7 @@ __try
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header
@@ -880,7 +880,6 @@ LPAPLCHAR CompileArrChar
     APLDIM      aplDimRow,      // Loop counter
                 aplDimCol;      // ...
     LPFMTROWSTR lpFmtRowLcl = NULL; // Ptr to local FMTROWSTR
-    UINT        uCurPos;        // Current col position
 
     // Set column type
     lpFmtColStr[0].colType   = max (lpFmtColStr[0].colType, COLTYPE_ALLCHAR);
@@ -916,24 +915,24 @@ LPAPLCHAR CompileArrChar
 
         // Copy the data including a terminating zero
         //  and launder special chars
-        for (aplDimCol = uCurPos = 0;
+        for (aplDimCol = 0;
              aplDimCol < aplDimNCols;
              aplDimCol++)
         // Split cases based upon the char
         switch (lpMem[aplDimCol])
         {
-            case TCNUL:         // []TCNUL -- Ignore this
+            case WC_EOS:        // []TCNUL -- Substitute for this
+                lpaplChar[aplDimCol] = UTF16_REPLACEMENT0000;
                 break;
 
             default:            // Insert a new char
-                lpaplChar[uCurPos] = lpMem[aplDimCol];
-                uCurPos++;
+                lpaplChar[aplDimCol] = lpMem[aplDimCol];
 
                 break;
         } // End FOR/SWITCH
 
         // Skip over the current item width
-        lpaplChar += uCurPos;
+        lpaplChar += aplDimNCols;
 
         // Skip over the right arg cols
         lpMem     += aplDimNCols;
@@ -945,7 +944,7 @@ LPAPLCHAR CompileArrChar
         lpFmtRowLcl->uItemCount++;
 
         // Max the current width with the width of this col
-        lpFmtColStr[0].uChrs = max (lpFmtColStr[0].uChrs, uCurPos);
+        lpFmtColStr[0].uChrs = max (lpFmtColStr[0].uChrs, (UINT) aplDimNCols);
 
         // Save the ptr to the terminating zero
         // Note that <lpaplChar> points to the 2nd trailing zero after the number
@@ -1066,7 +1065,7 @@ LPAPLCHAR CompileArrHetero
 
                 case PTRTYPE_HGLOBAL:
                     // Get the attributes of the global memory handle
-                    AttrsOfGlb (*(HGLOBAL *) lpMem, &aplTypeItm, NULL, NULL, NULL);
+                    AttrsOfGlb (MakeGlbFromPtr (lpMem), &aplTypeItm, NULL, NULL, NULL);
 
                     // Save the immediate type
                     immTypeCur = TranslateArrayTypeToImmType (aplTypeItm);
@@ -1339,7 +1338,7 @@ LPAPLCHAR CompileArrNested
 
             case PTRTYPE_HGLOBAL:
                 // Lock the memory to get a ptr to it
-                lpTmp = MyGlobalLock (((LPAPLHETERO) lpMem)[aplDimCol]);
+                lpTmp = MyGlobalLockVar (((LPAPLHETERO) lpMem)[aplDimCol]);
 
                 // Use the larger rank
                 aplRowRankNxt = max (aplRowRankNxt, lpTmp->Rank);
@@ -1587,7 +1586,7 @@ LPAPLCHAR CompileArrNestedGlb
     AttrsOfGlb (hGlb, &aplType, &aplNELM, &aplRank, NULL);
 
     // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlb);
+    lpMem = MyGlobalLockVar (hGlb);
 
     // Skip over the header to the dimensions
     lpMemDim = VarArrayBaseToDim (lpMem);
@@ -3678,7 +3677,7 @@ LPAPLCHAR FormatArrNestedGlb
     AttrsOfGlb (hGlb, &aplType, NULL, &aplRank, NULL);
 
     // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLock (hGlb);
+    lpMem = MyGlobalLockVar (hGlb);
 
     // Skip over the header to the dimensions
     lpMemDim = VarArrayBaseToDim (lpMem);
@@ -3944,7 +3943,7 @@ LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     //   and check the left arg for valid values
 
     // Lock the memory to get a ptr to it
-    lpMemWidPrc = MyGlobalLock (hGlbWidPrc);
+    lpMemWidPrc = MyGlobalLock000 (hGlbWidPrc);
 
     if (hGlbLft)
         // Skip over the header to the data
@@ -4560,7 +4559,7 @@ __try
                         // The item must be a char vector
 
                         // Lock the memory to get a ptr to it
-                        lpMemItmRht = MyGlobalLock (hGlbItmRht);
+                        lpMemItmRht = MyGlobalLockVar (hGlbItmRht);
 
 #define lpHeader    ((LPVARARRAY_HEADER) lpMemItmRht)
                         // Get the array parameters
@@ -4768,7 +4767,7 @@ __try
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock (hGlbRes);
+    lpMemRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
     // Fill in the header

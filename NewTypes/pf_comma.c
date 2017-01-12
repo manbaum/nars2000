@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2016 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -387,7 +387,7 @@ LPPL_YYSTYPE PrimFnMonCommaScalar_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
     // Fill in the header
@@ -412,7 +412,7 @@ LPPL_YYSTYPE PrimFnMonCommaScalar_EM_YY
     if (hGlbRht NE NULL)
     {
         // Lock the memory to get a handle to it
-        lpMemHdrRht = MyGlobalLock (hGlbRht);
+        lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
         // Skip over the header and dimensions to the data
         lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
@@ -711,7 +711,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     } // End IF
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLock (hGlbRht);
+    lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
 #define lpHeader    lpMemHdrRht
     // Get the Array Type and NELM
@@ -729,7 +729,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     if (hGlbAxis NE NULL)
     {
         // Lock the memory to get a ptr to it
-        lpMemAxisHead = MyGlobalLock (hGlbAxis);
+        lpMemAxisHead = MyGlobalLockInt (hGlbAxis);
 
         // Point to the grade-up of the first
         //   <aplRankRht> values in lpMemAxis
@@ -782,7 +782,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
     // Fill in the header
@@ -1016,7 +1016,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemWVec = MyGlobalLock (hGlbWVec);
+        lpMemWVec = MyGlobalLock000 (hGlbWVec);
 
         // Loop through the dimensions of the right arg in reverse
         //   order {backscan} and compute the cumulative product
@@ -1046,7 +1046,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemOdo = MyGlobalLock (hGlbOdo);
+        lpMemOdo = MyGlobalLock000 (hGlbOdo);
 
         // Split cases based upon the storage type of the right arg/result
         switch (aplTypeRht)
@@ -1356,7 +1356,8 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     APLRANK           aplRankLft,           // The rank of the left arg
                       aplRankRht,           // ...             right ...
                       aplRankRes,           // ...             result
-                      aplRankTmp;           // Temporary rank
+                      aplRankLo,            // ...             smaller rank arg
+                      aplRankHi;            // ...             larger  ...
     APLSTYPE          aplTypeLft,           // Left arg storage type
                       aplTypeRht,           // Right ...
                       aplTypeRes;           // Result   ...
@@ -1366,7 +1367,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     HGLOBAL           hGlbLft = NULL,       // Left arg global memory handle
                       hGlbRht = NULL,       // Right ...
                       hGlbRes = NULL,       // Result   ...
-                      hGlbTmp;              // Temporary ...
+                      hGlbNMT;              // Non-empty ...
     LPVARARRAY_HEADER lpMemHdrLft = NULL,   // Ptr to left arg header
                       lpMemHdrRht = NULL,   // ...    right ...
                       lpMemHdrRes = NULL;   // ...    result   ...
@@ -1378,7 +1379,8 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     LPAPLDIM          lpMemDimLft,          // Ptr to left arg dimensions
                       lpMemDimRht,          // ...    right ...
                       lpMemDimRes,          // ...    result   ...
-                      lpMemDimDir;          // ...
+                      lpMemDimLo,           // ...    smaller rank dimensions
+                      lpMemDimHi;           // ...    larger  ...
     APLDIM            aplDimTmp,
                       aplDimBeg,
                       aplDimLftEnd,
@@ -1609,25 +1611,29 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     // Get a ptr to the dimensions of the larger (or equal) rank arg
     if (aplRankLft < aplRankRht)
     {
-        lpMemDimDir = lpMemDimRht;
-        aplRankTmp  = aplRankRht;
+        lpMemDimHi  = lpMemDimRht;
+        lpMemDimLo  = lpMemDimLft;
+        aplRankHi   = aplRankRht;
+        aplRankLo   = aplRankLft;
     } else
     {
-        lpMemDimDir = lpMemDimLft;
-        aplRankTmp  = aplRankLft;
+        lpMemDimHi  = lpMemDimLft;
+        lpMemDimLo  = lpMemDimRht;
+        aplRankHi   = aplRankLft;
+        aplRankLo   = aplRankRht;
     } // End IF/ELSE
 
     // Calculate the product of the non-axis dimensions
-    for (uRht = 0, aplDimTmp = 1; uRht < aplRankTmp; uRht++)
+    for (uRht = 0, aplDimTmp = 1; uRht < aplRankHi; uRht++)
     if (bFract || uRht NE aplAxis)
-        aplDimTmp *= lpMemDimDir[uRht];
+        aplDimTmp *= lpMemDimHi[uRht];
 
     // Calculate the NELM of the result
     if (bFract)
         aplNELMRes = aplDimTmp * 2;
     else
     if (aplRankLft NE aplRankRht)
-        aplNELMRes = aplDimTmp * (lpMemDimDir[aplAxis] + 1);
+        aplNELMRes = aplDimTmp * (lpMemDimHi [aplAxis] + 1);
     else
         aplNELMRes = aplDimTmp * (lpMemDimLft[aplAxis] + lpMemDimRht[aplAxis]);
 
@@ -1637,12 +1643,12 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     if (IsEmpty (aplNELMLft))
     {
         aplTypeRes = aplTypeLft = aplTypeRht;
-        hGlbTmp    = hGlbRht;
+        hGlbNMT    = hGlbRht;
     } else
     if (IsEmpty (aplNELMRht))
     {
         aplTypeRes = aplTypeRht = aplTypeLft;
-        hGlbTmp    = hGlbLft;
+        hGlbNMT    = hGlbLft;
     } else
         aplTypeRes = aTypePromote[aplTypeLft][aplTypeRht];
 
@@ -1656,8 +1662,67 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     // Check for APA result
     if (IsSimpleAPA (aplTypeRes))
     {
-        // Copy the right arg
-        hGlbRes = CopySymGlbDirAsGlb (hGlbTmp);
+        // If the ranks differ, ...
+        if (aplRankLft NE aplRankRht)
+        {
+            LPAPLAPA lpaplAPARes,
+                     lpaplAPALo;
+
+            // Allocate a new APA
+
+            //***************************************************************
+            // Calculate space needed for the result
+            //***************************************************************
+            ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
+
+            //***************************************************************
+            // Check for overflow
+            //***************************************************************
+            if (ByteRes NE (APLU3264) ByteRes)
+                goto WSFULL_EXIT;
+
+            //***************************************************************
+            // Now we can allocate the storage for the result
+            //***************************************************************
+            hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+            if (hGlbRes EQ NULL)
+                goto WSFULL_EXIT;
+
+            // Lock the memory to get a ptr to it
+            lpMemHdrRes = MyGlobalLock000 (hGlbRes);
+
+#define lpHeader        lpMemHdrRes
+            // Fill in the header
+            lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+            lpHeader->ArrType    = aplTypeRes;
+////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+            lpHeader->RefCnt     = 1;
+            lpHeader->NELM       = aplNELMRes;
+            lpHeader->Rank       = aplRankRes;
+#undef  lpHeader
+            // Skip over the header to the dimensions
+            lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
+
+            // Copy the dimensions from the higher rank arg
+            CopyMemory (lpMemDimRes, lpMemDimHi, (APLU3264) (aplRankRes * sizeof (APLDIM)));
+
+            // Change the empty dimension
+            lpMemDimRes[aplAxis]++;
+
+            // Point to the APA data
+            lpaplAPARes = VarArrayDimToData (lpMemDimRes, aplRankRes);
+            lpaplAPALo  = VarArrayDimToData (lpMemDimLo , aplRankLo );
+
+            // Copy the APA data
+            lpaplAPARes->Off = lpaplAPALo->Off;
+            lpaplAPARes->Mul = lpaplAPALo->Mul;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+        } else
+            // Copy the non-empty arg
+            hGlbRes = CopySymGlbDirAsGlb (hGlbNMT);
 
         goto YYALLOC_EXIT;
     } // End IF
@@ -1713,7 +1778,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
 #define lpHeader        lpMemHdrRes
     // Fill in the header
@@ -1733,8 +1798,8 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // Copy the dimensions of the larger rank arg
-    for (uRht = 0; uRht < aplRankTmp; uRht++)
-        lpMemDimRes[uRht + (bFract && (aplAxis <= uRht))] = lpMemDimDir[uRht];
+    for (uRht = 0; uRht < aplRankHi; uRht++)
+        lpMemDimRes[uRht + (bFract && (aplAxis <= uRht))] = lpMemDimHi[uRht];
 
     // Add in the axis dimension
     if (bFract)

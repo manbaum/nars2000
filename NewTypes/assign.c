@@ -110,7 +110,7 @@ UBOOL AssignName_EM
             Assert (IsGlbTypeDfnDir_PTB (hGlbSrc));
 
             // Lock the memory to get a ptr to it
-            lpMemDfnHdr = MyGlobalLock (hGlbSrc);
+            lpMemDfnHdr = MyGlobalLockDfn (hGlbSrc);
 
             // Free the old value for this name
             FreeResultName (lptkNam);
@@ -679,7 +679,7 @@ UBOOL AssignNamedVars_EM
     hGlbStr = lptkStr->tkData.tkGlbData;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrNam = MyGlobalLock (hGlbStr);
+    lpMemHdrNam = MyGlobalLockVnm (hGlbStr);
 
 #define lpHeader    lpMemHdrNam
     // Get the # names in the strand
@@ -742,7 +742,7 @@ UBOOL AssignNamedVars_EM
     Assert (IsGlbTypeVarDir_PTB (hGlbVal));
 
     // Lock the memory to get a ptr to it
-    lpMemHdrVal = MyGlobalLock (hGlbVal);
+    lpMemHdrVal = MyGlobalLockVar (hGlbVal);
 
 #define lpHeader    lpMemHdrVal
     // Get the Type, NELM, and Rank
@@ -1097,7 +1097,7 @@ UBOOL ModifyAssignNamedVars_EM
     Assert (IsGlbTypeNamDir_PTB (hGlbName));
 
     // Lock the memory to get a ptr to it
-    lpMemHdrNam = MyGlobalLock (hGlbName);
+    lpMemHdrNam = MyGlobalLockVnm (hGlbName);
 
 #define lpHeader        lpMemHdrNam
     aplNELMNam = lpHeader->NELM;
@@ -1186,7 +1186,7 @@ UBOOL ModifyAssignNamedVars_EM
     Assert (IsGlbTypeVarDir_PTB (hGlbVal));
 
     // Lock the memory to get a ptr to it
-    lpMemHdrVal = MyGlobalLock (hGlbVal);
+    lpMemHdrVal = MyGlobalLockVar (hGlbVal);
 
 #define lpHeader    lpMemHdrVal
     // Get the Type, NELM, and Rank

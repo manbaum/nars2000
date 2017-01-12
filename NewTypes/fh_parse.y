@@ -287,6 +287,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  MakeHdrStrand_YY (&$1);
 
                                  lpfhLocalVars->lpYYFcnName = $1.lpYYStrandBase;
+                                 lpfhLocalVars->offFcnName  = $1.lpYYStrandBase->offTknIndex;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN0;         // Mark as a niladic function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_NIL;       // Mark as niladic
@@ -298,6 +299,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  MakeHdrStrand_YY (&$1);
 
                                  lpfhLocalVars->lpYYFcnName = $1.lpYYStrandBase;
+                                 lpfhLocalVars->offFcnName  = $1.lpYYStrandBase->offTknIndex;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN0;         // Mark as a niladic function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_NIL;       // Mark as niladic
@@ -315,6 +317,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  MakeHdrStrand_YY (&$1);
 
                                  lpfhLocalVars->lpYYFcnName = $1.lpYYStrandBase;
+                                 lpfhLocalVars->offFcnName  = $1.lpYYStrandBase->offTknIndex;
                                  lpfhLocalVars->lpYYRhtArg  = $2.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
@@ -327,6 +330,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  MakeHdrStrand_YY (&$1);
 
                                  lpfhLocalVars->lpYYFcnName = $1.lpYYStrandBase;
+                                 lpfhLocalVars->offFcnName  = $1.lpYYStrandBase->offTknIndex;
                                  lpfhLocalVars->lpYYRhtArg  = $2.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
@@ -344,6 +348,7 @@ NoResHdr:                       // N.B. that this production does not need to re
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
+                                 lpfhLocalVars->offFcnName  = $2.lpYYStrandBase->offTknIndex;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
@@ -360,6 +365,7 @@ NoResHdr:                       // N.B. that this production does not need to re
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
+                                 lpfhLocalVars->offFcnName  = $2.lpYYStrandBase->offTknIndex;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
@@ -372,6 +378,7 @@ NoResHdr:                       // N.B. that this production does not need to re
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
+                                 lpfhLocalVars->offFcnName  = $2.lpYYStrandBase->offTknIndex;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
@@ -385,6 +392,7 @@ NoResHdr:                       // N.B. that this production does not need to re
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
+                                 lpfhLocalVars->offFcnName  = $2.lpYYStrandBase->offTknIndex;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
@@ -398,6 +406,7 @@ NoResHdr:                       // N.B. that this production does not need to re
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
+                                 lpfhLocalVars->offFcnName  = $2.lpYYStrandBase->offTknIndex;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
@@ -411,6 +420,7 @@ NoResHdr:                       // N.B. that this production does not need to re
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
+                                 lpfhLocalVars->offFcnName  = $2.lpYYStrandBase->offTknIndex;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
@@ -497,7 +507,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->ListLft     = $1.List;              // Copy the List bit
                                 }
     | OptArg  List     RhtArg   {DbgMsgWP (L"%%NoResHdr:  OptArg List RhtArg");     // Mon/Dyd operator, ambivalent derived function
-                                  if (!GetOprName_EM (&$2))
+                                 if (!GetOprName_EM (&$2))
                                      YYERROR;
 
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
@@ -642,7 +652,7 @@ UBOOL ParseFcnHeader
         lpfhLocalVars->hGlbTknHdr = hGlbTknHdr;
 
         // Lock the memory to get a ptr to it
-        lpfhLocalVars->lpHeader  = MyGlobalLock (lpfhLocalVars->hGlbTknHdr);
+        lpfhLocalVars->lpHeader  = MyGlobalLockTkn (lpfhLocalVars->hGlbTknHdr);
 
         // Initialize the base & next strand ptrs
         lpfhLocalVars->lpYYStrandBase =
@@ -653,6 +663,9 @@ UBOOL ParseFcnHeader
 
         // Skip over the starting EOL
         lpfhLocalVars->lptkNext  = &lpfhLocalVars->lptkStart[1];
+
+        // Account for the above skip
+        lpfhLocalVars->offTknBase++;
 
         // Mark the stopping point
         lpfhLocalVars->lptkStop  = &lpfhLocalVars->lptkStart[lpfhLocalVars->lptkStart->tkData.tkChar];
@@ -721,6 +734,10 @@ int fh_yylex
 
 {
 FH_YYLEX_START:
+    // Save the token base as this item's index
+    //   and post-increment it
+    lpYYLval->offTknIndex = lpfhLocalVars->offTknBase++;
+
     // Check for stopping point
     if (lpfhLocalVars->lptkStop EQ lpfhLocalVars->lptkNext)
     {
@@ -812,6 +829,7 @@ FH_YYLEX_START:
             return SOS;
 
         case TKT_GLBDFN:
+        case TKT_LINECONT:
             goto FH_YYLEX_START;    // Ignore these tokens
 
         default:
@@ -941,7 +959,7 @@ DISPLAYCAT:
 #endif
 DISPLAY:
     // Display a message box
-    MessageBoxW (lpfhLocalVars->hWndEC,
+    MessageBoxW (hWndMF,
                  wp,
                  lpwszAppName,
                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);

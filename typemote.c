@@ -2359,6 +2359,7 @@ void TPA_BOOL2HETE
 {
     APLINT aplInteger;
 
+    // Copy the input value in case it overlaps with the output
     aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
 
     lpAllTypes->aplHetero =
@@ -2382,6 +2383,7 @@ void TPA_BOOL2NEST
 {
     APLINT aplInteger;
 
+    // Copy the input value in case it overlaps with the output
     aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
 
     lpAllTypes->aplNested =
@@ -2403,10 +2405,15 @@ void TPA_BOOL2RAT
      LPALLTYPES  lpAllTypes)
 
 {
+    APLINT aplInteger;
+
+    // Copy the input value in case it overlaps with the output
+    aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
+
     // Initialize the result
     Myq_init (&lpAllTypes->aplRat);
 
-    mpq_set_sx (&lpAllTypes->aplRat, GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt), 1);
+    mpq_set_sx (&lpAllTypes->aplRat, aplInteger, 1);
 } // TPA_BOOL2RAT
 
 
@@ -2420,10 +2427,15 @@ void TPA_BOOL2VFP
      LPALLTYPES  lpAllTypes)
 
 {
+    APLINT aplInteger;
+
+    // Copy the input value in case it overlaps with the output
+    aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
+
     // Initialize the result
     Myf_init (&lpAllTypes->aplVfp);
 
-    mpfr_set_sx (&lpAllTypes->aplVfp, GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt), MPFR_RNDN);
+    mpfr_set_sx (&lpAllTypes->aplVfp, aplInteger, MPFR_RNDN);
 } // TPA_BOOL2VFP
 
 
@@ -2437,7 +2449,7 @@ void TPA_INT2INT
      LPALLTYPES  lpAllTypes)
 
 {
-    lpAllTypes->aplInteger = GetNextInteger (lpaplInteger, ARRAY_INT, uInt);
+    lpAllTypes->aplInteger = lpaplInteger[uInt];
 } // TPA_INT2INT
 
 
@@ -2451,7 +2463,9 @@ void TPA_INT2FLT
      LPALLTYPES  lpAllTypes)
 
 {
-    lpAllTypes->aplFloat = GetNextFloat (lpaplInteger, ARRAY_INT, uInt);
+    // No need to copy the input as it is the same size as the output
+
+    lpAllTypes->aplFloat = (APLFLOAT) lpaplInteger[uInt];
 } // TPA_INT2FLT
 
 
@@ -2467,6 +2481,7 @@ void TPA_INT2HETE
 {
     APLINT aplInteger;
 
+    // Copy the input value in case it overlaps with the output
     aplInteger = GetNextInteger (lpaplInteger, ARRAY_INT, uInt);
 
     lpAllTypes->aplHetero =
@@ -2490,7 +2505,8 @@ void TPA_INT2NEST
 {
     APLINT aplInteger;
 
-    aplInteger = GetNextInteger (lpaplInteger, ARRAY_INT, uInt);
+    // Copy the input value in case it overlaps with the output
+    aplInteger = lpaplInteger[uInt];
 
     lpAllTypes->aplNested =
       MakeSymEntry_EM (IMMTYPE_INT,
@@ -2511,10 +2527,15 @@ void TPA_INT2RAT
      LPALLTYPES  lpAllTypes)
 
 {
+    APLINT aplInteger;
+
+    // Copy the input value in case it overlaps with the output
+    aplInteger = lpaplInteger[uInt];
+
     // Initialize the result
     Myq_init (&lpAllTypes->aplRat);
 
-    mpq_set_sx (&lpAllTypes->aplRat, GetNextInteger (lpaplInteger, ARRAY_INT, uInt), 1);
+    mpq_set_sx (&lpAllTypes->aplRat, aplInteger, 1);
 } // TPA_INT2RAT
 
 
@@ -2528,10 +2549,15 @@ void TPA_INT2VFP
      LPALLTYPES  lpAllTypes)
 
 {
-    // Initialize the result
+    APLINT aplInteger;
+
+    // Copy the input value in case it overlaps with the output
+    aplInteger = lpaplInteger[uInt];
+
+    // Initialize the result to NaN
     Myf_init (&lpAllTypes->aplVfp);
 
-    mpfr_set_sx (&lpAllTypes->aplVfp, GetNextInteger (lpaplInteger, ARRAY_INT, uInt), MPFR_RNDN);
+    mpfr_set_sx (&lpAllTypes->aplVfp, aplInteger, MPFR_RNDN);
 } // TPA_INT2VFP
 
 
@@ -2545,6 +2571,8 @@ void TPA_FLT2FLT
      LPALLTYPES  lpAllTypes)
 
 {
+    // No need to copy the input as it is the same size as the output
+
     lpAllTypes->aplFloat = lpaplFloat[uInt];
 } // TPA_FLT2FLT
 
@@ -2559,9 +2587,14 @@ void TPA_FLT2HETE
      LPALLTYPES  lpAllTypes)
 
 {
+    APLFLOAT aplFloat;
+
+    // Copy the input value in case it overlaps with the output
+    aplFloat = lpaplFloat[uInt];
+
     lpAllTypes->aplHetero =
       MakeSymEntry_EM (IMMTYPE_FLOAT,
-       (LPAPLLONGEST) &lpaplFloat[uInt],
+       (LPAPLLONGEST) &aplFloat,
                        NULL);
     if (lpAllTypes->aplHetero EQ NULL)
         RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
@@ -2578,9 +2611,14 @@ void TPA_FLT2NEST
      LPALLTYPES  lpAllTypes)
 
 {
+    APLFLOAT aplFloat;
+
+    // Copy the input value in case it overlaps with the output
+    aplFloat = lpaplFloat[uInt];
+
     lpAllTypes->aplNested =
       MakeSymEntry_EM (IMMTYPE_FLOAT,
-       (LPAPLLONGEST) &lpaplFloat[uInt],
+       (LPAPLLONGEST) &aplFloat,
                        NULL);
     if (lpAllTypes->aplNested EQ NULL)
         RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
@@ -2597,10 +2635,15 @@ void TPA_FLT2VFP
      LPALLTYPES  lpAllTypes)
 
 {
+    APLFLOAT aplFloat;
+
+    // Copy the input value in case it overlaps with the output
+    aplFloat = lpaplFloat[uInt];
+
     // Initialize the result
     Myf_init (&lpAllTypes->aplVfp);
 
-    mpfr_set_d  (&lpAllTypes->aplVfp, lpaplFloat[uInt], MPFR_RNDN);
+    mpfr_set_d  (&lpAllTypes->aplVfp, aplFloat, MPFR_RNDN);
 } // TPA_FLT2VFP
 
 
@@ -2614,6 +2657,8 @@ void TPA_CHAR2CHAR
      LPALLTYPES  lpAllTypes)
 
 {
+    // No need to copy the input as it is the same size as the output
+
     lpAllTypes->aplChar = lpaplChar[uInt];
 } // TPA_CHAR2CHAR
 
@@ -2628,9 +2673,14 @@ void TPA_CHAR2HETE
      LPALLTYPES  lpAllTypes)
 
 {
+    APLCHAR aplChar;
+
+    // Copy the input value in case it overlaps with the output
+    aplChar = lpaplChar[uInt];
+
     lpAllTypes->aplHetero =
       MakeSymEntry_EM (IMMTYPE_CHAR,
-       (LPAPLLONGEST) &lpaplChar[uInt],
+       (LPAPLLONGEST) &aplChar,
                        NULL);
     if (lpAllTypes->aplHetero EQ NULL)
         RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
@@ -2647,9 +2697,14 @@ void TPA_CHAR2NEST
      LPALLTYPES  lpAllTypes)
 
 {
+    APLCHAR aplChar;
+
+    // Copy the input value in case it overlaps with the output
+    aplChar = lpaplChar[uInt];
+
     lpAllTypes->aplNested =
       MakeSymEntry_EM (IMMTYPE_CHAR,
-       (LPAPLLONGEST) &lpaplChar[uInt],
+       (LPAPLLONGEST) &aplChar,
                        NULL);
     if (lpAllTypes->aplNested EQ NULL)
         RaiseException (EXCEPTION_WS_FULL, 0, 0, NULL);
@@ -2666,6 +2721,7 @@ void TPA_HETE2NEST
      LPALLTYPES  lpAllTypes)
 
 {
+    // Copy the HETERO to NESTED
     lpAllTypes->aplNested = lpaplHetero[uInt];
 } // TPA_HETE2NEST
 
@@ -2680,6 +2736,8 @@ void TPA_APA2INT
      LPALLTYPES  lpAllTypes)
 
 {
+    // No need to copy the input as it is larger than the output
+
     lpAllTypes->aplInteger = GetNextInteger (lpaplAPA, ARRAY_APA, uInt);
 } // TPA_APA2INT
 
@@ -2694,6 +2752,8 @@ void TPA_APA2FLT
      LPALLTYPES  lpAllTypes)
 
 {
+    // No need to copy the input as it is larger than the output
+
     lpAllTypes->aplFloat = GetNextFloat (lpaplAPA, ARRAY_APA, uInt);
 } // TPA_APA2FLT
 
@@ -2710,6 +2770,7 @@ void TPA_APA2HETE
 {
     APLINT aplInteger;
 
+    // Copy the input value in case it overlaps with the output
     aplInteger = GetNextInteger (lpaplAPA, ARRAY_APA, uInt);
 
     lpAllTypes->aplHetero =
@@ -2733,6 +2794,7 @@ void TPA_APA2NEST
 {
     APLINT aplInteger;
 
+    // Copy the input value in case it overlaps with the output
     aplInteger = GetNextInteger (lpaplAPA, ARRAY_APA, uInt);
 
     lpAllTypes->aplNested =
@@ -2754,10 +2816,15 @@ void TPA_APA2RAT
      LPALLTYPES  lpAllTypes)
 
 {
+    APLINT aplInteger;
+
+    // Copy the input value in case it overlaps with the output
+    aplInteger = GetNextInteger (lpaplAPA, ARRAY_APA, uInt);
+
     // Initialize the result
     Myq_init (&lpAllTypes->aplRat);
 
-    mpq_set_sx (&lpAllTypes->aplRat, GetNextInteger (lpaplAPA, ARRAY_APA, uInt), 1);
+    mpq_set_sx (&lpAllTypes->aplRat, aplInteger, 1);
 } // TPA_APA2RAT
 
 
@@ -2771,10 +2838,15 @@ void TPA_APA2VFP
      LPALLTYPES  lpAllTypes)
 
 {
+    APLINT aplInteger;
+
+    // Copy the input value in case it overlaps with the output
+    aplInteger = GetNextInteger (lpaplAPA, ARRAY_APA, uInt);
+
     // Initialize the result
     Myf_init (&lpAllTypes->aplVfp);
 
-    mpfr_set_sx (&lpAllTypes->aplVfp, GetNextInteger (lpaplAPA, ARRAY_APA, uInt), MPFR_RNDN);
+    mpfr_set_sx (&lpAllTypes->aplVfp, aplInteger, MPFR_RNDN);
 } // TPA_APA2VFP
 
 
@@ -2788,10 +2860,21 @@ void TPA_RAT2VFP
      LPALLTYPES  lpAllTypes)
 
 {
+    APLRAT aplRat;
+
+    // Copy the input value in case it overlaps with the output
+    aplRat = lpaplRat[uInt];
+
+#ifdef DEBUG
+    // If the input and output overlap, ...
+    if (((LPBYTE) lpAllTypes) EQ (LPBYTE) lpaplRat)
+        DbgStop ();
+#endif
+
     // Initialize the result
     Myf_init (&lpAllTypes->aplVfp);
 
-    mpfr_set_q  (&lpAllTypes->aplVfp, &lpaplRat[uInt], MPFR_RNDN);
+    mpfr_set_q  (&lpAllTypes->aplVfp, &aplRat, MPFR_RNDN);
 } // TPA_RAT2VFP
 
 
@@ -2805,6 +2888,7 @@ void TPA_HETE2HETE
      LPALLTYPES  lpAllTypes)
 
 {
+    // Copy the HETERO to HETERO
     lpAllTypes->aplHetero = lpaplHetero[uInt];
 } // TPA_HETE2HETE
 
@@ -2819,6 +2903,7 @@ void TPA_NEST2NEST
      LPALLTYPES  lpAllTypes)
 
 {
+    // Copy the NESTED to NESTED
     lpAllTypes->aplNested = CopySymGlbDir_PTB (((LPAPLNESTED) ClrPtrTypeDir (lpaplNested))[uInt]);
 } // TPA_NEST2NEST
 
@@ -2873,10 +2958,21 @@ void TPA_RAT2RAT
      LPALLTYPES  lpAllTypes)
 
 {
+    APLRAT aplRat;
+
+    // Copy the input value in case it overlaps with the output
+    aplRat = lpaplRat[uInt];
+
+#ifdef DEBUG
+    // If the input and output overlap, ...
+    if (((LPBYTE) lpAllTypes) EQ (LPBYTE) lpaplRat)
+        DbgStop ();
+#endif
+
     // Initialize the result
     Myq_init (&lpAllTypes->aplRat);
 
-    mpq_set (&lpAllTypes->aplRat, &lpaplRat[uInt]);
+    mpq_set (&lpAllTypes->aplRat, &aplRat);
 } // TPA_RAT2RAT
 
 
@@ -2930,10 +3026,21 @@ void TPA_VFP2VFP
      LPALLTYPES  lpAllTypes)
 
 {
+    APLVFP aplVfp;
+
+    // Copy the input value in case it overlaps with the output
+    aplVfp = lpaplVfp[uInt];
+
+#ifdef DEBUG
+    // If the input and output overlap, ...
+    if (((LPBYTE) lpAllTypes) EQ (LPBYTE) lpaplVfp)
+        DbgStop ();
+#endif
+
     // Initialize the result
     Myf_init (&lpAllTypes->aplVfp);
 
-    mpfr_copy (&lpAllTypes->aplVfp, &lpaplVfp[uInt]);
+    mpfr_copy (&lpAllTypes->aplVfp, &aplVfp);
 } // TPA_VFP2VFP
 
 

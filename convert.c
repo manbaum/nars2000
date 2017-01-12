@@ -398,7 +398,7 @@ int HeNe_cmp
                     // Char > Num
                     iDiff =  1;
                 else
-                // If the storage types sre both char, ...
+                // If the storage types are both char, ...
                 if (IsImmChr (immTypeLft) && IsImmChr (immTypeRht))
                     iDiff = lpSymGlbLft->stData.stChar -
                             lpSymGlbRht->stData.stChar;

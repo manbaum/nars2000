@@ -444,7 +444,7 @@ void AttrsOfGlb
     LPVOID  lpMemData;          // Ptr to global memory
 
     // Lock the memory to get a ptr to it
-    lpMemData = MyGlobalLock (hGlbData);
+    lpMemData = MyGlobalLock (hGlbData);    // LST, VAR
 
     // Split cases based upon the array signature
     switch (GetSignatureMem (lpMemData))
@@ -1940,7 +1940,7 @@ HGLOBAL CopyArray_EM
 #endif
         // Lock both memory blocks
         lpMemDst = MyGlobalLock000 (hGlbDst);
-        lpMemSrc = MyGlobalLock    (hGlbSrc);
+        lpMemSrc = MyGlobalLock    (hGlbSrc);   // VAR, FCN, DFN
 
         // Copy source to destin
         CopyMemory (lpMemDst, lpMemSrc, dwSize);
@@ -2608,7 +2608,7 @@ UBOOL IsGlobalTypeArray_PTB
         vfoHdrPtrs.lpMemVFO =
 #endif
         // Lock the memory to get a ptr to it
-        lpMem = MyGlobalLock (hGlb); Assert (lpMem NE NULL);
+        lpMem = MyGlobalLock (hGlb); Assert (lpMem NE NULL);    // DFN, FCN, LST, VAR, VNM
 
         // Split cases based upon the signature
         switch (GetSignatureMem (lpMem))

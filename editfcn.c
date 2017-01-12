@@ -871,6 +871,7 @@ LRESULT APIENTRY FEWndProc
             {
                 ActivateMDIMenu (WINDOWCLASS_FE, hWnd);
                 SetFocus (hWnd);
+                SendMessageW (hWndEC, EM_SCROLLCARET, 0, 0);
             } // End IF
 
             break;                  // Continue with DefMDIChildProcW

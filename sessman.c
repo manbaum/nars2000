@@ -1881,6 +1881,7 @@ NORMAL_EXIT:
             {
                 ActivateMDIMenu (WINDOWCLASS_SM, hWnd);
                 SetFocus (hWnd);
+                SendMessageW (hWndEC, EM_SCROLLCARET, 0, 0);
             } // End IF
 
             break;                  // Continue with DefMDIChildProc

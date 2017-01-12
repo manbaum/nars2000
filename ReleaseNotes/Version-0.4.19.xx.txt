@@ -1,6 +1,18 @@
 Version 0.4.19.xx consists of the following Builds:
 
 
+Build #1612 -- Version 0.4.19.xx
+--------------------------------
+
+* Scroll Text Caret Into View Upon Window Activation
+
+Directory trunk:
+
+EDITFCN.C:
+SESSMAN.C:
+  Scroll the text caret into view upon window activation.
+
+
 Build #1611 -- Version 0.4.19.xx
 --------------------------------
 

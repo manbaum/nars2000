@@ -193,6 +193,7 @@ Welcome to NARS2000</h1>
         <li>System variables:
           <ul>
             <li><span class="APL">{quad}DT</span> (Distribution Type)</li>
+            <li><span class="APL">{quad}DQ</span> (Division Quotient)</li>
             <li><span class="APL">{quad}FC</span> (Format Control)</li>
             <li><span class="APL">{quad}FPC</span> (Floating Point Control)</li>
             <li><span class="APL">{quad}IC</span> (Indeterminate Control)</li>
@@ -205,6 +206,7 @@ Welcome to NARS2000</h1>
             <li><span class="APL">L {quad}CR R</span> for
                 <span class="APL">L=1</span> and
                 <span class="APL">2</span></li>
+            <li><span class="APL">{quad}DC</span></li>
             <li><span class="APL">{quad}DM</span></li>
             <li><span class="APL">{quad}DR R</span></li>
             <li><span class="APL">L {quad}DR R</span> for
@@ -225,6 +227,7 @@ Welcome to NARS2000</h1>
             <li><span class="APL">L {quad}NAPPEND R</span></li>
             <li><span class="APL">L {quad}NCREATE R</span></li>
             <li><span class="APL">L {quad}NERASE R</span></li>
+            <li><span class="APL">{quad}NINFO</span></li>
             <li><span class="APL">{quad}NNAMES</span></li>
             <li><span class="APL">{quad}NNUMS</span></li>
             <li><span class="APL">{quad}NREAD R</span></li>
@@ -267,13 +270,13 @@ Welcome to NARS2000</h1>
       <ul>
         <li>Statement Separator (<span class="APL">{diamond}</span>)</li>
         <li>Trace and Stop Control</li>
+        <li>Complex Arithmetic</li>
       </ul>
     </li>
 
     <li>Optional Facilities Not Included (as yet)
       <ul>
         <li>Shared Variables</li>
-        <li>Complex Arithmetic</li>
       </ul>
     </li>
 
@@ -321,17 +324,17 @@ Welcome to NARS2000</h1>
       and <span class="APL">12345x</span>)</li>
     <li>Variable precision floating point numbers (e.g., <span class="APL">1.234v</span>
       and <span class="APL">12v</span>)</li>
+    <li>Complex numbers (e.g., <span class="APL">2i3.4</span>
+      or <span class="APL">2J3.4</span>)</li>
+    <li>Quaternions (e.g., <span class="APL">2i3j4ij5</span>
+      or <span class="APL">2i3j4k5</span>)</li>
+    <li>Octonions (e.g., <span class="APL">2i3j4k5l6il7jl8kl9</span>)</li>
     </ul>
 
   <h3>Wish List of Datatypes</h3>
   <ul>
     <li>Unicode support via multiple character widths
       (8-, 16-, and 32-bits) instead of the current 16-bit fixed width (UCS-2)</li>
-    <li>Complex numbers (e.g., <span class="APL">2i3.4</span>
-      or <span class="APL">2J3.4</span>)</li>
-    <li>Quaternions (e.g., <span class="APL">2i3j4ij5</span>
-      or <span class="APL">2i3j4k5</span>)</li>
-    <li>Octonions (e.g., <span class="APL">2i3j4k5l6il7jl8kl9</span>)</li>
     <li>Datatypes user extensible via user-defined APL functions</li>
     <li>Array predicates (a la Bernecky) for other special arrays</li>
   </ul>
@@ -393,12 +396,12 @@ Welcome to NARS2000</h1>
     <li>Available as either a 32- or 64-bit executable</li>
     <li>Language bar</li>
     <li>User-defined keyboard layout support (copied with minor changes from APL2)</li>
+    <li>Line continuation marker for easier display of long lines &mdash;
+      this also allows comments within a line</li>
   </ul>
 
   <h3>Wish List of Miscellaneous Features</h3>
   <ul>
-    <li>Line continuation marker for easier display of long lines &mdash;
-      this also allows comments within a line</li>
     <li>Idiom recognition at tokenization time</li>
   </ul>
 </div>

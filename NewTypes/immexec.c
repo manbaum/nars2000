@@ -247,7 +247,8 @@ UINT CopyBlockLines
      LPWCHAR lpwszLine)                     // Ptr to output buffer
 
 {
-    UINT uLineLen,                          // Line length
+    UINT uLinePos,                          // Line position
+         uLineLen,                          // Line length
          uBlockLen = 0;                     // Block length
 
     Assert (IzitSM (GetParent (hWndEC)) || IzitFE (GetParent (hWndEC)));
@@ -255,14 +256,17 @@ UINT CopyBlockLines
     // While the current physical line continues to the next line, ...
     while (SendMessageW (hWndEC, MYEM_ISLINECONT, uLineNum, 0) EQ TRUE)
     {
-        // Tell EM_GETLINE maximum # chars in the buffer
-        // Because we allocated space for the terminating zero,
-        //   we don't have to worry about overwriting the
-        //   allocation limits of the buffer
-        ((LPWORD) lpwszLine)[0] = (WORD) -1;
+        // Get the position of the start of the line
+        uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
 
-        // Get the contents of the line
-        uLineLen = (UINT) SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwszLine);
+        // Get the line length
+        uLineLen = (UINT) SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
+
+        // Tell EM_GETLINE maximum # chars in the buffer including the terminating zero
+        ((LPWORD) lpwszLine)[0] = uLineLen + 1;
+
+        // Get the contents of the line including the terminating zero because we allowed for it
+        SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwszLine);
 
         // Skip to the next line ptr
         lpwszLine = &lpwszLine[uLineLen];
@@ -279,14 +283,17 @@ UINT CopyBlockLines
 
     // Once more to get the contents of the last (non-continued) line
 
-    // Tell EM_GETLINE maximum # chars in the buffer
-    // Because we allocated space for the terminating zero,
-    //   we don't have to worry about overwriting the
-    //   allocation limits of the buffer
-    ((LPWORD) lpwszLine)[0] = (WORD) -1;
+    // Get the position of the start of the line
+    uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
 
-    // Get the contents of the line
-    uLineLen = (UINT) SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwszLine);
+    // Get the line length
+    uLineLen = (UINT) SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
+
+    // Tell EM_GETLINE maximum # chars in the buffer including the terminating zero
+    ((LPWORD) lpwszLine)[0] = uLineLen + 1;
+
+    // Get the contents of the line including the terminating zero because we allowed for it
+    SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwszLine);
 
     // Accumulate in result
     return uBlockLen + uLineLen;

@@ -184,7 +184,7 @@ Downloads</h1>
     version which is an executable Setup file) which you might want to unzip into a directory separate from
     the released installation so as to leave the latter unaffected.  As with the released version, please
     report any bugs to the Bug Report section of the NARS2000
-    <a class="linkleft" href="http://nars2000.forumatic.com/viewforum.php?f=12">Forum</a>.</p>
+    <a class="linkleft" href="http://forum.nars2000.org/viewforum.php?f=12">Forum</a>.</p>
 </div>
 
 <div class="section">
@@ -197,7 +197,7 @@ Downloads</h1>
     to install into a directory separate from
     the released installation so as to leave the latter unaffected.  As with the released version, please
     report any bugs to the Bug Report section of the NARS2000
-    <a class="linkleft" href="http://nars2000.forumatic.com/viewforum.php?f=12">Forum</a>.</p>
+    <a class="linkleft" href="http://forum.nars2000.org/viewforum.php?f=12">Forum</a>.</p>
 </div>
 
 <div class="section">

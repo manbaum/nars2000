@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -486,8 +486,18 @@ APLHC8F SqrtHCxF_RE
             aplRes.parts[1] = 0;
     } else
     {
+        // Calculate sin (v)
+        aplV   = sin (aplV);
+
+        // Calculate sin (v) / g
+        aplV   = DivHC1F_RE (aplV, aplIMag);
+
         // Calculate u * sin (v) / g
-        aplMul = aplU * sin (aplV) / aplIMag;
+        aplMul = MulHC1F_RE (aplU, aplV);
+
+        // If the multiplier is bogus (from {Inf} / {Inf}), ...
+        if (_isnan (aplMul))
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
         // Loop through the imaginary parts
         for (i = 1; i < iHCDimRes; i++)
@@ -627,6 +637,12 @@ void PrimFnMonRootHC2VisHC2R
 //  $SqrtHCxV_RE
 //***************************************************************************
 
+#ifdef DEBUG
+#define APPEND_NAME     L" -- SqrtHCxV_RE"
+#else
+#define APPEND_NAME
+#endif
+
 APLHC8V SqrtHCxV_RE
     (APLHC8V aplRht,                // Right arg
      int     iHCDimRes)             // HC Dimension (1, 2, 4, 8)
@@ -737,24 +753,42 @@ APLHC8V SqrtHCxV_RE
             mpfr_init0 (&aplRes.parts[1]);
     } else
     {
+        EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
         //  Calculate sin (v)
         aplTmp = sinVfp (aplV);
 
-        // Calculate sin (v) / g
-        aplMul = DivHC1V_RE (aplTmp, aplIMag);
+        __try
+        {
+            // Calculate sin (v) / g
+            aplMul = DivHC1V_RE (aplTmp, aplIMag);
+
+            // We no longer need this storage
+            Myf_clear (&aplTmp);
+
+            // Calculate u * sin (v) / g
+            aplTmp = MulHC1V_RE (aplU, aplMul);                         // q
+
+            // Loop through the imaginary parts
+            for (i = 1; i < iHCDimRes; i++)
+                // Multiply each of the imaginary parts by the arctan2
+                aplRes.parts[i] = MulHC1V_RE (aplRht.parts[i], aplTmp);
+        } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+        {
+            exCode = MyGetExceptionCode ();  // The exception code
+
+            dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+            // Check the exception code in a helper function
+            CheckExCodeHelper (&exCode);
+        } // End __try/__except
 
         // We no longer need this storage
         Myf_clear (&aplTmp);
-
-        // Calculate u * sin (v) / g
-        mpfr_mul (&aplMul, &aplU, &aplMul, MPFR_RNDN);              // q
-
-        // Loop through the imaginary parts
-        for (i = 1; i < iHCDimRes; i++)
-            // Multiply each of the imaginary parts by the arctan2
-            aplRes.parts[i] = MulHC1V_RE (aplRht.parts[i], aplMul);
-        // We no longer need this storage
         Myf_clear (&aplMul);
+
+        // Check the exception code in a main function
+        CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
     } // End IF/ELSE
 
     // We no longer need this storage
@@ -765,6 +799,7 @@ APLHC8V SqrtHCxV_RE
 
     return aplRes;
 } // End SqrtHCxV_RE
+#undef  APPEND_NAME
 
 
 //***************************************************************************

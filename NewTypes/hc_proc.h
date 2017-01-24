@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -124,6 +124,7 @@ APLHC8F aplPiHC8F,          // Initialized in <initdata.c>
 
 EXTERN
 APLHC8V aplPiHC8V,          // Initialized in <initdata.c>
+        aplPi2HC8V,         // ...
         aplGammaHC8V;       // ...
 
 typedef LPAPLCHAR (*HCI_FCN) (LPWCHAR, LPVOID);

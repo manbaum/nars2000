@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -61,9 +61,11 @@
         opAbs->parts[i] = fabs (op->parts[i]);                      \
                                                                     \
     /* Find the maximum abs                                       */\
-    w = max (opAbs->parts[0], opAbs->parts[1]);                     \
-    x = max (opAbs->parts[2], opAbs->parts[3]);                     \
-    w = max (w, x);                                                 \
+    w = opAbs->parts[0];                                            \
+    /* Loop through all of the imag parts                         */\
+    for (i = 1; i < iHCDim; i++)                                    \
+        /* Calculate the maximum value                            */\
+        w = max (w, opAbs->parts[i]);                               \
                                                                     \
     if (w EQ 0.0)                                                   \
         rop = 0.0;                                                  \

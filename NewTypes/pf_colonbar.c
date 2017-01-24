@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -313,7 +313,7 @@ void PrimFnMonColonBarRisR
     else
     // Check for special case:  {div}{neg}{inf}x
     if (IsMpqInfinity (&lpatRht->aplRat)
-     && mpq_sgn (&lpatRht->aplRat) < 0)
+     && SIGN_APLRAT (&lpatRht->aplRat))
         RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
     else
     {
@@ -439,6 +439,21 @@ void PrimFnMonColonBarHC2FisHC2F
                                                         SIGN_APLFLOAT (lpatRht->aplHC2F.parts[0]));
         lpMemRes[uRes].parts[1] = 0;
     } else
+    // If the denominator is {Inf}, ...
+    if (IsFltInfinity (aplDen))
+    {
+        UBOOL bAllowNeg0 = (UBOOL) gAllowNeg0;
+
+        // Calculate the numerator
+        aplNum = ConjHC2F_RE (lpatRht->aplHC2F);
+
+        // Loop through all of the parts
+        for (i = 0; i < 2; i++)
+            lpMemRes[uRes].parts[i] = (bAllowNeg0 ? ((SIGN_APLFLOAT_RAW (aplNum.parts[i])
+                                                   EQ SIGN_APLFLOAT_RAW (aplDen)) ?  0.0
+                                                                                  : -0.0)
+                                                  : 0.0);
+    } else
     {
         // Calculate the numerator
         aplNum = ConjHC2F_RE (lpatRht->aplHC2F);
@@ -468,6 +483,7 @@ void PrimFnMonColonBarHC2RisHC2R
     APLRAT   aplDen = {0},      // Denominator
              aplTmp;            // Temp
     APLHC2R  aplNum;            // Numerator
+    UBOOL    bAllowNeg0 = (UBOOL) gAllowNeg0;
 
     // Initialize to 0/1
     mpq_init (&aplDen);
@@ -493,14 +509,32 @@ void PrimFnMonColonBarHC2RisHC2R
                                                     &lpatRht->aplHC2R.parts[0],
                                                     &lpMemRes[uRes].parts[0],
                                                      FALSE);
-        // Initialize to 0/1
-        mpq_init (&lpMemRes[uRes].parts[1]);
+        // Loop through the imaginary parts
+        for (i = 1; i < 2; i++)
+            // Initialize to 0/1
+            mpq_init (&lpMemRes[uRes].parts[i]);
     } else
     // Check for special case:  {div}{neg}{inf}x
-    if (IsMpqInfinity (&aplDen)
-     && mpq_sgn (&aplDen) < 0)
+    if (bAllowNeg0
+     && IsMpqInfinity (&aplDen)
+     && SIGN_APLRAT (&aplDen))
         RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
     else
+    // If the denominator is {Inf}, ...
+    if (IsMpqInfinity (&aplDen))
+    {
+        // Calculate the numerator
+        aplNum = ConjHC2R_RE (lpatRht->aplHC2R);
+
+        // Loop through all of the parts
+        for (i = 0; i < 2; i++)
+            mpq_init_set_d (&lpMemRes[uRes].parts[i],
+                            bAllowNeg0 ? ((SIGN_APLRAT (&aplNum.parts[i])
+                                        EQ SIGN_APLRAT (&aplDen)) ?  0.0
+                                                                  : -0.0)
+                                       : 0.0);
+
+    } else
     {
         // Calculate the numerator
         aplNum = ConjHC2R_RE (lpatRht->aplHC2R);
@@ -558,6 +592,7 @@ void PrimFnMonColonBarHC2VisHC2V
     APLVFP   aplDen = {0},      // Denominator
              aplTmp;            // Temp
     APLHC2V  aplNum;            // Numerator
+    UBOOL    bAllowNeg0 = (UBOOL) gAllowNeg0;
 
     // Initialize to 0
     mpfr_init0 (&aplDen);
@@ -587,6 +622,21 @@ void PrimFnMonColonBarHC2VisHC2V
         for (i = 1; i < 2; i++)
             // Initialize to 0
             mpfr_init0 (&lpMemRes[uRes].parts[i]);
+    } else
+    // If the denominator is {Inf}, ...
+    if (IsMpfInfinity (&aplDen))
+    {
+        // Calculate the numerator
+        aplNum = ConjHC2V_RE (lpatRht->aplHC2V);
+
+        // Loop through all of the parts
+        for (i = 0; i < 2; i++)
+            mpfr_init_set_d (&lpMemRes[uRes].parts[i],
+                              bAllowNeg0 ? ((SIGN_APLVFP_RAW (&aplNum.parts[i])
+                                          EQ SIGN_APLVFP_RAW (&aplDen)) ?  0.0
+                                                                        : -0.0)
+                                         : 0.0,
+                              MPFR_RNDN);
     } else
     {
         // Calculate the numerator
@@ -663,6 +713,21 @@ void PrimFnMonColonBarHC4FisHC4F
                                                         SIGN_APLFLOAT (lpatRht->aplHC4F.parts[0]));
         lpMemRes[uRes].parts[1] = 0;
     } else
+    // If the denominator is {Inf}, ...
+    if (IsFltInfinity (aplDen))
+    {
+        UBOOL bAllowNeg0 = (UBOOL) gAllowNeg0;
+
+        // Calculate the numerator
+        aplNum = ConjHC4F_RE (lpatRht->aplHC4F);
+
+        // Loop through all of the parts
+        for (i = 0; i < 4; i++)
+            lpMemRes[uRes].parts[i] = (bAllowNeg0 ? ((SIGN_APLFLOAT_RAW (aplNum.parts[i])
+                                                   EQ SIGN_APLFLOAT_RAW (aplDen)) ?  0.0
+                                                                                  : -0.0)
+                                                  : 0.0);
+    } else
     {
         // Calculate the numerator
         aplNum = ConjHC4F_RE (lpatRht->aplHC4F);
@@ -692,6 +757,7 @@ void PrimFnMonColonBarHC4RisHC4R
     APLRAT   aplDen = {0},      // Denominator
              aplTmp;            // Temp
     APLHC4R  aplNum;            // Numerator
+    UBOOL    bAllowNeg0 = (UBOOL) gAllowNeg0;
 
     // Initialize to 0/1
     mpq_init (&aplDen);
@@ -717,14 +783,31 @@ void PrimFnMonColonBarHC4RisHC4R
                                                     &lpatRht->aplHC4R.parts[0],
                                                     &lpMemRes[uRes].parts[0],
                                                      FALSE);
-        // Initialize to 0/1
-        mpq_init (&lpMemRes[uRes].parts[1]);
+        // Loop through the imaginary parts
+        for (i = 1; i < 4; i++)
+            // Initialize to 0/1
+            mpq_init (&lpMemRes[uRes].parts[i]);
     } else
     // Check for special case:  {div}{neg}{inf}x
-    if (IsMpqInfinity (&aplDen)
-     && mpq_sgn (&aplDen) < 0)
+    if (bAllowNeg0
+     && IsMpqInfinity (&aplDen)
+     && SIGN_APLRAT (&aplDen))
         RaiseException (EXCEPTION_RESULT_HC4V, 0, 0, NULL);
     else
+    // If the denominator is {Inf}, ...
+    if (IsMpqInfinity (&aplDen))
+    {
+        // Calculate the numerator
+        aplNum = ConjHC4R_RE (lpatRht->aplHC4R);
+
+        // Loop through all of the parts
+        for (i = 0; i < 4; i++)
+            mpq_init_set_d (&lpMemRes[uRes].parts[i],
+                            bAllowNeg0 ? ((SIGN_APLRAT (&aplNum.parts[i])
+                                        EQ SIGN_APLRAT (&aplDen)) ?  0.0
+                                                                  : -0.0)
+                                        : 0.0);
+    } else
     {
         // Calculate the numerator
         aplNum = ConjHC4R_RE (lpatRht->aplHC4R);
@@ -782,6 +865,7 @@ void PrimFnMonColonBarHC4VisHC4V
     APLVFP   aplDen = {0},      // Denominator
              aplTmp;            // Temp
     APLHC4V  aplNum;            // Numerator
+    UBOOL    bAllowNeg0 = (UBOOL) gAllowNeg0;
 
     // Initialize to 0
     mpfr_init0 (&aplDen);
@@ -811,6 +895,21 @@ void PrimFnMonColonBarHC4VisHC4V
         for (i = 1; i < 4; i++)
             // Initialize to 0
             mpfr_init0 (&lpMemRes[uRes].parts[i]);
+    } else
+    // If the denominator is {Inf}, ...
+    if (IsMpfInfinity (&aplDen))
+    {
+        // Calculate the numerator
+        aplNum = ConjHC4V_RE (lpatRht->aplHC4V);
+
+        // Loop through all of the parts
+        for (i = 0; i < 4; i++)
+            mpfr_init_set_d (&lpMemRes[uRes].parts[i],
+                              bAllowNeg0 ? ((SIGN_APLVFP_RAW (&aplNum.parts[i])
+                                          EQ SIGN_APLVFP_RAW (&aplDen)) ?  0.0
+                                                                        : -0.0)
+                                         : 0.0,
+                              MPFR_RNDN);
     } else
     {
         // Calculate the numerator
@@ -887,6 +986,21 @@ void PrimFnMonColonBarHC8FisHC8F
                                                         SIGN_APLFLOAT (lpatRht->aplHC8F.parts[0]));
         lpMemRes[uRes].parts[1] = 0;
     } else
+    // If the denominator is {Inf}, ...
+    if (IsFltInfinity (aplDen))
+    {
+        UBOOL bAllowNeg0 = (UBOOL) gAllowNeg0;
+
+        // Calculate the numerator
+        aplNum = ConjHC8F_RE (lpatRht->aplHC8F);
+
+        // Loop through all of the parts
+        for (i = 0; i < 8; i++)
+            lpMemRes[uRes].parts[i] = (bAllowNeg0 ? ((SIGN_APLFLOAT_RAW (aplNum.parts[i])
+                                                   EQ SIGN_APLFLOAT_RAW (aplDen)) ?  0.0
+                                                                                  : -0.0)
+                                                  : 0.0);
+    } else
     {
         // Calculate the numerator
         aplNum = ConjHC8F_RE (lpatRht->aplHC8F);
@@ -916,6 +1030,7 @@ void PrimFnMonColonBarHC8RisHC8R
     APLRAT   aplDen = {0},      // Denominator
              aplTmp;            // Temp
     APLHC8R  aplNum;            // Numerator
+    UBOOL    bAllowNeg0 = (UBOOL) gAllowNeg0;
 
     // Initialize to 0/1
     mpq_init (&aplDen);
@@ -941,14 +1056,32 @@ void PrimFnMonColonBarHC8RisHC8R
                                                     &lpatRht->aplHC8R.parts[0],
                                                     &lpMemRes[uRes].parts[0],
                                                      FALSE);
-        // Initialize to 0/1
-        mpq_init (&lpMemRes[uRes].parts[1]);
+        // Loop through the imaginary parts
+        for (i = 1; i < 8; i++)
+            // Initialize to 0/1
+            mpq_init (&lpMemRes[uRes].parts[i]);
     } else
     // Check for special case:  {div}{neg}{inf}x
-    if (IsMpqInfinity (&aplDen)
-     && mpq_sgn (&aplDen) < 0)
+    if (bAllowNeg0
+     && IsMpqInfinity (&aplDen)
+     && SIGN_APLRAT (&aplDen))
         RaiseException (EXCEPTION_RESULT_HC8V, 0, 0, NULL);
     else
+    // If the denominator is {Inf}, ...
+    if (IsMpqInfinity (&aplDen))
+    {
+        // Calculate the numerator
+        aplNum = ConjHC8R_RE (lpatRht->aplHC8R);
+
+        // Loop through all of the parts
+        for (i = 0; i < 8; i++)
+            mpq_init_set_d (&lpMemRes[uRes].parts[i],
+                            bAllowNeg0 ? ((SIGN_APLRAT (&aplNum.parts[i])
+                                        EQ SIGN_APLRAT (&aplDen)) ?  0.0
+                                                                  : -0.0)
+                                       : 0.0);
+
+    } else
     {
         // Calculate the numerator
         aplNum = ConjHC8R_RE (lpatRht->aplHC8R);
@@ -1006,6 +1139,7 @@ void PrimFnMonColonBarHC8VisHC8V
     APLVFP   aplDen = {0},      // Denominator
              aplTmp;            // Temp
     APLHC8V  aplNum;            // Numerator
+    UBOOL    bAllowNeg0 = (UBOOL) gAllowNeg0;
 
     // Initialize to 0
     mpfr_init0 (&aplDen);
@@ -1035,6 +1169,21 @@ void PrimFnMonColonBarHC8VisHC8V
         for (i = 1; i < 8; i++)
             // Initialize to 0
             mpfr_init0 (&lpMemRes[uRes].parts[i]);
+    } else
+    // If the denominator is {Inf}, ...
+    if (IsMpfInfinity (&aplDen))
+    {
+        // Calculate the numerator
+        aplNum = ConjHC8V_RE (lpatRht->aplHC8V);
+
+        // Loop through all of the parts
+        for (i = 0; i < 8; i++)
+            mpfr_init_set_d (&lpMemRes[uRes].parts[i],
+                              bAllowNeg0 ? ((SIGN_APLVFP_RAW (&aplNum.parts[i])
+                                          EQ SIGN_APLVFP_RAW (&aplDen)) ?  0.0
+                                                                        : -0.0)
+                                         : 0.0,
+                              MPFR_RNDN);
     } else
     {
         // Calculate the numerator

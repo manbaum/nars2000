@@ -1107,6 +1107,7 @@ EXTERN
 APLFLOAT fltPosInfinity,                // Positive infinity
          fltNegInfinity,                // Negative ...
          FloatPi,                       // Pi
+         FloatPi2,                      // Pi/2
          FloatGamma,                    // Gamma
          FloatE,                        // e
          Float2Pow53;                   // 2*53 in floating point

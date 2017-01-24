@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -305,11 +305,11 @@ void fpXf_atan
                 fprf_set_zero (rop->parts[0]);
             else
             {
-                // Set the real part of the result to Pi/2
+                // Set the real part of the result to ±Pi/2
                 // Calculate:  Pi
                 fprf_const_pi (rop->parts[0]);
 
-                // Calculate:  Pi / 2
+                // Calculate:  Pi/2
                 fprf_div_si (rop->parts[0], rop->parts[0], 2);
 
                 // Set the sign of the real part in the result
@@ -613,7 +613,13 @@ void fpXf_atanh
     //   GSL imaginary (just not its value).
     Z1 = gsl_complex_arctanh (Z);
     Mygsl_atanh (&Z2, *(fpcf_res *) &Z);
-    Z1.dat[1] = signumflt (Z1.dat[1]) * fabs (Z2.parts[1]);
+
+    // Because my algorithm calls GSL code which doesn't handle infinities well,
+    //   if the result is a Real Indefinite in either coordinate, we go with
+    //   the original <gsl_complex_arctanh> result
+    if (!_isnan (Z2.parts[0]) && !_isnan (Z2.parts[1]))
+        // Use my result
+        Z1.dat[1] = signumflt (Z1.dat[1]) * fabs (Z2.parts[1]);
 
     // Save as the real part of the result
     fprf_set (rop->parts[0], Z1.dat[0]);
@@ -650,8 +656,16 @@ void fpXf_scale
 
     // Loop through the imaginary parts
     for (i = 1; i < iHCDim; i++)
+    {
         // Multiply the imaginary parts of the arg by the scale factor
         fprf_mul (rop->parts[i], op->parts[i], fpfTmp1);
+
+        // If the result is a NaN (really a Real Indefinite), ...
+        if (_isnan (rop->parts[i]))
+            // Set to zero
+            // We are deciding for this function that {inf} x 0 is 0
+            rop->parts[i] = 0.0;
+    } // End FOR
 } // End fpXf_scale
 
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -450,7 +450,7 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbarCom_EM_YY
                  || IsGlbNum (aplTypeRht))
                 {
                     // If the left arg is global, ...
-                    if (lpMemHdrLft)
+                    if (lpMemHdrLft NE NULL)
                         // Skip over the header to the data
                         lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
                     else
@@ -458,7 +458,7 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbarCom_EM_YY
                         lpMemLft = &aplLongestLft;
 
                     // If the right arg is global, ...
-                    if (lpMemHdrRht)
+                    if (lpMemHdrRht NE NULL)
                         // Skip over the header to the data
                         lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
                     else
@@ -1010,7 +1010,7 @@ UBOOL PrimFnDydEqualUnderbarNested
             } // End IF/ELSE
 
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbSub); lpMemRht = NULL;
+            MyGlobalUnlock (hGlbSub); lpMemHdrRht = NULL;
 
             return bRet;
         } // End IF
@@ -1199,11 +1199,11 @@ LPPL_YYSTYPE PrimFnMonNotEqualUnderbar_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    HGLOBAL      hGlbRht = NULL;    // Right arg global memory handle
-    LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
-    APLRANK      aplRankRht;        // Right arg rank
-    APLINT       aplIntegerRes;     // The result value
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
+    HGLOBAL           hGlbRht = NULL;       // Right arg global memory handle
+    LPVARARRAY_HEADER lpMemHdrRht = NULL;   // Ptr to right arg header
+    APLRANK           aplRankRht;           // Right arg rank
+    APLINT            aplIntegerRes;        // The result value
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
 
     // If the right arg is a list, ...
     if (IsTknParList (lptkRhtArg))
@@ -1221,13 +1221,13 @@ LPPL_YYSTYPE PrimFnMonNotEqualUnderbar_EM_YY
     AttrsOfToken (lptkRhtArg, NULL, NULL, &aplRankRht, NULL);
 
     // Get right arg's global ptr
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // If the right arg is a non-scalar, ...
     if (!IsScalar (aplRankRht))
         // Skip over the header to the dimensions and
         //   extract the first dimension
-        aplIntegerRes = *VarArrayBaseToDim (lpMemRht);
+        aplIntegerRes = *VarArrayBaseToDim (lpMemHdrRht);
     else
         // Use a tally of 1 for a scalar
         aplIntegerRes = 1;
@@ -1251,10 +1251,10 @@ AXIS_SYNTAX_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
     return lpYYRes;

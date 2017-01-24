@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1966,7 +1966,7 @@ LPPL_YYSTYPE plRedMF_A
 {
     TOKEN        tkLftArg = {0};        // Copy of left arg token
     LPTOKEN      lptkLftArg;            // Ptr to copy of left arg token
-    LPPL_YYSTYPE lpYYRes,               // Ptr to the result
+    LPPL_YYSTYPE lpYYRes = NULL,        // Ptr to the result
                 *lplpYYArgCurry = NULL; // Ptr to ptr to Arg curry (if any)
 
     // Ensure that the current object is a function
@@ -2087,15 +2087,15 @@ LPPL_YYSTYPE plRedMF_A
     // Free and YYFree the last right arg
     FreeResult (lpplYYLstRht); YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
-    // If not defined, ...
-    if (lpYYRes EQ NULL)
-        goto ERROR_EXIT;
+    // If the result is valid, ...
+    if (lpYYRes NE NULL
+     && !IsTokenNoValue (&lpYYRes->tkToken))
+    {
+        // Change the tkSynObj
+        lpYYRes->tkToken.tkSynObj = soType;
 
-    // Change the tkSynObj
-    lpYYRes->tkToken.tkSynObj = soType;
-
-    return lpYYRes;
-
+        return lpYYRes;
+    } // End IF
 ERROR_EXIT:
     if (lpplYYCurObj NE NULL)
     {
@@ -2103,7 +2103,7 @@ ERROR_EXIT:
         YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
     } // End IF
 
-    return NULL;
+    return lpYYRes;
 } // End plRedMF_A
 
 
@@ -5657,11 +5657,12 @@ NORMAL_EXIT:
                  && lpSISPrv->DfnType EQ DFNTYPE_EXEC)
                 {
                     // If the result of {execute}[]xLX is a normal
-                    //   result (EXITTYPE_NODISPLAY),
+                    //   result (EXITTYPE_NODISPLAY or EXITTYPE_DISPLAY),
                     //   return  EXITTYPE_RETURNxLX so the caller
                     //   can avoid displaying a prompt until the
                     //   result of executing []xLX is handled
-                    if (exitType EQ EXITTYPE_NODISPLAY)
+                    if (exitType EQ EXITTYPE_NODISPLAY
+                     || exitType EQ EXITTYPE_DISPLAY)
                         exitType =  EXITTYPE_RETURNxLX;
 
                     // Pass on this exit type to the caller

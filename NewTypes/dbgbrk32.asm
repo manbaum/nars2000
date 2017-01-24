@@ -1,5 +1,24 @@
-; '$Header:   P:/PVCS/MAX/STATUTIL/DBGBRK.ASV   1.0   25 Sep 1996 10:14:50   BOB  $
-        TITLE   DBGBRK.ASM
+COMMENT|
+/***************************************************************************
+    NARS2000 -- An Experimental APL Interpreter
+    Copyright (C) 2006-2017 Sudley Place Software
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+***************************************************************************/
+|
+
+        TITLE   DBGBRK32.ASM
 
 CPUFLAGS record  $ID:1,$VIP:1,$VIF:1,$ACHI:1,$VMHI:1,$RFHI:1, \
                  $R0:1,$NT:1,$IOPL:2,$OF:1,$DF:1,$IF:1,$TF:1,$SF:1,$ZF:1,$R1:1,$AF:1,$R2:1,$PF:1,$R3:1,$CF:1
@@ -13,6 +32,9 @@ CPUFLAGS record  $ID:1,$VIP:1,$VIF:1,$ACHI:1,$VMHI:1,$RFHI:1, \
 
 NDPSW   record  $BUSY:1,$C3:1,$ST0:1,$ST1:1,$ST2:1,$C2:1,$C1:1,$C0:1,$IR:1, \
                 $XRSV2:1,$XFPRC:1,$XFUNF:1,$XFOVF:1,$XFZDV:1,$XFDOP:1,$XFIOP:1
+
+        public  NaN32
+NaN32   dq      7FF0000000000001h   ; A Quiet NaN
 
         public  iAsmAdd64
 iAsmAdd64 proc                  ; Start iAsmAdd64 procedure
@@ -374,7 +396,15 @@ EAX     =       clobbered
         mov     eax,[ebp].MULPI_RHT ; EAX => integer right arg
         fild    qword ptr [eax] ; Load the integer right arg
         fsincos                 ;   cos(R) sin(R)
+        fstsw   ax              ; AX = Status Word
+                                ; AH = B:1,C3:1,TOP:3 ,C2:1,C1:1,C0:1
         fdivp   st(1),st(0)     ;   tan(R)
+        sahf                    ; AH = SF ,ZF  ,0,AF,0,PF  ,1   ,CF
+        jnp     iAsm3Int        ; Jump if C2 (Out of Range) flag is not set
+
+        ffree   st(0)           ;  <empty>
+        fld     NaN32           ;   NaN
+iAsm3Int:
         mov     eax,[ebp].MUL64_RES ; EAX => result
         fstp    qword ptr [eax] ; Save in result
 
@@ -409,7 +439,15 @@ EAX     =       clobbered
         mov     eax,[ebp].MULPI_RHT ; EAX => float right arg
         fld     qword ptr [eax] ; Load the float right arg
         fsincos                 ;   cos(R) sin(R)
+        fstsw   ax              ; AX = Status Word
+                                ; AH = B:1,C3:1,TOP:3 ,C2:1,C1:1,C0:1
         fdivp   st(1),st(0)     ;   tan(R)
+        sahf                    ; AH = SF ,ZF  ,0,AF,0,PF  ,1   ,CF
+        jnp     iAsm3Flt        ; Jump if C2 (Out of Range) flag is not set
+
+        ffree   st(0)           ;  <empty>
+        fld     NaN32           ;   NaN
+iAsm3Flt:
         mov     eax,[ebp].MUL64_RES ; EAX => result
         fstp    qword ptr [eax] ; Save in result
 
@@ -444,6 +482,14 @@ EAX     =       clobbered
         mov     eax,[ebp].MULPI_RHT ; EAX => integer right arg
         fild    qword ptr [eax] ; Load the integer right arg
         fcos                    ;   cos(R)
+        fstsw   ax              ; AX = Status Word
+                                ; AH = B:1,C3:1,TOP:3 ,C2:1,C1:1,C0:1
+        sahf                    ; AH = SF ,ZF  ,0,AF,0,PF  ,1   ,CF
+        jnp     iAsm2Int        ; Jump if C2 (Out of Range) flag is not set
+
+        ffree   st(0)           ;  <empty>
+        fld     NaN32           ;   NaN
+iAsm2Int:
         mov     eax,[ebp].MUL64_RES ; EAX => result
         fstp    qword ptr [eax] ; Save in result
 
@@ -478,6 +524,14 @@ EAX     =       clobbered
         mov     eax,[ebp].MULPI_RHT ; EAX => float right arg
         fld     qword ptr [eax] ; Load the float right arg
         fcos                    ;   cos(R)
+        fstsw   ax              ; AX = Status Word
+                                ; AH = B:1,C3:1,TOP:3 ,C2:1,C1:1,C0:1
+        sahf                    ; AH = SF ,ZF  ,0,AF,0,PF  ,1   ,CF
+        jnp     iAsm2Flt        ; Jump if C2 (Out of Range) flag is not set
+
+        ffree   st(0)           ;  <empty>
+        fld     NaN32           ;   NaN
+iAsm2Flt:
         mov     eax,[ebp].MUL64_RES ; EAX => result
         fstp    qword ptr [eax] ; Save in result
 
@@ -512,6 +566,14 @@ EAX     =       clobbered
         mov     eax,[ebp].MULPI_RHT ; EAX => integer right arg
         fild    qword ptr [eax] ; Load the integer right arg
         fsin                    ;   sin(R)
+        fstsw   ax              ; AX = Status Word
+                                ; AH = B:1,C3:1,TOP:3 ,C2:1,C1:1,C0:1
+        sahf                    ; AH = SF ,ZF  ,0,AF,0,PF  ,1   ,CF
+        jnp     iAsm1Int        ; Jump if C2 (Out of Range) flag is not set
+
+        ffree   st(0)           ;  <empty>
+        fld     NaN32           ;   NaN
+iAsm1Int:
         mov     eax,[ebp].MUL64_RES ; EAX => result
         fstp    qword ptr [eax] ; Save in result
 
@@ -546,6 +608,14 @@ EAX     =       clobbered
         mov     eax,[ebp].MULPI_RHT ; EAX => float right arg
         fld     qword ptr [eax] ; Load the float right arg
         fsin                    ;   sin(R)
+        fstsw   ax              ; AX = Status Word
+                                ; AH = B:1,C3:1,TOP:3 ,C2:1,C1:1,C0:1
+        sahf                    ; AH = SF ,ZF  ,0,AF,0,PF  ,1   ,CF
+        jnp     iAsm1Flt        ; Jump if C2 (Out of Range) flag is not set
+
+        ffree   st(0)           ;  <empty>
+        fld     NaN32           ;   NaN
+iAsm1Flt:
         mov     eax,[ebp].MUL64_RES ; EAX => result
         fstp    qword ptr [eax] ; Save in result
 
@@ -663,7 +733,8 @@ EAX     =       clobbered
         fld1                    ;   1           R      R
         faddp   st(1),st(0)     ; R+1           R
         fld1                    ;   1           R+1    R
-        fsubp   st(2),st(0)     ; R-1           R+1
+        fsubp   st(2),st(0)     ; R+1           R-1
+        fxch                    ; R-1           R+1
         fld     st(1)           ; R+1           R-1    R+1
         fdivp   st(1),st(0)     ; (R-1)/(R+1)   R+1
         fsqrt                   ; sqrt(...)     R+1
@@ -708,7 +779,8 @@ EAX     =       clobbered
         fld1                    ;   1           R      R
         faddp   st(1),st(0)     ; R+1           R
         fld1                    ;   1           R+1    R
-        fsubp   st(2),st(0)     ; R-1           R+1
+        fsubp   st(2),st(0)     ; R+1           R-1
+        fxch                    ; R-1           R+1
         fld     st(1)           ; R+1           R-1    R+1
         fdivp   st(1),st(0)     ; (R-1)/(R+1)   R+1
         fsqrt                   ; sqrt(...)     R+1

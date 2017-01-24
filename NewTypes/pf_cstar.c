@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -676,6 +676,7 @@ APLHC8F LogHCxF_RE
              aplIMag,               // ...              imaginary parts
              aplMul;                // Multiplier:  arctan2 (...) / ...
     int      i;                     // Loop counter
+    UBOOL    bAllowNeg0 = (UBOOL) gAllowNeg0;
 
     /*
         From http://tamivox.org/redbear/qtrn_calc/index.html
@@ -726,6 +727,39 @@ APLHC8F LogHCxF_RE
         // Calculate arctan2 (aplIMag, aplRht.parts[0]) / aplIMag
         aplMul = atan2 (aplIMag, aplRht.parts[0]) / aplIMag;        // v
 
+        // If the multiplier is 0, ...
+        if (aplMul EQ 0.0)
+        {
+            // Loop through the imaginary parts
+            for (i = 1; i < iHCDimRes; i++)
+            {
+                // If the right arg item is {Inf}, ...
+                if (IsFltInfinity (aplRht.parts[i]))
+                {
+                    // Set the corresponding item in the result to ±Pi/2
+                    aplRes.parts[i] = FloatPi2;
+
+                    if (SIGN_APLFLOAT_RAW (aplRht.parts[i]) NE SIGN_APLFLOAT_RAW (aplMul))
+                        // Negate the value
+                        aplRes.parts[i] = -aplRes.parts[i];
+                } else
+                    aplRes.parts[i] =  bAllowNeg0 ? ((SIGN_APLFLOAT (aplRht.parts[i])
+                                                   EQ SIGN_APLFLOAT (aplMul)) ? 0.0
+                                                                              : -0.0)
+                                                  : 0.0;
+            } // End FOR
+        } else
+////////// If the multiplier is {Inf}, ...
+////////if (IsFltInfinity (aplMul))
+////////{
+////////    // Loop through the imaginary parts
+////////    for (i = 1; i < iHCDimRes; i++)
+////////        DbgBrk ();
+////////
+////////
+////////
+////////
+////////} else
         // Loop through the imaginary parts
         for (i = 1; i < iHCDimRes; i++)
             // Multiply each of the imaginary parts by the arctan2
@@ -998,6 +1032,7 @@ APLHC8V LogHCxV_RE
              aplTmp,                // Temp var
              aplMul;                // Multiplier:  arctan2 (...) / ...
     int      i;                     // Loop counter
+    UBOOL    bAllowNeg0 = (UBOOL) gAllowNeg0;
 
     /*
         From http://tamivox.org/redbear/qtrn_calc/index.html
@@ -1070,6 +1105,42 @@ APLHC8V LogHCxV_RE
         // Divide by the magnitude of the imaginary parts
         mpfr_div   (&aplMul, &aplMul, &aplIMag, MPFR_RNDN);
 
+        // If the multiplier is 0, ...
+        if (IsMpf0 (&aplMul))
+        {
+            // Loop through the imaginary parts
+            for (i = 1; i < iHCDimRes; i++)
+            {
+                // If the right arg item is {Inf}, ...
+                if (IsMpfInfinity (&aplRht.parts[i]))
+                {
+                    // Set the corresponding item in the result to ±Pi/2
+                    mpfr_init_set   (&aplRes.parts[i], &aplPi2HC8V.parts[0], MPFR_RNDN);
+
+                    // If the signs differ, ...
+                    if (SIGN_APLVFP_RAW (&aplRht.parts[i]) NE SIGN_APLVFP_RAW (&aplMul))
+                        // Negate the value
+                        mpfr_neg (&aplRes.parts[i], &aplRes.parts[i], MPFR_RNDN);
+                } else
+                    mpfr_init_set_d (&aplRes.parts[i],
+                                      bAllowNeg0 ? ((SIGN_APLVFP_RAW (&aplRht.parts[i])
+                                                  EQ SIGN_APLVFP_RAW (&aplMul)) ? 0.0
+                                                                                : -0.0)
+                                                 : 0.0,
+                                      MPFR_RNDN);
+            } // End FOR
+        } else
+////////// If the multiplier is {Inf}, ...
+////////if (IsMpfInfinity (&aplMul))
+////////{
+////////    // Loop through the imaginary parts
+////////    for (i = 1; i < iHCDimRes; i++)
+////////        DbgBrk ();
+////////
+////////
+////////
+////////
+////////} else
         // Loop through the imaginary parts
         for (i = 1; i < iHCDimRes; i++)
             // Multiply each of the imaginary parts by the arctan2

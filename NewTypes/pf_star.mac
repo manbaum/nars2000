@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -59,6 +59,10 @@
     for (i = 1; i < iHCDim; i++)                                                        \
         /* Calculate the sum of the squares */                                          \
         aplIMag += aplRht.parts[i] * aplRht.parts[i];                                   \
+                                                                                        \
+    /* If g is {Inf}, ... */                                                            \
+    if (IsFltInfinity (aplIMag))                                                        \
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);                            \
                                                                                         \
     /* Calculate the magnitude of the imaginary parts */                                \
     aplIMag = sqrt (aplIMag);                                                           \
@@ -129,6 +133,10 @@
         /* We no longer need this resource */                                           \
         Myf_clear (&aplTmp);                                                            \
     } /* End IF */                                                                      \
+                                                                                        \
+    /* If g is {Inf}, ... */                                                            \
+    if (IsMpfInfinity (&aplIMag))                                                       \
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);                            \
                                                                                         \
     /* Calculate the magnitude of the imaginary parts */                                \
     mpfr_sqrt (&aplIMag, &aplIMag, MPFR_RNDN);                                          \

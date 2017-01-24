@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -307,11 +307,12 @@ int mpiz_set_str
     while (isspace (*p))
         p++;
     // If the input consists of "!" or "-!", ...
-    if (strcmp (p, DEF_POSINFINITY_STR) EQ 0
-     || strcmp (p, DEF_NEGINFINITY_STR) EQ 0)
+    if (p[0] EQ DEF_POSINFINITY_CHAR
+     || (p[0] EQ '-'
+      && p[1] EQ DEF_POSINFINITY_CHAR))
     {
         // Set to the appropriate signed infinity
-        mpz_set_inf (rop, p[0] EQ '-');
+        mpz_set_inf (rop, (p[0] EQ '-') ? -1 : 1);
 
         return 0;
     } else
@@ -338,14 +339,15 @@ int mpiz_init_set_str
     while (isspace (*p))
         p++;
     // If the input consists of "!" or "-!", ...
-    if (strcmp (p, DEF_POSINFINITY_STR) EQ 0
-     || strcmp (p, DEF_NEGINFINITY_STR) EQ 0)
+    if (p[0] EQ DEF_POSINFINITY_CHAR
+     || (p[0] EQ '-'
+      && p[1] EQ DEF_POSINFINITY_CHAR))
     {
         // Initialize the result
         mpz_init (rop);
 
         // Set to the appropriate signed infinity
-        mpz_set_inf (rop, p[0] EQ '-');
+        mpz_set_inf (rop, (p[0] EQ '-') ? -1 : 1);
 
         return 0;
     } else
@@ -2774,16 +2776,17 @@ int mpiq_set_str
      && mpz_cmp_ui  (mpq_denref (rop), 0) EQ 0)
     {
         // Set to the appropriate signed infinity
-        mpq_set_inf (rop, p[0] EQ '-');
+        mpq_set_inf (rop, (p[0] EQ '-') ? -1 : 1);
 
         return 0;
     } else
     // If the input consists of "!" or "-!", ...
-    if (strcmp (p, DEF_POSINFINITY_STR) EQ 0
-     || strcmp (p, DEF_NEGINFINITY_STR) EQ 0)
+    if (p[0] EQ DEF_POSINFINITY_CHAR
+     || (p[0] EQ '-'
+      && p[1] EQ DEF_POSINFINITY_CHAR))
     {
         // Set to the appropriate signed infinity
-        mpq_set_inf (rop, p[0] EQ '-');
+        mpq_set_inf (rop, (p[0] EQ '-') ? -1 : 1);
 
         return 0;
     } else
@@ -3478,11 +3481,12 @@ int mpifr_set_str
     while (isspace (*p))
         p++;
     // If the input consists of "!" or "-!", ...
-    if (strcmp (p, DEF_POSINFINITY_STR) EQ 0
-     || strcmp (p, DEF_NEGINFINITY_STR) EQ 0)
+    if (p[0] EQ DEF_POSINFINITY_CHAR
+     || (p[0] EQ '-'
+      && p[1] EQ DEF_POSINFINITY_CHAR))
     {
         // Set to the appropriate signed infinity
-        mpfr_set_inf (rop, p[0] EQ '-');
+        mpfr_set_inf (rop, (p[0] EQ '-') ? -1 : 1);
 
         return 0;
     } else
@@ -3511,11 +3515,12 @@ int mpifr_strtofr
     while (isspace (*p))
         p++;
     // If the input consists of "!" or "-!", ...
-    if (strcmp (p, DEF_POSINFINITY_STR) EQ 0
-     || strcmp (p, DEF_NEGINFINITY_STR) EQ 0)
+    if (p[0] EQ DEF_POSINFINITY_CHAR
+     || (p[0] EQ '-'
+      && p[1] EQ DEF_POSINFINITY_CHAR))
     {
         // Set to the appropriate signed infinity
-        mpfr_set_inf (rop, p[0] EQ '-');
+        mpfr_set_inf (rop, (p[0] EQ '-') ? -1 : 1);
 
         return 0;
     } else
@@ -3895,14 +3900,70 @@ void mpifr_mul
             break;
 
         case 2 * 0 + 1:     // Op2 only is an infinity
-            // The result is infinity whose sign is the product of the signs
-            mpfr_set_inf (rop, mpfr_sgn (op1) * mpfr_sgn (op2));
+            // Check for indeterminates:  0 {times} _  or  _ {times} 0
+            if ((IsMpf0 (op1)
+              && IsMpfPosInfinity (op2))
+             || (IsMpfPosInfinity (op1)
+              && IsMpf0 (op2)))
+                mpfr_set (rop,
+                          mpfr_QuadICValue (op1,
+                                            ICNDX_0MULPi,
+                                            op2,
+                                            rop,
+                                            IsMpf0 (op1) ? SIGN_APLVFP (op1)
+                                                         : SIGN_APLVFP (op2)),
+                          MPFR_RNDN);
+            else
+            // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
+            if ((IsMpf0 (op1)
+              && IsMpfNegInfinity (op2))
+             || (IsMpfNegInfinity (op1)
+              && IsMpf0 (op2)))
+                mpfr_set (rop,
+                          mpfr_QuadICValue (op1,
+                                            ICNDX_0MULNi,
+                                            op2,
+                                            rop,
+                                            IsMpf0 (op1) ? SIGN_APLVFP (op1)
+                                                         : SIGN_APLVFP (op2)),
+                          MPFR_RNDN);
+            else
+                // The result is infinity whose sign is the product of the signs
+                mpfr_set_inf (rop, mpfr_sgn (op1) * mpfr_sgn (op2));
 
             break;
 
         case 2 * 1 + 0:     // Op1 only is an infinity
-            // The result is infinity whose sign is the product of the signs
-            mpfr_set_inf (rop, mpfr_sgn (op1) * mpfr_sgn (op2));
+            // Check for indeterminates:  0 {times} _  or  _ {times} 0
+            if ((IsMpf0 (op2)
+              && IsMpfPosInfinity (op1))
+             || (IsMpfPosInfinity (op2)
+              && IsMpf0 (op1)))
+                mpfr_set (rop,
+                          mpfr_QuadICValue (op2,
+                                            ICNDX_0MULPi,
+                                            op1,
+                                            rop,
+                                            IsMpf0 (op2) ? SIGN_APLVFP (op2)
+                                                         : SIGN_APLVFP (op1)),
+                          MPFR_RNDN);
+            else
+            // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
+            if ((IsMpf0 (op2)
+              && IsMpfNegInfinity (op1))
+             || (IsMpfNegInfinity (op2)
+              && IsMpf0 (op1)))
+                mpfr_set (rop,
+                          mpfr_QuadICValue (op2,
+                                            ICNDX_0MULNi,
+                                            op1,
+                                            rop,
+                                            IsMpf0 (op2) ? SIGN_APLVFP (op2)
+                                                         : SIGN_APLVFP (op1)),
+                          MPFR_RNDN);
+            else
+                // The result is infinity whose sign is the product of the signs
+                mpfr_set_inf (rop, mpfr_sgn (op1) * mpfr_sgn (op2));
 
             break;
 

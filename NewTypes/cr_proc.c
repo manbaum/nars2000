@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -348,6 +348,8 @@ UBOOL crEndSeg
     int    res = 0;                     // mpq_set_str result
     char   chZap,                       // Zapped char
            chZapRat;                    // ...    rational sep
+     UBOOL bNegNum,                     // TRUE iff the numerator starts with a negative sign
+           bNegDen = FALSE;             // ...          denominator ...
 
     // Convert the segment from lpcrLocalVars.lpszStart into a rational number
     // This segment may include a decimal point
@@ -360,6 +362,9 @@ UBOOL crEndSeg
                    lpcrLocalVars->lpszCur[0] = AC_EOS;
     } else
        chZapRat = AC_EOS;
+
+    // Check for negative sign in the numerator
+    bNegNum = (lpcrLocalVars->lpszStart[0] EQ '-');
 
     // Check for a decimal point
     lpDec = strchr (lpcrLocalVars->lpszStart, '.');
@@ -374,14 +379,14 @@ UBOOL crEndSeg
         mpq_init (mpqt_div);
 
         // If the integer part is non-empty, ...
-        if (lpDec > lpcrLocalVars->lpszStart)
+        if (lpDec > &lpcrLocalVars->lpszStart[bNegNum])
         {
             // Save and zap the decimal point so as to terminate the integer part of the string
             chZap = lpDec[0];
                     lpDec[0] = AC_EOS;
             // Convert the integer part of the string to a multiple precision integer
             res = mpq_set_str (lpcrLocalVars->mpqMul,
-                               lpcrLocalVars->lpszStart,
+                              &lpcrLocalVars->lpszStart[bNegNum],
                                lpcrLocalVars->base);
             // Restore the zapped char
             lpDec[0] = chZap;
@@ -396,16 +401,19 @@ UBOOL crEndSeg
         // If the fractional part is non-empty, ...
         if (frcLen NE 0)
         {
+            // Check for negative sign in the denominator
+            bNegDen = (lpDec[1] EQ '-');
+
             // Save and zap the ending char
-            chZap = lpDec[1 + frcLen];
-                    lpDec[1 + frcLen] = AC_EOS;
+            chZap = lpDec[1 + bNegDen + frcLen];
+                    lpDec[1 + bNegDen + frcLen] = AC_EOS;
 
             // Convert the fractional part of the string to a multiple precision integer
             res = mpz_set_str (mpq_numref (mpqt_frc),
-                              &lpDec[1],
+                              &lpDec[1 + bNegDen],
                                lpcrLocalVars->base);
             // Restore the zapped char
-            lpDec[1 + frcLen] = chZap;
+            lpDec[1 + bNegDen + frcLen] = chZap;
 
             if (res NE 0)
                 goto ERROR_EXIT;
@@ -419,17 +427,14 @@ UBOOL crEndSeg
         mpq_div (mpqt_frc,
                  mpqt_frc,
                  mpqt_div);
-        // If the integer part is non-negative, ...
-        if (mpq_sgn (lpcrLocalVars->mpqMul) >= 0)
-            // Add the fractional part to the integer part
-            mpq_add (lpcrLocalVars->mpqMul,
-                     lpcrLocalVars->mpqMul,
-                     mpqt_frc);
-        else
-            // Subtract the fractional part from the integer part
-            mpq_sub (lpcrLocalVars->mpqMul,
-                     lpcrLocalVars->mpqMul,
-                     mpqt_frc);
+        // Add the fractional part to the integer part
+        mpq_add (lpcrLocalVars->mpqMul,
+                 lpcrLocalVars->mpqMul,
+                 mpqt_frc);
+        // If the result is negative, ...
+        if (bNegNum NE bNegDen)
+            // Make it negative
+            mpq_neg (lpcrLocalVars->mpqMul, lpcrLocalVars->mpqMul);
 ERROR_EXIT:
         mpq_clear (mpqt_div);
         mpq_clear (mpqt_frc);
@@ -460,7 +465,7 @@ ERROR_EXIT:
     if (res EQ 0)
     {
         // Check for -0
-        if (lpcrLocalVars->lpszStart[0] EQ OVERBAR1
+        if (bNegNum NE bNegDen
          && IsMpq0 (lpcrLocalVars->mpqMul)
          && gAllowNeg0)
         {

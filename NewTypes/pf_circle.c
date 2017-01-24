@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -137,7 +137,7 @@ PRIMSPEC PrimSpecCircle = {
 
     NULL,   // &PrimFnDydCircleHC4IisHC4IvHC4I, -- Can't happen w/Circle
     NULL,   // &PrimFnDydCircleHC4IisHC4FvHC4F, -- Can't happen w/Circle
-    &PrimFnDydCircleHC4FisHC4FvHC4F,
+    &PrimFnDydCircleHC4FisHC4IvHC4I,
     &PrimFnDydCircleHC4FisHC4FvHC4F,
     NULL,   // &PrimFnDydCircleHC4RisHC4RvHC4R, -- Can't happen w/Circle
     &PrimFnDydCircleHC4VisHC4RvHC4R,
@@ -145,7 +145,7 @@ PRIMSPEC PrimSpecCircle = {
 
     NULL,   // &PrimFnDydCircleHC8IisHC8IvHC8I, -- Can't happen w/Circle
     NULL,   // &PrimFnDydCircleHC8IisHC8IvHC8I, -- Can't happen w/Circle
-    &PrimFnDydCircleHC8FisHC8FvHC8F,
+    &PrimFnDydCircleHC8FisHC8IvHC8I,
     &PrimFnDydCircleHC8FisHC8FvHC8F,
     NULL,   // &PrimFnDydCircleHC8RisHC8RvHC8R, -- Can't happen w/Circle
     &PrimFnDydCircleHC8VisHC8RvHC8R,
@@ -853,8 +853,8 @@ void PrimFnDydCircleFisFvF
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    UINT     bRet;
-    APLINT   aplLft;
+    UINT   bRet;
+    APLINT aplLft;
 
     // Attempt to convert the float to an integer using System []CT
     aplLft = ConvertToInteger_SCT (ARRAY_FLOAT, &lpatLft->aplFloat, 0, &bRet);
@@ -864,6 +864,12 @@ void PrimFnDydCircleFisFvF
     switch (aplLft)
     {
         case  12:       // arc (phase) of R
+            if (SIGN_APLFLOAT (lpatRht->aplFloat))
+                lpMemRes[uRes] = FloatPi;
+            else
+                lpMemRes[uRes] = 0.0;
+            return;
+
         case  11:       // Imaginary part of R
             lpMemRes[uRes] = 0;
 
@@ -1034,7 +1040,7 @@ void PrimFnDydCircleFisFvF
         case  -7:       // atanh (R)
                         // 0.5 x (ln (1 + R) - ln (1 - R))
             // Check for Complex result
-            if (fabs (lpatRht->aplFloat) > 1)
+            if (fabs (lpatRht->aplFloat) >= 1)
                 RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
 
             lpMemRes[uRes] = gsl_atanh (lpatRht->aplFloat);
@@ -1125,6 +1131,12 @@ void PrimFnDydCircleVisVvV
     switch (aplLft)
     {
         case  12:       // arc (phase) of R
+            if (SIGN_APLVFP (&lpatRht->aplVfp))
+                mpfr_init_set (&lpMemRes[uRes], &aplPiHC8V.parts[0], MPFR_RNDN);
+            else
+                mpfr_init0    (&lpMemRes[uRes]);
+            return;
+
         case  11:       // Imaginary part of R
             // Initialize to 0
             mpfr_init0 (&lpMemRes[uRes]);
@@ -1238,8 +1250,7 @@ void PrimFnDydCircleVisVvV
         case  -4:       // (R + 1) × sqrt ((R - 1) / (R + 1))
                         // a.k.a. sqrt ((-1) + R * 2)
         {
-            APLVFP aplTmp1,
-                   aplTmp2,
+            APLVFP aplTmp2,
                    aplTmp3;
 
             // Check for Complex result
@@ -1255,24 +1266,19 @@ void PrimFnDydCircleVisVvV
                 return;
 
             // Initialize the temps to 0
-            mpfr_init0  (&aplTmp1);
             mpfr_init0  (&aplTmp2);
             mpfr_init0  (&aplTmp3);
 
-            // Set a temp to 1
-            mpfr_set_si  (&aplTmp1, 1, MPFR_RNDN);
-
-            mpfr_add    (&aplTmp2       , &lpatRht->aplVfp, &aplTmp1        , MPFR_RNDN);   // R + 1
-            mpfr_sub    (&aplTmp3       , &lpatRht->aplVfp, &aplTmp1        , MPFR_RNDN);   // R - 1
+            mpfr_add    (&aplTmp2       , &lpatRht->aplVfp, &mpfOne         , MPFR_RNDN);   // R + 1
+            mpfr_sub    (&aplTmp3       , &lpatRht->aplVfp, &mpfOne         , MPFR_RNDN);   // R - 1
             mpfr_div    (&aplTmp3       , &aplTmp3        , &aplTmp2        , MPFR_RNDN);   // (R - 1) / (R + 1)
             mpfr_sqrt   (&lpMemRes[uRes], &aplTmp3                          , MPFR_RNDN);   // sqrt ((R - 1) / (R + 1))
-////////////mpfr_add    (&aplTmp2       , &lpatRht->aplVfp, &aplTmp1        , MPFR_RNDN);   // R + 1  -- Already set
-            mpfr_div    (&lpMemRes[uRes], &aplTmp2        , &lpMemRes[uRes] , MPFR_RNDN);   // (R + 1) x sqrt ((R - 1) / (R + 1))
+////////////mpfr_add    (&aplTmp2       , &lpatRht->aplVfp, &mpfOne         , MPFR_RNDN);   // R + 1  -- Already set
+            mpfr_mul    (&lpMemRes[uRes], &aplTmp2        , &lpMemRes[uRes] , MPFR_RNDN);   // (R + 1) x sqrt ((R - 1) / (R + 1))
 
             // We no longer need this storage
             mpfr_clear (&aplTmp3);
             mpfr_clear (&aplTmp2);
-            mpfr_clear (&aplTmp1);
 
             // Check for NaN
             if (mpfr_nan_p (&lpMemRes[uRes]))
@@ -1302,8 +1308,8 @@ void PrimFnDydCircleVisVvV
         case  -7:       // atanh (R)
                         // 0.5 x (ln (1 + R) - ln (1 - R))
             // Check for Complex result
-            if (mpfr_cmp_si (&lpatRht->aplVfp,  1) > 0
-             || mpfr_cmp_si (&lpatRht->aplVfp, -1) < 0)
+            if (mpfr_cmp_si (&lpatRht->aplVfp,  1) >= 0
+             || mpfr_cmp_si (&lpatRht->aplVfp, -1) <= 0)
                 RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
 
             // Call subroutine

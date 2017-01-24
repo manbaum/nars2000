@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -556,7 +556,6 @@ APLHC2F ExpHC2F_RE
     (APLHC2F aplRht)
 
 {
-    int           i;                    // Loop counter
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
     APLHC2F       aplRes = {0};         // The result
@@ -573,14 +572,8 @@ APLHC2F ExpHC2F_RE
         // Get the ptr to the Ctrl-Break flag
         lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
-    // Check for special case:  ^-_ (any part is -_)
-    // Loop through all of the parts
-    for (i = 0; i < 2; i++)
-    if (IsFltNegInfinity (aplRht.parts[i]))
-        break;
-
-    // If we didn't terminated early, ...
-    if (i EQ 2)
+    // Check for special case:  ^-_
+    if (!IsFltNegInfinity (aplRht.parts[0]))
     {
         // Handle via macro
         PrimMonStarHCxF_MAC (2)
@@ -639,7 +632,6 @@ APLHC4F ExpHC4F_RE
     (APLHC4F aplRht)
 
 {
-    int           i;                    // Loop counter
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
     APLHC4F       aplRes = {0};         // The result
@@ -656,14 +648,8 @@ APLHC4F ExpHC4F_RE
         // Get the ptr to the Ctrl-Break flag
         lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
-    // Check for special case:  ^-_ (any part is -_)
-    // Loop through all of the parts
-    for (i = 0; i < 4; i++)
-    if (IsFltNegInfinity (aplRht.parts[i]))
-        break;
-
-    // If we didn't terminated early, ...
-    if (i EQ 4)
+    // Check for special case:  ^-_
+    if (!IsFltNegInfinity (aplRht.parts[0]))
     {
         // Handle via macro
         PrimMonStarHCxF_MAC (4)
@@ -722,7 +708,6 @@ APLHC8F ExpHC8F_RE
     (APLHC8F aplRht)
 
 {
-    int           i;                    // Loop counter
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
     APLHC8F       aplRes = {0};         // The result
@@ -739,14 +724,8 @@ APLHC8F ExpHC8F_RE
         // Get the ptr to the Ctrl-Break flag
         lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
-    // Check for special case:  ^-_ (any part is -_)
-    // Loop through all of the parts
-    for (i = 0; i < 8; i++)
-    if (IsFltNegInfinity (aplRht.parts[i]))
-        break;
-
-    // If we didn't terminated early, ...
-    if (i EQ 8)
+    // Check for special case:  ^-_
+    if (!IsFltNegInfinity (aplRht.parts[0]))
     {
         // Handle via macro
         PrimMonStarHCxF_MAC (8)
@@ -789,8 +768,7 @@ void PrimFnMonStarHC2VisHC2V
 
 {
     // Check for special case:  ^-_
-    if (IsMpfNegInfinity (&lpatRht->aplHC2V.parts[0])
-     || IsMpfNegInfinity (&lpatRht->aplHC2V.parts[1]))
+    if (IsMpfNegInfinity (&lpatRht->aplHC2V.parts[0]))
         // Initialize the result to 0
         mphc2v_init0 (&lpMemRes[uRes]);
     else
@@ -858,7 +836,6 @@ APLHC2V ExpHC2V_RE
     (APLHC2V aplRht)
 
 {
-    int           i;                    // Loop counter
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
     APLHC2V       aplRes;               // The result
@@ -875,14 +852,8 @@ APLHC2V ExpHC2V_RE
         // Get the ptr to the Ctrl-Break flag
         lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
-    // Check for special case:  ^-_ (any part is -_)
-    // Loop through all of the parts
-    for (i = 0; i < 2; i++)
-    if (IsMpfNegInfinity (&aplRht.parts[i]))
-        break;
-
-    // If we terminated early, ...
-    if (i < 2)
+    // Check for special case:  ^-_
+    if (IsMpfNegInfinity (&aplRht.parts[0]))
         // Initialize the result to 0
         mphc2v_init0 (&aplRes);
     else
@@ -945,7 +916,6 @@ APLHC4V ExpHC4V_RE
     (APLHC4V aplRht)
 
 {
-    int           i;                    // Loop counter
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
     APLHC4V       aplRes;               // The result
@@ -962,14 +932,8 @@ APLHC4V ExpHC4V_RE
         // Get the ptr to the Ctrl-Break flag
         lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
-    // Check for special case:  ^-_ (any part is -_)
-    // Loop through all of the parts
-    for (i = 0; i < 4; i++)
-    if (IsMpfNegInfinity (&aplRht.parts[i]))
-        break;
-
-    // If we terminated early, ...
-    if (i < 4)
+    // Check for special case:  ^-_
+    if (IsMpfNegInfinity (&aplRht.parts[0]))
         // Initialize the result to 0
         mphc4v_init0 (&aplRes);
     else
@@ -1032,7 +996,6 @@ APLHC8V ExpHC8V_RE
     (APLHC8V aplRht)
 
 {
-    int           i;                    // Loop counter
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
     APLHC8V       aplRes;               // The result
@@ -1049,14 +1012,8 @@ APLHC8V ExpHC8V_RE
         // Get the ptr to the Ctrl-Break flag
         lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
-    // Check for special case:  ^-_ (any part is -_)
-    // Loop through all of the parts
-    for (i = 0; i < 8; i++)
-    if (IsMpfNegInfinity (&aplRht.parts[i]))
-        break;
-
-    // If we terminated early, ...
-    if (i < 8)
+    // Check for special case:  ^-_
+    if (IsMpfNegInfinity (&aplRht.parts[0]))
         // Initialize the result to 0
         mphc8v_init0 (&aplRes);
     else
@@ -1615,7 +1572,7 @@ void PrimFnDydStarRisRvR
                                             FALSE);
     else
 ////// Check for indeterminates:  L * R for L < 0 and R not an integer
-////if (mpq_sgn (&lpatLft->aplRat) < 0
+////if (SIGN_APLRAT (&lpatLft->aplRat)
 //// && !mpq_integer_p (&lpatRht->aplRat))
 ////    lpMemRes[uRes] = *mpq_QuadICValue (&lpatLft->aplRat,
 ////                                        ICNDX_NegEXPFrc,
@@ -1624,7 +1581,7 @@ void PrimFnDydStarRisRvR
 ////                                        FALSE);
 ////else
     // Check for complex result
-    if (mpq_sgn (&lpatLft->aplRat) < 0
+    if (SIGN_APLRAT (&lpatLft->aplRat)
      && !mpq_integer_p (&lpatRht->aplRat))
         RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
     else
@@ -1658,12 +1615,12 @@ void PrimFnDydStarRisRvR
         mpz_pow_ui (mpq_denref (&lpMemRes[uRes]), mpq_denref (&lpMemRes[uRes]), uRht);
 
         // If the right arg is negative, ...
-        if (mpq_sgn (&lpatRht->aplRat) < 0)
+        if (SIGN_APLRAT (&lpatRht->aplRat))
             // Invert it
             mpq_inv (&lpMemRes[uRes], &lpMemRes[uRes]);
     } else
     // If the base is negative, ...
-    if (mpq_sgn (&lpatLft->aplRat) < 0)
+    if (SIGN_APLRAT (&lpatLft->aplRat))
     {
         // If the denominator is even, ...
         if (mpz_even_p (mpq_denref (&lpatRht->aplRat)))
@@ -2194,7 +2151,7 @@ APLHC2R PowHC2R_RE
                                         FALSE));
         else
 ////////// Check for indeterminates:  L * R for L < 0 and R not an integer
-////////if (mpq_sgn (&aplLft.parts[0]) < 0
+////////if (SIGN_APLRAT (&aplLft.parts[0])
 //////// && !mpq_integer_p (&aplRht.parts[0]))
 ////////{
 ////////    mpq_set (&aplRes.parts[0],
@@ -2221,7 +2178,7 @@ APLHC2R PowHC2R_RE
             mpq_init_set (&aplRes.parts[0], &aplLft.parts[0]);
         else
         // Check for complex result
-        if (mpq_sgn (&aplLft.parts[0]) < 0
+        if (SIGN_APLRAT (&aplLft.parts[0])
          && !mpq_integer_p (&aplRht.parts[0]))
         {
             // Avoid memory leak
@@ -2286,7 +2243,7 @@ APLHC2R PowHC2R_SUB
         } // End WHILE
 //  } else
 //  // If the base is negative, ...
-//  if (mpq_sgn (&aplLft.parts[0]) < 0)
+//  if (SIGN_APLRAT (&aplLft.parts[0]))
 //  {
 //      // If the denominator is even, ...
 //      if (mpz_even_p (mpq_denref (&aplRht.parts[0])))
@@ -2919,7 +2876,7 @@ APLHC4R PowHC4R_RE
                                         FALSE));
         else
 ////////// Check for indeterminates:  L * R for L < 0 and R not an integer
-////////if (mpq_sgn (&aplLft.parts[0]) < 0
+////////if (SIGN_APLRAT (&aplLft.parts[0])
 //////// && !mpq_integer_p (&aplRht.parts[0]))
 ////////{
 ////////    mpq_set (&aplRes.parts[0],
@@ -2946,7 +2903,7 @@ APLHC4R PowHC4R_RE
             mpq_init_set (&aplRes.parts[0], &aplLft.parts[0]);
         else
         // Check for complex result
-        if (mpq_sgn (&aplLft.parts[0]) < 0
+        if (SIGN_APLRAT (&aplLft.parts[0])
          && !mpq_integer_p (&aplRht.parts[0]))
         {
             // Avoid memory leak
@@ -3011,7 +2968,7 @@ APLHC4R PowHC4R_SUB
         } // End WHILE
 //  } else
 //  // If the base is negative, ...
-//  if (mpq_sgn (&aplLft.parts[0]) < 0)
+//  if (SIGN_APLRAT (&aplLft.parts[0]))
 //  {
 //      // If the denominator is even, ...
 //      if (mpz_even_p (mpq_denref (&aplRht.parts[0])))
@@ -3648,7 +3605,7 @@ APLHC8R PowHC8R_RE
                                         FALSE));
         else
 ////////// Check for indeterminates:  L * R for L < 0 and R not an integer
-////////if (mpq_sgn (&aplLft.parts[0]) < 0
+////////if (SIGN_APLRAT (&aplLft.parts[0])
 //////// && !mpq_integer_p (&aplRht.parts[0]))
 ////////{
 ////////    mpq_set (&aplRes.parts[0],
@@ -3675,7 +3632,7 @@ APLHC8R PowHC8R_RE
             mpq_init_set (&aplRes.parts[0], &aplLft.parts[0]);
         else
         // Check for complex result
-        if (mpq_sgn (&aplLft.parts[0]) < 0
+        if (SIGN_APLRAT (&aplLft.parts[0])
          && !mpq_integer_p (&aplRht.parts[0]))
         {
             // Avoid memory leak
@@ -3740,7 +3697,7 @@ APLHC8R PowHC8R_SUB
         } // End WHILE
 //  } else
 //  // If the base is negative, ...
-//  if (mpq_sgn (&aplLft.parts[0]) < 0)
+//  if (SIGN_APLRAT (&aplLft.parts[0]))
 //  {
 //      // If the denominator is even, ...
 //      if (mpz_even_p (mpq_denref (&aplRht.parts[0])))
@@ -4096,7 +4053,7 @@ APLFLOAT cosCT_Flt
     UBOOL    bRet;
 
     // Divide by Pi/2 so we can compare it with its floor
-    aplRes = 2 * aplRht / FloatPi;
+    aplRes = aplRht / FloatPi2;
 
     // Calculate the floor so we can see if it's an odd integer
     aplFlr = floor (aplRes);
@@ -4104,8 +4061,8 @@ APLFLOAT cosCT_Flt
     // Extract the integer from aplFlr
     aplInt = ConvertToInteger_SCT (ARRAY_FLOAT, &aplFlr, 0, &bRet);
 
-    // Handle cos (OddInteger*FloatPi/2) specially as
-    //   cos (OddInteger*FloatPi/2) isn't 0, but a very small number.
+    // Handle cos (OddInteger*Pi/2) specially as
+    //   cos (OddInteger*Pi/2) isn't 0, but a very small number.
     if (bRet
      && 1 EQ aplInt % 2
      && CmpCT_F (aplRes, aplFlr, SYS_CT, EQ))
@@ -4137,8 +4094,7 @@ APLVFP cosCT_Vfp
     mpfr_init0 (&aplRes);
 
     // Divide by Pi/2 so we can compare it with its floor
-    mpfr_div    (&aplRes, &aplRht, &GetMemPTD ()->mpfrPi, MPFR_RNDN);
-    mpfr_mul_ui (&aplRes, &aplRes, 2, MPFR_RNDN);
+    mpfr_div (&aplRes, &aplRht, &aplPi2HC8V.parts[0], MPFR_RNDN);
 
     // Calculate the floor so we can see if it's an odd integer
     aplFlr = FloorHC1V (aplRes);
@@ -4146,8 +4102,8 @@ APLVFP cosCT_Vfp
     // Extract the integer from aplFlr
     aplInt = ConvertToInteger_SCT (ARRAY_VFP, &aplFlr, 0, &bRet);
 
-    // Handle cos (OddInteger*FloatPi/2) specially as
-    //   cos (OddInteger*FloatPi/2) isn't 0, but a very small number.
+    // Handle cos (OddInteger*Pi/2) specially as
+    //   cos (OddInteger*Pi/2) isn't 0, but a very small number.
     if (bRet
      && 1 EQ aplInt % 2
      && CmpCT_V (aplRes, aplFlr, SYS_CT, EQ))

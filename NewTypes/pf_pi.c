@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1668,7 +1668,7 @@ APLMPI PrimFnPiPrevPrime
         return mpzRes;
     } // End IF
 
-    // Initialise the result to 0
+    // Initialize the result to 0
     mpz_init (&mpzRes);
 
     // Handle special cases

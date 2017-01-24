@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1582,14 +1582,14 @@ APLHC1R ModHC1R
     if (IsMpqNegInfinity (&aplRht))
     {
         // If the left arg is positive, ...
-        if (mpq_sgn (&aplLft) > 0)
+        if (!SIGN_APLRAT (&aplLft))
             aplRes = *mpq_QuadICValue (&aplLft,
                                         ICNDX_PosMODNi,
                                        &aplRht,
                                        &aplRes,
                                         FALSE);
         // If the left arg is negative, ...
-        if (mpq_sgn (&aplLft) < 0)
+        if (SIGN_APLRAT (&aplLft))
             aplRes = *mpq_QuadICValue (&aplLft,
                                         ICNDX_NegMODNi,
                                        &aplRht,
@@ -1601,14 +1601,14 @@ APLHC1R ModHC1R
     if (IsMpqPosInfinity (&aplRht))
     {
         // If the left arg is positive, ...
-        if (mpq_sgn (&aplLft) > 0)
+        if (!SIGN_APLRAT (&aplLft))
             aplRes = *mpq_QuadICValue (&aplLft,
                                         ICNDX_PosMODPi,
                                        &aplRht,
                                        &aplRes,
                                         FALSE);
         // If the left arg is negative, ...
-        if (mpq_sgn (&aplLft) < 0)
+        if (SIGN_APLRAT (&aplLft))
             aplRes = *mpq_QuadICValue (&aplLft,
                                         ICNDX_NegMODPi,
                                        &aplRht,
@@ -1620,7 +1620,7 @@ APLHC1R ModHC1R
     if (IsMpqNegInfinity (&aplLft))
     {
         // If the right arg is positive, ...
-        if (mpq_sgn (&aplRht) > 0)
+        if (!SIGN_APLRAT (&aplRht))
         {
             aplRes = *mpq_QuadICValue (&aplLft,
                                         ICNDX_NiMODPos,
@@ -1637,7 +1637,7 @@ APLHC1R ModHC1R
     if (IsMpqPosInfinity (&aplLft))
     {
         // If the right arg is negative, ...
-        if (mpq_sgn (&aplRht) < 0)
+        if (SIGN_APLRAT (&aplRht))
         {
             aplRes = *mpq_QuadICValue (&aplLft,
                                         ICNDX_PiMODNeg,
@@ -1693,7 +1693,7 @@ APLHC1R ModHC1R
     } // End IF/ELSE/...
 
     // The sign of the result is the sign of the left arg
-    if (mpq_sgn (&aplLft) < 0)
+    if (SIGN_APLRAT (&aplLft))
     {
         // If zero and -0 is allowed, ...
         if (IsMpq0 (&aplRes) && gAllowNeg0)

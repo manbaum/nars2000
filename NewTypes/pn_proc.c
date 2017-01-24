@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3424,15 +3424,10 @@ LPPN_YYSTYPE PN_MakeExpPoint
     {
         int iExpSgn;                    // The signum of the exponent
 
+        case PN_NUMTYPE_RAT:
         case PN_NUMTYPE_HC2R:
         case PN_NUMTYPE_HC4R:
         case PN_NUMTYPE_HC8R:
-            // Initialize to 0/1
-            mphcxr_init (&lpYYArg->at.aplRat, iHCDim);
-
-            // Fall through to common code
-
-        case PN_NUMTYPE_RAT:
             // Convert the exponent to a rational number
             mpz_init_set_str (&aplMpiExp , &lpszNumAccum[lpYYExponent->uNumAcc], 10);
 
@@ -3455,7 +3450,12 @@ LPPN_YYSTYPE PN_MakeExpPoint
                 // Create 10 * exp
                 mpz_ui_pow_ui (&aplMpiExp, 10, mpz_get_ui (&aplMpiExp));
 
-                // Convert the multiplier to a rational number
+                // If we inserted an exponent separator, ...
+                if (lppnLocalVars->lpszNumAccum[lpYYExponent->uNumAcc - 1] EQ 'e')
+                    // Delete it so we can convert the multiplier
+                    lppnLocalVars->lpszNumAccum[lpYYExponent->uNumAcc - 1] = AC_EOS;
+
+                // Convert the multiplier to a rational integer
                 mpz_init_set_str (&aplMpiMult, &lpszNumAccum[uNumAcc], 10);
 
                 // If the exponent sign is negative, ...
@@ -4415,13 +4415,13 @@ PN_YYSTYPE PN_MakeHc2Point
         case PN_NUMTYPE_HC2R:
         case PN_NUMTYPE_HC4R:
         case PN_NUMTYPE_HC8R:
-            // Get the angle in degrees as an integer
-            aplInteger1 = ConvertToInteger_SCT (TranslateNumTypeToArrayType (lpC1->chType), &lpC1->at.aplRat, 0, &bRet);
-
             // If we're converting from degrees or radians, ...
             switch (cConvType)
             {
                 case 'd':
+                    // Get the angle in degrees as an integer
+                    aplInteger1 = ConvertToInteger_SCT (TranslateNumTypeToArrayType (lpC1->chType), &lpC1->at.aplRat, 0, &bRet);
+
                     // If the integer conversion is valid,
                     //   and the angle is a multiple of 90 degrees, ...
                     if (bRet
@@ -5753,6 +5753,8 @@ PN_YYSTYPE PN_SetInfinity
 {
     PN_YYSTYPE  pnYYRes = {0};          // The result
     mpfr_prec_t uDefPrec;               // Default VFP precision
+    int         i,                      // Loop counter
+                iHCDim;                 // HC Dimension (1, 2, 4, 8)
 
     Assert (iInfSgn EQ 1 || iInfSgn EQ -1);
 
@@ -5762,22 +5764,42 @@ PN_YYSTYPE PN_SetInfinity
     // Get the numeric type
     pnYYRes.chType = (lppnLocalVars->chComType EQ PN_NUMTYPE_INIT) ? pnNumType : lppnLocalVars->chComType;
 
+    // Calculate the HC Dimension (1, 2, 4, 8)
+    iHCDim = TranslateNumTypeToHCDim (pnYYRes.chType);
+
     // Split cases based upon the current numeric type
     switch (pnYYRes.chType)
     {
         case PN_NUMTYPE_FLT:
+        case PN_NUMTYPE_HC2F:
+        case PN_NUMTYPE_HC4F:
+        case PN_NUMTYPE_HC8F:
             // Mark as +/- infinity
             pnYYRes.at.aplFloat = (iInfSgn EQ 1) ? fltPosInfinity : fltNegInfinity;
 
+            // Loop through the imaginary parts
+            for (i = 1; i < iHCDim; i++)
+                // Initialize to 0
+                pnYYRes.at.aplHC8F.parts[i] = 0.0;
             break;
 
         case PN_NUMTYPE_RAT:
+        case PN_NUMTYPE_HC2R:
+        case PN_NUMTYPE_HC4R:
+        case PN_NUMTYPE_HC8R:
             // Mark as _/- infinity
             mpq_set_infsub (&pnYYRes.at.aplRat, iInfSgn);
 
+            // Loop through the imaginary parts
+            for (i = 1; i < iHCDim; i++)
+                // Initialize to 0/1
+                mpq_init (&pnYYRes.at.aplHC8R.parts[i]);
             break;
 
         case PN_NUMTYPE_VFP:
+        case PN_NUMTYPE_HC2V:
+        case PN_NUMTYPE_HC4V:
+        case PN_NUMTYPE_HC8V:
             if (lpiVfpPrec NE NULL && *lpiVfpPrec NE 0)
             {
                 // Validate the desired precision
@@ -5802,26 +5824,17 @@ PN_YYSTYPE PN_SetInfinity
             // Mark as +/- infinity
             mpfr_set_inf (&pnYYRes.at.aplVfp, iInfSgn);
 
-            break;
-
-        case PN_NUMTYPE_HC2I:           // Not implemented as yet
-        case PN_NUMTYPE_HC2F:           // ...
-        case PN_NUMTYPE_HC2R:           // ...
-        case PN_NUMTYPE_HC2V:           // ...
-        case PN_NUMTYPE_HC4I:           // ...
-        case PN_NUMTYPE_HC4F:           // ...
-        case PN_NUMTYPE_HC4R:           // ...
-        case PN_NUMTYPE_HC4V:           // ...
-        case PN_NUMTYPE_HC8I:           // ...
-        case PN_NUMTYPE_HC8F:           // ...
-        case PN_NUMTYPE_HC8R:           // ...
-        case PN_NUMTYPE_HC8V:           // ...
-            DbgBrk ();                  // ***FINISHME***
-
+            // Loop through the imaginary parts
+            for (i = 1; i < iHCDim; i++)
+                // Initialize to 0
+                mpfr_init0 (&pnYYRes.at.aplHC8V.parts[i]);
             break;
 
         case PN_NUMTYPE_BOOL:           // Can't happen -- no such type of infinity
         case PN_NUMTYPE_INT:            // ...
+        case PN_NUMTYPE_HC2I:           // ...
+        case PN_NUMTYPE_HC4I:           // ...
+        case PN_NUMTYPE_HC8I:           // ...
         defstop
             break;
     } // End SWITCH

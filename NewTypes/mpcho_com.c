@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -425,12 +425,8 @@ void mpXf_atan
 ////// If the real part of the arg is zero, ...
 ////if (mpfr_zero_p (&op->parts[0]))
 ////{
-////    // Set the real part of the result to Pi/2
-////    // Calculate:  Pi
-////    mpfr_const_pi (&rop->parts[0], rnd);
-////
-////    // Calculate:  Pi / 2
-////    mpfr_div_si (&rop->parts[0], &rop->parts[0], 2, rnd);
+////    // Set the real part of the result to ±Pi/2
+////    mpfr_set (&rop->parts[0], aplHC8V.parts[0], rnd);
 ////
 ////    // Set the sign of the real part of the result
 ////    //   to the opposite sign of the (first) imag part
@@ -779,57 +775,93 @@ void mpXf_atanh
 {
     mpfr_t mpfIMag,             // Magnitude of imag parts in the arg
            mpfTmp1;             // Temp var
-    mpc_t  Z;
+    mpc_t  Z1, Z2;
 
     // Initialize to NaN
     mpfr_init (mpfIMag);
     mpfr_init (mpfTmp1);
-    mpc_init2 (Z, mpfr_get_default_prec ());
+    mpc_init2 (Z1, mpfr_get_default_prec ());
+    mpc_init2 (Z2, mpfr_get_default_prec ());
 
     // Calculate the magnitude of the imag parts in the arg
     mpXf_mag_imag (mpfIMag, op, rnd, iHCDim, 1);                // g
 
     // Construct a complex number from h and g
-    mpfr_set (Z->re, &op->parts[0], rnd);
-    mpfr_set (Z->im, mpfIMag, rnd);
+    mpfr_set (Z1->re, &op->parts[0], rnd);
+    mpfr_set (Z1->im, mpfIMag, rnd);
 
+    //***************************************************************************
     // In order to get correct CW continuity results from mpc_atanh,
     //   we must ensure that if the imag part of the
     //   arg is zero, then its sign is opposite that of
     //   the real part of the arg
-    if (mpfr_zero_p (&op->parts[1]))
+    //***************************************************************************
+
+    // If the arg has no imag parts, ...
+    if (mpfr_zero_p (mpfIMag))
     {
         // Ensure no sign on zero
-        mpfr_abs (Z->im, Z->im, MPFR_RNDN);
+        mpfr_abs (Z1->im, Z1->im, MPFR_RNDN);
 
         // If the real part of the arg is >= 1, ... (CW)
         if (mpfr_cmp_si (&op->parts[0], 1) >= 0)
 ////    // If the real part is <= -1, ... (CCW)
 ////    if (mpfr_cmp_si (&op->parts[0], -1) <=  0)
             // Pass negative zero to mpc_atanh
-            mpfr_neg (Z->im, Z->im, MPFR_RNDN);
+            mpfr_neg (Z1->im, Z1->im, MPFR_RNDN);
     } // End IF
-    // Calculate the corresponding complex number
-    mpc_atanh (Z, Z, MPC_RNDNN);
+
+    //***************************************************************************
+    // If the real part of Z1 is ±1, and the imaginary part is 0,
+    //   then <mpc_atanh> and <gsl_complex_arctanh>
+    //   disagree on the result.
+    // MPC says the result is (±inf,0)
+    //   and GSL says it is   (+inf,-Pi/2)  or  (-inf, Pi/2)
+    // For the moment, I'm going with GSL because it is more like
+    //   "NIST Handbook of Mathematical Functions" (a.k.a. A&S v2),
+    //   section 4.37.25.
+    //***************************************************************************
+
+    // If the real part of Z1 is ±1, and
+    //    the imag part of Z1 is  0, ...
+    if ((mpfr_cmp_si (Z1->re,  1) EQ 0
+      || mpfr_cmp_si (Z1->re, -1) EQ 0)
+     && mpfr_zero_p (Z1->im))
+    {
+        // Set the real part of Z2 to ±Inf
+        mpfr_set_inf (Z2->re, mpfr_sgn (Z1->re));
+
+        // Set the imag part of Z2 to ±Pi/2
+        mpfr_set (Z2->im, &aplPi2HC8V.parts[0], MPFR_RNDN);
+
+        // Set the sign of the imag part in Z2
+        //   to the opposite sign of the real
+        //   part of Z2
+        if (SIGN_APLVFP (Z2->re) EQ 0)
+            mpfr_neg  (Z2->im, Z2->im, MPFR_RNDN);
+    } else
+        // Calculate the corresponding complex number
+        mpc_atanh (Z2, Z1, MPC_RNDNN);
 
     // Save as the real part of the result
-    mpfr_set (&rop->parts[0], Z->re, rnd);
+    mpfr_set (&rop->parts[0], Z2->re, rnd);
 
     // If the arg has any imag parts, ...
     if (!mpfr_zero_p (mpfIMag))                                         // g == 0 ?
     {
-        // Calculate:  Z->im / g
-        mpfr_div (mpfTmp1, Z->im, mpfIMag, rnd);
+        // Calculate:  Z2->im / g
+        mpfr_div (mpfTmp1, Z2->im, mpfIMag, rnd);
 
-        // Multiply the imag parts of the arg by Z.im / g
+        // Multiply the imag parts of the arg by Z2.im / g
         mpXf_scale (rop, op, mpfTmp1, iHCDim, rnd);
     } else
     // The imag part of the arg is zero
         // Save in first imag part of the result
-        mpfr_set (&rop->parts[1], Z->im, rnd);
+        mpfr_set (&rop->parts[1], Z2->im, rnd);
 
     // We no longer need this storage
-    mpc_clear  (Z      );
+    mpc_clear  (Z2     );
+    mpc_clear  (Z1     );
     mpfr_clear (mpfTmp1);
     mpfr_clear (mpfIMag);
 } // End mpXf_atanh
@@ -853,8 +885,16 @@ void mpXf_scale
 
     // Loop through the imag parts
     for (i = 1; i < iHCDim; i++)
+    {
         // Multiply the imag parts of the arg by the scale factor
         mpfr_mul (&rop->parts[i], &op->parts[i], mpfTmp1, rnd);
+
+        // If the result is a NaN (really a Real Indefinite), ...
+        if (mpfr_nan_p (&rop->parts[i]))
+            // Set to zero
+            // We are deciding for this function that {inf} x 0 is 0
+            mpfr_set_d (&rop->parts[i], 0.0, MPFR_RNDN);
+    } // End FOR
 } // End mpXf_scale
 
 

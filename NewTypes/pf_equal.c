@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -688,7 +688,7 @@ UBOOL EqualHCxFvHCxF
     APLFLOAT aplMagLft,                 // Magnitude of left arg
              aplMagRht,                 // ...          right ...
              aplDist;                   // Distance between left and right args
-
+    int      i;                         // Loop counter
     __try
     {
         // Split cases based upon the Dimension
@@ -739,8 +739,24 @@ UBOOL EqualHCxFvHCxF
         aplDist = fltPosInfinity;
     } // End __try/__except
 
-    // The two numbers are equal iff the Dist is <= []CT * max (aplMagLft, aplMagRht)
-    return aplDist <= (fQuadCT * max (aplMagLft, aplMagRht));
+    // If both of the magnitudes are infinite, ...
+    if (IsFltInfinity (aplMagLft) && IsFltInfinity (aplMagRht))
+    {
+        // Compare the individual coordinates
+        for (i = 0; i < iHCDim; i++)
+        if (CmpCT_F (lpatLft->aplHC8F.parts[i],
+                     lpatRht->aplHC8F.parts[i],
+                     fQuadCT,
+                     NE))
+            return FALSE;
+        return TRUE;
+    } else
+    // If one of the magnitudes is infinite and the other isn't, ...
+    if (IsFltInfinity (aplMagLft) NE IsFltInfinity (aplMagRht))
+        return FALSE;
+    else
+        // The two numbers are equal iff the Dist is <= []CT * max (aplMagLft, aplMagRht)
+        return aplDist <= (fQuadCT * max (aplMagLft, aplMagRht));
 } // End EqualHCxFvHCxF
 
 
@@ -853,6 +869,7 @@ UBOOL EqualHCxRvHCxR
            aplMagMax,                   // Magnitude of larger
            aplDist;                     // Distance between left and right args
     UBOOL  bRet;                        // The result
+    int    i;                           // Loop counter
 
     __try
     {
@@ -867,8 +884,10 @@ UBOOL EqualHCxRvHCxR
                 aplMagLft = MagHC2R (lpatLft->aplHC2R);
                 aplMagRht = MagHC2R (lpatLft->aplHC2R);
 
-                // Get the distance between the args
-                aplDist   = DistHC2R (lpatLft->aplHC2R, lpatRht->aplHC2R);
+                // If neither of the magnitudes are infinite, ...
+                if (!IsMpfInfinity (&aplMagLft) && !IsMpfInfinity (&aplMagRht))
+                    // Get the distance between the args
+                    aplDist   = DistHC2R (lpatLft->aplHC2R, lpatRht->aplHC2R);
 
                 break;
 
@@ -877,8 +896,10 @@ UBOOL EqualHCxRvHCxR
                 aplMagLft = MagHC4R (lpatLft->aplHC4R);
                 aplMagRht = MagHC4R (lpatLft->aplHC4R);
 
-                // Get the distance between the args
-                aplDist   = DistHC4R (lpatLft->aplHC4R, lpatRht->aplHC4R);
+                // If neither of the magnitudes are infinite, ...
+                if (!IsMpfInfinity (&aplMagLft) && !IsMpfInfinity (&aplMagRht))
+                    // Get the distance between the args
+                    aplDist   = DistHC4R (lpatLft->aplHC4R, lpatRht->aplHC4R);
 
                 break;
 
@@ -887,8 +908,10 @@ UBOOL EqualHCxRvHCxR
                 aplMagLft = MagHC8R (lpatLft->aplHC8R);
                 aplMagRht = MagHC8R (lpatLft->aplHC8R);
 
-                // Get the distance between the args
-                aplDist   = DistHC8R (lpatLft->aplHC8R, lpatRht->aplHC8R);
+                // If neither of the magnitudes are infinite, ...
+                if (!IsMpfInfinity (&aplMagLft) && !IsMpfInfinity (&aplMagRht))
+                    // Get the distance between the args
+                    aplDist   = DistHC8R (lpatLft->aplHC8R, lpatRht->aplHC8R);
 
                 break;
 
@@ -913,8 +936,26 @@ UBOOL EqualHCxRvHCxR
         aplDist = mpfPosInfinity;
     } // End __try/__except
 
-    // The two numbers are equal iff the Dist is <= []CT * max (aplMagLft, aplMagRht)
-    bRet = mpfr_cmp (&aplDist, &aplMagMax) <= 0;
+    // Initialize the return value
+    bRet = TRUE;
+
+    // If both of the magnitudes are infinite, ...
+    if (IsMpfInfinity (&aplMagLft) && IsMpfInfinity (&aplMagRht))
+    {
+        // Compare the individual coordinates
+        for (i = 0; i < iHCDim; i++)
+        if (CmpCT_R (lpatLft->aplHC8R.parts[i],
+                     lpatRht->aplHC8R.parts[i],
+                     fQuadCT,
+                     NE))
+            bRet = FALSE;
+    } else
+    // If one of the magnitudes is infinite and the other isn't, ...
+    if (IsMpfInfinity (&aplMagLft) NE IsMpfInfinity (&aplMagRht))
+        bRet = FALSE;
+    else
+        // The two numbers are equal iff the Dist is <= []CT * max (aplMagLft, aplMagRht)
+        bRet = mpfr_cmp (&aplDist, &aplMagMax) <= 0;
 
     // We no longer need this resource
     Myf_clear (&aplMagMax);
@@ -1032,6 +1073,7 @@ UBOOL EqualHCxVvHCxV
            aplMagMax,                   // Magnitude of larger
            aplDist;                     // Distance between left and right args
     UBOOL  bRet;                        // The result
+    int    i;                           // Loop counter
 
     __try
     {
@@ -1046,8 +1088,10 @@ UBOOL EqualHCxVvHCxV
                 aplMagLft = MagHC2V (lpatLft->aplHC2V);
                 aplMagRht = MagHC2V (lpatLft->aplHC2V);
 
-                // Get the distance between the args
-                aplDist   = DistHC2V (lpatLft->aplHC2V, lpatRht->aplHC2V);
+                // If neither of the magnitudes are infinite, ...
+                if (!IsMpfInfinity (&aplMagLft) && !IsMpfInfinity (&aplMagRht))
+                    // Get the distance between the args
+                    aplDist   = DistHC2V (lpatLft->aplHC2V, lpatRht->aplHC2V);
 
                 break;
 
@@ -1056,8 +1100,10 @@ UBOOL EqualHCxVvHCxV
                 aplMagLft = MagHC4V (lpatLft->aplHC4V);
                 aplMagRht = MagHC4V (lpatLft->aplHC4V);
 
-                // Get the distance between the args
-                aplDist   = DistHC4V (lpatLft->aplHC4V, lpatRht->aplHC4V);
+                // If neither of the magnitudes are infinite, ...
+                if (!IsMpfInfinity (&aplMagLft) && !IsMpfInfinity (&aplMagRht))
+                    // Get the distance between the args
+                    aplDist   = DistHC4V (lpatLft->aplHC4V, lpatRht->aplHC4V);
 
                 break;
 
@@ -1066,8 +1112,10 @@ UBOOL EqualHCxVvHCxV
                 aplMagLft = MagHC8V (lpatLft->aplHC8V);
                 aplMagRht = MagHC8V (lpatLft->aplHC8V);
 
-                // Get the distance between the args
-                aplDist   = DistHC8V (lpatLft->aplHC8V, lpatRht->aplHC8V);
+                // If neither of the magnitudes are infinite, ...
+                if (!IsMpfInfinity (&aplMagLft) && !IsMpfInfinity (&aplMagRht))
+                    // Get the distance between the args
+                    aplDist   = DistHC8V (lpatLft->aplHC8V, lpatRht->aplHC8V);
 
                 break;
 
@@ -1092,8 +1140,26 @@ UBOOL EqualHCxVvHCxV
         aplDist = mpfPosInfinity;
     } // End __try/__except
 
-    // The two numbers are equal iff the Dist is <= []CT * max (aplMagLft, aplMagRht)
-    bRet = mpfr_cmp (&aplDist, &aplMagMax) <= 0;
+    // Initialize the return value
+    bRet = TRUE;
+
+    // If both of the magnitudes are infinite, ...
+    if (IsMpfInfinity (&aplMagLft) && IsMpfInfinity (&aplMagRht))
+    {
+        // Compare the individual coordinates
+        for (i = 0; i < iHCDim; i++)
+        if (CmpCT_V (lpatLft->aplHC8V.parts[i],
+                     lpatRht->aplHC8V.parts[i],
+                     fQuadCT,
+                     NE))
+            bRet = FALSE;
+    } else
+    // If one of the magnitudes is infinite and the other isn't, ...
+    if (IsMpfInfinity (&aplMagLft) NE IsMpfInfinity (&aplMagRht))
+        bRet = FALSE;
+    else
+        // The two numbers are equal iff the Dist is <= []CT * max (aplMagLft, aplMagRht)
+        bRet = mpfr_cmp (&aplDist, &aplMagMax) <= 0;
 
     // We no longer need this resource
     Myf_clear (&aplMagMax);

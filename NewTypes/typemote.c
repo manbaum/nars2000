@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -505,7 +505,7 @@ UNLOCK_EXIT:
             // i == 5                  HC8F
             // i == 6                  HC8F
             // i == 7                  HC8F
-            // Split cases as abovebased upon the HC Dimension
+            // Split cases as above based upon the HC Dimension
             switch (iHCMax)
             {
                 case 0:

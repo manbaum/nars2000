@@ -113,12 +113,13 @@ void InitConstants
     aplInteger = NEG_INFINITY; fltNegInfinity = *(LPAPLFLOAT) &aplInteger;
     aplInteger = FLOAT2POW53;  Float2Pow53    = *(LPAPLFLOAT) &aplInteger;
     aplInteger = FLOATPI;      FloatPi        = *(LPAPLFLOAT) &aplInteger;
+                               FloatPi2       = FloatPi / 2;
     aplInteger = FLOATGAMMA;   FloatGamma     = *(LPAPLFLOAT) &aplInteger;
     aplInteger = FLOATE;       FloatE         = *(LPAPLFLOAT) &aplInteger;
 
     // Create various Hypercomplex constants
 
-    // Construct Pi & Gamma as HC8F
+    // Construct Pi, Pi/2, and Gamma as HC8F
     aplPiHC8F   .parts[0] = FloatPi;
     aplGammaHC8F.parts[0] = FloatGamma;
 
@@ -177,6 +178,8 @@ void InitGlbNumConstants
     // Construct Pi & Gamma as HC8V
     mpof_init0        (&aplPiHC8V);
     mpfr_const_pi     (&aplPiHC8V.parts[0], MPFR_RNDN);
+    mpfr_init_set     (&aplPi2HC8V.parts[0], &aplPiHC8V .parts[0],    MPFR_RNDN);
+    mpfr_div_ui       (&aplPi2HC8V.parts[0], &aplPi2HC8V.parts[0], 2, MPFR_RNDN);
     mpof_init0        (&aplGammaHC8V);
     mpfr_const_euler  (&aplGammaHC8V.parts[0], MPFR_RNDN);
 

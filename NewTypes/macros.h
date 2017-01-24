@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -198,7 +198,6 @@
 #define iadd64_RE(a,b,c)    iadd64 ((a), (b), NULL, EXCEPTION_RESULT_##c)
 #define isub64_RE(a,b,c)    isub64 ((a), (b), NULL, EXCEPTION_RESULT_##c)
 
-#define bAllowNeg0          lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEG0]
 #define gAllowNeg0          GetMemPTD()->aplCurrentFEATURE[FEATURENDX_NEG0]
 #define gUseHurwitz         GetMemPTD()->aplCurrentFEATURE[FEATURENDX_HURWITZ]
 
@@ -210,9 +209,12 @@
 #define SIGN_APLINT(a)      ((UBOOL) (((APLUINT) (a)) >> 63))       // ...            APLINT
 #define SIGN_APLUINT(a)     ((UBOOL) ((a) >> 63))                   // ...            APLUINT
 #define SIGN_APLLONGEST(a)  ((UBOOL) ((a) >> 63))                   // ...            APLLONGEST
-#define SIGN_APLFLOAT(a)    (gAllowNeg0 ? ((UBOOL) (((LPAPLFLOATSTR) &a)->bSign))   \
+#define SIGN_APLFLOAT_RAW(a) ((UBOOL) (((LPAPLFLOATSTR) &a)->bSign))// ...            APLFLOAT
+#define SIGN_APLFLOAT(a)    (gAllowNeg0 ? SIGN_APLFLOAT_RAW (a)                     \
                                         : ((a) < 0))                // ...            APLFLOAT
-#define SIGN_APLVFP(a)      (gAllowNeg0 ? ((a)->_mpfr_sign < 0)                     \
+#define SIGN_APLRAT(a)      (mpq_sgn (a) < 0)                       // ...            APLRAT
+#define SIGN_APLVFP_RAW(a)  ((a)->_mpfr_sign < 0)                   // ...            APLVFP
+#define SIGN_APLVFP(a)      (gAllowNeg0 ? SIGN_APLVFP_RAW (a)                       \
                                         : (mpfr_sgn (a) < 0))       // ...            APLVFP
 #define signumrat            mpq_sgn
 #define signumvfp(a)        (SIGN_APLVFP   (a)       ? -1 : ( mpfr_sgn (a)  > 0))

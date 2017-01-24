@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1488,8 +1488,8 @@ APLRAT MulHC1R_RE
     if (gAllowNeg0
      && (IsMpq0 (&aplLft)
       || IsMpq0 (&aplRht))
-     && (mpq_sgn (&aplLft) < 0) NE
-        (mpq_sgn (&aplRht) < 0))
+     && (SIGN_APLRAT (&aplLft) NE
+         SIGN_APLRAT (&aplRht)))
         RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
     else
     {
@@ -1811,12 +1811,32 @@ APLHC2F MulHC2F_RE
 #define c   aplRht.partsLo
 #define d   aplRht.partsHi
 
-    // Use Cayley-Dickson construction
-    // (a,b) x (c,d) = (ac - db, da + bc)
-    aplRes.partsLo = SubHC1F_RE (MulHC1F_RE (a, c),
-                                 MulHC1F_RE (d, b));
-    aplRes.partsHi = AddHC1F_RE (MulHC1F_RE (d, a),
-                                 MulHC1F_RE (b, c));
+    // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
+    if (b EQ 0.0 && d EQ 0.0)
+    {
+        aplRes.partsLo = MulHC1F_RE (a, c);
+        aplRes.partsHi = 0.0;
+    } else
+    // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
+    if (b EQ 0.0)
+    {
+        aplRes.partsLo = MulHC1F_RE (a, c);
+        aplRes.partsHi = MulHC1F_RE (d, a);
+    } else
+    // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
+    if (d EQ 0.0)
+    {
+        aplRes.partsLo = MulHC1F_RE (a, c);
+        aplRes.partsHi = MulHC1F_RE (b, c);
+    } else
+    {
+        // Use Cayley-Dickson construction
+        // (a,b) x (c,d) = (ac - db, da + bc)
+        aplRes.partsLo = SubHC1F_RE (MulHC1F_RE (a, c),
+                                     MulHC1F_RE (d, b));
+        aplRes.partsHi = AddHC1F_RE (MulHC1F_RE (d, a),
+                                     MulHC1F_RE (b, c));
+    } // End IF/ELSE
 #undef  d
 #undef  c
 #undef  b
@@ -1899,15 +1919,34 @@ APLHC2R MulHC2R_RE
 #define c   aplRht.partsLo
 #define d   aplRht.partsHi
 
-    // Use Cayley-Dickson construction
-    // (a,b) x (c,d) = (ac - db, da + bc)
-    mpq_mul (&aplTmp1,         &a      , &c      );
-    mpq_mul (&aplTmp2,         &d      , &b      );
-    mpq_sub (&aplRes.parts[0], &aplTmp1, &aplTmp2);
+    // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
+    if (IsMpq0 (&b) && IsMpq0 (&d))
+    {
+        mpq_mul (&aplRes.parts[0], &a      , &c      );
+    } else
+    // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
+    if (IsMpq0 (&b))
+    {
+        mpq_mul (&aplRes.parts[0], &a      , &c      );
+        mpq_mul (&aplRes.parts[1], &d      , &a      );
+    } else
+    // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
+    if (IsMpq0 (&d))
+    {
+        mpq_mul (&aplRes.parts[0], &a      , &c      );
+        mpq_mul (&aplRes.parts[1], &b      , &c      );
+    } else
+    {
+        // Use Cayley-Dickson construction
+        // (a,b) x (c,d) = (ac - db, da + bc)
+        mpq_mul (&aplTmp1,         &a      , &c      );
+        mpq_mul (&aplTmp2,         &d      , &b      );
+        mpq_sub (&aplRes.parts[0], &aplTmp1, &aplTmp2);
 
-    mpq_mul (&aplTmp1,         &d      , &a      );
-    mpq_mul (&aplTmp2,         &b      , &c      );
-    mpq_add (&aplRes.parts[1], &aplTmp1, &aplTmp2);
+        mpq_mul (&aplTmp1,         &d      , &a      );
+        mpq_mul (&aplTmp2,         &b      , &c      );
+        mpq_add (&aplRes.parts[1], &aplTmp1, &aplTmp2);
+    } // End IF/ELSE
 
 #undef  d
 #undef  c
@@ -2024,15 +2063,34 @@ APLHC2V MulHC2V_RE
     // ***FIXME*** -- Use MulHC1V and friends inside __try/__except
     //                instead of mpfr_XXX
 
-    // Use Cayley-Dickson construction
-    // (a,b) x (c,d) = (ac - db, da + bc)
-    mpfr_mul (&aplTmp1,         &a      , &c      , MPFR_RNDN);
-    mpfr_mul (&aplTmp2,         &d      , &b      , MPFR_RNDN);
-    mpfr_sub (&aplRes.parts[0], &aplTmp1, &aplTmp2, MPFR_RNDN);
+    // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
+    if (IsMpf0 (&b) && IsMpf0 (&d))
+    {
+        mpfr_mul (&aplRes.parts[0], &a      , &c      , MPFR_RNDN);
+    } else
+    // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
+    if (IsMpf0 (&b))
+    {
+        mpfr_mul (&aplRes.parts[0], &a      , &c      , MPFR_RNDN);
+        mpfr_mul (&aplRes.parts[1], &d      , &a      , MPFR_RNDN);
+    } else
+    // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
+    if (IsMpf0 (&d))
+    {
+        mpfr_mul (&aplRes.parts[0], &a      , &c      , MPFR_RNDN);
+        mpfr_mul (&aplRes.parts[1], &b      , &c      , MPFR_RNDN);
+    } else
+    {
+        // Use Cayley-Dickson construction
+        // (a,b) x (c,d) = (ac - db, da + bc)
+        mpfr_mul (&aplTmp1,         &a      , &c      , MPFR_RNDN);
+        mpfr_mul (&aplTmp2,         &d      , &b      , MPFR_RNDN);
+        mpfr_sub (&aplRes.parts[0], &aplTmp1, &aplTmp2, MPFR_RNDN);
 
-    mpfr_mul (&aplTmp1,         &d      , &a      , MPFR_RNDN);
-    mpfr_mul (&aplTmp2,         &b      , &c      , MPFR_RNDN);
-    mpfr_add (&aplRes.parts[1], &aplTmp1, &aplTmp2, MPFR_RNDN);
+        mpfr_mul (&aplTmp1,         &d      , &a      , MPFR_RNDN);
+        mpfr_mul (&aplTmp2,         &b      , &c      , MPFR_RNDN);
+        mpfr_add (&aplRes.parts[1], &aplTmp1, &aplTmp2, MPFR_RNDN);
+    } // End IF/ELSE
 
 #undef  d
 #undef  c
@@ -2454,10 +2512,32 @@ APLHC4F MulHC4F_RE
 
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
-    aplRes.partsLo[0] = SubHC2F_RE (MulHC2F_RE (a  , c ),
-                                    MulHC2F_RE (dP , b ));
-    aplRes.partsHi[0] = AddHC2F_RE (MulHC2F_RE (d  , a ),
-                                    MulHC2F_RE (b  , cP));
+    // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
+    if (IsZeroHCxF (&b, 2) && IsZeroHCxF (&d, 2))
+    {
+        aplRes.partsLo[0] = MulHC2F_RE (a, c);
+        aplRes.partsHi[0].partsLo =
+        aplRes.partsHi[0].partsHi = 0.0;
+    } else
+    // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
+    if (IsZeroHCxF (&b, 2))
+    {
+        aplRes.partsLo[0] = MulHC2F_RE (a, c );
+        aplRes.partsHi[0] = MulHC2F_RE (d, a );
+    } else
+    // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
+    if (IsZeroHCxF (&d, 2))
+    {
+        aplRes.partsLo[0] = MulHC2F_RE (a, c );
+        aplRes.partsHi[0] = MulHC2F_RE (b, cP);
+    } else
+    {
+        aplRes.partsLo[0] = SubHC2F_RE (MulHC2F_RE (a  , c ),
+                                        MulHC2F_RE (dP , b ));
+        aplRes.partsHi[0] = AddHC2F_RE (MulHC2F_RE (d  , a ),
+                                        MulHC2F_RE (b  , cP));
+    } // End IF/ELSE
+
 #undef  d
 #undef  c
 #undef  b
@@ -2602,9 +2682,6 @@ APLHC4R MulHC4R_RE
     APLHC4R aplRes = {0};
     APLHC2R dP, cP;
 
-    // Initialize to 0/1
-    mphc4r_init (&aplRes);
-
     // Use Cayley-Dickson construction
     // (a,b) x (c,d) = (ac - d'b, da + bc')
     //   where d' = conjugate (d)
@@ -2620,10 +2697,33 @@ APLHC4R MulHC4R_RE
 
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
-    aplRes.partsLo = SubHC2R_RE (MulHC2R_RE (a  , c  ),
-                                 MulHC2R_RE (dP , b  ));
-    aplRes.partsHi = AddHC2R_RE (MulHC2R_RE (d  , a  ),
-                                 MulHC2R_RE (b  , cP ));
+    // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
+    if (IsZeroHCxR (&b, 2) && IsZeroHCxR (&d, 2))
+    {
+        aplRes.partsLo = MulHC2R_RE (a, c );
+
+        // Initialize to 0/1
+        mphc2r_init (&aplRes.partsHi);
+    } else
+    // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
+    if (IsZeroHCxR (&b, 2))
+    {
+        aplRes.partsLo = MulHC2R_RE (a, c );
+        aplRes.partsHi = MulHC2R_RE (d, a );
+    } else
+    // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
+    if (IsZeroHCxR (&d, 2))
+    {
+        aplRes.partsLo = MulHC2R_RE (a, c );
+        aplRes.partsHi = MulHC2R_RE (b, cP);
+    } else
+    {
+        aplRes.partsLo = SubHC2R_RE (MulHC2R_RE (a  , c  ),
+                                     MulHC2R_RE (dP , b  ));
+        aplRes.partsHi = AddHC2R_RE (MulHC2R_RE (d  , a  ),
+                                     MulHC2R_RE (b  , cP ));
+    } // End IF/ELSE
+
 #undef  d
 #undef  c
 #undef  b
@@ -2796,9 +2896,6 @@ APLHC4V MulHC4V_RE
     APLHC4V aplRes = {0};
     APLHC2V dP,cP;
 
-    // Initialize to 0
-    mphc4v_init0 (&aplRes);
-
 ////aplRes.parts[0] = aplLft.parts[0] * aplRht.parts[0],
 ////                - aplLft.parts[1] * aplRht.parts[1];
 ////aplRes.parts[1] = aplLft.parts[0] * aplRht.parts[1]
@@ -2819,10 +2916,33 @@ APLHC4V MulHC4V_RE
 
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
-    aplRes.partsLo = SubHC2V_RE (MulHC2V_RE (a  , c  ),
-                                 MulHC2V_RE (dP , b  ));
-    aplRes.partsHi = AddHC2V_RE (MulHC2V_RE (d  , a  ),
-                                 MulHC2V_RE (b  , cP ));
+    // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
+    if (IsZeroHCxV (&b, 2) && IsZeroHCxV (&d, 2))
+    {
+        aplRes.partsLo = MulHC2V_RE (a, c );
+
+        // Initialize to 0
+        mphc2v_init0 (&aplRes.partsHi);
+    } else
+    // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
+    if (IsZeroHCxV (&b, 2))
+    {
+        aplRes.partsLo = MulHC2V_RE (a, c );
+        aplRes.partsHi = MulHC2V_RE (d, a );
+    } else
+    // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
+    if (IsZeroHCxV (&d, 2))
+    {
+        aplRes.partsLo = MulHC2V_RE (a, c );
+        aplRes.partsHi = MulHC2V_RE (b, cP);
+    } else
+    {
+        aplRes.partsLo = SubHC2V_RE (MulHC2V_RE (a  , c  ),
+                                     MulHC2V_RE (dP , b  ));
+        aplRes.partsHi = AddHC2V_RE (MulHC2V_RE (d  , a  ),
+                                     MulHC2V_RE (b  , cP ));
+    } // End IF/ELSE
+
 #undef  d
 #undef  c
 #undef  b
@@ -3258,10 +3378,36 @@ APLHC8F MulHC8F_RE
 
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
-    aplRes.partsLo[0] = SubHC4F_RE (MulHC4F_RE (a  , c ),
-                                    MulHC4F_RE (dP , b ));
-    aplRes.partsHi[0] = AddHC4F_RE (MulHC4F_RE (d  , a ),
-                                    MulHC4F_RE (b  , cP));
+    // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
+    if (IsZeroHCxF (&b, 4) && IsZeroHCxF (&d, 4))
+    {
+        aplRes.partsLo[0] = MulHC4F_RE (a, c );
+
+        // Initialize to 0.0
+        aplRes.partsHi[0].partsLo[0].partsLo =
+        aplRes.partsHi[0].partsLo[0].partsHi =
+        aplRes.partsHi[0].partsHi[0].partsLo =
+        aplRes.partsHi[0].partsHi[0].partsHi = 0.0;
+    } else
+    // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
+    if (IsZeroHCxF (&b, 4))
+    {
+        aplRes.partsLo[0] = MulHC4F_RE (a, c );
+        aplRes.partsHi[0] = MulHC4F_RE (d, a );
+    } else
+    // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
+    if (IsZeroHCxF (&d, 4))
+    {
+        aplRes.partsLo[0] = MulHC4F_RE (a, c );
+        aplRes.partsHi[0] = MulHC4F_RE (b, cP);
+    } else
+    {
+        aplRes.partsLo[0] = SubHC4F_RE (MulHC4F_RE (a  , c ),
+                                        MulHC4F_RE (dP , b ));
+        aplRes.partsHi[0] = AddHC4F_RE (MulHC4F_RE (d  , a ),
+                                        MulHC4F_RE (b  , cP));
+    } // End IF/ELSE
+
 #undef  d
 #undef  c
 #undef  b
@@ -3299,8 +3445,8 @@ void PrimFnDydTimesHC8FisHC8FvHC8F
         switch (lpPrimSpec->eHCMul)
         {
             case ENUMHCM_NONE:
-               // Call subfunction
-               lpMemRes[uRes] = MulHC8F_RE (lpatLft->aplHC8F, lpatRht->aplHC8F);
+                // Call subfunction
+                lpMemRes[uRes] = MulHC8F_RE (lpatLft->aplHC8F, lpatRht->aplHC8F);
 
                 break;
 
@@ -3406,9 +3552,6 @@ APLHC8R MulHC8R_RE
     APLHC8R aplRes = {0};
     APLHC4R dP, cP;
 
-    // Initialize to 0/1
-    mphc8r_init (&aplRes);
-
     // Use Cayley-Dickson construction
     // (a,b) x (c,d) = (ac - d'b, da + bc')
     //   where d' = conjugate (d)
@@ -3424,10 +3567,33 @@ APLHC8R MulHC8R_RE
 
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
-    aplRes.partsLo = SubHC4R_RE (MulHC4R_RE (a  , c  ),
-                                 MulHC4R_RE (dP , b  ));
-    aplRes.partsHi = AddHC4R_RE (MulHC4R_RE (d  , a  ),
-                                 MulHC4R_RE (b  , cP ));
+    // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
+    if (IsZeroHCxR (&b, 4) && IsZeroHCxR (&d, 4))
+    {
+        aplRes.partsLo = MulHC4R_RE (a, c );
+
+        // Initialize to 0/1
+        mphc4r_init (&aplRes.partsHi);
+    } else
+    // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
+    if (IsZeroHCxR (&b, 4))
+    {
+        aplRes.partsLo = MulHC4R_RE (a, c );
+        aplRes.partsHi = MulHC4R_RE (d, a );
+    } else
+    // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
+    if (IsZeroHCxR (&d, 4))
+    {
+        aplRes.partsLo = MulHC4R_RE (a, c );
+        aplRes.partsHi = MulHC4R_RE (b, cP);
+    } else
+    {
+        aplRes.partsLo = SubHC4R_RE (MulHC4R_RE (a  , c  ),
+                                     MulHC4R_RE (dP , b  ));
+        aplRes.partsHi = AddHC4R_RE (MulHC4R_RE (d  , a  ),
+                                     MulHC4R_RE (b  , cP ));
+    } // End IF/ELSE
+
 #undef  d
 #undef  c
 #undef  b
@@ -3600,9 +3766,6 @@ APLHC8V MulHC8V_RE
     APLHC8V aplRes;
     APLHC4V dP,cP;
 
-    // Initialize to 0
-    mphc8v_init0 (&aplRes);
-
     // Use Cayley-Dickson construction
     // (a,b) x (c,d) = (ac - d'b, da + bc')
     //   where d' = conjugate (d)
@@ -3618,10 +3781,33 @@ APLHC8V MulHC8V_RE
 
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
-    aplRes.partsLo = SubHC4V_RE (MulHC4V_RE (a  , c  ),
-                                 MulHC4V_RE (dP , b  ));
-    aplRes.partsHi = AddHC4V_RE (MulHC4V_RE (d  , a  ),
-                                 MulHC4V_RE (b  , cP ));
+    // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
+    if (IsZeroHCxV (&b, 4) && IsZeroHCxV (&d, 4))
+    {
+        aplRes.partsLo = MulHC4V_RE (a, c );
+
+        // Initialize to 0
+        mphc4v_init0 (&aplRes.partsHi);
+    } else
+    // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
+    if (IsZeroHCxV (&b, 4))
+    {
+        aplRes.partsLo = MulHC4V_RE (a, c );
+        aplRes.partsHi = MulHC4V_RE (d, a );
+    } else
+    // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
+    if (IsZeroHCxV (&d, 4))
+    {
+        aplRes.partsLo = MulHC4V_RE (a, c );
+        aplRes.partsHi = MulHC4V_RE (b, cP);
+    } else
+    {
+        aplRes.partsLo = SubHC4V_RE (MulHC4V_RE (a  , c  ),
+                                     MulHC4V_RE (dP , b  ));
+        aplRes.partsHi = AddHC4V_RE (MulHC4V_RE (d  , a  ),
+                                     MulHC4V_RE (b  , cP ));
+    } // End IF/ELSE
+
 #undef  d
 #undef  c
 #undef  b

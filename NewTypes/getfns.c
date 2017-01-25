@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -100,6 +100,8 @@ APLLONGEST ValidateFirstItemToken
 {
     APLLONGEST aplLongestRht;           // Right arg longest if immediate
     HGLOBAL    hGlbSubRht;              // Right arg item global memory handle
+    int        iHCDimRht,               // HC Dimension (1, 2, 4, 8)
+               i;                       // Loop counter
 
     GetFirstItemToken (lpToken,         // Ptr to the token
                       &aplLongestRht,   // Ptr to the longest (may be NULL)
@@ -111,6 +113,7 @@ APLLONGEST ValidateFirstItemToken
         case ARRAY_BOOL:
         case ARRAY_INT:
         case ARRAY_APA:
+            // Mark as successful
             *lpbRet = TRUE;
 
             break;
@@ -121,30 +124,47 @@ APLLONGEST ValidateFirstItemToken
 
             break;
 
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
+
         case ARRAY_RAT:
-            Assert (GetPtrTypeDir (hGlbSubRht) NE PTRTYPE_HGLOBAL);
-
-            // Attempt to convert the RAT to an integer using System []CT
-            aplLongestRht = mpq_get_sctsx ((LPAPLRAT) hGlbSubRht, lpbRet);
-
-            break;
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
 
         case ARRAY_VFP:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
             Assert (GetPtrTypeDir (hGlbSubRht) NE PTRTYPE_HGLOBAL);
 
-            // Attempt to convert the VFP to an integer using System []CT
-            aplLongestRht = mpfr_get_sctsx ((LPAPLVFP) hGlbSubRht, lpbRet);
+            // Attempt to convert the HCxy to an integer using System []CT
+            aplLongestRht = ConvertToInteger_SCT (aplTypeRht, hGlbSubRht, 0, lpbRet);
 
+            // Calculate the HC Dimension (1, 2, 4, 8)
+            iHCDimRht = TranslateArrayTypeToHCDim (aplTypeRht);
+
+            // If that worked, ...
+            if (*lpbRet)
+            // Loop through the imaginary parts
+            for (i = 1; *lpbRet && i < iHCDimRht; i++)
+                // If this imaginary part is not zero, ...
+                if (ConvertToInteger_SCT (aplTypeRht, &hGlbSubRht, i, lpbRet) NE 0)
+                    // Mark as invalid
+                    *lpbRet = FALSE;
             break;
 
         case ARRAY_CHAR:
         case ARRAY_HETERO:
         case ARRAY_NESTED:
+            // Mark as invalid
             *lpbRet = FALSE;
 
             break;
 
         defstop
+            // Mark as invalid
             *lpbRet = FALSE;
 
             break;

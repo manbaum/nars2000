@@ -1155,7 +1155,8 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    HGLOBAL      hGlbRes;           // Result global memory handle
+    HGLOBAL      hGlbRes,           // Result global memory handle
+                 hOldGlbRes;        // Old ...
     APLSTYPE     aplTypeRes,        // Result storage type
                  aplTypeRht;        // Right arg storage type
     APLRANK      aplRankRht;        // Right arg rank
@@ -1166,6 +1167,7 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
                  mpfRes = {0};      // VFP result
     ATISAT      *lpPrimFn;          // Ptr to PSDF function
     ALLTYPES     atRht = {0};       // Right arg as ALLTYPES
+    UBOOL        bGlbEntry = FALSE; // TRUE iff we created a new global entry due to an exception
 
     // Check for axis present
     if (lptkAxis NE NULL)
@@ -1339,8 +1341,11 @@ RESTART_EXCEPTION_VARIMMED:
                             // Copy the immediate token to a temp
                             tkTmp = *lptkRhtArg;
 
-                            // Promote th immediate value
+                            // Promote the immediate value
                             (*aTypeTknPromote[aplTypeRht][aplTypeRes]) (&tkTmp);
+
+                            // Note that we created a global entry due to an exception
+                            bGlbEntry = TRUE;
 
                             // Get the global memory handle
                             hGlbRes = tkTmp.tkData.tkGlbData;
@@ -1376,10 +1381,23 @@ RESTART_EXCEPTION_VARARRAY:
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir_PTB (hGlbRes));
 
+            // Save the old global memory handle
+            hOldGlbRes = hGlbRes;
+
             // Handle via subroutine
             hGlbRes = PrimFnMonGlb_EM (hGlbRes,
                                        lptkFunc,
                                       &LclPrimSpec);
+            // If we created a new global entry due to an exception, ...
+            if (bGlbEntry)
+            {
+                // Free it as no one else will
+                MyGlobalFree (hOldGlbRes); hOldGlbRes = NULL;
+
+                // Clear the flag
+                bGlbEntry = FALSE;
+            } // End IF
+
             if (hGlbRes EQ NULL)
             {
                 YYFree (lpYYRes); lpYYRes = NULL;

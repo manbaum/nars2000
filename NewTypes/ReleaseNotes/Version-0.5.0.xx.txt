@@ -1,6 +1,20 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1616 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Memory Leak When Monadic PSF Immediate Blows Up To Global Entry
+
+Directory branches/bsmith/NewTypes:
+
+GETFNS.C:
+  Fix bug in <ValidateFirstItemToken> to handle HCxy numbers as an argument.
+
+PRIMSPEC.C:
+  Fix memory leak in <PrimFnMon_EM_YY> to handle the case when a PSF immediate blows up to a global entry.
+
+
 Build #1615 -- Version 0.5.0.xx
 --------------------------------
 

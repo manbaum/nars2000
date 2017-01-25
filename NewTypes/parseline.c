@@ -34,6 +34,11 @@
 //
 //***************************************************************************
 
+#ifdef DEBUG
+//#define DEBUG_TRACE
+//#define DEBUG_START
+#endif
+
 //***************************************************************************
 // Aliases
 //***************************************************************************
@@ -275,11 +280,6 @@
 #define RSTACKLEN                   (lpMemPTD->lpplRhtStk - lpplOrgRhtStk)
 #define RSTACKLEN2                  (lpplLocalVars->lpMemPTD->lpplRhtStk - lpplLocalVars->lpMemPTD->lpplOrgRhtStk)
 #define IsTknTypeNamedVar(a)        ((a) EQ TKT_VARNAMED)
-
-#ifdef DEBUG
-//#define DEBUG_TRACE
-//#define DEBUG_START
-#endif
 
 #ifdef DEBUG_TRACE
   #define TRACE(a,EVENT,soType,rhtSynObj)                         \

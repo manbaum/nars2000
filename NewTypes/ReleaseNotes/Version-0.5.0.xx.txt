@@ -1,6 +1,20 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1625 -- Version 0.5.0.xx
+--------------------------------
+
+* Scroll Caret Into View In Session Manager On WM_SIZE
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+  Move DEBUG stmts up for easier use.
+
+SESSMAN.C:
+  In <SMWndProc/WM_SIZE>, after setting the window position, scroll the caret into view so it is always visible.
+
+
 Build #1624 -- Version 0.5.0.xx
 --------------------------------
 

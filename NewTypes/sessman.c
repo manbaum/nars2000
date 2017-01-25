@@ -1841,6 +1841,7 @@ NORMAL_EXIT:
                                     // nWidth = LOWORD(lParam);  // Width of client area
                                     // nHeight = HIWORD(lParam); // Height of client area
             if (fwSizeType NE SIZE_MINIMIZED)
+            {
                 SetWindowPos (hWndEC,           // Window handle to position
                               0,                // SWP_NOZORDER
                               0,                // X-position
@@ -1850,6 +1851,9 @@ NORMAL_EXIT:
                               SWP_NOZORDER      // Flags
                             | SWP_SHOWWINDOW
                              );
+                SendMessageW (hWndEC, EM_SCROLLCARET, 0, 0);
+            } // End IF
+
             break;                  // *MUST* pass on to DefMDIChildProc
 #undef  nHeight
 #undef  nWidth

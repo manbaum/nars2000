@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -976,7 +976,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                 {
                     APLNELM  aplNELMSub;        // Sub rank
                     APLRANK  aplRankSub;        // Sub NELM
-                    LPAPLDIM lpMemSub;          // Ptr to Sub Global memory
+                    LPAPLDIM lpMemDimSub;       // Ptr to Sub Global memory dimensions
                     UBOOL    bRet = TRUE;       // TRUE iff the result is valid
 
                     // Get the global attrs
@@ -986,20 +986,20 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     lpMemHdrSub = MyGlobalLockVar (hGlbSub);
 
                     // Skip over the header to the dimensions
-                    lpMemSub = VarArrayBaseToDim (lpMemHdrSub);
+                    lpMemDimSub = VarArrayBaseToDim (lpMemHdrSub);
 
                     // If we're not assigning, ...
                     if (lptkSetArg EQ NULL)
                         // Fill in the result's dimension
-                        CopyMemory (lpMemDimRes, lpMemSub, (APLU3264) aplRankSub * sizeof (APLDIM));
+                        CopyMemory (lpMemDimRes, lpMemDimSub, (APLU3264) aplRankSub * sizeof (APLDIM));
                     else
                     // We are assigning
                     // Loop through the sub-item dimensions
-                    for (uSub = 0; uSub < aplRankSub; uSub++, uDimSet++)
+                    for (uSub = 0; uSub < aplRankSub; uSub++)
                     {
                         // Skip over length 1 dimensions in the sub-item
                         while (uSub < aplRankSub
-                            && IsUnitDim (lpMemSub[uSub]))
+                            && IsUnitDim (lpMemDimSub[uSub]))
                             uSub++;
 
                         // Skip over length 1 dimensions in the set arg
@@ -1010,7 +1010,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                         // Compare the left arg item & set arg dimensions
                         if (uSub    < aplRankSub
                          && uDimSet < aplRankSet
-                         && lpMemSub[uSub] NE lpMemDimSet[uDimSet])
+                         && lpMemDimSub[uSub] NE lpMemDimSet[uDimSet++])
                         {
                             // Mark as an error (LENGTH)
                             bRet = FALSE;
@@ -1053,6 +1053,10 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                 *lpMemDimRes++ = lpMemDimRht[uAxisNxt];
             else
             // We are assigning
+            // At the moment, this code is not called because indexing (a[;;])
+            //   uses APVs for elided axes.  However, if we ever implement
+            //   Selective Assignment then this code can be called as in
+            //     (a{squad}[b]c){is}d
             {
                 // Copy index
                 uRht = uAxisNxt;

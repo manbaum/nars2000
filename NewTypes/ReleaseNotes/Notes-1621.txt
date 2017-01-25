@@ -1,0 +1,9 @@
+Build #1621 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug When Assigning To Indexed Array In A Certain Way
+
+Directory branches/bsmith/NewTypes:
+
+PF_SQUAD.C:
+  Fix bug in <PrimFnDydSquadGlb_EM_YY> when assigning to an indexed array where <uDimSet> is incremented too many times.

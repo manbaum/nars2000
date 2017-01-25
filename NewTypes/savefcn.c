@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3166,7 +3166,8 @@ UBOOL GetLabelNums
 
                     if (lstrcmpiW (lpMemName, $QUAD_ID ) EQ 0)
                     {
-                        if (uDupLineNum1 = lpMemDfnHdr->nSysLblId  NE 0)
+                        uDupLineNum1 = lpMemDfnHdr->nSysLblId;
+                        if (uDupLineNum1 NE 0)
                             goto SYSDUP_EXIT;
                         // Save line # in origin-1
                         lpMemDfnHdr->nSysLblId  = uLineNum1;
@@ -3176,7 +3177,8 @@ UBOOL GetLabelNums
                     } else
                     if (lstrcmpiW (lpMemName, $QUAD_INV) EQ 0)
                     {
-                        if (uDupLineNum1 = lpMemDfnHdr->nSysLblInv NE 0)
+                        uDupLineNum1 = lpMemDfnHdr->nSysLblInv;
+                        if (uDupLineNum1 NE 0)
                             goto SYSDUP_EXIT;
                         // Save line # in origin-1
                         lpMemDfnHdr->nSysLblInv = uLineNum1;
@@ -3186,7 +3188,8 @@ UBOOL GetLabelNums
                     } else
                     if (lstrcmpiW (lpMemName, $QUAD_MS ) EQ 0)
                     {
-                        if (uDupLineNum1 = lpMemDfnHdr->nSysLblMs  NE 0)
+                        uDupLineNum1 = lpMemDfnHdr->nSysLblMs;
+                        if (uDupLineNum1 NE 0)
                             goto SYSDUP_EXIT;
                         // Save line # in origin-1
                         lpMemDfnHdr->nSysLblMs  = uLineNum1;
@@ -3196,7 +3199,8 @@ UBOOL GetLabelNums
                     } else
                     if (lstrcmpiW (lpMemName, $QUAD_PRO) EQ 0)
                     {
-                        if (uDupLineNum1 = lpMemDfnHdr->nSysLblPro NE 0)
+                        uDupLineNum1 = lpMemDfnHdr->nSysLblPro;
+                        if (uDupLineNum1 NE 0)
                             goto SYSDUP_EXIT;
                         // Save line # in origin-1
                         lpMemDfnHdr->nSysLblPro = uLineNum1;

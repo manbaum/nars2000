@@ -1,6 +1,20 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1622 -- Version 0.5.0.xx
+--------------------------------
+
+* Clean Up code
+
+Directory branches/bsmith/NewTypes:
+
+PF_CSLOPE.C:
+  Clean up code to use common naming conventions.
+
+SAVEFCN.C:
+  Clean up code to avoid embedded assignments.
+
+
 Build #1621 -- Version 0.5.0.xx
 --------------------------------
 

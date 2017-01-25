@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -504,7 +504,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
 #undef  lpHeader
 
     // Skip over the header to the dimensions
-    lpMemRes = lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
+    lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
 
     // Fill in the dimensions
     if (!IsScalar (aplRankRes))
@@ -518,14 +518,21 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
                 uMinDim = min (uMinDim, lpMemDimRht[lpMemAxisTail[uRht]]);
             else
             {
-                *((LPAPLDIM) lpMemRes)++ = uMinDim;
+                // Save as the next dimension
+                *lpMemDimRes++ = uMinDim;
                 uMinDim = lpMemDimRht[lpMemAxisTail[uRht]];
             } // End IF/ELSE
         } // End FOR
 
         // Save the last dimension
-        *((LPAPLDIM) lpMemRes)++ = uMinDim;
+        *lpMemDimRes++ = uMinDim;
     } // End IF
+
+    // Skip over the header to the dimensions
+    lpMemDimRes = VarArrayBaseToDim  (lpMemHdrRes);
+
+    // Skip over the header and dimensions to the data
+    lpMemRes    = VarArrayDataFmBase (lpMemHdrRes);
 
     // lpMemRes now points to the result's data
 

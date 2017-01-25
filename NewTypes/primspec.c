@@ -4236,13 +4236,13 @@ RESTART_EXCEPTION_IMMED:
         if (IsGlbNum (aplTypeRes))
         {
             // Allocate space for the result
-            if (!AllocateSpaceGlbNum (lphGlbRes,        // Ptr to result global memory handle
-                                     &hGlbTmp,          // ...    temp   ...
-                                      aplTypeRes,       // Result storage type
-                                      1,                // ...    NELM
-                                      0,                // ...    rank
-                                      lptkRes,          // Ptr to result token
-                                     &lpMemHdrRes))     // Ptr to ptr to result header
+            if (!AllocateSpaceGlbNum_LOCK (lphGlbRes,       // Ptr to result global memory handle
+                                          &hGlbTmp,         // ...    temp   ...
+                                           aplTypeRes,      // Result storage type
+                                           1,               // ...    NELM
+                                           0,               // ...    rank
+                                           lptkRes,         // Ptr to result token
+                                          &lpMemHdrRes))    // Ptr to ptr to result header
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
@@ -4289,6 +4289,7 @@ RESTART_EXCEPTION_IMMED:
             CopyMemory (lpatRes, lpMemRes, TranslateArrayTypeToSizeof (aplTypeRes));
 
         // Note that lpMemHdrRes locks hGlbTmp, not hGlbRes
+        //   unless *lphGlbRes is valid and not nested ***FIXME***
         if (hGlbTmp NE NULL)
         {
             if (lpMemHdrRes NE NULL)
@@ -5307,27 +5308,41 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $AllocateSpaceGlbNum
+//  $AllocateSpaceGlbNum_LOCK
 //
 //  Allocate space for a global numeric
 //***************************************************************************
 
-UBOOL AllocateSpaceGlbNum
-    (HGLOBAL *lphGlbRes,        // Ptr to result global memory handle
-     HGLOBAL *lphGlbTmp,        // ...    temp   ...
-     APLSTYPE aplTypeRes,       // Result storage type
-     APLNELM  aplNELMRes,       // ...    NELM
-     APLRANK  aplRankRes,       // ...    rank
-     LPTOKEN  lptkRes,          // Ptr to result token
-     LPVOID  *lplpMemHdrRes)    // Ptr to ptr to result header
+UBOOL AllocateSpaceGlbNum_LOCK
+    (HGLOBAL           *lphGlbRes,          // Ptr to result global memory handle
+     HGLOBAL           *lphGlbTmp,          // ...    temp   ...
+     APLSTYPE           aplTypeRes,         // Result storage type
+     APLNELM            aplNELMRes,         // ...    NELM
+     APLRANK            aplRankRes,         // ...    rank
+     LPTOKEN            lptkRes,            // Ptr to result token
+     LPVARARRAY_HEADER *lplpMemHdrRes)      // Ptr to ptr to result header
 
 {
     APLUINT           ByteRes;              // # bytes in the result
     LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to result header
-    LPVOID            lpMemRes;
+    UBOOL             bRet;                 // TRUE iff allocate locally
+
+    // If the result global memory handle is not NULL, ...
+    if (lphGlbRes NE NULL && *lphGlbRes NE NULL)
+    {
+        // Lock the memory to get a ptr to it
+        lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
+
+        // Is the global result Nested but the local result is GlbNum
+        bRet = IsNested (lpMemHdrRes->ArrType) && IsGlbNum (aplTypeRes);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (*lphGlbRes); lpMemHdrRes = NULL;
+    } else
+        bRet = FALSE;
 
     // If the result global memory handle is NULL, ...
-    if (lphGlbRes EQ NULL || *lphGlbRes EQ NULL)
+    if (bRet || lphGlbRes EQ NULL || *lphGlbRes EQ NULL)
     {
         // Allocate our own global memory and return it in lptkRes
 
@@ -5375,9 +5390,6 @@ UBOOL AllocateSpaceGlbNum
         lpMemHdrRes->ArrType = aplTypeRes;
     } // End IF/ELSE
 
-    // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
-
     // Save in the result
     lptkRes->tkData.tkGlbData = MakePtrTypeGlb (*lphGlbTmp);
 
@@ -5388,7 +5400,7 @@ UBOOL AllocateSpaceGlbNum
 
 WSFULL_EXIT:
     return FALSE;
-} // End AllocateSpaceGlbNum
+} // End AllocateSpaceGlbNum_LOCK
 
 
 //***************************************************************************

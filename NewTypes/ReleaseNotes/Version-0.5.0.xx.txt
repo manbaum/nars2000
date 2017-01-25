@@ -1,6 +1,17 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1617 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug When Calculating Nested Result With Scalar Global Numeric Items
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC.C:
+  Fix bug in <AllocateSpaceGlbNum> when the global result is nested and the local result is global numeric.
+
+
 Build #1616 -- Version 0.5.0.xx
 --------------------------------
 

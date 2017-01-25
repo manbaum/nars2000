@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -954,12 +954,9 @@ LPAPLCHAR CompileArrChar
         // Save as ptr to next row struc
         lpFmtRowLcl->lpFmtRowNxt = (LPFMTROWSTR) lpaplChar;
 
-////    // If this is not at the top level and not the last row,
         // If this is not the last row,
         //   we need to count the interplanar spacing
         //   as blank rows in the row count
-////    if ((!bTopLevel)                        // Not top level
-////     && aplDimRow NE (aplDimNRows - 1))     // Not last row
         if (aplDimRow NE (aplDimNRows - 1))     // Not last row
             lpaplChar = CompileBlankRows (lpaplChar,        // Ptr to output buffer
                                           lpMemDim,         // Ptr to item dimensions
@@ -1164,11 +1161,10 @@ LPAPLCHAR CompileArrHetero
         // Save as ptr to next row struc
         lpFmtRowLcl->lpFmtRowNxt = (LPFMTROWSTR) lpaplChar;
 
-        // If this is not at the top level and not the last row,
+        // If this is not the last row,
         //   we need to count the interplanar spacing
         //   as blank rows in the row count
-        if ((!bTopLevel)                        // Not top level
-         && aplDimRow NE (aplDimNRows - 1))     // Not last row
+        if (aplDimRow NE (aplDimNRows - 1))         // Not last row
             lpaplChar = CompileBlankRows (lpaplChar,        // Ptr to output buffer
                                           lpMemDim,         // Ptr to item dimensions
                                           0,                // Maximum row rank of next row

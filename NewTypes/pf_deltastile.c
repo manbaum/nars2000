@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -211,14 +211,20 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
      UBOOL   bGradeAll)             // TRUE iff we can grade all arrays
 
 {
-    APLSTYPE          aplTypeRes;           // Result storage type
+    APLSTYPE          aplTypeRes,           // Result storage type
+                      aplTypeItm;           // Item storage type
     APLNELM           aplNELMRht,           // Right arg NELM
                       aplNELMRes;           // Result    ...
     APLRANK           aplRankRht;           // Right arg rank
     HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
                       hGlbRes = NULL;       // Result    ...
+    APLINT            aplImag;              // Imaginary coordinate as an integer
     APLUINT           ByteRes,              // # bytes in the result
+                      uRht,                 // Loop counter
                       uRes;                 // Loop counter
+    int               i,                    // Loop counter
+                      iSizeofRht,           // # bytes in each right arg item
+                      iHCDimRht;            // HCD dimension (1, 2, 4, 8)
     LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
                       lpMemHdrRes = NULL;   // ...    result    ...
     LPVOID            lpMemRht,             // Ptr to right arg global memory
@@ -278,7 +284,40 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
             if (bGradeAll)
                 break;
             else
-                goto DOMAIN_EXIT;
+            {
+                // Calculate the # bytes in this item
+                iSizeofRht = TranslateArrayTypeToSizeof (gradeData.aplTypeRht);
+
+                // Calculate the HC dimension (1, 2, 4, 8)
+                iHCDimRht  = TranslateArrayTypeToHCDim  (gradeData.aplTypeRht);
+
+                // Get right arg global ptr
+                GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
+
+                // Skip over the header and dimensions to the data
+                lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+
+                // Get the array type of the individual parts
+                aplTypeItm = aToSimple[gradeData.aplTypeRht];
+
+                // Loop through the right arg elements
+                for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPBYTE) lpMemRht) += iSizeofRht)
+                {
+                    // Loop through the imaginary parts
+                    for (i = 1; i < iHCDimRht; i++)
+                    {
+                        // Attempt to convert the HCxy to an APLINT
+                        aplImag = ConvertToInteger_CT (aplTypeItm, lpMemRht, i, 0, &bRet);
+
+                        // If it's not successful, ...
+                        if (!bRet || aplImag NE 0)
+                            goto DOMAIN_EXIT;
+                    } // End FOR
+                } // End FOR
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
+            } // End IF/ELSE
     } // End SWITCH
 
     // Check for scalar right arg

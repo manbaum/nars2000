@@ -1,0 +1,9 @@
+Build #1624 -- Version 0.5.0.xx
+--------------------------------
+
+* Optimize Monadic Domino On Singletons
+
+Directory branches/bsmith/NewTypes:
+
+PF_DOMINO.C:
+  In <PrimFnMonDomino_EM_YY>, expand the special case handling of scalars to singletons.

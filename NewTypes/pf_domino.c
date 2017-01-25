@@ -382,11 +382,14 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                         aplRankRes;             // Result    ...
     HGLOBAL             hGlbRht = NULL,         // Right arg global memory handle
                         hGlbRes = NULL,         // Result    ...
+                        hGlbSgl = NULL,         // Singleton ...
                         hGlbTmp = NULL;         // Temporary ...
     LPVARARRAY_HEADER   lpMemHdrRht = NULL,     // Ptr to right arg header
-                        lpMemHdrRes = NULL;     // ...    result
+                        lpMemHdrRes = NULL,     // ...    result
+                        lpMemHdrSgl = NULL;     // ...    singleton
     LPVOID              lpMemRht,               // Ptr to right arg global memory
                         lpMemRes,               // Ptr to result    ...
+                        lpMemSgl,               // Ptr to singleton ...
                         lpMemTmp = NULL;        // Ptr to temporary ...
     APLUINT             ByteRes;                // # bytes in the result
     APLDIM              uNumRows,               // # rows in the right arg
@@ -406,11 +409,13 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     int                 ErrCode,                // Error code
                         signum,                 // Sign of the LU permutation
                         i,                      // Loop counter
+                        iSizeofRes,             // # bytes in each result item
                         iHCDimRht;              // Right arg HC Dimension (1, 2, 4, 8)
     LPPLLOCALVARS       lpplLocalVars;          // Ptr to re-entrant vars
     LPUBOOL             lpbCtrlBreak;           // Ptr to Ctrl-Break flag
     APLINT              iSizeofTmp;             // Temp sizeof () datatype
     ALLTYPES            atRes = {0};            // Result arg as ALLTYPES
+    LPAPLDIM            lpMemDimRht;            // Ptr to right arg dimensions
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -484,8 +489,9 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     if (IsHCInt (aplTypeRes))
         aplTypeRes++;           // Relying on order of ARRAY_TYPES
 
-    // If the right arg is a scalar, the result is an immediate or scalar global numeric, ...
-    if (IsScalar (aplRankRht))
+    // If the right arg is a singleton, the result is an immediate or scalar global numeric,
+    //   or vector or matrix simple or global numeric ...
+    if (IsSingleton (aplNELMRht))
     {
         IMM_TYPES immTypeRes;
         APLRAT    aplRatRht = {0};
@@ -496,7 +502,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
         lpYYRes = YYAlloc ();
 
         // Fill in the result token
-        lpYYRes->tkToken.tkFlags.TknType   =            // Filled in below
+////////lpYYRes->tkToken.tkFlags.TknType   =            // Filled in below
 ////////lpYYRes->tkToken.tkFlags.ImmType   =            // Filled in below
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;     // Already zero from YYAlloc
 ////////lpYYRes->tkToken.tkData.tkFloat    =            // Filled in below
@@ -734,6 +740,71 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                 // Check for errors
                 if (lpYYRes->tkToken.tkData.tkGlbData EQ NULL)
                     goto WSFULL_EXIT;
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+
+        // Split cases basd upon the right arg rank
+        switch (aplRankRht)
+        {
+            case 0:
+                break;
+
+            case 1:
+            case 2:
+                // Point to right arg dimensions
+                lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
+
+                // Convert the scalar result to a one-element vector or 1x1 matrix
+                hGlbRes = AllocateGlobalArray (aplTypeRes, 1, aplRankRht, lpMemDimRht);
+                if (hGlbRes EQ NULL)
+                    goto WSFULL_EXIT;
+
+                // Lock the memory to get a ptr to it
+                lpMemHdrRes = MyGlobalLockVar (hGlbRes);
+
+                // Skip over the header and dimensions to the data
+                lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+
+                // If the result is an immediate, ...
+                if (lpYYRes->tkToken.tkFlags.TknType EQ TKT_VARIMMED)
+                {
+                    // Fill in the global memory handle
+                    iSizeofRes = TranslateArrayTypeToSizeof (aplTypeRes);
+                    CopyMemory (lpMemRes, &lpYYRes->tkToken.tkData.tkLongest, iSizeofRes);
+
+                    // Change the token type to that of an array
+                    lpYYRes->tkToken.tkFlags.TknType = TKT_VARARRAY;
+                } else
+                {
+                    // Get the singleton global memory handle
+                    hGlbSgl = lpYYRes->tkToken.tkData.tkGlbData;
+
+                    // Lock the memory to get a ptr to it
+                    lpMemHdrSgl = MyGlobalLockVar (hGlbSgl);
+
+                    // Skip over the header and dimensions to the data
+                    lpMemSgl = VarArrayDataFmBase (lpMemHdrSgl);
+
+                    // Fill in the global memory handle
+                    iSizeofRes = TranslateArrayTypeToSizeof (aplTypeRes);
+                    CopyMemory (lpMemRes, lpMemSgl, iSizeofRes);
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbSgl); lpMemHdrSgl = NULL;
+
+                    // We no longer need this storage
+                    MyGlobalFree (hGlbSgl); hGlbSgl = NULL;
+                } // End IF/ELSE
+
+                // Save in the result
+                lpYYRes->tkToken.tkData.tkGlbData = MakePtrTypeGlb (hGlbRes);
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+
                 break;
 
             defstop

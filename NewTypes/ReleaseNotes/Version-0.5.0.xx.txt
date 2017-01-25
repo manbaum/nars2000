@@ -1,6 +1,17 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1618 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug When Checking For Duplicate Function Line Labels
+
+Directory branches/bsmith/NewTypes:
+
+SORT.C:
+  Fix bug in <CmpLPLBLENTRY> to compare labels directly, not through APL translate tables.
+
+
 Build #1617 -- Version 0.5.0.xx
 --------------------------------
 

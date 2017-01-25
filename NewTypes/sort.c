@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -188,7 +188,7 @@ int CmpLPLBLENTRY
     lpMemRht = MyGlobalLockWsz (lpLblRht->lpSymEntry->stHshEntry->htGlbName);
 
     // Compare the two names
-    iCmp = aplcmp (lpMemLft, lpMemRht);
+    iCmp = lstrcmpW (lpMemLft, lpMemRht);
 
     // We no longer need these ptrs
     MyGlobalUnlock (lpLblRht->lpSymEntry->stHshEntry->htGlbName); lpMemRht = NULL;

@@ -1,0 +1,11 @@
+Build #1623 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug In UpCaret, DownCaret, And Stile With Nested Arguments
+
+Directory branches/bsmith/NewTypes:
+
+PF_DCARET.C:
+PF_STILE.C:
+PF_UCARET.C:
+  Fix bug in each function's <PrimSpecXXXStorageTypeDyd> routine where the call to <HasFractionality> fails on Nested arguments.

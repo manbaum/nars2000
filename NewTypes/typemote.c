@@ -1318,7 +1318,7 @@ void DemoteData
                                     case ARRAY_INT:     // Res = BOOL, Rht = INT
                                     case ARRAY_APA:     // Res = BOOL, Rht = APA
                                     case ARRAY_FLOAT:   // Res = BOOL, Rht = FLT
-                                        *((LPAPLBOOL) lpMemRes) |= GetNextInteger (lpMemSub, lpMemHdrSub->ArrType, uRht) << uBitIndex;
+                                        *((LPAPLBOOL) lpMemRes) |= GetNextInteger (lpMemSub, lpMemHdrSub->ArrType, 0) << uBitIndex;
 
                                         break;
 
@@ -1420,7 +1420,7 @@ void DemoteData
                                     case ARRAY_INT:     // Res = INT , Rht = INT
                                     case ARRAY_APA:     // Res = INT , Rht = APA
                                     case ARRAY_FLOAT:   // Res = INT , Rht = FLT
-                                        *((LPAPLINT) lpMemRes)++ = GetNextInteger (lpMemSub, lpMemHdrSub->ArrType, uRht);
+                                        *((LPAPLINT) lpMemRes)++ = GetNextInteger (lpMemSub, lpMemHdrSub->ArrType, 0);
 
                                         break;
 
@@ -1518,7 +1518,7 @@ void DemoteData
                                     case ARRAY_INT:     // Res = FLT , Rht = INT
                                     case ARRAY_APA:     // Res = FLT , Rht = APA
                                     case ARRAY_FLOAT:   // Res = FLT , Rht = FLT
-                                        *((LPAPLFLOAT) lpMemRes)++ = GetNextFloat (lpMemSub, lpMemHdrSub->ArrType, uRht);
+                                        *((LPAPLFLOAT) lpMemRes)++ = GetNextFloat (lpMemSub, lpMemHdrSub->ArrType, 0);
 
                                         break;
 

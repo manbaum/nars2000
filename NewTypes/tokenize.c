@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2957,10 +2957,12 @@ UBOOL scPointDone
         } // End SWITCH
 
         // If the current char is Complex Angle ('a'),
-        //   and the next char is Degrees ('d') or Radians ('r'), ...
+        //   and the next char is Degrees ('d') or Radians ('r'),
+        //   or Unit Normalized ('u'), ...
         if (lpszNum[uVar] EQ 'a'
          && (lpszNum[uVar + 1] EQ 'd'
-          || lpszNum[uVar + 1] EQ 'r'))
+          || lpszNum[uVar + 1] EQ 'r'
+          || lpszNum[uVar + 1] EQ 'u'))
         {
             // Save the color
             lptkLocalVars->lpMemClrNxt++->syntClr =

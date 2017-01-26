@@ -1,0 +1,16 @@
+Build #1628 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug With Naked Goto
+
+Directory branches/bsmith/NewTypes:
+
+EXECDFN.C:
+  In <ExecuteFunction_EM_YY> if an error occurs and we're exiting because of a naked GOTO (EXITTYPE_RESET_ONE),
+    return a NoValue entry marked as a naked GOTO.
+
+PARSELINE.C:
+  In <plExecuteFn0>, don't modify <tkSynObj> in <lpYYRes> if it's a NoValue entry.
+
+TOKENIZE.C:
+  In <scPointDone>, syntax color "au" Unit Normalized notation as Point Notation.

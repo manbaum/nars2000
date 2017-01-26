@@ -7510,7 +7510,8 @@ LPPL_YYSTYPE plExecuteFn0
     FreeResult (lpYYFn0); YYFree (lpYYFn0); lpYYFn0 = NULL;
 
     // Check for error
-    if (lpYYRes)
+    if (lpYYRes NE NULL
+     && !IsTokenNoValue (&lpYYRes->tkToken))
         lpYYRes->tkToken.tkSynObj = soA;
 
     return lpYYRes;     // Might be NULL

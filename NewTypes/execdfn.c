@@ -1424,6 +1424,15 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
+    // If we're exiting via EXITTYPE_RESET_ONE, ...
+    if (exitType EQ EXITTYPE_RESET_ONE)
+    {
+        // Make a PL_YYSTYPE NoValue entry
+        lpYYRes = MakeNoValue_YY (lptkFunc);
+
+        // But mark is as a naked GOTO
+        lpYYRes->tkToken.tkSynObj = soGO;
+    } // End IF
 NORMAL_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;

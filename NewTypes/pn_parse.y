@@ -79,7 +79,6 @@ void pn_yyprint     (FILE *yyoutput, unsigned short int yytoknum, PN_YYSTYPE con
 
 ////#define DbgMsgWP(a)         DbgMsgW(a)
 ////#define DbgMsgWP(a)         DbgMsgW(a); DbgBrk ()
-////#define DbgMsgWP(a)         DbgMsgW(a)
     #define DbgMsgWP(a)
 
 #define NEED_EOT    lppnLocalVars->bNeedEOT = TRUE;
@@ -335,6 +334,9 @@ HcxPoint:
                                     }
     | DRVPoint 'a' 'r' DRVPoint     {DbgMsgWP (L"%%HcxPoint:  DRVPoint 'a' 'r' DRVPoint");
                                      $$ = PN_MakeHc2Point (&$1, &$4, 'r', lppnLocalVars);
+                                    }
+    | DRVPoint 'a' 'u' DRVPoint     {DbgMsgWP (L"%%HcxPoint:  DRVPoint 'a' 'u' DRVPoint");
+                                     $$ = PN_MakeHc2Point (&$1, &$4, 'u', lppnLocalVars);
                                     }
     | DRVPoint Co1X                 {DbgMsgWP (L"%%HcxPoint:  DRVPoint Co1X");
                                      $$ = PN_MakeHcxPoint (&$1, 1, &$2, lppnLocalVars);
@@ -608,8 +610,8 @@ Co7:
 // RatPoint left and right arguments
 // ExtPoint left arg
 RatArgs:
-      DecPoint
-    | ExpPoint
+      DecPoint                      {DbgMsgWP (L"RatArgs:  DecPoint");}
+    | ExpPoint                      {DbgMsgWP (L"RatArgs:  ExpPoint");}
     ;
 
 RatPoint:
@@ -696,11 +698,11 @@ ExtPoint:
 
 // Euler/Pi/Gamma left and right arguments
 EPGArgs:
-      DecPoint
-    | ExpPoint
-    | HcxPoint
-    | RatPoint
-    | VfpPoint
+      DecPoint                      {DbgMsgWP (L"EPGArgs:  DecPoint");}
+    | ExpPoint                      {DbgMsgWP (L"EPGArgs:  ExpPoint");}
+    | HcxPoint                      {DbgMsgWP (L"EPGArgs:  HcxPoint");}
+    | RatPoint                      {DbgMsgWP (L"EPGArgs:  RatPoint");}
+    | VfpPoint                      {DbgMsgWP (L"EPGArgs:  VfpPoint");}
     ;
 
 GammaPoint:
@@ -840,10 +842,10 @@ EulerPoint:
 
 // BasePoint left args
 BaseArgs:
-      EPGArgs
-    | EulerPoint
-    | GammaPoint
-    | PiPoint
+      EPGArgs                       {DbgMsgWP (L"BaseArgs:  EPGArgs");}
+    | EulerPoint                    {DbgMsgWP (L"BaseArgs:  EulerPoint");}
+    | GammaPoint                    {DbgMsgWP (L"BaseArgs:  GammaPoint");}
+    | PiPoint                       {DbgMsgWP (L"BaseArgs:  PiPoint");}
     ;
 
 BasePoint:
@@ -1054,8 +1056,7 @@ int pn_yylex
     UCHAR uChar;
     static UINT uCnt = 0;
 
-#ifdef YYLEX_DEBUG
-#ifdef DEBUG
+#if (defined (DEBUG)) && (defined (YYLEX_DEBUG))
     {
         char *lp;
         char ch[2] = {'\0'};
@@ -1072,7 +1073,6 @@ int pn_yylex
                      ++uCnt,
                      lp);
     }
-#endif
 #endif
     // Check for EOT
     if (lppnLocalVars->bEOT)
@@ -1154,7 +1154,7 @@ int pn_yylex
         uCharZap = lppnLocalVars->lpszStart[lppnLocalVars->uNumLen];
 
         // Point to the char after the HC notation chars
-        //   starting with the current char;  "uNumCur
+        //   starting with the current char;  "uNumCur"
         //   is the index of the next char and "uNumCur - 1"
         //   is the index of the current char from which
         //   "uChar" came.

@@ -1,6 +1,29 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1626 -- Version 0.5.0.xx
+--------------------------------
+
+* Implement Unit Normalized Radian Point Notation (e.g. 1au0.25 = 1ad90)
+
+Directory branches/bsmith/NewTypes:
+
+CR_PROC.C:
+  Fix bug in <crEndSeg> when scanning a line such as 1au0.5x where the code mistakenly finds a decimal point
+    and thinks it is in the integer part of the string.
+
+MPFNS.C:
+  Implement <mpq_mul_si> as a helper function.
+
+PN_PARSE.Y:
+  Implement Unit Normalized Radian point notation.
+  Define DEBUG stmts for no code terminals so they show up in a DEBUG run.
+
+PN_PROC.C:
+  Fix bug in <PN_MakeBasePoint> where a base of a Boolean 0 or 1 fails to note that the result is integer.
+  In <PN_MakeHc2Point>, implement Unit Normalized Radian point notation.
+
+
 Build #1625 -- Version 0.5.0.xx
 --------------------------------
 

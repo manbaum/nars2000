@@ -2516,6 +2516,7 @@ RESTART_BASEPOINT:
                 {
                     // Save the result
                     lpYYBase->at.aplInteger = aplIntAcc;
+                    lpYYBase->chType        = PN_NUMTYPE_INT;
 
                     break;
                 } // End IF
@@ -4118,6 +4119,7 @@ PN_YYSTYPE PN_MakeHc2Point
                                     //                   'J' = none
                                     //                   'd' = degrees
                                     //                   'r' = radians
+                                    //                   'u' = unit normalized radians
      LPPNLOCALVARS lppnLocalVars)   // Ptr to PN local vars
 
 {
@@ -4125,8 +4127,7 @@ PN_YYSTYPE PN_MakeHc2Point
                  chCom;
     APLHC2V      aplHC2V;           // Temp value
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    APLFLOAT     aplFloat0,         // Temp var
-                 aplFloat1;         // ...
+    APLFLOAT     aplFloat0;         // Temp var
     APLINT       aplInteger0,       // ...
                  aplInteger1;       // ...
     APLRAT       aplRat0 = {0};     // ...
@@ -4217,14 +4218,27 @@ PN_YYSTYPE PN_MakeHc2Point
             // Fall through to common code
 
         case PN_NUMTYPE_HC2I:
-            // Make a temp copy of LpC1->at.aplInteger as we overwrite it
+            // Make a temp copy of lpC1->at.aplInteger as we overwrite it
             aplInteger1 = lpC1->at.aplInteger;
+
+            // If we're using Unit Normalized Radians, ...
+            if (cConvType EQ 'u')
+            {
+                // By the fact that the unit normalized value is an integer
+                //   it is a multiple of 360 degrees
+
+                // Convert from Unit Normalized Radians to Degrees
+                aplInteger1 *= 360;
+
+                // Change the conversion type to Degrees
+                cConvType ='d';
+            } // End IF
 
             // If we're converting from degrees or radians, ...
             if (cConvType EQ 'r'
              || cConvType EQ 'd')
                 // Convert lpC1 from INT to FLT
-                lpC1->at.aplFloat = (APLFLOAT) lpC1->at.aplInteger;
+                lpC1->at.aplFloat = (APLFLOAT) aplInteger1;
 
             // Split cases based upon the Conversion Type
             switch (cConvType)
@@ -4241,7 +4255,7 @@ PN_YYSTYPE PN_MakeHc2Point
                     // Special case multiples of 90 degrees
                     if (0 EQ (aplInteger1 % 90))
                     {
-                        // Make a temp copy of LpC0->at.aplInteger as we overwrite it
+                        // Make a temp copy of lpC0->at.aplInteger as we overwrite it
                         aplInteger0 = lpC0->at.aplInteger;
 
                         // Split cases based upon the 360 degrees residue
@@ -4279,10 +4293,10 @@ PN_YYSTYPE PN_MakeHc2Point
                     } // End IF
 
                     // Divide by Pi radians
-                    aplFloat1 = lpC1->at.aplFloat / 180.0;
+                    lpC1->at.aplFloat /= 180.0;
 
                     // Convert lpC1 from degrees to radians
-                    iAsmMulPiFlt (&lpC1->at.aplFloat, &aplFloat1);
+                    iAsmMulPiFlt (&lpC1->at.aplFloat, &lpC1->at.aplFloat);
 
                     // Save the new type
                     lpC1->chType = PN_NUMTYPE_FLT;
@@ -4322,12 +4336,19 @@ PN_YYSTYPE PN_MakeHc2Point
             (*aNumTypeAction[lpC0->chType][chType]) (lpC0, lppnLocalVars);
             (*aNumTypeAction[lpC1->chType][chType]) (lpC1, lppnLocalVars);
 
-            // Make a temp copy of LpC1->at.aplFloat as we overwrite it
-            aplFloat1 = lpC1->at.aplFloat;
-
             // Presumably, the coefficients are now both FLT
             Assert (IsPnNumTypeFlt (lpC0->chType));
             Assert (IsPnNumTypeFlt (lpC1->chType));
+
+            // If we're using Unit Normalized Radians, ...
+            if (cConvType EQ 'u')
+            {
+                // Convert from Unit Normalized Radians to Degrees
+                lpC1->at.aplFloat *= 360;
+
+                // Change the conversion type to Degrees
+                cConvType ='d';
+            } // End IF
 
             // Split cases based upon the Conversion Type
             switch (cConvType)
@@ -4342,13 +4363,13 @@ PN_YYSTYPE PN_MakeHc2Point
 
                 case 'd':       // Degrees
                     // Special case multiples of 90 degrees
-                    if (0 EQ fmod (aplFloat1, 90))
+                    if (0 EQ fmod (lpC1->at.aplFloat, 90))
                     {
-                        // Make a temp copy of LpC0->at.aplFloat as we overwrite it
+                        // Make a temp copy of lpC0->at.aplFloat as we overwrite it
                         aplFloat0 = lpC0->at.aplFloat;
 
                         // Split cases based upon the 360 degrees residue
-                        switch ((int) fmod (aplFloat1, 360))
+                        switch ((int) fmod (lpC1->at.aplFloat, 360))
                         {
                             case 0:
                                 lpC0->at.aplHC2F.parts[0] =  aplFloat0;
@@ -4382,10 +4403,10 @@ PN_YYSTYPE PN_MakeHc2Point
                     } // End IF
 
                     // Divide by Pi radians
-                    aplFloat1 = aplFloat1 / 180.0;
+                    lpC1->at.aplFloat /= 180.0;
 
                     // Convert lpC1 from degrees to radians
-                    iAsmMulPiFlt (&lpC1->at.aplFloat, &aplFloat1);
+                    iAsmMulPiFlt (&lpC1->at.aplFloat, &lpC1->at.aplFloat);
 
                     // Fall through to common code
 
@@ -4415,6 +4436,16 @@ PN_YYSTYPE PN_MakeHc2Point
         case PN_NUMTYPE_HC2R:
         case PN_NUMTYPE_HC4R:
         case PN_NUMTYPE_HC8R:
+            // If we're using Unit Normalized Radians, ...
+            if (cConvType EQ 'u')
+            {
+                // Convert from Unit Normalized Radians to Degrees
+                mpq_mul_si (&lpC1->at.aplRat, &lpC1->at.aplRat, 360, 1);
+
+                // Change the conversion type to Degrees
+                cConvType ='d';
+            } // End IF
+
             // If we're converting from degrees or radians, ...
             switch (cConvType)
             {
@@ -4429,8 +4460,12 @@ PN_YYSTYPE PN_MakeHc2Point
                         // It's a RAT
                         chCom  = PN_NUMTYPE_RAT;
                     else
+                    {
                         // It's a VFP
                         chCom  = PN_NUMTYPE_VFP;
+                        lppnLocalVars->bRatSep = FALSE;
+                    } // End IF/ELSE
+
                     break;
 
                 case 'r':
@@ -4469,7 +4504,7 @@ PN_YYSTYPE PN_MakeHc2Point
                     // If the result is a RAT (special case multiples of 90 degrees), ...
                     if (chCom EQ PN_NUMTYPE_RAT)
                     {
-                        // Make a temp copy of LpC0->at.aplRat as we overwrite it
+                        // Make a temp copy of lpC0->at.aplRat as we overwrite it
                         mpq_init_set (&aplRat0, &lpC0->at.aplRat);
 
                         // Split cases based upon the 360 degrees residue
@@ -4566,6 +4601,16 @@ PN_YYSTYPE PN_MakeHc2Point
             (*aNumTypeAction[lpC0->chType][chCom]) (lpC0, lppnLocalVars);
             (*aNumTypeAction[lpC1->chType][chCom]) (lpC1, lppnLocalVars);
 
+            // If we're using Unit Normalized Radians, ...
+            if (cConvType EQ 'u')
+            {
+                // Convert from Unit Normalized Radians to Degrees
+                mpfr_mul_si (&lpC1->at.aplVfp, &lpC1->at.aplVfp, 360, MPFR_RNDN);
+
+                // Change the conversion type to Degrees
+                cConvType ='d';
+            } // End IF
+
             // Split cases based upon the Conversion Type
             switch (cConvType)
             {
@@ -4584,7 +4629,7 @@ PN_YYSTYPE PN_MakeHc2Point
                     // Special case multiples of 90 degrees
                     if (bRet && 0 EQ (aplInteger1 % 90))
                     {
-                        // Make a temp copy of LpC0->at.aplVfp as we overwrite it
+                        // Make a temp copy of lpC0->at.aplVfp as we overwrite it
                         mpfr_init_set (&aplVfp0, &lpC0->at.aplVfp, MPFR_RNDN);
 
                         // Split cases based upon the 360 degrees residue

@@ -346,22 +346,17 @@ UBOOL crEndSeg
 {
     LPCHAR lpDec = NULL;                // Ptr to decimal point (NULL if none)
     int    res = 0;                     // mpq_set_str result
-    char   chZap,                       // Zapped char
-           chZapRat;                    // ...    rational sep
+    char   chZapChr,                    // Zapped char
+           chZapEOI;                    // ...
      UBOOL bNegNum,                     // TRUE iff the numerator starts with a negative sign
            bNegDen = FALSE;             // ...          denominator ...
 
     // Convert the segment from lpcrLocalVars.lpszStart into a rational number
     // This segment may include a decimal point
 
-    // If the next char is a rational separator, ...
-    if (CharTransCR (lpcrLocalVars->lpszCur[0]) EQ CRCOL_RAT)
-    {
-        // Save and zap the rational sep so as to terminate the integer part of the string
-        chZapRat = lpcrLocalVars->lpszCur[0];
-                   lpcrLocalVars->lpszCur[0] = AC_EOS;
-    } else
-       chZapRat = AC_EOS;
+    // Save and zap the next char so as to terminate the integer part of the string
+    chZapEOI = lpcrLocalVars->lpszCur[0];
+               lpcrLocalVars->lpszCur[0] = AC_EOS;
 
     // Check for negative sign in the numerator
     bNegNum = (lpcrLocalVars->lpszStart[0] EQ '-');
@@ -382,14 +377,14 @@ UBOOL crEndSeg
         if (lpDec > &lpcrLocalVars->lpszStart[bNegNum])
         {
             // Save and zap the decimal point so as to terminate the integer part of the string
-            chZap = lpDec[0];
-                    lpDec[0] = AC_EOS;
+            chZapChr = lpDec[0];
+                       lpDec[0] = AC_EOS;
             // Convert the integer part of the string to a multiple precision integer
             res = mpq_set_str (lpcrLocalVars->mpqMul,
                               &lpcrLocalVars->lpszStart[bNegNum],
                                lpcrLocalVars->base);
             // Restore the zapped char
-            lpDec[0] = chZap;
+            lpDec[0] = chZapChr;
 
             if (res NE 0)
                 goto ERROR_EXIT;
@@ -405,15 +400,15 @@ UBOOL crEndSeg
             bNegDen = (lpDec[1] EQ '-');
 
             // Save and zap the ending char
-            chZap = lpDec[1 + bNegDen + frcLen];
-                    lpDec[1 + bNegDen + frcLen] = AC_EOS;
+            chZapChr = lpDec[1 + bNegDen + frcLen];
+                       lpDec[1 + bNegDen + frcLen] = AC_EOS;
 
             // Convert the fractional part of the string to a multiple precision integer
             res = mpz_set_str (mpq_numref (mpqt_frc),
                               &lpDec[1 + bNegDen],
                                lpcrLocalVars->base);
             // Restore the zapped char
-            lpDec[1 + bNegDen + frcLen] = chZap;
+            lpDec[1 + bNegDen + frcLen] = chZapChr;
 
             if (res NE 0)
                 goto ERROR_EXIT;
@@ -446,21 +441,21 @@ ERROR_EXIT:
         intLen = strspn (lpcrLocalVars->lpszStart, OVERBAR1_STR INFINITY1_STR "0123456789");
 
         // Save and zap the ending char
-        chZap = lpcrLocalVars->lpszStart[intLen];
-                lpcrLocalVars->lpszStart[intLen] = AC_EOS;
+        chZapChr = lpcrLocalVars->lpszStart[intLen];
+                   lpcrLocalVars->lpszStart[intLen] = AC_EOS;
 
         // Convert the integer part of the string to a multiple precision integer
         res = mpq_set_str (lpcrLocalVars->mpqMul,
                            lpcrLocalVars->lpszStart,
                            lpcrLocalVars->base);
         // Restore the zapped char
-        lpcrLocalVars->lpszStart[intLen] = chZap;
+        lpcrLocalVars->lpszStart[intLen] = chZapChr;
     } // End IF/ELSE
 
-    // If we zapped the rational sep, ...
-    if (chZapRat NE AC_EOS)
+    // If we zapped the EOI char, ...
+    if (chZapEOI NE AC_EOS)
         // Restore it
-        lpcrLocalVars->lpszCur[0] = chZapRat;
+        lpcrLocalVars->lpszCur[0] = chZapEOI;
 
     if (res EQ 0)
     {

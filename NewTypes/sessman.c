@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1851,6 +1851,7 @@ NORMAL_EXIT:
                               SWP_NOZORDER      // Flags
                             | SWP_SHOWWINDOW
                              );
+                // Scroll the caret into view
                 SendMessageW (hWndEC, EM_SCROLLCARET, 0, 0);
             } // End IF
 
@@ -1883,8 +1884,11 @@ NORMAL_EXIT:
             // If we're being activated, ...
             if (GET_WM_MDIACTIVATE_FACTIVATE (hWnd, wParam, lParam))
             {
+                // Activate the menu
                 ActivateMDIMenu (WINDOWCLASS_SM, hWnd);
                 SetFocus (hWnd);
+
+                // Scroll the caret into view
                 SendMessageW (hWndEC, EM_SCROLLCARET, 0, 0);
             } // End IF
 

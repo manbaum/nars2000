@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -826,6 +826,7 @@ LRESULT APIENTRY FEWndProc
                                     // nWidth = LOWORD(lParam);  // Width of client area
                                     // nHeight = HIWORD(lParam); // Height of client area
             if (fwSizeType NE SIZE_MINIMIZED)
+            {
                 SetWindowPos (hWndEC,           // Window handle to position
                               0,                // SWP_NOZORDER
                               0,                // X-position
@@ -835,6 +836,10 @@ LRESULT APIENTRY FEWndProc
                               SWP_NOZORDER      // Flags
                             | SWP_SHOWWINDOW
                              );
+                // Scroll the caret into view
+                SendMessageW (hWndEC, EM_SCROLLCARET, 0, 0);
+            } // End IF
+
             break;                  // *MUST* pass on to DefMDIChildProcW
 #undef  nHeight
 #undef  nWidth

@@ -1,6 +1,24 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1629 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug From Missing SEH Handlers
+* Fix Bug With PSFs Passing Wrong Datatype
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+  Append line # to TRACE DEBUG stmts.
+  Fix bug after <PARSELINE_DONE:> where it doesn't handle <soNVAL> from no return UDFOs.
+
+PRIMSPEC.C:
+  Use SEH __try/__finally to handle clean up after error.
+  Fix bug in both <PrimFnDydSimpNest_EM> and <PrimFnDydNestSimp_EM> where the wrong storage type is passed down to <PrimFnDydSiScSiSc_EM>.
+  Fix bug in <PrimFnDydNestSiSc_EM> and <PrimFnDydSiScNest_EM> where an exception from a call down to a PSF isn't handled.
+
+
 Build #1628 -- Version 0.5.0.xx
 --------------------------------
 

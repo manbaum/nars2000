@@ -283,23 +283,25 @@
 
 #ifdef DEBUG_TRACE
   #define TRACE(a,EVENT,soType,rhtSynObj)                         \
-              dprintfWL0 (L"%s %s %3d %-4s %3d %s %s",            \
+              dprintfWL0 (L"%s %s %3d %-4s %3d %s %s (#%d)",      \
                           (a),                                    \
                           LSTACK (&plLocalVars, lpplOrgLftStk),   \
                           LBIND (LFTSYNOBJ, CURSYNOBJ),           \
                           soNames[soType],                        \
                           RBIND (CURSYNOBJ, rhtSynObj),           \
                           RSTACK (&plLocalVars, lpplOrgRhtStk),   \
-                          EVENT)
+                          EVENT,                                  \
+                          __LINE__);
   #define TRACE2(a,EVENT,soType,rhtSynObj)                        \
-              dprintfWL0 (L"%s %s %3d %-4s %3d %s %s",            \
+              dprintfWL0 (L"%s %s %3d %-4s %3d %s %s (#%d)",      \
                           (a),                                    \
                           LSTACK (&plLocalVars, lpplOrgLftStk),   \
                           LBIND (LFTSYNOBJ, soType),              \
                           soNames[soType],                        \
                           RBIND (soType, rhtSynObj),              \
                           RSTACK (&plLocalVars, lpplOrgRhtStk),   \
-                          EVENT)
+                          EVENT,                                  \
+                          __LINE__);
   #define PushVarStrand_YY(a)               DbgPushVarStrand_YY    (a, FNLN)
   #define MakeVarStrand_EM_YY(a)            DbgMakeVarStrand_EM_YY (a, FNLN)
 #else
@@ -3658,9 +3660,10 @@ LPPL_YYSTYPE plRedNAM_SPCom
     if (!AssignName_EM (&lpplYYCurObj->tkToken, &lpplYYLstRht->tkToken))
         goto ERROR_EXIT;
 #ifdef DEBUG_TRACE
-    dprintfWL0 (L"AssignName_EM %s = %p",
+    dprintfWL0 (L"AssignName_EM %s = %p (#%d)",
                 lpplYYCurObj->tkToken.tkData.tkSym->stHshEntry->lpwCharName,
-                lpplYYCurObj->tkToken.tkData.tkSym->stData.stGlbData);
+                lpplYYCurObj->tkToken.tkData.tkSym->stData.stGlbData,
+                __LINE__);
 #endif
     // Change the tkSynObj
     lpplYYLstRht->tkToken.tkSynObj = soType;
@@ -4137,10 +4140,11 @@ PARSELINE_START:
                     // Make it look like LPMEMTXT_UNION as all we need to do
                     //   is reference ->C which is two WCHARs in
                     lpMemTxtLine = (LPMEMTXT_UNION) (lpwszLine - 2);
-                dprintfWL0 (L"Starting line(%d/%d):  %s",
+                dprintfWL0 (L"Starting line(%d/%d):  %s (#%d)",
                             uLineNum,
                             uTknNum,
-                           &lpMemTxtLine->C);
+                           &lpMemTxtLine->C,
+                            __LINE__);
                 TRACE (L"Starting:", L"", CURSYNOBJ, RHTSYNOBJ);
 
                 if (hGlbTxtLine NE NULL)
@@ -4403,8 +4407,9 @@ PARSELINE_MP_PAREN:
 
 PARSELINE_MP_DONE:
 #ifdef DEBUG_TRACE
-            dprintfWL0 (L"MatchPair Done:  curSynObj (%s)",
-                        soNames[curSynObj]);
+            dprintfWL0 (L"MatchPair Done:  curSynObj (%s) (#%d)",
+                         soNames[curSynObj],
+                         __LINE__);
 #endif
             // If the current object is a Niladic Function, ...
             if (curSynObj EQ soNF
@@ -4951,9 +4956,10 @@ PARSELINE_DONE:
 
             // N.B.:  DO NOT RELOAD lstSynObj as we are relying on the old value
 #ifdef DEBUG_TRACE
-            dprintfWL0 (L"Stmt Done:  curSynObj (%s), oldLstSynObj (%s)",
-                        soNames[curSynObj],
-                        soNames[oldLstSynObj]);
+            dprintfWL0 (L"Stmt Done:  curSynObj (%s), oldLstSynObj (%s) (#%d)",
+                         soNames[curSynObj],
+                         soNames[oldLstSynObj],
+                         __LINE__);
 #endif
             // If we're restarting, ...
             if (plLocalVars.bRestart)
@@ -4990,6 +4996,7 @@ PARSELINE_DONE:
              ||  curSynObj EQ soCS1
              ||  curSynObj EQ soAFOG
              ||  curSynObj EQ soAFOR
+             ||  curSynObj EQ soNVAL
 /////////////|| (curSynObj EQ soA    && lstSynObj EQ soSPA )    // Already handled via curSynObj EQ soA
 /////////////|| (curSynObj EQ soSA   && lstSynObj EQ soSPA )    // Already handled via curSynObj EQ soSA
              ||  bSink
@@ -5093,8 +5100,10 @@ PARSELINE_DONE:
                     plLocalVars.ExitType = EXITTYPE_NOVALUE;
                 } else
                 // If from an assigned name,
+                //   or soNOVAL
                 //   or naked goto, ...
                 if (bAssignName
+                 || curSynObj EQ soNVAL
                  || curSynObj EQ soGO)
                 {
                     // YYFree the current object
@@ -5833,9 +5842,10 @@ PL_YYLEX_START:
     lpplLocalVars->lptkNext--;
 
 #if (defined (DEBUG)) && (defined (YYLEX_DEBUG))
-    dprintfWL0 (L"==pl_yylex:  TknType = %S, CharIndex = %d",
+    dprintfWL0 (L"==pl_yylex:  TknType = %S, CharIndex = %d (#%d)",
                  GetTokenTypeName (lpplLocalVars->lptkNext->tkFlags.TknType),
-                 lpplLocalVars->lptkNext->tkCharIndex);
+                 lpplLocalVars->lptkNext->tkCharIndex,
+                 __LINE__);
 #endif
 
     // Return the current token

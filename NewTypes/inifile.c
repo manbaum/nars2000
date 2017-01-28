@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -65,7 +65,6 @@
 #define KEYNAME_KEYBUSECXV              L"KeybUseCXV"
 #define KEYNAME_KEYBUSEZY               L"KeybUseZY"
 #define KEYNAME_KEYBUSESEQ              L"KeybUseSEQ"
-#define KEYNAME_LOGFONTKB               L"LogFontKB"
 
 #define KEYNAME_IC0LOG0                 L"IC0LOG0"
 
@@ -88,6 +87,8 @@
 #define KEYNAME_QUADSA                  L"QuadSA"
 
 #define KEYNAME_LOGFONTFE               L"LogFontFE"
+#define KEYNAME_LOGFONTKB               L"LogFontKB"
+#define KEYNAME_LOGFONTLW               L"LogFontLW"
 #define KEYNAME_LOGFONTPR               L"LogFontPR"
 #define KEYNAME_LOGFONTSM               L"LogFontSM"
 #define KEYNAME_LOGFONTTC               L"LogFontTC"
@@ -563,6 +564,7 @@ UBOOL ReadIniFileGlb
 
     // Read in the LOGFONTW strucs
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTFE, &lfFE);
+    GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTLW, &lfLW);
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTPR, &lfPR);
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTSM, &lfSM);
     GetPrivateProfileLogFontW (SECTNAME_FONTS, KEYNAME_LOGFONTTC, &lfTC);
@@ -2212,6 +2214,11 @@ void SaveIniFile
     WritePrivateProfileLogfontW (SECTNAME_FONTS,            // Ptr to the section name
                                  KEYNAME_LOGFONTFE,         // Ptr to the key name
                                 &lfFE,                      // Ptr to LOGFONTW
+                                 lpwszIniFile);             // Ptr to the file name
+    // Write out the LOGFONTW struc for LW
+    WritePrivateProfileLogfontW (SECTNAME_FONTS,            // Ptr to the section name
+                                 KEYNAME_LOGFONTLW,         // Ptr to the key name
+                                &lfLW,                      // Ptr to LOGFONTW
                                  lpwszIniFile);             // Ptr to the file name
     // Write out the LOGFONTW struc for PR
     WritePrivateProfileLogfontW (SECTNAME_FONTS,            // Ptr to the section name

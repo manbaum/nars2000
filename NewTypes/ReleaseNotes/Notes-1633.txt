@@ -1,0 +1,9 @@
+Build #1633 -- Version 0.5.0.xx
+--------------------------------
+
+* Save And Restore The Language Bar Font In The NARS2000.INI File
+
+Directory branches/bsmith/NewTypes:
+
+INIFILE.C:
+  Inexplicably, I never got around to save the Language Bar font in the NARS2000.ini file.

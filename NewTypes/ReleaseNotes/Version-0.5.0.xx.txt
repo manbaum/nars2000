@@ -1,6 +1,17 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1632 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug In 0x*-1
+
+Directory branches/bsmith/NewTypes:
+
+PF_STAR.C:
+  Handle the case of a rational zero raised to a negative power.
+
+
 Build #1631 -- Version 0.5.0.xx
 --------------------------------
 

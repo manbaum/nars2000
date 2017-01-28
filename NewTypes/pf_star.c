@@ -1616,8 +1616,18 @@ void PrimFnDydStarRisRvR
 
         // If the right arg is negative, ...
         if (SIGN_APLRAT (&lpatRht->aplRat))
-            // Invert it
-            mpq_inv (&lpMemRes[uRes], &lpMemRes[uRes]);
+        {
+            // Check for indeterminates:  {div} 0
+            if (IsMpq0 (&lpMemRes[uRes]))
+                lpMemRes[uRes] = *mpq_QuadICValue (&lpMemRes[uRes],         // No left arg
+                                                    ICNDX_DIV0,
+                                                   &lpMemRes[uRes],
+                                                   &lpMemRes[uRes],
+                                                    FALSE);
+            else
+                // Invert it
+                mpq_inv (&lpMemRes[uRes], &lpMemRes[uRes]);
+        } // End IF
     } else
     // If the base is negative, ...
     if (SIGN_APLRAT (&lpatLft->aplRat))

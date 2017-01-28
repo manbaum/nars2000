@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1018,9 +1018,17 @@ void InitPrimeTabs
     for (uCnt = 0; uCnt < NthPowerCnt; uCnt++)
         mpz_init_set_str (&NthPowerTab[uCnt].aplMPI, NthPowerTab[uCnt].lpChar, 10);
 
-    // Initialize the NthPrimeStr values to the last entry in the NthPrimeTab
-    NthPrimeStr.aplNthVal = NthPrimeTab[NthPrimeCnt - 1];
-    NthPrimeStr.aplNthCnt = (NthPrimeCnt - 1) * NthPrimeInc;
+    // Initialize the Nth1e0PrimeStr values to the last entry in the Nth1e0PrimeTab
+    Nth1e0PrimeStr.aplNthVal = Nth1e0PrimeTab[Nth1e0PrimeCnt - 1];
+    Nth1e0PrimeStr.aplNthCnt = (Nth1e0PrimeCnt - 1) * Nth1e0PrimeInc;
+
+    // Initialize the Nth1e2PrimeStr values to the last entry in the Nth1e2PrimeTab
+    Nth1e2PrimeStr.aplNthVal = Nth1e2PrimeTab[Nth1e2PrimeCnt - 1];
+    Nth1e2PrimeStr.aplNthCnt = (Nth1e2PrimeCnt - 1) * Nth1e2PrimeInc;
+
+    // Initialize the Nth1e5PrimeStr values to the last entry in the Nth1e5PrimeTab
+    Nth1e5PrimeStr.aplNthVal = Nth1e5PrimeTab[Nth1e5PrimeCnt - 1];
+    Nth1e5PrimeStr.aplNthCnt = (Nth1e5PrimeCnt - 1) * Nth1e5PrimeInc;
 } // End InitPrimeTabs
 
 

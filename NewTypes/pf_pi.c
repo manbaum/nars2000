@@ -657,8 +657,35 @@ RESTART_RAT:
                 if (mpz_cmp_ui (&aplMPIRht, bQuadIO) < 0)
                     goto RIGHT_DOMAIN_EXIT;
                 else
+                if (mpz_cmp_ui (&aplMPIRht, 100) < 0)
+                    mpz_init_set_sx (&aplMPIRes, Nth1e0PrimeTab[mpz_get_si (&aplMPIRht)]);
+////////////////////aplMPIRes =
+////////////////////  PrimFnPiNthPrime  (aplMPIRht,
+////////////////////                    &Nth1e0PrimeTab[0],
+////////////////////                    &Nth1e0PrimeStr,
+////////////////////                     Nth1e0PrimeInc,
+////////////////////                     Nth1e0PrimeCnt,
+////////////////////                     lpbCtrlBreak,
+////////////////////                     lpMemPTD);
+                else
+                if (mpz_cmp_ui (&aplMPIRht, 100000) < 0)
                     aplMPIRes =
-                      PrimFnPiNthPrime  (aplMPIRht, lpbCtrlBreak, lpMemPTD);
+                      PrimFnPiNthPrime  (aplMPIRht,
+                                        &Nth1e2PrimeTab[0],
+                                        &Nth1e2PrimeStr,
+                                         Nth1e2PrimeInc,
+                                         Nth1e2PrimeCnt,
+                                         lpbCtrlBreak,
+                                         lpMemPTD);
+                else
+                    aplMPIRes =
+                      PrimFnPiNthPrime  (aplMPIRht,
+                                        &Nth1e5PrimeTab[0],
+                                        &Nth1e5PrimeStr,
+                                         Nth1e5PrimeInc,
+                                         Nth1e5PrimeCnt,
+                                         lpbCtrlBreak,
+                                         lpMemPTD);
                 break;
 
             case NUMTHEORY_NUMPRIMES:       //  02:  # primes <= a given #
@@ -668,7 +695,14 @@ RESTART_RAT:
                     mpz_init (&aplMPIRes);
                 else
                     aplMPIRes =
-                      PrimFnPiNumPrimes (aplMPIRht, lpbCtrlBreak, lpMemPTD);
+                      PrimFnPiNumPrimes (aplMPIRht,         // The argument
+                                        &NthPowerTab[0],    // Ptr to NthPowertab
+                                        &Nth1e5PrimeTab[0], // Ptr to NthPrimeTab
+                                        &Nth1e5PrimeStr,    // Ptr to NthPrimeStr
+                                         Nth1e5PrimeInc,    // Increment for the NthPrimeTab
+                                         Nth1e5PrimeCnt,    // Increment for the NthPrimeTab
+                                         lpbCtrlBreak,      // Ptr to Crtrl-Break handler
+                                         lpMemPTD);         // Ptr tp PerTabData
                 break;
 
             default:
@@ -1685,19 +1719,23 @@ APLMPI PrimFnPiPrevPrime
 //***************************************************************************
 //  $NthPrime               -2 {pi} R   subroutine
 //
-//  Calculate the Nth prime using NthPrimeTab, etc.
+//  Calculate the Nth prime using NthPrimeTab, NthPrimeTab, etc.
 //
 //  This code was influenced by http://dfns.dyalog.com/c_pco.htm from Roger Hui.
 //***************************************************************************
 
 UBOOL NthPrime
-    (LPAPLMPI     mpzRes,           // The result
-     APLMPI       mpzArg,           // The number to check (origin-0)
-     LPUBOOL      lpbCtrlBreak,     // Ptr to Ctrl-Break flag
-     LPPERTABDATA lpMemPTD,         // Ptr to PerTabData global memory
-     UBOOL        bQuadIO,          // []IO
-     TABSTATE     tabState,         // Table to use for the value
-     APLU3264     uCnt)             // The index into NthPowerTab/NthPrimeTab depending upon tabState
+    (LPAPLMPI      mpzRes,          // The result
+     APLMPI        mpzArg,          // The number to check (origin-0)
+     LPAPLINT      lpNthPrimeTab,   // Ptr to NthPrimeTab
+     LPNTHPRIMESTR lpNthPrimeStr,   // Ptr to NthPrimeStr
+     int           NthPrimeInc,     // Increment for the NthPrimeTab
+     int           NthPrimeCnt,     // Increment for the NthPrimeTab
+     LPUBOOL       lpbCtrlBreak,    // Ptr to Ctrl-Break flag
+     LPPERTABDATA  lpMemPTD,        // Ptr to PerTabData global memory
+     UBOOL         bQuadIO,         // []IO
+     TABSTATE      tabState,        // Table to use for the value
+     APLU3264      uCnt)            // The index into NthPowerTab/NthPrimeTab depending upon tabState
 
 {
     UBOOL  bRet = FALSE,            // TRUE iff the result is valid or Ctrl-Break pressed
@@ -1736,10 +1774,10 @@ UBOOL NthPrime
 
         case TABSTATE_LASTVALUE:
             // Copy as the lower multiple of NthPrimeInc entry
-            mpz_set_sx (&mpzLow, NthPrimeStr.aplNthCnt);
+            mpz_set_sx (&mpzLow, lpNthPrimeStr->aplNthCnt);
 
 ////////////// Copy as the upper multiple of NthPrimeInc entry
-////////////mpz_set_sx (&mpzUpp, NthPrimeStr.aplNthCnt + NthPrimeInc);
+////////////mpz_set_sx (&mpzUpp, lpNthPrimeStr->aplNthCnt + NthPrimeInc);
 
             break;
 
@@ -1765,13 +1803,13 @@ UBOOL NthPrime
             break;
 
         case TABSTATE_NTHPRIMETAB:
-            mpz_set_sx  ( mpzRes, NthPrimeTab[uCnt    ]);
-            mpz_set_sx  (&mpzTmp, NthPrimeTab[uCnt + 1]);
+            mpz_set_sx  ( mpzRes, lpNthPrimeTab[uCnt    ]);
+            mpz_set_sx  (&mpzTmp, lpNthPrimeTab[uCnt + 1]);
 
             break;
 
         case TABSTATE_LASTVALUE:
-            mpz_set_sx  ( mpzRes, NthPrimeStr.aplNthVal);
+            mpz_set_sx  ( mpzRes, lpNthPrimeStr->aplNthVal);
             mpz_set_sx  (&mpzTmp, -1);      // Always at endpoint for LastValue
 
             break;
@@ -1854,6 +1892,10 @@ NORMAL_EXIT:
 
 APLMPI PrimFnPiNthPrime
     (APLMPI        aplMPIArg,       // The N in "Nth prime to find"
+     LPAPLINT      lpNthPrimeTab,   // Ptr to NthPrimeTab
+     LPNTHPRIMESTR lpNthPrimeStr,   // Ptr to NthPrimeStr
+     int           NthPrimeInc,     // Increment for the NthPrimeTab
+     int           NthPrimeCnt,     // Count     ...
      LPUBOOL       lpbCtrlBreak,    // Ptr to Ctrl-Break flag
      LPPERTABDATA  lpMemPTD)        // Ptr to PerTabData global memory
 
@@ -1884,7 +1926,17 @@ APLMPI PrimFnPiNthPrime
         // Get the table index
         uCnt = mpz_get_ui (&mpzInd);
 
-        if (NthPrime (&mpzRes, mpzArg, lpbCtrlBreak, lpMemPTD, bQuadIO, TABSTATE_NTHPRIMETAB, uCnt))
+        if (NthPrime (&mpzRes,
+                       mpzArg,
+                       lpNthPrimeTab,
+                       lpNthPrimeStr,
+                       NthPrimeInc,
+                       NthPrimeCnt,
+                       lpbCtrlBreak,
+                       lpMemPTD,
+                       bQuadIO,
+                       TABSTATE_NTHPRIMETAB,
+                       uCnt))
             goto NORMAL_EXIT2;
         // Check for Ctrl-Break
         if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -1892,15 +1944,25 @@ APLMPI PrimFnPiNthPrime
     } // End IF
 
     // Save the lower and upper limits of the last value
-    mpz_set_sx (&mpzRes, NthPrimeStr.aplNthCnt              );
-    mpz_set_sx (&mpzInd, NthPrimeStr.aplNthCnt + NthPrimeInc);
+    mpz_set_sx (&mpzRes, lpNthPrimeStr->aplNthCnt              );
+    mpz_set_sx (&mpzInd, lpNthPrimeStr->aplNthCnt + NthPrimeInc);
 
     // If the arg is just beyond the last value, ...
-    if (NthPrimeStr.aplNthVal NE 0
+    if (lpNthPrimeStr->aplNthVal NE 0
      && mpz_cmp (&mpzRes, &mpzArg) <= 0
      && mpz_cmp (&mpzArg, &mpzInd) <= 0)
     {
-        if (NthPrime (&mpzRes, mpzArg, lpbCtrlBreak, lpMemPTD, bQuadIO, TABSTATE_LASTVALUE, -1))
+        if (NthPrime (&mpzRes,
+                       mpzArg,
+                       lpNthPrimeTab,
+                       lpNthPrimeStr,
+                       NthPrimeInc,
+                       NthPrimeCnt,
+                       lpbCtrlBreak,
+                       lpMemPTD,
+                       bQuadIO,
+                       TABSTATE_LASTVALUE,
+                       -1))
             goto NORMAL_EXIT;
         // Check for Ctrl-Break
         if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -1914,10 +1976,20 @@ APLMPI PrimFnPiNthPrime
         if (mpz_cmp (&mpzArg, &mpzRes) <= 0)
         {
             // Set the Nth Prime Count & Value
-            NthPrimeStr.aplNthCnt = (NthPrimeCnt - 1) * NthPrimeInc;
-            NthPrimeStr.aplNthVal = NthPrimeTab[NthPrimeCnt - 1];
+            lpNthPrimeStr->aplNthCnt = (NthPrimeCnt - 1) * NthPrimeInc;
+            lpNthPrimeStr->aplNthVal = lpNthPrimeTab[NthPrimeCnt - 1];
 
-            if (NthPrime (&mpzRes, mpzArg, lpbCtrlBreak, lpMemPTD, bQuadIO, TABSTATE_LASTVALUE, -1))
+            if (NthPrime (&mpzRes,
+                           mpzArg,
+                           lpNthPrimeTab,
+                           lpNthPrimeStr,
+                           NthPrimeInc,
+                           NthPrimeCnt,
+                           lpbCtrlBreak,
+                           lpMemPTD,
+                           bQuadIO,
+                           TABSTATE_LASTVALUE,
+                           -1))
                 goto NORMAL_EXIT;
             // Check for Ctrl-Break
             if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -1941,7 +2013,17 @@ APLMPI PrimFnPiNthPrime
             mpfr_clear (&mpfRes);
 
             // Call common routine
-            if (NthPrime (&mpzRes, mpzArg, lpbCtrlBreak, lpMemPTD, bQuadIO, TABSTATE_NTHPOWERTAB, uCnt))
+            if (NthPrime (&mpzRes,
+                           mpzArg,
+                           lpNthPrimeTab,
+                           lpNthPrimeStr,
+                           NthPrimeInc,
+                           NthPrimeCnt,
+                           lpbCtrlBreak,
+                           lpMemPTD,
+                           bQuadIO,
+                           TABSTATE_NTHPOWERTAB,
+                           uCnt))
                 goto NORMAL_EXIT;
         } // End IF/ELSE
     } // End IF/ELSE
@@ -1953,8 +2035,8 @@ APLMPI PrimFnPiNthPrime
 
 NORMAL_EXIT:
     // Save as the new last value
-    NthPrimeStr.aplNthCnt = mpz_get_sx (&aplMPIArg);
-    NthPrimeStr.aplNthVal = mpz_get_sx (&mpzRes);
+    lpNthPrimeStr->aplNthCnt = mpz_get_sx (&aplMPIArg);
+    lpNthPrimeStr->aplNthVal = mpz_get_sx (&mpzRes);
 NORMAL_EXIT2:
 ERROR_EXIT:
     // We no longer need this storage
@@ -1974,12 +2056,16 @@ ERROR_EXIT:
 //***************************************************************************
 
 UBOOL NumPrimes
-    (LPAPLMPI     mpzRes,           // The result
-     APLMPI       mpzArg,           // The number to check
-     LPUBOOL      lpbCtrlBreak,     // Ptr to Ctrl-Break flag
-     LPPERTABDATA lpMemPTD,         // Ptr to PerTabData global memory
-     TABSTATE     tabState,         // Table to use for the value
-     APLI3264     iCnt)             // The index into NthPowerTab/NthPrimeTab depending upon tabState
+    (LPAPLMPI      mpzRes,          // The result
+     APLMPI        mpzArg,          // The number to check
+     LPNTHPOWERTAB lpNthPowerTab,   // Ptr to Nth power tab
+     LPAPLINT      lpNthPrimeTab,   // Ptr to Nth prime tab
+     LPNTHPRIMESTR lpNthPrimeStr,   // Ptr to Nth prime struct
+     int           NthPrimeInc,     // Increment for the NthPrimeTab
+     LPUBOOL       lpbCtrlBreak,    // Ptr to Ctrl-Break flag
+     LPPERTABDATA  lpMemPTD,        // Ptr to PerTabData global memory
+     TABSTATE      tabState,        // Table to use for the value
+     APLI3264      iCnt)            // The index into NthPowerTab/NthPrimeTab depending upon tabState
 
 {
     UBOOL  bRet = FALSE,            // TRUE iff the result is valid or Ctrl-Break pressed
@@ -2005,25 +2091,25 @@ UBOOL NumPrimes
     {
         case TABSTATE_NTHPOWERTAB:
             // Copy as the lower NthPowerTab entry
-            mpz_set    (&mpzLow, &NthPowerTab[iCnt    ].aplMPI);
+            mpz_set    (&mpzLow, &lpNthPowerTab[iCnt    ].aplMPI);
 
             // Copy as the upper NthPowerTab entry
-            mpz_set    (&mpzUpp, &NthPowerTab[iCnt + 1].aplMPI);
+            mpz_set    (&mpzUpp, &lpNthPowerTab[iCnt + 1].aplMPI);
 
             break;
 
         case TABSTATE_NTHPRIMETAB:
             // Copy as the lower NthPrimeTab entry
-            mpz_set_sx (&mpzLow, NthPrimeTab[iCnt    ]);
+            mpz_set_sx (&mpzLow, lpNthPrimeTab[iCnt    ]);
 
             // Copy as the upper NthPrimeTab entry
-            mpz_set_sx (&mpzUpp, NthPrimeTab[iCnt + 1]);
+            mpz_set_sx (&mpzUpp, lpNthPrimeTab[iCnt + 1]);
 
             break;
 
         case TABSTATE_LASTVALUE:
             // Copy as lower bound
-            mpz_set_sx (&mpzLow, NthPrimeStr.aplNthVal);
+            mpz_set_sx (&mpzLow, lpNthPrimeStr->aplNthVal);
 
             // Mark as no upper bound
             mpz_set_sx (&mpzUpp, -1);       // Always endpoint for LastValue
@@ -2069,7 +2155,7 @@ UBOOL NumPrimes
 
         case TABSTATE_LASTVALUE:
             // Set the lower bound offset
-            iMin = NthPrimeStr.aplNthCnt;
+            iMin = lpNthPrimeStr->aplNthCnt;
 
             break;
 
@@ -2164,6 +2250,11 @@ NORMAL_EXIT:
 
 APLMPI PrimFnPiNumPrimes
     (APLMPI        aplMPIArg,       // The N in "# of primes <= N)
+     LPNTHPOWERTAB lpNthPowerTab,   // Ptr to NthPowerTab
+     LPAPLINT      lpNthPrimeTab,   // Ptr to NthPrimeTab
+     LPNTHPRIMESTR lpNthPrimeStr,   // Ptr to NthPrimeStr
+     int           NthPrimeInc,     // Increment for the NthPrimeTab
+     int           NthPrimeCnt,     // Increment for the NthPrimeTab
      LPUBOOL       lpbCtrlBreak,    // Ptr to Ctrl-Break flag
      LPPERTABDATA  lpMemPTD)        // Ptr to PerTabData global memory
 
@@ -2177,7 +2268,7 @@ APLMPI PrimFnPiNumPrimes
     UINT     uCnt;                  // Loop counter
 
     // Initialize the result to the last table entry
-    mpz_init_set_sx (&mpzRes, NthPrimeTab[NthPrimeCnt - 1]);
+    mpz_init_set_sx (&mpzRes, lpNthPrimeTab[NthPrimeCnt - 1]);
 
     // If the arg is in range of the NthPrimeTab table, ...
     if (mpz_cmp (&aplMPIArg, &mpzRes) <= 0)
@@ -2192,7 +2283,7 @@ APLMPI PrimFnPiNumPrimes
             // Set the current index
             iMid = (iMin + iMax) / 2;
 
-            mpz_set_sx (&mpzRes, NthPrimeTab[iMid]);
+            mpz_set_sx (&mpzRes, lpNthPrimeTab[iMid]);
 
             // Check for a match
             switch (signumint (mpz_cmp (&aplMPIArg, &mpzRes)))
@@ -2230,25 +2321,52 @@ APLMPI PrimFnPiNumPrimes
             // The arg is between NthPrimeTab[iMax] and NthPrimeTab[iMin]
             Assert (iMax EQ (iMin - 1));
 
-            if (NumPrimes (&mpzRes, aplMPIArg, lpbCtrlBreak, lpMemPTD, TABSTATE_NTHPRIMETAB, iMax))
+            if (NumPrimes (&mpzRes,
+                            aplMPIArg,
+                            lpNthPowerTab,
+                            lpNthPrimeTab,
+                            lpNthPrimeStr,
+                            NthPrimeInc,
+                            lpbCtrlBreak,
+                            lpMemPTD,
+                            TABSTATE_NTHPRIMETAB,
+                            iMax))
                 goto NORMAL_EXIT;
         } // End IF/ELSE
     } else
     {
         // Find the corresponding entry in NthPowerTab
         for (uCnt = 0; uCnt < NthPowerCnt; uCnt++)
-        if ((iCmp = mpz_cmp (&aplMPIArg, &NthPowerTab[uCnt].aplMPI)) <= 0)
+        if ((iCmp = mpz_cmp (&aplMPIArg, &lpNthPowerTab[uCnt].aplMPI)) <= 0)
         {
             // Save the current value
-            mpz_set (&mpzRes, &NthPowerTab[uCnt].aplMPI);
+            mpz_set (&mpzRes, &lpNthPowerTab[uCnt].aplMPI);
 
-            if (NumPrimes (&mpzRes, aplMPIArg, lpbCtrlBreak, lpMemPTD, TABSTATE_NTHPOWERTAB, uCnt - (iCmp NE 0)))
+            if (NumPrimes (&mpzRes,
+                            aplMPIArg,
+                            lpNthPowerTab,
+                            lpNthPrimeTab,
+                            lpNthPrimeStr,
+                            NthPrimeInc,
+                            lpbCtrlBreak,
+                            lpMemPTD,
+                            TABSTATE_NTHPOWERTAB,
+                            uCnt - (iCmp NE 0)))
                 goto NORMAL_EXIT;
             break;
         } // End FOR/IF
 
         // Search forwards for the answer
-        if (NumPrimes (&mpzRes, aplMPIArg, lpbCtrlBreak, lpMemPTD, TABSTATE_NTHPOWERTAB, uCnt - 2))
+        if (NumPrimes (&mpzRes,
+                        aplMPIArg,
+                        lpNthPowerTab,
+                        lpNthPrimeTab,
+                        lpNthPrimeStr,
+                        NthPrimeInc,
+                        lpbCtrlBreak,
+                        lpMemPTD,
+                        TABSTATE_NTHPOWERTAB,
+                        uCnt - 2))
             goto NORMAL_EXIT;
     } // End IF/ELSE
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2477,7 +2477,9 @@ TPF_ACTION aTypeFree[ARRAY_LENGTH + 1];
 #include "primes.h"
 
 EXTERN
-NTHPRIMESTR NthPrimeStr;        // Initialized in InitPrimeTabs
+NTHPRIMESTR Nth1e0PrimeStr,     // Initialized in InitPrimeTabs
+            Nth1e2PrimeStr,     // ...
+            Nth1e5PrimeStr;     // ...
 
 
 //***************************************************************************

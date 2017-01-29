@@ -1,6 +1,20 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1635 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug In Complex and Quaternion Floor Code
+
+Directory branches/bsmith/NewTypes:
+
+PF_DSTILE.C:
+  Fix bug in Complex and Quaternion Floor code to handle Hurwitz Integers better.
+
+PF_USTILE.C:
+  In <PrimFnUpStileStorageType[Mon|Dyd]>, call the corresponding routine from <PrimFnDownStileStorageTypeXXX>.
+
+
 Build #1634 -- Version 0.5.0.xx
 --------------------------------
 

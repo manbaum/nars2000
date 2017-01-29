@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -214,70 +214,10 @@ APLSTYPE PrimSpecUpStileStorageTypeMon
      LPTOKEN    lptkFunc)
 
 {
-    APLSTYPE aplTypeRes;
-
-    // In case the right arg is an empty char,
-    //   change its type to BOOL
-    if (IsCharEmpty (*lpaplTypeRht, aplNELMRht))
-        *lpaplTypeRht = ARRAY_BOOL;
-
-    // The storage type of the result is
-    //   the same as that of the right arg
-    aplTypeRes = *lpaplTypeRht;
-
-    // Split cases based upon the storage type
-    switch (aplTypeRes)
-    {
-        // Except FLOAT goes to INT
-        // IisF promotes to FisF as necessary.
-        case ARRAY_FLOAT:
-        case ARRAY_HC2F:
-            aplTypeRes--;       // ***ASSUME*** --  order of ARRAY_TYPES allows this
-
-            break;
-
-        case ARRAY_BOOL:
-        case ARRAY_INT:
-        case ARRAY_APA:
-        case ARRAY_RAT:
-        case ARRAY_VFP:
-        case ARRAY_NESTED:
-            break;
-
-        case ARRAY_CHAR:
-        case ARRAY_HETERO:
-        case ARRAY_HC8I:
-        case ARRAY_HC8F:
-        case ARRAY_HC8R:
-        case ARRAY_HC8V:
-            aplTypeRes = ARRAY_ERROR;
-
-            break;
-
-        case ARRAY_HC2I:
-        case ARRAY_HC2R:
-        case ARRAY_HC2V:
-            break;
-
-        case ARRAY_HC4F:
-            if (HasFractionality (aplTypeRes))
-                aplTypeRes--;   // ***ASSUME*** --  order of ARRAY_TYPES allows this
-            else
-                aplTypeRes = ARRAY_ERROR;
-            break;
-
-        case ARRAY_HC4I:
-        case ARRAY_HC4R:
-        case ARRAY_HC4V:
-            if (!HasFractionality (aplTypeRes))
-                aplTypeRes = ARRAY_ERROR;
-            break;
-
-        defstop
-            break;
-    } // End IF/ELSE/SWITCH
-
-    return aplTypeRes;
+    return
+      PrimSpecDownStileStorageTypeMon (aplNELMRht,
+                                       lpaplTypeRht,
+                                       lptkFunc);
 } // End PrimSpecUpStileStorageTypeMon
 
 
@@ -993,39 +933,12 @@ APLSTYPE PrimSpecUpStileStorageTypeDyd
      LPAPLSTYPE lpaplTypeRht)
 
 {
-    APLSTYPE aplTypeRes;
-
-    // In case the left arg is an empty char,
-    //   change its type to BOOL
-    if (IsCharEmpty (*lpaplTypeLft, aplNELMLft))
-        *lpaplTypeLft = ARRAY_BOOL;
-
-    // In case the right arg is an empty char,
-    //   change its type to BOOL
-    if (IsCharEmpty (*lpaplTypeRht, aplNELMRht))
-        *lpaplTypeRht = ARRAY_BOOL;
-
-    // Calculate the storage type of the result
-    aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
-
-    // Is the result HC?
-    if (IsHCAny (aplTypeRes))
-        return ARRAY_ERROR;
-    else
-    // Split cases based upon the result storage type
-    switch (aplTypeRes)
-    {
-        case ARRAY_BOOL:
-        case ARRAY_INT:
-        case ARRAY_FLOAT:
-        case ARRAY_APA:
-        case ARRAY_RAT:
-        case ARRAY_VFP:
-            return aplTypeRes;
-
-        defstop
-            return ARRAY_ERROR;
-    } // End IF/ELSE/SWITCH
+    return
+      PrimSpecDownStileStorageTypeDyd (aplNELMLft,
+                                       lpaplTypeLft,
+                                       lptkFunc,
+                                       aplNELMRht,
+                                       lpaplTypeRht);
 } // End PrimSpecUpStileStorageTypeDyd
 
 

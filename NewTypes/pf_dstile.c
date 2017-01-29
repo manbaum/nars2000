@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -226,8 +226,10 @@ APLSTYPE PrimSpecDownStileStorageTypeMon
         // IisF promotes to FisF as necessary.
         case ARRAY_FLOAT:
         case ARRAY_HC2F:
-            aplTypeRes--;       // ***ASSUME*** --  order of ARRAY_TYPES allows this
-
+            // If we're not using Hurwitz, ...
+            if (!gUseHurwitz)
+                // IisF
+                aplTypeRes--;       // ***ASSUME*** --  order of ARRAY_TYPES allows this
             break;
 
         case ARRAY_BOOL:
@@ -254,9 +256,7 @@ APLSTYPE PrimSpecDownStileStorageTypeMon
             break;
 
         case ARRAY_HC4F:
-            if (HasFractionality (aplTypeRes))
-                aplTypeRes--;   // ***ASSUME*** --  order of ARRAY_TYPES allows this
-            else
+            if (!HasFractionality (aplTypeRes))
                 aplTypeRes = ARRAY_ERROR;
             break;
 
@@ -750,15 +750,58 @@ APLHC2F FloorHC2F
     // If we're using Hurwitz's Floor, ...
     if (gUseHurwitz)
     {
+        APLHC2F  aplTmp1,
+                 aplTmp2;
+        APLFLOAT aplDst1,
+                 aplDst2;
+        APLINT   aplIntFlr;
+
         // Loop through all of the parts
         for (i = 0; i < 2; i++)
         {
+            //***************************************************************************
+            // Calculate the all integer coordinate choice
+            //***************************************************************************
+
             // Add 0.5 to each part
-            aplFlr.parts[i] = aplRht.parts[i] + 0.5;
+            aplTmp1.parts[i] = aplRht.parts[i] + 0.5;
 
             // Calculate the floor of each part
-            aplFlr.parts[i] = FloorHC1F (aplFlr.parts[i]);
+            aplTmp1.parts[i] = FloorHC1F (aplTmp1.parts[i]);
+
+            //***************************************************************************
+            // Calculate the all half integer coordinate choice
+            //***************************************************************************
+
+            // Double it
+            aplTmp2.parts[i] = 2 * aplRht.parts[i];
+
+            // Add 0.5 to each part
+            aplTmp2.parts[i] += 0.5;
+
+            // Calculate the floor of each part
+            aplIntFlr = (APLINT) FloorHC1F (aplTmp2.parts[i]);
+
+            // If the number if non-zero and even, ...
+            if (aplIntFlr NE 0
+             && (aplIntFlr & BIT0) EQ 0)
+                // Convert to an odd number with lower absolute value
+                aplIntFlr -= signumint (aplIntFlr);
+
+            // Save half the value
+            aplTmp2.parts[i] = (APLFLOAT) (aplIntFlr / 2);
         } // End FOR
+
+        //***************************************************************************
+        // Choose the result closer to the original number
+        //***************************************************************************
+
+        // Calculate the distances
+        aplDst1 = DistHC2F (aplRht, aplTmp1);
+        aplDst2 = DistHC2F (aplRht, aplTmp2);
+
+        // Use the one of smaller distance
+        aplFlr = (aplDst1 < aplDst2) ? aplTmp1 : aplTmp2;
     } else
     {
         // Loop through all of the parts
@@ -810,92 +853,61 @@ APLHC4F FloorHC4F
 
 {
     int      i;
-    APLHC4F  aplFlr1,
-             aplFlrH,                   // Half-integer
-             aplFlrD1,
-             aplFlrDH,
+    APLHC4F  aplTmp1,
+             aplTmp2,                   // Half-integer
              aplRes = {0};
-////         aplFrc = {0};
-////APLHC1F  aplSum = 0;
-    APLHC1F  aplMag1,                   // Magnitude of aplFlr1
-             aplMagH;                   // ...          aplFlrH
-////APLFLOAT fQuadCT = GetQuadCT ();
+    APLHC1F  aplDst1,                   // Distance between aplRht and aplTmp1
+             aplDst2;                   // ...                         aplTmp2
+    APLINT   aplIntFlr;
 
     // No exceptions in this code
 
-////// If we're using Hurwitz's Floor, ...
-////if (gUseHurwitz)
-////{
-        // Loop through all of the parts
-        for (i = 0; i < 4; i++)
-        {
-            // Calculate the floor of each part
-            aplFlrH.parts[i] = FloorHC1F (aplRht.parts[i]);
+    // Loop through all of the parts
+    for (i = 0; i < 4; i++)
+    {
+        //***************************************************************************
+        // Calculate the all integer coordinate choice
+        //***************************************************************************
 
-            // Add 0.5 to each part
-            aplFlrH.parts[i] = aplFlrH.parts[i] + 0.5;
+        // Add 0.5 to each part
+        aplTmp1.parts[i] = aplRht.parts[i] + 0.5;
 
-            // Add 0.5 to each part
-            aplFlr1.parts[i] = aplRht.parts[i] + 0.5;
+        // Calculate the floor of each part
+        aplTmp1.parts[i] = FloorHC1F (aplTmp1.parts[i]);
 
-            // Calculate the floor of each part + 0.5
-            aplFlr1.parts[i] = FloorHC1F (aplFlr1.parts[i]);
-        } // End FOR
+        //***************************************************************************
+        // Calculate the all half integer coordinate choice
+        //***************************************************************************
 
-        // Calculate the differences
-        aplFlrD1 = SubHC4F_RE (aplRht, aplFlr1);
-        aplFlrDH = SubHC4F_RE (aplRht, aplFlrH);
+        // Double it
+        aplTmp2.parts[i] = 2 * aplRht.parts[i];
 
-        // Calculate the magnitudes
-        aplMag1 = MagHC4F (aplFlrD1);
-        aplMagH = MagHC4F (aplFlrDH);
+        // Add 0.5 to each part
+        aplTmp2.parts[i] += 0.5;
 
-        // Choose the smaller magnitude
-        if (aplMag1 < aplMagH)
-            aplRes = aplFlr1;
-        else
-            aplRes = aplFlrH;
+        // Calculate the floor of each part
+        aplIntFlr = (APLINT) FloorHC1F (aplTmp2.parts[i]);
 
-        return aplRes;
-////} else
-////{
-////    // Loop through all of the parts
-////    for (i = 0; i < 4; i++)
-////    {
-////        // Calculate the floor of each part
-////        aplFlr.parts[i] = FloorHC1F (aplRht.parts[i]);
-////
-////        // Calculate the fractional value of each part
-////        aplFrc.parts[i] = ModHC1F (1, aplRht.parts[i]);
-////
-////        // Calculate the sum of the fractional values
-////        aplSum += aplFrc.parts[i];
-////    } // End FOR
-////
-////    // If the point is NOT in the corner containing zero, ...
-////    if (CmpCT_F (aplSum, 1, fQuadCT, >=))
-////    {
-////        int j;
-////
-////        // Calculate the index of the largest fractional part
-////        // Assume it's the real part
-////        j = 0; aplSum = aplFrc.parts[j];
-////
-////        // Loop through the imaginary parts
-////        for (i = 1; i < 4; i++)
-////        // If this part is larger (within []CT), ...
-////        if (CmpCT_F (aplSum, aplFrc.parts[i], fQuadCT, <))
-////        {
-////            // Save as the largest so far
-////            j = i; aplSum = aplFrc.parts[j];
-////        } // End FOR/IF
-////
-////        // Increment the chosen coordinate
-////        aplFlr.parts[j]++;
-////    } // End IF
-////} // End IF/ELSE
-////
-////return aplFlr;
+        // If the number if non-zero and even, ...
+        if (aplIntFlr NE 0
+         && (aplIntFlr & BIT0) EQ 0)
+            // Convert to an odd number with lower absolute value
+            aplIntFlr -= signumint (aplIntFlr);
+
+        // Save half the value
+        aplTmp2.parts[i] = (APLFLOAT) (aplIntFlr / 2);
+    } // End FOR
+
+    //***************************************************************************
+    // Choose the result closer to the original number
+    //***************************************************************************
+
+    // Calculate the distances
+    aplDst1 = DistHC4F (aplRht, aplTmp1);
+    aplDst2 = DistHC4F (aplRht, aplTmp2);
+
+    // Use the one of smaller distance
+    return (aplDst1 < aplDst2) ? aplTmp1 : aplTmp2;
 } // End FloorHC4F
 
 
@@ -910,8 +922,14 @@ APLHC2R FloorHC2R
     int      i;
     UBOOL    bRet;
     APLHC2R  aplFlr = {0},
-             aplFrc = {0};
-    APLHC1R  aplSum;
+             aplFrc = {0},
+             aplTmp1,
+             aplTmp2 = {0};
+    APLHC1R  aplSum,
+             aplRatFlr;
+    APLHC1V  aplDst1,                   // Distance between aplRht and aplTmp1
+             aplDst2;                   // ...                         aplTmp2
+    APLINT   aplIntFlr;
     APLFLOAT fQuadCT = GetQuadCT ();
 
     // No exceptions in this code
@@ -919,17 +937,79 @@ APLHC2R FloorHC2R
     // If we're using Hurwitz's Floor, ...
     if (gUseHurwitz)
     {
+        // Initialize the half integer coordinate choice to 0/1
+        mphc2r_init (&aplTmp2);
+
         // Loop through all of the parts
         for (i = 0; i < 2; i++)
         {
+            //***************************************************************************
+            // Calculate the all integer coordinate choice
+            //***************************************************************************
+
             // Add 0.5 to each part
-            aplSum          = AddHC1R_RE (aplRht.parts[i], mpqHalf);
+            aplSum = AddHC1R_RE (aplRht.parts[i], mpqHalf);
 
             // Calculate the floor of each part
-            aplFlr.parts[i] = FloorHC1R (aplSum);
+            aplTmp1.parts[i] = FloorHC1R (aplSum);
 
             Myq_clear (&aplSum);
+
+            //***************************************************************************
+            // Calculate the all half integer coordinate choice
+            //***************************************************************************
+
+            // Double it
+            mpq_mul_si (&aplTmp2.parts[i], &aplRht.parts[i], 2, 1);
+
+            // Add 0.5 to each part
+            aplSum = AddHC1R_RE (aplTmp2.parts[i], mpqHalf);
+
+            // Calculate the floor of each part
+            aplRatFlr = FloorHC1R (aplSum);
+
+            Assert (mpq_integer_p (&aplRatFlr));
+
+            Myq_clear (&aplSum);
+
+            // Extract the integer within
+            aplIntFlr = ConvertToInteger_SCT (ARRAY_HC1R, &aplRatFlr, 0, &bRet);
+
+            Assert (bRet);
+
+            Myq_clear (&aplRatFlr);
+
+            // If the number if non-zero and even, ...
+            if (aplIntFlr NE 0
+             && (aplIntFlr & BIT0) EQ 0)
+                // Convert to an odd number with lower absolute value
+                aplIntFlr -= signumint (aplIntFlr);
+
+            // Save half the value
+            mpq_set_sx (&aplTmp2.parts[i], aplIntFlr / 2, 1);
         } // End FOR
+
+        //***************************************************************************
+        // Choose the result closer to the original number
+        //***************************************************************************
+
+        // Calculate the distances
+        aplDst1 = DistHC2R (aplRht, aplTmp1);
+        aplDst2 = DistHC2R (aplRht, aplTmp2);
+
+        // Use the one of smaller distance
+        if (mpfr_cmp (&aplDst1, &aplDst2) < 0)
+        {
+            mphc2r_set   (&aplFlr, &aplTmp1);
+            Myhc2r_clear (&aplTmp2);
+        } else
+        {
+            mphc2r_set   (&aplFlr, &aplTmp2);
+            Myhc2r_clear (&aplTmp1);
+        } // End IF/ELSE
+
+        Myf_clear (&aplDst1);
+        Myf_clear (&aplDst2);
     } else
     {
         // Initialize to 0/1
@@ -992,121 +1072,93 @@ APLHC4R FloorHC4R
 
 {
     int      i;
-////UBOOL    bRet;
-    APLHC4R  aplFlr1,
-             aplFlrH,
-             aplFlrD1,
-             aplFlrDH,
-             aplRes;
-////         aplFrc = {0};
-    APLHC1R  aplSum;
-    APLHC1V  aplMag1,                   // Magnitude of aplFlr1
-             aplMagH;                   // ...          aplFlrH
-////APLFLOAT fQuadCT = GetQuadCT ();
+    UBOOL    bRet;
+    APLHC4R  aplTmp1,
+             aplTmp2 = {0},
+             aplRes = {0};
+    APLHC1R  aplSum,
+             aplRatFlr;
+    APLHC1V  aplDst1,                   // Distance between aplRht and aplTmp1
+             aplDst2;                   // ...                         aplTmp2
+    APLINT   aplIntFlr;
 
     // No exceptions in this code
 
-////// If we're using Hurwitz's Floor, ...
-////if (gUseHurwitz)
-////{
-        // Loop through all of the parts
-        for (i = 0; i < 4; i++)
-        {
-            // Calculate the floor of each part
-            aplFlrH.parts[i] = FloorHC1R (aplRht.parts[i]);
+    // Initialize the half integer coordinate choice to 0/1
+    mphc4r_init (&aplTmp2);
 
-            // Add 0.5 to each part
-            aplSum = AddHC1R_RE (aplFlrH.parts[i], mpqHalf);
+    // Loop through all of the parts
+    for (i = 0; i < 4; i++)
+    {
+        //***************************************************************************
+        // Calculate the all integer coordinate choice
+        //***************************************************************************
 
-            // Save in the result
-            mpq_set (&aplFlrH.parts[i], &aplSum);
+        // Add 0.5 to each part
+        aplSum = AddHC1R_RE (aplRht.parts[i], mpqHalf);
 
-            Myq_clear (&aplSum);
+        // Calculate the floor of each part
+        aplTmp1.parts[i] = FloorHC1R (aplSum);
 
-            // Add 0.5 to each part
-            aplSum           = AddHC1R_RE (aplRht.parts[i], mpqHalf);
+        Myq_clear (&aplSum);
 
-            // Calculate the floor of each part
-            aplFlr1.parts[i] = FloorHC1R (aplSum);
+        //***************************************************************************
+        // Calculate the all half integer coordinate choice
+        //***************************************************************************
 
-            Myq_clear (&aplSum);
-        } // End FOR
+        // Double it
+        mpq_mul_si (&aplTmp2.parts[i], &aplRht.parts[i], 2, 1);
 
-        // Calculate the differences
-        aplFlrD1 = SubHC4R_RE (aplRht, aplFlr1);
-        aplFlrDH = SubHC4R_RE (aplRht, aplFlrH);
+        // Add 0.5 to each part
+        aplSum = AddHC1R_RE (aplTmp2.parts[i], mpqHalf);
 
-        // Calculate the magnitudes
-        aplMag1 = MagHC4R (aplFlrD1);
-        aplMagH = MagHC4R (aplFlrDH);
+        // Calculate the floor of each part
+        aplRatFlr = FloorHC1R (aplSum);
 
-        // Choose the smaller magnitude
-        if (mpfr_cmp (&aplMag1, &aplMagH) < 0)
-        {
-            aplRes = aplFlr1;
+        Assert (mpq_integer_p (&aplRatFlr));
 
-            Myhc4r_clear (&aplFlrH);
-        } else
-        {
-            aplRes = aplFlrH;
+        Myq_clear (&aplSum);
 
-            Myhc4r_clear (&aplFlr1);
-        } // End IF/ELSE
+        // Extract the integer within
+        aplIntFlr = ConvertToInteger_SCT (ARRAY_HC1R, &aplRatFlr, 0, &bRet);
 
-        Myhc4r_clear (&aplFlrD1);
-        Myhc4r_clear (&aplFlrDH);
-        Myf_clear    (&aplMag1);
-        Myf_clear    (&aplMagH);
+        Assert (bRet);
 
-        return aplRes;
-////} else
-////{
-////    // Initialize to 0/1
-////    mpq_init (&aplSum);
-////
-////    // Loop through all of the parts
-////    for (i = 0; i < 4; i++)
-////    {
-////        // Calculate the floor of each part
-////        aplFlr.parts[i] = FloorHC1R (aplRht.parts[i]);
-////
-////        // Calculate the fractional value of each part
-////        aplFrc.parts[i] = ModHC1R (mpqOne, aplRht.parts[i]);
-////
-////        // Calculate the sum of the fractional values
-////        mpq_add (&aplSum, &aplSum, &aplFrc.parts[i]);
-////    } // End FOR
-////
-////    // Compare against the hyperplane between the nearest corners
-////    bRet = CmpCT_R (aplSum, mpqOne, fQuadCT, >=);
-////
-////    // We no longer need this storage
-////    Myhc1r_clear (&aplSum);
-////
-////    // If the point is NOT in the corner containing zero, ...
-////    if (bRet)
-////    {
-////        int j;
-////
-////        // Calculate the index of the largest fractional part
-////        // Assume it's the real part
-////        j = 0; aplSum = aplFrc.parts[j];
-////
-////        // Loop through the imaginary parts
-////        for (i = 1; i < 4; i++)
-////        // If this part is larger (within []CT), ...
-////        if (CmpCT_R (aplSum, aplFrc.parts[i], fQuadCT, <))
-////        {
-////            // Save as the largest so far
-////            j = i; aplSum = aplFrc.parts[j];
-////        } // End FOR/IF
-////
-////        // Increment the chosen coordinate
-////        mpq_add (&aplFlr.parts[j], &aplFlr.parts[j], &mpqOne);
-////    } // End IF
-////} // End IF/ELSE
-////
-////return aplFlr;
+        Myq_clear (&aplRatFlr);
+
+        // If the number if non-zero and even, ...
+        if (aplIntFlr NE 0
+         && (aplIntFlr & BIT0) EQ 0)
+            // Convert to an odd number with lower absolute value
+            aplIntFlr -= signumint (aplIntFlr);
+
+        // Save half the value
+        mpq_set_sx (&aplTmp2.parts[i], aplIntFlr / 2, 1);
+    } // End FOR
+
+    //***************************************************************************
+    // Choose the result closer to the original number
+    //***************************************************************************
+
+    // Calculate the distances
+    aplDst1 = DistHC4R (aplRht, aplTmp1);
+    aplDst2 = DistHC4R (aplRht, aplTmp2);
+
+    // Choose the smaller distance
+    if (mpfr_cmp (&aplDst1, &aplDst2) < 0)
+    {
+        mphc4r_init_set (&aplRes, &aplTmp1);
+        Myhc4r_clear    (&aplTmp2);
+    } else
+    {
+        mphc4r_init_set (&aplRes, &aplTmp2);
+        Myhc4r_clear    (&aplTmp1);
+    } // End IF/ELSE
+
+    Myf_clear    (&aplDst1);
+    Myf_clear    (&aplDst2);
+
+    return aplRes;
 } // End FloorHC4R
 
 
@@ -1121,8 +1173,14 @@ APLHC2V FloorHC2V
     int      i;
     UBOOL    bRet;
     APLHC2V  aplFlr = {0},
-             aplFrc = {0};
-    APLHC1V  aplSum;
+             aplFrc = {0},
+             aplTmp1,
+             aplTmp2 = {0};
+    APLHC1V  aplSum,
+             aplVfpFlr;
+    APLHC1V  aplDst1,                   // Distance between aplRht and aplTmp1
+             aplDst2;                   // ...                         aplTmp2
+    APLINT   aplIntFlr;
     APLFLOAT fQuadCT = GetQuadCT ();
 
     // No exceptions in this code
@@ -1130,17 +1188,79 @@ APLHC2V FloorHC2V
     // If we're using Hurwitz's Floor, ...
     if (gUseHurwitz)
     {
+        // Initialize the half integer coordinate choice to 0
+        mphc2v_init0 (&aplTmp2);
+
         // Loop through all of the parts
         for (i = 0; i < 2; i++)
         {
+            //***************************************************************************
+            // Calculate the all integer coordinate choice
+            //***************************************************************************
+
             // Add 0.5 to each part
-            aplSum          = AddHC1V_RE (aplRht.parts[i], mpfHalf);
+            aplSum = AddHC1V_RE (aplRht.parts[i], mpfHalf);
 
             // Calculate the floor of each part
-            aplFlr.parts[i] = FloorHC1V (aplSum);
+            aplTmp1.parts[i] = FloorHC1V (aplSum);
 
             Myf_clear (&aplSum);
+
+            //***************************************************************************
+            // Calculate the all half integer coordinate choice
+            //***************************************************************************
+
+            // Double it
+            mpfr_mul_si (&aplTmp2.parts[i], &aplRht.parts[i], 2, MPFR_RNDN);
+
+            // Add 0.5 to each part
+            aplSum = AddHC1V_RE (aplTmp2.parts[i], mpfHalf);
+
+            // Calculate the floor of each part
+            aplVfpFlr = FloorHC1V (aplSum);
+
+            Assert (mpfr_integer_p (&aplVfpFlr));
+
+            Myf_clear (&aplSum);
+
+            // Extract the integer within
+            aplIntFlr = ConvertToInteger_SCT (ARRAY_HC1V, &aplVfpFlr, 0, &bRet);
+
+            Assert (bRet);
+
+            Myf_clear (&aplVfpFlr);
+
+            // If the number if non-zero and even, ...
+            if (aplIntFlr NE 0
+             && (aplIntFlr & BIT0) EQ 0)
+                // Convert to an odd number with lower absolute value
+                aplIntFlr -= signumint (aplIntFlr);
+
+            // Save half the value
+            mpfr_set_sx (&aplTmp2.parts[i], aplIntFlr / 2, 1);
         } // End FOR
+
+        //***************************************************************************
+        // Choose the result closer to the original number
+        //***************************************************************************
+
+        // Calculate the distances
+        aplDst1 = DistHC2V (aplRht, aplTmp1);
+        aplDst2 = DistHC2V (aplRht, aplTmp2);
+
+        // Choose the smaller distance
+        if (mpfr_cmp (&aplDst1, &aplDst2) < 0)
+        {
+            mphc2v_init_set (&aplFlr, &aplTmp1);
+            Myhc2v_clear    (&aplTmp2);
+        } else
+        {
+            mphc2v_init_set (&aplFlr, &aplTmp2);
+            Myhc2v_clear    (&aplTmp1);
+        } // End IF/ELSE
+
+        Myf_clear    (&aplDst1);
+        Myf_clear    (&aplDst2);
     } else
     {
         // Initialize to 0
@@ -1203,121 +1323,95 @@ APLHC4V FloorHC4V
 
 {
     int      i;
-////UBOOL    bRet;
-    APLHC4V  aplFlr1,
-             aplFlrH,
-             aplFlrD1,
-             aplFlrDH,
-             aplRes;
-////         aplFrc = {0};
-    APLHC1V  aplSum;
-    APLHC1V  aplMag1,                   // Magnitude of aplFlr1
-             aplMagH;                   // ...          aplFlrH
-////APLFLOAT fQuadCT = GetQuadCT ();
+    UBOOL    bRet;
+    APLHC4V  aplFlr = {0},
+             aplFrc = {0},
+             aplTmp1,
+             aplTmp2 = {0},
+             aplRes = {0};
+    APLHC1V  aplSum,
+             aplVfpFlr;
+    APLHC1V  aplDst1,                   // Distance between aplRht and aplTmp1
+             aplDst2;                   // ...                         aplTmp2
+    APLINT   aplIntFlr;
 
     // No exceptions in this code
 
-////// If we're using Hurwitz's Floor, ...
-////if (gUseHurwitz)
-////{
-        // Loop through all of the parts
-        for (i = 0; i < 4; i++)
-        {
-            // Calculate the floor of each part
-            aplFlrH.parts[i] = FloorHC1V (aplRht.parts[i]);
+    // Initialize the half integer coordinate choice to 0
+    mphc4v_init0 (&aplTmp2);
 
-            // Add 0.5 to each part
-            aplSum = AddHC1V_RE (aplFlrH.parts[i], mpfHalf);
+    // Loop through all of the parts
+    for (i = 0; i < 4; i++)
+    {
+        //***************************************************************************
+        // Calculate the all integer coordinate choice
+        //***************************************************************************
 
-            // Save in the result
-            mpfr_set (&aplFlrH.parts[i], &aplSum, MPFR_RNDN);
+        // Add 0.5 to each part
+        aplSum = AddHC1V_RE (aplRht.parts[i], mpfHalf);
 
-            Myf_clear (&aplSum);
+        // Calculate the floor of each part
+        aplTmp1.parts[i] = FloorHC1V (aplSum);
 
-            // Add 0.5 to each part
-            aplSum          = AddHC1V_RE (aplRht.parts[i], mpfHalf);
+        Myf_clear (&aplSum);
 
-            // Calculate the floor of each part
-            aplFlr1.parts[i] = FloorHC1V (aplSum);
+        //***************************************************************************
+        // Calculate the all half integer coordinate choice
+        //***************************************************************************
 
-            Myf_clear (&aplSum);
-        } // End FOR
+        // Double it
+        mpfr_mul_si (&aplTmp2.parts[i], &aplRht.parts[i], 2, MPFR_RNDN);
 
-        // Calculate the differences
-        aplFlrD1 = SubHC4V_RE (aplRht, aplFlr1);
-        aplFlrDH = SubHC4V_RE (aplRht, aplFlrH);
+        // Add 0.5 to each part
+        aplSum = AddHC1V_RE (aplTmp2.parts[i], mpfHalf);
 
-        // Calculate the magnitudes
-        aplMag1 = MagHC4V (aplFlrD1);
-        aplMagH = MagHC4V (aplFlrDH);
+        // Calculate the floor of each part
+        aplVfpFlr = FloorHC1V (aplSum);
 
-        // Choose the smaller magnitude
-        if (mpfr_cmp (&aplMag1, &aplMagH) < 0)
-        {
-            aplRes = aplFlr1;
+        Assert (mpfr_integer_p (&aplVfpFlr));
 
-            Myhc4v_clear (&aplFlrH);
-        } else
-        {
-            aplRes = aplFlrH;
+        Myf_clear (&aplSum);
 
-            Myhc4v_clear (&aplFlr1);
-        } // End IF/ELSE
+        // Extract the integer within
+        aplIntFlr = ConvertToInteger_SCT (ARRAY_HC1V, &aplVfpFlr, 0, &bRet);
 
-        Myhc4v_clear (&aplFlrD1);
-        Myhc4v_clear (&aplFlrDH);
-        Myf_clear    (&aplMag1);
-        Myf_clear    (&aplMagH);
+        Assert (bRet);
 
-        return aplRes;
-////} else
-////{
-////    // Initialize to 0
-////    mpfr_init0 (&aplSum);
-////
-////    // Loop through all of the parts
-////    for (i = 0; i < 4; i++)
-////    {
-////        // Calculate the floor of each part
-////        aplFlr.parts[i] = FloorHC1V (aplRht.parts[i]);
-////
-////        // Calculate the fractional value of each part
-////        aplFrc.parts[i] = ModHC1V (mpfOne, aplRht.parts[i]);
-////
-////        // Calculate the sum of the fractional values
-////        mpfr_add (&aplSum, &aplSum, &aplFrc.parts[i], MPFR_RNDN);
-////    } // End FOR
-////
-////    // Compare against the hyperplane between the nearest corners
-////    bRet = CmpCT_V (aplSum, mpfOne, fQuadCT, >=);
-////
-////    // We no longer need this storage
-////    Myhc1v_clear (&aplSum);
-////
-////    // If the point is NOT in the corner containing zero, ...
-////    if (bRet)
-////    {
-////        int j;
-////
-////        // Calculate the index of the largest fractional part
-////        // Assume it's the real part
-////        j = 0; aplSum = aplFrc.parts[j];
-////
-////        // Loop through the imaginary parts
-////        for (i = 1; i < 4; i++)
-////        // If this part is larger (within []CT), ...
-////        if (CmpCT_V (aplSum, aplFrc.parts[i], fQuadCT, <))
-////        {
-////            // Save as the largest so far
-////            j = i; aplSum = aplFrc.parts[j];
-////        } // End FOR/IF
-////
-////        // Increment the chosen coordinate
-////        mpfr_add (&aplFlr.parts[j], &aplFlr.parts[j], &mpfOne, MPFR_RNDN);
-////    } // End IF
-////} // End IF/ELSE
-////
-////return aplFlr;
+        Myf_clear (&aplVfpFlr);
+
+        // If the number if non-zero and even, ...
+        if (aplIntFlr NE 0
+         && (aplIntFlr & BIT0) EQ 0)
+            // Convert to an odd number with lower absolute value
+            aplIntFlr -= signumint (aplIntFlr);
+
+        // Save half the value
+        mpfr_set_sx (&aplTmp2.parts[i], aplIntFlr / 2, 1);
+    } // End FOR
+
+    //***************************************************************************
+    // Choose the result closer to the original number
+    //***************************************************************************
+
+    // Calculate the distances
+    aplDst1 = DistHC4V (aplRht, aplTmp1);
+    aplDst2 = DistHC4V (aplRht, aplTmp2);
+
+    // Choose the smaller distance
+    if (mpfr_cmp (&aplDst1, &aplDst2) < 0)
+    {
+        mphc4v_init_set (&aplRes, &aplTmp1);
+        Myhc4v_clear    (&aplTmp2);
+    } else
+    {
+        mphc4v_init_set (&aplRes, &aplTmp2);
+        Myhc4v_clear    (&aplTmp1);
+    } // End IF/ELSE
+
+    Myf_clear    (&aplDst1);
+    Myf_clear    (&aplDst2);
+
+    return aplRes;
 } // End FloorHC4V
 
 

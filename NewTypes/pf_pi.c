@@ -657,6 +657,7 @@ RESTART_RAT:
                 if (mpz_cmp_ui (&aplMPIRht, bQuadIO) < 0)
                     goto RIGHT_DOMAIN_EXIT;
                 else
+                // If the arg is handled by this table, ...
                 if (mpz_cmp_ui (&aplMPIRht, 100) < 0)
                     mpz_init_set_sx (&aplMPIRes, Nth1e0PrimeTab[mpz_get_si (&aplMPIRht)]);
 ////////////////////aplMPIRes =
@@ -668,6 +669,7 @@ RESTART_RAT:
 ////////////////////                     lpbCtrlBreak,
 ////////////////////                     lpMemPTD);
                 else
+                // If the arg is handled by this table, ...
                 if (mpz_cmp_ui (&aplMPIRht, 100000) < 0)
                     aplMPIRes =
                       PrimFnPiNthPrime  (aplMPIRht,
@@ -693,6 +695,30 @@ RESTART_RAT:
                 if (mpz_cmp_ui (&aplMPIRht, 1) <= 0)
                     // Initialize to 0 (FALSE)
                     mpz_init (&aplMPIRes);
+                else
+                // If the arg is handled by this table, ...
+                if (mpz_cmp_sx (&aplMPIRht, Nth1e0PrimeTab[Nth1e0PrimeCnt - 1]) <= 0)
+                    aplMPIRes =
+                      PrimFnPiNumPrimes (aplMPIRht,         // The argument
+                                        &NthPowerTab[0],    // Ptr to NthPowertab
+                                        &Nth1e0PrimeTab[0], // Ptr to NthPrimeTab
+                                        &Nth1e0PrimeStr,    // Ptr to NthPrimeStr
+                                         Nth1e0PrimeInc,    // Increment for the NthPrimeTab
+                                         Nth1e0PrimeCnt,    // Increment for the NthPrimeTab
+                                         lpbCtrlBreak,      // Ptr to Crtrl-Break handler
+                                         lpMemPTD);         // Ptr tp PerTabData
+                else
+                // If the arg is handled by this table, ...
+                if (mpz_cmp_sx (&aplMPIRht, Nth1e2PrimeTab[Nth1e2PrimeCnt - 1]) <= 0)
+                    aplMPIRes =
+                      PrimFnPiNumPrimes (aplMPIRht,         // The argument
+                                        &NthPowerTab[0],    // Ptr to NthPowertab
+                                        &Nth1e2PrimeTab[0], // Ptr to NthPrimeTab
+                                        &Nth1e2PrimeStr,    // Ptr to NthPrimeStr
+                                         Nth1e2PrimeInc,    // Increment for the NthPrimeTab
+                                         Nth1e2PrimeCnt,    // Increment for the NthPrimeTab
+                                         lpbCtrlBreak,      // Ptr to Crtrl-Break handler
+                                         lpMemPTD);         // Ptr tp PerTabData
                 else
                     aplMPIRes =
                       PrimFnPiNumPrimes (aplMPIRht,         // The argument

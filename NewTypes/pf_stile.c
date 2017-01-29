@@ -908,7 +908,7 @@ APLFLOAT MagHC8F
     // No exceptions in this code
 
     // Loop through all of the parts
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < 8; i++)
         // Sum the squares
         aplRes += aplRht.parts[i] * aplRht.parts[i];
 
@@ -973,7 +973,7 @@ APLVFP MagHC8V
     mpfr_init0 (&aplTmp);
 
     // Loop through all of the parts
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < 8; i++)
     {
         // Square the parts
         mpfr_mul (&aplTmp, &aplRht.parts[i], &aplRht.parts[i], MPFR_RNDN);

@@ -1,6 +1,17 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1634 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug In Dyadic Stile For HC8F and HC8V
+
+Directory branches/bsmith/NewTypes:
+
+PF_STILE.C:
+  Fix bug in <MagHC8F> and <MagHC8V> where the loop limit is 4 not 8.
+
+
 Build #1633 -- Version 0.5.0.xx
 --------------------------------
 

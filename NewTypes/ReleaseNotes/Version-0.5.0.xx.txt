@@ -1,6 +1,19 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1637 -- Version 0.5.0.xx
+--------------------------------
+
+* Reduce Flicker When Moving Back And Forth Between The Session Manager And A Function Editor Window
+
+Directory branches/bsmith/NewTypes:
+
+EDITFCN.C:
+SESSMAN.C:
+  In the WM_MDIACTIVATE routine for <SMWndProc> and <FEWndProc>, call a common routine.
+  In the above common routine, move the call to SetFocus to the end so as to reduce flicker.
+
+
 Build #1636 -- Version 0.5.0.xx
 --------------------------------
 

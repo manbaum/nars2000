@@ -1881,16 +1881,7 @@ NORMAL_EXIT:
             break;                  // *MUST* pass on to DefMDIChildProc
 
         case WM_MDIACTIVATE:        // Activate/de-activate a child window
-            // If we're being activated, ...
-            if (GET_WM_MDIACTIVATE_FACTIVATE (hWnd, wParam, lParam))
-            {
-                // Activate the menu
-                ActivateMDIMenu (WINDOWCLASS_SM, hWnd);
-                SetFocus (hWnd);
-
-                // Scroll the caret into view
-                SendMessageW (hWndEC, EM_SCROLLCARET, 0, 0);
-            } // End IF
+            MdiActivate (WINDOWCLASS_SM, hWnd, wParam, lParam, hWndEC);
 
             break;                  // Continue with DefMDIChildProc
 

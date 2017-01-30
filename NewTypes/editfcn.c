@@ -330,6 +330,31 @@ void ReplaceSel
 
 
 //***************************************************************************
+//  $MdiActivate
+//***************************************************************************
+
+void MdiActivate
+    (WINDOWCLASS wc,
+     HWND        hWnd,          // SM or FE window handle
+     WPARAM      wParam,        // ...      wParam
+     LPARAM      lParam,        // ...      lParam
+     HWND        hWndEC)        // EditCtrl window handle
+
+{
+    // If we're being activated, ...
+    if (GET_WM_MDIACTIVATE_FACTIVATE (hWnd, wParam, lParam))
+    {
+        ActivateMDIMenu (wc, hWnd);
+
+        // Scroll the caret into view
+        SendMessageW (hWndEC, EM_SCROLLCARET, 0, 0);
+
+        SetFocus (hWnd);
+    } // End IF
+} // End MdiActivate
+
+
+//***************************************************************************
 //  $FE_Create
 //
 //  Perform window-specific initialization
@@ -871,13 +896,7 @@ LRESULT APIENTRY FEWndProc
             break;                  // *MUST* pass on to DefMDIChildProcW
 
         case WM_MDIACTIVATE:        // Activate/de-activate a child window
-            // If we're being activated, ...
-            if (GET_WM_MDIACTIVATE_FACTIVATE (hWnd, wParam, lParam))
-            {
-                ActivateMDIMenu (WINDOWCLASS_FE, hWnd);
-                SetFocus (hWnd);
-                SendMessageW (hWndEC, EM_SCROLLCARET, 0, 0);
-            } // End IF
+            MdiActivate (WINDOWCLASS_FE, hWnd, wParam, lParam, hWndEC);
 
             break;                  // Continue with DefMDIChildProcW
 

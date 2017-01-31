@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -417,7 +417,7 @@ UBOOL DisplayGlbArr_EM
         lpaplCharStart = (LPAPLCHAR) (&lpFmtColStr[aplChrNCols]);
 
         // Save ptr to 1st child FMTROWSTR
-        if (aplDimNRows)
+        if (aplDimNRows NE 0)
             lpFmtHeader->lpFmtRow1st = (LPFMTROWSTR) lpaplCharStart;
         else
             lpFmtHeader->lpFmtRow1st = NULL;
@@ -811,7 +811,7 @@ UBOOL DisplayGlbArr_EM
                                 // If we're NOT Output Debugging, ...
                                 if (!OptionFlags.bOutputDebug)
                                 {
-                                    if (uCurPos)
+                                    if (uCurPos NE 0)
                                         uCurPos--;
                                     break;
                                 } else
@@ -1009,91 +1009,91 @@ LPAPLCHAR FormatImmed
         case IMMTYPE_RAT:
             lpaplChar =
               FormatAplRat (lpaplChar,      // Ptr to output save area
-                 (LPAPLRAT) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest))); // Ptr to the value to format
+                 (LPAPLRAT)  VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)));    // Ptr to the value to format
             break;
 
         case IMMTYPE_VFP:
             lpaplChar =
               FormatAplVfp (lpaplChar,      // Ptr to output save area
-                 (LPAPLVFP) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)),  // Ptr to the value to format
+                 (LPAPLVFP)  VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)),     // Ptr to the value to format
                             GetQuadPPV ());     // Use this many significant digits for VFP
             break;
 
         case IMMTYPE_HC2I:
             lpaplChar =
               FormatAplHC2I (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC2I) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest))); // Ptr to the value to format
+                 (LPAPLHC2I) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)));    // Ptr to the value to format
             break;
 
         case IMMTYPE_HC4I:
             lpaplChar =
               FormatAplHC4I (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC4I) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest))); // Ptr to the value to format
+                 (LPAPLHC4I) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)));    // Ptr to the value to format
             break;
 
         case IMMTYPE_HC8I:
             lpaplChar =
               FormatAplHC8I (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC8I) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest))); // Ptr to the value to format
+                 (LPAPLHC8I) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)));    // Ptr to the value to format
             break;
 
         case IMMTYPE_HC2F:
             lpaplChar =
               FormatAplHC2F (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC2F) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)), // Ptr to the value to format
+                 (LPAPLHC2F) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)),     // Ptr to the value to format
                              0);            // Use default significant digits
             break;
 
         case IMMTYPE_HC4F:
             lpaplChar =
               FormatAplHC4F (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC4F) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)), // Ptr to the value to format
+                 (LPAPLHC4F) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)),     // Ptr to the value to format
                              0);            // Use default significant digits
             break;
 
         case IMMTYPE_HC8F:
             lpaplChar =
               FormatAplHC8F (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC8F) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)), // Ptr to the value to format
+                 (LPAPLHC8F) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)),     // Ptr to the value to format
                              0);            // Use default significant digits
             break;
 
         case IMMTYPE_HC2R:
             lpaplChar =
               FormatAplHC2R (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC2R) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest))); // Ptr to the value to format
+                 (LPAPLHC2R) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)));    // Ptr to the value to format
             break;
 
         case IMMTYPE_HC4R:
             lpaplChar =
               FormatAplHC4R (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC4R) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest))); // Ptr to the value to format
+                 (LPAPLHC4R) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)));    // Ptr to the value to format
             break;
 
         case IMMTYPE_HC8R:
             lpaplChar =
               FormatAplHC8R (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC8R) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest))); // Ptr to the value to format
+                 (LPAPLHC8R) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)));    // Ptr to the value to format
             break;
 
         case IMMTYPE_HC2V:
             lpaplChar =
               FormatAplHC2V (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC2V) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)), // Ptr to the value to format
+                 (LPAPLHC2V) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)),     // Ptr to the value to format
                              GetQuadPPV ());// Use this many significant digits for VFP
             break;
 
         case IMMTYPE_HC4V:
             lpaplChar =
               FormatAplHC4V (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC4V) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)), // Ptr to the value to format
+                 (LPAPLHC4V) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)),     // Ptr to the value to format
                              GetQuadPPV ());// Use this many significant digits for VFP
             break;
 
         case IMMTYPE_HC8V:
             lpaplChar =
               FormatAplHC8V (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC8V) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)), // Ptr to the value to format
+                 (LPAPLHC8V) VarArrayDataFmBase (ClrPtrTypeDir (lpaplLongest)),     // Ptr to the value to format
                              GetQuadPPV ());// Use this many significant digits for VFP
             break;
 
@@ -1591,7 +1591,7 @@ LPAPLCHAR FormatAplRatFC
     {
         // Convert '/' (if any) to aplCharRatSep
         lpw = strchrW (lpaplChar, L'/');
-        if (lpw)
+        if (lpw NE NULL)
             *lpw = aplCharRatSep;
         else
         if (OptionFlags.bDispMPSuf)
@@ -1811,7 +1811,7 @@ LPAPLCHAR FormatAplFltFC
         } // End IF
 
         // Handle the sign
-        if (sign)
+        if (sign NE 0)
             *lpaplChar++ = aplCharOverbar;
 
         // Split cases based upon the float display format
@@ -2152,12 +2152,12 @@ LPAPLCHAR FormatExpFmt
         iSigDig--;
 
         // If there are more digits or we're being exact
-        if (*s || bExact)
+        if (*s NE AC_EOS || bExact)
             // Then the decimal separator
             *lpaplChar++ = aplCharDecimal;
 
         // If there are more digits, ...
-        if (*s)
+        if (*s NE AC_EOS)
         // Then the next nDigits digits
         while (nDigits > 0
             && *s)
@@ -2542,7 +2542,7 @@ LPAPLCHAR FormatAplVfpFC
                 } // End IF
 
                 // Fill in the trailing underflow digits, possibly overwriting the decimal point
-                if (iUnderflow)
+                if (iUnderflow NE 0)
                 {
                     FillMemoryW (&lpaplChar[iLen - iUnderflow], (APLU3264) iUnderflow, DEF_UNDERFLOW);
 
@@ -3780,17 +3780,18 @@ LPWCHAR DisplayTransferGlb2
      UBOOL      bTopLevel)                  // TRUE iff this call is at the top level
 
 {
-    LPVOID   lpMemArg;                      // Ptr to arg item global memory
-    APLSTYPE aplTypeArg;                    // Arg item storage type
-    APLNELM  aplNELMArg,                    // Arg item NELM
-             aplNELMNst;                    // Arg item NELM if nested
-    APLRANK  aplRankArg;                    // Arg item rank
-    APLUINT  uCnt;                          // Loop counter
-    UBOOL    bNeedParens = FALSE,           // TRUE iff this level needs surrounding parens
-             bDispMPSuf,                    // Save area for OptionFlags value
-             bJ4i,                          // ...
-             bDisp0Imag,                    // ...
-             bDispInfix;                    // ...
+    LPVARARRAY_HEADER lpMemHdrArg = NULL;   // Ptr to arg item global memory header
+    LPVOID            lpMemArg;             // Ptr to arg item global memory
+    APLSTYPE          aplTypeArg;           // Arg item storage type
+    APLNELM           aplNELMArg,           // Arg item NELM
+                      aplNELMNst;           // Arg item NELM if nested
+    APLRANK           aplRankArg;           // Arg item rank
+    APLUINT           uCnt;                 // Loop counter
+    UBOOL             bNeedParens = FALSE,  // TRUE iff this level needs surrounding parens
+                      bDispMPSuf,           // Save area for OptionFlags value
+                      bJ4i,                 // ...
+                      bDisp0Imag,           // ...
+                      bDispInfix;           // ...
 
     // Save OptionFlags for display to fixed
     //   values so we convert values on )LOAD,
@@ -3798,9 +3799,12 @@ LPWCHAR DisplayTransferGlb2
     SetOptionFlagsDisplay (&bJ4i, &bDisp0Imag, &bDispInfix, &bDispMPSuf);
 
     // Lock the memory to get a ptr to it
-    lpMemArg = MyGlobalLockVar (hGlbArg);
+    lpMemHdrArg = MyGlobalLockVar (hGlbArg);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemArg)
+    // Skip over the header to the dimensions
+    lpMemArg = VarArrayBaseToDim (lpMemHdrArg);
+
+#define lpHeader        lpMemHdrArg
     // Get the Array Type, NELM, and Rank
     aplTypeArg = lpHeader->ArrType;
     aplNELMArg = lpHeader->NELM;
@@ -3826,16 +3830,6 @@ LPWCHAR DisplayTransferGlb2
             *lpwszTemp++ = UTF16_LEFTSHOE;
     } // End IF
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemArg)
-    // Get the storage type, NELM & Rank
-    aplTypeArg = lpHeader->ArrType;
-    aplNELMArg = lpHeader->NELM;
-    aplRankArg = lpHeader->Rank;
-#undef  lpHeader
-
-    // Skip over the header to the dimensions
-    lpMemArg = VarArrayBaseToDim (lpMemArg);
-
     // If the array is a matrix
     //   or a non-scalar singleton,
     //   or an empty nested array, ...
@@ -3858,6 +3852,10 @@ LPWCHAR DisplayTransferGlb2
     } else
         // Skip over the dimension(s)
         ((LPAPLDIM) lpMemArg) += aplRankArg;
+
+    //***************************************************************************
+    // lpMemArg now points to the data
+    //***************************************************************************
 
     // Split cases based upon the arg storage type
     switch (aplTypeArg)
@@ -4115,7 +4113,7 @@ LPWCHAR DisplayTransferGlb2
         *lpwszTemp++ = L')';
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbArg); lpMemArg = NULL;
+    MyGlobalUnlock (hGlbArg); lpMemHdrArg = NULL;
 
     // Restore the OptionFlags values
     RestoreOptionFlagsDisplay (bJ4i, bDisp0Imag, bDispInfix, bDispMPSuf);
@@ -4158,7 +4156,7 @@ LPWCHAR DisplayTransferFcn2
         lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
         // Save creation time if requested
-        if (lpftCreation)
+        if (lpftCreation NE NULL)
             *lpftCreation = lpMemDfnHdr->ftCreation;
 
         // Lock the memory to get a ptr to it
@@ -4185,7 +4183,7 @@ LPWCHAR DisplayTransferFcn2
             // Get the line text global memory handle
             hGlbTxtLine = lpFcnLines->hGlbTxtLine;
 
-            if (hGlbTxtLine)
+            if (hGlbTxtLine NE NULL)
             {
                 // Lock the memory to get a ptr to it
                 lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
@@ -4253,12 +4251,13 @@ APLCHAR GetQuadFCValue
     (UINT uIndex)
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    HGLOBAL      hGlbQuadFC;    // []FC global memory handle
-    LPAPLCHAR    lpMemQuadFC;   // Ptr to []FC global memory
-    APLNELM      aplNELMQuadFC; // []FC NELM
-    APLRANK      aplRankQuadFC; // []FC rank
-    APLCHAR      aplCharQuadFC; // []FC[uIndex]
+    LPPERTABDATA      lpMemPTD;                 // Ptr to PerTabData global memory
+    HGLOBAL           hGlbQuadFC;               // []FC global memory handle
+    LPVARARRAY_HEADER lpMemHdrQuadFC = NULL;    // Ptr to []FC global memory header
+    LPAPLCHAR         lpMemQuadFC;              // Ptr to []FC global memory
+    APLNELM           aplNELMQuadFC;            // []FC NELM
+    APLRANK           aplRankQuadFC;            // []FC rank
+    APLCHAR           aplCharQuadFC;            // []FC[uIndex]
 
     Assert (uIndex < FCNDX_LENGTH);
 
@@ -4269,16 +4268,16 @@ APLCHAR GetQuadFCValue
     hGlbQuadFC = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_FC]->stData.stGlbData;
 
     // Lock the memory to get a ptr to it
-    lpMemQuadFC = MyGlobalLockVar (hGlbQuadFC);
+    lpMemHdrQuadFC = MyGlobalLockVar (hGlbQuadFC);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemQuadFC)
+#define lpHeader        lpMemHdrQuadFC
     // Get the array NELM and rank
     aplNELMQuadFC = lpHeader->NELM;
     aplRankQuadFC = lpHeader->Rank;
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
-    lpMemQuadFC = VarArrayDataFmBase (lpMemQuadFC);
+    lpMemQuadFC = VarArrayDataFmBase (lpMemHdrQuadFC);
 
     // Check for short []FC
     if (uIndex >= aplNELMQuadFC)
@@ -4287,7 +4286,7 @@ APLCHAR GetQuadFCValue
         aplCharQuadFC = lpMemQuadFC[uIndex];
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbQuadFC); lpMemQuadFC = NULL;
+    MyGlobalUnlock (hGlbQuadFC); lpMemHdrQuadFC = NULL;
 
     return aplCharQuadFC;
 } // End GetQuadFCValue
@@ -4303,13 +4302,14 @@ APLINT GetQuadICValue
     (IC_INDICES icIndex)
 
 {
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    HGLOBAL      hGlbQuadIC;        // []IC global memory handle
-    LPAPLINT     lpMemQuadIC;       // Ptr to []IC global memory
-    APLSTYPE     aplTypeQuadIC;     // []IC storage type
-    APLNELM      aplNELMQuadIC;     // []IC NELM
-    APLRANK      aplRankQuadIC;     // []IC rank
-    APLINT       aplIntQuadIC;      // []IC[uIndex]
+    LPPERTABDATA      lpMemPTD;                 // Ptr to PerTabData global memory
+    HGLOBAL           hGlbQuadIC;               // []IC global memory handle
+    LPVARARRAY_HEADER lpMemHdrQuadIC = NULL;    // Ptr to []IC global memory header
+    LPAPLINT          lpMemQuadIC;              // Ptr to []IC global memory
+    APLSTYPE          aplTypeQuadIC;            // []IC storage type
+    APLNELM           aplNELMQuadIC;            // []IC NELM
+    APLRANK           aplRankQuadIC;            // []IC rank
+    APLINT            aplIntQuadIC;             // []IC[uIndex]
 
     Assert (icIndex < ICNDX_LENGTH);
 
@@ -4320,9 +4320,9 @@ APLINT GetQuadICValue
     hGlbQuadIC = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_IC]->stData.stGlbData;
 
     // Lock the memory to get a ptr to it
-    lpMemQuadIC = MyGlobalLockVar (hGlbQuadIC);
+    lpMemHdrQuadIC = MyGlobalLockVar (hGlbQuadIC);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemQuadIC)
+#define lpHeader        lpMemHdrQuadIC
     // Get the array Type, NELM, and rank
     aplTypeQuadIC = lpHeader->ArrType;
     aplNELMQuadIC = lpHeader->NELM;
@@ -4330,7 +4330,7 @@ APLINT GetQuadICValue
 #undef  lpHeader
 
     // Skip over the header and dimensions to the data
-    lpMemQuadIC = VarArrayDataFmBase (lpMemQuadIC);
+    lpMemQuadIC = VarArrayDataFmBase (lpMemHdrQuadIC);
 
     // Check for short []IC
     if (icIndex >= aplNELMQuadIC)
@@ -4344,7 +4344,7 @@ APLINT GetQuadICValue
                         NULL,               // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                        &aplIntQuadIC);      // Ptr to result immediate value (may be NULL)
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbQuadIC); lpMemQuadIC = NULL;
+    MyGlobalUnlock (hGlbQuadIC); lpMemHdrQuadIC = NULL;
 
     return aplIntQuadIC;
 } // End GetQuadICValue
@@ -4406,10 +4406,10 @@ UBOOL DisplayGlbVector
                     // Check for Terminal Control chars
                     if (CheckTermCodes ((LPAPLCHAR) lpMemArr,   // Ptr to current char to test
                                         hWndEC,                 // EditCtrl window handle
-                                    lpaplCharIni,           // Ptr to initial output save area
-                                   &lpaplChar,              // Ptr to ptr to output save area
-                                   &uCurPos,                // Ptr to current position
-                                   &uMaxPos,                // Ptr to maximum position
+                                        lpaplCharIni,           // Ptr to initial output save area
+                                       &lpaplChar,              // Ptr to ptr to output save area
+                                       &uCurPos,                // Ptr to current position
+                                       &uMaxPos,                // Ptr to maximum position
                                         uIniPos))               // Initial position
                     {
                         // Skip over the next two chars
@@ -4433,7 +4433,7 @@ UBOOL DisplayGlbVector
                 uIniPos = uCurPos = uMaxPos = DEF_INDENT;
 
                 // If there's more to display, ...
-                if (aplDimNCols)
+                if (aplDimNCols NE 0)
                     // Display the non-continued indent without ending CRLF
                     AppendLine (wszIndent, FALSE, FALSE);
 
@@ -4675,9 +4675,9 @@ UBOOL CheckTermCodes
             FillMemoryW (lpaplCharIni, (APLU3264) *lpuCurPos, L' ');
 
             // Reset the ptrs and counters to the start of the line
-            (*lplpaplChar) = &lpaplCharIni[uIniPos];
+            (*lplpaplChar) = lpaplCharIni;
             (*lpuMaxPos)   =
-            (*lpuCurPos)   = uIniPos;
+            (*lpuCurPos)   = 0;
 
             // If this char is followed by WC_CR and WC_LF, ...
             if (lpwc[1] EQ WC_CR

@@ -1,0 +1,11 @@
+Build #1638 -- Version 0.5.0.xx
+--------------------------------
+
+* Handle []TCNL In Global Vector Output
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  In IF stmts always compare ptr against NULL.
+  Include "Hdr" in name of result of <MyGlobalLock>.
+  In <CheckTermCodes>, return to 0 (instead of uIniPos) upon encountering []TCNL.

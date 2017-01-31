@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -412,13 +412,17 @@ void PrimFnMonPlusHC2FisHC2I
      LPPRIMSPEC lpPrimSpec)             // Ptr to local PRIMSPEC
 
 {
+    int i;
+
     // No exceptions in this code
 
     // Copy the right arg real part to the result
     lpMemRes[uRes].parts[0] =  (APLFLOAT) lpatRht->aplHC2I.parts[0];
 
-    // Change the sign of the imaginary part
-    lpMemRes[uRes].parts[1] = -(APLFLOAT) lpatRht->aplHC2I.parts[1];
+    // Loop through the imaginary parts
+        for (i = 1; i < 2; i++)
+        // Change the sign of the imaginary part
+        lpMemRes[uRes].parts[i] = -(APLFLOAT) lpatRht->aplHC2I.parts[i];
 } // End PrimFnMonPlusHC2FisHC2I
 
 
@@ -2044,14 +2048,10 @@ void PrimFnDydPlusHC4FisHC4FvHC4F
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    int i;
-
     // No exceptions in this code
 
-    // Loop through all of the parts
-    for (i = 0; i < 4; i++)
-        // Add the floats
-        lpMemRes[uRes].parts[i] = lpatLft->aplHC4F.parts[i] + lpatRht->aplHC4F.parts[i];
+    // Add the floats
+    lpMemRes[uRes] = AddHC4F_RE (lpatLft->aplHC4F, lpatRht->aplHC4F);
 } // End PrimFnDydPlusHC4FisHC4FvHC4F
 
 

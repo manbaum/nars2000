@@ -1,6 +1,20 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1639 -- Version 0.5.0.xx
+--------------------------------
+
+* Miscellaneous Cosmetic Coding Changes
+
+Directory branches/bsmith/NewTypes:
+
+HC_PROC.C:
+PF_PLUS.C:
+PF_STAR.:
+TYPEMOTE.C:
+  Use the same consistent coding conventions when looping through real and imaginary parts.
+
+
 Build #1638 -- Version 0.5.0.xx
 --------------------------------
 

@@ -802,7 +802,7 @@ void PrimFnMonStarHC2VisHC2V
             aplTmp = AddHC2V_RE (*lpaplRes, aplBase);
 
             // Loop through all of the parts
-            for (i = 0; i < 2; i++)
+            for (i = 0; i < 2; i++)     // #ifdef FALSE
                 mpfr_set (&lpaplRes->parts[i], &aplTmp.parts[i], MPFR_RNDN);
 
             // Set the counter to uRht + 1
@@ -814,7 +814,7 @@ void PrimFnMonStarHC2VisHC2V
             Myhc2v_clear (&aplDiv);
 
             // Loop through all of the parts
-            for (i = 0; i < 2; i++)
+            for (i = 0; i < 2; i++)     // #ifdef FALSE
                 mpfr_set (&aplBase.parts[i], &aplTmp.parts[i], MPFR_RNDN);
         } // End FOR
 
@@ -2543,7 +2543,6 @@ APLHC4I PowHC4I_RE
 
 {
     APLHC4I aplRes;                 // The result
-    APLINT  aplExp;                 // Temp for Exponent
     int     i;                      // Loop counter
 
     // Check for indeterminates:  0 * 0
@@ -2577,6 +2576,8 @@ APLHC4I PowHC4I_RE
         RaiseException (EXCEPTION_RESULT_HC4F, 0, 0, NULL);
     else
     {
+        APLINT aplExp;                  // Temp for Exponent
+
         // Initialize with identity element for multiplication
         aplRes.parts[0] = 1;
 
@@ -3267,17 +3268,11 @@ APLHC8I PowHC8I_RE
 
 {
     APLHC8I aplRes;                 // The result
-    APLINT  aplExp;                 // Temp for Exponent
     int     i;                      // Loop counter
 
-    // Loop through all of the parts
-    for (i = 0; i < 8; i++)
     // Check for indeterminates:  0 * 0
-    if (aplLft.parts[i] NE 0
-     || aplRht.parts[i] NE 0)
-        break;
-    // If we didn't terminate early, ...
-    if (i EQ 8)
+    if (IsZeroHCxI (&aplLft, 8)
+     && IsZeroHCxI (&aplRht, 8))
         RaiseException (EXCEPTION_RESULT_HC8F, 0, 0, NULL);
 
     // Check for special cases:  (|1) * R
@@ -3299,12 +3294,14 @@ APLHC8I PowHC8I_RE
                 aplRes.parts[i] = 0;
         } // End IF
     } else
+    // Check for special cases:  L * R for R < 0 or R > 64
+    if (aplRht.parts[0] < 0
+     || aplRht.parts[0] > 64
+     || IzitImaginary (ARRAY_HC8I, &aplRht))
+        RaiseException (EXCEPTION_RESULT_HC8F, 0, 0, NULL);
+    else
     {
-        // Check for special cases:  L * R for R < 0 or R > 68
-        if (aplRht.parts[0] < 0
-         || aplRht.parts[0] > 68
-         || IzitImaginary (ARRAY_HC8I, &aplRht))
-            RaiseException (EXCEPTION_RESULT_HC8F, 0, 0, NULL);
+        APLINT aplExp;                  // Temp for Exponent
 
         // Initialize with identity element for multiplication
         aplRes.parts[0] = 1;

@@ -481,11 +481,15 @@ void mphc2r_init_set_d
      APLFLOAT  aplFloat)
 
 {
+    int i;
+
     // Initialize the real part to FLT
     mpq_init_set_d (&lpaplHC2RRht->parts[0], aplFloat);
 
-    // Initialize the imaginary part to 0/1
-    Myq_init       (&lpaplHC2RRht->parts[1]);
+    // Loop through the imaginary parts
+    for (i = 1; i < 2; i++)
+        // Initialize to 0/1
+        Myq_init (&lpaplHC2RRht->parts[i]);
 } // End mphc2r_init_set_d
 
 

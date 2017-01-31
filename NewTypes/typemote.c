@@ -10677,7 +10677,7 @@ void TCA_HC2I_BOOL
         *lpbRet = IsBooleanValue (lpAllTypes->aplInteger);
 
         // Loop through the remainder of the imaginary HC2I parts
-        for (i = 1; i < 2; i++) // No bret
+        for (i = 1; i < 2; i++) // No bRet
             // Ensure the imaginary HC2I part is 0
             *lpbRet &= lpaplHC2I[uInt].parts[i] EQ 0;
     } // End IF

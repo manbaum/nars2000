@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -990,75 +990,87 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
             break;
 
         case ARRAY_HC2I:
-            wsprintfW (wszTemp,
-                      L"Complex Integer (%d):  128 bits per element",
-                      DR_HC2I);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Complex Integer (%d):  128 bits per element",
+                        DR_HC2I);
             break;
 
         case ARRAY_HC2F:
-            wsprintfW (wszTemp,
-                      L"Complex Floating Point (%d):  128 bits per element",
-                      DR_HC2F);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Complex Floating Point (%d):  128 bits per element",
+                        DR_HC2F);
             break;
 
         case ARRAY_HC2R:
-            wsprintfW (wszTemp,
-                      L"Complex Rational (%d):  arbitrary precision numerator and denominator",
-                      DR_HC2R);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Complex Rational (%d):  arbitrary precision numerator and denominator",
+                        DR_HC2R);
             break;
 
         case ARRAY_HC2V:
-            wsprintfW (wszTemp,
-                      L"Complex Variable Floating Point (%d):  variable precision mantissa, 32-bit exponent",
-                      DR_HC2V);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Complex Variable Floating Point (%d):  variable precision mantissa, 32-bit exponent",
+                        DR_HC2V);
             break;
 
         case ARRAY_HC4I:
-            wsprintfW (wszTemp,
-                      L"Quaternion Integer (%d):  256 bits per element",
-                      DR_HC4I);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Quaternion Integer (%d):  256 bits per element",
+                        DR_HC4I);
             break;
 
         case ARRAY_HC4F:
-            wsprintfW (wszTemp,
-                      L"Quaternion Floating Point (%d):  256 bits per element",
-                      DR_HC4F);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Quaternion Floating Point (%d):  256 bits per element",
+                        DR_HC4F);
             break;
 
         case ARRAY_HC4R:
-            wsprintfW (wszTemp,
-                      L"Quaternion Rational (%d):  arbitrary precision numerator and denominator",
-                      DR_HC4R);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Quaternion Rational (%d):  arbitrary precision numerator and denominator",
+                        DR_HC4R);
             break;
 
         case ARRAY_HC4V:
-            wsprintfW (wszTemp,
-                      L"Quaternion Variable Floating Point (%d):  variable precision mantissa, 32-bit exponent",
-                      DR_HC4V);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Quaternion Variable Floating Point (%d):  variable precision mantissa, 32-bit exponent",
+                        DR_HC4V);
             break;
 
         case ARRAY_HC8I:
-            wsprintfW (wszTemp,
-                      L"Octonion Integer (%d):  512 bits per element",
-                      DR_HC8I);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Octonion Integer (%d):  512 bits per element",
+                        DR_HC8I);
             break;
 
         case ARRAY_HC8F:
-            wsprintfW (wszTemp,
-                      L"Octonion Floating Point (%d):  512 bits per element",
-                      DR_HC8F);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Octonion Floating Point (%d):  512 bits per element",
+                        DR_HC8F);
             break;
 
         case ARRAY_HC8R:
-            wsprintfW (wszTemp,
-                      L"Octonion Rational (%d):  arbitrary precision numerator and denominator",
-                      DR_HC8R);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Octonion Rational (%d):  arbitrary precision numerator and denominator",
+                        DR_HC8R);
             break;
 
         case ARRAY_HC8V:
-            wsprintfW (wszTemp,
-                      L"Octonion Variable Floating Point (%d):  variable precision mantissa, 32-bit exponent",
-                      DR_HC8V);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Octonion Variable Floating Point (%d):  variable precision mantissa, 32-bit exponent",
+                        DR_HC8V);
             break;
 
         defstop
@@ -1570,9 +1582,9 @@ HGLOBAL SysFnDR_CharToIntFloat_EM
         if (!((L'0' <= aplChar
             &&         aplChar <= L'9')
            || (L'a' <= aplChar
-            &&         aplChar <= L'z')
+            &&         aplChar <= L'f')
            || (L'A' <= aplChar
-            &&         aplChar <= L'Z')))
+            &&         aplChar <= L'F')))
             goto RIGHT_DOMAIN_EXIT;
     } // End FOR
 
@@ -1645,11 +1657,11 @@ HGLOBAL SysFnDR_CharToIntFloat_EM
                 aplChar -= L'0';
             else
             if (L'a' <= aplChar
-             &&         aplChar <= L'z')
+             &&         aplChar <= L'f')
                 aplChar -= L'a' - 10;
             else
             if (L'A' <= aplChar
-              &&        aplChar <= L'Z')
+              &&        aplChar <= L'F')
                 aplChar -= L'A' - 10;
 #ifdef DEBUG
             else

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #define APL_EXPONENT_LEN    11          // APLFLOAT exponent length (# bits)
 #define APL_MANTISSA_LEN    52          // ...      mantissa ...
 #define APL_EXP_BIAS        1023        // ...      exponent bias
+#define APL_QNaN_BIT        (1LL << (APL_MANTISSA_LEN - 1))  // Flag for Quiet NaN
 
 typedef struct tagAPLFLOAT_STR
 {

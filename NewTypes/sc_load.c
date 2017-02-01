@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1379,17 +1379,8 @@ LPWCHAR ParseSavedWsVar_EM
                 // Restore the original value
                 *lpwCharEnd = wcTmp;
 
-                // Check for positive infinity
-                if (lstrcmp ((LPCHAR) lpwszFormat, TEXT_INFINITY) EQ 0)
-                    // Save in the result and skip over it
-                    aplFloat = fltPosInfinity;
-                else
-                // Check for negative infinity
-                if (lstrcmp ((LPCHAR) lpwszFormat, "-" TEXT_INFINITY) EQ 0)
-                    // Save in the result and skip over it
-                    aplFloat = fltNegInfinity;
-                else
-                    aplFloat = MyStrtod ((LPCHAR) lpwszFormat, NULL);
+                // Convert special chars to float
+                aplFloat = ConvertSpecCharsToFloat ((LPCHAR) lpwszFormat, NULL);
 
                 // If we're to save the SymTab, ...
                 if (bSymTab)
@@ -1761,19 +1752,9 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         // Restore the original value
                         *lpwCharEnd = wcTmp;
 
-                        // Check for positive infinity
-                        if (lstrcmp ((LPCHAR) lpwszFormat, TEXT_INFINITY) EQ 0)
-                            // Save in the result and skip over it
-                            *((LPAPLFLOAT) lpMemObj)++ = fltPosInfinity;
-                        else
-                        // Check for negative infinity
-                        if (lstrcmp ((LPCHAR) lpwszFormat, "-" TEXT_INFINITY) EQ 0)
-                            // Save in the result and skip over it
-                            *((LPAPLFLOAT) lpMemObj)++ = fltNegInfinity;
-                        else
-                            // Use David Gay's routines
-                            // Save in the result and skip over it
-                            *((LPAPLFLOAT) lpMemObj)++ = MyStrtod ((LPCHAR) lpwszFormat, NULL);
+                        // Convert special chars to float
+                        *((LPAPLFLOAT) lpMemObj)++ = ConvertSpecCharsToFloat ((LPCHAR) lpwszFormat, NULL);
+
                         // Skip to the next field
                         lpwszProf = SkipPastCharW (lpwszProf, L' ');
                     } // End FOR
@@ -2093,32 +2074,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         // Restore the original value
                         *lpwCharEnd = wcTmp;
 
-                        // Check for positive infinity
-                        if (strncmp (lpFmt, TEXT_INFINITY, strcountof (TEXT_INFINITY)) EQ 0)
-                        {
-                            // Save in the result and skip over it
-                            *((LPAPLFLOAT) lpMemObj)++ = fltPosInfinity;
-
-                            // Count the scanned chars
-                            uLen = strcountof (TEXT_INFINITY);
-                        } else
-                        // Check for negative infinity
-                        if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                        {
-                            // Save in the result and skip over it
-                            *((LPAPLFLOAT) lpMemObj)++ = fltNegInfinity;
-
-                            // Count the scanned chars
-                            uLen = strcountof ("-" TEXT_INFINITY);
-                        } else
-                        {
-                            // Use David Gay's routines
-                            // Save in the result and skip over it
-                            *((LPAPLFLOAT) lpMemObj)++ = MyStrtod (lpFmt, NULL);
-
-                            // Count the scanned chars
-                            uLen = strspnW (lpwszProf, L"0123456789eE.-");
-                        } // End IF/ELSE/...
+                        // Convert special chars to float
+                        *((LPAPLFLOAT) lpMemObj)++ = ConvertSpecCharsToFloat (lpFmt, &uLen);
 
                         // Skip over the scanned chars
                         lpwszProf += uLen;
@@ -2131,32 +2088,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                             lpwszProf++;
                             lpFmt++;
 
-                            // Check for positive infinity
-                            if (strncmp (lpFmt, TEXT_INFINITY, strcountof (TEXT_INFINITY)) EQ 0)
-                            {
-                                // Save in the result and skip over it
-                                *((LPAPLFLOAT) lpMemObj)++ = fltPosInfinity;
-
-                                // Count the scanned chars
-                                uLen = strcountof (TEXT_INFINITY);
-                            } else
-                            // Check for negative infinity
-                            if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                            {
-                                // Save in the result and skip over it
-                                *((LPAPLFLOAT) lpMemObj)++ = fltNegInfinity;
-
-                                // Count the scanned chars
-                                uLen = strcountof ("-" TEXT_INFINITY);
-                            } else
-                            {
-                                // Use David Gay's routines
-                                // Save in the result and skip over it
-                                *((LPAPLFLOAT) lpMemObj)++ = MyStrtod (lpFmt, NULL);
-
-                                // Count the scanned chars
-                                uLen = strspnW (lpwszProf, L"0123456789eE.-");
-                            } // End IF/ELSE/...
+                            // Convert special chars to float
+                            *((LPAPLFLOAT) lpMemObj)++ = ConvertSpecCharsToFloat (lpFmt, &uLen);
 
                             // Skip over the scanned chars
                             lpwszProf += uLen;
@@ -2187,32 +2120,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         // Restore the original value
                         *lpwCharEnd = wcTmp;
 
-                        // Check for positive infinity
-                        if (strncmp (lpFmt, TEXT_INFINITY, strcountof (TEXT_INFINITY)) EQ 0)
-                        {
-                            // Save in the result and skip over it
-                            *((LPAPLFLOAT) lpMemObj)++ = fltPosInfinity;
-
-                            // Count the scanned chars
-                            uLen = strcountof (TEXT_INFINITY);
-                        } else
-                        // Check for negative infinity
-                        if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                        {
-                            // Save in the result and skip over it
-                            *((LPAPLFLOAT) lpMemObj)++ = fltNegInfinity;
-
-                            // Count the scanned chars
-                            uLen = strcountof ("-" TEXT_INFINITY);
-                        } else
-                        {
-                            // Use David Gay's routines
-                            // Save in the result and skip over it
-                            *((LPAPLFLOAT) lpMemObj)++ = MyStrtod (lpFmt, NULL);
-
-                            // Count the scanned chars
-                            uLen = strspnW (lpwszProf, L"0123456789eE.-");
-                        } // End IF/ELSE/...
+                        // Convert special chars to float
+                        *((LPAPLFLOAT) lpMemObj)++ = ConvertSpecCharsToFloat (lpFmt, &uLen);
 
                         // Skip over the scanned chars
                         lpwszProf += uLen;
@@ -2228,32 +2137,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                             lpwszProf += uLen;
                             lpFmt  += uLen;
 
-                            // Check for positive infinity
-                            if (strncmp (lpFmt, TEXT_INFINITY, strcountof (TEXT_INFINITY)) EQ 0)
-                            {
-                                // Save in the result and skip over it
-                                *((LPAPLFLOAT) lpMemObj)++ = fltPosInfinity;
-
-                                // Count the scanned chars
-                                uLen = strcountof (TEXT_INFINITY);
-                            } else
-                            // Check for negative infinity
-                            if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                            {
-                                // Save in the result and skip over it
-                                *((LPAPLFLOAT) lpMemObj)++ = fltNegInfinity;
-
-                                // Count the scanned chars
-                                uLen = strcountof ("-" TEXT_INFINITY);
-                            } else
-                            {
-                                // Use David Gay's routines
-                                // Save in the result and skip over it
-                                *((LPAPLFLOAT) lpMemObj)++ = MyStrtod (lpFmt, NULL);
-
-                                // Count the scanned chars
-                                uLen = strspnW (lpwszProf, L"0123456789eE.-");
-                            } // End IF/ELSE/...
+                            // Convert special chars to float
+                            *((LPAPLFLOAT) lpMemObj)++ = ConvertSpecCharsToFloat (lpFmt, &uLen);
 
                             // Skip over the scanned chars
                             lpwszProf += uLen;
@@ -2284,32 +2169,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                         // Restore the original value
                         *lpwCharEnd = wcTmp;
 
-                        // Check for positive infinity
-                        if (strncmp (lpFmt, TEXT_INFINITY, strcountof (TEXT_INFINITY)) EQ 0)
-                        {
-                            // Save in the result and skip over it
-                            *((LPAPLFLOAT) lpMemObj)++ = fltPosInfinity;
-
-                            // Count the scanned chars
-                            uLen = strcountof (TEXT_INFINITY);
-                        } else
-                        // Check for negative infinity
-                        if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                        {
-                            // Save in the result and skip over it
-                            *((LPAPLFLOAT) lpMemObj)++ = fltNegInfinity;
-
-                            // Count the scanned chars
-                            uLen = strcountof ("-" TEXT_INFINITY);
-                        } else
-                        {
-                            // Use David Gay's routines
-                            // Save in the result and skip over it
-                            *((LPAPLFLOAT) lpMemObj)++ = MyStrtod (lpFmt, NULL);
-
-                            // Count the scanned chars
-                            uLen = strspnW (lpwszProf, L"0123456789eE.-");
-                        } // End IF/ELSE/...
+                        // Convert special chars to float
+                        *((LPAPLFLOAT) lpMemObj)++ = ConvertSpecCharsToFloat (lpFmt, &uLen);
 
                         // Skip over the scanned chars
                         lpwszProf += uLen;
@@ -2325,32 +2186,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                             lpwszProf += uLen;
                             lpFmt  += uLen;
 
-                            // Check for positive infinity
-                            if (strncmp (lpFmt, TEXT_INFINITY, strcountof (TEXT_INFINITY)) EQ 0)
-                            {
-                                // Save in the result and skip over it
-                                *((LPAPLFLOAT) lpMemObj)++ = fltPosInfinity;
-
-                                // Count the scanned chars
-                                uLen = strcountof (TEXT_INFINITY);
-                            } else
-                            // Check for negative infinity
-                            if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                            {
-                                // Save in the result and skip over it
-                                *((LPAPLFLOAT) lpMemObj)++ = fltNegInfinity;
-
-                                // Count the scanned chars
-                                uLen = strcountof ("-" TEXT_INFINITY);
-                            } else
-                            {
-                                // Use David Gay's routines
-                                // Save in the result and skip over it
-                                *((LPAPLFLOAT) lpMemObj)++ = MyStrtod (lpFmt, NULL);
-
-                                // Count the scanned chars
-                                uLen = strspnW (lpwszProf, L"0123456789eE.-");
-                            } // End IF/ELSE/...
+                            // Convert special chars to float
+                            *((LPAPLFLOAT) lpMemObj)++ = ConvertSpecCharsToFloat (lpFmt, &uLen);
 
                             // Skip over the scanned chars
                             lpwszProf += uLen;

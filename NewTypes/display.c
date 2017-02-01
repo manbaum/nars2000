@@ -1655,6 +1655,7 @@ LPAPLCHAR FormatAplFltFC
      UBOOL      bSubstInf)          // TRUE iff we're to substitute text for infinity
 
 {
+    // Check for Infinity
     if (IsFltInfinity (aplFloat))
     {
         if (aplFloat < 0)
@@ -1669,6 +1670,7 @@ LPAPLCHAR FormatAplFltFC
         else
             *lpaplChar++ = wcInf;           // Char for infinity
     } else
+    // Check for 0.0
     if (aplFloat EQ 0)
     {
         // If it's negative, ...
@@ -1739,6 +1741,42 @@ LPAPLCHAR FormatAplFltFC
             defstop
                 break;
         } // End SWITCH
+    } else
+    // Check for NaN
+    if (_isnan (aplFloat))
+    {
+        // If we're to substitute, ...
+        if (bSubstInf)
+        {
+            WCHAR wszTemp[32];
+
+            // Convert to char
+            IntFloatToAplchar (wszTemp, (LPAPLLONGEST) &aplFloat);
+            wszTemp[16] = WC_EOS;
+
+            // Format and skip over
+            lpaplChar +=
+              MySprintfW (lpaplChar,
+                          (1 + 1 + strcountof (WS_TEXT_NaN) + 13 + 1 + 1) * sizeof (WCHAR),
+                         L"{%s%s%s}",
+                          (SIGN_APLFLOAT_RAW (aplFloat)) ? L"-" : L"",
+                          WS_TEXT_NaN,
+                         &wszTemp[3]);
+        } else
+        {
+            if (SIGN_APLFLOAT_RAW (aplFloat))
+                // Mark as negative
+                *lpaplChar++ = aplCharOverbar;
+
+            // Copy the Quiet or Signalling flag
+            *lpaplChar++ = (APL_QNaN_BIT & *(LPAPLUINT) &aplFloat) ? L'Q' : L'S';
+
+            // String for NaN
+            lstrcpyW (lpaplChar, WS_TEXT_NaN);
+
+            // Skip over it
+            lpaplChar += strcountof (WS_TEXT_NaN);
+        } // End IF/ELSE
     } else
     // Non-zero
     {

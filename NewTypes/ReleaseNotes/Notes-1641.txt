@@ -1,0 +1,29 @@
+Build #1641 -- Version 0.5.0.xx
+--------------------------------
+
+* Allow NaNs To Display And Survive )LOAD/)SAVE
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+  Define new routines to convert chars to floats while sensitive to Infinities and NaNs.
+
+DATATYPE.H:
+  Define the Quiet NaN bit in floating point format.
+
+DEFINES.H:
+  Define text for NaNs.
+
+DISPLAY.C:
+  Improve comments.
+  In <FormatAplFltFC>, handle formatting of NaNs.
+
+QF_DR.C:
+  Substitute <MySprintfW> for <wsprintfW>.
+  Fix typo in test for valid hexadecimal values.
+
+SC_LOAD.C:
+  Use common routine to test for and convert Infinities and NaNs.
+
+STARTADDR.H:
+  Include more routines.

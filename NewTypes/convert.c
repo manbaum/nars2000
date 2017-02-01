@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1945,6 +1945,137 @@ APLFLOAT ConvertToFloat
 
     return atArg.aplFloat;
 } // End ConvertToFloat
+
+
+//***************************************************************************
+//  $ConvertCharToFloat
+//
+//  Convert a 16-element char to a float
+//***************************************************************************
+
+APLFLOAT ConvertCharToFloat
+    (LPCHAR lpszChar)
+
+{
+    APLLONGEST aplLongest;          // Accumulator
+    UINT       uRht;                // Loop counter
+    UCHAR      aplChar;             // Temporary char
+
+    // Initialize accumulator
+    aplLongest = 0;
+
+    // Convert hex chars to hex
+    for (uRht = 0; uRht < 16; uRht++)
+    {
+        // Get the next char
+        aplChar = *lpszChar++;
+
+        // Convert the char to a hexadecimal digit
+        if (L'0' <= aplChar
+          &&        aplChar <= L'9')
+            aplChar -= L'0';
+        else
+        if (L'a' <= aplChar
+         &&         aplChar <= L'f')
+            aplChar -= L'a' - 10;
+        else
+        if (L'A' <= aplChar
+          &&        aplChar <= L'F')
+            aplChar -= L'A' - 10;
+#ifdef DEBUG
+        else
+            // We should never get here
+            DbgStop ();         // #ifdef DEBUG
+#endif
+        // Shift and accumulate
+        aplLongest = (aplLongest << 4) | aplChar;
+    } // End FOR
+
+    // Note that this converts a Signalling NaN to a Quiet one
+    return *(LPAPLFLOAT) &aplLongest;
+} // End ConvertCharToFloat
+
+
+//***************************************************************************
+//  $ConvertSpecCharToFloat
+//
+//  Convert special chars to float taking into account the
+//    various infinities and NaNs
+//***************************************************************************
+
+APLFLOAT ConvertSpecCharsToFloat
+    (LPCHAR  lpszChar,          // Ptr to incoming text
+     size_t *lpuLen)            // Ptr to # scanned chars (may be NULL)
+
+{
+    char szTemp[16+1];
+
+    // Check for positive infinity
+    if (lstrcmp (lpszChar,     TEXT_INFINITY) EQ 0)
+    {
+        if (lpuLen NE NULL)
+            // Copy the # scanned chars
+            *lpuLen = strcountof (TEXT_INFINITY);
+
+        // Copy the value
+        return fltPosInfinity;
+    } else
+    // Check for negative infinity
+    if (lstrcmp (lpszChar, "-" TEXT_INFINITY) EQ 0)
+    {
+        if (lpuLen NE NULL)
+            // Copy the # scanned chars
+            *lpuLen = strcountof ("-" TEXT_INFINITY);
+
+        // Copy the value
+        return fltNegInfinity;
+    } else
+    // Check for positive NaN
+    if (strncmp (lpszChar, "{" TEXT_NaN, strcountof ("{" TEXT_NaN)) EQ 0)
+    {
+        if (lpuLen NE NULL)
+            // Copy the # scanned chars         1234567890123
+            //                     {       NaN  8000000000001 }
+            *lpuLen = strcountof ("{" TEXT_NaN) + 13        + 1;
+
+        // Copy the incoming text to a temp so we can convert the header
+        CopyMemory (szTemp, &lpszChar[1], 16);
+
+        // Subsitute the floating point NaN header for "NaN"
+        szTemp[0] = '7';  // Positive NaN
+        szTemp[1] = 'F';
+        szTemp[2] = 'F';
+
+        // Copy the value
+        return ConvertCharToFloat (szTemp);
+    } else
+    // Check for negative NaN
+    if (strncmp (lpszChar, "{-" TEXT_NaN, strcountof ("{-" TEXT_NaN)) EQ 0)
+    {
+        if (lpuLen NE NULL)
+            // Copy the # scanned chars          1234567890123
+            //                     {-       NaN  8000000000001 }
+            *lpuLen = strcountof ("{-" TEXT_NaN) + 13        + 1;
+
+        // Copy the incoming text to a temp so we can convert the header
+        CopyMemory (szTemp, &lpszChar[2], 16);
+
+        // Subsitute the floating point NaN header for "NaN"
+        szTemp[0] = 'F';  // Negative NaN
+        szTemp[1] = 'F';
+        szTemp[2] = 'F';
+
+        // Copy the value
+        return ConvertCharToFloat (szTemp);
+    } else
+    {
+        if (lpuLen NE NULL)
+            // Copy the # scanned chars
+            *lpuLen = strspn (lpszChar, "0123456789eE.-");
+
+        return MyStrtod (lpszChar, NULL);
+    } // End IF/ELSE/...
+} // End ConvertSpecCharsToFloat
 
 
 //***************************************************************************

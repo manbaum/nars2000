@@ -4410,7 +4410,7 @@ UBOOL DisplayGlbVector
                                        &lpaplChar,              // Ptr to ptr to output save area
                                        &uCurPos,                // Ptr to current position
                                        &uMaxPos,                // Ptr to maximum position
-                                        uIniPos))               // Initial position
+                                       &uIniPos))               // Initial position
                     {
                         // Skip over the next two chars
                         uCnt                   += 2;
@@ -4594,7 +4594,7 @@ UBOOL CheckTermCodes
      LPAPLCHAR *lplpaplChar,    // Ptr to ptr to output save area
      APLUINT   *lpuCurPos,      // Ptr to current position
      APLUINT   *lpuMaxPos,      // Ptr to maximum position
-     APLUINT    uIniPos)        // Initial position
+     APLUINT   *lpuIniPos)      // Ptr to initial position
 
 {
     APLUINT uSpaces;            // # spaces to fill in for HT
@@ -4644,7 +4644,7 @@ UBOOL CheckTermCodes
             if (!OptionFlags.bOutputDebug)
             {
                 // If there's room to backspace, ...
-                if (lpuCurPos[0] > uIniPos)
+                if (lpuCurPos[0] > *lpuIniPos)
                 {
                     // Back up one position
                     (*lplpaplChar)--;
@@ -4666,7 +4666,7 @@ UBOOL CheckTermCodes
 
         case WC_CR:
             // Ensure properly terminated
-            lpaplCharIni[*lpuMaxPos - uIniPos] = WC_EOS;
+            lpaplCharIni[*lpuMaxPos - *lpuIniPos] = WC_EOS;
 
             // Display the continued line with ending CRLF
             AppendLine (lpaplCharIni, TRUE, TRUE);
@@ -4677,7 +4677,8 @@ UBOOL CheckTermCodes
             // Reset the ptrs and counters to the start of the line
             (*lplpaplChar) = lpaplCharIni;
             (*lpuMaxPos)   =
-            (*lpuCurPos)   = 0;
+            (*lpuCurPos)   =
+            (*lpuIniPos)   = 0;
 
             // If this char is followed by WC_CR and WC_LF, ...
             if (lpwc[1] EQ WC_CR

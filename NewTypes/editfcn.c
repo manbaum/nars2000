@@ -330,11 +330,60 @@ void ReplaceSel
 
 
 //***************************************************************************
+//  $KeepFirstVisibleLine
+//
+//  After WM_SIZE, ensure that the first visible line beforehand is still visible
+//***************************************************************************
+
+void KeepFirstVisibleLine
+    (HWND hWnd,                 // Window handle of the Session Manager
+     HWND hWndEC)               // Window handle of the edit ctrl
+
+{
+    ULONG ulFVL;                // First Visible Line
+
+    // Get the first visible line #
+    ulFVL = HandleToUlong (GetPropW (hWnd, PROP_FIRSTVISIBLELINE));
+
+    // Less the current FVL
+    ulFVL -= (ULONG) SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
+
+    // Scroll that line to the top
+    SendMessageW (hWndEC, EM_LINESCROLL, 0, ulFVL);
+
+    // Scroll the caret into view
+    SendMessageW (hWndEC, EM_SCROLLCARET, 0, 0);
+} // End KeepFirstVisibleLine
+
+
+//***************************************************************************
+//  $SaveFirstVisibleLine
+//
+//  Save the first visible line #
+//***************************************************************************
+
+void SaveFirstVisibleLine
+
+    (HWND hWnd,                 // Window handle of the Session Manager
+     HWND hWndEC)               // Window handle of the edit ctrl
+
+{
+    ULONG ulFVL;                // First Visible Line
+
+    // Get the first visible line #
+    ulFVL = (ULONG) SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
+
+    // Save the first visible line #
+    SetPropW (hWnd, PROP_FIRSTVISIBLELINE, ULongToHandle (ulFVL));
+} // End SaveFirstVisibleLine
+
+
+//***************************************************************************
 //  $MdiActivate
 //***************************************************************************
 
 void MdiActivate
-    (WINDOWCLASS wc,
+    (WINDOWCLASS wc,            // Window class enum (see WINDOWCLASS)
      HWND        hWnd,          // SM or FE window handle
      WPARAM      wParam,        // ...      wParam
      LPARAM      lParam,        // ...      lParam
@@ -346,11 +395,14 @@ void MdiActivate
     {
         ActivateMDIMenu (wc, hWnd);
 
-        // Scroll the caret into view
-        SendMessageW (hWndEC, EM_SCROLLCARET, 0, 0);
+        // Keep the first visible line visible, and
+        //   scroll the caret into view
+        KeepFirstVisibleLine (hWnd, hWndEC);
 
         SetFocus (hWnd);
-    } // End IF
+    } else
+        // Save the first visible line #
+        SaveFirstVisibleLine (hWnd, hWndEC);
 } // End MdiActivate
 
 
@@ -729,6 +781,9 @@ LRESULT APIENTRY FEWndProc
             // Save our window handle as the new next
             lpMemPTD->hWndFENxt = hWnd;
 
+            // Initialize the first visible line #
+            SetPropW (hWnd, PROP_FIRSTVISIBLELINE, 0);
+
             break;
         } // End WM_CREATE
 #undef  lpMDIcs
@@ -852,6 +907,9 @@ LRESULT APIENTRY FEWndProc
                                     // nHeight = HIWORD(lParam); // Height of client area
             if (fwSizeType NE SIZE_MINIMIZED)
             {
+                // Save the first visible line #
+                SaveFirstVisibleLine (hWnd, hWndEC);
+
                 SetWindowPos (hWndEC,           // Window handle to position
                               0,                // SWP_NOZORDER
                               0,                // X-position
@@ -861,8 +919,9 @@ LRESULT APIENTRY FEWndProc
                               SWP_NOZORDER      // Flags
                             | SWP_SHOWWINDOW
                              );
-                // Scroll the caret into view
-                SendMessageW (hWndEC, EM_SCROLLCARET, 0, 0);
+                // Keep the first visible line visible, and
+                //   scroll the caret into view
+                KeepFirstVisibleLine (hWnd, hWndEC);
             } // End IF
 
             break;                  // *MUST* pass on to DefMDIChildProcW

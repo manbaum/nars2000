@@ -1662,6 +1662,9 @@ NORMAL_EXIT:
             // Free the workspace global
             DbgGlobalFree ((*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE); (*(LPSM_CREATESTRUCTW *) &lpMDIcs->lParam)->hGlbDPFE = NULL;
 
+            // Initialize the first visible line #
+            SetPropW (hWnd, PROP_FIRSTVISIBLELINE, 0);
+
             PERFMON
 ////////////PERFMONSHOW (NULL)
 
@@ -1842,6 +1845,9 @@ NORMAL_EXIT:
                                     // nHeight = HIWORD(lParam); // Height of client area
             if (fwSizeType NE SIZE_MINIMIZED)
             {
+////            // Save the first visible line #
+////            SaveFirstVisibleLine (hWnd, hWndEC);
+
                 SetWindowPos (hWndEC,           // Window handle to position
                               0,                // SWP_NOZORDER
                               0,                // X-position
@@ -1851,8 +1857,9 @@ NORMAL_EXIT:
                               SWP_NOZORDER      // Flags
                             | SWP_SHOWWINDOW
                              );
-                // Scroll the caret into view
-                SendMessageW (hWndEC, EM_SCROLLCARET, 0, 0);
+////            // Keep the first visible line visible, and
+////            //   scroll the caret into view
+////            KeepFirstVisibleLine (hWnd, hWndEC);
             } // End IF
 
             break;                  // *MUST* pass on to DefMDIChildProc

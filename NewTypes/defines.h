@@ -686,6 +686,8 @@ default:        \
 
 #define PROP_IDMPOSFN   L"PROP_IDMPOSFN"
 #define PROP_NTHREADS   L"PROP_NTHREADS"
+#define PROP_FIRSTVISIBLELINE   L"FirstVisibleLine"
+
 
 //***************************************************************************
 //  RAT & VFP
@@ -695,6 +697,7 @@ default:        \
 //   as opposed to sensitive to []CT.
 ////#define RAT_EXACT
 
+
 //***************************************************************************
 //  Timers
 //***************************************************************************
@@ -702,6 +705,7 @@ default:        \
 #define ID_TIMER_UPDCHK        1
 #define ID_TIMER_EDIT       1729
 #define ID_TIMER_EXEC       1730
+
 
 //***************************************************************************
 //  Progress Bar
@@ -755,7 +759,6 @@ typedef struct tagCOLORBLEND *LPCOLORBLEND;     // Dummy entry for .pro files on
 
 #define CmpCT_V(aplLft,aplRht,fQuadCT,CMP)                      \
         (mpfr_cmp_ct ( aplLft,  aplRht, fQuadCT       ) CMP 0)
-
 
 
 //***************************************************************************

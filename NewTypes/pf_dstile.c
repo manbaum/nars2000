@@ -515,10 +515,10 @@ APLHC1R FloorHC1R
             {
                 mpq_set (&aplRes, &mpqNear);
 
-                if (!CmpCT_R (aplRht,
-                              mpqNear,
-                              GetQuadCT (),
-                              EQ))
+                if (CmpCT_R (aplRht,
+                             mpqNear,
+                             GetQuadCT (),
+                             NE))
                     mpq_sub_ui (&aplRes, &aplRes, 1, 1);
             } else
             {
@@ -655,10 +655,10 @@ APLHC1V FloorHC1V
             {
                 mpfr_set (&aplRes, &mpfNear, MPFR_RNDN);
 
-                if (!CmpCT_V (aplRht,
-                              mpfNear,
-                              GetQuadCT (),
-                              EQ))
+                if (CmpCT_V (aplRht,
+                             mpfNear,
+                             GetQuadCT (),
+                             NE))
                     mpfr_sub_ui (&aplRes, &aplRes, 1, MPFR_RNDN);
             } else
             {

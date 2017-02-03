@@ -1,6 +1,32 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1646 -- Version 0.5.0.xx
+--------------------------------
+
+* Replace Old Macro/Function Names With New Macro Names
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+DEFINES.H:
+MACROS.H:
+MPFNS.C:
+PF_DSTILE.C:
+PF_EPSILON.C:
+PF_EPSUND.C:
+PF_EQUALUND.C:
+PF_IOTA.C:
+PF_PI.C:
+PF_STILE.C:
+PO_MULTISET.C:
+QF_FMT.C:
+  Replace CompareCT/_CompareCT/mpq_cmp_ct/mpfr_cmp_ct with consistent macro calls (CmpCT_[FRV] or CmpSCT_[FRV]) except where the value of Integer Test is a variable.
+
+STARTADDR.H:
+  Rename <mpq_cmp_ct> to <_mpq_cmp_ct>.
+
+
 Build #1645 -- Version 0.5.0.xx
 --------------------------------
 

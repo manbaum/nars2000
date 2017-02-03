@@ -191,7 +191,7 @@ APLINT _FloatToAplint_CT
     aplInteger = (APLINT) floor (fFloat);
 
     // See how the number and its tolerant floor compare
-    if (_CompareCT (fFloat, (APLFLOAT) aplInteger, fQuadCT, bIntegerTest))
+    if (flt_cmp_ct (fFloat, (APLFLOAT) aplInteger, fQuadCT, bIntegerTest) EQ 0)
     {
         *lpbRet = TRUE;
 
@@ -202,7 +202,7 @@ APLINT _FloatToAplint_CT
     aplInteger = (APLINT) ceil (fFloat);
 
     // See how the number and its tolerant ceiling compare
-    if (_CompareCT (fFloat, (APLFLOAT) aplInteger, fQuadCT, bIntegerTest))
+    if (flt_cmp_ct (fFloat, (APLFLOAT) aplInteger, fQuadCT, bIntegerTest) EQ 0)
     {
         *lpbRet = TRUE;
 
@@ -648,13 +648,13 @@ int hcXY_cmp
             if (fQuadCT EQ 0.0)
                 return signumint (mpq_cmp (&lpatLft->aplRat, &lpatRht->aplRat));
             else
-                return signumint (mpq_cmp_ct (lpatLft->aplRat, lpatRht->aplRat, fQuadCT));
+                return signumint (CmpCT_R ( lpatLft->aplRat,  lpatRht->aplRat, fQuadCT, -));
 
         case ARRAY_VFP:
             if (fQuadCT EQ 0.0)
                 return signumint (mpfr_cmp (&lpatLft->aplVfp, &lpatRht->aplVfp));
             else
-                return signumint (mpfr_cmp_ct (lpatLft->aplVfp, lpatRht->aplVfp, fQuadCT));
+                return signumint (CmpCT_V  ( lpatLft->aplVfp,  lpatRht->aplVfp, fQuadCT, -));
 
         case ARRAY_HC2I:
             return hc2i_cmp  (lpatLft->aplHC2I    , lpatRht->aplHC2I   );
@@ -1455,9 +1455,10 @@ int hc2v_cmp
             continue;
         else
         // Split cases based upon the signum of the difference
-        switch (signumint (mpfr_cmp_ct (aplHC2VLft.parts[i],
-                                        aplHC2VRht.parts[i],
-                                        fQuadCT)))
+        switch (signumint (CmpCT_V (aplHC2VLft.parts[i],
+                                    aplHC2VRht.parts[i],
+                                    fQuadCT,
+                                    -)))
         {
             case 1:
                 return  1;

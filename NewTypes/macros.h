@@ -602,13 +602,10 @@
 
 // Define macros that expand to another function
 #define FloatToAplint_CT(a,b,c)     (_FloatToAplint_CT (a, b, c, FALSE))
-#define CompareCT(a,b,c,d)          (_CompareCT (a, b, c, FALSE))
-#define _CompareCT(a,b,c,d)         (flt_cmp_ct (a, b, c, d) EQ 0)
 
 #define mpq_get_sctsx(a,b)          _mpq_get_ctsx (a, SYS_CT, b, TRUE)
 #define mpq_get_ctsx(a,b,c)         _mpq_get_ctsx (a, b, c, FALSE)
 #define mpfr_get_ctsx(a,b,c)        _mpfr_get_ctsx (a, b, c, FALSE)
-#define mpfr_cmp_ct(a,b,c)          _mpfr_cmp_ct (&a, &b, c, FALSE)
 
 // Define macro for detecting a character in the range for Output Debugging
 #define IsOutDbg(a)             ((L' ' > (unsigned) a) || (a) EQ UTF16_REPLACEMENT0000)

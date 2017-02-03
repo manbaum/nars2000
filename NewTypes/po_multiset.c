@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -957,7 +957,7 @@ void PrimFnDydMEO_NvN
                             aplTypeRht,                 // Storage type
                             lpMemGupRht[iRht].Index);   // Index
             // Compare 'em
-            bComp = CompareCT (aplFloatLft, aplFloatRht, fQuadCT, NULL);
+            bComp = CmpCT_F (aplFloatLft, aplFloatRht, fQuadCT, EQ);
 
             // Check for a match
             if (bComp)
@@ -1652,7 +1652,7 @@ void PrimFnDydMIO_NvN
                             aplTypeLft,                 // Storage type
                             lpMemGupLft[iLft].Index);   // Index
             // Compare 'em
-            bComp = CompareCT (aplFloatLft, aplFloatRht, fQuadCT, NULL);
+            bComp = CmpCT_F (aplFloatLft, aplFloatRht, fQuadCT, EQ);
 
             // Check for a match
             if (bComp)
@@ -1675,7 +1675,7 @@ void PrimFnDydMIO_NvN
                           GetNextFloat (lpMemLft,                   // Ptr to global memory
                                         aplTypeLft,                 // Storage type
                                         lpMemGupLft[iLft].Index);   // Index
-                        if (!CompareCT (aplFloatLft, aplFloatRht, fQuadCT, NULL))
+                        if (CmpCT_F (aplFloatLft, aplFloatRht, fQuadCT, NE))
                             break;
                     } // End FOR
 #ifdef GRADE2ND

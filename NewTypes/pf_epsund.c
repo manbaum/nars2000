@@ -959,13 +959,13 @@ UBOOL EqualAny
 #define GetNextRAT(lpMem,typeMem,uRes)      ((LPAPLRAT) lpMem)[uRes]
 #define GetNextVFP(lpMem,typeMem,uRes)      ((LPAPLVFP) lpMem)[uRes]
 #define CompareInt(Lft,typeLft,Rht,typeRht) (Lft EQ Rht)
-#define CompareFlt(Lft,typeLft,Rht,typeRht) (CompareCT   ( Lft,  Rht, fQuadCT, NULL))
+#define CompareFlt(Lft,typeLft,Rht,typeRht) (CmpCT_F ( Lft,  Rht, fQuadCT, EQ))
 #ifdef RAT_EXACT
-#define CompareRAT(Lft,typeLft,Rht,typeRht) (mpq_cmp     (&Lft, &Rht         ) EQ 0)
+#define CompareRAT(Lft,typeLft,Rht,typeRht) (mpq_cmp (&Lft, &Rht         ) EQ 0)
 #else
-#define CompareRAT(Lft,typeLft,Rht,typeRht) (mpq_cmp_ct  (&Lft, &Rht, fQuadCT) EQ 0)
+#define CompareRAT(Lft,typeLft,Rht,typeRht) (CmpCT_R (&Lft, &Rht, fQuadCT, EQ))
 #endif
-#define CompareVFP(Lft,typeLft,Rht,typeRht) (mpfr_cmp_ct (&Lft, &Rht, fQuadCT) EQ 0)
+#define CompareVFP(Lft,typeLft,Rht,typeRht) (CmpCT_V (&Lft, &Rht, fQuadCT, EQ))
 
 //  ***FIXME*** -- What to do about fuzzy comparisons not being transitive???
 
@@ -2136,7 +2136,7 @@ UBOOL CompareRATvVFP
     mpfr_init_set_q (&mpfLft, &aplLft, MPFR_RNDN);
 
     // Compare 'em
-    bRet = (mpfr_cmp_ct (mpfLft, aplRht, GetQuadCT ()) EQ 0);
+    bRet = (CmpCT_V (mpfLft, aplRht, GetQuadCT (), EQ));
 
     // We no longer need this storage
     Myf_clear (&mpfLft);
@@ -2208,7 +2208,7 @@ UBOOL CompareVFPvRAT
     mpfr_init_set_q (&mpfRht, &aplRht, MPFR_RNDN);
 
     // Compare 'em
-    bRet = (mpfr_cmp_ct (aplLft, mpfRht, GetQuadCT ()) EQ 0);
+    bRet = (CmpCT_V (aplLft, mpfRht, GetQuadCT (), EQ));
 
     // We no longer need this storage
     Myf_clear (&mpfRht);

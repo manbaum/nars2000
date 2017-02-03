@@ -1088,7 +1088,7 @@ void mpq_mod_sx
 
 
 //***************************************************************************
-//  $mpq_cmp_ct
+//  $_mpq_cmp_ct
 //
 //  Compare two RATs relative to a given comparison tolerance
 //
@@ -1133,26 +1133,6 @@ int _mpq_cmp_ct
 
     return mpq_cmp (&aplRatLft, &aplRatRht);
 } // End _mpq_cmp_ct
-
-
-//***************************************************************************
-//  $mpq_cmp_ct
-//
-//  Compare two RATs relative to a given comparison tolerance
-//
-//  Return +1 if Lft >  Rht
-//          0 if Lft EQ Rht
-//         -1 if Lft <  Rht
-//***************************************************************************
-
-int mpq_cmp_ct
-    (APLRAT   aplRatLft,        // Left arg
-     APLRAT   aplRatRht,        // Right arg
-     APLFLOAT fQuadCT)          // []CT
-
-{
-    return _mpq_cmp_ct (aplRatLft, aplRatRht, fQuadCT, FALSE);
-} // End mpq_cmp_ct
 
 
 //***************************************************************************
@@ -1745,7 +1725,7 @@ int _mpfr_cmp_ct
         int    sgnLft,              // Left arg sign
                sgnRht;              // Right ...
 
-        // Use an algorithm similar to the one in _CompareCT
+        // Use an algorithm similar to the one in flt_cmp_ct
 
         // Initialize the temps to 0
         mpfr_init0 (&mpfLftAbs);

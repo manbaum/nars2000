@@ -765,8 +765,8 @@ typedef struct tagCOLORBLEND *LPCOLORBLEND;     // Dummy entry for .pro files on
 //  Item Comparisons with SYS_CT, allow integer test
 //***************************************************************************
 
-#define CmpSCT_F(aplLft,aplRht,CMP)                             \
-       (flt_cmp_ct   ( aplLft,  aplRht, SYS_CT , TRUE ) CMP 0)
+#define CmpSCT_F(aplLft,aplRht,fQuadCT,CMP)                     \
+       (flt_cmp_ct   ( aplLft,  aplRht, fQuadCT, TRUE ) CMP 0)
 
 #ifdef RAT_EXACT
     // Compare the two RATs

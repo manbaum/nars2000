@@ -491,7 +491,7 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbarCom_EM_YY
                          && IsSimpleInt (aplTypeRht))
                             aplIntegerRes = (aplIntegerLft EQ aplIntegerRht);
                         else
-                            aplIntegerRes = CompareCT (aplFloatLft, aplFloatRht, fQuadCT, NULL);
+                            aplIntegerRes = CmpCT_F (aplFloatLft, aplFloatRht, fQuadCT, EQ);
                     } else          // Both are char
                         // Compare the values
                         aplIntegerRes = (aplCharLft EQ aplCharRht);
@@ -673,24 +673,24 @@ UBOOL PrimFnDydEqualUnderbarSimpleOrd
                 break;
 
             case ARRAY_FLOAT:
-                bRet = CompareCT (atLft.aplFloat,
-                                  atRht.aplFloat,
-                                  fQuadCT,
-                                  NULL);
+                bRet = CmpCT_F (atLft.aplFloat,
+                                atRht.aplFloat,
+                                fQuadCT,
+                                EQ);
                 break;
 
             case ARRAY_RAT:
                 // Compare the two RATs relative to []CT
 #ifdef RAT_EXACT
-                bRet = mpq_cmp     (&atLft.aplRat, &atRht.aplRat         ) EQ 0;
+                bRet = mpq_cmp  (&atLft.aplRat, &atRht.aplRat         ) EQ 0;
 #else
-                bRet = mpq_cmp_ct  ( atLft.aplRat,  atRht.aplRat, fQuadCT) EQ 0;
+                bRet = CmpCT_R  ( atLft.aplRat,  atRht.aplRat, fQuadCT, EQ);
 #endif
                 break;
 
             case ARRAY_VFP:
                 // Compare the two VFPs relative to []CT
-                bRet = mpfr_cmp_ct (atLft.aplVfp, atRht.aplVfp, fQuadCT) EQ 0;
+                bRet = CmpCT_V (atLft.aplVfp, atRht.aplVfp, fQuadCT, EQ);
 
                 break;
 
@@ -1050,7 +1050,7 @@ UBOOL PrimFnDydEqualUnderbarNested
                 } // End IF
 
                 // Finally, handle FLOAT vs. FLOAT
-                if (!CompareCT (aplFloatLft, aplFloatRht, fQuadCT, NULL))
+                if (CmpCT_F (aplFloatLft, aplFloatRht, fQuadCT, NE))
                     return FALSE;
                 break;
 

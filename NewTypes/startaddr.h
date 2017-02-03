@@ -477,7 +477,7 @@ typedef struct tagSTART_ADDRESSES
     "mpq_ceil"                  , (LPUCHAR) &mpq_ceil                   ,
     "mpq_mod"                   , (LPUCHAR) &mpq_mod                    ,
     "mpq_mod_sx"                , (LPUCHAR) &mpq_mod_sx                 ,
-    "mpq_cmp_ct"                , (LPUCHAR) &mpq_cmp_ct                 ,
+    "_mpq_cmp_ct"               , (LPUCHAR) &_mpq_cmp_ct                ,
     "Myq_init"                  , (LPUCHAR) &Myq_init                   ,
     "Myq_clear"                 , (LPUCHAR) &Myq_clear                  ,
     "mpq_integer_p"             , (LPUCHAR) &mpq_integer_p              ,

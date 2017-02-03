@@ -930,13 +930,13 @@ UBOOL PrimFnPiIntegerTolerance
             mpq_ceil  (&mpqRes, mpqTmp);
 
             // Compare against the original value
-            if (mpq_cmp_ct (mpqRes, *mpqTmp, SYS_CT) NE 0)
+            if (CmpCT_R (mpqRes, *mpqTmp, SYS_CT, NE))
             {
                 // Get the floor
                 mpq_floor (&mpqRes, mpqTmp);
 
                 // Compare against the original value
-                if (mpq_cmp_ct (mpqRes, *mpqTmp, SYS_CT) NE 0)
+                if (CmpCT_R (mpqRes, *mpqTmp, SYS_CT, NE))
                     return FALSE;
             } // End IF/ELSE
 

@@ -1515,10 +1515,10 @@ APLHC1F ModHC1F
 
         // If Rht divided-by Lft is near an integer within CT
         //   aplRes = 0.
-        if (_CompareCT (aplTmp, floor (aplTmp), fQuadCT, TRUE))
+        if (CmpSCT_F (aplTmp, floor (aplTmp), fQuadCT, EQ))
             return (gAllowNeg0 && SIGN_APLFLOAT (aplLft)) ? -0.0 : 0.0;
 
-        if (_CompareCT (aplTmp, ceil  (aplTmp), fQuadCT, TRUE))
+        if (CmpSCT_F (aplTmp, ceil  (aplTmp), fQuadCT, EQ))
             return (gAllowNeg0 && SIGN_APLFLOAT (aplLft)) ? -0.0 : 0.0;
 
         // Calculate the modulus
@@ -1681,8 +1681,8 @@ APLHC1R ModHC1R
         //   aplRes = 0.
         mpq_floor (&aplFlr, &aplTmp);
         mpq_ceil  (&aplCel, &aplTmp);
-        if (mpq_cmp_ct (aplTmp, aplFlr, fQuadCT) NE 0
-         && mpq_cmp_ct (aplTmp, aplCel, fQuadCT) NE 0)
+        if (CmpCT_R (aplTmp, aplFlr, fQuadCT, NE)
+         && CmpCT_R (aplTmp, aplCel, fQuadCT, NE))
             // Calculate the residue
             mpq_mod (&aplRes, &aplRht, &aplLft);
 
@@ -1841,8 +1841,8 @@ APLHC1V ModHC1V
         //   return 0.
         mpfr_floor (&aplFlr, &aplTmp);
         mpfr_ceil  (&aplCel, &aplTmp);
-        if (mpfr_cmp_ct (aplTmp, aplFlr, fQuadCT) NE 0
-         && mpfr_cmp_ct (aplTmp, aplCel, fQuadCT) NE 0)
+        if (CmpCT_V (aplTmp, aplFlr, fQuadCT, NE)
+         && CmpCT_V (aplTmp, aplCel, fQuadCT, NE))
             // Calculate the residue
             mpfr_mod (&aplRes, &aplRht, &aplLft);
 
@@ -2364,12 +2364,12 @@ APLHC4F ModHC4F
             aplTmp = fabs (aplRes.parts[i]);
 
             // If floor (aplTmp) is near a Hurwitz integer within SYS_CT, ...
-            if (_CompareCT (aplTmp, floor (aplTmp) + 0.5, SYS_CT, TRUE))
+            if (CmpSCT_F (aplTmp, floor (aplTmp) + 0.5, SYS_CT, EQ))
                 // Save the half integer
                 aplRes2.parts[i] = floor (aplTmp) + 0.5;
             else
             // If ceil  (aplTmp) is near a Hurwitz integer within SYS_CT, ...
-            if (_CompareCT (aplTmp, ceil  (aplTmp) - 0.5, SYS_CT, TRUE))
+            if (CmpSCT_F (aplTmp, ceil  (aplTmp) - 0.5, SYS_CT, EQ))
                 // Save the half integer
                 aplRes2.parts[i] = ceil  (aplTmp) - 0.5;
             else
@@ -2387,7 +2387,7 @@ APLHC4F ModHC4F
             // Loop through all of the parts
             for (i = 0; i < 4; i++)
             // If it's close to 0
-            if (_CompareCT (aplRes.parts[i], 0, SYS_CT, TRUE))
+            if (CmpSCT_F (aplRes.parts[i], 0, SYS_CT, EQ))
                 // Call it 0
                 aplRes.parts[i] = 0;
         // Calculate the magnitudes

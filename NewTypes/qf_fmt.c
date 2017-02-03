@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2580,7 +2580,7 @@ UBOOL QFMT_SubstValue
             fQuadCT = GetQuadCT ();
 
             while (TRUE)
-            if (CompareCT (lpOchain->aplFltVal, aplFltItm, fQuadCT, NULL))
+            if (CmpCT_F (lpOchain->aplFltVal, aplFltItm, fQuadCT, EQ))
             {
                 LPWCHAR lpwSub;         // Ptr to substitution text
                 UINT    uWid,           // Field width

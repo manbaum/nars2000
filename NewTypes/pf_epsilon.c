@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2457,7 +2457,7 @@ UBOOL PrimFnDydEpsilonOther_EM
                                     break;
 
                                 case IMMTYPE_FLOAT:     // Lft = BOOL, Rht = FLOAT
-                                    if (CompareCT ((APLBOOL) aplLongestSubLft, *(LPAPLFLOAT) &aplLongestSubRht, fQuadCT, NULL))
+                                    if (CmpCT_F ((APLBOOL) aplLongestSubLft, *(LPAPLFLOAT) &aplLongestSubRht, fQuadCT, EQ))
                                         goto SET_RESULT_BIT;
                                     break;
 
@@ -2482,7 +2482,7 @@ UBOOL PrimFnDydEpsilonOther_EM
                                     break;
 
                                 case IMMTYPE_FLOAT:     // Lft = INT, Rht = FLOAT
-                                    if (CompareCT ((APLFLOAT) (APLINT)  aplLongestSubLft, *(LPAPLFLOAT) &aplLongestSubRht, fQuadCT, NULL))
+                                    if (CmpCT_F ((APLFLOAT) (APLINT)  aplLongestSubLft, *(LPAPLFLOAT) &aplLongestSubRht, fQuadCT, EQ))
                                         goto SET_RESULT_BIT;
                                     break;
 
@@ -2497,17 +2497,17 @@ UBOOL PrimFnDydEpsilonOther_EM
                             switch (immTypeSubRht)
                             {
                                 case IMMTYPE_BOOL:      // Lft = FLOAT, Rht = BOOL
-                                    if (CompareCT (*(LPAPLFLOAT) &aplLongestSubLft, (APLBOOL) aplLongestSubRht, fQuadCT, NULL))
+                                    if (CmpCT_F (*(LPAPLFLOAT) &aplLongestSubLft, (APLBOOL) aplLongestSubRht, fQuadCT, EQ))
                                         goto SET_RESULT_BIT;
                                     break;
 
                                 case IMMTYPE_INT:       // Lft = FLOAT, Rht = INT
-                                    if (CompareCT (*(LPAPLFLOAT) &aplLongestSubLft, (APLFLOAT) (APLINT) aplLongestSubRht, fQuadCT, NULL))
+                                    if (CmpCT_F (*(LPAPLFLOAT) &aplLongestSubLft, (APLFLOAT) (APLINT) aplLongestSubRht, fQuadCT, EQ))
                                         goto SET_RESULT_BIT;
                                     break;
 
                                 case IMMTYPE_FLOAT:     // Lft = FLOAT, Rht = FLOAT
-                                    if (CompareCT (*(LPAPLFLOAT) &aplLongestSubLft, *(LPAPLFLOAT) &aplLongestSubRht, fQuadCT, NULL))
+                                    if (CmpCT_F (*(LPAPLFLOAT) &aplLongestSubLft, *(LPAPLFLOAT) &aplLongestSubRht, fQuadCT, EQ))
                                         goto SET_RESULT_BIT;
                                     break;
 

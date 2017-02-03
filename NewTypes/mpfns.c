@@ -1097,10 +1097,11 @@ void mpq_mod_sx
 //         -1 if Lft <  Rht
 //***************************************************************************
 
-int mpq_cmp_ct
-    (APLRAT   aplRatLft,
-     APLRAT   aplRatRht,
-     APLFLOAT fQuadCT)
+int _mpq_cmp_ct
+    (APLRAT   aplRatLft,        // Left arg
+     APLRAT   aplRatRht,        // Right arg
+     APLFLOAT fQuadCT,          // []CT
+     UBOOL    bIntegerTest)     // TRUE iff this is an integer test
 
 {
     APLVFP mpfLft = {0},
@@ -1120,7 +1121,7 @@ int mpq_cmp_ct
         mpfr_set_q (&mpfRht, &aplRatRht, MPFR_RNDN);
 
         // Compare the two VFPs relative to []CT
-        bRet = mpfr_cmp_ct (mpfLft, mpfRht, fQuadCT) EQ 0;
+        bRet = _mpfr_cmp_ct (&mpfLft, &mpfRht, fQuadCT, bIntegerTest) EQ 0;
 
         // We no longer need this storage
         Myf_clear (&mpfRht);
@@ -1131,6 +1132,26 @@ int mpq_cmp_ct
     } // End IF
 
     return mpq_cmp (&aplRatLft, &aplRatRht);
+} // End _mpq_cmp_ct
+
+
+//***************************************************************************
+//  $mpq_cmp_ct
+//
+//  Compare two RATs relative to a given comparison tolerance
+//
+//  Return +1 if Lft >  Rht
+//          0 if Lft EQ Rht
+//         -1 if Lft <  Rht
+//***************************************************************************
+
+int mpq_cmp_ct
+    (APLRAT   aplRatLft,        // Left arg
+     APLRAT   aplRatRht,        // Right arg
+     APLFLOAT fQuadCT)          // []CT
+
+{
+    return _mpq_cmp_ct (aplRatLft, aplRatRht, fQuadCT, FALSE);
 } // End mpq_cmp_ct
 
 
@@ -1741,12 +1762,12 @@ int _mpfr_cmp_ct
         // If this is an integer test, allow comparison with zero
         if (bIntegerTest
          && sgnLft EQ 0
-         && mpfr_cmp_d (&mpfRhtAbs, fQuadCT) <= 0)
+         && mpfr_cmp_d (&mpfRhtAbs, SYS_CT) <= 0)
             iRet = 0;
         else
         if (bIntegerTest
          && sgnRht EQ 0
-         && mpfr_cmp_d (&mpfLftAbs, fQuadCT) <= 0)
+         && mpfr_cmp_d (&mpfLftAbs, SYS_CT) <= 0)
             iRet = 0;
         else
         if (!IsMpf0 (lpaplVfpLft)       // Lft NE 0

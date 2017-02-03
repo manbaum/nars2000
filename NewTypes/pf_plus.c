@@ -336,6 +336,29 @@ void PrimFnMonPlusVisV
 
 
 //***************************************************************************
+//  $ConjHC2I
+//***************************************************************************
+
+APLHC2I ConjHC2I
+    (APLHC2I aplRht)                    // Right arg
+
+{
+    int     i;
+    APLHC2I aplRes;
+
+    // Copy the right arg real part to the result
+    aplRes.parts[0] =  aplRht.parts[0];
+
+    // Loop through the imaginary parts
+    for (i = 1; i < 2; i++)
+        // Change the sign of the imaginary part
+        aplRes.parts[i] = -aplRht.parts[i];
+
+    return aplRes;
+} // End ConjHC2I
+
+
+//***************************************************************************
 //  $ConjHC2I_RE
 //***************************************************************************
 
@@ -427,10 +450,10 @@ void PrimFnMonPlusHC2FisHC2I
 
 
 //***************************************************************************
-//  $ConjHC2F_RE
+//  $ConjHC2F
 //***************************************************************************
 
-APLHC2F ConjHC2F_RE
+APLHC2F ConjHC2F
     (APLHC2F aplRht)                    // Right arg
 
 {
@@ -448,7 +471,7 @@ APLHC2F ConjHC2F_RE
         aplRes.parts[i] = -aplRht.parts[i];
 
     return aplRes;
-} // End ConjHC2F_RE
+} // End ConjHC2F
 
 
 //***************************************************************************
@@ -467,8 +490,34 @@ void PrimFnMonPlusHC2FisHC2F
     // No exceptions in this code
 
     // Call subfunction
-    lpMemRes[uRes] = ConjHC2F_RE (lpatRht->aplHC2F);
+    lpMemRes[uRes] = ConjHC2F (lpatRht->aplHC2F);
 } // End PrimFnMonPlusHC2FisHC2F
+
+
+//***************************************************************************
+//  $ConjHC2R
+//***************************************************************************
+
+APLHC2R ConjHC2R
+    (APLHC2R aplRht)                    // Right arg
+
+{
+    int     i;
+    APLHC2R aplRes = {0};
+
+    // Initialize to 0/1
+    mphc2r_init (&aplRes);
+
+    // Copy the right arg real part to the result
+    mpq_set (&aplRes.parts[0], &aplRht.parts[0]);
+
+    // Loop through the imaginary parts
+    for (i = 1; i < 2; i++)
+         // Change the sign of the imaginary part
+         mpq_neg (&aplRes.parts[i], &aplRht.parts[i]);
+
+    return aplRes;
+} // End ConjHC2R
 
 
 //***************************************************************************
@@ -546,10 +595,10 @@ void PrimFnMonPlusHC2RisHC2R
 
 
 //***************************************************************************
-//  $ConjHC2V_RE
+//  $ConjHC2V
 //***************************************************************************
 
-APLHC2V ConjHC2V_RE
+APLHC2V ConjHC2V
     (APLHC2V aplRht)                    // Right arg
 
 {
@@ -570,7 +619,7 @@ APLHC2V ConjHC2V_RE
         mpfr_neg (&aplRes.parts[i], &aplRht.parts[i], MPFR_RNDN);
 
     return aplRes;
-} // End ConjHC2V_RE
+} // End ConjHC2V
 
 
 //***************************************************************************
@@ -594,7 +643,7 @@ void PrimFnMonPlusHC2VisHC2R
     // No exceptions in this code
 
     // Call subfunction
-    lpMemRes[uRes] = ConjHC2V_RE (atRht.aplHC2V);
+    lpMemRes[uRes] = ConjHC2V (atRht.aplHC2V);
 
     Myhc2v_clear (&atRht.aplHC2V);
 } // End PrimFnMonPlusHC2VisHC2R
@@ -616,8 +665,31 @@ void PrimFnMonPlusHC2VisHC2V
     // No exceptions in this code
 
     // Call subfunction
-    lpMemRes[uRes] = ConjHC2V_RE (lpatRht->aplHC2V);
+    lpMemRes[uRes] = ConjHC2V (lpatRht->aplHC2V);
 } // End PrimFnMonPlusHC2VisHC2V
+
+
+//***************************************************************************
+//  $ConjHC4I
+//***************************************************************************
+
+APLHC4I ConjHC4I
+    (APLHC4I aplRht)                    // Right arg
+
+{
+    int     i;
+    APLHC4I aplRes;
+
+    // Copy the right arg real part to the result
+    aplRes.parts[0] =  aplRht.parts[0];
+
+    // Loop through the imaginary parts
+    for (i = 1; i < 4; i++)
+        // Change the sign of the imaginary part
+        aplRes.parts[i] = -aplRht.parts[i];
+
+    return aplRes;
+} // End ConjHC4I
 
 
 //***************************************************************************
@@ -712,10 +784,10 @@ void PrimFnMonPlusHC4FisHC4I
 
 
 //***************************************************************************
-//  $ConjHC4F_RE
+//  $ConjHC4F
 //***************************************************************************
 
-APLHC4F ConjHC4F_RE
+APLHC4F ConjHC4F
     (APLHC4F aplRht)                    // Right arg
 
 {
@@ -733,7 +805,7 @@ APLHC4F ConjHC4F_RE
         aplRes.parts[i] = -aplRht.parts[i];
 
     return aplRes;
-} // End ConjHC4F_RE
+} // End ConjHC4F
 
 
 //***************************************************************************
@@ -752,8 +824,34 @@ void PrimFnMonPlusHC4FisHC4F
     // No exceptions in this code
 
     // Call subfunction
-    lpMemRes[uRes] = ConjHC4F_RE (lpatRht->aplHC4F);
+    lpMemRes[uRes] = ConjHC4F (lpatRht->aplHC4F);
 } // End PrimFnMonPlusHC4FisHC4F
+
+
+//***************************************************************************
+//  $ConjHC4R
+//***************************************************************************
+
+APLHC4R ConjHC4R
+    (APLHC4R aplRht)                    // Right arg
+
+{
+    int     i;
+    APLHC4R aplRes = {0};
+
+    // Initialize to 0/1
+    mphc4r_init (&aplRes);
+
+    // Copy the right arg real part to the result
+    mpq_set (&aplRes.parts[0], &aplRht.parts[0]);
+
+    // Loop through the imaginary parts
+    for (i = 1; i < 4; i++)
+         // Change the sign of the imaginary part
+         mpq_neg (&aplRes.parts[i], &aplRht.parts[i]);
+
+    return aplRes;
+} // End ConjHC4R
 
 
 //***************************************************************************
@@ -831,10 +929,10 @@ void PrimFnMonPlusHC4RisHC4R
 
 
 //***************************************************************************
-//  $ConjHC4V_RE
+//  $ConjHC4V
 //***************************************************************************
 
-APLHC4V ConjHC4V_RE
+APLHC4V ConjHC4V
     (APLHC4V aplRht)                    // Right arg
 
 {
@@ -855,7 +953,7 @@ APLHC4V ConjHC4V_RE
         mpfr_neg (&aplRes.parts[i], &aplRht.parts[i], MPFR_RNDN);
 
     return aplRes;
-} // End ConjHC4V_RE
+} // End ConjHC4V
 
 
 //***************************************************************************
@@ -879,7 +977,7 @@ void PrimFnMonPlusHC4VisHC4R
     // No exceptions in this code
 
     // Call subfunction
-    lpMemRes[uRes] = ConjHC4V_RE (atRht.aplHC4V);
+    lpMemRes[uRes] = ConjHC4V (atRht.aplHC4V);
 
     Myhc4v_clear (&atRht.aplHC4V);
 } // End PrimFnMonPlusHC4VisHC4R
@@ -901,8 +999,31 @@ void PrimFnMonPlusHC4VisHC4V
     // No exceptions in this code
 
     // Call subfunction
-    lpMemRes[uRes] = ConjHC4V_RE (lpatRht->aplHC4V);
+    lpMemRes[uRes] = ConjHC4V (lpatRht->aplHC4V);
 } // End PrimFnMonPlusHC4VisHC4V
+
+
+//***************************************************************************
+//  $ConjHC8I
+//***************************************************************************
+
+APLHC8I ConjHC8I
+    (APLHC8I aplRht)                    // Right arg
+
+{
+    int     i;
+    APLHC8I aplRes;
+
+    // Copy the right arg real part to the result
+    aplRes.parts[0] =  aplRht.parts[0];
+
+    // Loop through the imaginary parts
+    for (i = 1; i < 8; i++)
+        // Change the sign of the imaginary part
+        aplRes.parts[i] = -aplRht.parts[i];
+
+    return aplRes;
+} // End ConjHC8I
 
 
 //***************************************************************************
@@ -997,10 +1118,10 @@ void PrimFnMonPlusHC8FisHC8I
 
 
 //***************************************************************************
-//  $ConjHC8F_RE
+//  $ConjHC8F
 //***************************************************************************
 
-APLHC8F ConjHC8F_RE
+APLHC8F ConjHC8F
     (APLHC8F aplRht)                // Right arg
 
 {
@@ -1018,7 +1139,7 @@ APLHC8F ConjHC8F_RE
         aplRes.parts[i] = -aplRht.parts[i];
 
     return aplRes;
-} // End ConjHC8F_RE
+} // End ConjHC8F
 
 
 //***************************************************************************
@@ -1037,8 +1158,34 @@ void PrimFnMonPlusHC8FisHC8F
     // No exceptions in this code
 
     // Call subfunction
-    lpMemRes[uRes] = ConjHC8F_RE (lpatRht->aplHC8F);
+    lpMemRes[uRes] = ConjHC8F (lpatRht->aplHC8F);
 } // End PrimFnMonPlusHC8FisHC8F
+
+
+//***************************************************************************
+//  $ConjHC8R
+//***************************************************************************
+
+APLHC8R ConjHC8R
+    (APLHC8R aplRht)                    // Right arg
+
+{
+    int     i;
+    APLHC8R aplRes = {0};
+
+    // Initialize to 0/1
+    mphc8r_init (&aplRes);
+
+    // Copy the right arg real part to the result
+    mpq_set (&aplRes.parts[0], &aplRht.parts[0]);
+
+    // Loop through the imaginary parts
+    for (i = 1; i < 8; i++)
+         // Change the sign of the imaginary part
+         mpq_neg (&aplRes.parts[i], &aplRht.parts[i]);
+
+    return aplRes;
+} // End ConjHC8R
 
 
 //***************************************************************************
@@ -1116,10 +1263,10 @@ void PrimFnMonPlusHC8RisHC8R
 
 
 //***************************************************************************
-//  $ConjHC8V_RE
+//  $ConjHC8V
 //***************************************************************************
 
-APLHC8V ConjHC8V_RE
+APLHC8V ConjHC8V
     (APLHC8V aplRht)                    // Right arg
 
 {
@@ -1140,7 +1287,7 @@ APLHC8V ConjHC8V_RE
         mpfr_neg (&aplRes.parts[i], &aplRht.parts[i], MPFR_RNDN);
 
     return aplRes;
-} // End ConjHC8V_RE
+} // End ConjHC8V
 
 
 //***************************************************************************
@@ -1164,7 +1311,7 @@ void PrimFnMonPlusHC8VisHC8R
     // No exceptions in this code
 
     // Call subfunction
-    lpMemRes[uRes] = ConjHC8V_RE (atRht.aplHC8V);
+    lpMemRes[uRes] = ConjHC8V (atRht.aplHC8V);
 
     Myhc8v_clear (&atRht.aplHC8V);
 } // End PrimFnMonPlusHC8VisHC8R
@@ -1186,7 +1333,7 @@ void PrimFnMonPlusHC8VisHC8V
     // No exceptions in this code
 
     // Call subfunction
-    lpMemRes[uRes] = ConjHC8V_RE (lpatRht->aplHC8V);
+    lpMemRes[uRes] = ConjHC8V (lpatRht->aplHC8V);
 } // End PrimFnMonPlusHC8VisHC8V
 
 

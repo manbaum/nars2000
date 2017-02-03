@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -963,9 +963,9 @@ UBOOL EqualAny
 #ifdef RAT_EXACT
 #define CompareRAT(Lft,typeLft,Rht,typeRht) (mpq_cmp     (&Lft, &Rht         ) EQ 0)
 #else
-#define CompareRAT(Lft,typeLft,Rht,typeRht) (mpq_cmp_ct  ( Lft,  Rht, fQuadCT) EQ 0)
+#define CompareRAT(Lft,typeLft,Rht,typeRht) (mpq_cmp_ct  (&Lft, &Rht, fQuadCT) EQ 0)
 #endif
-#define CompareVFP(Lft,typeLft,Rht,typeRht) (mpfr_cmp_ct ( Lft,  Rht, fQuadCT) EQ 0)
+#define CompareVFP(Lft,typeLft,Rht,typeRht) (mpfr_cmp_ct (&Lft, &Rht, fQuadCT) EQ 0)
 
 //  ***FIXME*** -- What to do about fuzzy comparisons not being transitive???
 

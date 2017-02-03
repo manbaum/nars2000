@@ -445,7 +445,7 @@ void PrimFnMonColonBarHC2FisHC2F
         UBOOL bAllowNeg0 = (UBOOL) gAllowNeg0;
 
         // Calculate the numerator
-        aplNum = ConjHC2F_RE (lpatRht->aplHC2F);
+        aplNum = ConjHC2F (lpatRht->aplHC2F);
 
         // Loop through all of the parts
         for (i = 0; i < 2; i++)
@@ -456,7 +456,7 @@ void PrimFnMonColonBarHC2FisHC2F
     } else
     {
         // Calculate the numerator
-        aplNum = ConjHC2F_RE (lpatRht->aplHC2F);
+        aplNum = ConjHC2F (lpatRht->aplHC2F);
 
         // Loop through all of the parts
         for (i = 0; i < 2; i++)
@@ -524,7 +524,7 @@ void PrimFnMonColonBarHC2RisHC2R
     if (IsMpqInfinity (&aplDen))
     {
         // Calculate the numerator
-        aplNum = ConjHC2R_RE (lpatRht->aplHC2R);
+        aplNum = ConjHC2R (lpatRht->aplHC2R);
 
         // Loop through all of the parts
         for (i = 0; i < 2; i++)
@@ -537,7 +537,7 @@ void PrimFnMonColonBarHC2RisHC2R
     } else
     {
         // Calculate the numerator
-        aplNum = ConjHC2R_RE (lpatRht->aplHC2R);
+        aplNum = ConjHC2R (lpatRht->aplHC2R);
 
         // Initialize to 0/1
         mphc2r_init (&lpMemRes[uRes]);
@@ -627,7 +627,7 @@ void PrimFnMonColonBarHC2VisHC2V
     if (IsMpfInfinity (&aplDen))
     {
         // Calculate the numerator
-        aplNum = ConjHC2V_RE (lpatRht->aplHC2V);
+        aplNum = ConjHC2V (lpatRht->aplHC2V);
 
         // Loop through all of the parts
         for (i = 0; i < 2; i++)
@@ -640,7 +640,7 @@ void PrimFnMonColonBarHC2VisHC2V
     } else
     {
         // Calculate the numerator
-        aplNum = ConjHC2V_RE (lpatRht->aplHC2V);
+        aplNum = ConjHC2V (lpatRht->aplHC2V);
 
         // Initialize to 0
         mphc2v_init0 (&lpMemRes[uRes]);
@@ -719,7 +719,7 @@ void PrimFnMonColonBarHC4FisHC4F
         UBOOL bAllowNeg0 = (UBOOL) gAllowNeg0;
 
         // Calculate the numerator
-        aplNum = ConjHC4F_RE (lpatRht->aplHC4F);
+        aplNum = ConjHC4F (lpatRht->aplHC4F);
 
         // Loop through all of the parts
         for (i = 0; i < 4; i++)
@@ -730,7 +730,7 @@ void PrimFnMonColonBarHC4FisHC4F
     } else
     {
         // Calculate the numerator
-        aplNum = ConjHC4F_RE (lpatRht->aplHC4F);
+        aplNum = ConjHC4F (lpatRht->aplHC4F);
 
         // Loop through all of the parts
         for (i = 0; i < 4; i++)
@@ -798,7 +798,7 @@ void PrimFnMonColonBarHC4RisHC4R
     if (IsMpqInfinity (&aplDen))
     {
         // Calculate the numerator
-        aplNum = ConjHC4R_RE (lpatRht->aplHC4R);
+        aplNum = ConjHC4R (lpatRht->aplHC4R);
 
         // Loop through all of the parts
         for (i = 0; i < 4; i++)
@@ -810,7 +810,7 @@ void PrimFnMonColonBarHC4RisHC4R
     } else
     {
         // Calculate the numerator
-        aplNum = ConjHC4R_RE (lpatRht->aplHC4R);
+        aplNum = ConjHC4R (lpatRht->aplHC4R);
 
         // Initialize to 0/1
         mphc4r_init (&lpMemRes[uRes]);
@@ -900,7 +900,7 @@ void PrimFnMonColonBarHC4VisHC4V
     if (IsMpfInfinity (&aplDen))
     {
         // Calculate the numerator
-        aplNum = ConjHC4V_RE (lpatRht->aplHC4V);
+        aplNum = ConjHC4V (lpatRht->aplHC4V);
 
         // Loop through all of the parts
         for (i = 0; i < 4; i++)
@@ -913,7 +913,7 @@ void PrimFnMonColonBarHC4VisHC4V
     } else
     {
         // Calculate the numerator
-        aplNum = ConjHC4V_RE (lpatRht->aplHC4V);
+        aplNum = ConjHC4V (lpatRht->aplHC4V);
 
         // Initialize to 0
         mphc4v_init0 (&lpMemRes[uRes]);
@@ -992,7 +992,7 @@ void PrimFnMonColonBarHC8FisHC8F
         UBOOL bAllowNeg0 = (UBOOL) gAllowNeg0;
 
         // Calculate the numerator
-        aplNum = ConjHC8F_RE (lpatRht->aplHC8F);
+        aplNum = ConjHC8F (lpatRht->aplHC8F);
 
         // Loop through all of the parts
         for (i = 0; i < 8; i++)
@@ -1003,7 +1003,7 @@ void PrimFnMonColonBarHC8FisHC8F
     } else
     {
         // Calculate the numerator
-        aplNum = ConjHC8F_RE (lpatRht->aplHC8F);
+        aplNum = ConjHC8F (lpatRht->aplHC8F);
 
         // Loop through all of the parts
         for (i = 0; i < 8; i++)
@@ -1071,7 +1071,7 @@ void PrimFnMonColonBarHC8RisHC8R
     if (IsMpqInfinity (&aplDen))
     {
         // Calculate the numerator
-        aplNum = ConjHC8R_RE (lpatRht->aplHC8R);
+        aplNum = ConjHC8R (lpatRht->aplHC8R);
 
         // Loop through all of the parts
         for (i = 0; i < 8; i++)
@@ -1084,7 +1084,7 @@ void PrimFnMonColonBarHC8RisHC8R
     } else
     {
         // Calculate the numerator
-        aplNum = ConjHC8R_RE (lpatRht->aplHC8R);
+        aplNum = ConjHC8R (lpatRht->aplHC8R);
 
         // Initialize to 0/1
         mphc8r_init (&lpMemRes[uRes]);
@@ -1174,7 +1174,7 @@ void PrimFnMonColonBarHC8VisHC8V
     if (IsMpfInfinity (&aplDen))
     {
         // Calculate the numerator
-        aplNum = ConjHC8V_RE (lpatRht->aplHC8V);
+        aplNum = ConjHC8V (lpatRht->aplHC8V);
 
         // Loop through all of the parts
         for (i = 0; i < 8; i++)
@@ -1187,7 +1187,7 @@ void PrimFnMonColonBarHC8VisHC8V
     } else
     {
         // Calculate the numerator
-        aplNum = ConjHC8V_RE (lpatRht->aplHC8V);
+        aplNum = ConjHC8V (lpatRht->aplHC8V);
 
         // Initialize to 0
         mphc8v_init0 (&lpMemRes[uRes]);
@@ -1617,21 +1617,8 @@ APLHC2I DivHC2I_RE
     if (aplDen EQ 0)
         RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
 
-    __try
-    {
-        // Calculate the conjugate which might fail trying to represent -0
-        aplNum = ConjHC2I_RE (aplRht);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
-    {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
-
-        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
-
-        Assert (exCode EQ EXCEPTION_RESULT_FLOAT);
-
-        // Ignore the promotion (due to -0), use the right arg as is
-        aplNum = aplRht;
-    } // End __try/__except
+     // Calculate the conjugate
+     aplNum = ConjHC2I (aplRht);
 
     // If the user wants the left quotient, ...
     if (GetQuadDQ () EQ 'l')
@@ -1747,10 +1734,10 @@ APLHC2F DivHC2F_RE
     // If the user wants the left quotient, ...
     if (GetQuadDQ () EQ 'l')
         // Calculate the numerator
-        aplNum = MulHC2F_RE (        ConjHC2F_RE (aplRht), aplLft);
+        aplNum = MulHC2F_RE (        ConjHC2F (aplRht), aplLft);
     else
         // Calculate the numerator
-        aplNum = MulHC2F_RE (aplLft, ConjHC2F_RE (aplRht));
+        aplNum = MulHC2F_RE (aplLft, ConjHC2F (aplRht));
     // Loop through all of the parts
     for (i = 0; i < 2; i++)
     // Check for indeterminates:  0 {div} 0
@@ -1881,8 +1868,8 @@ APLHC2R DivHC2R_RE
         Myq_clear (&aplTmp1);
     } // End FOR
 
-    // Get the conjugate
-    aplTmp3 = ConjHC2R_RE (aplRht);
+    // Calculate the conjugate
+    aplTmp3 = ConjHC2R (aplRht);
 
     // If the user wants the left quotient, ...
     if (GetQuadDQ () EQ 'l')
@@ -2036,7 +2023,7 @@ APLHC2V DivHC2V_RE
     } // End FOR
 
     // Calculate the conjugate
-    aplTmp3 = ConjHC2V_RE (aplRht);
+    aplTmp3 = ConjHC2V (aplRht);
 
     // If the user wants the left quotient, ...
     if (GetQuadDQ () EQ 'l')
@@ -2213,21 +2200,8 @@ APLHC4I DivHC4I_RE
     if (aplDen EQ 0)
         RaiseException (EXCEPTION_RESULT_HC4F, 0, 0, NULL);
 
-    __try
-    {
-        // Calculate the conjugate which might fail trying to represent -0
-        aplNum = ConjHC4I_RE (aplRht);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
-    {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
-
-        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
-
-        Assert (exCode EQ EXCEPTION_RESULT_FLOAT);
-
-        // Ignore the promotion (due to -0), use the right arg as is
-        aplNum = aplRht;
-    } // End __try/__except
+    // Calculate the conjugate
+    aplNum = ConjHC4I (aplRht);
 
     // If the user wants the left quotient, ...
     if (GetQuadDQ () EQ 'l')
@@ -2343,10 +2317,10 @@ APLHC4F DivHC4F_RE
     // If the user wants the left quotient, ...
     if (GetQuadDQ () EQ 'l')
         // Calculate the numerator
-        aplNum = MulHC4F_RE (        ConjHC4F_RE (aplRht), aplLft);
+        aplNum = MulHC4F_RE (        ConjHC4F (aplRht), aplLft);
     else
         // Calculate the numerator
-        aplNum = MulHC4F_RE (aplLft, ConjHC4F_RE (aplRht));
+        aplNum = MulHC4F_RE (aplLft, ConjHC4F (aplRht));
 
     // Loop through all of the parts
     for (i = 0; i < 4; i++)
@@ -2479,7 +2453,7 @@ APLHC4R DivHC4R_RE
     } // End FOR
 
     // Calculate the conjugate
-    aplTmp3 = ConjHC4R_RE (aplRht);
+    aplTmp3 = ConjHC4R (aplRht);
 
     // If the user wants the left quotient, ...
     if (GetQuadDQ () EQ 'l')
@@ -2633,7 +2607,7 @@ APLHC4V DivHC4V_RE
     } // End FOR
 
     // Calculate the conjugate
-    aplTmp3 = ConjHC4V_RE (aplRht);
+    aplTmp3 = ConjHC4V (aplRht);
 
     // If the user wants the left quotient, ...
     if (GetQuadDQ () EQ 'l')
@@ -2810,21 +2784,8 @@ APLHC8I DivHC8I_RE
     if (aplDen EQ 0)
         RaiseException (EXCEPTION_RESULT_HC8F, 0, 0, NULL);
 
-    __try
-    {
-        // Calculate the conjugate which might fail trying to represent -0
-        aplNum = ConjHC8I_RE (aplRht);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
-    {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
-
-        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
-
-        Assert (exCode EQ EXCEPTION_RESULT_FLOAT);
-
-        // Ignore the promotion (due to -0), use the right arg as is
-        aplNum = aplRht;
-    } // End __try/__except
+     // Calculate the conjugate
+     aplNum = ConjHC8I (aplRht);
 
     // If the user wants the left quotient, ...
     if (GetQuadDQ () EQ 'l')
@@ -2940,10 +2901,10 @@ APLHC8F DivHC8F_RE
     // If the user wants the left quotient, ...
     if (GetQuadDQ () EQ 'l')
         // Calculate the numerator
-        aplNum = MulHC8F_RE (        ConjHC8F_RE (aplRht), aplLft);
+        aplNum = MulHC8F_RE (        ConjHC8F (aplRht), aplLft);
     else
         // Calculate the numerator
-        aplNum = MulHC8F_RE (aplLft, ConjHC8F_RE (aplRht));
+        aplNum = MulHC8F_RE (aplLft, ConjHC8F (aplRht));
 
     // Loop through all of the parts
     for (i = 0; i < 8; i++)
@@ -3081,24 +3042,8 @@ APLHC8R DivHC8R_RE
         Myq_clear (&aplTmp1);
     } // End FOR
 
-    __try
-    {
-        // Calculate the conjugate which might fail trying to represent -0
-        aplTmp3 = ConjHC8R_RE (aplRht);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
-    {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
-
-        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
-
-        Assert (exCode EQ EXCEPTION_RESULT_VFP);
-
-        // Initialize to 0/1
-        mphc8r_init (&aplTmp3);
-
-        // Ignore the promotion (due to -0), use the right arg as is
-        mphc8r_set (&aplTmp3, &aplRht);
-    } // End __try/__except
+    // Calculate the conjugate
+    aplTmp3 = ConjHC8R (aplRht);
 
     // If the user wants the left quotient, ...
     if (GetQuadDQ () EQ 'l')
@@ -3252,7 +3197,7 @@ APLHC8V DivHC8V_RE
     } // End FOR
 
     // Calculate the conjugate
-    aplTmp3 = ConjHC8V_RE (aplRht);
+    aplTmp3 = ConjHC8V (aplRht);
 
     // If the user wants the left quotient, ...
     if (GetQuadDQ () EQ 'l')

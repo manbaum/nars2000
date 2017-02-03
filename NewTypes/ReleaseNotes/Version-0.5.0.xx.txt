@@ -1,6 +1,43 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1645 -- Version 0.5.0.xx
+--------------------------------
+
+* Avoid Exceptions Due To Negative 0 In Conjugate Function
+* Use SYS_CT Instead Of []CT When Comparing As Integer Test.
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+  Use SYS_CT instead of []CT when comparing as Integer Test.
+
+DEFINES.H:
+  Define macros for Integer Test comparisons to match those for non-integer test
+
+MPFNS.C:
+  Define <_mpq_cmp_ct> to handle Integer Tests.
+  Use SYS_CT instead of []CT when comparing as Integer Test.
+
+PF_CIRCLE.C:
+PF_CIRCLE.MAC:
+  Rename <ConjHC[248][FV]_RE> to <Conj[248][FV]> as they do not Raise an Exception.
+
+PF_COLONBAR.C:
+PF_PLUS.C:
+  Rename <ConjHC[248][FV]_RE> to <Conj[248][FV]> as they do not Raise an Exception.
+  Define and use <ConjHC[248]I> as a version of <ConjHC[248]I_RE> which doesn't Raise an Exception.
+
+PF_EPSUND.C:
+  Change macro to match the definition of <mpq_cmp_ct>.
+
+PF_STILE.C:
+  Fix bug in <ModHC4[FRV]> to handle Hurwitz Integers.
+
+PF_TIMES.C:
+  Define and use <ConjHC[248]I> as a version of <ConjHC[248]I_RE> which doesn't Raise an Exception.
+
+
 Build #1644 -- Version 0.5.0.xx
 --------------------------------
 

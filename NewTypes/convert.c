@@ -1603,11 +1603,11 @@ int flt_cmp_ct
     if (bIntegerTest)
     {
         if (aplFloatLft EQ 0
-         && aplRhtAbs <= fCompTol)
+         && aplRhtAbs <= SYS_CT)
             return 0;
 
         if (aplFloatRht EQ 0
-         && aplLftAbs <= fCompTol)
+         && aplLftAbs <= SYS_CT)
             return 0;
     } // End IF
 

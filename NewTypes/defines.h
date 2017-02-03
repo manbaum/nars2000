@@ -741,7 +741,7 @@ typedef struct tagCOLORBLEND *LPCOLORBLEND;     // Dummy entry for .pro files on
 
 
 //***************************************************************************
-//  Item Comparisons
+//  Item Comparisons with []CT, no integer test
 //***************************************************************************
 
 #define CmpCT_F(aplLft,aplRht,fQuadCT,CMP)                      \
@@ -754,11 +754,32 @@ typedef struct tagCOLORBLEND *LPCOLORBLEND;     // Dummy entry for .pro files on
 #else
     // Compare the two RATs relative to []CT
 #define CmpCT_R(aplLft,aplRht,fQuadCT,CMP)                      \
-        (mpq_cmp_ct  ( aplLft,  aplRht, fQuadCT       ) CMP 0)
+        (_mpq_cmp_ct  ( aplLft,  aplRht, fQuadCT, FALSE) CMP 0)
 #endif
 
 #define CmpCT_V(aplLft,aplRht,fQuadCT,CMP)                      \
-        (mpfr_cmp_ct ( aplLft,  aplRht, fQuadCT       ) CMP 0)
+        (_mpfr_cmp_ct (&aplLft, &aplRht, fQuadCT, FALSE) CMP 0)
+
+
+//***************************************************************************
+//  Item Comparisons with SYS_CT, allow integer test
+//***************************************************************************
+
+#define CmpSCT_F(aplLft,aplRht,CMP)                             \
+       (flt_cmp_ct   ( aplLft,  aplRht, SYS_CT , TRUE ) CMP 0)
+
+#ifdef RAT_EXACT
+    // Compare the two RATs
+#define CmpSCT_R(aplLft,aplRht,fQuadCT,CMP)                     \
+        (mpq_cmp     (&aplLft, &aplRht                ) CMP 0)
+#else
+    // Compare the two RATs relative to []CT
+#define CmpSCT_R(aplLft,aplRht,fQuadCT,CMP)                     \
+        (_mpq_cmp_ct  ( aplLft,  aplRht, fQuadCT, TRUE ) CMP 0)
+#endif
+
+#define CmpSCT_V(aplLft,aplRht,fQuadCT,CMP)                     \
+        (_mpfr_cmp_ct (&aplLft, &aplRht, fQuadCT, TRUE ) CMP 0)
 
 
 //***************************************************************************

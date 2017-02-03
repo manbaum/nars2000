@@ -2284,8 +2284,8 @@ APLHC4I MulHC4I_RE
 #define c   aplRht.partsLo[0]
 #define d   aplRht.partsHi[0]
 
-    dP = ConjHC2I_RE (d);
-    cP = ConjHC2I_RE (c);
+    dP = ConjHC2I (d);
+    cP = ConjHC2I (c);
 
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
@@ -2507,8 +2507,8 @@ APLHC4F MulHC4F_RE
 #define c   aplRht.partsLo[0]
 #define d   aplRht.partsHi[0]
 
-    dP = ConjHC2F_RE (d);
-    cP = ConjHC2F_RE (c);
+    dP = ConjHC2F (d);
+    cP = ConjHC2F (c);
 
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
@@ -2692,8 +2692,8 @@ APLHC4R MulHC4R_RE
 #define c   aplRht.partsLo
 #define d   aplRht.partsHi
 
-    dP = ConjHC2R_RE (d);
-    cP = ConjHC2R_RE (c);
+    dP = ConjHC2R (d);
+    cP = ConjHC2R (c);
 
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
@@ -2911,8 +2911,8 @@ APLHC4V MulHC4V_RE
 #define c   aplRht.partsLo
 #define d   aplRht.partsHi
 
-    dP = ConjHC2V_RE (d);
-    cP = ConjHC2V_RE (c);
+    dP = ConjHC2V (d);
+    cP = ConjHC2V (c);
 
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
@@ -3150,8 +3150,8 @@ APLHC8I MulHC8I_RE
 #define c   aplRht.partsLo[0]
 #define d   aplRht.partsHi[0]
 
-    dP = ConjHC4I_RE (d);
-    cP = ConjHC4I_RE (c);
+    dP = ConjHC4I (d);
+    cP = ConjHC4I (c);
 
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
@@ -3373,8 +3373,8 @@ APLHC8F MulHC8F_RE
 #define c   aplRht.partsLo[0]
 #define d   aplRht.partsHi[0]
 
-    dP = ConjHC4F_RE (d);
-    cP = ConjHC4F_RE (c);
+    dP = ConjHC4F (d);
+    cP = ConjHC4F (c);
 
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
@@ -3562,8 +3562,8 @@ APLHC8R MulHC8R_RE
 #define c   aplRht.partsLo
 #define d   aplRht.partsHi
 
-    dP = ConjHC4R_RE (d);
-    cP = ConjHC4R_RE (c);
+    dP = ConjHC4R (d);
+    cP = ConjHC4R (c);
 
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
@@ -3776,8 +3776,8 @@ APLHC8V MulHC8V_RE
 #define c   aplRht.partsLo
 #define d   aplRht.partsHi
 
-    dP = ConjHC4V_RE (d);
-    cP = ConjHC4V_RE (c);
+    dP = ConjHC4V (d);
+    cP = ConjHC4V (c);
 
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 

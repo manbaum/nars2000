@@ -1880,7 +1880,7 @@ void PrimFnDydCircleHC2FisHC2FvHC2F
             return;
 
         case -10:       // +R
-            lpMemRes[uRes] = ConjHC2F_RE (lpatRht->aplHC2F);
+            lpMemRes[uRes] = ConjHC2F (lpatRht->aplHC2F);
 
             return;
 

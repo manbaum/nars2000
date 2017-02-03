@@ -2239,6 +2239,8 @@ void PrimFnDydStileHC2VisHC2VvHC2V
 
 //***************************************************************************
 //  $ModHC4I
+//
+//  Note that this function is called using Hurwitz's Floor function only
 //***************************************************************************
 
 APLHC4I ModHC4I
@@ -2307,6 +2309,8 @@ APLHC4I ModHC4I
 
 //***************************************************************************
 //  $ModHC4F
+//
+//  Note that this function is called using Hurwitz's Floor function only
 //***************************************************************************
 
 APLHC4F ModHC4F
@@ -2324,6 +2328,8 @@ APLHC4F ModHC4F
     {
         APLFLOAT aplMagL,
                  aplMagZ;
+        APLHC4F  aplRes2;
+        int      i;
 
         if (IsOneHCxF  (&aplLft, 4))
             aplRes = SubHC4F_RE (aplRht, FloorHC4F (aplRht));
@@ -2345,16 +2351,55 @@ APLHC4F ModHC4F
                 aplRes = MulHC4F_RE (aplTmp, aplLft);
         } // End IF/ELSE
 
+        //***************************************************************************
+        // Check for near a Hurwitz Integer
+        //***************************************************************************
+
+        // Loop through all of the parts
+        for (i = 0; i < 4; i++)
+        {
+            APLFLOAT aplTmp;
+
+            // Get the absolute value
+            aplTmp = fabs (aplRes.parts[i]);
+
+            // If floor (aplTmp) is near a Hurwitz integer within SYS_CT, ...
+            if (_CompareCT (aplTmp, floor (aplTmp) + 0.5, SYS_CT, TRUE))
+                // Save the half integer
+                aplRes2.parts[i] = floor (aplTmp) + 0.5;
+            else
+            // If ceil  (aplTmp) is near a Hurwitz integer within SYS_CT, ...
+            if (_CompareCT (aplTmp, ceil  (aplTmp) - 0.5, SYS_CT, TRUE))
+                // Save the half integer
+                aplRes2.parts[i] = ceil  (aplTmp) - 0.5;
+            else
+                break;
+        } // End IF
+
+        // If we didn't terminate early, ...
+        if (i EQ 4)
+            // Loop through all of the parts
+            for (i = 0; i < 4; i++)
+                // Copy aplRes2 to aplRes with the sign of aplRes
+                aplRes.parts[i] = signumflt (aplRes.parts[i]) * aplRes2.parts[i];
+        else
+        // We did terminate early, so it's not a Hurwitz Integer
+            // Loop through all of the parts
+            for (i = 0; i < 4; i++)
+            // If it's close to 0
+            if (_CompareCT (aplRes.parts[i], 0, SYS_CT, TRUE))
+                // Call it 0
+                aplRes.parts[i] = 0;
         // Calculate the magnitudes
         aplMagL = MagHC4F (aplLft);
         aplMagZ = MagHC4F (aplRes);
 
-        Assert (aplMagL >= aplMagZ);
-
         // If the magnitudes are equal, ...
-        if (aplMagL EQ aplMagZ)
+        if (CmpCT_F (aplMagL, aplMagZ, SYS_CT, EQ))
             // Return 0
             ZeroMemory (&aplRes, sizeof (aplRes));
+        else
+            Assert (CmpCT_F (aplMagL, aplMagZ, SYS_CT, >));
     } // End IF/ELSE/...
 
     return aplRes;
@@ -2432,6 +2477,8 @@ void PrimFnDydStileHC4FisHC4FvHC4F
 
 //***************************************************************************
 //  $ModHC4R
+//
+//  Note that this function is called using Hurwitz's Floor function only
 //***************************************************************************
 
 APLHC4R ModHC4R
@@ -2439,7 +2486,7 @@ APLHC4R ModHC4R
      APLHC4R aplRht)                // Right arg (argument)
 
 {
-    APLHC4R aplRes = {0};
+    APLHC4R aplRes = {0};           // The result
 
     // Using the algorithm in Doug Forkes paper
     if (IsZeroHCxR (&aplLft, 4))
@@ -2449,12 +2496,15 @@ APLHC4R ModHC4R
         aplRes = SubHC4R_RE (aplRht, FloorHC4R (aplRht));
     else
     {
-        APLHC4R  aplTmp = {0},
-                 aplSub = {0};
-        APLVFP   aplMagL,
-                 aplMagZ;
-        APLFLOAT fQuadCT = GetQuadCT ();
-        int      iCmp;
+        APLHC4R aplTmp  = {0},
+                aplSub  = {0},
+                aplRes2 = {0};
+        APLVFP  aplMagL,
+                aplMagZ;
+        APLRAT  aplAbs,
+                aplFlr,
+                aplCel;
+        int     i;                      // Loop counter
 
         // Calculate Rht / Lft
         // This function is sensitive to []DQ
@@ -2471,22 +2521,82 @@ APLHC4R ModHC4R
             // Calculate      (1 | Rht / Lft) * Lft
             aplRes = MulHC4R_RE (aplSub, aplLft);
 
+        // Initialize to 0/1
+        mpq_init    (&aplAbs);
+        mpq_init    (&aplCel);
+        mpq_init    (&aplFlr);
+        mphc4r_init (&aplRes2);
+
+        //***************************************************************************
+        // Check for near a Hurwitz Integer
+        //***************************************************************************
+
+        // Loop through all of the parts
+        for (i = 0; i < 4; i++)
+        {
+            // Get the absolute value
+            mpq_abs (&aplAbs, &aplRes.parts[i]);
+
+            // Get the floor and ceiling
+            mpq_floor (&aplFlr, &aplAbs);
+            mpq_ceil  (&aplCel, &aplAbs);
+
+            // Add/subtract 0.5 to/from Floor/Ceiling
+            mpq_add (&aplFlr, &aplFlr, &mpqHalf);
+            mpq_sub (&aplCel, &aplCel, &mpqHalf);
+
+            // If floor (aplTmp) is near a Hurwitz integer within SYS_CT, ...
+            if (CmpSCT_R (aplAbs, aplFlr, SYS_CT, EQ))
+                // Save the half integer
+                mpq_set (&aplRes2.parts[i], &aplFlr);
+            else
+            // If ceil  (aplTmp) is near a Hurwitz integer within SYS_CT, ...
+            if (CmpSCT_R (aplAbs, aplCel, SYS_CT, EQ))
+                // Save the half integer
+                mpq_set (&aplRes2.parts[i], &aplCel);
+            else
+                break;
+        } // End IF
+
+        // If we didn't terminate early, ...
+        if (i EQ 4)
+            // Loop through all of the parts
+            for (i = 0; i < 4; i++)
+            {
+                // Save the sign of aplRes
+                if (mpq_sgn (&aplRes.parts[i]) < 0)
+                    // Negate it
+                    mpq_neg (&aplRes2.parts[i], &aplRes2.parts[i]);
+
+                // Copy aplRes2 to aplRes with the sign of aplRes
+                mpq_set (&aplRes.parts[i], &aplRes2.parts[i]);
+            } // End FOR
+        else
+        // We did terminate early, so it's not a Hurwitz Integer
+            // Loop through all of the parts
+            for (i = 0; i < 4; i++)
+            // If it's close to 0
+            if (CmpSCT_R (aplRes.parts[i], mpqZero, SYS_CT, EQ))
+                // Call it 0/1
+                mpq_set_ui (&aplRes.parts[i], 0, 1);
         // Calculate the magnitudes
         aplMagL = MagHC4R (aplLft);
         aplMagZ = MagHC4R (aplRes);
 
-        // Compare the magnitudes
-        iCmp = mpfr_cmp_ct (aplMagL, aplMagZ, fQuadCT);
-        Assert (iCmp >= 0);
-
         // If the magnitudes are equal, ...
-        if (iCmp EQ 0)
+        if (CmpCT_V (aplMagL, aplMagZ, SYS_CT, EQ))
             // Return 0/1
             mphc4r_set (&aplRes, &conmpoi_0.partsLo);
+        else
+            Assert (CmpCT_V (aplMagL, aplMagZ, SYS_CT, >));
 
         // Free the temps
-        Myhc4r_clear (&aplSub);
-        Myhc4r_clear (&aplTmp);
+        Myhc4r_clear (&aplRes2);
+        mpq_clear    (&aplFlr);
+        mpq_clear    (&aplCel);
+        mpq_clear    (&aplAbs);
+        Myhc4r_clear (&aplSub );
+        Myhc4r_clear (&aplTmp );
     } // End IF/ELSE/...
 
     return aplRes;
@@ -2542,6 +2652,8 @@ void PrimFnDydStileHC4VisHC4RvHC4R
 
 //***************************************************************************
 //  $ModHC4V
+//
+//  Note that this function is called using Hurwitz's Floor function only
 //***************************************************************************
 
 APLHC4V ModHC4V
@@ -2559,12 +2671,15 @@ APLHC4V ModHC4V
         aplRes = SubHC4V_RE (aplRht, FloorHC4V (aplRht));
     else
     {
-        APLHC4V  aplTmp = {0},
-                 aplSub = {0};
-        APLVFP   aplMagL,
-                 aplMagZ;
-        APLFLOAT fQuadCT = GetQuadCT ();
-        int      iCmp;
+        APLHC4V aplTmp = {0},
+                aplSub = {0},
+                aplRes2 = {0};
+        APLVFP  aplMagL,
+                aplMagZ;
+        APLVFP  aplAbs,
+                aplFlr,
+                aplCel;
+        int     i;                      // Loop counter
 
         // Calculate Rht / Lft
         // This function is sensitive to []DQ
@@ -2581,20 +2696,80 @@ APLHC4V ModHC4V
             // Calculate      (1 | Rht / Lft) * Lft
             aplRes = MulHC4V_RE (aplSub, aplLft);
 
+        // Initialize to 0
+        mpfr_init0   (&aplAbs);
+        mpfr_init0   (&aplCel);
+        mpfr_init0   (&aplFlr);
+        mphc4v_init0 (&aplRes2);
+
+        //***************************************************************************
+        // Check for near a Hurwitz Integer
+        //***************************************************************************
+
+        // Loop through all of the parts
+        for (i = 0; i < 4; i++)
+        {
+            // Get the absolute value
+            mpfr_abs (&aplAbs, &aplRes.parts[i], MPFR_RNDN);
+
+            // Get the floor and ceiling
+            mpfr_floor (&aplFlr, &aplAbs);
+            mpfr_ceil  (&aplCel, &aplAbs);
+
+            // Add/subtract 0.5 to/from Floor/Ceiling
+            mpfr_add (&aplFlr, &aplFlr, &mpfHalf, MPFR_RNDN);
+            mpfr_sub (&aplCel, &aplCel, &mpfHalf, MPFR_RNDN);
+
+            // If floor (aplTmp) is near a Hurwitz integer within SYS_CT, ...
+            if (CmpSCT_V (aplAbs, aplFlr, SYS_CT, EQ))
+                // Save the half integer
+                mpfr_set (&aplRes2.parts[i], &aplFlr, MPFR_RNDN);
+            else
+            // If ceil  (aplTmp) is near a Hurwitz integer within SYS_CT, ...
+            if (CmpSCT_V (aplAbs, aplCel, SYS_CT, EQ))
+                // Save the half integer
+                mpfr_set (&aplRes2.parts[i], &aplCel, MPFR_RNDN);
+            else
+                break;
+        } // End IF
+
+        // If we didn't terminate early, ...
+        if (i EQ 4)
+            // Loop through all of the parts
+            for (i = 0; i < 4; i++)
+            {
+                // Save the sign of aplRes
+                if (mpfr_sgn (&aplRes.parts[i]) < 0)
+                    // Negate it
+                    mpfr_neg (&aplRes2.parts[i], &aplRes2.parts[i], MPFR_RNDN);
+
+                // Copy aplRes2 to aplRes with the sign of aplRes
+                mpfr_set (&aplRes.parts[i], &aplRes2.parts[i], MPFR_RNDN);
+            } // End FOR
+        else
+        // We did terminate early, so it's not a Hurwitz Integer
+            // Loop through all of the parts
+            for (i = 0; i < 4; i++)
+            // If it's close to 0
+            if (CmpSCT_V (aplRes.parts[i], mpfZero, SYS_CT, EQ))
+                // Call it 0/1
+                mpfr_set_ui (&aplRes.parts[i], 0, MPFR_RNDN);
         // Calculate the magnitudes
         aplMagL = MagHC4V (aplLft);
         aplMagZ = MagHC4V (aplRes);
 
-        // Compare the magnitudes
-        iCmp = mpfr_cmp_ct (aplMagL, aplMagZ, fQuadCT);
-        Assert (iCmp >= 0);
-
         // If the magnitudes are equal, ...
-        if (iCmp EQ 0)
-            // Return 0
+        if (CmpCT_V (aplMagL, aplMagZ, SYS_CT, EQ))
+            // Return 0/1
             mphc4v_set (&aplRes, &conmpof_0.partsLo);
+        else
+            Assert (CmpCT_V (aplMagL, aplMagZ, SYS_CT, >));
 
         // Free the temps
+        Myhc4v_clear (&aplRes2);
+        mpfr_clear   (&aplFlr);
+        mpfr_clear   (&aplCel);
+        mpfr_clear   (&aplAbs);
         Myhc4v_clear (&aplSub);
         Myhc4v_clear (&aplTmp);
     } // End IF/ELSE/...

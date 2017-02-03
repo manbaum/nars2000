@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -304,7 +304,7 @@
             return;                                                                                                 \
                                                                                                                     \
         case -10:       /* +R                                                                                     */\
-            lpMemRes[uRes] = ConjHC##N##V_RE (lpatRht->aplHC##N##V);                                                \
+            lpMemRes[uRes] = ConjHC##N##V (lpatRht->aplHC##N##V);                                                   \
                                                                                                                     \
             return;                                                                                                 \
                                                                                                                     \
@@ -536,7 +536,7 @@
             return;                                                                                                 \
                                                                                                                     \
         case -10:       /* +R                                                                                     */\
-            lpMemRes[uRes] = ConjHC##N##F_RE (lpatRht->aplHC##N##F);                                                \
+            lpMemRes[uRes] = ConjHC##N##F (lpatRht->aplHC##N##F);                                                   \
                                                                                                                     \
             return;                                                                                                 \
                                                                                                                     \

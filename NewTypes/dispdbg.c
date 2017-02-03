@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3383,7 +3383,10 @@ HGLOBAL _ValidObj
             // "+ 1" for the terminating zero
             uLen = sizeof (lpTxt->U)
                  + (lstrlenW (&lpTxt->C) + 1) * sizeof (WCHAR);
-
+            // Handle the case of a line from an AFO which has the
+            //   trailing right brace truncated
+            if (((LPWCHAR) ByteAddr (lpTxt, uLen))[0] EQ L'}')
+                uLen += 2 * sizeof (WCHAR);
             // Get the overall size
             uSiz = GlobalSize (ClrPtrTypeDir(hMem));
 

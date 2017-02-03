@@ -1,6 +1,17 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1644 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug When Calling <MyGlobalLockTxt> On AFO Line
+
+Directory branches/bsmith/NewTypes:
+
+DISPDBG.C:
+  In <_ValidObj> we need special handling for calls to <MyGlobalTxt> on a line from an AFO.
+
+
 Build #1643 -- Version 0.5.0.xx
 --------------------------------
 

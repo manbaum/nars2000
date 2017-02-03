@@ -1,6 +1,18 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1643 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bugs In Plus And GCD/LCM Using Wrong Indices When Promoting
+
+Directory branches/bsmith/NewTypes:
+
+PF_DCARET.C:
+PF_PLUS.C:
+  Fix bugs in calls to *aTypeActPromote where the wrong dimension indices are used when promoting HC RAT to HC VFP.
+
+
 Build #1642 -- Version 0.5.0.xx
 --------------------------------
 

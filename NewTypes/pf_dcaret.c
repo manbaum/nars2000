@@ -537,7 +537,7 @@ APLHC4F GcdHC4F
         // Rotate the result into the first quadrant
 
         // Loop through the parts of the result looking for negative values
-        for (uIndex = 0, i = 2 - 1; i >= 0; i--)
+        for (uIndex = 0, i = 4 - 1; i >= 0; i--)
             uIndex = (3 * uIndex) + 1 + signumflt (aplRht.parts[i]);
         // Get the table indices
         uLft = gGcdRotateTab4[uIndex][0];
@@ -1442,8 +1442,8 @@ void PrimFnDydDownCaretHC2VisHC2RvHC2R
              atRht = {0};
 
     // Promote the left & right arg to the result type
-    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatLft->aplRat, 0, &atLft);
-    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatRht->aplRat, 0, &atRht);
+    (*aTypeActPromote[ARRAY_HC2R][ARRAY_HC2V]) (&lpatLft->aplRat, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC2R][ARRAY_HC2V]) (&lpatRht->aplRat, 0, &atRht);
 
     PrimFnDydDownCaretHC2VisHC2VvHC2V (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
 
@@ -1568,8 +1568,8 @@ void PrimFnDydDownCaretHC4VisHC4RvHC4R
              atRht = {0};
 
     // Promote the left & right arg to the result type
-    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatLft->aplRat, 0, &atLft);
-    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatRht->aplRat, 0, &atRht);
+    (*aTypeActPromote[ARRAY_HC4R][ARRAY_HC4V]) (&lpatLft->aplRat, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC4R][ARRAY_HC4V]) (&lpatRht->aplRat, 0, &atRht);
 
     PrimFnDydDownCaretHC4VisHC4VvHC4V (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
 

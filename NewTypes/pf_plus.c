@@ -1549,8 +1549,8 @@ void PrimFnDydPlusVisRvR
              atRht = {0};
 
     // Promote the left & right arg to the result type
-    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatLft->aplRat, 0, &atLft);
-    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatRht->aplRat, 0, &atRht);
+    (*aTypeActPromote[ARRAY_HC1R][ARRAY_HC1V]) (&lpatLft->aplRat, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC1R][ARRAY_HC1V]) (&lpatRht->aplRat, 0, &atRht);
 
     PrimFnDydPlusVisVvV (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
 
@@ -1873,8 +1873,8 @@ void PrimFnDydPlusHC2VisHC2RvHC2R
              atRht = {0};
 
     // Promote the left & right arg to the result type
-    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatLft->aplRat, 0, &atLft);
-    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatRht->aplRat, 0, &atRht);
+    (*aTypeActPromote[ARRAY_HC2R][ARRAY_HC2V]) (&lpatLft->aplRat, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC2R][ARRAY_HC2V]) (&lpatRht->aplRat, 0, &atRht);
 
     PrimFnDydPlusHC2VisHC2VvHC2V (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
 
@@ -2197,8 +2197,8 @@ void PrimFnDydPlusHC4VisHC4RvHC4R
              atRht = {0};
 
     // Promote the left & right arg to the result type
-    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatLft->aplRat, 0, &atLft);
-    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatRht->aplRat, 0, &atRht);
+    (*aTypeActPromote[ARRAY_HC4R][ARRAY_HC4V]) (&lpatLft->aplRat, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC4R][ARRAY_HC4V]) (&lpatRht->aplRat, 0, &atRht);
 
     PrimFnDydPlusHC4VisHC4VvHC4V (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
 
@@ -2523,8 +2523,8 @@ void PrimFnDydPlusHC8VisHC8RvHC8R
              atRht = {0};
 
     // Promote the left & right arg to the result type
-    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatLft->aplRat, 0, &atLft);
-    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatRht->aplRat, 0, &atRht);
+    (*aTypeActPromote[ARRAY_HC8R][ARRAY_HC8V]) (&lpatLft->aplRat, 0, &atLft);
+    (*aTypeActPromote[ARRAY_HC8R][ARRAY_HC8V]) (&lpatRht->aplRat, 0, &atRht);
 
     PrimFnDydPlusHC8VisHC8VvHC8V (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
 

@@ -1,6 +1,18 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1647 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug In PV {iota} N
+
+Directory branches/bsmith/NewTypes:
+
+PF_IOTA.C:
+  In <PrimFnDydIotaPvN_EM> when calculating the inverse indices, I added in []IO once too many times.
+  Dyadic Epsilon has no corresponding bug.
+
+
 Build #1646 -- Version 0.5.0.xx
 --------------------------------
 

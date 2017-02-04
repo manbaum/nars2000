@@ -1375,7 +1375,7 @@ UBOOL PrimFnDydIotaPvN_EM
                           aplTypeLft,
                           uLft);
         // Save as origin-0 inverse index
-        lpMemInv[aplIntegerLft - lpHeaderLft->PV1] = uLft + bQuadIO;
+        lpMemInv[aplIntegerLft - lpHeaderLft->PV1] = uLft;
     } // End FOR
 
     // Loop through the right arg looking up each value

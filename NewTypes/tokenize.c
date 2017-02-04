@@ -1431,7 +1431,10 @@ UBOOL fnAlpDone
             //   and we're not tokenizing an AFO, ...
             if (!lpMemPTD->bInTF
              && !lptkLocalVars->lpSF_Fcns->bAFO)
-                lpSymEntry = lpMemPTD->lphtsPTD->steNoValueSys;
+                // N.B.:  Use steNoValueUsr NOT steNoValueSys
+                //   as the former has a valid stHshEntry
+                //   and the latter doesn't
+                lpSymEntry = lpMemPTD->lphtsPTD->steNoValueUsr;
         } else
         {
             STFLAGS stFlags = {0};              // STE flags

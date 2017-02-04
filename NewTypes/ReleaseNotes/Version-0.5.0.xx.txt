@@ -1,6 +1,22 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1650 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug Initializing []Z
+
+Directory branches/bsmith/NewTypes:
+
+ASSIGN.C:
+  Fix typo in comment.
+
+SYSVARS.C:
+TOKENIZE.C:
+  When initializing []Z, assign <steNoValueUsr> instead of <steNoValueSys> as
+    the former has a valid <stHshEntry> and the latter doesn't.
+
+
 Build #1649 -- Version 0.5.0.xx
 --------------------------------
 

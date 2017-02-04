@@ -4271,7 +4271,8 @@ void AssignDefaultHTSSysVars
     AssignGlobalCWS     (hGlbQuadWSID_CWS    , SYSVAR_WSID    , lpSymQuad[SYSVAR_WSID    ]);    // Workspace Identifier
 
     // Set the values for []Z
-    lpSymQuad[SYSVAR_Z]->stFlags             = lphtsPTD->steNoValueSys->stFlags;
+    // N.B.:  Use steNoValueUsr NOT steNoValueSys as the former has a valid stHshEntry and the latter doesn't
+    lpSymQuad[SYSVAR_Z]->stFlags             = lphtsPTD->steNoValueUsr->stFlags;
     lpSymQuad[SYSVAR_Z]->stFlags.Inuse       = TRUE;
     lpSymQuad[SYSVAR_Z]->stFlags.SysVarValid = SYSVAR_Z;
 } // End AssignDefaultHTSSysVars

@@ -82,7 +82,7 @@ UBOOL AssignName_EM
     // Note that we have to wait until all errors have been
     //   resolved before calling FreeResultName.
 
-    // If the target is a NoValue system name (excep for []Z), ...
+    // If the target is a NoValue system name (except for []Z), ...
     if (IsTokenNoValue (lptkNam)
      && IsTknSysName   (lptkNam, TRUE))
         // Signal a VALUE ERROR

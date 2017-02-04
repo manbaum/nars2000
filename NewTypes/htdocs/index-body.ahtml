@@ -190,6 +190,8 @@ Welcome to NARS2000</h1>
         <li>Anonymous Functions/Operators:  one-line grouping of one or more statements all enclosed in braces such as <span class="APL">{(+{slashbar}{omega}){divide}{mismatch}{omega}}</span></li>
         <li>Primitive dyadic operator <span class="APL">f.g R</span> as a monadic derived function (Determinant Operator)</li>
         <li>Primitive dyadic operator dieresis-downtack (<span class="APL">f{convolution}g</span>) as a dyadic derived function (Convolution Operator)</li>
+        <li>Primitive monadic function Equal (<span class="APL">=R</span> (Dimension)</li>
+        <li>Primitive monadic function NotEqual (<span class="APL">{notequal}R</span> (Norm)</li>
         <li>System variables:
           <ul>
             <li><span class="APL">{quad}DT</span> (Distribution Type)</li>
@@ -365,19 +367,21 @@ Welcome to NARS2000</h1>
       <span class="APL">{quad}TCNUL</span>) display correctly in simple and nested output</li>
     <li>Out of range numeric assignments to
       <span class="APL">{quad}CT</span>,
+      <span class="APL">{quad}FPC</span>,
       <span class="APL">{quad}IC</span>,
       <span class="APL">{quad}IO</span>,
       <span class="APL">{quad}PP</span>,
       <span class="APL">{quad}PW</span>, and
       <span class="APL">{quad}RL</span> are set to the value in the allowable range
       nearest the ceiling of the given number.  For example, if
-      <span class="APL">{quad}PP</span> is set to <span class="APL">23.7</span>,
-      that value is rounded down to <span class="APL">17</span>, the largest value
+      <span class="APL">{quad}FPC</span> is set to <span class="APL">23.7</span>,
+      that value is rounded up to <span class="APL">53</span>, the smallest value
       that system variable may assume</li>
     <li>An empty vector assignment to
       <span class="APL">{quad}CT</span>,
       <span class="APL">{quad}DT</span>,
       <span class="APL">{quad}FC</span>,
+      <span class="APL">{quad}FPC</span>,
       <span class="APL">{quad}IC</span>,
       <span class="APL">{quad}IO</span>,
       <span class="APL">{quad}PP</span>,

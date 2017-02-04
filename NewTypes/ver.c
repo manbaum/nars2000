@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -173,6 +173,10 @@ APLU3264 CALLBACK AboutDlgProc
             // Change the icon to our own
             SendMessageW (hDlg, WM_SETICON, ICON_BIG, (LPARAM) (HANDLE_PTR) hIconAbout);
 
+            //***************************************************************************
+            // NARS2000 version
+            //***************************************************************************
+
             // Format the version #
             MySprintfW (wszTemp,
                         sizeof (wszTemp),
@@ -180,6 +184,10 @@ APLU3264 CALLBACK AboutDlgProc
                         wszFileVer);
             // Write out the version string
             SetDlgItemTextW (hDlg, IDC_VERSION, wszTemp);
+
+            //***************************************************************************
+            // MPIR version
+            //***************************************************************************
 
             // Copy the MPIR prefix to the text
             MyStrcpyW (wszTemp, sizeof (wszTemp), L"MPIR Version #");
@@ -190,6 +198,10 @@ APLU3264 CALLBACK AboutDlgProc
                         L"%S\n",
                          mpir_version);
 
+            //***************************************************************************
+            // GMP version
+            //***************************************************************************
+
             // Copy the GMP prefix to the text
             MyStrcatW (wszTemp, sizeof (wszTemp), L"GMP Version #");
 
@@ -198,6 +210,10 @@ APLU3264 CALLBACK AboutDlgProc
                          uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%S\n",
                          gmp_version);
+            //***************************************************************************
+            // MPFR version
+            //***************************************************************************
+
             // Copy the MPFR prefix to the text
             MyStrcatW (wszTemp, sizeof (wszTemp), L"MPFR Version #");
 
@@ -206,6 +222,22 @@ APLU3264 CALLBACK AboutDlgProc
                          uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%S\n",
                          mpfr_get_version ());
+            //***************************************************************************
+            // MPC version
+            //***************************************************************************
+
+            // Copy the MPC prefix to the text
+            MyStrcatW (wszTemp, sizeof (wszTemp), L"MPC Version #");
+
+            // Append the MPC version #
+            MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
+                        L"%S\n",
+                         mpc_get_version ());
+            //***************************************************************************
+            // ECM version
+            //***************************************************************************
+
             // Copy the ECM prefix to the text
             MyStrcatW (wszTemp, sizeof (wszTemp), L"ECM Version #");
 
@@ -214,6 +246,10 @@ APLU3264 CALLBACK AboutDlgProc
                          uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%S\n",
                          ecm_version);
+            //***************************************************************************
+            // COMCTL32.DLL version
+            //***************************************************************************
+
             // Copy the COMCTL32.DLL prefix to the text
             MyStrcatW (wszTemp, sizeof (wszTemp), L"COMCTL32.DLL Version #");
 
@@ -222,6 +258,10 @@ APLU3264 CALLBACK AboutDlgProc
                          uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%s\n",
                          wszComctl32FileVer);
+            //***************************************************************************
+            // CRASHRPT.DLL version
+            //***************************************************************************
+
             // Copy the CRASHRPT.DLL prefix to the text
             MyStrcatW (wszTemp, sizeof (wszTemp), crsh_dll);
             MyStrcatW (wszTemp, sizeof (wszTemp), L" Version #");
@@ -231,16 +271,28 @@ APLU3264 CALLBACK AboutDlgProc
                          uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%s\n",
                          crsh_version);
+            //***************************************************************************
+            // Workspace version
+            //***************************************************************************
+
             // Append the workspace version #
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
                          uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"Workspace version #%s\n",
                          WS_VERSTR);
+            //***************************************************************************
+            // SYMTABSIZE version
+            //***************************************************************************
+
             // Append the SymTabSize
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
                          uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"SymTabSize %u\n",
                          gSymTabSize / SYMTABSIZE_MUL);
+            //***************************************************************************
+            // HSHTABSIZE version
+            //***************************************************************************
+
             // Append the HshTabSize
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
                          uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
@@ -374,9 +426,9 @@ APLU3264 CALLBACK AboutDlgProc
                     // Copy the version # and version2 text to the clipboard
 
                     // Get the text lengths ("+ 1" for WS_LF)
-                    dwSizeDst = GetWindowTextLengthW (GetDlgItem (hDlg, IDC_VERSION   )) + 1 + 1;   // Does NOT end with a LF
-                    dwSizeDst +=GetWindowTextLengthW (GetDlgItem (hDlg, IDC_VERSION2  )) + 1    ;   // Does     end with a LF
-                    dwSizeDst +=GetWindowTextLengthW (GetDlgItem (hDlg, IDC_ABOUT_NOTE));           // Does NOT end with a LF
+                    dwSizeDst  = GetWindowTextLengthW (GetDlgItem (hDlg, IDC_VERSION   )) + 1 + 1;  // Does NOT end with a LF
+                    dwSizeDst += GetWindowTextLengthW (GetDlgItem (hDlg, IDC_VERSION2  )) + 1    ;  // Does     end with a LF
+                    dwSizeDst += GetWindowTextLengthW (GetDlgItem (hDlg, IDC_ABOUT_NOTE));          // Does NOT end with a LF
                     // Note we do not use MyGlobalAlloc or DbgGlobalAlloc here as the global memory handle
                     //   is to be placed onto the clipboard at which point the system
                     //   will own the handle

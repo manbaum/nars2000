@@ -1,6 +1,27 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1649 -- Version 0.5.0.xx
+--------------------------------
+
+* Update Version Data
+
+Directory branches/bsmith/NewTypes:
+
+MAIN.RC:
+  Make room in the About Box for more lines of version #s.
+
+VER.C:
+  Improve comments.
+  In the About Box list of version #s, include MPC.
+
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+INDEX-BODY.AHTML:
+  Include more functions in the list.
+
+
 Build #1648 -- Version 0.5.0.xx
 --------------------------------
 

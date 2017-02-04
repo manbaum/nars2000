@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3076,31 +3076,34 @@ UBOOL AllocSymTab
     lpHTS->lpSymTabNext = lpHTS->lpSymTab;
 
     // Initialize the Symbol Table Entry for the special constants and names
-    lpHTS->steZero      = SymTabHTSAppendInteger_EM (0                      , FALSE, lpHTS);
-    lpHTS->steOne       = SymTabHTSAppendInteger_EM (1                      , FALSE, lpHTS);
-    lpHTS->steBlank     = SymTabHTSAppendChar_EM    (L' '                   , FALSE, lpHTS);
-    lpHTS->steAlpha     = SymTabHTSAppendName_EM    (WS_UTF16_ALPHA  , NULL , TRUE , lpHTS);
-    lpHTS->steDel       = SymTabHTSAppendName_EM    (WS_UTF16_DEL    , NULL , TRUE , lpHTS);
-    lpHTS->steOmega     = SymTabHTSAppendName_EM    (WS_UTF16_OMEGA  , NULL , TRUE , lpHTS);
-    lpHTS->steLftOper   = SymTabHTSAppendName_EM    (WS_UTF16_LFTOPER, NULL , TRUE , lpHTS);
-    lpHTS->steDelDel    = SymTabHTSAppendName_EM    (WS_UTF16_DELDEL , NULL , TRUE , lpHTS);
-    lpHTS->steRhtOper   = SymTabHTSAppendName_EM    (WS_UTF16_RHTOPER, NULL , TRUE , lpHTS);
-    lpHTS->steNoValue   = lpHTS->lpSymTabNext++;
+    lpHTS->steZero       = SymTabHTSAppendInteger_EM (0                      , FALSE, lpHTS);
+    lpHTS->steOne        = SymTabHTSAppendInteger_EM (1                      , FALSE, lpHTS);
+    lpHTS->steBlank      = SymTabHTSAppendChar_EM    (L' '                   , FALSE, lpHTS);
+    lpHTS->steAlpha      = SymTabHTSAppendName_EM    (WS_UTF16_ALPHA  , NULL , TRUE , lpHTS);
+    lpHTS->steDel        = SymTabHTSAppendName_EM    (WS_UTF16_DEL    , NULL , TRUE , lpHTS);
+    lpHTS->steOmega      = SymTabHTSAppendName_EM    (WS_UTF16_OMEGA  , NULL , TRUE , lpHTS);
+    lpHTS->steLftOper    = SymTabHTSAppendName_EM    (WS_UTF16_LFTOPER, NULL , TRUE , lpHTS);
+    lpHTS->steDelDel     = SymTabHTSAppendName_EM    (WS_UTF16_DELDEL , NULL , TRUE , lpHTS);
+    lpHTS->steRhtOper    = SymTabHTSAppendName_EM    (WS_UTF16_RHTOPER, NULL , TRUE , lpHTS);
+    lpHTS->steNoValueUsr = lpHTS->lpSymTabNext++;
+    lpHTS->steNoValueSys = lpHTS->lpSymTabNext++;
 #ifdef DEBUG
     // Save the header signature
-    lpHTS->steNoValue->Sig.nature = SYM_HEADER_SIGNATURE;
+    lpHTS->steNoValueUsr->Sig.nature =
+    lpHTS->steNoValueSys->Sig.nature = SYM_HEADER_SIGNATURE;
 #endif
 
-    if (lpHTS->steZero    EQ NULL
-     || lpHTS->steOne     EQ NULL
-     || lpHTS->steBlank   EQ NULL
-     || lpHTS->steAlpha   EQ NULL
-     || lpHTS->steOmega   EQ NULL
-     || lpHTS->steDel     EQ NULL
-     || lpHTS->steLftOper EQ NULL
-     || lpHTS->steDelDel  EQ NULL
-     || lpHTS->steRhtOper EQ NULL
-     || lpHTS->steNoValue EQ NULL
+    if (lpHTS->steZero       EQ NULL
+     || lpHTS->steOne        EQ NULL
+     || lpHTS->steBlank      EQ NULL
+     || lpHTS->steAlpha      EQ NULL
+     || lpHTS->steOmega      EQ NULL
+     || lpHTS->steDel        EQ NULL
+     || lpHTS->steLftOper    EQ NULL
+     || lpHTS->steDelDel     EQ NULL
+     || lpHTS->steRhtOper    EQ NULL
+     || lpHTS->steNoValueUsr EQ NULL
+     || lpHTS->steNoValueSys EQ NULL
        )
         return FALSE;
     else
@@ -3112,10 +3115,13 @@ UBOOL AllocSymTab
         lpHTS->steOmega->stFlags.bIsOmega = TRUE;
 
         // Set the flags for the NoValue entry
-        lpHTS->steNoValue->stFlags.ObjName    = OBJNAME_NOVALUE;
-        lpHTS->steNoValue->stFlags.stNameType = NAMETYPE_UNK;
+        lpHTS->steNoValueUsr->stFlags.ObjName    = OBJNAME_NOVALUE_USR;
+        lpHTS->steNoValueSys->stFlags.ObjName    = OBJNAME_NOVALUE_SYS;
+        lpHTS->steNoValueUsr->stFlags.stNameType =
+        lpHTS->steNoValueSys->stFlags.stNameType = NAMETYPE_UNK;
 
-        Assert (IsSymNoValue (lpHTS->steNoValue));
+        Assert (IsSymNoValue (lpHTS->steNoValueUsr));
+        Assert (IsSymNoValue (lpHTS->steNoValueSys));
 
         return TRUE;
     } // End IF

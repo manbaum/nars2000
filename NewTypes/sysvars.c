@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -4271,7 +4271,7 @@ void AssignDefaultHTSSysVars
     AssignGlobalCWS     (hGlbQuadWSID_CWS    , SYSVAR_WSID    , lpSymQuad[SYSVAR_WSID    ]);    // Workspace Identifier
 
     // Set the values for []Z
-    lpSymQuad[SYSVAR_Z]->stFlags             = lphtsPTD->steNoValue->stFlags;
+    lpSymQuad[SYSVAR_Z]->stFlags             = lphtsPTD->steNoValueSys->stFlags;
     lpSymQuad[SYSVAR_Z]->stFlags.Inuse       = TRUE;
     lpSymQuad[SYSVAR_Z]->stFlags.SysVarValid = SYSVAR_Z;
 } // End AssignDefaultHTSSysVars

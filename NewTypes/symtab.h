@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -201,8 +201,9 @@ typedef struct tagHSHTABSTR
               *steLftOper,              // 94:  ...            Alpha Alpha
               *steDelDel,               // 98:  ...            Del Del
               *steRhtOper,              // 9C:  ...            Omega Omega
-              *steNoValue;              // A0:  ...            no-value result
-} HSHTABSTR, *LPHSHTABSTR;              // A4:  Length
+              *steNoValueUsr,           // A0:  ...            no-value user result
+              *steNoValueSys;           // A4:  ...            no-value system name
+} HSHTABSTR, *LPHSHTABSTR;              // A8:  Length
 
 //********************* SYMBOL TABLE ****************************************
 
@@ -306,9 +307,10 @@ typedef enum tagOBJ_NAMES
     OBJNAME_SYS,            // 02:  System name (starts with a Quad or Quote-quad)
     OBJNAME_MFO,            // 03:  Magic function/operator
     OBJNAME_LOD,            // 04:  )LOAD and )COPY HGLOBAL
-    OBJNAME_NOVALUE,        // 05:  NoValue object (result from, say, {execute}'')
-                            // 06-07:  Available entries (3 bits)
-} OBJ_NAMES;
+    OBJNAME_NOVALUE_USR,    // 05:  NoValue user object (result from, say, {execute}'')
+    OBJNAME_NOVALUE_SYS,    // 06:  NoValue system name (from, say, []FCP)
+                            // 07-07:  Available entries (3 bits)
+} OBJ_NAMES, *LPOBJ_NAMES;
 
 #define OBJNAME_WSTRPTR     {L"None", L"USR", L"SYS", L"MFO", L"LOD", L"NoV"}
 

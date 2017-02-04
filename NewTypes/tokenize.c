@@ -1431,7 +1431,7 @@ UBOOL fnAlpDone
             //   and we're not tokenizing an AFO, ...
             if (!lpMemPTD->bInTF
              && !lptkLocalVars->lpSF_Fcns->bAFO)
-                lpSymEntry = lpMemPTD->lphtsPTD->steNoValue;
+                lpSymEntry = lpMemPTD->lphtsPTD->steNoValueSys;
         } else
         {
             STFLAGS stFlags = {0};              // STE flags
@@ -1455,8 +1455,8 @@ UBOOL fnAlpDone
 
                     goto ERROR_EXIT;
                 } else
-                    // Just call it NoValue
-                    lpSymEntry = lpMemPTD->lphtsPTD->steNoValue;
+                    // Just call it NoValueSys
+                    lpSymEntry = lpMemPTD->lphtsPTD->steNoValueSys;
             } // End IF
         } // End IF
     } else

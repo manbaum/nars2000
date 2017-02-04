@@ -1,6 +1,29 @@
 Version 0.5.0.xx consists of the following Builds:
 
 
+Build #1648 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug When Mistyping A System Name
+
+Directory branches/bsmith/NewTypes:
+
+PRIMFNS.C:
+  Rename <steNoValue> to <steNoValueUsr> and define new name <steNoValueSys>.
+  In <IsTknSysName>, check for <OBJNAME_NOVALUE_SYS> before touching <stHshEntry> as that ptr may be NULL.
+
+SYMTAB.C:
+  Rename <steNoValue> to <steNoValueUsr> and define new name <steNoValueSys>.
+
+SYMTAB.H:
+  Rename <steNoValue> to <steNoValueUsr> and define new name <steNoValueSys>.
+  Rename <OBJNAME_NOVALUE> to <OBJNAME_NOVALUE_USR> and define new name <OBJNAME_NOVALUE_SYS>.
+
+SYSVARS.C:
+TOKENIZE.C:
+  Rename <steNoValue> to <steNoValueUsr> and define new name <steNoValueSys>.
+
+
 Build #1647 -- Version 0.5.0.xx
 --------------------------------
 

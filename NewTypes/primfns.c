@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3442,7 +3442,7 @@ LPPL_YYSTYPE MakeNoValue_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARNAMED;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
     lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
-    lpYYRes->tkToken.tkData.tkSym      = lpMemPTD->lphtsPTD->steNoValue;
+    lpYYRes->tkToken.tkData.tkSym      = lpMemPTD->lphtsPTD->steNoValueUsr;
     lpYYRes->tkToken.tkCharIndex       = (lptkFunc NE NULL) ? lptkFunc->tkCharIndex
                                                             : -1;
     lpYYRes->tkToken.tkSynObj          = soNVAL;
@@ -3989,6 +3989,12 @@ UBOOL IsTknSysName
     // If it's not named, ...
     if (!IsTknNamed (lptkVar))
         return FALSE;
+
+    // In case we encounter a system name typo (e.g., []FCP),
+    //   we must test for it before we touch the HshEntry as
+    //   that ptr is NULL
+    if (lptkVar->tkData.tkSym->stFlags.ObjName EQ OBJNAME_NOVALUE_SYS)
+        return TRUE;
 
     // Get the HshEntry name's global memory handle
     htGlbName = lptkVar->tkData.tkSym->stHshEntry->htGlbName;

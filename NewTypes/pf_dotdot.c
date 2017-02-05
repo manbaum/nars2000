@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -170,7 +170,9 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
     LPVOID            lpMemLft,             // Ptr to left arg global memory
                       lpMemRht,             // ...    right ...
                       lpMemRes;             // ...    result ...
-    UBOOL             bRet = TRUE;          // TRUE iff the result is valid
+    UBOOL             bRet = TRUE,          // TRUE iff the result is valid
+                      PV0 = FALSE,          // TRUE iff the result is a origin-0 PV
+                      PV1 = FALSE;          // ...                             1 ...
     LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
     ALLTYPES          atLft = {0},          // Left arg as ALLTYPES
                       atStp = {0},          // Step  ...
@@ -206,7 +208,7 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
     if (IsHCAny (aplTypeLft))
         goto LEFT_DOMAIN_EXIT;
     if (IsHCAny (aplTypeRht))
-        goto LEFT_DOMAIN_EXIT;
+        goto RIGHT_DOMAIN_EXIT;
 
     // If either arg is nested, ...
     if (IsNested (aplTypeLft)
@@ -241,7 +243,7 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
     } else
         lpMemRht = &aplLongestRht;
 
-    // Initialize temps if necessary
+    // Pick off APAs and errors
     // Split cases based upon the result storage type
     switch (aplTypeRes)
     {
@@ -344,6 +346,25 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
                 atStp.aplInteger =  abs64 (atStp.aplInteger);
             else
                 atStp.aplInteger = -abs64 (atStp.aplInteger);
+
+            // Check for PV result
+            if (atStp.aplInteger EQ 1
+             && atLft.aplInteger < atRht.aplInteger
+             && IsBooleanValue (atLft.aplInteger))
+            {
+                // Set PV0 & PV1
+                PV0 = (atLft.aplInteger EQ 0);
+                PV1 = (atLft.aplInteger EQ 1);
+            } else
+            if (atStp.aplInteger EQ -1
+             && atLft.aplInteger > atRht.aplInteger
+             && IsBooleanValue (atRht.aplInteger))
+            {
+                // Set PV0 & PV1
+                PV0 = (atRht.aplInteger EQ 0);
+                PV1 = (atRht.aplInteger EQ 1);
+            } // End IF
+
             // The NELM of the result is
             aplNELMRes = 1 + abs64 ((atRht.aplInteger - atLft.aplInteger) / atStp.aplInteger);
 
@@ -451,6 +472,8 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
     lpHeader->ArrType    = aplTypeRes;
 ////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
 ////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+    lpHeader->PV0        = PV0;
+    lpHeader->PV1        = PV1;
     lpHeader->RefCnt     = 1;
     lpHeader->NELM       = aplNELMRes;
     lpHeader->Rank       = 1;

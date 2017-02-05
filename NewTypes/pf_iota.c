@@ -1326,10 +1326,10 @@ ERROR_EXIT:
 
 UBOOL PrimFnDydIotaPvN_EM
     (LPAPLUINT         lpMemRes,        // Ptr to result global memory data
-     LPVARARRAY_HEADER lpHeaderLft,     // Ptr to left arg header
+     LPVARARRAY_HEADER lpMemHdrLft,     // Ptr to left arg header
      APLSTYPE          aplTypeLft,      // Left arg storage type
      APLNELM           aplNELMLft,      // Left arg NELM
-     LPAPLUINT         lpMemLft,        // Ptr to left arg global memory data
+     LPAPLAPA          lpMemLft,        // Ptr to left arg global memory data
      APLSTYPE          aplTypeRht,      // Right arg storage type
      APLNELM           aplNELMRht,      // Right arg NELM
      LPVOID            lpMemRht,        // Ptr to right arg global memory data
@@ -1345,6 +1345,8 @@ UBOOL PrimFnDydIotaPvN_EM
               uRht;                     // ...
     APLINT    aplIntegerLft,            // Left arg integer
               aplIntegerRht,            // Right arg integer
+              aplLftMin,                // Left arg min value
+              aplLftMax,                // ...      max  ...
               ByteRes;                  // # bytes in the result
     HGLOBAL   hGlbInv = NULL;           // Inverse indices global memory handle
     LPAPLUINT lpMemInv;                 // Ptr to inverse indices global memory
@@ -1365,6 +1367,27 @@ UBOOL PrimFnDydIotaPvN_EM
     // Lock the memory to get a ptr to it
     lpMemInv = MyGlobalLock000 (hGlbInv);
 
+    // If the PV is ascending, ...
+    if (lpMemLft->Mul EQ 1)
+    {
+        // Get the min and max values in the left arg
+        aplLftMin = GetNextInteger (lpMemLft, aplTypeLft,              0);
+        aplLftMax = GetNextInteger (lpMemLft, aplTypeLft, aplNELMLft - 1);
+    } else
+    {
+        // Get the min and max values in the left arg
+        aplLftMin = GetNextInteger (lpMemLft, aplTypeLft, aplNELMLft - 1);
+        aplLftMax = GetNextInteger (lpMemLft, aplTypeLft,              0);
+    } // End IF
+
+    // How can a PV not be
+    //   an APA
+    //   with step ±1
+    //   whose minimum value is the origin (0 or 1) of the PV?
+    Assert (IsSimpleAPA (aplTypeLft));
+    Assert (abs64 (lpMemLft->Mul) EQ 1);
+    Assert (aplLftMin EQ lpMemHdrLft->PV1);
+
     // Loop through the left arg converting it to
     //   origin-0 inverse indices
     for (uLft = 0; uLft < aplNELMLft; uLft++)
@@ -1374,9 +1397,12 @@ UBOOL PrimFnDydIotaPvN_EM
           GetNextInteger (lpMemLft,
                           aplTypeLft,
                           uLft);
-        // Save as origin-0 inverse index
-        lpMemInv[aplIntegerLft - lpHeaderLft->PV1] = uLft;
+        // Save as origin-0 inverse index with origin-sensitive result
+        lpMemInv[aplIntegerLft - aplLftMin] = uLft + bQuadIO;
     } // End FOR
+
+    // Note that the empty case is handled by our caller
+    Assert (aplNELMLft NE 0);
 
     // Loop through the right arg looking up each value
     //   in the inverse indices and saving the answer
@@ -1392,10 +1418,10 @@ UBOOL PrimFnDydIotaPvN_EM
 
         // If there's no overflow, and it's within range, ...
         if (bRet
-         && (0 <= aplIntegerRht
-          &&      aplIntegerRht <= ((APLINT) aplNELMLft - 1)))
+         && (aplLftMin <= aplIntegerRht
+          &&              aplIntegerRht <= aplLftMax))
             // Lookup in the inverse indices
-            *lpMemRes++ = lpMemInv[aplIntegerRht];
+            *lpMemRes++ = lpMemInv[aplIntegerRht - aplLftMin];
         else
         if (bFltFound)
             goto DOMAIN_EXIT;

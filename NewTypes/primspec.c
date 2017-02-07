@@ -2525,9 +2525,15 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
                 goto LEFT_DOMAIN_EXIT;
             if (hGlbLft2 EQ NULL)
                 goto WSFULL_EXIT;
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
+
             // Save as the new global handle and storage type
             hGlbLft    = hGlbLft2;
             aplTypeLft = aplTypeLft2;
+
+            // Lock the memory to get a ptr to it
+            lpMemHdrLft = MyGlobalLockVar (hGlbLft);
         } // End IF
 
         // If the right arg is HC, ...
@@ -2546,9 +2552,15 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
                 goto RIGHT_DOMAIN_EXIT;
             if (hGlbRht2 EQ NULL)
                 goto WSFULL_EXIT;
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
+
             // Save as the new global handle and storage type
             hGlbRht    = hGlbRht2;
             aplTypeRht = aplTypeRht2;
+
+            // Lock the memory to get a ptr to it
+            lpMemHdrRht = MyGlobalLockVar (hGlbRht);
         } // End IF
     } // End IF
 
@@ -3568,9 +3580,15 @@ RESTART_EXCEPTION:
                 goto LEFT_DOMAIN_EXIT;
             if (hGlbLft2 EQ NULL)
                 goto WSFULL_EXIT;
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
+
             // Save as the new global handle and storage type
             hGlbLft    = hGlbLft2;
             aplTypeLft = aplTypeLft2;
+
+            // Lock the memory to get a ptr to it
+            lpMemHdrLft = MyGlobalLockVar (hGlbLft);
         } // End IF
     } // End IF
 
@@ -4217,9 +4235,15 @@ RESTART_EXCEPTION:
                 goto RIGHT_DOMAIN_EXIT;
             if (hGlbRht2 EQ NULL)
                 goto WSFULL_EXIT;
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
+
             // Save as the new global handle and storage type
             hGlbRht    = hGlbRht2;
             aplTypeRht = aplTypeRht2;
+
+            // Lock the memory to get a ptr to it
+            lpMemHdrRht = MyGlobalLockVar (hGlbRht);
         } // End IF
     } // End IF
 

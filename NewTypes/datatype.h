@@ -162,9 +162,9 @@ typedef enum tagARRAY_TYPES
  ARRAY_LENGTH   ,                       // 16:  # elements in this enum
                                         //      *MUST* be the last non-error entry
                                         // 17-1F:  Available entries (5 bits)
- ARRAY_INIT  = ARRAY_LENGTH  ,
- ARRAY_ERROR = (APLSTYPE) -1 ,
- ARRAY_NONCE = (APLSTYPE) -2 ,
+ ARRAY_INIT     = ARRAY_LENGTH  ,
+ ARRAY_ERROR    = (APLSTYPE) -1 ,
+ ARRAY_NONCE    = (APLSTYPE) -2 ,
 
  ARRAY_HC1I  =   ARRAY_INT   ,          // To simplify common macros
  ARRAY_HC1F  =   ARRAY_FLOAT ,          // ...
@@ -341,6 +341,10 @@ typedef struct tagVARARRAY_HEADER
                                         //      followed by the dimensions
                                         // 1C:  Length
 } VARARRAY_HEADER, *LPVARARRAY_HEADER;
+
+// Note that a permuation vector is a vector whose elements when placed in
+//   ascending order are identical to an APV starting at 0 or 1 with a step of 1
+// Such arrays are formed by the two Grades, Monadic Iota,
 
 // List array header
 #define LSTARRAY_HEADER_SIGNATURE   'TSIL'

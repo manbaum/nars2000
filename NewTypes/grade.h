@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ typedef struct tagGRADE_DATA
                                     //   1 for GradeUp, -1 for GradeDown
     APLRANK      aplRankLft;        // Left arg rank
     LPTT_HANDLES lpMemTTHandles;    // Ptr to TT Handles global memory
-    UBOOL        PV0:1,             // Right arg is a Perumtation Vector, origin-0
+    UBOOL        PV0:1,             // Right arg is a Permutation Vector, origin-0
                  PV1:1;             // ...                                       1
     LPUBOOL      lpbCtrlBreak;      // Ptr to Ctrl-Break flag
 } GRADE_DATA, *LPGRADE_DATA;

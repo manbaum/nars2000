@@ -1247,7 +1247,7 @@ UBOOL PrimFnDydIotaAvN_EM
     atRht. enumCT = ENUMCT_USER;
     atRht.fQuadCT = fQuadCT;
 
-    // Point to TPA routine to extract an indexed
+    // Point to TCA routine to extract an indexed
     //   value from the right arg
     tcActionRht = aTypeActConvert[aplTypeRht][ARRAY_INT];
 
@@ -1329,7 +1329,7 @@ UBOOL PrimFnDydIotaPvN_EM
      LPVARARRAY_HEADER lpMemHdrLft,     // Ptr to left arg header
      APLSTYPE          aplTypeLft,      // Left arg storage type
      APLNELM           aplNELMLft,      // Left arg NELM
-     LPAPLAPA          lpMemLft,        // Ptr to left arg global memory data
+     LPVOID            lpMemLft,        // Ptr to left arg global memory data
      APLSTYPE          aplTypeRht,      // Right arg storage type
      APLNELM           aplNELMRht,      // Right arg NELM
      LPVOID            lpMemRht,        // Ptr to right arg global memory data
@@ -1367,26 +1367,9 @@ UBOOL PrimFnDydIotaPvN_EM
     // Lock the memory to get a ptr to it
     lpMemInv = MyGlobalLock000 (hGlbInv);
 
-    // If the PV is ascending, ...
-    if (lpMemLft->Mul EQ 1)
-    {
-        // Get the min and max values in the left arg
-        aplLftMin = GetNextInteger (lpMemLft, aplTypeLft,              0);
-        aplLftMax = GetNextInteger (lpMemLft, aplTypeLft, aplNELMLft - 1);
-    } else
-    {
-        // Get the min and max values in the left arg
-        aplLftMin = GetNextInteger (lpMemLft, aplTypeLft, aplNELMLft - 1);
-        aplLftMax = GetNextInteger (lpMemLft, aplTypeLft,              0);
-    } // End IF
-
-    // How can a PV not be
-    //   an APA
-    //   with step ±1
-    //   whose minimum value is the origin (0 or 1) of the PV?
-    Assert (IsSimpleAPA (aplTypeLft));
-    Assert (abs64 (lpMemLft->Mul) EQ 1);
-    Assert (aplLftMin EQ lpMemHdrLft->PV1);
+    // Get the min and max values in the left arg
+    aplLftMin = lpMemHdrLft->PV1;
+    aplLftMax = (aplNELMLft - lpMemHdrLft->PV0);
 
     // Loop through the left arg converting it to
     //   origin-0 inverse indices

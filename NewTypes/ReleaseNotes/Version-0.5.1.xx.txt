@@ -1,6 +1,23 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1652 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bugs In Lookup Algorithm For PV Left Args, Part II
+
+Directory branches/bsmith/NewTypes:
+
+DATATYPE.H:
+  Define a Permutation Vector.
+
+GRADE.H:
+  Fix typo in comment.
+
+PF_IOTA.C:
+  Fix bugs in lookup algorithm for PV left args.
+
+
 Build #1651 -- Version 0.5.1.xx
 --------------------------------
 

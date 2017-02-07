@@ -1,2 +1,2 @@
-#define VER_MODULE 300
-#define VER_MODULE_STR "300"
+#define VER_MODULE 1
+#define VER_MODULE_STR "1"

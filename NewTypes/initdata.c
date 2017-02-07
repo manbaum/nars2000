@@ -111,6 +111,7 @@ void InitConstants
     aplInteger = POS_INFINITY; fltPosInfinity = *(LPAPLFLOAT) &aplInteger;
                                   __infinity  = fltPosInfinity;
     aplInteger = NEG_INFINITY; fltNegInfinity = *(LPAPLFLOAT) &aplInteger;
+    aplInteger = QUIET_NAN;    fltNaN         = *(LPAPLFLOAT) &aplInteger;
     aplInteger = FLOAT2POW53;  Float2Pow53    = *(LPAPLFLOAT) &aplInteger;
     aplInteger = FLOATPI;      FloatPi        = *(LPAPLFLOAT) &aplInteger;
                                FloatPi2       = FloatPi / 2;

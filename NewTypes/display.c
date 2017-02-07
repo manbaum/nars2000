@@ -27,6 +27,11 @@
 #include "headers.h"
 #include "debug.h"              // For xxx_TEMP_OPEN macros
 
+
+#define UTF16_NAN                 0x00D8        // Alt-'5' - NaN
+#define WS_UTF16_NAN                 L"\x00D8"  // Alt-'5' - NaN
+
+
 typedef enum tagDTOA_MODE
 {
     DTOAMODE_SHORT_RND = 0,             // 0 = shortest string with rounding, e.g., 1e23
@@ -1748,34 +1753,18 @@ LPAPLCHAR FormatAplFltFC
         // If we're to substitute, ...
         if (bSubstInf)
         {
-            WCHAR wszTemp[32];
-
-            // Convert to char
-            IntFloatToAplchar (wszTemp, (LPAPLLONGEST) &aplFloat);
-            wszTemp[16] = WC_EOS;
-
-            // Format and skip over
-            lpaplChar +=
-              MySprintfW (lpaplChar,
-                          (1 + 1 + strcountof (WS_TEXT_NaN) + 13 + 1 + 1) * sizeof (WCHAR),
-                         L"{%s%s%s}",
-                          (SIGN_APLFLOAT_RAW (aplFloat)) ? L"-" : L"",
-                          WS_TEXT_NaN,
-                         &wszTemp[3]);
-        } else
-        {
-            if (SIGN_APLFLOAT_RAW (aplFloat))
-                // Mark as negative
-                *lpaplChar++ = aplCharOverbar;
-
-            // Copy the Quiet or Signalling flag
-            *lpaplChar++ = (APL_QNaN_BIT & *(LPAPLUINT) &aplFloat) ? L'Q' : L'S';
-
             // String for NaN
-            lstrcpyW (lpaplChar, WS_TEXT_NaN);
+            lstrcpyW (lpaplChar, LTEXT_NAN2);
 
             // Skip over it
-            lpaplChar += strcountof (WS_TEXT_NaN);
+            lpaplChar += strcountof (LTEXT_NAN2);
+        } else
+        {
+            // String for NaN
+            lstrcpyW (lpaplChar, WS_UTF16_NAN);
+
+            // Skip over it
+            lpaplChar += strcountof (WS_UTF16_NAN);
         } // End IF/ELSE
     } else
     // Non-zero

@@ -1106,6 +1106,7 @@ HGLOBAL hGlbQuadA,                      // []A
 EXTERN
 APLFLOAT fltPosInfinity,                // Positive infinity
          fltNegInfinity,                // Negative ...
+         fltNaN,                        // NaN
          FloatPi,                       // Pi
          FloatPi2,                      // Pi/2
          FloatGamma,                    // Gamma

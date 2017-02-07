@@ -2009,8 +2009,6 @@ APLFLOAT ConvertSpecCharsToFloat
      size_t *lpuLen)            // Ptr to # scanned chars (may be NULL)
 
 {
-    char szTemp[16+1];
-
     // Check for positive infinity
     if (lstrcmp (lpszChar,     TEXT_INFINITY) EQ 0)
     {
@@ -2018,7 +2016,7 @@ APLFLOAT ConvertSpecCharsToFloat
             // Copy the # scanned chars
             *lpuLen = strcountof (TEXT_INFINITY);
 
-        // Copy the value
+        // Return the value
         return fltPosInfinity;
     } else
     // Check for negative infinity
@@ -2028,46 +2026,18 @@ APLFLOAT ConvertSpecCharsToFloat
             // Copy the # scanned chars
             *lpuLen = strcountof ("-" TEXT_INFINITY);
 
-        // Copy the value
+        // Return the value
         return fltNegInfinity;
     } else
-    // Check for positive NaN
-    if (strncmp (lpszChar, "{" TEXT_NaN, strcountof ("{" TEXT_NaN)) EQ 0)
+    // Check for NaN
+    if (strncmp (lpszChar, TEXT_NAN2, strcountof (TEXT_NAN2)) EQ 0)
     {
         if (lpuLen NE NULL)
-            // Copy the # scanned chars         1234567890123
-            //                     {       NaN  8000000000001 }
-            *lpuLen = strcountof ("{" TEXT_NaN) + 13        + 1;
+            // Copy the # scanned chars
+            *lpuLen = strcountof (TEXT_NAN2);
 
-        // Copy the incoming text to a temp so we can convert the header
-        CopyMemory (szTemp, &lpszChar[1], 16);
-
-        // Subsitute the floating point NaN header for "NaN"
-        szTemp[0] = '7';  // Positive NaN
-        szTemp[1] = 'F';
-        szTemp[2] = 'F';
-
-        // Copy the value
-        return ConvertCharToFloat (szTemp);
-    } else
-    // Check for negative NaN
-    if (strncmp (lpszChar, "{-" TEXT_NaN, strcountof ("{-" TEXT_NaN)) EQ 0)
-    {
-        if (lpuLen NE NULL)
-            // Copy the # scanned chars          1234567890123
-            //                     {-       NaN  8000000000001 }
-            *lpuLen = strcountof ("{-" TEXT_NaN) + 13        + 1;
-
-        // Copy the incoming text to a temp so we can convert the header
-        CopyMemory (szTemp, &lpszChar[2], 16);
-
-        // Subsitute the floating point NaN header for "NaN"
-        szTemp[0] = 'F';  // Negative NaN
-        szTemp[1] = 'F';
-        szTemp[2] = 'F';
-
-        // Copy the value
-        return ConvertCharToFloat (szTemp);
+        // Return the value
+        return fltNaN;
     } else
     {
         if (lpuLen NE NULL)

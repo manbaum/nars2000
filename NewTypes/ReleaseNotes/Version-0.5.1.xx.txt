@@ -1,6 +1,32 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1655 -- Version 0.5.1.xx
+--------------------------------
+
+* Define A Single NaN Rather Multiple NaNs
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+  In <ConvertSpecCharsToFloat>, display a NaN as {NaN} rather than with any other adornment.
+
+DEFINES.H:
+  Define a Quiet NaN as well as a Real Indefinite.
+
+DISPLAY.C:
+  In <FormatAplFltFC>, format a NaN as {NaN} with no other adornment.
+
+EXTERNS.H:
+  Define save area for floating point NaN.
+
+INITDATA.C:
+  Initialize <fltNaN> as a Quiet NaN.
+
+PRIMSPEC.C:
+  Move the unlock code to before we test for errors.
+
+
 Build #1654 -- Version 0.5.1.xx
 --------------------------------
 

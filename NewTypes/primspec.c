@@ -2520,14 +2520,14 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
                                        aplNELMLft,          // ... NELM
                                        aplRankLft,          // ... rank
                                       &bRet);               // TRUE iff the result is not a WS FULL
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
+
             // Check for error
             if (!bRet)
                 goto LEFT_DOMAIN_EXIT;
             if (hGlbLft2 EQ NULL)
                 goto WSFULL_EXIT;
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
-
             // Save as the new global handle and storage type
             hGlbLft    = hGlbLft2;
             aplTypeLft = aplTypeLft2;
@@ -2547,14 +2547,14 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
                                        aplNELMRht,          // ... NELM
                                        aplRankRht,          // ... rank
                                       &bRet);               // TRUE iff the result is not a WS FULL
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
+
             // Check for error
             if (!bRet)
                 goto RIGHT_DOMAIN_EXIT;
             if (hGlbRht2 EQ NULL)
                 goto WSFULL_EXIT;
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
-
             // Save as the new global handle and storage type
             hGlbRht    = hGlbRht2;
             aplTypeRht = aplTypeRht2;
@@ -3575,14 +3575,14 @@ RESTART_EXCEPTION:
                                        aplNELMLft,          // ... NELM
                                        aplRankLft,          // ... rank
                                       &bRet);               // TRUE iff the result is not demotable
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
+
             // Check for error
             if (!bRet)
                 goto LEFT_DOMAIN_EXIT;
             if (hGlbLft2 EQ NULL)
                 goto WSFULL_EXIT;
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
-
             // Save as the new global handle and storage type
             hGlbLft    = hGlbLft2;
             aplTypeLft = aplTypeLft2;
@@ -4230,14 +4230,14 @@ RESTART_EXCEPTION:
                                        aplNELMRht,          // ... NELM
                                        aplRankRht,          // ... rank
                                       &bRet);               // TRUE iff the result is not demotable
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
+
             // Check for error
             if (!bRet)
                 goto RIGHT_DOMAIN_EXIT;
             if (hGlbRht2 EQ NULL)
                 goto WSFULL_EXIT;
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
-
             // Save as the new global handle and storage type
             hGlbRht    = hGlbRht2;
             aplTypeRht = aplTypeRht2;

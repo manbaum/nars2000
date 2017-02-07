@@ -274,13 +274,12 @@
 
 #define POS_INFINITY            (0x7FF0000000000000)
 #define NEG_INFINITY            (0xFFF0000000000000)
-#define QUIET_NAN               (0xFFF8000000000000)
+#define QUIET_NAN               (0x7FF8000000000000)
+#define REAL_INDEFINITE         (0xFFF8000000000000)
 #define FLOAT2POW53             (0x4340000000000000)
 #define FLOATPI                 (0x400921FB54442D18)
 #define FLOATGAMMA              (0x3FE2788CFC6FB619)
 #define FLOATE                  (0x4005BF0A8B145769)
-#define TEXT_NaN                "NaN"
-#define WS_TEXT_NaN            L"NaN"
 
 
 //***************************************************************************
@@ -569,6 +568,10 @@ default:        \
 #define DEF_POSINFINITY_CHAR     '!'
 #define DEF_POSINFINITY_STR      "!"
 #define DEF_NEGINFINITY_STR     "-!"
+
+// Define text for NaN
+#define  TEXT_NAN2           "{NaN}"
+#define LTEXT_NAN2          L"{NaN}"
 
 // Use when translating to non-WCHAR code in <pn_parse.y>
 #define INFINITY1       DEF_POSINFINITY_CHAR

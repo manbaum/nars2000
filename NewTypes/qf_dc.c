@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -378,7 +378,7 @@ LPPL_YYSTYPE SysFnMonDC_ToHC_EM_YY
 ////} // End IF
 ////
 ////// See if it fits into a lower (but not necessarily smaller) datatype
-////TypeDemote (&lpYYRes->tkToken);
+////TypeDemote (&lpYYRes->tkToken, FALSE);
 
     goto NORMAL_EXIT;
 
@@ -820,7 +820,7 @@ LPPL_YYSTYPE SysFnDydDC_EM_YY
 ////} // End IF
 ////
 ////// See if it fits into a lower (but not necessarily smaller) datatype
-////TypeDemote (&lpYYRes->tkToken);
+////TypeDemote (&lpYYRes->tkToken, FALSE);
 
     goto NORMAL_EXIT;
 

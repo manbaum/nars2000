@@ -1183,7 +1183,7 @@ HGLOBAL TypeDemoteGlb
 //  Demote the data in the right arg, copying it to the result
 //***************************************************************************
 
-void DemoteData
+UBOOL DemoteData
     (APLSTYPE aplTypeRes,                   // Result storage type
      LPVOID   lpMemRes,                     // Ptr to result global memory
      APLSTYPE aplTypeRht,                   // Right arg storage type
@@ -1198,11 +1198,13 @@ void DemoteData
     LPVOID            lpMemSub;             // Ptr to temp global memory
     LPVARARRAY_HEADER lpMemHdrSub = NULL;   // Ptr to temp memory header
     ALLTYPES          atSub = {0};          // Item as ALLTYPES
+    UBOOL             bRet;                 // TRUE iff the result is valid
     int               iHCDimRht,            // Right arg HC dimension (1, 2, 4, 8)
                       iHCDimRes,            // Result    ...
                       iSizeofRht,           // Sizeof a right arg item
                       iSizeofRes,           // ...      result    ...
                       i;                    // Loop counter
+    TC_ACTION         tcActionRht;          // Ptr to TypeActConvert action routine for right arg
 
     // Calculate the size of the dimension
     iHCDimRht = TranslateArrayTypeToHCDim (aplTypeRht);
@@ -1350,7 +1352,47 @@ void DemoteData
 
                 case ARRAY_RAT:     // Res = BOOL, Rht = RAT
                 case ARRAY_VFP:     // Res = BOOL, Rht = VFP
-                                    // We don't demote RAT/VFP to BOOL
+                case ARRAY_HC2I:    // Res = BOOL, Rht = HC2I
+                case ARRAY_HC2F:    // Res = BOOL, Rht = HC2F
+                case ARRAY_HC2R:    // Res = BOOL, Rht = HC2R
+                case ARRAY_HC2V:    // Res = BOOL, Rht = HC2V
+                case ARRAY_HC4I:    // Res = BOOL, Rht = HC4I
+                case ARRAY_HC4F:    // Res = BOOL, Rht = HC4F
+                case ARRAY_HC4R:    // Res = BOOL, Rht = HC4R
+                case ARRAY_HC4V:    // Res = BOOL, Rht = HC4V
+                case ARRAY_HC8I:    // Res = BOOL, Rht = HC8I
+                case ARRAY_HC8F:    // Res = BOOL, Rht = HC8F
+                case ARRAY_HC8R:    // Res = BOOL, Rht = HC8R
+                case ARRAY_HC8V:    // Res = BOOL, Rht = HC8V
+                    // Point to TCA routine to extract an indexed
+                    //   value from the right arg
+                    tcActionRht = aTypeActConvert[aplTypeRht][aplTypeRes];
+
+                    // Loop through the elements
+                    for (uRht = 0; uRht < aplNELMRht; uRht++)
+                    {
+                        // Convert to lower data type
+                        (*tcActionRht) (lpMemRht, uRht, &atSub, &bRet);
+
+                        // Ensure it's Boolean-valued
+                        bRet &= IsBooleanValue (atSub.aplInteger);
+
+                        if (!bRet)
+                            goto ERROR_EXIT;
+
+                        // Save in the result
+                        *((LPAPLBOOL) lpMemRes) |= atSub.aplBoolean << uBitIndex;
+
+                        // Check for end-of-byte
+                        if (++uBitIndex EQ NBIB)
+                        {
+                            uBitIndex = 0;              // Start over
+                            ((LPAPLBOOL) lpMemRes)++;   // Skip to next byte
+                        } // End IF
+                    } // End FOR
+
+                    break;
+
                 defstop
                     break;
             } // End SWITCH
@@ -1443,16 +1485,52 @@ void DemoteData
 
                     break;
 
-                case ARRAY_HC2I:        // Reduce the dimension
-                case ARRAY_HC4I:        // ...
-                case ARRAY_HC8I:        // ...
-                    if (bDimDemote)
+                case ARRAY_RAT:     // Res = INT, Rht = RAT
+                case ARRAY_VFP:     // Res = INT, Rht = VFP
+                case ARRAY_HC2I:    // Res = INT, Rht = HC2I
+                case ARRAY_HC2F:    // Res = INT, Rht = HC2F
+                case ARRAY_HC2R:    // Res = INT, Rht = HC2R
+                case ARRAY_HC2V:    // Res = INT, Rht = HC2V
+                case ARRAY_HC4I:    // Res = INT, Rht = HC4I
+                case ARRAY_HC4F:    // Res = INT, Rht = HC4F
+                case ARRAY_HC4R:    // Res = INT, Rht = HC4R
+                case ARRAY_HC4V:    // Res = INT, Rht = HC4V
+                case ARRAY_HC8I:    // Res = INT, Rht = HC8I
+                case ARRAY_HC8F:    // Res = INT, Rht = HC8F
+                case ARRAY_HC8R:    // Res = INT, Rht = HC8R
+                case ARRAY_HC8V:    // Res = INT, Rht = HC8V
+                    // Point to TCA routine to extract an indexed
+                    //   value from the right arg
+                    tcActionRht = aTypeActConvert[aplTypeRht][aplTypeRes];
+
                     // Loop through the elements
-                    for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPBYTE) lpMemRht) += (iSizeofRht - iSizeofRes))
-                    // Loop through all of the parts
-                    for (i = 0; i < iHCDimRes; i++)
-                        // Copy to the result
-                        *((LPAPLINT) lpMemRes)++ = *((LPAPLINT) lpMemRht)++;
+                    for (uRht = 0; uRht < aplNELMRht; uRht++)
+                    {
+                        // Convert to lower data type
+                        (*tcActionRht) (lpMemRht, uRht, &atSub, &bRet);
+
+                        if (!bRet)
+                            goto ERROR_EXIT;
+
+                        // Save in the result
+                        *((LPAPLINT) lpMemRes)++ = atSub.aplInteger;
+                    } // End FOR
+
+////////////////case ARRAY_HC2I:        // Reduce the dimension
+////////////////case ARRAY_HC4I:        // ...
+////////////////case ARRAY_HC8I:        // ...
+                    if (bDimDemote && FALSE)
+                    {
+                        DbgBrk ();
+
+                        // Loop through the elements
+                        for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPBYTE) lpMemRht) += (iSizeofRht - iSizeofRes))
+                        // Loop through all of the parts
+                        for (i = 0; i < iHCDimRes; i++)
+                            // Copy to the result
+                            *((LPAPLINT) lpMemRes)++ = *((LPAPLINT) lpMemRht)++;
+                    } // End IF
+
                     break;
 
                 defstop
@@ -1541,16 +1619,52 @@ void DemoteData
 
                     break;
 
-                case ARRAY_HC2F:        // Reduce the dimension
-                case ARRAY_HC4F:        // ...
-                case ARRAY_HC8F:        // ...
-                    if (bDimDemote)
+                case ARRAY_RAT:     // Res = FLT, Rht = RAT
+                case ARRAY_VFP:     // Res = FLT, Rht = VFP
+                case ARRAY_HC2I:    // Res = FLT, Rht = HC2I
+                case ARRAY_HC2F:    // Res = FLT, Rht = HC2F
+                case ARRAY_HC2R:    // Res = FLT, Rht = HC2R
+                case ARRAY_HC2V:    // Res = FLT, Rht = HC2V
+                case ARRAY_HC4I:    // Res = FLT, Rht = HC4I
+                case ARRAY_HC4F:    // Res = FLT, Rht = HC4F
+                case ARRAY_HC4R:    // Res = FLT, Rht = HC4R
+                case ARRAY_HC4V:    // Res = FLT, Rht = HC4V
+                case ARRAY_HC8I:    // Res = FLT, Rht = HC8I
+                case ARRAY_HC8F:    // Res = FLT, Rht = HC8F
+                case ARRAY_HC8R:    // Res = FLT, Rht = HC8R
+                case ARRAY_HC8V:    // Res = FLT, Rht = HC8V
+                    // Point to TCA routine to extract an indexed
+                    //   value from the right arg
+                    tcActionRht = aTypeActConvert[aplTypeRht][aplTypeRes];
+
                     // Loop through the elements
-                    for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPBYTE) lpMemRht) += (iSizeofRht - iSizeofRes))
-                    // Loop through all of the parts
-                    for (i = 0; i < iHCDimRes; i++)
-                        // Copy to the result
-                        *((LPAPLFLOAT) lpMemRes)++ = *((LPAPLFLOAT) lpMemRht)++;
+                    for (uRht = 0; uRht < aplNELMRht; uRht++)
+                    {
+                        // Convert to lower data type
+                        (*tcActionRht) (lpMemRht, uRht, &atSub, &bRet);
+
+                        if (!bRet)
+                            goto ERROR_EXIT;
+
+                        // Save in the result
+                        *((LPAPLFLOAT) lpMemRes)++ = atSub.aplFloat;
+                    } // End FOR
+
+////////////////case ARRAY_HC2F:        // Reduce the dimension
+////////////////case ARRAY_HC4F:        // ...
+////////////////case ARRAY_HC8F:        // ...
+                    if (bDimDemote && FALSE)
+                    {
+                        DbgBrk ();
+
+                        // Loop through the elements
+                        for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPBYTE) lpMemRht) += (iSizeofRht - iSizeofRes))
+                        // Loop through all of the parts
+                        for (i = 0; i < iHCDimRes; i++)
+                            // Copy to the result
+                            *((LPAPLFLOAT) lpMemRes)++ = *((LPAPLFLOAT) lpMemRht)++;
+                    } // End IF
+
                     break;
 
                 defstop
@@ -1643,16 +1757,52 @@ void DemoteData
 
                     break;
 
-                case ARRAY_HC2R:        // Reduce the dimension
-                case ARRAY_HC4R:        // ...
-                case ARRAY_HC8R:        // ...
-                    if (bDimDemote)
+////////////////case ARRAY_RAT:     // Res = RAT, Rht = RAT
+                case ARRAY_VFP:     // Res = RAT, Rht = VFP
+                case ARRAY_HC2I:    // Res = RAT, Rht = HC2I
+                case ARRAY_HC2F:    // Res = RAT, Rht = HC2F
+                case ARRAY_HC2R:    // Res = RAT, Rht = HC2R
+                case ARRAY_HC2V:    // Res = RAT, Rht = HC2V
+                case ARRAY_HC4I:    // Res = RAT, Rht = HC4I
+                case ARRAY_HC4F:    // Res = RAT, Rht = HC4F
+                case ARRAY_HC4R:    // Res = RAT, Rht = HC4R
+                case ARRAY_HC4V:    // Res = RAT, Rht = HC4V
+                case ARRAY_HC8I:    // Res = RAT, Rht = HC8I
+                case ARRAY_HC8F:    // Res = RAT, Rht = HC8F
+                case ARRAY_HC8R:    // Res = RAT, Rht = HC8R
+                case ARRAY_HC8V:    // Res = RAT, Rht = HC8V
+                    // Point to TCA routine to extract an indexed
+                    //   value from the right arg
+                    tcActionRht = aTypeActConvert[aplTypeRht][aplTypeRes];
+
                     // Loop through the elements
-                    for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPBYTE) lpMemRht) += (iSizeofRht - iSizeofRes))
-                    // Loop through all of the parts
-                    for (i = 0; i < iHCDimRes; i++)
-                        // Copy to the result
-                        mpq_init_set (((LPAPLRAT) lpMemRes)++, ((LPAPLRAT) lpMemRht)++);
+                    for (uRht = 0; uRht < aplNELMRht; uRht++)
+                    {
+                        // Convert to lower data type
+                        (*tcActionRht) (lpMemRht, uRht, &atSub, &bRet);
+
+                        if (!bRet)
+                            goto ERROR_EXIT;
+
+                        // Save in the result
+                        *((LPAPLRAT) lpMemRes)++ = atSub.aplRat;
+                    } // End FOR
+
+////////////////case ARRAY_HC2R:        // Reduce the dimension
+////////////////case ARRAY_HC4R:        // ...
+////////////////case ARRAY_HC8R:        // ...
+                    if (bDimDemote && FALSE)
+                    {
+                        DbgBrk ();
+
+                        // Loop through the elements
+                        for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPBYTE) lpMemRht) += (iSizeofRht - iSizeofRes))
+                        // Loop through all of the parts
+                        for (i = 0; i < iHCDimRes; i++)
+                            // Copy to the result
+                            mpq_init_set (((LPAPLRAT) lpMemRes)++, ((LPAPLRAT) lpMemRht)++);
+                    } // End IF
+
                     break;
 
                 defstop
@@ -1728,16 +1878,52 @@ void DemoteData
 
                     break;
 
-                case ARRAY_HC2V:        // Reduce the dimension
-                case ARRAY_HC4V:        // ...
-                case ARRAY_HC8V:        // ...
-                    if (bDimDemote)
+////////////////case ARRAY_RAT:     // Res = VFP, Rht = RAT
+////////////////case ARRAY_VFP:     // Res = VFP, Rht = VFP
+                case ARRAY_HC2I:    // Res = VFP, Rht = HC2I
+                case ARRAY_HC2F:    // Res = VFP, Rht = HC2F
+                case ARRAY_HC2R:    // Res = VFP, Rht = HC2R
+                case ARRAY_HC2V:    // Res = VFP, Rht = HC2V
+                case ARRAY_HC4I:    // Res = VFP, Rht = HC4I
+                case ARRAY_HC4F:    // Res = VFP, Rht = HC4F
+                case ARRAY_HC4R:    // Res = VFP, Rht = HC4R
+                case ARRAY_HC4V:    // Res = VFP, Rht = HC4V
+                case ARRAY_HC8I:    // Res = VFP, Rht = HC8I
+                case ARRAY_HC8F:    // Res = VFP, Rht = HC8F
+                case ARRAY_HC8R:    // Res = VFP, Rht = HC8R
+                case ARRAY_HC8V:    // Res = VFP, Rht = HC8V
+                    // Point to TCA routine to extract an indexed
+                    //   value from the right arg
+                    tcActionRht = aTypeActConvert[aplTypeRht][aplTypeRes];
+
                     // Loop through the elements
-                    for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPBYTE) lpMemRht) += (iSizeofRht - iSizeofRes))
-                    // Loop through all of the parts
-                    for (i = 0; i < iHCDimRes; i++)
-                        // Copy to the result
-                        mpfr_init_set (((LPAPLVFP) lpMemRes)++, ((LPAPLVFP) lpMemRht)++, MPFR_RNDN);
+                    for (uRht = 0; uRht < aplNELMRht; uRht++)
+                    {
+                        // Convert to lower data type
+                        (*tcActionRht) (lpMemRht, uRht, &atSub, &bRet);
+
+                        if (!bRet)
+                            goto ERROR_EXIT;
+
+                        // Save in the result
+                        *((LPAPLVFP) lpMemRes)++ = atSub.aplVfp;
+                    } // End FOR
+
+////////////////case ARRAY_HC2V:        // Reduce the dimension
+////////////////case ARRAY_HC4V:        // ...
+////////////////case ARRAY_HC8V:        // ...
+                    if (bDimDemote && FALSE)
+                    {
+                        DbgBrk ();
+
+                        // Loop through the elements
+                        for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPBYTE) lpMemRht) += (iSizeofRht - iSizeofRes))
+                        // Loop through all of the parts
+                        for (i = 0; i < iHCDimRes; i++)
+                            // Copy to the result
+                            mpfr_init_set (((LPAPLVFP) lpMemRes)++, ((LPAPLVFP) lpMemRht)++, MPFR_RNDN);
+                    } // End IF
+
                     break;
 
                 defstop
@@ -2148,6 +2334,10 @@ void DemoteData
         defstop
             break;
     } // End SWITCH
+
+    bRet = TRUE;
+ERROR_EXIT:
+    return bRet;
 } // End DemoteData
 
 
@@ -16732,6 +16922,85 @@ void TCA_HC8V_HC8V
         // Mark as successful
         *lpbRet = TRUE;
 } // TCA_HC8V_HC8V
+
+
+//***************************************************************************
+//  $AllocateDemote
+//
+//  Allocate a new array and demote the data from the old to the new
+//***************************************************************************
+
+HGLOBAL AllocateDemote
+    (APLSTYPE   aplTypeRes,                 // Result storage type
+     HGLOBAL    hGlbArg,                    // Arg global memory handle (may be NULL iff lpatArg is not NULL)
+     LPALLTYPES lpatArg,                    // Ptr to ALLTYPES arg values (may be NULL iff hGlbArg is not NULL)
+     APLSTYPE   aplTypeArg,                 // Arg storage type
+     APLNELM    aplNELMArg,                 // ... NELM
+     APLRANK    aplRankArg,                 // ... rank
+     LPUBOOL    lpbRet)                     // Ptr to TRUE iff the result is not demotable
+
+{
+    HGLOBAL           hGlbRes = NULL;       // Result global memory handle
+    LPVARARRAY_HEADER lpMemHdrRes = NULL,   // Ptr to arg header
+                      lpMemHdrArg = NULL;   // Ptr to arg header
+
+    // Assume no error
+    *lpbRet = TRUE;
+
+    // If the arg is HC, ...
+    if (IsHCAny (aplTypeArg))
+    {
+        // Lock the memory to get a ptr to it
+        lpMemHdrArg = MyGlobalLockVar (hGlbArg);
+
+        // Allocate space for the new left arg
+        hGlbRes = AllocateGlobalArray (aplTypeRes, aplNELMArg, aplRankArg, VarArrayBaseToDim (lpMemHdrArg));
+
+        // Check for error
+        if (hGlbRes EQ NULL)
+            goto WSFULL_EXIT;
+
+        // Lock the memory to get a ptr to it
+        lpMemHdrRes = MyGlobalLockVar (hGlbRes);
+
+        // Demote the data in the left arg, copying it to the new left
+        if (!DemoteData (aplTypeRes,                            // Result storage type
+                         VarArrayDataFmBase (lpMemHdrRes),      // Ptr to result global memory
+                         aplTypeArg,                            // Arg storage type
+                         aplNELMArg,                            // Arg NELM
+                         VarArrayDataFmBase (lpMemHdrArg),      // tPr to arg global memory
+                         FALSE))                                // TRUE iff dimension demotion allowed
+        {
+            // Mark as not demotable
+            *lpbRet = FALSE;
+
+            goto DOMAIN_EXIT;
+        } // End IF
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+     } else
+        // Return the arg handle, copied once
+        hGlbRes = CopySymGlbDirAsGlb (hGlbArg);
+
+    goto NORMAL_EXIT;
+
+DOMAIN_EXIT:
+    if (hGlbRes NE NULL)
+    {
+        if (lpMemHdrRes NE NULL)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+        } // End IF
+
+        // We no longer need this resource
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
+WSFULL_EXIT:
+NORMAL_EXIT:
+    return hGlbRes;
+} // End AllocateDemote
 
 
 //***************************************************************************

@@ -1626,7 +1626,8 @@ UBOOL PrimFnDydEpsilonNvB
     ALLTYPES  atLft = {0};          // Left arg items asALLTYPEs
     TC_ACTION tcAction;             // Ptr to TCA routine
 
-    // Get ptr to TCA routine
+    // Point to TCA routine to extract an indexed
+    //   value from the right arg
     tcAction = aTypeActConvert[aplTypeLft][ARRAY_BOOL];
 
     // Get the current value of []CT

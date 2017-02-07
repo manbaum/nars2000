@@ -165,6 +165,7 @@ typedef enum tagARRAY_TYPES
  ARRAY_INIT     = ARRAY_LENGTH  ,
  ARRAY_ERROR    = (APLSTYPE) -1 ,
  ARRAY_NONCE    = (APLSTYPE) -2 ,
+ ARRAY_REALONLY = (APLSTYPE) -3 ,
 
  ARRAY_HC1I  =   ARRAY_INT   ,          // To simplify common macros
  ARRAY_HC1F  =   ARRAY_FLOAT ,          // ...

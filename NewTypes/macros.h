@@ -243,11 +243,14 @@
 #define IsAPLCharDownCaretTilde(a)  ((a) EQ UTF16_DOWNCARETTILDE     || (a) EQ UTF16_NOR                                           )
 #define IsAPLCharUpCaret(a)         ((a) EQ UTF16_UPCARET            || (a) EQ UTF16_CIRCUMFLEX                                    )
 
-// Define macro for detecting error array type
+// Define macro for detecting nonce array type
 #define IsNonceType(ArrType)            (ArrType EQ ARRAY_NONCE)
 
+// Define macro for detecting real  array type
+#define IsRealType(ArrType)             (ArrType EQ ARRAY_REALONLY)
+
 // Define macro for detecting error array type
-#define IsErrorType(ArrType)            (IsNonceType (ArrType) || ArrType EQ ARRAY_ERROR)
+#define IsErrorType(ArrType)            (IsNonceType (ArrType) || IsRealType (ArrType) || ArrType EQ ARRAY_ERROR)
 
 // Define macro for detecting simple array type
 /////// IsSimple(ArrType)               ((ArrType) EQ ARRAY_BOOL || (ArrType) EQ ARRAY_INT || (ArrType) EQ ARRAY_APA || (ArrType) EQ ARRAY_FLOAT || (ArrType) EQ ARRAY_CHAR || (ArrType) EQ ARRAY_HETERO)

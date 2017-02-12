@@ -2048,7 +2048,7 @@ APLHC2F PowHC2F_SUB
     int     i;                      // Loop counter
 
     // Get the real part of the exponent
-    aplExp = ConvertToInteger_SCT (ARRAY_HC2F, &aplRht, 0, &bRet);
+    aplExp = ConvertToInteger_CT (ARRAY_HC2F, &aplRht, 0, 0.0, &bRet);
 
     // If the right arg is an integer, ...
     if (bRet
@@ -2225,7 +2225,7 @@ APLHC2R PowHC2R_SUB
     APLINT  aplExp;                     // Temp for Exponent
 
     // Get the real part of the exponent
-    aplExp = ConvertToInteger_SCT (ARRAY_HC2R, &aplRht, 0, &bRet);
+    aplExp = ConvertToInteger_CT (ARRAY_HC2R, &aplRht, 0, 0.0, &bRet);
 
     // If the exponent is a non-negative integer (and thus not imaginary), ...
     if (bRet
@@ -2459,7 +2459,7 @@ APLHC2V PowHC2V_SUB
     APLINT  aplExp;                 // Temp for Exponent
 
     // Get the real part of the exponent
-    aplExp = ConvertToInteger_SCT (ARRAY_HC2V, &aplRht, 0, &bRet);
+    aplExp = ConvertToInteger_CT (ARRAY_HC2V, &aplRht, 0, 0.0, &bRet);
 
     // If the exponent is a non-negative integer (and thus not imaginary), ...
     if (bRet
@@ -2774,7 +2774,7 @@ APLHC4F PowHC4F_SUB
     int     i;                      // Loop counter
 
     // Get the real part of the exponent
-    aplExp = ConvertToInteger_SCT (ARRAY_HC4F, &aplRht, 0, &bRet);
+    aplExp = ConvertToInteger_CT (ARRAY_HC4F, &aplRht, 0, 0.0, &bRet);
 
     // If the right arg is an integer, ...
     if (bRet
@@ -2951,7 +2951,7 @@ APLHC4R PowHC4R_SUB
     APLINT  aplExp;                     // Temp for Exponent
 
     // Get the real part of the exponent
-    aplExp = ConvertToInteger_SCT (ARRAY_HC4R, &aplRht, 0, &bRet);
+    aplExp = ConvertToInteger_CT (ARRAY_HC4R, &aplRht, 0, 0.0, &bRet);
 
     // If the exponent is a non-negative integer (and thus not imaginary), ...
     if (bRet
@@ -3184,7 +3184,7 @@ APLHC4V PowHC4V_SUB
     APLINT  aplExp;                 // Temp for Exponent
 
     // Get the real part of the exponent
-    aplExp = ConvertToInteger_SCT (ARRAY_HC4V, &aplRht, 0, &bRet);
+    aplExp = ConvertToInteger_CT (ARRAY_HC4V, &aplRht, 0, 0.0, &bRet);
 
     // If the exponent is a non-negative integer (and thus not imaginary), ...
     if (bRet
@@ -3499,7 +3499,7 @@ APLHC8F PowHC8F_SUB
     int     i;                      // Loop counter
 
     // Get the real part of the exponent
-    aplExp = ConvertToInteger_SCT (ARRAY_HC8F, &aplRht, 0, &bRet);
+    aplExp = ConvertToInteger_CT (ARRAY_HC8F, &aplRht, 0, 0.0, &bRet);
 
     // If the right arg is an integer, ...
     if (bRet
@@ -3676,7 +3676,7 @@ APLHC8R PowHC8R_SUB
     APLINT  aplExp;                     // Temp for Exponent
 
     // Get the real part of the exponent
-    aplExp = ConvertToInteger_SCT (ARRAY_HC8R, &aplRht, 0, &bRet);
+    aplExp = ConvertToInteger_CT (ARRAY_HC8R, &aplRht, 0, 0.0, &bRet);
 
     // If the exponent is a non-negative integer (and thus not imaginary), ...
     if (bRet
@@ -3912,7 +3912,7 @@ APLHC8V PowHC8V_SUB
     APLINT  aplExp;                 // Temp for Exponent
 
     // Get the real part of the exponent
-    aplExp = ConvertToInteger_SCT (ARRAY_HC8V, &aplRht, 0, &bRet);
+    aplExp = ConvertToInteger_CT (ARRAY_HC8V, &aplRht, 0, 0.0, &bRet);
 
     // If the exponent is a non-negative integer (and thus not imaginary), ...
     if (bRet

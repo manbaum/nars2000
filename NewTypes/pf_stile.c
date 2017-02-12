@@ -1435,6 +1435,13 @@ APLHC1F ModHC1F
             aplLft2,
             aplRht2,
             fQuadCT;            // []CT
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht,            // ...          right ...
+            bNoSign = FALSE;    // TRUE iff we're to skip the ending sign-setting code
+
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC1F, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC1F, &aplRht, 0);
 
     // Handle zero modulus or argument
     if (aplLft EQ 0
@@ -1442,6 +1449,17 @@ APLHC1F ModHC1F
         // aplRes = the right arg with the appropriate sign
         aplTmp = aplRht;
     else
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            aplRes = aplLft;
+        else
+            aplRes = aplRht;
+        // Skip the ending sign-setting code as
+        //   there is only one NaN
+        bNoSign = TRUE;
+    } else
     // If the right arg is negative infinity, ...
     if (IsFltNegInfinity (aplRht))
     {
@@ -1451,6 +1469,7 @@ APLHC1F ModHC1F
                                            ICNDX_PosMODNi,
                                            aplRht,
                                            FALSE);
+        else
         // If the left arg is negative, ...
         if (aplLft < 0)
             aplRes = TranslateQuadICIndex (aplLft,
@@ -1535,10 +1554,11 @@ APLHC1F ModHC1F
     } // End IF/ELSE/...
 
     // The sign of the result is the sign of the left arg
-    if (SIGN_APLFLOAT (aplLft))
+    if (SIGN_APLFLOAT (aplLft) && !bNoSign)
         aplRes = -aplTmp;
     else
         aplRes =  aplTmp;
+
     return aplRes;
 } // End ModHC1F
 
@@ -1572,6 +1592,13 @@ APLHC1R ModHC1R
 
 {
     APLHC1R aplRes = {0};
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht,            // ...          right ...
+            bNoSign = FALSE;    // TRUE iff we're to skip the ending sign-setting code
+
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC1R, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC1R, &aplRht, 0);
 
     // Handle zero modulus or argument
     if (IsMpq0 (&aplLft)
@@ -1579,6 +1606,17 @@ APLHC1R ModHC1R
         // AplRes = the right arg with the appropriate sign
         mpq_init_set (&aplRes, &aplRht);
     else
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mpq_set (&aplRes, &aplLft);
+        else
+            mpq_set (&aplRes, &aplRht);
+        // Skip the ending sign-setting code as
+        //   there is only one NaN
+        bNoSign = TRUE;
+    } else
     // If the right arg is negative infinity, ...
     if (IsMpqNegInfinity (&aplRht))
     {
@@ -1694,7 +1732,7 @@ APLHC1R ModHC1R
     } // End IF/ELSE/...
 
     // The sign of the result is the sign of the left arg
-    if (SIGN_APLRAT (&aplLft))
+    if (SIGN_APLRAT (&aplLft) && !bNoSign)
     {
         // If zero and -0 is allowed, ...
         if (IsMpq0 (&aplRes) && gAllowNeg0)
@@ -1736,6 +1774,13 @@ APLHC1V ModHC1V
 
 {
     APLHC1V aplRes = {0};
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht,            // ...          right ...
+            bNoSign = FALSE;    // TRUE iff we're to skip the ending sign-setting code
+
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC1V, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC1V, &aplRht, 0);
 
     // Handle zero modulus or argument
     if (IsMpf0 (&aplLft)
@@ -1743,6 +1788,17 @@ APLHC1V ModHC1V
         // AplRes = the right arg with the appropriate sign
         mpfr_init_copy (&aplRes, &aplRht);
     else
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mpfr_set (&aplRes, &aplLft, MPFR_RNDN);
+        else
+            mpfr_set (&aplRes, &aplRht, MPFR_RNDN);
+        // Skip the ending sign-setting code as
+        //   there is only one NaN
+        bNoSign = TRUE;
+    } else
     // If the right arg is negative infinity, ...
     if (IsMpfNegInfinity (&aplRht))
     {
@@ -1852,7 +1908,7 @@ APLHC1V ModHC1V
     } // End IF/ELSE/...
 
     // The sign of the result is the sign of the left arg
-    if (SIGN_APLVFP (&aplLft))
+    if (SIGN_APLVFP (&aplLft) && !bNoSign)
     {
         // If non-zero or -0 is allowed, ...
         if (!IsMpf0 (&aplRes) || gAllowNeg0)
@@ -1987,11 +2043,33 @@ APLHC2F ModHC2F
 {
     APLHC2F aplRes,
             aplTmp;
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
+
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC2F, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC2F, &aplRht, 0);
 
     // Using the algorithm in Doug Forkes paper
     if (IsZeroHCxF (&aplLft, 2))
         aplRes = aplRht;
     else
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            aplRes = aplLft;
+        else
+            aplRes = aplRht;
+    } else
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            aplRes = aplLft;
+        else
+            aplRes = aplRht;
+    } else
     if (IsOneHCxF  (&aplLft, 2))
         aplRes = SubHC2F_RE (aplRht, FloorHC2F (aplRht));
     else
@@ -2093,11 +2171,25 @@ APLHC2R ModHC2R
 
 {
     APLHC2R aplRes = {0};
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
+
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC2R, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC2R, &aplRht, 0);
 
     // Using the algorithm in Doug Forkes paper
     if (IsZeroHCxR (&aplLft, 2))
         mphc2r_init_set (&aplRes, &aplRht);
     else
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc2r_set (&aplRes, &aplLft);
+        else
+            mphc2r_set (&aplRes, &aplRht);
+    } else
     if (IsOneHCxR  (&aplLft, 2))
         aplRes = SubHC2R_RE (aplRht, FloorHC2R (aplRht));
     else
@@ -2184,11 +2276,25 @@ APLHC2V ModHC2V
 
 {
     APLHC2V aplRes = {0};
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
+
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC2V, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC2V, &aplRht, 0);
 
     // Using the algorithm in Doug Forkes paper
     if (IsZeroHCxV (&aplLft, 2))
         mphc2v_init_set (&aplRes, &aplRht);
     else
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc2v_set (&aplRes, &aplLft);
+        else
+            mphc2v_set (&aplRes, &aplRht);
+    } else
     if (IsOneHCxV  (&aplLft, 2))
         aplRes = SubHC2V_RE (aplRht, FloorHC2V (aplRht));
     else
@@ -2320,11 +2426,25 @@ APLHC4F ModHC4F
 {
     APLHC4F aplRes,
             aplTmp;
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
+
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC4F, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC4F, &aplRht, 0);
 
     // Using the algorithm in Doug Forkes paper
     if (IsZeroHCxF (&aplLft, 4))
         aplRes = aplRht;
     else
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            aplRes = aplLft;
+        else
+            aplRes = aplRht;
+    } else
     {
         APLFLOAT aplMagL,
                  aplMagZ;
@@ -2487,11 +2607,25 @@ APLHC4R ModHC4R
 
 {
     APLHC4R aplRes = {0};           // The result
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
+
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC4R, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC4R, &aplRht, 0);
 
     // Using the algorithm in Doug Forkes paper
     if (IsZeroHCxR (&aplLft, 4))
         mphc4r_init_set (&aplRes, &aplRht);
     else
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc4r_set (&aplRes, &aplLft);
+        else
+            mphc4r_set (&aplRes, &aplRht);
+    } else
     if (IsOneHCxR  (&aplLft, 4))
         aplRes = SubHC4R_RE (aplRht, FloorHC4R (aplRht));
     else
@@ -2662,11 +2796,25 @@ APLHC4V ModHC4V
 
 {
     APLHC4V aplRes = {0};
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
+
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC4V, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC4V, &aplRht, 0);
 
     // Using the algorithm in Doug Forkes paper
     if (IsZeroHCxV (&aplLft, 4))
         mphc4v_init_set (&aplRes, &aplRht);
     else
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc4v_set (&aplRes, &aplLft);
+        else
+            mphc4v_set (&aplRes, &aplRht);
+    } else
     if (IsOneHCxV  (&aplLft, 4))
         aplRes = SubHC4V_RE (aplRht, FloorHC4V (aplRht));
     else

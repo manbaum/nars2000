@@ -28,7 +28,7 @@
 
 
 //***************************************************************************
-//  $mpXf_sin
+//  $mpXf_sin       (1)
 //
 //  The code below was translated to C from the original Javascript
 //    http://tamivox.org/redbear/qtrn_calc/index.html
@@ -58,8 +58,17 @@ void mpXf_sin
     mpfr_set (Z->re, &op->parts[0], rnd);
     mpfr_set (Z->im, mpfIMag, rnd);
 
-    // Calculate the corresponding complex number
-    mpc_sin (Z, Z, MPC_RNDNN);
+    // If the imaginary part is zero, ...
+    if (IsMpf0 (mpfIMag))
+    {
+        // Call the Real number version so as to avoid
+        //   inconsistencies in the two cases:
+        //   Real vs. Complex (with imaginary part EQ 0)
+        mpfr_sin    (Z->re, Z->re, MPFR_RNDN);
+////////mpfr_set_ui (Z->im, 0, MPFR_RNDN);  // Already zero from <mpfr_set> above
+    } else
+        // Calculate the corresponding complex number
+        mpc_sin (Z, Z, MPC_RNDNN);
 
     // Save as the real part of the result
     mpfr_set (&rop->parts[0], Z->re, rnd);
@@ -85,7 +94,7 @@ void mpXf_sin
 
 
 //***************************************************************************
-//  $mpXf_cos
+//  $mpXf_cos       (2)
 //***************************************************************************
 
 void mpXf_cos
@@ -111,8 +120,17 @@ void mpXf_cos
     mpfr_set (Z->re, &op->parts[0], rnd);
     mpfr_set (Z->im, mpfIMag, rnd);
 
-    // Calculate the corresponding complex number
-    mpc_cos (Z, Z, MPC_RNDNN);
+    // If the imaginary part is zero, ...
+    if (IsMpf0 (mpfIMag))
+    {
+        // Call the Real number version so as to avoid
+        //   inconsistencies in the two cases:
+        //   Real vs. Complex (with imaginary part EQ 0)
+        mpfr_cos    (Z->re, Z->re, MPFR_RNDN);
+////////mpfr_set_ui (Z->im, 0, MPFR_RNDN);  // Already zero from <mpfr_set> above
+    } else
+        // Calculate the corresponding complex number
+        mpc_cos (Z, Z, MPC_RNDNN);
 
     // Save as the real part of the result
     mpfr_set (&rop->parts[0], Z->re, rnd);
@@ -138,7 +156,7 @@ void mpXf_cos
 
 
 //***************************************************************************
-//  $mpXf_tan
+//  $mpXf_tan       (3)
 //***************************************************************************
 
 void mpXf_tan
@@ -164,8 +182,17 @@ void mpXf_tan
     mpfr_set (Z->re, &op->parts[0], rnd);
     mpfr_set (Z->im, mpfIMag, rnd);
 
-    // Calculate the corresponding complex number
-    mpc_tan (Z, Z, MPC_RNDNN);
+    // If the imaginary part is zero, ...
+    if (IsMpf0 (mpfIMag))
+    {
+        // Call the Real number version so as to avoid
+        //   inconsistencies in the two cases:
+        //   Real vs. Complex (with imaginary part EQ 0)
+        mpfr_tan    (Z->re, Z->re, MPFR_RNDN);
+////////mpfr_set_ui (Z->im, 0, MPFR_RNDN);  // Already zero from <mpfr_set> above
+    } else
+        // Calculate the corresponding complex number
+        mpc_tan (Z, Z, MPC_RNDNN);
 
     // Save as the real part of the result
     mpfr_set (&rop->parts[0], Z->re, rnd);
@@ -191,7 +218,7 @@ void mpXf_tan
 
 
 //***************************************************************************
-//  $mpXf_asin
+//  $mpXf_asin      (-1)
 //***************************************************************************
 
 void mpXf_asin
@@ -239,8 +266,17 @@ void mpXf_asin
 ////strcpyW (wszTemp, L"Z.re:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->re, 0) = WC_EOS; DbgMsgW (wszTemp);
 ////strcpyW (wszTemp, L"Z.im:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->im, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
-    // Calculate the corresponding complex number
-    mpc_asin (Z, Z, MPC_RNDNN);
+    // If the imaginary part is zero, ...
+    if (IsMpf0 (mpfIMag))
+    {
+        // Call the Real number version so as to avoid
+        //   inconsistencies in the two cases:
+        //   Real vs. Complex (with imaginary part EQ 0)
+        mpfr_asin   (Z->re, Z->re, MPFR_RNDN);
+////////mpfr_set_ui (Z->im, 0, MPFR_RNDN);  // Already zero from <mpfr_set> above
+    } else
+        // Calculate the corresponding complex number
+        mpc_asin (Z, Z, MPC_RNDNN);
 
 #ifdef DEBUG
 ////strcpyW (wszTemp, L"Z.re:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->re, 0) = WC_EOS; DbgMsgW (wszTemp);
@@ -270,7 +306,7 @@ void mpXf_asin
 
 
 //***************************************************************************
-//  $mpXf_acos
+//  $mpXf_acos      (-2)
 //***************************************************************************
 
 void mpXf_acos
@@ -318,8 +354,17 @@ void mpXf_acos
 ////strcpyW (wszTemp, L"Z.re:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->re, 0) = WC_EOS; DbgMsgW (wszTemp);
 ////strcpyW (wszTemp, L"Z.im:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->im, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
-    // Calculate the corresponding complex number
-    mpc_acos (Z, Z, MPC_RNDNN);
+    // If the imaginary part is zero, ...
+    if (IsMpf0 (mpfIMag))
+    {
+        // Call the Real number version so as to avoid
+        //   inconsistencies in the two cases:
+        //   Real vs. Complex (with imaginary part EQ 0)
+        mpfr_acos   (Z->re, Z->re, MPFR_RNDN);
+////////mpfr_set_ui (Z->im, 0, MPFR_RNDN);  // Already zero from <mpfr_set> above
+    } else
+        // Calculate the corresponding complex number
+        mpc_acos (Z, Z, MPC_RNDNN);
 
 #ifdef DEBUG
 ////strcpyW (wszTemp, L"Z.re:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->re, 0) = WC_EOS; DbgMsgW (wszTemp);
@@ -349,7 +394,7 @@ void mpXf_acos
 
 
 //***************************************************************************
-//  $mpXf_atan
+//  $mpXf_atan      (-3)
 //***************************************************************************
 
 void mpXf_atan
@@ -443,7 +488,7 @@ void mpXf_atan
 
 
 //***************************************************************************
-//  $mpXf_sinh
+//  $mpXf_sinh      (5)
 //***************************************************************************
 
 void mpXf_sinh
@@ -469,8 +514,17 @@ void mpXf_sinh
     mpfr_set (Z->re, &op->parts[0], rnd);
     mpfr_set (Z->im, mpfIMag, rnd);
 
-    // Calculate the corresponding complex number
-    mpc_sinh (Z, Z, MPC_RNDNN);
+    // If the imaginary part is zero, ...
+    if (IsMpf0 (mpfIMag))
+    {
+        // Call the Real number version so as to avoid
+        //   inconsistencies in the two cases:
+        //   Real vs. Complex (with imaginary part EQ 0)
+        mpfr_sinh   (Z->re, Z->re, MPFR_RNDN);
+////////mpfr_set_ui (Z->im, 0, MPFR_RNDN);  // Already zero from <mpfr_set> above
+    } else
+        // Calculate the corresponding complex number
+        mpc_sinh (Z, Z, MPC_RNDNN);
 
     // Save as the real part of the result
     mpfr_set (&rop->parts[0], Z->re, rnd);
@@ -496,7 +550,7 @@ void mpXf_sinh
 
 
 //***************************************************************************
-//  $mpXf_cosh
+//  $mpXf_cosh      (6)
 //***************************************************************************
 
 void mpXf_cosh
@@ -522,8 +576,17 @@ void mpXf_cosh
     mpfr_set (Z->re, &op->parts[0], rnd);
     mpfr_set (Z->im, mpfIMag, rnd);
 
-    // Calculate the corresponding complex number
-    mpc_cosh (Z, Z, MPC_RNDNN);
+    // If the imaginary part is zero, ...
+    if (IsMpf0 (mpfIMag))
+    {
+        // Call the Real number version so as to avoid
+        //   inconsistencies in the two cases:
+        //   Real vs. Complex (with imaginary part EQ 0)
+        mpfr_cosh   (Z->re, Z->re, MPFR_RNDN);
+////////mpfr_set_ui (Z->im, 0, MPFR_RNDN);  // Already zero from <mpfr_set> above
+    } else
+        // Calculate the corresponding complex number
+        mpc_cosh (Z, Z, MPC_RNDNN);
 
     // Save as the real part of the result
     mpfr_set (&rop->parts[0], Z->re, rnd);
@@ -549,7 +612,7 @@ void mpXf_cosh
 
 
 //***************************************************************************
-//  $mpXf_tanh
+//  $mpXf_tanh      (7)
 //***************************************************************************
 
 void mpXf_tanh
@@ -575,8 +638,17 @@ void mpXf_tanh
     mpfr_set (Z->re, &op->parts[0], rnd);
     mpfr_set (Z->im, mpfIMag, rnd);
 
-    // Calculate the corresponding complex number
-    mpc_tanh (Z, Z, MPC_RNDNN);
+    // If the imaginary part is zero, ...
+    if (IsMpf0 (mpfIMag))
+    {
+        // Call the Real number version so as to avoid
+        //   inconsistencies in the two cases:
+        //   Real vs. Complex (with imaginary part EQ 0)
+        mpfr_tanh   (Z->re, Z->re, MPFR_RNDN);
+////////mpfr_set_ui (Z->im, 0, MPFR_RNDN);  // Already zero from <mpfr_set> above
+    } else
+        // Calculate the corresponding complex number
+        mpc_tanh (Z, Z, MPC_RNDNN);
 
     // Save as the real part of the result
     mpfr_set (&rop->parts[0], Z->re, rnd);
@@ -602,7 +674,7 @@ void mpXf_tanh
 
 
 //***************************************************************************
-//  $mpXf_asinh
+//  $mpXf_asinh     (-5)
 //***************************************************************************
 
 void mpXf_asinh
@@ -682,7 +754,7 @@ void mpXf_asinh
 
 
 //***************************************************************************
-//  $mpXf_acosh
+//  $mpXf_acosh     (-6)
 //***************************************************************************
 
 void mpXf_acosh
@@ -735,7 +807,7 @@ void mpXf_acosh
 
 
 //***************************************************************************
-//  $Mympc_atanh
+//  $Mympc_atanh    (-7)
 //***************************************************************************
 
 void Mympc_atanh
@@ -763,7 +835,7 @@ void Mympc_atanh
 
 
 //***************************************************************************
-//  $mpXf_atanh
+//  $mpXf_atanh     (-7)
 //***************************************************************************
 
 void mpXf_atanh
@@ -840,8 +912,15 @@ void mpXf_atanh
         if (SIGN_APLVFP (Z2->re) EQ 0)
             mpfr_neg  (Z2->im, Z2->im, MPFR_RNDN);
     } else
+    {
+        // If either part is an infinity or NaN, ...
+        if (mpfr_inf_p (Z1->re) || mpfr_inf_p (Z1->im)
+         || mpfr_nan_p (Z1->re) || mpfr_nan_p (Z1->im))
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
         // Calculate the corresponding complex number
         mpc_atanh (Z2, Z1, MPC_RNDNN);
+     } // End IF/ELSE
 
     // Save as the real part of the result
     mpfr_set (&rop->parts[0], Z2->re, rnd);

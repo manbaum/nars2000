@@ -28,10 +28,6 @@
 #include "debug.h"              // For xxx_TEMP_OPEN macros
 
 
-#define UTF16_NAN                 0x00D8        // Alt-'5' - NaN
-#define WS_UTF16_NAN                 L"\x00D8"  // Alt-'5' - NaN
-
-
 typedef enum tagDTOA_MODE
 {
     DTOAMODE_SHORT_RND = 0,             // 0 = shortest string with rounding, e.g., 1e23
@@ -40,7 +36,8 @@ typedef enum tagDTOA_MODE
     DTOAMODE_FRACTDIGS,                 // 3 = # fractional digits (past decimal point)
 } DTOAMODE;
 
-WCHAR wcInf = UTF16_INFINITY;
+WCHAR wcInf = UTF16_INFINITY,
+      wcNaN = UTF16_NAN;
 
 // DTOA mode for the corresponding FLTDSPFMT_xxx value
 DTOAMODE gDTOA_Mode[FLTDISPFMT_LENGTH] = {DTOAMODE_SIGDIGS,     // E :  2 = nDigits significant digits
@@ -1538,8 +1535,9 @@ LPAPLCHAR FormatAplRatFC
 
     lpRawFmt = (LPCHAR) lpaplChar;
 
-    // If the number is NOT +/- infinity, ...
-    if (!mpq_inf_p (lpaplRat))
+    // If the number is NOT +/- infinity, and not a NaN ...
+    if (!mpq_inf_p (lpaplRat)
+     && !mpq_nan_p (lpaplRat))
     {
         // If the denominator is NE 1, ...
         if (mpz_cmp_ui (mpq_denref (lpaplRat), 1) NE 0)
@@ -1581,6 +1579,18 @@ LPAPLCHAR FormatAplRatFC
         iLen--;
     } // End IF
 
+    // Check for NaN
+    if (lpaplChar[0] EQ DEF_NAN_CHAR)
+    {
+        // If we're to substitute, ...
+        if (bSubstInf)
+            lpaplChar +=
+              ConvertWideToNameLength (lpaplChar,   // Ptr to output save buffer
+                                      &wcNaN,       // Ptr to incoming chars
+                                       1);          // # chars to convert
+        else
+            *lpaplChar++ = wcNaN;
+    } else
     // Check for Infinity
     if (lpaplChar[0] EQ DEF_POSINFINITY_CHAR)
     {
@@ -1591,7 +1601,7 @@ LPAPLCHAR FormatAplRatFC
                                       &wcInf,       // Ptr to incoming chars
                                        1);          // # chars to convert
         else
-            *lpaplChar++ = UTF16_INFINITY;
+            *lpaplChar++ = wcInf;
     } else
     {
         // Convert '/' (if any) to aplCharRatSep
@@ -1660,8 +1670,26 @@ LPAPLCHAR FormatAplFltFC
      UBOOL      bSubstInf)          // TRUE iff we're to substitute text for infinity
 
 {
+    // Check for NaN
+    if (_isnan (aplFloat))
+    {
+        // If we're to substitute, ...
+        if (bSubstInf)
+            lpaplChar +=
+              ConvertWideToNameLength (lpaplChar,       // Ptr to output save buffer
+                                      &wcNaN,           // Ptr to incoming chars
+                                       1);              // # chars to convert
+        else
+        {
+            // String for NaN
+            lstrcpyW (lpaplChar, WS_UTF16_NAN);
+
+            // Skip over it
+            lpaplChar += strcountof (WS_UTF16_NAN);
+        } // End IF/ELSE
+    } else
     // Check for Infinity
-    if (IsFltInfinity (aplFloat))
+    if (_isinf (aplFloat))
     {
         if (aplFloat < 0)
             *lpaplChar++ = aplCharOverbar;
@@ -1746,26 +1774,6 @@ LPAPLCHAR FormatAplFltFC
             defstop
                 break;
         } // End SWITCH
-    } else
-    // Check for NaN
-    if (_isnan (aplFloat))
-    {
-        // If we're to substitute, ...
-        if (bSubstInf)
-        {
-            // String for NaN
-            lstrcpyW (lpaplChar, LTEXT_NAN2);
-
-            // Skip over it
-            lpaplChar += strcountof (LTEXT_NAN2);
-        } else
-        {
-            // String for NaN
-            lstrcpyW (lpaplChar, WS_UTF16_NAN);
-
-            // Skip over it
-            lpaplChar += strcountof (WS_UTF16_NAN);
-        } // End IF/ELSE
     } else
     // Non-zero
     {
@@ -2307,13 +2315,17 @@ LPAPLCHAR FormatAplVfpFC
         lpaplChar[-1] = L')';
     } // End IF
 
+    // Izit a NaN?
+    if (IsMpfNaN (lpaplVfp))
+        *lpaplChar++ = wcNaN;
+    else
     // Izit an infinity?
     if (IsMpfInfinity (lpaplVfp))
     {
         // Izit negative?
         if (mpfr_sgn (lpaplVfp) < 0)
             *lpaplChar++ = aplCharOverbar;
-        *lpaplChar++ = UTF16_INFINITY;
+        *lpaplChar++ = wcInf;
     } else
     {
         lpRawFmt = (LPCHAR) lpaplChar;
@@ -2476,7 +2488,7 @@ LPAPLCHAR FormatAplVfpFC
                      (int) -nDigits,                // # significant digits
                             lpRawFmt,               // Ptr to raw formatted number
                             expptr,                 // Exponent
-                            DEF_MAX_QUADPP_VFP, // Maximum # significant digits
+                            DEF_MAX_QUADPP_VFP,     // Maximum # significant digits
                             aplCharDecimal,         // Char to use as decimal separator
                             aplCharOverbar);        // Char to use as overbar
         } else
@@ -2489,11 +2501,12 @@ LPAPLCHAR FormatAplVfpFC
             if (lpaplChar[bNeg] EQ DEF_POSINFINITY_CHAR)
             {
                 if (bSubstInf)
-                {
-                    strcpyW (&lpaplChar[bNeg], LTEXT_INFINITY);
-                    iLen = lstrlenW (lpaplChar);
-                } else
-                    lpaplChar[bNeg] = UTF16_INFINITY;
+////////////////////lpaplChar += bNeg +     // No need to skip over
+                      ConvertWideToNameLength (&lpaplChar[bNeg],    // Ptr to output save buffer
+                                               &wcInf,              // Ptr to incoming chars
+                                                1);                 // # chars to convert
+                else
+                    lpaplChar[bNeg] = wcInf;
             } else
             // If the number is in (-1, 1), ...
             if (expptr <= 0)

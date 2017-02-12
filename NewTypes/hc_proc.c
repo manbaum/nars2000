@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -571,6 +571,24 @@ void mphc8r_init_set_sx
         // Initialize to 0/1
         Myq_init (&lpaplHC8RRht->parts[i]);
 } // End mphc8r_init_set_sx
+
+
+//***************************************************************************
+//  $mphc1v_init_set
+//***************************************************************************
+
+void mphc1v_init_set
+    (LPAPLHC1V lpaplHC1VRes,
+     LPAPLHC1V lpaplHC1VRht)
+
+{
+    int i;
+
+    // Loop through all of the parts
+    for (i = 0; i < 1; i++)
+        // Initialize to 0
+        mpfr_init_set (lpaplHC1VRes, lpaplHC1VRht, MPFR_RNDN);
+} // End mphc1v_init_set
 
 
 //***************************************************************************

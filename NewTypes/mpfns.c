@@ -426,6 +426,12 @@ LPAPLMPI mpz_QuadICValue
 
             break;
 
+        case ICVAL_NAN:
+            // Initialize to a NaN
+            mpz_set_nan (mpzRes);
+
+            break;
+
         case ICVAL_LEFT:
             mpz_init_set (mpzRes, aplMpiLft);
 
@@ -681,6 +687,12 @@ LPAPLRAT mpq_QuadICValue
 
         case ICVAL_NEG_INFINITY:
             mpq_init_set (mpqRes, &mpqNegInfinity);
+
+            break;
+
+        case ICVAL_NAN:
+            // Initialize to a NaN
+            mpq_set_nan (mpqRes);
 
             break;
 
@@ -1240,6 +1252,12 @@ LPAPLVFP mpfr_QuadICValue
 
         case ICVAL_NEG_INFINITY:
             mpfr_init_set (mpfRes, &mpfNegInfinity, MPFR_RNDN);
+
+            break;
+
+        case ICVAL_NAN:
+            // Initialize to a NaN
+            mpfr_init (mpfRes);
 
             break;
 

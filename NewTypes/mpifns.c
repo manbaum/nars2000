@@ -36,6 +36,8 @@ MPFR_INVALID gmpfr_invalid = &mpfr_exit;
 
 #define mpfr_clr_inf(a)     (a)
 
+#define MPZIR_NAN_RES   INT_MAX
+
 
 //***************************************************************************
 //  Generic Functions
@@ -125,6 +127,22 @@ int mpz_inf_p
 
 
 //***************************************************************************
+//  $mpz_nan_p
+//
+//  Is the given value a NaN?
+//***************************************************************************
+
+int mpz_nan_p
+    (mpz_t op)                  // Source
+
+{
+    return (op->_mp_size EQ (mp_size_t) (INT_MAX - 1)
+         && op->_mp_alloc EQ 0
+         && op->_mp_d     EQ NULL);
+} // End mpz_nan_p
+
+
+//***************************************************************************
 //  $IsMpzNULL
 //
 //  Is the given value all zero?
@@ -165,16 +183,40 @@ void mpz_set_inf
 
 
 //***************************************************************************
+//  $mpz_set_nan
+//
+//  Set the argument to NaN
+//***************************************************************************
+
+void mpz_set_nan
+    (mpz_t rop)                 // Destination
+
+{
+    // If it's not infinite nor a NaN, ...
+    if (!mpz_inf_p (rop)
+     && !mpz_nan_p (rop))
+        // Free the value as we'll use a special format
+        mpz_clear (rop);
+
+    // Set the numerator to a special format, properly signed
+    rop->_mp_size  = (mp_size_t) (INT_MAX - 1);
+    rop->_mp_alloc = 0;
+    rop->_mp_d     = NULL;
+} // mpz_set_nan
+
+
+//***************************************************************************
 //  $mpz_clr_inf
 //
-//  Initialize op if it's an infinity
+//  Initialize op if it's an infinity or NaN
 //***************************************************************************
 
 mpz_ptr mpz_clr_inf
     (mpz_t op)                  // Source
 
 {
-    if (mpz_inf_p (op))
+    if (mpz_inf_p (op)
+     || mpz_nan_p (op))
         mpz_init (op);
 
     return op;
@@ -195,6 +237,10 @@ void mpiz_set
     if (mpz_inf_p (op))
         // The result is infinity whose sign is that of op
         mpz_set_inf (rop, mpz_sgn (op));
+    else
+    if (mpz_nan_p (op))
+        // The result is NaN
+        mpz_set_nan (rop);
     else
         mpz_set (mpz_clr_inf (rop), op);
 } // End mpiz_set
@@ -241,9 +287,13 @@ void mpiz_set_d
      double op)                 // Source
 
 {
-    if (IsFltInfinity (op))
+    if (_isinf (op))
         // The result is infinity whose sign is that of op
         mpz_set_inf (rop, signumflt (op));
+    else
+    if (IsFltNaN      (op))
+        // The result is NaN
+        mpz_set_nan (rop);
     else
         mpz_set_d (mpz_clr_inf (rop), op);
 } // End mpiz_set_d
@@ -264,6 +314,10 @@ void mpiz_set_q
         // The result is infinity whose sign is that of op
         mpz_set_inf (rop, mpq_sgn (op));
     else
+    if (mpq_nan_p (op))
+        // The result is NaN
+        mpz_set_nan (rop);
+    else
         mpz_set_q (mpz_clr_inf (rop), op);
 } // End mpiz_set_q
 
@@ -283,6 +337,10 @@ void mpiz_set_fr
     if (mpfr_inf_p (op))
         // The result is infinity whose sign is that of op
         mpz_set_inf (rop, mpfr_sgn (op));
+    else
+    if (mpfr_nan_p (op))
+        // The result is NaN
+        mpz_set_nan (rop);
     else
         mpz_set_fr (mpz_clr_inf (rop), op, rnd);
 } // End mpiz_set_fr
@@ -313,6 +371,14 @@ int mpiz_set_str
     {
         // Set to the appropriate signed infinity
         mpz_set_inf (rop, (p[0] EQ '-') ? -1 : 1);
+
+        return 0;
+    } else
+    // If the input consists of "#", ...
+    if (p[0] EQ DEF_NAN_CHAR)
+    {
+        // The result is NaN
+        mpz_set_nan (rop);
 
         return 0;
     } else
@@ -351,6 +417,17 @@ int mpiz_init_set_str
 
         return 0;
     } else
+    // If the input consists of "#", ...
+    if (p[0] EQ DEF_NAN_CHAR)
+    {
+        // Initialize the result
+        mpz_init (rop);
+
+        // The result is NaN
+        mpz_set_nan (rop);
+
+        return 0;
+    } else
         return mpz_init_set_str (mpz_clr_inf (rop), str, base);
 } // End mpiz_init_set_str
 
@@ -373,6 +450,13 @@ void mpiz_init_set
         // The result is infinity whose sign is that of op
         mpz_set_inf (rop, mpz_sgn (op));
     } else
+    if (mpz_nan_p (op))
+    {
+        mpz_init (rop);
+
+        // The result is NaN
+        mpz_set_nan (rop);
+    } else
         mpz_init_set (mpz_clr_inf (rop), op);
 } // End mpiz_init_set
 
@@ -388,12 +472,19 @@ void mpiz_init_set_d
      double op)                 // Source
 
 {
-    if (IsFltInfinity (op))
+    if (_isinf (op))
     {
         mpz_init (rop);
 
         // The result is infinity whose sign is that of op
         mpz_set_inf (rop, signumflt (op));
+    } else
+    if (IsFltNaN      (op))
+    {
+        mpz_init (rop);
+
+        // The result is NaN
+        mpz_set_nan (rop);
     } else
         mpz_init_set_d (rop, op);
 } // End mpiz_init_set_d
@@ -409,8 +500,10 @@ mpir_ui mpiz_get_ui
     (mpz_t op)                  // Source
 
 {
-    if (mpz_inf_p (op))
-        return (mpir_ui )0xFFFFFFFF;
+    if (mpz_inf_p (op)
+     || mpz_nan_p (op))
+        // The result is NaN
+        return (mpir_ui) MPZIR_NAN_RES;
     else
         return mpz_get_ui (mpz_clr_inf (op));
 } // End mpiz_get_ui
@@ -426,8 +519,10 @@ mpir_si mpiz_get_si
     (mpz_t op)                  // Source
 
 {
-    if (mpz_inf_p (op))
-        return (mpir_si) 0xFFFFFFFF;
+    if (mpz_inf_p (op)
+     || mpz_nan_p (op))
+        // The result is NaN
+        return (mpir_si) MPZIR_NAN_RES;
     else
         return mpz_get_si (mpz_clr_inf (op));
 } // End mpiz_get_si
@@ -451,6 +546,9 @@ double mpiz_get_d
                          : NEG_INFINITY;
         return *(double *) &Int64;
     } else
+    if (mpz_nan_p (op))
+        return fltNaN;
+    else
         return mpz_get_d (mpz_clr_inf (op));
 } // End mpiz_get_d
 
@@ -470,12 +568,16 @@ double mpiz_get_d_2exp
     {
         __int64 Int64;
 
-        *exp = (mpir_si) 0xFFFFFFFF;
+        // The result is NaN
+        *exp = (mpir_si) MPZIR_NAN_RES;
 
         Int64 = (op > 0) ? POS_INFINITY
                          : NEG_INFINITY;
         return *(double *) &Int64;
     } else
+    if (mpz_nan_p (op))
+        return fltNaN;
+    else
         return mpz_get_d_2exp (exp, mpz_clr_inf (op));
 } // End mpiz_get_d_2exp
 
@@ -487,11 +589,32 @@ double mpiz_get_d_2exp
 //***************************************************************************
 
 char *mpiz_get_str
-    (char *str,                 // Ptr to output string
+    (char *str,                 // Ptr to output string (may be NULL)
      int   base,                // Number base
      mpz_t op)                  // Source
 
 {
+    // Check for special cases
+    if (mpz_nan_p (op))
+    {
+        __mpz_struct tmp = {0};
+        char *p;
+
+        // Initialize and set a temp to "1"
+        //   which is of sufficient size to store "#"
+        mpz_init_set_si (&tmp, mpz_sgn (op));
+
+        // Convert to "1" using the caller's <str>
+        p = mpz_get_str (str, base, &tmp);
+
+        // Change the "1" to the NaN char
+        p[0] = DEF_NAN_CHAR;
+
+        // We no longer need this storage
+        Myz_clear (&tmp);
+
+        return p;
+    } else
     if (mpz_inf_p (op))
     {
         __mpz_struct tmp = {0};
@@ -528,6 +651,12 @@ void mpiz_add
      mpz_t op2)                 // Right arg
 
 {
+    // If either arg is a NaN, ...
+    if (mpz_nan_p (op1)
+     || mpz_nan_p (op2))
+        // The result is NaN
+        mpz_set_nan (rop);
+    else
     // Split cases based upon which (if any) arg is an infinity
     switch (2 * mpz_inf_p (op1) + mpz_inf_p (op2))
     {
@@ -577,6 +706,10 @@ void mpiz_add_ui
         // The result is infinity whose sign is that of op1
         mpz_set_inf (rop, mpz_sgn (op1));
     else
+    if (mpz_nan_p (op1))
+        // The result is NaN
+        mpz_set_nan (rop);
+    else
         mpz_add_ui (mpz_clr_inf (rop), op1, op2);
 } // End mpiz_add_ui
 
@@ -593,6 +726,12 @@ void mpiz_sub
      mpz_t op2)                 // Right arg
 
 {
+    // If either arg is a NaN, ...
+    if (mpz_nan_p (op1)
+     || mpz_nan_p (op2))
+        // The result is NaN
+        mpz_set_nan (rop);
+    else
     // Split cases based upon which (if any) arg is an infinity
     switch (2 * mpz_inf_p (op1) + mpz_inf_p (op2))
     {
@@ -642,6 +781,10 @@ void mpiz_sub_ui
         // The result is infinity whose sign is that of op1
         mpz_set_inf (rop, mpz_sgn (op1));
     else
+    if (mpz_nan_p (op1))
+        // The result is NaN
+        mpz_set_nan (rop);
+    else
         mpz_sub_ui (mpz_clr_inf (rop), op1, op2);
 } // End mpiz_sub_ui
 
@@ -662,6 +805,10 @@ void mpiz_ui_sub
         // The result is infinity whose sign is that of op2
         mpz_set_inf (rop, -mpz_sgn (op2));
     else
+    if (mpz_nan_p (op2))
+        // The result is NaN
+        mpz_set_nan (rop);
+    else
         mpz_ui_sub (mpz_clr_inf (rop), op1, op2);
 } // End mpiz_ui_sub
 
@@ -678,6 +825,12 @@ void mpiz_mul
      mpz_t op2)                 // Right arg
 
 {
+    // If either arg is a NaN, ...
+    if (mpz_nan_p (op1)
+     || mpz_nan_p (op2))
+        // The result is NaN
+        mpz_set_nan (rop);
+    else
     // Split cases based upon which (if any) arg is an infinity
     switch (2 * mpz_inf_p (op1) + mpz_inf_p (op2))
     {
@@ -727,6 +880,10 @@ void mpiz_mul_si
         // Note that the case where the other op is zero has been handled by the caller
         mpz_set_inf (rop, mpz_sgn (op1) * signumint (op2));
     else
+    if (mpz_nan_p (op1))
+        // The result is NaN
+        mpz_set_nan (rop);
+    else
         mpz_mul_si (mpz_clr_inf (rop), op1, op2);
 } // End mpiz_mul_si
 
@@ -747,6 +904,10 @@ void mpiz_mul_ui
         // The result is infinity whose sign that of op1
         // Note that the case where the other op is zero has been handled by the caller
         mpz_set_inf (rop, mpz_sgn (op1));
+    else
+    if (mpz_nan_p (op1))
+        // The result is NaN
+        mpz_set_nan (rop);
     else
         mpz_mul_ui (mpz_clr_inf (rop), op1, op2);
 } // End mpiz_mul_ui
@@ -775,6 +936,12 @@ void mpiz_addmul
         mpiz_add (rop, rop, &tmp);
         mpz_clear (&tmp);
     } else
+    if (mpz_nan_p (rop)
+     || mpz_nan_p (op1)
+     || mpz_nan_p (op2))
+        // The result is NaN
+        mpz_set_nan (rop);
+    else
         mpz_addmul (mpz_clr_inf (rop), op1, op2);
 } // End mpiz_addmul
 
@@ -801,6 +968,11 @@ void mpiz_addmul_ui
         mpiz_add (rop, rop, &tmp);
         mpz_clear (&tmp);
     } else
+    if (mpz_nan_p (rop)
+     || mpz_nan_p (op1))
+        // The result is NaN
+        mpz_set_nan (rop);
+    else
         mpz_addmul_ui (mpz_clr_inf (rop), op1, op2);
 } // End mpiz_addmul_ui
 
@@ -828,6 +1000,12 @@ void mpiz_submul
         mpiz_sub (rop, rop, &tmp);
         mpz_clear (&tmp);
     } else
+    if (mpz_nan_p (rop)
+     || mpz_nan_p (op1)
+     || mpz_nan_p (op2))
+        // The result is NaN
+        mpz_set_nan (rop);
+    else
         mpz_submul (mpz_clr_inf (rop), op1, op2);
 } // End mpiz_submul
 
@@ -854,6 +1032,11 @@ void mpiz_submul_ui
         mpiz_sub (rop, rop, &tmp);
         mpz_clear (&tmp);
     } else
+    if (mpz_nan_p (rop)
+     || mpz_nan_p (op1))
+        // The result is NaN
+        mpz_set_nan (rop);
+    else
         mpz_submul_ui (mpz_clr_inf (rop), op1, op2);
 } // End mpiz_submul_ui
 
@@ -873,6 +1056,10 @@ void mpiz_mul_2exp
     if (mpz_inf_p (op1))
         // The result is infinity whose sign is that of op1
         mpz_set_inf (rop, mpz_sgn (op1));
+    else
+    if (mpz_nan_p (op1))
+        // The result is NaN
+        mpz_set_nan (rop);
     else
         mpz_mul_2exp (mpz_clr_inf (rop), op1, op2);
 } // End mpiz_mul_2exp
@@ -894,6 +1081,10 @@ void mpiz_neg
         // The result is infinity whose sign is that of -op
         mpz_set_inf (rop, -mpz_sgn (op));
     else
+    if (mpz_nan_p (op))
+        // The result is NaN
+        mpz_set_nan (rop);
+    else
         // Otherwise, call the original function
         mpz_neg (mpz_clr_inf (rop), op);
 } // End mpiz_neg
@@ -914,6 +1105,10 @@ void mpiz_abs
         // The result is infinity whose sign is positive
         mpz_set_inf (rop, 1);
     else
+    if (mpz_nan_p (op))
+        // The result is NaN
+        mpz_set_nan (rop);
+    else
         mpz_abs (mpz_clr_inf (rop), op);
 } // End mpiz_abs
 
@@ -931,6 +1126,11 @@ void mpiz_cdiv_q
 
 {
     // Check for special cases
+    if (mpz_nan_p (n)
+     || mpz_nan_p (d))
+        // The result is NaN
+        mpz_set_nan (q);
+    else
     if (mpz_cmp_ui (d, 0) EQ 0)
         // The result is infinity whose sign is that of N
         mpz_set_inf (q, mpz_sgn (n));
@@ -962,13 +1162,18 @@ void mpiz_cdiv_r
 
 {
     // Check for special cases
+    if (mpz_nan_p (n)
+     || mpz_nan_p (d))
+        // The result is NaN
+        mpz_set_nan (r);
+    else
     if (mpz_cmp_ui (d, 0) EQ 0
      || mpz_inf_p (n)
      || mpz_inf_p (d))
         // Remainder is undefined for infinite result
         (*gmpz_invalid) (MP_CDIV_Q, r, n, d, NULL, 0, 0);
     else
-        mpz_cdiv_r (r, n, d);
+        mpz_cdiv_r (mpz_clr_inf (r), n, d);
 } // End mpiz_cdiv_r
 
 
@@ -986,13 +1191,20 @@ void mpiz_cdiv_qr
 
 {
     // Check for special cases
+    if (mpz_nan_p (n)
+     || mpz_nan_p (d))
+    {
+        // The result is NaN
+        mpz_set_nan (q);
+        mpz_set_nan (r);
+    } else
     if (mpz_cmp_ui (d, 0) EQ 0
      || mpz_inf_p (n)
      || mpz_inf_p (d))
         // Remainder is undefined for infinite result
         (*gmpz_invalid) (MP_CDIV_QR, q, r, n, d, 0, 0);
     else
-        mpz_cdiv_qr (mpz_clr_inf (q), r, n, d);
+        mpz_cdiv_qr (mpz_clr_inf (q), mpz_clr_inf (r), n, d);
 } // End mpiz_cdiv_qr
 
 
@@ -1009,6 +1221,12 @@ mpir_ui mpiz_cdiv_q_ui
 
 {
     // Check for special cases
+    if (mpz_nan_p (n))
+    {
+        // The result is NaN
+        mpz_set_nan (q);
+        return (mpir_ui) MPZIR_NAN_RES;
+    } else
     if (d EQ 0)
     {
         // The result is infinity whose sign is that of N
@@ -1040,6 +1258,12 @@ mpir_ui mpiz_cdiv_r_ui
 
 {
     // Check for special cases
+    if (mpz_nan_p (n))
+    {
+        // The result is NaN
+        mpz_set_nan (r);
+        return (mpir_ui) MPZIR_NAN_RES;
+    } else
     if (d EQ 0
      || mpz_inf_p (n))
         // Remainder is undefined for infinite result
@@ -1063,12 +1287,19 @@ mpir_ui mpiz_cdiv_qr_ui
 
 {
     // Check for special cases
+    if (mpz_nan_p (n))
+    {
+        // The result is NaN
+        mpz_set_nan (q);
+        mpz_set_nan (r);
+        return (mpir_ui) MPZIR_NAN_RES;
+    } else
     if (d EQ 0
      || mpz_inf_p (n))
         // Remainder is undefined for infinite result
         return (*gmpz_invalid) (MP_CDIV_QR_UI, q, r, n, NULL, d, 0);
     else
-        return mpz_cdiv_qr_ui (mpz_clr_inf (q), r, n, d);
+        return mpz_cdiv_qr_ui (mpz_clr_inf (q), mpz_clr_inf (r), n, d);
 } // End mpiz_cdiv_qr_ui
 
 
@@ -1084,6 +1315,10 @@ mpir_ui mpiz_cdiv_ui
 
 {
     // Check for special cases
+    if (mpz_nan_p (n))
+        // mpir_ui is too small for NaN result
+        return (*gmpz_invalid) (MP_CDIV_QR_UI, n, NULL, NULL, NULL, d, 0);
+    else
     if (d EQ 0
      || mpz_inf_p (n))
         // mpir_ui is too small for infinite result
@@ -1106,6 +1341,10 @@ void mpiz_cdiv_q_2exp
 
 {
     // Check for special cases
+    if (mpz_nan_p (n))
+        // The result is NaN
+        mpz_set_nan (q);
+    else
     if (mpz_inf_p (n))
         // The result is infinity whose sign is that of N
         mpz_set_inf (q, mpz_sgn (n));
@@ -1127,6 +1366,10 @@ void mpiz_cdiv_r_2exp
 
 {
     // Check for special cases
+    if (mpz_nan_p (n))
+        // The result is NaN
+        mpz_set_nan (r);
+    else
     if (mpz_inf_p (n))
         // Remainder is undefined for infinite result
         (*gmpz_invalid) (MP_CDIV_R_2EXP, r, n, NULL, NULL, b, 0);
@@ -1148,6 +1391,11 @@ void mpiz_fdiv_q
 
 {
     // Check for special cases
+    if (mpz_nan_p (n)
+     || mpz_nan_p (d))
+        // The result is NaN
+        mpz_set_nan (q);
+    else
     if (mpz_cmp_ui (d, 0) EQ 0)
         // The result is infinity whose sign is that of N
         mpz_set_inf (q, mpz_sgn (n));
@@ -1179,6 +1427,11 @@ void mpiz_fdiv_r
 
 {
     // Check for special cases
+    if (mpz_nan_p (n)
+     || mpz_nan_p (d))
+        // The result is NaN
+        mpz_set_nan (r);
+    else
     if (mpz_cmp_ui (d, 0) EQ 0
      || mpz_inf_p (n)
      || mpz_inf_p (d))
@@ -1203,13 +1456,20 @@ void mpiz_fdiv_qr
 
 {
     // Check for special cases
+    if (mpz_nan_p (n)
+     || mpz_nan_p (d))
+    {
+        // The result is NaN
+        mpz_set_nan (q);
+        mpz_set_nan (r);
+    } else
     if (mpz_cmp_ui (d, 0) EQ 0
      || mpz_inf_p (n)
      || mpz_inf_p (d))
         // Remainder is undefined for infinite result
         (*gmpz_invalid) (MP_FDIV_QR, q, r, n, d, 0, 0);
     else
-        mpz_fdiv_qr (mpz_clr_inf (q), r, n, d);
+        mpz_fdiv_qr (mpz_clr_inf (q), mpz_clr_inf (r), n, d);
 } // End mpiz_fdiv_qr
 
 
@@ -1226,6 +1486,12 @@ mpir_ui mpiz_fdiv_q_ui
 
 {
     // Check for special cases
+    if (mpz_nan_p (n))
+    {
+        // The result is NaN
+        mpz_set_nan (q);
+        return 0;
+    } else
     if (d EQ 0)
     {
         // The result is infinity whose sign is that of N
@@ -1257,6 +1523,10 @@ mpir_ui mpiz_fdiv_r_ui
 
 {
     // Check for special cases
+    if (mpz_nan_p (n))
+        // Remainder is undefined for NaN result
+        return (*gmpz_invalid) (MP_FDIV_R_UI, r, n, NULL, NULL, 0, 0);
+    else
     if (d EQ 0
      || mpz_inf_p (n))
         // Remainder is undefined for infinite result
@@ -1280,12 +1550,16 @@ mpir_ui mpiz_fdiv_qr_ui
 
 {
     // Check for special cases
+    if (mpz_nan_p (n))
+        // Remainder is undefined for NaN result
+        return (*gmpz_invalid) (MP_FDIV_QR_UI, q, r, n, NULL, d, 0);
+    else
     if (d EQ 0
      || mpz_inf_p (n))
         // Remainder is undefined for infinite result
         return (*gmpz_invalid) (MP_FDIV_QR_UI, q, r, n, NULL, d, 0);
     else
-        return mpz_fdiv_qr_ui (mpz_clr_inf (q), r, n, d);
+        return mpz_fdiv_qr_ui (mpz_clr_inf (q), mpz_clr_inf (r), n, d);
 } // End mpiz_fdiv_qr_ui
 
 
@@ -1301,6 +1575,10 @@ mpir_ui mpiz_fdiv_ui
 
 {
     // Check for special cases
+    if (mpz_nan_p (n))
+        // mpir_ui is too small for NaN result
+        return (*gmpz_invalid) (MP_FDIV_QR_UI, n, NULL, NULL, NULL, d, 0);
+    else
     if (d EQ 0
      || mpz_inf_p (n))
         // mpir_ui is too small for infinite result
@@ -1323,6 +1601,10 @@ void mpiz_fdiv_q_2exp
 
 {
     // Check for special cases
+    if (mpz_nan_p (n))
+        // The result is NaN
+        mpz_set_nan (q);
+    else
     if (mpz_inf_p (n))
         // The result is infinity whose sign is that of N
         mpz_set_inf (q, mpz_sgn (n));
@@ -1344,6 +1626,10 @@ void mpiz_fdiv_r_2exp
 
 {
     // Check for special cases
+    if (mpz_nan_p (n))
+        // The result is NaN
+        mpz_set_nan (r);
+    else
     if (mpz_inf_p (n))
         // Remainder is undefined for infinite result
         (*gmpz_invalid) (MP_FDIV_R_2EXP, r, n, NULL, NULL, b, 0);
@@ -1365,6 +1651,11 @@ void mpiz_tdiv_q
 
 {
     // Check for special cases
+    if (mpz_nan_p (n)
+     || mpz_nan_p (d))
+        // The result is NaN
+        mpz_set_nan (q);
+    else
     if (mpz_cmp_ui (d, 0) EQ 0)
         // The result is infinity whose sign is that of N
         mpz_set_inf (q, mpz_sgn (n));
@@ -1396,6 +1687,11 @@ void mpiz_tdiv_r
 
 {
     // Check for special cases
+    if (mpz_nan_p (n)
+     || mpz_nan_p (d))
+        // The result is NaN
+        mpz_set_nan (r);
+    else
     if (mpz_cmp_ui (d, 0) EQ 0
      || mpz_inf_p (n)
      || mpz_inf_p (d))
@@ -1420,13 +1716,20 @@ void mpiz_tdiv_qr
 
 {
     // Check for special cases
+    if (mpz_nan_p (n)
+     || mpz_nan_p (d))
+    {
+        // The result is NaN
+        mpz_set_nan (q);
+        mpz_set_nan (r);
+    } else
     if (mpz_cmp_ui (d, 0) EQ 0
      || mpz_inf_p (n)
      || mpz_inf_p (d))
         // Remainder is undefined for infinite result
         (*gmpz_invalid) (MP_TDIV_QR, q, r, n, d, 0, 0);
     else
-        mpz_tdiv_qr (mpz_clr_inf (q), r, n, d);
+        mpz_tdiv_qr (mpz_clr_inf (q), mpz_clr_inf (r), n, d);
 } // End mpiz_tdiv_qr
 
 
@@ -1443,6 +1746,13 @@ mpir_ui mpiz_tdiv_q_ui
 
 {
     // Check for special cases
+    if (mpz_nan_p (n))
+    {
+        // The result is NaN
+        mpz_set_nan (q);
+
+        return 0;
+    } else
     if (d EQ 0)
     {
         // The result is infinity whose sign is that of N
@@ -1474,6 +1784,10 @@ mpir_ui mpiz_tdiv_r_ui
 
 {
     // Check for special cases
+    if (mpz_nan_p (n))
+        // Remainder is undefined for NaN result
+        return (*gmpz_invalid) (MP_TDIV_R_UI, r, n, NULL, NULL, 0, 0);
+    else
     if (d EQ 0
      || mpz_inf_p (n))
         // Remainder is undefined for infinite result
@@ -1497,12 +1811,16 @@ mpir_ui mpiz_tdiv_qr_ui
 
 {
     // Check for special cases
+    if (mpz_nan_p (n))
+        // Remainder is undefined for NaN result
+        return (*gmpz_invalid) (MP_TDIV_QR_UI, q, r, n, NULL, d, 0);
+    else
     if (d EQ 0
      || mpz_inf_p (n))
         // Remainder is undefined for infinite result
         return (*gmpz_invalid) (MP_TDIV_QR_UI, q, r, n, NULL, d, 0);
     else
-        return mpz_tdiv_qr_ui (mpz_clr_inf (q), r, n, d);
+        return mpz_tdiv_qr_ui (mpz_clr_inf (q), mpz_clr_inf (r), n, d);
 } // End mpiz_tdiv_qr_ui
 
 
@@ -1518,6 +1836,10 @@ mpir_ui mpiz_tdiv_ui
 
 {
     // Check for special cases
+    if (mpz_nan_p (n))
+        // mpir_ui is too small for NaN result
+        return (*gmpz_invalid) (MP_TDIV_QR_UI, n, NULL, NULL, NULL, d, 0);
+    else
     if (d EQ 0
      || mpz_inf_p (n))
         // mpir_ui is too small for infinite result
@@ -1540,6 +1862,10 @@ void mpiz_tdiv_q_2exp
 
 {
     // Check for special cases
+    if (mpz_nan_p (n))
+        // The result is NaN
+        mpz_set_nan (q);
+    else
     if (mpz_inf_p (n))
         // The result is infinity whose sign is that of N
         mpz_set_inf (q, mpz_sgn (n));
@@ -1561,6 +1887,10 @@ void mpiz_tdiv_r_2exp
 
 {
     // Check for special cases
+    if (mpz_nan_p (n))
+        // The result is NaN
+        mpz_set_nan (r);
+    else
     if (mpz_inf_p (n))
         // Remainder is undefined for infinite result
         (*gmpz_invalid) (MP_TDIV_R_2EXP, r, n, NULL, NULL, b, 0);
@@ -1581,6 +1911,12 @@ void mpiz_mod
      mpz_t d)                   // The modulus
 
 {
+    // Check for special cases
+    if (mpz_nan_p (n)
+     || mpz_nan_p (d))
+        // The result is NaN
+        mpz_set_nan (r);
+    else
     // Handle zero modulus or argument
     if (mpz_sgn (n) EQ 0
      || mpz_sgn (d) EQ 0)
@@ -1632,7 +1968,7 @@ void mpiz_mod
         if (mpz_sgn (n) < 0)
             (*gmpz_invalid) (MP_PiMODNeg, r, n, d, NULL, 0, 0);
     } else
-        mpz_mod (r, n, d);
+        mpz_mod (mpz_clr_inf (r), n, d);
 } // End mpiz_mod
 
 
@@ -1648,6 +1984,10 @@ mpir_ui mpiz_mod_ui
      mpir_ui d)                 // The modulus
 
 {
+    // Check for special cases
+    if (mpz_nan_p (n))
+        return (*gmpz_invalid) (MP_MODUINi, r, n, NULL, NULL, d, 0);
+    else
     // Handle zero modulus or argument
     if (mpz_sgn (n) EQ 0
      ||          d  EQ 0)
@@ -1666,7 +2006,7 @@ mpir_ui mpiz_mod_ui
     if (mpz_inf_p (n) && mpz_sgn (n) > 0)
         return (*gmpz_invalid) (MP_MODUIPi, r, n, NULL, NULL, d, 0);
     else
-        return mpz_mod_ui (r, n, d);
+        return mpz_mod_ui (mpz_clr_inf (r), n, d);
 } // End mpiz_mod
 
 
@@ -1682,7 +2022,13 @@ void mpiz_divexact
      mpz_t d)                   // Divisor
 
 {
-    mpz_divexact (q, n, d);     // ***FIXME***
+    // Check for special cases
+    if (mpz_nan_p (n)
+     || mpz_nan_p (d))
+        // The result is NaN
+        mpz_set_nan (q);
+    else
+        mpz_divexact (q, n, d); // ***FIXME***
 } // End mpiz_divexact
 
 
@@ -1698,6 +2044,11 @@ void mpiz_divexact_ui
      mpir_ui d)                 // Divisor
 
 {
+    // Check for special cases
+    if (mpz_nan_p (n))
+        // The result is NaN
+        mpz_set_nan (q);
+    else
     mpz_divexact_ui (q, n, d);  // ***FIXME***
 } // End mpiz_divexact_ui
 
@@ -1713,6 +2064,13 @@ int mpiz_divisible_p
      mpz_t d)                   // Denominator
 
 {
+    // Check for special cases
+    if (mpz_nan_p (n)
+     || mpz_nan_p (d))
+    {
+        // The result is Not Divisible
+        return 0;
+    } else
     if (mpz_inf_p (n)
      || mpz_inf_p (d))
         return (int) (*gmpz_invalid) (MP_DIVISIBLE_P, n, d, NULL, NULL, 0, 0);
@@ -1732,6 +2090,12 @@ int mpiz_divisible_ui_p
      mpir_ui d)                 // Denominator
 
 {
+    // Check for special cases
+    if (mpz_nan_p (n))
+    {
+        // The result is Not Divisible
+        return 0;
+    } else
     if (mpz_inf_p (n))
         return (int) (*gmpz_invalid) (MP_DIVISIBLE_UI_P, n, NULL, NULL, NULL, 0, 0);
     else
@@ -1750,6 +2114,12 @@ int mpiz_divisible_2exp_p
      mp_bitcnt_t d)             // Denominator
 
 {
+    // Check for special cases
+    if (mpz_nan_p (n))
+    {
+        // The result is Not Divisible
+        return 0;
+    } else
     if (mpz_inf_p (n))
         return (int) (*gmpz_invalid) (MP_DIVISIBLE_2EXP_P, n, NULL, NULL, NULL, 0, 0);
     else
@@ -1772,6 +2142,11 @@ void mpiz_pow_ui
     MP_INT mpzRes = {0};
 
     // Check for special cases
+    if (mpz_nan_p (base))
+    {
+        // The result is NaN
+        mpz_set_nan (rop);
+    } else
     if (IsMpz0 (base) && exp EQ 0           //  0  * 0
      || mpz_inf_p (base) && exp EQ 0)   // Inf * 0
         (*gmpz_invalid) (MP_POW_UI, rop, base, NULL, NULL, exp, 0);
@@ -1815,6 +2190,12 @@ void mpiz_sqrt
      mpz_t op)                  // Source
 
 {
+    // Check for special cases
+    if (mpz_nan_p (op))
+    {
+        // The result is NaN
+        mpz_set_nan (rop);
+    } else
     if (mpz_inf_p (op))
     {
         if (mpz_sgn (op) < 0)
@@ -1871,7 +2252,16 @@ void mpiz_nextprime
      mpz_t op)                  // Argument
 
 {
-    mpz_nextprime (rop, op);    // ***FIXME***
+    // Check for special cases
+    if (mpz_nan_p (op))
+    {
+        // The result is NaN
+        mpz_set_nan (rop);
+    } else
+    if (mpz_inf_p (op))
+        mpz_set_inf (rop, 1);
+    else
+        mpz_nextprime (rop, op);
 } // End mpiz_nextprime
 
 
@@ -1887,6 +2277,13 @@ void mpiz_gcd
      mpz_t op2)                 // Right arg
 
 {
+    // Check for special cases
+    if (mpz_nan_p (op1)
+     || mpz_nan_p (op2))
+    {
+        // The result is NaN
+        mpz_set_nan (rop);
+    } else
     // Split cases based upon which (if any) arg is an infinity
     switch (2 * mpz_inf_p (op1) + mpz_inf_p (op2))
     {
@@ -1921,6 +2318,13 @@ void mpiz_lcm
      mpz_t op2)                 // Right arg
 
 {
+    // Check for special cases
+    if (mpz_nan_p (op1)
+     || mpz_nan_p (op2))
+    {
+        // The result is NaN
+        mpz_set_nan (rop);
+    } else
     // Split cases based upon which (if any) arg is an infinity
     switch (2 * mpz_inf_p (op1) + mpz_inf_p (op2))
     {
@@ -1948,7 +2352,7 @@ void mpiz_lcm
 //
 //  Remove all occurrences of the factor f from op
 //    and store the result in rop, returning the #
-//    occurrecnes in the result.
+//    occurrences in the result.
 //***************************************************************************
 
 mp_bitcnt_t mpiz_remove
@@ -1957,7 +2361,21 @@ mp_bitcnt_t mpiz_remove
      mpz_t f)                   // Factor to remove
 
 {
-    return mpz_remove (rop, op, f);     // ***FINISHME***
+    // Check for special cases
+    if (mpz_nan_p (op))
+    {
+        // The result is NaN
+        mpz_set_nan (rop);
+
+        // There were no occurrences
+        return 0;
+    } else
+    if (mpz_inf_p (op))
+    {
+        mpz_set_inf (rop, mpz_sgn (op));
+        return 0;
+    } else
+        return mpz_remove (mpz_clr_inf (rop), op, f);
 } // End mpiz_remove
 
 
@@ -1975,25 +2393,45 @@ int mpiz_cmp
      mpz_t op2)                 // Right arg
 
 {
-    // Split cases based upon which (if any) arg is an infinity
-    switch (2 * mpz_inf_p (op1) + mpz_inf_p (op2))
+    // Check for special cases
+    // Split cases based upon which (if any) arg is a NaN
+    switch (2 * mpz_nan_p (op1) + mpz_nan_p (op2))
     {
-        case 2 * 0 + 0:     // Neither arg is an infinity
-            // Call the original function
-            return mpz_cmp (op1, op2);
+        case 2 * 0 + 0:     // Neither arg is a NaN
+            // Split cases based upon which (if any) arg is an infinity
+            switch (2 * mpz_inf_p (op1) + mpz_inf_p (op2))
+            {
+                case 2 * 0 + 0:     // Neither arg is an infinity
+                    // Call the original function
+                    return mpz_cmp (op1, op2);
 
-        case 2 * 0 + 1:     // Op2 only is an infinity
-            // The result is opposite sign of the infinite argument (op2)
-            return -mpz_sgn (op2);
+                case 2 * 0 + 1:     // Op2 only is an infinity
+                    // The result is opposite sign of the infinite argument (op2)
+                    return -mpz_sgn (op2);
 
-        case 2 * 1 + 0:     // Op1 only is an infinity
-            // The result is same sign as the infinite argument (op1)
-            return  mpz_sgn (op1);
+                case 2 * 1 + 0:     // Op1 only is an infinity
+                    // The result is same sign as the infinite argument (op1)
+                    return  mpz_sgn (op1);
 
-        case 2 * 1 + 1:     // Op1 and Op2 are infinities
-            // The result is 0 if op1 and op2 are the same sign,
-            //   +1 if op2 is negative and -1 if op1 is negative
-            return signumint (mpz_sgn (op1) - mpz_sgn (op2));
+                case 2 * 1 + 1:     // Op1 and Op2 are infinities
+                    // The result is 0 if op1 and op2 are the same sign,
+                    //   +1 if op2 is negative and -1 if op1 is negative
+                    return signumint (mpz_sgn (op1) - mpz_sgn (op2));
+
+                default:
+                    return 0;       // To keep the compiler happy
+            } // End SWITCH
+
+            break;
+
+        case 2 * 0 + 1:     // Op2 only is a NaN
+            return -1;      // Op1 < Op2 ?????
+
+        case 2 * 1 + 0:     // Op1 only is a NaN
+            return 1;       // Op1 > Op2 ?????
+
+        case 2 * 1 + 1:     // Op1 and Op2 are NaNs
+            return 0;       // NaNs are equal ?????
 
         default:
             return 0;       // To keep the compiler happy
@@ -2015,25 +2453,45 @@ int mpiz_cmp_d
      double op2)                // Right arg
 
 {
-    // Split cases based upon which (if any) arg is an infinity
-    switch (2 * mpz_inf_p (op1) + IsFltInfinity (op2))
+    // Check for special cases
+    // Split cases based upon which (if any) arg is a NaN
+    switch (2 * mpz_nan_p (op1) + IsFltNaN (op2))
     {
-        case 2 * 0 + 0:     // Neither arg is an infinity
-            // Call the original function
-            return mpz_cmp_d (op1, op2);
+        case 2 * 0 + 0:     // Neither arg is a NaN
+            // Split cases based upon which (if any) arg is an infinity
+            switch (2 * mpz_inf_p (op1) + _isinf (op2))
+            {
+                case 2 * 0 + 0:     // Neither arg is an infinity
+                    // Call the original function
+                    return mpz_cmp_d (op1, op2);
 
-        case 2 * 0 + 1:     // Op2 only is an infinity
-            // The result is the opposite sign of the infinite argument (op2)
-            return -signumflt (op2);
+                case 2 * 0 + 1:     // Op2 only is an infinity
+                    // The result is the opposite sign of the infinite argument (op2)
+                    return -signumflt (op2);
 
-        case 2 * 1 + 0:     // Op1 only is an infinity
-            // The result is the same sign as the infinite argument (op1)
-            return  mpz_sgn (op1);
+                case 2 * 1 + 0:     // Op1 only is an infinity
+                    // The result is the same sign as the infinite argument (op1)
+                    return  mpz_sgn (op1);
 
-        case 2 * 1 + 1:     // Op1 and Op2 are infinities
-            // The result is 0 if op1 and op2 are the same sign,
-            //   +1 if op2 is negative and -1 if op1 is negative
-            return signumint ((mpz_sgn (op1) - signumflt (op2)));
+                case 2 * 1 + 1:     // Op1 and Op2 are infinities
+                    // The result is 0 if op1 and op2 are the same sign,
+                    //   +1 if op2 is negative and -1 if op1 is negative
+                    return signumint ((mpz_sgn (op1) - signumflt (op2)));
+
+                default:
+                    return 0;       // To keep the compiler happy
+            } // End SWITCH
+
+            break;
+
+        case 2 * 0 + 1:     // Op2 only is a NaN
+            return -1;      // Op1 < Op2 ?????
+
+        case 2 * 1 + 0:     // Op1 only is a NaN
+            return 1;       // Op1 > Op2 ?????
+
+        case 2 * 1 + 1:     // Op1 and Op2 are NaNs
+            return 0;       // NaNs are equal ?????
 
         default:
             return 0;       // To keep the compiler happy
@@ -2055,6 +2513,10 @@ int mpiz_cmp_ui
      mpir_ui op2)               // Right arg
 
 {
+    // Check for special cases
+    if (mpz_nan_p (op1))
+        return 1;           // Op1 > Op2 ?????
+    else
     if (mpz_inf_p (op1))
         return mpz_sgn (op1);
     else
@@ -2076,6 +2538,10 @@ int mpiz_cmp_si
      mpir_si op2)               // Right arg
 
 {
+    // Check for special cases
+    if (mpz_nan_p (op1))
+        return 1;
+    else
     if (mpz_inf_p (op1))
         return mpz_sgn (op1);
     else
@@ -2097,21 +2563,41 @@ int mpiz_cmpabs
      mpz_t op2)                 // Right arg
 
 {
-    // Split cases based upon which (if any) arg is an infinity
-    switch (2 * mpz_inf_p (op1) + mpz_inf_p (op2))
+    // Check for special cases
+    // Split cases based upon which (if any) arg is a NaN
+    switch (2 * mpz_nan_p (op1) + mpz_nan_p (op2))
     {
-        case 2 * 0 + 0:     // Neither arg is an infinity
-            // Call the original function
-            return mpz_cmpabs (op1, op2);
+        case 2 * 0 + 0:     // Neither arg is a NaN
+            // Split cases based upon which (if any) arg is an infinity
+            switch (2 * mpz_inf_p (op1) + mpz_inf_p (op2))
+            {
+                case 2 * 0 + 0:     // Neither arg is an infinity
+                    // Call the original function
+                    return mpz_cmpabs (op1, op2);
 
-        case 2 * 0 + 1:     // Op2 only is an infinity
-            return -1;
+                case 2 * 0 + 1:     // Op2 only is an infinity
+                    return -1;
 
-        case 2 * 1 + 0:     // Op1 only is an infinity
-            return  1;
+                case 2 * 1 + 0:     // Op1 only is an infinity
+                    return  1;
 
-        case 2 * 1 + 1:     // Op1 and Op2 are infinities
-            return  0;
+                case 2 * 1 + 1:     // Op1 and Op2 are infinities
+                    return  0;
+
+                default:
+                    return 0;       // To keep the compiler happy
+            } // End SWITCH
+
+            break;
+
+        case 2 * 0 + 1:     // Op2 only is a NaN
+            return -1;      // Op1 < Op2 ?????
+
+        case 2 * 1 + 0:     // Op1 only is a NaN
+            return 1;       // Op1 > Op2 ?????
+
+        case 2 * 1 + 1:     // Op1 and Op2 are NaNs
+            return 0;       // NaNs are equal ?????
 
         default:
             return 0;       // To keep the compiler happy
@@ -2133,21 +2619,41 @@ int mpiz_cmpabs_d
      double op2)                // Right arg
 
 {
-    // Split cases based upon which (if any) arg is an infinity
-    switch (2 * mpz_inf_p (op1) + IsFltInfinity (op2))
+    // Check for special cases
+    // Split cases based upon which (if any) arg is a NaN
+    switch (2 * mpz_nan_p (op1) + IsFltNaN (op2))
     {
-        case 2 * 0 + 0:     // Neither arg is an infinity
-            // Call the original function
-            return mpz_cmpabs_d (op1, op2);
+        case 2 * 0 + 0:     // Neither arg is a NaN
+            // Split cases based upon which (if any) arg is an infinity
+            switch (2 * mpz_inf_p (op1) + _isinf (op2))
+            {
+                case 2 * 0 + 0:     // Neither arg is an infinity
+                    // Call the original function
+                    return mpz_cmpabs_d (op1, op2);
 
-        case 2 * 0 + 1:     // Op2 only is an infinity
-            return -1;
+                case 2 * 0 + 1:     // Op2 only is an infinity
+                    return -1;
 
-        case 2 * 1 + 0:     // Op1 only is an infinity
-            return  1;
+                case 2 * 1 + 0:     // Op1 only is an infinity
+                    return  1;
 
-        case 2 * 1 + 1:     // Op1 and Op2 are infinities
-            return 0;
+                case 2 * 1 + 1:     // Op1 and Op2 are infinities
+                    return 0;
+
+                default:
+                    return 0;       // To keep the compiler happy
+            } // End SWITCH
+
+            break;
+
+        case 2 * 0 + 1:     // Op2 only is a NaN
+            return -1;      // Op1 < Op2 ?????
+
+        case 2 * 1 + 0:     // Op1 only is a NaN
+            return 1;       // Op1 > Op2 ?????
+
+        case 2 * 1 + 1:     // Op1 and Op2 are NaNs
+            return 0;       // NaNs are equal ?????
 
         default:
             return 0;       // To keep the compiler happy
@@ -2169,6 +2675,10 @@ int mpiz_cmpabs_ui
      mpir_ui op2)               // Right arg
 
 {
+    // Check for special cases
+    if (mpz_nan_p (op1))
+        return 1;               // Op1 > Op2 ?????
+    else
     if (mpz_inf_p (op1))
         return 1;
     else
@@ -2188,6 +2698,12 @@ void mpiz_and
      mpz_t op2)                 // Right arg
 
 {
+    // Check for special cases
+    if (mpz_nan_p (op1)
+     || mpz_nan_p (op2))
+        // The result is NaN
+        mpz_set_nan (rop);
+    else
     if (mpz_inf_p (op1)
      || mpz_inf_p (op2))
         (*gmpz_invalid) (MP_AND, rop, op1, op2, NULL, 0, 0);
@@ -2208,6 +2724,12 @@ void mpiz_ior
      mpz_t op2)                 // Right arg
 
 {
+    // Check for special cases
+    if (mpz_nan_p (op1)
+     || mpz_nan_p (op2))
+        // The result is NaN
+        mpz_set_nan (rop);
+    else
     if (mpz_inf_p (op1)
      || mpz_inf_p (op2))
         (*gmpz_invalid) (MP_IOR, rop, op1, op2, NULL, 0, 0);
@@ -2228,6 +2750,12 @@ void mpiz_xor
      mpz_t op2)                 // Right arg
 
 {
+    // Check for special cases
+    if (mpz_nan_p (op1)
+     || mpz_nan_p (op2))
+        // The result is NaN
+        mpz_set_nan (rop);
+    else
     if (mpz_inf_p (op1)
      || mpz_inf_p (op2))
         (*gmpz_invalid) (MP_XOR, rop, op1, op2, NULL, 0, 0);
@@ -2247,7 +2775,16 @@ mp_bitcnt_t mpiz_scan0
      mp_bitcnt_t starting_bit)
 
 {
-    return mpz_scan0 (op, starting_bit);
+    // Check for special cases
+    if (mpz_nan_p (op))
+        // There were no occurrences
+        return 0;
+    else
+    if (mpz_inf_p (op))
+        // There were no occurrences
+        return 0;
+    else
+        return mpz_scan0 (op, starting_bit);
 } // End mpiz_scan0
 
 
@@ -2262,7 +2799,16 @@ mp_bitcnt_t mpiz_scan1
      mp_bitcnt_t starting_bit)
 
 {
-    return mpz_scan1 (op, starting_bit);
+    // Check for special cases
+    if (mpz_nan_p (op))
+        // There were no occurrences
+        return 0;
+    else
+    if (mpz_inf_p (op))
+        // There were no occurrences
+        return 0;
+    else
+        return mpz_scan1 (op, starting_bit);
 } // End mpiz_scan1
 
 
@@ -2277,6 +2823,11 @@ void mpiz_com
      mpz_t op1)                 // Left arg
 
 {
+    // Check for special cases
+    if (mpz_inf_p (op1))
+        // The result is NaN
+        mpz_set_nan (rop);
+    else
     if (mpz_inf_p (op1))
         (*gmpz_invalid) (MP_COM, rop, op1, NULL, NULL, 0, 0);
     else
@@ -2294,7 +2845,9 @@ int mpiz_fits_ulong_p
     (mpz_t op)                  // Source
 
 {
-    if (mpz_inf_p (op))
+    // Check for special cases
+    if (mpz_inf_p (op)
+     || mpz_nan_p (op))
         return 0;
     else
         return mpz_fits_ulong_p (op);
@@ -2311,7 +2864,9 @@ int mpiz_fits_slong_p
     (mpz_t op)                  // Source
 
 {
-    if (mpz_inf_p (op))
+    // Check for special cases
+    if (mpz_inf_p (op)
+     || mpz_nan_p (op))
         return 0;
     else
         return mpz_fits_slong_p (op);
@@ -2328,7 +2883,9 @@ int mpiz_fits_uint_p
     (mpz_t op)                  // Source
 
 {
-    if (mpz_inf_p (op))
+    // Check for special cases
+    if (mpz_inf_p (op)
+     || mpz_nan_p (op))
         return 0;
     else
         return mpz_fits_uint_p (op);
@@ -2345,7 +2902,9 @@ int mpiz_fits_sint_p
     (mpz_t op)                  // Source
 
 {
-    if (mpz_inf_p (op))
+    // Check for special cases
+    if (mpz_inf_p (op)
+     || mpz_nan_p (op))
         return 0;
     else
         return mpz_fits_sint_p (op);
@@ -2362,7 +2921,9 @@ int mpiz_fits_ushort_p
     (mpz_t op)                  // Source
 
 {
-    if (mpz_inf_p (op))
+    // Check for special cases
+    if (mpz_inf_p (op)
+     || mpz_nan_p (op))
         return 0;
     else
         return mpz_fits_ushort_p (op);
@@ -2379,7 +2940,9 @@ int mpiz_fits_sshort_p
     (mpz_t op)                  // Source
 
 {
-    if (mpz_inf_p (op))
+    // Check for special cases
+    if (mpz_inf_p (op)
+     || mpz_nan_p (op))
         return 0;
     else
         return mpz_fits_sshort_p (op);
@@ -2396,7 +2959,9 @@ int mpiz_odd_p
     (mpz_t op)                  // Source
 
 {
-    if (mpz_inf_p (op))
+    // Check for special cases
+    if (mpz_inf_p (op)
+     || mpz_nan_p (op))
         return 0;
     else
         return mpz_odd_p (op);
@@ -2413,7 +2978,9 @@ int mpiz_even_p
     (mpz_t op)                  // Source
 
 {
-    if (mpz_inf_p (op))
+    // Check for special cases
+    if (mpz_inf_p (op)
+     || mpz_nan_p (op))
         return 0;
     else
         return mpz_odd_p (op);
@@ -2431,7 +2998,12 @@ size_t mpiz_sizeinbase
      int   base)                // Base
 
 {
-    return mpz_sizeinbase (mpz_clr_inf (op), base);
+    // Check for special cases
+    if (mpz_inf_p (op)
+     || mpz_nan_p (op))
+        return 0;
+    else
+        return mpz_sizeinbase (mpz_clr_inf (op), base);
 } // End mpiz_sizeinbase
 
 
@@ -2446,7 +3018,9 @@ void *_mpiz_realloc
      mp_size_t new_alloc)       // New allocation
 
 {
-    if (mpz_inf_p (op))
+    // Check for special cases
+    if (mpz_inf_p (op)
+     || mpz_nan_p (op))
         return NULL;
     else
         return _mpz_realloc (op, new_alloc);
@@ -2464,7 +3038,9 @@ mp_limb_t mpiz_getlimbn
      mp_size_t n)               // Limb #
 
 {
-    if (mpz_inf_p (op))
+    // Check for special cases
+    if (mpz_inf_p (op)
+     || mpz_nan_p (op))
         return 0;
     else
         return mpz_getlimbn (op, n);
@@ -2481,7 +3057,9 @@ size_t mpiz_size
     (mpz_t op)                  // Source
 
 {
-    if (mpz_inf_p (op))
+    // Check for special cases
+    if (mpz_inf_p (op)
+     || mpz_nan_p (op))
         return 0;
     else
         return mpz_size (op);
@@ -2521,6 +3099,7 @@ int mpq_inf_p
     (mpq_t op)                  // Source
 
 {
+    // Check for special cases
     return (mpz_inf_p (mpq_numref (op))
          && IsMpzNULL (mpq_denref (op)));
 } // End mpq_inf_p
@@ -2536,6 +3115,7 @@ int IsMpqPosInfinity
     (mpq_t op)                  // Source
 
 {
+    // Check for special cases
     return (mpq_inf_p (op)
          && mpq_sgn (op) > 0);
 } // End IsMpqPosInfinity
@@ -2551,6 +3131,7 @@ int IsMpqNegInfinity
     (mpq_t op)                  // Source
 
 {
+    // Check for special cases
     return (mpq_inf_p (op)
          && mpq_sgn (op) < 0);
 } // End IsMpqNegInfinity
@@ -2566,6 +3147,7 @@ int IsMpqNULL
     (mpq_t op)                  // Source
 
 {
+    // Check for special cases
     return (IsMpzNULL (mpq_numref (op))
          && IsMpzNULL (mpq_denref (op)));
 } // End IsMpqNULL
@@ -2583,8 +3165,7 @@ void mpq_set_infsub
 
 {
     // Set the numerator to a special format, properly signed
-    rop->_mp_num._mp_size  = (sgn >= 0) ? (mp_size_t) INT_MAX
-                                        : (mp_size_t) INT_MIN;
+    mpz_set_inf (mpq_numref (rop), sgn);
     rop->_mp_num._mp_alloc = 0;
     rop->_mp_num._mp_d     = NULL;
 
@@ -2616,6 +3197,61 @@ void mpq_set_inf
 
 
 //***************************************************************************
+//  $mpq_set_nansub
+//
+//  Set the argument to a NaN
+//***************************************************************************
+
+void mpq_set_nansub
+    (mpq_t rop)                 // Destination
+
+{
+    // Set the numerator to a special format
+    mpz_set_nan (mpq_numref (rop));
+
+    // Set the denominator to all 0s
+    rop->_mp_den._mp_size  = 0;
+    rop->_mp_den._mp_alloc = 0;
+    rop->_mp_den._mp_d     = NULL;
+} // mpq_set_nansub
+
+
+//***************************************************************************
+//  $mpq_nan_p
+//
+//  Is the given value a NaN
+//***************************************************************************
+
+UBOOL mpq_nan_p
+    (mpq_t op)                  // Source
+
+{
+    // Check for special cases
+    return (mpz_nan_p (mpq_numref (op))
+         && IsMpzNULL (mpq_denref (op)));
+} // mpq_nan_p
+
+
+//***************************************************************************
+//  $mpq_set_nan
+//
+//  Set the argument to NaN
+//***************************************************************************
+
+void mpq_set_nan
+    (mpq_t rop)                 // Destination
+
+{
+    // If it's not a NaN, ...
+    if (!mpq_nan_p (rop))
+        // Free the arg as we'll use a special format
+        Myq_clear (rop);
+
+    mpq_set_nansub (rop);
+} // mpq_set_nan
+
+
+//***************************************************************************
 //  $mpq_clr_inf
 //
 //  Initialize op if it's an infinity
@@ -2625,7 +3261,10 @@ mpq_ptr mpq_clr_inf
     (mpq_t op)                  // Source
 
 {
-    if (mpq_inf_p (op))
+    // Check for special cases
+    if (mpq_inf_p (op)
+     || mpq_nan_p (op))
+        // Initialize to 0/1
         mpq_init (op);
 
     return (op);
@@ -2642,7 +3281,9 @@ void mpiq_canonicalize
     (mpq_t op)
 
 {
-    if (!mpq_inf_p (op))
+    // Check for special cases
+    if (!mpq_inf_p (op)
+     && !mpq_nan_p (op))
         mpq_canonicalize (op);
 } // End mpiq_canonicalize
 
@@ -2657,7 +3298,9 @@ void mpiq_clear
     (mpq_t op)
 
 {
-    if (!mpq_inf_p (op))
+    // Check for special cases
+    if (!mpq_inf_p (op)
+     && !mpq_nan_p (op))
         mpq_clear (op);
     else
     {
@@ -2683,6 +3326,10 @@ void mpiq_set
      mpq_t op)                  // Source
 
 {
+    // Check for special cases
+    if (mpq_nan_p (op))
+        mpq_set_nan (rop);
+    else
     if (mpq_inf_p (op))
         // The result is infinity whose sign is that of op
         mpq_set_inf (rop, mpq_sgn (op));
@@ -2702,6 +3349,10 @@ void mpiq_set_z
      mpz_t op)                  // Source
 
 {
+    // Check for special cases
+    if (mpz_nan_p (op))
+        mpq_set_nan (rop);
+    else
     if (mpz_inf_p (op))
         // The result is infinity whose sign is that of op
         mpq_set_inf (rop, mpz_sgn (op));
@@ -2722,6 +3373,7 @@ void mpiq_set_ui
      mpir_ui op2)               // Source denominator
 
 {
+    // Check for special cases
     if (op2 EQ 0)
         // The result is infinity whose sign is positive
         mpq_set_inf (rop, 1);
@@ -2742,6 +3394,7 @@ void mpiq_set_si
      mpir_ui op2)               // Source denominator
 
 {
+    // Check for special cases
     if (op2 EQ 0)
         // The result is infinity whose sign is that of op1
         mpq_set_inf (rop, signumint (op1));
@@ -2762,7 +3415,7 @@ int mpiq_set_str
      int   base)                // Base
 
 {
-    char *p, *q, *dpt;
+    char *p, *q;
 
     // Skip over white space
     p = str;
@@ -2770,14 +3423,23 @@ int mpiq_set_str
         p++;
     // Find the numerator/denominator separator (if any)
     q = strchr (p, '/');
-    dpt = strchr (p, '.');
-    if (q
+    if ((q NE NULL && q[1] EQ DEF_NAN_CHAR)
+     || p[0] EQ DEF_NAN_CHAR)
+    {
+        // The result is NaN
+        mpq_set_nan (rop);
+
+        // Mark as a valid number
+        return 0;
+    } else
+    if (q NE NULL
      && mpz_set_str (mpq_denref (rop), &q[1], base) EQ 0
      && mpz_cmp_ui  (mpq_denref (rop), 0) EQ 0)
     {
         // Set to the appropriate signed infinity
         mpq_set_inf (rop, (p[0] EQ '-') ? -1 : 1);
 
+        // Mark as a valid number
         return 0;
     } else
     // If the input consists of "!" or "-!", ...
@@ -2788,6 +3450,7 @@ int mpiq_set_str
         // Set to the appropriate signed infinity
         mpq_set_inf (rop, (p[0] EQ '-') ? -1 : 1);
 
+        // Mark as a valid number
         return 0;
     } else
         return mpq_set_str (mpq_clr_inf (rop), str, base);
@@ -2804,6 +3467,10 @@ double mpiq_get_d
     (mpq_t op)                  // Source
 
 {
+    // Check for special cases
+    if (mpq_nan_p (op))
+        return fltNaN;
+    else
     if (mpq_inf_p (op))
     {
         __int64 Int64;
@@ -2827,7 +3494,12 @@ void mpiq_set_d
      double op)                 // Source
 
 {
-    if (IsFltInfinity (op))
+    // Check for special cases
+    if (IsFltNaN      (op))
+        // The result is NaN
+        mpq_set_nan (rop);
+    else
+    if (_isinf (op))
         // The result is infinity whose sign is that of op
         mpq_set_inf (rop, signumflt (op));
     else
@@ -2846,6 +3518,11 @@ void mpiq_set_fr
      mpfr_t op)                 // Source
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op))
+        // The result is NaN
+        mpq_set_nan (rop);
+    else
     if (mpfr_inf_p (op))
         // The result is infinity whose sign is that of op
         mpq_set_inf (rop, mpfr_sgn (op));
@@ -2875,28 +3552,49 @@ void mpiq_set_fr
 //***************************************************************************
 
 char *mpiq_get_str
-    (char *str,                 // Ptr to output string
+    (char *str,                 // Ptr to output string (may be NULL)
      int   base,                // Number base
      mpq_t op)                  // Source
 
 {
+    // Check for special cases
+    if (mpq_nan_p (op))
+    {
+        __mpz_struct tmp = {0};
+        char *p;
+
+        // Initialize and set a temp to "1"
+        //   which is of sufficient size to store "#"
+        mpz_init_set_si (&tmp, 1);
+
+        // Convert to "1" using the caller's <str>
+        p = mpz_get_str (str, base, &tmp);
+
+        // Change the "1" to the NaN char
+        p[0] = DEF_NAN_CHAR;
+
+        // We no longer need this storage
+        Myz_clear (&tmp);
+
+        return p;
+    } else
     if (mpq_inf_p (op))
     {
-        __mpq_struct tmp = {0};
+        __mpz_struct tmp = {0};
         char *p;
 
         // Initialize and set a temp to "1" or "-1"
         //   which is of sufficient size to store "!" or "-!"
-        mpq_init_set_si (&tmp, mpq_sgn (op), 1);
+        mpz_init_set_si (&tmp, mpq_sgn (op));
 
         // Convert to "1" or "-1" using the caller's <str>
-        p = mpq_get_str (str, base, &tmp);
+        p = mpz_get_str (str, base, &tmp);
 
         // Change the "1" to the inifnity char
         p[p[0] EQ '-'] = DEF_POSINFINITY_CHAR;
 
         // We no longer need this storage
-        Myq_clear (&tmp);
+        Myz_clear (&tmp);
 
         return p;
     } else
@@ -2916,6 +3614,13 @@ void mpiq_add
      mpq_t op2)                 // Right arg
 
 {
+    // Check for special cases
+    // If either arg is a NaN, ...
+    if (mpq_nan_p (op1)
+     || mpq_nan_p (op2))
+        // The result is NaN
+        mpq_set_nan (rop);
+    else
     // Split cases based upon which (if any) arg is an infinity
     switch (2 * mpq_inf_p (op1) + mpq_inf_p (op2))
     {
@@ -2961,6 +3666,13 @@ void mpiq_sub
      mpq_t op2)                 // Right arg
 
 {
+    // Check for special cases
+    // If either arg is a NaN, ...
+    if (mpq_nan_p (op1)
+     || mpq_nan_p (op2))
+        // The result is NaN
+        mpq_set_nan (rop);
+    else
     // Split cases based upon which (if any) arg is an infinity
     switch (2 * mpq_inf_p (op1) + mpq_inf_p (op2))
     {
@@ -3006,6 +3718,13 @@ void mpiq_mul
      mpq_t op2)                 // Right arg
 
 {
+    // Check for special cases
+    // If either arg is a NaN, ...
+    if (mpq_nan_p (op1)
+     || mpq_nan_p (op2))
+        // The result is NaN
+        mpq_set_nan (rop);
+    else
     // Split cases based upon which (if any) arg is an infinity
     switch (2 * mpq_inf_p (op1) + mpq_inf_p (op2))
     {
@@ -3048,6 +3767,12 @@ void mpiq_mul_2exp
      mp_bitcnt_t op2)           // Right arg
 
 {
+    // Check for special cases
+    // If the arg is a NaN, ...
+    if (mpq_nan_p (op1))
+        // The result is NaN
+        mpq_set_nan (rop);
+    else
     if (mpq_inf_p (op1))
         // The result is infinity whose sign is that of op1
         mpq_set_inf (rop, mpq_sgn (op1));
@@ -3069,6 +3794,12 @@ void mpiq_div
 
 {
     // Check for special cases
+    // If either arg is a NaN, ...
+    if (mpq_nan_p (op1)
+     || mpq_nan_p (op2))
+        // The result is NaN
+        mpq_set_nan (rop);
+    else
     if (!mpq_inf_p (op1)
      && mpq_cmp_ui (op2, 0, 1) EQ 0)
         // The result is infinity whose sign is that of op1
@@ -3111,6 +3842,12 @@ void mpiq_div_2exp
      mp_bitcnt_t op2)           // Right arg
 
 {
+    // Check for special cases
+    // If the arg is a NaN, ...
+    if (mpq_nan_p (op1))
+        // The result is NaN
+        mpq_set_nan (rop);
+    else
     if (mpq_inf_p (op1))
         // The result is infinity whose sign is that of op1
         mpq_set_inf (rop, mpq_sgn (op1));
@@ -3130,6 +3867,12 @@ void mpiq_neg
      mpq_t op)                  // Source
 
 {
+    // Check for special cases
+    // If the arg is a NaN, ...
+    if (mpq_nan_p (op))
+        // The result is NaN
+        mpq_set_nan (rop);
+    else
     if (mpq_inf_p (op))
         // The result is infinity whose sign is that of -op
         mpq_set_inf (rop, -mpq_sgn (op));
@@ -3149,6 +3892,12 @@ void mpiq_abs
      mpq_t op)                  // Source
 
 {
+    // Check for special cases
+    // If the arg is a NaN, ...
+    if (mpq_nan_p (op))
+        // The result is NaN
+        mpq_set_nan (rop);
+    else
     if (mpq_inf_p (op))
         // The result is infinity whose sign is positive
         mpq_set_inf (rop, 1);
@@ -3168,6 +3917,12 @@ void mpiq_inv
      mpq_t op)                  // Source
 
 {
+    // Check for special cases
+    // If the arg is a NaN, ...
+    if (mpq_nan_p (op))
+        // The result is NaN
+        mpq_set_nan (rop);
+    else
     if (mpq_inf_p (op))
         mpq_set_ui (rop, 0, 1);
     else
@@ -3189,24 +3944,44 @@ int mpiq_cmp
      mpq_t op2)                 // Right arg
 
 {
-    // Split cases based upon which (if any) arg is an infinity
-    switch (2 * mpq_inf_p (op1) + mpq_inf_p (op2))
+    // Check for special cases
+    // Split cases based upon which (if any) arg is a NaN
+    switch (2 * mpq_nan_p (op1) + mpq_nan_p (op2))
     {
-        case 2 * 0 + 0:     // Neither arg is an infinity
-            // Call the original function
-            return mpq_cmp (op1, op2);
+        case 2 * 0 + 0:     // Neither arg is a NaN
+            // Split cases based upon which (if any) arg is an infinity
+            switch (2 * mpq_inf_p (op1) + mpq_inf_p (op2))
+            {
+                case 2 * 0 + 0:     // Neither arg is an infinity
+                    // Call the original function
+                    return mpq_cmp (op1, op2);
 
-        case 2 * 0 + 1:     // Op2 only is an infinity
-            // The result is the sign of the infinite argument (op2)
-            return -mpq_sgn (op2);
+                case 2 * 0 + 1:     // Op2 only is an infinity
+                    // The result is the sign of the infinite argument (op2)
+                    return -mpq_sgn (op2);
 
-        case 2 * 1 + 0:     // Op1 only is an infinity
-            // The result is the sign of the infinite argument (op1)
-            return  mpq_sgn (op1);
+                case 2 * 1 + 0:     // Op1 only is an infinity
+                    // The result is the sign of the infinite argument (op1)
+                    return  mpq_sgn (op1);
 
-        case 2 * 1 + 1:     // Op1 and Op2 are infinities
-            // The result is difference between the left and right argument signs
-            return signumint (mpq_sgn (op1) - mpq_sgn (op2));
+                case 2 * 1 + 1:     // Op1 and Op2 are infinities
+                    // The result is difference between the left and right argument signs
+                    return signumint (mpq_sgn (op1) - mpq_sgn (op2));
+
+                default:
+                    return 0;       // To keep the compiler happy
+            } // End SWITCH
+
+            break;
+
+        case 2 * 0 + 1:     // Op2 only is a NaN
+            return -1;      // Op1 < Op2 ?????
+
+        case 2 * 1 + 0:     // Op1 only is a NaN
+            return 1;       // Op1 > Op2 ?????
+
+        case 2 * 1 + 1:     // Op1 and Op2 are NaNs
+            return 0;       // NaNs are equal ?????
 
         default:
             return 0;       // To keep the compiler happy
@@ -3229,6 +4004,10 @@ int mpiq_cmp_ui
      mpir_ui den)               // Denominator
 
 {
+    // Check for special cases
+    if (mpq_nan_p (op1))
+        return 1;           // Op1 > op2 ?????
+    else
     if (den EQ 0)
         return mpiq_cmp (op1, &mpqPosInfinity);
     else
@@ -3254,6 +4033,10 @@ int mpiq_cmp_si
      mpir_ui den)               // Denominator
 
 {
+    // Check for special cases
+    if (mpq_nan_p (op1))
+        return 1;           // Op1 > op2 ?????
+    else
     if (den EQ 0)
         return mpiq_cmp (op1, (num > 0) ? &mpqPosInfinity : &mpqNegInfinity);
     else
@@ -3277,19 +4060,39 @@ int mpiq_equal
      mpq_t op2)                 // Right arg
 
 {
-    // Split cases based upon which (if any) arg is an infinity
-    switch (2 * mpq_inf_p (op1) + mpq_inf_p (op2))
+    // Check for special cases
+    // Split cases based upon which (if any) arg is a NaN
+    switch (2 * mpq_nan_p (op1) + mpq_nan_p (op2))
     {
-        case 2 * 0 + 0:     // Neither arg is an infinity
-            // Call the original function
-            return mpq_equal (op1, op2);
+        case 2 * 0 + 0:     // Neither arg is a NaN
+            // Split cases based upon which (if any) arg is an infinity
+            switch (2 * mpq_inf_p (op1) + mpq_inf_p (op2))
+            {
+                case 2 * 0 + 0:     // Neither arg is an infinity
+                    // Call the original function
+                    return mpq_equal (op1, op2);
 
-        case 2 * 0 + 1:     // Op2 only is an infinity
-        case 2 * 1 + 0:     // Op1 only is an infinity
-            return 0;
+                case 2 * 0 + 1:     // Op2 only is an infinity
+                case 2 * 1 + 0:     // Op1 only is an infinity
+                    return 0;
 
-        case 2 * 1 + 1:     // Op1 and Op2 are infinities
-            return signumint (mpq_sgn (op1) - mpq_sgn (op2));
+                case 2 * 1 + 1:     // Op1 and Op2 are infinities
+                    return signumint (mpq_sgn (op1) - mpq_sgn (op2));
+
+                default:
+                    return 0;       // To keep the compiler happy
+            } // End SWITCH
+
+            break;
+
+        case 2 * 0 + 1:     // Op2 only is a NaN
+            return -1;      // Op1 < Op2 ?????
+
+        case 2 * 1 + 0:     // Op1 only is a NaN
+            return 1;       // Op1 > Op2 ?????
+
+        case 2 * 1 + 1:     // Op1 and Op2 are NaNs
+            return 0;       // NaNs are equal ?????
 
         default:
             return 0;       // To keep the compiler happy
@@ -3330,6 +4133,7 @@ int IsMpfNULL
     (mpfr_t op)                 // Source
 
 {
+    // Check for special cases
     return (op->_mpfr_prec EQ 0
          && op->_mpfr_exp  EQ 0
          && op->_mpfr_d    EQ NULL);
@@ -3346,6 +4150,7 @@ int IsMpfPosInfinity
     (mpfr_t op)                 // Source
 
 {
+    // Check for special cases
     return (mpfr_inf_p (op)
          && mpfr_sgn (op) > 0);
 } // End IsMpfPosInfinity
@@ -3361,6 +4166,7 @@ int IsMpfNegInfinity
     (mpfr_t op)                 // Source
 
 {
+    // Check for special cases
     return (mpfr_inf_p (op)
          && mpfr_sgn (op) < 0);
 } // End IsMpfNegInfinity
@@ -3377,6 +4183,11 @@ void mpifr_copy
      mpfr_t op)                 // Source
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     if (mpfr_inf_p (op))
         // The result is infinity whose sign is that of op
         mpfr_set_inf (rop, mpfr_sgn (op));
@@ -3397,7 +4208,12 @@ void mpifr_set
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    mpfr_set (mpfr_clr_inf (rop), op, rnd);
+    // Check for special cases
+    if (mpfr_nan_p (op))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
+        mpfr_set (mpfr_clr_inf (rop), op, rnd);
 } // End mpifr_set
 
 
@@ -3413,7 +4229,12 @@ void mpifr_set_d
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (IsFltInfinity (op))
+    // Check for special cases
+    if (IsFltNaN      (op))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
+    if (_isinf (op))
         // The result is infinity whose sign is that of op
         mpfr_set_inf (rop, signumflt (op));
     else
@@ -3433,6 +4254,11 @@ void mpifr_set_z
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
+    // Check for special cases
+    if (mpz_nan_p (op))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     if (mpz_inf_p (op))
         // The result is infinity whose sign is that of op
         mpfr_set_inf (rop, mpz_sgn (op));
@@ -3453,6 +4279,12 @@ void mpifr_set_q
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
+    // Check for special cases
+    if (mpq_nan_p (op))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
+    // Check for special cases
     if (mpq_inf_p (op))
         // The result is infinity whose sign is that of op
         mpfr_set_inf (rop, mpq_sgn (op));
@@ -3480,6 +4312,14 @@ int mpifr_set_str
     p = str;
     while (isspace (*p))
         p++;
+    // If the input consists of "#", ...
+    if (p[0] EQ DEF_NAN_CHAR)
+    {
+        // Set to the appropriate signed infinity
+        mpfr_set_nan (rop);
+
+        return 0;
+    } else
     // If the input consists of "!" or "-!", ...
     if (p[0] EQ DEF_POSINFINITY_CHAR
      || (p[0] EQ '-'
@@ -3514,6 +4354,19 @@ int mpifr_strtofr
     p = str;
     while (isspace (*p))
         p++;
+    // If the input consists of "#", ...
+    if (p[0] EQ DEF_NAN_CHAR)
+    {
+        // Set to the appropriate signed infinity
+        mpfr_set_nan (rop);
+
+        // If the ptr to the ending char is valid, ...
+        if (endptr NE NULL)
+            // Return a ptr to the ending char
+            *endptr = p + 1;
+
+        return 0;
+    } else
     // If the input consists of "!" or "-!", ...
     if (p[0] EQ DEF_POSINFINITY_CHAR
      || (p[0] EQ '-'
@@ -3521,6 +4374,11 @@ int mpifr_strtofr
     {
         // Set to the appropriate signed infinity
         mpfr_set_inf (rop, (p[0] EQ '-') ? -1 : 1);
+
+        // If the ptr to the ending char is valid, ...
+        if (endptr NE NULL)
+            // Return a ptr to the ending char
+            *endptr = p + 1;
 
         return 0;
     } else
@@ -3539,6 +4397,11 @@ void mpifr_init_copy
      mpfr_t op)                 // Source
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     if (mpfr_inf_p (op))
         // The result is infinity whose sign is that of op
         mpfr_set_inf (rop, mpfr_sgn (op));
@@ -3559,7 +4422,12 @@ void mpifr_init_set_d
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (IsFltInfinity (op))
+    // Check for special cases
+    if (IsFltNaN      (op))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
+    if (_isinf (op))
         // The result is infinity whose sign is that of op
         mpfr_set_inf (rop, signumflt (op));
     else
@@ -3575,13 +4443,13 @@ void mpifr_init_set_d
 
 int mpifr_init_set_str
     (mpfr_t     rop,            // Destination
-     char      *str,            // Source
+     char      *str,            // Source (may be NULL)
      int        base,           // Base
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
     mpfr_init0 (rop);
-    return mpfr_set_str (rop, str, base, rnd);
+    return mpifr_set_str (rop, str, base, rnd);
 } // End mpifr_init_set_str
 
 
@@ -3596,6 +4464,11 @@ double mpifr_get_d
      mpfr_rnd_t rnd)
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op))
+        // The result is NaN
+        return fltNaN;
+    else
     if (mpfr_inf_p (op))
         return ((mpfr_sgn (op) > 0) ? fltPosInfinity : fltNegInfinity);
     else
@@ -3615,6 +4488,12 @@ double mpifr_get_d_2exp
      mpfr_rnd_t       rnd)
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op))
+    {
+        *exp = 0;
+        return fltNaN;
+    } else
     if (mpfr_inf_p (op))
     {
         *exp = 0;
@@ -3635,8 +4514,11 @@ unsigned long int mpifr_get_ui
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpfr_inf_p (op))
-        return (unsigned long int) 0xFFFFFFFF;
+    // Check for special cases
+    if (mpfr_inf_p (op)
+     || mpfr_nan_p (op))
+        // The result is NaN
+        return (unsigned long int) MPZIR_NAN_RES;
     else
         return mpfr_get_ui (op, rnd);
 } // End mpifr_get_ui
@@ -3653,8 +4535,11 @@ signed long int mpifr_get_si
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpfr_inf_p (op))
-        return (signed long int) 0xFFFFFFFF;
+    // Check for special cases
+    if (mpfr_inf_p (op)
+     || mpfr_nan_p (op))
+        // The result is NaN
+        return (signed long int) MPZIR_NAN_RES;
     else
         return mpfr_get_si (op, rnd);
 } // End mpifr_get_si
@@ -3667,7 +4552,7 @@ signed long int mpifr_get_si
 //***************************************************************************
 
 char *mpifr_get_str
-    (char      *str,
+    (char      *str,            // Ptr to output string (may be NULL)
      mp_exp_t  *expptr,
      int        base,
      size_t     n_digits,
@@ -3675,6 +4560,27 @@ char *mpifr_get_str
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op))
+    {
+        __mpfr_struct tmp = {0};
+        char *p;
+
+        // Initialize and set a temp to "1"
+        //   which is of sufficient size to store "#"
+        mpfr_init_set_si (&tmp, 1, rnd);
+
+        // Convert to "1" using the caller's <str>
+        p = mpfr_get_str (str, expptr, base, n_digits, &tmp, rnd);
+
+        // Change the "1" to the NaN char
+        p[0] = DEF_NAN_CHAR;
+
+        // We no longer need this storage
+        Myf_clear (&tmp);
+
+        return p;
+    } else
     if (mpfr_inf_p (op))
     {
         __mpfr_struct tmp = {0};
@@ -3711,6 +4617,14 @@ int mpifr_get_z
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op))
+    {
+        // The result is NaN
+        mpz_set_nan (rop);
+
+        return 0;
+    } else
     if (mpfr_inf_p (op))
     {
         // The result is infinity whose sign is that of op
@@ -3735,6 +4649,12 @@ void mpifr_add
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op1)
+     || mpfr_nan_p (op2))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     // Split cases based upon which (if any) arg is an infinity
     switch (2 * mpfr_inf_p (op1) + mpfr_inf_p (op2))
     {
@@ -3781,6 +4701,11 @@ void mpifr_add_ui
      mpfr_rnd_t        rnd)     // Rounding mode
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op1))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     if (mpfr_inf_p (op1))
         // The result is infinity whose sign is that of op1
         mpfr_set_inf (rop, mpfr_sgn (op1));
@@ -3802,6 +4727,12 @@ void mpifr_sub
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op1)
+     || mpfr_nan_p (op2))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     // Split cases based upon which (if any) arg is an infinity
     switch (2 * mpfr_inf_p (op1) + mpfr_inf_p (op2))
     {
@@ -3812,8 +4743,8 @@ void mpifr_sub
             break;
 
         case 2 * 0 + 1:     // Op2 only is an infinity
-            // The result is infinity whose sign is that of op2
-            mpfr_set_inf (rop, mpfr_sgn (op2));
+            // The result is infinity whose sign is the opposite of op2
+            mpfr_set_inf (rop, -mpfr_sgn (op2));
 
             break;
 
@@ -3848,6 +4779,11 @@ void mpifr_ui_sub
      mpfr_rnd_t        rnd)     // Rounding mode
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op2))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     if (mpfr_inf_p (op2))
         // The result is infinity whose sign is that of -op2
         mpfr_set_inf (rop, -mpfr_sgn (op2));
@@ -3869,6 +4805,11 @@ void mpifr_sub_ui
      mpfr_rnd_t        rnd)     // Rounding mode
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op1))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     if (mpfr_inf_p (op1))
         // The result is infinity whose sign is that of op1
         mpfr_set_inf (rop, mpfr_sgn (op1));
@@ -3890,6 +4831,12 @@ void mpifr_mul
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op1)
+     || mpfr_nan_p (op2))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     // Split cases based upon which (if any) arg is an infinity
     switch (2 * mpfr_inf_p (op1) + mpfr_inf_p (op2))
     {
@@ -3989,6 +4936,11 @@ void mpifr_mul_ui
      mpfr_rnd_t      rnd)       // Rounding mode
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op1))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     if (mpfr_inf_p (op1))
         // The result is infinity whose sign is that of op1
         mpfr_set_inf (rop, mpfr_sgn (op1));
@@ -4012,6 +4964,11 @@ void mpifr_div
 
 {
     // Check for special cases
+    if (mpfr_nan_p (op1)
+     || mpfr_nan_p (op2))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     if (!mpfr_inf_p (op2)
      && mpfr_cmp_ui (op2, 0) EQ 0)
         // The result is infinity whose sign is that of op1
@@ -4053,6 +5010,10 @@ void mpifr_ui_div
 
 {
     // Check for special cases
+    if (mpfr_nan_p (op2))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     if (mpfr_inf_p (op2))
         // Divide infinity into finite returns zero
         mpfr_set_ui (mpfr_clr_inf (rop), 0, rnd);
@@ -4076,6 +5037,10 @@ void mpifr_div_ui
 
 {
     // Check for special cases
+    if (mpfr_nan_p (op1))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     if (op2 EQ 0)
         // The result is infinity whose sign is that of op1
         mpfr_set_inf (rop, signumvfp (op1));
@@ -4100,6 +5065,11 @@ void mpifr_sqrt
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
+    if (mpfr_nan_p (op))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
+    // Check for special cases
     if (mpfr_inf_p (op))
     {
         if (mpfr_sgn (op) > 0)
@@ -4124,6 +5094,10 @@ void mpifr_neg
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
+    if (mpfr_nan_p (op))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     if (mpfr_inf_p (op))
         // The result is infinity whose sign is that of -op
         mpfr_set_inf (rop, -mpfr_sgn (op));
@@ -4144,6 +5118,11 @@ void mpifr_abs
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
+    if (mpfr_nan_p (op))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
+    // Check for special cases
     if (mpfr_inf_p (op))
         // The result is infinity whose sign is positive
         mpfr_set_inf (rop, 1);
@@ -4165,6 +5144,11 @@ void mpifr_mul_2exp
      mpfr_rnd_t  rnd)           // Rounding mode
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op1))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     if (mpfr_inf_p (op1))
         // The result is infinity whose sign is that of op1
         mpfr_set_inf (rop, mpfr_sgn (op1));
@@ -4186,6 +5170,11 @@ void mpifr_div_2exp
      mpfr_rnd_t  rnd)           // Rounding mode
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op1))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     if (mpfr_inf_p (op1))
             // The result is infinity whose sign is that of op1
         mpfr_set_inf (rop, mpfr_sgn (op1));
@@ -4208,24 +5197,44 @@ int mpifr_cmp
      mpfr_t op2)                // Right arg
 
 {
-    // Split cases based upon which (if any) arg is an infinity
-    switch (2 * mpfr_inf_p (op1) + mpfr_inf_p (op2))
+    // Check for special cases
+    // Split cases based upon which (if any) arg is a NaN
+    switch (2 * mpfr_nan_p (op1) + mpfr_nan_p (op2))
     {
-        case 2 * 0 + 0:     // Neither arg is an infinity
-            // Call the original function
-            return mpfr_cmp (op1, op2);
+        case 2 * 0 + 0:     // Neither arg is a NaN
+            // Split cases based upon which (if any) arg is an infinity
+            switch (2 * mpfr_inf_p (op1) + mpfr_inf_p (op2))
+            {
+                case 2 * 0 + 0:     // Neither arg is an infinity
+                    // Call the original function
+                    return mpfr_cmp (op1, op2);
 
-        case 2 * 0 + 1:     // Op2 only is an infinity
-            // The result is the opposite sign of the infinite argument (op2)
-            return -mpfr_sgn (op2);
+                case 2 * 0 + 1:     // Op2 only is an infinity
+                    // The result is the opposite sign of the infinite argument (op2)
+                    return -mpfr_sgn (op2);
 
-        case 2 * 1 + 0:     // Op1 only is an infinity
-            // The result is the same sign as the infinite argument (op1)
-            return  mpfr_sgn (op1);
+                case 2 * 1 + 0:     // Op1 only is an infinity
+                    // The result is the same sign as the infinite argument (op1)
+                    return  mpfr_sgn (op1);
 
-        case 2 * 1 + 1:     // Op1 and Op2 are infinities
-            // The result is the difference between the argument's signs
-            return signumint (mpfr_sgn (op1) - mpfr_sgn (op2));
+                case 2 * 1 + 1:     // Op1 and Op2 are infinities
+                    // The result is the difference between the argument's signs
+                    return signumint (mpfr_sgn (op1) - mpfr_sgn (op2));
+
+                default:
+                    return 0;       // To keep the compiler happy
+            } // End SWITCH
+
+            break;
+
+        case 2 * 0 + 1:     // Op2 only is a NaN
+            return -1;      // Op1 < Op2 ?????
+
+        case 2 * 1 + 0:     // Op1 only is a NaN
+            return 1;       // Op1 > Op2 ?????
+
+        case 2 * 1 + 1:     // Op1 and Op2 are NaNs
+            return 0;       // NaNs are equal ?????
 
         default:
             return 0;       // To keep the compiler happy
@@ -4247,6 +5256,11 @@ int mpifr_cmp_ui
      unsigned long int op2)     // Right arg
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op1))
+        // The result is NaN
+        return 1;               // Op1 > Op2 ?????
+    else
     if (mpfr_inf_p (op1))
         return mpfr_sgn (op1);
     else
@@ -4268,6 +5282,11 @@ int mpifr_cmp_si
      signed long int op2)       // Right arg
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op1))
+        // The result is NaN
+        return 1;               // Op1 > Op2 ?????
+    else
     if (mpfr_inf_p (op1))
         return mpfr_sgn (op1);
     else
@@ -4289,10 +5308,28 @@ int mpifr_cmp_d
      double op2)                // Right arg
 
 {
-    if (mpfr_inf_p (op1))
-        return mpfr_sgn (op1);
-    else
-        return mpfr_cmp_d (op1, op2);
+    // Check for special cases
+    // Split cases based upon which (if any) arg is a NaN
+    switch (2 * mpfr_nan_p (op1) + IsFltNaN (op2))
+    {
+        case 2 * 0 + 0:     // Neither arg is a NaN
+            if (mpfr_inf_p (op1))
+                return mpfr_sgn (op1);
+            else
+                return mpfr_cmp_d (op1, op2);
+
+        case 2 * 0 + 1:     // Op2 only is a NaN
+            return -1;      // Op1 < Op2 ?????
+
+        case 2 * 1 + 0:     // Op1 only is a NaN
+            return 1;       // Op1 > Op2 ?????
+
+        case 2 * 1 + 1:     // Op1 and Op2 are NaNs
+            return 0;       // NaNs are equal ?????
+
+        default:
+            return 0;       // To keep the compiler happy
+    } // End SWITCH
 } // End mpifr_cmp_d
 
 
@@ -4309,20 +5346,38 @@ int mpifr_eq
      unsigned long int op3)     // Bit count
 
 {
-    // Split cases based upon which (if any) arg is an infinity
-    switch (2 * mpfr_inf_p (op1) + mpfr_inf_p (op2))
+    // Check for special cases
+    // Split cases based upon which (if any) arg is a NaN
+    switch (2 * mpfr_nan_p (op1) + mpfr_nan_p (op2))
     {
-        case 2 * 0 + 0:     // Neither arg is an infinity
-            // Call the original function
-            return mpfr_eq (op1, op2, op3);
+        case 2 * 0 + 0:     // Neither arg is a NaN
+            // Split cases based upon which (if any) arg is an infinity
+            switch (2 * mpfr_inf_p (op1) + mpfr_inf_p (op2))
+            {
+                case 2 * 0 + 0:     // Neither arg is an infinity
+                    // Call the original function
+                    return mpfr_eq (op1, op2, op3);
 
-        case 2 * 0 + 1:     // Op2 only is an infinity
-        case 2 * 1 + 0:     // Op1 only is an infinity
-            return 0;
+                case 2 * 0 + 1:     // Op2 only is an infinity
+                case 2 * 1 + 0:     // Op1 only is an infinity
+                    return 0;
 
-        case 2 * 1 + 1:     // Op1 and Op2 are infinities
-            // If they are the same sign, ...
-            return (mpfr_sgn (op1) EQ mpfr_sgn (op2));
+                case 2 * 1 + 1:     // Op1 and Op2 are infinities
+                    // If they are the same sign, ...
+                    return (mpfr_sgn (op1) EQ mpfr_sgn (op2));
+
+                default:
+                    return 0;       // To keep the compiler happy
+            } // End SWITCH
+
+        case 2 * 0 + 1:     // Op2 only is a NaN
+            return -1;      // Op1 < Op2 ?????
+
+        case 2 * 1 + 0:     // Op1 only is a NaN
+            return 1;       // Op1 > Op2 ?????
+
+        case 2 * 1 + 1:     // Op1 and Op2 are NaNs
+            return 0;       // NaNs are equal ?????
 
         default:
             return 0;       // To keep the compiler happy
@@ -4346,34 +5401,53 @@ void mpifr_reldiff
     UBOOL bZ1,
           bZ2;
 
-    // Split cases based upon which (if any) arg is an infinity
-    switch (2 * mpfr_inf_p (op1) + mpfr_inf_p (op2))
+    // Check for special cases
+    // Split cases based upon which (if any) arg is a NaN
+    switch (2 * mpfr_nan_p (op1) + mpfr_nan_p (op2))
     {
-        case 2 * 0 + 0:     // Neither arg is an infinity
-            bZ1 = mpfr_zero_p (op1);
-            bZ2 = mpfr_zero_p (op2);
+        case 2 * 0 + 0:     // Neither arg is a NaN
+            // Split cases based upon which (if any) arg is an infinity
+            switch (2 * mpfr_inf_p (op1) + mpfr_inf_p (op2))
+            {
+                case 2 * 0 + 0:     // Neither arg is an infinity
+                    bZ1 = mpfr_zero_p (op1);
+                    bZ2 = mpfr_zero_p (op2);
 
-            if (bZ1 && bZ2)
-                mpfr_set_ui (mpfr_clr_inf (rop), 0, MPFR_RNDN);
-            else
-            if (bZ1 || bZ2)
-                mpfr_set_ui (mpfr_clr_inf (rop), 1, MPFR_RNDN);
-            else
-                // Call the original function
-                mpfr_reldiff (mpfr_clr_inf (rop), op1, op2, rnd);
+                    if (bZ1 && bZ2)
+                        mpfr_set_ui (mpfr_clr_inf (rop), 0, MPFR_RNDN);
+                    else
+                    if (bZ1 || bZ2)
+                        mpfr_set_ui (mpfr_clr_inf (rop), 1, MPFR_RNDN);
+                    else
+                        // Call the original function
+                        mpfr_reldiff (mpfr_clr_inf (rop), op1, op2, rnd);
+
+                    break;
+
+                case 2 * 0 + 1:     // Op2 only is an infinity
+                    // The result is infinity whose sign is that of op1
+                    mpfr_set_inf (rop, signumvfp (op1));
+
+                    break;
+
+                case 2 * 1 + 0:     // Op1 only is an infinity
+                case 2 * 1 + 1:     // Op1 and Op2 are infinities
+                    (*gmpfr_invalid) (MP_RELDIFF, rop, op1, op2, NULL, 0);
+
+                    break;
+            } // End SWITCH
 
             break;
 
-        case 2 * 0 + 1:     // Op2 only is an infinity
-            // The result is infinity whose sign is that of op1
-            mpfr_set_inf (rop, signumvfp (op1));
+        case 2 * 0 + 1:     // Op2 only is a NaN
+        case 2 * 1 + 0:     // Op1 only is a NaN
+        case 2 * 1 + 1:     // Op1 and Op2 are NaNs
+            // The result is NaN
+            mpfr_set_nan (rop);
 
             break;
 
-        case 2 * 1 + 0:     // Op1 only is an infinity
-        case 2 * 1 + 1:     // Op1 and Op2 are infinities
-            (*gmpfr_invalid) (MP_RELDIFF, rop, op1, op2, NULL, 0);
-
+        default:
             break;
     } // End SWITCH
 } // End mpifr_reldiff
@@ -4390,6 +5464,11 @@ void mpifr_ceil
      mpfr_t op)                 // Source
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     if (mpfr_inf_p (op))
         // The result is infinity whose sign is that of op
         mpfr_set_inf (rop, mpfr_sgn (op));
@@ -4409,6 +5488,11 @@ void mpifr_floor
      mpfr_t op)                 // Source
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     if (mpfr_inf_p (op))
         // The result is infinity whose sign is that of op
         mpfr_set_inf (rop, mpfr_sgn (op));
@@ -4428,6 +5512,11 @@ void mpifr_trunc
      mpfr_t op)                 // Source
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     if (mpfr_inf_p (op))
         // The result is infinity whose sign is that of op
         mpfr_set_inf (rop, mpfr_sgn (op));
@@ -4446,6 +5535,11 @@ int mpifr_integer_p
     (mpfr_t op)                 // Source
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op))
+        // The result is NaN
+        return 0;
+    else
     if (mpfr_inf_p (op))
         return 1;
     else
@@ -4464,7 +5558,9 @@ int mpifr_fits_ulong_p
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpfr_inf_p (op))
+    // Check for special cases
+    if (mpfr_inf_p (op)
+     || mpfr_nan_p (op))
         return 0;
     else
         return mpfr_fits_ulong_p (op, rnd);
@@ -4482,7 +5578,9 @@ int mpifr_fits_slong_p
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpfr_inf_p (op))
+    // Check for special cases
+    if (mpfr_inf_p (op)
+     || mpfr_nan_p (op))
         return 0;
     else
         return mpfr_fits_slong_p (op, rnd);
@@ -4500,7 +5598,9 @@ int mpifr_fits_uint_p
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpfr_inf_p (op))
+    // Check for special cases
+    if (mpfr_inf_p (op)
+     || mpfr_nan_p (op))
         return 0;
     else
         return mpfr_fits_uint_p (op, rnd);
@@ -4518,7 +5618,9 @@ int mpifr_fits_sint_p
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpfr_inf_p (op))
+    // Check for special cases
+    if (mpfr_inf_p (op)
+     || mpfr_nan_p (op))
         return 0;
     else
         return mpfr_fits_sint_p (op, rnd);
@@ -4536,7 +5638,9 @@ int mpifr_fits_ushort_p
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpfr_inf_p (op))
+    // Check for special cases
+    if (mpfr_inf_p (op)
+     || mpfr_nan_p (op))
         return 0;
     else
         return mpfr_fits_ushort_p (op, rnd);
@@ -4554,7 +5658,9 @@ int mpifr_fits_sshort_p
      mpfr_rnd_t rnd)            // Rounding mode
 
 {
-    if (mpfr_inf_p (op))
+    // Check for special cases
+    if (mpfr_inf_p (op)
+     || mpfr_nan_p (op))
         return 0;
     else
         return mpfr_fits_sshort_p (op, rnd);
@@ -4574,6 +5680,11 @@ void mpifr_pow_ui
      mpfr_rnd_t        rnd)     // Rounding mode
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op1))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     if (mpfr_inf_p (op1))
         // The result is infinity whose sign is that of op1 if op2 is odd and positive if op2 is even
         mpfr_set_inf (rop, (op2 & 1) ? mpfr_sgn (op1) : 1);
@@ -4595,6 +5706,12 @@ void mpifr_pow_z
      mpfr_rnd_t        rnd)     // Rounding mode
 
 {
+    // Check for special cases
+    if (mpfr_nan_p (op1)
+     || mpz_nan_p  (op2))
+        // The result is NaN
+        mpfr_set_nan (rop);
+    else
     if (mpfr_inf_p (op1))
     {
         // If op2 is -infinity, ...

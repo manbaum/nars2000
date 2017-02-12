@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2929,9 +2929,15 @@ typedef struct tagLANGCHARS
         {WS_UTF16_INFINITY          , {0}, L"Infinity",
                                            L" "             WS_UTF16_INFINITY L" is the largest (floating point) number\n"
                                            WS_UTF16_OVERBAR WS_UTF16_INFINITY L" is the smallest (floating point) number\n"
-                                           WS_UTF16_INFINITY L"r1 is an infinite rational number\n\n"
+                                           WS_UTF16_INFINITY L"r1 is an infinite multi-precision Rational number\n\n"
                                            L"Keyboard:  Alt-'f'\n\n"
                                            L"Unicode:  0x221E or 8734"},
+        {WS_UTF16_NAN               , {0}, L"NaN",
+                                           WS_UTF16_NAN L" is a fixed-precision Floating Point NaN (Not-A-Number)\n"
+                                           WS_UTF16_NAN L"r1 and " WS_UTF16_NAN L"x are both multi-precision Rational NaNs\n"
+                                           WS_UTF16_NAN L"v is a multi-precision Floating Point NaN\n\n"
+                                           L"Keyboard:  Alt-'5'\n\n"
+                                           L"Unicode:  0x2205 or 8709"},
         LANGCHARS_SEPARATOR
         {L"b"                       , {0}, L"Base Point Notation",
                                            L"This infix notation make it easy to enter numeric constants in an abritrary base as in 16bFFFF to represent 16" WS_UTF16_UPTACK L"15 15 15 15 or 65535.  "
@@ -2966,18 +2972,18 @@ typedef struct tagLANGCHARS
                                            L" where " WS_UTF16_PI L" is Archimedes' Constant (3.141592653589793...)."
                                            },
         {DEF_RATSEP_WS              , {0}, L"Rational Point Notation",
-                                           L"This infix notation allows you to enter Rational numbers as in 1r3 to represent 1" WS_UTF16_COLONBAR L"3, or, if the denominator is 1, using the suffix x as in 123x.  "
+                                           L"This infix notation allows you to enter multi-precision Rational numbers as in 1r3 to represent 1" WS_UTF16_COLONBAR L"3, or, if the denominator is 1, using the suffix x as in 123x.  "
                                            L"Such constants are of infinite precision, limited only by the available workspace."
                                            },
-        {DEF_VFPSEP_WS              , {0}, L"Variable-precision Floating Point Notation",
-                                           L"This suffix notation allows you to enter VFP numbers as in 1.3v to represent 1.3 or 12v to represent 12 where both have "
-                                           L"a precision controlled by the current value of " WS_UTF16_QUAD L"FPC, as opposed to the 53-bit precision of IEEE-754 floating point numbers."
+        {DEF_VFPSEP_WS              , {0}, L"Multi-precision Floating Point Notation",
+                                           L"This suffix notation allows you to enter multi-precision Floating Point numbers as in 1.3v to represent 1.3 or 12v to represent 12 where both have "
+                                           L"a precision controlled by the current value of " WS_UTF16_QUAD L"FPC, as opposed to the 53-bit precision of IEEE-754 fixed-precision Floating Point numbers."
                                            },
         {L"x"                       , {0}, L"Euler Point Notation",
                                            L"This infix notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(*1)*E "
                                            L"as in 3x2 for three times e squared where e is Euler's Number (2.718281828459045...).\r\n\r\n"
                                            L"As a suffix notation, \"x\" following an integer constant such as " WS_UTF16_OVERBAR L"123x indicates "
-                                           L"that the constant is a rational integer identical to " WS_UTF16_OVERBAR L"123r1."
+                                           L"that the constant is a multi-precision Rational integer identical to " WS_UTF16_OVERBAR L"123r1."
                                            },
     };
 

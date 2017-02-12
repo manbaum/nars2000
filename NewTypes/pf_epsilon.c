@@ -2545,7 +2545,7 @@ UBOOL PrimFnDydEpsilonOther_EM
                 tkSubRht.tkCharIndex       = lptkFunc->tkCharIndex;
 
                 // If the immediate type is a global numeric, ...
-                if (IsImmGlbNum (immTypeSubRht))
+                if (IsImmGlbNum (immTypeSubLft))
                 {
                     APLSTYPE aplTypeSubRht;         // Right sub arg storage type
 
@@ -2605,10 +2605,10 @@ UBOOL PrimFnDydEpsilonOther_EM
                 // Free the temporary result
                 YYFree (lpYYTmp); lpYYTmp = NULL;
 
-                // Free the temp global memory handle
+                // If the temp handle is valid, ...
                 if (hGlbTmp NE NULL)
                 {
-                    // Free it
+                    // Free the temp global memory handle
                     // Note that we don't use <FreeResultGlobalVar> (or anything that calls that function)
                     //   because the global numeric we copied into this var has not had its RefCnt incremented.
                     MyGlobalFree (hGlbTmp); hGlbTmp = NULL;
@@ -2639,7 +2639,7 @@ UBOOL PrimFnDydEpsilonOther_EM
                 tkSubLft.tkCharIndex       = lptkFunc->tkCharIndex;
 
                 // If the immediate type is a global numeric, ...
-                if (IsImmGlbNum (immTypeSubLft))
+                if (IsImmGlbNum (immTypeSubRht))
                 {
                     APLSTYPE aplTypeSubLft;         // Right sub arg storage type
 
@@ -2681,11 +2681,11 @@ UBOOL PrimFnDydEpsilonOther_EM
                     MyGlobalUnlock (hGlbTmp); lpMemHdrTmp = NULL;
 
                     // Save in common var
-                    hGlbSubRht = hGlbTmp;
+                    hGlbSubLft = hGlbTmp;
                 } // End IF
 
                 // Save in temp token
-                tkSubRht.tkData.tkGlbData  = MakePtrTypeGlb (hGlbSubRht);
+                tkSubLft.tkData.tkGlbData  = MakePtrTypeGlb (hGlbSubLft);
 
                 // Use match to determine equality
                 lpYYTmp =
@@ -2699,9 +2699,10 @@ UBOOL PrimFnDydEpsilonOther_EM
                 // Free the temporary result
                 YYFree (lpYYTmp); lpYYTmp = NULL;
 
-                // Free the temp global memory handle
+                // If the temp handle is valid, ...
                 if (hGlbTmp NE NULL)
                 {
+                    // Free the temp global memory handle
                     // Note that we don't use <FreeResultGlobalVar> (or anything that calls that function)
                     //   because the global numeric we copied into this var has not had its RefCnt incremented.
                     MyGlobalFree (hGlbTmp); hGlbTmp = NULL;

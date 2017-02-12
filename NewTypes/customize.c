@@ -63,6 +63,7 @@ UBOOL gbCallbackBN = TRUE,
 
 #define NEG     WS_UTF16_OVERBAR
 #define INF     WS_UTF16_INFINITY
+#define NaN     WS_UTF16_NAN
 #define NINF    NEG INF
 #define R_NE_FLOOR_R    L"R" WS_UTF16_NOTEQUAL WS_UTF16_DOWNSTILE L"R"
 #define PoM     WS_UTF16_PLUS_OR_MINUS
@@ -102,14 +103,15 @@ LPWCHAR icIndexNames[ICNDX_LENGTH]
 
 // []IC Index Values -- these must be in the same order as the IC_VALUES enum.
 LPWCHAR icIndexValues[ICVAL_LENGTH]
-= {WS_UTF16_OVERBAR L"1"    ,
-   L"0"                     ,
-   L"1"                     ,
-   L"DOMAIN ERROR"          ,
-   INF                      ,
-   NINF                     ,
-   L"L"                     ,
-   L"R"                     ,
+= {WS_UTF16_OVERBAR L"1"    ,   // -1:  Result is -1
+   L"0"                     ,   // 00:  ...        0
+   L"1"                     ,   // 01:  ...        1
+   L"DOMAIN ERROR"          ,   // 02:  ...        DOMAIN ERROR
+   INF                      ,   // 03:  ...        + infinity
+   NINF                     ,   // 04:  ...        - infinity
+   NaN                      ,   // 05:  ...        NaN
+   L"L"                     ,   // 06:  ...        L
+   L"R"                     ,   // 07:  ...        R
   };
 #undef  NINF
 #undef  INF

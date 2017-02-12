@@ -49,7 +49,7 @@ CRACTSTR fsaActTableCR [][CRCOL_LENGTH]
   {CRROW_ERROR   , NULL     , crError   },      // 03:  E
   {CRROW_ERROR   , NULL     , crError   },      // 04:  /
   {CRROW_ERROR   , NULL     , crError   },      // 05:  x
-  {CRROW_INF     , crIniInf , crAccInf  },      // 06:  Infinity
+  {CRROW_INFNAN  , crIniInf , crAccInf  },      // 06:  Infinity/NaN
   {CRROW_ERROR   , NULL     , crError   },      // 07:  All other chars
  },
     // CRROW_NEG        Negative Sign ('-')
@@ -59,7 +59,7 @@ CRACTSTR fsaActTableCR [][CRCOL_LENGTH]
   {CRROW_ERROR   , NULL     , crError   },      // 03:  E
   {CRROW_INIT    , NULL     , crError   },      // 04:  /
   {CRROW_EXIT    , NULL     , crError   },      // 05:  x
-  {CRROW_INF     , crAccInf , NULL      },      // 06:  Infinity
+  {CRROW_INFNAN  , crAccInf , NULL      },      // 06:  Infinity/NaN
   {CRROW_EXIT    , crEndInt , crExit    },      // 07:  All other chars
  },
     // CRROW_INT1       Next of Integer State ('-0123456789')
@@ -69,7 +69,7 @@ CRACTSTR fsaActTableCR [][CRCOL_LENGTH]
   {CRROW_EXP0    , crEndInt , crIniExp  },      // 03:  E
   {CRROW_INIT    , crEndInt , crIniRat  },      // 04:  /
   {CRROW_EXIT    , crEndInt , crIniExt  },      // 05:  x
-  {CRROW_ERROR   , NULL     , crError   },      // 06:  Infinity
+  {CRROW_ERROR   , NULL     , crError   },      // 06:  Infinity/NaN
   {CRROW_EXIT    , crEndInt , crExit    },      // 07:  All other chars
  },
     // CRROW_DEC        Decimal point ('.')
@@ -79,7 +79,7 @@ CRACTSTR fsaActTableCR [][CRCOL_LENGTH]
   {CRROW_EXP0    , crEndDec , crIniExp  },      // 03:  E
   {CRROW_INIT    , crEndDec , crIniRat  },      // 04:  /
   {CRROW_EXIT    , crEndDec , crIniExt  },      // 05:  x
-  {CRROW_ERROR   , NULL     , crError   },      // 06:  Infinity
+  {CRROW_ERROR   , NULL     , crError   },      // 06:  InfinityNaN
   {CRROW_EXIT    , crEndDec , crExit    },      // 07:  All other chars
  },
     // CRROW_EXP0       Start of Exponent State ('E')
@@ -89,7 +89,7 @@ CRACTSTR fsaActTableCR [][CRCOL_LENGTH]
   {CRROW_ERROR   , NULL     , crError   },      // 03:  E
   {CRROW_ERROR   , NULL     , crError   },      // 04:  /
   {CRROW_ERROR   , NULL     , crError   },      // 05:  x
-  {CRROW_ERROR   , NULL     , crError   },      // 06:  Infinity
+  {CRROW_ERROR   , NULL     , crError   },      // 06:  Infinity/NaN
   {CRROW_ERROR   , NULL     , crError   },      // 07:  All other chars
  },
     // CRROW_EXP1       Next of Exponent State ('-0123456789')
@@ -99,17 +99,17 @@ CRACTSTR fsaActTableCR [][CRCOL_LENGTH]
   {CRROW_ERROR   , NULL     , crError   },      // 03:  E
   {CRROW_INIT    , crEndExp , crIniRat  },      // 04:  /
   {CRROW_EXIT    , crEndExp , crIniExt  },      // 05:  x
-  {CRROW_ERROR   , NULL     , crError   },      // 06:  Infinity
+  {CRROW_ERROR   , NULL     , crError   },      // 06:  Infinity/NaN
   {CRROW_EXIT    , crEndExp , crExit    },      // 07:  All other chars
  },
-    // CRROW_INF        Infinity ('!')
+    // CRROW_INF/NaN    Infinity ('!')/NaN ('#')
  {{CRROW_ERROR   , NULL     , crError   },      // 00:  Overbar or minus sign
   {CRROW_ERROR   , NULL     , crError   },      // 01:  Digit
   {CRROW_ERROR   , NULL     , crError   },      // 02:  Decimal point
   {CRROW_ERROR   , NULL     , crError   },      // 03:  E
   {CRROW_INIT    , crEndInf , crIniRat  },      // 04:  /
   {CRROW_EXIT    , crEndInf , crIniExt  },      // 05:  x
-  {CRROW_ERROR   , NULL     , crError   },      // 06:  Infinity
+  {CRROW_ERROR   , NULL     , crError   },      // 06:  Infinity/NaN
   {CRROW_EXIT    , crEndInf , crExit    },      // 07:  All other chars
  },
 }
@@ -245,6 +245,12 @@ UBOOL crExit
     {
         _try
         {
+            // Check for NaN
+            if (mpq_nan_p (lpcrLocalVars->mpqRes)
+             || mpq_nan_p (lpcrLocalVars->mpqRes))
+                // Save as a NaN
+                mpq_set_nan (lpcrLocalVars->mpqRes);
+            else
             // Check for indeterminates:  0 {div} 0
             if (mpq_zero_p (lpcrLocalVars->mpqRes)
              && mpq_zero_p (lpcrLocalVars->mpqMul))
@@ -438,7 +444,7 @@ ERROR_EXIT:
         size_t intLen;                  // Length (in chars) of the integer part
 
         // Get the length of the integer part
-        intLen = strspn (lpcrLocalVars->lpszStart, OVERBAR1_STR INFINITY1_STR "0123456789");
+        intLen = strspn (lpcrLocalVars->lpszStart, OVERBAR1_STR INFINITY1_STR NaN1_STR "0123456789");
 
         // Save and zap the ending char
         chZapChr = lpcrLocalVars->lpszStart[intLen];
@@ -711,7 +717,8 @@ CRCOLINDICES CharTransCR
             return CRCOL_EXT;
 
         case INFINITY1:
-            return CRCOL_INF;
+        case NaN1:
+            return CRCOL_INFNAN;
 
         default:
             return CRCOL_EON;

@@ -4432,8 +4432,8 @@ void TPT_RAT_HC2V
 
     // Make a global numeric entry of it
     lptkArg->tkData.tkGlbData =
-      MakeGlbEntry_EM (ARRAY_HC2V,           // Array Type to use (see ARRAY_TYPES)
-                      &aplHC2V,              // Ptr to value to use
+      MakeGlbEntry_EM (ARRAY_HC2V,          // Array Type to use (see ARRAY_TYPES)
+                      &aplHC2V,             // Ptr to value to use
                        FALSE,               // TRUE iff we should initialize the target first
                        lptkArg);            // Ptr to token to use in case of error
     // Check for errors
@@ -4696,8 +4696,8 @@ void TPT_VFP_HC2V
 
     // Make a global numeric entry of it
     lptkArg->tkData.tkGlbData =
-      MakeGlbEntry_EM (ARRAY_HC2V,           // Array Type to use (see ARRAY_TYPES)
-                      &aplHC2V,              // Ptr to value to use
+      MakeGlbEntry_EM (ARRAY_HC2V,          // Array Type to use (see ARRAY_TYPES)
+                      &aplHC2V,             // Ptr to value to use
                        FALSE,               // TRUE iff we should initialize the target first
                        lptkArg);            // Ptr to token to use in case of error
     // Check for errors
@@ -4748,8 +4748,8 @@ void TPT_VFP_HC4V
 
     // Make a global numeric entry of it
     lptkArg->tkData.tkGlbData =
-      MakeGlbEntry_EM (ARRAY_HC4V,           // Array Type to use (see ARRAY_TYPES)
-                      &aplHC4V,              // Ptr to value to use
+      MakeGlbEntry_EM (ARRAY_HC4V,          // Array Type to use (see ARRAY_TYPES)
+                      &aplHC4V,             // Ptr to value to use
                        FALSE,               // TRUE iff we should initialize the target first
                        lptkArg);            // Ptr to token to use in case of error
     // Check for errors
@@ -4800,8 +4800,8 @@ void TPT_VFP_HC8V
 
     // Make a global numeric entry of it
     lptkArg->tkData.tkGlbData =
-      MakeGlbEntry_EM (ARRAY_HC8V,           // Array Type to use (see ARRAY_TYPES)
-                      &aplHC8V,              // Ptr to value to use
+      MakeGlbEntry_EM (ARRAY_HC8V,          // Array Type to use (see ARRAY_TYPES)
+                      &aplHC8V,             // Ptr to value to use
                        FALSE,               // TRUE iff we should initialize the target first
                        lptkArg);            // Ptr to token to use in case of error
     // Check for errors

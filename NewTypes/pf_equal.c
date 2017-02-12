@@ -407,6 +407,9 @@ void PrimFnDydEqualBisFvF
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
+    // N.B.:  Because <CmpCT_F> calls <flt_cmp_ct> which
+    //          treats NaNs specially, two NaNs compare equally.
+
     // Compare the two floats relative to []CT
     lpMemRes[uRes >> LOG2NBIB] |=
       CmpCT_F (lpatLft->aplFloat, lpatRht->aplFloat, GetQuadCT (), EQ)
@@ -739,8 +742,24 @@ UBOOL EqualHCxFvHCxF
         aplDist = fltPosInfinity;
     } // End __try/__except
 
+    // If both of the magnitudes are NaN, ...
+    if (IsFltNaN      (aplMagLft) && IsFltNaN      (aplMagRht))
+    {
+        // Compare the individual coordinates
+        for (i = 0; i < iHCDim; i++)
+        if (CmpCT_F (lpatLft->aplHC8F.parts[i],
+                     lpatRht->aplHC8F.parts[i],
+                     fQuadCT,
+                     NE))
+            return FALSE;
+        return TRUE;
+    } else
+    // If one of the magnitudes is NaN and the other isn't, ...
+    if (IsFltNaN      (aplMagLft) NE IsFltNaN      (aplMagRht))
+        return FALSE;
+    else
     // If both of the magnitudes are infinite, ...
-    if (IsFltInfinity (aplMagLft) && IsFltInfinity (aplMagRht))
+    if (_isinf (aplMagLft) && _isinf (aplMagRht))
     {
         // Compare the individual coordinates
         for (i = 0; i < iHCDim; i++)
@@ -752,7 +771,7 @@ UBOOL EqualHCxFvHCxF
         return TRUE;
     } else
     // If one of the magnitudes is infinite and the other isn't, ...
-    if (IsFltInfinity (aplMagLft) NE IsFltInfinity (aplMagRht))
+    if (_isinf (aplMagLft) NE _isinf (aplMagRht))
         return FALSE;
     else
         // The two numbers are equal iff the Dist is <= []CT * max (aplMagLft, aplMagRht)
@@ -1143,8 +1162,9 @@ UBOOL EqualHCxVvHCxV
     // Initialize the return value
     bRet = TRUE;
 
-    // If both of the magnitudes are infinite, ...
-    if (IsMpfInfinity (&aplMagLft) && IsMpfInfinity (&aplMagRht))
+    // If both of the magnitudes are infinite or NaNs, ...
+    if ((IsMpfInfinity (&aplMagLft) && IsMpfInfinity (&aplMagRht))
+     || (mpfr_nan_p    (&aplMagLft) && mpfr_nan_p    (&aplMagRht)))
     {
         // Compare the individual coordinates
         for (i = 0; i < iHCDim; i++)

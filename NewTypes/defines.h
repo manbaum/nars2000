@@ -565,9 +565,17 @@ default:        \
 #define  TEXT_INFINITY       "{infinity}"
 #define LTEXT_INFINITY      L"{infinity}"
 
+// Define text for NaN
+#define  TEXT_NAN            "NaN"
+#define LTEXT_NAN           L"NaN"
+#define  TEXT_NAN2           "{NaN}"
+#define LTEXT_NAN2          L"{NaN}"
+
 #define DEF_POSINFINITY_CHAR     '!'
 #define DEF_POSINFINITY_STR      "!"
 #define DEF_NEGINFINITY_STR     "-!"
+#define DEF_NAN_CHAR              '#'
+#define DEF_NAN_STR               "#"
 
 // Define text for NaN
 #define  TEXT_NAN2           "{NaN}"
@@ -578,6 +586,8 @@ default:        \
 #define INFINITY1_STR   DEF_POSINFINITY_STR
 #define OVERBAR1        '-'
 #define OVERBAR1_STR    "-"
+#define NaN1            DEF_NAN_CHAR
+#define NaN1_STR        DEF_NAN_STR
 
 
 //***************************************************************************

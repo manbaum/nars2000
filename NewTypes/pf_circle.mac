@@ -50,6 +50,10 @@
                 /* Copy to the result                                                                             */\
                 lpMemRes[uRes].parts[i] = aplTmp[0].parts[i];                                                       \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case  11:       /* Imaginary part of R                                                                    */\
@@ -59,6 +63,10 @@
             for (i = 1; i < N; i++)                                                                                 \
                 mpfr_init0 (&lpMemRes[uRes].parts[i]);                                                              \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case  10:       /* |R                                                                                     */\
@@ -68,6 +76,10 @@
             for (i = 1; i < N; i++)                                                                                 \
                 mpfr_init0 (&lpMemRes[uRes].parts[i]);                                                              \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case   9:       /* Real part of R                                                                         */\
@@ -77,6 +89,10 @@
             for (i = 1; i < N; i++)                                                                                 \
                 mpfr_init0 (&lpMemRes[uRes].parts[i]);                                                              \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case   8:       /* sqrt ((-1) - R * 2)                                                                    */\
@@ -93,6 +109,10 @@
             mp##cho##f_clear (aplTmp);                                                                              \
             mp##cho##f_clear (aplMul);                                                                              \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case   7:       /* tanh (R)                                                                               */\
@@ -102,6 +122,10 @@
             mp##cho##f_tanh  (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
             lpMemRes[uRes] = aplTmp[0];                                                                             \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case   6:       /* cosh (R)                                                                               */\
@@ -111,6 +135,10 @@
             mp##cho##f_cosh  (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
             lpMemRes[uRes] = aplTmp[0];                                                                             \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case   5:       /* sinh (R)                                                                               */\
@@ -120,6 +148,10 @@
             mp##cho##f_sinh  (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
             lpMemRes[uRes] = aplTmp[0];                                                                             \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case   4:       /* sqrt (1 + R * 2)                                                                       */\
@@ -135,6 +167,10 @@
             mp##cho##f_clear (aplAdd);                                                                              \
             mp##cho##f_clear (aplMul);                                                                              \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case   3:       /* tan (R)                                                                                */\
@@ -144,6 +180,10 @@
             mp##cho##f_tan   (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
             lpMemRes[uRes] = aplTmp[0];                                                                             \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case   2:       /* cos (R)                                                                                */\
@@ -153,6 +193,10 @@
             mp##cho##f_cos   (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
             lpMemRes[uRes] = aplTmp[0];                                                                             \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case   1:       /* sin (R)                                                                                */\
@@ -162,6 +206,10 @@
             mp##cho##f_sin   (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
             lpMemRes[uRes] = aplTmp[0];                                                                             \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case   0:       /* sqrt (1 - R * 2)                                                                       */\
@@ -177,6 +225,10 @@
             mp##cho##f_clear (aplSub);                                                                              \
             mp##cho##f_clear (aplMul);                                                                              \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case  -1:       /* asin (R)                                                                               */\
@@ -186,6 +238,10 @@
             mp##cho##f_asin  (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
             lpMemRes[uRes] = aplTmp[0];                                                                             \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case  -2:       /* acos (R)                                                                               */\
@@ -195,6 +251,10 @@
             mp##cho##f_acos  (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
             lpMemRes[uRes] = aplTmp[0];                                                                             \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case  -3:       /* atan (R)                                                                               */\
@@ -205,6 +265,10 @@
             mp##cho##f_atan  (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
             lpMemRes[uRes] = aplTmp[0];                                                                             \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case  -4:       /* (R + 1) × sqrt ((R - 1) / (R + 1))                                                     */\
@@ -214,7 +278,7 @@
                                 N,                                                                                  \
                                 GetQuadCT (),                                                                       \
                                 __FUNCTION__))                                                                      \
-                /* Initialzie the result to 0                                                                     */\
+                /* Initialize the result to 0                                                                     */\
                 mp##cho##f_init0 (&lpMemRes[uRes]);                                                                 \
             else                                                                                                    \
             {                                                                                                       \
@@ -246,6 +310,10 @@
                 mp##cho##f_clear (aplDiv);                                                                          \
             } /* End IF/ELSE                                                                                      */\
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case  -5:       /* asinh (R)                                                                              */\
@@ -256,6 +324,10 @@
             mp##cho##f_asinh (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
             lpMemRes[uRes] = aplTmp[0];                                                                             \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case  -6:       /* acosh (R)                                                                              */\
@@ -266,6 +338,10 @@
             mp##cho##f_acosh (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
             lpMemRes[uRes] = aplTmp[0];                                                                             \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case  -7:       /* atanh (R)                                                                              */\
@@ -276,6 +352,10 @@
             mp##cho##f_atanh (*(mpcho_t *) &aplTmp[0], &lpatRht->aplHC8V, MPFR_RNDN);                               \
             lpMemRes[uRes] = aplTmp[0];                                                                             \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case  -8:       /* -sqrt ((-1) - R * 2)                                                                   */\
@@ -296,26 +376,46 @@
             mp##cho##f_clear (aplSub);                                                                              \
             mp##cho##f_clear (aplMul);                                                                              \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case  -9:       /* R                                                                                      */\
             mphc##N##v_init_set (&lpMemRes[uRes], &lpatRht->aplHC##N##V);                                           \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case -10:       /* +R                                                                                     */\
             lpMemRes[uRes] = ConjHC##N##V (lpatRht->aplHC##N##V);                                                   \
                                                                                                                     \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case -11:       /* 0J1 x R                                                                                */\
             lpMemRes[uRes] = MulHC##N##V_RE (conmpof_I##suf,                                                        \
                                              lpatRht->aplHC##N##V);                                                 \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case -12:       /* *0J1 x R                                                                               */\
             lpMemRes[uRes] = ExpHC##N##V_RE (MulHC##N##V_RE (conmpof_I##suf,                                        \
                                                              lpatRht->aplHC##N##V));                                \
+            /* Check for NaN                                                                                      */\
+            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
+             && !gAllowNaN)                                                                                         \
+                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         default:                                                                                                    \

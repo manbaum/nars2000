@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1081,6 +1081,9 @@ APLFLOAT TranslateQuadICIndex
 
         case ICVAL_NEG_INFINITY:
             return bNegate ? fltPosInfinity : fltNegInfinity;
+
+        case ICVAL_NAN:
+            return fltNaN;
 
         case ICVAL_LEFT:
             return bNegate ? -aplFloatLft : aplFloatLft;

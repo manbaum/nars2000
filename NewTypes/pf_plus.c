@@ -1508,11 +1508,26 @@ APLFLOAT AddHC1F_RE
      APLFLOAT          aplRht)          // Right ...
 
 {
-    // Check for indeterminates:  _ + -_  or  -_ + _
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
 
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC1F, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC1F, &aplRht, 0);
+
+    // Check for indeterminates:  _ + _  or  -_ + -_
+
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            return aplLft;
+        else
+            return aplRht;
+    } else
     // If the args are both infinite and of opposite signs, ...
-    if (IsFltInfinity (aplLft)
-     && IsFltInfinity (aplRht)
+    if (_isinf (aplLft)
+     && _isinf (aplRht)
      && SIGN_APLFLOAT (aplLft) NE SIGN_APLFLOAT (aplRht))
         return TranslateQuadICIndex (aplLft,
                                      ICNDX_InfSUBInf,
@@ -1576,9 +1591,23 @@ APLRAT AddHC1R_RE
 
 {
     APLRAT aplRes = {0};
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
 
-    // Check for indeterminates:  _ + -_  or  -_ + _
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC1R, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC1R, &aplRht, 0);
 
+    // Check for indeterminates:  _ + _  or  -_ + -_
+
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc1r_init_set (&aplRes, &aplLft);
+        else
+            mphc1r_init_set (&aplRes, &aplRht);
+    } else
     // If the args are both infinite and of opposite signs, ...
     if (mpq_inf_p (&aplLft)
      && mpq_inf_p (&aplRht)
@@ -1653,9 +1682,23 @@ APLVFP AddHC1V_RE
 
 {
     APLVFP aplRes = {0};
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
 
-    // Check for indeterminates:  _ + -_  or  -_ + _
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC1V, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC1V, &aplRht, 0);
 
+    // Check for indeterminates:  _ + _  or  -_ + -_
+
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc1v_init_set (&aplRes, &aplLft);
+        else
+            mphc1v_init_set (&aplRes, &aplRht);
+    } else
     // If the args are both infinite and of opposite signs, ...
     if (mpfr_inf_p (&aplLft)
      && mpfr_inf_p (&aplRht)
@@ -1847,13 +1890,27 @@ APLHC2F AddHC2F_RE
 {
     int     i;
     APLHC2F aplRes;
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
+
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC1F, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC1F, &aplRht, 0);
 
     // No exceptions in this code
 
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            return aplLft;
+        else
+            return aplRht;
+    } else
     // Loop through all of the parts
     for (i = 0; i < 2; i++)
         // Add the two integers
-        aplRes.parts[i] = (aplLft.parts[i] + aplRht.parts[i]);
+        aplRes.parts[i] = AddHC1F_RE (aplLft.parts[i], aplRht.parts[i]);
 
     return aplRes;
 } // End AddHC2F_RE
@@ -1889,7 +1946,23 @@ APLHC2R AddHC2R_RE
 {
     int    i;
     APLHC2R aplRes;
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
 
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC2R, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC2R, &aplRht, 0);
+
+    // Check for indeterminates:  _ + _  or  -_ + -_
+
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc2r_init_set (&aplRes, &aplLft);
+        else
+            mphc2r_init_set (&aplRes, &aplRht);
+    } else
     // Loop through all of the parts
     for (i = 0; i < 2; i++)
     {
@@ -1972,7 +2045,23 @@ APLHC2V AddHC2V_RE
 {
     int     i;
     APLHC2V aplRes = {0};
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
 
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC2V, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC2V, &aplRht, 0);
+
+    // Check for indeterminates:  _ + _  or  -_ + -_
+
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc2v_init_set (&aplRes, &aplLft);
+        else
+            mphc2v_init_set (&aplRes, &aplRht);
+    } else
     // Loop through all of the parts
     for (i = 0; i < 2; i++)
     {
@@ -2171,7 +2260,23 @@ APLHC4F AddHC4F_RE
 {
     int     i;
     APLHC4F aplRes;
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
 
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC1F, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC1F, &aplRht, 0);
+
+    // No exceptions in this code
+
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            return aplLft;
+        else
+            return aplRht;
+    } else
     // Loop through all of the parts
     for (i = 0; i < 4; i++)
         // Add the two integers
@@ -2213,7 +2318,23 @@ APLHC4R AddHC4R_RE
 {
     int     i;
     APLHC4R aplRes;
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
 
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC4R, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC4R, &aplRht, 0);
+
+    // Check for indeterminates:  _ + _  or  -_ + -_
+
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc4r_init_set (&aplRes, &aplLft);
+        else
+            mphc4r_init_set (&aplRes, &aplRht);
+    } else
     // Loop through all of the parts
     for (i = 0; i < 4; i++)
     {
@@ -2296,7 +2417,23 @@ APLHC4V AddHC4V_RE
 {
     int     i;
     APLHC4V aplRes = {0};
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
 
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC4V, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC4V, &aplRht, 0);
+
+    // Check for indeterminates:  _ + _  or  -_ + -_
+
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc4v_init_set (&aplRes, &aplLft);
+        else
+            mphc4v_init_set (&aplRes, &aplRht);
+    } else
     // Loop through all of the parts
     for (i = 0; i < 4; i++)
     {
@@ -2495,13 +2632,27 @@ APLHC8F AddHC8F_RE
 {
     int     i;
     APLHC8F aplRes;
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
+
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC1F, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC1F, &aplRht, 0);
 
     // No exceptions in this code
 
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            return aplLft;
+        else
+            return aplRht;
+    } else
     // Loop through all of the parts
     for (i = 0; i < 8; i++)
         // Add the two FLOATs
-        aplRes.parts[i] = (aplLft.parts[i] + aplRht.parts[i]);
+        aplRes.parts[i] = AddHC1F_RE (aplLft.parts[i], aplRht.parts[i]);
 
     return aplRes;
 } // End AddHC8F_RE
@@ -2539,7 +2690,23 @@ APLHC8R AddHC8R_RE
 {
     int     i;
     APLHC8R aplRes;
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
 
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC8R, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC8R, &aplRht, 0);
+
+    // Check for indeterminates:  _ + _  or  -_ + -_
+
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc8r_init_set (&aplRes, &aplLft);
+        else
+            mphc8r_init_set (&aplRes, &aplRht);
+    } else
     // Loop through all of the parts
     for (i = 0; i < 8; i++)
     {
@@ -2622,7 +2789,23 @@ APLHC8V AddHC8V_RE
 {
     int     i;
     APLHC8V aplRes = {0};
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
 
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC8V, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC8V, &aplRht, 0);
+
+    // Check for indeterminates:  _ + _  or  -_ + -_
+
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc8v_init_set (&aplRes, &aplLft);
+        else
+            mphc8v_init_set (&aplRes, &aplRht);
+    } else
     // Loop through all of the parts
     for (i = 0; i < 8; i++)
     {

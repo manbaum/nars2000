@@ -81,7 +81,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Overbar
   {TKROW_INIT      , NULL        , fnDirIdent  , NULL        , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , NULL        , fnSysInit   , NULL        , scSysInit   },     // Quad
-  {TKROW_ALPHA     , NULL        , fnAlpInit   , NULL        , scAlpInit   },     // Underbar
+  {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // NaN
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Infinity
   {TKROW_INIT      , NULL        , fnAsnDone   , NULL        , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , NULL        , fnLstDone   , NULL        , scLstDone   },     // Semicolon  ...
@@ -115,7 +115,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Overbar
   {TKROW_INIT      , NULL        , fnDirIdent  , NULL        , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , NULL        , fnSysInit   , NULL        , scSysInit   },     // Quad
-  {TKROW_ALPHA     , NULL        , fnAlpInit   , NULL        , scAlpInit   },     // Underbar
+  {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // NaN
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Infinity
   {TKROW_INIT      , NULL        , fnAsnDone   , NULL        , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , NULL        , fnLstDone   , NULL        , scLstDone   },     // Semicolon  ...
@@ -149,7 +149,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnPointDone , fnDirIdent  , scPointDone , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnPointDone , fnSysInit   , scPointDone , scSysInit   },     // Quad
-  {TKROW_ALPHA     , fnPointDone , fnAlpInit   , scPointDone , scAlpInit   },     // Underbar
+  {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // NaN
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnPointDone , fnAsnDone   , scPointDone , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnPointDone , fnLstDone   , scPointDone , scLstDone   },     // Semicolon  ...
@@ -183,7 +183,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnPointDone , fnDirIdent  , scPointDone , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnPointDone , fnSysInit   , scPointDone , scSysInit   },     // Quad
-  {TKROW_ALPHA     , fnPointDone , fnAlpInit   , scPointDone , scAlpInit   },     // Underbar
+  {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // NaN
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnPointDone , fnAsnDone   , scPointDone , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnPointDone , fnLstDone   , scPointDone , scLstDone   },     // Semicolon  ...
@@ -217,7 +217,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_ALPHA     , fnAlpAccum  , NULL        , scAlpAccum  , NULL        },     // Overbar
   {TKROW_INIT      , fnAlpDone   , fnDirIdent  , scAlpDone   , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnAlpDone   , fnSysInit   , scAlpDone   , scSysInit   },     // Quad
-  {TKROW_ALPHA     , fnAlpAccum  , NULL        , scAlpAccum  , NULL        },     // Underbar
+  {TKROW_POINTNOT1 , fnAlpDone   , fnPointAcc  , scAlpDone   , scPointAcc  },     // NaN
   {TKROW_POINTNOT1 , fnAlpDone   , fnPointAcc  , scAlpDone   , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnAlpDone   , fnAsnDone   , scAlpDone   , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnAlpDone   , fnLstDone   , scAlpDone   , scLstDone   },     // Semicolon  ...
@@ -251,7 +251,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , fnSysDone   , fnPointAcc  , scSysDone   , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnSysDone   , fnDirIdent  , scSysDone   , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnSysDone   , fnSysInit   , scSysDone   , scSysInit   },     // Quad
-  {TKROW_SYSNAME   , fnSysAccum  , NULL        , scSysAccum  , NULL        },     // Underbar
+  {TKROW_POINTNOT1 , fnSysDone   , fnPointAcc  , scSysDone   , scPointAcc  },     // NaN
   {TKROW_POINTNOT1 , fnSysDone   , fnPointAcc  , scSysDone   , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnSysDone   , fnAsnDone   , scSysDone   , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnSysDone   , fnLstDone   , scSysDone   , scLstDone   },     // Semicolon  ...
@@ -285,7 +285,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Overbar
   {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Alpha or Omega
   {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Quad
-  {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Underbar
+  {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // NaN
   {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Infinity
   {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Assignment symbol
   {TKROW_QUOTE1A   , fnQuo1Accum , NULL        , scQuo1Accum , NULL        },     // Semicolon  ...
@@ -319,7 +319,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , fnQuo1Done  , fnPointAcc  , scQuo1Done  , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnQuo1Done  , fnDirIdent  , scQuo1Done  , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnQuo1Done  , fnSysInit   , scQuo1Done  , scSysInit   },     // Quad
-  {TKROW_ALPHA     , fnQuo1Done  , fnAlpInit   , scQuo1Done  , scAlpInit   },     // Underbar
+  {TKROW_POINTNOT1 , fnQuo1Done  , fnPointAcc  , scQuo1Done  , scPointAcc  },     // NaN
   {TKROW_POINTNOT1 , fnQuo1Done  , fnPointAcc  , scQuo1Done  , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnQuo1Done  , fnAsnDone   , scQuo1Done  , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnQuo1Done  , fnLstDone   , scQuo1Done  , scLstDone   },     // Semicolon  ...
@@ -353,7 +353,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Overbar
   {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Alpha or Omega
   {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Quad
-  {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Underbar
+  {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // NaN
   {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Infinity
   {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Assignment symbol
   {TKROW_QUOTE2A   , fnQuo2Accum , NULL        , scQuo2Accum , NULL        },     // Semicolon  ...
@@ -387,7 +387,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , fnQuo2Done  , fnPointAcc  , scQuo2Done  , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnQuo2Done  , fnDirIdent  , scQuo2Done  , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnQuo2Done  , fnSysInit   , scQuo2Done  , scSysInit   },     // Quad
-  {TKROW_ALPHA     , fnQuo2Done  , fnAlpInit   , scQuo2Done  , scAlpInit   },     // Underbar
+  {TKROW_POINTNOT1 , fnQuo2Done  , fnPointAcc  , scQuo2Done  , scPointAcc  },     // NaN
   {TKROW_POINTNOT1 , fnQuo2Done  , fnPointAcc  , scQuo2Done  , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnQuo2Done  , fnAsnDone   , scQuo2Done  , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnQuo2Done  , fnLstDone   , scQuo2Done  , scLstDone   },     // Semicolon  ...
@@ -421,7 +421,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , fnDotDone   , fnPointAcc  , scDotDone   , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnDotDone   , fnDirIdent  , scDotDone   , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnDotDone   , fnSysInit   , scDotDone   , scSysInit   },     // Quad
-  {TKROW_ALPHA     , fnDotDone   , fnAlpInit   , scDotDone   , scAlpInit   },     // Underbar
+  {TKROW_POINTNOT1 , fnDotDone   , fnPointAcc  , scDotDone   , scPointAcc  },     // NaN
   {TKROW_POINTNOT1 , fnDotDone   , fnPointAcc  , scDotDone   , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnDotDone   , fnAsnDone   , scDotDone   , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnDotDone   , fnLstDone   , scDotDone   , scLstDone   },     // Semicolon  ...
@@ -455,7 +455,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , fnJotDone   , fnPointAcc  , scJotDone   , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnJotDone   , fnDirIdent  , scJotDone   , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnJotDone   , fnSysInit   , scJotDone   , scSysInit   },     // Quad
-  {TKROW_ALPHA     , fnJotDone   , fnAlpInit   , scJotDone   , scAlpInit   },     // Underbar
+  {TKROW_POINTNOT1 , fnJotDone   , fnPointAcc  , scJotDone   , scPointAcc  },     // NaN
   {TKROW_POINTNOT1 , fnJotDone   , fnPointAcc  , scJotDone   , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnJotDone   , fnAsnDone   , scJotDone   , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnJotDone   , fnLstDone   , scJotDone   , scLstDone   },     // Semicolon  ...
@@ -489,7 +489,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , fnOutDone   , fnPointAcc  , scOutDone   , scPointAcc  },     // Overbar
   {TKROW_INIT      , fnOutDone   , fnDirIdent  , scOutDone   , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , fnOutDone   , fnSysInit   , scOutDone   , scSysInit   },     // Quad
-  {TKROW_ALPHA     , fnOutDone   , fnAlpInit   , scOutDone   , scAlpInit   },     // Underbar
+  {TKROW_POINTNOT1 , fnOutDone   , fnPointAcc  , scOutDone   , scPointAcc  },     // NaN
   {TKROW_POINTNOT1 , fnOutDone   , fnPointAcc  , scOutDone   , scPointAcc  },     // Infinity
   {TKROW_INIT      , fnOutDone   , fnAsnDone   , scOutDone   , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , fnOutDone   , fnLstDone   , scOutDone   , scLstDone   },     // Semicolon  ...
@@ -523,7 +523,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Overbar
   {TKROW_INIT      , NULL        , fnDirIdent  , NULL        , scDirIdent  },     // Alpha or Omega
   {TKROW_SYSNAME   , NULL        , fnSysInit   , NULL        , scSysInit   },     // Quad
-  {TKROW_ALPHA     , NULL        , fnAlpInit   , NULL        , scAlpInit   },     // Underbar
+  {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // NaN
   {TKROW_POINTNOT1 , NULL        , fnPointAcc  , NULL        , scPointAcc  },     // Infinity
   {TKROW_INIT      , NULL        , fnAsnDone   , NULL        , scAsnDone   },     // Assignment symbol
   {TKROW_INIT      , NULL        , fnLstDone   , NULL        , scLstDone   },     // Semicolon  ...
@@ -557,7 +557,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // Overbar
   {TKROW_LBR_INIT  , NULL        , fnLbrAlpha  , NULL        , scLbrAlpha  },     // Alpha or Omega
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // Quad
-  {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // Underbar
+  {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // NaN
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // Infinity
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // Assignment symbol
   {TKROW_LBR_INIT  , NULL        , NULL        , NULL        , NULL        },     // Semicolon  ...
@@ -591,7 +591,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // Overbar
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // Alpha or Omega
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // Quad
-  {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // Underbar
+  {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // NaN
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // Infinity
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // Assignment symbol
   {TKROW_LBR_Q1    , NULL        , NULL        , NULL        , NULL        },     // Semicolon  ...
@@ -625,7 +625,7 @@ TKACTSTR fsaActTableTK [][TKCOL_LENGTH]
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // Overbar
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // Alpha or Omega
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // Quad
-  {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // Underbar
+  {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // NaN
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // Infinity
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // Assignment symbol
   {TKROW_LBR_Q2    , NULL        , NULL        , NULL        , NULL        },     // Semicolon  ...
@@ -2502,6 +2502,10 @@ UBOOL fnPointAcc
     // Check for Infinity
     if (wchCur EQ UTF16_INFINITY)
         wchCur = INFINITY1;
+    else
+    // Check for NaN
+    if (wchCur EQ UTF16_NAN)
+        wchCur = NaN1;
 
     // Use subroutine
     if (!fnPointSub (lptkLocalVars, lpMemPTD, wchCur))
@@ -6476,12 +6480,10 @@ TKCOLINDICES CharTransTK
         case UTF16_Y_:
         case UTF16_Z_:
 
+        case L'_':
         case UTF16_DELTA:               // Alt-'h' - delta
         case UTF16_DELTAUNDERBAR:       // Alt-'H' - delta-underbar
             return TKCOL_ALPHA;
-
-        case L'_':
-            return TKCOL_UNDERBAR;
 
         case UTF16_INFINITY:
             return TKCOL_INFINITY;
@@ -6533,6 +6535,9 @@ TKCOLINDICES CharTransTK
 
         case UTF16_DEL:                 // Alt-'g' - del
             return TKCOL_DEL;
+
+        case UTF16_NAN:                 // Alt-'5' - NaN
+            return TKCOL_NAN;
 
 ////////case UTF16_ALPHA:               // Alt-'a' - alpha (TKCOL_DIRIDENT)
 ////////case UTF16_ALPHA2:              // Alpha2
@@ -6590,7 +6595,7 @@ TKCOLINDICES CharTransTK
         case UTF16_LEFTCARET:           // Alt-'3' - less
         case UTF16_LEFTCARETUNDERBAR:   // Alt-'4' - not more
         case UTF16_LEFTCARETUNDERBAR2:  // Not more2
-        case UTF16_EQUAL:               // Alt-'5' - equal
+////////case UTF16_NAN:                 // Alt-'5' - NaN
         case UTF16_RIGHTCARETUNDERBAR:  // Alt-'6' - not less
         case UTF16_RIGHTCARETUNDERBAR2: // Not less2
         case UTF16_RIGHTCARET:          // Alt-'7' - more
@@ -6649,7 +6654,7 @@ TKCOLINDICES CharTransTK
         case UTF16_STAR2:               //     '*' - star
         case UTF16_BAR:                 //     '-' - bar
         case UTF16_BAR2:                //     '-' - bar
-////////case UTF16_EQUAL:               //     '=' - equal
+        case UTF16_EQUAL:               //     '=' - equal
         case UTF16_PLUS:                //     '+' - plus
         case UTF16_STILE:               //     '|' - stile
         case UTF16_STILE2:              //     '|' - stile2
@@ -6884,7 +6889,7 @@ static COLNAMES colNames[] =
  {L"OVERBAR"     , TKCOL_OVERBAR     }, // 03: Overbar
  {L"DIRIDENT"    , TKCOL_DIRIDENT    }, // 04: Alpha or Omega
  {L"Q_QQ"        , TKCOL_Q_QQ        }, // 05: Quad
- {L"UNDERBAR"    , TKCOL_UNDERBAR    }, // 06: Underbar
+ {L"NaN"         , TKCOL_NAN         }, // 06: NaN
  {L"INFINITY"    , TKCOL_INFINITY    }, // 07: Infinity
  {L"ASSIGN"      , TKCOL_ASSIGN      }, // 08: Assignment symbol
  {L"SEMICOLON"   , TKCOL_SEMICOLON   }, // 09: Semicolon symbol

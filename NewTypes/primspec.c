@@ -1168,6 +1168,10 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
     ATISAT      *lpPrimFn;          // Ptr to PSDF function
     ALLTYPES     atRht = {0};       // Right arg as ALLTYPES
     UBOOL        bGlbEntry = FALSE; // TRUE iff we created a new global entry due to an exception
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     // Check for axis present
     if (lptkAxis NE NULL)
@@ -1247,24 +1251,40 @@ RESTART_EXCEPTION_VARIMMED:
 
                     case ARRAY_INT:             // Res = INT
                     case ARRAY_FLOAT:           // Res = FLOAT
-                        // Get the target function
-                        lpPrimFn = TranslateTypesToMonPSFIndex (lpPrimSpec, aplTypeRes, aplTypeRht);
+                        // Check for NaNs
 
-                        // Copy the right arg to common var
-                        (*aTypeActPromote[aplTypeRht][aplTypeRht]) (&lptkRhtArg->tkData.tkLongest, 0, &atRht);
-
-                        __try
+                        // Is the arg a NaN?
+                        if (IsArgNaN (aplTypeRht, &lptkRhtArg->tkData.tkLongest, 0))
                         {
+                            if (!gbAllowNaN)
+                                goto DOMAIN_EXIT;
+
+////////////////////////////DbgBrk ();      // #1:  Monadic PSF {NaN}
+
+                            // Save in the result
+                            lpYYRes->tkToken.tkData.tkLongest = lptkRhtArg->tkData.tkLongest;
+                            lpYYRes->tkToken.tkFlags.ImmType  = IMMTYPE_FLOAT;
+                        } else
+                        {
+                            // Get the target function
+                            lpPrimFn = TranslateTypesToMonPSFIndex (lpPrimSpec, aplTypeRes, aplTypeRht);
+
+                            // Copy the right arg to common var
+                            (*aTypeActPromote[aplTypeRht][aplTypeRht]) (&lptkRhtArg->tkData.tkLongest, 0, &atRht);
+
                             __try
                             {
-                                // Call the function
-                                (*lpPrimFn) (&lpYYRes->tkToken.tkData.tkLongest, 0, &atRht, &LclPrimSpec);
-                            } __finally
-                            {
-                                // Free the old atRht (if any)
-                                (*aTypeFree[aplTypeRht]) (&atRht, 0);
-                            } // End __try/__finally
-                        } __except (EXCEPTION_CONTINUE_SEARCH) {}
+                                __try
+                                {
+                                    // Call the function
+                                    (*lpPrimFn) (&lpYYRes->tkToken.tkData.tkLongest, 0, &atRht, &LclPrimSpec);
+                                } __finally
+                                {
+                                    // Free the old atRht (if any)
+                                    (*aTypeFree[aplTypeRht]) (&atRht, 0);
+                                } // End __try/__finally
+                            } __except (EXCEPTION_CONTINUE_SEARCH) {}
+                        } // End IF/ELSE
 
                         break;
 
@@ -1276,9 +1296,6 @@ RESTART_EXCEPTION_VARIMMED:
                 EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
 
                 dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #2: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
-
-                // Free the old atRht (if any)
-                (*aTypeFree[aplTypeRht]) (&atRht, 0);
 
                 // Split cases based upon the ExceptionCode
                 switch (ExceptionCode)
@@ -1521,6 +1538,11 @@ HGLOBAL PrimFnMonGlb_EM
     APLVFP            mpfRes = {0};         // VFP result
     ATISAT           *lpPrimFn;             // Ptr to PSDF function
     ALLTYPES          atRht = {0};          // Right arg as ALLTYPES
+    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
+    int               iSizeofRes;           // Sizeof an item in the result
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -1541,6 +1563,9 @@ HGLOBAL PrimFnMonGlb_EM
     aplTypeRes = (*lpPrimSpec->StorageTypeMon) (aplNELMRht,
                                                &aplTypeRht,
                                                 lptkFunc);
+    // Calculate the sizeof
+    iSizeofRes = TranslateArrayTypeToSizeof (aplTypeRes);
+
     // In case StorageTypeMon changed the value of aplTypeRht,
     //   save it back into the array
     lpHeader->ArrType = aplTypeRht;
@@ -1625,10 +1650,16 @@ HGLOBAL PrimFnMonGlb_EM
 
                     break;
 
-                case EXCEPTION_RESULT_VFP:
+////////////////case EXCEPTION_RESULT_RAT:
+////////////////case EXCEPTION_RESULT_HC2R:
+////////////////case EXCEPTION_RESULT_HC4R:
+////////////////case EXCEPTION_RESULT_HC8R:
+
                 case EXCEPTION_RESULT_HC2F:
                 case EXCEPTION_RESULT_HC4F:
                 case EXCEPTION_RESULT_HC8F:
+
+                case EXCEPTION_RESULT_VFP:
                 case EXCEPTION_RESULT_HC2V:
                 case EXCEPTION_RESULT_HC4V:
                 case EXCEPTION_RESULT_HC8V:
@@ -2022,26 +2053,41 @@ RESTART_EXCEPTION:
 
                                         break;
 
-                                    case ARRAY_INT:
-                                    case ARRAY_FLOAT:
-                                        // Get the target function
-                                        lpPrimFn = TranslateTypesToMonPSFIndex (lpPrimSpec, aplTypeRes, aplTypeRht);
+                                    case ARRAY_INT:             // Res = INT    {floor} 1.5 (2 3)
+                                    case ARRAY_FLOAT:           // Res = FLT
+                                        // Check for NaNs
 
-                                        // Copy the right arg to common var
-                                        (*aTypeActPromote[aplTypeRht][aplTypeRht]) (&lpSymDst->stData.stLongest, 0, &atRht);
-
-                                        __try
+                                        // Is the arg a NaN?
+                                        if (IsArgNaN (aplTypeRht2, &lpSymDst->stData.stLongest, 0))
                                         {
+                                            if (!gbAllowNaN)
+                                                goto DOMAIN_EXIT;
+////////////////////////////////////////////DbgBrk ();          // #2: {floor} {NaN} (2 3)
+
+                                            // Save in the result
+////////////////////////////////////////////lpSymDst->stData.stLongest = lpSymDst->stData.stLongest;
+                                            lpSymDst->stFlags.ImmType = IMMTYPE_FLOAT;
+                                        } else
+                                        {
+                                            // Get the target function
+                                            lpPrimFn = TranslateTypesToMonPSFIndex (lpPrimSpec, aplTypeRes2, aplTypeRht2);
+
+                                            // Copy the right arg to common var
+                                            (*aTypeActPromote[aplTypeRht2][aplTypeRht2]) (&lpSymDst->stData.stLongest, 0, &atRht);
+
                                             __try
                                             {
-                                                // Call the function
-                                                (*lpPrimFn) (&lpSymDst->stData.stLongest, 0, &atRht, lpPrimSpec);
-                                            } __finally
-                                            {
-                                                // Free the old atRht (if any)
-                                                (*aTypeFree[aplTypeRht]) (&atRht, 0);
-                                            } // End __try/__finally
-                                        } __except (EXCEPTION_CONTINUE_SEARCH) {}
+                                                __try
+                                                {
+                                                    // Call the function
+                                                    (*lpPrimFn) (&lpSymDst->stData.stLongest, 0, &atRht, lpPrimSpec);
+                                                } __finally
+                                                {
+                                                    // Free the old atRht (if any)
+                                                    (*aTypeFree[aplTypeRht2]) (&atRht, 0);
+                                                } // End __try/__finally
+                                            } __except (EXCEPTION_CONTINUE_SEARCH) {}
+                                        } // End IF/ELSE
 
                                         break;
 
@@ -2110,29 +2156,51 @@ RESTART_EXCEPTION:
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    // Copy the right arg to ALLTYPES
-                    (*aTypeActPromote[aplTypeRht][aplTypeCom]) (lpMemRht, uRes, &atRht);
+                    // Check for NaNs
 
-                    __try
+                    // Is the arg a NaN?
+                    if (IsArgNaN (aplTypeRht, lpMemRht, uRes))
                     {
+                        // HC Dimension index (0, 1, 2, 3)
+                        int iHCDimIndex = aArrayTypeToHCDimIndex[aplTypeRes];
+
+                        if (!gbAllowNaN)
+                            goto DOMAIN_EXIT;
+////////////////////////DbgBrk ();      // #3:  Monadic PSF ,{NaN}
+                                        //      Monadic PSF {enclose},{NaN}
+
+                        // Do we need to promote the result type from HCxI to HCxF as in {floor},{NaN}  ?
+                        if (IsSimpleInt (aToSimple[aplTypeRes]))
+                            RaiseException (EXCEPTION_RESULT_FLOAT + 2 * iHCDimIndex, 0, 0, NULL);
+
+                        // Copy the right arg to the result
+                        (*aTypeActPromote[aplTypeRht][aplTypeRes]) (lpMemRht, uRes, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
+                    } else
+                    {
+                        // Copy the right arg to ALLTYPES
+                        (*aTypeActPromote[aplTypeRht][aplTypeCom]) (lpMemRht, uRes, &atRht);
+
                         __try
                         {
-                            // Save in the result
-                            (*lpPrimFn) (lpMemRes, uRes, &atRht, lpPrimSpec);
-                        } __finally
+                            __try
+                            {
+                                // Save in the result
+                                (*lpPrimFn) (lpMemRes, uRes, &atRht, lpPrimSpec);
+                            } __finally
+                            {
+                                // Free the old atRht (if any)
+                                (*aTypeFree[aplTypeCom]) (&atRht, 0);
+                            } // End __try/__finally
+                        } __except (CheckException (GetExceptionInformation (), L"PrimFnMonGlb_EM"))
                         {
-                            // Free the old atRht (if any)
-                            (*aTypeFree[aplTypeCom]) (&atRht, 0);
-                        } // End __try/__finally
-                    } __except (CheckException (GetExceptionInformation (), L"PrimFnMonGlb_EM"))
-                    {
-                        EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
+                            EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
 
-                        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #4A: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
+                            dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #4A: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
-                        // Pass it on
-                        RaiseException (ExceptionCode, 0, 0, NULL);
-                    } // End __try/__except
+                            // Pass it on
+                            RaiseException (ExceptionCode, 0, 0, NULL);
+                        } // End __try/__except
+                    } // End IF/ELSE
                 } // End FOR
 
                 // Mark as eligible for type demotion
@@ -2179,7 +2247,7 @@ RESTART_EXCEPTION:
 
                 if (IsNumeric (aplTypeRes))
                 {
-                    /* It's now a HCxF result */
+                    /* It's now a HCxF or HCxV result */
                     aplTypeRes = TranslateExceptionCodeToArrayType (ExceptionCode);
 
                     /* We no longer need this ptr */
@@ -2799,6 +2867,10 @@ UBOOL PrimFnDydSimpNest_EM
                       atRht = {0};          // Right ...
     LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     Assert (IsNested (aplTypeUnused));
 
@@ -2905,6 +2977,8 @@ UBOOL PrimFnDydSimpNest_EM
     {
         APLINT   uLft, uRht, uArg;
         APLSTYPE aplTypeHetRht;
+        UBOOL    bNaNLft,                   // TRUE iff the left arg is a NaN
+                 bNaNRht;                   // ...          right ...
 
         // Check for Ctrl-Break
         if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -2964,24 +3038,92 @@ UBOOL PrimFnDydSimpNest_EM
                 // Promote the right arg to the common type
                 (*aTypeActPromote[aplTypeHetRht][aplTypeCom]) (&((LPSYMENTRY) hGlbSub)->stData.stLongest, 0, &atRht);
 
-                __try
+                // Check for NaNs
+
+                // Are the args a NaN?
+                bNaNLft = IsArgNaN (aplTypeCom, &atLft, 0);
+                bNaNRht = IsArgNaN (aplTypeCom, &atRht, 0);
+
+                // If either arg is a NaN, ...
+                if (bNaNLft || bNaNRht)
                 {
-                    __try
+                    if (gbAllowNaN)         // 1x + {NaN} (3 4)
                     {
-                        hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
-                                                       *lphGlbRes,
-                                                        aplTypeCom,
-                                                       &atLft,
-                                                        aplTypeCom,
-                                                       &atRht,
-                                                        lpPrimSpec);
-                    } __finally
+                        if (bNaNLft)
+                            hGlbSub =
+                              MakeGlbEntry_EM (aplTypeCom,              // Entry type
+                                              &atLft,                   // Ptr to the value
+                                               TRUE,                    // TRUE iff we should initialize the target first
+                                               lptkFunc);               // Ptr to function token
+                        else
+                        {
+                            // If the right arg is a global numeric, ...
+                            if (IsGlbNum (aplTypeCom))
+                                hGlbSub =
+                                  MakeGlbEntry_EM (aplTypeCom,              // Entry type
+                                                  &atRht,                   // Ptr to the value
+                                                   TRUE,                    // TRUE iff we should initialize the target first
+                                                   lptkFunc);               // Ptr to function token
+                            else
+                                hGlbSub =
+                                  MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeCom),    // Immediate type
+                                                  &atRht.aplLongest,                            // Ptr to immediate value
+                                                   lptkFunc);                                   // Ptr to function token
+                        } // End IF/ELSE
+
+                        // Free the old atLft & atRht (if any)
+                        (*aTypeFree[aplTypeCom]) (&atLft, 0);
+                        (*aTypeFree[aplTypeCom]) (&atRht, 0);
+
+                        // Zero the memory in case we use it again
+                        //   because aplTypeCom changes when looping
+                        //   through a HETERO.
+                        ZeroMemory (&atLft, sizeof (atLft));
+                        ZeroMemory (&atRht, sizeof (atRht));
+                    } else
                     {
                         // Free the old atLft & atRht (if any)
                         (*aTypeFree[aplTypeCom]) (&atLft, 0);
                         (*aTypeFree[aplTypeCom]) (&atRht, 0);
-                    } // End __try/__finally
-                } __except (EXCEPTION_CONTINUE_SEARCH) {}
+
+                        // Zero the memory in case we use it again
+                        //   because aplTypeCom changes when looping
+                        //   through a HETERO.
+                        ZeroMemory (&atLft, sizeof (atLft));
+                        ZeroMemory (&atRht, sizeof (atRht));
+
+                        if (bNaNLft)
+                            goto LEFT_DOMAIN_EXIT;
+                        else
+                            goto RIGHT_DOMAIN_EXIT;
+                    } // End IF/ELSE
+                } else
+                {
+                    __try
+                    {
+                        __try
+                        {
+                            hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
+                                                           *lphGlbRes,
+                                                            aplTypeCom,
+                                                           &atLft,
+                                                            aplTypeCom,
+                                                           &atRht,
+                                                            lpPrimSpec);
+                        } __finally
+                        {
+                            // Free the old atLft & atRht (if any)
+                            (*aTypeFree[aplTypeCom]) (&atLft, 0);
+                            (*aTypeFree[aplTypeCom]) (&atRht, 0);
+
+                            // Zero the memory in case we use it again
+                            //   because aplTypeCom changes when looping
+                            //   through a HETERO.
+                            ZeroMemory (&atLft, sizeof (atLft));
+                            ZeroMemory (&atRht, sizeof (atRht));
+                        } // End __try/__finally
+                    } __except (EXCEPTION_CONTINUE_SEARCH) {}
+                } // End IF/ELSE
 
                 if (hGlbSub EQ NULL)
                     goto ERROR_EXIT;
@@ -3034,6 +3176,16 @@ UBOOL PrimFnDydSimpNest_EM
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
+    goto ERROR_EXIT;
+
+LEFT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
     goto ERROR_EXIT;
 
 ERROR_EXIT:
@@ -3141,6 +3293,10 @@ UBOOL PrimFnDydNestSimp_EM
                       atRht = {0};          // Right ...
     LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     Assert (IsNested (aplTypeUnused));
 
@@ -3247,6 +3403,8 @@ UBOOL PrimFnDydNestSimp_EM
     {
         APLINT   uLft, uRht, uArg;
         APLSTYPE aplTypeHetLft;
+        UBOOL    bNaNLft,                   // TRUE iff the left arg is a NaN
+                 bNaNRht;                   // ...          right ...
 
         // Check for Ctrl-Break
         if (CheckCtrlBreak (*lpbCtrlBreak))
@@ -3306,24 +3464,84 @@ UBOOL PrimFnDydNestSimp_EM
                 // Promote the left arg to the common type
                 (*aTypeActPromote[aplTypeHetLft][aplTypeCom]) (&((LPSYMENTRY) hGlbSub)->stData.stLongest, 0, &atLft);
 
-                __try
+                // Check for NaNs
+
+                // Are the args a NaN?
+                bNaNLft = IsArgNaN (aplTypeHetLft, &((LPSYMENTRY) hGlbSub)->stData.stLongest, 0);
+                bNaNRht = IsArgNaN (aplTypeRht   ,  lpMemRht                                , uRht);
+
+                // If either arg is a NaN, ...
+                if (bNaNLft || bNaNRht)
                 {
-                    __try
+                    if (gbAllowNaN)         // {NaN} (3 4) + 1x
                     {
-                        hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
-                                                       *lphGlbRes,
-                                                        aplTypeCom,
-                                                       &atLft,
-                                                        aplTypeCom,
-                                                       &atRht,
-                                                        lpPrimSpec);
-                    } __finally
+                        if (bNaNLft)
+                        {
+                            // If the left arg is a global numeric, ...
+                            if (IsGlbNum (aplTypeCom))
+                                hGlbSub =
+                                  MakeGlbEntry_EM (aplTypeCom,              // Entry type
+                                                  &atLft,                   // Ptr to the value
+                                                   TRUE,                    // TRUE iff we should initialize the target first
+                                                   lptkFunc);               // Ptr to function token
+                            else
+                            hGlbSub =
+                              MakeSymEntry_EM (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,     // Immediate type
+                                              &((LPSYMENTRY) hGlbSub)->stData.stLongest,    // Ptr to immediate value
+                                               lptkFunc);                                   // Ptr to function token
+                        } else
+                            hGlbSub =
+                              MakeGlbEntry_EM (aplTypeCom,              // Entry type
+                                              &atRht,                   // Ptr to the value
+                                               TRUE,                    // TRUE iff we should initialize the target first
+                                               lptkFunc);               // Ptr to function token
+                        // Free the old atLft & atRht (if any)
+                        (*aTypeFree[aplTypeCom]) (&atLft, 0);
+                        (*aTypeFree[aplTypeCom]) (&atRht, 0);
+
+                        // Zero the memory in case we use it again
+                        //   because aplTypeCom changes when looping
+                        //   through a HETERO.
+                        ZeroMemory (&atLft, sizeof (atLft));
+                        ZeroMemory (&atRht, sizeof (atRht));
+                    } else
                     {
                         // Free the old atLft & atRht (if any)
                         (*aTypeFree[aplTypeCom]) (&atLft, 0);
                         (*aTypeFree[aplTypeCom]) (&atRht, 0);
-                    } // End __try/__finally
-                } __except (EXCEPTION_CONTINUE_SEARCH) {}
+
+                        // Zero the memory in case we use it again
+                        //   because aplTypeCom changes when looping
+                        //   through a HETERO.
+                        ZeroMemory (&atLft, sizeof (atLft));
+                        ZeroMemory (&atRht, sizeof (atRht));
+
+                        if (bNaNLft)
+                            goto LEFT_DOMAIN_EXIT;
+                        else
+                            goto RIGHT_DOMAIN_EXIT;
+                    } // End IF/ELSE
+                } else
+                {
+                    __try
+                    {
+                        __try
+                        {
+                            hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
+                                                           *lphGlbRes,
+                                                            aplTypeCom,
+                                                           &atLft,
+                                                            aplTypeCom,
+                                                           &atRht,
+                                                            lpPrimSpec);
+                        } __finally
+                        {
+                            // Free the old atLft & atRht (if any)
+                            (*aTypeFree[aplTypeCom]) (&atLft, 0);
+                            (*aTypeFree[aplTypeCom]) (&atRht, 0);
+                        } // End __try/__finally
+                    } __except (EXCEPTION_CONTINUE_SEARCH) {}
+                } // End IF/ELSE
 
                 if (hGlbSub EQ NULL)
                     goto ERROR_EXIT;
@@ -3386,6 +3604,16 @@ WSFULL_EXIT:
                                lptkFunc);
     goto ERROR_EXIT;
 
+LEFT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
     bRet = FALSE;
 
@@ -3442,6 +3670,8 @@ HGLOBAL PrimFnDydNestSiSc_EM
 
 {
     UBOOL             bRet      = TRUE,
+                      bNaNLft,                  // TRUE iff the left arg is a NaN
+                      bNaNRht,                  // ...          right ...
                       bRealOnly = FALSE;        // TRUE iff the args must be demoted to real
     HGLOBAL           hGlbRes = NULL,
                       hGlbSub,
@@ -3470,6 +3700,11 @@ HGLOBAL PrimFnDydNestSiSc_EM
                       atRht = {0},
                       atRht2 = {0};
     LPALLTYPES        lpatRht2 = NULL;
+    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
+    int               iSizeofRes;           // Sizeof an item in the result
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     // The left arg data is a valid HGLOBAL array
     Assert (IsGlbTypeVarDir_PTB (hGlbLft));
@@ -3520,6 +3755,9 @@ HGLOBAL PrimFnDydNestSiSc_EM
     else
     if (IsErrorType (aplTypeRes))
         goto DOMAIN_EXIT;
+
+    // Calculate the sizeof
+    iSizeofRes = TranslateArrayTypeToSizeof (aplTypeRes);
 
     // Special case APA result
     if (IsSimpleAPA (aplTypeRes))
@@ -3643,14 +3881,44 @@ RESTART_EXCEPTION:
                     atLft.aplLongest = ((LPSYMENTRY) hGlbSub)->stData.stLongest;
                     aplTypeHetLft    = TranslateImmTypeToArrayType (((LPSYMENTRY) hGlbSub)->stFlags.ImmType);
 
-                    hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
-                                                    hGlbRes,
-                                                    aplTypeHetLft,
-                                                   &atLft,
-                                                    aplTypeRht,
-                                                    lpatRht,
-                                                    lpPrimSpec);
-                    // No need to free the old atLft as it isn't created (it's copied)
+                    // Check for NaNs
+
+                    // Are the args a NaN?
+                    bNaNLft = IsArgNaN (aplTypeHetLft, &atLft.aplLongest, 0);
+                    bNaNRht = IsArgNaN (aplTypeRht   ,  lpatRht         , 0);
+
+                    // If either arg is a NaN, ...
+                    if (bNaNLft || bNaNRht)
+                    {
+                        if (gbAllowNaN)
+                        {
+                            if (bNaNLft)
+                                hGlbSub =
+                                  MakeSymEntry_EM (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,     // Immediate type
+                                                  &atLft.aplLongest,                            // Ptr to immediate value
+                                                   lptkFunc);                                   // Ptr to function token
+                            else
+                                hGlbSub =
+                                  MakeGlbEntry_EM (aplTypeCom,              // Entry type
+                                                   lpatRht,                 // Ptr to the value
+                                                   TRUE,                    // TRUE iff we should initialize the target first
+                                                   lptkFunc);               // Ptr to function token
+                        } else
+                        if (bNaNLft)
+                            goto LEFT_DOMAIN_EXIT;
+                        else
+                            goto RIGHT_DOMAIN_EXIT;
+                    } else
+                    {
+                        hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
+                                                        hGlbRes,
+                                                        aplTypeHetLft,
+                                                       &atLft,
+                                                        aplTypeRht,
+                                                        lpatRht,
+                                                        lpPrimSpec);
+                        // No need to free the old atLft as it isn't created (it's copied)
+                    } // End IF/ELSE
 
                     if (hGlbSub EQ NULL)
                         goto ERROR_EXIT;
@@ -3684,11 +3952,14 @@ RESTART_EXCEPTION:
                     break;
             } // End SWITCH
         } else
-        // The left arg is hetero or simple global numeric
+        // The left arg is hetero, simple numeric, or simple global numeric
         {
             APLLONGEST aplLongestLft;
             LPSYMENTRY lpSymGlbSub;
             ALLTYPES   atTmp = {0};
+
+            Assert (IsSimpleHet (aplTypeLft)
+                 || IsNumeric   (aplTypeLft));
 
             // If the left arg is hetero, ...
             if (IsSimpleHet (aplTypeLft))
@@ -3699,115 +3970,143 @@ RESTART_EXCEPTION:
                 aplLongestLft = lpSymGlbSub->stData.stLongest;
                 aplTypeHetLft = TranslateImmTypeToArrayType (lpSymGlbSub->stFlags.ImmType);
             } else
-            // The left arg is a simple global numeric array
+            // The left arg is a simple numeric array or simple global numeric array
             {
                 // Copy the left arg to an ALLTYPES
                 (*aTypeActPromote[aplTypeLft][aplTypeLft]) (lpMemLft, uRes, &atTmp);
 
                 // Get a ptr to the left arg element
                 lpSymGlbSub = (LPVOID) &atTmp;
+                aplLongestLft = atTmp.aplLongest;
 
                 // Save as left arg element type
                 aplTypeHetLft = aplTypeLft;
             } // End IF/ELSE
 
-            // Get the common storage type between the left & right args
-            aplTypeCom = aTypePromote[aplTypeHetLft][aplTypeRht];
+            // Check for NaNs
 
-            // Promote the right arg to the common type
-            (*aTypeActPromote[aplTypeRht][aplTypeCom]) (lpatRht, 0, &atRht);
+            // Are the args a NaN?
+            bNaNLft = IsArgNaN (aplTypeHetLft, &aplLongestLft, 0);
+            bNaNRht = IsArgNaN (aplTypeRht   ,  lpatRht      , 0);
 
-            // If the left arg is hetero, ...
-            if (IsSimpleHet (aplTypeLft))
-                // Promote the left arg to the common type
-                (*aTypeActPromote[aplTypeHetLft][aplTypeCom]) (&aplLongestLft, 0, &atLft);
-            else
-                // Promote the left arg to the common type
-                (*aTypeActPromote[aplTypeHetLft][aplTypeCom]) (lpSymGlbSub   , 0, &atLft);
-
-            // Get the target function
-            lpPrimFn = TranslateTypesToDydPSFIndex (lpPrimSpec, aplTypeRes, aplTypeCom);
-
-            __try
+            // If either arg is a NaN, ...
+            if (bNaNLft || bNaNRht)
             {
+                if (gbAllowNaN)
+                {
+////////////////////DbgBrk ();          // #4:  {NaN} ({NaN} 3) + 1x
+
+                    if (bNaNLft)
+                        // Copy the left arg to the result
+                        (*aTypeActPromote[aplTypeHetLft][aplTypeRes]) (&aplLongestLft, 0, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
+                    else
+                        // Copy the right arg to the result
+                        (*aTypeActPromote[aplTypeRht   ][aplTypeRes]) (lpatRht       , 0, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
+                } else
+                if (bNaNLft)
+                    goto LEFT_DOMAIN_EXIT;
+                else
+                    goto RIGHT_DOMAIN_EXIT;
+            } else
+            {
+                // Get the common storage type between the left & right args
+                aplTypeCom = aTypePromote[aplTypeHetLft][aplTypeRht];
+
+                // Promote the right arg to the common type
+                (*aTypeActPromote[aplTypeRht][aplTypeCom]) (lpatRht, 0, &atRht);
+
+                // If the left arg is hetero, ...
+                if (IsSimpleHet (aplTypeLft))
+                    // Promote the left arg to the common type
+                    (*aTypeActPromote[aplTypeHetLft][aplTypeCom]) (&aplLongestLft, 0, &atLft);
+                else
+                    // Promote the left arg to the common type
+                    (*aTypeActPromote[aplTypeHetLft][aplTypeCom]) (lpSymGlbSub   , 0, &atLft);
+
+                // Get the target function
+                lpPrimFn = TranslateTypesToDydPSFIndex (lpPrimSpec, aplTypeRes, aplTypeCom);
+
                 __try
                 {
-                    // Call the function
-                    (*lpPrimFn) (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
-                } __finally
+                    __try
+                    {
+                        // Call the function
+                        (*lpPrimFn) (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+                    } __finally
+                    {
+                        // Free the old atLft & atRht (if any)
+                        (*aTypeFree[aplTypeCom]) (&atLft, 0);
+                        (*aTypeFree[aplTypeCom]) (&atRht, 0);
+                    } // End __try/__finally
+                } __except (CheckException (GetExceptionInformation (), L"PrimFnDydNestSiSc_EM"))
                 {
-                    // Free the old atLft & atRht (if any)
-                    (*aTypeFree[aplTypeCom]) (&atLft, 0);
-                    (*aTypeFree[aplTypeCom]) (&atRht, 0);
-                } // End __try/__finally
-            } __except (CheckException (GetExceptionInformation (), L"PrimFnDydNestSiSc_EM"))
-            {
-                EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
+                    EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
 
-                dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #7: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
+                    dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #7: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
-                // Split cases based upon the ExceptionCode
-                switch (ExceptionCode)
-                {
-                    case EXCEPTION_DOMAIN_ERROR:
-                    case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-                    case EXCEPTION_INT_DIVIDE_BY_ZERO:
-                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+                    // Split cases based upon the ExceptionCode
+                    switch (ExceptionCode)
+                    {
+                        case EXCEPTION_DOMAIN_ERROR:
+                        case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+                        case EXCEPTION_INT_DIVIDE_BY_ZERO:
+                            MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                        goto DOMAIN_EXIT;
+                            goto DOMAIN_EXIT;
 
-                    case EXCEPTION_WS_FULL:
-                        goto WSFULL_EXIT;
+                        case EXCEPTION_WS_FULL:
+                            goto WSFULL_EXIT;
 
-                    case EXCEPTION_NONCE_ERROR:
-                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+                        case EXCEPTION_NONCE_ERROR:
+                            MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                        goto NONCE_EXIT;
+                            goto NONCE_EXIT;
 
-                    case EXCEPTION_RESULT_FLOAT:
-                    case EXCEPTION_RESULT_HC2F:
-                    case EXCEPTION_RESULT_HC4F:
-                    case EXCEPTION_RESULT_HC8F:
-                    case EXCEPTION_RESULT_VFP:
-                    case EXCEPTION_RESULT_HC2V:
-                    case EXCEPTION_RESULT_HC4V:
-                    case EXCEPTION_RESULT_HC8V:
-                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+                        case EXCEPTION_RESULT_FLOAT:
+                        case EXCEPTION_RESULT_HC2F:
+                        case EXCEPTION_RESULT_HC4F:
+                        case EXCEPTION_RESULT_HC8F:
+                        case EXCEPTION_RESULT_VFP:
+                        case EXCEPTION_RESULT_HC2V:
+                        case EXCEPTION_RESULT_HC4V:
+                        case EXCEPTION_RESULT_HC8V:
+                            MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                        if (IsNumeric (aplTypeRes))
-                        {
-                            if (hGlbRes NE NULL)
+                            if (IsNumeric (aplTypeRes))
                             {
-                                if (lpMemHdrRes NE NULL)
+                                if (hGlbRes NE NULL)
                                 {
-                                    // We need to start over with the result
-                                    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+                                    if (lpMemHdrRes NE NULL)
+                                    {
+                                        // We need to start over with the result
+                                        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+                                    } // End IF
+
+                                    // We no longer need this storage
+                                    FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
                                 } // End IF
 
-                                // We no longer need this storage
-                                FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+                                // It's now a promoted result
+                                aplTypeRes = TranslateExceptionCodeToArrayType (ExceptionCode);
+
+                                dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #7: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
+
+                                goto RESTART_EXCEPTION;
                             } // End IF
 
-                            // It's now a promoted result
-                            aplTypeRes = TranslateExceptionCodeToArrayType (ExceptionCode);
+                            // Display message for unhandled exception
+                            DisplayException ();
 
-                            dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #7: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
+                            break;
 
-                            goto RESTART_EXCEPTION;
-                        } // End IF
+                        default:
+                            // Display message for unhandled exception
+                            DisplayException ();
 
-                        // Display message for unhandled exception
-                        DisplayException ();
-
-                        break;
-
-                    default:
-                        // Display message for unhandled exception
-                        DisplayException ();
-
-                        break;
-                } // End SWITCH
-            } // End __try/__except
+                            break;
+                    } // End SWITCH
+                } // End __try/__except
+            } // End IF/ELSE
         } // End IF/ELSE
     } // End FOR
 
@@ -4097,6 +4396,8 @@ HGLOBAL PrimFnDydSiScNest_EM
 
 {
     UBOOL             bRet      = TRUE,
+                      bNaNLft,                  // TRUE iff the left arg is a NaN
+                      bNaNRht,                  // ...          right ...
                       bRealOnly = FALSE;        // TRUE iff the args must be demoted to real
     HGLOBAL           hGlbRes = NULL,
                       hGlbSub,
@@ -4125,6 +4426,11 @@ HGLOBAL PrimFnDydSiScNest_EM
                       atRht = {0},
                       atLft2 = {0};
     LPALLTYPES        lpatLft2 = NULL;
+    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
+    int               iSizeofRes;           // Sizeof an item in the result
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     // The right arg data is a valid HGLOBAL array
     Assert (IsGlbTypeVarDir_PTB (hGlbRht));
@@ -4175,6 +4481,9 @@ HGLOBAL PrimFnDydSiScNest_EM
     else
     if (IsErrorType (aplTypeRes))
         goto DOMAIN_EXIT;
+
+    // Calculate the sizeof
+    iSizeofRes = TranslateArrayTypeToSizeof (aplTypeRes);
 
     // Special case APA result
     if (IsSimpleAPA (aplTypeRes))
@@ -4298,14 +4607,44 @@ RESTART_EXCEPTION:
                     atRht.aplLongest = ((LPSYMENTRY) hGlbSub)->stData.stLongest;
                     aplTypeHetRht    = TranslateImmTypeToArrayType (((LPSYMENTRY) hGlbSub)->stFlags.ImmType);
 
-                    hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
-                                                    hGlbRes,
-                                                    aplTypeLft,
-                                                    lpatLft,
-                                                    aplTypeHetRht,
-                                                   &atRht,
-                                                    lpPrimSpec);
-                    // No need to free the old atRht as it isn't created (it's copied)
+                    // Check for NaNs
+
+                    // Are the args a NaN?
+                    bNaNLft = IsArgNaN (aplTypeLft   ,  lpatLft                                 , 0);
+                    bNaNRht = IsArgNaN (aplTypeHetRht, &((LPSYMENTRY) hGlbSub)->stData.stLongest, 0);
+
+                    // If either arg is a NaN, ...
+                    if (bNaNLft || bNaNRht)
+                    {
+                        if (gbAllowNaN)
+                        {
+                            if (bNaNLft)
+                                hGlbSub =
+                                  MakeGlbEntry_EM (aplTypeLft,              // Entry type
+                                                   lpatLft,                 // Ptr to the value
+                                                   TRUE,                    // TRUE iff we should initialize the target first
+                                                   lptkFunc);               // Ptr to function token
+                            else
+                                hGlbSub =
+                                  MakeSymEntry_EM (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,     // Immediate type
+                                                  &((LPSYMENTRY) hGlbSub)->stData.stLongest,    // Ptr to immediate value
+                                                   lptkFunc);                                   // Ptr to function token
+                        } else
+                        if (bNaNLft)
+                            goto LEFT_DOMAIN_EXIT;
+                        else
+                            goto RIGHT_DOMAIN_EXIT;
+                    } else
+                    {
+                        hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
+                                                        hGlbRes,
+                                                        aplTypeLft,
+                                                        lpatLft,
+                                                        aplTypeHetRht,
+                                                       &atRht,
+                                                        lpPrimSpec);
+                        // No need to free the old atRht as it isn't created (it's copied)
+                    } // End IF/ELSE
 
                     if (hGlbSub EQ NULL)
                         goto ERROR_EXIT;
@@ -4360,109 +4699,137 @@ RESTART_EXCEPTION:
                 (*aTypeActPromote[aplTypeRht][aplTypeRht]) (lpMemRht, uRes, &atTmp);
 
                 // Get a ptr to the right arg element
-                lpSymGlbSub = (LPVOID) &atTmp;
+                lpSymGlbSub   = (LPVOID) &atTmp;
+                aplLongestRht = atTmp.aplLongest;
 
                 // Save as right arg element type
                 aplTypeHetRht = aplTypeRht;
             } // End IF/ELSE
 
-            // Get the common storage type between the left & right args
-            aplTypeCom = aTypePromote[aplTypeLft][aplTypeHetRht];
+            // Check for NaNs
 
-            // Promote the left arg to the common type
-            (*aTypeActPromote[aplTypeLft][aplTypeCom]) (lpatLft, 0, &atLft);
+            // Are the args a NaN?
+            bNaNLft = IsArgNaN (aplTypeLft   ,  lpatLft      , 0);
+            bNaNRht = IsArgNaN (aplTypeHetRht, &aplLongestRht, 0);
 
-            // If the right arg is hetero, ...
-            if (IsSimpleHet (aplTypeRht))
-                // Promote the right arg to the common type
-                (*aTypeActPromote[aplTypeHetRht][aplTypeCom]) (&aplLongestRht, 0, &atRht);
-            else
-                // Promote the right arg to the common type
-                (*aTypeActPromote[aplTypeHetRht][aplTypeCom]) (lpSymGlbSub   , 0, &atRht);
-
-            // Get the target function
-            lpPrimFn = TranslateTypesToDydPSFIndex (lpPrimSpec, aplTypeRes, aplTypeCom);
-
-            __try
+            // If either arg is a NaN, ...
+            if (bNaNLft || bNaNRht)
             {
+                if (gbAllowNaN)
+                {
+////////////////////DbgBrk ();          // #5:  {NaN}x + 1 (2 3)
+
+                    if (bNaNLft)
+                        // Copy the left arg to the result
+                        (*aTypeActPromote[aplTypeLft   ][aplTypeRes]) (lpatLft       , 0, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
+                    else
+                        // Copy the right arg to the result
+                        (*aTypeActPromote[aplTypeHetRht][aplTypeRes]) (&aplLongestRht, 0, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
+                } else
+                if (bNaNLft)
+                    goto LEFT_DOMAIN_EXIT;
+                else
+                    goto RIGHT_DOMAIN_EXIT;
+            } else
+            {
+                // Get the common storage type between the left & right args
+                aplTypeCom = aTypePromote[aplTypeLft][aplTypeHetRht];
+
+                // Promote the left arg to the common type
+                (*aTypeActPromote[aplTypeLft][aplTypeCom]) (lpatLft, 0, &atLft);
+
+                // If the right arg is hetero, ...
+                if (IsSimpleHet (aplTypeRht))
+                    // Promote the right arg to the common type
+                    (*aTypeActPromote[aplTypeHetRht][aplTypeCom]) (&aplLongestRht, 0, &atRht);
+                else
+                    // Promote the right arg to the common type
+                    (*aTypeActPromote[aplTypeHetRht][aplTypeCom]) (lpSymGlbSub   , 0, &atRht);
+
+                // Get the target function
+                lpPrimFn = TranslateTypesToDydPSFIndex (lpPrimSpec, aplTypeRes, aplTypeCom);
+
                 __try
                 {
-                    // Call the function
-                    (*lpPrimFn) (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
-                } __finally
+                    __try
+                    {
+                        // Call the function
+                        (*lpPrimFn) (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+                    } __finally
+                    {
+                        // Free the old atLft & atRht (if any)
+                        (*aTypeFree[aplTypeCom]) (&atLft, 0);
+                        (*aTypeFree[aplTypeCom]) (&atRht, 0);
+                    } // End __try/__finally
+                } __except (CheckException (GetExceptionInformation (), L"PrimFnDydNestSiSc_EM"))
                 {
-                    // Free the old atLft & atRht (if any)
-                    (*aTypeFree[aplTypeCom]) (&atLft, 0);
-                    (*aTypeFree[aplTypeCom]) (&atRht, 0);
-                } // End __try/__finally
-            } __except (CheckException (GetExceptionInformation (), L"PrimFnDydNestSiSc_EM"))
-            {
-                EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
+                    EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
 
-                dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #8: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
+                    dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #8: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
-                // Split cases based upon the ExceptionCode
-                switch (ExceptionCode)
-                {
-                    case EXCEPTION_DOMAIN_ERROR:
-                    case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-                    case EXCEPTION_INT_DIVIDE_BY_ZERO:
-                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+                    // Split cases based upon the ExceptionCode
+                    switch (ExceptionCode)
+                    {
+                        case EXCEPTION_DOMAIN_ERROR:
+                        case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+                        case EXCEPTION_INT_DIVIDE_BY_ZERO:
+                            MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                        goto DOMAIN_EXIT;
+                            goto DOMAIN_EXIT;
 
-                    case EXCEPTION_WS_FULL:
-                        goto WSFULL_EXIT;
+                        case EXCEPTION_WS_FULL:
+                            goto WSFULL_EXIT;
 
-                    case EXCEPTION_NONCE_ERROR:
-                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+                        case EXCEPTION_NONCE_ERROR:
+                            MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                        goto NONCE_EXIT;
+                            goto NONCE_EXIT;
 
-                    case EXCEPTION_RESULT_FLOAT:
-                    case EXCEPTION_RESULT_HC2F:
-                    case EXCEPTION_RESULT_HC4F:
-                    case EXCEPTION_RESULT_HC8F:
-                    case EXCEPTION_RESULT_VFP:
-                    case EXCEPTION_RESULT_HC2V:
-                    case EXCEPTION_RESULT_HC4V:
-                    case EXCEPTION_RESULT_HC8V:
-                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+                        case EXCEPTION_RESULT_FLOAT:
+                        case EXCEPTION_RESULT_HC2F:
+                        case EXCEPTION_RESULT_HC4F:
+                        case EXCEPTION_RESULT_HC8F:
+                        case EXCEPTION_RESULT_VFP:
+                        case EXCEPTION_RESULT_HC2V:
+                        case EXCEPTION_RESULT_HC4V:
+                        case EXCEPTION_RESULT_HC8V:
+                            MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                        if (IsNumeric (aplTypeRes))
-                        {
-                            if (hGlbRes NE NULL)
+                            if (IsNumeric (aplTypeRes))
                             {
-                                if (lpMemHdrRes NE NULL)
+                                if (hGlbRes NE NULL)
                                 {
-                                    // We need to start over with the result
-                                    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+                                    if (lpMemHdrRes NE NULL)
+                                    {
+                                        // We need to start over with the result
+                                        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+                                    } // End IF
+
+                                    // We no longer need this storage
+                                    FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
                                 } // End IF
 
-                                // We no longer need this storage
-                                FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+                                // It's now a promoted result
+                                aplTypeRes = TranslateExceptionCodeToArrayType (ExceptionCode);
+
+                                dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #8: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
+
+                                goto RESTART_EXCEPTION;
                             } // End IF
 
-                            // It's now a promoted result
-                            aplTypeRes = TranslateExceptionCodeToArrayType (ExceptionCode);
+                            // Display message for unhandled exception
+                            DisplayException ();
 
-                            dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #8: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
+                            break;
 
-                            goto RESTART_EXCEPTION;
-                        } // End IF
+                        default:
+                            // Display message for unhandled exception
+                            DisplayException ();
 
-                        // Display message for unhandled exception
-                        DisplayException ();
-
-                        break;
-
-                    default:
-                        // Display message for unhandled exception
-                        DisplayException ();
-
-                        break;
-                } // End SWITCH
-            } // End __try/__except
+                            break;
+                    } // End SWITCH
+                } // End __try/__except
+            } // End IF/ELSE
         } // End IF/ELSE
     } // End FOR
 
@@ -4725,6 +5092,7 @@ RESTART_EXCEPTION_IMMED:
             __try
             {
                 // Call the function
+                // NaNs handled by the caller
                 (*lpPrimFn) (lpMemRes, 0, &atLft, &atRht, lpPrimSpec);
             } __finally
             {
@@ -4934,6 +5302,8 @@ UBOOL PrimFnDydSimpSimp_EM
                       lpMemLft,             // ...    left arg ...
                       lpMemRht;             // ...    right ...
     UBOOL             bRet = TRUE,          // TRUE iff result is valid
+                      bNaNLft,              // TRUE iff the left arg is a NaN
+                      bNaNRht,              // ...          right ...
                       bHetLft,              // TRUE iff the left arg is hetero
                       bHetRht;              // ...          right ...
     LPAPLUINT         lpMemWVec = NULL,
@@ -4965,6 +5335,14 @@ UBOOL PrimFnDydSimpSimp_EM
     ALLTYPES          atLft = {0},          // Left arg as ALLTYPES
                       atRht = {0};          // Right ...
     ATISATVAT        *lpPrimFn;             // Ptr to primitive dyadic scalar function
+    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
+    int               iSizeofRes;           // Sizeof an item in the result
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
+
+    // Calculate the sizeof
+    iSizeofRes = TranslateArrayTypeToSizeof (aplTypeRes);
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -5296,19 +5674,30 @@ RESTART_EXCEPTION:
                     uHetRht = uRht;
                 } // End IF
 
-////            // If the function is Equal or NotEqual,
-////            //   and the types are Char vs. Num or vice versa, ...
-////            if ((lptkFunc->tkData.tkChar EQ UTF16_EQUAL
-////              || lptkFunc->tkData.tkChar EQ UTF16_NOTEQUAL)
-////             && ((IsNumeric (aplTypeLft) && IsSimpleChar (aplTypeRht))
-////              || (IsNumeric (aplTypeRht) && IsSimpleChar (aplTypeLft))))
-////            {
-////                // Use separate types so we don't promote to HETERO which we don't free at the end
-////                aplTypeComLft = aplTypeLft;
-////                aplTypeComRht = aplTypeRht;
-////                aplTypeCom    = ARRAY_HETERO;
-////            } else
-////            {
+                // Check for NaNs
+
+                // Are the args a NaN?
+                bNaNLft = IsArgNaN (aplTypeHetLft, lpMemLft, uLft);
+                bNaNRht = IsArgNaN (aplTypeHetRht, lpMemRht, uRht);
+
+                // If either arg is a NaN, ...
+                if (bNaNLft || bNaNRht)
+                {
+                    if (gbAllowNaN)
+                    {
+                        if (bNaNLft)
+                            // Convert the left arg to the common datatype
+                            (*aTypeActPromote[aplTypeHetLft][aplTypeRes]) (lpSymGlbLft, uHetLft, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
+                        else
+                            // Convert the right arg to the common datatype
+                            (*aTypeActPromote[aplTypeHetRht][aplTypeRes]) (lpSymGlbRht, uHetRht, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
+                    } else
+                    if (bNaNLft)
+                        goto LEFT_DOMAIN_EXIT;
+                    else
+                        goto RIGHT_DOMAIN_EXIT;
+                } else
+                {
                     // If the argument's dimension and the result's differ,
                     //   promote the arg to the type of the result
                     // This can happen when (say) a VFP blows up to HC2V (e.g., log -2.5v  or  (-4)o-0.5v)
@@ -5323,36 +5712,36 @@ RESTART_EXCEPTION:
 
                     // Initialize left and right common types
                     aplTypeComLft = aplTypeComRht = aplTypeCom;
-////            } // End IF/ELSE
 
-                // Convert the left arg to the common datatype
-                (*aTypeActPromote[aplTypeHetLft][aplTypeComLft]) (lpSymGlbLft, uHetLft, &atLft);
+                    // Convert the left arg to the common datatype
+                    (*aTypeActPromote[aplTypeHetLft][aplTypeComLft]) (lpSymGlbLft, uHetLft, &atLft);
 
-                // Convert the right arg to the common datatype
-                (*aTypeActPromote[aplTypeHetRht][aplTypeComRht]) (lpSymGlbRht, uHetRht, &atRht);
+                    // Convert the right arg to the common datatype
+                    (*aTypeActPromote[aplTypeHetRht][aplTypeComRht]) (lpSymGlbRht, uHetRht, &atRht);
 
-                // Get the target function
-                lpPrimFn = TranslateTypesToDydPSFIndex (lpPrimSpec, aplTypeRes, aplTypeCom);
+                    // Get the target function
+                    lpPrimFn = TranslateTypesToDydPSFIndex (lpPrimSpec, aplTypeRes, aplTypeCom);
 
-                __try
-                {
                     __try
                     {
-                        // Call the function
-                        (*lpPrimFn) (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
-                    } __finally
-                    {
-                        // Free the old atLft & atRht (if any)
-                        (*aTypeFree[aplTypeComLft]) (&atLft, 0);
-                        (*aTypeFree[aplTypeComRht]) (&atRht, 0);
+                        __try
+                        {
+                            // Call the function
+                            (*lpPrimFn) (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+                        } __finally
+                        {
+                            // Free the old atLft & atRht (if any)
+                            (*aTypeFree[aplTypeComLft]) (&atLft, 0);
+                            (*aTypeFree[aplTypeComRht]) (&atRht, 0);
 
-                        // Zero the memory in case we use it again
-                        //   because aplTypeCom changes when looping
-                        //   through a HETERO.
-                        ZeroMemory (&atLft, sizeof (atLft));
-                        ZeroMemory (&atRht, sizeof (atRht));
-                    } // End __try/__finally
-                } __except (EXCEPTION_CONTINUE_SEARCH) {}
+                            // Zero the memory in case we use it again
+                            //   because aplTypeCom changes when looping
+                            //   through a HETERO.
+                            ZeroMemory (&atLft, sizeof (atLft));
+                            ZeroMemory (&atRht, sizeof (atRht));
+                        } // End __try/__finally
+                    } __except (EXCEPTION_CONTINUE_SEARCH) {}
+                } // End IF/ELSE
             } // End FOR
         } __except (CheckException (GetExceptionInformation (), L"PrimFnDydSimpSimp_EM #1"))
         {
@@ -5595,6 +5984,16 @@ RESTART_EXCEPTION:
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                lptkFunc);
+    goto ERROR_EXIT;
+
+LEFT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
     goto ERROR_EXIT;
 
 NONCE_EXIT:
@@ -5904,6 +6303,10 @@ UINT TranslateResArgToPSFIndex
         case ARRAY_HC2V:
         case ARRAY_HC4V:
         case ARRAY_HC8V:
+            // If the common type is FLT, ...
+            if (IsHCFlt (aplTypeCom))
+                return 3;                       // [3]
+
             Assert (IsHCRat (aplTypeCom)
                  || IsHCVfp (aplTypeCom));
             return 5 + IsHCVfp (aplTypeCom);    // [5, 6]
@@ -5943,7 +6346,7 @@ LPATISAT TranslateTypesToMonPSFIndex
         // Skip to the proper index in "IFIFRRV"
         uTmp += TranslateResArgToPSFIndex (aplTypeRes, aplTypeRht);
 
-        // The index below is into the Table starting at IisI through HC8VisHC8VvHC8V
+        // The index below is into the Table starting at IisI through HC8VisHC8V
         return (&lpPrimSpec->IisI)[uTmp];
     } // End IF/ELSE
 } // End TranslateTypesToMonPSFIndex

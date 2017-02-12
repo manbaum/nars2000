@@ -5,7 +5,7 @@
       about="urn:mozilla:install-manifest"
       em:id="{34F189F2-E184-4c2e-8441-D32E4B77B29E}"
       em:name="APLChars"
-      em:version="0.0.757"
+      em:version="0.0.758"
       em:creator="Bob Smith"
       em:description="A mechanism for entering APL characters into a message."
       em:homepageURL="http://www.sudleyplace.com/APL/AplInEmail.ahtml"

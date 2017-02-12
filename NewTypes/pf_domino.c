@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -416,6 +416,10 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     APLINT              iSizeofTmp;             // Temp sizeof () datatype
     ALLTYPES            atRes = {0};            // Result arg as ALLTYPES
     LPAPLDIM            lpMemDimRht;            // Ptr to right arg dimensions
+    LPPERTABDATA        lpMemPTD;               // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -989,13 +993,12 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    // Check for NaN
-                    if (!_isnan (lpGslVectorW->data[uCol]))
-                        lpMemData[uCol * uNumRows + uRow] = lpGslVectorW->data[uCol];
-                    else
+                    // If it's a NaN and we don't allow them, ...
+                    if (_isnan (lpGslVectorW->data[uCol]) && !gbAllowNaN)
                         goto DOMAIN_EXIT;
+                    else
+                        lpMemData[uCol * uNumRows + uRow] = lpGslVectorW->data[uCol];
                 } // End FOR
-
 #undef  lpMemData
             } // End FOR
 

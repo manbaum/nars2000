@@ -1186,6 +1186,7 @@ LPWCHAR ParseSavedWsVar_EM
                  lpSymTmp;              // Ptr to temporary LPSYMENTRY
     APLINT       aplInteger;            // Temporary integer
     APLFLOAT     aplFloat;              // ...       float
+    LPAPLFLOAT   lpaplFloat;            // Ptr to aplFloat
     APLSTYPE     aplTypeObj;            // Object storage type
     HGLOBAL      hGlbObj;               // Object global memory handle
     LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
@@ -1367,21 +1368,17 @@ LPWCHAR ParseSavedWsVar_EM
                 break;
 
             case ARRAY_FLOAT:       // Float
-                // Find the trailing L' '
-                lpwCharEnd = SkipToCharW (lpwSrc, L' ');
+                // Save a ptr to the var to conform to ParseHCxFs
+                lpaplFloat = &aplFloat;
 
-                // Save old next char, zap to form zero-terminated name
-                wcTmp = *lpwCharEnd; *lpwCharEnd = WC_EOS;
-
-                // Convert the format string to ASCII
-                W2A ((LPCHAR) lpwszFormat, lpwSrc, (DEF_WFORMAT_MAXNELM - 1) * sizeof (WCHAR));
-
-                // Restore the original value
-                *lpwCharEnd = wcTmp;
-
-                // Convert special chars to float
-                aplFloat = ConvertSpecCharsToFloat ((LPCHAR) lpwszFormat, NULL);
-
+                // Parse the sequence of HC1F numbers
+                ParseHCxFs (&lpaplFloat,            // Ptr to ptr to output save area
+                             1,                     // NELM of the input
+                            &lpwSrc,                // Ptr to ptr to input
+                             lpwszFormat,           // Ptr to scratch area
+                             lpMemPTD,              // Ptr to PerTabData global memory
+                             NULL,                  // Ptr to HC separators
+                             0);                    // # HC separators
                 // If we're to save the SymTab, ...
                 if (bSymTab)
                 {
@@ -1394,10 +1391,6 @@ LPWCHAR ParseSavedWsVar_EM
                 } else
                     // Save the result directly
                     *((LPAPLFLOAT) *lplpMemObj) = aplFloat;
-
-                // Skip to the next field
-                lpwSrc = &lpwCharEnd[1];
-
                 break;
 
             defstop
@@ -1455,22 +1448,16 @@ HGLOBAL LoadWorkspaceGlobal_EM
     STFLAGS           stFlags = {0};        // SymTab flags
     LPSYMENTRY        lpSymEntry,           // Ptr to STE for HGLOBAL
                       lpSymLink;            // Ptr to SYMENTRY temp for *lplpSymLink
-    char              cTmp;                 // Temporary char
     WCHAR             wcTmp,                // Temporary char
                       wszTimeStamp[16 + 1]; // Output save area for time stamp
     LPWCHAR           lpwFcnName,           // Ptr to function name
                       lpwSectName,          // Ptr to section name
-                      lpwSrcStart,          // Ptr to starting point
-                      lpwCharEnd;           // Temporary ptr
+                      lpwSrcStart;          // Ptr to starting point
     UINT              uBitIndex,            // Bit index for looping through Boolean result
                       uLineCnt,             // # lines in the current function including the header
                       uCnt,                 // Loop counter
                       Count;                // Temporary count for monitor info
-    APLU3264          uLen,                 // Temporary length
-                      uLen2;                // ...
-    mp_prec_t         uDefPrec,             // Default precision to use when inputting VFP numbers
-                      uCommPrec = 0,        // Common precision for array of VFP numbers
-                      uOldPrec;             // Old precision to be restored later
+    mp_prec_t         uCommPrec = 0;        // Common precision for array of VFP numbers
     FILETIME          ftCreation,           // Function creation time
                       ftLastMod;            // ...      last modification time
     SYSTEMTIME        systemTime;           // Current system (UTC) time
@@ -1486,7 +1473,6 @@ HGLOBAL LoadWorkspaceGlobal_EM
     LPVOID            lpMemObj;             // Ptr to object global memory
     APLINT            aplInteger;           // Temporary integer
     LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
-    LPCHAR            lpFmt;                // Temporary ptr
     LPWCHAR           lpwszFormat,          // Ptr to formatting save area
                       lpwszProf,            // Ptr to profile string
                       lpwszOldTemp;         // Ptr to temporary save area
@@ -1737,28 +1723,14 @@ HGLOBAL LoadWorkspaceGlobal_EM
                     break;
 
                 case ARRAY_FLOAT:
-                    // Loop through the elements
-                    for (uObj = 0; uObj < aplNELMObj; uObj++)
-                    {
-                        // Find the trailing L' '
-                        lpwCharEnd = SkipToCharW (lpwszProf, L' ');
-
-                        // Save old next char, zap to form zero-terminated name
-                        wcTmp = *lpwCharEnd; *lpwCharEnd = WC_EOS;
-
-                        // Convert the format string to ASCII
-                        W2A ((LPCHAR) lpwszFormat, lpwszProf, (DEF_WFORMAT_MAXNELM - 1) * sizeof (WCHAR));
-
-                        // Restore the original value
-                        *lpwCharEnd = wcTmp;
-
-                        // Convert special chars to float
-                        *((LPAPLFLOAT) lpMemObj)++ = ConvertSpecCharsToFloat ((LPCHAR) lpwszFormat, NULL);
-
-                        // Skip to the next field
-                        lpwszProf = SkipPastCharW (lpwszProf, L' ');
-                    } // End FOR
-
+                    // Parse the sequence of HC1F numbers
+                    ParseHCxFs (&(LPAPLFLOAT) lpMemObj, // Ptr to ptr to output save area
+                                 aplNELMObj,            // NELM of the input
+                                &lpwszProf,             // Ptr to ptr to input
+                                 lpwszFormat,           // Ptr to scratch area
+                                 lpMemPTD,              // Ptr to PerTabData global memory
+                                 NULL,                  // Ptr to HC separators
+                                 0);                    // # HC separators
                     break;
 
                 case ARRAY_CHAR:
@@ -1835,106 +1807,26 @@ HGLOBAL LoadWorkspaceGlobal_EM
                     break;
 
                 case ARRAY_RAT:
-                    // Loop through the elements
-                    for (uObj = 0; uObj < aplNELMObj; uObj++)
-                    {
-                        LPWCHAR lpwWS,
-                                lpwStr;
-                        LPCHAR  lpStr;
-
-                        // Skip to the next white space
-                        lpwWS = SkipToCharW (lpwszProf, L' ');
-
-                        // Convert it to a WC_EOS
-                        wcTmp = *lpwWS; *lpwWS = WC_EOS;
-
-                        // Initialize the save area
-                        mpq_init ((LPAPLRAT) lpMemObj);
-
-                        // Convert the string from WCHAR to char
-                        lpwStr = lpwszProf; lpStr = (LPCHAR) lpwStr;
-                        while (*lpwStr)
-                            *lpStr++ = (char) *lpwStr++;
-                        *lpStr = AC_EOS;
-
-                        // Restore the original value
-                        *lpwWS = wcTmp;
-
-                        // Check for positive infinity
-                        if (lstrcmp ((LPCHAR) lpwszProf, TEXT_INFINITY) EQ 0)
-                            mpq_set_inf (((LPAPLRAT) lpMemObj)++, 1);
-                        else
-                        // Check for negative infinity
-                        if (lstrcmp ((LPCHAR) lpwszProf, "-" TEXT_INFINITY) EQ 0)
-                            mpq_set_inf (((LPAPLRAT) lpMemObj)++, -1);
-                        else
-                            // Convert the string to rational
-                            mpq_set_str (((LPAPLRAT) lpMemObj)++, (LPCHAR) lpwszProf, 10);
-
-                        // Skip to the next field
-                        lpwszProf = SkipPastCharW (lpwWS, L' ');
-                    } // End FOR
-
+                    // Parse the sequence of HC1R numbers
+                    ParseHCxRs (&(LPAPLRAT) lpMemObj,   // Ptr to ptr to output save area
+                                 aplNELMObj,            // NELM of the input
+                                &lpwszProf,             // Ptr to ptr to input
+                                 lpwszFormat,           // Ptr to scratch area
+                                 lpMemPTD,              // Ptr to PerTabData global memory
+                                 NULL,                  // Ptr to HC separators
+                                 0);                    // # HC separators
                     break;
 
                 case ARRAY_VFP:
-                    // Get the current precision
-                    uOldPrec = mpfr_get_default_prec ();
-
-                    // Loop through the elements
-                    for (uObj = 0; uObj < aplNELMObj; uObj++)
-                    {
-                        // Skip to the next white space
-                        lpwCharEnd = SkipToCharW (lpwszProf, L' ');
-
-                        // Convert it to a WC_EOS
-                        wcTmp = *lpwCharEnd; *lpwCharEnd = WC_EOS;
-
-                        // If there's a preceding FPC as (nnn), ...
-                        if (*lpwszProf EQ L'(')
-                        {
-                            // Skip over the leading paren
-                            Assert (*lpwszProf EQ L'('); lpwszProf++;
-
-                            // Scan the new precision
-                            sscanfW (lpwszProf, L"%u", &uDefPrec);
-
-                            // Set the default precision
-                            mpfr_set_default_prec (uDefPrec);
-
-                            // Skip past the trailing paren
-                            lpwszProf = SkipPastCharW (lpwszProf, L')');
-                        } else
-                            // Set the default precision
-                            mpfr_set_default_prec ((uCommPrec EQ 0) ? uOldPrec : uCommPrec);
-
-                        // Convert the format string to ASCII
-                        W2A (lpFmt = (LPCHAR) lpwszFormat, lpwszProf, (DEF_WFORMAT_MAXNELM - 1) * sizeof (WCHAR));
-
-                        // Restore the original value
-                        *lpwCharEnd = wcTmp;
-
-                        // Initialize the save area to 0 using the precision set above
-                        mpfr_init0 ((LPAPLVFP) lpMemObj);
-
-                        // Check for positive infinity
-                        if (lstrcmp (lpFmt, TEXT_INFINITY) EQ 0)
-                            mpfr_set_inf (((LPAPLVFP) lpMemObj)++, 1);
-                        else
-                        // Check for negative infinity
-                        if (lstrcmp (lpFmt, "-" TEXT_INFINITY) EQ 0)
-                            mpfr_set_inf (((LPAPLVFP) lpMemObj)++, -1);
-                        else
-                            // Convert the string to VFP
-                            mpfr_set_str (((LPAPLVFP) lpMemObj)++, lpFmt, 10, MPFR_RNDN);
-
-                        // Skip to the next field
-                        lpwszProf = SkipPastCharW (lpwszProf, L' ');
-                    } // End FOR
-
-                    // Restore the default precision
-                    mpfr_set_default_prec (uOldPrec);
-
+                    // Parse the sequence of HC1V numbers
+                    ParseHCxVs (&(LPAPLVFP) lpMemObj,   // Ptr to ptr to output save area
+                                 aplNELMObj,            // NELM of the input
+                                &lpwszProf,             // Ptr to ptr to input
+                                 lpwszFormat,           // Ptr to scratch area
+                                 lpMemPTD,              // Ptr to PerTabData global memory
+                                 uCommPrec,             // Common precision
+                                 NULL,                  // Ptr to HC separators
+                                 0);                    // # HC separators
                     break;
 
                 case ARRAY_HC2I:
@@ -2059,909 +1951,105 @@ HGLOBAL LoadWorkspaceGlobal_EM
                     break;
 
                 case ARRAY_HC2F:
-                    // Loop through the elements
-                    for (uObj = 0; uObj < aplNELMObj; uObj++)
-                    {
-                        // Find the trailing L' '
-                        lpwCharEnd = SkipToCharW (lpwszProf, L' ');
-
-                        // Save old next char, zap to form zero-terminated name
-                        wcTmp = *lpwCharEnd; *lpwCharEnd = WC_EOS;
-
-                        // Convert the format string to ASCII
-                        W2A (lpFmt = (LPCHAR) lpwszFormat, lpwszProf, (DEF_WFORMAT_MAXNELM - 1) * sizeof (WCHAR));
-
-                        // Restore the original value
-                        *lpwCharEnd = wcTmp;
-
-                        // Convert special chars to float
-                        *((LPAPLFLOAT) lpMemObj)++ = ConvertSpecCharsToFloat (lpFmt, &uLen);
-
-                        // Skip over the scanned chars
-                        lpwszProf += uLen;
-                        lpFmt  += uLen;
-
-                        // If there's a separator, ...
-                        if (lpwszProf[0] EQ GetHC2Sep)
-                        {
-                            // Skip over the separator
-                            lpwszProf++;
-                            lpFmt++;
-
-                            // Convert special chars to float
-                            *((LPAPLFLOAT) lpMemObj)++ = ConvertSpecCharsToFloat (lpFmt, &uLen);
-
-                            // Skip over the scanned chars
-                            lpwszProf += uLen;
-                            lpFmt  += uLen;
-                        } else
-                            // Fill in the zero coefficient
-                            *((LPAPLFLOAT) lpMemObj)++ = 0;
-
-                        // Skip to the next field
-                        lpwszProf = SkipPastCharW (lpwszProf, L' ');
-                    } // End FOR
-
+                    // Parse the sequence of HC2F numbers
+                    ParseHCxFs (&(LPAPLFLOAT) lpMemObj, // Ptr to ptr to output save area
+                                 aplNELMObj,            // NELM of the input
+                                &lpwszProf,             // Ptr to ptr to input
+                                 lpwszFormat,           // Ptr to scratch area
+                                 lpMemPTD,              // Ptr to PerTabData global memory
+                                &hc2Sep[0],             // Ptr to HC separators
+                                 countof (hc2Sep));     // # HC separators
                     break;
 
                 case ARRAY_HC4F:
-                    // Loop through the elements
-                    for (uObj = 0; uObj < aplNELMObj; uObj++)
-                    {
-                        // Find the trailing L' '
-                        lpwCharEnd = SkipToCharW (lpwszProf, L' ');
-
-                        // Save old next char, zap to form zero-terminated name
-                        wcTmp = *lpwCharEnd; *lpwCharEnd = WC_EOS;
-
-                        // Convert the format string to ASCII
-                        W2A (lpFmt = (LPCHAR) lpwszFormat, lpwszProf, (DEF_WFORMAT_MAXNELM - 1) * sizeof (WCHAR));
-
-                        // Restore the original value
-                        *lpwCharEnd = wcTmp;
-
-                        // Convert special chars to float
-                        *((LPAPLFLOAT) lpMemObj)++ = ConvertSpecCharsToFloat (lpFmt, &uLen);
-
-                        // Skip over the scanned chars
-                        lpwszProf += uLen;
-                        lpFmt  += uLen;
-
-                        // Loop through the separators
-                        for (uCnt = 0; uCnt < countof (hc4Sep) ; uCnt++)
-                        // If there's a separator, ...
-                        if (strncmpW (lpwszProf, hc4Sep[uCnt], uLen = lstrlenW (hc4Sep[uCnt])) EQ 0
-                         && (strchrW (L"0123456789-", lpwszProf[uLen]) NE NULL))
-                        {
-                            // Skip over the separator
-                            lpwszProf += uLen;
-                            lpFmt  += uLen;
-
-                            // Convert special chars to float
-                            *((LPAPLFLOAT) lpMemObj)++ = ConvertSpecCharsToFloat (lpFmt, &uLen);
-
-                            // Skip over the scanned chars
-                            lpwszProf += uLen;
-                            lpFmt  += uLen;
-                        } else
-                            // Fill in the zero coefficient
-                            *((LPAPLFLOAT) lpMemObj)++ = 0;
-
-                        // Skip to the next field
-                        lpwszProf = SkipPastCharW (lpwszProf, L' ');
-                    } // End FOR
-
+                    // Parse the sequence of HC4F numbers
+                    ParseHCxFs (&(LPAPLFLOAT) lpMemObj, // Ptr to ptr to output save area
+                                 aplNELMObj,            // NELM of the input
+                                &lpwszProf,             // Ptr to ptr to input
+                                 lpwszFormat,           // Ptr to scratch area
+                                 lpMemPTD,              // Ptr to PerTabData global memory
+                                &hc4Sep[0],             // Ptr to HC separators
+                                 countof (hc4Sep));     // # HC separators
                     break;
 
                 case ARRAY_HC8F:
-                    // Loop through the elements
-                    for (uObj = 0; uObj < aplNELMObj; uObj++)
-                    {
-                        // Find the trailing L' '
-                        lpwCharEnd = SkipToCharW (lpwszProf, L' ');
-
-                        // Save old next char, zap to form zero-terminated name
-                        wcTmp = *lpwCharEnd; *lpwCharEnd = WC_EOS;
-
-                        // Convert the format string to ASCII
-                        W2A (lpFmt = (LPCHAR) lpwszFormat, lpwszProf, (DEF_WFORMAT_MAXNELM - 1) * sizeof (WCHAR));
-
-                        // Restore the original value
-                        *lpwCharEnd = wcTmp;
-
-                        // Convert special chars to float
-                        *((LPAPLFLOAT) lpMemObj)++ = ConvertSpecCharsToFloat (lpFmt, &uLen);
-
-                        // Skip over the scanned chars
-                        lpwszProf += uLen;
-                        lpFmt  += uLen;
-
-                        // Loop through the separators
-                        for (uCnt = 0; uCnt < countof (hc8Sep) ; uCnt++)
-                        // If there's a separator, ...
-                        if (strncmpW (lpwszProf, hc8Sep[uCnt], uLen = lstrlenW (hc8Sep[uCnt])) EQ 0
-                         && (strchrW (L"0123456789-", lpwszProf[uLen]) NE NULL))
-                        {
-                            // Skip over the separator
-                            lpwszProf += uLen;
-                            lpFmt  += uLen;
-
-                            // Convert special chars to float
-                            *((LPAPLFLOAT) lpMemObj)++ = ConvertSpecCharsToFloat (lpFmt, &uLen);
-
-                            // Skip over the scanned chars
-                            lpwszProf += uLen;
-                            lpFmt  += uLen;
-                        } else
-                            // Fill in the zero coefficient
-                            *((LPAPLFLOAT) lpMemObj)++ = 0;
-
-                        // Skip to the next field
-                        lpwszProf = SkipPastCharW (lpwszProf, L' ');
-                    } // End FOR
-
+                    // Parse the sequence of HC8F numbers
+                    ParseHCxFs (&(LPAPLFLOAT) lpMemObj, // Ptr to ptr to output save area
+                                 aplNELMObj,            // NELM of the input
+                                &lpwszProf,             // Ptr to ptr to input
+                                 lpwszFormat,           // Ptr to scratch area
+                                 lpMemPTD,              // Ptr to PerTabData global memory
+                                &hc8Sep[0],             // Ptr to HC separators
+                                 countof (hc8Sep));     // # HC separators
                     break;
 
                 case ARRAY_HC2R:
-                    // Loop through the elements
-                    for (uObj = 0; uObj < aplNELMObj; uObj++)
-                    {
-                        // Find the trailing L' '
-                        lpwCharEnd = SkipToCharW (lpwszProf, L' ');
-
-                        // Save old next char, zap to form zero-terminated name
-                        wcTmp = *lpwCharEnd; *lpwCharEnd = WC_EOS;
-
-                        // Convert the format string to ASCII
-                        W2A (lpFmt = (LPCHAR) lpwszFormat, lpwszProf, (DEF_WFORMAT_MAXNELM - 1) * sizeof (WCHAR));
-
-                        // Restore the original value
-                        *lpwCharEnd = wcTmp;
-
-                        // Initialize the save area to 0/1
-                        mpq_init ((LPAPLRAT) lpMemObj);
-
-                        // Check for positive infinity
-                        if (strncmp (lpFmt, TEXT_INFINITY, strcountof (TEXT_INFINITY)) EQ 0)
-                        {
-                            mpq_set_inf (((LPAPLRAT) lpMemObj)++, 1);
-
-                            // Count the scanned chars
-                            uLen = strcountof (TEXT_INFINITY);
-                        } else
-                        // Check for negative infinity
-                        if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                        {
-                            mpq_set_inf (((LPAPLRAT) lpMemObj)++, -1);
-
-                            // Count the scanned chars
-                            uLen = strcountof ("-" TEXT_INFINITY);
-                        } else
-                        {
-                            // Count the valid chars
-                            uLen = strspnW (lpwszProf, L"0123456789/-");
-
-                            // If there's a trailing separator, ...
-                            if (lpwszProf[uLen] EQ GetHC2Sep)
-                            {
-                                // Save old next char, zap to form zero-terminated name
-                                cTmp = lpFmt[uLen]; lpFmt[uLen] = AC_EOS;
-
-                                // Convert the string to rational
-                                mpq_set_str (((LPAPLRAT) lpMemObj)++, lpFmt, 10);
-
-                                // Restore the original value
-                                lpFmt[uLen] = cTmp;
-                            } else
-                                // Convert the string to rational
-                                mpq_set_str (((LPAPLRAT) lpMemObj)++, lpFmt, 10);
-                        } // End IF/ELSE/...
-
-                        // Skip over the scanned chars
-                        lpwszProf += uLen;
-                        lpFmt  += uLen;
-
-                        // Initialize the save area to 0/1
-                        mpq_init ((LPAPLRAT) lpMemObj);
-
-                        // If there's a separator, ...
-                        if (lpwszProf[0] EQ GetHC2Sep)
-                        {
-                            // Skip over the separator
-                            lpwszProf++;
-                            lpFmt++;
-
-                            // Check for positive infinity
-                            if (strncmp (lpFmt, TEXT_INFINITY, strcountof (TEXT_INFINITY)) EQ 0)
-                            {
-                                mpq_set_inf (((LPAPLRAT) lpMemObj)++, 1);
-
-                                // Count the scanned chars
-                                uLen = strcountof (TEXT_INFINITY);
-                            } else
-                            // Check for negative infinity
-                            if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                            {
-                                mpq_set_inf (((LPAPLRAT) lpMemObj)++, -1);
-
-                                // Count the scanned chars
-                                uLen = strcountof ("-" TEXT_INFINITY);
-                            } else
-                            {
-                                // Count the valid chars
-                                uLen = strspnW (lpwszProf, L"0123456789/-");
-
-                                // If there's a trailing separator, ...
-                                if (lpwszProf[uLen] EQ GetHC2Sep)
-                                {
-                                    // Save old next char, zap to form zero-terminated name
-                                    cTmp = lpFmt[uLen]; lpFmt[uLen] = AC_EOS;
-
-                                    // Convert the string to rational
-                                    mpq_set_str (((LPAPLRAT) lpMemObj)++, lpFmt, 10);
-
-                                    // Restore the original value
-                                    lpFmt[uLen] = cTmp;
-                                } else
-                                    // Convert the string to rational
-                                    mpq_set_str (((LPAPLRAT) lpMemObj)++, lpFmt, 10);
-                            } // End IF/ELSE/...
-
-                            // Skip over the scanned chars
-                            lpwszProf += uLen;
-                            lpFmt  += uLen;
-                        } else
-                            // Skip over the zero coefficient
-                            ((LPAPLRAT) lpMemObj)++;
-
-                        // Skip to the next field
-                        lpwszProf = SkipPastCharW (lpwszProf, L' ');
-                    } // End FOR
-
+                    // Parse the sequence of HC2R numbers
+                    ParseHCxRs (&(LPAPLRAT) lpMemObj,   // Ptr to ptr to output save area
+                                 aplNELMObj,            // NELM of the input
+                                &lpwszProf,             // Ptr to ptr to input
+                                 lpwszFormat,           // Ptr to scratch area
+                                 lpMemPTD,              // Ptr to PerTabData global memory
+                                &hc2Sep[0],             // Ptr to HC separators
+                                 countof (hc2Sep));     // # HC separators
                     break;
 
                 case ARRAY_HC4R:
-                    // Loop through the elements
-                    for (uObj = 0; uObj < aplNELMObj; uObj++)
-                    {
-                        // Find the trailing L' '
-                        lpwCharEnd = SkipToCharW (lpwszProf, L' ');
-
-                        // Save old next char, zap to form zero-terminated name
-                        wcTmp = *lpwCharEnd; *lpwCharEnd = WC_EOS;
-
-                        // Convert the format string to ASCII
-                        W2A (lpFmt = (LPCHAR) lpwszFormat, lpwszProf, (DEF_WFORMAT_MAXNELM - 1) * sizeof (WCHAR));
-
-                        // Restore the original value
-                        *lpwCharEnd = wcTmp;
-
-                        // Initialize the save area to 0/1
-                        mpq_init ((LPAPLRAT) lpMemObj);
-
-                        // Check for positive infinity
-                        if (strncmp (lpFmt, TEXT_INFINITY, strcountof (TEXT_INFINITY)) EQ 0)
-                        {
-                            mpq_set_inf (((LPAPLRAT) lpMemObj)++, 1);
-
-                            // Count the scanned chars
-                            uLen = strcountof (TEXT_INFINITY);
-                        } else
-                        // Check for negative infinity
-                        if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                        {
-                            mpq_set_inf (((LPAPLRAT) lpMemObj)++, -1);
-
-                            // Count the scanned chars
-                            uLen = strcountof ("-" TEXT_INFINITY);
-                        } else
-                        {
-                            // Count the valid chars
-                            uLen = strspnW (lpwszProf, L"0123456789/-");
-
-                            // If there's a trailing separator, ...
-                            if (strncmpW (&lpwszProf[uLen], hc4Sep[0], uLen2 = lstrlenW (hc4Sep[0])) EQ 0
-                             && (strchrW (L"0123456789-", lpwszProf[uLen + uLen2]) NE NULL))
-                            {
-                                // Save old next char, zap to form zero-terminated name
-                                cTmp = lpFmt[uLen]; lpFmt[uLen] = AC_EOS;
-
-                                // Convert the string to rational
-                                mpq_set_str (((LPAPLRAT) lpMemObj)++, lpFmt, 10);
-
-                                // Restore the original value
-                                lpFmt[uLen] = cTmp;
-                            } else
-                                // Convert the string to rational
-                                mpq_set_str (((LPAPLRAT) lpMemObj)++, lpFmt, 10);
-                        } // End IF/ELSE/...
-
-                        // Skip over the scanned chars
-                        lpwszProf += uLen;
-                        lpFmt  += uLen;
-
-                        // Loop through the separators
-                        for (uCnt = 0; uCnt < countof (hc4Sep) ; uCnt++)
-                        {
-                            // Initialize the save area to 0/1
-                            mpq_init ((LPAPLRAT) lpMemObj);
-
-                            // If there's a separator, ...
-                            if (strncmpW (lpwszProf, hc4Sep[uCnt], uLen = lstrlenW (hc4Sep[uCnt])) EQ 0
-                             && (strchrW (L"0123456789-", lpwszProf[uLen]) NE NULL))
-                            {
-                                // Skip over the separator
-                                lpwszProf += uLen;
-                                lpFmt  += uLen;
-
-                                // Check for positive infinity
-                                if (strncmp (lpFmt, TEXT_INFINITY, strcountof (TEXT_INFINITY)) EQ 0)
-                                {
-                                    mpq_set_inf (((LPAPLRAT) lpMemObj)++, 1);
-
-                                    // Count the scanned chars
-                                    uLen = strcountof (TEXT_INFINITY);
-                                } else
-                                // Check for negative infinity
-                                if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                                {
-                                    mpq_set_inf (((LPAPLRAT) lpMemObj)++, -1);
-
-                                    // Count the scanned chars
-                                    uLen = strcountof ("-" TEXT_INFINITY);
-                                } else
-                                {
-                                    // Count the valid chars
-                                    uLen = strspnW (lpwszProf, L"0123456789/-");
-
-                                    // If there's a trailing separator, ...
-                                    if ((uCnt + 1) < countof (hc4Sep)
-                                     && strncmpW (&lpwszProf[uLen], hc4Sep[uCnt + 1], uLen2 = lstrlenW (hc4Sep[uCnt + 1])) EQ 0
-                                     && (strchrW (L"0123456789-", lpwszProf[uLen + uLen2]) NE NULL))
-                                    {
-                                        // Save old next char, zap to form zero-terminated name
-                                        cTmp = lpFmt[uLen]; lpFmt[uLen] = AC_EOS;
-
-                                        // Convert the string to rational
-                                        mpq_set_str (((LPAPLRAT) lpMemObj)++, lpFmt, 10);
-
-                                        // Restore the original value
-                                        lpFmt[uLen] = cTmp;
-                                    } else
-                                        // Convert the string to rational
-                                        mpq_set_str (((LPAPLRAT) lpMemObj)++, lpFmt, 10);
-                                } // End IF/ELSE/...
-
-                                // Skip over the scanned chars
-                                lpwszProf += uLen;
-                                lpFmt  += uLen;
-                            } else
-                                // Skip over the zero coefficient
-                                ((LPAPLRAT) lpMemObj)++;
-                        } // End FOR
-
-                        // Skip to the next field
-                        lpwszProf = SkipPastCharW (lpwszProf, L' ');
-                    } // End FOR
-
+                    // Parse the sequence of HC4R numbers
+                    ParseHCxRs (&(LPAPLRAT) lpMemObj,   // Ptr to ptr to output save area
+                                 aplNELMObj,            // NELM of the input
+                                &lpwszProf,             // Ptr to ptr to input
+                                 lpwszFormat,           // Ptr to scratch area
+                                 lpMemPTD,              // Ptr to PerTabData global memory
+                                &hc4Sep[0],             // Ptr to HC separators
+                                 countof (hc4Sep));     // # HC separators
                     break;
 
                 case ARRAY_HC8R:
-                    // Loop through the elements
-                    for (uObj = 0; uObj < aplNELMObj; uObj++)
-                    {
-                        // Find the trailing L' '
-                        lpwCharEnd = SkipToCharW (lpwszProf, L' ');
-
-                        // Save old next char, zap to form zero-terminated name
-                        wcTmp = *lpwCharEnd; *lpwCharEnd = WC_EOS;
-
-                        // Convert the format string to ASCII
-                        W2A (lpFmt = (LPCHAR) lpwszFormat, lpwszProf, (DEF_WFORMAT_MAXNELM - 1) * sizeof (WCHAR));
-
-                        // Restore the original value
-                        *lpwCharEnd = wcTmp;
-
-                        // Initialize the save area to 0/1
-                        mpq_init ((LPAPLRAT) lpMemObj);
-
-                        // Check for positive infinity
-                        if (strncmp (lpFmt, TEXT_INFINITY, strcountof (TEXT_INFINITY)) EQ 0)
-                        {
-                            mpq_set_inf (((LPAPLRAT) lpMemObj)++, 1);
-
-                            // Count the scanned chars
-                            uLen = strcountof (TEXT_INFINITY);
-                        } else
-                        // Check for negative infinity
-                        if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                        {
-                            mpq_set_inf (((LPAPLRAT) lpMemObj)++, -1);
-
-                            // Count the scanned chars
-                            uLen = strcountof ("-" TEXT_INFINITY);
-                        } else
-                        {
-                            // Count the valid chars
-                            uLen = strspnW (lpwszProf, L"0123456789/-");
-
-                            // If there's a trailing separator, ...
-                            if (strncmpW (&lpwszProf[uLen], hc8Sep[0], uLen2 = lstrlenW (hc8Sep[0])) EQ 0
-                             && (strchrW (L"0123456789-", lpwszProf[uLen + uLen2]) NE NULL))
-                            {
-                                // Save old next char, zap to form zero-terminated name
-                                cTmp = lpFmt[uLen]; lpFmt[uLen] = AC_EOS;
-
-                                // Convert the string to rational
-                                mpq_set_str (((LPAPLRAT) lpMemObj)++, lpFmt, 10);
-
-                                // Restore the original value
-                                lpFmt[uLen] = cTmp;
-                            } else
-                                // Convert the string to rational
-                                mpq_set_str (((LPAPLRAT) lpMemObj)++, lpFmt, 10);
-                        } // End IF/ELSE/...
-
-                        // Skip over the scanned chars
-                        lpwszProf += uLen;
-                        lpFmt  += uLen;
-
-                        // Loop through the separators
-                        for (uCnt = 0; uCnt < countof (hc8Sep) ; uCnt++)
-                        {
-                            // Initialize the save area to 0/1
-                            mpq_init ((LPAPLRAT) lpMemObj);
-
-                            // If there's a separator, ...
-                            if (strncmpW (lpwszProf, hc8Sep[uCnt], uLen = lstrlenW (hc8Sep[uCnt])) EQ 0
-                             && (strchrW (L"0123456789-", lpwszProf[uLen]) NE NULL))
-                            {
-                                // Skip over the separator
-                                lpwszProf += uLen;
-                                lpFmt  += uLen;
-
-                                // Check for positive infinity
-                                if (strncmp (lpFmt, TEXT_INFINITY, strcountof (TEXT_INFINITY)) EQ 0)
-                                {
-                                    mpq_set_inf (((LPAPLRAT) lpMemObj)++, 1);
-
-                                    // Count the scanned chars
-                                    uLen = strcountof (TEXT_INFINITY);
-                                } else
-                                // Check for negative infinity
-                                if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                                {
-                                    mpq_set_inf (((LPAPLRAT) lpMemObj)++, -1);
-
-                                    // Count the scanned chars
-                                    uLen = strcountof ("-" TEXT_INFINITY);
-                                } else
-                                {
-                                    // Count the valid chars
-                                    uLen = strspnW (lpwszProf, L"0123456789/-");
-
-                                    // If there's a trailing separator, ...
-                                    if ((uCnt + 1) < countof (hc8Sep)
-                                     && strncmpW (&lpwszProf[uLen], hc8Sep[uCnt + 1], uLen2 = lstrlenW (hc8Sep[uCnt + 1])) EQ 0
-                                     && (strchrW (L"0123456789-", lpwszProf[uLen + uLen2]) NE NULL))
-                                    {
-                                        // Save old next char, zap to form zero-terminated name
-                                        cTmp = lpFmt[uLen]; lpFmt[uLen] = AC_EOS;
-
-                                        // Convert the string to rational
-                                        mpq_set_str (((LPAPLRAT) lpMemObj)++, lpFmt, 10);
-
-                                        // Restore the original value
-                                        lpFmt[uLen] = cTmp;
-                                    } else
-                                        // Convert the string to rational
-                                        mpq_set_str (((LPAPLRAT) lpMemObj)++, lpFmt, 10);
-                                } // End IF/ELSE/...
-
-                                // Skip over the scanned chars
-                                lpwszProf += uLen;
-                                lpFmt  += uLen;
-                            } else
-                                // Skip over the zero coefficient
-                                ((LPAPLRAT) lpMemObj)++;
-                        } // End FOR
-
-                        // Skip to the next field
-                        lpwszProf = SkipPastCharW (lpwszProf, L' ');
-                    } // End FOR
-
+                    // Parse the sequence of HC8R numbers
+                    ParseHCxRs (&(LPAPLRAT) lpMemObj,   // Ptr to ptr to output save area
+                                 aplNELMObj,            // NELM of the input
+                                &lpwszProf,             // Ptr to ptr to input
+                                 lpwszFormat,           // Ptr to scratch area
+                                 lpMemPTD,              // Ptr to PerTabData global memory
+                                &hc8Sep[0],             // Ptr to HC separators
+                                 countof (hc8Sep));     // # HC separators
                     break;
 
                 case ARRAY_HC2V:
-                    // Get the current precision
-                    uOldPrec = mpfr_get_default_prec ();
-
-                    // Loop through the elements
-                    for (uObj = 0; uObj < aplNELMObj; uObj++)
-                    {
-                        // Skip to the next white space
-                        lpwCharEnd = SkipToCharW (lpwszProf, L' ');
-
-                        // Save old next char, zap to form zero-terminated name
-                        wcTmp = *lpwCharEnd; *lpwCharEnd = WC_EOS;
-
-                        // If there's a preceding FPC as (nnn), ...
-                        if (*lpwszProf EQ L'(')
-                        {
-                            // Skip over the leading paren
-                            Assert (*lpwszProf EQ L'('); lpwszProf++;
-
-                            // Scan the new precision
-                            sscanfW (lpwszProf, L"%u", &uDefPrec);
-
-                            // Set the default precision
-                            mpfr_set_default_prec (uDefPrec);
-
-                            // Skip past the trailing paren
-                            lpwszProf = SkipPastCharW (lpwszProf, L')');
-                        } else
-                            // Set the default precision
-                            mpfr_set_default_prec ((uCommPrec EQ 0) ? uOldPrec : uCommPrec);
-
-                        // Convert the format string to ASCII
-                        W2A (lpFmt = (LPCHAR) lpwszFormat, lpwszProf, (DEF_WFORMAT_MAXNELM - 1) * sizeof (WCHAR));
-
-                        // Restore the original value
-                        *lpwCharEnd = wcTmp;
-
-                        // Initialize the save area to 0 using the precision set above
-                        mpfr_init0 ((LPAPLVFP) lpMemObj);
-
-                        // Check for positive infinity
-                        if (strncmp (lpFmt, TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                        {
-                            mpfr_set_inf (((LPAPLVFP) lpMemObj)++, 1);
-
-                            // Count the scanned chars
-                            uLen = strcountof (TEXT_INFINITY);
-                        } else
-                        // Check for negative infinity
-                        if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                        {
-                            mpfr_set_inf (((LPAPLVFP) lpMemObj)++, -1);
-
-                            // Count the scanned chars
-                            uLen = strcountof ("-" TEXT_INFINITY);
-                        } else
-                        {
-                            // Convert the string to VFP
-                            mpfr_set_str (((LPAPLVFP) lpMemObj)++, lpFmt, 10, MPFR_RNDN);
-
-                            // Count the scanned chars
-                            uLen = strspnW (lpwszProf, L"0123456789eE.-");
-                        } // End IF/ELSE/...
-
-                        // Skip over the scanned chars
-                        lpwszProf += uLen;
-                        lpFmt  += uLen;
-
-                        // Initialize the save area to 0
-                        mpfr_init0 ((LPAPLVFP) lpMemObj);
-
-                        // If there's a separator, ...
-                        if (lpwszProf[0] EQ GetHC2Sep)
-                        {
-                            // Skip over the separator
-                            lpwszProf++;
-                            lpFmt++;
-
-                            // Check for positive infinity
-                            if (strncmp (lpFmt, TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                            {
-                                mpfr_set_inf (((LPAPLVFP) lpMemObj)++, 1);
-
-                                // Count the scanned chars
-                                uLen = strcountof (TEXT_INFINITY);
-                            } else
-                            // Check for negative infinity
-                            if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                            {
-                                mpfr_set_inf (((LPAPLVFP) lpMemObj)++, -1);
-
-                                // Count the scanned chars
-                                uLen = strcountof ("-" TEXT_INFINITY);
-                            } else
-                            {
-                                // Convert the string to VFP
-                                mpfr_set_str (((LPAPLVFP) lpMemObj)++, lpFmt, 10, MPFR_RNDN);
-
-                                // Count the scanned chars
-                                uLen = strspnW (lpwszProf, L"0123456789eE.-");
-                            } // End IF/ELSE/...
-
-                            // Skip over the scanned chars
-                            lpwszProf += uLen;
-                            lpFmt  += uLen;
-                        } else
-                            // Skip over the zero coefficient
-                            ((LPAPLVFP) lpMemObj)++;
-
-                        // Skip to the next field
-                        lpwszProf = SkipPastCharW (lpwszProf, L' ');
-                    } // End FOR
-
-                    // Restore the default precision
-                    mpfr_set_default_prec (uOldPrec);
-
+                    // Parse the sequence of HC2V numbers
+                    ParseHCxVs (&(LPAPLVFP) lpMemObj,   // Ptr to ptr to output save area
+                                 aplNELMObj,            // NELM of the input
+                                &lpwszProf,             // Ptr to ptr to input
+                                 lpwszFormat,           // Ptr to scratch area
+                                 lpMemPTD,              // Ptr to PerTabData global memory
+                                 uCommPrec,             // Common precision
+                                &hc2Sep[0],             // Ptr to HC separators
+                                 countof (hc2Sep));     // # HC separators
                     break;
 
                 case ARRAY_HC4V:
-                    // Get the current precision
-                    uOldPrec = mpfr_get_default_prec ();
-
-                    // Loop through the elements
-                    for (uObj = 0; uObj < aplNELMObj; uObj++)
-                    {
-                        // Skip to the next white space
-                        lpwCharEnd = SkipToCharW (lpwszProf, L' ');
-
-                        // Save old next char, zap to form zero-terminated name
-                        wcTmp = *lpwCharEnd; *lpwCharEnd = WC_EOS;
-
-                        // If there's a preceding FPC as (nnn), ...
-                        if (*lpwszProf EQ L'(')
-                        {
-                            // Skip over the leading paren
-                            Assert (*lpwszProf EQ L'('); lpwszProf++;
-
-                            // Scan the new precision
-                            sscanfW (lpwszProf, L"%u", &uDefPrec);
-
-                            // Set the default precision
-                            mpfr_set_default_prec (uDefPrec);
-
-                            // Skip past the trailing paren
-                            lpwszProf = SkipPastCharW (lpwszProf, L')');
-                        } else
-                            // Set the default precision
-                            mpfr_set_default_prec ((uCommPrec EQ 0) ? uOldPrec : uCommPrec);
-
-                        // Convert the format string to ASCII
-                        W2A (lpFmt = (LPCHAR) lpwszFormat, lpwszProf, (DEF_WFORMAT_MAXNELM - 1) * sizeof (WCHAR));
-
-                        // Restore the original value
-                        *lpwCharEnd = wcTmp;
-
-                        // Initialize the save area to 0 using the precision set above
-                        mpfr_init0 ((LPAPLVFP) lpMemObj);
-
-                        // Check for positive infinity
-                        if (strncmp (lpFmt, TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                        {
-                            mpfr_set_inf (((LPAPLVFP) lpMemObj)++, 1);
-
-                            // Count the scanned chars
-                            uLen = strcountof (TEXT_INFINITY);
-                        } else
-                        // Check for negative infinity
-                        if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                        {
-                            mpfr_set_inf (((LPAPLVFP) lpMemObj)++, -1);
-
-                            // Count the scanned chars
-                            uLen = strcountof ("-" TEXT_INFINITY);
-                        } else
-                        {
-                            // Convert the string to VFP
-                            mpfr_set_str (((LPAPLVFP) lpMemObj)++, lpFmt, 10, MPFR_RNDN);
-
-                            // Count the scanned chars
-                            uLen = strspnW (lpwszProf, L"0123456789eE.-");
-                        } // End IF/ELSE/...
-
-                        // Skip over the scanned chars
-                        lpwszProf += uLen;
-                        lpFmt  += uLen;
-
-                        // Loop through the separators
-                        for (uCnt = 0; uCnt < countof (hc4Sep) ; uCnt++)
-                        {
-                            // Initialize the save area to 0
-                            mpfr_init0 ((LPAPLVFP) lpMemObj);
-
-                            // If there's a separator, ...
-                            if (strncmpW (lpwszProf, hc4Sep[uCnt], uLen = lstrlenW (hc4Sep[uCnt])) EQ 0
-                             && (strchrW (L"0123456789-", lpwszProf[uLen]) NE NULL))
-                            {
-                                // Skip over the separator
-                                lpwszProf += uLen;
-                                lpFmt  += uLen;
-
-                                // Check for positive infinity
-                                if (strncmp (lpFmt, TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                                {
-                                    mpfr_set_inf (((LPAPLVFP) lpMemObj)++, 1);
-
-                                    // Count the scanned chars
-                                    uLen = strcountof (TEXT_INFINITY);
-                                } else
-                                // Check for negative infinity
-                                if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                                {
-                                    mpfr_set_inf (((LPAPLVFP) lpMemObj)++, -1);
-
-                                    // Count the scanned chars
-                                    uLen = strcountof ("-" TEXT_INFINITY);
-                                } else
-                                {
-                                    // Count the scanned chars
-                                    uLen = strspnW (lpwszProf, L"0123456789eE.-");
-
-                                    // If there's a trailing separator, ...
-                                    if ((uCnt + 1) < countof (hc4Sep)
-                                     && strncmpW (&lpwszProf[uLen], hc4Sep[uCnt + 1], uLen2 = lstrlenW (hc4Sep[uCnt + 1])) EQ 0
-                                     && (strchrW (L"0123456789-", lpwszProf[uLen + uLen2]) NE NULL))
-                                    {
-                                        // Save old next char, zap to form zero-terminated name
-                                        cTmp = lpFmt[uLen]; lpFmt[uLen] = AC_EOS;
-
-                                        // Convert the string to VFP
-                                        mpfr_set_str (((LPAPLVFP) lpMemObj)++, lpFmt, 10, MPFR_RNDN);
-
-                                        // Restore the original value
-                                        lpFmt[uLen] = cTmp;
-                                    } else
-                                        // Convert the string to VFP
-                                        mpfr_set_str (((LPAPLVFP) lpMemObj)++, lpFmt, 10, MPFR_RNDN);
-                                } // End IF/ELSE/...
-
-                                // Skip over the scanned chars
-                                lpwszProf += uLen;
-                                lpFmt  += uLen;
-                            } else
-                                // Skip over the zero coefficient
-                                ((LPAPLVFP) lpMemObj)++;
-                        } // End FOR
-
-                        // Skip to the next field
-                        lpwszProf = SkipPastCharW (lpwszProf, L' ');
-                    } // End FOR
-
-                    // Restore the default precision
-                    mpfr_set_default_prec (uOldPrec);
-
+                    // Parse the sequence of HC4V numbers
+                    ParseHCxVs (&(LPAPLVFP) lpMemObj,   // Ptr to ptr to output save area
+                                 aplNELMObj,            // NELM of the input
+                                &lpwszProf,             // Ptr to ptr to input
+                                 lpwszFormat,           // Ptr to scratch area
+                                 lpMemPTD,              // Ptr to PerTabData global memory
+                                 uCommPrec,             // Common precision
+                                &hc4Sep[0],             // Ptr to HC separators
+                                 countof (hc4Sep));     // # HC separators
                     break;
 
                 case ARRAY_HC8V:
-                    // Get the current precision
-                    uOldPrec = mpfr_get_default_prec ();
-
-                    // Loop through the elements
-                    for (uObj = 0; uObj < aplNELMObj; uObj++)
-                    {
-                        // Skip to the next white space
-                        lpwCharEnd = SkipToCharW (lpwszProf, L' ');
-
-                        // Save old next char, zap to form zero-terminated name
-                        wcTmp = *lpwCharEnd; *lpwCharEnd = WC_EOS;
-
-                        // If there's a preceding FPC as (nnn), ...
-                        if (*lpwszProf EQ L'(')
-                        {
-                            // Skip over the leading paren
-                            Assert (*lpwszProf EQ L'('); lpwszProf++;
-
-                            // Scan the new precision
-                            sscanfW (lpwszProf, L"%u", &uDefPrec);
-
-                            // Set the default precision
-                            mpfr_set_default_prec (uDefPrec);
-
-                            // Skip past the trailing paren
-                            lpwszProf = SkipPastCharW (lpwszProf, L')');
-                        } else
-                            // Set the default precision
-                            mpfr_set_default_prec ((uCommPrec EQ 0) ? uOldPrec : uCommPrec);
-
-                        // Convert the format string to ASCII
-                        W2A (lpFmt = (LPCHAR) lpwszFormat, lpwszProf, (DEF_WFORMAT_MAXNELM - 1) * sizeof (WCHAR));
-
-                        // Restore the original value
-                        *lpwCharEnd = wcTmp;
-
-                        // Initialize the save area to 0 using the precision set above
-                        mpfr_init0 ((LPAPLVFP) lpMemObj);
-
-                        // Check for positive infinity
-                        if (strncmp (lpFmt, TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                        {
-                            mpfr_set_inf (((LPAPLVFP) lpMemObj)++, 1);
-
-                            // Count the scanned chars
-                            uLen = strcountof (TEXT_INFINITY);
-                        } else
-                        // Check for negative infinity
-                        if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                        {
-                            mpfr_set_inf (((LPAPLVFP) lpMemObj)++, -1);
-
-                            // Count the scanned chars
-                            uLen = strcountof ("-" TEXT_INFINITY);
-                        } else
-                        {
-                            // Convert the string to VFP
-                            mpfr_set_str (((LPAPLVFP) lpMemObj)++, lpFmt, 10, MPFR_RNDN);
-
-                            // Count the scanned chars
-                            uLen = strspnW (lpwszProf, L"0123456789eE.-");
-                        } // End IF/ELSE/...
-
-                        // Skip over the scanned chars
-                        lpwszProf += uLen;
-                        lpFmt  += uLen;
-
-                        // Loop through the separators
-                        for (uCnt = 0; uCnt < countof (hc8Sep) ; uCnt++)
-                        {
-                            // Initialize the save area to 0
-                            mpfr_init0 ((LPAPLVFP) lpMemObj);
-
-                            // If there's a separator, ...
-                            if (strncmpW (lpwszProf, hc8Sep[uCnt], uLen = lstrlenW (hc8Sep[uCnt])) EQ 0
-                             && (strchrW (L"0123456789-", lpwszProf[uLen]) NE NULL))
-                            {
-                                // Skip over the separator
-                                lpwszProf += uLen;
-                                lpFmt  += uLen;
-
-                                // Check for positive infinity
-                                if (strncmp (lpFmt, TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                                {
-                                    mpfr_set_inf (((LPAPLVFP) lpMemObj)++, 1);
-
-                                    // Count the scanned chars
-                                    uLen = strcountof (TEXT_INFINITY);
-                                } else
-                                // Check for negative infinity
-                                if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
-                                {
-                                    mpfr_set_inf (((LPAPLVFP) lpMemObj)++, -1);
-
-                                    // Count the scanned chars
-                                    uLen = strcountof ("-" TEXT_INFINITY);
-                                } else
-                                {
-                                    // Count the scanned chars
-                                    uLen = strspnW (lpwszProf, L"0123456789eE.-");
-
-                                    // If there's a trailing separator, ...
-                                    if ((uCnt + 1) < countof (hc8Sep)
-                                     && strncmpW (&lpwszProf[uLen], hc8Sep[uCnt + 1], uLen2 = lstrlenW (hc8Sep[uCnt + 1])) EQ 0
-                                     && (strchrW (L"0123456789-", lpwszProf[uLen + uLen2]) NE NULL))
-                                    {
-                                        // Save old next char, zap to form zero-terminated name
-                                        cTmp = lpFmt[uLen]; lpFmt[uLen] = AC_EOS;
-
-                                        // Convert the string to VFP
-                                        mpfr_set_str (((LPAPLVFP) lpMemObj)++, lpFmt, 10, MPFR_RNDN);
-
-                                        // Restore the original value
-                                        lpFmt[uLen] = cTmp;
-                                    } else
-                                        // Convert the string to VFP
-                                        mpfr_set_str (((LPAPLVFP) lpMemObj)++, lpFmt, 10, MPFR_RNDN);
-                                } // End IF/ELSE/...
-
-                                // Skip over the scanned chars
-                                lpwszProf += uLen;
-                                lpFmt  += uLen;
-                            } else
-                                // Skip over the zero coefficient
-                                ((LPAPLVFP) lpMemObj)++;
-                        } // End FOR
-
-                        // Skip to the next field
-                        lpwszProf = SkipPastCharW (lpwszProf, L' ');
-                    } // End FOR
-
-                    // Restore the default precision
-                    mpfr_set_default_prec (uOldPrec);
-
+                    // Parse the sequence of HC8V numbers
+                    ParseHCxVs (&(LPAPLVFP) lpMemObj,   // Ptr to ptr to output save area
+                                 aplNELMObj,            // NELM of the input
+                                &lpwszProf,             // Ptr to ptr to input
+                                 lpwszFormat,           // Ptr to scratch area
+                                 lpMemPTD,              // Ptr to PerTabData global memory
+                                 uCommPrec,             // Common precision
+                                &hc8Sep[0],             // Ptr to HC separators
+                                 countof (hc8Sep));     // # HC separators
                     break;
 
                 defstop
@@ -3553,6 +2641,504 @@ HGLOBAL LoadWsGlbVarConv
     else
         return lpSymEntry->stData.stGlbData;
 } // End LoadWsGlbVarConv
+
+
+//***************************************************************************
+//  $ParseHCxFs
+//
+//  Parse a sequence of HCxFs
+//***************************************************************************
+
+void ParseHCxFs
+    (LPAPLFLOAT  *lplpMemObj,   // Ptr to ptr to output save area
+     APLNELM      aplNELMObj,   // NELM of the input
+     LPWCHAR     *lplpwszProf,  // Ptr to ptr to input
+     LPWCHAR      lpwszFormat,  // Ptr to scratch area
+     LPPERTABDATA lpMemPTD,     // Ptr to PerTabData global memory
+     LPWCHAR     *lphcXSep,     // Ptr to HC separators
+     UINT         hcXSepLen)    // # HC separators
+
+{
+    LPWCHAR     lpwCharEnd;     // Temporary ptr
+    LPCHAR      lpFmt;          // Temporary ptr
+    APLU3264    uLen;           // Temporary length
+    APLUINT     uObj;           // Loop counter
+    WCHAR       wcTmp;          // Temporary char
+    UINT        uCnt;           // Loop counter
+
+    // Loop through the elements
+    for (uObj = 0; uObj < aplNELMObj; uObj++)
+    {
+        // Skip to the next white space
+        lpwCharEnd = SkipToCharW (*lplpwszProf, L' ');
+
+        // Save old next char, zap to form zero-terminated name
+        wcTmp = *lpwCharEnd; *lpwCharEnd = WC_EOS;
+
+        // Convert the format string to ASCII
+        W2A (lpFmt = (LPCHAR) lpwszFormat, *lplpwszProf, (DEF_WFORMAT_MAXNELM - 1) * sizeof (WCHAR));
+
+        // Restore the original value
+        *lpwCharEnd = wcTmp;
+
+        // Check for positive infinity
+        if (strncmp (lpFmt, TEXT_INFINITY, strcountof (TEXT_INFINITY)) EQ 0)
+        {
+            *(*lplpMemObj)++ = fltPosInfinity;
+
+            // Count the scanned chars
+            uLen = strcountof (TEXT_INFINITY);
+        } else
+        // Check for negative infinity
+        if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
+        {
+            *(*lplpMemObj)++ = fltNegInfinity;
+
+            // Count the scanned chars
+            uLen = strcountof ("-" TEXT_INFINITY);
+        } else
+        // Check for text NaN
+        if (strncmpi (lpFmt, TEXT_NAN2, strcountof (TEXT_NAN2)) EQ 0)
+        {
+            // Save as a NaN
+            *(*lplpMemObj)++ = fltNaN;
+
+            // Count the scanned chars
+            uLen = strcountof (TEXT_NAN2);
+        } else
+        // Check for symbol NaN
+        if ((*lplpwszProf)[0] EQ UTF16_NAN)
+        {
+            // Save as a NaN
+            *(*lplpMemObj)++ = fltNaN;
+
+            // Count the scanned chars
+            uLen = 1;
+        } else
+        {
+            *(*lplpMemObj)++ = MyStrtod (lpFmt, NULL);
+
+            // Count the scanned chars
+            uLen = strspn (lpFmt, "0123456789eE.-");
+        } // End IF/ELSE/...
+
+        // Skip over the scanned chars
+        (*lplpwszProf) += uLen;
+        lpFmt          += uLen;
+
+        // Loop through the separators
+        for (uCnt = 0; uCnt < hcXSepLen; uCnt++)
+        {
+            // If there's a separator, ...
+            if (strncmpW ((*lplpwszProf), lphcXSep[uCnt], uLen = lstrlenW (lphcXSep[uCnt])) EQ 0
+             && (strchrW (L"0123456789-{" WS_UTF16_NAN, (*lplpwszProf)[uLen]) NE NULL))
+            {
+                // Skip over the separator
+                (*lplpwszProf) += uLen;
+                lpFmt          += uLen;
+
+                // Check for positive infinity
+                if (strncmp (lpFmt, TEXT_INFINITY, strcountof (TEXT_INFINITY)) EQ 0)
+                {
+                    *(*lplpMemObj)++ = fltPosInfinity;
+
+                    // Count the scanned chars
+                    uLen = strcountof (TEXT_INFINITY);
+                } else
+                // Check for negative infinity
+                if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
+                {
+                    *(*lplpMemObj)++ = fltNegInfinity;
+
+                    // Count the scanned chars
+                    uLen = strcountof ("-" TEXT_INFINITY);
+                } else
+                // Check for text NaN
+                if (strncmpi (lpFmt, TEXT_NAN2, strcountof (TEXT_NAN2)) EQ 0)
+                {
+                    // Save as a NaN
+                    *(*lplpMemObj)++ = fltNaN;
+
+                    // Count the scanned chars
+                    uLen = strcountof (TEXT_NAN2);
+                } else
+                // Check for symbol NaN
+                if ((*lplpwszProf)[0] EQ UTF16_NAN)
+                {
+                    // Save as a NaN
+                    *(*lplpMemObj)++ = fltNaN;
+
+                    // Count the scanned chars
+                    uLen = 1;
+                } else
+                {
+                    *(*lplpMemObj)++ = MyStrtod (lpFmt, NULL);
+
+                    // Count the scanned chars
+                    uLen = strspn (lpFmt, "0123456789eE.-");
+                } // End IF/ELSE/...
+
+                // Skip over the scanned chars
+                (*lplpwszProf) += uLen;
+                lpFmt          += uLen;
+            } else
+                // Skip over the zero coefficient
+                (*lplpMemObj)++;
+        } // End FOR
+
+        // Skip to the next field
+        (*lplpwszProf) = SkipPastCharW (*lplpwszProf, L' ');
+    } // End FOR
+} // End ParseHCxFs
+
+
+//***************************************************************************
+//  $ParseHCxRs
+//
+//  Parse a sequence of HCxRs
+//***************************************************************************
+
+void ParseHCxRs
+    (LPAPLRAT    *lplpMemObj,   // Ptr to ptr to output save area
+     APLNELM      aplNELMObj,   // NELM of the input
+     LPWCHAR     *lplpwszProf,  // Ptr to ptr to input
+     LPWCHAR      lpwszFormat,  // Ptr to scratch area
+     LPPERTABDATA lpMemPTD,     // Ptr to PerTabData global memory
+     LPWCHAR     *lphcXSep,     // Ptr to HC separators
+     UINT         hcXSepLen)    // # HC separators
+
+{
+    LPWCHAR     lpwCharEnd;     // Temporary ptr
+    LPCHAR      lpFmt;          // Temporary ptr
+    APLU3264    uLen;           // Temporary length
+    APLUINT     uObj;           // Loop counter
+    WCHAR       wcTmp;          // Temporary char
+    UINT        uCnt;           // Loop counter
+    CR_RETCODES crRetCode;      // Return code
+
+    // Loop through the elements
+    for (uObj = 0; uObj < aplNELMObj; uObj++)
+    {
+        // Skip to the next white space
+        lpwCharEnd = SkipToCharW (*lplpwszProf, L' ');
+
+        // Save old next char, zap to form zero-terminated name
+        wcTmp = *lpwCharEnd; *lpwCharEnd = WC_EOS;
+
+        // Convert the format string to ASCII
+        W2A (lpFmt = (LPCHAR) lpwszFormat, *lplpwszProf, (DEF_WFORMAT_MAXNELM - 1) * sizeof (WCHAR));
+
+        // Restore the original value
+        *lpwCharEnd = wcTmp;
+
+        // Initialize the save area to 0/1
+        mpq_init (*lplpMemObj);
+
+        // Check for positive infinity
+        if (strncmp (lpFmt, TEXT_INFINITY, strcountof (TEXT_INFINITY)) EQ 0)
+        {
+            mpq_set_inf ((*lplpMemObj)++, 1);
+
+            // Count the scanned chars
+            uLen = strcountof (TEXT_INFINITY);
+        } else
+        // Check for negative infinity
+        if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
+        {
+            mpq_set_inf ((*lplpMemObj)++, -1);
+
+            // Count the scanned chars
+            uLen = strcountof ("-" TEXT_INFINITY);
+        } else
+        // Check for text NaN
+        if (strncmpi (lpFmt, TEXT_NAN2, strcountof (TEXT_NAN2)) EQ 0)
+        {
+            // Save as a NaN
+            mpq_set_nan ((*lplpMemObj)++);
+
+            // Count the scanned chars
+            uLen = strcountof (TEXT_NAN2);
+        } else
+        // Check for symbol NaN
+        if ((*lplpwszProf)[0] EQ UTF16_NAN)
+        {
+            // Save as a NaN
+            mpq_set_nan ((*lplpMemObj)++);
+
+            // Count the scanned chars
+            uLen = 1;
+        } else
+        {
+            // Convert the string to rational
+            crRetCode = mpq_set_str2 ((*lplpMemObj)++, lpFmt, 10);
+            Assert (crRetCode EQ CR_SUCCESS);
+
+            // Count the scanned chars
+            uLen = strspn (lpFmt, "0123456789/-");
+        } // End IF/ELSE/...
+
+        // Skip over the scanned chars
+        (*lplpwszProf) += uLen;
+        lpFmt          += uLen;
+
+        // Loop through the separators
+        for (uCnt = 0; uCnt < hcXSepLen; uCnt++)
+        {
+            // Initialize the save area to 0/1
+            mpq_init (*lplpMemObj);
+
+            // If there's a separator, ...
+            if (strncmpW (*lplpwszProf, lphcXSep[uCnt], uLen = lstrlenW (lphcXSep[uCnt])) EQ 0
+             && (strchrW (L"0123456789-{" WS_UTF16_NAN, (*lplpwszProf)[uLen]) NE NULL))
+            {
+                // Skip over the separator
+                (*lplpwszProf) += uLen;
+                lpFmt          += uLen;
+
+                // Check for positive infinity
+                if (strncmp (lpFmt, TEXT_INFINITY, strcountof (TEXT_INFINITY)) EQ 0)
+                {
+                    mpq_set_inf ((*lplpMemObj)++, 1);
+
+                    // Count the scanned chars
+                    uLen = strcountof (TEXT_INFINITY);
+                } else
+                // Check for negative infinity
+                if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
+                {
+                    mpq_set_inf ((*lplpMemObj)++, -1);
+
+                    // Count the scanned chars
+                    uLen = strcountof ("-" TEXT_INFINITY);
+                } else
+                // Check for text NaN
+                if (strncmpi (lpFmt, TEXT_NAN2, strcountof (TEXT_NAN2)) EQ 0)
+                {
+                    // Save as a NaN
+                    mpq_set_nan ((*lplpMemObj)++);
+
+                    // Count the scanned chars
+                    uLen = strcountof (TEXT_NAN2);
+                } else
+                // Check for symbol NaN
+                if ((*lplpwszProf)[0] EQ UTF16_NAN)
+                {
+                    // Save as a NaN
+                    mpq_set_nan ((*lplpMemObj)++);
+
+                    // Count the scanned chars
+                    uLen = 1;
+                } else
+                {
+                    // Count the scanned chars
+                    uLen = strspn (lpFmt, "0123456789/-");
+
+                    // Convert the string to rational
+                    crRetCode = mpq_set_str2 ((*lplpMemObj)++, lpFmt, 10);
+                    Assert (crRetCode EQ CR_SUCCESS);
+                } // End IF/ELSE/...
+
+                // Skip over the scanned chars
+                (*lplpwszProf) += uLen;
+                lpFmt          += uLen;
+            } else
+                // Skip over the zero coefficient
+                (*lplpMemObj)++;
+        } // End FOR
+
+        // Skip to the next field
+        (*lplpwszProf) = SkipPastCharW (*lplpwszProf, L' ');
+    } // End FOR
+} // End ParseHCxRs
+
+
+//***************************************************************************
+//  $ParseHCxVs
+//
+//  Parse a sequence of HCxVs
+//***************************************************************************
+
+void ParseHCxVs
+    (LPAPLVFP    *lplpMemObj,   // Ptr to ptr to output save area
+     APLNELM      aplNELMObj,   // NELM of the input
+     LPWCHAR     *lplpwszProf,  // Ptr to ptr to input
+     LPWCHAR      lpwszFormat,  // Ptr to scratch area
+     LPPERTABDATA lpMemPTD,     // Ptr to PerTabData global memory
+     mp_prec_t    uCommPrec,    // Common precision
+     LPWCHAR     *lphcXSep,     // Ptr to HC separators
+     UINT         hcXSepLen)    // # HC separators
+
+{
+    mp_prec_t uDefPrec,         // Default precision to use when inputting VFP numbers
+              uOldPrec;         // Old precision to be restored later
+    LPWCHAR   lpwCharEnd;       // Temporary ptr
+    LPCHAR    lpFmt,            // Temporary ptr
+              lpEndPtr;         // Ptr to ending char
+    APLU3264  uLen;             // Temporary length
+    APLUINT   uObj;             // Loop counter
+    WCHAR     wcTmp;            // Temporary char
+    UINT      uCnt;             // Loop counter
+
+    // Get the current precision
+    uOldPrec = mpfr_get_default_prec ();
+
+    // Loop through the elements
+    for (uObj = 0; uObj < aplNELMObj; uObj++)
+    {
+        // Skip to the next white space
+        lpwCharEnd = SkipToCharW (*lplpwszProf, L' ');
+
+        // Save old next char, zap to form zero-terminated name
+        wcTmp = *lpwCharEnd; *lpwCharEnd = WC_EOS;
+
+        // If there's a preceding FPC as (nnn), ...
+        if (**lplpwszProf EQ L'(')
+        {
+            // Skip over the leading paren
+            Assert (**lplpwszProf EQ L'('); (*lplpwszProf)++;
+
+            // Scan the new precision
+            sscanfW (*lplpwszProf, L"%u", &uDefPrec);
+
+            // Set the default precision
+            mpfr_set_default_prec (uDefPrec);
+
+            // Skip past the trailing paren
+            (*lplpwszProf) = SkipPastCharW (*lplpwszProf, L')');
+        } else
+            // Set the default precision
+            mpfr_set_default_prec ((uCommPrec EQ 0) ? uOldPrec : uCommPrec);
+
+        // Convert the format string to ASCII
+        W2A (lpFmt = (LPCHAR) lpwszFormat, *lplpwszProf, (DEF_WFORMAT_MAXNELM - 1) * sizeof (WCHAR));
+
+        // Restore the original value
+        *lpwCharEnd = wcTmp;
+
+        // Initialize the save area to 0 using the precision set above
+        mpfr_init0 (*lplpMemObj);
+
+        // Check for positive infinity
+        if (strncmp (lpFmt, TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
+        {
+            mpfr_set_inf ((*lplpMemObj)++, 1);
+
+            // Count the scanned chars
+            uLen = strcountof (TEXT_INFINITY);
+        } else
+        // Check for negative infinity
+        if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
+        {
+            mpfr_set_inf ((*lplpMemObj)++, -1);
+
+            // Count the scanned chars
+            uLen = strcountof ("-" TEXT_INFINITY);
+        } else
+        // Check for text NaN
+        if (strncmpi (lpFmt, TEXT_NAN2   , strcountof (TEXT_NAN2)   ) EQ 0)
+        {
+            // Save as a NaN
+            mpfr_set_nan ((*lplpMemObj)++);
+
+            // Count the scanned chars
+            uLen = strcountof (TEXT_NAN2);
+        } else
+        // Check for symbol NaN
+        if ((*lplpwszProf)[0] EQ UTF16_NAN)
+        {
+            // Save as a NaN
+            mpfr_set_nan ((*lplpMemObj)++);
+
+            // Count the scanned chars
+            uLen = 1;
+        } else
+        {
+            // Convert the string to VFP
+            mpfr_strtofr ((*lplpMemObj)++, lpFmt, &lpEndPtr, 10, MPFR_RNDN);
+
+            // Count the scanned chars
+            uLen = strspn (lpFmt, "0123456789eE.-");
+
+            Assert (uLen EQ (lpEndPtr - lpFmt));
+        } // End IF/ELSE/...
+
+        // Skip over the scanned chars
+        (*lplpwszProf) += uLen;
+        lpFmt  += uLen;
+
+        // Loop through the separators
+        for (uCnt = 0; uCnt < hcXSepLen; uCnt++)
+        {
+            // Initialize the save area to 0
+            mpfr_init0 (*lplpMemObj);
+
+            // If there's a separator, ...
+            if (strncmpW (*lplpwszProf, lphcXSep[uCnt], uLen = lstrlenW (lphcXSep[uCnt])) EQ 0
+             && (strchrW (L"0123456789-{" WS_UTF16_NAN, (*lplpwszProf)[uLen]) NE NULL))
+            {
+                // Skip over the separator
+                (*lplpwszProf) += uLen;
+                lpFmt          += uLen;
+
+                // Check for positive infinity
+                if (strncmp (lpFmt, TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
+                {
+                    mpfr_set_inf ((*lplpMemObj)++, 1);
+
+                    // Count the scanned chars
+                    uLen = strcountof (TEXT_INFINITY);
+                } else
+                // Check for negative infinity
+                if (strncmp (lpFmt, "-" TEXT_INFINITY, strcountof ("-" TEXT_INFINITY)) EQ 0)
+                {
+                    mpfr_set_inf ((*lplpMemObj)++, -1);
+
+                    // Count the scanned chars
+                    uLen = strcountof ("-" TEXT_INFINITY);
+                } else
+                // Check for text NaN
+                if (strncmpi (lpFmt, TEXT_NAN2, strcountof (TEXT_NAN2)) EQ 0)
+                {
+                    // Save as a NaN
+                    mpfr_set_nan ((*lplpMemObj)++);
+
+                    // Count the scanned chars
+                    uLen = strcountof (TEXT_NAN2);
+                } else
+                // Check for symbol NaN
+                if ((*lplpwszProf)[0] EQ UTF16_NAN)
+                {
+                    // Save as a NaN
+                    mpfr_set_nan ((*lplpMemObj)++);
+
+                    // Count the scanned chars
+                    uLen = 1;
+                } else
+                {
+                    // Convert the string to VFP
+                    mpfr_strtofr ((*lplpMemObj)++, lpFmt, &lpEndPtr, 10, MPFR_RNDN);
+
+                    // Count the scanned chars
+                    uLen = strspn (lpFmt, "0123456789eE.-");
+
+                    Assert (uLen EQ (lpEndPtr - lpFmt));
+                } // End IF/ELSE/...
+
+                // Skip over the scanned chars
+                (*lplpwszProf) += uLen;
+                lpFmt          += uLen;
+            } else
+                // Skip over the zero coefficient
+                (*lplpMemObj)++;
+        } // End FOR
+
+        // Skip to the next field
+        (*lplpwszProf) = SkipPastCharW (*lplpwszProf, L' ');
+    } // End FOR
+
+    // Restore the default precision
+    mpfr_set_default_prec (uOldPrec);
+} // End ParseHCxVs
 
 
 //***************************************************************************

@@ -34,7 +34,7 @@
 //
 //  Using a macro instead of a defined function risks duplicate
 //    execution of the argument as well as tricky handling
-//    of unsigned numners.
+//    of unsigned numbers.
 //***************************************************************************
 
 int signumint
@@ -1588,6 +1588,15 @@ int flt_cmp_ct
              aplRhtAbs,
              aplHoodLo;
 
+    // If both args are NaNs, ...
+    if (_isnan (aplFloatLft) && _isnan (aplFloatRht))
+        return 0;
+
+    // If only one arg is a NaN, ...
+    if (_isnan (aplFloatLft) || _isnan (aplFloatRht))
+        // Return 1 if the left is a NaN, -1 if the right is a NaN
+        return -1+2*_isnan (aplFloatLft);
+
     // If Lft EQ Rht (absolutely), return 0 (equal)
     if (aplFloatLft EQ aplFloatRht)
         return 0;
@@ -1946,107 +1955,6 @@ APLFLOAT ConvertToFloat
 
     return atArg.aplFloat;
 } // End ConvertToFloat
-
-
-//***************************************************************************
-//  $ConvertCharToFloat
-//
-//  Convert a 16-element char to a float
-//***************************************************************************
-
-APLFLOAT ConvertCharToFloat
-    (LPCHAR lpszChar)
-
-{
-    APLLONGEST aplLongest;          // Accumulator
-    UINT       uRht;                // Loop counter
-    UCHAR      aplChar;             // Temporary char
-
-    // Initialize accumulator
-    aplLongest = 0;
-
-    // Convert hex chars to hex
-    for (uRht = 0; uRht < 16; uRht++)
-    {
-        // Get the next char
-        aplChar = *lpszChar++;
-
-        // Convert the char to a hexadecimal digit
-        if (L'0' <= aplChar
-          &&        aplChar <= L'9')
-            aplChar -= L'0';
-        else
-        if (L'a' <= aplChar
-         &&         aplChar <= L'f')
-            aplChar -= L'a' - 10;
-        else
-        if (L'A' <= aplChar
-          &&        aplChar <= L'F')
-            aplChar -= L'A' - 10;
-#ifdef DEBUG
-        else
-            // We should never get here
-            DbgStop ();         // #ifdef DEBUG
-#endif
-        // Shift and accumulate
-        aplLongest = (aplLongest << 4) | aplChar;
-    } // End FOR
-
-    // Note that this converts a Signalling NaN to a Quiet one
-    return *(LPAPLFLOAT) &aplLongest;
-} // End ConvertCharToFloat
-
-
-//***************************************************************************
-//  $ConvertSpecCharToFloat
-//
-//  Convert special chars to float taking into account the
-//    various infinities and NaNs
-//***************************************************************************
-
-APLFLOAT ConvertSpecCharsToFloat
-    (LPCHAR  lpszChar,          // Ptr to incoming text
-     size_t *lpuLen)            // Ptr to # scanned chars (may be NULL)
-
-{
-    // Check for positive infinity
-    if (lstrcmp (lpszChar,     TEXT_INFINITY) EQ 0)
-    {
-        if (lpuLen NE NULL)
-            // Copy the # scanned chars
-            *lpuLen = strcountof (TEXT_INFINITY);
-
-        // Return the value
-        return fltPosInfinity;
-    } else
-    // Check for negative infinity
-    if (lstrcmp (lpszChar, "-" TEXT_INFINITY) EQ 0)
-    {
-        if (lpuLen NE NULL)
-            // Copy the # scanned chars
-            *lpuLen = strcountof ("-" TEXT_INFINITY);
-
-        // Return the value
-        return fltNegInfinity;
-    } else
-    // Check for NaN
-    if (strncmp (lpszChar, TEXT_NAN2, strcountof (TEXT_NAN2)) EQ 0)
-    {
-        if (lpuLen NE NULL)
-            // Copy the # scanned chars
-            *lpuLen = strcountof (TEXT_NAN2);
-
-        // Return the value
-        return fltNaN;
-    } else
-    {
-        if (lpuLen NE NULL)
-            // Copy the # scanned chars
-            *lpuLen = strspn (lpszChar, "0123456789eE.-");
-
-        return MyStrtod (lpszChar, NULL);
-    } // End IF/ELSE/...
-} // End ConvertSpecCharsToFloat
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -180,7 +180,7 @@
 #define UTF16_OVERBAR             0x00AF        // Alt-'2' - high minus
 #define UTF16_LEFTCARET           0x003C        // Alt-'3' - less
 #define UTF16_LEFTCARETUNDERBAR   0x2264        // Alt-'4' - not more
-#define UTF16_EQUAL               0x003D        // Alt-'5' - equal
+#define UTF16_NAN                 0x2205        // Alt-'5' - NaN
 #define UTF16_RIGHTCARETUNDERBAR  0x2265        // Alt-'6' - not less
 #define UTF16_RIGHTCARET          0x003E        // Alt-'7' - more
 #define UTF16_NOTEQUAL            0x2260        // Alt-'8' - not equal
@@ -251,6 +251,7 @@
 #define UTF16_SLASH               0x002F        // Slash
 #define UTF16_COLON               0x003A        // Colon
 #define UTF16_SEMICOLON           0x003B        // Semicolon
+#define UTF16_EQUAL               0x003D        // Equal
 #define UTF16_ATSIGN              0x0040        // At sign
 #define UTF16_LEFTBRACKET         0x005B        // Left bracket
 #define UTF16_SLOPE               0x005C        // Slope
@@ -462,7 +463,7 @@
 #define WS_UTF16_OVERBAR             L"\x00AF"  // Alt-'2' - high minus
 #define WS_UTF16_LEFTCARET           L"\x003C"  // Alt-'3' - less
 #define WS_UTF16_LEFTCARETUNDERBAR   L"\x2264"  // Alt-'4' - not more
-#define WS_UTF16_EQUAL               L"\x003D"  // Alt-'5' - equal
+#define WS_UTF16_NAN                 L"\x2205"  // Alt-'5' - NaN
 #define WS_UTF16_RIGHTCARETUNDERBAR  L"\x2265"  // Alt-'6' - not less
 #define WS_UTF16_RIGHTCARET          L"\x003E"  // Alt-'7' - more
 #define WS_UTF16_NOTEQUAL            L"\x2260"  // Alt-'8' - not equal
@@ -533,6 +534,7 @@
 #define WS_UTF16_SLASH               L"\x002F"  // Slash
 #define WS_UTF16_COLON               L"\x003A"  // Colon
 #define WS_UTF16_SEMICOLON           L"\x003B"  // Semicolon
+#define WS_UTF16_EQUAL               L"\x003D"  // Equal
 #define WS_UTF16_ATSIGN              L"\x0040"  // At sign
 #define WS_UTF16_LEFTBRACKET         L"\x005B"  // Left bracket
 #define WS_UTF16_SLOPE               L"\x005C"  // Slope

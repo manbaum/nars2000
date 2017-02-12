@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -57,6 +57,8 @@ typedef struct tagVKSTATE
 } VKSTATE, *LPVKSTATE;
 
 
+#define NaN     0x2205
+
 // If you are looking for places on the keyboard to put a new symbol,
 //   there are several free Alt-Shift- combinations:
 //     Alt-'A'
@@ -79,7 +81,6 @@ typedef struct tagVKSTATE
 //
 //     Symbol & Name              Keystroke
 //     --------------------------------------------------
-//     = Equal                    Alt-'5'
 //     < Left Caret               Alt-'3'
 //     ? Question Mark            Alt-'q'
 //     > Right Caret              Alt-'7'
@@ -112,7 +113,7 @@ CHARCODE aCharCodesNARS_US_EN_ALT[NUM_KEYS]
  {L'2', UTF16_OVERBAR           , 0, 0, L'@', UTF16_NOTEQUALUNDERBAR  , 0, 0},    // 03:  '2'
  {L'3', L'<'                    , 0, 0, L'#', UTF16_DELSTILE          , 0, 0},    // 04:  '3'
  {L'4', UTF16_LEFTCARETUNDERBAR , 0, 0, L'$', UTF16_DELTASTILE        , 0, 0},    // 05:  '4'
- {L'5', L'='                    , 0, 0, L'%', UTF16_CIRCLESTILE       , 0, 0},    // 06:  '5'
+ {L'5', UTF16_NAN               , 0, 0, L'%', UTF16_CIRCLESTILE       , 0, 0},    // 06:  '5'
  {L'6', UTF16_RIGHTCARETUNDERBAR, 0, 0, L'^', UTF16_CIRCLESLOPE       , 0, 0},    // 07:  '6'
  {L'7', L'>'                    , 0, 0, L'&', UTF16_CIRCLEBAR         , 0, 0},    // 08:  '7'
  {L'8', UTF16_NOTEQUAL          , 0, 0, L'*', UTF16_CIRCLESTAR        , 0, 0},    // 09:  '8'
@@ -226,7 +227,7 @@ CHARCODE aCharCodesNARS_US_EN_ALT[NUM_KEYS]
  {L'2', 0, UTF16_OVERBAR           , 0, L'@', 0, UTF16_NOTEQUALUNDERBAR  , 0},    // 03:  '2'
  {L'3', 0, L'<'                    , 0, L'#', 0, UTF16_DELSTILE          , 0},    // 04:  '3'
  {L'4', 0, UTF16_LEFTCARETUNDERBAR , 0, L'$', 0, UTF16_DELTASTILE        , 0},    // 05:  '4'
- {L'5', 0, L'='                    , 0, L'%', 0, UTF16_CIRCLESTILE       , 0},    // 06:  '5'
+ {L'5', 0, UTF16_NAN               , 0, L'%', 0, UTF16_CIRCLESTILE       , 0},    // 06:  '5'
  {L'6', 0, UTF16_RIGHTCARETUNDERBAR, 0, L'^', 0, UTF16_CIRCLESLOPE       , 0},    // 07:  '6'
  {L'7', 0, L'>'                    , 0, L'&', 0, UTF16_CIRCLEBAR         , 0},    // 08:  '7'
  {L'8', 0, UTF16_NOTEQUAL          , 0, L'*', 0, UTF16_CIRCLESTAR        , 0},    // 09:  '8'
@@ -339,7 +340,7 @@ CHARCODE aCharCodesNARS_US_EN_ALT[NUM_KEYS]
  {  L'2' ,  0    , 0x00AF,  0    ,  L'\"',  L'@' , 0x236B,  0     },              // 03:  '2'
  {  L'3' ,  0    ,  L'<' ,  0    ,  L'#' , 0x00A3, 0x2352,  0     },              // 04:  '3'
  {  L'4' ,  0    , 0x2264,  0    , 0x00A4,  L'$' , 0x234B,  0     },              // 05:  '4'
- {  L'5' ,  0    ,  L'=' ,  0    ,  L'%' ,  0    , 0x233D,  0     },              // 06:  '5'
+ {  L'5' ,  0    ,  NaN  ,  0    ,  L'%' ,  0    , 0x233D,  0     },              // 06:  '5'
  {  L'6' ,  0    , 0x2265,  0    ,  L'&' ,  0    , 0x2349,  0     },              // 07:  '6'
  {  L'7' ,  0    ,  L'>' ,  0    ,  L'/' ,  L'{' , 0x2296,  0     },              // 08:  '7'
  {  L'8' ,  0    , 0x2260,  0    ,  L'(' ,  L'[' , 0x235F,  0     },              // 09:  '8'
@@ -373,7 +374,7 @@ CHARCODE aCharCodesNARS_US_EN_ALT[NUM_KEYS]
  {  L'k' ,  0    , 0x236B,  0    ,  L'K' ,  0    ,  0    ,  0     },              // 25:  'k'
  {  L'l' ,  0    , 0x2395,  0    ,  L'L' ,  0    , 0x2337,  0     },              // 26:  'l'
  { 0x00E6,  0    , 0x234E,  0    , 0x00C6,  0    ,  0    ,  0     },              // 27:  ';'
- { 0x00F8,  0    , 0x2355,  0    , 0x00D8,  0    , 0x2262,  0     },              // 28:  '''
+ { 0x00F8,  0    , 0x2355,  0    ,  NaN  ,  0    , 0x2262,  0     },              // 28:  '''
  { 0x00A7,  0    , 0x22C4,  0    , 0x00BD,  0    , 0x236A,  0     },              // 29:  '`'
  {  0 },                                                                          // 2A:  LSHIFT
  {  L'\'',  0    , 0x22A2,  0    ,  L'*' ,  0    , 0x22A3,  0     },              // 2B:  '\'
@@ -448,7 +449,7 @@ CHARCODE aCharCodesNARS_US_EN_ALT[NUM_KEYS]
  { 0x00E9, 0x00AF,  L'~' ,  0    ,  L'2' , 0x2262,  0    ,  0     },              // 03:  '2'
  {  L'\"',  L'<' ,  L'#' ,  0    ,  L'3' , 0x2352,  0    ,  0     },              // 04:  '3'
  {  L'\'', 0x2264,  L'{' ,  0    ,  L'4' , 0x234B,  0    ,  0     },              // 05:  '4'
- {  L'(' ,  L'=' ,  L'[' ,  0    ,  L'5' , 0x233D,  0    ,  0     },              // 06:  '5'
+ {  L'(' ,  NaN  ,  L'[' ,  0    ,  L'5' , 0x233D,  0    ,  0     },              // 06:  '5'
  {  L'-' , 0x2265,  L'|' ,  0    ,  L'6' , 0x2349,  0    ,  0     },              // 07:  '6'
  { 0x00E8,  L'>' ,  L'`' ,  0    ,  L'7' , 0x2296,  0    ,  0     },              // 08:  '7'
  {  L'_' , 0x2260,  L'\\',  0    ,  L'8' , 0x235F,  0    ,  0     },              // 09:  '8'
@@ -641,6 +642,7 @@ LOGFONTW lfKB                       // LOGFONTW for the Keyboard
  = {DEF_KBLOGFONT}
 #endif
 ;
+#undef  NaN
 
 
 //***************************************************************************

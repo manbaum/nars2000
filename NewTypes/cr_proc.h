@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ typedef enum tagCRCOL_INDICES       // FSA column indices for <mpq_set_str>
     CRCOL_EXP           ,           // 03:  e or E
     CRCOL_RAT           ,           // 04:  r or /
     CRCOL_EXT           ,           // 05:  x
-    CRCOL_INF           ,           // 06:  Infinity
+    CRCOL_INFNAN        ,           // 06:  Infinity/NaN
     CRCOL_EON           ,           // 07:  All other chars (End-Of-Number)
 
     CRCOL_LENGTH        ,           // 08:  # column indices (cols in fsaActTableCR)
@@ -52,7 +52,7 @@ typedef enum tagCRROW_INDICES       // FSA row indices for Format Specification
     CRROW_DEC        ,              // 03:  Decimal point of integer state
     CRROW_EXP0       ,              // 04:  Start of exponent state
     CRROW_EXP1       ,              // 05:  Next of exponent state
-    CRROW_INF        ,              // 06:  Infinity
+    CRROW_INFNAN     ,              // 06:  Infinity/NaN
     CRROW_LENGTH     ,              // 07:  # FSA terminal states (rows in fsaActTableCR)
                                     //      Because this enum is origin-0, this value is the # valid rows.
 

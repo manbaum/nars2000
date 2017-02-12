@@ -32,7 +32,7 @@
 
 
 //***************************************************************************
-//  $fpXf_sin
+//  $fpXf_sin       (1)
 //
 //  The code below was translated to C from the original Javascript
 //    http://tamivox.org/redbear/qtrn_calc/index.html
@@ -58,8 +58,17 @@ void fpXf_sin
     fprf_set (Z.dat[0], op->parts[0]);
     fprf_set (Z.dat[1], fpfIMag);
 
-    // Calculate the corresponding complex number
-    Z = gsl_complex_sin (Z);
+    // If the imaginary part is zero, ...
+    if (fpfIMag EQ 0)
+    {
+        // Call the Real number version so as to avoid
+        //   inconsistencies in the two cases:
+        //   Real vs. Complex (with imaginary part EQ 0)
+        Z.dat[0] = sin (Z.dat[0]);
+////////Z.dat[1] = 0;               // Already zero from <fprf_set> above
+    } else
+        // Calculate the corresponding complex number
+        Z = gsl_complex_sin (Z);
 
     // Save as the real part of the result
     fprf_set (rop->parts[0], Z.dat[0]);
@@ -80,7 +89,7 @@ void fpXf_sin
 
 
 //***************************************************************************
-//  $fpXf_cos
+//  $fpXf_cos       (2)
 //***************************************************************************
 
 void fpXf_cos
@@ -102,8 +111,17 @@ void fpXf_cos
     fprf_set (Z.dat[0], op->parts[0]);
     fprf_set (Z.dat[1], fpfIMag);
 
-    // Calculate the corresponding complex number
-    Z = gsl_complex_cos (Z);
+    // If the imaginary part is zero, ...
+    if (fpfIMag EQ 0)
+    {
+        // Call the Real number version so as to avoid
+        //   inconsistencies in the two cases:
+        //   Real vs. Complex (with imaginary part EQ 0)
+        Z.dat[0] = cos (Z.dat[0]);
+////////Z.dat[1] = 0;               // Already zero from <fprf_set> above
+    } else
+        // Calculate the corresponding complex number
+        Z = gsl_complex_cos (Z);
 
     // Save as the real part of the result
     fprf_set (rop->parts[0], Z.dat[0]);
@@ -124,7 +142,7 @@ void fpXf_cos
 
 
 //***************************************************************************
-//  $fpXf_tan
+//  $fpXf_tan       (3)
 //***************************************************************************
 
 void fpXf_tan
@@ -146,8 +164,17 @@ void fpXf_tan
     fprf_set (Z.dat[0], op->parts[0]);
     fprf_set (Z.dat[1], fpfIMag);
 
-    // Calculate the corresponding complex number
-    Z = gsl_complex_tan (Z);
+    // If the imaginary part is zero, ...
+    if (fpfIMag EQ 0)
+    {
+        // Call the Real number version so as to avoid
+        //   inconsistencies in the two cases:
+        //   Real vs. Complex (with imaginary part EQ 0)
+        Z.dat[0] = tan (Z.dat[0]);
+////////Z.dat[1] = 0;               // Already zero from <fprf_set> above
+    } else
+        // Calculate the corresponding complex number
+        Z = gsl_complex_tan (Z);
 
     // Save as the real part of the result
     fprf_set (rop->parts[0], Z.dat[0]);
@@ -168,7 +195,7 @@ void fpXf_tan
 
 
 //***************************************************************************
-//  $fpXf_asin
+//  $fpXf_asin      (-1)
 //***************************************************************************
 
 void fpXf_asin
@@ -190,8 +217,17 @@ void fpXf_asin
     fprf_set (Z.dat[0], op->parts[0]);
     fprf_set (Z.dat[1], fpfIMag);
 
-    // Calculate the corresponding complex number
-    Z = gsl_complex_arcsin (Z);
+    // If the imaginary part is zero, ...
+    if (fpfIMag EQ 0)
+    {
+        // Call the Real number version so as to avoid
+        //   inconsistencies in the two cases:
+        //   Real vs. Complex (with imaginary part EQ 0)
+        Z.dat[0] = asin (Z.dat[0]);
+////////Z.dat[1] = 0;               // Already zero from <fprf_set> above
+    } else
+        // Calculate the corresponding complex number
+        Z = gsl_complex_arcsin (Z);
 
     // Save as the real part of the result
     fprf_set (rop->parts[0], Z.dat[0]);
@@ -212,7 +248,7 @@ void fpXf_asin
 
 
 //***************************************************************************
-//  $fpXf_acos
+//  $fpXf_acos      (-2)
 //***************************************************************************
 
 void fpXf_acos
@@ -234,8 +270,17 @@ void fpXf_acos
     fprf_set (Z.dat[0], op->parts[0]);
     fprf_set (Z.dat[1], fpfIMag);
 
-    // Calculate the corresponding complex number
-    Z = gsl_complex_arccos (Z);
+    // If the imaginary part is zero, ...
+    if (fpfIMag EQ 0)
+    {
+        // Call the Real number version so as to avoid
+        //   inconsistencies in the two cases:
+        //   Real vs. Complex (with imaginary part EQ 0)
+        Z.dat[0] = acos (Z.dat[0]);
+////////Z.dat[1] = 0;               // Already zero from <fprf_set> above
+    } else
+        // Calculate the corresponding complex number
+        Z = gsl_complex_arccos (Z);
 
     // Save as the real part of the result
     fprf_set (rop->parts[0], Z.dat[0]);
@@ -255,7 +300,7 @@ void fpXf_acos
 
 
 //***************************************************************************
-//  $fpXf_atan
+//  $fpXf_atan      (-3)
 //***************************************************************************
 
 void fpXf_atan
@@ -327,7 +372,7 @@ void fpXf_atan
 
 
 //***************************************************************************
-//  $fpXf_sinh
+//  $fpXf_sinh      (5)
 //***************************************************************************
 
 void fpXf_sinh
@@ -349,8 +394,17 @@ void fpXf_sinh
     fprf_set (Z.dat[0], op->parts[0]);
     fprf_set (Z.dat[1], fpfIMag);
 
-    // Calculate the corresponding complex number
-    Z = gsl_complex_sinh (Z);
+    // If the imaginary part is zero, ...
+    if (fpfIMag EQ 0)
+    {
+        // Call the Real number version so as to avoid
+        //   inconsistencies in the two cases:
+        //   Real vs. Complex (with imaginary part EQ 0)
+        Z.dat[0] = sinh (Z.dat[0]);
+////////Z.dat[1] = 0;               // Already zero from <fprf_set> above
+    } else
+        // Calculate the corresponding complex number
+        Z = gsl_complex_sinh (Z);
 
     // Save as the real part of the result
     fprf_set (rop->parts[0], Z.dat[0]);
@@ -371,7 +425,7 @@ void fpXf_sinh
 
 
 //***************************************************************************
-//  $fpXf_cosh
+//  $fpXf_cosh      (6)
 //***************************************************************************
 
 void fpXf_cosh
@@ -393,8 +447,17 @@ void fpXf_cosh
     fprf_set (Z.dat[0], op->parts[0]);
     fprf_set (Z.dat[1], fpfIMag);
 
-    // Calculate the corresponding complex number
-    Z = gsl_complex_cosh (Z);
+    // If the imaginary part is zero, ...
+    if (fpfIMag EQ 0)
+    {
+        // Call the Real number version so as to avoid
+        //   inconsistencies in the two cases:
+        //   Real vs. Complex (with imaginary part EQ 0)
+        Z.dat[0] = cosh (Z.dat[0]);
+////////Z.dat[1] = 0;               // Already zero from <fprf_set> above
+    } else
+        // Calculate the corresponding complex number
+        Z = gsl_complex_cosh (Z);
 
     // Save as the real part of the result
     fprf_set (rop->parts[0], Z.dat[0]);
@@ -415,7 +478,7 @@ void fpXf_cosh
 
 
 //***************************************************************************
-//  $fpXf_tanh
+//  $fpXf_tanh      (7)
 //***************************************************************************
 
 void fpXf_tanh
@@ -437,8 +500,17 @@ void fpXf_tanh
     fprf_set (Z.dat[0], op->parts[0]);
     fprf_set (Z.dat[1], fpfIMag);
 
-    // Calculate the corresponding complex number
-    Z = gsl_complex_tanh (Z);
+    // If the imaginary part is zero, ...
+    if (fpfIMag EQ 0)
+    {
+        // Call the Real number version so as to avoid
+        //   inconsistencies in the two cases:
+        //   Real vs. Complex (with imaginary part EQ 0)
+        Z.dat[0] = tanh (Z.dat[0]);
+////////Z.dat[1] = 0;               // Already zero from <fprf_set> above
+    } else
+        // Calculate the corresponding complex number
+        Z = gsl_complex_tanh (Z);
 
     // Save as the real part of the result
     fprf_set (rop->parts[0], Z.dat[0]);
@@ -459,7 +531,7 @@ void fpXf_tanh
 
 
 //***************************************************************************
-//  $fpXf_asinh
+//  $fpXf_asinh     (-5)
 //***************************************************************************
 
 void fpXf_asinh
@@ -519,7 +591,7 @@ void fpXf_asinh
 
 
 //***************************************************************************
-//  $fpXf_acosh
+//  $fpXf_acosh     (-6)
 //***************************************************************************
 
 void fpXf_acosh
@@ -563,7 +635,7 @@ void fpXf_acosh
 
 
 //***************************************************************************
-//  $Mygsl_atanh
+//  $Mygsl_atanh    (-7)
 //***************************************************************************
 
 void Mygsl_atanh
@@ -585,7 +657,7 @@ void Mygsl_atanh
 
 
 //***************************************************************************
-//  $fpXf_atanh
+//  $fpXf_atanh     (-7)
 //***************************************************************************
 
 void fpXf_atanh
@@ -607,6 +679,11 @@ void fpXf_atanh
     // Construct a complex number from h and g
     fprf_set (Z.dat[0], op->parts[0]);
     fprf_set (Z.dat[1], fpfIMag);
+
+    // If either part is an infinity or NaN, ...
+    if (_isinf (Z.dat[0]) || _isinf (Z.dat[1])
+     || _isnan (Z.dat[0]) || _isnan (Z.dat[1]))
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     // Because the GSL version of atanh isn't very accurate in the imaginary part,
     //   we use a different algorithm to calculate that, using the sign of the

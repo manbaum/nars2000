@@ -456,53 +456,73 @@ APLHC8F SqrtHCxF_RE
     aplIMag = sqrt (aplIMag);                                       // g
     aplU    = sqrt (aplRMag);                                       // u
 
-    // If the imaginary parts are all 0, ...
-    if (aplIMag EQ 0)
-        aplV = 0;
-    else
-        aplV = atan2 (aplIMag, aplRht.parts[0]) / 2;
-
-    // Calculate the real part
-    aplRes.parts[0] = aplU * cos (aplV);                            // p
-
-    // If the imaginary parts are all 0, ...
-    if (aplIMag EQ 0)
+    // If the imaginary parts are all 0 or a NaN, ...
+    if (aplIMag EQ 0 || _isnan (aplIMag))
     {
-        // Loop through all but the 1st of the imaginary parts
-        for (i = 2; i < iHCDimRes; i++)
-            // Initialize to 0
-            aplRes.parts[i] = 0.0;
-
-        // If the real part is negative, ...
-        if (aplRht.parts[0] < 0)
+        // If the real part of the right arg is negative, ...
+        if (signumflt (aplRht.parts[0]) < 0)
         {
-            // Set the real part to 0
-            aplRes.parts[0] = 0;
+            // If it's not a Complex result as yet, ...
+            if (iHCDimRes < 2)
+                // Make it so
+                RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+            else
+            {
+                // Set the real part to 0
+////////////////aplRes.parts[0] = 0.0;  // Already done in = {0}
 
-            // Set the 1st imaginary part to aplU
-            aplRes.parts[1] = aplU;
+                // Calculate the real Sqrt of the absolute value of the right arg real part
+                aplRes.parts[1] = sqrt (fabs (aplRht.parts[0]));
+            } // End IF/ELSE
         } else
-            // Set the 1st imaginary part to 0
-            aplRes.parts[1] = 0;
+            // Calculate the real Sqrt of the right arg real part
+            aplRes.parts[0] = sqrt (aplRht.parts[0]);
     } else
     {
-        // Calculate sin (v)
-        aplV   = sin (aplV);
+        aplV = atan2 (aplIMag, aplRht.parts[0]) / 2;
 
-        // Calculate sin (v) / g
-        aplV   = DivHC1F_RE (aplV, aplIMag);
+        // Calculate the real part
+        aplRes.parts[0] = aplU * cos (aplV);                            // p
 
-        // Calculate u * sin (v) / g
-        aplMul = MulHC1F_RE (aplU, aplV);
+        // If the imaginary parts are all 0, ...
+        if (aplIMag EQ 0)
+        {
+            // Loop through all but the 1st of the imaginary parts
+            for (i = 2; i < iHCDimRes; i++)
+                // Initialize to 0
+                aplRes.parts[i] = 0.0;
 
-        // If the multiplier is bogus (from {Inf} / {Inf}), ...
-        if (_isnan (aplMul))
-            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+            // If the real part is negative, ...
+            if (aplRht.parts[0] < 0)
+            {
+                // Set the real part to 0
+                aplRes.parts[0] = 0;
 
-        // Loop through the imaginary parts
-        for (i = 1; i < iHCDimRes; i++)
-            // Multiply each of the imaginary parts by the arctan2
-            aplRes.parts[i] = aplRht.parts[i] * aplMul;
+                // Set the 1st imaginary part to aplU
+                aplRes.parts[1] = aplU;
+            } else
+                // Set the 1st imaginary part to 0
+                aplRes.parts[1] = 0;
+        } else
+        {
+            // Calculate sin (v)
+            aplV   = sin (aplV);
+
+            // Calculate sin (v) / g
+            aplV   = DivHC1F_RE (aplV, aplIMag);
+
+            // Calculate u * sin (v) / g
+            aplMul = MulHC1F_RE (aplU, aplV);
+
+            // If the multiplier is bogus (from {Inf} / {Inf}), ...
+            if (_isnan (aplMul))
+                RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+            // Loop through the imaginary parts
+            for (i = 1; i < iHCDimRes; i++)
+                // Multiply each of the imaginary parts by the arctan2
+                aplRes.parts[i] = aplRht.parts[i] * aplMul;
+        } // End IF/ELSE
     } // End IF/ELSE
 
     return aplRes;
@@ -656,6 +676,7 @@ APLHC8V SqrtHCxV_RE
              aplV = {0},            // ...
              aplMul;                  // ...
     int      i;                     // Loop counter
+    UBOOL    bError = FALSE;        // TRUE iff we end in an error
 
     /*
         From http://home.comcast.net/~tamivox/redbear/qtrn_calc/index.html
@@ -715,87 +736,120 @@ APLHC8V SqrtHCxV_RE
     // Initialize to 0
     mpfr_init0 (&aplV);
 
-    // If the imaginary parts are NOT all 0, ...
-    if (!IsMpf0 (&aplIMag))
+    // If the imaginary parts are all 0 or a NaN, ...
+    if (IsMpf0 (&aplIMag) || mpfr_nan_p (&aplIMag))
+    {
+        // Initialize to 0
+        mphcxv_init0 (&aplRes, iHCDimRes);
+
+        // If the real part of the right arg is negative, ...
+        if (mpfr_sgn (&aplRht.parts[0]) < 0)
+        {
+            // If it's not a Complex result as yet, ...
+            if (iHCDimRes < 2)
+            {
+                // Mark as in error
+                bError = TRUE;
+
+                goto ERROR_EXIT;
+            } else
+            {
+                // Set the real part to 0
+////////////////mpfr_set_d (&aplRes.parts[0], 0.0, MPFR_RNDN);  // Already done in mphcxv_init0
+
+                // Calculate the absolute value of the right arg real part
+                mpfr_abs (&aplV, &aplRht.parts[0], MPFR_RNDN);
+
+                // Calculate the real Sqrt of the absolute value of the right arg real part
+                mpfr_sqrt (&aplRes.parts[1], &aplV, MPFR_RNDN);
+            } // End IF/ELSE
+        } else
+            // Return the real Sqrt
+            mpfr_sqrt (&aplRes.parts[0], &aplRht.parts[0], MPFR_RNDN);
+    } else
     {
         // Calculate atan2 (g, h) /2
         mpfr_atan2  (&aplV, &aplIMag, &aplRht.parts[0], MPFR_RNDN);
         mpfr_div_si (&aplV, &aplV, 2, MPFR_RNDN);
-    } // End IF/ELSE
 
-    // Calculate cos (v)
-    aplTmp = cosVfp (aplV);
+        // Calculate cos (v)
+        aplTmp = cosVfp (aplV);
 
-    // Calculate u * cos (v)
-    aplRes.parts[0] = MulHC1V_RE (aplU, aplTmp);                    // p
-
-    // We no longer need this storage
-    Myf_clear (&aplTmp);
-
-    // If the imaginary parts are all 0, ...
-    if (IsMpf0 (&aplIMag))
-    {
-        // Loop through all but the 1st of the imaginary parts
-        for (i = 2; i < iHCDimRes; i++)
-            // Initialize to 0
-            mpfr_init0 (&aplRes.parts[i]);
-
-        // If the real part is negative, ...
-        if (mpfr_sgn (&aplRht.parts[0]) < 0)
-        {
-            // Set the real part to 0
-            mpfr_set_si (&aplRes.parts[0], 0, MPFR_RNDN);
-
-            // Set the 1st imaginary part to aplU
-            mpfr_init_set (&aplRes.parts[1], &aplU, MPFR_RNDN);
-        } else
-            // Initialize the 1st imaginary part to 0
-            mpfr_init0 (&aplRes.parts[1]);
-    } else
-    {
-        EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
-
-        //  Calculate sin (v)
-        aplTmp = sinVfp (aplV);
-
-        __try
-        {
-            // Calculate sin (v) / g
-            aplMul = DivHC1V_RE (aplTmp, aplIMag);
-
-            // We no longer need this storage
-            Myf_clear (&aplTmp);
-
-            // Calculate u * sin (v) / g
-            aplTmp = MulHC1V_RE (aplU, aplMul);                         // q
-
-            // Loop through the imaginary parts
-            for (i = 1; i < iHCDimRes; i++)
-                // Multiply each of the imaginary parts by the arctan2
-                aplRes.parts[i] = MulHC1V_RE (aplRht.parts[i], aplTmp);
-        } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
-        {
-            exCode = MyGetExceptionCode ();  // The exception code
-
-            dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
-
-            // Check the exception code in a helper function
-            CheckExCodeHelper (&exCode);
-        } // End __try/__except
+        // Calculate u * cos (v)
+        aplRes.parts[0] = MulHC1V_RE (aplU, aplTmp);                    // p
 
         // We no longer need this storage
         Myf_clear (&aplTmp);
-        Myf_clear (&aplMul);
 
-        // Check the exception code in a main function
-        CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
+        // If the imaginary parts are all 0, ...
+        if (IsMpf0 (&aplIMag))
+        {
+            // Loop through all but the 1st of the imaginary parts
+            for (i = 2; i < iHCDimRes; i++)
+                // Initialize to 0
+                mpfr_init0 (&aplRes.parts[i]);
+
+            // If the real part is negative, ...
+            if (mpfr_sgn (&aplRht.parts[0]) < 0)
+            {
+                // Set the real part to 0
+                mpfr_set_si (&aplRes.parts[0], 0, MPFR_RNDN);
+
+                // Set the 1st imaginary part to aplU
+                mpfr_init_set (&aplRes.parts[1], &aplU, MPFR_RNDN);
+            } else
+                // Initialize the 1st imaginary part to 0
+                mpfr_init0 (&aplRes.parts[1]);
+        } else
+        {
+            EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
+            //  Calculate sin (v)
+            aplTmp = sinVfp (aplV);
+
+            __try
+            {
+                // Calculate sin (v) / g
+                aplMul = DivHC1V_RE (aplTmp, aplIMag);
+
+                // We no longer need this storage
+                Myf_clear (&aplTmp);
+
+                // Calculate u * sin (v) / g
+                aplTmp = MulHC1V_RE (aplU, aplMul);                         // q
+
+                // Loop through the imaginary parts
+                for (i = 1; i < iHCDimRes; i++)
+                    // Multiply each of the imaginary parts by the arctan2
+                    aplRes.parts[i] = MulHC1V_RE (aplRht.parts[i], aplTmp);
+            } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+            {
+                exCode = MyGetExceptionCode ();  // The exception code
+
+                dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+                // Check the exception code in a helper function
+                CheckExCodeHelper (&exCode);
+            } // End __try/__except
+
+            // We no longer need this storage
+            Myf_clear (&aplTmp);
+            Myf_clear (&aplMul);
+
+            // Check the exception code in a main function
+            CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
+        } // End IF/ELSE
     } // End IF/ELSE
-
+ERROR_EXIT:
     // We no longer need this storage
     Myf_clear (&aplV);
     Myf_clear (&aplU);
     Myf_clear (&aplIMag);
     Myf_clear (&aplRMag);
+
+    if (bError)
+        // Make it so
+        RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
 
     return aplRes;
 } // End SqrtHCxV_RE
@@ -1065,7 +1119,7 @@ void PrimFnDydRootIisIvI
                                                 (APLFLOAT) lpatRht->aplInteger,
                                                            FALSE);
             // If aplFloatRes can't be expressed as an integer, ...
-            if (IsFltInfinity (aplFloatRes))
+            if (_isinf (aplFloatRes))
                 RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
             else
                 lpMemRes[uRes] = (APLINT) aplFloatRes;
@@ -1088,7 +1142,7 @@ void PrimFnDydRootIisIvI
                                                 (APLFLOAT) lpatRht->aplInteger,
                                                            FALSE);
             // If aplFloatRes can't be expressed as an integer, ...
-            if (IsFltInfinity (aplFloatRes))
+            if (_isinf (aplFloatRes))
                 RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
             else
                 lpMemRes[uRes] = (APLINT) aplFloatRes;
@@ -1189,7 +1243,7 @@ void PrimFnDydRootFisIvI
     } // End IF
 ////else
 ////// Check for indeterminate:  PoM_ {root} 0 <==> 0 * 0
-////if (IsFltInfinity (lpatLft->aplInteger)
+////if (_isinf (lpatLft->aplInteger)
 //// && lpatRht->aplInteger EQ 0)
 ////    lpMemRes[uRes] = TranslateQuadICIndex ((APLFLOAT) lpatLft->aplInteger,
 ////                                                      ICNDX_0EXP0,
@@ -1264,7 +1318,7 @@ void PrimFnDydRootFisFvF
     } // End IF
     else
     // Check for indeterminate:  PoM_ {root} 0 <==> 0 * 0
-    if (IsFltInfinity (lpatLft->aplFloat)
+    if (_isinf (lpatLft->aplFloat)
      && lpatRht->aplFloat EQ 0)
         lpMemRes[uRes] = TranslateQuadICIndex (lpatLft->aplFloat,
                                                ICNDX_0EXP0,

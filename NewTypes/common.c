@@ -1303,5 +1303,80 @@ WSFULL_EXIT:
 
 
 //***************************************************************************
+//  $IsArgNaN
+//
+//  Determine if an arg is a NaN
+//***************************************************************************
+
+UBOOL IsArgNaN
+    (APLSTYPE aplTypeArg,
+     LPVOID   lpMemArg,
+     APLINT   uArg)
+
+{
+    int i,                          // Loop counter
+        iHCDimArg,                  // HC Dimension (1, 2, 4, 8)
+        iSizeofArg;                 // # bytes in each arg item
+
+    // Get the HC Dimension (1, 2, 4, 8)
+    iHCDimArg  = TranslateArrayTypeToHCDim  (aplTypeArg);
+    iSizeofArg = TranslateArrayTypeToSizeof (aplTypeArg);
+
+    // Split cases based upon the argument storage type
+    switch (aplTypeArg)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_APA :
+        case ARRAY_INT :
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
+        case ARRAY_CHAR:
+        case ARRAY_NESTED:
+        case ARRAY_HETERO:
+            return FALSE;
+
+        case ARRAY_FLOAT:
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
+            // Loop through all of the parts
+            for (i = 0; i < iHCDimArg; i++)
+                // If it's a NaN, ...
+                if (_isnan (((LPAPLHC8F) &((LPAPLHC1F) lpMemArg)[uArg * iSizeofArg])->parts[i]))
+                    return TRUE;
+            break;
+
+        case ARRAY_RAT:
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
+            // Loop through all of the parts
+            for (i = 0; i < iHCDimArg; i++)
+                // If it's a NaN, ...
+                if (mpq_nan_p (&((LPAPLHC8R) &((LPAPLHC1R) lpMemArg)[uArg * iSizeofArg])->parts[i]))
+                    return TRUE;
+            break;
+
+        case ARRAY_VFP:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
+            // Loop through all of the parts
+            for (i = 0; i < iHCDimArg; i++)
+                // If it's a NaN, ...
+                if (mpfr_nan_p (&((LPAPLHC8V) &((LPAPLHC1V) lpMemArg)[uArg * iSizeofArg])->parts[i]))
+                    return TRUE;
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    return FALSE;
+} // End IsArgNaN
+
+
+//***************************************************************************
 //  End of File: common.c
 //***************************************************************************

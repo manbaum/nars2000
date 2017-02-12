@@ -1,5 +1,7 @@
 <?php
 
+// On the server, this file should be saved into /var/www/cgi-bin/
+
 // Define the array of conversions
 $br2a = array (
 
@@ -130,6 +132,9 @@ $br2a = array (
 'drop'                  => 0x2193,
 'downarrow'             => 0x2193,
 'raze'                  => 0x2193,
+
+'nan'                   => 0x2205,
+'circleslash'           => 0x2205,
 
 'delta'                 => 0x2206,
 

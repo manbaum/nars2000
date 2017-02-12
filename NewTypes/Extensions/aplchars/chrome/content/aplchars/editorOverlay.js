@@ -120,7 +120,7 @@ var KeyboardNARS2000 =
  '\u00AF',              // 50 = Alt-'2'             overbar
  '\u003C',              // 51 = Alt-'3'             left-caret
  '\u2264',              // 52 = Alt-'4'             left-caret-underbar
- '\u003D',              // 53 = Alt-'5'             equal
+ '\u2205',              // 53 = Alt-'5'             nan
  '\u2265',              // 54 = Alt-'6'             right-caret-underbar
  '\u003E',              // 55 = Alt-'7'             right-caret
  '\u2260',              // 56 = Alt-'8'             notequal
@@ -129,7 +129,7 @@ var KeyboardNARS2000 =
  '\u234E',              // 59 = Alt-';'             up-tack-jot
         0,              // 60 = Alt-'<'
  '\u00F7',              // 61 = Alt-'='             colon-bar
-        0,              // 62 = Alt-'>'
+ '\u2235',              // 62 = Alt-'>'             dieresis-dot
  '\u2299',              // 63 = Alt-'?'             circle-middle-dot
  '\u2262',              // 64 = Alt-'@'             notequal underbar
         0,              // 65 = Alt-'A'

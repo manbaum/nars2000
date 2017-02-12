@@ -198,8 +198,13 @@
 #define iadd64_RE(a,b,c)    iadd64 ((a), (b), NULL, EXCEPTION_RESULT_##c)
 #define isub64_RE(a,b,c)    isub64 ((a), (b), NULL, EXCEPTION_RESULT_##c)
 
-#define gAllowNeg0          GetMemPTD()->aplCurrentFEATURE[FEATURENDX_NEG0]
-#define gUseHurwitz         GetMemPTD()->aplCurrentFEATURE[FEATURENDX_HURWITZ]
+// []FEATURE values
+#define gAllowNeg0          GetMemPTD()->aplCurrentFEATURE[FEATURENDX_NEG0    ]
+#define gUseHurwitz         GetMemPTD()->aplCurrentFEATURE[FEATURENDX_HURWITZ ]
+#define gAllowNaN           GetMemPTD()->aplCurrentFEATURE[FEATURENDX_NAN     ]
+#define gbAllowNeg0          lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_NEG0    ]     // Use these if lpMemPTD is already assigned
+#define gbUseHurwitz         lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_HURWITZ ]     // ...
+#define gbAllowNaN           lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_NAN     ]     // ...
 
 ////ine signumint(a)        (   (((APLINT) (a)) < 0) ? -1 : (((APLINT) (a)) > 0))
 ////ine signumflt(a)        (SIGN_APLFLOAT (a)       ? -1 : (          (a)  > 0))
@@ -552,14 +557,17 @@
 #define DLG_MSGNODEFFOCUS           FALSE           // ...               do not set focus
 
 // Define macro for detecting floating point infinity
-#define IsFltInfinity(a)    (!_finite (a) && !_isnan (a))
+#define _isinf(a)           (!_finite (a) && !_isnan (a))
+#define IsFltInfinity(a)    _isinf (a)
 #define IsFltPosInfinity(a) (!_finite (a) && !_isnan (a) && !SIGN_APLFLOAT (a))
 #define IsFltNegInfinity(a) (!_finite (a) && !_isnan (a) &&  SIGN_APLFLOAT (a))
+#define IsFltNaN(a)         (!_finite (a) &&  _isnan (a))
 
 // Define macro for detecting Rational or VFP infinity
 #define IsMpzInfinity(a)    (mpz_inf_p (a))
 #define IsMpqInfinity(a)    (mpq_inf_p (a))
 #define IsMpfInfinity(a)    (mpfr_inf_p (a))
+#define IsMpfNaN(a)         (mpfr_nan_p (a))
 
 // Define macro for inverting VFP numbers
 #define mpfr_inv(rop,op,rnd)    mpfr_si_div (rop, 1, op, rnd)

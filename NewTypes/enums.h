@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -127,20 +127,22 @@ typedef enum tagSYSCMDS_ENUM    // System Commands
 typedef enum tagEXCEPTION_CODES // Exception Codes
 {
     EXCEPTION_SUCCESS = 0 ,     // 00:  All OK
-    EXCEPTION_RESULT_FLOAT ,    // 01:  Result should be Float
-    EXCEPTION_RESULT_RAT   ,    // 02:  Result should be RAT ***FIXME*** -- When can this occur?
-    EXCEPTION_RESULT_VFP   ,    // 03:  Result should be VFP
-    EXCEPTION_DOMAIN_ERROR ,    // 04:  Signal a DOMAIN ERROR
-    EXCEPTION_LIMIT_ERROR  ,    // 05:  Signal a LIMIT ERROR
-    EXCEPTION_NONCE_ERROR  ,    // 06:  Signal a NONCE ERROR
-    EXCEPTION_WS_FULL      ,    // 07:  Signal a WS FULL
-    EXCEPTION_CTRL_BREAK   ,    // 08:  Ctrl-Break pressed
-    EXCEPTION_RESULT_HC2F  ,    // 09:  Result should be HC2F
-    EXCEPTION_RESULT_HC2V  ,    // 0A:  Result should be HC2V
-    EXCEPTION_RESULT_HC4F  ,    // 0B:  Result should be HC4F
-    EXCEPTION_RESULT_HC4V  ,    // 0C:  Result should be HC4V
-    EXCEPTION_RESULT_HC8F  ,    // 0D:  Result should be HC8F
-    EXCEPTION_RESULT_HC8V  ,    // 0E:  Result should be HC8V
+    EXCEPTION_DOMAIN_ERROR ,    // 01:  Signal a DOMAIN ERROR
+    EXCEPTION_LIMIT_ERROR  ,    // 02:  Signal a LIMIT ERROR
+    EXCEPTION_NONCE_ERROR  ,    // 03:  Signal a NONCE ERROR
+    EXCEPTION_WS_FULL      ,    // 04:  Signal a WS FULL
+    EXCEPTION_CTRL_BREAK   ,    // 05:  Ctrl-Break pressed
+                                // N.B.  The following values *MUST* be in order F, V, F, V, etc.
+                                //       so we can do arithmetic on them as in
+                                //       EXCEPTION_RESULT_FLOAT + 2 * iHCDimIndex
+    EXCEPTION_RESULT_FLOAT ,    // 06:  Result should be Float
+    EXCEPTION_RESULT_VFP   ,    // 07:  Result should be VFP
+    EXCEPTION_RESULT_HC2F  ,    // 08:  Result should be HC2F
+    EXCEPTION_RESULT_HC2V  ,    // 09:  Result should be HC2V
+    EXCEPTION_RESULT_HC4F  ,    // 0A:  Result should be HC4F
+    EXCEPTION_RESULT_HC4V  ,    // 0B:  Result should be HC4V
+    EXCEPTION_RESULT_HC8F  ,    // 0C:  Result should be HC8F
+    EXCEPTION_RESULT_HC8V  ,    // 0D:  Result should be HC8V
 
     EXCEPTION_RESULT_HC1F = EXCEPTION_RESULT_FLOAT, // To simplify common macros
     EXCEPTION_RESULT_HC1V = EXCEPTION_RESULT_VFP  , // ...

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ typedef enum tagTKCOL_INDICES       // FSA column indices for Tokenize
  TKCOL_OVERBAR      ,               // 03:  Overbar
  TKCOL_DIRIDENT     ,               // 04:  Alpha or Omega
  TKCOL_Q_QQ         ,               // 05:  Quad
- TKCOL_UNDERBAR     ,               // 06:  Underbar
+ TKCOL_NAN          ,               // 06:  NaN
  TKCOL_INFINITY     ,               // 07:  Infinity
  TKCOL_ASSIGN       ,               // 08:  Assignment symbol
  TKCOL_SEMICOLON    ,               // 09:  Semicolon symbol

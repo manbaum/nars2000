@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -614,75 +614,76 @@ RESTART_EXCEPTION:
 
                 __try
                 {
-                    // Split cases based upon the result arg storage type
-                    switch (aplTypeRes)
+                    __try
                     {
+                        // Split cases based upon the result arg storage type
+                        switch (aplTypeRes)
+                        {
 #ifdef DEBUG
-////////////////////////WCHAR wszTemp[1024];
+////////////////////////////WCHAR wszTemp[1024];
 #endif
-                        case ARRAY_INT:                 // Res = INT
-                            PrimFnDydDownTackHCxIF_MAC (1, I)
+                            case ARRAY_INT:                 // Res = INT
+                                PrimFnDydDownTackHCxIF_MAC (1, I)
 
-                        case ARRAY_HC2I:                // Res = HC2I
-                            PrimFnDydDownTackHCxIF_MAC (2, I)
+                            case ARRAY_HC2I:                // Res = HC2I
+                                PrimFnDydDownTackHCxIF_MAC (2, I)
 
-                        case ARRAY_HC4I:                // Res = HC4I
-                            PrimFnDydDownTackHCxIF_MAC (4, I)
+                            case ARRAY_HC4I:                // Res = HC4I
+                                PrimFnDydDownTackHCxIF_MAC (4, I)
 
-                        case ARRAY_FLOAT:               // Res = FLOAT
-                            PrimFnDydDownTackHCxIF_MAC (1, F)
+                            case ARRAY_FLOAT:               // Res = FLOAT
+                                PrimFnDydDownTackHCxIF_MAC (1, F)
 
-                        case ARRAY_HC2F:                // Res = HC2F
-                            PrimFnDydDownTackHCxIF_MAC (2, F)
+                            case ARRAY_HC2F:                // Res = HC2F
+                                PrimFnDydDownTackHCxIF_MAC (2, F)
 
-                        case ARRAY_HC4F:                // Res = HC4F
-                            PrimFnDydDownTackHCxIF_MAC (4, F)
+                            case ARRAY_HC4F:                // Res = HC4F
+                                PrimFnDydDownTackHCxIF_MAC (4, F)
 
-                        case ARRAY_RAT:                 // Res = RAT
-                            PrimFnDydDownTackHCxRV_MAC (1, R, r)
+                            case ARRAY_RAT:                 // Res = RAT
+                                PrimFnDydDownTackHCxRV_MAC (1, R, r)
 
-                        case ARRAY_HC2R:                // Res = HC2R
-                            PrimFnDydDownTackHCxRV_MAC (2, R, r)
+                            case ARRAY_HC2R:                // Res = HC2R
+                                PrimFnDydDownTackHCxRV_MAC (2, R, r)
 
-                        case ARRAY_HC4R:                // Res = HC4R
-                            PrimFnDydDownTackHCxRV_MAC (4, R, r)
+                            case ARRAY_HC4R:                // Res = HC4R
+                                PrimFnDydDownTackHCxRV_MAC (4, R, r)
 
-                        case ARRAY_VFP:                 // Res = VFP
-                            PrimFnDydDownTackHCxRV_MAC (1, V, v)
+                            case ARRAY_VFP:                 // Res = VFP
+                                PrimFnDydDownTackHCxRV_MAC (1, V, v)
 
-                        case ARRAY_HC2V:                // Res = HC2V
+                            case ARRAY_HC2V:                // Res = HC2V
 #ifdef DEBUG
-////////////////////////////strcpyW (wszTemp, L"atLft.aplHC2V:  "); *FormatAplHC2V (&wszTemp[lstrlenW (wszTemp)], &atLft.aplHC2V, 0) = WC_EOS; DbgMsgW (wszTemp);
-////////////////////////////strcpyW (wszTemp, L"atRht.aplHC2V:  "); *FormatAplHC2V (&wszTemp[lstrlenW (wszTemp)], &atRht.aplHC2V, 0) = WC_EOS; DbgMsgW (wszTemp);
+////////////////////////////////strcpyW (wszTemp, L"atLft.aplHC2V:  "); *FormatAplHC2V (&wszTemp[lstrlenW (wszTemp)], &atLft.aplHC2V, 0) = WC_EOS; DbgMsgW (wszTemp);
+////////////////////////////////strcpyW (wszTemp, L"atRht.aplHC2V:  "); *FormatAplHC2V (&wszTemp[lstrlenW (wszTemp)], &atRht.aplHC2V, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
-                            PrimFnDydDownTackHCxRV_MAC (2, V, v)
+                                PrimFnDydDownTackHCxRV_MAC (2, V, v)
 
-                        case ARRAY_HC4V:                // Res = HC4V
-                            PrimFnDydDownTackHCxRV_MAC (4, V, v)
+                            case ARRAY_HC4V:                // Res = HC4V
+                                PrimFnDydDownTackHCxRV_MAC (4, V, v)
 
-////////////////////////case ARRAY_BOOL:                // Can't happen w/DownTack
-////////////////////////case ARRAY_APA:                 // ...
-////////////////////////case ARRAY_CHAR:                // ...
-////////////////////////case ARRAY_HETERO:              // ...
-////////////////////////case ARRAY_NESTED:              // ...
-////////////////////////case ARRAY_HC8I:                // ...
-////////////////////////case ARRAY_HC8F:                // ...
-////////////////////////case ARRAY_HC8R:                // ...
-////////////////////////case ARRAY_HC8V:                // ...
-                        defstop
-                            break;
-                    } // End SWITCH
-
-                    // Free the old atLft
-                    (*aTypeFree[aplTypeRes]) (&atLft, 0);
+////////////////////////////case ARRAY_BOOL:                // Can't happen w/DownTack
+////////////////////////////case ARRAY_APA:                 // ...
+////////////////////////////case ARRAY_CHAR:                // ...
+////////////////////////////case ARRAY_HETERO:              // ...
+////////////////////////////case ARRAY_NESTED:              // ...
+////////////////////////////case ARRAY_HC8I:                // ...
+////////////////////////////case ARRAY_HC8F:                // ...
+////////////////////////////case ARRAY_HC8R:                // ...
+////////////////////////////case ARRAY_HC8V:                // ...
+                            defstop
+                                break;
+                        } // End SWITCH
+                    } _finally
+                    {
+                        // Free the old atLft
+                        (*aTypeFree[aplTypeRes]) (&atLft, 0);
+                    } // End __try/__finally
                 } __except (CheckException (GetExceptionInformation (), L"PrimFnDydUpTack_EM_YY"))
                 {
                     EXCEPTION_CODES exCode = MyGetExceptionCode ();
 
-                    // Free the old atLft and atRht
-                    (*aTypeFree[aplTypeRes]) (&atLft, 0);
-                    (*aTypeFree[aplTypeRes]) (&atRht, 0);
-
+                    // Split cases based upon the exception code
                     switch (exCode)
                     {
                         case EXCEPTION_RESULT_FLOAT:
@@ -734,6 +735,9 @@ RESTART_EXCEPTION:
                             DisplayException ();
 
                             break;
+
+                        case EXCEPTION_DOMAIN_ERROR:
+                            goto DOMAIN_EXIT;
 
                         default:
                             // Display message for unhandled exception
@@ -820,6 +824,11 @@ YYALLOC_EXIT:
     TypeDemote (&lpYYRes->tkToken, FALSE);
 
     goto NORMAL_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
 
 LEFT_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,

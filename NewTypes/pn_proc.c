@@ -4976,6 +4976,7 @@ PN_YYSTYPE PN_MakeHcxPoint
 
             goto ERROR_EXIT;
         } // End IF
+
         // Save the smaller value
         uNumStart = min (uNumStart, lpC1->uNumStart);
     } // End IF
@@ -4987,6 +4988,13 @@ PN_YYSTYPE PN_MakeHcxPoint
 
     // Round up to a power of two
     iHCDimRes = iHCDimPof2[iHCDimRes];
+
+    // If we're not initiating, ...
+    if (lppnLocalVars->chComType NE PN_NUMTYPE_INIT)
+        // Use the larger of this number and the
+        //   HC Dimension of lppnLocalVars->chComType
+        iHCDimRes = max (iHCDimRes,
+                         TranslateNumTypeToHCDim (lppnLocalVars->chComType));
 
     // Looop through all of the parts
     for (i = 0; i < iHCDimRes; i++)
@@ -5886,6 +5894,109 @@ PN_YYSTYPE PN_SetInfinity
 
     return pnYYRes;
 } // End PN_SetInfinity
+
+
+//***************************************************************************
+//  $PN_SetNaN
+//
+//  Set a constant NaN
+//***************************************************************************
+
+PN_YYSTYPE PN_SetNaN
+    (LPPNLOCALVARS lppnLocalVars,       // Ptr to local pnLocalVars
+     PNNUMTYPE     pnNumType,           // The suggested PN_NUMTYPE_xx
+     int           uNumStart,           // The starting offset in lpszStart
+     LPAPLINT      lpiVfpPrec)          // Ptr to VFP Precision (NULL = none, ptr to 0 = default)
+
+{
+    PN_YYSTYPE  pnYYRes = {0};          // The result
+    mpfr_prec_t uDefPrec;               // Default VFP precision
+    int         i,                      // Loop counter
+                iHCDim;                 // HC Dimension (1, 2, 4, 8)
+
+    // Save the starting offset
+    pnYYRes.uNumStart = uNumStart;
+
+    // Get the numeric type
+    pnYYRes.chType = (lppnLocalVars->chComType EQ PN_NUMTYPE_INIT) ? pnNumType : lppnLocalVars->chComType;
+
+    // Calculate the HC Dimension (1, 2, 4, 8)
+    iHCDim = TranslateNumTypeToHCDim (pnYYRes.chType);
+
+    // Split cases based upon the current numeric type
+    switch (pnYYRes.chType)
+    {
+        case PN_NUMTYPE_FLT:
+        case PN_NUMTYPE_HC2F:
+        case PN_NUMTYPE_HC4F:
+        case PN_NUMTYPE_HC8F:
+            // Save as a NaN
+            pnYYRes.at.aplFloat = fltNaN;
+
+            // Loop through the imaginary parts
+            for (i = 1; i < iHCDim; i++)
+                // Initialize to 0
+                pnYYRes.at.aplHC8F.parts[i] = 0.0;
+            break;
+
+        case PN_NUMTYPE_RAT:
+        case PN_NUMTYPE_HC2R:
+        case PN_NUMTYPE_HC4R:
+        case PN_NUMTYPE_HC8R:
+            // Save as a NaN
+            mpq_set_nan (&pnYYRes.at.aplRat);
+
+            // Loop through the imaginary parts
+            for (i = 1; i < iHCDim; i++)
+                // Initialize to 0/1
+                mpq_init (&pnYYRes.at.aplHC8R.parts[i]);
+            break;
+
+        case PN_NUMTYPE_VFP:
+        case PN_NUMTYPE_HC2V:
+        case PN_NUMTYPE_HC4V:
+        case PN_NUMTYPE_HC8V:
+            if (lpiVfpPrec NE NULL && *lpiVfpPrec NE 0)
+            {
+                // Validate the desired precision
+                if (!ValidateIntegerTest (lpiVfpPrec,           // Ptr to the integer to test
+                                          DEF_MIN_QUADFPC,      // Low range value (inclusive)
+                                          DEF_MIN_QUADFPC,      // High ...
+                                          TRUE))                // TRUE iff we're range limiting
+                {
+                    // Mark as invalid result
+                    lppnLocalVars->bYYERROR = TRUE;
+
+                    break;
+                } else
+                    uDefPrec = (UINT) *lpiVfpPrec;
+            } else
+                // Use the default precision
+                uDefPrec = mpfr_get_default_prec ();
+
+            // Initialize the VFP
+            mpfr_init2 (&pnYYRes.at.aplVfp, uDefPrec);
+
+            // Save as a NaN
+            mpfr_set_nan (&pnYYRes.at.aplVfp);
+
+            // Loop through the imaginary parts
+            for (i = 1; i < iHCDim; i++)
+                // Initialize to 0
+                mpfr_init0 (&pnYYRes.at.aplHC8V.parts[i]);
+            break;
+
+        case PN_NUMTYPE_BOOL:           // Can't happen -- no such type of infinity
+        case PN_NUMTYPE_INT:            // ...
+        case PN_NUMTYPE_HC2I:           // ...
+        case PN_NUMTYPE_HC4I:           // ...
+        case PN_NUMTYPE_HC8I:           // ...
+        defstop
+            break;
+    } // End SWITCH
+
+    return pnYYRes;
+} // End PN_SetNaN
 
 
 //***************************************************************************

@@ -59,20 +59,22 @@ typedef enum tagIC_VALUES
     ICVAL_DOMAIN_ERROR ,    // 02:  ...        DOMAIN ERROR
     ICVAL_POS_INFINITY ,    // 03:  ...        + infinity
     ICVAL_NEG_INFINITY ,    // 04:  ...        - infinity
-    ICVAL_LEFT         ,    // 05:  ...        L
-    ICVAL_RIGHT        ,    // 06:  ...        R
-    ICVAL_LENGTHM1          // 07:  Length-1
+    ICVAL_NAN          ,    // 05:  ...        NaN
+    ICVAL_LEFT         ,    // 06:  ...        L
+    ICVAL_RIGHT        ,    // 07:  ...        R
+    ICVAL_LENGTHM1          // 08:  Length-1
 } IC_VALUES;
 
 #define ICVAL_LENGTH        (ICVAL_LENGTHM1 + 1)
 
 // N.B.:  Whenever changing the above enum (IC_VALUES),
 //   be sure to make a corresponding change to
-//   <icIndexValues> in <customize.c>.
+//   <icIndexValues> in <customize.c>, and
+//   <ICVAL_MINVAL> and <ICVAL_MAXVAL> below.
 
 // Define the minimum/maximum allowable values for []IC
 #define ICVAL_MINVAL        ICVAL_NEG1
-#define ICVAL_MAXVAL        ICVAL_NEG_INFINITY
+#define ICVAL_MAXVAL        ICVAL_RIGHT
 
 // Indeterminate Control Indices
 typedef enum tagIC_INDICES
@@ -167,7 +169,8 @@ typedef enum tagFEATURE_INDICES
     FEATURENDX_NEGINDICES   ,           // 00:  Allow negative indices
     FEATURENDX_NEG0         ,           // 01:  Allow -0
     FEATURENDX_HURWITZ      ,           // 02:  Use Hurwitz's Floor instead of McDonnell's
-    FEATURENDX_LENGTH                   // 03:  # entries in this enum
+    FEATURENDX_NAN          ,           // 03:  Allow NaNs
+    FEATURENDX_LENGTH                   // 04:  # entries in this enum
 } FEATURE_INDICES, *LPFEATURE_INDICES;
 
 // Define the minimum/maximum allowable values for []FEATURE
@@ -177,6 +180,7 @@ typedef enum tagFEATURE_INDICES
 #define DEF_FEATURE_NEGINDICES  FALSE
 #define DEF_FEATURE_NEG0        FALSE
 #define DEF_FEATURE_HURWITZ     FALSE
+#define DEF_FEATURE_NAN         FALSE
 
 typedef struct tagFEATURE_NAMES
 {
@@ -190,6 +194,7 @@ APLINT aplDefaultFEATURE[FEATURENDX_LENGTH]  // []FEATURE default values
  = {DEF_FEATURE_NEGINDICES  ,           // 00:  Allow negative indices
     DEF_FEATURE_NEG0        ,           // 01:  Allow -0
     DEF_FEATURE_HURWITZ     ,           // 02:  Use Hurwitz's Floor instead of McDonnell's
+    DEF_FEATURE_NAN         ,           // 03:  Allow NaNs
    }
 #endif
 ;
@@ -197,9 +202,10 @@ APLINT aplDefaultFEATURE[FEATURENDX_LENGTH]  // []FEATURE default values
 EXTERN
 FEATURE_NAMES featNames[FEATURENDX_LENGTH]
 #ifdef DEFINE_VALUES
- = {{FEATURENDX_NEGINDICES  , L"Allow Negative Indices"},
-    {FEATURENDX_NEG0        , L"Allow " WS_UTF16_OVERBAR L"0"},
-    {FEATURENDX_HURWITZ     , L"Use Hurwitz's Floor instead of McDonnell's"},
+ = {{FEATURENDX_NEGINDICES  , L"Allow Negative Indices"                     },
+    {FEATURENDX_NEG0        , L"Allow " WS_UTF16_OVERBAR L"0"               },
+    {FEATURENDX_HURWITZ     , L"Use Hurwitz's Floor instead of McDonnell's" },
+    {FEATURENDX_NAN         , L"Allow NaNs"                                 },
    }
 #endif
 ;

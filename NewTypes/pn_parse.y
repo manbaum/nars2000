@@ -89,7 +89,7 @@ void pn_yyprint     (FILE *yyoutput, unsigned short int yytoknum, PN_YYSTYPE con
 %name-prefix "pn_yy"
 %parse-param {LPPNLOCALVARS lppnLocalVars}
 %lex-param   {LPPNLOCALVARS lppnLocalVars}
-%token EXT INF OVR EOT I J K L IJ JK KL S
+%token EXT INF OVR EOT I J K L IJ JK KL S NaN
 
 %start VectorRes
 
@@ -277,6 +277,10 @@ DecConstants:
                                      // Set constant infinity
                                      $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_FLT, $1.uNumStart, -1, NULL);
                                     }
+    | NaN                           {DbgMsgWP (L"%%DecConstants:  NaN");
+                                     // Set constant NaN
+                                     $$ = PN_SetNaN      (lppnLocalVars, PN_NUMTYPE_FLT, $1.uNumStart,     NULL);
+                                    }
     ;
 
 VfpConstants:
@@ -299,6 +303,14 @@ VfpConstants:
                                      $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_VFP, $1.uNumStart, -1, &$4.at.aplInteger);
                                      if (lppnLocalVars->bYYERROR)
                                         YYERROR;
+                                    }
+    |     NaN DEF_VFPSEP            {DbgMsgWP (L"%%VfpConstants:  NaN 'v'");
+                                     // Set constant NaN
+                                     $$ = PN_SetNaN      (lppnLocalVars, PN_NUMTYPE_VFP, $1.uNumStart, NULL);
+                                    }
+    |     NaN DEF_VFPSEP UnIntPoint {DbgMsgWP (L"%%VfpConstants:  NaN 'v' UnIntPoint");
+                                     // Set constant NaN
+                                     $$ = PN_SetNaN      (lppnLocalVars, PN_NUMTYPE_VFP, $1.uNumStart, &$3.at.aplInteger);
                                     }
     ;
 
@@ -635,6 +647,11 @@ RatConstantsInt:
                                      //   taking into account negative integer and -0
                                      $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT, $1.uNumStart,  (2 * (lppnLocalVars->lpszNumAccum[0] EQ OVERBAR1)) - 1, NULL);
                                     }
+    |     NaN  DEF_RATSEP RatArgs   {DbgMsgWP (L"%%RatConstantsInt:  NaN 'r' RatArgs");
+                                     // Set constant NaN
+                                     //   taking into account negative integer and -0
+                                     $$ = PN_SetNaN      (lppnLocalVars, PN_NUMTYPE_RAT, $1.uNumStart,  NULL);
+                                    }
     | RatArgs  DEF_RATSEP INF       {DbgMsgWP (L"%%RatConstantsInt:  RatArgs 'r' INF");
                                      // If the integer is signed, ...
                                      if (gAllowNeg0
@@ -683,6 +700,10 @@ RatConstantsExt:
     | OVR INF EXT                   {DbgMsgWP (L"%%RatConstantsExt:  OVR INF 'x'");
                                      // Set constant infinity
                                      $$ = PN_SetInfinity (lppnLocalVars, PN_NUMTYPE_RAT, $1.uNumStart, -1, NULL);
+                                    }
+    |     NaN EXT                   {DbgMsgWP (L"%%RatConstantsExt:  NaN 'x'");
+                                     // Set constant NaN
+                                     $$ = PN_SetNaN      (lppnLocalVars, PN_NUMTYPE_RAT, $1.uNumStart, NULL);
                                     }
     ;
 
@@ -1116,6 +1137,10 @@ int pn_yylex
         // If the character is infinity, ...
         if (lpYYLval->chCur EQ INFINITY1)
             return INF;
+
+        // If the character is NaN, ...
+        if (lpYYLval->chCur EQ NaN1)
+            return NaN;
     } // End IF/ELSE
 
     // If we need an EOT, ...

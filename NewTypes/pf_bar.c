@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1491,11 +1491,26 @@ APLFLOAT SubHC1F_RE
      APLFLOAT aplRht)                   // Right ...
 
 {
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
+
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC1F, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC1F, &aplRht, 0);
+
     // Check for indeterminates:  _ - _  or  -_ - -_
 
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            return aplLft;
+        else
+            return aplRht;
+    } else
     // If the args are both infinite and of the same signs, ...
-    if (IsFltInfinity (aplLft)
-     && IsFltInfinity (aplRht)
+    if (_isinf (aplLft)
+     && _isinf (aplRht)
      && SIGN_APLFLOAT (aplLft) EQ SIGN_APLFLOAT (aplRht))
         return TranslateQuadICIndex (aplLft,
                                      ICNDX_InfSUBInf,
@@ -1559,9 +1574,23 @@ APLRAT SubHC1R_RE
 
 {
     APLRAT aplRes = {0};
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
+
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC1R, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC1R, &aplRht, 0);
 
     // Check for indeterminates:  _ - _  or  -_ - -_
 
+    // If either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc1r_init_set (&aplRes, &aplLft);
+        else
+            mphc1r_init_set (&aplRes, &aplRht);
+    } else
     // If the args are both infinite and of the same signs, ...
     if (mpq_inf_p (&aplLft)
      && mpq_inf_p (&aplRht)
@@ -1579,7 +1608,7 @@ APLRAT SubHC1R_RE
 
         // Subtract the Rationals
         mpq_sub (&aplRes, &aplLft, &aplRht);
-    } // End IF/ELSE
+    } // End IF/ELSE/...
 
     return aplRes;
 } // End SubHC1R_RE
@@ -1637,9 +1666,23 @@ APLVFP SubHC1V_RE
 
 {
     APLVFP aplRes = {0};
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
+
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC1V, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC1V, &aplRht, 0);
 
     // Check for indeterminates:  _ - _  or  -_ - -_
 
+    // If either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc1v_init_set (&aplRes, &aplLft);
+        else
+            mphc1v_init_set (&aplRes, &aplRht);
+    } else
     // If the args are both infinite and of the same signs, ...
     if (mpfr_inf_p (&aplLft)
      && mpfr_inf_p (&aplRht)
@@ -1658,7 +1701,7 @@ APLVFP SubHC1V_RE
 
         // Subtract the VFPs
         mpfr_sub (&aplRes, &aplLft, &aplRht, MPFR_RNDN);
-    } // End IF/ELSE
+    } // End IF/ELSE/...
 
     return aplRes;
 } // End SubHC1V_RE
@@ -1831,13 +1874,27 @@ APLHC2F SubHC2F_RE
 {
     int     i;
     APLHC2F aplRes;
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
+
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC2F, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC2F, &aplRht, 0);
 
     // No exceptions in this code
 
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            aplRes = aplLft;
+        else
+            aplRes = aplRht;
+    } else
     // Loop through all of the parts
     for (i = 0; i < 2; i++)
         // Subtract the two integers
-        aplRes.parts[i] = (aplLft.parts[i] - aplRht.parts[i]);
+        aplRes.parts[i] = SubHC1F_RE (aplLft.parts[i], aplRht.parts[i]);
 
     return aplRes;
 } // End SubHC2F_RE
@@ -1875,7 +1932,21 @@ APLHC2R SubHC2R_RE
 {
     int     i;
     APLHC2R aplRes;
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
 
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC2R, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC2R, &aplRht, 0);
+
+    // If either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc2r_init_set (&aplRes, &aplLft);
+        else
+            mphc2r_init_set (&aplRes, &aplRht);
+    } else
     // Loop through all of the parts
     for (i = 0; i < 2; i++)
     {
@@ -1961,7 +2032,21 @@ APLHC2V SubHC2V_RE
 {
     int     i;
     APLHC2V aplRes;
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
 
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC2V, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC2V, &aplRht, 0);
+
+    // If either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc2v_init_set (&aplRes, &aplLft);
+        else
+            mphc2v_init_set (&aplRes, &aplRht);
+    } else
     // Loop through all of the parts
     for (i = 0; i < 2; i++)
     {
@@ -2161,13 +2246,27 @@ APLHC4F SubHC4F_RE
 {
     int     i;
     APLHC4F aplRes;
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
+
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC4F, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC4F, &aplRht, 0);
 
     // No exceptions in this code
 
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            aplRes = aplLft;
+        else
+            aplRes = aplRht;
+    } else
     // Loop through all of the parts
     for (i = 0; i < 4; i++)
         // Subtract the two FLOATs
-        aplRes.parts[i] = (aplLft.parts[i] - aplRht.parts[i]);
+        aplRes.parts[i] = SubHC1F_RE (aplLft.parts[i], aplRht.parts[i]);
 
     return aplRes;
 } // End SubHC4F_RE
@@ -2205,7 +2304,21 @@ APLHC4R SubHC4R_RE
 {
     int     i;
     APLHC4R aplRes;
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
 
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC4R, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC4R, &aplRht, 0);
+
+    // If either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc4r_init_set (&aplRes, &aplLft);
+        else
+            mphc4r_init_set (&aplRes, &aplRht);
+    } else
     // Loop through all of the parts
     for (i = 0; i < 4; i++)
     {
@@ -2291,7 +2404,21 @@ APLHC4V SubHC4V_RE
 {
     int     i;
     APLHC4V aplRes;
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
 
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC4V, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC4V, &aplRht, 0);
+
+    // If either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc4v_init_set (&aplRes, &aplLft);
+        else
+            mphc4v_init_set (&aplRes, &aplRht);
+    } else
     // Loop through all of the parts
     for (i = 0; i < 4; i++)
     {
@@ -2491,13 +2618,27 @@ APLHC8F SubHC8F_RE
 {
     int     i;
     APLHC8F aplRes;
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
+
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC8F, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC8F, &aplRht, 0);
 
     // No exceptions in this code
 
+    // If the either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            aplRes = aplLft;
+        else
+            aplRes = aplRht;
+    } else
     // Loop through all of the parts
     for (i = 0; i < 8; i++)
         // Subtract the two integers
-        aplRes.parts[i] = (aplLft.parts[i] - aplRht.parts[i]);
+        aplRes.parts[i] = SubHC1F_RE (aplLft.parts[i], aplRht.parts[i]);
 
     return aplRes;
 } // End SubHC8F_RE
@@ -2535,7 +2676,21 @@ APLHC8R SubHC8R_RE
 {
     int     i;
     APLHC8R aplRes;
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
 
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC8R, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC8R, &aplRht, 0);
+
+    // If either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc8r_init_set (&aplRes, &aplLft);
+        else
+            mphc8r_init_set (&aplRes, &aplRht);
+    } else
     // Loop through all of the parts
     for (i = 0; i < 8; i++)
     {
@@ -2621,7 +2776,21 @@ APLHC8V SubHC8V_RE
 {
     int     i;
     APLHC8V aplRes;
+    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
+            bNaNRht;            // ...          right ...
 
+    // Is either arg a NaN?
+    bNaNLft = IsArgNaN (ARRAY_HC8V, &aplLft, 0);
+    bNaNRht = IsArgNaN (ARRAY_HC8V, &aplRht, 0);
+
+    // If either arg is a NaN, ...
+    if (bNaNLft || bNaNRht)
+    {
+        if (bNaNLft)
+            mphc8v_init_set (&aplRes, &aplLft);
+        else
+            mphc8v_init_set (&aplRes, &aplRht);
+    } else
     // Loop through all of the parts
     for (i = 0; i < 8; i++)
     {

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -195,7 +195,7 @@ SYMBOLNAMES aSymbolNames[]
   {UTF16_LEFTCARETUNDERBAR    , L"{leftcaretunderbar}"  },  // Alt-'4' - not more
   {UTF16_LEFTCARETUNDERBAR    , L"{leftcaret_}"         },  // ...
   {UTF16_LEFTCARETUNDERBAR    , L"{<=}"                 },  // ...
-  {UTF16_EQUAL                , L"{equal}"              },  // Alt-'5' - equal
+  {UTF16_NAN                  , L"{nan}"                },  // Alt-'5' - NaN
   {UTF16_RIGHTCARETUNDERBAR   , L"{rightcaretunderbar}" },  // Alt-'6' - not less
   {UTF16_RIGHTCARETUNDERBAR   , L"{rightcaret_}"        },  // ...
   {UTF16_RIGHTCARETUNDERBAR   , L"{>=}"                 },  // ...
@@ -290,6 +290,7 @@ SYMBOLNAMES aSymbolNames[]
   {UTF16_STAR                 , L"{star}"               },  // 002A:  Star
   {UTF16_STAR                 , L"{power}"              },  // ...
   {UTF16_COMMA                , L"{comma}"              },  // 002C:  Comma
+  {UTF16_EQUAL                , L"{equal}"              },  // 003D:  Equal
   {UTF16_SLOPE                , L"{slope}"              },  // 005C:  Slope
   {UTF16_SLOPE                , L"{backslash}"          },  // 005C:  ...
   {UTF16_CIRCUMFLEX           , L"{circumflex}"         },  // 005E:  Circumflex

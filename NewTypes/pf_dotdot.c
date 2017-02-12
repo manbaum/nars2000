@@ -210,13 +210,6 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
     if (IsHCAny (aplTypeRht))
         goto RIGHT_DOMAIN_EXIT;
 
-    // If either arg is nested, ...
-    if (IsNested (aplTypeLft)
-     || IsNested (aplTypeRht))
-        return PrimFnDydDotDotNested_EM_YY (lptkLftArg, // Ptr to right arg token
-                                            lptkFunc,   // Ptr to function token
-                                            lptkRhtArg, // Ptr to right arg token
-                                            lptkAxis);  // Ptr to axis token (may be NULL)
     // Get Left & right arg global ptrs
     aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
@@ -243,6 +236,27 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
     } else
         lpMemRht = &aplLongestRht;
 
+    // Loop through all the items in the left arg
+    for (uCnt = 0; bRet && uCnt < aplNELMLft; uCnt++)
+        // Is this item in arg a NaN?
+        bRet &= !IsArgNaN (aplTypeLft, lpMemLft, uCnt);
+
+    // Loop through all the items in the right arg
+    for (uCnt = 0; bRet && uCnt < aplNELMRht; uCnt++)
+        // Is this item in arg a NaN?
+        bRet &= !IsArgNaN (aplTypeRht, lpMemRht, uCnt);
+
+    // Check for NaNs
+    if (!bRet)
+        goto DOMAIN_EXIT;
+
+    // If either arg is nested, ...
+    if (IsNested (aplTypeLft)
+     || IsNested (aplTypeRht))
+        return PrimFnDydDotDotNested_EM_YY (lptkLftArg, // Ptr to right arg token
+                                            lptkFunc,   // Ptr to function token
+                                            lptkRhtArg, // Ptr to right arg token
+                                            lptkAxis);  // Ptr to axis token (may be NULL)
     // Pick off APAs and errors
     // Split cases based upon the result storage type
     switch (aplTypeRes)
@@ -561,6 +575,11 @@ RIGHT_LENGTH_EXIT:
 LEFT_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                lptkLftArg);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
     goto ERROR_EXIT;
 
 RIGHT_DOMAIN_EXIT:

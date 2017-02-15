@@ -1797,9 +1797,11 @@ APLSTYPE PrimSpecDownStileStorageTypeDyd
         case ARRAY_APA:
         case ARRAY_RAT:
         case ARRAY_VFP:
+        case ARRAY_NESTED:
             return aplTypeRes;
 
         defstop
+        case ARRAY_HETERO:
             return ARRAY_ERROR;
     } // End IF/ELSE/SWITCH
 } // End PrimSpecDownStileStorageTypeDyd

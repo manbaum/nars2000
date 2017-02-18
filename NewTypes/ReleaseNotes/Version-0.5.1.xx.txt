@@ -1,6 +1,21 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1663 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug With NaNs And Certain Dyadic PSFs
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC.C:
+  Improve comments.
+  When detecting a NaN in an argument to a Dyadic PSF, special handle the six comparison functions.
+  In <PrimFnDydNestSiSc_EM> and <PrimFnDydSiScNest_EM> after calling <PrimFnDydAllocate_EM> handle immediate (<hGlbRes EQ NULL>) result, and before returning.
+  Now that <PrimFnDydNestSiSc_EM> and <PrimFnDydSiScNest_EM>  return a PTB-sensitive result, don't call <MakePtrTypeGlb> on the returned HGLOBAL.
+  After call to <PrimScalarFnDydAllocate_EM>, Assert that <*lphGlbRes> is valid.
+
+
 Build #1662 -- Version 0.5.1.xx
 --------------------------------
 

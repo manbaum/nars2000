@@ -895,7 +895,7 @@ UBOOL PrimIdentFnScalarCommon_EM
         switch (GetPtrTypeDir (lpMemRht[uRht]))
         {
             case PTRTYPE_STCONST:
-                // Save the identity element
+                // Save the identity element as a SYMENTRY
                 *lpMemRes++ =
                   MakeSymEntry_EM (lpMemRht[uRht]->stFlags.ImmType,     // Immediate type
                                   &lpMemRht[uRht]->stData.stLongest,    // Ptr to immediate value
@@ -1256,10 +1256,8 @@ RESTART_EXCEPTION_VARIMMED:
                         // Is the arg a NaN?
                         if (IsArgNaN (aplTypeRht, &lptkRhtArg->tkData.tkLongest, 0))
                         {
-                            if (!gbAllowNaN)
+                            if (!gbAllowNaN)            // #1:  Monadic PSF {NaN}
                                 goto DOMAIN_EXIT;
-
-////////////////////////////DbgBrk ();      // #1:  Monadic PSF {NaN}
 
                             // Save in the result
                             lpYYRes->tkToken.tkData.tkLongest = lptkRhtArg->tkData.tkLongest;
@@ -2060,12 +2058,11 @@ RESTART_EXCEPTION:
                                         // Is the arg a NaN?
                                         if (IsArgNaN (aplTypeRht2, &lpSymDst->stData.stLongest, 0))
                                         {
-                                            if (!gbAllowNaN)
+                                            if (!gbAllowNaN)        // #2: {floor} {NaN} (2 3)
                                                 goto DOMAIN_EXIT;
-////////////////////////////////////////////DbgBrk ();          // #2: {floor} {NaN} (2 3)
 
                                             // Save in the result
-////////////////////////////////////////////lpSymDst->stData.stLongest = lpSymDst->stData.stLongest;
+////////////////////////////////////////////lpSymDst->stData.stLongest = lpSymDst->stData.stLongest;    // Already in lpSymDst
                                             lpSymDst->stFlags.ImmType = IMMTYPE_FLOAT;
                                         } else
                                         {
@@ -2164,10 +2161,9 @@ RESTART_EXCEPTION:
                         // HC Dimension index (0, 1, 2, 3)
                         int iHCDimIndex = aArrayTypeToHCDimIndex[aplTypeRes];
 
-                        if (!gbAllowNaN)
+                        if (!gbAllowNaN)            // #3:  Monadic PSF ,{NaN}
+                                                    //      Monadic PSF {enclose},{NaN}
                             goto DOMAIN_EXIT;
-////////////////////////DbgBrk ();      // #3:  Monadic PSF ,{NaN}
-                                        //      Monadic PSF {enclose},{NaN}
 
                         // Do we need to promote the result type from HCxI to HCxF as in {floor},{NaN}  ?
                         if (IsSimpleInt (aToSimple[aplTypeRes]))
@@ -2648,6 +2644,8 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
                                      aplNELMRes))
         goto ERROR_EXIT;
 
+////Assert (hGlbRes NE NULL);   // The individual <PrimFnDydXXX>s handle this case
+
     // Four cases:
     //   Result     Left       Right
     //   ----------------------------
@@ -3049,27 +3047,64 @@ UBOOL PrimFnDydSimpNest_EM
                 {
                     if (gbAllowNaN)         // 1x + {NaN} (3 4)
                     {
-                        if (bNaNLft)
-                            hGlbSub =
-                              MakeGlbEntry_EM (aplTypeCom,              // Entry type
-                                              &atLft,                   // Ptr to the value
-                                               TRUE,                    // TRUE iff we should initialize the target first
-                                               lptkFunc);               // Ptr to function token
-                        else
+                        Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
+
+                        // Split cases based upon the primitive function
+                        switch (lptkFunc->tkData.tkChar)
                         {
-                            // If the right arg is a global numeric, ...
-                            if (IsGlbNum (aplTypeCom))
+                            APLFLOAT fValue;
+
+                            case UTF16_EQUAL:
+                            case UTF16_NOTEQUAL:
+                                Assert (IsNested (aplTypeUnused));
+
+                                // Calculate the Boolean result
+                                fValue = (bNaNLft && bNaNRht) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL);
+
+                                // Make a SYMENTRY
                                 hGlbSub =
-                                  MakeGlbEntry_EM (aplTypeCom,              // Entry type
-                                                  &atRht,                   // Ptr to the value
-                                                   TRUE,                    // TRUE iff we should initialize the target first
+                                  MakeSymEntry_EM (IMMTYPE_FLOAT,           // Immediate type
+                                   (LPAPLLONGEST) &fValue,                  // Ptr to immediate value
                                                    lptkFunc);               // Ptr to function token
-                            else
-                                hGlbSub =
-                                  MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeCom),    // Immediate type
-                                                  &atRht.aplLongest,                            // Ptr to immediate value
-                                                   lptkFunc);                                   // Ptr to function token
-                        } // End IF/ELSE
+                                break;
+
+                            case UTF16_LEFTCARET:
+                            case UTF16_LEFTCARETUNDERBAR:
+                            case UTF16_RIGHTCARETUNDERBAR:
+                            case UTF16_RIGHTCARET:
+                                // Scream!
+                                RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+                                break;
+
+                            default:
+                                if (bNaNLft)
+                                    // Make a global entry
+                                    hGlbSub =
+                                      MakeGlbEntry_EM (aplTypeCom,              // Entry type
+                                                      &atLft,                   // Ptr to the value
+                                                       TRUE,                    // TRUE iff we should initialize the target first
+                                                       lptkFunc);               // Ptr to function token
+                                else
+                                {
+                                    // If the right arg is a global numeric, ...
+                                    if (IsGlbNum (aplTypeCom))
+                                        // Make a global entry
+                                        hGlbSub =
+                                          MakeGlbEntry_EM (aplTypeCom,              // Entry type
+                                                          &atRht,                   // Ptr to the value
+                                                           TRUE,                    // TRUE iff we should initialize the target first
+                                                           lptkFunc);               // Ptr to function token
+                                    else
+                                        // Make a SYMENTRY
+                                        hGlbSub =
+                                          MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeCom),    // Immediate type
+                                                          &atRht.aplLongest,                            // Ptr to immediate value
+                                                           lptkFunc);                                   // Ptr to function token
+                                } // End IF/ELSE
+
+                                break;
+                        } // End SWITCH
 
                         // Free the old atLft & atRht (if any)
                         (*aTypeFree[aplTypeCom]) (&atLft, 0);
@@ -3142,6 +3177,7 @@ UBOOL PrimFnDydSimpNest_EM
                 (*aTypeActPromote[aplTypeLft][aplTypeLft]) (lpMemLft, uLft, &atLft);
 
                 // 2 4-({enclose}0 1)(0 1 2)
+                // Note that PrimFnDydSiScNest_EM now returns a PTB-sensitive result
                 hGlbSub = PrimFnDydSiScNest_EM (lptkFunc,
                                                 aplTypeLft,
                                                &atLft,
@@ -3156,7 +3192,7 @@ UBOOL PrimFnDydSimpNest_EM
                     goto ERROR_EXIT;
                 else
                     // Save in the result
-                    *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbSub);
+                    *((LPAPLNESTED) lpMemRes)++ = hGlbSub;
                 break;
 
             defstop
@@ -3475,26 +3511,63 @@ UBOOL PrimFnDydNestSimp_EM
                 {
                     if (gbAllowNaN)         // {NaN} (3 4) + 1x
                     {
-                        if (bNaNLft)
+                        Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
+
+                        // Split cases based upon the primitive function
+                        switch (lptkFunc->tkData.tkChar)
                         {
-                            // If the left arg is a global numeric, ...
-                            if (IsGlbNum (aplTypeCom))
+                            APLFLOAT fValue;
+
+                            case UTF16_EQUAL:
+                            case UTF16_NOTEQUAL:
+                                Assert (IsNested (aplTypeUnused));
+
+                                // Calculate the Boolean result
+                                fValue = (bNaNLft && bNaNRht) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL);
+
+                                // Make a SYMENTRY
                                 hGlbSub =
-                                  MakeGlbEntry_EM (aplTypeCom,              // Entry type
-                                                  &atLft,                   // Ptr to the value
-                                                   TRUE,                    // TRUE iff we should initialize the target first
+                                  MakeSymEntry_EM (IMMTYPE_FLOAT,           // Immediate type
+                                   (LPAPLLONGEST) &fValue,                  // Ptr to immediate value
                                                    lptkFunc);               // Ptr to function token
-                            else
-                            hGlbSub =
-                              MakeSymEntry_EM (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,     // Immediate type
-                                              &((LPSYMENTRY) hGlbSub)->stData.stLongest,    // Ptr to immediate value
-                                               lptkFunc);                                   // Ptr to function token
-                        } else
-                            hGlbSub =
-                              MakeGlbEntry_EM (aplTypeCom,              // Entry type
-                                              &atRht,                   // Ptr to the value
-                                               TRUE,                    // TRUE iff we should initialize the target first
-                                               lptkFunc);               // Ptr to function token
+                                break;
+
+                            case UTF16_LEFTCARET:
+                            case UTF16_LEFTCARETUNDERBAR:
+                            case UTF16_RIGHTCARETUNDERBAR:
+                            case UTF16_RIGHTCARET:
+                                // Scream!
+                                RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+                                break;
+
+                            default:
+                                if (bNaNLft)
+                                {
+                                    // If the left arg is a global numeric, ...
+                                    if (IsGlbNum (aplTypeCom))
+                                        // Make a global entry
+                                        hGlbSub =
+                                          MakeGlbEntry_EM (aplTypeCom,              // Entry type
+                                                          &atLft,                   // Ptr to the value
+                                                           TRUE,                    // TRUE iff we should initialize the target first
+                                                           lptkFunc);               // Ptr to function token
+                                    else
+                                    // Make a SYMENTRY
+                                    hGlbSub =
+                                      MakeSymEntry_EM (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,     // Immediate type
+                                                      &((LPSYMENTRY) hGlbSub)->stData.stLongest,    // Ptr to immediate value
+                                                       lptkFunc);                                   // Ptr to function token
+                                } else
+                                    // Make a global entry
+                                    hGlbSub =
+                                      MakeGlbEntry_EM (aplTypeCom,              // Entry type
+                                                      &atRht,                   // Ptr to the value
+                                                       TRUE,                    // TRUE iff we should initialize the target first
+                                                       lptkFunc);               // Ptr to function token
+                                break;
+                        } // End SWITCH
+
                         // Free the old atLft & atRht (if any)
                         (*aTypeFree[aplTypeCom]) (&atLft, 0);
                         (*aTypeFree[aplTypeCom]) (&atRht, 0);
@@ -3564,6 +3637,7 @@ UBOOL PrimFnDydNestSimp_EM
                     __try
                     {
                         // ({enclose}0 1)(0 1 2)-2 4
+                        // Note that PrimFnDydNestSiSc_EM now returns a PTB-sensitive result
                         hGlbSub = PrimFnDydNestSiSc_EM (lptkFunc,
                                                         aplTypeRht,
                                                        &atRht,
@@ -3582,7 +3656,7 @@ UBOOL PrimFnDydNestSimp_EM
                     goto ERROR_EXIT;
                 else
                     // Save in the result
-                    *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbSub);
+                    *((LPAPLNESTED) lpMemRes)++ = hGlbSub;
                 break;
 
             defstop
@@ -3691,6 +3765,7 @@ HGLOBAL PrimFnDydNestSiSc_EM
     APLRANK           aplRankLft,
                       aplRankRht = 0,
                       aplRankRes;
+    APLLONGEST        aplLongestRes = 0;
     APLINT            uRes,
                       apaOffLft,
                       apaMulLft;
@@ -3846,12 +3921,20 @@ RESTART_EXCEPTION:
                                      aplNELMRes))
         goto ERROR_EXIT;
 
-    // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLockVar (hGlbRes);
+    // If the result is not immediate, ...
+    if (hGlbRes NE NULL)
+    {
+        // Lock the memory to get a ptr to it
+        lpMemHdrRes = MyGlobalLockVar (hGlbRes);
+
+        // Skip over the header and dimensions to the data
+        lpMemRes    = VarArrayDataFmBase (lpMemHdrRes);
+    } else
+        // Point to a data value    (2 3){NaN}x=1x
+        lpMemRes = &aplLongestRes;
 
     // Skip over the header and dimensions to the data
     lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
-    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // If the left arg is an APA, ...
     if (IsSimpleAPA (aplTypeLft))
@@ -3890,19 +3973,54 @@ RESTART_EXCEPTION:
                     // If either arg is a NaN, ...
                     if (bNaNLft || bNaNRht)
                     {
-                        if (gbAllowNaN)
+                        if (gbAllowNaN)         // ((,NaN) 3)NaN=NaN
                         {
-                            if (bNaNLft)
-                                hGlbSub =
-                                  MakeSymEntry_EM (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,     // Immediate type
-                                                  &atLft.aplLongest,                            // Ptr to immediate value
-                                                   lptkFunc);                                   // Ptr to function token
-                            else
-                                hGlbSub =
-                                  MakeGlbEntry_EM (aplTypeCom,              // Entry type
-                                                   lpatRht,                 // Ptr to the value
-                                                   TRUE,                    // TRUE iff we should initialize the target first
-                                                   lptkFunc);               // Ptr to function token
+                            Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
+
+                            // Split cases based upon the primitive function
+                            switch (lptkFunc->tkData.tkChar)
+                            {
+                                APLFLOAT fValue;
+
+                                case UTF16_EQUAL:
+                                case UTF16_NOTEQUAL:
+                                    Assert (IsNested (aplTypeRes));
+
+                                    // Calculate the Boolean result
+                                    fValue = (bNaNLft && bNaNRht) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL);
+
+                                    // Make a SYMENTRY
+                                    hGlbSub =
+                                      MakeSymEntry_EM (IMMTYPE_FLOAT,           // Immediate type
+                                       (LPAPLLONGEST) &fValue,                  // Ptr to immediate value
+                                                       lptkFunc);               // Ptr to function token
+                                    break;
+
+                                case UTF16_LEFTCARET:
+                                case UTF16_LEFTCARETUNDERBAR:
+                                case UTF16_RIGHTCARETUNDERBAR:
+                                case UTF16_RIGHTCARET:
+                                    // Scream!
+                                    RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+                                    break;
+
+                                default:
+                                    if (bNaNLft)
+                                        // Make a SYMENTRY
+                                        hGlbSub =
+                                          MakeSymEntry_EM (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,     // Immediate type
+                                                          &atLft.aplLongest,                            // Ptr to immediate value
+                                                           lptkFunc);                                   // Ptr to function token
+                                    else
+                                        // Make a global entry
+                                        hGlbSub =
+                                          MakeGlbEntry_EM (aplTypeCom,              // Entry type
+                                                           lpatRht,                 // Ptr to the value
+                                                           TRUE,                    // TRUE iff we should initialize the target first
+                                                           lptkFunc);               // Ptr to function token
+                                    break;
+                            } // End SWITCH
                         } else
                         if (bNaNLft)
                             goto LEFT_DOMAIN_EXIT;
@@ -3934,6 +4052,7 @@ RESTART_EXCEPTION:
 
                 case PTRTYPE_HGLOBAL:
                     // ({enclose}0 1)(0 1 2)-2 4
+                    // Note that PrimFnDydNestSiSc_EM now returns a PTB-sensitive result
                     hGlbSub = PrimFnDydNestSiSc_EM (lptkFunc,
                                                     aplTypeRht,
                                                     lpatRht,
@@ -3945,7 +4064,7 @@ RESTART_EXCEPTION:
                         goto ERROR_EXIT;
                     else
                         // Save in the result
-                        *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbSub);
+                        *((LPAPLNESTED) lpMemRes)++ = hGlbSub;
                     break;
 
                 defstop
@@ -3992,16 +4111,45 @@ RESTART_EXCEPTION:
             // If either arg is a NaN, ...
             if (bNaNLft || bNaNRht)
             {
-                if (gbAllowNaN)
+                if (gbAllowNaN)         // #4:  {NaN} ({NaN} 3) + 1x
                 {
-////////////////////DbgBrk ();          // #4:  {NaN} ({NaN} 3) + 1x
+                    Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
 
-                    if (bNaNLft)
-                        // Copy the left arg to the result
-                        (*aTypeActPromote[aplTypeHetLft][aplTypeRes]) (&aplLongestLft, 0, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
-                    else
-                        // Copy the right arg to the result
-                        (*aTypeActPromote[aplTypeRht   ][aplTypeRes]) (lpatRht       , 0, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
+                    // Split cases based upon the primitive function
+                    switch (lptkFunc->tkData.tkChar)
+                    {
+                        UBOOL bValue;
+
+                        case UTF16_EQUAL:
+                        case UTF16_NOTEQUAL:
+                            Assert (IsSimpleBool (aplTypeRes));
+
+                            // Calculate the Boolean result
+                            bValue = (bNaNLft && bNaNRht) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL);
+
+                            // Save the result
+                            ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |= bValue << (MASKLOG2NBIB & (UINT) uRes);
+
+                            break;
+
+                        case UTF16_LEFTCARET:
+                        case UTF16_LEFTCARETUNDERBAR:
+                        case UTF16_RIGHTCARETUNDERBAR:
+                        case UTF16_RIGHTCARET:
+                            // Scream!
+                            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+                            break;
+
+                        default:
+                            if (bNaNLft)
+                                // Copy the left arg to the result
+                                (*aTypeActPromote[aplTypeHetLft][aplTypeRes]) (&aplLongestLft, 0, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
+                            else
+                                // Copy the right arg to the result
+                                (*aTypeActPromote[aplTypeRht   ][aplTypeRes]) (lpatRht       , 0, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
+                            break;
+                    } // End SWITCH
                 } else
                 if (bNaNLft)
                     goto LEFT_DOMAIN_EXIT;
@@ -4109,6 +4257,20 @@ RESTART_EXCEPTION:
             } // End IF/ELSE
         } // End IF/ELSE
     } // End FOR
+
+    // Handle immediate result
+    if (hGlbRes EQ NULL
+     && lpMemHdrRes EQ NULL)
+    {
+        // The result is in aplLongestRes
+        hGlbRes =
+          // Make a SYMENTRY
+          MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeRes),    // Immediate type
+                          &aplLongestRes,                               // Ptr to immediate value
+                           lptkFunc);                                   // Ptr to function token
+    } else
+        // Mark as an HGLOBAL so as to return a PTB-sensitive result
+        hGlbRes = MakePtrTypeGlb (hGlbRes);
 
     // Mark as successful
     bRet = TRUE;
@@ -4331,7 +4493,7 @@ UBOOL PrimFnDydNestNest_EM
             switch (lpYYRes2->tkToken.tkFlags.TknType)
             {
                 case TKT_VARIMMED:
-                    // Save in the result
+                    // Save in the result as a SYMENTRY
                     ((LPAPLNESTED) lpMemRes)[uRes] =
                       MakeSymEntry_EM (lpYYRes2->tkToken.tkFlags.ImmType,   // Immediate type
                                       &lpYYRes2->tkToken.tkData.tkLongest,  // Ptr to immediate value
@@ -4417,6 +4579,7 @@ HGLOBAL PrimFnDydSiScNest_EM
     APLRANK           aplRankLft = 0,
                       aplRankRht,
                       aplRankRes;
+    APLLONGEST        aplLongestRes = 0;
     APLINT            uRes,
                       apaOffRht,
                       apaMulRht;
@@ -4572,12 +4735,20 @@ RESTART_EXCEPTION:
                                      aplNELMRes))
         goto ERROR_EXIT;
 
-    // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLockVar (hGlbRes);
+    // If the result is not immediate, ...
+    if (hGlbRes NE NULL)
+    {
+        // Lock the memory to get a ptr to it
+        lpMemHdrRes = MyGlobalLockVar (hGlbRes);
+
+        // Skip over the header and dimensions to the data
+        lpMemRes    = VarArrayDataFmBase (lpMemHdrRes);
+    } else
+        // Point to a data value    1x=(2 3){NaN}x
+        lpMemRes = &aplLongestRes;
 
     // Skip over the header and dimensions to the data
-    lpMemRht    = VarArrayDataFmBase (lpMemHdrRht);
-    lpMemRes    = VarArrayDataFmBase (lpMemHdrRes);
+    lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
     // If the right arg is an APA, ...
     if (IsSimpleAPA (aplTypeRht))
@@ -4616,19 +4787,54 @@ RESTART_EXCEPTION:
                     // If either arg is a NaN, ...
                     if (bNaNLft || bNaNRht)
                     {
-                        if (gbAllowNaN)
+                        if (gbAllowNaN)         // NaN=((,NaN) 3)NaN
                         {
-                            if (bNaNLft)
-                                hGlbSub =
-                                  MakeGlbEntry_EM (aplTypeLft,              // Entry type
-                                                   lpatLft,                 // Ptr to the value
-                                                   TRUE,                    // TRUE iff we should initialize the target first
-                                                   lptkFunc);               // Ptr to function token
-                            else
-                                hGlbSub =
-                                  MakeSymEntry_EM (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,     // Immediate type
-                                                  &((LPSYMENTRY) hGlbSub)->stData.stLongest,    // Ptr to immediate value
-                                                   lptkFunc);                                   // Ptr to function token
+                            Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
+
+                            // Split cases based upon the primitive function
+                            switch (lptkFunc->tkData.tkChar)
+                            {
+                                APLFLOAT fValue;
+
+                                case UTF16_EQUAL:
+                                case UTF16_NOTEQUAL:
+                                    Assert (IsNested (aplTypeRes));
+
+                                    // Calculate the Boolean result
+                                    fValue = (bNaNLft && bNaNRht) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL);
+
+                                    // Make a SYMENTRY
+                                    hGlbSub =
+                                      MakeSymEntry_EM (IMMTYPE_FLOAT,           // Immediate type
+                                       (LPAPLLONGEST) &fValue,                  // Ptr to immediate value
+                                                       lptkFunc);               // Ptr to function token
+                                    break;
+
+                                case UTF16_LEFTCARET:
+                                case UTF16_LEFTCARETUNDERBAR:
+                                case UTF16_RIGHTCARETUNDERBAR:
+                                case UTF16_RIGHTCARET:
+                                    // Scream!
+                                    RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+                                    break;
+
+                                default:
+                                    if (bNaNLft)
+                                        // Make a global entry
+                                        hGlbSub =
+                                          MakeGlbEntry_EM (aplTypeLft,              // Entry type
+                                                           lpatLft,                 // Ptr to the value
+                                                           TRUE,                    // TRUE iff we should initialize the target first
+                                                           lptkFunc);               // Ptr to function token
+                                    else
+                                        // Make a SYMENTRY
+                                        hGlbSub =
+                                          MakeSymEntry_EM (((LPSYMENTRY) hGlbSub)->stFlags.ImmType,     // Immediate type
+                                                          &((LPSYMENTRY) hGlbSub)->stData.stLongest,    // Ptr to immediate value
+                                                           lptkFunc);                                   // Ptr to function token
+                                    break;
+                            } // End SWITCH
                         } else
                         if (bNaNLft)
                             goto LEFT_DOMAIN_EXIT;
@@ -4660,6 +4866,7 @@ RESTART_EXCEPTION:
 
                 case PTRTYPE_HGLOBAL:
                     // 2 4-({enclose}0 1)(0 1 2)
+                    // Note that PrimFnDydSiScNest_EM now returns a PTB-sensitive result
                     hGlbSub = PrimFnDydSiScNest_EM (lptkFunc,
                                                     aplTypeLft,
                                                     lpatLft,
@@ -4671,7 +4878,7 @@ RESTART_EXCEPTION:
                         goto ERROR_EXIT;
                     else
                         // Save in the result
-                        *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeGlb (hGlbSub);
+                        *((LPAPLNESTED) lpMemRes)++ = hGlbSub;
                     break;
 
                 defstop
@@ -4715,16 +4922,45 @@ RESTART_EXCEPTION:
             // If either arg is a NaN, ...
             if (bNaNLft || bNaNRht)
             {
-                if (gbAllowNaN)
+                if (gbAllowNaN)         // #5:  {NaN}x + 1 (2 3)
                 {
-////////////////////DbgBrk ();          // #5:  {NaN}x + 1 (2 3)
+                    Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
 
-                    if (bNaNLft)
-                        // Copy the left arg to the result
-                        (*aTypeActPromote[aplTypeLft   ][aplTypeRes]) (lpatLft       , 0, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
-                    else
-                        // Copy the right arg to the result
-                        (*aTypeActPromote[aplTypeHetRht][aplTypeRes]) (&aplLongestRht, 0, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
+                    // Split cases based upon the primitive function
+                    switch (lptkFunc->tkData.tkChar)
+                    {
+                        UBOOL bValue;
+
+                        case UTF16_EQUAL:
+                        case UTF16_NOTEQUAL:
+                            Assert (IsSimpleBool (aplTypeRes));
+
+                            // Calculate the Boolean result
+                            bValue = (bNaNLft && bNaNRht) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL);
+
+                            // Save the result
+                            ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |= bValue << (MASKLOG2NBIB & (UINT) uRes);
+
+                            break;
+
+                        case UTF16_LEFTCARET:
+                        case UTF16_LEFTCARETUNDERBAR:
+                        case UTF16_RIGHTCARETUNDERBAR:
+                        case UTF16_RIGHTCARET:
+                            // Scream!
+                            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+                            break;
+
+                        default:
+                            if (bNaNLft)
+                                // Copy the left arg to the result
+                                (*aTypeActPromote[aplTypeLft   ][aplTypeRes]) (lpatLft       , 0, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
+                            else
+                                // Copy the right arg to the result
+                                (*aTypeActPromote[aplTypeHetRht][aplTypeRes]) (&aplLongestRht, 0, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
+                            break;
+                    } // End SWITCH
                 } else
                 if (bNaNLft)
                     goto LEFT_DOMAIN_EXIT;
@@ -4832,6 +5068,20 @@ RESTART_EXCEPTION:
             } // End IF/ELSE
         } // End IF/ELSE
     } // End FOR
+
+    // Handle immediate result
+    if (hGlbRes EQ NULL
+     && lpMemHdrRes EQ NULL)
+    {
+        // The result is in aplLongestRes
+        hGlbRes =
+          // Make a SYMENTRY
+          MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeRes),    // Immediate type
+                          &aplLongestRes,                               // Ptr to immediate value
+                           lptkFunc);                                   // Ptr to function token
+    } else
+        // Mark as an HGLOBAL so as to return a PTB-sensitive result
+        hGlbRes = MakePtrTypeGlb (hGlbRes);
 
     // Mark as successful
     bRet = TRUE;
@@ -5683,14 +5933,45 @@ RESTART_EXCEPTION:
                 // If either arg is a NaN, ...
                 if (bNaNLft || bNaNRht)
                 {
-                    if (gbAllowNaN)
+                    if (gbAllowNaN)             // NaN=0
                     {
-                        if (bNaNLft)
-                            // Convert the left arg to the common datatype
-                            (*aTypeActPromote[aplTypeHetLft][aplTypeRes]) (lpSymGlbLft, uHetLft, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
-                        else
-                            // Convert the right arg to the common datatype
-                            (*aTypeActPromote[aplTypeHetRht][aplTypeRes]) (lpSymGlbRht, uHetRht, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
+                        Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
+
+                        // Split cases based upon the primitive function
+                        switch (lptkFunc->tkData.tkChar)
+                        {
+                            UBOOL bValue;
+
+                            case UTF16_EQUAL:
+                            case UTF16_NOTEQUAL:
+                                Assert (IsSimpleBool (aplTypeRes));
+
+                                // Calculate the Boolean result
+                                bValue = (bNaNLft && bNaNRht) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL);
+
+                                // Save the result
+                                ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |= bValue << (MASKLOG2NBIB & (UINT) uRes);
+
+                                break;
+
+                            case UTF16_LEFTCARET:
+                            case UTF16_LEFTCARETUNDERBAR:
+                            case UTF16_RIGHTCARETUNDERBAR:
+                            case UTF16_RIGHTCARET:
+                                // Scream!
+                                RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+                                break;
+
+                            default:
+                                if (bNaNLft)
+                                    // Copy the left arg to the result
+                                    (*aTypeActPromote[aplTypeHetLft][aplTypeRes]) (lpSymGlbLft, uHetLft, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
+                                else
+                                    // Copy the right arg to the result
+                                    (*aTypeActPromote[aplTypeHetRht][aplTypeRes]) (lpSymGlbRht, uHetRht, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
+                                break;
+                        } // End SWITCH
                     } else
                     if (bNaNLft)
                         goto LEFT_DOMAIN_EXIT;
@@ -5796,6 +6077,8 @@ RESTART_EXCEPTION:
                                                          aplNELMRes))
                             goto ERROR_EXIT;
 
+                        Assert (*lphGlbRes NE NULL);
+
                         // Lock the memory to get a ptr to it
                         lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
 
@@ -5851,6 +6134,8 @@ RESTART_EXCEPTION:
                                                              aplNELMRht,
                                                              aplNELMRes))
                                 goto ERROR_EXIT;
+
+                            Assert (*lphGlbRes NE NULL);
 
                             // Lock the memory to get a ptr to it
                             lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
@@ -5918,6 +6203,8 @@ RESTART_EXCEPTION:
                                                          aplNELMRht,
                                                          aplNELMRes))
                             goto ERROR_EXIT;
+
+                        Assert (*lphGlbRes NE NULL);
 
                         // Lock the memory to get a ptr to it
                         lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);

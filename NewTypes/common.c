@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1315,12 +1315,10 @@ UBOOL IsArgNaN
 
 {
     int i,                          // Loop counter
-        iHCDimArg,                  // HC Dimension (1, 2, 4, 8)
-        iSizeofArg;                 // # bytes in each arg item
+        iHCDimArg;                  // HC Dimension (1, 2, 4, 8)
 
     // Get the HC Dimension (1, 2, 4, 8)
     iHCDimArg  = TranslateArrayTypeToHCDim  (aplTypeArg);
-    iSizeofArg = TranslateArrayTypeToSizeof (aplTypeArg);
 
     // Split cases based upon the argument storage type
     switch (aplTypeArg)
@@ -1332,9 +1330,23 @@ UBOOL IsArgNaN
         case ARRAY_HC4I:
         case ARRAY_HC8I:
         case ARRAY_CHAR:
+            return FALSE;
+
         case ARRAY_NESTED:
         case ARRAY_HETERO:
-            return FALSE;
+            // If the item is an STE, ...
+            if (GetPtrTypeDir (((LPAPLNESTED) lpMemArg)[uArg]) EQ PTRTYPE_STCONST)
+            {
+                LPSYMENTRY lpSymEntry;          // Ptr to HETERO/NESTED STE
+
+                // Get a ptr to the STE
+                lpSymEntry = ((LPAPLNESTED) lpMemArg)[uArg];
+
+                // If it's a FLT and a NaN, ...
+                return (IsImmFlt (lpSymEntry->stFlags.ImmType)
+                     && IsFltNaN (lpSymEntry->stData.stFloat));
+            } else
+                return FALSE;
 
         case ARRAY_FLOAT:
         case ARRAY_HC2F:
@@ -1343,7 +1355,7 @@ UBOOL IsArgNaN
             // Loop through all of the parts
             for (i = 0; i < iHCDimArg; i++)
                 // If it's a NaN, ...
-                if (_isnan (((LPAPLHC8F) &((LPAPLHC1F) lpMemArg)[uArg * iSizeofArg])->parts[i]))
+                if (_isnan (((LPAPLFLOAT) lpMemArg)[i + uArg * iHCDimArg]))
                     return TRUE;
             break;
 
@@ -1354,7 +1366,7 @@ UBOOL IsArgNaN
             // Loop through all of the parts
             for (i = 0; i < iHCDimArg; i++)
                 // If it's a NaN, ...
-                if (mpq_nan_p (&((LPAPLHC8R) &((LPAPLHC1R) lpMemArg)[uArg * iSizeofArg])->parts[i]))
+                if (mpq_nan_p (&((LPAPLRAT) lpMemArg)[i + uArg * iHCDimArg]))
                     return TRUE;
             break;
 
@@ -1365,7 +1377,7 @@ UBOOL IsArgNaN
             // Loop through all of the parts
             for (i = 0; i < iHCDimArg; i++)
                 // If it's a NaN, ...
-                if (mpfr_nan_p (&((LPAPLHC8V) &((LPAPLHC1V) lpMemArg)[uArg * iSizeofArg])->parts[i]))
+                if (mpfr_nan_p (&((LPAPLVFP) lpMemArg)[i + uArg * iHCDimArg]))
                     return TRUE;
             break;
 

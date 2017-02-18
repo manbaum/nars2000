@@ -1,6 +1,18 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1658 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Identifying A NaN
+
+Directory branches/bsmith/NewTypes:
+
+COMMON.C:
+  In <IsArgNaN>, if the argument is Nested/Hetero, the code used to just return FALSE.  Now it looks in the item and if it's a SYMENTRY, returns its NaN status.
+  In <IsArgNaN>, if the argument is FLT-, RAT-, or VFP-like, use HC Dimension as the multiplier to index the base case.
+
+
 Build #1657 -- Version 0.5.1.xx
 --------------------------------
 

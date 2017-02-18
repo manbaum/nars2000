@@ -1863,8 +1863,11 @@ UBOOL DemoteData
                                 // Skip over the header and dimensions to the data
                                 lpMemSub = VarArrayDataFmBase (lpMemHdrSub);
 
-                                // Copy the data
-                                mpfr_init_copy (((LPAPLVFP) lpMemRes)++, (LPAPLVFP) lpMemSub);
+                                // Convert to VFP and copy the data
+                                (*aTypeActConvert[lpMemHdrSub->ArrType][aplTypeRes]) (lpMemSub, 0, (LPALLTYPES) ((LPAPLVFP) lpMemRes)++, &bRet);
+
+                                if (!bRet)
+                                    goto ERROR_EXIT;
 
                                 // We no longer need this ptr
                                 MyGlobalUnlock (lpSymGlbSub); lpMemHdrSub = NULL;

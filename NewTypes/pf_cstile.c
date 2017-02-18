@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -503,7 +503,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    // Loop through the parts
+                    // Loop through all of the parts
                     for (i = 0; i < iHCDimRht; i++)
                         ((LPAPLINT  ) lpMemRes)[i + iHCDimRht * (uDim +                 uAx  * uDimHi)] =
                         ((LPAPLINT  ) lpMemRht)[i + iHCDimRht * (uDim + ((uDimAx - 1) - uAx) * uDimHi)];
@@ -527,7 +527,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    // Loop through the parts
+                    // Loop through all of the parts
                     for (i = 0; i < iHCDimRht; i++)
                         ((LPAPLFLOAT) lpMemRes)[i + iHCDimRht * (uDim +                 uAx  * uDimHi)] =
                         ((LPAPLFLOAT) lpMemRht)[i + iHCDimRht * (uDim + ((uDimAx - 1) - uAx) * uDimHi)];
@@ -623,7 +623,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    // Loop through the parts
+                    // Loop through all of the parts
                     for (i = 0; i < iHCDimRht; i++)
                         mpq_init_set (&((LPAPLRAT) lpMemRes)[i + iHCDimRht * (uDim +                 uAx  * uDimHi)],
                                       &((LPAPLRAT) lpMemRht)[i + iHCDimRht * (uDim + ((uDimAx - 1) - uAx) * uDimHi)]);
@@ -647,7 +647,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                     if (CheckCtrlBreak (*lpbCtrlBreak))
                         goto ERROR_EXIT;
 
-                    // Loop through the parts
+                    // Loop through all of the parts
                     for (i = 0; i < iHCDimRht; i++)
                         mpfr_init_copy (&((LPAPLVFP) lpMemRes)[i + iHCDimRht * (uDim +                 uAx  * uDimHi)],
                                         &((LPAPLVFP) lpMemRht)[i + iHCDimRht * (uDim + ((uDimAx - 1) - uAx) * uDimHi)]);

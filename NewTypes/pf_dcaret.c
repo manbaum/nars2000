@@ -307,7 +307,7 @@ APLHC2I GcdHC2I
 
         // Rotate the result into the first quadrant
 
-        // Loop through the parts of the result looking for negative values
+        // Loop through all of the parts of all of the result looking for negative values
         for (uIndex = 0, i = 2 - 1; i >= 0; i--)
             uIndex = (3 * uIndex) + 1 + signumint (aplRht.parts[i]);
         // Get the table index for the righthand unit
@@ -373,7 +373,7 @@ APLHC4I GcdHC4I
 
         // Rotate the result into the first quadrant
 
-        // Loop through the parts of the result looking for negative values
+        // Loop through all of the parts of all of the result looking for negative values
         for (uIndex = 0, i = 4 - 1; i >= 0; i--)
             uIndex = (3 * uIndex) + 1 + signumint (aplRht.parts[i]);
         // Get the table indices
@@ -469,7 +469,7 @@ APLHC2F GcdHC2F
 
         // Rotate the result into the first quadrant
 
-        // Loop through the parts of the result looking for negative values
+        // Loop through all of the parts of all of the result looking for negative values
         for (uIndex = 0, i = 2 - 1; i >= 0; i--)
             uIndex = (3 * uIndex) + 1 + signumflt (aplRht.parts[i]);
         // Get the table index for the righthand unit
@@ -536,7 +536,7 @@ APLHC4F GcdHC4F
 
         // Rotate the result into the first quadrant
 
-        // Loop through the parts of the result looking for negative values
+        // Loop through all of the parts of all of the result looking for negative values
         for (uIndex = 0, i = 4 - 1; i >= 0; i--)
             uIndex = (3 * uIndex) + 1 + signumflt (aplRht.parts[i]);
         // Get the table indices
@@ -674,7 +674,7 @@ APLHC2R GcdHC2R
 
         // Rotate the result into the first quadrant
 
-        // Loop through the parts of the result looking for negative values
+        // Loop through all of the parts of all of the result looking for negative values
         for (uIndex = 0, i = 2 - 1; i >= 0; i--)
             uIndex = (3 * uIndex) + 1 + signumrat (&aplRht.parts[i]);
         // Get the table index
@@ -777,7 +777,7 @@ APLHC4R GcdHC4R
 
         // Rotate the result into the first bi-quadrant
 
-        // Loop through the parts of the result looking for negative values
+        // Loop through all of the parts of all of the result looking for negative values
         for (uIndex = 0, i = 4 - 1; i >= 0; i--)
             uIndex = (3 * uIndex) + 1 + signumrat (&aplRht.parts[i]);
         // Get the table indices
@@ -930,7 +930,7 @@ APLHC2V GcdHC2V
 
         // Rotate the result into the first quadrant
 
-        // Loop through the parts of the result looking for negative values
+        // Loop through all of the parts of all of the result looking for negative values
         for (uIndex = 0, i = 2 - 1; i >= 0; i--)
             uIndex = (3 * uIndex) + 1 + signumvfp (&aplRht.parts[i]);
         // Get the table index
@@ -1033,7 +1033,7 @@ APLHC4V GcdHC4V
 
         // Rotate the result into the first bi-quadrant
 
-        // Loop through the parts of the result looking for negative values
+        // Loop through all of the parts of all of the result looking for negative values
         for (uIndex = 0, i = 4 - 1; i >= 0; i--)
             uIndex = (3 * uIndex) + 1 + signumvfp (&aplRht.parts[i]);
         // Get the table indices

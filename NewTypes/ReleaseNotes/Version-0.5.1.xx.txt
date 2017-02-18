@@ -1,6 +1,20 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1660 -- Version 0.5.1.xx
+--------------------------------
+
+* Word Comments Consistently
+
+Directory branches/bsmith/NewTypes:
+
+HC_PROC.C:
+PF_CSTILE.C:
+PF_DCARET.C:
+TYPEMOTE.C:
+  Word comments consistently.
+
+
 Build #1659 -- Version 0.5.1.xx
 --------------------------------
 

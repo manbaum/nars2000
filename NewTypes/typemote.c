@@ -12849,7 +12849,7 @@ void TCA_HC4I_HC2I
 {
     int i;
 
-    // Loop through the parts common to HC4I & HC2I
+    // Loop through all of the parts common to HC4I & HC2I
     for (i = 0; i < 2;i++)
         // Copy the HC4I as HC2I
         lpAllTypes->aplHC2I.parts[i] = lpaplHC4I[uInt].parts[i];
@@ -13847,7 +13847,7 @@ void TCA_HC4R_HC2I
     int   i;
     UBOOL bRet[2];
 
-    // Loop through the parts common to HC4R & HC2I
+    // Loop through all of the parts common to HC4R & HC2I
     for (i = 0; i < 2; i++)
         // Attempt to convert each part of HC4R to INT
         lpAllTypes->aplHC2I.parts[i] = ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
@@ -14875,7 +14875,7 @@ void TCA_HC8I_HC2I
 {
     int i;
 
-    // Loop through the parts common to HC8I & HC2I
+    // Loop through all of the parts common to HC8I & HC2I
     for (i = 0; i < 2;i++)
         // Copy the HC8I as HC2I
         lpAllTypes->aplHC2I.parts[i] = lpaplHC8I[uInt].parts[i];
@@ -14907,7 +14907,7 @@ void TCA_HC8I_HC4I
 {
     int i;
 
-    // Loop through the parts common to HC8I & HC4I
+    // Loop through all of the parts common to HC8I & HC4I
     for (i = 0; i < 4; i++)
         // Copy the HC8I as HC4I
         lpAllTypes->aplHC4I.parts[i] = lpaplHC8I[uInt].parts[i];
@@ -15513,7 +15513,7 @@ void TCA_HC8F_HC2F
 {
     int i;
 
-    // Loop through the parts common to HC8F & HC2F
+    // Loop through all of the parts common to HC8F & HC2F
     for (i = 0; i < 2; i++)
         // Copy the HC8F as HC2F
         lpAllTypes->aplHC2F.parts[i] = lpaplHC8F[uInt].parts[i];
@@ -15547,7 +15547,7 @@ void TCA_HC8F_HC4F
 {
     int i;
 
-    // Loop through the parts common to HC8F & HC4F
+    // Loop through all of the parts common to HC8F & HC4F
     for (i = 0; i < 4; i++)
         // Copy the HC8F as HC4F
         lpAllTypes->aplHC4F.parts[i] = lpaplHC8F[uInt].parts[i];
@@ -15917,7 +15917,7 @@ void TCA_HC8R_HC2I
     int   i;
     UBOOL bRet[2];
 
-    // Loop through the parts common to HC8R & HC2I
+    // Loop through all of the parts common to HC8R & HC2I
     for (i = 0; i < 2; i++)
         // Attempt to convert each part of HC8R to INT
         lpAllTypes->aplHC2I.parts[i] = ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &bRet[i]);

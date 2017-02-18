@@ -75,7 +75,7 @@ void Myhc2r_clear
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 2; i++)
     // If this part is valid, ...
     if (mphc2rVal->parts[i]._mp_num._mp_d NE NULL)
@@ -97,7 +97,7 @@ void Myhc4r_clear
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 4; i++)
     // If this part is valid, ...
     if (mphc4rVal->parts[i]._mp_num._mp_d NE NULL)
@@ -119,7 +119,7 @@ void Myhc8r_clear
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 8; i++)
     // If this part is valid, ...
     if (mphc8rVal->parts[i]._mp_num._mp_d NE NULL)
@@ -179,7 +179,7 @@ void Myhc2v_clear
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 2; i++)
     // If this part is valid, ...
     if (mphc2vVal->parts[i]._mpfr_d NE NULL)
@@ -200,7 +200,7 @@ void Myhc4v_clear
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 4; i++)
     // If this part is valid, ...
     if (mphc4vVal->parts[i]._mpfr_d NE NULL)
@@ -221,7 +221,7 @@ void Myhc8v_clear
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 8; i++)
     // If this part is valid, ...
     if (mphc8vVal->parts[i]._mpfr_d NE NULL)
@@ -257,7 +257,7 @@ void mphc2r_set
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 2; i++)
         // Initialize to 0/1
         mpq_set (&lpaplHC2RRes->parts[i], &lpaplHC2RRht->parts[i]);
@@ -275,7 +275,7 @@ void mphc4r_set
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 4; i++)
         // Initialize to 0/1
         mpq_set (&lpaplHC4RRes->parts[i], &lpaplHC4RRht->parts[i]);
@@ -293,7 +293,7 @@ void mphc8r_set
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 8; i++)
         // Initialize to 0/1
         mpq_set (&lpaplHC8RRes->parts[i], &lpaplHC8RRht->parts[i]);
@@ -325,7 +325,7 @@ void mphc2v_set
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 2; i++)
         // Initialize to 0
         mpfr_set (&lpaplHC2VRes->parts[i], &lpaplHC2VRht->parts[i], MPFR_RNDN);
@@ -343,7 +343,7 @@ void mphc4v_set
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 4; i++)
         // Initialize to 0
         mpfr_set (&lpaplHC4VRes->parts[i], &lpaplHC4VRht->parts[i], MPFR_RNDN);
@@ -361,7 +361,7 @@ void mphc8v_set
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 8; i++)
         // Initialize to 0
         mpfr_set (&lpaplHC8VRes->parts[i], &lpaplHC8VRht->parts[i], MPFR_RNDN);
@@ -760,7 +760,7 @@ void mphc2r_init
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 2; i++)
         // Initialize to 0/1
         Myq_init (&lpaplHC2RRht->parts[i]);
@@ -777,7 +777,7 @@ void mphc4r_init
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 4; i++)
         // Initialize to 0/1
         Myq_init (&lpaplHC4RRht->parts[i]);
@@ -794,7 +794,7 @@ void mphc8r_init
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 8; i++)
         // Initialize to 0/1
         Myq_init (&lpaplHC8RRht->parts[i]);
@@ -853,7 +853,7 @@ void mphc2v_init0
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 2; i++)
         // Initialize to 0
         mpfr_init0 (&lpaplHC2VRht->parts[i]);
@@ -871,7 +871,7 @@ void mphc2v_init_copy
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 2; i++)
         // Initialize to 0
         mpfr_init_copy (&lpaplHC2VRes->parts[i], &lpaplHC2VRht->parts[i]);
@@ -888,7 +888,7 @@ void mphc4v_init0
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 4; i++)
         // Initialize to 0
         mpfr_init0 (&lpaplHC4VRht->parts[i]);
@@ -906,7 +906,7 @@ void mphc4v_init_copy
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 4; i++)
         // Initialize to 0
         mpfr_init_copy (&lpaplHC4VRes->parts[i], &lpaplHC4VRht->parts[i]);
@@ -923,7 +923,7 @@ void mphc8v_init0
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 8; i++)
         // Initialize to 0/1
         mpfr_init0 (&lpaplHC8VRht->parts[i]);
@@ -941,7 +941,7 @@ void mphc8v_init_copy
 {
     int i;
 
-    // Loop through the parts
+    // Loop through all of the parts
     for (i = 0; i < 8; i++)
         // Initialize to 0
         mpfr_init_copy (&lpaplHC8VRes->parts[i], &lpaplHC8VRht->parts[i]);

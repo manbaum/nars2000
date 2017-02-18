@@ -62,6 +62,8 @@ typedef struct tagSTART_ADDRESSES
 
     // common.c
     "MySprintfW"                , (LPUCHAR) &MySprintfW                 ,
+    "AllocateGlobalArray"       , (LPUCHAR) &AllocateGlobalArray        ,
+    "IsArgNaN"                  , (LPUCHAR) &IsArgNaN                   ,
 
     // convert.c
 
@@ -513,6 +515,7 @@ typedef struct tagSTART_ADDRESSES
     "signumflt"                 , (LPUCHAR) &signumflt                  ,
     "mpz_exit"                  , (LPUCHAR) &mpz_exit                   ,
     "mpz_inf_p"                 , (LPUCHAR) &mpz_inf_p                  ,
+    "mpz_nan_p"                 , (LPUCHAR) &mpz_nan_p                  ,
     "IsMpzNULL"                 , (LPUCHAR) &IsMpzNULL                  ,
 
     // parseline.c

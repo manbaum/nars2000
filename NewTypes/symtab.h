@@ -194,16 +194,17 @@ typedef struct tagHSHTABSTR
     struct tagSYMENTRY
               *steZero,                 // 7C:  Ptr to STE for constant zero
               *steOne,                  // 80:  ...                     one
-              *steBlank,                // 84:  ...                     blank
-              *steAlpha,                // 88:  ...            Alpha
-              *steDel,                  // 8C:  ...            Del
-              *steOmega,                // 90:  ...            Omega
-              *steLftOper,              // 94:  ...            Alpha Alpha
-              *steDelDel,               // 98:  ...            Del Del
-              *steRhtOper,              // 9C:  ...            Omega Omega
-              *steNoValueUsr,           // A0:  ...            no-value user result
-              *steNoValueSys;           // A4:  ...            no-value system name
-} HSHTABSTR, *LPHSHTABSTR;              // A8:  Length
+              *steNaN,                  // 84:  ...                     NaN
+              *steBlank,                // 88:  ...                     blank
+              *steAlpha,                // 8C:  ...            Alpha
+              *steDel,                  // 90:  ...            Del
+              *steOmega,                // 94:  ...            Omega
+              *steLftOper,              // 98:  ...            Alpha Alpha
+              *steDelDel,               // 9C:  ...            Del Del
+              *steRhtOper,              // A0:  ...            Omega Omega
+              *steNoValueUsr,           // A4:  ...            no-value user result
+              *steNoValueSys;           // A8:  ...            no-value system name
+} HSHTABSTR, *LPHSHTABSTR;              // AC:  Length
 
 //********************* SYMBOL TABLE ****************************************
 

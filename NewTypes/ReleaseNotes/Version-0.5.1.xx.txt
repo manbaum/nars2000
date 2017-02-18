@@ -1,6 +1,34 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1659 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Type Function With A NaN Argument
+
+Directory branches/bsmith/NewTypes:
+
+MF_QUADFMT.H:
+  Handle a NaN result from the Type function.
+
+PF_DTACK.C:
+  In <PrimFnMonDownTack_EM_YY>, for immediate FLTs, return a NaN for a NaN.
+
+PO_DIERESIS.C:
+  After call to <PrimScalarFnDydAllocate_EM>, Assert that <hGlbRes> is valid.
+
+PRIMFNS.C:
+  In <MakeMonPrototype_EM_PTB>, the prototype of a NaN is a NaN.
+  After call to <PrimScalarFnDydAllocate_EM>, Assert that <hGlbRes> is valid.
+
+STARTADDR.H:
+  Include more routines.
+
+SYMTAB.C:
+SYMTAB.H:
+  Define and use a Symbol Table Entry for a NaN.
+
+
 Build #1658 -- Version 0.5.1.xx
 --------------------------------
 

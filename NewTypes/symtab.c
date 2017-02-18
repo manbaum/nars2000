@@ -3078,6 +3078,7 @@ UBOOL AllocSymTab
     // Initialize the Symbol Table Entry for the special constants and names
     lpHTS->steZero       = SymTabHTSAppendInteger_EM (0                      , FALSE, lpHTS);
     lpHTS->steOne        = SymTabHTSAppendInteger_EM (1                      , FALSE, lpHTS);
+    lpHTS->steNaN        = SymTabHTSAppendFloat_EM   (fltNaN                 ,        lpHTS);
     lpHTS->steBlank      = SymTabHTSAppendChar_EM    (L' '                   , FALSE, lpHTS);
     lpHTS->steAlpha      = SymTabHTSAppendName_EM    (WS_UTF16_ALPHA  , NULL , TRUE , lpHTS);
     lpHTS->steDel        = SymTabHTSAppendName_EM    (WS_UTF16_DEL    , NULL , TRUE , lpHTS);
@@ -3095,6 +3096,7 @@ UBOOL AllocSymTab
 
     if (lpHTS->steZero       EQ NULL
      || lpHTS->steOne        EQ NULL
+     || lpHTS->steNaN        EQ NULL
      || lpHTS->steBlank      EQ NULL
      || lpHTS->steAlpha      EQ NULL
      || lpHTS->steOmega      EQ NULL

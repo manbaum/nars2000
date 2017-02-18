@@ -227,8 +227,11 @@ LPPL_YYSTYPE PrimFnMonDownTack_EM_YY
                     break;
 
                 case IMMTYPE_FLOAT:
-                    lpYYRes->tkToken.tkData.tkFloat   = 0;
-
+                    // If the argument is a NaN, ...
+                    if (IsFltNaN (lptkRhtArg->tkData.tkSym->stData.stFloat))
+                        lpYYRes->tkToken.tkData.tkFloat   = fltNaN;
+                    else
+                        lpYYRes->tkToken.tkData.tkFloat   = 0;
                     break;
 
                 case IMMTYPE_CHAR:
@@ -262,8 +265,11 @@ LPPL_YYSTYPE PrimFnMonDownTack_EM_YY
                     break;
 
                 case IMMTYPE_FLOAT:
-                    lpYYRes->tkToken.tkData.tkFloat   = 0;
-
+                    // If the argument is a NaN, ...
+                    if (IsFltNaN (lptkRhtArg->tkData.tkFloat))
+                        lpYYRes->tkToken.tkData.tkFloat   = fltNaN;
+                    else
+                        lpYYRes->tkToken.tkData.tkFloat   = 0;
                     break;
 
                 case IMMTYPE_CHAR:

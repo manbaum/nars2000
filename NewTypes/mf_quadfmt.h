@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ static LPAPLCHAR MonBodyFMT[] =
  L"  :else",
  L"    Proto←R",
  L"  :endif",
- L"  Type←(0 ' '∊⊤Proto)/'~─¯'[0,1+0∊⍴R]",
+ L"  Type←(0 ∅ ' '∊⊤Proto)/'~~─¯'[0 1,2+0∊⍴R]",
  L"  :select ×/⍴Type",
  L"  :case 1",
  L"    Type←⍬⍴Type",

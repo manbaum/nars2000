@@ -836,10 +836,12 @@ HGLOBAL MakeMonPrototype_EM_PTB
                       lpMemHdrTmp = NULL;   // ...    temp   ...
     LPVOID            lpMemArr,             // Ptr to array global memory
                       lpMemRes;             // ...
-    APLSTYPE          aplType;
-    APLNELM           aplNELM;
-    APLRANK           aplRank;
-    UINT              u;
+    APLSTYPE          aplType;              // Array storage type
+    APLNELM           aplNELM,              // Array NELM
+                      u;                    // Loop counter
+    APLRANK           aplRank;              // Array rank
+    int               i,                    // Loop counter
+                      iHCDimArr;            // HC Dimension (1, 2, 4,, 8)
     APLNELM           uLen;
     UBOOL             bRet = TRUE;          // TRUE iff result is valid
     APLUINT           ByteRes;              // # bytes in the result
@@ -894,8 +896,14 @@ HGLOBAL MakeMonPrototype_EM_PTB
         case PTRTYPE_STCONST:
             // If it's numeric, ...
             if (IsImmNum (((LPSYMENTRY) hGlbArr)->stFlags.ImmType))
-                return lpMemPTD->lphtsGLB->steZero;
-            else
+            {
+                // If it's FLT and a NaN, ...
+                if (IsImmFlt (((LPSYMENTRY) hGlbArr)->stFlags.ImmType)
+                 && IsFltNaN (((LPSYMENTRY) hGlbArr)->stData.stFloat))
+                    return lpMemPTD->lphtsGLB->steNaN;
+                else
+                    return lpMemPTD->lphtsGLB->steZero;
+            } else
                 return lpMemPTD->lphtsGLB->steBlank;
 
         case PTRTYPE_HGLOBAL:
@@ -920,6 +928,9 @@ HGLOBAL MakeMonPrototype_EM_PTB
     aplRank = lpHeader->Rank;
 #undef  lpHeader
 
+    // Get the HC Dimension (1, 2, 4, 8)
+    iHCDimArr = TranslateArrayTypeToHCDim (aplType);
+
     // Point to the data
     lpMemArr = VarArrayDataFmBase (lpMemHdrArr);
 
@@ -936,16 +947,25 @@ HGLOBAL MakeMonPrototype_EM_PTB
             break;
 
         case ARRAY_INT:
-        case ARRAY_FLOAT:
         case ARRAY_HC2I:
-        case ARRAY_HC2F:
         case ARRAY_HC4I:
-        case ARRAY_HC4F:
         case ARRAY_HC8I:
-        case ARRAY_HC8F:
             // Zero the memory
             ZeroMemory (lpMemArr, (APLU3264) aplNELM * TranslateArrayTypeToSizeof (aplType));
 
+            break;
+
+        case ARRAY_FLOAT:
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
+            // Loop through the elements
+            for (u = 0; u < aplNELM; u++)
+            // Loop through all of the parts
+            for (i = 0; i < iHCDimArr; i++)
+            //If it's NOT a NaN, ...
+            if (!IsFltNaN (((LPAPLFLOAT) lpMemArr)[i + u * iHCDimArr]))
+                ((LPAPLFLOAT) lpMemArr)[i + u * iHCDimArr] = 0;
             break;
 
         case ARRAY_CHAR:
@@ -1059,9 +1079,16 @@ HGLOBAL MakeMonPrototype_EM_PTB
                     {
                         case IMMTYPE_BOOL:
                         case IMMTYPE_INT:
-                        case IMMTYPE_FLOAT:
                             lpSymRes = lpMemPTD->lphtsGLB->steZero;
 
+                            break;
+
+                        case IMMTYPE_FLOAT:
+                            // If it's a NaN, ...
+                            if (IsFltNaN (lpSymArr->stData.stFloat))
+                                lpSymRes = lpMemPTD->lphtsGLB->steNaN;
+                            else
+                                lpSymRes = lpMemPTD->lphtsGLB->steZero;
                             break;
 
                         case IMMTYPE_CHAR:
@@ -1175,50 +1202,38 @@ HGLOBAL MakeMonPrototype_EM_PTB
             switch (aplType)
             {
                 case ARRAY_RAT:
-                    // Initialize to 0/1
-                    mpq_init     (((LPAPLRAT) lpMemRes)++);
+                case ARRAY_HC2R:
+                case ARRAY_HC4R:
+                case ARRAY_HC8R:
+                    // Loop through all of the parts
+                    for (i = 0; i < iHCDimArr; i++)
+                    // If it's a NaN, ...
+                    if (mpq_nan_p   (&((LPAPLRAT) lpMemArr)[i + u * iHCDimArr]))
+                        // Save as a NaN
+                        mpq_set_nan (((LPAPLRAT) lpMemRes)++);
+                    else
+                        // Initialize to 0/1
+                        mpq_init    (((LPAPLRAT) lpMemRes)++);
+                    // Skip over this one item in the array
+                    ((LPAPLRAT) lpMemArr) += iHCDimArr;
 
                     break;
 
                 case ARRAY_VFP:
-                    // Initialize to 0
-                    mpfr_init0   (((LPAPLVFP) lpMemRes)++);
-
-                    break;
-
-                case ARRAY_HC2R:
-                    // Initialize to 0/1
-                    mphc2r_init  (((LPAPLHC2R) lpMemRes)++);
-
-                    break;
-
                 case ARRAY_HC2V:
-                    // Initialize to 0
-                    mphc2v_init0 (((LPAPLHC2V) lpMemRes)++);
-
-                    break;
-
-                case ARRAY_HC4R:
-                    // Initialize to 0/1
-                    mphc4r_init  (((LPAPLHC4R) lpMemRes)++);
-
-                    break;
-
                 case ARRAY_HC4V:
-                    // Initialize to 0
-                    mphc4v_init0 (((LPAPLHC4V) lpMemRes)++);
-
-                    break;
-
-                case ARRAY_HC8R:
-                    // Initialize to 0/1
-                    mphc8r_init  (((LPAPLHC8R) lpMemRes)++);
-
-                    break;
-
                 case ARRAY_HC8V:
-                    // Initialize to 0
-                    mphc8v_init0 (((LPAPLHC8V) lpMemRes)++);
+                    // Loop through all of the parts
+                    for (i = 0; i < iHCDimArr; i++)
+                    // If it's a NaN, ...
+                    if (mpfr_nan_p   (&((LPAPLVFP) lpMemArr)[i + u * iHCDimArr]))
+                        // Save as a NaN
+                        mpfr_set_nan (((LPAPLVFP) lpMemRes)++);
+                    else
+                        // Initialize to 0
+                        mpfr_init0   (((LPAPLVFP) lpMemRes)++);
+                    // Skip over this one item in the array
+                    ((LPAPLVFP) lpMemArr) += iHCDimArr;
 
                     break;
 
@@ -1592,6 +1607,8 @@ HGLOBAL MakeDydPrototype_EM_PTB
                                          aplNELMRht,
                                          aplNELMRes))
             goto ERROR_EXIT;
+
+        Assert (hGlbRes NE NULL);
 
         // Take into account nested prototypes
         if (IsNested (aplTypeLft))

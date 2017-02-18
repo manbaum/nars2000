@@ -1,6 +1,17 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1662 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Indexing Nested Array With An Empty Array
+
+Directory branches/bsmith/NewTypes:
+
+PF_INDEX.C:
+  In <ArrayIndexRef_EM_YY> when indexing a nested array with an empty array, the prototype of the result is not created.
+
+
 Build #1661 -- Version 0.5.1.xx
 --------------------------------
 

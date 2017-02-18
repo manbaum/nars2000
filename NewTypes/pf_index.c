@@ -169,7 +169,6 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             aplTypeSub    = aplTypeLst;
             aplNELMSub    = aplNELMLst;
             aplRankSub    = aplRankLst;
-
             hGlbSub       = hGlbLst;
 
             // Split cases based upon the token type
@@ -543,54 +542,86 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                     {
                         TOKEN tkLstArg = {0};
 
-                        // If the result is empty, we've validated all we need
+                        // If the item is empty, we've validated all we need
                         if (IsEmpty (aplNELMSub))
-                            goto YYALLOC_EXIT;
-
-                        // Fill in the list arg token
-                        tkLstArg.tkFlags.TknType   = TKT_VARARRAY;
-////////////////////////tkLstArg.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
-////////////////////////tkLstArg.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
-                        tkLstArg.tkData.tkGlbData  = MakePtrTypeGlb (hGlbItm);
-                        tkLstArg.tkCharIndex       = lptkFunc->tkCharIndex;
-
-                        // Note the args get switched between indexing and squad
-                        lpYYItm =
-                          PrimFnDydSquadGlb_EM_YY (&tkLstArg,           // Ptr to left arg token
-                                                   &hGlbNam,            // Right arg global memory handle
-                                                    NULL,               // Ptr to axis token (may be NULL)
-                                                    lptkFunc,           // Ptr to function token
-                                                    TRUE,               // TRUE iff we came from indexing
-                                                    NULL,               // Ptr to result global memory handle
-                                                    NULL,               // Ptr to set arg token
-                                                    FALSE);             // TRUE iff protoyping
-                        Assert (!IsPtrSuccess (lpYYItm));
-
-                        // If valid, disclose the item as squad returns an enclosed item
-                        if (lpYYItm NE NULL)
                         {
-                            LPPL_YYSTYPE lpYYItm2;
-                            APLSTYPE     aplTypeItm;
-                            APLRANK      aplRankItm;
+                            HGLOBAL hSymGlbProto;           // Prototype global memory handle
 
-                            // Get the attributes (Type, NELM, and Rank) of the item
-                            AttrsOfToken (&lpYYItm->tkToken, &aplTypeItm, NULL, &aplRankItm, NULL);
+                            // If the result is not nested, ...
+                            if (!IsNested (aplTypeRes))
+                                // We're done, hGlbRes has the result
+                                goto YYALLOC_EXIT;
 
-                            // If the item is a scalar global numeric, don't disclose as that can increment the
-                            //   refcnt on a global numerc
-                            if (!IsScalar (aplRankItm)
-                             || !IsGlbNum (aplTypeItm))
+                            // Fill in the prototype from the name arg
+
+                            // Allocate a new YYRes
+                            lpYYItm = YYAlloc ();
+
+                            Assert (hGlbNam NE NULL);
+                            Assert (GetPtrTypeInd (lpMemNam) EQ PTRTYPE_HGLOBAL);
+
+                            // Make a prototype for the result
+                            hSymGlbProto =
+                              MakeMonPrototype_EM_PTB (*(LPAPLNESTED) lpMemNam, // Proto arg handle
+                                                       aplTypeNam,              // Array storage type
+                                                       lptkFunc,                // Ptr to function token
+                                                       MP_CHARS);               // CHARs allowed
+                            if (hSymGlbProto EQ NULL)
+                                goto WSFULL_EXIT;
+
+                            // Fill in the result token
+                            lpYYItm->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////////////////////lpYYItm->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////////////////////////lpYYItm->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+                            lpYYItm->tkToken.tkData.tkGlbData  = hSymGlbProto;
+                            lpYYItm->tkToken.tkCharIndex       = lptkLstArg->tkCharIndex;
+                        } else
+                        {
+                            // Fill in the list arg token
+                            tkLstArg.tkFlags.TknType   = TKT_VARARRAY;
+////////////////////////////tkLstArg.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
+////////////////////////////tkLstArg.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+                            tkLstArg.tkData.tkGlbData  = MakePtrTypeGlb (hGlbItm);
+                            tkLstArg.tkCharIndex       = lptkFunc->tkCharIndex;
+
+                            // Note the args get switched between indexing and squad
+                            lpYYItm =
+                              PrimFnDydSquadGlb_EM_YY (&tkLstArg,               // Ptr to left arg token
+                                                       &hGlbNam,                // Right arg global memory handle
+                                                        NULL,                   // Ptr to axis token (may be NULL)
+                                                        lptkFunc,               // Ptr to function token
+                                                        TRUE,                   // TRUE iff we came from indexing
+                                                        NULL,                   // Ptr to result global memory handle
+                                                        NULL,                   // Ptr to set arg token
+                                                        FALSE);                 // TRUE iff protoyping
+                            Assert (!IsPtrSuccess (lpYYItm));
+
+                            // If valid, disclose the item as squad returns an enclosed item
+                            if (lpYYItm NE NULL)
                             {
-                                lpYYItm2 = PrimFnMonRightShoe_EM_YY (lptkFunc,
-                                                                    &lpYYItm->tkToken,
-                                                                     NULL);
-                                if (lpYYItm2 NE NULL)
+                                LPPL_YYSTYPE lpYYItm2;
+                                APLSTYPE     aplTypeItm;
+                                APLRANK      aplRankItm;
+
+                                // Get the attributes (Type, NELM, and Rank) of the item
+                                AttrsOfToken (&lpYYItm->tkToken, &aplTypeItm, NULL, &aplRankItm, NULL);
+
+                                // If the item is a scalar global numeric, don't disclose as that can increment the
+                                //   refcnt on a global numerc
+                                if (!IsScalar (aplRankItm)
+                                 || !IsGlbNum (aplTypeItm))
                                 {
-                                    FreeResult (lpYYItm); YYFree (lpYYItm); lpYYItm = NULL;
-                                    lpYYItm = lpYYItm2;
+                                    lpYYItm2 = PrimFnMonRightShoe_EM_YY (lptkFunc,
+                                                                        &lpYYItm->tkToken,
+                                                                         NULL);
+                                    if (lpYYItm2 NE NULL)
+                                    {
+                                        FreeResult (lpYYItm); YYFree (lpYYItm); lpYYItm = NULL;
+                                        lpYYItm = lpYYItm2;
+                                    } // End IF
                                 } // End IF
                             } // End IF
-                        } // End IF
+                        } // End IF/ELSE
                     } else
                     {
                         // Note the args get switched between indexing and pick

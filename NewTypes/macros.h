@@ -141,6 +141,7 @@
   #define DbgMsgW2(a)                     {if (gDbgLvl > 2) {DbgMsgW(a);}}
 
   #define CheckMemStat()                  _CheckMemStat ()
+  #define CheckGlbStat(a)                 _CheckGlbStat (a)
 
   #define Assert(a)                       ((a) || (DbgBrk (), nop (), 0))
   #define BreakIf(a)                      Assert (!(a))
@@ -180,6 +181,7 @@
   #define DbgMsgW2(a)
 
   #define CheckMemStat()
+  #define CheckGlbStat(a)
 
   #define Assert(a)                       ((void) 0)
   #define BreakIf(a)                      ((void) 0)

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1843,6 +1843,51 @@ void _CheckMemStat
         DbgBrk ();              // #ifdef DEBUG
 #endif
 } // End _CheckMemStat
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $CheckGlbStat
+//
+//  Check on memory status
+//***************************************************************************
+
+void _CheckGlbStat
+    (HGLOBAL hGlbArg)
+
+{
+    LPVARARRAY_HEADER lpMemHdrArg;
+    LPDWORD           lpMemArg;
+    APLINT            iSize;
+
+    if (hGlbArg EQ NULL)
+        return;
+
+    // Lock the memory to get a ptr to it
+    lpMemHdrArg = GlobalLock (ClrPtrTypeDir (hGlbArg));
+
+    Assert (lpMemHdrArg->Sig.nature EQ VARARRAY_HEADER_SIGNATURE);
+
+    // Get the size of the global var
+    iSize =
+      CalcArraySize (lpMemHdrArg->ArrType,
+                     lpMemHdrArg->NELM,
+                     lpMemHdrArg->Rank);
+    // Point to the following DWORD
+    lpMemArg = (LPDWORD) ByteAddr (lpMemHdrArg, iSize);
+
+#define GUARD   0xabababab
+
+    // If the next two DWORDs are not valid, ...
+    if (lpMemArg[0] NE GUARD
+     || lpMemArg[1] NE GUARD)
+        // Scream!
+        DbgBrk ();
+#undef  GUARD
+    // We no longer need this ptr
+    GlobalUnlock (ClrPtrTypeDir (hGlbArg)); lpMemHdrArg = NULL;
+} // End _CheckGlbStat
 #endif
 #endif
 

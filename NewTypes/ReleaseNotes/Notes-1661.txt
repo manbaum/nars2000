@@ -1,0 +1,12 @@
+Build #1661 -- Version 0.5.1.xx
+--------------------------------
+
+* Implement Debugging Aid For A Specific HGLOBAL
+
+Directory branches/bsmith/NewTypes:
+
+MACROS.H:
+  Define macro <CheckGlbStat> to check a specific HGLOBAL for memory corruption.
+
+RESDEBUG.C:
+  Implement <_CheckGlbStat> to check a specific HGLOBAL for memory corruption.

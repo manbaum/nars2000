@@ -6677,14 +6677,10 @@ PL_YYLEX_OP3NAMED:
 
                             // Copy the memory in case the hybrid changes to a function or operator
                             lpplYYLval->tkToken.tkData .tkGlbData =
-                              CopyArray_EM (lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData, NULL);
-
-                            // If it succeeded, ...
-                            if (lpplYYLval->tkToken.tkData.tkGlbData NE NULL)
-                                // Make it a global ptr
-                                lpplYYLval->tkToken.tkData.tkGlbData = MakePtrTypeGlb (lpplYYLval->tkToken.tkData.tkGlbData);
+                              CopyArray_EM_PTB (lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData, NULL);
 #ifdef DEBUG
-                            else
+                            // If it failed, ...
+                            if (lpplYYLval->tkToken.tkData.tkGlbData EQ NULL)
                             {
                                 DbgBrk ();              // #ifdef DEBUG -- ***FIXME***
 ////                            goto WSFULL_EXIT;       // ***FIXME***

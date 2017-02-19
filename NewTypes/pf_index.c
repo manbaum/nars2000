@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3279,7 +3279,7 @@ UBOOL ArrayIndexSetSingLst_EM
                     // Because this operation changes the named array,
                     //   we need to copy the entire array first.  The
                     //   caller of this code deletes the old array.
-                    *lphGlbRes = CopyArray_EM (hGlbNam, lptkNamArg);
+                    *lphGlbRes = CopyArray_EM_PTB (hGlbNam, lptkNamArg);
             } else
             {
                 *lphGlbRes = CopyGlbAsType_EM (hGlbNam, aplTypeRes, lptkNamArg);
@@ -3458,7 +3458,7 @@ UBOOL ArrayIndexSetSingLst_EM
     // Because this operation changes the named array,
     //   we need to copy the entire array first.  The
     //   caller of this code deletes the old array.
-    *lphGlbRes = CopyArray_EM (hGlbNam, lptkNamArg);
+    *lphGlbRes = CopyArray_EM_PTB (hGlbNam, lptkNamArg);
 
     // Check for error
     if (*lphGlbRes EQ NULL)

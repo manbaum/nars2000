@@ -914,8 +914,8 @@ HGLOBAL MakeMonPrototype_EM_PTB
     } // End SWITCH
 
     // Make a copy of the array as we're changing it
-    hGlbArr = CopyArray_EM (hGlbArr,
-                            lptkFunc);
+    hGlbArr = CopyArray_EM_PTB (hGlbArr,
+                                lptkFunc);
     if (hGlbArr EQ NULL)
         return NULL;
 
@@ -1031,7 +1031,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
                     FreeResultGlobalVar (hGlbArr); hGlbArr = NULL;
 
                     // Copy the global handle
-                    hGlbArr = hGlbTmp;
+                    hGlbArr = MakePtrTypeGlb (hGlbTmp);
 
                     goto NORMAL_EXIT;
 
@@ -1249,7 +1249,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
             FreeResultGlobalVar (hGlbArr); hGlbArr = NULL;
 
             // Copy to result var
-            hGlbArr = hGlbRes;
+            hGlbArr = MakePtrTypeGlb (hGlbRes);
 
             break;
 
@@ -2020,18 +2020,19 @@ HGLOBAL CopySymGlbNumDir_PTB
 
 
 //***************************************************************************
-//  $CopyArray_EM
+//  $CopyArray_EM_PTB
 //
 //  Make a copy of a global memory ptr array
+//  The result is PTB-sensitive
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- CopyArray_EM"
+#define APPEND_NAME     L" -- CopyArray_EM_PTB"
 #else
 #define APPEND_NAME
 #endif
 
-HGLOBAL CopyArray_EM
+HGLOBAL CopyArray_EM_PTB
     (HGLOBAL hGlbSrc,                       // Source handle
      LPTOKEN lptkFunc)                      // Ptr to function token
 
@@ -2156,11 +2157,11 @@ HGLOBAL CopyArray_EM
                                 Assert (IsGlbTypeVarInd_PTB (lpMemSrc));
 
                                 // Copy the array
-                                hGlbItm = CopyArray_EM (*(LPAPLNESTED) lpMemSrc,
-                                                        lptkFunc);
+                                hGlbItm = CopyArray_EM_PTB (*(LPAPLNESTED) lpMemSrc,
+                                                            lptkFunc);
                                 if (hGlbItm NE NULL)
                                     // Save into the destin
-                                    *((LPAPLNESTED) lpMemDst) = MakePtrTypeGlb (hGlbItm);
+                                    *((LPAPLNESTED) lpMemDst) = hGlbItm;
                                 else
                                     bRet = FALSE;
                                 break;
@@ -2339,7 +2340,7 @@ HGLOBAL CopyArray_EM
                         if (GetSignatureGlb (hGlbItm) EQ DFN_HEADER_SIGNATURE)
                         {
                             // This DEBUG stmt probably never is triggered because
-                            //    CopyArray_EM is never used on any form of function.
+                            //    CopyArray_EM_PTB is never used on any form of function.
 #ifdef DEBUG
                             DbgStop ();         // ***Probably never executed***
 #endif
@@ -2347,11 +2348,11 @@ HGLOBAL CopyArray_EM
                             DbgIncrRefCntDir_PTB (hGlbItm); // EXAMPLE:  ***Probably never executed***
                         } else
                             // Copy the array
-                            hGlbItm = CopyArray_EM (hGlbItm,
-                                                    lptkFunc);
+                            hGlbItm = CopyArray_EM_PTB (hGlbItm,
+                                                        lptkFunc);
                         if (hGlbItm NE NULL)
                             // Save back into the destin
-                            lpMemFcn->tkToken.tkData.tkGlbData = MakePtrTypeGlb (hGlbItm);
+                            lpMemFcn->tkToken.tkData.tkGlbData = hGlbItm;
                         else
                             bRet = FALSE;
                         break;
@@ -2398,7 +2399,7 @@ HGLOBAL CopyArray_EM
                         if (lpMemFcn->tkToken.tkData.tkSym->stFlags.UsrDfn)
                         {
                             // This DEBUG stmt probably never is triggered because
-                            //    CopyArray_EM is never used on any form of function.
+                            //    CopyArray_EM_PTB is never used on any form of function.
 #ifdef DEBUG
                             DbgStop ();         // ***Probably never executed***
 #endif
@@ -2406,8 +2407,8 @@ HGLOBAL CopyArray_EM
                             DbgIncrRefCntDir_PTB (hGlbItm); // EXAMPLE:  ***Probably never executed***
                         } else
                             // Copy the array
-                            hGlbItm = CopyArray_EM (hGlbItm,
-                                                    lptkFunc);
+                            hGlbItm = CopyArray_EM_PTB (hGlbItm,
+                                                        lptkFunc);
                         if (hGlbItm NE NULL)
                         {
                             // Save back into the destin
@@ -2428,7 +2429,7 @@ HGLOBAL CopyArray_EM
 
             case DFN_HEADER_SIGNATURE:
                 // This DEBUG stmt probably never is triggered because
-                //    CopyArray_EM is never used on any form of function.
+                //    CopyArray_EM_PTB is never used on any form of function.
 #ifdef DEBUG
                 DbgStop ();         // ***Probably never executed***
 #endif
@@ -2454,8 +2455,8 @@ HGLOBAL CopyArray_EM
     } else
         ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                    lptkFunc);
-    return hGlbDst;
-} // End CopyArray_EM
+    return (hGlbDst EQ NULL) ? hGlbDst : MakePtrTypeGlb (hGlbDst);
+} // End CopyArray_EM_PTB
 #undef  APPEND_NAME
 
 

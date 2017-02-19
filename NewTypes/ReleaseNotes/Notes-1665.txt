@@ -1,0 +1,17 @@
+Build #1665 -- Version 0.5.1.xx
+--------------------------------
+
+* Rename Function To Indicate It's PTB-sensitive
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+PF_BAR.C:
+PF_INDEX.C:
+PF_PLUS.C:
+PF_SQUAD.C:
+PF_TIMES.C:
+PO_SLASH.C:
+PRIMFNS.C:
+STARTADDR.H:
+  Rename <CopyArray_EM> to <CopyArray_EM_PTB> to indicate that it returns a PTB-sensitive result.

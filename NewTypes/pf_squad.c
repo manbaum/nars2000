@@ -1117,7 +1117,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
         // Because this operation changes the named array,
         //   we need to copy the entire array first.  The
         //   caller of this code deletes the old array.
-        hGlbRht2 = CopyArray_EM (hGlbRht, lptkSetArg);
+        hGlbRht2 = CopyArray_EM_PTB (hGlbRht, lptkSetArg);
         if (hGlbRht2 EQ NULL)
             goto ERROR_EXIT;
 

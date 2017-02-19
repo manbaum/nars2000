@@ -839,7 +839,7 @@ typedef struct tagSTART_ADDRESSES
     "MakeDydPrototype_EM_PTB"   , (LPUCHAR) &MakeDydPrototype_EM_PTB    ,
     "IsFirstSimpleGlb"          , (LPUCHAR) &IsFirstSimpleGlb           ,
     "CopySymGlbDir_PTB"         , (LPUCHAR) &CopySymGlbDir_PTB          ,
-    "CopyArray_EM"              , (LPUCHAR) &CopyArray_EM               ,
+    "CopyArray_EM_PTB"          , (LPUCHAR) &CopyArray_EM_PTB           ,
     "CopyGlbAsType_EM"          , (LPUCHAR) &CopyGlbAsType_EM           ,
     "CheckRankLengthError_EM"   , (LPUCHAR) &CheckRankLengthError_EM    ,
     "RoundUpBitsToBytes"        , (LPUCHAR) &RoundUpBitsToBytes         ,

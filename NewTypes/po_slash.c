@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1372,7 +1372,7 @@ RESTART_EXCEPTION:
                     break;
             } // End SWITCH
 
-            // Because we didn't CopyArray_EM on the tkGlbData,
+            // Because we didn't CopyArray_EM_PTB on the tkGlbData,
             //   we don't need to free tkRhtArg.
         } // End FOR/FOR
     } // End IF/ELSE

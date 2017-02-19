@@ -2961,12 +2961,12 @@ UBOOL PrimFnDydPlusAPA_EM
     //   (one of the arg's must be a singleton)
     if (!IsSingleton (aplNELMLft))
     {
-        *lphGlbRes = CopyArray_EM (hGlbLft, lptkFunc);
+        *lphGlbRes = CopyArray_EM_PTB (hGlbLft, lptkFunc);
         aplRankRes = aplRankLft;
     } else
     if (!IsSingleton (aplNELMRht))
     {
-        *lphGlbRes = CopyArray_EM (hGlbRht, lptkFunc);
+        *lphGlbRes = CopyArray_EM_PTB (hGlbRht, lptkFunc);
         aplRankRes = aplRankRht;
     } else
         DbgStop ();     // We should never get here

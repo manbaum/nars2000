@@ -4516,6 +4516,7 @@ __try
                                   FormatAplVfpFC (lpaplChar,                // Ptr to output save area
                                                  &aplVfpItm,                // Ptr to the value to format
                                                   iPrc,                     // # significant/fractional digits (0 = all)
+                                                  uWid,                     // Maximum width including sign & decpt (0 = none)
                                                   aplCharDecimal,           // Char to use as decimal separator
                                                   aplCharOverbar,           // Char to use as overbar
                                                   iPrc >= 0,                // TRUE iff nDigits is # fractional digits
@@ -4531,6 +4532,7 @@ __try
                                   FormatAplVfpFC (lpaplChar,                // Ptr to output save area
                                        (LPAPLVFP) hGlbItmRht,               // Ptr to the value to format
                                                   iPrc,                     // # significant/fractional digits (0 = all)
+                                                  uWid,                     // Maximum width including sign & decpt (0 = none)
                                                   aplCharDecimal,           // Char to use as decimal separator
                                                   aplCharOverbar,           // Char to use as overbar
                                                   iPrc >= 0,                // TRUE iff nDigits is # fractional digits

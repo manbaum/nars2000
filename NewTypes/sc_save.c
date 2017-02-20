@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1729,6 +1729,7 @@ LPAPLCHAR SavedWsFormGlbVar
                       FormatAplVfpFC (lpaplChar,            // Ptr to output save area
                                       lpMemObj,             // Ptr to the value to format
                                       0,                    // # significant digits (0 = all)
+                                      0,                    // Maximum width including sign & decpt (0 = none)
                                       L'.',                 // Char to use as decimal separator
                                       UTF16_BAR,            // Char to use as overbar
                                       FALSE,                // TRUE iff nDigits is # fractional digits

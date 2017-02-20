@@ -1780,6 +1780,7 @@ void QFMT_CommonEFIR
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
                                      &aplVfpItm,            // Ptr to the value to format
                             -(APLINT) fsDig,                // # significant digits (0 = all)
+                                      0,                    // Maximum width including sign & decpt (0 = none)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
                                       FALSE,                // TRUE iff nDigits is # fractional digits
@@ -1798,6 +1799,7 @@ void QFMT_CommonEFIR
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
                                      &aplVfpItm,            // Ptr to the value to format
                             -(APLINT) fsDig,                // # significant digits (0 = all)
+                                      0,                    // Maximum width including sign & decpt (0 = none)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
                                       FALSE,                // TRUE iff nDigits is # fractional digits
@@ -1853,6 +1855,7 @@ void QFMT_CommonEFIR
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
                                      &aplVfpItm,            // Ptr to the value to format
                                       fsDig,                // # fractional digits (0 = all)
+                                      0,                    // Maximum width including sign & decpt (0 = none)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
                                       TRUE,                 // TRUE iff nDigits is # fractional digits
@@ -1871,6 +1874,7 @@ void QFMT_CommonEFIR
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
                                      &aplVfpItm,            // Ptr to the value to format
                                       fsDig,                // # fractional digits (0 = all)
+                                      0,                    // Maximum width including sign & decpt (0 = none)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
                                       TRUE,                 // TRUE iff nDigits is # fractional digits
@@ -2066,6 +2070,7 @@ void QFMT_CommonEFIR
                       FormatAplVfpFC (lpwszFormat,          // Ptr to output save area
                                      &aplVfpTmp,            // Ptr to the value to format
                                       fsDig,                // # significant digits (0 = all)
+                                      0,                    // Maximum width including sign & decpt (0 = none)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
                                       FALSE,                // TRUE iff nDigits is # fractional digits

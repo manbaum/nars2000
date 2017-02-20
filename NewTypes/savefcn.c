@@ -321,11 +321,17 @@ UINT SF_LineLenM
     // Save local params
     lpFX_Params = lpSF_Fcns->LclParams;
 
-    // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLockVar (lpFX_Params->hGlbRht);
+    // Check for immediate right arg
+    if (lpFX_Params->hGlbRht NE NULL)
+    {
+        // Lock the memory to get a ptr to it
+        lpMemHdrRht = MyGlobalLockVar (lpFX_Params->hGlbRht);
 
-    // Skip over the header to the data
-    lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+        // Skip over the header to the data
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+    } else
+        // Point to the data
+        lpMemRht = (LPAPLCHAR) &lpFX_Params->aplLongestRht;
 
     // Get the # cols in the matrix
     uLineLen = (UINT) lpFX_Params->aplColsRht;
@@ -333,17 +339,18 @@ UINT SF_LineLenM
     // Calc the offset to the appropriate row
     uRowOff = uLineNum * uLineLen;
 
-    // Skip over the header to the data
-    lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
-
     // As this is a matrix and the header/function line might have
     //   been padded out beyond its normal length, delete trailing blanks
     for (; uLineLen; uLineLen--)
     if (lpMemRht[uRowOff + uLineLen - 1] NE L' ')
         break;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (lpFX_Params->hGlbRht); lpMemHdrRht = NULL;
+    // If it's valid, ...
+    if (lpMemHdrRht NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (lpFX_Params->hGlbRht); lpMemHdrRht = NULL;
+    } // End IF
 
     return uLineLen;
 } // End SF_LineLenM
@@ -370,6 +377,8 @@ UINT SF_LineLenN
 
     // Save local params
     lpFX_Params = lpSF_Fcns->LclParams;
+
+    Assert (lpFX_Params->hGlbRht NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemHdrRht = MyGlobalLockVar (lpFX_Params->hGlbRht);
@@ -398,8 +407,12 @@ UINT SF_LineLenN
             break;
     } // End SWITCH
 
-    // We no longer need this ptr
-    MyGlobalUnlock (lpFX_Params->hGlbRht); lpMemHdrRht = NULL;
+    // If it's valid, ...
+    if (lpMemHdrRht NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (lpFX_Params->hGlbRht); lpMemHdrRht = NULL;
+    } // End IF
 
     return (UINT) aplNELMItmRht;
 } // End SF_LineLenN
@@ -429,11 +442,17 @@ UINT SF_LineLenAFO
     // Save local params
     lpFX_Params = lpSF_Fcns->LclParams;
 
-    // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLockVar (lpFX_Params->hGlbRht);
+    // Check for immediate right arg
+    if (lpFX_Params->hGlbRht NE NULL)
+    {
+        // Lock the memory to get a ptr to it
+        lpMemHdrRht = MyGlobalLockVar (lpFX_Params->hGlbRht);
 
-    // Skip over the header to the data
-    lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+        // Skip over the header to the data
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+    } else
+        // Point to the data
+        lpMemRht = (LPAPLCHAR) &lpFX_Params->aplLongestRht;
 
     // Split cases based upon the arg rank
     switch (lpFX_Params->aplRankRht)
@@ -506,8 +525,12 @@ UINT SF_LineLenAFO
             break;
     } // End SWITCH
 
-    // We no longer need this ptr
-    MyGlobalUnlock (lpFX_Params->hGlbRht); lpMemHdrRht = NULL;
+    // If it's valid, ...
+    if (lpMemHdrRht NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (lpFX_Params->hGlbRht); lpMemHdrRht = NULL;
+    } // End IF
 
     // If the caller wants the offset, ...
     if (lpuLineOff NE NULL)
@@ -784,11 +807,17 @@ void SF_ReadLineM
     // Save local params
     lpFX_Params = lpSF_Fcns->LclParams;
 
-    // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLockVar (lpFX_Params->hGlbRht);
+    // Check for immediate right arg
+    if (lpFX_Params->hGlbRht NE NULL)
+    {
+        // Lock the memory to get a ptr to it
+        lpMemHdrRht = MyGlobalLockVar (lpFX_Params->hGlbRht);
 
-    // Skip over the header to the data
-    lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+        // Skip over the header to the data
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+    } else
+        // Point to the data
+        lpMemRht = (LPAPLCHAR) &lpFX_Params->aplLongestRht;
 
     // Get the # cols in the matrix
     uLineLen = (UINT) lpFX_Params->aplColsRht;
@@ -809,8 +838,12 @@ void SF_ReadLineM
     // Ensure properly terminated
     lpMemLine[0] = WC_EOS;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (lpFX_Params->hGlbRht); lpMemHdrRht = NULL;
+    // If it's valid, ...
+    if (lpMemHdrRht NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (lpFX_Params->hGlbRht); lpMemHdrRht = NULL;
+    } // End IF
 } // End SF_ReadLineM
 
 
@@ -838,6 +871,8 @@ void SF_ReadLineN
 
     // Save local params
     lpFX_Params = lpSF_Fcns->LclParams;
+
+    Assert (lpFX_Params->hGlbRht NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemHdrRht = MyGlobalLockVar (lpFX_Params->hGlbRht);
@@ -882,8 +917,12 @@ void SF_ReadLineN
             break;
     } // End SWITCH
 
-    // We no longer need this ptr
-    MyGlobalUnlock (lpFX_Params->hGlbRht); lpMemHdrRht = NULL;
+    // If it's valid, ...
+    if (lpMemHdrRht NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (lpFX_Params->hGlbRht); lpMemHdrRht = NULL;
+    } // End IF
 } // End SF_ReadLineN
 
 
@@ -923,7 +962,7 @@ void SF_ReadLineSV
         uLineLen = SF_LineLenAFO (hWndEC, lpSF_Fcns, uLineNum, &uLineOff);
 
     // Check for immediate right arg
-    if (uLineNum EQ 0 && lpFX_Params->hGlbRht EQ NULL)
+    if (lpFX_Params->hGlbRht EQ NULL)
     {
         // Copy the simple char to the result
         *lpMemLine++ = (APLCHAR) lpFX_Params->aplLongestRht;
@@ -2021,9 +2060,17 @@ UBOOL SaveFunctionCom
                                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);
                     SetFocus (GetParent (hWndEC));
                 } else
-                    ErrorMessageIndirectToken (ERRMSG_SI_DAMAGE APPEND_NAME,
-                                               lpSF_Fcns->lptkFunc);
-                goto ERROR_EXIT;
+                {
+                    // If we're NOT called from []FX, ...
+                    if (lpSF_Fcns->sfTypes NE SFTYPES_FX)
+                        // Signal an error message
+                        ErrorMessageIndirectToken (ERRMSG_SI_DAMAGE APPEND_NAME,
+                                                   lpSF_Fcns->lptkFunc);
+                    else
+                        // Mark the line in error
+                        lpSF_Fcns->uErrLine = 0;
+                    goto ERROR_EXIT;
+                } // End IF/ELSE
             } // End FOR/IF
 
             // If it's a UDFO, ...

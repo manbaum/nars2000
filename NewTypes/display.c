@@ -2244,6 +2244,7 @@ LPAPLCHAR FormatAplVfp
     return FormatAplVfpFC (lpaplChar,               // Ptr to output save area
                            lpaplVfp,                // Ptr to the value to format
                            nDigits,                 // # significant digits (0 = all)
+                           0,                       // Maximum width including sign & decpt (0 = none)
                            UTF16_DOT,               // Char to use as decimal separator
                            UTF16_OVERBAR,           // Char to use as overbar
                            FALSE,                   // TRUE iff nDigits is # fractional digits
@@ -2264,6 +2265,7 @@ LPAPLCHAR FormatAplVfpFC
      APLINT     nDigits,            // # significant digits (0 = all), or
                                     // # fractional digits (if bFractDigs)
                                     // If negative, use E-format
+     APLINT     nWid,               // Maximum width including sign & decpt (0 = none)
      APLCHAR    aplCharDecimal,     // Char to use as decimal separator
      APLCHAR    aplCharOverbar,     // Char to use as overbar
      UBOOL      bFractDigs,         // TRUE iff nDigits is # fractional digits
@@ -2340,27 +2342,46 @@ LPAPLCHAR FormatAplVfpFC
                       0,                    // # significant digits (0 = all)
                       lpaplVfp,             // Ptr to VFP number
                       MPFR_RNDN);           // Rounding mode
-        // If we're not already displaying in E-format, ...
+        // Check for negative
+        bNeg = (lpRawFmt[0] EQ '-');
+
+        // If we're not already displaying in E-format, and
+        //   there's a maximum width, ...
         if (nDigits > 0)
         {
-            // If the number is too large or too small, ...
-            if (expptr > abs64 (nDigits)
-             || expptr < -5)
-                // Switch to E-format
-                nDigits = -nDigits;
+            // If the maximum width is valid, ...
+            if (nWid NE 0)
+            {
+                // If nDigits is # fractional digits, ...
+                if (bFractDigs)
+                {
+                    // If the number is too large or too small, ...
+                    //           -      int     .    frc
+                    if (nWid < (bNeg + expptr + 1 + nDigits)
+                     || expptr < -5)
+                        // Switch to E-format
+                        nDigits = -nDigits;
+                } else
+                    // Switch to E-format
+                    nDigits = -nDigits;
+            } else
+            {
+                // If the number is too large or too small, ...
+                if (expptr > nDigits
+                 || expptr < -5)
+                    // Switch to E-format
+                    nDigits = -nDigits;
+            } // End IF/ELSE
         } // End IF
 
         // Get the char length
         iDiff = lstrlen (lpRawFmt);
 
-        // Check for negative
-        bNeg = (lpRawFmt[0] EQ '-');
-
         // Get the # digits in the precision
         iPrcDigs = (int) iDiff - bNeg;
 
         // nDigits < 0 ==> !bFractDigs
-        // nDigits >= 0 &&  bFractDigs ==> 'Fxx.yy' []FMT ...
+        // nDigits >= 0 &&  bFractDigs ==> 'Fxx.yy' []FMT ... or nWid nDigits{format}...
         // nDigits >= 0 && !bFractDigs ==> 'Ixx'    []FMT ... or FormatAplVfp () or dyadic DownTackJot
 
         // If abs (number) >= 1
@@ -3424,6 +3445,7 @@ LPAPLCHAR FormatAplHC2VFC
                           nDigits,              // # significant digits (0 = all), or
                                                 // # fractional digits (if bFractDigs)
                                                 // If negative, use E-format
+                          0,                    // Maximum width including sign & decpt (0 = none)
                           aplCharDecimal,       // Char to use as decimal separator
                           aplCharOverbar,       // Char to use as overbar
                           bFractDigs,           // TRUE iff nDigits is # fractional digits
@@ -3443,6 +3465,7 @@ LPAPLCHAR FormatAplHC2VFC
                               nDigits,              // # significant digits (0 = all), or
                                                     // # fractional digits (if bFractDigs)
                                                     // If negative, use E-format
+                              0,                    // Maximum width including sign & decpt (0 = none)
                               aplCharDecimal,       // Char to use as decimal separator
                               aplCharOverbar,       // Char to use as overbar
                               bFractDigs,           // TRUE iff nDigits is # fractional digits
@@ -3478,6 +3501,7 @@ LPAPLCHAR FormatAplHC2VFC
                           nDigits,              // # significant digits (0 = all), or
                                                 // # fractional digits (if bFractDigs)
                                                 // If negative, use E-format
+                          0,                    // Maximum width including sign & decpt (0 = none)
                           aplCharDecimal,       // Char to use as decimal separator
                           aplCharOverbar,       // Char to use as overbar
                           bFractDigs,           // TRUE iff nDigits is # fractional digits
@@ -3578,6 +3602,7 @@ LPAPLCHAR FormatAplHCxVFC
                           nDigits,              // # significant digits (0 = all), or
                                                 // # fractional digits (if bFractDigs)
                                                 // If negative, use E-format
+                          0,                    // Maximum width including sign & decpt (0 = none)
                           aplCharDecimal,       // Char to use as decimal separator
                           aplCharOverbar,       // Char to use as overbar
                           bFractDigs,           // TRUE iff nDigits is # fractional digits
@@ -3597,6 +3622,7 @@ LPAPLCHAR FormatAplHCxVFC
                               nDigits,              // # significant digits (0 = all), or
                                                     // # fractional digits (if bFractDigs)
                                                     // If negative, use E-format
+                              0,                    // Maximum width including sign & decpt (0 = none)
                               aplCharDecimal,       // Char to use as decimal separator
                               aplCharOverbar,       // Char to use as overbar
                               bFractDigs,           // TRUE iff nDigits is # fractional digits
@@ -3637,6 +3663,7 @@ LPAPLCHAR FormatAplHCxVFC
                           nDigits,              // # significant digits (0 = all), or
                                                 // # fractional digits (if bFractDigs)
                                                 // If negative, use E-format
+                          0,                    // Maximum width including sign & decpt (0 = none)
                           aplCharDecimal,       // Char to use as decimal separator
                           aplCharOverbar,       // Char to use as overbar
                           bFractDigs,           // TRUE iff nDigits is # fractional digits

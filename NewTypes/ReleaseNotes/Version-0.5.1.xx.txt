@@ -1,6 +1,23 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1670 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Deciding When To Switch To E-format In VFP Display
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  Pass additional parameter to <FormatAplVfpFC> to help choose whether or not to use E-format in certain cases.
+  In <FormatAplVfpFC>, fix bug in calculation of when to switch to E-format.
+
+PF_DTACKJOT.C:
+QF_FMT.C:
+SC_SAVE.C:
+  Pass additional parameter to <FormatAplVfpFC> to help choose whether or not to use E-format in certain cases.
+
+
 Build #1669 -- Version 0.5.1.xx
 --------------------------------
 

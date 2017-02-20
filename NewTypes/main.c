@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3011,6 +3011,20 @@ LRESULT APIENTRY MFWndProc
             DeleteImageBitmaps ();
 
             break;                  // Continue with default handler
+
+        case WM_SYSCOMMAND:
+            // There is an anamolous behavior if the user taps
+            //   the left or right Alt key twice in succession;
+            //   this causes the system to lock up -- not good!
+
+            // The incoming values which indicate this situation are
+            //   (wParam & 0xFFF0) EQ SC_KEYMENU
+            // && lParam           EQ 0
+            if ((wParam & 0xFFF0) EQ SC_KEYMENU
+             && lParam EQ 0)
+                return FALSE;       // We handled the msg
+            else
+                break;              // Continue with default handler
 
         default:
             break;                  // Continue with default handler

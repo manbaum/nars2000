@@ -1,0 +1,9 @@
+Build #1666 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Tapping Either Alt Key Twice
+
+Directory branches/bsmith/NewTypes:
+
+MAIN.C:
+  In <MFWndProc>, handle <WM_SYSCOMMAND> to catch the case where the user taps either Alt key twice.

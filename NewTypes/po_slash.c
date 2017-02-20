@@ -1115,8 +1115,22 @@ RESTART_EXCEPTION:
                     //   atTmpRes is already in the new storage type, ...
                     if (aplTypeRes NE aTypePromote[aplTypeRes][aplTypeNew])
                     {
-                        // Tell the header about it
-                        lpMemHdrRes->ArrType = aplTypeRes = aplTypeNew;
+                        // It's now a new storage type
+                        aplTypeRes = aplTypeNew;
+
+                        if (hGlbRes NE NULL)
+                        {
+                            if (lpMemHdrRes NE NULL)
+                            {
+                                // We no longer need this ptr
+                                MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+                            } // End IF
+
+                            // We no longer need this storage
+                            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+                        } // End IF
+
+                        goto RESTART_ALLOC;
                     } // End IF
 
                     // Copy the result type as the temporary right arg type

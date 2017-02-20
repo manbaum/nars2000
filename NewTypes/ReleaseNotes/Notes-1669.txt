@@ -1,0 +1,9 @@
+Build #1669 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Reducing A Matrix Which Blows Up From INT To FLT
+
+Directory branches/bsmith/NewTypes:
+
+PO_SLASH.C:
+  Fix bug when reducing a matrix which blows up from INT to FLT.

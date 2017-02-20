@@ -1934,7 +1934,7 @@ uint32_t hashlittleConv
 ////else
 ////    *lpwTmp++ = *lpwName++;
     // Copy the name to a local var
-    if (FAILED (StringCchCopyW (wszTemp, countof (wszTemp), lpwName)))
+    if (FAILED (StringCchCopyNW (wszTemp, countof (wszTemp), lpwName, length)))
         DbgStop ();
 
     // Hash the converted name

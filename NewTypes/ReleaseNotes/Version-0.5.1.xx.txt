@@ -1,6 +1,18 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1668 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Grading A NaN
+
+Directory branches/bsmith/NewTypes:
+
+PF_DELTASTILE.C:
+  In <PrimFnMonGradeCommon_EM_YY>, enclose the call to the grade routine in a  __try/__except exception handler to catch DOMAIN ERRORs.
+  In <PrimFnGradeCompare> when grading FLTs, check for NaNs and signal a DOMAIN ERROR if found.
+
+
 Build #1667 -- Version 0.5.1.xx
 --------------------------------
 

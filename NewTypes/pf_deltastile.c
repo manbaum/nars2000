@@ -460,18 +460,32 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
             goto ERROR_EXIT;
     } else
     {
+        EXCEPTION_CODES exCode = EXCEPTION_SUCCESS;
+
         // Initialize the result with {iota}aplNELMRes (origin-0)
         for (uRes = 0; uRes < aplNELMRes; uRes++)
             ((LPAPLINT) lpMemRes)[uRes] = uRes;
 
-        // Grade the array
-        if (!GRADE_ROUTINE (lpMemRes,               // Ptr to result global memory
-                            lpMemRht,               // Ptr to right arg global memory
-                            aplNELMRes,             // Result NELM
-                           &PrimFnGradeCompare,     // Ptr to comparison routine
-                            gradeData.lpbCtrlBreak, // Ptr to Ctrl-Break flag
-                           &gradeData))             // Ptr to extra grade data
-            goto ERROR_EXIT;
+        __try
+        {
+            // Grade the array
+            if (!GRADE_ROUTINE (lpMemRes,               // Ptr to result global memory
+                                lpMemRht,               // Ptr to right arg global memory
+                                aplNELMRes,             // Result NELM
+                               &PrimFnGradeCompare,     // Ptr to comparison routine
+                                gradeData.lpbCtrlBreak, // Ptr to Ctrl-Break flag
+                               &gradeData))             // Ptr to extra grade data
+                goto ERROR_EXIT;
+        } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+        {
+            exCode = MyGetExceptionCode ();  // The exception code
+
+            dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+            Assert (exCode EQ EXCEPTION_DOMAIN_ERROR);
+
+            goto DOMAIN_EXIT;
+        } // End __try/__except
     } // End IF/ELSE
 
     // If it's origin-1, ...
@@ -1317,6 +1331,10 @@ APLINT PrimFnGradeCompare
         case ARRAY_FLOAT:
             // Compare the hyper-planes of the right arg
             for (uRest = 0; uRest < aplNELMRest; uRest++)
+            // If it's a NaN, ... (note we test only one of the two values as we're going to see them all eventually)
+            if (_isnan (((LPAPLFLOAT) lpMemRht)[aplUIntLft * aplNELMRest + uRest]))
+                RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+            else
             // Split cases based upon the signum of the difference
             switch (signumflt (((LPAPLFLOAT) lpMemRht)[aplUIntLft * aplNELMRest + uRest]
                              - ((LPAPLFLOAT) lpMemRht)[aplUIntRht * aplNELMRest + uRest]))
@@ -1332,7 +1350,7 @@ APLINT PrimFnGradeCompare
 
                 defstop
                     break;
-            } // End FOR/SWITCH
+            } // End FOR/IF/ELSE/SWITCH
 
             // The hyper-planes are equal -- compare indices so the sort is stable
             return signumint (aplUIntLft - aplUIntRht);

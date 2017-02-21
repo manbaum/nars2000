@@ -3503,8 +3503,8 @@ UBOOL PrimFnDydNestSimp_EM
                 // Check for NaNs
 
                 // Are the args a NaN?
-                bNaNLft = IsArgNaN (aplTypeHetLft, &((LPSYMENTRY) hGlbSub)->stData.stLongest, 0);
-                bNaNRht = IsArgNaN (aplTypeRht   ,  lpMemRht                                , uRht);
+                bNaNLft = IsArgNaN (aplTypeCom, &atLft, 0);
+                bNaNRht = IsArgNaN (aplTypeCom, &atRht, 0);
 
                 // If either arg is a NaN, ...
                 if (bNaNLft || bNaNRht)
@@ -4073,9 +4073,9 @@ RESTART_EXCEPTION:
         } else
         // The left arg is hetero, simple numeric, or simple global numeric
         {
-            APLLONGEST aplLongestLft;
             LPSYMENTRY lpSymGlbSub;
             ALLTYPES   atTmp = {0};
+            LPALLTYPES lpatTmp = &atTmp;
 
             Assert (IsSimpleHet (aplTypeLft)
                  || IsNumeric   (aplTypeLft));
@@ -4084,10 +4084,10 @@ RESTART_EXCEPTION:
             if (IsSimpleHet (aplTypeLft))
             {
                 // Get a ptr to the left arg element
-                lpSymGlbSub = ((LPAPLNESTED) lpMemLft)[uRes];
+                lpSymGlbSub      = ((LPAPLNESTED) lpMemLft)[uRes];
 
-                aplLongestLft = lpSymGlbSub->stData.stLongest;
-                aplTypeHetLft = TranslateImmTypeToArrayType (lpSymGlbSub->stFlags.ImmType);
+                atTmp.aplLongest = lpSymGlbSub->stData.stLongest;
+                aplTypeHetLft    = TranslateImmTypeToArrayType (lpSymGlbSub->stFlags.ImmType);
             } else
             // The left arg is a simple numeric array or simple global numeric array
             {
@@ -4096,7 +4096,6 @@ RESTART_EXCEPTION:
 
                 // Get a ptr to the left arg element
                 lpSymGlbSub = (LPVOID) &atTmp;
-                aplLongestLft = atTmp.aplLongest;
 
                 // Save as left arg element type
                 aplTypeHetLft = aplTypeLft;
@@ -4105,8 +4104,8 @@ RESTART_EXCEPTION:
             // Check for NaNs
 
             // Are the args a NaN?
-            bNaNLft = IsArgNaN (aplTypeHetLft, &aplLongestLft, 0);
-            bNaNRht = IsArgNaN (aplTypeRht   ,  lpatRht      , 0);
+            bNaNLft = IsArgNaN (aplTypeHetLft, lpatTmp, 0);
+            bNaNRht = IsArgNaN (aplTypeRht   , lpatRht, 0);
 
             // If either arg is a NaN, ...
             if (bNaNLft || bNaNRht)
@@ -4144,10 +4143,10 @@ RESTART_EXCEPTION:
                         default:
                             if (bNaNLft)
                                 // Copy the left arg to the result
-                                (*aTypeActPromote[aplTypeHetLft][aplTypeRes]) (&aplLongestLft, 0, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
+                                (*aTypeActPromote[aplTypeHetLft][aplTypeRes]) (lpatTmp, 0, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
                             else
                                 // Copy the right arg to the result
-                                (*aTypeActPromote[aplTypeRht   ][aplTypeRes]) (lpatRht       , 0, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
+                                (*aTypeActPromote[aplTypeRht   ][aplTypeRes]) (lpatRht, 0, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
                             break;
                     } // End SWITCH
                 } else
@@ -4166,10 +4165,10 @@ RESTART_EXCEPTION:
                 // If the left arg is hetero, ...
                 if (IsSimpleHet (aplTypeLft))
                     // Promote the left arg to the common type
-                    (*aTypeActPromote[aplTypeHetLft][aplTypeCom]) (&aplLongestLft, 0, &atLft);
+                    (*aTypeActPromote[aplTypeHetLft][aplTypeCom]) (lpatTmp    , 0, &atLft);
                 else
                     // Promote the left arg to the common type
-                    (*aTypeActPromote[aplTypeHetLft][aplTypeCom]) (lpSymGlbSub   , 0, &atLft);
+                    (*aTypeActPromote[aplTypeHetLft][aplTypeCom]) (lpSymGlbSub, 0, &atLft);
 
                 // Get the target function
                 lpPrimFn = TranslateTypesToDydPSFIndex (lpPrimSpec, aplTypeRes, aplTypeCom);
@@ -4781,8 +4780,8 @@ RESTART_EXCEPTION:
                     // Check for NaNs
 
                     // Are the args a NaN?
-                    bNaNLft = IsArgNaN (aplTypeLft   ,  lpatLft                                 , 0);
-                    bNaNRht = IsArgNaN (aplTypeHetRht, &((LPSYMENTRY) hGlbSub)->stData.stLongest, 0);
+                    bNaNLft = IsArgNaN (aplTypeLft   ,  lpatLft         , 0);
+                    bNaNRht = IsArgNaN (aplTypeHetRht, &atRht.aplLongest, 0);
 
                     // If either arg is a NaN, ...
                     if (bNaNLft || bNaNRht)
@@ -4887,18 +4886,17 @@ RESTART_EXCEPTION:
         } else
         // The right arg is hetero or simple global numeric
         {
-            APLLONGEST aplLongestRht;
             LPSYMENTRY lpSymGlbSub;
             ALLTYPES   atTmp = {0};
+            LPALLTYPES lpatTmp = &atTmp;
 
             // If the right arg is hetero, ...
             if (IsSimpleHet (aplTypeRht))
             {
                 // Get a ptr to the right arg element
-                lpSymGlbSub = ((LPAPLNESTED) lpMemRht)[uRes];
-
-                aplLongestRht = lpSymGlbSub->stData.stLongest;
-                aplTypeHetRht = TranslateImmTypeToArrayType (lpSymGlbSub->stFlags.ImmType);
+                lpSymGlbSub      = ((LPAPLNESTED) lpMemRht)[uRes];
+                atTmp.aplLongest = lpSymGlbSub->stData.stLongest;
+                aplTypeHetRht    = TranslateImmTypeToArrayType (lpSymGlbSub->stFlags.ImmType);
             } else
             // The right arg is a simple global numeric array
             {
@@ -4907,7 +4905,6 @@ RESTART_EXCEPTION:
 
                 // Get a ptr to the right arg element
                 lpSymGlbSub   = (LPVOID) &atTmp;
-                aplLongestRht = atTmp.aplLongest;
 
                 // Save as right arg element type
                 aplTypeHetRht = aplTypeRht;
@@ -4916,8 +4913,8 @@ RESTART_EXCEPTION:
             // Check for NaNs
 
             // Are the args a NaN?
-            bNaNLft = IsArgNaN (aplTypeLft   ,  lpatLft      , 0);
-            bNaNRht = IsArgNaN (aplTypeHetRht, &aplLongestRht, 0);
+            bNaNLft = IsArgNaN (aplTypeLft   , lpatLft, 0);
+            bNaNRht = IsArgNaN (aplTypeHetRht, lpatTmp, 0);
 
             // If either arg is a NaN, ...
             if (bNaNLft || bNaNRht)
@@ -4958,7 +4955,7 @@ RESTART_EXCEPTION:
                                 (*aTypeActPromote[aplTypeLft   ][aplTypeRes]) (lpatLft       , 0, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
                             else
                                 // Copy the right arg to the result
-                                (*aTypeActPromote[aplTypeHetRht][aplTypeRes]) (&aplLongestRht, 0, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
+                                (*aTypeActPromote[aplTypeHetRht][aplTypeRes]) (lpatTmp, 0, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
                             break;
                     } // End SWITCH
                 } else
@@ -4977,10 +4974,10 @@ RESTART_EXCEPTION:
                 // If the right arg is hetero, ...
                 if (IsSimpleHet (aplTypeRht))
                     // Promote the right arg to the common type
-                    (*aTypeActPromote[aplTypeHetRht][aplTypeCom]) (&aplLongestRht, 0, &atRht);
+                    (*aTypeActPromote[aplTypeHetRht][aplTypeCom]) (lpatTmp    , 0, &atRht);
                 else
                     // Promote the right arg to the common type
-                    (*aTypeActPromote[aplTypeHetRht][aplTypeCom]) (lpSymGlbSub   , 0, &atRht);
+                    (*aTypeActPromote[aplTypeHetRht][aplTypeCom]) (lpSymGlbSub, 0, &atRht);
 
                 // Get the target function
                 lpPrimFn = TranslateTypesToDydPSFIndex (lpPrimSpec, aplTypeRes, aplTypeCom);

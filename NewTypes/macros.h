@@ -61,6 +61,7 @@
 
 #define CheckSymEntries()       _CheckSymEntries (FNLN)
 
+#define DebugFile(a,b)          _DebugFile (a, b, FNLN)
 
 #ifdef DEBUG
 //#define DEBUG_ALLOCFREE

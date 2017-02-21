@@ -1,0 +1,10 @@
+Build #1672 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Testing For NaNs In Simple vs. Global Numeric or Vice Versa
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC.C:
+  Fix bug in <PrimFnDydNestSiSc_EM> and <PrimFnDydSiScNest_EM> when testing for a NaN
+    in a simple vs. global numeric array, or vice versa.

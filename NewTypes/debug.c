@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include <Shlwapi.h>
 #include <stdio.h>
 #include "headers.h"
+#include "bom.h"
 
 
 CDB_THREAD cdbThread;               // Temporary global
@@ -1252,6 +1253,76 @@ LPCHAR FileNameOnly
         ;
     return p;
 } // End FileNameOnly
+
+
+//***************************************************************************
+//  $DebugFile
+//
+//  Write out to a debug file
+//***************************************************************************
+
+void _DebugFile
+    (LPWCHAR lpwStart,      // Ptr to leading text
+     LPVOID  lpPrimFn,      // Ptr to execution routine
+     LPCHAR  lpFileName,    // Ptr to filename (may be NULL)
+     UINT    uLine)         // Line #
+
+{
+    static WCHAR  wszOutFile[] = L"R:\\NARS2000\\NewTypes\\outfile.txt";
+    static UBOOL  bInit        = FALSE;
+           HANDLE hOutFile;
+           WCHAR  wszTemp[1024];    // Temp buffer
+
+    // If the file hasn't been initialized as yet, ...
+    if (!bInit)
+    {
+        // Create the output file
+        hOutFile =
+          CreateFileW (wszOutFile,                  // File name
+                       GENERIC_WRITE,               // Open for write
+                       0,                           // Do not share
+                       NULL,                        // Default security
+                       CREATE_ALWAYS,               // Overwrite existing
+                       FILE_ATTRIBUTE_NORMAL,       // Normal file
+                       NULL);                       // No template
+        // Write out the BOM for UTF-16
+        WriteFile (hOutFile, UTF16LE_BOM, strcountof (UTF16LE_BOM), NULL, NULL);
+
+        // Close it
+        CloseHandle (hOutFile); hOutFile = NULL;
+
+        // Mark as initialized
+        bInit = TRUE;
+    } // End IF
+
+    // Format the message
+    MySprintfW (wszTemp,
+                sizeof (wszTemp),
+               L"%s: exec: %p, %S(#%u)\r\n",
+                lpwStart,
+                lpPrimFn,
+                lpFileName,
+                uLine);
+    // Open the output file
+    hOutFile =
+      CreateFileW (wszOutFile,                  // File name
+                   GENERIC_WRITE,               // Open for write
+                   0,                           // Do not share
+                   NULL,                        // Default security
+                   OPEN_EXISTING,               // Create/open flags
+                   FILE_ATTRIBUTE_NORMAL,       // Normal file
+                   NULL);                       // No template
+    // Set the file ptr to the end so we append the text
+    SetFilePointer (hOutFile,
+                    0,
+                    NULL,
+                    FILE_END);
+    // Write out the text
+    WriteFile (hOutFile, wszTemp, lstrlenW (wszTemp) * sizeof (WCHAR), NULL, NULL);
+
+    // Close it
+    CloseHandle (hOutFile); hOutFile = NULL;
+} // End _DebugFile
 
 
 //***************************************************************************

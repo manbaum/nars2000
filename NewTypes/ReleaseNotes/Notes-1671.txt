@@ -1,0 +1,9 @@
+Build #1671 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In F!F
+
+Directory branches/bsmith/NewTypes:
+
+PF_QDOT.C:
+  Fix bug in F!F with missing break stmts!

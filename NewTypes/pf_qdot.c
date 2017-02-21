@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1387,11 +1387,17 @@ void PrimFnDydQuoteDotFisFvF
 
                 lpMemRes[uRes] = ZF;
 
+                break;
+
             case 4*0 + 2*0 + 1*1:   // 0
                 lpMemRes[uRes] = 0;
 
+                break;
+
             case 4*0 + 2*1 + 1*0:   // DOMAIN ERROR
                 RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+                break;
 
             case 4*0 + 2*1 + 1*1:   // ((-1)*LF)*LF!(LF-(RF+1))
                 // Recurse with L replaced by LF
@@ -1404,11 +1410,17 @@ void PrimFnDydQuoteDotFisFvF
                 // Handle sign
                 lpMemRes[uRes] = (fmod (LF, 2) ? -1: 1) * lpMemRes[uRes];
 
+                break;
+
             case 4*1 + 2*0 + 1*0:   // 0
                 lpMemRes[uRes] = 0;
 
+                break;
+
             case 4*1 + 2*0 + 1*1:   // (Can't happen)
                 lpMemRes[uRes] = -1;
+
+                break;
 
             case 4*1 + 2*1 + 1*0:   // ((-1)*RI-LI)*(-RI+1)!|LI+1
                 // Recurse with L replaced by -(RF+1)
@@ -1422,11 +1434,17 @@ void PrimFnDydQuoteDotFisFvF
                 // Handle sign
                 lpMemRes[uRes] = (fmod (RF-LF, 2) ? -1: 1) * lpMemRes[uRes];
 
+                break;
+
             case 4*1 + 2*1 + 1*1:   // 0
                 lpMemRes[uRes] = 0;
 
+                break;
+
             defstop
                 lpMemRes[uRes] = -1;
+
+                break;
         } // End SWITCH
     } else
     {

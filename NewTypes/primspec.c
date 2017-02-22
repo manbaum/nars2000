@@ -2000,7 +2000,8 @@ RESTART_EXCEPTION:
                             APLSTYPE   aplTypeRes2,
                                        aplTypeRht2;
                             LPSYMENTRY lpSymSrc,
-                                       lpSymDst;
+                                       lpSymDst = NULL;
+                            APLLONGEST aplLongestRes;
 
                             // Get the type of the SYMENTRY
                             aplTypeRht2 = TranslateImmTypeToArrayType (((LPSYMENTRY) ClrPtrTypeInd (lpMemRht))->stFlags.ImmType);
@@ -2013,89 +2014,104 @@ RESTART_EXCEPTION:
                             if (IsErrorType (aplTypeRes2))
                                 goto DOMAIN_EXIT;
 
-                            // Copy the SYMENTRY as the same type as the result
+                            // Copy the SYMENTRY from the right arg
                             lpSymSrc = ClrPtrTypeInd (lpMemRht);
-                            lpSymDst = CopyImmSymEntry_EM (lpSymSrc,
-                                                           TranslateArrayTypeToImmType (aplTypeRes2),
-                                                           lptkFunc);
-                            if (lpSymDst NE NULL)
+
+                            // Split cases based upon the result storage type
+                            switch (aplTypeRes2)
                             {
-                                // Split cases based upon the result storage type
-                                switch (aplTypeRes2)
-                                {
-                                    case ARRAY_BOOL:            // Res = BOOL
-                                        // Split cases based upon the right arg's storage type
-                                        switch (lpSymSrc->stFlags.ImmType)
+                                case ARRAY_BOOL:            // Res = BOOL
+                                    // Split cases based upon the right arg's storage type
+                                    switch (lpSymSrc->stFlags.ImmType)
+                                    {
+                                        case IMMTYPE_BOOL:  // Res = BOOL, Rht = BOOL
+                                            // Calculate the result
+                                            aplLongestRes = (*lpPrimSpec->BisB) (lpSymSrc->stData.stBoolean & BIT0,
+                                                                                 lpPrimSpec);
+                                            // Make a SYMENTRY out of it
+                                            lpSymDst =
+                                              MakeSymEntry_EM (IMMTYPE_BOOL,
+                                                              &aplLongestRes,
+                                                               lptkFunc);
+                                            break;
+
+                                        case IMMTYPE_INT:   // Res = BOOL, Rht = INT
+                                            // Calculate the result
+                                            aplLongestRes = (*lpPrimSpec->BisI) (lpSymSrc->stData.stInteger,
+                                                                                 lpPrimSpec);
+                                            // Make a SYMENTRY out of it
+                                            lpSymDst =
+                                              MakeSymEntry_EM (IMMTYPE_BOOL,
+                                                              &aplLongestRes,
+                                                               lptkFunc);
+                                            break;
+
+                                        case IMMTYPE_FLOAT: // Res = BOOL, Rht = FLOAT
+                                            // Calculate the result
+                                            aplLongestRes = (*lpPrimSpec->BisF) (lpSymSrc->stData.stFloat,
+                                                                                 lpPrimSpec);
+                                            // Make a SYMENTRY out of it
+                                            lpSymDst =
+                                              MakeSymEntry_EM (IMMTYPE_BOOL,
+                                                              &aplLongestRes,
+                                                               lptkFunc);
+                                            break;
+
+                                        defstop
+                                            break;
+                                    } // End SWITCH
+
+                                    break;
+
+                                case ARRAY_INT:             // Res = INT    {floor} 1.5 (2 3)
+                                case ARRAY_FLOAT:           // Res = FLT
+                                    // Check for NaNs
+
+                                    // Is the arg a NaN?
+                                    if (IsArgNaN (aplTypeRht2, &lpSymSrc->stData.stLongest, 0))
+                                    {
+                                        if (!gbAllowNaN)        // #2: {floor} {NaN} (2 3)
+                                            goto DOMAIN_EXIT;
+
+                                        // Save in the result
+                                        lpSymDst = lpMemPTD->lphtsGLB->steNaN;
+                                    } else
+                                    {
+                                        // Get the target function
+                                        lpPrimFn = TranslateTypesToMonPSFIndex (lpPrimSpec, aplTypeRes2, aplTypeRht2);
+
+                                        // Copy the right arg to common var
+                                        (*aTypeActPromote[aplTypeRht2][aplTypeRht2]) (&lpSymSrc->stData.stLongest, 0, &atRht);
+
+                                        __try
                                         {
-                                            case IMMTYPE_BOOL:  // Res = BOOL, Rht = BOOL
-                                                lpSymDst->stData.stBoolean =
-                                                  (*lpPrimSpec->BisB) (lpSymSrc->stData.stBoolean & BIT0,
-                                                                       lpPrimSpec);
-                                                break;
-
-                                            case IMMTYPE_INT:   // Res = BOOL, Rht = INT
-                                                lpSymDst->stData.stBoolean =
-                                                  (*lpPrimSpec->BisI) (lpSymSrc->stData.stInteger,
-                                                                       lpPrimSpec);
-                                                break;
-
-                                            case IMMTYPE_FLOAT: // Res = BOOL, Rht = FLOAT
-                                                lpSymDst->stData.stBoolean =
-                                                  (*lpPrimSpec->BisF) (lpSymSrc->stData.stFloat,
-                                                                       lpPrimSpec);
-                                                break;
-
-                                            defstop
-                                                break;
-                                        } // End SWITCH
-
-                                        break;
-
-                                    case ARRAY_INT:             // Res = INT    {floor} 1.5 (2 3)
-                                    case ARRAY_FLOAT:           // Res = FLT
-                                        // Check for NaNs
-
-                                        // Is the arg a NaN?
-                                        if (IsArgNaN (aplTypeRht2, &lpSymDst->stData.stLongest, 0))
-                                        {
-                                            if (!gbAllowNaN)        // #2: {floor} {NaN} (2 3)
-                                                goto DOMAIN_EXIT;
-
-                                            // Save in the result
-////////////////////////////////////////////lpSymDst->stData.stLongest = lpSymDst->stData.stLongest;    // Already in lpSymDst
-                                            lpSymDst->stFlags.ImmType = IMMTYPE_FLOAT;
-                                        } else
-                                        {
-                                            // Get the target function
-                                            lpPrimFn = TranslateTypesToMonPSFIndex (lpPrimSpec, aplTypeRes2, aplTypeRht2);
-
-                                            // Copy the right arg to common var
-                                            (*aTypeActPromote[aplTypeRht2][aplTypeRht2]) (&lpSymDst->stData.stLongest, 0, &atRht);
-
                                             __try
                                             {
-                                                __try
-                                                {
-                                                    // Call the function
-                                                    (*lpPrimFn) (&lpSymDst->stData.stLongest, 0, &atRht, lpPrimSpec);
-                                                } __finally
-                                                {
-                                                    // Free the old atRht (if any)
-                                                    (*aTypeFree[aplTypeRht2]) (&atRht, 0);
-                                                } // End __try/__finally
-                                            } __except (EXCEPTION_CONTINUE_SEARCH) {}
-                                        } // End IF/ELSE
+                                                // Calculate the result
+                                                (*lpPrimFn) (&aplLongestRes, 0, &atRht, lpPrimSpec);
 
-                                        break;
+                                                // Make a SYMENTRY out of it
+                                                lpSymDst =
+                                                  MakeSymEntry_EM (TranslateArrayTypeToImmType (aplTypeRes2),
+                                                                  &aplLongestRes,
+                                                                   lptkFunc);
+                                            } __finally
+                                            {
+                                                // Free the old atRht (if any)
+                                                (*aTypeFree[aplTypeRht2]) (&atRht, 0);
+                                            } // End __try/__finally
+                                        } __except (EXCEPTION_CONTINUE_SEARCH) {}
+                                    } // End IF/ELSE
 
-                                    defstop
-                                        break;
-                                } // End SWITCH
+                                    break;
 
-                                // Save in the result
-                                *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeSym (lpSymDst);
-                            } else
-                                bRet = FALSE;
+                                defstop
+                                    break;
+                            } // End SWITCH
+
+                            // Save in the result
+                            *((LPAPLNESTED) lpMemRes)++ = MakePtrTypeSym (lpSymDst);
+
                             break;
                         } // End PTRTYPE_STCONST
 

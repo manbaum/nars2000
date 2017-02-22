@@ -23,8 +23,6 @@
 #endif
 
 
-#define strlenW         (UINT_PTR) lstrlenW
-
 #define WINAPI          __stdcall
 typedef int             BOOL,       *PBOOL,    *LPBOOL;
 typedef int             INT,        *PINT,     *LPINT;

@@ -449,14 +449,14 @@ APLU3264 CALLBACK AboutDlgProc
                         dwSizeNxt = GetWindowTextW (GetDlgItem (hDlg, IDC_VERSION), lpMemDst, 1 + dwSizeDst);
 
                         // Append two LFs
-                        lstrcpyW (&lpMemDst[dwSizeNxt], WS_LF); dwSizeNxt++;
-                        lstrcpyW (&lpMemDst[dwSizeNxt], WS_LF); dwSizeNxt++;
+                        strcpyW (&lpMemDst[dwSizeNxt], WS_LF); dwSizeNxt++;
+                        strcpyW (&lpMemDst[dwSizeNxt], WS_LF); dwSizeNxt++;
 
                         // Copy the version2 text to global memory
                         dwSizeNxt += GetWindowTextW (GetDlgItem (hDlg, IDC_VERSION2), &lpMemDst[dwSizeNxt], 1 + dwSizeDst - dwSizeNxt);
 
                         // Append one LF
-                        lstrcpyW (&lpMemDst[dwSizeNxt], WS_LF); dwSizeNxt++;
+                        strcpyW (&lpMemDst[dwSizeNxt], WS_LF); dwSizeNxt++;
 
                         // Copy the (C) text to global memory
                         dwSizeNxt += GetWindowTextW (GetDlgItem (hDlg, IDC_ABOUT_NOTE), &lpMemDst[dwSizeNxt], 1 + dwSizeDst - dwSizeNxt);

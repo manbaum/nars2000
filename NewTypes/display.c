@@ -1317,87 +1317,87 @@ LPAPLCHAR FormatImmedPtr
 
         case IMMTYPE_VFP:
             lpaplChar =
-              FormatAplVfp (lpaplChar,      // Ptr to output save area
-                 (LPAPLVFP) lpaplLongest,   // The value to format
-                            GetQuadPPV ()); // Use this many significant digits for VFP
+              FormatAplVfp (lpaplChar,          // Ptr to output save area
+                 (LPAPLVFP) lpaplLongest,       // The value to format
+                            GetQuadPPV ());     // Use this many significant digits for VFP
             break;
 
         case IMMTYPE_HC2I:
             lpaplChar =
-              FormatAplHC2I (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC2I) lpaplLongest); // Ptr to the value to format
+              FormatAplHC2I (lpaplChar,         // Ptr to output save area
+                 (LPAPLHC2I) lpaplLongest);     // Ptr to the value to format
             break;
 
         case IMMTYPE_HC4I:
             lpaplChar =
-              FormatAplHC4I (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC4I) lpaplLongest); // Ptr to the value to format
+              FormatAplHC4I (lpaplChar,         // Ptr to output save area
+                 (LPAPLHC4I) lpaplLongest);     // Ptr to the value to format
             break;
 
         case IMMTYPE_HC8I:
             lpaplChar =
-              FormatAplHC8I (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC8I) lpaplLongest); // Ptr to the value to format
+              FormatAplHC8I (lpaplChar,         // Ptr to output save area
+                 (LPAPLHC8I) lpaplLongest);     // Ptr to the value to format
             break;
 
         case IMMTYPE_HC2F:
             lpaplChar =
-              FormatAplHC2F (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC2F) lpaplLongest,  // Ptr to the value to format
-                             0);            // Use default significant digits
+              FormatAplHC2F (lpaplChar,         // Ptr to output save area
+                 (LPAPLHC2F) lpaplLongest,      // Ptr to the value to format
+                             0);                // Use default significant digits
             break;
 
         case IMMTYPE_HC4F:
             lpaplChar =
-              FormatAplHC4F (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC4F) lpaplLongest,  // Ptr to the value to format
-                             0);            // Use default significant digits
+              FormatAplHC4F (lpaplChar,         // Ptr to output save area
+                 (LPAPLHC4F) lpaplLongest,      // Ptr to the value to format
+                             0);                // Use default significant digits
             break;
 
         case IMMTYPE_HC8F:
             lpaplChar =
-              FormatAplHC8F (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC8F) lpaplLongest,  // Ptr to the value to format
-                             0);            // Use default significant digits
+              FormatAplHC8F (lpaplChar,         // Ptr to output save area
+                 (LPAPLHC8F) lpaplLongest,      // Ptr to the value to format
+                             0);                // Use default significant digits
             break;
 
         case IMMTYPE_HC2R:
             lpaplChar =
-              FormatAplHC2R (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC2R) lpaplLongest); // Ptr to the value to format
+              FormatAplHC2R (lpaplChar,         // Ptr to output save area
+                 (LPAPLHC2R) lpaplLongest);     // Ptr to the value to format
             break;
 
         case IMMTYPE_HC4R:
             lpaplChar =
-              FormatAplHC4R (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC4R) lpaplLongest); // Ptr to the value to format
+              FormatAplHC4R (lpaplChar,         // Ptr to output save area
+                 (LPAPLHC4R) lpaplLongest);     // Ptr to the value to format
             break;
 
         case IMMTYPE_HC8R:
             lpaplChar =
-              FormatAplHC8R (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC8R) lpaplLongest); // Ptr to the value to format
+              FormatAplHC8R (lpaplChar,         // Ptr to output save area
+                 (LPAPLHC8R) lpaplLongest);     // Ptr to the value to format
             break;
 
         case IMMTYPE_HC2V:
             lpaplChar =
-              FormatAplHC2V (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC2V) lpaplLongest,  // Ptr to the value to format
-                             GetQuadPPV ());// Use this many significant digits for VFP
+              FormatAplHC2V (lpaplChar,         // Ptr to output save area
+                 (LPAPLHC2V) lpaplLongest,      // Ptr to the value to format
+                             GetQuadPPV ());    // Use this many significant digits for VFP
             break;
 
         case IMMTYPE_HC4V:
             lpaplChar =
-              FormatAplHC4V (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC4V) lpaplLongest,  // Ptr to the value to format
-                             GetQuadPPV ());// Use this many significant digits for VFP
+              FormatAplHC4V (lpaplChar,         // Ptr to output save area
+                 (LPAPLHC4V) lpaplLongest,      // Ptr to the value to format
+                             GetQuadPPV ());    // Use this many significant digits for VFP
             break;
 
         case IMMTYPE_HC8V:
             lpaplChar =
-              FormatAplHC8V (lpaplChar,     // Ptr to output save area
-                 (LPAPLHC8V) lpaplLongest,  // Ptr to the value to format
-                             GetQuadPPV ());// Use this many significant digits for VFP
+              FormatAplHC8V (lpaplChar,         // Ptr to output save area
+                 (LPAPLHC8V) lpaplLongest,      // Ptr to the value to format
+                             GetQuadPPV ());    // Use this many significant digits for VFP
             break;
 
         defstop
@@ -1682,7 +1682,7 @@ LPAPLCHAR FormatAplFltFC
         else
         {
             // String for NaN
-            lstrcpyW (lpaplChar, WS_UTF16_NAN);
+            strcpyW (lpaplChar, WS_UTF16_NAN);
 
             // Skip over it
             lpaplChar += strcountof (WS_UTF16_NAN);

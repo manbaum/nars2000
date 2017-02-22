@@ -612,6 +612,7 @@ default:        \
 #define tolowerW        towlower
 #define IsDigit         isdigit
 #define IsDigitW        iswdigit
+#define strlenW         wcslen
 
 
 //***************************************************************************

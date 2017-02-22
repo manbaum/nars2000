@@ -3751,12 +3751,12 @@ UBOOL ProfileWrite
     _wsplitpath (lpDict->lpwszDPFE, wszDrive, wszDir, wszFname, wszExt);
 
     // Form the destination path
-    lstrcpyW (wszPath, wszDrive);
-    lstrcatW (wszPath, wszDir  );
+    strcpyW (wszPath, wszDrive);
+    strcatW (wszPath, wszDir  );
 
     // Append a backslash if not already present
     if (wszPath[lstrlenW (wszPath) - 1] NE '\\')
-        lstrcatW (wszPath, L"\\"   );
+        strcatW (wszPath, L"\\"   );
 
     // Append the temp filename
     GetTempFileNameW (wszPath,                      // Temp path

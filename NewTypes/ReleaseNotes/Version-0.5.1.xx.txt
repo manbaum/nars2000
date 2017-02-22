@@ -1,6 +1,33 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1674 -- Version 0.5.1.xx
+--------------------------------
+
+* Avoid Bug In Windows API Functions lstrcpy, lstrcpyn, lstrcat
+
+Directory branches/bsmith/NewTypes:
+
+DEFINES.H:
+  Define library equivalent to <strlenW>.
+
+DISPLAY.C:
+  Improve comments.
+  Replace lstrcpy, lstrcpyn, and lstrcat with working versions.
+
+IMMEXEC.C:
+INIFILE.C:
+QF_NFNS.C:
+VER.C:
+  Replace lstrcpy, lstrcpyn, and lstrcat with working versions.
+
+
+Directory branches/bsmith/NewTypes/WineHQ:
+
+LOCAL.H:
+  Omit previous replacement for <strlenW>.
+
+
 Build #1673 -- Version 0.5.1.xx
 --------------------------------
 

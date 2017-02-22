@@ -1472,13 +1472,13 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
                     lpMemTmp = VarArrayDataFmBase (lpMemHdrTmp);
 
                     // Copy the Domain Name to the result
-                    lstrcpyW (lpMemTmp, lpDomainName);
+                    strcpyW (lpMemTmp, lpDomainName);
 
                     // Append a backslash
-                    lstrcatW (lpMemTmp, L"\\");
+                    strcatW (lpMemTmp, L"\\");
 
                     // Catenate the Acct Name to the result
-                    lstrcatW (lpMemTmp, lpAcctName);
+                    strcatW (lpMemTmp, lpAcctName);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbTmp); lpMemHdrTmp = NULL;

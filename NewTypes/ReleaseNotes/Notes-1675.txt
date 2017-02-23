@@ -1,0 +1,9 @@
+Build #1675 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In 3 []DR On Hypercomplex Numbers
+
+Directory branches/bsmith/NewTypes:
+
+QF_DR.C:
+  In <SysFnDR_GetPrec_EM_YY>, handle Hypercomplex numbers.

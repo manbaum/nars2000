@@ -461,12 +461,12 @@ LPPL_YYSTYPE SysFnDR_GetPrec_EM_YY
         case ARRAY_INT:
         case ARRAY_APA:
         case ARRAY_FLOAT:
-////////case ARRAY_HC2I:
-////////case ARRAY_HC4I:
-////////case ARRAY_HC8I:
-////////case ARRAY_HC2F:
-////////case ARRAY_HC4F:
-////////case ARRAY_HC8F:
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
             // Return the numeric precision
             aplIntegerRes = 64;
             immTypeRes    = IMMTYPE_INT;
@@ -474,9 +474,9 @@ LPPL_YYSTYPE SysFnDR_GetPrec_EM_YY
             break;
 
         case ARRAY_RAT:
-////////case ARRAY_HC2R:
-////////case ARRAY_HC4R:
-////////case ARRAY_HC8R:
+        case ARRAY_HC2R:
+        case ARRAY_HC4R:
+        case ARRAY_HC8R:
             // Return the numeric precision
             aplIntegerRes = POS_INFINITY;
             immTypeRes    = IMMTYPE_FLOAT;
@@ -484,12 +484,11 @@ LPPL_YYSTYPE SysFnDR_GetPrec_EM_YY
             break;
 
         case ARRAY_VFP:
-////////case ARRAY_HC2V:
-////////case ARRAY_HC4V:
-////////case ARRAY_HC8V:
-////////    // Get the HC Dimension (1, 2, 4, 8)
-////////    iHCDim = TranslateArrayTypeToHCDim (aplType);
-            iHCDim = 1;
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
+        case ARRAY_HC8V:
+            // Get the HC Dimension (1, 2, 4, 8)
+            iHCDim = TranslateArrayTypeToHCDim (aplTypeRht);
 
             // Skip over the header and dimensions to the data
             lpMemRht = VarArrayDataFmBase (lpMemHdrRht);

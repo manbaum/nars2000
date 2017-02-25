@@ -1,6 +1,28 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1676 -- Version 0.5.1.xx
+--------------------------------
+
+* Remove More References To Vector And Matrix Editors
+
+Directory branches/bsmith/NewTypes:
+
+DEFINES.H:
+MAIN.C:
+MAIN.RC:
+MAKEFILE.INC:
+RESOURCE.H:
+  Remove references to Vector and Matrix editors.
+
+
+Directory branches/bsmith/NewTypes/Images:
+
+ME.ICO:
+VE.ICO:
+  Delete these unused icons.
+
+
 Build #1675 -- Version 0.5.1.xx
 --------------------------------
 

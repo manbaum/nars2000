@@ -74,8 +74,6 @@ HMODULE user32_module;                  // Needed by WineHQ\EDITCTRL.C
 HICON hIconMF_Large,    hIconMF_Small,      // Icon handles
       hIconSM_Large,    hIconSM_Small,
       hIconFE_Large,    hIconFE_Small,
-      hIconME_Large,    hIconME_Small,
-      hIconVE_Large,    hIconVE_Small,
       hIconCC_Large,    hIconCC_Small,
       hIconWC_Large,    hIconWC_Small,
       hIconAbout,
@@ -1346,13 +1344,9 @@ LRESULT APIENTRY MFWndProc
 
             hMenuSM = LoadMenu (_hInstance, MAKEINTRESOURCE (IDR_SMMENU));
             hMenuFE = LoadMenu (_hInstance, MAKEINTRESOURCE (IDR_FEMENU));
-////////////hMenuME = LoadMenu (_hInstance, MAKEINTRESOURCE (IDR_MEMENU));
-////////////hMenuVE = LoadMenu (_hInstance, MAKEINTRESOURCE (IDR_VEMENU));
 
             hMenuSMWindow = GetSubMenu (hMenuSM, IDMPOS_SM_WINDOW);
             hMenuFEWindow = GetSubMenu (hMenuFE, IDMPOS_FE_WINDOW);
-////////////hMenuMEWindow = GetSubMenu (hMenuME, IDMPOS_ME_WINDOW);
-////////////hMenuVEWindow = GetSubMenu (hMenuVE, IDMPOS_VE_WINDOW);
 
             break;                  // Continue with next handler
 
@@ -3796,12 +3790,6 @@ UBOOL InitInstance
 #endif
     hIconFE_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_FE_LARGE));
     hIconFE_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_FE_SMALL));
-
-    hIconME_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_ME_LARGE));
-    hIconME_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_ME_SMALL));
-
-    hIconVE_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_VE_LARGE));
-    hIconVE_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_VE_SMALL));
 
     hIconCC_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_CC_LARGE));
     hIconCC_Small = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_CC_SMALL));

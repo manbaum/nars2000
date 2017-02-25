@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,8 +25,6 @@
 #define IDR_MFMENU                                20
 #define IDR_SMMENU                                21
 #define IDR_FEMENU                                22
-#define IDR_VEMENU                                23
-#define IDR_MEMENU                                24
 
 // Accelerator IDs
 #define IDR_ACCEL                                 30
@@ -45,10 +43,6 @@
 #define IDI_DB_SMALL                             107
 #define IDI_FE_LARGE                             108
 #define IDI_FE_SMALL                             109
-#define IDI_ME_LARGE                             110
-#define IDI_ME_SMALL                             111
-#define IDI_VE_LARGE                             112
-#define IDI_VE_SMALL                             113
 #define IDI_CC_LARGE                             114
 #define IDI_CC_SMALL                             115
 #define IDI_PM_LARGE                             116

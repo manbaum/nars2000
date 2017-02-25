@@ -424,12 +424,10 @@ ICONS=$(A)About.ico     \
       $(A)Custom.ico    \
       $(A)DB.ico        \
       $(A)FE.ico        \
-      $(A)ME.ico        \
       $(A)MF.ico        \
       $(A)NARS.ico      \
       $(A)PM.ico        \
       $(A)SM.ico        \
-      $(A)VE.ico        \
       $(A)WC.ico        \
       $(A)Workspace.bmp \
       $(A)Edit.bmp      \

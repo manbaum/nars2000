@@ -1786,7 +1786,8 @@ APLSTYPE PrimSpecDownStileStorageTypeDyd
 
     // Is the result HC?
     if (IsHCAny (aplTypeRes))
-        return ARRAY_ERROR;
+        // Tell the caller to demote the data to HC dimension 1
+        return ARRAY_REALONLY;
     else
     // Split cases based upon the result storage type
     switch (aplTypeRes)

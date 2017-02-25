@@ -566,35 +566,43 @@ BEGIN
     PUSHBUTTON      ""             , IDC_KEYB_BN_KC_39   ,229, 90, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
     PUSHBUTTON      ""             , IDC_KEYB_BN_KC_3A   ,244, 90, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
 
-    LTEXT           "Unicode"      , IDC_STATIC          , 85,110, 50, 14
-    EDITTEXT                         IDC_KEYB_EC_UNICODE , 85,120, 30, 14
-    LTEXT           "Char"         , IDC_STATIC          ,130,110, 30, 14
-    PUSHBOX         " "            , IDC_KEYB_BN_UNICODE ,130,120, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
-    AUTORADIOBUTTON "Dec"          , IDC_KEYB_RB_DEC     , 85,135, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
-    AUTORADIOBUTTON "Hex"          , IDC_KEYB_RB_HEX     ,120,135, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP
+    PUSHBUTTON      ""             , IDC_KEYB_BN_DK      , 85,106, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    LTEXT           "represents a Dead Key; right-click to toggle"
+                                   , IDC_STATIC          ,103,108,190, 14
 
-    GROUPBOX        "State"        , IDC_STATIC          ,175,110,100, 30
+    LTEXT           "Unicode"      , IDC_STATIC          , 85,123, 50, 14
+    EDITTEXT                         IDC_KEYB_EC_UNICODE , 85,133, 30, 14
+    LTEXT           "Char"         , IDC_STATIC          ,130,123, 30, 14
+    PUSHBOX         " "            , IDC_KEYB_BN_UNICODE ,130,133, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
+    AUTORADIOBUTTON "Dec"          , IDC_KEYB_RB_DEC     , 85,148, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
+    AUTORADIOBUTTON "Hex"          , IDC_KEYB_RB_HEX     ,120,148, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP
 
-    AUTOCHECKBOX    "Shift"        , IDC_KEYB_XB_SHIFT   ,180,120, 30, 14
-    AUTOCHECKBOX    "Ctrl"         , IDC_KEYB_XB_CTRL    ,215,120, 30, 14
-    AUTOCHECKBOX    "Alt"          , IDC_KEYB_XB_ALT     ,250,120, 30, 14
+    GROUPBOX        "Modifiers"    , IDC_STATIC          ,175,123,100, 30
+
+    AUTOCHECKBOX    "Shift"        , IDC_KEYB_XB_SHIFT   ,180,133, 30, 14
+    AUTOCHECKBOX    "Ctrl"         , IDC_KEYB_XB_CTRL    ,215,133, 30, 14
+    AUTOCHECKBOX    "Alt"          , IDC_KEYB_XB_ALT     ,250,133, 30, 14
 
     AUTORADIOBUTTON "Use Ctrl-C, -X, -V for Copy, Cut, Paste"
-                                   , IDC_KEYB_RB_CLIP0   , 85,150,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
+                                   , IDC_KEYB_RB_CLIP0   , 85,163,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
     AUTORADIOBUTTON "Use Ctrl-Ins, Shift-Del, Shift-Ins for Copy, Cut, Paste"
-                                   , IDC_KEYB_RB_CLIP1   , 85,162,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP
+                                   , IDC_KEYB_RB_CLIP1   , 85,175,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP
     AUTORADIOBUTTON "Use Ctrl-Z, -Y for Undo, Redo"
-                                   , IDC_KEYB_RB_UNDO0   , 85,180,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
+                                   , IDC_KEYB_RB_UNDO0   , 85,193,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
     AUTORADIOBUTTON "No keyboard shortcuts for Undo, Redo"
-                                   , IDC_KEYB_RB_UNDO1   , 85,192,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP
+                                   , IDC_KEYB_RB_UNDO1   , 85,205,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP
     AUTORADIOBUTTON "Use Ctrl-S, -E, -Q for Function Editing commands"
-                                   , IDC_KEYB_RB_FNED0   , 85,210,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
+                                   , IDC_KEYB_RB_FNED0   , 85,223,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
     AUTORADIOBUTTON "No keyboard shortcuts for Function Editing commands"
-                                   , IDC_KEYB_RB_FNED1   , 85,222,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP
+                                   , IDC_KEYB_RB_FNED1   , 85,235,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP
+    AUTORADIOBUTTON "AltGR is same as pressing the Ctrl- and Alt-keys"
+                                   , IDC_KEYB_RB_ALTG0   , 85,253,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
+    AUTORADIOBUTTON "No AltGR key, or AltGR is the same as the other Alt-key"
+                                   , IDC_KEYB_RB_ALTG1   , 85,265,190, 14, BS_AUTORADIOBUTTON | WS_TABSTOP
 
-    PUSHBUTTON      "Copy..."      , IDC_KEYB_BN_COPY    ,  5,270, 50, 14
-    PUSHBUTTON      "Delete..."    , IDC_KEYB_BN_DEL     , 65,270, 50, 14
-    PUSHBUTTON      "Font..."      , IDC_KEYB_BN_FONT    ,125,270, 50, 14
+    PUSHBUTTON      "Copy..."      , IDC_KEYB_BN_COPY    ,  5,283, 50, 14
+    PUSHBUTTON      "Delete..."    , IDC_KEYB_BN_DEL     , 65,283, 50, 14
+    PUSHBUTTON      "Font..."      , IDC_KEYB_BN_FONT    ,125,283, 50, 14
 END
 
 IDD_PROPPAGE_RANGE_LIMITS DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY

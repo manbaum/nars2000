@@ -1,0 +1,75 @@
+Build #1678 -- Version 0.5.1.xx
+--------------------------------
+
+* Implement Support Dead Keys On National Keyboards
+
+Directory branches/bsmith/NewTypes:
+
+CUSTOMIZE.C:
+  Define foreground and background colors for the Dead Key button.
+  When displaying a Dead Key button, change the foreground and background colors to make it stand out.
+  Allow the user to change the state of Dead Key keycap via a context menu.
+  Implement Radio Buttons to allow the user to Enable/Disable the AltGR key.
+
+EDITFCN.C:
+  Implement support for Dead Keys.  If a Dead Key is pressed and released,
+    wait for the next key press to see if it can be combined with the accent
+    character.
+  Support the AltGR key.
+  Define routine to translate an accent letter combination to a WCHAR.
+
+EXTERNS.H:
+  Define HGLOBALs to hold the various flavors of []A.
+
+INIFILE.C:
+  Read in and write out the new format for user-defined keyboards.
+
+KEYBOARDS.H:
+  Define equates for use in a narrow table.
+  Define a UBOOL array to hold the Dead Key values.
+  Distinguish between Circumflex and UpCaret and use appropriately, one as an accent char and one as an APL symbol.
+  Distinguish between Tilde and Tilde2 and use appropriately, one as an accent char and one as an APL symbol.
+  Support the AltGR key.
+  In the French keyboard, mark the appropriate scancodes as Dead Keys producers.
+
+MACROS.H:
+  Define a macro to detect if we support a key as a Dead Key.
+  Define a macro to detect if a System Name is a flavor of []A.
+
+MAIN.RC:
+  Make room for Dead Key legend.
+  Make room for AltGR settings.
+
+PF_DELTASTILE.C:
+QF_D.C:
+  Omit <MakePtrTypeGlb> macro as the HGLOBAL already has the PTB set.
+
+QF_A.C:
+  Define various flavors of []A.
+
+QF_AV.C:
+  Omit <MakePtrTypeGlb> macro as the HGLOBAL already has the PTB set.
+  In <MakeQuadAV>, set the PTB in <hGlbQuadAV>.
+
+RESOURCE.H:
+  Define IDM for the toggle Dead Key message.
+  Define IDCs for the AltGR keyboard radio buttons.
+
+SYMTAB.C:
+  Use special routine to convert a system name to a common lower case except for the various flavors of []A.
+  Call <hashlittle< instead of <hashlittleConv> so as not to force the system name to lowercase.
+
+SYSVARS.C:
+  Define entries for the various flavors of []A.
+  Create the content of the various flavors of []A.
+  Set the PTB for the permanent HGLOBALs.
+  Free the various flavors of []A at the end.
+  Omit <MakePtrTypeGlb> macro as the HGLOBAL already has the PTB set.
+
+TOKENIZE.C:
+  Use special routine to convert a system name to a common lower case except for the various flavors of []A.
+  In <CharTransTK>, include the various accented letters as in the alphabet.
+  Define routine to convert a system name to a common lowercase except for the various flavors of []A.
+
+UNICODE.H:
+  Define more accented character names.

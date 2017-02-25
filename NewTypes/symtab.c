@@ -2020,8 +2020,8 @@ LPSYMENTRY SymTabHTSLookupNameLength
         // Copy the sysname to local storage
         CopyMemoryW (sysName, lpwString, iLen);
 
-        // Convert it to lowercase
-        CharLowerBuffW (sysName, (UINT) iLen);
+        // Convert it to lowercase if not []A and friends
+        SysNameLowerBuffW (sysName, (UINT) iLen);
 
         // Point to it
         lpwName = sysName;
@@ -2031,10 +2031,10 @@ LPSYMENTRY SymTabHTSLookupNameLength
     MyEnterCriticalSection (&CSOHshTab);
 
     // Hash the name
-    uHash = hashlittleConv
-            (lpwName,                       // A ptr to the name to hash
-             iLen,                          // The # WCHARs pointed to
-             0);                            // Initial value or previous hash
+    uHash =
+      hashlittle     (lpwName,      // A ptr to the name to hash
+                     iLen,          // The # WCHARs pointed to
+                     0);            // Initial value or previous hash
     // If the caller hasn't set this field, set it ourselves
     if (lpstFlags->ObjName EQ OBJNAME_NONE)
     {
@@ -2798,9 +2798,9 @@ LPSYMENTRY SymTabHTSAppendNewName_EM
 
     // Hash the name
     uHash =
-      hashlittleConv (lpwszString,      // A ptr to the name to hash
-                      iLen,             // The # WCHARs pointed to
-                      0);               // Initial value or previous hash
+      hashlittle     (lpwszString,  // A ptr to the name to hash
+                      iLen,         // The # WCHARs pointed to
+                      0);           // Initial value or previous hash
     // This name isn't in the ST -- find the next free entry
     //   in the hash table, split if necessary
     lpHshEntryDest = FindNextFreeUsingHash_SPLIT_EM (uHash, TRUE, lphtsPTD);

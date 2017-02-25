@@ -65,6 +65,7 @@
 #define KEYNAME_KEYBUSECXV              L"KeybUseCXV"
 #define KEYNAME_KEYBUSEZY               L"KeybUseZY"
 #define KEYNAME_KEYBUSESEQ              L"KeybUseSEQ"
+#define KEYNAME_KEYBUSEALTGR            L"KeybUseAltGR"
 
 #define KEYNAME_IC0LOG0                 L"IC0LOG0"
 
@@ -156,7 +157,7 @@
 #define KEYNAME_UPDCHK                  L"UpdateCheck"
 
 // Format string for Keyboard Layout SCA Chars for each ScanCode
-#define FMTSTR_KEYBCHARS        L"%04X, %04X, %04X, %04X, %04X, %04X, %04X, %04X"
+#define FMTSTR_KEYBCHARS        L"%04X, %04X, %04X, %04X, %04X, %04X, %04X, %04X, %u, %u, %u, %u, %u, %u, %u, %u"
 
 // Format string for [Fonts] section LOGFONTW
 #define FMTSTR_LOGFONT_INP      L"%d %d %d %d %d %d %d %d %d %d %d %d %d '%s'"
@@ -496,7 +497,8 @@ UBOOL ReadIniFileGlb
                  *lpwszTemp;                        // Temporary ptr into wszTemp
     UINT          uCnt,                             // Loop counter
                   uCnt2,                            // ...
-                  uCol;                             // ...
+                  uCol,                             // ...
+                  uKST;                             // ...
     WCHAR       (*lpwszRecentFiles)[][_MAX_PATH];   // Ptr to list of recent files
     LPKEYBLAYOUTS lpKeybLayouts;                    // Ptr to keyboard layouts global memory
     LPWSZLIBDIRS  lpwszLibDirs;                     // Ptr to LibDirs
@@ -1321,6 +1323,7 @@ UBOOL ReadIniFileGlb
         lpKeybLayouts[uCnt].bUseCXV                = aKeybLayoutsBI[uCnt].bUseCXV;
         lpKeybLayouts[uCnt].bUseZY                 = aKeybLayoutsBI[uCnt].bUseZY;
         lpKeybLayouts[uCnt].bUseSEQ                = aKeybLayoutsBI[uCnt].bUseSEQ;
+        lpKeybLayouts[uCnt].bUseAltGR              = aKeybLayoutsBI[uCnt].bUseAltGR;
     } // End FOR
 
     // Read in the user-defined keyboard layouts
@@ -1328,9 +1331,10 @@ UBOOL ReadIniFileGlb
          uCnt < uGlbKeybLayoutUser;
          uCnt++, uCnt2++)
     {
-        WCHAR wszKeybChars[8 * 8 - 2 + 1];              // Room for a string formatted by FMTSTR_KEYBCHARS
-        UINT wc[8],                                     // Save area for keyb chars as UINTs
-             uLen;                                      // Length value
+        WCHAR wszKeybChars[8 * 8 + 3 + 1];              // Room for a string formatted by FMTSTR_KEYBCHARS
+        UINT  wc[8],                                    // Save area for keyb chars as UINTs
+              uLen;                                     // Length value
+        UBOOL dk[8];                                    // Save area for keyb dead key states
 
         // Format the section name
         MySprintfW (wszSectName,
@@ -1374,6 +1378,12 @@ UBOOL ReadIniFileGlb
                                  KEYNAME_KEYBUSESEQ,        // Ptr to the key name
                                  0,                         // Default value if not found
                                  lpwszIniFile);             // Ptr to the file name
+        // Read in the flag for AltGR
+        lpKeybLayouts[uCnt2].bUseAltGR =
+          GetPrivateProfileIntW (wszSectName,               // Ptr to the section name
+                                 KEYNAME_KEYBUSEALTGR,      // Ptr to the key name
+                                 0,                         // Default value if not found
+                                 lpwszIniFile);             // Ptr to the file name
         // Read in the # scancodes in the layout
         uLen = lpKeybLayouts[uCnt2].uCharCodesLen =
           GetPrivateProfileIntW (wszSectName,               // Ptr to the section name
@@ -1395,6 +1405,9 @@ UBOOL ReadIniFileGlb
                                       wszKeybChars,             // Ptr to the output buffer
                                       countof (wszKeybChars),   // Count of the output buffer
                                       lpwszIniFile);            // Ptr to the file name
+            // Ensure dk is initialized in case it's not present on this line
+            ZeroMemory (&dk, sizeof (dk));
+
             // Convert the hex digits to integers
             sscanfW (wszKeybChars,
                      FMTSTR_KEYBCHARS,
@@ -1405,16 +1418,21 @@ UBOOL ReadIniFileGlb
                     &wc[4],
                     &wc[5],
                     &wc[6],
-                    &wc[7]);
-            // Save the values in aCharCodes
-            lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[0] = wc[0];
-            lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[1] = wc[1];
-            lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[2] = wc[2];
-            lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[3] = wc[3];
-            lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[4] = wc[4];
-            lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[5] = wc[5];
-            lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[6] = wc[6];
-            lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[7] = wc[7];
+                    &wc[7],
+                    &dk[0],
+                    &dk[1],
+                    &dk[2],
+                    &dk[3],
+                    &dk[4],
+                    &dk[5],
+                    &dk[6],
+                    &dk[7]);
+            for (uKST = 0; uKST < 8; uKST++)
+            {
+                // Save the values in aCharCodes
+                lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[uKST] = wc[uKST];
+                lpKeybLayouts[uCnt2].aCharCodes[uCol].dk[uKST] = dk[uKST];
+            } // End FOR
         } // End FOR
     } // End FOR
 
@@ -3129,7 +3147,8 @@ void SaveIniFile
          uCnt < uGlbKeybLayoutUser;
          uCnt++, uCnt2++)
     {
-        WCHAR wszKeybChars[8 * 8 - 2 + 1],              // Room for a string formatted by FMTSTR_KEYBCHARS
+        // the format is 8(xxxx, ) + 8(, x) + 1
+        WCHAR wszKeybChars[8 * (6 + 3) + 1],            // Room for a string formatted by FMTSTR_KEYBCHARS
               wszCount[8 + 1];                          // Scancode count
 
         // Format the section name
@@ -3187,6 +3206,15 @@ void SaveIniFile
                                     KEYNAME_KEYBUSESEQ,         // Ptr to the key name
                                     wszTemp,                    // Ptr to the key value
                                     lpwszIniFile);              // Ptr to the file name
+        // Format the flag for AltGR
+        wszTemp[0] = L'0' + lpKeybLayouts[uCnt2].bUseAltGR;
+        wszTemp[1] = WC_EOS;
+
+        // Write out the flag for AltGR
+        WritePrivateProfileStringW (wszSectName,                // Ptr to the section name
+                                    KEYNAME_KEYBUSEALTGR,       // Ptr to the key name
+                                    wszTemp,                    // Ptr to the key value
+                                    lpwszIniFile);              // Ptr to the file name
         // Get the # scancodes in this layout
         uLen = lpKeybLayouts[uCnt2].uCharCodesLen;
 
@@ -3208,7 +3236,7 @@ void SaveIniFile
                         sizeof (wszKeyName),
                         KEYNAME_KEYBSCANCODE L"%02X",
                         uCol);
-            // Format the keyboard chars for this scancode
+            // Format the keyboard chars and dead key state for this scancode
             MySprintfW (wszKeybChars,
                         sizeof (wszKeybChars),
                         FMTSTR_KEYBCHARS,
@@ -3219,7 +3247,15 @@ void SaveIniFile
                         lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[4],
                         lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[5],
                         lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[6],
-                        lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[7]);
+                        lpKeybLayouts[uCnt2].aCharCodes[uCol].wc[7],
+                        lpKeybLayouts[uCnt2].aCharCodes[uCol].dk[0],
+                        lpKeybLayouts[uCnt2].aCharCodes[uCol].dk[1],
+                        lpKeybLayouts[uCnt2].aCharCodes[uCol].dk[2],
+                        lpKeybLayouts[uCnt2].aCharCodes[uCol].dk[3],
+                        lpKeybLayouts[uCnt2].aCharCodes[uCol].dk[4],
+                        lpKeybLayouts[uCnt2].aCharCodes[uCol].dk[5],
+                        lpKeybLayouts[uCnt2].aCharCodes[uCol].dk[6],
+                        lpKeybLayouts[uCnt2].aCharCodes[uCol].dk[7]);
             // Write out the keyb chars for this scancode
             WritePrivateProfileStringW (wszSectName,                // Ptr to the section name
                                         wszKeyName,                 // Ptr to the key name

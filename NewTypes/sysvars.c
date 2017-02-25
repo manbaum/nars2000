@@ -56,7 +56,18 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD SYSLBL_PRO  , SYSLBL,      TRUE , FALSE, NULL                , 0              },    // ...                                            []PRO = prototype
 
 // Niladic system functions
-    {WS_UTF16_QUAD L"a"        ,      0,      FALSE, FALSE, SysFnA_EM_YY        , 0              },    // Alphabet
+    {WS_UTF16_QUAD L"a"        ,      0,      FALSE, FALSE, SysFna_EM_YY        , 0              },    // Alphabet, lowercase unaccented
+    {WS_UTF16_QUAD L"A"        ,      0,      FALSE, FALSE, SysFnA_EM_YY        , 0              },    // ...       uppercase ...
+    {WS_UTF16_QUAD L"â"        ,      0,      FALSE, FALSE, SysFnâ_EM_YY        , 0              },    // ...       lowercase with circumflex
+    {WS_UTF16_QUAD L"Â"        ,      0,      FALSE, FALSE, SysFnÂ_EM_YY        , 0              },    // ...       uppercase ...
+    {WS_UTF16_QUAD L"ä"        ,      0,      FALSE, FALSE, SysFnä_EM_YY        , 0              },    // ...       lowercase with dieresis
+    {WS_UTF16_QUAD L"Ä"        ,      0,      FALSE, FALSE, SysFnÄ_EM_YY        , 0              },    // ...       uppercase ...
+    {WS_UTF16_QUAD L"á"        ,      0,      FALSE, FALSE, SysFná_EM_YY        , 0              },    // ...       lowercase with acute
+    {WS_UTF16_QUAD L"Á"        ,      0,      FALSE, FALSE, SysFnÁ_EM_YY        , 0              },    // ...       uppercase ...
+    {WS_UTF16_QUAD L"à"        ,      0,      FALSE, FALSE, SysFnà_EM_YY        , 0              },    // ...       lowercase with grave
+    {WS_UTF16_QUAD L"À"        ,      0,      FALSE, FALSE, SysFnÀ_EM_YY        , 0              },    // ...       uppercase ...
+    {WS_UTF16_QUAD L"ã"        ,      0,      FALSE, FALSE, SysFnã_EM_YY        , 0              },    // ...       lowercase with tilde
+    {WS_UTF16_QUAD L"Ã"        ,      0,      FALSE, FALSE, SysFnÃ_EM_YY        , 0              },    // ...       uppercase ...
     {WS_UTF16_QUAD L"av"       ,      0,      FALSE, TRUE , SysFnAV_EM_YY       , 0              },    // Atomic Vector
     {WS_UTF16_QUAD L"d"        ,      0,      FALSE, FALSE, SysFnD_EM_YY        , 0              },    // Digits
     {WS_UTF16_QUAD L"em"       ,      0,      FALSE, TRUE , SysFnEM_EM_YY       , 0              },    // Event Message
@@ -119,6 +130,60 @@ SYSNAME aSystemNames[] =
 
 
 //***************************************************************************
+//  $CreateQuadA
+//
+//  Create []a and friends
+//***************************************************************************
+
+HGLOBAL CreateQuadA
+    (LPWCHAR lpwStr)
+
+{
+    UINT              uLen;         // Temp length
+    HGLOBAL           hGlbRes;      // Result handle
+    LPVARARRAY_HEADER lpHeader;     // Ptr to array header
+
+    // Get the string length
+    uLen = lstrlenW (lpwStr);
+
+    // Note, we can't use DbgGlobalAlloc here as the
+    //   PTD has not been allocated as yet
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_CHAR, uLen, 1));
+    if (hGlbRes EQ NULL)
+    {
+        DbgStop ();         // We should never get here
+    } // End IF
+
+    // Lock the memory to get a ptr to it
+    lpHeader = MyGlobalLock000 (hGlbRes);
+
+    // Fill in the header values
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_CHAR;
+    lpHeader->PermNdx    = PERMNDX_QUADA;   // So we don't free it
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+////lpHeader->RefCnt     = 0;               // Ignore as this is perm
+    lpHeader->NELM       = uLen;
+    lpHeader->Rank       = 1;
+
+    // Save the vector length
+    *VarArrayBaseToDim (lpHeader) = uLen;
+
+    // Skip over the header and dimensions to the data
+    lpHeader = VarArrayDataFmBase (lpHeader);
+
+    // Copy the data to the result
+    CopyMemoryW (lpHeader, lpwStr, uLen);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpHeader = NULL;
+
+    // Set the PTB and return it
+    return MakePtrTypeGlb (hGlbRes);
+} // End CreateQuadA
+
+
+//***************************************************************************
 //  $MakePermVars
 //
 //  Make various permanent variables
@@ -137,43 +202,33 @@ void MakePermVars
     LPVARARRAY_HEADER lpHeader;     // Ptr to array header
 
     //***************************************************************
-    // Create []A
+    // Create []A and friends
     //***************************************************************
 
-#define ALPHABET    L"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-#define ALPHANELM   strcountof (ALPHABET)
-
-    // Note, we can't use DbgGlobalAlloc here as the
-    //   PTD has not been allocated as yet
-    hGlbQuadA = DbgGlobalAlloc (GHND, (APLU3264) CalcArraySize (ARRAY_CHAR, ALPHANELM, 1));
-    if (hGlbQuadA EQ NULL)
-    {
-        DbgStop ();         // We should never get here
-    } // End IF
-
-    // Lock the memory to get a ptr to it
-    lpHeader = MyGlobalLock000 (hGlbQuadA);
-
-    // Fill in the header values
-    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = ARRAY_CHAR;
-    lpHeader->PermNdx    = PERMNDX_QUADA;   // So we don't free it
-////lpHeader->SysVar     = FALSE;           // Already zero from GHND
-////lpHeader->RefCnt     = 0;               // Ignore as this is perm
-    lpHeader->NELM       = ALPHANELM;
-    lpHeader->Rank       = 1;
-
-    // Save the vector length
-    *VarArrayBaseToDim (lpHeader) = ALPHANELM;
-
-    // Skip over the header and dimensions to the data
-    lpHeader = VarArrayDataFmBase (lpHeader);
-
-    // Copy the data to the result
-    CopyMemoryW (lpHeader, ALPHABET, ALPHANELM);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbQuadA); lpHeader = NULL;
+    hGlbQuada = CreateQuadA (L"abcdefghijklmnopqrstuvwxyz");
+    hGlbQuadA = CreateQuadA (L"ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    //                            A     B     C     D     E     F     G     H     I     J     K    L     M
+    //                            N     O     P     Q     R     S     T     U     V     W     X    Y     Z
+    hGlbQuadâ = CreateQuadA (L"\x00E2\x0062\x0109\x0064\x00EA\x0066\x011D\x0125\x00EE\x0135\x006B\x006C\x006D"
+                             L"\x006E\x00F4\x0070\x0071\x0072\x0073\x0074\x0075\x0076\x0077\x0078\x0079\x007A");
+    hGlbQuadÂ = CreateQuadA (L"\x00C2\x0042\x0108\x0044\x00CA\x0046\x011C\x0124\x00CE\x0134\x004B\x004C\x004D"
+                             L"\x004E\x00D4\x0050\x0051\x0052\x015C\x0054\x00DB\x0056\x0174\x0058\x0176\x1E90");
+    hGlbQuadä = CreateQuadA (L"\x00E4\x0062\x0063\x0064\x00EB\x0066\x0067\x1E27\x00EF\x006A\x006B\x006C\x006D"
+                             L"\x006E\x00F6\x0070\x0071\x0072\x0073\x1E97\x00FC\x0076\x1E85\x1E8D\x00FF\x007A");
+    hGlbQuadÄ = CreateQuadA (L"\x00C4\x0042\x0043\x0044\x00CB\x0046\x0047\x1E26\x00CF\x004A\x004B\x004C\x004D"
+                             L"\x004E\x00D6\x0050\x0051\x0052\x0053\x0054\x00DC\x0056\x1E84\x1E8C\x0178\x005A");
+    hGlbQuadá = CreateQuadA (L"\x00E1\x0062\x0107\x0064\x00E9\x0066\x01F5\x0068\x00ED\x006A\x1E31\x013A\x1E3F"
+                             L"\x0144\x00F3\x1E55\x0071\x0155\x015B\x0074\x00FA\x0076\x1E83\x0078\x00FD\x017A");
+    hGlbQuadÁ = CreateQuadA (L"\x00C1\x0042\x0106\x0044\x00C9\x0046\x01F4\x0048\x00CD\x004A\x1E30\x0139\x1E3E"
+                             L"\x0143\x00D3\x1E54\x0051\x0154\x015A\x0054\x00DA\x0056\x1E82\x0058\x00DD\x0179");
+    hGlbQuadà = CreateQuadA (L"\x00E0\x0062\x0063\x0064\x00E8\x0066\x0067\x0068\x00EC\x006A\x006B\x006C\x006D"
+                             L"\x01F9\x00F2\x0070\x0071\x0072\x0073\x0074\x00F9\x0076\x1E81\x0078\x1EF3\x007A");
+    hGlbQuadÀ = CreateQuadA (L"\x00C0\x0042\x0043\x0044\x00C8\x0046\x0047\x0048\x00CC\x004A\x004B\x004C\x004D"
+                             L"\x01F8\x00D2\x0050\x0051\x0052\x0053\x0054\x00D9\x0056\x1E80\x0058\x1EF2\x005A");
+    hGlbQuadã = CreateQuadA (L"\x00E3\x0062\x0063\x0064\x1EBD\x0066\x0067\x0068\x0129\x006A\x006B\x006C\x006D"
+                             L"\x00F1\x00F5\x0070\x0071\x0072\x0073\x0074\x0169\x1E7D\x0077\x0078\x1EF9\x007A");
+    hGlbQuadÃ = CreateQuadA (L"\x00C3\x0042\x0043\x0044\x1EBC\x0046\x0047\x0048\x0128\x004A\x004B\x004C\x004D"
+                             L"\x00D1\x00D5\x0050\x0051\x0052\x0053\x0054\x0168\x1E7C\x0057\x0058\x1EF8\x005A");
 
     //***************************************************************
     // Create []D
@@ -214,6 +269,9 @@ void MakePermVars
     // We no longer need this ptr
      MyGlobalUnlock (hGlbQuadD); lpHeader = NULL;
 
+    // Set the PTB
+    hGlbQuadD = MakePtrTypeGlb (hGlbQuadD);
+
     //***************************************************************
     // Create zilde
     //***************************************************************
@@ -243,6 +301,9 @@ void MakePermVars
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbZilde); lpHeader = NULL;
+
+    // Set the PTB
+    hGlbZilde = MakePtrTypeGlb (hGlbZilde);
 
     //***************************************************************
     // Create initial value for []EC[2] (0 x 0 Boolean matrix)
@@ -341,19 +402,30 @@ void DelePermVars
     FreeGlbName (hGlbQuadIC_SYS      );  hGlbQuadIC_SYS      = NULL;
     FreeGlbName (hGlbQuadFEATURE_SYS );  hGlbQuadFEATURE_SYS = NULL;
     FreeGlbName (hGlbQuadFC_SYS      );  hGlbQuadFC_SYS      = NULL;
-////FreeGlbName (hGlbQuadWSID_CWS    ); EQ hGlbV0Char
+////FreeGlbName (hGlbQuadWSID_CWS    );  hGlbV0Char          = NULL;
     FreeGlbName (hGlbSAOff           );  hGlbSAOff           = NULL;
     FreeGlbName (hGlbSAExit          );  hGlbSAExit          = NULL;
     FreeGlbName (hGlbSAError         );  hGlbSAError         = NULL;
     FreeGlbName (hGlbSAClear         );  hGlbSAClear         = NULL;
-////FreeGlbName (hGlbSAEmpty         ); EQ hGlbV0Char
+////FreeGlbName (hGlbSAEmpty         );  hGlbV0Char          = NULL;
     FreeGlbName (hGlbV0Char          );  hGlbV0Char          = NULL;
     FreeGlbName (hGlbQuadxLX         );  hGlbQuadxLX         = NULL;
     FreeGlbName (hGlb3by0            );  hGlb3by0            = NULL;
     FreeGlbName (hGlb0by0            );  hGlb0by0            = NULL;
     FreeGlbName (hGlbZilde           );  hGlbZilde           = NULL;
     FreeGlbName (hGlbQuadD           );  hGlbQuadD           = NULL;
+    FreeGlbName (hGlbQuadÃ           );  hGlbQuadÃ           = NULL;
+    FreeGlbName (hGlbQuadã           );  hGlbQuadã           = NULL;
+    FreeGlbName (hGlbQuadÀ           );  hGlbQuadÀ           = NULL;
+    FreeGlbName (hGlbQuadà           );  hGlbQuadà           = NULL;
+    FreeGlbName (hGlbQuadÁ           );  hGlbQuadÁ           = NULL;
+    FreeGlbName (hGlbQuadá           );  hGlbQuadá           = NULL;
+    FreeGlbName (hGlbQuadÄ           );  hGlbQuadÄ           = NULL;
+    FreeGlbName (hGlbQuadä           );  hGlbQuadä           = NULL;
+    FreeGlbName (hGlbQuadÂ           );  hGlbQuadÂ           = NULL;
+    FreeGlbName (hGlbQuadâ           );  hGlbQuadâ           = NULL;
     FreeGlbName (hGlbQuadA           );  hGlbQuadA           = NULL;
+    FreeGlbName (hGlbQuada           );  hGlbQuada           = NULL;
 } // End DelePermVars
 
 
@@ -2425,7 +2497,7 @@ UBOOL VariantValidateCom_EM
         tkRhtArg.tkFlags.TknType   = TKT_VARARRAY;
 ////////tkRhtArg.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
 ////////tkRhtArg.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
-        tkRhtArg.tkData.tkGlbData  = MakePtrTypeGlb (hGlbZilde);
+        tkRhtArg.tkData.tkGlbData  = hGlbZilde;
         tkRhtArg.tkCharIndex       = lptkFunc->tkCharIndex;
     } else
     if (hGlbItm NE NULL)

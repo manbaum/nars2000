@@ -1419,7 +1419,8 @@ UBOOL fnAlpDone
                                       -lptkLocalVars->iStrLen);
             goto NORMAL_EXIT;
         } else
-            CharLowerBuffW (lpwszStr, lptkLocalVars->iStrLen);
+            // Convert it to lowercase if not []A and friends
+            SysNameLowerBuffW (lpwszStr, lptkLocalVars->iStrLen);
 
         // If it's []Z, ...
         if (lstrcmpiW (lpwszStr, WS_UTF16_QUAD L"z") EQ 0)
@@ -6483,6 +6484,128 @@ TKCOLINDICES CharTransTK
         case L'_':
         case UTF16_DELTA:               // Alt-'h' - delta
         case UTF16_DELTAUNDERBAR:       // Alt-'H' - delta-underbar
+
+        case L'\x00E2':                 // Circumflex a
+        case L'\x0109':                 // ...        c
+        case L'\x00EA':                 // ...        e
+        case L'\x011D':                 // ...        g
+        case L'\x0125':                 // ...        h
+        case L'\x00EE':                 // ...        i
+        case L'\x0135':                 // ...        j
+        case L'\x00F4':                 // ...        o
+        case L'\x015D':                 // ...        s
+        case L'\x00FB':                 // ...        u
+        case L'\x0175':                 // ...        w
+        case L'\x0177':                 // ...        y
+        case L'\x1E91':                 // ...        z
+
+        case L'\x00C2':                 // Circumflex A
+        case L'\x0108':                 // ...        C
+        case L'\x00CA':                 // ...        E
+        case L'\x011C':                 // ...        G
+        case L'\x0124':                 // ...        H
+        case L'\x00CE':                 // ...        I
+        case L'\x0134':                 // ...        J
+        case L'\x00D4':                 // ...        O
+        case L'\x015C':                 // ...        S
+        case L'\x00DB':                 // ...        U
+        case L'\x0174':                 // ...        W
+        case L'\x0176':                 // ...        Y
+        case L'\x1E90':                 // ...        Z
+
+        case L'\x00E4':                 // Dieresis   a
+        case L'\x00EB':                 // ...        e
+        case L'\x1E27':                 // ...        h
+        case L'\x00EF':                 // ...        i
+        case L'\x00F6':                 // ...        o
+        case L'\x1E97':                 // ...        t
+        case L'\x00FC':                 // ...        u
+        case L'\x1E85':                 // ...        w
+        case L'\x1E8D':                 // ...        x
+        case L'\x00FF':                 // ...        y
+
+        case L'\x00C4':                 // Dieresis   A
+        case L'\x00CB':                 // ...        E
+        case L'\x1E26':                 // ...        H
+        case L'\x00CF':                 // ...        I
+        case L'\x00D6':                 // ...        O
+////////case L'\xFFFD':                 // ...        T
+        case L'\x00DC':                 // ...        U
+        case L'\x1E84':                 // ...        W
+        case L'\x1E8C':                 // ...        X
+        case L'\x0178':                 // ...        Y
+
+        case L'\x00E1':                 // Acute      a
+        case L'\x0107':                 // ...        c
+        case L'\x00E9':                 // ...        e
+        case L'\x01F5':                 // ...        g
+        case L'\x00ED':                 // ...        i
+        case L'\x1E31':                 // ...        k
+        case L'\x013A':                 // ...        l
+        case L'\x1E3F':                 // ...        m
+        case L'\x0144':                 // ...        n
+        case L'\x00F3':                 // ...        o
+        case L'\x1E55':                 // ...        p
+        case L'\x0155':                 // ...        r
+        case L'\x015B':                 // ...        s
+        case L'\x00FA':                 // ...        u
+        case L'\x1E83':                 // ...        w
+        case L'\x00FD':                 // ...        y
+        case L'\x017A':                 // ...        z
+
+        case L'\x00C1':                 // Acute      A
+        case L'\x0106':                 // ...        C
+        case L'\x00C9':                 // ...        E
+        case L'\x01F4':                 // ...        G
+        case L'\x00CD':                 // ...        I
+        case L'\x1E30':                 // ...        K
+        case L'\x0139':                 // ...        L
+        case L'\x1E3E':                 // ...        M
+        case L'\x0143':                 // ...        N
+        case L'\x00D3':                 // ...        O
+        case L'\x1E54':                 // ...        P
+        case L'\x0154':                 // ...        R
+        case L'\x015A':                 // ...        S
+        case L'\x00DA':                 // ...        U
+        case L'\x1E82':                 // ...        W
+        case L'\x00DD':                 // ...        Y
+        case L'\x0179':                 // ...        Z
+
+        case L'\x00E0':                 // Grave      a
+        case L'\x00E8':                 // ...        e
+        case L'\x00EC':                 // ...        i
+        case L'\x01F9':                 // ...        n
+        case L'\x00F2':                 // ...        o
+        case L'\x00F9':                 // ...        u
+        case L'\x1E81':                 // ...        w
+        case L'\x1EF3':                 // ...        y
+
+        case L'\x00C0':                 // Grave      A
+        case L'\x00C8':                 // ...        E
+        case L'\x00CC':                 // ...        I
+        case L'\x01F8':                 // ...        N
+        case L'\x00D2':                 // ...        O
+        case L'\x00D9':                 // ...        U
+        case L'\x1E80':                 // ...        W
+        case L'\x1EF2':                 // ...        Y
+
+        case L'\x00E3':                 // Tilde      a
+        case L'\x1EBD':                 // ...        e
+        case L'\x0129':                 // ...        i
+        case L'\x00F1':                 // ...        n
+        case L'\x00F5':                 // ...        o
+        case L'\x0169':                 // ...        u
+        case L'\x1E7D':                 // ...        v
+        case L'\x1EF9':                 // ...        y
+
+        case L'\x00C3':                 // Tilde      A
+        case L'\x1EBC':                 // ...        E
+        case L'\x0128':                 // ...        I
+        case L'\x00D1':                 // ...        N
+        case L'\x00D5':                 // ...        O
+        case L'\x0168':                 // ...        U
+        case L'\x1E7C':                 // ...        V
+        case L'\x1EF8':                 // ...        Y
             return TKCOL_ALPHA;
 
         case UTF16_INFINITY:
@@ -7010,6 +7133,27 @@ void SetTknTypeSynObj
     // Set the appropriate Syntax Object value
     lptkCur->tkSynObj        = tokenSo[tknType].tkSynObj;
 } // End SetTknTypeSynObj
+
+
+//***************************************************************************
+//  $SysNameLowerBuffW
+//
+//  Convert a sys name to lower case except for []A and friends
+//***************************************************************************
+
+void SysNameLowerBuffW
+    (LPWCHAR lpwszStr,      // Ptr to sys name
+     int     iStrLen)       // Length of the sys name
+
+{
+    // Handle []a and friends alone so we distinguish case
+    //   by not converting them to lowercase
+    if (!IsSysName (lpwszStr)
+     || iStrLen NE 2
+     || !IsQuadA (lpwszStr[1]))
+        // Convert to lowercase
+        CharLowerBuffW (lpwszStr, iStrLen);
+} // End SysNameLowerBuffW
 
 
 //***************************************************************************

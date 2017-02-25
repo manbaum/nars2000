@@ -55,6 +55,13 @@ char szCloseMessage[] = "You have changed the body of this function;"
 //    by the first and all subsequent calls to VK_CANCEL.
 UINT uCancelCode = 0x46;
 
+// There is a mechanism on some keyboard of using a "dead key"
+//   to enable entering characters with an overstruck diacritical
+//   mark.  The following var when set to TRUE indicates that we're
+//   in the middle of that process.
+UBOOL gbDeadKey = FALSE;
+WCHAR gwDeadKey;
+
 // Define struct for passing parameters to WM_NCCREATE/WM_CREATE
 //   for the Function Edit window
 typedef struct tagFE_CREATESTRUCTW
@@ -2143,7 +2150,8 @@ LRESULT WINAPI LclEditCtrlWndProc
     LPWCHAR      lpMemClip;                 // Memory ptr
     UBOOL        ksShft,                    // TRUE iff VK_CONTROL is pressed (either Ctrl- key)
                  ksCtrl,                    // ...      VK_SHIFT   ...                Shift-...
-                 ksMenu;                    // ...      VK_MENU    ...                Alt-  ...
+                 ksMenu,                    // ...      VK_MENU    ...                Alt-  ...
+                 ksAltGR;                   // ...      VK_RMENU   ...         both   Ctrl- Alt-...
     LPPERTABDATA lpMemPTD;                  // Ptr to PerTabData global memory
     LPWCHAR      lpwszFormat;               // Ptr to formatting save area
     static WNDPROC lpfnOldEditCtrlWndProc = // Ptr to preceding Edit Ctrl window procedure
@@ -2547,6 +2555,12 @@ LRESULT WINAPI LclEditCtrlWndProc
             ksShft  = (GetKeyState (VK_SHIFT)   & BIT15) ? TRUE : FALSE;
             ksCtrl  = (GetKeyState (VK_CONTROL) & BIT15) ? TRUE : FALSE;
             ksMenu  = (GetKeyState (VK_MENU )   & BIT15) ? TRUE : FALSE;
+            ksAltGR = (GetKeyState (VK_RMENU)   & BIT15) ? TRUE : FALSE;    // Probably needed in WM_SYSKEYDOWN only
+
+            // If the AltGR key is active and enabled for this keyboard, ...
+            if (ksAltGR && aKeybLayoutAct.bUseAltGR)
+                // Set both the Ctrl- and Alt-keys
+                ksCtrl = ksMenu = TRUE;
 
             // If the virtual key is alphabetic,
             //   and the Alt key is up,
@@ -2583,11 +2597,11 @@ LRESULT WINAPI LclEditCtrlWndProc
             } // End IF
 
 #ifdef DEBUG_WM_KEYDOWN
-            dprintfWL0 (L"WM_KEYDOWN:     nVirtKey = %02X(%c), ScanCode = %02X, SCM = %u%u%u",
+            dprintfWL0 (L"WM_KEYDOWN:     nVirtKey = %02X(%c), ScanCode = %02X, SCMG = %u%u%u%u",
                         nVirtKey,
-                        nVirtKey,
+                        (nVirtKey < ' ') ? ' ' : nVirtKey,
                         keyData.scanCode,
-                        ksShft, ksCtrl, ksMenu);
+                        ksShft, ksCtrl, ksMenu, ksAltGR);
 #endif
             // Get the handle of the parent window
             hWndParent = GetParent (hWnd);
@@ -2607,8 +2621,20 @@ LRESULT WINAPI LclEditCtrlWndProc
                 // Set the keyb state
                 uState = (ksShft << 2) | (ksCtrl << 1) | (ksMenu << 0);
 
-                // Get the corresponding character
+                // Get the corresponding character and its dead key states
                 wchCode[0] = aKeybLayoutAct.aCharCodes[keyData.scanCode].wc[uState];
+
+                // If this is a dead key,
+                //   and the underlying char is one we support, ...
+                if (aKeybLayoutAct.aCharCodes[keyData.scanCode].dk[uState]
+                 && IsDeadKey (wchCode[0]))
+                {
+                    // Mark as dead key waiting
+                    gbDeadKey = TRUE;
+                    gwDeadKey = wchCode[0];
+
+                    return FALSE;
+                } // End IF
 
                 // Check for valid character
                 if (wchCode[0])
@@ -2621,8 +2647,17 @@ LRESULT WINAPI LclEditCtrlWndProc
                             break;
                     } // End IF
 
-                    // Insert/replace the char string
-                    InsRepCharStr (hWnd, wchCode, lpMemPTD EQ NULL);
+                    // If we're dead key waiting, ...
+                    if (gbDeadKey)
+                    {
+                        // Translate and process the char
+                        DeadKeyTrans (hWnd, wchCode, gwDeadKey, lpMemPTD EQ NULL);
+
+                        // Mark as no longer dead key waiting
+                        gbDeadKey = FALSE;
+                    } else
+                        // Insert/replace the char string
+                        InsRepCharStr (hWnd, wchCode, lpMemPTD EQ NULL);
 
                     return FALSE;       // We handled the msg
                 } // End IF
@@ -2852,7 +2887,10 @@ LRESULT WINAPI LclEditCtrlWndProc
             keyData = keyData;          // Respecify to avoid compiler error (unreferenced var)
 
 #ifdef DEBUG_WM_KEYUP
-            dprintfWL0 (L"WM_KEYUP:       nVirtKey = %02X(%c), ScanCode = %02X, SCMA = %u%u%u%u", nVirtKey, nVirtKey, keyData.scanCode);
+            dprintfWL0 (L"WM_KEYUP:       nVirtKey = %02X(%c), ScanCode = %02X",
+                        nVirtKey,
+                        (nVirtKey < ' ') ? ' ' : nVirtKey,
+                        keyData.scanCode);
 #endif
             // Process the virtual key
             switch (nVirtKey)
@@ -2920,6 +2958,12 @@ LRESULT WINAPI LclEditCtrlWndProc
             ksShft  = (GetKeyState (VK_SHIFT)   & BIT15) ? TRUE : FALSE;
             ksCtrl  = (GetKeyState (VK_CONTROL) & BIT15) ? TRUE : FALSE;
             ksMenu  = (GetKeyState (VK_MENU )   & BIT15) ? TRUE : FALSE;
+            ksAltGR = (GetKeyState (VK_RMENU)   & BIT15) ? TRUE : FALSE;
+
+            // If the AltGR key is active and enabled for this keyboard, ...
+            if (ksAltGR && aKeybLayoutAct.bUseAltGR)
+                // Set both the Ctrl- and Alt-keys
+                ksCtrl = ksMenu = TRUE;
 
             // If the virtual key is alphabetic,
             //   and the Alt key is up,
@@ -2956,13 +3000,25 @@ LRESULT WINAPI LclEditCtrlWndProc
             } // End IF
 
 #ifdef DEBUG_WM_KEYDOWN
-            dprintfWL0 (L"WM_SYSKEYDOWN:  nVirtKey = %02X(%c), ScanCode = %02X, SCM = %u%u%u",
+            dprintfWL0 (L"WM_SYSKEYDOWN:  nVirtKey = %02X(%c), ScanCode = %02X, SCMG = %u%u%u%u",
                         nVirtKey,
-                        nVirtKey,
+                        (nVirtKey < ' ') ? ' ' : nVirtKey,
                         keyData.scanCode,
-                        ksShft, ksCtrl, ksMenu);
+                        ksShft, ksCtrl, ksMenu, ksAltGR);
 #endif
-            // Ensure the scanCode is within range of our table
+            // Get the handle of the parent window
+            hWndParent = GetParent (hWnd);
+
+            // If our parent is not MF, ...
+            if (lpMemPTD NE NULL)
+                // Save the key in the parent window's extra bytes
+                SetWindowLongW (hWndParent, GWLSF_LASTKEY, nVirtKey);
+
+            // This message handles special keys that don't
+            //   produce a WM_CHAR, i.e. non-printable keys,
+            //   Backspace, and Delete.
+
+            // If the scanCode is within range of our table, ...
             if (keyData.scanCode < aKeybLayoutAct.uCharCodesLen)
             {
                 // Set the keyb state
@@ -2970,6 +3026,18 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                 // Get the corresponding character
                 wchCode[0] = aKeybLayoutAct.aCharCodes[keyData.scanCode].wc[uState];
+
+                // If this is a dead key,
+                //   and the underlying char is one we support, ...
+                if (aKeybLayoutAct.aCharCodes[keyData.scanCode].dk[uState]
+                 && IsDeadKey (wchCode[0]))
+                {
+                    // Mark as dead key waiting
+                    gbDeadKey = TRUE;
+                    gwDeadKey = wchCode[0];
+
+                    return FALSE;
+                } // End IF
 
                 // Check for valid character
                 if (wchCode[0])
@@ -2982,8 +3050,17 @@ LRESULT WINAPI LclEditCtrlWndProc
                             break;
                     } // End IF
 
-                    // Insert/replace the char string
-                    InsRepCharStr (hWnd, wchCode, lpMemPTD EQ NULL);
+                    // If we're dead key waiting, ...
+                    if (gbDeadKey)
+                    {
+                        // Translate and process the char
+                        DeadKeyTrans (hWnd, wchCode, gwDeadKey, lpMemPTD EQ NULL);
+
+                        // Mark as no longer dead key waiting
+                        gbDeadKey = FALSE;
+                    } else
+                        // Insert/replace the char string
+                        InsRepCharStr (hWnd, wchCode, lpMemPTD EQ NULL);
 
                     return FALSE;       // We handled the msg
                 } // End IF
@@ -3086,6 +3163,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 ////             ksShft  = (GetKeyState (VK_SHIFT)   & BIT15) ? TRUE : FALSE;
 ////             ksCtrl  = (GetKeyState (VK_CONTROL) & BIT15) ? TRUE : FALSE;
 ////             ksMenu  = (GetKeyState (VK_MENU )   & BIT15) ? TRUE : FALSE;
+////             ksAltGR = (GetKeyState (VK_RMENU)   & BIT15) ? TRUE : FALSE;
 ////
 ////             // If the virtual key is alphabetic,
 ////             //   and the Alt key is up,
@@ -3117,11 +3195,11 @@ LRESULT WINAPI LclEditCtrlWndProc
 ////            } // End IF
 ////
 //// #ifdef DEBUG_WM_KEYUP
-////             dprintfWL0 (L"WM_SYSKEYUP:    nVirtKey = %02X(%c), ScanCode = %02X, SCM = %u%u%u%u",
+////             dprintfWL0 (L"WM_SYSKEYUP:    nVirtKey = %02X(%c), ScanCode = %02X, SCMG = %u%u%u%u",
 ////                         nVirtKey,
-////                         nVirtKey,
+////                         (nVirtKey < ' ') ? ' ' : nVirtKey,
 ////                         keyData.scanCode,
-////                         ksShft, ksCtrl, ksMenu);
+////                         ksShft, ksCtrl, ksMenu, ksAltGR);
 //// #endif
 ////             break;
 //// #ifndef DEBUG
@@ -3146,21 +3224,19 @@ LRESULT WINAPI LclEditCtrlWndProc
                 return FALSE;
 
             // Get the key states
-            // Note that the shift state (L- and R-shift and CapsLock)
-            //   has already been taken into consideration, so there's
-            //   no need to obtain the shift state., and if the Alt key
-            //   is down, then WM_SYSCHAR is called, not WM_CHAR.
+            // Note that if the Alt key is down,
+            //   then WM_SYSCHAR is called, not WM_CHAR.
             ksShft  = (GetKeyState (VK_SHIFT)   & BIT15) ? TRUE : FALSE;
             ksCtrl  = (GetKeyState (VK_CONTROL) & BIT15) ? TRUE : FALSE;
-////////////ksMenu  = (GetKeyState (VK_MENU )   & BIT15) ? TRUE : FALSE;
 
 #ifdef DEBUG_WM_CHAR
             ksMenu  = (GetKeyState (VK_MENU )   & BIT15) ? TRUE : FALSE;
-            dprintfWL0 (L"WM_CHAR:      CharCode = %02X(%c), ScanCode = %02X, SCM = %u%u%u",
+            ksAltGR = (GetKeyState (VK_RMENU)   & BIT15) ? TRUE : FALSE;
+            dprintfWL0 (L"WM_CHAR:        CharCode = %02X(%c), ScanCode = %02X, SCMG = %u%u%u%u",
                          wchCharCode,
                          wchCharCode,
                          keyData.scanCode,
-                         ksShft, ksCtrl, ksMenu);
+                         ksShft, ksCtrl, ksMenu, ksAltGR);
 #endif
             // Check for Tab
             if (wchCharCode EQ WC_HT)
@@ -3331,10 +3407,13 @@ LRESULT WINAPI LclEditCtrlWndProc
   #define keyData       (*(LPKEYDATA) &lParam)
 #endif
             wchCharCode = wchCharCode;  // Respecify to avoid compiler error (unreferenced var)
-            keyData = keyData;
+            keyData = keyData;          // ...
 
 #ifdef DEBUG_WM_CHAR
-            dprintfWL0 (L"WM_SYSCHAR:   CharCode = %02X(%c), ScanCode = %02X", wchCharCode, wchCharCode, keyData.scanCode);
+            dprintfWL0 (L"WM_SYSCHAR:     CharCode = %02X(%c), ScanCode = %02X",
+                         wchCharCode,
+                         wchCharCode,
+                         keyData.scanCode);
 #endif
             return FALSE;           // We handled the msg
 #ifndef DEBUG
@@ -5122,6 +5201,117 @@ RESTART_UNDO:
     SetWindowLongPtrW (hWnd, GWLSF_UNDO_NXT, (APLU3264) (LONG_PTR) lpUndoNxt);
     SetWindowLongPtrW (hWnd, GWLSF_UNDO_LST, (APLU3264) (LONG_PTR) lpUndoNxt);
 } // End AppendUndo
+
+
+//***************************************************************************
+//  $DeadKeyTrans
+//
+//  Translate a dead key and its following character and process the result
+//***************************************************************************
+
+void DeadKeyTrans
+    (HWND    hWnd,          // EC window handle
+     LPWCHAR lpwcInp,       // The incoming char string
+     WCHAR   gwDeadKey,     // The dead key character (e.g. '^')
+     UBOOL   bParentMF)     // TRUE iff the window's parent is MF
+
+{
+typedef struct tag
+{
+    LPWCHAR ascii,          // Unaccented chars
+            accent;         // Accented   ...
+} ACCENTCHARS, *LPACCENTCHARS;
+
+    static ACCENTCHARS circumflex = {L"aceghijosuwyz"
+                                     L"ACEGHIJOSUWYZ",
+                                     //   A     C     E     G     H     I     J     O     S     U     W    Y     Z
+                                     L"\x00E2\x0109\x00EA\x011D\x0125\x00EE\x0135\x00F4\x015D\x00FB\x0175\x0177\x1E91"
+                                     L"\x00C2\x0108\x00CA\x011C\x0124\x00CE\x0134\x00D4\x015C\x00DB\x0174\x0176\x1E90"},
+                       dieresis   = {L"aehiotuwxy"
+                                     L"AEHIOTUWXY",
+                                     //   A     E     H     I     O     T     U     W     X     Y
+                                     L"\x00E4\x00EB\x1E27\x00EF\x00F6\x1E97\x00FC\x1E85\x1E8D\x00FF"
+                                     L"\x00C4\x00CB\x1E26\x00CF\x00D6\xFFFD\x00DC\x1E84\x1E8C\x0178"},   // Note that capital T with dieresis is missing
+                       acute      = {L"acegiklmnoprsuwyz"
+                                     L"ACEGIKLMNOPRSUWYZ",
+                                     //   A     C     E     G     I     K     L     M     N     O     P     R     S     U     W     Y     Z
+                                     L"\x00E1\x0107\x00E9\x01F5\x00ED\x1E31\x013A\x1E3F\x0144\x00F3\x1E55\x0155\x015B\x00FA\x1E83\x00FD\x017A"
+                                     L"\x00C1\x0106\x00C9\x01F4\x00CD\x1E30\x0139\x1E3E\x0143\x00D3\x1E54\x0154\x015A\x00DA\x1E82\x00DD\x0179"},
+                       grave      = {L"aeinouwy"
+                                     L"AEINOUWY",
+                                     //   A     E     I     N     O     U     W     Y
+                                     L"\x00E0\x00E8\x00EC\x01F9\x00F2\x00F9\x1E81\x1EF3"
+                                     L"\x00C0\x00C8\x00CC\x01F8\x00D2\x00D9\x1E80\x1EF2"},
+                       tilde      = {L"aeinouvy"
+                                     L"AEINOUVY",
+                                     //   A     E     I     N     O     U     V     Y
+                                     L"\x00E3\x1EBD\x0129\x00F1\x00F5\x0169\x1E7D\x1EF9"
+                                     L"\x00C3\x1EBC\x0128\x00D1\x00D5\x0168\x1E7C\x1EF8"};
+    ACCENTCHARS lpwDK;              // Ptr to current ACCENTCHARS
+    APLI3264    iNdx;               // Temporary index into each row of lpwDK
+    WCHAR       wcOut[2] = {L'\0'}; // Temporary WCHAR
+    UBOOL       bNoMatch = FALSE;   // TRUE iff we do not support this dead key
+
+    // Split cases based upon the dead key
+    switch (gwDeadKey)
+    {
+        case UTF16_CIRCUMFLEX:
+            lpwDK = circumflex;
+
+            break;
+
+        case UTF16_DIERESIS:
+            lpwDK = dieresis  ;
+
+            break;
+
+        case UTF16_ACUTE:
+            lpwDK = acute     ;
+
+            break;
+
+        case UTF16_GRAVE:
+            lpwDK = grave     ;
+
+            break;
+
+        case UTF16_TILDE2:
+            lpwDK = tilde     ;
+
+            break;
+
+        default:
+            // Mark as not supported
+            bNoMatch = TRUE;
+
+            break;
+    } // End SWITCH
+
+    // If we support this dead key, ...
+    if (!bNoMatch)
+        // Look up the incoming char in our table
+        iNdx = strcspnW (lpwDK.ascii, lpwcInp);
+
+    // If supported and found, ...
+    if (!bNoMatch && iNdx < lstrlenW (lpwDK.ascii))
+    {
+        // Translate the char
+        wcOut[0] = lpwDK.accent[iNdx];
+
+        // Insert the char
+        InsRepCharStr (hWnd, wcOut, bParentMF);
+    } else
+    {
+        // Save the dead key as a string
+        wcOut[0] = gwDeadKey;
+
+        // Output the dead key
+        InsRepCharStr (hWnd, wcOut, bParentMF);
+
+        // Output the incoming char
+        InsRepCharStr (hWnd, lpwcInp, bParentMF);
+    } // End IF/ELSE
+} // End DeadKeyTrans
 
 
 //***************************************************************************

@@ -57,7 +57,23 @@ typedef struct tagVKSTATE
 } VKSTATE, *LPVKSTATE;
 
 
-#define NaN     0x2205
+#define NaN         UTF16_NAN
+#define EURO        UTF16_EURO
+#define POUND       UTF16_POUND
+#define CURR        UTF16_CURRENCY
+#define JOT2        UTF16_JOT2
+#define DIER        UTF16_DIERESIS
+#define AGRAVE      UTF16_SMALL_A_GRAVE
+#define CCEDIL      UTF16_SMALL_C_CEDILLA
+#define EGRAVE      UTF16_SMALL_E_GRAVE
+#define EACUTE      UTF16_SMALL_E_ACUTE
+#define UCAR        UTF16_UPCARET
+#define CIRCM       UTF16_CIRCUMFLEX
+
+//                   U  A  C AC  S SA SC SCA
+#define DEAD_UN_SH  {1, 0, 0, 0, 1, 0, 0, 0}
+#define DEAD_GR     {0, 0, 0, 1, 0, 0, 0, 0}
+
 
 // If you are looking for places on the keyboard to put a new symbol,
 //   there are several free Alt-Shift- combinations:
@@ -89,7 +105,7 @@ typedef struct tagVKSTATE
 
 typedef struct tagCHARCODE
 {
-    WCHAR wc[8];    // 000-111:  Shift- Ctrl- Alt-keys
+    WCHAR wc[9];    // 000-111:  Shift- Ctrl- Alt-keys and Dead Key
 ////WCHAR u   ,     // 000:  No Shift- Ctrl- Alt-keys pressed
 ////      a   ,     // 001:  Alt-key pressed
 ////      c   ,     // 010:  Ctrl-key pressed
@@ -98,6 +114,7 @@ typedef struct tagCHARCODE
 ////      sa  ,     // 101:  Shift- Alt-keys pressed
 ////      sc  ,     // 110:  Shift- Ctrl-keys pressed
 ////      sca ;     // 111:  Shift- Ctrl- Alt-keys pressed
+    UBOOL dk[8];    // TRUE iff this scan code in this keyb state is a dead key
 } CHARCODE, *LPCHARCODE;
 
 #define NUM_KEYS    (0x56 + 1)
@@ -114,7 +131,7 @@ CHARCODE aCharCodesNARS_US_EN_ALT[NUM_KEYS]
  {L'3', L'<'                    , 0, 0, L'#', UTF16_DELSTILE          , 0, 0},    // 04:  '3'
  {L'4', UTF16_LEFTCARETUNDERBAR , 0, 0, L'$', UTF16_DELTASTILE        , 0, 0},    // 05:  '4'
  {L'5', UTF16_NAN               , 0, 0, L'%', UTF16_CIRCLESTILE       , 0, 0},    // 06:  '5'
- {L'6', UTF16_RIGHTCARETUNDERBAR, 0, 0, L'^', UTF16_CIRCLESLOPE       , 0, 0},    // 07:  '6'
+ {L'6', UTF16_RIGHTCARETUNDERBAR, 0, 0, UCAR, UTF16_CIRCLESLOPE       , 0, 0},    // 07:  '6'
  {L'7', L'>'                    , 0, 0, L'&', UTF16_CIRCLEBAR         , 0, 0},    // 08:  '7'
  {L'8', UTF16_NOTEQUAL          , 0, 0, L'*', UTF16_CIRCLESTAR        , 0, 0},    // 09:  '8'
  {L'9', UTF16_DOWNCARET         , 0, 0, L'(', UTF16_DOWNCARETTILDE    , 0, 0},    // 0A:  '9'
@@ -228,7 +245,7 @@ CHARCODE aCharCodesNARS_US_EN_ALT[NUM_KEYS]
  {L'3', 0, L'<'                    , 0, L'#', 0, UTF16_DELSTILE          , 0},    // 04:  '3'
  {L'4', 0, UTF16_LEFTCARETUNDERBAR , 0, L'$', 0, UTF16_DELTASTILE        , 0},    // 05:  '4'
  {L'5', 0, UTF16_NAN               , 0, L'%', 0, UTF16_CIRCLESTILE       , 0},    // 06:  '5'
- {L'6', 0, UTF16_RIGHTCARETUNDERBAR, 0, L'^', 0, UTF16_CIRCLESLOPE       , 0},    // 07:  '6'
+ {L'6', 0, UTF16_RIGHTCARETUNDERBAR, 0, UCAR, 0, UTF16_CIRCLESLOPE       , 0},    // 07:  '6'
  {L'7', 0, L'>'                    , 0, L'&', 0, UTF16_CIRCLEBAR         , 0},    // 08:  '7'
  {L'8', 0, UTF16_NOTEQUAL          , 0, L'*', 0, UTF16_CIRCLESTAR        , 0},    // 09:  '8'
  {L'9', 0, UTF16_DOWNCARET         , 0, L'(', 0, UTF16_DOWNCARETTILDE    , 0},    // 0A:  '9'
@@ -336,9 +353,9 @@ CHARCODE aCharCodesNARS_US_EN_ALT[NUM_KEYS]
 //  U       A       C       AC      S       SA      SC      SCA
 {{  0 },                                                                          // 00:  DO NOT USE
  {  0 },                                                                          // 01:  ESC
- {  L'1' ,  0    , 0x00A8,  0    ,  L'!' ,  0    , 0x2261,  0     },              // 02:  '1'
+ {  L'1' ,  0    , DIER  ,  0    ,  L'!' ,  0    , 0x2261,  0     },              // 02:  '1'
  {  L'2' ,  0    , 0x00AF,  0    ,  L'\"',  L'@' , 0x236B,  0     },              // 03:  '2'
- {  L'3' ,  0    ,  L'<' ,  0    ,  L'#' , 0x00A3, 0x2352,  0     },              // 04:  '3'
+ {  L'3' ,  0    ,  L'<' ,  0    ,  L'#' , POUND , 0x2352,  0     },              // 04:  '3'
  {  L'4' ,  0    , 0x2264,  0    , 0x00A4,  L'$' , 0x234B,  0     },              // 05:  '4'
  {  L'5' ,  0    ,  NaN  ,  0    ,  L'%' ,  0    , 0x233D,  0     },              // 06:  '5'
  {  L'6' ,  0    , 0x2265,  0    ,  L'&' ,  0    , 0x2349,  0     },              // 07:  '6'
@@ -352,7 +369,7 @@ CHARCODE aCharCodesNARS_US_EN_ALT[NUM_KEYS]
  {  0 },                                                                          // 0F:  HT
  {  L'q' ,  0    ,  L'?' ,  0    ,  L'Q' ,  0    ,  0    ,  0     },              // 10:  'q'
  {  L'w' ,  0    , 0x2375,  0    ,  L'W' ,  0    ,  0    ,  0     },              // 11:  'w'
- {  L'e' ,  0    , 0x220A,  0    ,  L'E' , 0x20AC, 0x2377,  0     },              // 12:  'e'
+ {  L'e' ,  0    , 0x220A,  EURO ,  L'E' ,  0    , 0x2377,  0     },              // 12:  'e'
  {  L'r' ,  0    , 0x2374,  0    ,  L'R' ,  0    , 0x221A,  0     },              // 13:  'r'
  {  L't' ,  0    , 0x223C,  0    ,  L'T' ,  0    , 0x2368,  0     },              // 14:  't'
  {  L'y' ,  0    , 0x2191,  0    ,  L'Y' ,  0    ,  0    ,  0     },              // 15:  'y'
@@ -361,7 +378,7 @@ CHARCODE aCharCodesNARS_US_EN_ALT[NUM_KEYS]
  {  L'o' ,  0    , 0x25CB,  0    ,  L'O' ,  0    , 0x2365,  0     },              // 18:  'o'
  {  L'p' ,  0    ,  L'*' ,  0    ,  L'P' ,  0    , 0x2363,  0     },              // 19:  'p'
  { 0x00E5,  0    , 0x2190,  0    , 0x00C5,  0    , 0x235E,  0     },              // 1A:  '['
- { 0x00A8,  0    , 0x2192,  0    ,  L'^' ,  L'~' , 0x236C,  0     },              // 1B:  ']'
+{{ DIER  ,  0    , 0x2192,  CURR ,  CIRCM,  L'~' , 0x236C,  0     }, DEAD_GR},    // 1B:  ']'
  {  0 },                                                                          // 1C:  CR
  {  0 },                                                                          // 1D:  LCTL & RCTL
  {  L'a' ,  0    , 0x237A,  0    ,  L'A' ,  0    ,  0    ,  0     },              // 1E:  'a'
@@ -445,23 +462,23 @@ CHARCODE aCharCodesNARS_US_EN_ALT[NUM_KEYS]
 //  U       A       C       AC      S       SA      SC      SCA
 {{  0 },                                                                          // 00:  DO NOT USE
  {  0 },                                                                          // 01:  ESC
- {  L'&' , 0x00A8,  0    ,  0    ,  L'1' , 0x2261,  0    ,  0     },              // 02:  '1'
- { 0x00E9, 0x00AF,  L'~' ,  0    ,  L'2' , 0x2262,  0    ,  0     },              // 03:  '2'
- {  L'\"',  L'<' ,  L'#' ,  0    ,  L'3' , 0x2352,  0    ,  0     },              // 04:  '3'
- {  L'\'', 0x2264,  L'{' ,  0    ,  L'4' , 0x234B,  0    ,  0     },              // 05:  '4'
- {  L'(' ,  NaN  ,  L'[' ,  0    ,  L'5' , 0x233D,  0    ,  0     },              // 06:  '5'
- {  L'-' , 0x2265,  L'|' ,  0    ,  L'6' , 0x2349,  0    ,  0     },              // 07:  '6'
- { 0x00E8,  L'>' ,  L'`' ,  0    ,  L'7' , 0x2296,  0    ,  0     },              // 08:  '7'
- {  L'_' , 0x2260,  L'\\',  0    ,  L'8' , 0x235F,  0    ,  0     },              // 09:  '8'
- { 0x00E7, 0x2228,  L'^' ,  0    ,  L'9' , 0x2371,  0    ,  0     },              // 0A:  '9'
- { 0x00E0, 0x2227,  L'@' ,  0    ,  L'0' , 0x2372,  0    ,  0     },              // 0B:  '0'
- {  L')' , 0x00D7,  L']' ,  0    , 0x2218, 0x2360,  0    ,  0     },              // 0C:  '-'
- {  L'=' , 0x00F7,  L'}' ,  0    ,  L'+' , 0x2339,  0    ,  0     },              // 0D:  '='
+ {  L'&' , DIER  ,  0    ,  0    ,  L'1' , 0x2261,  0    ,  0     },              // 02:  '1'
+{{ EACUTE, 0x00AF,  0    ,  L'~' ,  L'2' , 0x2262,  0    ,  0     }, DEAD_GR},    // 03:  '2'
+ {  L'\"',  L'<' ,  0    ,  L'#' ,  L'3' , 0x2352,  0    ,  0     },              // 04:  '3'
+ {  L'\'', 0x2264,  0    ,  L'{' ,  L'4' , 0x234B,  0    ,  0     },              // 05:  '4'
+ {  L'(' ,  NaN  ,  0    ,  L'[' ,  L'5' , 0x233D,  0    ,  0     },              // 06:  '5'
+ {  L'-' , 0x2265,  0    ,  L'|' ,  L'6' , 0x2349,  0    ,  0     },              // 07:  '6'
+{{ EGRAVE,  L'>' ,  0    ,  L'`' ,  L'7' , 0x2296,  0    ,  0     }, DEAD_GR},    // 08:  '7'
+ {  L'_' , 0x2260,  0    ,  L'\\',  L'8' , 0x235F,  0    ,  0     },              // 09:  '8'
+ { CCEDIL, 0x2228,  0    ,  UCAR ,  L'9' , 0x2371,  0    ,  0     },              // 0A:  '9'
+ { AGRAVE, 0x2227,  0    ,  L'@' ,  L'0' , 0x2372,  0    ,  0     },              // 0B:  '0'
+ {  L')' , 0x00D7,  0    ,  L']' , JOT2  , 0x2360,  0    ,  0     },              // 0C:  '-'
+ {  L'=' , 0x00F7,  0    ,  L'}' ,  L'+' , 0x2339,  0    ,  0     },              // 0D:  '='
  {  0 },                                                                          // 0E:  BS
  {  0 },                                                                          // 0F:  HT
  {  L'a' ,  L'?' ,  0    ,  0    ,  L'A' ,  0    ,  0    ,  0     },              // 10:  'q'
  {  L'z' , 0x2375,  0    ,  0    ,  L'Z' ,  0    ,  0    ,  0     },              // 11:  'w'
- {  L'e' , 0x220A,  0    ,  0    ,  L'E' , 0x2377,  0    ,  0     },              // 12:  'e'
+ {  L'e' , 0x220A,  0    , EURO  ,  L'E' , 0x2377,  0    ,  0     },              // 12:  'e'
  {  L'r' , 0x2374,  0    ,  0    ,  L'R' , 0x221A,  0    ,  0     },              // 13:  'r'
  {  L't' , 0x223C,  0    ,  0    ,  L'T' , 0x2368,  0    ,  0     },              // 14:  't'
  {  L'y' , 0x2191,  0    ,  0    ,  L'Y' ,  0    ,  0    ,  0     },              // 15:  'y'
@@ -469,11 +486,11 @@ CHARCODE aCharCodesNARS_US_EN_ALT[NUM_KEYS]
  {  L'i' , 0x2373,  0    ,  0    ,  L'I' , 0x2378,  0    ,  0     },              // 17:  'i'
  {  L'o' , 0x25CB,  0    ,  0    ,  L'O' , 0x2365,  0    ,  0     },              // 18:  'o'
  {  L'p' , 0x03C0,  0    ,  0    ,  L'P' , 0x2363,  0    ,  0     },              // 19:  'p'
- {  L'^' , 0x2190,  0    ,  0    , 0x00A8, 0x235E,  0    ,  0     },              // 1A:  '['
- {  L'$' , 0x2192, 0x20AC,  0    , 0x00A3, 0x236C,  0    ,  0     },              // 1B:  ']'
+{{  CIRCM, 0x2190,  0    ,  0    , DIER  , 0x235E,  0    ,  0     }, DEAD_UN_SH}, // 1A:  '['
+ {  L'$' , 0x2192,  0    , CURR  , POUND , 0x236C,  0    ,  0     },              // 1B:  ']'
  {  0 },                                                                          // 1C:  CR
  {  0 },                                                                          // 1D:  LCTL & RCTL
- {  L'q' , 0x237A,  0    ,  0    ,  L'A' ,  0    ,  0    ,  0     },              // 1E:  'a'
+ {  L'q' , 0x237A,  0    ,  0    ,  L'Q' ,  0    ,  0    ,  0     },              // 1E:  'a'
  {  L's' , 0x2308,  0    ,  0    ,  L'S' , 0x00A7,  0    ,  0     },              // 1F:  's'
  {  L'd' , 0x230A,  0    ,  0    ,  L'D' ,  0    ,  0    ,  0     },              // 20:  'd'
  {  L'f' , 0x221E,  0    ,  0    ,  L'F' ,  0    ,  0    ,  0     },              // 21:  'f'
@@ -561,8 +578,9 @@ typedef struct tagKEYBLAYOUTS
                bUseCXV:1,               //        00000002:  TRUE iff this keyb layout uses Ctrl-C, -X, -V for Copy, Cut, Paste
                bUseZY:1,                //        00000004:  TRUE iff ...                   Ctrl-Z, -Y     for Undo, Redo
                bUseSEQ:1,               //        00000008:  TRUE iff ...                   Ctrl-S, -E, -Q for function editing commands
-               bReadOnly:1,             //        00000010:  TRUE iff the layout is read-only (i.e. built-in)
-               :27;                     //        FFFFFFE0:  Available bits
+               bUseAltGR:1,             //        00000010:  TRUE iff ...                   AltGR as an  alias for pressing the Ctrl- and Alt-keys
+               bReadOnly:1,             //        00000020:  TRUE iff the layout is read-only (i.e. built-in)
+               :26;                     //        FFFFFFC0:  Available bits
                                         // 088C:  Length
 } KEYBLAYOUTS, *LPKEYBLAYOUTS;
 
@@ -576,7 +594,8 @@ typedef struct tagKEYBLAYOUTS_BI
                bUseCXV:1,               //        00000002:  TRUE iff this keyb layout uses Ctrl-C, -X, -V for Copy, Cut, Paste
                bUseZY:1,                //        00000004:  TRUE iff ...              uses Ctrl-Z, -Y     for Undo, Redo
                bUseSEQ:1,               //        00000008:  TRUE iff ...                   Ctrl-S, -E, -Q for function editing commands
-               :28;                     //        FFFFFFF0:  Available bits
+               bUseAltGR:1,             //        00000010:  TRUE iff ...                   AltGR as an  alias for pressing the Ctrl- and Alt-keys
+               :27;                     //        FFFFFFE0:  Available bits
                                         // 0090:  Length
 } KEYBLAYOUTS_BI, *LPKEYBLAYOUTS_BI;
 
@@ -599,14 +618,14 @@ KEYBLAYOUTS_BI aKeybLayoutsBI[]
 #ifdef DEFINE_VALUES
 =
 {
-    {aCharCodesNARS_US_EN_ALT, countof (aCharCodesNARS_US_EN_ALT), KEYBLAYOUT_UK_ALT   , 2, TRUE , TRUE , TRUE , TRUE },
-    {aCharCodesNARS_US_EN_ALT, countof (aCharCodesNARS_US_EN_ALT), KEYBLAYOUT_US_ALT   , 1, FALSE, TRUE , TRUE , TRUE },
-    {aCharCodesNARS_US_EN_ALT, countof (aCharCodesNARS_US_EN_ALT), KEYBLAYOUT_INTL_ALT , 2, FALSE, TRUE , TRUE , TRUE },
-    {aCharCodesNARS_US_EN_CTL, countof (aCharCodesNARS_US_EN_CTL), KEYBLAYOUT_UK_CTL   , 2, TRUE , FALSE, FALSE, FALSE},
-    {aCharCodesNARS_US_EN_CTL, countof (aCharCodesNARS_US_EN_CTL), KEYBLAYOUT_US_CTL   , 1, FALSE, FALSE, FALSE, FALSE},
-    {aCharCodesNARS_US_EN_CTL, countof (aCharCodesNARS_US_EN_CTL), KEYBLAYOUT_INTL_CTL , 2, FALSE, FALSE, FALSE, FALSE},
-    {aCharCodesNARS_DK_CTL   , countof (aCharCodesNARS_DK_CTL   ), KEYBLAYOUT_DK_CTL   , 2, TRUE , FALSE, FALSE, FALSE},
-    {aCharCodesNARS_FR_ALT   , countof (aCharCodesNARS_FR_ALT   ), KEYBLAYOUT_FR_ALT   , 2, TRUE , TRUE , TRUE , TRUE },
+    {aCharCodesNARS_US_EN_ALT, countof (aCharCodesNARS_US_EN_ALT), KEYBLAYOUT_UK_ALT   , 2, TRUE , TRUE , TRUE , TRUE , FALSE},
+    {aCharCodesNARS_US_EN_ALT, countof (aCharCodesNARS_US_EN_ALT), KEYBLAYOUT_US_ALT   , 1, FALSE, TRUE , TRUE , TRUE , FALSE},
+    {aCharCodesNARS_US_EN_ALT, countof (aCharCodesNARS_US_EN_ALT), KEYBLAYOUT_INTL_ALT , 2, FALSE, TRUE , TRUE , TRUE , FALSE},
+    {aCharCodesNARS_US_EN_CTL, countof (aCharCodesNARS_US_EN_CTL), KEYBLAYOUT_UK_CTL   , 2, TRUE , FALSE, FALSE, FALSE, FALSE},
+    {aCharCodesNARS_US_EN_CTL, countof (aCharCodesNARS_US_EN_CTL), KEYBLAYOUT_US_CTL   , 1, FALSE, FALSE, FALSE, FALSE, FALSE},
+    {aCharCodesNARS_US_EN_CTL, countof (aCharCodesNARS_US_EN_CTL), KEYBLAYOUT_INTL_CTL , 2, FALSE, FALSE, FALSE, FALSE, FALSE},
+    {aCharCodesNARS_DK_CTL   , countof (aCharCodesNARS_DK_CTL   ), KEYBLAYOUT_DK_CTL   , 2, TRUE , FALSE, FALSE, FALSE, TRUE},
+    {aCharCodesNARS_FR_ALT   , countof (aCharCodesNARS_FR_ALT   ), KEYBLAYOUT_FR_ALT   , 2, TRUE , TRUE , TRUE , TRUE , TRUE},
 }
 #endif
 ;

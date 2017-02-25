@@ -1089,7 +1089,18 @@ HWND hWndTC,                            // Global Tab Control window handle
      hWndLW_RB;                         // ...    Lang window in Rebar Ctrl
 
 EXTERN
-HGLOBAL hGlbQuadA,                      // []A
+HGLOBAL hGlbQuada,                      // []a
+        hGlbQuadA,                      // []A
+        hGlbQuadâ,                      // []â
+        hGlbQuadÂ,                      // []Â
+        hGlbQuadä,                      // []ä
+        hGlbQuadÄ,                      // []Ä
+        hGlbQuadá,                      // []á
+        hGlbQuadÁ,                      // []Á
+        hGlbQuadà,                      // []à
+        hGlbQuadÀ,                      // []À
+        hGlbQuadã,                      // []ã
+        hGlbQuadÃ,                      // []Ã
         hGlbQuadAV,                     // []AV
         hGlbQuadD,                      // []D
         hGlbQuadxLX,                    // []xLX default

@@ -340,7 +340,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
         tkLft.tkFlags.TknType   = TKT_VARARRAY;
 ////////tkLft.tkFlags.ImmType   = IMMTYPE_ERROR;    // Already zero from = {0}
 ////////tkLft.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
-        tkLft.tkData.tkGlbData  = MakePtrTypeGlb (hGlbQuadAV);
+        tkLft.tkData.tkGlbData  = hGlbQuadAV;
         tkLft.tkCharIndex       = lptkFunc->tkCharIndex;
 
         lpYYRes =

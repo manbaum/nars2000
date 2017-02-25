@@ -150,6 +150,7 @@
 #define IDM_TOGGLE_LNS_FCN                       745
 
 #define IDM_CUSTOMIZE                            750
+#define IDM_TOGGLE_DK                            751
 
 // The following IDs are used as a base of length <uNumRecentFiles>
 #define IDM_LOAD_BASE                          11000
@@ -832,11 +833,14 @@
 #define IDC_KEYB_RB_UNDO1                       4163
 #define IDC_KEYB_RB_FNED0                       4164
 #define IDC_KEYB_RB_FNED1                       4165
-#define IDC_KEYB_BN_COPY                        4166
-#define IDC_KEYB_BN_DEL                         4167
-#define IDC_KEYB_BN_FONT                        4168
-#define IDC_KEYB_TC                             4169
-#define IDC_NEWKEYB_EC                          4170
+#define IDC_KEYB_RB_ALTG0                       4166
+#define IDC_KEYB_RB_ALTG1                       4167
+#define IDC_KEYB_BN_COPY                        4168
+#define IDC_KEYB_BN_DEL                         4169
+#define IDC_KEYB_BN_FONT                        4170
+#define IDC_KEYB_TC                             4171
+#define IDC_NEWKEYB_EC                          4172
+#define IDC_KEYB_BN_DK                          4173
 
 #define IDC_KEYB_BN_KC_00                       4200
 #define IDC_KEYB_BN_KC_01                       4201

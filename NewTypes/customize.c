@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -306,6 +306,10 @@ typedef struct tagNEWKEYBDLG
 
 // Define default pt size for the CLEARWS Values font
 #define DEF_CWSPTSIZE       11
+
+// Define foreground & background colors for Dead Keys
+#define DEF_SCN_DK_FG       DEF_SCN_RED
+#define DEF_SCN_DK_BG       DEF_SCN_YELLOW
 
 
 //***************************************************************************
@@ -2038,7 +2042,9 @@ INT_PTR CALLBACK CustomizeDlgProc
             if (IDC_KEYB_BN_KC_00 <= idCtl
              &&                      idCtl <= IDC_KEYB_BN_KC_LAST)
             {
-                UINT oldBkMode;
+                COLORREF oldTextColor,              // ... text color
+                         oldBackColor;              // ... back color
+                UINT     oldBkMode;                 // Old background mode
 
                 Assert (lpdis->CtlType EQ ODT_BUTTON);
 
@@ -2046,8 +2052,10 @@ INT_PTR CALLBACK CustomizeDlgProc
                 hWndProp = (HWND)
                   SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
 
-                // Set the text background mode and save the old one
-                oldBkMode = SetBkMode (lpdis->hDC, TRANSPARENT);
+                // Save the old text & background colors & mode
+                oldTextColor = GetTextColor (lpdis->hDC);
+                oldBackColor = GetBkColor   (lpdis->hDC);
+                oldBkMode    = SetBkMode    (lpdis->hDC, TRANSPARENT);
 
                 // Paint the button border & background
                 if (bThemedKeybs)
@@ -2135,6 +2143,22 @@ INT_PTR CALLBACK CustomizeDlgProc
                         if (wszText[0] EQ L'\0')
                             // Draw a blank
                             wszText[0] = L' ';
+                        else
+                        // If this scancode is a dead key, ...
+                        if (lpLclKeybLayouts[uLclKeybLayoutNumVis].aCharCodes[uScanCode].dk[uKeybState])
+                        {
+                            // Set the foreground & background color & mode
+                            SetTextColor (lpdis->hDC, DEF_SCN_DK_FG);
+                            SetBkColor   (lpdis->hDC, DEF_SCN_DK_BG);
+                            SetBkMode    (lpdis->hDC, OPAQUE);
+
+                            // Paint the button border & background
+                            if (bThemedKeybs)
+                                // Draw the theme background
+                                zDrawThemeBackground (hThemeKeybs, lpdis->hDC, BP_PUSHBUTTON, PBS_HOT   , &lpdis->rcItem, NULL);
+                            // Fill in the background closer to the edge
+                            FillBackgroundToEdge (lpdis);
+                        } // End IF/ELSE/...
                     } else
                         // Draw a blank
                         wszText[0] = L' ';
@@ -2147,8 +2171,53 @@ INT_PTR CALLBACK CustomizeDlgProc
                                DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
                 } // End IF
 
-                // Restore the old text background mode
-                SetBkMode (lpdis->hDC, oldBkMode);
+                // Restore the old text & background colors & mode
+                SetTextColor (lpdis->hDC, oldTextColor);
+                SetBkColor   (lpdis->hDC, oldBackColor);
+                SetBkMode    (lpdis->hDC, oldBkMode);
+            } else
+            // Check to see if this is our Keyboard Dead Key button
+            if (idCtl EQ IDC_KEYB_BN_DK)
+            {
+                COLORREF oldTextColor,              // ... text color
+                         oldBackColor;              // ... back color
+                UINT     oldBkMode;                 // Old background mode
+
+                Assert (lpdis->CtlType EQ ODT_BUTTON);
+
+                // Get the associated item data (window handle of the Property Page)
+                hWndProp = (HWND)
+                  SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
+
+                // Save the old text & background colors & mode
+                oldTextColor = SetTextColor (lpdis->hDC, DEF_SCN_DK_FG);
+                oldBackColor = SetBkColor   (lpdis->hDC, DEF_SCN_DK_BG);
+                oldBkMode    = SetBkMode    (lpdis->hDC, OPAQUE);
+
+                // Paint the button border & background
+                if (bThemedKeybs)
+                    // Draw the theme background
+                    zDrawThemeBackground (hThemeKeybs, lpdis->hDC, BP_PUSHBUTTON, PBS_HOT   , &lpdis->rcItem, NULL);
+                else
+                    // Draw a border around the char
+                    DrawEdge (lpdis->hDC, &lpdis->rcItem, EDGE_RAISED, BF_RECT | BF_SOFT | BF_FLAT | BF_MONO);
+
+                // Fill in the background closer to the edge
+                FillBackgroundToEdge (lpdis);
+
+                // Get the char to draw
+                wszText[0] = UTF16_CIRCUMFLEX;
+
+                // Draw the text (one char)
+                DrawTextW (lpdis->hDC,
+                           wszText,
+                           1,
+                          &lpdis->rcItem,
+                           DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
+                // Restore the old text & background colors & mode
+                SetTextColor (lpdis->hDC, oldTextColor);
+                SetBkColor   (lpdis->hDC, oldBackColor);
+                SetBkMode    (lpdis->hDC, oldBkMode);
             } else
             // Check to see if this is one of our Keyboard TabCtrl buttons
             if (IDC_KEYB_BN_TC_00 <= idCtl
@@ -2305,6 +2374,98 @@ INT_PTR CALLBACK CustomizeDlgProc
   #undef  idCtl
 #endif
         } // End WM_DRAWITEM
+
+        case WM_CONTEXTMENU:                // hwnd = (HWND) wParam;
+                                            // xPos = LOSHORT (lParam); // horizontal position of cursor in Screen coords
+                                            // yPos = HISHORT (lParam); // vertical   ...
+        {
+            POINT ptScr;                    // Point in screen coordinates
+            HWND  hWndKC;                   // Window handle of the KeyCap
+            int   idCtl;                    // Control ID
+            HMENU hMenu;                    // Menu handle
+            UINT  uRetCmd,                  // Return cmd from TrackPopupMenu
+                  uScanCode;                // Scan code
+
+            // Get the associated item data (window handle of the Property Page)
+            hWndProp = (HWND)
+              SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
+
+            // Save the mouse position as a point
+            ptScr.x = GET_X_LPARAM (lParam);
+            ptScr.y = GET_Y_LPARAM (lParam);
+
+            // Find the corresponding window handle under this point
+            hWndKC = WindowFromPoint (ptScr);
+
+            // Return the IDC_KEYB_xxx value of the window
+            idCtl = GetWindowLong (hWndKC, GWL_ID);
+
+            // Check to see if this is one of our Keyboard Keycap buttons
+            if (IDC_KEYB_BN_KC_00 <= idCtl
+             &&                      idCtl <= IDC_KEYB_BN_KC_LAST)
+            {
+                // Calculate the scan code
+                uScanCode = IDToKeybScanCode (idCtl);
+
+                // Ensure that the underlying character is one we support
+                if (IsDeadKey (lpLclKeybLayouts[uLclKeybLayoutNumVis].aCharCodes[uScanCode].wc[uKeybState]))
+                {
+                    // Ensure that this keyb layout is not readonly
+                    if (lpLclKeybLayouts[uLclKeybLayoutNumVis].bReadOnly)
+                        // Complain to the user
+                        MessageBoxW (hDlg,
+                                     L"This Keyboard Layout is Read-Only.  Copy this layout to a writable one with the \"Copy\" button before changing it.",
+                                     WS_APPNAME,
+                                     MB_OK
+                                   | MB_ICONWARNING);
+                    else
+                    {
+                        // Create a popup menu
+                        hMenu = CreatePopupMenu ();
+
+                        AppendMenuW (hMenu,                     // Handle
+                                     MF_ENABLED
+                                   | MF_STRING,                 // Flags
+                                     IDM_TOGGLE_DK,             // ID
+                                    L"&Toggle dead key state"); // Text
+
+                        // Display the popup menu
+                        uRetCmd =
+                          TrackPopupMenu (hMenu,            // Handle
+                                          0                 // Flags
+                                        | TPM_CENTERALIGN
+                                        | TPM_LEFTBUTTON
+                                        | TPM_RIGHTBUTTON
+                                        | TPM_NONOTIFY
+                                        | TPM_RETURNCMD
+                                          ,
+                                          ptScr.x,          // x-position
+                                          ptScr.y,          // y-position
+                                          0,                // Reserved (must be zero)
+                                          hWnd,             // Handle of owner window
+                                          NULL);            // Dismissal area outside rectangle (none)
+                        // If the menu item was selected, ...
+                        if (uRetCmd NE 0)
+                        {
+                            // Toggle the dead key state of this scancode
+                            lpLclKeybLayouts[uLclKeybLayoutNumVis].aCharCodes[uScanCode].dk[uKeybState] ^= TRUE;
+
+                            // Repaint the window
+                            InvalidateRect (hWndKC, NULL, TRUE);
+
+                            // Enable the Apply button
+                            EnableWindow (hWndApply, TRUE);
+                        } // End IF
+
+                        // Free the menu resources
+                        DestroyMenu (hMenu);
+                    } // End IF/ELSE
+                } // End IF/ELSE
+            } // End IF
+
+            // Return dialog result
+            DlgMsgDone (hDlg);              // We handled the msg
+        } // End WM_CONTEXTMENU
 
         case WM_THEMECHANGED:
             // If the theme library is loaded, ...
@@ -4195,7 +4356,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         // Clear the bit
                         uKeybState &= ~BITx;
 
-                    // Invalidate the KeyCap buttons
+                    // Repaint the KeyCap buttons
                     for (uCnt = 0; uCnt < KKC_CY; uCnt++)
                     for (uCol = aKKC_IDC_BEG[uCnt]; uCol <= aKKC_IDC_END[uCnt]; uCol++)
                         InvalidateRect (GetDlgItem (hWndProp, uCol), NULL, TRUE);
@@ -4277,6 +4438,21 @@ INT_PTR CALLBACK CustomizeDlgProc
 
                     // Display or hide the keyboard Ctrl keycaps
                     DispKeybCtrlKeycaps (hWndProp);
+
+                    // Enable the Apply button
+                    EnableWindow (hWndApply, TRUE);
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
+
+                case IDC_KEYB_RB_ALTG0:
+                case IDC_KEYB_RB_ALTG1:
+                    // Get the associated item data (window handle of the Property Page)
+                    hWndProp = (HWND)
+                      SendMessageW (hWndListBox, LB_GETITEMDATA, IDD_PROPPAGE_KEYBS - IDD_PROPPAGE_START, 0);
+
+                    // Set or clear the bit
+                    lpLclKeybLayouts[uLclKeybLayoutNumVis].bUseAltGR = IsDlgButtonChecked (hWndProp, IDC_KEYB_RB_ALTG0);
 
                     // Enable the Apply button
                     EnableWindow (hWndApply, TRUE);
@@ -5529,7 +5705,7 @@ void DispKeybLayout
     UINT uCnt,                              // Loop counter
          uCol;                              // ..
 
-    // Invalidate the Keycap buttons
+    // Repaint the Keycap buttons
     for (uCnt = 0; uCnt < KKC_CY; uCnt++)
     for (uCol = aKKC_IDC_BEG[uCnt]; uCol <= aKKC_IDC_END[uCnt]; uCol++)
         InvalidateRect (GetDlgItem (hWndProp, uCol), NULL, TRUE);
@@ -5546,13 +5722,15 @@ void DispKeybLayout
     ShowWindow (GetDlgItem (hWndProp, IDC_KEYB_BN_KC_30),
                  lpLclKeybLayouts[uLclKeybLayoutNumVis].bExtraKeyRow3            ? SW_SHOW : SW_HIDE);
 
-    // Check/uncheck CXV, ZY, and SEQ boxes
-    CheckDlgButton (hWndProp, IDC_KEYB_RB_CLIP0,  lpLclKeybLayouts[uLclKeybLayoutNumVis].bUseCXV);
-    CheckDlgButton (hWndProp, IDC_KEYB_RB_CLIP1, !lpLclKeybLayouts[uLclKeybLayoutNumVis].bUseCXV);
-    CheckDlgButton (hWndProp, IDC_KEYB_RB_UNDO0,  lpLclKeybLayouts[uLclKeybLayoutNumVis].bUseZY );
-    CheckDlgButton (hWndProp, IDC_KEYB_RB_UNDO1, !lpLclKeybLayouts[uLclKeybLayoutNumVis].bUseZY );
-    CheckDlgButton (hWndProp, IDC_KEYB_RB_FNED0,  lpLclKeybLayouts[uLclKeybLayoutNumVis].bUseSEQ);
-    CheckDlgButton (hWndProp, IDC_KEYB_RB_FNED1, !lpLclKeybLayouts[uLclKeybLayoutNumVis].bUseSEQ);
+    // Check/uncheck CXV, ZY, SEQ, and AltGR boxes
+    CheckDlgButton (hWndProp, IDC_KEYB_RB_CLIP0,  lpLclKeybLayouts[uLclKeybLayoutNumVis].bUseCXV  );
+    CheckDlgButton (hWndProp, IDC_KEYB_RB_CLIP1, !lpLclKeybLayouts[uLclKeybLayoutNumVis].bUseCXV  );
+    CheckDlgButton (hWndProp, IDC_KEYB_RB_UNDO0,  lpLclKeybLayouts[uLclKeybLayoutNumVis].bUseZY   );
+    CheckDlgButton (hWndProp, IDC_KEYB_RB_UNDO1, !lpLclKeybLayouts[uLclKeybLayoutNumVis].bUseZY   );
+    CheckDlgButton (hWndProp, IDC_KEYB_RB_FNED0,  lpLclKeybLayouts[uLclKeybLayoutNumVis].bUseSEQ  );
+    CheckDlgButton (hWndProp, IDC_KEYB_RB_FNED1, !lpLclKeybLayouts[uLclKeybLayoutNumVis].bUseSEQ  );
+    CheckDlgButton (hWndProp, IDC_KEYB_RB_ALTG0,  lpLclKeybLayouts[uLclKeybLayoutNumVis].bUseAltGR);
+    CheckDlgButton (hWndProp, IDC_KEYB_RB_ALTG1, !lpLclKeybLayouts[uLclKeybLayoutNumVis].bUseAltGR);
 
     // Display or hide the keyboard Ctrl keycaps
     DispKeybCtrlKeycaps (hWndProp);
@@ -5583,6 +5761,30 @@ void DispKeybCtrlKeycaps
     InvalidateRect (GetDlgItem (hWndProp, KeybScanCodeToID (KeybCharToScanCode (L'e', KS_NONE))), NULL, TRUE);
     InvalidateRect (GetDlgItem (hWndProp, KeybScanCodeToID (KeybCharToScanCode (L'q', KS_NONE))), NULL, TRUE);
 } // End DispKeybCtrlKeycaps
+
+
+//***************************************************************************
+//  $IDToKeybScanCode
+//
+//  Find the scancode of a given ID
+//***************************************************************************
+
+UINT IDToKeybScanCode
+    (UINT idCtl)                    // The ID to find
+
+{
+    UINT uCnt;                      // Loop counter
+
+    // Loop through the rows
+    for (uCnt = 0; uCnt < KKC_CY; uCnt++)
+    //If the idCtl is in this row, ...
+    if (aKKC_IDC_BEG[uCnt] <= idCtl
+     &&                       idCtl <= aKKC_IDC_END[uCnt])
+        // Return the corresponding scancode
+        return aKKC_SC[uCnt].aSC[idCtl - aKKC_IDC_BEG[uCnt]];
+
+    return 0;
+} // End IDToKeybScanCode
 
 
 //***************************************************************************
@@ -5666,6 +5868,8 @@ void SetKeybFont
     for (uCnt = 0; uCnt < KKC_CY; uCnt++)
     for (uCol = aKKC_IDC_BEG[uCnt]; uCol <= aKKC_IDC_END[uCnt]; uCol++)
         SendMessageW (GetDlgItem (hWndProp, uCol), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontKB, MAKELPARAM (TRUE, 0));
+    // Set the font for the Dead Key button and redraw it
+    SendMessageW (GetDlgItem (hWndProp, IDC_KEYB_BN_DK), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontKB, MAKELPARAM (TRUE, 0));
 
     // Set the font for the TabCtrl pushbuttons and redraw them
     for (uCnt = 0; uCnt < KTC_TXT_CY; uCnt++)
@@ -5861,7 +6065,7 @@ UBOOL CALLBACK EnumCallbackRepaint
 
 #undef  bWinBGDiff
 
-        // Invalidate the Client Area
+        // Repaint the Client Area
         InvalidateRect (hWndEC, NULL, FALSE);
 
         // Update it
@@ -5922,7 +6126,7 @@ UBOOL CALLBACK EnumCallbackFallbackFont
                       EM_SETFALLBACKFONT,
                       (WPARAM) (OptionFlags.bOutputDebug ? hFontFB_PR : NULL),
                       (LPARAM) (OptionFlags.bOutputDebug ? hFontFB_SF : NULL));
-        // Invalidate the Client Area
+        // Repaint the Client Area
         InvalidateRect (hWndEC, NULL, FALSE);
 
         // Update it
@@ -5992,6 +6196,39 @@ void FillSyntaxColor
     // We no longer need this resource
     MyDeleteObject (hBrush); hBrush = NULL;
 } // End FillSyntaxColor
+
+
+//***************************************************************************
+//  $FillBackgroundToEdge
+//
+//  Fill in the background color closer to the edge of the PushButton
+//***************************************************************************
+
+void FillBackgroundToEdge
+    (LPDRAWITEMSTRUCT lpdis)
+
+{
+    HBRUSH hBrush;                      // Fill brush for the background
+    RECT   rc;                          // RECT for the Dead Key button
+
+    // Copy the rectangle
+    rc = lpdis->rcItem;
+
+    // Move the rectangle in a bit
+    rc.left   += 2;
+    rc.top    += 2;
+    rc.right  -= 2;
+    rc.bottom -= 2;
+
+    // Get the corresponding Background Color
+    hBrush = MyCreateSolidBrush (GetBkColor (lpdis->hDC));
+
+    // Color the client area
+    FillRect (lpdis->hDC, &rc, hBrush);
+
+    // We no longer need this resource
+    MyDeleteObject (hBrush); hBrush = NULL;
+} // End FillBackgroundToEdge
 
 
 //***************************************************************************

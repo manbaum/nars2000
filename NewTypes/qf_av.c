@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ LPPL_YYSTYPE SysFnAV_EM_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
 ////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbQuadAV);
+    lpYYRes->tkToken.tkData.tkGlbData  = hGlbQuadAV;
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     return lpYYRes;
@@ -139,6 +139,9 @@ void MakeQuadAV
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbQuadAV); lpMemRes = NULL;
+
+    // Set the PTB
+    hGlbQuadAV = MakePtrTypeGlb (hGlbQuadAV);
 } // End MakeQuadAV
 #undef  APPEND_NAME
 

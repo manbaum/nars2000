@@ -40,6 +40,10 @@
 
 // No keystroke equivalents for these as yet
 #define UTF16_PLUS_OR_MINUS       0x00B1        // Plus or minus symbol
+#define UTF16_SMALL_A_GRAVE       0X00E0        // Small letter a with grave
+#define UTF16_SMALL_C_CEDILLA     0X00E7        // Small letter c with cedilla
+#define UTF16_SMALL_E_GRAVE       0X00E8        // Small letter e with grave
+#define UTF16_SMALL_E_ACUTE       0X00E9        // Small letter e with acute
 #define UTF16_GAMMA               0x03B3        // Gamma
 #define UTF16_LEFTSINGLEQUOTE     0x2018        // Left single quotation mark
 #define UTF16_RIGHTSINGLEQUOTE    0x2019        // Right ...
@@ -259,6 +263,7 @@
 #define UTF16_CIRCUMFLEX          0x005E        // Circumflex (a.k.a. 0x2227)
 #define UTF16_UNDERBAR            0x005F        // Underbar
 #define UTF16_BACKTICK            0x0060        // Backtick
+#define UTF16_GRAVE               0x0060        // Grave accent
 #define UTF16_LEFTBRACE           0x007B        // Left brace
 #define UTF16_STILE2              0x007C        // Stile (a.k.a. 0x2223)
 #define UTF16_RIGHTBRACE          0x007D        // Right brace
@@ -323,6 +328,10 @@
 
 // No keystroke equivalents for these as yet
 #define WS_UTF16_PLUS_OR_MINUS       L"\x00B1"  // Plus or minus symbol
+#define WS_UTF16_SMALL_A_GRAVE       L"\x00E0"  // Small letter a with grave
+#define WS_UTF16_SMALL_C_CEDILLA     L"\x00E7"  // Small letter c with cedilla
+#define WS_UTF16_SMALL_E_GRAVE       L"\x00E8"  // Small letter e with grave
+#define WS_UTF16_SMALL_E_ACUTE       L"\x00E9"  // Small letter e with acute
 #define WS_UTF16_GAMMA               L"\x03B3"  // Gamma
 #define WS_UTF16_LEFTSINGLEQUOTE     L"\x2018"  // Left single quotation mark
 #define WS_UTF16_RIGHTSINGLEQUOTE    L"\x2019"  // Right ...
@@ -542,6 +551,7 @@
 #define WS_UTF16_CIRCUMFLEX          L"\x005E"  // Circumflex (a.k.a. \x2227)
 #define WS_UTF16_UNDERBAR            L"\x005F"  // Underbar
 #define WS_UTF16_BACKTICK            L"\x0060"  // Backtick
+#define WS_UTF16_GRAVE               L"\x0060"  // Grave accent
 #define WS_UTF16_LEFTBRACE           L"\x007B"  // Left brace
 #define WS_UTF16_STILE2              L"\x007C"  // Stile (a.k.a. \x2223)
 #define WS_UTF16_RIGHTBRACE          L"\x007D"  // Right brace

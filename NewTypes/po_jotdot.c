@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -306,6 +306,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
                       lptkAxisRht;          // Ptr to right operand axis token (may be NULL)
     LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    UBOOL             bDimDemote = FALSE;   // TRUE iff dimension demotion allowed
     LPPRIMSPEC        lpPrimSpec;           // Ptr to local PRIMSPEC
     LPPRIMFLAGS       lpPrimFlagsRht;       // Ptr to right operand PrimFlags entry
     ALLTYPES          atLft = {0},          // Left arg as ALLTYPES
@@ -376,6 +377,9 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     {
         // Get the corresponding lpPrimSpec
         lpPrimSpec = PrimSpecTab[SymTrans (&lpYYFcnStrRht->tkToken)];
+
+        // Save the dimension demotion flag
+        bDimDemote = lpPrimSpec->bDydDimDemote;
 
         // Calculate the storage type of the result
         aplTypeRes = (*lpPrimSpec->StorageTypeDyd) (aplNELMLft,
@@ -860,7 +864,7 @@ RESTART_JOTDOT:
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    TypeDemote (&lpYYRes->tkToken, FALSE);
+    TypeDemote (&lpYYRes->tkToken, bDimDemote);
 
     goto NORMAL_EXIT;
 

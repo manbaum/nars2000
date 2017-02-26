@@ -454,10 +454,10 @@ void InitPrimFn
      LPPRIMFNS lpPrimFn)
 
 {
-    if (PrimFnsTab[PRIMTAB_MASK & wchFn])
+    if (PrimFnsTab[FcnTrans (wchFn)] NE NULL)
         DbgStop ();         // We should never get here
     else
-        PrimFnsTab[PRIMTAB_MASK & wchFn] = lpPrimFn;
+        PrimFnsTab[FcnTrans (wchFn)] = lpPrimFn;
 } // End InitPrimFn
 
 
@@ -684,10 +684,10 @@ void InitPrimProtoFn
      LPPRIMFNS lpPrimFn)
 
 {
-    if (PrimProtoFnsTab[PRIMTAB_MASK & wchFn])
+    if (PrimProtoFnsTab[FcnTrans (wchFn)] NE NULL)
         DbgStop ();         // We should never get here
     else
-        PrimProtoFnsTab[PRIMTAB_MASK & wchFn] = lpPrimFn;
+        PrimProtoFnsTab[FcnTrans (wchFn)] = lpPrimFn;
 } // End InitPrimProtoFn
 
 
@@ -702,10 +702,10 @@ void InitPrimProtoOp
      LPPRIMOPS lpPrimOp)
 
 {
-    if (PrimProtoOpsTab[PRIMTAB_MASK & wchFn])
+    if (PrimProtoOpsTab[FcnTrans (wchFn)] NE NULL)
         DbgStop ();         // We should never get here
     else
-        PrimProtoOpsTab[PRIMTAB_MASK & wchFn] = lpPrimOp;
+        PrimProtoOpsTab[FcnTrans (wchFn)] = lpPrimOp;
 } // End InitPrimProtoOp
 
 
@@ -820,10 +820,10 @@ void Init1PrimSpec
      LPPRIMSPEC lpPrimSpec)
 
 {
-    if (PrimSpecTab[PRIMTAB_MASK & wchFn])
+    if (PrimSpecTab[FcnTrans (wchFn)] NE NULL)
         DbgStop ();         // We should never get here
     else
-        PrimSpecTab[PRIMTAB_MASK & wchFn] = lpPrimSpec;
+        PrimSpecTab[FcnTrans (wchFn)] = lpPrimSpec;
 } // End Init1PrimSpec
 
 
@@ -945,8 +945,8 @@ void Init1PrimFlag
      LPPRIMOPS lpPrimOps)
 
 {
-    *((APLU3264 *) &PrimFlags[PRIMTAB_MASK & wchFn]) |= uFlag;
-                    PrimFlags[PRIMTAB_MASK & wchFn].lpPrimOps = lpPrimOps;
+    *((APLU3264 *) &PrimFlags[FcnTrans (wchFn)]) |= uFlag;
+                    PrimFlags[FcnTrans (wchFn)].lpPrimOps = lpPrimOps;
 } // End Init1PrimFlag
 
 

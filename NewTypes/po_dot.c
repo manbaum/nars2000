@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2586,8 +2586,9 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     LPPRIMIDENT       lpPrimIdentLft;           // Ptr to left operand PrimIdent entry
     UBOOL             bRet = TRUE,              // TRUE iff result is valid
                       bNrmIdent = FALSE,        // TRUE iff reducing an empty array with a primitive scalar dyadic function
-                      bPrimIdent = FALSE;       // TRUE iff reducing an empty array with a primitive or
+                      bPrimIdent = FALSE,       // TRUE iff reducing an empty array with a primitive or
                                                 //   user-defined function/operator
+                      bDimDemote = FALSE;       // TRUE iff dimension demotion allowed
     ALLTYPES          atLft    = {0},           // Left arg as ALLTYPES
                       atCmpLft = {0},           // ...  compare ...
                       atRht    = {0},           // Right arg    ...
@@ -2783,6 +2784,10 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
         // Get the left & right arg lpPrimSpec
         lpPrimSpecLft = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
         lpPrimSpecRht = PrimSpecTab[SymTrans (&lpYYFcnStrRht->tkToken)];
+
+        // Save the dimension demotion flags
+        bDimDemote = lpPrimSpecLft->bDydDimDemote
+                  && lpPrimSpecRht->bDydDimDemote;
 
         // Calculate the storage type of the comparison result
         aplTypeCmp =
@@ -4009,7 +4014,7 @@ YYALLOC_EXIT:
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    TypeDemote (&lpYYRes->tkToken, FALSE);
+    TypeDemote (&lpYYRes->tkToken, bDimDemote);
 
     goto NORMAL_EXIT;
 

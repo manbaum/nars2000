@@ -171,7 +171,8 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
                       bPrimDydScal = FALSE, // TRUE iff the left operand is a Primitive Dyadic Scalar function
                       bNrmIdent = FALSE,    // TRUE iff reducing an empty array with a primitive scalar dyadic function
                       bPrimIdent = FALSE,   // TRUE iff reducing an empty array with a primitive function/operator
-                      bFastBool = FALSE;    // TRUE iff this is a Fast Boolean operation
+                      bFastBool = FALSE,    // TRUE iff this is a Fast Boolean operation
+                      bDimDemote = FALSE;   // TRUE iff dimension demotion allowed
     LPPRIMFNS         lpPrimProtoLft;       // Ptr to left operand prototype function
     LPPRIMSPEC        lpPrimSpecLft;        // Ptr to left operand PRIMSPEC
     LPPRIMFLAGS       lpPrimFlagsLft;       // Ptr to left operand PrimFlags entry
@@ -466,6 +467,9 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     {
             // Get the corresponding lpPrimSpecLft
             lpPrimSpecLft = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
+
+            // Save the dimension demotion flag
+            bDimDemote = lpPrimSpecLft->bDydDimDemote;
 
             // Calculate the storage type of the result
             aplTypeRes =
@@ -1100,7 +1104,7 @@ RESTART_EXCEPTION:
                                                   &atLft,
                                                    aplTypeTmp,
                                                   &atRht,
-                                                  &aplTypeNew,               // New storage type
+                                                  &aplTypeNew,              // New storage type
                                                    lpPrimSpecLft))
                         goto ERROR_EXIT;
 
@@ -1409,7 +1413,7 @@ RESTART_EXCEPTION:
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    TypeDemote (&lpYYRes->tkToken, FALSE);
+    TypeDemote (&lpYYRes->tkToken, bDimDemote);
 
     goto NORMAL_EXIT;
 
@@ -1670,8 +1674,9 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     APLLONGEST        aplLongestLft;        // Left arg if immediate
     UBOOL             bRet = TRUE,          // TRUE iff result is valid
                       bNstIdent = FALSE,    // TRUE iff reducing an empty nested array with a primitive scalar dyadic fcn
-                      bPrimIdent = FALSE;   // TRUE iff reducing an empty array with a primitive
+                      bPrimIdent = FALSE,   // TRUE iff reducing an empty array with a primitive
                                             //   or user-defined function/operator
+                      bDimDemote = FALSE;   // TRUE iff dimension demotion allowed
     LPPL_YYSTYPE      lpYYRes = NULL,       // Ptr to the result
                       lpYYRes2,             // Ptr to secondary result
                       lpYYFcnStrLft;        // Ptr to the left operand strand
@@ -1900,6 +1905,9 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     {
         // Get the corresponding lpPrimSpecLft
         lpPrimSpecLft = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
+
+        // Save the dimension demotion flag
+        bDimDemote = lpPrimSpecLft->bDydDimDemote;
 
         // Calculate the storage type of the result
         aplTypeRes =
@@ -2593,7 +2601,7 @@ RESTART_EXCEPTION:
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    TypeDemote (&lpYYRes->tkToken, FALSE);
+    TypeDemote (&lpYYRes->tkToken, bDimDemote);
 
     goto NORMAL_EXIT;
 

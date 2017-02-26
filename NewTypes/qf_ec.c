@@ -106,6 +106,9 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
 #endif
     EXIT_TYPES        exitType;             // Exit type (see EXIT_TYPES)
     LPPLLOCALVARS     lpplLocalVars;        // Ptr to ParseLine local vars
+    LPSIS_HEADER      lpSISPrv;             // Ptr to previous SIS layer
+    UINT              NxtLineNum,           // Next line # (origin-1)
+                      NxtTknNum;            // Next token #
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -130,6 +133,23 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
                 TRUE);                  // LinkIntoChain
     // Fill in the non-default SIS header entries
     lpMemPTD->lpSISCur->bItsEC = TRUE;
+
+    // Peel back to the first non-Imm/Exec/ErrCtrl layer
+    //   starting with the previous SIS header
+    lpSISPrv = GetSISLayer (lpMemPTD->lpSISCur);
+
+    // If there's an active or suspended user-defined function/operator, ...
+    if (lpSISPrv NE NULL
+     && (lpSISPrv->DfnType EQ DFNTYPE_OP1
+      || lpSISPrv->DfnType EQ DFNTYPE_OP2
+      || lpSISPrv->DfnType EQ DFNTYPE_FCN))
+    {
+        // Save as the next line & token #s
+        NxtLineNum = lpSISPrv->NxtLineNum;
+        NxtTknNum  = lpSISPrv->NxtTknNum ;
+    } else
+        // Mark as not valid
+        lpSISPrv = NULL;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -210,6 +230,14 @@ LPPL_YYSTYPE SysFnMonEC_EM_YY
                                       FALSE,        // TRUE iff we should act on errors
                                      &exitType,     // Ptr to return EXITTYPE_xxx (may be NULL)
                                       lptkFunc);    // Ptr to function token
+    // As this is []EC, we need to restore the NxtLineNum and NxtTknNum
+    //   in case the expression was a valid branch
+    if (lpSISPrv NE NULL)
+    {
+        lpSISPrv->NxtLineNum = NxtLineNum;
+        lpSISPrv->NxtTknNum  = NxtTknNum ;
+    } // End IF
+
     // Get the return code
 #ifdef DEBUG
     retCode =

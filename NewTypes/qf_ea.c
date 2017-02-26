@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -100,26 +100,28 @@ LPPL_YYSTYPE SysFnMonEA_EM_YY
 #endif
 
 LPPL_YYSTYPE SysFnDydEA_EM_YY
-    (LPTOKEN lptkLftArg,            // Ptr to left arg token
-     LPTOKEN lptkFunc,              // Ptr to function token
-     LPTOKEN lptkRhtArg,            // Ptr to right arg token
-     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+    (LPTOKEN lptkLftArg,                    // Ptr to left arg token
+     LPTOKEN lptkFunc,                      // Ptr to function token
+     LPTOKEN lptkRhtArg,                    // Ptr to right arg token
+     LPTOKEN lptkAxis)                      // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeLft,        // Left arg storage type
-                 aplTypeRht;        // right ...
-    APLRANK      aplRankLft,        // Left arg rank
-                 aplRankRht;        // right ...
-    APLNELM      aplNELMLft,        // Left arg NELM
-                 aplNELMRht;        // Right ...
-    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
-                 hGlbRht = NULL;    // Right ...
-    LPAPLCHAR    lpMemLft = NULL,   // Ptr to left arg global memory
-                 lpMemRht = NULL;   // ...    right ...
-    APLLONGEST   aplLongestLft,     // Left arg immediate value
-                 aplLongestRht;     // Right ...
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    APLSTYPE          aplTypeLft,           // Left arg storage type
+                      aplTypeRht;           // right ...
+    APLRANK           aplRankLft,           // Left arg rank
+                      aplRankRht;           // right ...
+    APLNELM           aplNELMLft,           // Left arg NELM
+                      aplNELMRht;           // Right ...
+    HGLOBAL           hGlbLft = NULL,       // Left arg global memory handle
+                      hGlbRht = NULL;       // Right ...
+    LPVARARRAY_HEADER lpMemHdrLft = NULL,   // Ptr to left arg header
+                      lpMemHdrRht = NULL;   // ...    right ...
+    LPAPLCHAR         lpMemLft,             // Ptr to left arg global memory
+                      lpMemRht;             // ...    right ...
+    APLLONGEST        aplLongestLft,        // Left arg immediate value
+                      aplLongestRht;        // Right ...
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to result
+    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -154,12 +156,12 @@ LPPL_YYSTYPE SysFnDydEA_EM_YY
         goto RIGHT_DOMAIN_EXIT;
 
     // Get the right arg's global ptrs
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // If it's global, ...
-    if (hGlbRht)
+    if (hGlbRht NE NULL)
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayDataFmBase (lpMemRht);
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
      else
         // Point to the immediate value
         lpMemRht = (LPAPLCHAR) &aplLongestRht;
@@ -169,23 +171,23 @@ LPPL_YYSTYPE SysFnDydEA_EM_YY
       PrimFnMonUpTackJotCommon_EM_YY (lpMemRht,     // Ptr to text of line to execute
                                       aplNELMRht,   // Length of the line to execute
                                       FALSE,        // TRUE iff we should free lpwszCompLine
-                                      FALSE,        // TRUE iff we should return a NoValue YYRes
+                                      TRUE,         // TRUE iff we should return a NoValue YYRes
                                       FALSE,        // TRUE iff we should act on errors
                                       NULL,         // Ptr to return EXITTYPE_xxx (may be NULL)
                                       lptkFunc);    // Ptr to function token
     // If it succeeded, ...
-    if (lpYYRes)
+    if (lpYYRes NE NULL)
         goto NORMAL_EXIT;
 
     // There was an error, so execute the left arg
 
     // Get the left arg's global ptrs
-    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
 
     // If it's global, ...
-    if (hGlbLft)
+    if (hGlbLft NE NULL)
         // Skip over the header and dimensions to the data
-        lpMemLft = VarArrayDataFmBase (lpMemLft);
+        lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
     else
         // Point to the immediate value
         lpMemLft = (LPAPLCHAR) &aplLongestLft;
@@ -223,16 +225,16 @@ RIGHT_DOMAIN_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbLft && lpMemLft)
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
     } // End IF
 
     // Unlocalize the STEs on the innermost level

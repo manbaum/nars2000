@@ -1,6 +1,28 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1682 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bugs In []EA And []EC
+
+Directory branches/bsmith/NewTypes:
+
+PRIMFNS.C:
+  In <GetSISLayer>, skip past DFNTYPE_ERRCTL along with the other already present.
+    This allows a branch within []EA to change the next function line number when that function becomes active again.
+
+QF_EA.C:
+  In IF stmts always compare ptr against NULL.
+  Include "Hdr" in name of result of <MyGlobalLock>.
+  In <SysFnDydEA_EM_YY>, when calling <PrimFnMonUpTackJotCommon_EM_YY>, tell that function to return a NoValue YYRes if appropriate
+    This allows a branch to a number to return the proper result to the caller.
+
+QF_EC.C:
+  In <SysFnMonEC_EM_YY>, save the caller's function line and token number before executing the right arg and restore it upon return.
+    This avoids a branch to a number from changing the caller's next function line number when that function becomes active again.
+
+
 Build #1681 -- Version 0.5.1.xx
 --------------------------------
 

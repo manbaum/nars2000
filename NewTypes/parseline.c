@@ -211,9 +211,11 @@
 #define plRedAFOG_SA    plRedAFOG_A
 #define plRedAFOG_SPA   plRedAFOG_A
 #define plRedAFOG_IO    plRedAFOG_A
+#define plRedAFOG_NF    plRedAFOG_A
 #define plRedAFOR_SA    plRedAFOR_A
 #define plRedAFOR_SPA   plRedAFOR_A
 #define plRedAFOR_IO    plRedAFOR_A
+#define plRedAFOR_NF    plRedAFOR_A
 
 #define plRedSA_RBK     plRedA_RBK
 #define plRedIO_RBK     plRedA_RBK
@@ -224,6 +226,7 @@
 
 #define plRedCS1_SA     plRedCS1_A
 #define plRedCS1_SPA    plRedCS1_A
+#define plRedCS1_NF     plRedCS1_A
 
 #define plRedCSI_SA     plRedCSI_A
 #define plRedCS1_IO     plRedCS1_A
@@ -2207,6 +2210,22 @@ LPPL_YYSTYPE plRedCS1_A
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
+    // If the last right object is a Niladic Function, ...
+    if (lpplYYLstRht->tkToken.tkSynObj EQ soNF)
+    {
+        // Execute the niladic function returning an array
+        lpYYVar =
+          plExecuteFn0 (lpplYYLstRht);
+
+        // Check for error
+        if (lpYYVar EQ NULL)
+            goto ERROR_EXIT;
+
+        // Copy to the last right object
+        lpplYYLstRht = lpYYVar; // rhtSynObj = lpYYVar->tkToken.tkSynObj; Assert (IsValidSO (rhtSynObj));
+        lpYYVar = NULL;
+    } // End IF
+
     // If the last right object is in the process of stranding, ...
     if (lpplYYLstRht->YYStranding)
     {
@@ -3738,6 +3757,22 @@ LPPL_YYSTYPE plRedAFOG_A
     LPPL_YYSTYPE lpYYRes = NULL,        // Ptr to the result
                  lpYYVar;               // Ptr to a temp
 
+    // If the last right object is a Niladic Function, ...
+    if (lpplYYLstRht->tkToken.tkSynObj EQ soNF)
+    {
+        // Execute the niladic function returning an array
+        lpYYVar =
+          plExecuteFn0 (lpplYYLstRht);
+
+        // Check for error
+        if (lpYYVar EQ NULL)
+            goto ERROR_EXIT;
+
+        // Copy to the last right object
+        lpplYYLstRht = lpYYVar; // rhtSynObj = lpYYVar->tkToken.tkSynObj; Assert (IsValidSO (rhtSynObj));
+        lpYYVar = NULL;
+    } // End IF
+
     // If the last right object is in the process of stranding, ...
     if (lpplYYLstRht->YYStranding)
     {
@@ -3805,6 +3840,22 @@ LPPL_YYSTYPE plRedAFOR_A
 
 {
     LPPL_YYSTYPE lpYYVar;               // Ptr to a temp
+
+    // If the last right object is a Niladic Function, ...
+    if (lpplYYLstRht->tkToken.tkSynObj EQ soNF)
+    {
+        // Execute the niladic function returning an array
+        lpYYVar =
+          plExecuteFn0 (lpplYYLstRht);
+
+        // Check for error
+        if (lpYYVar EQ NULL)
+            goto ERROR_EXIT;
+
+        // Copy to the last right object
+        lpplYYLstRht = lpYYVar; // rhtSynObj = lpYYVar->tkToken.tkSynObj; Assert (IsValidSO (rhtSynObj));
+        lpYYVar = NULL;
+    } // End IF
 
     // If the last right object is in the process of stranding, ...
     if (lpplYYLstRht->YYStranding)
@@ -4279,7 +4330,8 @@ PARSELINE_SCAN1:
                 goto PARSELINE_SYNTERR;
 
             // Check for VALUE ERROR
-            if (curSynObj EQ soVALR)
+            if (curSynObj EQ soVALR
+             || (curSynObj EQ soNVAL && lftSynObj NE soEOS))
                 goto PARSELINE_VALUEERR;
 
             // Check for left & right EOS

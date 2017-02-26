@@ -1,6 +1,18 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1681 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Syntax Bug Not Recognizing CS1 NF
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+PARSELINE.H:
+  Define responses for a Niladic Function to the right of a Monadic CtrlStruc (CS1), an AFO Guard (AFOG), and an AFO Return (AFOR).
+
+
 Build #1680 -- Version 0.5.1.xx
 --------------------------------
 

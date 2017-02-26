@@ -3787,7 +3787,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 uLen = lstrlenW (lpwGlbName);
 
                 // If the name is already local, ...
-                if (IsLocalName (lpwGlbName, uLen, hWnd, lpwszTemp, &uPos))
+                if (IsLocalName (lpwGlbName, uLen, hWnd, &uPos))
                 {
                     // If we're unlocalizing, ...
                     if (message EQ MYWM_UNLOCALIZE)

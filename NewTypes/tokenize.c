@@ -819,7 +819,6 @@ UBOOL IsLocalName
     (LPWCHAR lpwszStr,                  // Ptr to the name
      UINT    iStrLen,                   // Length of the name
      HWND    hWndEC,                    // Handle to Edit Ctrl window
-     LPWCHAR lpwszTemp,                 // Ptr to temp storage
      LPUINT  lpPosition)                // Ptr to save area for position in line
                                         // (if not found, position of 1st semicolon or EOL)
                                         // (may be NULL if position not desired)
@@ -827,24 +826,38 @@ UBOOL IsLocalName
 {
     static LPWCHAR  lpwBrkLead = L"({[ ]});" WS_UTF16_LEFTARROW WS_CRLF,
                     lpwBrkTerm = L"({[ ]});" WS_UTF16_LEFTARROW WS_CRLF WS_UTF16_LAMP;
-    LPWCHAR         wp;                         // Ptr to temp char
+    LPWCHAR         wp,                         // Ptr to temp char
+                    lpwBlk;                     // Ptr to block of lines
     APLU3264        uLineLen;                   // Line length
     int (*lpStrncmpW) (const WCHAR *, const WCHAR *, size_t);
+    UBOOL           bRet = FALSE;               // TRUE iff the result is valid
 
     // If the Edit Ctrl window handle is not from a Function Editor window, ...
     if (!IzitFE (GetParent (hWndEC)))
         // The given name can't be local
         return FALSE;
 
+    // Get the block length
+    uLineLen = GetBlockLength (hWndEC, 0);
+
+    // Allocate storage for the block including
+    //   the trailing lamp and terminating zero
+    lpwBlk = DbgGlobalAlloc (GPTR, (uLineLen + 1 + 1) * sizeof (WCHAR));
+
+    // Check for error
+    if (lpwBlk EQ NULL)
+        // Mark as not local
+        return bRet;
+
     // Copy the function header block
     //   including a terminating zero if there's enough room
-    uLineLen = CopyBlockLines (hWndEC, 0, lpwszTemp);   // ***FIXME*** -- buffer overflow???
+    uLineLen = CopyBlockLines (hWndEC, 0, lpwBlk);
 
     // Append a trailing marker
-    strcpyW (&lpwszTemp[uLineLen], WS_UTF16_LAMP);
+    lpwBlk[uLineLen] = UTF16_LAMP;
 
     // Copy the base of the line
-    wp = lpwszTemp;
+    wp = lpwBlk;
 
     // If it's a System Name, ...
     if (IsSysName (lpwszStr))
@@ -871,9 +884,12 @@ UBOOL IsLocalName
         {
             // Mark as FOUND
             if (lpPosition NE NULL)
-               *lpPosition = (UINT) (wp - lpwszTemp);
+               *lpPosition = (UINT) (wp - lpwBlk);
 
-            return TRUE;
+            // Mark as a local name
+            bRet = TRUE;
+
+            break;
         } // End IF
 
         // Find next terminating char
@@ -881,27 +897,30 @@ UBOOL IsLocalName
     } // End WHILE
 
     // If position is desired, ...
-    if (lpPosition NE NULL)
+    if (!bRet && lpPosition NE NULL)
     {
         // Remove the trailing lamp
-        lpwszTemp[lstrlenW (lpwszTemp) - 1] = WC_EOS;
+        lpwBlk[lstrlenW (lpwBlk) - 1] = WC_EOS;
 
         // Zap any other lamp
-        *SkipToCharW (lpwszTemp, UTF16_LAMP) = WC_EOS;
+        *SkipToCharW (lpwBlk, UTF16_LAMP) = WC_EOS;
 
         // Find first semicolon
-        wp = SkipToCharW (lpwszTemp, L';');
+        wp = SkipToCharW (lpwBlk, L';');
 
         // If no semicolon, backup over trailing blanks
         if (*wp NE L';')
-            while (wp > lpwszTemp && wp[-1] EQ L' ')
+            while (wp > lpwBlk && wp[-1] EQ L' ')
                 wp--;
 
         // Mark as NOT FOUND
-        *lpPosition = (UINT) (wp - lpwszTemp);
+        *lpPosition = (UINT) (wp - lpwBlk);
     } // End IF
 
-    return FALSE;
+    // We no longer need this storage
+    MyGlobalFree (lpwBlk); lpwBlk = NULL;
+
+    return bRet;
 } // End IsLocalName
 
 
@@ -1225,7 +1244,7 @@ UBOOL scAlpha
             if (IzitFE (GetParent (lptkLocalVars->hWndEC)))
             {
                 // Check for global vs. local
-                if (IsLocalName (lpwszStr, lptkLocalVars->iStrLen, lptkLocalVars->hWndEC, lpMemPTD->lpwszTemp, NULL))
+                if (IsLocalName (lpwszStr, lptkLocalVars->iStrLen, lptkLocalVars->hWndEC, NULL))
                 {
                     uClr = SC_LCLNAME;
 
@@ -1301,7 +1320,7 @@ UBOOL scAlpha
             {
                 case NAMETYPE_VAR:
                     // Check for global vs. local
-                    if (IsLocalName (lpwszStr, lptkLocalVars->iStrLen, lptkLocalVars->hWndEC, lpMemPTD->lpwszTemp, NULL))
+                    if (IsLocalName (lpwszStr, lptkLocalVars->iStrLen, lptkLocalVars->hWndEC, NULL))
                     {
                         // Save the color index
                         uClr = SC_LCLSYSVAR;

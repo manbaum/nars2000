@@ -1,6 +1,21 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1680 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In <IsLocalName>
+
+Directory branches/bsmith/NewTypes:
+
+EDITFCN.C:
+  Skip passing to <IsLocalName> a ptr to a temp work area.
+
+TOKENIZE.C:
+  Skip passing to <IsLocalName> a ptr to a temp work area.
+  In <IsLocalName> allocate space as needed for a temp work area as the global one passed in sometimes is used by another thread.
+
+
 Build #1679 -- Version 0.5.1.xx
 --------------------------------
 

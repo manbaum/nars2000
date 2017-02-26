@@ -1,6 +1,27 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1679 -- Version 0.5.1.xx
+--------------------------------
+
+* Implement Support For Global Dead Keys On All Keyboards
+
+Directory branches/bsmith/NewTypes:
+
+DEFINES.H:
+  Define the global dead keys.
+
+EDITFCN.C:
+  Delete <IsDeadKey> macro in favor of a defined function so I don't have to rebuild the entire product whenever I make a change to it.
+  Include the global dead key values in the <DeadkeyTrans> switch stmt.
+
+KEYBOARDS.H:
+  Define equates for global dead keys and their modifier states.
+
+MACROS.H:
+  Delete <IsDeadKey> macro in favor of a defined function so I don't have to rebuild the entire product whenever I make a change to it.
+
+
 Build #1678 -- Version 0.5.1.xx
 --------------------------------
 

@@ -5204,6 +5204,27 @@ RESTART_UNDO:
 
 
 //***************************************************************************
+//  $IsDeadKey
+//
+//  Determine if the underlying character is one we support as a dead key
+//***************************************************************************
+
+UBOOL IsDeadKey
+    (WCHAR wcDK)
+
+{
+    // Determine if a WCHAR is one of the dead keys we support
+    return (wcDK NE WC_EOS
+         && strchrW (WS_UTF16_CIRCUMFLEX
+                     WS_UTF16_DIERESIS
+                     WS_UTF16_ACUTE
+                     WS_UTF16_GRAVE
+                     WS_UTF16_TILDE2
+                     WS_GLB_DEAD_KEYS, wcDK) NE NULL);
+} // End IsDeadKey
+
+
+//***************************************************************************
 //  $DeadKeyTrans
 //
 //  Translate a dead key and its following character and process the result
@@ -5256,26 +5277,31 @@ typedef struct tag
     switch (gwDeadKey)
     {
         case UTF16_CIRCUMFLEX:
+        case GLB_DEAD_KEY_C:
             lpwDK = circumflex;
 
             break;
 
         case UTF16_DIERESIS:
+        case GLB_DEAD_KEY_D:
             lpwDK = dieresis  ;
 
             break;
 
         case UTF16_ACUTE:
+        case GLB_DEAD_KEY_A:
             lpwDK = acute     ;
 
             break;
 
         case UTF16_GRAVE:
+        case GLB_DEAD_KEY_G:
             lpwDK = grave     ;
 
             break;
 
         case UTF16_TILDE2:
+        case GLB_DEAD_KEY_T:
             lpwDK = tilde     ;
 
             break;

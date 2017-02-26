@@ -535,13 +535,6 @@
 #define GetNextInt64(a,t,c)         ((LPINT64   ) a)[c]
 #define GetNextFlt64(a,t,c)         ((LPAPLFLOAT) a)[c]
 
-// Macro to determine if a WCHAR is one of the dead keys we support
-#define IsDeadKey(a)                (strchrW (WS_UTF16_CIRCUMFLEX   \
-                                              WS_UTF16_DIERESIS     \
-                                              WS_UTF16_ACUTE        \
-                                              WS_UTF16_GRAVE        \
-                                              WS_UTF16_TILDE2, (a)) NE NULL)
-
 // Macro to determine if the System Name is one of []A and friends
 #define IsQuadA(a)                  (strchrW (L"aA‚¬‰ƒ·¡‡¿„√", (a)) NE NULL)
 

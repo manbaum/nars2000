@@ -501,6 +501,29 @@ default:        \
 
 
 //***************************************************************************
+//  Global dead keys
+//***************************************************************************
+
+// Define a set of global dead keys
+#define    GLB_DEAD_KEY_A     0xFFF0
+#define    GLB_DEAD_KEY_C     0xFFF1
+#define    GLB_DEAD_KEY_D     0xFFF2
+#define    GLB_DEAD_KEY_G     0xFFF3
+#define    GLB_DEAD_KEY_T     0xFFF4
+
+#define WS_GLB_DEAD_KEY_A   L"\xFFF0"
+#define WS_GLB_DEAD_KEY_C   L"\xFFF1"
+#define WS_GLB_DEAD_KEY_D   L"\xFFF2"
+#define WS_GLB_DEAD_KEY_G   L"\xFFF3"
+#define WS_GLB_DEAD_KEY_T   L"\xFFF4"
+
+#define WS_GLB_DEAD_KEYS    WS_GLB_DEAD_KEY_A \
+                            WS_GLB_DEAD_KEY_C \
+                            WS_GLB_DEAD_KEY_D \
+                            WS_GLB_DEAD_KEY_G \
+                            WS_GLB_DEAD_KEY_T
+
+//***************************************************************************
 //  Character constants -- ASCII and Wide characters and strings
 //***************************************************************************
 

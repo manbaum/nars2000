@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -845,8 +845,8 @@ UBOOL DisplayTraceResult
 
     CHECK_TEMP_OPEN
 
-    // Calculate the item NELM ("+ 1" for the trailing zero
-    aplNELMItm = lstrlenW (lpwszFcnLine) + 1;
+    // Calculate the item NELM
+    aplNELMItm = lstrlenW (lpwszFcnLine);
 
     // Calculate the result NELM
     aplNELMRes = 2;

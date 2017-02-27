@@ -255,10 +255,11 @@ void PrimFnMonColonBarFisI
 {
     // Check for indeterminates:  {div} 0
     if (lpatRht->aplInteger EQ 0)
-        lpMemRes[uRes] = TranslateQuadICIndex (0,
-                                               ICNDX_DIV0,
-                                    (APLFLOAT) lpatRht->aplInteger,
-                                               FALSE);
+        lpMemRes[uRes] =
+          TranslateQuadICIndex (0,
+                                ICNDX_DIV0,
+                     (APLFLOAT) lpatRht->aplInteger,
+                                FALSE);
     else
         // The FPU handles overflow and underflow for us
         lpMemRes[uRes] = (1 / (APLFLOAT) lpatRht->aplInteger);
@@ -280,10 +281,11 @@ void PrimFnMonColonBarFisF
 {
     // Check for indeterminates:  {div} 0
     if (lpatRht->aplFloat EQ 0)
-        lpMemRes[uRes] = TranslateQuadICIndex (0,
-                                               ICNDX_DIV0,
-                                               lpatRht->aplFloat,
-                                               SIGN_APLFLOAT (lpatRht->aplFloat));
+        lpMemRes[uRes] =
+          TranslateQuadICIndex (0,
+                                ICNDX_DIV0,
+                                lpatRht->aplFloat,
+                                SIGN_APLFLOAT (lpatRht->aplFloat));
     else
         // The FPU handles overflow and underflow for us
         lpMemRes[uRes] = (1 / lpatRht->aplFloat);
@@ -305,11 +307,12 @@ void PrimFnMonColonBarRisR
 {
     // Check for indeterminates:  {div} 0
     if (IsMpq0 (&lpatRht->aplRat))
-        lpMemRes[uRes] = *mpq_QuadICValue (&lpatRht->aplRat,        // No left arg
-                                            ICNDX_DIV0,
-                                           &lpatRht->aplRat,
-                                           &lpMemRes[uRes],
-                                            FALSE);
+        lpMemRes[uRes] =
+          *mpq_QuadICValue (&lpatRht->aplRat,        // No left arg
+                             ICNDX_DIV0,
+                            &lpatRht->aplRat,
+                            &lpMemRes[uRes],
+                             FALSE);
     else
     // Check for special case:  {div}{neg}{inf}x
     if (IsMpqInfinity (&lpatRht->aplRat)
@@ -365,11 +368,12 @@ void PrimFnMonColonBarVisV
 {
     // Check for indeterminates:  {div} 0
     if (IsMpf0 (&lpatRht->aplVfp))
-        lpMemRes[uRes] = *mpfr_QuadICValue (&lpatRht->aplVfp,       // No left arg
-                                             ICNDX_DIV0,
-                                            &lpatRht->aplVfp,
-                                            &lpMemRes[uRes],
-                                             SIGN_APLVFP (&lpatRht->aplVfp));
+        lpMemRes[uRes] =
+          *mpfr_QuadICValue (&lpatRht->aplVfp,       // No left arg
+                              ICNDX_DIV0,
+                             &lpatRht->aplVfp,
+                             &lpMemRes[uRes],
+                              SIGN_APLVFP (&lpatRht->aplVfp));
     else
     {
         // Initialize the result to 0
@@ -417,26 +421,33 @@ void PrimFnMonColonBarHC2FisHC2F
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    int      i;
-    APLFLOAT aplDen = 0.0;      // Denominator
-    APLHC2F  aplNum;            // Numerator
+    int      i;                 // Loop counter
+    APLFLOAT aplDen;            // Denominator
+    APLHC2F  aplNum,            // Numerator
+             aplTmp;            // Temp
 
-    // Loop through all of the parts
-    for (i = 0; i < 2; i++)
-    {
-        // Calculate the denominator
-        // Square and sum the next right arg part
-        aplDen = AddHC1F_RE (aplDen,
-                             MulHC1F_RE (lpatRht->aplHC2F.parts[i], lpatRht->aplHC2F.parts[i]));
-    } // End FOR
+    // Calculate the numerator
+    aplNum = ConjHC2F (lpatRht->aplHC2F);
+
+    // Calculate the denominator
+    aplTmp = MulHC2F_RE (lpatRht->aplHC2F, aplNum);
+
+    // Save the real part
+    aplDen = aplTmp.parts[0];
+
+    // If any the imaginary parts are non-zero, ...
+    if (IzitImaginary (ARRAY_HC2F, &aplTmp))
+        // Sound the alarm
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     // If the denominator is 0, ...
     if (aplDen EQ 0.0)
     {
-        lpMemRes[uRes].parts[0] = TranslateQuadICIndex (0,
-                                                        ICNDX_DIV0,
-                                                        lpatRht->aplHC2F.parts[0],
-                                                        SIGN_APLFLOAT (lpatRht->aplHC2F.parts[0]));
+        lpMemRes[uRes].parts[0] =
+          TranslateQuadICIndex (0,
+                                ICNDX_DIV0,
+                                lpatRht->aplHC2F.parts[0],
+                                SIGN_APLFLOAT (lpatRht->aplHC2F.parts[0]));
         lpMemRes[uRes].parts[1] = 0;
     } else
     // If the denominator is {Inf}, ...
@@ -444,20 +455,15 @@ void PrimFnMonColonBarHC2FisHC2F
     {
         UBOOL bAllowNeg0 = (UBOOL) gAllowNeg0;
 
-        // Calculate the numerator
-        aplNum = ConjHC2F (lpatRht->aplHC2F);
-
         // Loop through all of the parts
         for (i = 0; i < 2; i++)
-            lpMemRes[uRes].parts[i] = (bAllowNeg0 ? ((SIGN_APLFLOAT_RAW (aplNum.parts[i])
-                                                   EQ SIGN_APLFLOAT_RAW (aplDen)) ?  0.0
-                                                                                  : -0.0)
-                                                  : 0.0);
+            lpMemRes[uRes].parts[i] =
+              (bAllowNeg0 ? ((SIGN_APLFLOAT_RAW (aplNum.parts[i])
+                           EQ SIGN_APLFLOAT_RAW (aplDen)) ?  0.0
+                                                          : -0.0)
+                          : 0.0);
     } else
     {
-        // Calculate the numerator
-        aplNum = ConjHC2F (lpatRht->aplHC2F);
-
         // Loop through all of the parts
         for (i = 0; i < 2; i++)
             // The FPU handles overflow and underflow for us
@@ -479,36 +485,48 @@ void PrimFnMonColonBarHC2RisHC2R
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    int      i;
-    APLRAT   aplDen = {0},      // Denominator
-             aplTmp;            // Temp
-    APLHC2R  aplNum;            // Numerator
-    UBOOL    bAllowNeg0 = (UBOOL) gAllowNeg0;
+    int     i;                  // Loop counter
+    APLRAT  aplDen = {0};       // Denominator
+    APLHC2R aplNum,             // Numerator
+            aplTmp;             // Temp
+    UBOOL   bAllowNeg0 = (UBOOL) gAllowNeg0,
+            bImagRht;
 
-    // Initialize to 0/1
-    mpq_init (&aplDen);
+    // Calculate the numerator
+    aplNum = ConjHC2R (lpatRht->aplHC2R);
 
-    // Loop through all of the parts
-    for (i = 0; i < 2; i++)
+    // Calculate the denominator
+    aplTmp = MulHC2R_RE (lpatRht->aplHC2R, aplNum);
+
+    // Save the real part
+    mpq_init_set (&aplDen, &aplTmp.parts[0]);
+
+    // Calculate if any the imaginary parts are non-zero
+    bImagRht = IzitImaginary (ARRAY_HC2R, &aplTmp);
+
+    // Free the temp
+    Myhc2r_clear (&aplTmp);
+
+    // If any the imaginary parts are non-zero, ...
+    if (bImagRht)
     {
-        // Calculate the denominator
-        // Square the next right arg part
-        aplTmp = MulHC1R_RE (lpatRht->aplHC2R.parts[i], lpatRht->aplHC2R.parts[i]);
+        // Free the temps
+        Myhc1r_clear (&aplDen);
+        Myhc2r_clear (&aplNum);
 
-        // Add into the accumulator
-        mpq_add (&aplDen, &aplDen, &aplTmp);
-    } // End FOR
-
-    Myq_clear (&aplTmp);
+        // Sound the alarm
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    } // End IF
 
     // If the denominator is 0, ...
     if (IsMpq0 (&aplDen))
     {
-        lpMemRes[uRes].parts[0] = *mpq_QuadICValue (&lpatRht->aplHC2R.parts[0],     // No left arg
-                                                     ICNDX_DIV0,
-                                                    &lpatRht->aplHC2R.parts[0],
-                                                    &lpMemRes[uRes].parts[0],
-                                                     FALSE);
+        lpMemRes[uRes].parts[0] =
+          *mpq_QuadICValue (&lpatRht->aplHC2R.parts[0],     // No left arg
+                             ICNDX_DIV0,
+                            &lpatRht->aplHC2R.parts[0],
+                            &lpMemRes[uRes].parts[0],
+                             FALSE);
         // Loop through the imaginary parts
         for (i = 1; i < 2; i++)
             // Initialize to 0/1
@@ -518,14 +536,16 @@ void PrimFnMonColonBarHC2RisHC2R
     if (bAllowNeg0
      && IsMpqInfinity (&aplDen)
      && SIGN_APLRAT (&aplDen))
+    {
+        // Free the temps
+        Myhc1r_clear (&aplDen);
+        Myhc2r_clear (&aplNum);
+
         RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
-    else
+    } else
     // If the denominator is {Inf}, ...
     if (IsMpqInfinity (&aplDen))
     {
-        // Calculate the numerator
-        aplNum = ConjHC2R (lpatRht->aplHC2R);
-
         // Loop through all of the parts
         for (i = 0; i < 2; i++)
             mpq_init_set_d (&lpMemRes[uRes].parts[i],
@@ -533,12 +553,8 @@ void PrimFnMonColonBarHC2RisHC2R
                                         EQ SIGN_APLRAT (&aplDen)) ?  0.0
                                                                   : -0.0)
                                        : 0.0);
-
     } else
     {
-        // Calculate the numerator
-        aplNum = ConjHC2R (lpatRht->aplHC2R);
-
         // Initialize to 0/1
         mphc2r_init (&lpMemRes[uRes]);
 
@@ -548,6 +564,10 @@ void PrimFnMonColonBarHC2RisHC2R
                      &aplNum.parts[i],
                      &aplDen);
     } // End IF/ELSE
+
+    // Free the temps
+    Myhc1r_clear (&aplDen);
+    Myhc2r_clear (&aplNum);
 } // End PrimFnMonColonBarHC2RisHC2R
 
 
@@ -588,36 +608,53 @@ void PrimFnMonColonBarHC2VisHC2V
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    int      i;
-    APLVFP   aplDen = {0},      // Denominator
-             aplTmp;            // Temp
-    APLHC2V  aplNum;            // Numerator
-    UBOOL    bAllowNeg0 = (UBOOL) gAllowNeg0;
+    int     i;                  // Loop counter
+    APLVFP  aplDen = {0};       // Denominator
+    APLHC2V aplNum,             // Numerator
+            aplTmp;             // Temp
+    UBOOL   bAllowNeg0 = (UBOOL) gAllowNeg0,
+            bImagRht;
 
-    // Initialize to 0
-    mpfr_init0 (&aplDen);
+    // Calculate the numerator
+    aplNum = ConjHC2V (lpatRht->aplHC2V);
 
-    // Loop through all of the parts
-    for (i = 0; i < 2; i++)
-    {
+    // If the user wants the left quotient, ...
+    if (GetQuadDQ () EQ 'l')
         // Calculate the denominator
-        // Square the next right arg part
-        aplTmp = MulHC1V_RE (lpatRht->aplHC2V.parts[i], lpatRht->aplHC2V.parts[i]);
+        aplTmp = MulHC2V_RE (                  aplNum, lpatRht->aplHC2V);
+    else
+        // Calculate the denominator
+        aplTmp = MulHC2V_RE (lpatRht->aplHC2V, aplNum);
 
-        // Add into the accumulator
-        mpfr_add (&aplDen, &aplDen, &aplTmp, MPFR_RNDN);
-    } // End FOR
+    // Save the real part
+    mpfr_init_set (&aplDen, &aplTmp.parts[0], MPFR_RNDN);
 
-    Myf_clear (&aplTmp);
+    // Calculate if any the imaginary parts are non-zero
+    bImagRht = IzitImaginary (ARRAY_HC2V, &aplTmp);
+
+    // Free the temp
+    Myhc2v_clear (&aplTmp);
+
+    // If any the imaginary parts are non-zero, ...
+    if (bImagRht)
+    {
+        // Free the temps
+        Myhc1v_clear (&aplDen);
+        Myhc2v_clear (&aplNum);
+
+        // Sound the alarm
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    } // End IF
 
     // If the denominator is 0, ...
     if (IsMpf0 (&aplDen))
     {
-        lpMemRes[uRes].parts[0] = *mpfr_QuadICValue (&lpatRht->aplHC2V.parts[0],     // No left arg
-                                                      ICNDX_DIV0,
-                                                     &lpatRht->aplHC2V.parts[0],
-                                                     &lpMemRes[uRes].parts[0],
-                                                      FALSE);
+        lpMemRes[uRes].parts[0] =
+          *mpfr_QuadICValue (&lpatRht->aplHC2V.parts[0],     // No left arg
+                              ICNDX_DIV0,
+                             &lpatRht->aplHC2V.parts[0],
+                             &lpMemRes[uRes].parts[0],
+                              FALSE);
         // Loop through the imaginary parts
         for (i = 1; i < 2; i++)
             // Initialize to 0
@@ -626,9 +663,6 @@ void PrimFnMonColonBarHC2VisHC2V
     // If the denominator is {Inf}, ...
     if (IsMpfInfinity (&aplDen))
     {
-        // Calculate the numerator
-        aplNum = ConjHC2V (lpatRht->aplHC2V);
-
         // Loop through all of the parts
         for (i = 0; i < 2; i++)
             mpfr_init_set_d (&lpMemRes[uRes].parts[i],
@@ -639,9 +673,6 @@ void PrimFnMonColonBarHC2VisHC2V
                               MPFR_RNDN);
     } else
     {
-        // Calculate the numerator
-        aplNum = ConjHC2V (lpatRht->aplHC2V);
-
         // Initialize to 0
         mphc2v_init0 (&lpMemRes[uRes]);
 
@@ -652,6 +683,10 @@ void PrimFnMonColonBarHC2VisHC2V
                       &aplDen,
                        MPFR_RNDN);
     } // End IF/ELSE
+
+    // Free the temps
+    Myhc1v_clear (&aplDen);
+    Myhc2v_clear (&aplNum);
 } // End PrimFnMonColonBarHC2VisHC2V
 
 
@@ -691,26 +726,33 @@ void PrimFnMonColonBarHC4FisHC4F
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    int      i;
-    APLFLOAT aplDen = 0.0;      // Denominator
-    APLHC4F  aplNum;            // Numerator
+    int      i;                 // Loop counter
+    APLFLOAT aplDen;            // Denominator
+    APLHC4F  aplNum,            // Numerator
+             aplTmp;            // Temp
 
-    // Loop through all of the parts
-    for (i = 0; i < 4; i++)
-    {
-        // Calculate the denominator
-        // Square and sum the next right arg part
-        aplDen = AddHC1F_RE (aplDen,
-                             MulHC1F_RE (lpatRht->aplHC4F.parts[i], lpatRht->aplHC4F.parts[i]));
-    } // End FOR
+    // Calculate the numerator
+    aplNum = ConjHC4F (lpatRht->aplHC4F);
+
+    // Calculate the denominator
+    aplTmp = MulHC4F_RE (lpatRht->aplHC4F, aplNum);
+
+    // Save the real part
+    aplDen = aplTmp.parts[0];
+
+    // If any the imaginary parts are non-zero, ...
+    if (IzitImaginary (ARRAY_HC4F, &aplTmp))
+        // Sound the alarm
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     // If the denominator is 0, ...
     if (aplDen EQ 0.0)
     {
-        lpMemRes[uRes].parts[0] = TranslateQuadICIndex (0,
-                                                        ICNDX_DIV0,
-                                                        lpatRht->aplHC4F.parts[0],
-                                                        SIGN_APLFLOAT (lpatRht->aplHC4F.parts[0]));
+        lpMemRes[uRes].parts[0] =
+          TranslateQuadICIndex (0,
+                                ICNDX_DIV0,
+                                lpatRht->aplHC4F.parts[0],
+                                SIGN_APLFLOAT (lpatRht->aplHC4F.parts[0]));
         lpMemRes[uRes].parts[1] = 0;
     } else
     // If the denominator is {Inf}, ...
@@ -718,20 +760,15 @@ void PrimFnMonColonBarHC4FisHC4F
     {
         UBOOL bAllowNeg0 = (UBOOL) gAllowNeg0;
 
-        // Calculate the numerator
-        aplNum = ConjHC4F (lpatRht->aplHC4F);
-
         // Loop through all of the parts
         for (i = 0; i < 4; i++)
-            lpMemRes[uRes].parts[i] = (bAllowNeg0 ? ((SIGN_APLFLOAT_RAW (aplNum.parts[i])
-                                                   EQ SIGN_APLFLOAT_RAW (aplDen)) ?  0.0
-                                                                                  : -0.0)
-                                                  : 0.0);
+            lpMemRes[uRes].parts[i] =
+              (bAllowNeg0 ? ((SIGN_APLFLOAT_RAW (aplNum.parts[i])
+                           EQ SIGN_APLFLOAT_RAW (aplDen)) ?  0.0
+                                                          : -0.0)
+                          : 0.0);
     } else
     {
-        // Calculate the numerator
-        aplNum = ConjHC4F (lpatRht->aplHC4F);
-
         // Loop through all of the parts
         for (i = 0; i < 4; i++)
             // The FPU handles overflow and underflow for us
@@ -753,36 +790,53 @@ void PrimFnMonColonBarHC4RisHC4R
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    int      i;
-    APLRAT   aplDen = {0},      // Denominator
-             aplTmp;            // Temp
-    APLHC4R  aplNum;            // Numerator
-    UBOOL    bAllowNeg0 = (UBOOL) gAllowNeg0;
+    int     i;                  // Loop counter
+    APLRAT  aplDen = {0};       // Denominator
+    APLHC4R aplNum,             // Numerator
+            aplTmp;             // Temp
+    UBOOL   bAllowNeg0 = (UBOOL) gAllowNeg0,
+            bImagRht;
 
-    // Initialize to 0/1
-    mpq_init (&aplDen);
+    // Calculate the numerator
+    aplNum = ConjHC4R (lpatRht->aplHC4R);
 
-    // Loop through all of the parts
-    for (i = 0; i < 4; i++)
-    {
+    // If the user wants the left quotient, ...
+    if (GetQuadDQ () EQ 'l')
         // Calculate the denominator
-        // Square the next right arg part
-        aplTmp = MulHC1R_RE (lpatRht->aplHC4R.parts[i], lpatRht->aplHC4R.parts[i]);
+        aplTmp = MulHC4R_RE (                  aplNum, lpatRht->aplHC4R);
+    else
+        // Calculate the denominator
+        aplTmp = MulHC4R_RE (lpatRht->aplHC4R, aplNum);
 
-        // Add into the accumulator
-        mpq_add (&aplDen, &aplDen, &aplTmp);
-    } // End FOR
+    // Save the real part
+    mpq_init_set (&aplDen, &aplTmp.parts[0]);
 
-    Myq_clear (&aplTmp);
+    // Calculate if any the imaginary parts are non-zero
+    bImagRht = IzitImaginary (ARRAY_HC4R, &aplTmp);
+
+    // Free the temp
+    Myhc4r_clear (&aplTmp);
+
+    // If any the imaginary parts are non-zero, ...
+    if (bImagRht)
+    {
+        // Free the temps
+        Myhc1r_clear (&aplDen);
+        Myhc4r_clear (&aplNum);
+
+        // Sound the alarm
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    } // End IF
 
     // If the denominator is 0, ...
     if (IsMpq0 (&aplDen))
     {
-        lpMemRes[uRes].parts[0] = *mpq_QuadICValue (&lpatRht->aplHC4R.parts[0],     // No left arg
-                                                     ICNDX_DIV0,
-                                                    &lpatRht->aplHC4R.parts[0],
-                                                    &lpMemRes[uRes].parts[0],
-                                                     FALSE);
+        lpMemRes[uRes].parts[0] =
+          *mpq_QuadICValue (&lpatRht->aplHC4R.parts[0],     // No left arg
+                             ICNDX_DIV0,
+                            &lpatRht->aplHC4R.parts[0],
+                            &lpMemRes[uRes].parts[0],
+                             FALSE);
         // Loop through the imaginary parts
         for (i = 1; i < 4; i++)
             // Initialize to 0/1
@@ -792,14 +846,16 @@ void PrimFnMonColonBarHC4RisHC4R
     if (bAllowNeg0
      && IsMpqInfinity (&aplDen)
      && SIGN_APLRAT (&aplDen))
+    {
+        // Free the temps
+        Myhc1r_clear (&aplDen);
+        Myhc4r_clear (&aplNum);
+
         RaiseException (EXCEPTION_RESULT_HC4V, 0, 0, NULL);
-    else
+    } else
     // If the denominator is {Inf}, ...
     if (IsMpqInfinity (&aplDen))
     {
-        // Calculate the numerator
-        aplNum = ConjHC4R (lpatRht->aplHC4R);
-
         // Loop through all of the parts
         for (i = 0; i < 4; i++)
             mpq_init_set_d (&lpMemRes[uRes].parts[i],
@@ -809,9 +865,6 @@ void PrimFnMonColonBarHC4RisHC4R
                                         : 0.0);
     } else
     {
-        // Calculate the numerator
-        aplNum = ConjHC4R (lpatRht->aplHC4R);
-
         // Initialize to 0/1
         mphc4r_init (&lpMemRes[uRes]);
 
@@ -821,6 +874,10 @@ void PrimFnMonColonBarHC4RisHC4R
                      &aplNum.parts[i],
                      &aplDen);
     } // End IF/ELSE
+
+    // Free the temps
+    Myhc1r_clear (&aplDen);
+    Myhc4r_clear (&aplNum);
 } // End PrimFnMonColonBarHC4RisHC4R
 
 
@@ -861,36 +918,53 @@ void PrimFnMonColonBarHC4VisHC4V
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    int      i;
-    APLVFP   aplDen = {0},      // Denominator
-             aplTmp;            // Temp
-    APLHC4V  aplNum;            // Numerator
-    UBOOL    bAllowNeg0 = (UBOOL) gAllowNeg0;
+    int     i;                  // Loop counter
+    APLVFP  aplDen = {0};       // Denominator
+    APLHC4V aplNum,             // Numerator
+            aplTmp;             // Temp
+    UBOOL   bAllowNeg0 = (UBOOL) gAllowNeg0,
+            bImagRht;
 
-    // Initialize to 0
-    mpfr_init0 (&aplDen);
+    // Calculate the numerator
+    aplNum = ConjHC4V (lpatRht->aplHC4V);
 
-    // Loop through all of the parts
-    for (i = 0; i < 4; i++)
-    {
+    // If the user wants the left quotient, ...
+    if (GetQuadDQ () EQ 'l')
         // Calculate the denominator
-        // Square the next right arg part
-        aplTmp = MulHC1V_RE (lpatRht->aplHC4V.parts[i], lpatRht->aplHC4V.parts[i]);
+        aplTmp = MulHC4V_RE (                  aplNum, lpatRht->aplHC4V);
+    else
+        // Calculate the denominator
+        aplTmp = MulHC4V_RE (lpatRht->aplHC4V, aplNum);
 
-        // Add into the accumulator
-        mpfr_add (&aplDen, &aplDen, &aplTmp, MPFR_RNDN);
-    } // End FOR
+    // Save the real part
+    mpfr_init_set (&aplDen, &aplTmp.parts[0], MPFR_RNDN);
 
-    Myf_clear (&aplTmp);
+    // Calculate if any the imaginary parts are non-zero
+    bImagRht = IzitImaginary (ARRAY_HC4V, &aplTmp);
+
+    // Free the temp
+    Myhc4v_clear (&aplTmp);
+
+    // If any the imaginary parts are non-zero, ...
+    if (bImagRht)
+    {
+        // Free the temps
+        Myhc1v_clear (&aplDen);
+        Myhc4v_clear (&aplNum);
+
+        // Sound the alarm
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    } // End IF
 
     // If the denominator is 0, ...
     if (IsMpf0 (&aplDen))
     {
-        lpMemRes[uRes].parts[0] = *mpfr_QuadICValue (&lpatRht->aplHC4V.parts[0],     // No left arg
-                                                      ICNDX_DIV0,
-                                                     &lpatRht->aplHC4V.parts[0],
-                                                     &lpMemRes[uRes].parts[0],
-                                                      FALSE);
+        lpMemRes[uRes].parts[0] =
+          *mpfr_QuadICValue (&lpatRht->aplHC4V.parts[0],     // No left arg
+                              ICNDX_DIV0,
+                             &lpatRht->aplHC4V.parts[0],
+                             &lpMemRes[uRes].parts[0],
+                              FALSE);
         // Loop through the imaginary parts
         for (i = 1; i < 4; i++)
             // Initialize to 0
@@ -899,9 +973,6 @@ void PrimFnMonColonBarHC4VisHC4V
     // If the denominator is {Inf}, ...
     if (IsMpfInfinity (&aplDen))
     {
-        // Calculate the numerator
-        aplNum = ConjHC4V (lpatRht->aplHC4V);
-
         // Loop through all of the parts
         for (i = 0; i < 4; i++)
             mpfr_init_set_d (&lpMemRes[uRes].parts[i],
@@ -912,9 +983,6 @@ void PrimFnMonColonBarHC4VisHC4V
                               MPFR_RNDN);
     } else
     {
-        // Calculate the numerator
-        aplNum = ConjHC4V (lpatRht->aplHC4V);
-
         // Initialize to 0
         mphc4v_init0 (&lpMemRes[uRes]);
 
@@ -925,6 +993,10 @@ void PrimFnMonColonBarHC4VisHC4V
                       &aplDen,
                        MPFR_RNDN);
     } // End IF/ELSE
+
+    // Free the temps
+    Myhc1v_clear (&aplDen);
+    Myhc4v_clear (&aplNum);
 } // End PrimFnMonColonBarHC4VisHC4V
 
 
@@ -964,47 +1036,48 @@ void PrimFnMonColonBarHC8FisHC8F
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    int      i;
-    APLFLOAT aplDen = 0.0;      // Denominator
-    APLHC8F  aplNum;            // Numerator
+    int      i;                 // Loop counter
+    APLFLOAT aplDen;            // Denominator
+    APLHC8F  aplNum,            // Numerator
+             aplTmp;            // Temp
+    UBOOL    bAllowNeg0 = (UBOOL) gAllowNeg0;
 
-    // Loop through all of the parts
-    for (i = 0; i < 8; i++)
-    {
-        // Calculate the denominator
-        // Square and sum the next right arg part
-        aplDen = AddHC1F_RE (aplDen,
-                             MulHC1F_RE (lpatRht->aplHC8F.parts[i], lpatRht->aplHC8F.parts[i]));
-    } // End FOR
+    // Calculate the numerator
+    aplNum = ConjHC8F (lpatRht->aplHC8F);
+
+    // Calculate the denominator
+    aplTmp = MulHC8F_RE (lpatRht->aplHC8F, aplNum);
+
+    // Save the real part
+    aplDen = aplTmp.parts[0];
+
+    // If any the imaginary parts are non-zero, ...
+    if (IzitImaginary (ARRAY_HC8F, &aplTmp))
+        // Sound the alarm
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     // If the denominator is 0, ...
     if (aplDen EQ 0.0)
     {
-        lpMemRes[uRes].parts[0] = TranslateQuadICIndex (0,
-                                                        ICNDX_DIV0,
-                                                        lpatRht->aplHC8F.parts[0],
-                                                        SIGN_APLFLOAT (lpatRht->aplHC8F.parts[0]));
+        lpMemRes[uRes].parts[0] =
+          TranslateQuadICIndex (0,
+                                ICNDX_DIV0,
+                                lpatRht->aplHC8F.parts[0],
+                                SIGN_APLFLOAT (lpatRht->aplHC8F.parts[0]));
         lpMemRes[uRes].parts[1] = 0;
     } else
     // If the denominator is {Inf}, ...
     if (IsFltInfinity (aplDen))
     {
-        UBOOL bAllowNeg0 = (UBOOL) gAllowNeg0;
-
-        // Calculate the numerator
-        aplNum = ConjHC8F (lpatRht->aplHC8F);
-
         // Loop through all of the parts
         for (i = 0; i < 8; i++)
-            lpMemRes[uRes].parts[i] = (bAllowNeg0 ? ((SIGN_APLFLOAT_RAW (aplNum.parts[i])
-                                                   EQ SIGN_APLFLOAT_RAW (aplDen)) ?  0.0
-                                                                                  : -0.0)
-                                                  : 0.0);
+            lpMemRes[uRes].parts[i] =
+              (bAllowNeg0 ? ((SIGN_APLFLOAT_RAW (aplNum.parts[i])
+                           EQ SIGN_APLFLOAT_RAW (aplDen)) ?  0.0
+                                                          : -0.0)
+                          : 0.0);
     } else
     {
-        // Calculate the numerator
-        aplNum = ConjHC8F (lpatRht->aplHC8F);
-
         // Loop through all of the parts
         for (i = 0; i < 8; i++)
             // The FPU handles overflow and underflow for us
@@ -1026,36 +1099,53 @@ void PrimFnMonColonBarHC8RisHC8R
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    int      i;
-    APLRAT   aplDen = {0},      // Denominator
-             aplTmp;            // Temp
-    APLHC8R  aplNum;            // Numerator
-    UBOOL    bAllowNeg0 = (UBOOL) gAllowNeg0;
+    int     i;                  // Loop counter
+    APLRAT  aplDen = {0};       // Denominator
+    APLHC8R aplNum,             // Numerator
+            aplTmp;             // Temp
+    UBOOL   bAllowNeg0 = (UBOOL) gAllowNeg0,
+            bImagRht;
 
-    // Initialize to 0/1
-    mpq_init (&aplDen);
+    // Calculate the numerator
+    aplNum = ConjHC8R (lpatRht->aplHC8R);
 
-    // Loop through all of the parts
-    for (i = 0; i < 8; i++)
-    {
+    // If the user wants the left quotient, ...
+    if (GetQuadDQ () EQ 'l')
         // Calculate the denominator
-        // Square the next right arg part
-        aplTmp = MulHC1R_RE (lpatRht->aplHC8R.parts[i], lpatRht->aplHC8R.parts[i]);
+        aplTmp = MulHC8R_RE (                  aplNum, lpatRht->aplHC8R);
+    else
+        // Calculate the denominator
+        aplTmp = MulHC8R_RE (lpatRht->aplHC8R, aplNum);
 
-        // Add into the accumulator
-        mpq_add (&aplDen, &aplDen, &aplTmp);
-    } // End FOR
+    // Save the real part
+    mpq_init_set (&aplDen, &aplTmp.parts[0]);
 
-    Myq_clear (&aplTmp);
+    // Calculate if any the imaginary parts are non-zero
+    bImagRht = IzitImaginary (ARRAY_HC8R, &aplTmp);
+
+    // Free the temp
+    Myhc8r_clear (&aplTmp);
+
+    // If any the imaginary parts are non-zero, ...
+    if (bImagRht)
+    {
+        // Free the temps
+        Myhc1r_clear (&aplDen);
+        Myhc8r_clear (&aplNum);
+
+        // Sound the alarm
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    } // End IF
 
     // If the denominator is 0, ...
     if (IsMpq0 (&aplDen))
     {
-        lpMemRes[uRes].parts[0] = *mpq_QuadICValue (&lpatRht->aplHC8R.parts[0],     // No left arg
-                                                     ICNDX_DIV0,
-                                                    &lpatRht->aplHC8R.parts[0],
-                                                    &lpMemRes[uRes].parts[0],
-                                                     FALSE);
+        lpMemRes[uRes].parts[0] =
+          *mpq_QuadICValue (&lpatRht->aplHC8R.parts[0],     // No left arg
+                             ICNDX_DIV0,
+                            &lpatRht->aplHC8R.parts[0],
+                            &lpMemRes[uRes].parts[0],
+                             FALSE);
         // Loop through the imaginary parts
         for (i = 1; i < 8; i++)
             // Initialize to 0/1
@@ -1065,14 +1155,16 @@ void PrimFnMonColonBarHC8RisHC8R
     if (bAllowNeg0
      && IsMpqInfinity (&aplDen)
      && SIGN_APLRAT (&aplDen))
+    {
+        // Free the temps
+        Myhc1r_clear (&aplDen);
+        Myhc8r_clear (&aplNum);
+
         RaiseException (EXCEPTION_RESULT_HC8V, 0, 0, NULL);
-    else
+    } else
     // If the denominator is {Inf}, ...
     if (IsMpqInfinity (&aplDen))
     {
-        // Calculate the numerator
-        aplNum = ConjHC8R (lpatRht->aplHC8R);
-
         // Loop through all of the parts
         for (i = 0; i < 8; i++)
             mpq_init_set_d (&lpMemRes[uRes].parts[i],
@@ -1083,9 +1175,6 @@ void PrimFnMonColonBarHC8RisHC8R
 
     } else
     {
-        // Calculate the numerator
-        aplNum = ConjHC8R (lpatRht->aplHC8R);
-
         // Initialize to 0/1
         mphc8r_init (&lpMemRes[uRes]);
 
@@ -1095,6 +1184,10 @@ void PrimFnMonColonBarHC8RisHC8R
                      &aplNum.parts[i],
                      &aplDen);
     } // End IF/ELSE
+
+    // Free the temps
+    Myhc1r_clear (&aplDen);
+    Myhc8r_clear (&aplNum);
 } // End PrimFnMonColonBarHC8RisHC8R
 
 
@@ -1135,36 +1228,53 @@ void PrimFnMonColonBarHC8VisHC8V
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    int      i;
-    APLVFP   aplDen = {0},      // Denominator
-             aplTmp;            // Temp
-    APLHC8V  aplNum;            // Numerator
-    UBOOL    bAllowNeg0 = (UBOOL) gAllowNeg0;
+    int     i;                  // Loop counter
+    APLVFP  aplDen = {0};       // Denominator
+    APLHC8V aplNum,             // Numerator
+            aplTmp;             // Temp
+    UBOOL   bAllowNeg0 = (UBOOL) gAllowNeg0,
+            bImagRht;
 
-    // Initialize to 0
-    mpfr_init0 (&aplDen);
+    // Calculate the numerator
+    aplNum = ConjHC8V (lpatRht->aplHC8V);
 
-    // Loop through all of the parts
-    for (i = 0; i < 8; i++)
-    {
+    // If the user wants the left quotient, ...
+    if (GetQuadDQ () EQ 'l')
         // Calculate the denominator
-        // Square the next right arg part
-        aplTmp = MulHC1V_RE (lpatRht->aplHC8V.parts[i], lpatRht->aplHC8V.parts[i]);
+        aplTmp = MulHC8V_RE (                  aplNum, lpatRht->aplHC8V);
+    else
+        // Calculate the denominator
+        aplTmp = MulHC8V_RE (lpatRht->aplHC8V, aplNum);
 
-        // Add into the accumulator
-        mpfr_add (&aplDen, &aplDen, &aplTmp, MPFR_RNDN);
-    } // End FOR
+    // Save the real part
+    mpfr_init_set (&aplDen, &aplTmp.parts[0], MPFR_RNDN);
 
-    Myf_clear (&aplTmp);
+    // Calculate if any the imaginary parts are non-zero
+    bImagRht = IzitImaginary (ARRAY_HC8V, &aplTmp);
+
+    // Free the temp
+    Myhc8v_clear (&aplTmp);
+
+    // If any the imaginary parts are non-zero, ...
+    if (bImagRht)
+    {
+        // Free the temps
+        Myhc1v_clear (&aplDen);
+        Myhc8v_clear (&aplNum);
+
+        // Sound the alarm
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+    } // End IF
 
     // If the denominator is 0, ...
     if (IsMpf0 (&aplDen))
     {
-        lpMemRes[uRes].parts[0] = *mpfr_QuadICValue (&lpatRht->aplHC8V.parts[0],     // No left arg
-                                                      ICNDX_DIV0,
-                                                     &lpatRht->aplHC8V.parts[0],
-                                                     &lpMemRes[uRes].parts[0],
-                                                      FALSE);
+        lpMemRes[uRes].parts[0] =
+          *mpfr_QuadICValue (&lpatRht->aplHC8V.parts[0],     // No left arg
+                              ICNDX_DIV0,
+                             &lpatRht->aplHC8V.parts[0],
+                             &lpMemRes[uRes].parts[0],
+                              FALSE);
         // Loop through the imaginary parts
         for (i = 1; i < 8; i++)
             // Initialize to 0
@@ -1173,9 +1283,6 @@ void PrimFnMonColonBarHC8VisHC8V
     // If the denominator is {Inf}, ...
     if (IsMpfInfinity (&aplDen))
     {
-        // Calculate the numerator
-        aplNum = ConjHC8V (lpatRht->aplHC8V);
-
         // Loop through all of the parts
         for (i = 0; i < 8; i++)
             mpfr_init_set_d (&lpMemRes[uRes].parts[i],
@@ -1186,9 +1293,6 @@ void PrimFnMonColonBarHC8VisHC8V
                               MPFR_RNDN);
     } else
     {
-        // Calculate the numerator
-        aplNum = ConjHC8V (lpatRht->aplHC8V);
-
         // Initialize to 0
         mphc8v_init0 (&lpMemRes[uRes]);
 
@@ -1199,6 +1303,10 @@ void PrimFnMonColonBarHC8VisHC8V
                       &aplDen,
                        MPFR_RNDN);
     } // End IF/ELSE
+
+    // Free the temps
+    Myhc1v_clear (&aplDen);
+    Myhc8v_clear (&aplNum);
 } // End PrimFnMonColonBarHC8VisHC8V
 
 
@@ -1303,18 +1411,20 @@ void PrimFnDydColonBarFisIvI
     if (lpatLft->aplInteger EQ 0
      && lpatRht->aplInteger EQ 0)
     {
-        lpMemRes[uRes] = TranslateQuadICIndex ((APLFLOAT) lpatLft->aplInteger,
-                                                          ICNDX_0DIV0,
-                                               (APLFLOAT) lpatRht->aplInteger,
-                                                          FALSE);
+        lpMemRes[uRes] =
+          TranslateQuadICIndex ((APLFLOAT) lpatLft->aplInteger,
+                                ICNDX_0DIV0,
+                     (APLFLOAT) lpatRht->aplInteger,
+                                FALSE);
     } else
     // Check for indeterminates:  L {div} 0
     if (lpatRht->aplInteger EQ 0)
     {
-        lpMemRes[uRes] = TranslateQuadICIndex ((APLFLOAT) lpatLft->aplInteger,
-                                                          ICNDX_DIV0,
-                                               (APLFLOAT) lpatRht->aplInteger,
-                                                          FALSE);
+        lpMemRes[uRes] =
+          TranslateQuadICIndex ((APLFLOAT) lpatLft->aplInteger,
+                                ICNDX_DIV0,
+                     (APLFLOAT) lpatRht->aplInteger,
+                                FALSE);
     } else
         // The FPU handles overflow and underflow for us
         lpMemRes[uRes] = (((APLFLOAT) lpatLft->aplInteger) / (APLFLOAT) lpatRht->aplInteger);
@@ -1351,33 +1461,37 @@ APLHC1F DivHC1F_RE
     if (aplLft EQ 0
      && aplRht EQ 0)
     {
-        aplRes = TranslateQuadICIndex (aplLft,
-                                       ICNDX_0DIV0,
-                                       aplRht,
-                                       SIGN_APLFLOAT (aplLft) NE SIGN_APLFLOAT (aplRht));
+        aplRes =
+          TranslateQuadICIndex (aplLft,
+                                ICNDX_0DIV0,
+                                aplRht,
+                                SIGN_APLFLOAT (aplLft) NE SIGN_APLFLOAT (aplRht));
     } else
     // Check for indeterminates:  L {div} 0
     if (aplRht EQ 0)
     {
-        aplRes = TranslateQuadICIndex (aplLft,
-                                       ICNDX_DIV0,
-                                       aplRht,
-                                       SIGN_APLFLOAT (aplLft) NE SIGN_APLFLOAT (aplRht));
+        aplRes =
+          TranslateQuadICIndex (aplLft,
+                                ICNDX_DIV0,
+                                aplRht,
+                                SIGN_APLFLOAT (aplLft) NE SIGN_APLFLOAT (aplRht));
     } else
     // Check for indeterminates:  _ {div} _ (same or different signs)
     if (IsFltInfinity (aplLft)
      && IsFltInfinity (aplRht))
     {
         if (SIGN_APLFLOAT (aplLft) EQ SIGN_APLFLOAT (aplRht))
-            aplRes = TranslateQuadICIndex (aplLft,
-                                           ICNDX_PiDIVPi,
-                                           aplRht,
-                                           FALSE);
+            aplRes =
+              TranslateQuadICIndex (aplLft,
+                                    ICNDX_PiDIVPi,
+                                    aplRht,
+                                    FALSE);
         else
-            aplRes = TranslateQuadICIndex (aplLft,
-                                           ICNDX_NiDIVPi,
-                                           aplRht,
-                                           FALSE);
+            aplRes =
+              TranslateQuadICIndex (aplLft,
+                                    ICNDX_NiDIVPi,
+                                    aplRht,
+                                    FALSE);
     } else
         // The FPU handles overflow and underflow for us
         aplRes = (aplLft / aplRht);
@@ -1436,37 +1550,41 @@ APLHC1R DivHC1R_RE
     if (IsMpq0 (&aplLft)
      && IsMpq0 (&aplRht))
     {
-        aplRes = *mpq_QuadICValue (&aplLft,
-                                    ICNDX_0DIV0,
-                                   &aplRht,
-                                   &aplRes,
-                                    FALSE);
+        aplRes =
+          *mpq_QuadICValue (&aplLft,
+                             ICNDX_0DIV0,
+                            &aplRht,
+                            &aplRes,
+                             FALSE);
     } else
     // Check for indeterminates:  L {div} 0
     if (IsMpq0 (&aplRht))
     {
-        aplRes = *mpq_QuadICValue (&aplLft,
-                                    ICNDX_DIV0,
-                                   &aplRht,
-                                   &aplRes,
-                                    FALSE);
+        aplRes =
+          *mpq_QuadICValue (&aplLft,
+                             ICNDX_DIV0,
+                            &aplRht,
+                            &aplRes,
+                             FALSE);
     } else
     // Check for indeterminates:  _ {div} _ (same or different signs)
     if (mpq_inf_p (&aplLft)
      && mpq_inf_p (&aplRht))
     {
         if (mpq_sgn (&aplLft) EQ mpq_sgn (&aplRht))
-            aplRes = *mpq_QuadICValue (&aplLft,
-                                        ICNDX_PiDIVPi,
-                                       &aplRht,
-                                       &aplRes,
-                                        FALSE);
+            aplRes =
+              *mpq_QuadICValue (&aplLft,
+                                 ICNDX_PiDIVPi,
+                                &aplRht,
+                                &aplRes,
+                                 FALSE);
         else
-            aplRes = *mpq_QuadICValue (&aplLft,
-                                        ICNDX_NiDIVPi,
-                                       &aplRht,
-                                       &aplRes,
-                                        FALSE);
+            aplRes =
+              *mpq_QuadICValue (&aplLft,
+                                 ICNDX_NiDIVPi,
+                                &aplRht,
+                                &aplRes,
+                                 FALSE);
     } else
     {
         // Initialize the result
@@ -1547,39 +1665,43 @@ APLHC1V DivHC1V_RE
     if (IsMpf0 (&aplLft)
      && IsMpf0 (&aplRht))
     {
-        aplRes = *mpfr_QuadICValue (&aplLft,
-                                     ICNDX_0DIV0,
-                                    &aplRht,
-                                    &aplRes,
-                                     SIGN_APLVFP (&aplLft) NE
-                                     SIGN_APLVFP (&aplRht));
+        aplRes =
+          *mpfr_QuadICValue (&aplLft,
+                              ICNDX_0DIV0,
+                             &aplRht,
+                             &aplRes,
+                              SIGN_APLVFP (&aplLft) NE
+                              SIGN_APLVFP (&aplRht));
     } else
     // Check for indeterminates:  L {div} 0
     if (IsMpf0 (&aplRht))
     {
-        aplRes = *mpfr_QuadICValue (&aplLft,
-                                     ICNDX_DIV0,
-                                    &aplRht,
-                                    &aplRes,
-                                     SIGN_APLVFP (&aplLft) NE
-                                     SIGN_APLVFP (&aplRht));
+        aplRes =
+          *mpfr_QuadICValue (&aplLft,
+                              ICNDX_DIV0,
+                             &aplRht,
+                             &aplRes,
+                              SIGN_APLVFP (&aplLft) NE
+                              SIGN_APLVFP (&aplRht));
     } else
     // Check for indeterminates:  _ {div} _ (same or different signs)
     if (mpfr_inf_p (&aplLft)
      && mpfr_inf_p (&aplRht))
     {
         if (mpfr_sgn (&aplLft) EQ mpfr_sgn (&aplRht))
-            aplRes = *mpfr_QuadICValue (&aplLft,
-                                         ICNDX_PiDIVPi,
-                                        &aplRht,
-                                        &aplRes,
-                                         FALSE);
+            aplRes =
+              *mpfr_QuadICValue (&aplLft,
+                                  ICNDX_PiDIVPi,
+                                 &aplRht,
+                                 &aplRes,
+                                  FALSE);
         else
-            aplRes = *mpfr_QuadICValue (&aplLft,
-                                         ICNDX_NiDIVPi,
-                                        &aplRht,
-                                        &aplRes,
-                                         FALSE);
+            aplRes =
+              *mpfr_QuadICValue (&aplLft,
+                                  ICNDX_NiDIVPi,
+                                 &aplRht,
+                                 &aplRes,
+                                  FALSE);
     } else
     {
         // Initialize the result to 0
@@ -1633,30 +1755,26 @@ APLHC2I DivHC2I_RE
      APLHC2I aplRht)                    // Right ...
 
 {
-    int     i;                      // Loop counter
-    APLINT  aplDen = 0;             // Denominator
-    APLHC2I aplNum,                 // Numerator
-            aplRes;                 // Result
+    int     i;                  // Loop counter
+    APLINT  aplDen = 0;         // Denominator
+    APLHC2I aplNum,             // Numerator
+            aplRes;             // Result
 
     // Loop through all of the parts
     for (i = 0; i < 2; i++)
-        // Calculate the denominator
-        aplDen = AddHC1I_RE (aplDen, MulHC1I_RE (aplRht.parts[i], aplRht.parts[i]));
-
+        // Calculate the denominator by summing the squares of the parts
+        aplDen = AddHC1I_RE (aplDen,
+                             MulHC1I_RE (aplRht.parts[i],
+                                         aplRht.parts[i]));
     // If the denominator is 0, ...
     if (aplDen EQ 0)
         RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
 
-     // Calculate the conjugate
-     aplNum = ConjHC2I (aplRht);
+    // Calculate the conjugate
+    aplNum = ConjHC2I (aplRht);
 
-    // If the user wants the left quotient, ...
-    if (GetQuadDQ () EQ 'l')
-        // Calculate the numerator
-        aplNum = MulHC2I_RE (        aplNum, aplLft);
-    else
-        // Calculate the numerator
-        aplNum = MulHC2I_RE (aplLft, aplNum);
+    // Calculate the numerator
+    aplNum = MulHC2I_RE (aplLft, aplNum);
 
     // Loop through all of the parts
     for (i = 0; i < 2; i++)
@@ -1752,11 +1870,11 @@ APLHC2F DivHC2F_RE
 
 {
     int      i;                 // Loop counter
-    APLFLOAT aplDen = 0;        // Denominator
+    APLFLOAT aplDen;            // Denominator
     APLHC2F  aplNum,            // Numerator
              aplRes;            // Result
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
+    UBOOL    bNaNLft,           // TRUE iff the left arg is a NaN
+             bNaNRht;           // ...          right ...
 
     // Is either arg a NaN?
     bNaNLft = IsArgNaN (ARRAY_HC2F, &aplLft, 0);
@@ -1773,37 +1891,43 @@ APLHC2F DivHC2F_RE
             return aplRht;
     } else
     {
-        // Loop through all of the parts
-        for (i = 0; i < 2; i++)
-            // Calculate the denominator
-            aplDen = AddHC1F_RE (aplDen, MulHC1F_RE (aplRht.parts[i], aplRht.parts[i]));
+        APLHC2F aplTmp;             // Temp
 
-        // If the user wants the left quotient, ...
-        if (GetQuadDQ () EQ 'l')
-            // Calculate the numerator
-            aplNum = MulHC2F_RE (        ConjHC2F (aplRht), aplLft);
-        else
-            // Calculate the numerator
-            aplNum = MulHC2F_RE (aplLft, ConjHC2F (aplRht));
+        // Calculate the numerator
+        aplNum = MulHC2F_RE (aplLft, ConjHC2F (aplRht));
+
+        // Calculate the denominator
+        aplTmp = MulHC2F_RE (aplRht, ConjHC2F (aplRht));
+
+        // Save the real part
+        aplDen = aplTmp.parts[0];
+
+        // If any the imaginary parts are non-zero, ...
+        if (IzitImaginary (ARRAY_HC2F, &aplTmp))
+            // Sound the alarm
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
         // Loop through all of the parts
         for (i = 0; i < 2; i++)
         // Check for indeterminates:  0 {div} 0
         if (aplNum.parts[i] EQ 0
          && aplDen EQ 0)
         {
-            aplRes.parts[0] = TranslateQuadICIndex (aplLft.parts[i],
-                                                    ICNDX_0DIV0,
-                                                    aplRht.parts[i],
-                                                    SIGN_APLFLOAT (aplLft.parts[i]) NE SIGN_APLFLOAT (aplRht.parts[i]));
+            aplRes.parts[0] =
+              TranslateQuadICIndex (aplLft.parts[i],
+                                    ICNDX_0DIV0,
+                                    aplRht.parts[i],
+                                    SIGN_APLFLOAT (aplLft.parts[i]) NE SIGN_APLFLOAT (aplRht.parts[i]));
             break;
         } else
         // Check for indeterminates:  L {div} 0
         if (aplDen EQ 0)
         {
-            aplRes.parts[0] = TranslateQuadICIndex (aplLft.parts[i],
-                                                    ICNDX_DIV0,
-                                                    aplRht.parts[i],
-                                                    SIGN_APLFLOAT (aplLft.parts[i]) NE SIGN_APLFLOAT (aplRht.parts[i]));
+            aplRes.parts[0] =
+              TranslateQuadICIndex (aplLft.parts[i],
+                                    ICNDX_DIV0,
+                                    aplRht.parts[i],
+                                    SIGN_APLFLOAT (aplLft.parts[i]) NE SIGN_APLFLOAT (aplRht.parts[i]));
             break;
         } else
         // Check for indeterminates:  _ {div} _ (same or different signs)
@@ -1811,15 +1935,17 @@ APLHC2F DivHC2F_RE
          && IsFltInfinity (aplDen))
         {
             if (SIGN_APLFLOAT (aplLft.parts[i]) EQ SIGN_APLFLOAT (aplRht.parts[i]))
-                aplRes.parts[0] = TranslateQuadICIndex (aplLft.parts[i],
-                                                        ICNDX_PiDIVPi,
-                                                        aplRht.parts[i],
-                                                        FALSE);
+                aplRes.parts[0] =
+                  TranslateQuadICIndex (aplLft.parts[i],
+                                        ICNDX_PiDIVPi,
+                                        aplRht.parts[i],
+                                        FALSE);
             else
-                aplRes.parts[0] = TranslateQuadICIndex (aplLft.parts[i],
-                                                        ICNDX_NiDIVPi,
-                                                        aplRht.parts[i],
-                                                        FALSE);
+                aplRes.parts[0] =
+                  TranslateQuadICIndex (aplLft.parts[i],
+                                        ICNDX_NiDIVPi,
+                                        aplRht.parts[i],
+                                        FALSE);
             break;
         } else
             // Divide numerator by denominator to get the result
@@ -1889,13 +2015,11 @@ APLHC2R DivHC2R_RE
      APLHC2R aplRht)                    // Right ...
 
 {
-    int      i;                 // Loop counter
-    APLRAT   aplDen = {0},      // Denominator
-             aplTmp1,           // Temp
-             aplTmp2;           // ...
-    APLHC2R  aplNum,            // Numerator
-             aplTmp3,           // Temp
-             aplRes = {0};      // Result
+    int     i;                  // Loop counter
+    APLRAT  aplDen = {0};       // Denominator
+    APLHC2R aplNum,             // Numerator
+            aplConj,            // Conjugate
+            aplRes = {0};       // Result
     UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
             bNaNRht;            // ...          right ...
 
@@ -1914,38 +2038,32 @@ APLHC2R DivHC2R_RE
             mphc2r_init_set (&aplRes, &aplRht);
     } else
     {
-        // Initialize to 0/1
-        mpq_init (&aplDen);
+        APLHC2R aplTmp;             // Temp
 
-        // Loop through all of the parts
-        for (i = 0; i < 2; i++)
+        // Calculate the conjugate of the denominator
+        aplConj = ConjHC2R (aplRht);
+
+        // Calculate the numerator
+        aplNum = MulHC2R_RE (aplLft, aplConj);
+
+        // Calculate the denominator
+        aplTmp = MulHC2R_RE (aplRht, aplConj);
+
+        // Save the real part
+        mpq_init_set (&aplDen, &aplTmp.parts[0]);
+
+        // If any the imaginary parts are non-zero, ...
+        if (IzitImaginary (ARRAY_HC2R, &aplTmp))
         {
-            // Square the part
-            aplTmp1 = MulHC1R_RE (aplRht.parts[i], aplRht.parts[i]);
+            // Free the temps
+            Myhc1r_clear (&aplDen );
+            Myhc2r_clear (&aplTmp );
+            Myhc2r_clear (&aplNum );
+            Myhc2r_clear (&aplConj);
 
-            // Accumulate
-            aplTmp2 = AddHC1R_RE (aplDen, aplTmp1);
-
-            // Save in the denominator
-            mpq_set (&aplDen, &aplTmp2);
-
-            // We no longer need these reources
-            Myq_clear (&aplTmp2);
-            Myq_clear (&aplTmp1);
-        } // End FOR
-
-        // Calculate the conjugate
-        aplTmp3 = ConjHC2R (aplRht);
-
-        // If the user wants the left quotient, ...
-        if (GetQuadDQ () EQ 'l')
-            // Calculate the numerator
-            aplNum = MulHC2R_RE (        aplTmp3, aplLft);
-        else
-            // Calculate the numerator
-            aplNum = MulHC2R_RE (aplLft, aplTmp3);
-
-        Myhc2r_clear (&aplTmp3);
+            // Sound the alarm
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+        } // End IF
 
         // Initialize to 0/1
         mphc2r_init (&aplRes);
@@ -2004,6 +2122,11 @@ APLHC2R DivHC2R_RE
         for (i = 1; i < 2; i++)
             // Set to 0/1
             mpq_set_si (&aplRes.parts[i], 0, 1);
+        // Free the temps
+        Myhc1r_clear (&aplDen );
+        Myhc2r_clear (&aplTmp );
+        Myhc2r_clear (&aplNum );
+        Myhc2r_clear (&aplConj);
     } // End IF/ELSE
 
     return aplRes;
@@ -2061,13 +2184,11 @@ APLHC2V DivHC2V_RE
      APLHC2V aplRht)                    // Right ...
 
 {
-    int      i;
-    APLVFP   aplDen = {0},      // Denominator
-             aplTmp1,           // Temp
-             aplTmp2;           // ...
-    APLHC2V  aplNum,            // Numerator
-             aplTmp3,           // Temp
-             aplRes = {0};      // Result
+    int     i;                  // Loop counter
+    APLVFP  aplDen = {0};       // Denominator
+    APLHC2V aplNum,             // Numerator
+            aplConj,            // Conjugate
+            aplRes = {0};       // Result
     UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
             bNaNRht;            // ...          right ...
 
@@ -2086,38 +2207,32 @@ APLHC2V DivHC2V_RE
             mphc2v_init_set (&aplRes, &aplRht);
     } else
     {
-        // Initialize to 0
-        mpfr_init0 (&aplDen);
+        APLHC2V aplTmp;             // Temp
 
-        // Loop through all of the parts
-        for (i = 0; i < 2; i++)
+        // Calculate the conjugate of the denominator
+        aplConj = ConjHC2V (aplRht);
+
+        // Calculate the numerator
+        aplNum = MulHC2V_RE (aplLft, aplConj);
+
+        // Calculate the denominator
+        aplTmp = MulHC2V_RE (aplRht, aplConj);
+
+        // Save the real part
+        mpfr_init_set (&aplDen, &aplTmp.parts[0], MPFR_RNDN);
+
+        // If any the imaginary parts are non-zero, ...
+        if (IzitImaginary (ARRAY_HC2V, &aplTmp))
         {
-            // Square the part
-            aplTmp1 = MulHC1V_RE (aplRht.parts[i], aplRht.parts[i]);
+            // Free the temps
+            Myhc1v_clear (&aplDen );
+            Myhc2v_clear (&aplTmp );
+            Myhc2v_clear (&aplNum );
+            Myhc2v_clear (&aplConj);
 
-            // Accumulate
-            aplTmp2 = AddHC1V_RE (aplDen, aplTmp1);
-
-            // Save in the denominator
-            mpfr_set (&aplDen, &aplTmp2, MPFR_RNDN);
-
-            // We no longer need these reources
-            Myf_clear (&aplTmp2);
-            Myf_clear (&aplTmp1);
-        } // End FOR
-
-        // Calculate the conjugate
-        aplTmp3 = ConjHC2V (aplRht);
-
-        // If the user wants the left quotient, ...
-        if (GetQuadDQ () EQ 'l')
-            // Calculate the numerator
-            aplNum  = MulHC2V_RE (        aplTmp3, aplLft);
-        else
-            // Calculate the numerator
-            aplNum  = MulHC2V_RE (aplLft, aplTmp3);
-
-        Myhc2v_clear (&aplTmp3);
+            // Sound the alarm
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+        } // End IF
 
         // Initialize to 0
         mphc2v_init0 (&aplRes);
@@ -2180,6 +2295,11 @@ APLHC2V DivHC2V_RE
         for (i = 1; i < 2; i++)
             // Set to 0
             mpfr_set_si (&aplRes.parts[i], 0, MPFR_RNDN);
+        // Free the temps
+        Myhc1v_clear (&aplDen );
+        Myhc2v_clear (&aplTmp );
+        Myhc2v_clear (&aplNum );
+        Myhc2v_clear (&aplConj);
     } // End IF/ELSE
 
     return aplRes;
@@ -2271,16 +2391,17 @@ APLHC4I DivHC4I_RE
      APLHC4I aplRht)                    // Right ...
 
 {
-    int     i;                      // Loop counter
-    APLINT  aplDen = 0;             // Denominator
-    APLHC4I aplNum,                 // Numerator
-            aplRes;                 // Result
+    int     i;                  // Loop counter
+    APLINT  aplDen = 0;         // Denominator
+    APLHC4I aplNum,             // Numerator
+            aplRes;             // Result
 
     // Loop through all of the parts
     for (i = 0; i < 4; i++)
-        // Calculate the denominator
-        aplDen = AddHC1I_RE (aplDen, MulHC1I_RE (aplRht.parts[i], aplRht.parts[i]));
-
+        // Calculate the denominator by summing the squares of the parts
+        aplDen = AddHC1I_RE (aplDen,
+                             MulHC1I_RE (aplRht.parts[i],
+                                         aplRht.parts[i]));
     // If the denominator is 0, ...
     if (aplDen EQ 0)
         RaiseException (EXCEPTION_RESULT_HC4F, 0, 0, NULL);
@@ -2390,11 +2511,11 @@ APLHC4F DivHC4F_RE
 
 {
     int      i;                 // Loop counter
-    APLFLOAT aplDen = 0;        // Denominator
+    APLFLOAT aplDen;            // Denominator
     APLHC4F  aplNum,            // Numerator
              aplRes;            // Result
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
+    UBOOL    bNaNLft,           // TRUE iff the left arg is a NaN
+             bNaNRht;           // ...          right ...
 
     // Is either arg a NaN?
     bNaNLft = IsArgNaN (ARRAY_HC4F, &aplLft, 0);
@@ -2411,18 +2532,32 @@ APLHC4F DivHC4F_RE
             return aplRht;
     } else
     {
-        // Loop through all of the parts
-        for (i = 0; i < 4; i++)
-            // Calculate the denominator
-            aplDen = AddHC1F_RE (aplDen, MulHC1F_RE (aplRht.parts[i], aplRht.parts[i]));
+        APLHC4F aplTmp;             // Temp
 
         // If the user wants the left quotient, ...
         if (GetQuadDQ () EQ 'l')
+        {
             // Calculate the numerator
             aplNum = MulHC4F_RE (        ConjHC4F (aplRht), aplLft);
-        else
+
+            // Calculate the denominator
+            aplTmp = MulHC4F_RE (        ConjHC4F (aplRht), aplRht);
+        } else
+        {
             // Calculate the numerator
             aplNum = MulHC4F_RE (aplLft, ConjHC4F (aplRht));
+
+            // Calculate the denominator
+            aplTmp = MulHC4F_RE (aplRht, ConjHC4F (aplRht));
+        } // End IF/ELSE
+
+        // Save the real part
+        aplDen = aplTmp.parts[0];
+
+        // If any the imaginary parts are non-zero, ...
+        if (IzitImaginary (ARRAY_HC4F, &aplTmp))
+            // Sound the alarm
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
         // Loop through all of the parts
         for (i = 0; i < 4; i++)
@@ -2430,19 +2565,21 @@ APLHC4F DivHC4F_RE
         if (aplNum.parts[i] EQ 0
          && aplDen EQ 0)
         {
-            aplRes.parts[0] = TranslateQuadICIndex (aplLft.parts[i],
-                                                    ICNDX_0DIV0,
-                                                    aplRht.parts[i],
-                                                    SIGN_APLFLOAT (aplLft.parts[i]) NE SIGN_APLFLOAT (aplRht.parts[i]));
+            aplRes.parts[0] =
+              TranslateQuadICIndex (aplLft.parts[i],
+                                    ICNDX_0DIV0,
+                                    aplRht.parts[i],
+                                    SIGN_APLFLOAT (aplLft.parts[i]) NE SIGN_APLFLOAT (aplRht.parts[i]));
             break;
         } else
         // Check for indeterminates:  L {div} 0
         if (aplDen EQ 0)
         {
-            aplRes.parts[0] = TranslateQuadICIndex (aplLft.parts[i],
-                                                    ICNDX_DIV0,
-                                                    aplRht.parts[i],
-                                                    SIGN_APLFLOAT (aplLft.parts[i]) NE SIGN_APLFLOAT (aplRht.parts[i]));
+            aplRes.parts[0] =
+              TranslateQuadICIndex (aplLft.parts[i],
+                                    ICNDX_DIV0,
+                                    aplRht.parts[i],
+                                    SIGN_APLFLOAT (aplLft.parts[i]) NE SIGN_APLFLOAT (aplRht.parts[i]));
             break;
         } else
         // Check for indeterminates:  _ {div} _ (same or different signs)
@@ -2450,15 +2587,17 @@ APLHC4F DivHC4F_RE
          && IsFltInfinity (aplDen))
         {
             if (SIGN_APLFLOAT (aplLft.parts[i]) EQ SIGN_APLFLOAT (aplRht.parts[i]))
-                aplRes.parts[0] = TranslateQuadICIndex (aplLft.parts[i],
-                                                        ICNDX_PiDIVPi,
-                                                        aplRht.parts[i],
-                                                        FALSE);
+                aplRes.parts[0] =
+                  TranslateQuadICIndex (aplLft.parts[i],
+                                        ICNDX_PiDIVPi,
+                                        aplRht.parts[i],
+                                        FALSE);
             else
-                aplRes.parts[0] = TranslateQuadICIndex (aplLft.parts[i],
-                                                        ICNDX_NiDIVPi,
-                                                        aplRht.parts[i],
-                                                        FALSE);
+                aplRes.parts[0] =
+                  TranslateQuadICIndex (aplLft.parts[i],
+                                        ICNDX_NiDIVPi,
+                                        aplRht.parts[i],
+                                        FALSE);
             break;
         } else
             // Divide numerator by denominator to get the result
@@ -2528,13 +2667,11 @@ APLHC4R DivHC4R_RE
      APLHC4R aplRht)                    // Right ...
 
 {
-    int      i;                 // Loop counter
-    APLRAT   aplDen = {0},      // Denominator
-             aplTmp1,           // Temp
-             aplTmp2;           // ...
-    APLHC4R  aplNum,            // Numerator
-             aplTmp3,           // Temp
-             aplRes = {0};      // Result
+    int     i;                  // Loop counter
+    APLRAT  aplDen = {0};       // Denominator
+    APLHC4R aplNum,             // Numerator
+            aplConj,            // Conjugate
+            aplRes = {0};       // Result
     UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
             bNaNRht;            // ...          right ...
 
@@ -2553,38 +2690,43 @@ APLHC4R DivHC4R_RE
             mphc4r_init_set (&aplRes, &aplRht);
     } else
     {
-        // Initialize to 0/1
-        mpq_init (&aplDen);
+        APLHC4R aplTmp;             // Temp
 
-        // Loop through all of the parts
-        for (i = 0; i < 4; i++)
-        {
-            // Square the part
-            aplTmp1 = MulHC1R_RE (aplRht.parts[i], aplRht.parts[i]);
-
-            // Accumulate
-            aplTmp2 = AddHC1R_RE (aplDen, aplTmp1);
-
-            // Save in the denominator
-            mpq_set (&aplDen, &aplTmp2);
-
-            // We no longer need these reources
-            Myq_clear (&aplTmp2);
-            Myq_clear (&aplTmp1);
-        } // End FOR
-
-        // Calculate the conjugate
-        aplTmp3 = ConjHC4R (aplRht);
+        // Calculate the conjugate of the denominator
+        aplConj = ConjHC4R (aplRht);
 
         // If the user wants the left quotient, ...
         if (GetQuadDQ () EQ 'l')
+        {
             // Calculate the numerator
-            aplNum  = MulHC4R_RE (        aplTmp3, aplLft);
-        else
-            // Calculate the numerator
-            aplNum  = MulHC4R_RE (aplLft, aplTmp3);
+            aplNum = MulHC4R_RE (        aplConj, aplLft);
 
-        Myhc4r_clear (&aplTmp3);
+            // Calculate the denominator
+            aplTmp = MulHC4R_RE (        aplConj, aplRht);
+        } else
+        {
+            // Calculate the numerator
+            aplNum = MulHC4R_RE (aplLft, aplConj);
+
+            // Calculate the denominator
+            aplTmp = MulHC4R_RE (aplRht, aplConj);
+        } // End IF/ELSE
+
+        // Save the real part
+        mpq_init_set (&aplDen, &aplTmp.parts[0]);
+
+        // If any the imaginary parts are non-zero, ...
+        if (IzitImaginary (ARRAY_HC4R, &aplTmp))
+        {
+            // Free the temps
+            Myhc1r_clear (&aplDen );
+            Myhc4r_clear (&aplTmp );
+            Myhc4r_clear (&aplNum );
+            Myhc4r_clear (&aplConj);
+
+            // Sound the alarm
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+        } // End IF
 
         // Initialize to 0/1
         mphc4r_init (&aplRes);
@@ -2643,6 +2785,11 @@ APLHC4R DivHC4R_RE
         for (i = 1; i < 4; i++)
             // Set to 0/1
             mpq_set_si (&aplRes.parts[i], 0, 1);
+        // Free the temps
+        Myhc1r_clear (&aplDen );
+        Myhc4r_clear (&aplTmp );
+        Myhc4r_clear (&aplNum );
+        Myhc4r_clear (&aplConj);
     } // End IF/ELSE
 
     return aplRes;
@@ -2700,13 +2847,11 @@ APLHC4V DivHC4V_RE
      APLHC4V aplRht)                    // Right ...
 
 {
-    int      i;
-    APLVFP   aplDen = {0},      // Denominator
-             aplTmp1,           // Temp
-             aplTmp2;           // ...
-    APLHC4V  aplNum,            // Numerator
-             aplTmp3,           // Temp
-             aplRes = {0};      // Result
+    int     i;                  // Loop counter
+    APLVFP  aplDen = {0};       // Denominator
+    APLHC4V aplNum,             // Numerator
+            aplConj,            // Conjugate
+            aplRes = {0};       // Result
     UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
             bNaNRht;            // ...          right ...
 
@@ -2725,38 +2870,43 @@ APLHC4V DivHC4V_RE
             mphc4v_init_set (&aplRes, &aplRht);
     } else
     {
-        // Initialize to 0
-        mpfr_init0 (&aplDen);
+        APLHC4V aplTmp;             // Temp
 
-        // Loop through all of the parts
-        for (i = 0; i < 4; i++)
-        {
-            // Square the part
-            aplTmp1 = MulHC1V_RE (aplRht.parts[i], aplRht.parts[i]);
-
-            // Accumulate
-            aplTmp2 = AddHC1V_RE (aplDen, aplTmp1);
-
-            // Save in the denominator
-            mpfr_set (&aplDen, &aplTmp2, MPFR_RNDN);
-
-            // We no longer need these reources
-            Myf_clear (&aplTmp2);
-            Myf_clear (&aplTmp1);
-        } // End FOR
-
-        // Calculate the conjugate
-        aplTmp3 = ConjHC4V (aplRht);
+        // Calculate the conjugate of the denominator
+        aplConj = ConjHC4V (aplRht);
 
         // If the user wants the left quotient, ...
         if (GetQuadDQ () EQ 'l')
+        {
             // Calculate the numerator
-            aplNum  = MulHC4V_RE (        aplTmp3, aplLft);
-        else
-            // Calculate the numerator
-            aplNum  = MulHC4V_RE (aplLft, aplTmp3);
+            aplNum = MulHC4V_RE (        aplConj, aplLft);
 
-        Myhc4v_clear (&aplTmp3);
+            // Calculate the denominator
+            aplTmp = MulHC4V_RE (        aplConj, aplRht);
+        } else
+        {
+            // Calculate the numerator
+            aplNum = MulHC4V_RE (aplLft, aplConj);
+
+            // Calculate the denominator
+            aplTmp = MulHC4V_RE (aplRht, aplConj);
+        } // End IF/ELSE
+
+        // Save the real part
+        mpfr_init_set (&aplDen, &aplTmp.parts[0], MPFR_RNDN);
+
+        // If any the imaginary parts are non-zero, ...
+        if (IzitImaginary (ARRAY_HC4V, &aplTmp))
+        {
+            // Free the temps
+            Myhc1v_clear (&aplDen );
+            Myhc4v_clear (&aplTmp );
+            Myhc4v_clear (&aplNum );
+            Myhc4v_clear (&aplConj);
+
+            // Sound the alarm
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+        } // End IF
 
         // Initialize to 0
         mphc4v_init0 (&aplRes);
@@ -2819,6 +2969,11 @@ APLHC4V DivHC4V_RE
         for (i = 1; i < 4; i++)
             // Set to 0
             mpfr_set_si (&aplRes.parts[i], 0, MPFR_RNDN);
+        // Free the temps
+        Myhc1v_clear (&aplDen );
+        Myhc4v_clear (&aplTmp );
+        Myhc4v_clear (&aplNum );
+        Myhc4v_clear (&aplConj);
     } // End IF/ELSE
 
     return aplRes;
@@ -2910,22 +3065,23 @@ APLHC8I DivHC8I_RE
      APLHC8I aplRht)                    // Right ...
 
 {
-    int     i;                      // Loop counter
-    APLINT  aplDen = 0;             // Denominator
-    APLHC8I aplNum,                 // Numerator
-            aplRes;                 // Result
+    int     i;                  // Loop counter
+    APLINT  aplDen = 0;         // Denominator
+    APLHC8I aplNum,             // Numerator
+            aplRes;             // Result
 
     // Loop through all of the parts
     for (i = 0; i < 8; i++)
-        // Calculate the denominator
-        aplDen = AddHC1I_RE (aplDen, MulHC1I_RE (aplRht.parts[i], aplRht.parts[i]));
-
+        // Calculate the denominator by summing the squares of the parts
+        aplDen = AddHC1I_RE (aplDen,
+                             MulHC1I_RE (aplRht.parts[i],
+                                         aplRht.parts[i]));
     // If the denominator is 0, ...
     if (aplDen EQ 0)
         RaiseException (EXCEPTION_RESULT_HC8F, 0, 0, NULL);
 
-     // Calculate the conjugate
-     aplNum = ConjHC8I (aplRht);
+    // Calculate the conjugate
+    aplNum = ConjHC8I (aplRht);
 
     // If the user wants the left quotient, ...
     if (GetQuadDQ () EQ 'l')
@@ -3029,11 +3185,11 @@ APLHC8F DivHC8F_RE
 
 {
     int      i;                 // Loop counter
-    APLFLOAT aplDen = 0;        // Denominator
+    APLFLOAT aplDen;            // Denominator
     APLHC8F  aplNum,            // Numerator
              aplRes;            // Result
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
+    UBOOL    bNaNLft,           // TRUE iff the left arg is a NaN
+             bNaNRht;           // ...          right ...
 
     // Is either arg a NaN?
     bNaNLft = IsArgNaN (ARRAY_HC8F, &aplLft, 0);
@@ -3050,18 +3206,32 @@ APLHC8F DivHC8F_RE
             return aplRht;
     } else
     {
-        // Loop through all of the parts
-        for (i = 0; i < 8; i++)
-            // Calculate the denominator
-            aplDen = AddHC1F_RE (aplDen, MulHC1F_RE (aplRht.parts[i], aplRht.parts[i]));
+        APLHC8F aplTmp;             // Temp
 
         // If the user wants the left quotient, ...
         if (GetQuadDQ () EQ 'l')
+        {
             // Calculate the numerator
             aplNum = MulHC8F_RE (        ConjHC8F (aplRht), aplLft);
-        else
+
+            // Calculate the denominator
+            aplTmp = MulHC8F_RE (        ConjHC8F (aplRht), aplRht);
+        } else
+        {
             // Calculate the numerator
             aplNum = MulHC8F_RE (aplLft, ConjHC8F (aplRht));
+
+            // Calculate the denominator
+            aplTmp = MulHC8F_RE (aplRht, ConjHC8F (aplRht));
+        } // End IF/ELSE
+
+        // Save the real part
+        aplDen = aplTmp.parts[0];
+
+        // If any the imaginary parts are non-zero, ...
+        if (IzitImaginary (ARRAY_HC8F, &aplTmp))
+            // Sound the alarm
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
         // Loop through all of the parts
         for (i = 0; i < 8; i++)
@@ -3069,19 +3239,21 @@ APLHC8F DivHC8F_RE
         if (aplNum.parts[i] EQ 0
          && aplDen EQ 0)
         {
-            aplRes.parts[0] = TranslateQuadICIndex (aplLft.parts[i],
-                                                    ICNDX_0DIV0,
-                                                    aplRht.parts[i],
-                                                    SIGN_APLFLOAT (aplLft.parts[i]) NE SIGN_APLFLOAT (aplRht.parts[i]));
+            aplRes.parts[0] =
+              TranslateQuadICIndex (aplLft.parts[i],
+                                    ICNDX_0DIV0,
+                                    aplRht.parts[i],
+                                    SIGN_APLFLOAT (aplLft.parts[i]) NE SIGN_APLFLOAT (aplRht.parts[i]));
             break;
         } else
         // Check for indeterminates:  L {div} 0
         if (aplDen EQ 0)
         {
-            aplRes.parts[0] = TranslateQuadICIndex (aplLft.parts[i],
-                                                    ICNDX_DIV0,
-                                                    aplRht.parts[i],
-                                                    SIGN_APLFLOAT (aplLft.parts[i]) NE SIGN_APLFLOAT (aplRht.parts[i]));
+            aplRes.parts[0] =
+              TranslateQuadICIndex (aplLft.parts[i],
+                                    ICNDX_DIV0,
+                                    aplRht.parts[i],
+                                    SIGN_APLFLOAT (aplLft.parts[i]) NE SIGN_APLFLOAT (aplRht.parts[i]));
             break;
         } else
         // Check for indeterminates:  _ {div} _ (same or different signs)
@@ -3089,15 +3261,17 @@ APLHC8F DivHC8F_RE
          && IsFltInfinity (aplDen))
         {
             if (SIGN_APLFLOAT (aplLft.parts[i]) EQ SIGN_APLFLOAT (aplRht.parts[i]))
-                aplRes.parts[0] = TranslateQuadICIndex (aplLft.parts[i],
-                                                        ICNDX_PiDIVPi,
-                                                        aplRht.parts[i],
-                                                        FALSE);
+                aplRes.parts[0] =
+                  TranslateQuadICIndex (aplLft.parts[i],
+                                        ICNDX_PiDIVPi,
+                                        aplRht.parts[i],
+                                        FALSE);
             else
-                aplRes.parts[0] = TranslateQuadICIndex (aplLft.parts[i],
-                                                        ICNDX_NiDIVPi,
-                                                        aplRht.parts[i],
-                                                        FALSE);
+                aplRes.parts[0] =
+                  TranslateQuadICIndex (aplLft.parts[i],
+                                        ICNDX_NiDIVPi,
+                                        aplRht.parts[i],
+                                        FALSE);
             break;
         } else
             // Divide numerator by denominator to get the result
@@ -3162,24 +3336,16 @@ void PrimFnDydColonBarHC8FisHC8FvHC8F
 //  $DivHC8R_RE
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- DivHC8R_RE"
-#else
-#define APPEND_NAME
-#endif
-
 APLHC8R DivHC8R_RE
     (APLHC8R aplLft,                    // Left arg
      APLHC8R aplRht)                    // Right ...
 
 {
-    int      i;                 // Loop counter
-    APLRAT   aplDen = {0},      // Denominator
-             aplTmp1,           // Temp
-             aplTmp2;           // ...
-    APLHC8R  aplNum,            // Numerator
-             aplTmp3 = {0},     // Temp
-             aplRes = {0};      // Result
+    int     i;                  // Loop counter
+    APLRAT  aplDen = {0};       // Denominator
+    APLHC8R aplNum,             // Numerator
+            aplConj,            // Conjugate
+            aplRes = {0};       // Result
     UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
             bNaNRht;            // ...          right ...
 
@@ -3197,39 +3363,44 @@ APLHC8R DivHC8R_RE
         else
             mphc8r_init_set (&aplRes, &aplRht);
     } else
-        {
-        // Initialize to 0/1
-        mpq_init (&aplDen);
+    {
+        APLHC8R aplTmp;             // Temp
 
-        // Loop through all of the parts
-        for (i = 0; i < 8; i++)
-        {
-            // Square the part
-            aplTmp1 = MulHC1R_RE (aplRht.parts[i], aplRht.parts[i]);
-
-            // Accumulate
-            aplTmp2 = AddHC1R_RE (aplDen, aplTmp1);
-
-            // Save in the denominator
-            mpq_set (&aplDen, &aplTmp2);
-
-            // We no longer need these reources
-            Myq_clear (&aplTmp2);
-            Myq_clear (&aplTmp1);
-        } // End FOR
-
-        // Calculate the conjugate
-        aplTmp3 = ConjHC8R (aplRht);
+        // Calculate the conjugate of the denominator
+        aplConj = ConjHC8R (aplRht);
 
         // If the user wants the left quotient, ...
         if (GetQuadDQ () EQ 'l')
+        {
             // Calculate the numerator
-            aplNum  = MulHC8R_RE (        aplTmp3, aplLft);
-        else
-            // Calculate the numerator
-            aplNum  = MulHC8R_RE (aplLft, aplTmp3);
+            aplNum = MulHC8R_RE (        aplConj, aplLft);
 
-        Myhc8r_clear (&aplTmp3);
+            // Calculate the denominator
+            aplTmp = MulHC8R_RE (        aplConj, aplRht);
+        } else
+        {
+            // Calculate the numerator
+            aplNum = MulHC8R_RE (aplLft, aplConj);
+
+            // Calculate the denominator
+            aplTmp = MulHC8R_RE (aplRht, aplConj);
+        } // End IF/ELSE
+
+        // Save the real part
+        mpq_init_set (&aplDen, &aplTmp.parts[0]);
+
+        // If any the imaginary parts are non-zero, ...
+        if (IzitImaginary (ARRAY_HC8R, &aplTmp))
+        {
+            // Free the temps
+            Myhc1r_clear (&aplDen );
+            Myhc8r_clear (&aplTmp );
+            Myhc8r_clear (&aplNum );
+            Myhc8r_clear (&aplConj);
+
+            // Sound the alarm
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+        } // End IF
 
         // Initialize to 0/1
         mphc8r_init (&aplRes);
@@ -3288,11 +3459,16 @@ APLHC8R DivHC8R_RE
         for (i = 1; i < 8; i++)
             // Set to 0/1
             mpq_set_si (&aplRes.parts[i], 0, 1);
+        // Free the temps
+        Myhc1r_clear (&aplDen );
+        Myhc8r_clear (&aplTmp );
+        Myhc8r_clear (&aplNum );
+        Myhc8r_clear (&aplConj);
     } // End IF/ELSE
 
     return aplRes;
 } // End DivHC8R_RE
-#undef  APPEND_NAME
+
 
 //***************************************************************************
 //  $PrimFnDydColonBarHC8RisHC8RvHC8R
@@ -3345,13 +3521,11 @@ APLHC8V DivHC8V_RE
      APLHC8V aplRht)                    // Right ...
 
 {
-    int      i;
-    APLVFP   aplDen = {0},      // Denominator
-             aplTmp1,           // Temp
-             aplTmp2;           // ...
-    APLHC8V  aplNum,            // Numerator
-             aplTmp3,           // Temp
-             aplRes = {0};      // Result
+    int     i;                  // Loop counter
+    APLVFP  aplDen = {0};       // Denominator
+    APLHC8V aplNum,             // Numerator
+            aplConj,            // Conjugate
+            aplRes = {0};       // Result
     UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
             bNaNRht;            // ...          right ...
 
@@ -3369,39 +3543,44 @@ APLHC8V DivHC8V_RE
         else
             mphc8v_init_set (&aplRes, &aplRht);
     } else
-        {
-        // Initialize to 0
-        mpfr_init0 (&aplDen);
+    {
+        APLHC8V aplTmp;             // Temp
 
-        // Loop through all of the parts
-        for (i = 0; i < 8; i++)
-        {
-            // Square the part
-            aplTmp1 = MulHC1V_RE (aplRht.parts[i], aplRht.parts[i]);
-
-            // Accumulate
-            aplTmp2 = AddHC1V_RE (aplDen, aplTmp1);
-
-            // Save in the denominator
-            mpfr_set (&aplDen, &aplTmp2, MPFR_RNDN);
-
-            // We no longer need these reources
-            Myf_clear (&aplTmp2);
-            Myf_clear (&aplTmp1);
-        } // End FOR
-
-        // Calculate the conjugate
-        aplTmp3 = ConjHC8V (aplRht);
+        // Calculate the conjugate of the denominator
+        aplConj = ConjHC8V (aplRht);
 
         // If the user wants the left quotient, ...
         if (GetQuadDQ () EQ 'l')
+        {
             // Calculate the numerator
-            aplNum  = MulHC8V_RE (        aplTmp3, aplLft);
-        else
-            // Calculate the numerator
-            aplNum  = MulHC8V_RE (aplLft, aplTmp3);
+            aplNum = MulHC8V_RE (        aplConj, aplLft);
 
-        Myhc8v_clear (&aplTmp3);
+            // Calculate the denominator
+            aplTmp = MulHC8V_RE (        aplConj, aplRht);
+        } else
+        {
+            // Calculate the numerator
+            aplNum = MulHC8V_RE (aplLft, aplConj);
+
+            // Calculate the denominator
+            aplTmp = MulHC8V_RE (aplRht, aplConj);
+        } // End IF/ELSE
+
+        // Save the real part
+        mpfr_init_set (&aplDen, &aplTmp.parts[0], MPFR_RNDN);
+
+        // If any the imaginary parts are non-zero, ...
+        if (IzitImaginary (ARRAY_HC8V, &aplTmp))
+        {
+            // Free the temps
+            Myhc1v_clear (&aplDen );
+            Myhc8v_clear (&aplTmp );
+            Myhc8v_clear (&aplNum );
+            Myhc8v_clear (&aplConj);
+
+            // Sound the alarm
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+        } // End IF
 
         // Initialize to 0
         mphc8v_init0 (&aplRes);
@@ -3464,6 +3643,11 @@ APLHC8V DivHC8V_RE
         for (i = 1; i < 8; i++)
             // Set to 0
             mpfr_set_si (&aplRes.parts[i], 0, MPFR_RNDN);
+        // Free the temps
+        Myhc1v_clear (&aplDen );
+        Myhc8v_clear (&aplTmp );
+        Myhc8v_clear (&aplNum );
+        Myhc8v_clear (&aplConj);
     } // End IF/ELSE
 
     return aplRes;

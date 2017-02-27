@@ -360,6 +360,15 @@ LPPL_YYSTYPE PrimFnMonSquad_EM_YY
 
 
 //***************************************************************************
+//  Magic function/operator for dyadic squad
+//
+//  Dyadic Squad
+//***************************************************************************
+
+#include "mf_squad.h"
+
+
+//***************************************************************************
 //  $PrimFnDydSquad_EM_YY
 //
 //  Primitive function for dyadic Squad ("rectangular indexing")
@@ -401,147 +410,22 @@ LPPL_YYSTYPE PrimFnDydSquadCommon_EM_YY
      UBOOL   bPrototyping)          // TRUE iff prototyping
 
 {
-    APLLONGEST   aplLongestRht;     // The value of the right arg
-    APLSTYPE     aplTypeLft;        // The storage type of the left arg
-    APLNELM      aplNELMLft;        // The # elements in the left arg
-    APLRANK      aplRankLft;        // The rank of the left arg
-    IMM_TYPES    immTypeRht;        // The immediate type of the right arg (see IMM_TYPES)
-    LPPL_YYSTYPE lpYYRes;           // Ptr to the result
+    HGLOBAL hGlbMFO;                // Magic function/operator global memory handle
 
-    // Split cases based upon the right arg's token type
-    switch (lptkRhtArg->tkFlags.TknType)
-    {
-        HGLOBAL hGlbRht;
+    // Get the magic function/operator global memory handle
+    hGlbMFO = GetMemPTD ()->hGlbMFO[MFOE_DydSquad];
 
-        case TKT_VARNAMED:
-            // tkData is an LPSYMENTRY
-            Assert (GetPtrTypeDir (lptkRhtArg->tkData.tkVoid) EQ PTRTYPE_STCONST);
-
-            // If it's not immediate, we must look inside the array
-            if (!lptkRhtArg->tkData.tkSym->stFlags.Imm)
-            {
-                // Get the right arg global memory handle
-                hGlbRht = lptkRhtArg->tkData.tkSym->stData.stGlbData;
-
-                // stData is a valid HGLOBAL variable array
-                Assert (IsGlbTypeVarDir_PTB (hGlbRht));
-
-                return PrimFnDydSquadGlb_EM_YY
-                       (lptkLftArg,         // Ptr to left arg token
-                       &hGlbRht,            // Ptr to right arg global memory handle
-                        lptkAxis,           // Ptr to axis token (may be NULL)
-                        lptkFunc,           // Ptr to function token
-                        FALSE,              // TRUE iff we came from indexing
-                        NULL,               // Ptr to result global memory handle
-                        NULL,               // Ptr to set arg token
-                        bPrototyping);      // TRUE iff prototyping
-            } // End IF
-
-            // Handle the immediate case
-
-            // Get the immediate value & type
-            aplLongestRht = lptkRhtArg->tkData.tkSym->stData.stLongest;
-            immTypeRht    = lptkRhtArg->tkData.tkSym->stFlags.ImmType;
-
-            break;
-
-        case TKT_VARIMMED:
-            // Get the immediate value & type
-            aplLongestRht = *GetPtrTknLongest (lptkRhtArg);
-            immTypeRht    = lptkRhtArg->tkFlags.ImmType;
-
-            break;
-
-        case TKT_VARARRAY:
-            // Get the right arg global memory handle
-            hGlbRht = lptkRhtArg->tkData.tkGlbData;
-
-            // tkData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir_PTB (hGlbRht));
-
-            return PrimFnDydSquadGlb_EM_YY
-                   (lptkLftArg,         // Ptr to left arg token
-                   &hGlbRht,            // Ptr to right arg global memory handle
-                    lptkAxis,           // Ptr to axis token (may be NULL)
-                    lptkFunc,           // Ptr to function token
-                    FALSE,              // TRUE iff we came from indexing
-                    NULL,               // Ptr to result global memory handle
-                    NULL,               // Ptr to set arg token
-                    bPrototyping);      // TRUE iff prototyping
-        defstop
-            return NULL;
-    } // End SWITCH
-
-    // Common immediate case, value in <aplLongestRht>
-
-    // The only allowed left arg is an empty simple vector
-    //   or an empty nested vector of an empty simple vector
-    //   so as to maintain the identity a{match}({iota}{each}{rho}a){squad}a
-
-    // Get the attributes (Type, NELM, and Rank) of the left arg
-    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
-
-    // Check for RANK ERROR
-    if (!IsVector (aplRankLft))
-        goto RANK_EXIT;
-
-    // Check for LENGTH ERROR
-    if (!IsEmpty (aplNELMLft))
-        goto LENGTH_EXIT;
-
-    // If the left arg is nested, ...
-    if (IsNested (aplTypeLft))
-    {
-        HGLOBAL           hGlbLft;          // Left arg global memory handle
-        LPVARARRAY_HEADER lpMemHdrLft;      // Ptr to left arg header
-        LPVOID            lpMemLft;         // Ptr to left arg global memory
-        UBOOL             bRet;             // TRUE iff the result is valid
-
-        // Get left arg global ptrs
-        GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
-
-        // Skip over header and dimensions to the data
-        lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
-
-        // Confirm that the prototype in the left arg is {zilde}
-        bRet = ArrayIndexValidZilde_EM (lpMemLft, 0, NULL, lptkFunc);
-
-        // We no longer need this ptr
-        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
-
-        if (!bRet)
-            goto DOMAIN_EXIT;
-    } else
-        // Check for DOMAIN ERROR
-        if (!IsSimpleNH (aplTypeLft))
-            goto DOMAIN_EXIT;
-
-    // Allocate a new YYRes
-    lpYYRes = YYAlloc ();
-
-    // Fill in the result token
-    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
-    lpYYRes->tkToken.tkFlags.ImmType   = immTypeRht;
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
-    lpYYRes->tkToken.tkData.tkLongest  = aplLongestRht;
-    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-
-    return lpYYRes;
-
-RANK_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                               lptkFunc);
-    return NULL;
-
-LENGTH_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                               lptkFunc);
-    return NULL;
-
-DOMAIN_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkFunc);
-    return NULL;
+    //  Use an internal magic function/operator.
+    return
+      ExecuteMagicFunction_EM_YY (lptkLftArg,   // Ptr to left arg token
+                                  lptkFunc,     // Ptr to function token
+                                  NULL,         // Ptr to function strand
+                                  lptkRhtArg,   // Ptr to right arg token
+                                  lptkAxis,     // Ptr to axis token
+                                  hGlbMFO,      // Magic function/operator global memory handle
+                                  NULL,         // Ptr to HSHTAB struc (may be NULL)
+                   bPrototyping ? LINENUM_PRO   // Starting line # type (see LINE_NUMS)
+                                : LINENUM_ONE); // Starting line # type (see LINE_NUMS)
 } // End PrimFnDydSquadCommon_EM_YY
 #undef  APPEND_NAME
 
@@ -1290,8 +1174,8 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                                 break;
                         } // End SWITCH
                     } else
-                    // The left arg item value is immediate or a ptr to a global numeric
-                    //   (in <aplLongestSub> and of immediate type <immTypeSub>)
+                    // The left arg item value is immediate in <aplLongestSub> and of immediate type <immTypeSub>
+                    //   or a ptr to a global numeric in hGlbSub
                     {
                         // Mark as a singleton
                         aplNELMSub = 1;
@@ -1456,8 +1340,8 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                     // Save in the result
                     *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hGlbSub);
                 else
-                // The right arg item is immediate or a global numeric
-                //   (in <aplLongestSub> of immediate type <immTypeSub>)
+                // The right arg item is immediate in <aplLongestSub> of immediate type <immTypeSub>
+                //    or a global numeric scalar in <hGlbSub>
                 {
                     // Calculate the HC Dimension (1, 2, 4, 8)
                     iHCDimRes = TranslateArrayTypeToHCDim (aplTypeRes);

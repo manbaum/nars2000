@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -71,7 +71,8 @@ typedef enum tagMFO
     MFOE_DetSing         ,      // 2D:  Determinant of a singleton
     MFOE_DydVOFact       ,      // 2E:  Pochhammer symbol:  rising/falling factorial
     MFOE_MonExecute      ,      // 2F:  Monadic Execute with []FPC localized
-    MFOE_LENGTH                 // 30:  # entries in this enum
+    MFOE_DydSquad        ,      // 30:  Dyadic Squad
+    MFOE_LENGTH                 // 31:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -123,6 +124,7 @@ typedef enum tagMFO
 #define MFON_DetSing            L"#DetSing"
 #define MFON_DydVOFact          L"#DydVOFact"
 #define MFON_MonExecute         L"#MonExecute"
+#define MFON_DydSquad           L"#DydSquad"
 
 // Magic Function/Operator Variables
 #define $ALPHA          WS_UTF16_ALPHA

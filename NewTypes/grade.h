@@ -40,7 +40,8 @@ typedef struct tagGRADE_DATA
     APLRANK      aplRankLft;        // Left arg rank
     LPTT_HANDLES lpMemTTHandles;    // Ptr to TT Handles global memory
     UBOOL        PV0:1,             // Right arg is a Permutation Vector, origin-0
-                 PV1:1;             // ...                                       1
+                 PV1:1,             // ...                                       1
+                 bGradeAll:1;       // TRUE iff we can grade all arrays
     LPUBOOL      lpbCtrlBreak;      // Ptr to Ctrl-Break flag
 } GRADE_DATA, *LPGRADE_DATA;
 

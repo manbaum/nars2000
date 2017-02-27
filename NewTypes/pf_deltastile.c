@@ -230,6 +230,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     LPVOID            lpMemRht,             // Ptr to right arg global memory
                       lpMemRes;             // Ptr to result    ...
     LPAPLDIM          lpMemDimRht;          // Ptr to right arg dimensions
+    APLLONGEST        aplLongestRht;        // Right arg is immediate
     UBOOL             bRet = TRUE;          // TRUE iff result is valid
     LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
     APLBOOL           bQuadIO;              // []IO
@@ -246,6 +247,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     gradeData.iMul           = (lptkFunc->tkData.tkChar EQ UTF16_DELTASTILE) ? 1 : -1;
     gradeData.aplRankLft     = 0;
     gradeData.lpMemTTHandles = NULL;
+    gradeData.bGradeAll      = bGradeAll;
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
@@ -294,6 +296,9 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
                 // Get right arg global ptr
                 GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
+                // Note that the datatypes for this code is intended can never be immediates
+                Assert (lpMemHdrRht NE NULL);
+
                 // Skip over the header and dimensions to the data
                 lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
@@ -322,14 +327,8 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
 
     // Check for scalar right arg
     if (IsScalar (aplRankRht))
-    {
-        // Return {enclose}{zilde}
-        hGlbRes = MakeEncloseZilde ();
-        if (hGlbRes EQ NULL)
-            goto WSFULL_EXIT;
-        else
-            goto YYALLOC_EXIT;
-    } // End IF
+        // Treat as ravelled
+        bRavelArg = TRUE;
 
     // Check for simple char
     if (IsSimpleChar (gradeData.aplTypeRht))
@@ -356,14 +355,23 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     } // End IF
 
     // Get right arg global ptr
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
-    // Save the Array Property bits
-    gradeData.PV0 = lpMemHdrRht->PV0;
-    gradeData.PV1 = lpMemHdrRht->PV1;
+    // If the right arg is not immediate, ...
+    if (lpMemHdrRht NE NULL)
+    {
+        // Save the Array Property bits
+        gradeData.PV0 = lpMemHdrRht->PV0;
+        gradeData.PV1 = lpMemHdrRht->PV1;
 
-    // Skip over the header to the dimensions
-    lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
+        // Skip over the header to the dimensions
+        lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
+
+        // Skip over the header and dimensions to the data
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+    } else
+        // Point to the data
+        lpMemRht = &aplLongestRht;
 
     // If we're ravelling the right arg, ...
     if (bRavelArg)
@@ -423,7 +431,6 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
 
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
-    lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
     // If the right arg is an APA, ...
     if (IsSimpleAPA (gradeData.aplTypeRht))
@@ -503,7 +510,19 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
-YYALLOC_EXIT:
+
+    // Check for scalar right arg
+    if (IsScalar (aplRankRht))
+    {
+        // We no longer need this storage
+        MyGlobalFree (hGlbRes); hGlbRes = NULL;
+
+        // Return {enclose}{zilde}
+        hGlbRes = MakeEncloseZilde ();
+        if (hGlbRes EQ NULL)
+            goto WSFULL_EXIT;
+    } // End IF
+
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
@@ -1331,8 +1350,10 @@ APLINT PrimFnGradeCompare
         case ARRAY_FLOAT:
             // Compare the hyper-planes of the right arg
             for (uRest = 0; uRest < aplNELMRest; uRest++)
-            // If it's a NaN, ... (note we test only one of the two values as we're going to see them all eventually)
-            if (_isnan (((LPAPLFLOAT) lpMemRht)[aplUIntLft * aplNELMRest + uRest]))
+            // If we're not grading all items and either item is a NaN, ...
+            if (!lpGradeData->bGradeAll
+             && (_isnan (((LPAPLFLOAT) lpMemRht)[aplUIntLft * aplNELMRest + uRest])
+              || _isnan (((LPAPLFLOAT) lpMemRht)[aplUIntRht * aplNELMRest + uRest])))
                 RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
             else
             // Split cases based upon the signum of the difference

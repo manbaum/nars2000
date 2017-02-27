@@ -527,7 +527,10 @@ UBOOL HeapSort
     APLUINT j;
 
     if (uCount <= 1)
-        return TRUE;
+        // The following call is necessary to filter out NaNs.
+        //   When !bGradeAll and lpSrc[0] EQ NaN, it signals a DOMAIN ERROR.
+        return (*ObjCmp) (lpSrc, 0, 0, lpExtra) EQ 0;
+
     // Map addresses to indices 1 til count
     lpDst -= 1;
 

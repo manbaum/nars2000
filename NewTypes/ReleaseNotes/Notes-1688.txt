@@ -1,0 +1,9 @@
+Build #1688 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Display Of Quote-Quad Output
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  Pass <bEndingCR> flag to <DisplayGlbVector> so it can decide whether or not to end the line with a CRLF.

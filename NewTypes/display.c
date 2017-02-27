@@ -372,6 +372,7 @@ UBOOL DisplayGlbArr_EM
                                 aplType,            // Array storage type
                                 aplDimNCols,        // Array # cols
                                 lpMemArr,           // Ptr to array global memory
+                                bEndingCR,          // TRUE iff last line has CR
                                 lpbCtrlBreak,       // Prt to Ctrl-Break flag
                                 uQuadPW);           // []PW
             goto ERROR_EXIT;
@@ -4430,6 +4431,7 @@ UBOOL DisplayGlbVector
      APLSTYPE  aplType,             // Array storage type
      APLDIM    aplDimNCols,         // Array # cols (!= 0)
      LPVOID    lpMemArr,            // Ptr to array global memory
+     UBOOL     bEndingCR,           // TRUE iff last line has CR
      LPUBOOL   lpbCtrlBreak,        // Ptr to Ctrl-Break flag
      APLUINT   uQuadPW)             // []PW
 
@@ -4489,8 +4491,8 @@ UBOOL DisplayGlbVector
                 // Account for it
                 aplDimNCols -= uCnt;
 
-                // Display the continued line with ending CRLF
-                AppendLine (lpaplCharIni, aplDimNCols > 0, TRUE);
+                // Display the continued line with or without ending CRLF
+                AppendLine (lpaplCharIni, aplDimNCols > 0, bEndingCR || (aplDimNCols > 0));
 
                 // Reset ptrs
                 lpaplChar = lpaplCharIni;

@@ -299,22 +299,23 @@ typedef struct tagHEADER_SIGNATURE
 typedef enum tagPERM_NDX
 {
     PERMNDX_NONE = 0    ,               // 00:  Not a permanent array
-    PERMNDX_QUADA       ,               // 01:  []A
+    PERMNDX_QUADA       ,               // 01:  []A and friends
     PERMNDX_QUADAV      ,               // 02:  []AV
-    PERMNDX_QUADD       ,               // 03:  []D
-    PERMNDX_QUADxLX     ,               // 04:  []xLX default
-    PERMNDX_QUADFC      ,               // 05:  []FC default
-    PERMNDX_QUADFEATURE ,               // 06:  []FEATURE default
-    PERMNDX_QUADIC      ,               // 07:  []IC default
-    PERMNDX_SACLEAR     ,               // 08:  'CLEAR'
-    PERMNDX_SAERROR     ,               // 09:  'ERROR'
-    PERMNDX_SAEXIT      ,               // 0A:  'EXIT'
-    PERMNDX_SAOFF       ,               // 0B:  'OFF'
-    PERMNDX_V0CHAR      ,               // 0C:  ''
-    PERMNDX_ZILDE       ,               // 0D:  {zilde}
-    PERMNDX_0BY0        ,               // 0E:  0 0 {rho} 0 -- []EC[2] default
-    PERMNDX_3BY0        ,               // 0F:  3 0 {rho}'' -- []EM default
-                                        // ??-??:  Available entries (4 bits)
+    PERMNDX_QUADCS      ,               // 03:  []CS
+    PERMNDX_QUADD       ,               // 04:  []D
+    PERMNDX_QUADxLX     ,               // 05:  []xLX default
+    PERMNDX_QUADFC      ,               // 06:  []FC default
+    PERMNDX_QUADFEATURE ,               // 07:  []FEATURE default
+    PERMNDX_QUADIC      ,               // 08:  []IC default
+    PERMNDX_SACLEAR     ,               // 09:  'CLEAR'
+    PERMNDX_SAERROR     ,               // 0A:  'ERROR'
+    PERMNDX_SAEXIT      ,               // 0B:  'EXIT'
+    PERMNDX_SAOFF       ,               // 0C:  'OFF'
+    PERMNDX_V0CHAR      ,               // 0D:  ''
+    PERMNDX_ZILDE       ,               // 0E:  {zilde}
+    PERMNDX_0BY0        ,               // 0F:  0 0 {rho} 0 -- []EC[2] default
+    PERMNDX_3BY0        ,               // 10:  3 0 {rho}'' -- []EM default
+                                        // 11-1F:  Available entries (5 bits)
 } PERM_NDX;
 
 // Variable array header
@@ -324,17 +325,17 @@ typedef struct tagVARARRAY_HEADER
 {
     HEADER_SIGNATURE Sig;               // 00:  Array header signature
     UINT             ArrType:5,         // 04:  0000001F:  The type of the array (see ARRAY_TYPES)
-                     PermNdx:4,         //      000001E0:  Permanent array index (e.g., PERMNDX_ZILDE for {zilde})
-                     SysVar:1,          //      00000200:  Izit for a Sysvar (***DEBUG*** only)?
-                     PV0:1,             //      00000400:  Permutation Vector in origin-0
-                     PV1:1,             //      00000800:  ...                          1
-                     bSelSpec:1,        //      00001000:  Select Specification array
-                     All2s:1,           //      00002000:  Values are all 2s
+                     PermNdx:5,         //      000003E0:  Permanent array index (e.g., PERMNDX_ZILDE for {zilde})
+                     SysVar:1,          //      00000400:  Izit for a Sysvar (***DEBUG*** only)?
+                     PV0:1,             //      00000800:  Permutation Vector in origin-0
+                     PV1:1,             //      00001000:  ...                          1
+                     bSelSpec:1,        //      00002000:  Select Specification array
+                     All2s:1,           //      00004000:  Values are all 2s
 #ifdef DEBUG
-                     bMFOvar:1,         //      00004000:  Magic Function/Operator var -- do not display
-                     :17;               //      FFFF8000:  Available bits
+                     bMFOvar:1,         //      00008000:  Magic Function/Operator var -- do not display
+                     :16;               //      FFFF0000:  Available bits
 #else
-                     :18;               //      FFFFC000:  Available bits
+                     :17;               //      FFFF8000:  Available bits
 #endif
     UINT             RefCnt;            // 08:  Reference count
     APLNELM          NELM;              // 0C:  # elements in the array (8 bytes)

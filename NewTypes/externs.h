@@ -1102,6 +1102,7 @@ HGLOBAL hGlbQuada,                      // []a
         hGlbQuad„,                      // []„
         hGlbQuad√,                      // []√
         hGlbQuadAV,                     // []AV
+        hGlbQuadCS,                     // []CS
         hGlbQuadD,                      // []D
         hGlbQuadxLX,                    // []xLX default
         hGlb0by0,                       // 0 0 {rho} 0 -- []EC[2] default

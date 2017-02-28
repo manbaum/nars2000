@@ -69,6 +69,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"„"        ,      0,      FALSE, FALSE, SysFn„_EM_YY        , 0              },    // ...       lowercase with tilde
     {WS_UTF16_QUAD L"√"        ,      0,      FALSE, FALSE, SysFn√_EM_YY        , 0              },    // ...       uppercase ...
     {WS_UTF16_QUAD L"av"       ,      0,      FALSE, TRUE , SysFnAV_EM_YY       , 0              },    // Atomic Vector
+    {WS_UTF16_QUAD L"cs"       ,      0,      FALSE, TRUE , SysFnCS_EM_YY       , 0              },    // Collating Sequence
     {WS_UTF16_QUAD L"d"        ,      0,      FALSE, FALSE, SysFnD_EM_YY        , 0              },    // Digits
     {WS_UTF16_QUAD L"em"       ,      0,      FALSE, TRUE , SysFnEM_EM_YY       , 0              },    // Event Message
     {WS_UTF16_QUAD L"et"       ,      0,      FALSE, TRUE , SysFnET_EM_YY       , 0              },    // Event Type
@@ -384,6 +385,9 @@ void MakePermVars
 
     // Create []AV
     MakeQuadAV ();
+
+    // Create []CS
+    MakeQuadCS ();
 } // End MakePermVars
 #undef  APPEND_NAME
 
@@ -398,6 +402,7 @@ void DelePermVars
     (void)
 
 {
+    FreeGlbName (hGlbQuadCS          );  hGlbQuadCS          = NULL;
     FreeGlbName (hGlbQuadAV          );  hGlbQuadAV          = NULL;
     FreeGlbName (hGlbQuadIC_SYS      );  hGlbQuadIC_SYS      = NULL;
     FreeGlbName (hGlbQuadFEATURE_SYS );  hGlbQuadFEATURE_SYS = NULL;

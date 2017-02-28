@@ -1,6 +1,21 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1690 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Display Colors For Keyboard Layout Menu
+* Show ToolTip With Scan And Char Codes For Keycaps In Keyboard Layouts
+
+Directory branches/bsmith/NewTypes:
+
+CUSTOMIZE.C:
+  Fix bug in the display of the available keyboard layouts.
+  Rename <IDTokeybScanCode> to <KeybIDToScanCode> for consistency.
+  Make tooltip with ScanCode and CharCode on keyboard layout keycaps available to non-DEBUG versions.
+  Define helper function <KeybScanCodeToChar> for use in the above tooltip.
+
+
 Build #1689 -- Version 0.5.1.xx
 --------------------------------
 

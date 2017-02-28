@@ -2336,18 +2336,23 @@ INT_PTR CALLBACK CustomizeDlgProc
 
                         // If we're selected, ...
                         if (lpdis->itemState & ODS_SELECTED)
-                        {
-                            // Set the Foreground and Background colors
-                            clrBack = SetBkColor   (lpdis->hDC, GetSysColor (COLOR_HIGHLIGHT    ));
-                            clrText = SetTextColor (lpdis->hDC, GetSysColor (COLOR_HIGHLIGHTTEXT));
-                        } // End IF
+                            // Set the Foreground color
+                            clrText = SetTextColor (lpdis->hDC, GetSysColor (COLOR_MENUHILIGHT));
+                        else
+                            // Set the Foreground color
+                            clrText = SetTextColor (lpdis->hDC, GetSysColor (COLOR_MENUTEXT   ));
+
+                        // Set the Background color
+                        clrBack = SetBkColor   (lpdis->hDC, GetSysColor (COLOR_MENU       ));
 
                         // Draw the text
                         DrawTextW (lpdis->hDC,
                                    wszTmpKeybLayoutName,
-                                   -1,
-                                  &rcItem,
-                                   DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
+                                   -1,                          // Character count (-1 = all)
+                                  &rcItem,                      // Ptr to RECT
+                                   DT_VCENTER
+                                 | DT_SINGLELINE
+                                 | DT_NOPREFIX);                // Flags
                         // If we're selected, ...
                         if (lpdis->itemState & ODS_SELECTED)
                         {
@@ -2405,7 +2410,7 @@ INT_PTR CALLBACK CustomizeDlgProc
              &&                      idCtl <= IDC_KEYB_BN_KC_LAST)
             {
                 // Calculate the scan code
-                uScanCode = IDToKeybScanCode (idCtl);
+                uScanCode = KeybIDToScanCode (idCtl);
 
                 // Ensure that the underlying character is one we support
                 if (IsDeadKey (lpLclKeybLayouts[uLclKeybLayoutNumVis].aCharCodes[uScanCode].wc[uKeybState]))
@@ -2610,26 +2615,31 @@ INT_PTR CALLBACK CustomizeDlgProc
                     } else
 #endif
                     {
-#ifdef DEBUG
                         // Check to see if this is one of our Keycaps
-                        if (lpttt->lParam)
+                        if (lpttt->lParam NE 0)
                         {
                             // Find the row and col of the ID in lpttt->lParam
                             for (uCnt = 0; uCnt < KKC_CY; uCnt++)
                             for (uCol = aKKC_IDC_BEG[uCnt]; uCol <= aKKC_IDC_END[uCnt]; uCol++)
                             if (lpttt->lParam EQ uCol)
                             {
+                                UINT sc;
+
+                                // Get the ScanCode
+                                sc = aKKC_SC[uCnt].aSC[uCol - aKKC_IDC_BEG[uCnt]];
+
                                 MySprintfW (TooltipText,
                                             sizeof (TooltipText),
-                                           L"Scan code 0x%02X",
-                                            aKKC_SC[uCnt].aSC[uCol - aKKC_IDC_BEG[uCnt]]);
+                                           L"Scan code 0x%02X, Char code 0x%04X",
+                                            sc,
+                                            KeybScanCodeToChar (sc, uKeybState));
                                 lpttt->lpszText = TooltipText;
 
                                 // Return dialog result
                                 DlgMsgDone (hDlg);              // We handled the msg
                             } // End FOR/FOR/IF
                         } // End IF
-#endif
+
                         // In case we used TTF_IDISHWND when adding the Tooltip, get the Ctrl ID
                         idCtl = GetDlgCtrlID ((HWND) idCtl);
 
@@ -5764,12 +5774,12 @@ void DispKeybCtrlKeycaps
 
 
 //***************************************************************************
-//  $IDToKeybScanCode
+//  $KeybIDToScanCode
 //
 //  Find the scancode of a given ID
 //***************************************************************************
 
-UINT IDToKeybScanCode
+UINT KeybIDToScanCode
     (UINT idCtl)                    // The ID to find
 
 {
@@ -5784,7 +5794,7 @@ UINT IDToKeybScanCode
         return aKKC_SC[uCnt].aSC[idCtl - aKKC_IDC_BEG[uCnt]];
 
     return 0;
-} // End IDToKeybScanCode
+} // End KeybIDToScanCode
 
 
 //***************************************************************************
@@ -5834,6 +5844,21 @@ UINT KeybCharToScanCode
 
     return 0;
 } // End KeybCharToScanCode
+
+
+//***************************************************************************
+//  $KeybScanCodeToChar
+//
+//  Find the char of a given scancode and state
+//***************************************************************************
+
+WCHAR KeybScanCodeToChar
+    (UINT sc,                       // The scancode to find
+     UINT uState)                   // The keyboard state (combination of KS_SHIFT, KS_CTRL, and KS_ALT)
+
+{
+    return lpLclKeybLayouts[uLclKeybLayoutNumVis].aCharCodes[sc].wc[uState];
+} // End KeybScanCodeToChar
 
 
 //***************************************************************************

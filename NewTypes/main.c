@@ -34,6 +34,7 @@
 #define MPIFNS
 #include "headers.h"
 #include "typemote.h"
+#include "keyboards_bi.h"
 #undef  MPIFNS
 #undef  DEFINE_ENUMS
 #undef  DEFINE_VALUES

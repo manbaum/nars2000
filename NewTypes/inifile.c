@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "headers.h"
+#include "keyboards_bi.h"
 ////#include "bom.h"
 
 
@@ -1256,13 +1257,14 @@ UBOOL ReadIniFileGlb
     // LANG_ENGLISH == 0x09  SUBLANG_ENGLISH_US     == 0x01
     // LANG_ENGLISH == 0x09  SUBLANG_ENGLISH_UK     == 0x02
     // LANG_FRENCH  == 0x0C  SUBLANG_FRENCH         -- 0x01
+    // LANG_GERMAN  == 0x07  SUBLANG_GERMAN         -- 0x01
     hkl = LOWORD (GetKeyboardLayout (0));
 
     // Split cases based upon the primary language ID (LANG_xxx)
     switch (PRIMARYLANGID (hkl))
     {
         case LANG_DANISH:
-            lpKeybLayout = KEYBLAYOUT_DK_CTL;
+            lpKeybLayout = KEYBLAYOUT_DK_ALT;
 
             break;
 
@@ -1290,6 +1292,11 @@ UBOOL ReadIniFileGlb
 
         case LANG_FRENCH:
             lpKeybLayout = KEYBLAYOUT_FR_ALT;
+
+            break;
+
+        case LANG_GERMAN:
+            lpKeybLayout = KEYBLAYOUT_GR_ALT;
 
             break;
 

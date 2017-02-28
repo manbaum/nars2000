@@ -1,6 +1,31 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1691 -- Version 0.5.1.xx
+--------------------------------
+
+* Define New Layouts For Danish, French, And German Keyboards
+
+Directory branches/bsmith/NewTypes:
+
+INIFILE.C:
+  Include German keyboard as a possible initial layout for the first time user.
+
+KEYBLAYOUTS.H:
+  Move keyboard layout structures from <keyboards.h> to <keyblayouts.h> so it is available elsewhere.
+
+KEYBOARDS.H:
+  Move the built-in keyboard definitions to <keyboards_bi.h> so they may be changed without having to rebuild the entire project.
+  Define entries for new keyboards DK_ALT, FR_CTL, GR_CTL, and GR_CTL.
+
+KEYBOARDS_BI.H:
+  Move the built-in keyboard definitions to <keyboards_bi.h> so they may be changed without having to rebuild the entire project.
+  Define new keyboards DK_ALT, FR_CTL, GR_CTL, and GR_CTL.
+
+MAIN.C:
+  Include the built-in keyboard information.
+
+
 Build #1690 -- Version 0.5.1.xx
 --------------------------------
 

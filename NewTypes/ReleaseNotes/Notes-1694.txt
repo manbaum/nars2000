@@ -1,0 +1,9 @@
+Build #1694 -- Version 0.5.1.xx
+--------------------------------
+
+* Clear The Dead Key State When Saving A New Character In A Keyboard Layout
+
+Directory branches/bsmith/NewTypes:
+
+CUSTOMIZE.C:
+  When customizing the keyboard layout and saving a new charcode for a keycap, clear the Dead Key state in case the new charcode is not an accent.  The user may toggle the Dead Key state via the context menu.

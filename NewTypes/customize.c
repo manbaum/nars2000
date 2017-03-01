@@ -4892,6 +4892,9 @@ INT_PTR CALLBACK CustomizeDlgProc
                                 // Save the new value
                                 lpLclKeybLayouts[uLclKeybLayoutNumVis].aCharCodes[uScanCode].wc[uKeybState] = wszText[0];
 
+                                // Clear the Dead key state
+                                lpLclKeybLayouts[uLclKeybLayoutNumVis].aCharCodes[uScanCode].dk[uKeybState] = 0;
+
                                 // Enable the Apply button
                                 EnableWindow (hWndApply, TRUE);
 

@@ -5277,32 +5277,37 @@ typedef struct tag
     // Split cases based upon the dead key
     switch (gwDeadKey)
     {
-        case UTF16_CIRCUMFLEX:
         case GLB_DEAD_KEY_C:
+            gwDeadKey = UTF16_CIRCUMFLEX;
+        case UTF16_CIRCUMFLEX:
             lpwDK = circumflex;
 
             break;
 
-        case UTF16_DIERESIS:
         case GLB_DEAD_KEY_D:
+            gwDeadKey = UTF16_DIERESIS;
+        case UTF16_DIERESIS:
             lpwDK = dieresis  ;
 
             break;
 
-        case UTF16_ACUTE:
         case GLB_DEAD_KEY_A:
+            gwDeadKey = UTF16_ACUTE;
+        case UTF16_ACUTE:
             lpwDK = acute     ;
 
             break;
 
-        case UTF16_GRAVE:
         case GLB_DEAD_KEY_G:
+            gwDeadKey = UTF16_GRAVE;
+        case UTF16_GRAVE:
             lpwDK = grave     ;
 
             break;
 
-        case UTF16_TILDE2:
         case GLB_DEAD_KEY_T:
+            gwDeadKey = UTF16_TILDE2;
+        case UTF16_TILDE2:
             lpwDK = tilde     ;
 
             break;

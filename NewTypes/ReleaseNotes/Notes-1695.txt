@@ -1,0 +1,9 @@
+Build #1695 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Using A Global Dead Key To Create An Accented Character Where The Base Character Doesn't have An Accented Form
+
+Directory branches/bsmith/NewTypes:
+
+EDITFCN.C:
+  In <DeadKeyTrans>, when the base character for a global dead key doesn't have an accented form, the result is to display two characters:  the accent and the base character.  If the Dead Key is a Global one, the wrong accent symbol is displayed.

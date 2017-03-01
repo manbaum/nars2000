@@ -1361,7 +1361,7 @@ RESTART_EXCEPTION_VARIMMED:
                             dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #2A: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
 
                             // Copy the immediate token to a temp
-                            tkTmp = *lptkRhtArg;
+                            CopyAll (&tkTmp, lptkRhtArg);
 
                             // Promote the immediate value
                             (*aTypeTknPromote[aplTypeRht][aplTypeRes]) (&tkTmp);

@@ -119,7 +119,6 @@ LPPL_YYSTYPE PrimOpDownShoeStileCommon_EM_YY
                  lpYYRes;               // Ptr to result
     LPTOKEN      lptkAxisOpr,           // Ptr to operator axis token (may be NULL)
                  lptkTmpArg;            // Ptr to temp token
-    APLFLOAT     fQuadCT;               // Current value for QuadCT
     UBOOL        bNotEqual = FALSE;     // TRUE iff not NotEqual
 
     // Check for axis operator
@@ -172,9 +171,6 @@ LPPL_YYSTYPE PrimOpDownShoeStileCommon_EM_YY
         // Get ptr to PerTabData global memory
         lpMemPTD = GetMemPTD ();
 
-        // Get the current value of []CT
-        fQuadCT = GetQuadCT ();
-
         // Split cases based upon the function symbol
         switch (lpYYFcnStrLft->tkToken.tkData.tkChar)
         {
@@ -186,9 +182,6 @@ LPPL_YYSTYPE PrimOpDownShoeStileCommon_EM_YY
                 // If both args are simple non-heteros, ...
                 if (IsSimpleNH (aplTypeLft) && IsSimpleNH (aplTypeRht))
                 {
-                    // Zero QuadCT
-                    SetQuadCT (0);
-
                     lpYYRes =
                       PrimFnDydMEO_EM_YY (lptkLftArg,               // Ptr to left arg token
                                           aplTypeLft,               // Left arg storage type
@@ -212,9 +205,6 @@ LPPL_YYSTYPE PrimOpDownShoeStileCommon_EM_YY
                 // If both args are simple non-heteros, ...
                 if (IsSimpleNH (aplTypeLft) && IsSimpleNH (aplTypeRht))
                 {
-                    // Zero QuadCT
-                    SetQuadCT (0);
-
                     lpYYRes =
                       PrimFnDydMIO_EM_YY (lptkLftArg,               // Ptr to left arg token
                                           aplTypeLft,               // Left arg storage type
@@ -328,9 +318,6 @@ LPPL_YYSTYPE PrimOpDownShoeStileCommon_EM_YY
                 // If both args are simple non-heteros, ...
                 if (IsSimpleNH (aplTypeLft) && IsSimpleNH (aplTypeRht))
                 {
-                    // Zero QuadCT
-                    SetQuadCT (0);
-
                     lpYYRes =
                       PrimFnDydMM_EM_YY (lptkLftArg,                // Ptr to left arg token
                                          aplTypeLft,                // Left arg storage type
@@ -386,9 +373,6 @@ LPPL_YYSTYPE PrimOpDownShoeStileCommon_EM_YY
     } else
         goto NONCE_EXIT;
 
-    // Zero QuadCT
-    SetQuadCT (0);
-
     //  Use an internal magic function.
     lpYYRes =
       ExecuteMagicFunction_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if niladic/monadic)
@@ -401,9 +385,6 @@ LPPL_YYSTYPE PrimOpDownShoeStileCommon_EM_YY
                    bPrototyping ? LINENUM_PRO
                                 : LINENUM_MS);          // Starting line # type (see LINE_NUMS)
 NORMAL_EXIT:
-    // Restore original value of QuadCT
-    SetQuadCT (fQuadCT);
-
     return lpYYRes;
 
 AXIS_SYNTAX_EXIT:

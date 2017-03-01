@@ -1,6 +1,33 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1692 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Multiset Operator Setting []CT To Zero
+* Miscellaneous Changes
+
+Directory branches/bsmith/NewTypes:
+
+DEFINES.H:
+  Update the copyright year.
+
+EDITFCN.C:
+  Improve comments.
+
+MAIN.RC:
+  Include dependent files if ever (i.e., never) called from some version of ApStudio.
+
+NARS2000.VCXPROJ:
+  Include <af_cs.c> in source file, omitted from the last build.
+
+PO_MULTISET.C:
+  Fix bug in multiset operator setting []CT to zero.
+
+PRIMSPEC.C:
+  Use <CopyAll> function to avoid spurious compiler warning.
+
+
 Build #1691 -- Version 0.5.1.xx
 --------------------------------
 

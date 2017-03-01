@@ -55,10 +55,11 @@ char szCloseMessage[] = "You have changed the body of this function;"
 //    by the first and all subsequent calls to VK_CANCEL.
 UINT uCancelCode = 0x46;
 
-// There is a mechanism on some keyboard of using a "dead key"
+// There is a mechanism on some keyboards of using a "dead key"
 //   to enable entering characters with an overstruck diacritical
 //   mark.  The following var when set to TRUE indicates that we're
-//   in the middle of that process.
+//   in the middle of that process, and the var after that holds
+//   the value of the dead key (e.g., ^ ~ ¨ ` ´)
 UBOOL gbDeadKey = FALSE;
 WCHAR gwDeadKey;
 

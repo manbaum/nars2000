@@ -60,6 +60,8 @@ BEGIN
     "perfmon.h\0"
     "resource.h\0"
     "Unicode.h\0"
+    "classnames.h\0"
+    "defines.h\0"
 END
 
 2 TEXTINCLUDE DISCARDABLE

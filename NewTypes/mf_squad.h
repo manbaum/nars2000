@@ -53,8 +53,8 @@ static LPAPLCHAR DydBody[] =
  L":if 1=⍴⍴R", // Because of R≡(⍳¨⍴R)⌷R
  L":andif (2≡≡L)∧(,1)≡≡¨L ⋄ Z←R[↑L] ⋄ →0 ⋄ :end",
 
- L":if Pro ⋄ Z←(⍴⊃∘.,/(0⍴⊂⊂⍬),A)⍴R",
- L":else   ⋄ Z←R[⊃∘.,/(0⍴⊂⊂⍬),A]",
+ L":if Pro ⋄ Z←(⍴⊃∘.,/A)⍴R",
+ L":else   ⋄ Z←R[⊃∘.,/A]",
  L":end    ⋄ →0",
  L"⎕PRO:Pro←1",
  L"→L1",

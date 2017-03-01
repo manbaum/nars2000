@@ -1,0 +1,9 @@
+Build #1696 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Specifying []CS
+
+Directory branches/bsmith/NewTypes:
+
+QF_CS.C:
+  Fix bug where I put the digits at the start instead of the end of the array.  Oops!

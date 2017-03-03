@@ -1,6 +1,20 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1697 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Combinations Function On Multiple Precision Numbers
+
+Directory branches/bsmith/NewTypes:
+
+MPFNS.C:
+  Define helper functions <mpq_cmpabs> and <mpfr_bin_ui>.
+
+PF_QDOT.C:
+  Fix bug in multiple precision Combinations function.
+
+
 Build #1696 -- Version 0.5.1.xx
 --------------------------------
 

@@ -1100,7 +1100,7 @@ void PrimFnDydQuoteDotIisIvI
     switch (4*(L < 0) + 2*(R < 0) + 1*(R < L))
     {
         //    L     R   R-L
-        case 4*0 + 2*0 + 0:     // (!R)/((!L)*!R-L)
+        case 4*0 + 2*0 + 1*0:   // (!R)/((!L)*!R-L)
             // WLOG, change L so that L <= (R/2)
             //   using the reflection rule for
             //   binomial coefficients.
@@ -1196,14 +1196,22 @@ void PrimFnDydQuoteDotFisIvI
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLFLOAT aplFloatTmp,
-             aplFloatRes,
-             aplFloatInd;
-    APLINT   aplIntegerTmp,
-             aplIntegerRes,
-             aplIntegerInd,
-             aplIntegerTmp2;
-    UBOOL    bRet = TRUE;       // Assume the result is valid
+    APLFLOAT      aplFloatTmp,      // Temp vars
+                  aplFloatRes,      // ...
+                  aplFloatInd;      // ...
+    APLINT        aplIntegerTmp,    // ...
+                  aplIntegerRes,    // ...
+                  aplIntegerInd,    // ...
+                  aplIntegerTmp2;   // ...
+    UBOOL         bRet = TRUE;      // Assume the result is valid
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // FYI:  The only way this function can be called is
     //   from an exception raised from IisIvI above.
@@ -1221,12 +1229,12 @@ void PrimFnDydQuoteDotFisIvI
 #define ZF  aplFloatRes
 #define IF  aplFloatInd
 
-    // Determine whether or not LI, RI, or LI - RI is a negative integer
+    // Determine whether or not LI, RI, or RI - LI is a negative integer
     // From ISO-IEC 13751 Extended APL Standard, p. 90
     switch (4*(LI < 0) + 2*(RI < 0) + 1*(RI < LI))
     {
         //    LI   RI  RI-LI
-        case 4*0 + 2*0 + 0:     // (!RI)/((!LI)*!RI-LI)
+        case 4*0 + 2*0 + 1*0:   // (!RI)/((!LI)*!RI-LI)
             // WLOG, change LI so that LI <= (RI/2)
             //   using the reflection rule for
             //   binomial coefficients.
@@ -1240,6 +1248,10 @@ void PrimFnDydQuoteDotFisIvI
                  II <= LI;
                  II++)
             {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    break;
+
                 TI2 = imul64 (ZI, II + TI, &bRet, EXCEPTION_RESULT_FLOAT);
                 if (bRet)
                     ZI = TI2 / II;
@@ -1250,8 +1262,8 @@ void PrimFnDydQuoteDotFisIvI
                          II++, IF++)
                     {
                         ZF = (ZF * (IF + TF)) / IF;
-                        if (IsFltInfinity (ZF))
-                            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+                        if (_isinf (ZF))
+                            break;
                     } // End FOR
 
                     lpMemRes[uRes] = ZF;
@@ -1264,17 +1276,20 @@ void PrimFnDydQuoteDotFisIvI
 
             break;
 
+        //    LI   RI  RI-LI
         case 4*0 + 2*0 + 1*1:   // 0
             lpMemRes[uRes] = 0;
 
             break;
 
+        //    LI   RI  RI-LI
         case 4*0 + 2*1 + 1*0:   // DOMAIN ERROR
             RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
+        //    LI   RI  RI-LI
         case 4*0 + 2*1 + 1*1:   // ((-1)*LI)*LI!(LI-(RI+1))
-            // Recurse with L replaced by LI
-            // Recurse with R replaced by LI-(RI+1)
+            // Recurse with LI replaced by LI
+            // Recurse with RI replaced by LI-(RI+1)
 ////////////LI = LI;
             RI = LI-(RI+1);
 
@@ -1285,16 +1300,19 @@ void PrimFnDydQuoteDotFisIvI
 
             break;
 
+        //    LI   RI  RI-LI
         case 4*1 + 2*0 + 1*0:   // 0
             lpMemRes[uRes] = 0;
 
             break;
 
+        //    LI   RI  RI-LI
         case 4*1 + 2*0 + 1*1:   // (Can't happen)
             lpMemRes[uRes] = -1;
 
             break;
 
+        //    LI   RI  RI-LI
         case 4*1 + 2*1 + 1*0:   // ((-1)*RI-LI)*(-RI+1)!|LI+1
             // Recurse with L replaced by -(RI+1)
             // Recurse with R replaced by -(LI+1)
@@ -1309,6 +1327,7 @@ void PrimFnDydQuoteDotFisIvI
 
             break;
 
+        //    LI   RI  RI-LI
         case 4*1 + 2*1 + 1*1:   // 0
             lpMemRes[uRes] = 0;
 
@@ -1349,9 +1368,17 @@ void PrimFnDydQuoteDotFisFvF
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLFLOAT aplFloatTmp,
-             aplFloatRes,
-             aplFloatInd;
+    APLFLOAT      aplFloatTmp,      // Temp vars
+                  aplFloatRes,      // ...
+                  aplFloatInd;      // ...
+    LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
 #define LF  lpatLft->aplFloat
 #define RF  lpatRht->aplFloat
@@ -1365,12 +1392,12 @@ void PrimFnDydQuoteDotFisFvF
      && (RF EQ floor (RF)
       || RF EQ ceil  (RF)))
     {
-        // Determine whether or not LF, RF, or LF - RF is a negative integer
+        // Determine whether or not LF, RF, or RF - LF is a negative integer
         // From ISO-IEC 13751 Extended APL Standard, p. 90
         switch (4*(LF < 0) + 2*(RF < 0) + 1*(RF < LF))
         {
             //    LF   RF  RF-LF
-            case 4*0 + 2*0 + 0:     // (!RF)/((!LF)*!RF-LF)
+            case 4*0 + 2*0 + 1*0:   // (!RF)/((!LF)*!RF-LF)
                 // WLOG, change LF so that LF <= (RF/2)
                 //   using the reflection rule for
                 //   binomial coefficients.
@@ -1383,22 +1410,34 @@ void PrimFnDydQuoteDotFisFvF
                 for (TF = RF - LF, ZF = 1, IF = 1;
                      IF <= LF;
                      IF++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        break;
+
                     ZF = (ZF * (IF + TF)) / IF;
+
+                    if (_isinf (ZF))
+                        break;
+                } // End DOR
 
                 lpMemRes[uRes] = ZF;
 
                 break;
 
+            //    LF   RF  RF-LF
             case 4*0 + 2*0 + 1*1:   // 0
                 lpMemRes[uRes] = 0;
 
                 break;
 
+            //    LF   RF  RF-LF
             case 4*0 + 2*1 + 1*0:   // DOMAIN ERROR
                 RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
                 break;
 
+            //    LF   RF  RF-LF
             case 4*0 + 2*1 + 1*1:   // ((-1)*LF)*LF!(LF-(RF+1))
                 // Recurse with L replaced by LF
                 // Recurse with R replaced by LF-(RF+1)
@@ -1412,19 +1451,22 @@ void PrimFnDydQuoteDotFisFvF
 
                 break;
 
+            //    LF   RF  RF-LF
             case 4*1 + 2*0 + 1*0:   // 0
                 lpMemRes[uRes] = 0;
 
                 break;
 
+            //    LF   RF  RF-LF
             case 4*1 + 2*0 + 1*1:   // (Can't happen)
                 lpMemRes[uRes] = -1;
 
                 break;
 
-            case 4*1 + 2*1 + 1*0:   // ((-1)*RI-LI)*(-RI+1)!|LI+1
-                // Recurse with L replaced by -(RF+1)
-                // Recurse with R replaced by -(LF+1)
+            //    LF   RF  RF-LF
+            case 4*1 + 2*1 + 1*0:   // ((-1)*RF-LF)*(-RF+1)!|LF+1
+                // Recurse with LF replaced by -(RF+1)
+                // Recurse with RF replaced by -(LF+1)
                 TF = LF;
                 LF = -(RF+1);
                 RF = -(TF+1);
@@ -1436,6 +1478,7 @@ void PrimFnDydQuoteDotFisFvF
 
                 break;
 
+            //    LF   RF  RF-LF
             case 4*1 + 2*1 + 1*1:   // 0
                 lpMemRes[uRes] = 0;
 
@@ -1477,38 +1520,157 @@ void PrimFnDydQuoteDotRisRvR
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    UINT   uLft;
+    APLMPI   aplTmpDif = {0};
+    APLRAT   aplTmp1 = {0},
+             aplTmp2 = {0};
+    LPAPLRAT lpaplLft;
+    mpir_si  iLft;
+    // Calculate the LR, RR, and RR-LR signs
+    int LS = mpz_sgn (mpq_numref (&lpatLft->aplRat)),
+        RS = mpz_sgn (mpq_numref (&lpatRht->aplRat)),
+        TS;
 
     // Initialize the result to 0/1
     mpq_init (&lpMemRes[uRes]);
+
+    // Copy the ptr
+    lpaplLft = &lpMemRes[uRes];
 
     // Using the identity A!B <=> (B-A)!B and because the function
     //   mpz_bin_ui requires that the left argument must fit in a
     //   UINT, we calculate the alternate left argument in case it
     //   fits in a UINT.
-    mpq_sub (&lpMemRes[uRes], &lpatRht->aplRat, &lpatLft->aplRat);
+    mpq_sub (lpaplLft, &lpatRht->aplRat, &lpatLft->aplRat);
 
     // Use the smaller of the two for the left arg
-    if (mpq_cmp (&lpMemRes[uRes], &lpatLft->aplRat) > 0)
-        mpq_set (&lpMemRes[uRes], &lpatLft->aplRat);
+    if (mpq_cmpabs (lpaplLft, &lpatLft->aplRat) > 0)
+        mpq_set    (lpaplLft, &lpatLft->aplRat);
+
+    // Initialize to 0
+    mpz_init (&aplTmpDif);
+
+    // Calculate RR-LR
+    mpz_sub (&aplTmpDif, mpq_numref (&lpatRht->aplRat), mpq_numref (lpaplLft));
+
+    TS = mpz_sgn (&aplTmpDif);
 
     // If both denominators are 1,
-    //   and the left numerator fits in a UINT, ...
-    if (mpq_integer_p (&lpatLft->aplRat)
+    //   and the left numerator fits in a signed long, ...
+    if (mpq_integer_p (lpaplLft        )
      && mpq_integer_p (&lpatRht->aplRat)
-     && mpz_fits_slong_p (mpq_numref (&lpMemRes[uRes])) NE 0)
+     && mpz_fits_slong_p (mpq_numref (lpaplLft)) NE 0)
     {
         // Extract the numerator of the left argument
-        uLft = (UINT) mpz_get_si (mpq_numref (&lpMemRes[uRes]));
+        iLft = mpz_get_si (mpq_numref (lpaplLft));
 
-        // Compute the binomial coefficient
-        mpz_bin_ui (mpq_numref (&lpMemRes[uRes]), mpq_numref (&lpatRht->aplRat), uLft);
+        // Determine whether or not LR, RR, or RR - LR is a negative integer
+        // From ISO-IEC 13751 Extended APL Standard, p. 90
+        switch (4*(LS < 0) + 2*(RS < 0) + 1*(TS < 0))
+        {
+            //    LR   RR  RR-LR
+            case 4*0 + 2*0 + 1*0:   // (!RR)/((!LR)*!RR-LR)
+                // Compute the binomial coefficient:  Z = R L
+                mpz_bin_ui (mpq_numref (&lpMemRes[uRes]), mpq_numref (&lpatRht->aplRat), iLft);
+
+                break;
+
+            //    LR   RR  RR-LR
+            case 4*0 + 2*0 + 1*1:   // 0
+                mpq_set_si (&lpMemRes[uRes], 0, 1);
+
+                break;
+
+            //    LR   RR  RR-LR
+            case 4*0 + 2*1 + 1*0:   // DOMAIN ERROR
+                Myz_clear (&aplTmpDif     );
+                Myq_clear (&lpMemRes[uRes]);
+
+                RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+            //    LR   RR  RR-LR
+            case 4*0 + 2*1 + 1*1:   // ((-1)*LR)*LR!(LR-(RR+1))
+                // Recurse with LR replaced by LR
+                // Recurse with RR replaced by LR-(RR+1)
+////////////////LR = LR;
+////////////////RR = LR-(RR+1)
+
+                // Calculate    (RR+1)
+                mpz_add_ui (&aplTmpDif, mpq_numref (&lpatRht->aplRat), 1);
+
+                // Calculate LR-(RR+1)
+                mpz_sub (&aplTmpDif, mpq_numref (lpaplLft), &aplTmpDif);
+
+                // Compute the binomial coefficient:  Z = R L
+                mpz_bin_ui (mpq_numref (&lpMemRes[uRes]), &aplTmpDif, iLft);
+
+                // Handle sign
+                if ((iLft % 2) EQ 1)
+                    mpq_neg (&lpMemRes[uRes], &lpMemRes[uRes]);
+
+                break;
+
+            //    LR   RR  RR-LR
+            case 4*1 + 2*0 + 1*0:   // 0
+                mpq_set_si (&lpMemRes[uRes], 0, 1);
+
+                break;
+
+            //    LR   RR  RR-LR
+            case 4*1 + 2*0 + 1*1:   // (Can't happen)
+                mpq_set_si (&lpMemRes[uRes], -1, 1);
+
+                break;
+
+            //    LR   RR  RR-LR
+            case 4*1 + 2*1 + 1*0:   // ((-1)*RR-LR)*(-RR+1)!|LR+1
+                // Recurse with LR replaced by -(RR+1)
+                // Recurse with RR replaced by -(LR+1)
+                //   TR = LR;
+                //   LR = -(RR+1);
+                //   RR = -(TR+1);
+
+                // Initialize to 0/1
+                mpq_init (&aplTmp1);
+                mpq_init (&aplTmp2);
+
+                mpq_set (&aplTmp1, lpaplLft);                   // TR = LR
+                mpq_add (&aplTmp2, &lpatRht->aplRat, &mpqOne);  //  (RR+1)
+                mpq_neg (&aplTmp2, &aplTmp2);                   // -(RR+1)
+                mpq_add (&aplTmp1, &aplTmp1, &mpqOne);          //  (TR+1)
+                mpq_neg (&aplTmp1, &aplTmp1);                   // -(TR+1)
+
+                PrimFnDydQuoteDotRisRvR (lpMemRes, uRes, (LPALLTYPES) &aplTmp2, (LPALLTYPES) &aplTmp1, lpPrimSpec);
+
+                // We no longer need these resources
+                Myq_clear (&aplTmp2);
+                Myq_clear (&aplTmp1);
+
+                // Handle sign
+                if ((iLft % 2) EQ 1)
+                    mpq_neg (&lpMemRes[uRes], &lpMemRes[uRes]);
+
+                break;
+
+            //    LR   RR  RR-LR
+            case 4*1 + 2*1 + 1*1:   // 0
+                mpq_set_si (&lpMemRes[uRes], 0, 1);
+
+                break;
+
+            defstop
+                mpq_set_si (&lpMemRes[uRes], -1, 1);
+
+                break;
+        } // End SWITCH
     } else
     {
         Myq_clear (&lpMemRes[uRes]);
+        Myz_clear (&aplTmpDif     );
 
         RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
     } // End IF/ELSE
+
+    Myz_clear (&aplTmpDif);
 } // End PrimFnDydQuoteDotRisRvR
 
 
@@ -1554,25 +1716,172 @@ void PrimFnDydQuoteDotVisVvV
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLVFP aplLft,
-           aplRht,
-           aplTmp = {0};
+    APLVFP   aplLft,
+             aplRht,
+             aplTmp = {0},
+             aplTmp1 = {0},
+             aplTmp2 = {0},
+             aplTmpDif = {0};
+    LPAPLVFP lpaplLft;
+    long     iLft;
+    // Calculate the LV, RV, and RV-LV signs
+    int LS = mpfr_sgn (&lpatLft->aplVfp),
+        RS = mpfr_sgn (&lpatRht->aplVfp),
+        TS;
 
-    // Z = (!R) / (!L) * !R-L
-    aplLft = FactVFP (lpatLft->aplVfp);                                 // !L
-    aplRht = FactVFP (lpatRht->aplVfp);                                 // !R
+    // Initialize the result to 0
+    mpfr_init0 (&lpMemRes[uRes]);
 
-    mpfr_init_copy (&aplTmp, &lpatRht->aplVfp);                         // R
-    mpfr_sub       (&aplTmp, &aplTmp, &lpatLft->aplVfp, MPFR_RNDN);     // R-L
-    lpMemRes[uRes] = FactVFP (aplTmp);                                  // !R-L
+    // Copy the ptr
+    lpaplLft = &lpMemRes[uRes];
 
-    mpfr_mul (&lpMemRes[uRes], &aplLft, &lpMemRes[uRes], MPFR_RNDN);    // (!L) * !R-L
-    mpfr_div (&lpMemRes[uRes], &aplRht, &lpMemRes[uRes], MPFR_RNDN);    // (!R) / ((!L) * !R-L)
+    // Using the identity A!B <=> (B-A)!B and because the function
+    //   mpz_bin_ui requires that the left argument must fit in a
+    //   UINT, we calculate the alternate left argument in case it
+    //   fits in a UINT.
+    mpfr_sub (lpaplLft, &lpatRht->aplVfp, &lpatLft->aplVfp, MPFR_RNDN);
+
+    // Use the smaller of the two for the left arg
+    if (mpfr_cmpabs (lpaplLft, &lpatLft->aplVfp) > 0)
+        mpfr_set    (lpaplLft, &lpatLft->aplVfp, MPFR_RNDN);
+
+    // Initialize to 0
+    mpfr_init0 (&aplTmpDif);
+
+    // Calculate RV-LV
+    mpfr_sub (&aplTmpDif, &lpatRht->aplVfp, lpaplLft, MPFR_RNDN);
+
+    TS = mpfr_sgn (&aplTmpDif);
+
+    // If both denominators are 1,
+    //   and the left numerator fits in a signed long, ...
+    if (mpfr_integer_p (lpaplLft        )
+     && mpfr_integer_p (&lpatRht->aplVfp)
+     && mpfr_fits_slong_p (lpaplLft, MPFR_RNDN) NE 0)
+    {
+        // Extract the numerator of the left argument
+        iLft = mpfr_get_si (lpaplLft, MPFR_RNDN);
+
+        // Determine whether or not LV, RV, or RV - LV is a negative integer
+        // From ISO-IEC 13751 Extended APL Standard, p. 90
+        switch (4*(LS < 0) + 2*(RS < 0) + 1*(TS < 0))
+        {
+            //    LV   RV  RV-LV
+            case 4*0 + 2*0 + 1*0:   // (!R)/((!L)*!R-L)
+                // Compute the binomial coefficient
+                mpfr_bin_ui (&lpMemRes[uRes], &lpatRht->aplVfp, iLft);
+
+                break;
+
+            //    LV   RV  RV-LV
+            case 4*0 + 2*0 + 1*1:   // 0
+                mpfr_set_si (&lpMemRes[uRes], 0, MPFR_RNDN);
+
+                break;
+
+            //    LV   RV  RV-LV
+            case 4*0 + 2*1 + 1*0:   // DOMAIN ERROR
+                Myf_clear (&aplTmpDif     );
+                Myf_clear (&lpMemRes[uRes]);
+
+                RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+            //    LV   RV  RV-LV
+            case 4*0 + 2*1 + 1*1:   // ((-1)*L)*L!(L-(R+1))
+                // Recurse with LR replaced by LR
+                // Recurse with RR replaced by LR-(RR+1)
+////////////////LR = LR;
+////////////////RR = LR-(RR+1)
+
+                // Calculate    (RV+1)
+                mpfr_add_ui (&aplTmpDif, &lpatRht->aplVfp, 1, MPFR_RNDN);
+
+                // Calculate LV-(RV+1)
+                mpfr_sub (&aplTmpDif, lpaplLft, &aplTmpDif, MPFR_RNDN);
+
+                // Compute the binomial coefficient
+                mpfr_bin_ui (&lpMemRes[uRes], &aplTmpDif, iLft);
+
+                // Handle sign
+                if ((iLft % 2) EQ 1)
+                    mpfr_neg (&lpMemRes[uRes], &lpMemRes[uRes], MPFR_RNDN);
+
+                break;
+
+            //    LV   RV  RV-LV
+            case 4*1 + 2*0 + 1*0:   // 0
+                mpfr_set_si (&lpMemRes[uRes], 0, MPFR_RNDN);
+
+                break;
+
+            //    LV   RV  RV-LV
+            case 4*1 + 2*0 + 1*1:   // (Can't happen)
+                mpfr_set_si (&lpMemRes[uRes], -1, MPFR_RNDN);
+
+                break;
+
+            //    LV   RV  RV-LV
+            case 4*1 + 2*1 + 1*0:   // ((-1)*RV-LV)*(-RV+1)!|LV+1
+                // Recurse with LV replaced by -(RV+1)
+                // Recurse with RV replaced by -(LV+1)
+                //   TV = LV;
+                //   LV = -(RV+1);
+                //   RV = -(TV+1);
+
+                // Initialize to 0
+                mpfr_init0 (&aplTmp1);
+                mpfr_init0 (&aplTmp2);
+
+                mpfr_set    (&aplTmp1, lpaplLft, MPFR_RNDN);                // TV = LV
+                mpfr_add_ui (&aplTmp2, &lpatRht->aplVfp, 1, MPFR_RNDN);     //  (RV+1)
+                mpfr_neg    (&aplTmp2, &aplTmp2, MPFR_RNDN);                // -(RV+1)
+                mpfr_add_ui (&aplTmp1, &aplTmp1, 1, MPFR_RNDN);             //  (TV+1)
+                mpfr_neg    (&aplTmp1, &aplTmp1, MPFR_RNDN);                // -(TV+1)
+
+                PrimFnDydQuoteDotVisVvV (lpMemRes, uRes, (LPALLTYPES) &aplTmp2, (LPALLTYPES) &aplTmp1, lpPrimSpec);
+
+                // We no longer need these resources
+                Myf_clear (&aplTmp2);
+                Myf_clear (&aplTmp1);
+
+                // Handle sign
+                if ((iLft % 2) EQ 1)
+                    mpfr_neg (&lpMemRes[uRes], &lpMemRes[uRes], MPFR_RNDN);
+
+                break;
+
+            //    LV   RV  RV-LV
+            case 4*1 + 2*1 + 1*1:   // 0
+                mpfr_set_si (&lpMemRes[uRes], 0, MPFR_RNDN);
+
+                break;
+
+            defstop
+                mpfr_set_si (&lpMemRes[uRes], -1, MPFR_RNDN);
+
+                break;
+        } // End SWITCH
+    } else
+    {
+        // Z = (!R) / (!L) * !R-L
+        aplLft = FactVFP (lpatLft->aplVfp);                                 // !L
+        aplRht = FactVFP (lpatRht->aplVfp);                                 // !R
+
+        mpfr_init_copy (&aplTmp, &lpatRht->aplVfp);                         // R
+        mpfr_sub       (&aplTmp, &aplTmp, &lpatLft->aplVfp, MPFR_RNDN);     // R-L
+        lpMemRes[uRes] = FactVFP (aplTmp);                                  // !R-L
+
+        mpfr_mul (&lpMemRes[uRes], &aplLft, &lpMemRes[uRes], MPFR_RNDN);    // (!L) * !R-L
+        mpfr_div (&lpMemRes[uRes], &aplRht, &lpMemRes[uRes], MPFR_RNDN);    // (!R) / ((!L) * !R-L)
+
+        // We no longer need this storage
+        Myf_clear (&aplTmp);
+        Myf_clear (&aplRht);
+        Myf_clear (&aplLft);
+    } // End IF/ELSE
 
     // We no longer need this storage
-    Myf_clear (&aplRht);
-    Myf_clear (&aplLft);
-    Myf_clear (&aplTmp);
+    Myf_clear (&aplTmpDif);
 } // End PrimFnDydQuoteDotVisVvV
 
 

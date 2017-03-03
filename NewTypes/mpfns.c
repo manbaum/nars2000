@@ -1100,6 +1100,44 @@ void mpq_mod_sx
 
 
 //***************************************************************************
+//  $mpq_cmp_abs
+//
+//  Compare the absolute value of two RATs
+//
+//  Return +1 if Lft >  Rht
+//          0 if Lft EQ Rht
+//         -1 if Lft <  Rht
+//***************************************************************************
+
+int mpq_cmpabs
+    (LPAPLRAT lpaplRatLft,      // Left arg
+     LPAPLRAT lpaplRatRht)      // Right arg
+
+{
+    APLRAT aplAbsLft = {0},
+           aplAbsRht = {0};
+    int    iRet;
+
+    // Copy the left arg and compute its absolute value
+    mpq_init_set (&aplAbsLft, lpaplRatLft);
+    mpq_abs      (&aplAbsLft,  &aplAbsLft);
+
+    // Copy the right arg and compute its absolute value
+    mpq_init_set (&aplAbsRht, lpaplRatRht);
+    mpq_abs      (&aplAbsRht,  &aplAbsRht);
+
+    // Compare the absolute values
+    iRet = mpq_cmp (&aplAbsLft, &aplAbsRht);
+
+    // We no longer needmthis storage
+    Myq_clear (&aplAbsRht);
+    Myq_clear (&aplAbsLft);
+
+    return iRet;
+} // End mpq_cmpabs
+
+
+//***************************************************************************
 //  $_mpq_cmp_ct
 //
 //  Compare two RATs relative to a given comparison tolerance
@@ -1865,6 +1903,41 @@ int mpfr_si_cmp
 {
     return -mpfr_cmp_si (op2, op1);
 } // End mpfr_si_cmp
+
+
+//***************************************************************************
+//  $mpfr_bin_ui
+//
+//  Compute a binomial coefficient as a VFP
+//***************************************************************************
+
+void mpfr_bin_ui
+    (mpfr_t rop,        // Ptr to result
+     mpfr_t op1,        // ...    right arg (in the APL sense of L!R)
+     long   op2)        // ...    left arg   ...
+
+{
+    mpz_t lpaplRht,
+          lpaplRes;
+
+    Assert (mpfr_integer_p (op1));
+
+    // Initialize to 0
+    mpz_init (lpaplRht);
+    mpz_init (lpaplRes);
+
+    // Convert the right arg to an MPI
+    mpfr_get_z (lpaplRht, op1, MPFR_RNDN);
+
+    // Compute the binomial coefficient:  Z = R L
+    mpz_bin_ui (lpaplRes, lpaplRht, op2);
+
+    // Convert the result back to VFP
+    mpfr_set_z (rop, lpaplRes, MPFR_RNDN);
+
+    mpz_clear (lpaplRht);
+    mpz_clear (lpaplRes);
+} // End mpfr_bin_ui
 
 
 //***************************************************************************

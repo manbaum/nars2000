@@ -1,0 +1,11 @@
+Build #1698 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Base Log Function With Negative Real Right Arguments
+
+Directory branches/bsmith/NewTypes:
+
+PF_CSTAR.C:
+  Use consistent language in comments.
+  Fix bug in Base Log function with negative right args in FisIvI, FisFvF, and VisVvV.
+  Fix memory leak in VisRvR, HC2VisHC2RvHC2R, HC4VisHC4RvHC4R and HC8VisHC8RvHC8R.

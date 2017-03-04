@@ -361,8 +361,10 @@ void PrimFnMonCircleStarVisR
     // Promote the right arg to the result type
     (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatRht->aplRat, 0, &atRht);
 
+    // Pass it on
     PrimFnMonCircleStarVisV (lpMemRes, uRes, &atRht, lpPrimSpec);
 
+    // We no longer need this storage
     Myhc1v_clear (&atRht.aplHC1V);
 } // End PrimFnMonCircleStarVisR
 
@@ -902,8 +904,10 @@ void PrimFnMonCircleStarHC2VisHC2R
     // Promote the right arg to the result type
     (*aTypeActPromote[ARRAY_HC2R][ARRAY_HC2V]) (&lpatRht->aplRat, 0, &atRht);
 
+    // Pass it on
     PrimFnMonCircleStarHC2VisHC2V (lpMemRes, uRes, &atRht, lpPrimSpec);
 
+    // We no longer need this storage
     Myhc2v_clear (&atRht.aplHC2V);
 } // End PrimFnMonCircleStarHC2VisHC2R
 
@@ -962,7 +966,7 @@ APLHC8V ArcHCxV_RE
         // Calculate the sum of the squares
         mpfr_add (&aplIMag, &aplIMag, &aplTmp, MPFR_RNDN);
 
-        // We no longer need this resource
+        // We no longer need this storage
         Myf_clear (&aplTmp);
     } // End IF
 
@@ -992,7 +996,7 @@ APLHC8V ArcHCxV_RE
             // Multiply each of the imaginary parts by the arctan2
             aplRes.parts[i] = MulHC1V_RE (aplRht.parts[i], aplMul);
 
-        // We no longer need this resource
+        // We no longer need this storage
         Myf_clear (&aplMul);
     } else
     {
@@ -1010,7 +1014,7 @@ APLHC8V ArcHCxV_RE
             mpfr_init0 (&aplRes.parts[i]);
     } // End IF/ELSE
 
-    // We no longer need this resource
+    // We no longer need this storage
     Myf_clear (&aplIMag);
 
     return aplRes;
@@ -1076,7 +1080,7 @@ APLHC8V LogHCxV_RE
         // Calculate the sum of the squares
         mpfr_add (&aplIMag, &aplIMag, &aplTmp, MPFR_RNDN);
 
-        // We no longer need this resource
+        // We no longer need this storage
         Myf_clear (&aplTmp);
     } // End IF
 
@@ -1161,7 +1165,7 @@ APLHC8V LogHCxV_RE
             mpfr_init0 (&aplRes.parts[i]);
     } // End IF/ELSE
 
-    // We no longer need this resource
+    // We no longer need this storage
     Myf_clear (&aplMul);
     Myf_clear (&aplIMag);
     Myf_clear (&aplRMag);
@@ -1206,8 +1210,10 @@ void PrimFnMonCircleStarHC4VisHC4R
     // Promote the right arg to the result type
     (*aTypeActPromote[ARRAY_HC4R][ARRAY_HC4V]) (&lpatRht->aplRat, 0, &atRht);
 
+    // Pass it on
     PrimFnMonCircleStarHC4VisHC4V (lpMemRes, uRes, &atRht, lpPrimSpec);
 
+    // We no longer need this storage
     Myhc4v_clear (&atRht.aplHC4V);
 } // End PrimFnMonCircleStarHC4VisHC4R
 
@@ -1248,8 +1254,10 @@ void PrimFnMonCircleStarHC8VisHC8R
     // Promote the right arg to the result type
     (*aTypeActPromote[ARRAY_HC8R][ARRAY_HC8V]) (&lpatRht->aplRat, 0, &atRht);
 
+    // Pass it on
     PrimFnMonCircleStarHC8VisHC8V (lpMemRes, uRes, &atRht, lpPrimSpec);
 
+    // We no longer need this storage
     Myhc8v_clear (&atRht.aplHC8V);
 } // End PrimFnMonCircleStarHC8VisHC8R
 
@@ -1417,39 +1425,39 @@ void PrimFnDydCircleStarFisIvI
     if (IsBooleanValue (lpatLft->aplInteger)
      && IsBooleanValue (lpatRht->aplInteger))
     {
-        lpMemRes[uRes] = TranslateQuadICIndex ((APLFLOAT) lpatLft->aplInteger,
-                                                          icndxLog[lpatLft->aplInteger][lpatRht->aplInteger],
-                                               (APLFLOAT) lpatRht->aplInteger,
-                                                          FALSE);
-        return;
-    } // End IF
-
+        lpMemRes[uRes] =
+          TranslateQuadICIndex ((APLFLOAT) lpatLft->aplInteger,
+                                           icndxLog[lpatLft->aplInteger][lpatRht->aplInteger],
+                                (APLFLOAT) lpatRht->aplInteger,
+                                           FALSE);
+    } else
     // Check for indeterminates:  0 {log} N (N != 0 or 1)
     if (lpatLft->aplInteger EQ 0)
     {
-        lpMemRes[uRes] = TranslateQuadICIndex ((APLFLOAT) lpatLft->aplInteger,
-                                                          ICNDX_0LOGN,
-                                               (APLFLOAT) lpatRht->aplInteger,
-                                                          FALSE);
-        return;
-    } // End IF
-
+        lpMemRes[uRes] =
+          TranslateQuadICIndex ((APLFLOAT) lpatLft->aplInteger,
+                                           ICNDX_0LOGN,
+                                (APLFLOAT) lpatRht->aplInteger,
+                                           FALSE);
+    } else
     // Check for Complex result
-    if (lpatLft->aplInteger < 0)
+    if (lpatLft->aplInteger < 0
+     || lpatRht->aplInteger < 0)
         RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
-
+    else
     // The EAS says "If A and B are equal, lpMemRes[uRes] = one."
     if (lpatLft->aplInteger EQ lpatRht->aplInteger)
     {
         lpMemRes[uRes] = 1.0;
 
         return;
-    } // End IF
-
-    // Calculate the log
-    // Note that the native IEEE code correctly handles infinite results
-    //   such as 5{log}0
-    lpMemRes[uRes] = log ((APLFLOAT) lpatRht->aplInteger) / log ((APLFLOAT) lpatLft->aplInteger);
+    } else
+        // Calculate the log
+        // Note that the native IEEE code correctly handles infinite results
+        //   such as 5{log}0
+        lpMemRes[uRes] =
+          log ((APLFLOAT) lpatRht->aplInteger)
+        / log ((APLFLOAT) lpatLft->aplInteger);
 } // End PrimFnDydCircleStarFisIvI
 
 
@@ -1479,39 +1487,36 @@ void PrimFnDydCircleStarFisFvF
     if (IsBooleanValue (lpatLft->aplFloat)
      && IsBooleanValue (lpatRht->aplFloat))
     {
-        lpMemRes[uRes] = TranslateQuadICIndex (lpatLft->aplFloat,
-                                               icndxLog[(UINT) lpatLft->aplFloat][(UINT) lpatRht->aplFloat],
-                                               lpatRht->aplFloat,
-                                               FALSE);
-        return;
-    } // End IF
-
+        lpMemRes[uRes] =
+          TranslateQuadICIndex (lpatLft->aplFloat,
+                                icndxLog[(UINT) lpatLft->aplFloat][(UINT) lpatRht->aplFloat],
+                                lpatRht->aplFloat,
+                                FALSE);
+    } else
     // Check for indeterminates:  0 {log} N  (N != 0 or 1)
     if (lpatLft->aplFloat EQ 0.0)
     {
-        lpMemRes[uRes] = TranslateQuadICIndex (lpatLft->aplFloat,
-                                               ICNDX_0LOGN,
-                                               lpatRht->aplFloat,
-                                               FALSE);
-        return;
-    } // End IF
-
+        lpMemRes[uRes] =
+          TranslateQuadICIndex (lpatLft->aplFloat,
+                                ICNDX_0LOGN,
+                                lpatRht->aplFloat,
+                                FALSE);
+    } else
     // Check for Complex result
-    if (SIGN_APLFLOAT (lpatLft->aplFloat))
+    if (SIGN_APLFLOAT (lpatLft->aplFloat)
+     || SIGN_APLFLOAT (lpatRht->aplFloat))
         RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
-
+    else
     // The EAS says "If A and B are equal, lpMemRes[uRes] = one."
     if (lpatLft->aplFloat EQ lpatRht->aplFloat)
-    {
         lpMemRes[uRes] = 1.0;
-
-        return;
-    } // End IF
-
-    // Calculate the log
-    // Note that the native IEEE code correctly handles infinite results
-    //   such as 5{log}0  and  0.5{log}0
-    lpMemRes[uRes] = log (lpatRht->aplFloat) / log (lpatLft->aplFloat);
+    else
+        // Calculate the log
+        // Note that the native IEEE code correctly handles infinite results
+        //   such as 5{log}0  and  0.5{log}0
+        lpMemRes[uRes] =
+          log (lpatRht->aplFloat)
+        / log (lpatLft->aplFloat);
 } // End PrimFnDydCircleStarFisFvF
 
 
@@ -1533,12 +1538,15 @@ void PrimFnDydCircleStarVisRvR
              atRht = {0};
 
     // Promote the left & right args to the result type
-    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatRht->aplRat, 0, &atRht);
     (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatLft->aplRat, 0, &atLft);
+    (*aTypeActPromote[ARRAY_RAT][ARRAY_VFP]) (&lpatRht->aplRat, 0, &atRht);
 
+    // Pass it on
     PrimFnDydCircleStarVisVvV (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
 
+    // We no longer need this storage
     Myhc1v_clear (&atRht.aplHC1V);
+    Myhc1v_clear (&atLft.aplHC1V);
 } // End PrimFnMonCircleStarVisRvR
 
 
@@ -1563,7 +1571,7 @@ void PrimFnDydCircleStarVisVvV
      || (mpfr_inf_p (&lpatLft->aplVfp) && IsMpf0 (&lpatRht->aplVfp))
      || (mpfr_inf_p (&lpatLft->aplVfp) && mpfr_inf_p (&lpatRht->aplVfp)))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-
+    else
     // Check for indeterminates:  B {log} B
     if (IsBooleanVfp (&lpatLft->aplVfp)
      && IsBooleanVfp (&lpatRht->aplVfp))
@@ -1574,9 +1582,7 @@ void PrimFnDydCircleStarVisVvV
                              &lpatRht->aplVfp,
                              &lpMemRes[uRes],
                               FALSE);
-        return;
-    } // End IF
-
+    } else
     // Check for indeterminates:  0 {log} N  (N != 0 or 1)
     if (mpfr_zero_p (&lpatLft->aplVfp))
     {
@@ -1586,47 +1592,47 @@ void PrimFnDydCircleStarVisVvV
                              &lpatRht->aplVfp,
                              &lpMemRes[uRes],
                               FALSE);
-        return;
-    } // End IF
-
+    } else
     // Check for Complex result
-    if (SIGN_APLVFP (&lpatLft->aplVfp))
+    if (SIGN_APLVFP (&lpatLft->aplVfp)
+     || SIGN_APLVFP (&lpatRht->aplVfp))
         RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
-
-    // Initialize the result to 0
-    mpfr_init0 (&lpMemRes[uRes]);
-
-    // The EAS says "If A and B are equal, lpMemRes[uRes] = one."
-    if (mpfr_cmp (&lpatLft->aplVfp,  &lpatRht->aplVfp) EQ 0)
-        mpfr_set_ui (&lpMemRes[uRes], 1, MPFR_RNDN);
     else
     {
-        APLVFP mpfLft,
-               mpfRht;
+        // Initialize the result to 0
+        mpfr_init0 (&lpMemRes[uRes]);
+
+        // The EAS says "If A and B are equal, lpMemRes[uRes] = one."
+        if (mpfr_cmp (&lpatLft->aplVfp,  &lpatRht->aplVfp) EQ 0)
+            mpfr_set_ui (&lpMemRes[uRes], 1, MPFR_RNDN);
+        else
+        {
+            APLVFP mpfLft,
+                   mpfRht;
 #ifdef DEBUG
-////    WCHAR  wszTemp[512];
+////        WCHAR  wszTemp[512];
+#endif
+            // Calculate log (lpatRht->aplVfp) / log (lpatLft->aplVfp)
+            // Note that the MPFR code correctly handles infinite results
+            //   such as 5{log}0  and  0.5{log}0
+            PrimFnMonCircleStarVisV (&mpfLft, 0, lpatLft, lpPrimSpec);
+#ifdef DEBUG
+////        strcpyW (wszTemp, L"Lft: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfLft, 0) = WC_EOS; DbgMsgW (wszTemp);
+#endif
+            PrimFnMonCircleStarVisV (&mpfRht, 0, lpatRht, lpPrimSpec);
+#ifdef DEBUG
+////        strcpyW (wszTemp, L"Rht: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfRht, 0) = WC_EOS; DbgMsgW (wszTemp);
+#endif
+            mpfr_div (&lpMemRes[uRes], &mpfRht, &mpfLft, MPFR_RNDN);
+#ifdef DEBUG
+////        strcpyW (wszTemp, L"Res: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpMemRes[uRes], 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
 
-        // Calculate log (lpatRht->aplVfp) / log (lpatLft->aplVfp)
-        // Note that the MPFR code correctly handles infinite results
-        //   such as 5{log}0  and  0.5{log}0
-        PrimFnMonCircleStarVisV (&mpfLft, 0, lpatLft, lpPrimSpec);
-#ifdef DEBUG
-////    strcpyW (wszTemp, L"Lft: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfLft, 0) = WC_EOS; DbgMsgW (wszTemp);
-#endif
-        PrimFnMonCircleStarVisV (&mpfRht, 0, lpatRht, lpPrimSpec);
-#ifdef DEBUG
-////    strcpyW (wszTemp, L"Rht: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfRht, 0) = WC_EOS; DbgMsgW (wszTemp);
-#endif
-        mpfr_div (&lpMemRes[uRes], &mpfRht, &mpfLft, MPFR_RNDN);
-#ifdef DEBUG
-////    strcpyW (wszTemp, L"Res: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpMemRes[uRes], 0) = WC_EOS; DbgMsgW (wszTemp);
-#endif
-
-        // We no longer need this storage
-        Myf_clear (&mpfRht);
-        Myf_clear (&mpfLft);
-    } // End IF
+            // We no longer need this storage
+            Myf_clear (&mpfRht);
+            Myf_clear (&mpfLft);
+        } // End IF/ELSE
+    } // End IF/ELSE/...
 } // End PrimFnDydCircleStarVisVvV
 
 
@@ -1713,6 +1719,10 @@ void PrimFnDydCircleStarHC2VisHC2RvHC2R
 
     // Pass it on
     PrimFnDydCircleStarHC2VisHC2VvHC2V (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+
+    // We no longer need this storage
+    Myhc2v_clear (&atRht.aplHC2V);
+    Myhc2v_clear (&atLft.aplHC2V);
 } // End PrimFnDydCircleStarHC2VisHC2RvHC2R
 
 
@@ -1736,7 +1746,7 @@ APLHC2V BaseLogHC2V_RE
     // log R to the base L is (ln R) / ln L
     aplRes = DivHC2V_RE (aplLogRht, aplLogLft);
 
-    // We no longer need these resources
+    // We no longer need this storage
     Myhc2v_clear (&aplLogRht);
     Myhc2v_clear (&aplLogLft);
 
@@ -1846,6 +1856,10 @@ void PrimFnDydCircleStarHC4VisHC4RvHC4R
 
     // Pass it on
     PrimFnDydCircleStarHC4VisHC4VvHC4V (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+
+    // We no longer need this storage
+    Myhc4v_clear (&atRht.aplHC4V);
+    Myhc4v_clear (&atLft.aplHC4V);
 } // End PrimFnDydCircleStarHC4VisHC4RvHC4R
 
 
@@ -1869,7 +1883,7 @@ APLHC4V BaseLogHC4V_RE
     // log R to the base L is (ln R) / ln L
     aplRes = DivHC4V_RE (aplLogRht, aplLogLft);
 
-    // We no longer need these resources
+    // We no longer need this storage
     Myhc4v_clear (&aplLogRht);
     Myhc4v_clear (&aplLogLft);
 
@@ -1979,6 +1993,10 @@ void PrimFnDydCircleStarHC8VisHC8RvHC8R
 
     // Pass it on
     PrimFnDydCircleStarHC8VisHC8VvHC8V (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
+
+    // We no longer need this storage
+    Myhc8v_clear (&atRht.aplHC8V);
+    Myhc8v_clear (&atLft.aplHC8V);
 } // End PrimFnDydCircleStarHC8VisHC8RvHC8R
 
 
@@ -2002,7 +2020,7 @@ APLHC8V BaseLogHC8V_RE
     // log R to the base L is (ln R) / ln L
     aplRes = DivHC8V_RE (aplLogRht, aplLogLft);
 
-    // We no longer need these resources
+    // We no longer need this storage
     Myhc8v_clear (&aplLogRht);
     Myhc8v_clear (&aplLogLft);
 

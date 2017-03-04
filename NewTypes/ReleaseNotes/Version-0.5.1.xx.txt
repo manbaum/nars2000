@@ -1,6 +1,17 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1699 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In )COPY Of Variable Onto A Function
+
+Directory branches/bsmith/NewTypes:
+
+SC_COPY.C:
+  Fix bug in )COPY of a variable onto a function.  I used the wrong function to free the old (function) value.
+
+
 Build #1698 -- Version 0.5.1.xx
 --------------------------------
 

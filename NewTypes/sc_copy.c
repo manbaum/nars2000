@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -549,7 +549,7 @@ int CopyWsVars
             // Out with the old
             if (!lpSymEntry->stFlags.Imm && lpSymEntry->stFlags.Value)
             {
-                FreeResultGlobalVar (lpSymEntry->stData.stGlbData); lpSymEntry->stData.stGlbData = NULL;
+                FreeResultGlobalDFLV (lpSymEntry->stData.stGlbData); lpSymEntry->stData.stGlbData = NULL;
             } // End IF
 
             // Set the stFlags & stData

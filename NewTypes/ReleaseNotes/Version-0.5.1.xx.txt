@@ -1,6 +1,23 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1701 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Rational Comparisons W.R.T. []CT
+
+Directory branches/bsmith/NewTypes:
+
+DEFINES.H:
+STARTADDR.H:
+  Remove the leading underscore from the names <_mpq_cmp_ct> and <_mpfr_cmp_ct>.
+
+MPFNS.C:
+  Fix typos in comments.
+  Remove the leading underscore from the names <_mpq_cmp_ct> and <_mpfr_cmp_ct>.
+  Rewrite <mpq_cmp_ct> in the same way as <mpfr_cmp_ct> without calling the latter directly.  By using MPIR native code, we don't run afoul of precision ([]FPC) issues in <mpfr_cmp_ct>.
+
+
 Build #1700 -- Version 0.5.1.xx
 --------------------------------
 

@@ -1129,7 +1129,7 @@ int mpq_cmpabs
     // Compare the absolute values
     iRet = mpq_cmp (&aplAbsLft, &aplAbsRht);
 
-    // We no longer needmthis storage
+    // We no longer need this storage
     Myq_clear (&aplAbsRht);
     Myq_clear (&aplAbsLft);
 
@@ -1147,42 +1147,136 @@ int mpq_cmpabs
 //         -1 if Lft <  Rht
 //***************************************************************************
 
-int _mpq_cmp_ct
-    (APLRAT   aplRatLft,        // Left arg
-     APLRAT   aplRatRht,        // Right arg
-     APLFLOAT fQuadCT,          // []CT
-     UBOOL    bIntegerTest)     // TRUE iff this is an integer test
+int mpq_cmp_ct
+    (LPAPLRAT lpaplLft,             // Ptr to left arg
+     LPAPLRAT lpaplRht,             // ...    right arg
+     APLFLOAT fQuadCT,              // []CT
+     UBOOL    bIntegerTest)         // TRUE iff this is an integer test
 
 {
-    APLVFP mpfLft = {0},
-           mpfRht = {0};
-    UBOOL  bRet;
+    int iRet;                       // Result of mpq_cmp
 
-    // So as to avoid dividing by zero, if neither arg is zero, ...
-    if (!IsMpq0 (&aplRatLft)
-     && !IsMpq0 (&aplRatRht))
+////#define CT_DEBUG
+
+#if defined (DEBUG) && defined (CT_DEBUG)
+    WCHAR  wszTemp[1024];
+    APLVFP mpfFmt = {0};
+
+    strcpyW (wszTemp, L"Lft: "); *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], lpaplLft) = WC_EOS; DbgMsgW (wszTemp);
+    strcpyW (wszTemp, L"Rht: "); *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], lpaplRht) = WC_EOS; DbgMsgW (wszTemp);
+#endif
+    // Compare 'em without tolerance
+    iRet = mpq_cmp (lpaplLft, lpaplRht);
+
+    // If args are unequal,
+    //   and []CT is non-zero,
+    //   and neither arg is either infinity, ...
+    if (iRet NE 0                               // Lft NE Rht
+     && fQuadCT NE 0                            // []CT NE 0
+     && !IsMpqInfinity (lpaplLft)
+     && !IsMpqInfinity (lpaplRht))
     {
-        // Initialize the temps to 0
-        mpfr_init0 (&mpfLft);
-        mpfr_init0 (&mpfRht);
+        APLRAT mpqLftAbs = {0},     // Absolute value of left arg
+               mpqRhtAbs = {0},     // ...               right ...
+               mpqSYS_CT = {0};     // SYS_CT as an mpq
+        int    sgnLft,              // Left arg sign
+               sgnRht;              // Right ...
 
-        // Copy the RAT as a VFP
-        mpfr_set_q (&mpfLft, &aplRatLft, MPFR_RNDN);
-        mpfr_set_q (&mpfRht, &aplRatRht, MPFR_RNDN);
+        // Use an algorithm similar to the one in flt_cmp_ct
 
-        // Compare the two VFPs relative to []CT
-        bRet = _mpfr_cmp_ct (&mpfLft, &mpfRht, fQuadCT, bIntegerTest) EQ 0;
+        // Initialize the temps to 0/1
+        mpq_init (&mpqLftAbs);
+        mpq_init (&mpqRhtAbs);
 
-        // We no longer need this storage
-        Myf_clear (&mpfRht);
-        Myf_clear (&mpfLft);
+        // Initialize mpq_SYS_CT
+        mpq_init_set_d (&mpqSYS_CT, SYS_CT);
 
-        if (bRet)
-            return 0;
+        // Get the signs
+        sgnLft = signumrat (lpaplLft);
+        sgnRht = signumrat (lpaplRht);
+
+        // Get the absolute values
+        mpq_abs (&mpqLftAbs, lpaplLft);
+        mpq_abs (&mpqRhtAbs, lpaplRht);
+
+        // If this is an integer test, allow comparison with zero
+        if (bIntegerTest
+         && sgnLft EQ 0
+         && mpq_cmp (&mpqRhtAbs, &mpqSYS_CT) <= 0)
+            iRet = 0;
+        else
+        if (bIntegerTest
+         && sgnRht EQ 0
+         && mpq_cmp (&mpqLftAbs, &mpqSYS_CT) <= 0)
+            iRet = 0;
+        else
+        if (!IsMpq0 (lpaplLft)          // Lft NE 0
+         && !IsMpq0 (lpaplRht)          // Rht NE 0
+         && sgnLft EQ sgnRht)           // Signs are the same, ...
+        {
+            APLRAT mpqCT     = {0},
+                   mpqHoodLo = {0};
+
+            // Initialize the temps to 0/1
+            mpq_init (&mpqCT);
+            mpq_init (&mpqHoodLo);
+
+            // Convert the comparison tolerance
+            mpq_set_d (&mpqCT, fQuadCT);
+#if defined (DEBUG) && defined (CT_DEBUG)
+            strcpyW (wszTemp, L"CT:  "); *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], &mpqCT) = WC_EOS; DbgMsgW (wszTemp);
+#endif
+            // Calculate the low end of the left neighborhood of (|Rht)
+////////////aplHoodLo = aplRhtAbs - aplRhtAbs * fQuadCT;
+            mpq_mul (&mpqHoodLo, &mpqRhtAbs, &mpqCT    );
+            mpq_sub (&mpqHoodLo, &mpqRhtAbs, &mpqHoodLo);
+#if defined (DEBUG) && defined (CT_DEBUG)
+            strcpyW (wszTemp, L"Lo1: "); *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], &mpqHoodLo) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"L1 : "); *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], &mpqLftAbs) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"R1 : "); *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], &mpqRhtAbs) = WC_EOS; DbgMsgW (wszTemp);
+#endif
+            // If (|Rht) is greater than (|Lft),
+            // and (|Lft) is in the
+            //    left-neighborhood of (|Rht) with CT, return 0 (equal)
+////////////if (aplHoodLo <= aplLftAbs
+//////////// &&              aplLftAbs < aplRhtAbs)
+////////////    return TRUE;
+            if (mpq_cmp (&mpqHoodLo, &mpqLftAbs)             <= 0
+             && mpq_cmp (            &mpqLftAbs, &mpqRhtAbs) <  0)
+                iRet = 0;
+            else
+            {
+                // Calculate the low end of the left neighborhood of (|Lft)
+////////////////aplHoodLo = aplLftAbs - aplLftAbs * fQuadCT;
+                mpq_mul (&mpqHoodLo, &mpqLftAbs, &mpqCT    );
+                mpq_sub (&mpqHoodLo, &mpqLftAbs, &mpqHoodLo);
+#if defined (DEBUG) && defined (CT_DEBUG)
+            strcpyW (wszTemp, L"Lo2: "); *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], &mpqHoodLo) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"R2 : "); *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], &mpqRhtAbs) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"L2 : "); *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], &mpqLftAbs) = WC_EOS; DbgMsgW (wszTemp);
+#endif
+                // If (|Lft) is greater than (|Rht),
+                // and (|Rht) is in the
+                //    left-neighborhood of (|Lft) with CT, return 0 (equal)
+////////////////if (aplHoodLo <= aplRhtAbs
+//////////////// &&              aplRhtAbs < aplLftAbs)
+////////////////    return TRUE;
+                if (mpq_cmp (&mpqHoodLo, &mpqRhtAbs)             <= 0
+                 && mpq_cmp (            &mpqRhtAbs, &mpqLftAbs) <  0)
+                    iRet = 0;
+            } // End IF/ELSE
+
+            // We no longer need this storage
+            Myq_clear (&mpqHoodLo);
+            Myq_clear (&mpqCT    );
+        } // End IF/ELSE
+
+        Myq_clear (&mpqRhtAbs);
+        Myq_clear (&mpqLftAbs);
     } // End IF
 
-    return mpq_cmp (&aplRatLft, &aplRatRht);
-} // End _mpq_cmp_ct
+    return iRet;
+} // End mpq_cmp_ct
 
 
 //***************************************************************************
@@ -1561,12 +1655,12 @@ APLINT _mpfr_get_ctsx
         mpfr_ceil  (&mpfTmp2, src);
 
         // Compare the number and its floor
-        if (_mpfr_cmp_ct (&mpfSrc, &mpfTmp1, fQuadCT, bIntegerTest) EQ 0)
+        if (mpfr_cmp_ct (&mpfSrc, &mpfTmp1, fQuadCT, bIntegerTest) EQ 0)
             // Return the floor
             aplInt = mpfr_get_sx (&mpfTmp1, lpbRet);
         else
         // Compare the number and its ceiling
-        if (_mpfr_cmp_ct (&mpfSrc, &mpfTmp2, fQuadCT, bIntegerTest) EQ 0)
+        if (mpfr_cmp_ct (&mpfSrc, &mpfTmp2, fQuadCT, bIntegerTest) EQ 0)
             // Return the ceiling
             aplInt = mpfr_get_sx (&mpfTmp2, lpbRet);
         else
@@ -1747,9 +1841,9 @@ void mpfr_mod_sub
 //         -1 if Lft <  Rht
 //***************************************************************************
 
-int _mpfr_cmp_ct
-    (LPAPLVFP lpaplVfpLft,          // Ptr to left arg
-     LPAPLVFP lpaplVfpRht,          // ...    right ...
+int mpfr_cmp_ct
+    (LPAPLVFP lpaplLft,             // Ptr to left arg
+     LPAPLVFP lpaplRht,             // ...    right ...
      APLFLOAT fQuadCT,              // []CT
      UBOOL    bIntegerTest)         // TRUE iff this is an integer test
 
@@ -1762,19 +1856,19 @@ int _mpfr_cmp_ct
     WCHAR  wszTemp[1024];
     APLVFP mpfFmt = {0};
 
-    strcpyW (wszTemp, L"Lft: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], *lpaplVfpLft, 0) = WC_EOS; DbgMsgW (wszTemp);
-    strcpyW (wszTemp, L"Rht: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], *lpaplVfpRht, 0) = WC_EOS; DbgMsgW (wszTemp);
+    strcpyW (wszTemp, L"Lft: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpaplLft, 0) = WC_EOS; DbgMsgW (wszTemp);
+    strcpyW (wszTemp, L"Rht: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpaplRht, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
     // Compare 'em without tolerance
-    iRet = mpfr_cmp (lpaplVfpLft, lpaplVfpRht);
+    iRet = mpfr_cmp (lpaplLft, lpaplRht);
 
     // If args are unequal,
     //   and []CT is non-zero,
     //   and neither arg is either infinity, ...
     if (iRet NE 0                               // Lft NE Rht
      && fQuadCT NE 0                            // []CT NE 0
-     && !IsMpfInfinity (lpaplVfpLft)
-     && !IsMpfInfinity (lpaplVfpRht))
+     && !IsMpfInfinity (lpaplLft)
+     && !IsMpfInfinity (lpaplRht))
     {
         APLVFP mpfLftAbs = {0},     // Absolute value of left arg
                mpfRhtAbs = {0};     // ...               right ...
@@ -1788,12 +1882,12 @@ int _mpfr_cmp_ct
         mpfr_init0 (&mpfRhtAbs);
 
         // Get the signs
-        sgnLft = signumvfp (lpaplVfpLft);
-        sgnRht = signumvfp (lpaplVfpRht);
+        sgnLft = signumvfp (lpaplLft);
+        sgnRht = signumvfp (lpaplRht);
 
         // Get the absolute values
-        mpfr_abs (&mpfLftAbs, lpaplVfpLft, MPFR_RNDN);
-        mpfr_abs (&mpfRhtAbs, lpaplVfpRht, MPFR_RNDN);
+        mpfr_abs (&mpfLftAbs, lpaplLft, MPFR_RNDN);
+        mpfr_abs (&mpfRhtAbs, lpaplRht, MPFR_RNDN);
 
         // If this is an integer test, allow comparison with zero
         if (bIntegerTest
@@ -1806,8 +1900,8 @@ int _mpfr_cmp_ct
          && mpfr_cmp_d (&mpfLftAbs, SYS_CT) <= 0)
             iRet = 0;
         else
-        if (!IsMpf0 (lpaplVfpLft)       // Lft NE 0
-         && !IsMpf0 (lpaplVfpRht)       // Rht NE 0
+        if (!IsMpf0 (lpaplLft)       // Lft NE 0
+         && !IsMpf0 (lpaplRht)       // Rht NE 0
          && sgnLft EQ sgnRht)           // Signs are the same, ...
         {
             APLVFP mpfCT     = {0},
@@ -1820,7 +1914,7 @@ int _mpfr_cmp_ct
             // Convert the comparison tolerance
             mpfr_set_d (&mpfCT, fQuadCT, MPFR_RNDN);
 #if defined (DEBUG) && defined (CT_DEBUG)
-            strcpyW (wszTemp, L"CT:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfCT, 0) = WC_EOS; DbgMsgW (wszTemp);
+            strcpyW (wszTemp, L"CT:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &mpfCT, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
             // Calculate the low end of the left neighborhood of (|Rht)
 ////////////aplHoodLo = aplRhtAbs - aplRhtAbs * fQuadCT;
@@ -1872,7 +1966,7 @@ int _mpfr_cmp_ct
     } // End IF
 
     return iRet;
-} // End _mpfr_cmp_ct
+} // End mpfr_cmp_ct
 
 
 //***************************************************************************

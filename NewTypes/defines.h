@@ -785,11 +785,11 @@ typedef struct tagCOLORBLEND *LPCOLORBLEND;     // Dummy entry for .pro files on
 #else
     // Compare the two RATs relative to []CT
 #define CmpCT_R(aplLft,aplRht,fQuadCT,CMP)                      \
-        (_mpq_cmp_ct  ( aplLft,  aplRht, fQuadCT, FALSE) CMP 0)
+        (mpq_cmp_ct  (&aplLft, &aplRht, fQuadCT, FALSE) CMP 0)
 #endif
 
 #define CmpCT_V(aplLft,aplRht,fQuadCT,CMP)                      \
-        (_mpfr_cmp_ct (&aplLft, &aplRht, fQuadCT, FALSE) CMP 0)
+        (mpfr_cmp_ct (&aplLft, &aplRht, fQuadCT, FALSE) CMP 0)
 
 
 //***************************************************************************
@@ -806,11 +806,11 @@ typedef struct tagCOLORBLEND *LPCOLORBLEND;     // Dummy entry for .pro files on
 #else
     // Compare the two RATs relative to []CT
 #define CmpSCT_R(aplLft,aplRht,fQuadCT,CMP)                     \
-        (_mpq_cmp_ct  ( aplLft,  aplRht, fQuadCT, TRUE ) CMP 0)
+        (mpq_cmp_ct  (&aplLft, &aplRht, fQuadCT, TRUE ) CMP 0)
 #endif
 
 #define CmpSCT_V(aplLft,aplRht,fQuadCT,CMP)                     \
-        (_mpfr_cmp_ct (&aplLft, &aplRht, fQuadCT, TRUE ) CMP 0)
+        (mpfr_cmp_ct (&aplLft, &aplRht, fQuadCT, TRUE ) CMP 0)
 
 
 //***************************************************************************

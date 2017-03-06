@@ -118,9 +118,10 @@ typedef enum tagSYSCMDS_ENUM    // System Commands
     SYSCMD_SI       ,           // 14:  )SI
     SYSCMD_SINL     ,           // 15:  )SINL
     SYSCMD_ULIB     ,           // 16:  )ULIB
-    SYSCMD_VARS     ,           // 17:  )VARS
-    SYSCMD_XLOAD    ,           // 18:  )XLOAD
-    SYSCMD_WSID     ,           // 19:  )WSID
+    SYSCMD_SYMB     ,           // 17:  )SYMB
+    SYSCMD_VARS     ,           // 18:  )VARS
+    SYSCMD_XLOAD    ,           // 19:  )XLOAD
+    SYSCMD_WSID     ,           // 1A:  )WSID
 } SYSCMDS_ENUM, *LPSYSCMDS_ENUM;
 
 

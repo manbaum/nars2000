@@ -553,6 +553,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     <ClCompile Include="sc_reset.c" />
     <ClCompile Include="sc_save.c" />
     <ClCompile Include="sc_si.c" />
+    <ClCompile Include="sc_symb.c" />
     <ClCompile Include="sc_wsid.c" />
     <ClCompile Include="sessman.c" />
     <ClCompile Include="sort.c" />

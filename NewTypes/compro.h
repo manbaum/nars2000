@@ -208,6 +208,7 @@
   #include "sc_save.pro"
   #include "sc_si.pro"
   #include "sc_wsid.pro"
+  #include "sc_symb.pro"
   #include "sessman.pro"
   #include "sort.pro"
   #include "statusbar.pro"

@@ -1,0 +1,21 @@
+Build #1700 -- Version 0.5.1.xx
+--------------------------------
+
+* Implement Preliminary Version System Command )SYMB
+
+Directory branches/bsmith/NewTypes:
+
+COMPRO.H:
+  Include new file's prototype.
+
+ENUMS.H:
+  Include new system command in the list.
+
+MAKEFILE.SRC:
+MAKEFILE.INC:
+NARS2000.VCXPROJ:
+SYSCMDS.C:
+  Include new file in the lists.
+
+SC_SYMB.C:
+  Implement new system command )SYMB in inquiry mode only.

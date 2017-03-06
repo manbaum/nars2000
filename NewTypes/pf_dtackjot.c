@@ -4519,6 +4519,7 @@ __try
                                                   uWid,                     // Maximum width including sign & decpt (0 = none)
                                                   aplCharDecimal,           // Char to use as decimal separator
                                                   aplCharOverbar,           // Char to use as overbar
+                                                  FLTDISPFMT_F,             // Float display format
                                                   iPrc >= 0,                // TRUE iff nDigits is # fractional digits
                                                   FALSE,                    // TRUE iff we're to substitute text for infinity
                                                   FALSE);                   // TRUE iff we're to precede the display with (FPCnnn)
@@ -4535,6 +4536,7 @@ __try
                                                   uWid,                     // Maximum width including sign & decpt (0 = none)
                                                   aplCharDecimal,           // Char to use as decimal separator
                                                   aplCharOverbar,           // Char to use as overbar
+                                                  FLTDISPFMT_F,             // Float display format
                                                   iPrc >= 0,                // TRUE iff nDigits is # fractional digits
                                                   FALSE,                    // TRUE iff we're to substitute text for infinity
                                                   FALSE);                   // TRUE iff we're to precede the display with (FPCnnn)

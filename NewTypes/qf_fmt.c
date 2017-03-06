@@ -1783,6 +1783,7 @@ void QFMT_CommonEFIR
                                       0,                    // Maximum width including sign & decpt (0 = none)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
+                                      FLTDISPFMT_E,         // Float display format
                                       FALSE,                // TRUE iff nDigits is # fractional digits
                                       FALSE,                // TRUE iff we're to substitute text for infinity
                                       FALSE);               // TRUE iff we're to precede the display with (FPC)
@@ -1802,6 +1803,7 @@ void QFMT_CommonEFIR
                                       0,                    // Maximum width including sign & decpt (0 = none)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
+                                      FLTDISPFMT_E,         // Float display format
                                       FALSE,                // TRUE iff nDigits is # fractional digits
                                       FALSE,                // TRUE iff we're to substitute text for infinity
                                       FALSE);               // TRUE iff we're to precede the display with (FPC)
@@ -1858,6 +1860,7 @@ void QFMT_CommonEFIR
                                       0,                    // Maximum width including sign & decpt (0 = none)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
+                                      FLTDISPFMT_F,         // Float display format
                                       TRUE,                 // TRUE iff nDigits is # fractional digits
                                       FALSE,                // TRUE iff we're to substitute text for infinity
                                       FALSE);               // TRUE iff we're to precede the display with (FPC)
@@ -1877,6 +1880,7 @@ void QFMT_CommonEFIR
                                       0,                    // Maximum width including sign & decpt (0 = none)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
+                                      FLTDISPFMT_F,         // Float display format
                                       TRUE,                 // TRUE iff nDigits is # fractional digits
                                       FALSE,                // TRUE iff we're to substitute text for infinity
                                       FALSE);               // TRUE iff we're to precede the display with (FPC)
@@ -2073,6 +2077,7 @@ void QFMT_CommonEFIR
                                       0,                    // Maximum width including sign & decpt (0 = none)
                                       UTF16_DOT,            // Char to use as decimal separator
                                       UTF16_OVERBAR,        // Char to use as overbar
+                                      FLTDISPFMT_RAWINT,    // Float display format
                                       FALSE,                // TRUE iff nDigits is # fractional digits
                                       FALSE,                // TRUE iff we're to substitute text for infinity
                                       FALSE);               // TRUE iff we're to precede the display with (FPC)

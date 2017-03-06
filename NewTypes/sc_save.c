@@ -1732,6 +1732,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                       0,                    // Maximum width including sign & decpt (0 = none)
                                       L'.',                 // Char to use as decimal separator
                                       UTF16_BAR,            // Char to use as overbar
+                                      FLTDISPFMT_RAWFLT,    // Float display format
                                       FALSE,                // TRUE iff nDigits is # fractional digits
                                       TRUE,                 // TRUE iff we're to substitute text for infinity
                                       uCommPrec EQ 0);      // TRUE iff we're to precede the display with (FPCnnn)
@@ -1948,6 +1949,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                        L'.',                    // Char to use as decimal separator
                                        UTF16_BAR,               // Char to use as overbar
                                        GetHC2Sep,               // Char to use as separator
+                                       FLTDISPFMT_RAWFLT,       // Float display format
                                        FALSE,                   // TRUE iff nDigits is # fractional digits
                                        TRUE,                    // TRUE iff we're to substitute text for infinity
                                        uCommPrec EQ 0);         // TRUE iff we're to precede the display with (FPCnnn)
@@ -1981,6 +1983,7 @@ LPAPLCHAR SavedWsFormGlbVar
                                        0,                       // # significant digits (0 = all)
                                        L'.',                    // Char to use as decimal separator
                                        UTF16_BAR,               // Char to use as overbar
+                                       FLTDISPFMT_RAWFLT,       // Float display format
                                        FALSE,                   // TRUE iff nDigits is # fractional digits
                                        TRUE,                    // TRUE iff we're to substitute text for infinity
                                        uCommPrec EQ 0,          // TRUE iff we're to precede the display with (FPCnnn)

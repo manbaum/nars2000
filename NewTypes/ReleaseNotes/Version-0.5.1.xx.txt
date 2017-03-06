@@ -1,6 +1,23 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1702 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Display Of VFP Numbers With Fixed Number Of Significant Digits
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  Pass additional argument to various VFP formatting functions just like for FLT.
+  Make <FormatAplVfpFC> sensitive to the FLTDISPFMT_xxx value.
+
+PF_DTACKJOT.C:
+QF_FMT.C:
+SC_SAVE.C:
+  Pass additional argument to various VFP formatting functions just like for FLT.
+
+
 Build #1701 -- Version 0.5.1.xx
 --------------------------------
 

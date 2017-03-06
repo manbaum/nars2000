@@ -1681,17 +1681,12 @@ LPAPLCHAR FormatAplFltFC
                                       &wcNaN,           // Ptr to incoming chars
                                        1);              // # chars to convert
         else
-        {
-            // String for NaN
-            strcpyW (lpaplChar, WS_UTF16_NAN);
-
-            // Skip over it
-            lpaplChar += strcountof (WS_UTF16_NAN);
-        } // End IF/ELSE
+            *lpaplChar++ = wcNaN;
     } else
     // Check for Infinity
     if (_isinf (aplFloat))
     {
+        // Izit negative?
         if (aplFloat < 0)
             *lpaplChar++ = aplCharOverbar;
 
@@ -1823,7 +1818,9 @@ LPAPLCHAR FormatAplFltFC
             else
                 aplFloat = -floor (0.5 - aplFloat);
             // Handle signed zero
-            if (aplFloat EQ 0)
+            if (aplFloat EQ 0       // If it's zero, and
+             && !gAllowNeg0)        //   we don't allow -0, ...
+                // Make it an unsigned zero
                 aplFloat = 0;
         } // End IF
 
@@ -2248,6 +2245,7 @@ LPAPLCHAR FormatAplVfp
                            0,                       // Maximum width including sign & decpt (0 = none)
                            UTF16_DOT,               // Char to use as decimal separator
                            UTF16_OVERBAR,           // Char to use as overbar
+                           FLTDISPFMT_RAWFLT,       // Float display format
                            FALSE,                   // TRUE iff nDigits is # fractional digits
                            FALSE,                   // TRUE iff we're to substitute text for infinity
                            FALSE);                  // TRUE iff we're to precede the display with (FPCnnn)
@@ -2269,6 +2267,7 @@ LPAPLCHAR FormatAplVfpFC
      APLINT     nWid,               // Maximum width including sign & decpt (0 = none)
      APLCHAR    aplCharDecimal,     // Char to use as decimal separator
      APLCHAR    aplCharOverbar,     // Char to use as overbar
+     FLTDISPFMT fltDispFmt,         // Float display format (see FLTDISPFMT)
      UBOOL      bFractDigs,         // TRUE iff nDigits is # fractional digits
      UBOOL      bSubstInf,          // TRUE iff we're to substitute text for infinity
      UBOOL      bPrecFPC)           // TRUE iff we're to precede the display with (FPCnnn)
@@ -2320,16 +2319,105 @@ LPAPLCHAR FormatAplVfpFC
 
     // Izit a NaN?
     if (IsMpfNaN (lpaplVfp))
-        *lpaplChar++ = wcNaN;
-    else
+    {
+        // If we're to substitute, ...
+        if (bSubstInf)
+            lpaplChar +=
+              ConvertWideToNameLength (lpaplChar,       // Ptr to output save buffer
+                                      &wcNaN,           // Ptr to incoming chars
+                                       1);              // # chars to convert
+        else
+            *lpaplChar++ = wcNaN;
+    } else
     // Izit an infinity?
     if (IsMpfInfinity (lpaplVfp))
     {
         // Izit negative?
         if (mpfr_sgn (lpaplVfp) < 0)
             *lpaplChar++ = aplCharOverbar;
-        *lpaplChar++ = wcInf;
+
+        // If we're to substitute, ...
+        if (bSubstInf)
+            lpaplChar +=
+              ConvertWideToNameLength (lpaplChar,       // Ptr to output save buffer
+                                      &wcInf,           // Ptr to incoming chars
+                                       1);              // # chars to convert
+        else
+            *lpaplChar++ = wcInf;           // Char for infinity
     } else
+    // Check for 0.0
+    if (IsMpf0 (lpaplVfp))
+    {
+        // If it's negative, ...
+        if (SIGN_APLVFP (lpaplVfp))
+            *lpaplChar++ = aplCharOverbar;
+
+        // Split cases based upon the float display format
+        switch (fltDispFmt)
+        {
+            case FLTDISPFMT_E:          // 0E0 or 0.0E0 or 0.0---0E0
+                if (nDigits EQ 1)
+                {
+                    // Fill in the result of "0E0"
+                    *lpaplChar++ = L'0';
+                    *lpaplChar++ = DEF_EXPONENT_UC;
+                    *lpaplChar++ = L'0';
+                } else
+                if (nDigits > 1)
+                {
+                    // Start with "0."
+                    *lpaplChar++ = L'0';
+                    nDigits--;
+                    *lpaplChar++ = aplCharDecimal;
+
+                    // While there are more digits, ...
+                    while (nDigits > 0)
+                    {
+                        // Fill with leading zeros
+                        *lpaplChar++ = L'0';
+                        nDigits--;
+                    } // End WHILE
+
+                    // End with "E0"
+                    *lpaplChar++ = DEF_EXPONENT_UC;
+                    *lpaplChar++ = L'0';
+                } else
+                    DbgStop ();         // We should never get here
+                break;
+
+            case FLTDISPFMT_F:
+                // Start with a "0"
+                *lpaplChar++ = L'0';
+
+                // If there are any significant digits, ...
+                if (nDigits > 0)
+                {
+                    // Append a decimal point
+                    *lpaplChar++ = aplCharDecimal;
+
+                    // While there are more significant digits, ...
+                    while (nDigits > 0)
+                    {
+                        // Append another zero
+                        *lpaplChar++ = L'0';
+                        nDigits--;
+                    } // End WHILE
+                } // End IF
+
+                break;
+
+            case FLTDISPFMT_RAWINT:
+            case FLTDISPFMT_RAWFLT:
+                // The result is "0"
+                *lpaplChar++ = L'0';
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } else
+    // Non-zero
     {
         lpRawFmt = (LPCHAR) lpaplChar;
 
@@ -2446,6 +2534,7 @@ LPAPLCHAR FormatAplVfpFC
         // Get the char length
         iLen = lstrlen (lpRawFmt);
 
+        if (fltDispFmt NE FLTDISPFMT_F)
         // Delete trailing zeros as <mpf_get_str> does
         for (iRes = iLen - 1; iRes >= (bNeg + max (expptr, 0)); iRes--)
         if (lpRawFmt[iRes] EQ '0')
@@ -2469,34 +2558,6 @@ LPAPLCHAR FormatAplVfpFC
         } else
             iUnderflow = 0;
 
-        // If the number is zero, ...
-        if (iLen EQ bNeg)
-        {
-            // If the number is negative, ...
-            if (bNeg)
-                *lpaplChar++ = aplCharOverbar;
-
-            // "Format" the number
-            *lpaplChar++ = L'0';
-
-            // If we're formatting in E-format, ...
-            if (nDigits < 0)
-            {
-                *lpaplChar++ = aplCharDecimal;
-
-                lpaplChar = FillMemoryW (lpaplChar, (APLU3264) ((-nDigits) - 1), L'0');
-
-                *lpaplChar++ = DEF_EXPONENT_UC;
-                *lpaplChar++ = L'0';
-            } else
-            // If displaying fractional digits, ...
-            if (bFractDigs)
-            {
-                *lpaplChar++ = aplCharDecimal;
-
-                lpaplChar = FillMemoryW (lpaplChar, (APLU3264)    nDigits      , L'0');
-            } // End IF
-        } else
         // If we're formatting in E-format, ...
         if (nDigits < 0)
         {
@@ -3402,15 +3463,16 @@ LPAPLCHAR FormatAplHC2V
      APLUINT  nDigits)          // # significant digits (0 = all)
 
 {
-    return FormatAplHC2VFC (lpaplChar,      // Ptr to output save area
-                            lpaplHC2V,      // Ptr to the value to format
-                            nDigits,        // # significant digits (0 = all)
-                            UTF16_DOT,      // Char to use as decimal separator
-                            UTF16_OVERBAR,  // Char to use as overbar
-                            GetHC2Sep,      // Char to use as separator
-                            FALSE,          // TRUE iff nDigits is # fractional digits
-                            FALSE,          // TRUE iff we're to substitute text for infinity
-                            FALSE);         // TRUE iff we're to precede the display with (FPCnnn)
+    return FormatAplHC2VFC (lpaplChar,          // Ptr to output save area
+                            lpaplHC2V,          // Ptr to the value to format
+                            nDigits,            // # significant digits (0 = all)
+                            UTF16_DOT,          // Char to use as decimal separator
+                            UTF16_OVERBAR,      // Char to use as overbar
+                            GetHC2Sep,          // Char to use as separator
+                            FLTDISPFMT_RAWFLT,  // Float display format
+                            FALSE,              // TRUE iff nDigits is # fractional digits
+                            FALSE,              // TRUE iff we're to substitute text for infinity
+                            FALSE);             // TRUE iff we're to precede the display with (FPCnnn)
 } // End FormatAplHC2V
 
 
@@ -3429,6 +3491,7 @@ LPAPLCHAR FormatAplHC2VFC
      APLCHAR    aplCharDecimal,     // Char to use as decimal separator
      APLCHAR    aplCharOverbar,     // Char to use as overbar
      APLCHAR    aplCharSep,         // Char to use as separator
+     FLTDISPFMT fltDispFmt,         // Float display format (see FLTDISPFMT)
      UBOOL      bFractDigs,         // TRUE iff nDigits is # fractional digits
      UBOOL      bSubstInf,          // TRUE iff we're to substitute text for infinity
      UBOOL      bPrecFPC)           // TRUE iff we're to precede the display with (FPCnnn)
@@ -3449,6 +3512,7 @@ LPAPLCHAR FormatAplHC2VFC
                           0,                    // Maximum width including sign & decpt (0 = none)
                           aplCharDecimal,       // Char to use as decimal separator
                           aplCharOverbar,       // Char to use as overbar
+                          fltDispFmt,           // Float display format (see FLTDISPFMT)
                           bFractDigs,           // TRUE iff nDigits is # fractional digits
                           bSubstInf,            // TRUE iff we're to substitute text for infinity
                           bPrecFPC);            // TRUE iff we're to precede the display with (FPCnnn)
@@ -3469,6 +3533,7 @@ LPAPLCHAR FormatAplHC2VFC
                               0,                    // Maximum width including sign & decpt (0 = none)
                               aplCharDecimal,       // Char to use as decimal separator
                               aplCharOverbar,       // Char to use as overbar
+                              fltDispFmt,           // Float display format (see FLTDISPFMT)
                               bFractDigs,           // TRUE iff nDigits is # fractional digits
                               bSubstInf,            // TRUE iff we're to substitute text for infinity
                               bPrecFPC);            // TRUE iff we're to precede the display with (FPCnnn)
@@ -3505,6 +3570,7 @@ LPAPLCHAR FormatAplHC2VFC
                           0,                    // Maximum width including sign & decpt (0 = none)
                           aplCharDecimal,       // Char to use as decimal separator
                           aplCharOverbar,       // Char to use as overbar
+                          fltDispFmt,           // Float display format (see FLTDISPFMT)
                           bFractDigs,           // TRUE iff nDigits is # fractional digits
                           bSubstInf,            // TRUE iff we're to substitute text for infinity
                           bPrecFPC);            // TRUE iff we're to precede the display with (FPCnnn)
@@ -3536,15 +3602,16 @@ LPAPLCHAR FormatAplHC4V
      APLUINT  nDigits)          // # significant digits (0 = all)
 
 {
-    return FormatAplHCxVFC (lpaplChar,      // Ptr to output save area
-                            lpaplHC4V,      // Ptr to the value to format
-                            nDigits,        // # significant digits (0 = all)
-                            UTF16_DOT,      // Char to use as decimal separator
-                            UTF16_OVERBAR,  // Char to use as overbar
-                            FALSE,          // TRUE iff nDigits is # fractional digits
-                            FALSE,          // TRUE iff we're to substitute text for infinity
-                            FALSE,          // TRUE iff we're to precede the display with (FPCnnn)
-                            4);             // HC Dimension (1, 2, 4, 8)
+    return FormatAplHCxVFC (lpaplChar,          // Ptr to output save area
+                            lpaplHC4V,          // Ptr to the value to format
+                            nDigits,            // # significant digits (0 = all)
+                            UTF16_DOT,          // Char to use as decimal separator
+                            UTF16_OVERBAR,      // Char to use as overbar
+                            FLTDISPFMT_RAWFLT,  // Float display format
+                            FALSE,              // TRUE iff nDigits is # fractional digits
+                            FALSE,              // TRUE iff we're to substitute text for infinity
+                            FALSE,              // TRUE iff we're to precede the display with (FPCnnn)
+                            4);                 // HC Dimension (1, 2, 4, 8)
 } // End FormatAplHC4V
 
 
@@ -3560,15 +3627,16 @@ LPAPLCHAR FormatAplHC8V
      APLUINT  nDigits)          // # significant digits (0 = all)
 
 {
-    return FormatAplHCxVFC (lpaplChar,      // Ptr to output save area
-                            lpaplHC8V,      // Ptr to the value to format
-                            nDigits,        // # significant digits (0 = all)
-                            UTF16_DOT,      // Char to use as decimal separator
-                            UTF16_OVERBAR,  // Char to use as overbar
-                            FALSE,          // TRUE iff nDigits is # fractional digits
-                            FALSE,          // TRUE iff we're to substitute text for infinity
-                            FALSE,          // TRUE iff we're to precede the display with (FPCnnn)
-                            8);             // HC Dimension (1, 2, 4, 8)
+    return FormatAplHCxVFC (lpaplChar,          // Ptr to output save area
+                            lpaplHC8V,          // Ptr to the value to format
+                            nDigits,            // # significant digits (0 = all)
+                            UTF16_DOT,          // Char to use as decimal separator
+                            UTF16_OVERBAR,      // Char to use as overbar
+                            FLTDISPFMT_RAWFLT,  // Float display format
+                            FALSE,              // TRUE iff nDigits is # fractional digits
+                            FALSE,              // TRUE iff we're to substitute text for infinity
+                            FALSE,              // TRUE iff we're to precede the display with (FPCnnn)
+                            8);                 // HC Dimension (1, 2, 4, 8)
 } // End FormatAplHC8V
 
 
@@ -3586,6 +3654,7 @@ LPAPLCHAR FormatAplHCxVFC
                                     // If negative, use E-format
      APLCHAR    aplCharDecimal,     // Char to use as decimal separator
      APLCHAR    aplCharOverbar,     // Char to use as overbar
+     FLTDISPFMT fltDispFmt,         // Float display format (see FLTDISPFMT)
      UBOOL      bFractDigs,         // TRUE iff nDigits is # fractional digits
      UBOOL      bSubstInf,          // TRUE iff we're to substitute text for infinity
      UBOOL      bPrecFPC,           // TRUE iff we're to precede the display with (FPCnnn)
@@ -3606,6 +3675,7 @@ LPAPLCHAR FormatAplHCxVFC
                           0,                    // Maximum width including sign & decpt (0 = none)
                           aplCharDecimal,       // Char to use as decimal separator
                           aplCharOverbar,       // Char to use as overbar
+                          fltDispFmt,           // Float display format (see FLTDISPFMT)
                           bFractDigs,           // TRUE iff nDigits is # fractional digits
                           bSubstInf,            // TRUE iff we're to substitute text for infinity
                           bPrecFPC);            // TRUE iff we're to precede the display with (FPCnnn)
@@ -3626,6 +3696,7 @@ LPAPLCHAR FormatAplHCxVFC
                               0,                    // Maximum width including sign & decpt (0 = none)
                               aplCharDecimal,       // Char to use as decimal separator
                               aplCharOverbar,       // Char to use as overbar
+                              fltDispFmt,           // Float display format (see FLTDISPFMT)
                               bFractDigs,           // TRUE iff nDigits is # fractional digits
                               bSubstInf,            // TRUE iff we're to substitute text for infinity
                               bPrecFPC);            // TRUE iff we're to precede the display with (FPCnnn)
@@ -3667,6 +3738,7 @@ LPAPLCHAR FormatAplHCxVFC
                           0,                    // Maximum width including sign & decpt (0 = none)
                           aplCharDecimal,       // Char to use as decimal separator
                           aplCharOverbar,       // Char to use as overbar
+                          fltDispFmt,           // Float display format (see FLTDISPFMT)
                           bFractDigs,           // TRUE iff nDigits is # fractional digits
                           bSubstInf,            // TRUE iff we're to substitute text for infinity
                           bPrecFPC);            // TRUE iff we're to precede the display with (FPCnnn)

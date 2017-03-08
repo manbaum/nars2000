@@ -1,6 +1,17 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1704 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Display Of VFP Numbers With Fixed Number Of Significant Digits, Part 3
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  When displaying VFP numbers, avoid shifting to E-format if the number of digits is fixed and there is a maximum width.
+
+
 Build #1703 -- Version 0.5.1.xx
 --------------------------------
 
@@ -9,7 +20,7 @@ Build #1703 -- Version 0.5.1.xx
 Directory branches/bsmith/NewTypes:
 
 DISPLAY.C:
-  When display VFP numbers, avoid shifting to E-format if the number of digits is fixed.
+  When displaying VFP numbers, avoid shifting to E-format if the number of digits is fixed.
 
 
 Build #1702 -- Version 0.5.1.xx

@@ -2435,33 +2435,15 @@ LPAPLCHAR FormatAplVfpFC
         bNeg = (lpRawFmt[0] EQ '-');
 
         // If we're not already displaying in E-format, and
-        //   there's a maximum width, ...
+        //   there's no maximum width, ...
         if (nDigits > 0
-         && fltDispFmt NE FLTDISPFMT_F)
+         && nWid EQ 0)
         {
-            // If the maximum width is valid, ...
-            if (nWid NE 0)
-            {
-                // If nDigits is # fractional digits, ...
-                if (bFractDigs)
-                {
-                    // If the number is too large or too small, ...
-                    //           -      int     .    frc
-                    if (nWid < (bNeg + expptr + 1 + nDigits)
-                     || expptr < -5)
-                        // Switch to E-format
-                        nDigits = -nDigits;
-                } else
-                    // Switch to E-format
-                    nDigits = -nDigits;
-            } else
-            {
-                // If the number is too large or too small, ...
-                if (expptr > nDigits
-                 || expptr < -5)
-                    // Switch to E-format
-                    nDigits = -nDigits;
-            } // End IF/ELSE
+            // If the number is too large or too small, ...
+            if (expptr > nDigits
+             || expptr < -5)
+                // Switch to E-format
+                nDigits = -nDigits;
         } // End IF
 
         // Get the char length

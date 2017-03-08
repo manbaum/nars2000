@@ -1,0 +1,9 @@
+Build #1703 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Display Of VFP Numbers With Fixed Number Of Significant Digits, Part 2
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  When display VFP numbers, avoid shifting to E-format if the number of digits is fixed.

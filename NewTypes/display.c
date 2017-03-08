@@ -2436,7 +2436,8 @@ LPAPLCHAR FormatAplVfpFC
 
         // If we're not already displaying in E-format, and
         //   there's a maximum width, ...
-        if (nDigits > 0)
+        if (nDigits > 0
+         && fltDispFmt NE FLTDISPFMT_F)
         {
             // If the maximum width is valid, ...
             if (nWid NE 0)

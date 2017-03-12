@@ -1,4 +1,13 @@
 Version 0.5.1.xx consists of the following Builds:
+Build #1705 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Plus Reduction Of An Even Length APV
+
+Directory branches/bsmith/NewTypes:
+
+PO_SLASH.C:
+  Fix bug in <PrimOpMonSlashCommon_EM_YY> with a misplaced parenthesis that produces the wrong result for even length APVs.
 
 
 Build #1704 -- Version 0.5.1.xx

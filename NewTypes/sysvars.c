@@ -1990,8 +1990,8 @@ UNLOCK_EXIT:
 UBOOL ValidateIntegerVector_EM
     (LPTOKEN  lptkNamArg,           // Ptr to name token
      LPTOKEN  lptkRhtArg,           // Ptr to right arg token
-     UINT     uValidLo,             // Low range value (inclusive)
-     UINT     uValidHi,             // High ...
+     APLINT   iValidLo,             // Low range value (inclusive)
+     APLINT   iValidHi,             // High ...
      UBOOL    bRangeLimit)          // TRUE iff an incoming value outside
                                     //   the given range [uValidLo, uValidHi]
                                     //   is adjusted to be the closer range limit
@@ -2046,8 +2046,8 @@ UBOOL ValidateIntegerVector_EM
 
                     // Test the value
                     bRet = ValidateIntegerTest (&aplInteger,        // Ptr to the integer to test
-                                                 uValidLo,          // Low range value (inclusive)
-                                                 uValidHi,          // High ...
+                                                 iValidLo,          // Low range value (inclusive)
+                                                 iValidHi,          // High ...
                                                  bRangeLimit);      // TRUE iff we're range limiting
                     if (bRet)
                     {
@@ -2066,8 +2066,8 @@ UBOOL ValidateIntegerVector_EM
                     {
                         // Test the value
                         bRet = ValidateIntegerTest (&aplInteger,    // Ptr to the integer to test
-                                                     uValidLo,      // Low range value (inclusive)
-                                                     uValidHi,      // High ...
+                                                     iValidLo,      // Low range value (inclusive)
+                                                     iValidHi,      // High ...
                                                      bRangeLimit);  // TRUE iff we're range limiting
                         if (bRet)
                         {
@@ -2098,8 +2098,8 @@ UBOOL ValidateIntegerVector_EM
 
                     // Test the value
                     bRet = ValidateIntegerTest (&aplInteger,        // Ptr to the integer to test
-                                                 uValidLo,          // Low range value (inclusive)
-                                                 uValidHi,          // High ...
+                                                 iValidLo,          // Low range value (inclusive)
+                                                 iValidHi,          // High ...
                                                  bRangeLimit);      // TRUE iff we're range limiting
                     if (bRet)
                     {
@@ -2118,8 +2118,8 @@ UBOOL ValidateIntegerVector_EM
                     {
                         // Test the value
                         bRet = ValidateIntegerTest (&aplInteger,    // Ptr to the integer to test
-                                                     uValidLo,      // Low range value (inclusive)
-                                                     uValidHi,      // High ...
+                                                     iValidLo,      // Low range value (inclusive)
+                                                     iValidHi,      // High ...
                                                      bRangeLimit);  // TRUE iff we're range limiting
                         if (bRet)
                         {
@@ -2187,8 +2187,8 @@ UBOOL ValidateIntegerVector_EM
 
                 // Test the value
                 bRet = ValidateIntegerTest (&aplInteger,            // Ptr to the integer to test
-                                             uValidLo,              // Low range value (inclusive)
-                                             uValidHi,              // High ...
+                                             iValidLo,              // Low range value (inclusive)
+                                             iValidHi,              // High ...
                                              bRangeLimit);          // TRUE iff we're range limiting
                 if (!bRet)
                     goto DOMAIN_EXIT;
@@ -2217,8 +2217,8 @@ UBOOL ValidateIntegerVector_EM
 
                 // Test the value
                 bRet = ValidateIntegerTest (&aplInteger,            // Ptr to the integer to test
-                                             uValidLo,              // Low range value (inclusive)
-                                             uValidHi,              // High ...
+                                             iValidLo,              // Low range value (inclusive)
+                                             iValidHi,              // High ...
                                              bRangeLimit);          // TRUE iff we're range limiting
                 if (!bRet)
                     goto DOMAIN_EXIT;
@@ -2237,8 +2237,8 @@ UBOOL ValidateIntegerVector_EM
                                                &bRet);
                 // Test the value
                 bRet = ValidateIntegerTest (&aplInteger,            // Ptr to the integer to test
-                                             uValidLo,              // Low range value (inclusive)
-                                             uValidHi,              // High ...
+                                             iValidLo,              // Low range value (inclusive)
+                                             iValidHi,              // High ...
                                              bRangeLimit);          // TRUE iff we're range limiting
                 if (!bRet)
                     goto DOMAIN_EXIT;
@@ -2262,8 +2262,8 @@ UBOOL ValidateIntegerVector_EM
 
                 // Test the value
                 bRet = ValidateIntegerTest (&aplInteger,            // Ptr to the integer to test
-                                             uValidLo,              // Low range value (inclusive)
-                                             uValidHi,              // High ...
+                                             iValidLo,              // Low range value (inclusive)
+                                             iValidHi,              // High ...
                                              bRangeLimit);          // TRUE iff we're range limiting
                 if (!bRet)
                     goto DOMAIN_EXIT;

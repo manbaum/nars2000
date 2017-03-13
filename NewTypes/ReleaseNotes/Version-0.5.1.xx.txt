@@ -1,4 +1,17 @@
 Version 0.5.1.xx consists of the following Builds:
+
+
+Build #1706 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In []IC Set
+
+Directory branches/bsmith/NewTypes:
+
+SYSVARS.C::
+  Fix bug in <ValidateIntegerVector_EM> where the argument is mistakenly specified as UINT instead of APLINT.
+
+
 Build #1705 -- Version 0.5.1.xx
 --------------------------------
 

@@ -4533,6 +4533,39 @@ PARSELINE_MP_DONE:
             if (curSynObj EQ soGO)
                 plLocalVars.ExitType = EXITTYPE_RESET_ONE_INIT;
             else
+            // If the current object is INPOUT, ...
+            if (curSynObj EQ soIO)
+            {
+                RESET_FLAGS  resetFlag;             // The current Reset Flag
+
+                lpYYRes =
+                  WaitForInput (plLocalVars.hWndSM,
+                                lpplYYCurObj->tkToken.tkData.tkChar EQ UTF16_QUOTEQUAD,
+                               &lpplYYCurObj->tkToken);
+                // YYFree the current object
+                YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+
+                // Get the Reset Flag
+                resetFlag = plLocalVars.lpMemPTD->lpSISCur->ResetFlag;
+
+                // If we're resetting, ...
+                if (resetFlag NE RESETFLAG_NONE)
+                {
+                    plLocalVars.ExitType = TranslateResetFlagToExitType (resetFlag);
+
+                    goto PARSELINE_ERROR;
+                } // End IF
+
+                if (lpYYRes EQ NULL)            // If not defined, free args and YYERROR
+                    goto PARSELINE_ERROR;
+
+                // Set the new tkSynObj
+                lpYYRes->tkToken.tkSynObj = soA;
+
+                // Copy to the current object
+                lpplYYCurObj = lpYYRes; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
+                lpYYRes = NULL;
+            } else
                 // Unstrand the current object if necessary
                 UnVarStrand (lpplYYCurObj);
 

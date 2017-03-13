@@ -874,7 +874,7 @@ void FormatQQuadInput
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-    lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // ...
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpMemPTD->lpSISCur->lptkFunc->tkCharIndex;
 

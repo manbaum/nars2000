@@ -5,5 +5,5 @@ Build #1706 -- Version 0.5.1.xx
 
 Directory branches/bsmith/NewTypes:
 
-SYSVARS.C::
+SYSVARS.C:
   Fix bug in <ValidateIntegerVector_EM> where the argument is mistakenly specified as UINT instead of APLINT.

@@ -933,67 +933,133 @@ void PrimFnDydCircleFisFvF
     switch (aplLft)
     {
         case  12:       // arc (phase) of R
+            if (_isnan (lpatRht->aplFloat))
+            {
+                if (gAllowNaN)
+                    lpMemRes[uRes] = fltNaN;
+                else
+                    break;
+            } else
             if (SIGN_APLFLOAT (lpatRht->aplFloat))
                 lpMemRes[uRes] = FloatPi;
             else
                 lpMemRes[uRes] = 0.0;
+
             return;
 
         case  11:       // Imaginary part of R
-            lpMemRes[uRes] = 0;
+            if (_isnan (lpatRht->aplFloat))
+            {
+                if (gAllowNaN)
+                    lpMemRes[uRes] = fltNaN;
+                else
+                    break;
+            } else
+                lpMemRes[uRes] = 0;
 
             return;
 
         case  10:       // |R
-            lpMemRes[uRes] = fabs (lpatRht->aplFloat);
+            if (_isnan (lpatRht->aplFloat))
+            {
+                if (gAllowNaN)
+                    lpMemRes[uRes] = fltNaN;
+                else
+                    break;
+            } else
+                lpMemRes[uRes] = fabs (lpatRht->aplFloat);
 
             return;
 
         case   9:       // Real part of R
-            lpMemRes[uRes] = lpatRht->aplFloat;
+            if (_isnan (lpatRht->aplFloat))
+            {
+                if (gAllowNaN)
+                    lpMemRes[uRes] = fltNaN;
+                else
+                    break;
+            } else
+                lpMemRes[uRes] = lpatRht->aplFloat;
 
             return;
 
         case   8:       // sqrt ((-1) - R * 2)
-            RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+            if (_isnan (lpatRht->aplFloat))
+            {
+                if (gAllowNaN)
+                    lpMemRes[uRes] = fltNaN;
+                else
+                    break;
+            } else
+                RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
 
         case   7:       // tanh (R)
-            // Call subroutine
-            lpMemRes[uRes] = tanh (lpatRht->aplFloat);
+            if (_isnan (lpatRht->aplFloat))
+            {
+                if (gAllowNaN)
+                    lpMemRes[uRes] = fltNaN;
+                else
+                    break;
+            } else
+                // Call subroutine
+                lpMemRes[uRes] = tanh (lpatRht->aplFloat);
 
             return;
 
         case   6:       // cosh (R)
-            // Call subroutine
-            lpMemRes[uRes] = cosh (lpatRht->aplFloat);
+            if (_isnan (lpatRht->aplFloat))
+            {
+                if (gAllowNaN)
+                    lpMemRes[uRes] = fltNaN;
+                else
+                    break;
+            } else
+                // Call subroutine
+                lpMemRes[uRes] = cosh (lpatRht->aplFloat);
 
             return;
 
         case   5:       // sinh (R)
-            // Call subroutine
-            lpMemRes[uRes] = sinh (lpatRht->aplFloat);
+            if (_isnan (lpatRht->aplFloat))
+            {
+                if (gAllowNaN)
+                    lpMemRes[uRes] = fltNaN;
+                else
+                    break;
+            } else
+                // Call subroutine
+                lpMemRes[uRes] = sinh (lpatRht->aplFloat);
 
             return;
 
         case   4:       // sqrt (1 + R * 2)
-            // Get absolute value to avoid duplication in comparison and result
-            lpatRht->aplFloat = fabs (lpatRht->aplFloat);
-
-            // Values at or above this limit when squared
-            //   lpMemRes[uRes] = infinity, so we lpMemRes[uRes] = the arg unchanged.
-            // Also, 2*26 = 67108864 is the smallest positive number such that
-            //   a=sqrt (1 + a * 2)
-            if (lpatRht->aplFloat >= 1.3407807929942596E154)
-                lpMemRes[uRes] = lpatRht->aplFloat;
-            else
+            if (_isnan (lpatRht->aplFloat))
             {
-                // Call assembler function
-                iAsmCircle4Flt (&lpMemRes[uRes], &lpatRht->aplFloat);
-
-                // Check for NaN
-                if (_isnan (lpMemRes[uRes])
-                 && !gAllowNaN)
+                if (gAllowNaN)
+                    lpMemRes[uRes] = fltNaN;
+                else
                     break;
+            } else
+            {
+                // Get absolute value to avoid duplication in comparison and result
+                lpatRht->aplFloat = fabs (lpatRht->aplFloat);
+
+                // Values at or above this limit when squared
+                //   lpMemRes[uRes] = infinity, so we lpMemRes[uRes] = the arg unchanged.
+                // Also, 2*26 = 67108864 is the smallest positive number such that
+                //   a=sqrt (1 + a * 2)
+                if (lpatRht->aplFloat >= 1.3407807929942596E154)
+                    lpMemRes[uRes] = lpatRht->aplFloat;
+                else
+                {
+                    // Call assembler function
+                    iAsmCircle4Flt (&lpMemRes[uRes], &lpatRht->aplFloat);
+
+                    // Check for NaN
+                    if (_isnan (lpMemRes[uRes])
+                     && !gAllowNaN)
+                        break;
+                } // End IF/ELSE
             } // End IF/ELSE
 
             return;
@@ -1029,45 +1095,75 @@ void PrimFnDydCircleFisFvF
             return;
 
         case   0:       // sqrt (1 - R * 2)
-            // Check for Complex result
-            if (fabs (lpatRht->aplFloat) > 1)
-                RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+            if (_isnan (lpatRht->aplFloat))
+            {
+                if (gAllowNaN)
+                    lpMemRes[uRes] = fltNaN;
+                else
+                    break;
+            } else
+            {
+                // Check for Complex result
+                if (fabs (lpatRht->aplFloat) > 1)
+                    RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
 
-            // Call assembler function
-            iAsmCircle0Flt (&lpMemRes[uRes], &lpatRht->aplFloat);
+                // Call assembler function
+                iAsmCircle0Flt (&lpMemRes[uRes], &lpatRht->aplFloat);
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
+                // Check for NaN
+                if (_isnan (lpMemRes[uRes])
+                 && !gAllowNaN)
+                    break;
+            } // End IF/ELSE
+
             return;
 
         case  -1:       // asin (R)
-            // Check for Complex result
-            if (fabs (lpatRht->aplFloat) > 1)
-                RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+            if (_isnan (lpatRht->aplFloat))
+            {
+                if (gAllowNaN)
+                    lpMemRes[uRes] = fltNaN;
+                else
+                    break;
+            } else
+            {
+                // Check for Complex result
+                if (fabs (lpatRht->aplFloat) > 1)
+                    RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
 
-            // Call subroutine
-            lpMemRes[uRes] = asin (lpatRht->aplFloat);
+                // Call subroutine
+                lpMemRes[uRes] = asin (lpatRht->aplFloat);
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
+                // Check for NaN
+                if (_isnan (lpMemRes[uRes])
+                 && !gAllowNaN)
+                    break;
+            } // End IF/ELSE
+
             return;
 
         case  -2:       // acos (R)
-            // Check for Complex result
-            if (fabs (lpatRht->aplFloat) > 1)
-                RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+            if (_isnan (lpatRht->aplFloat))
+            {
+                if (gAllowNaN)
+                    lpMemRes[uRes] = fltNaN;
+                else
+                    break;
+            } else
+            {
+                // Check for Complex result
+                if (fabs (lpatRht->aplFloat) > 1)
+                    RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
 
-            // Call subroutine
-            lpMemRes[uRes] = acos (lpatRht->aplFloat);
+                // Call subroutine
+                lpMemRes[uRes] = acos (lpatRht->aplFloat);
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
+                // Check for NaN
+                if (_isnan (lpMemRes[uRes])
+                 && !gAllowNaN)
+                    break;
+            } // End IF/ELSE
+
             return;
 
         case  -3:       // atan (R)
@@ -1082,59 +1178,102 @@ void PrimFnDydCircleFisFvF
 
         case  -4:       // (R + 1) × sqrt ((R - 1) / (R + 1))
                         // a.k.a. sqrt ((-1) + R * 2)
-            // Check for Complex result
-            if (fabs (lpatRht->aplFloat) < 1)
-                RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+            if (_isnan (lpatRht->aplFloat))
+            {
+                if (gAllowNaN)
+                    lpMemRes[uRes] = fltNaN;
+                else
+                    break;
+            } else
+            {
+                // Check for Complex result
+                if (fabs (lpatRht->aplFloat) < 1)
+                    RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
 
-            // Call assembler function
-            iAsmCircleN4Flt (&lpMemRes[uRes], &lpatRht->aplFloat);
+                // Call assembler function
+                iAsmCircleN4Flt (&lpMemRes[uRes], &lpatRht->aplFloat);
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes]))
-                RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+                // Check for NaN
+                if (_isnan (lpMemRes[uRes]))
+                    RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+            } // End IF/ELSE
 
             return;
 
         case  -5:       // asinh (R)
                         // ln (R + sqrt (1 + R * 2))
-            lpMemRes[uRes] = gsl_asinh (lpatRht->aplFloat);
+            if (_isnan (lpatRht->aplFloat))
+            {
+                if (gAllowNaN)
+                    lpMemRes[uRes] = fltNaN;
+                else
+                    break;
+            } else
+            {
+                lpMemRes[uRes] = gsl_asinh (lpatRht->aplFloat);
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes]))
-                RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+                // Check for NaN
+                if (_isnan (lpMemRes[uRes]))
+                    RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+            } // End IF/ELSE
 
             return;
 
         case  -6:       // acosh (R)
                         // 2 x ln (sqrt ((R + 1) x 0.5) + sqrt ((R - 1) x 0.5))
-            // Check for Complex result
-            if (lpatRht->aplFloat < 1)
-                RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+            if (_isnan (lpatRht->aplFloat))
+            {
+                if (gAllowNaN)
+                    lpMemRes[uRes] = fltNaN;
+                else
+                    break;
+            } else
+            {
+                // Check for Complex result
+                if (lpatRht->aplFloat < 1)
+                    RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
 
-            lpMemRes[uRes] = gsl_acosh (lpatRht->aplFloat);
+                lpMemRes[uRes] = gsl_acosh (lpatRht->aplFloat);
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes]))
-                RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+                // Check for NaN
+                if (_isnan (lpMemRes[uRes]))
+                    RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+            } // End IF/ELSE
 
             return;
 
         case  -7:       // atanh (R)
                         // 0.5 x (ln (1 + R) - ln (1 - R))
-            // Check for Complex result
-            if (fabs (lpatRht->aplFloat) >= 1)
-                RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+            if (_isnan (lpatRht->aplFloat))
+            {
+                if (gAllowNaN)
+                    lpMemRes[uRes] = fltNaN;
+                else
+                    break;
+            } else
+            {
+                // Check for Complex result
+                if (fabs (lpatRht->aplFloat) >= 1)
+                    RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
 
-            lpMemRes[uRes] = gsl_atanh (lpatRht->aplFloat);
+                lpMemRes[uRes] = gsl_atanh (lpatRht->aplFloat);
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes]))
-                RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+                // Check for NaN
+                if (_isnan (lpMemRes[uRes]))
+                    RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+            } // End IF/ELSE
 
             return;
 
         case  -8:       // -sqrt ((-1) - R * 2)
-            RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+            if (_isnan (lpatRht->aplFloat))
+            {
+                if (gAllowNaN)
+                    lpMemRes[uRes] = fltNaN;
+                else
+                    break;
+            } else
+                RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
 
         case  -9:       // R
             lpMemRes[uRes] = lpatRht->aplFloat;
@@ -1156,7 +1295,14 @@ void PrimFnDydCircleFisFvF
 
         case -11:       // 0J1 x R
         case -12:       // *0J1 x R
-            RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+            if (_isnan (lpatRht->aplFloat))
+            {
+                if (gAllowNaN)
+                    lpMemRes[uRes] = fltNaN;
+                else
+                    break;
+            } else
+                RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
 
             return;
 
@@ -1221,6 +1367,13 @@ void PrimFnDydCircleVisVvV
     switch (aplLft)
     {
         case  12:       // arc (phase) of R
+            if (IsMpfNaN (&lpatRht->aplVfp))
+            {
+                if (gAllowNaN)
+                    mpfr_set_nan (&lpMemRes[uRes]);
+                else
+                    break;
+            } else
             if (SIGN_APLVFP (&lpatRht->aplVfp))
                 mpfr_init_set (&lpMemRes[uRes], &aplPiHC8V.parts[0], MPFR_RNDN);
             else
@@ -1232,35 +1385,69 @@ void PrimFnDydCircleVisVvV
             return;
 
         case  11:       // Imaginary part of R
-            // Initialize to 0
-            mpfr_init0 (&lpMemRes[uRes]);
+            if (IsMpfNaN (&lpatRht->aplVfp))
+            {
+                if (gAllowNaN)
+                    mpfr_set_nan (&lpMemRes[uRes]);
+                else
+                    break;
+            } else
+                // Initialize to 0
+                mpfr_init0 (&lpMemRes[uRes]);
 
             return;
 
         case  10:       // |R
-            // Initialize to 0
-            mpfr_init0 (&lpMemRes[uRes]);
+            if (IsMpfNaN (&lpatRht->aplVfp))
+            {
+                if (gAllowNaN)
+                    mpfr_set_nan (&lpMemRes[uRes]);
+                else
+                    break;
+            } else
+            {
+                // Initialize to 0
+                mpfr_init0 (&lpMemRes[uRes]);
 
-            // Save in the result
-            mpfr_abs (&lpMemRes[uRes], &lpatRht->aplVfp, MPFR_RNDN);
+                // Save in the result
+                mpfr_abs (&lpMemRes[uRes], &lpatRht->aplVfp, MPFR_RNDN);
 
-            // Check for NaN
-            if (mpfr_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
+                // Check for NaN
+                if (mpfr_nan_p (&lpMemRes[uRes])
+                 && !gAllowNaN)
+                    break;
+            } // End IF/ELSE
+
             return;
 
         case   9:       // Real part of R
-            mpfr_init_set (&lpMemRes[uRes], &lpatRht->aplVfp, MPFR_RNDN);
+            if (IsMpfNaN (&lpatRht->aplVfp))
+            {
+                if (gAllowNaN)
+                    mpfr_set_nan (&lpMemRes[uRes]);
+                else
+                    break;
+            } else
+            {
+                mpfr_init_set (&lpMemRes[uRes], &lpatRht->aplVfp, MPFR_RNDN);
 
-            // Check for NaN
-            if (mpfr_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
+                // Check for NaN
+                if (mpfr_nan_p (&lpMemRes[uRes])
+                 && !gAllowNaN)
+                    break;
+            } // End IF/ELSE
+
             return;
 
         case   8:       // sqrt ((-1) - R * 2)
-            RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
+            if (IsMpfNaN (&lpatRht->aplVfp))
+            {
+                if (gAllowNaN)
+                    mpfr_set_nan (&lpMemRes[uRes]);
+                else
+                    break;
+            } else
+                RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
 
         case   7:       // tanh (R)
             // Call subroutine
@@ -1336,51 +1523,81 @@ void PrimFnDydCircleVisVvV
             return;
 
         case   0:       // sqrt (1 - R * 2)
-            // Check for Complex result
-            if (mpfr_cmp_si (&lpatRht->aplVfp,  1) > 0
-             || mpfr_cmp_si (&lpatRht->aplVfp, -1) < 0)
-                RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
+            if (IsMpfNaN (&lpatRht->aplVfp))
+            {
+                if (gAllowNaN)
+                    mpfr_set_nan (&lpMemRes[uRes]);
+                else
+                    break;
+            } else
+            {
+                // Check for Complex result
+                if (mpfr_cmp_si (&lpatRht->aplVfp,  1) > 0
+                 || mpfr_cmp_si (&lpatRht->aplVfp, -1) < 0)
+                    RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
 
-            // Initialize the result to 0
-            mpfr_init0  (&lpMemRes[uRes]);
-            mpfr_mul    (&lpMemRes[uRes], &lpatRht->aplVfp, &lpatRht->aplVfp, MPFR_RNDN);  // R * 2
-            mpfr_ui_sub (&lpMemRes[uRes], 1               , &lpMemRes[uRes] , MPFR_RNDN);  // 1 - R * 2
-            mpfr_sqrt   (&lpMemRes[uRes],                   &lpMemRes[uRes] , MPFR_RNDN);  // sqrt (1 - R * 2)
+                // Initialize the result to 0
+                mpfr_init0  (&lpMemRes[uRes]);
+                mpfr_mul    (&lpMemRes[uRes], &lpatRht->aplVfp, &lpatRht->aplVfp, MPFR_RNDN);  // R * 2
+                mpfr_ui_sub (&lpMemRes[uRes], 1               , &lpMemRes[uRes] , MPFR_RNDN);  // 1 - R * 2
+                mpfr_sqrt   (&lpMemRes[uRes],                   &lpMemRes[uRes] , MPFR_RNDN);  // sqrt (1 - R * 2)
 
-            // Check for NaN
-            if (mpfr_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
+                // Check for NaN
+                if (mpfr_nan_p (&lpMemRes[uRes])
+                 && !gAllowNaN)
+                    break;
+            } // End IF/ELSE
+
             return;
 
         case  -1:       // asin (R)
-            // Check for Complex result
-            if (mpfr_cmp_si (&lpatRht->aplVfp,  1) > 0
-             || mpfr_cmp_si (&lpatRht->aplVfp, -1) < 0)
-                RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
+            if (IsMpfNaN (&lpatRht->aplVfp))
+            {
+                if (gAllowNaN)
+                    mpfr_set_nan (&lpMemRes[uRes]);
+                else
+                    break;
+            } else
+            {
+                // Check for Complex result
+                if (mpfr_cmp_si (&lpatRht->aplVfp,  1) > 0
+                 || mpfr_cmp_si (&lpatRht->aplVfp, -1) < 0)
+                    RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
 
-            // Call subroutine
-            lpMemRes[uRes] = asinVfp (lpatRht->aplVfp);
+                // Call subroutine
+                lpMemRes[uRes] = asinVfp (lpatRht->aplVfp);
 
-            // Check for NaN
-            if (mpfr_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
+                // Check for NaN
+                if (mpfr_nan_p (&lpMemRes[uRes])
+                 && !gAllowNaN)
+                    break;
+            } // End IF/ELSE
+
             return;
 
         case  -2:       // acos (R)
-            // Check for Complex result
-            if (mpfr_cmp_si (&lpatRht->aplVfp,  1) > 0
-             || mpfr_cmp_si (&lpatRht->aplVfp, -1) < 0)
-                RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
+            if (IsMpfNaN (&lpatRht->aplVfp))
+            {
+                if (gAllowNaN)
+                    mpfr_set_nan (&lpMemRes[uRes]);
+                else
+                    break;
+            } else
+            {
+                // Check for Complex result
+                if (mpfr_cmp_si (&lpatRht->aplVfp,  1) > 0
+                 || mpfr_cmp_si (&lpatRht->aplVfp, -1) < 0)
+                    RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
 
-            // Call subroutine
-            lpMemRes[uRes] = acosVfp (lpatRht->aplVfp);
+                // Call subroutine
+                lpMemRes[uRes] = acosVfp (lpatRht->aplVfp);
 
-            // Check for NaN
-            if (mpfr_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
+                // Check for NaN
+                if (mpfr_nan_p (&lpMemRes[uRes])
+                 && !gAllowNaN)
+                    break;
+            } // End IF/ELSE
+
             return;
 
         case  -3:       // atan (R)
@@ -1395,43 +1612,50 @@ void PrimFnDydCircleVisVvV
 
         case  -4:       // (R + 1) × sqrt ((R - 1) / (R + 1))
                         // a.k.a. sqrt ((-1) + R * 2)
-        {
-            APLVFP aplTmp2,
-                   aplTmp3;
+            if (IsMpfNaN (&lpatRht->aplVfp))
+            {
+                if (gAllowNaN)
+                    mpfr_set_nan (&lpMemRes[uRes]);
+                else
+                    break;
+            } else
+            {
+                APLVFP aplTmp2,
+                       aplTmp3;
 
-            // Check for Complex result
-            if (mpfr_cmp_si (&lpatRht->aplVfp,  1) < 0
-             && mpfr_cmp_si (&lpatRht->aplVfp, -1) > 0)
-                RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
+                // Check for Complex result
+                if (mpfr_cmp_si (&lpatRht->aplVfp,  1) < 0
+                 && mpfr_cmp_si (&lpatRht->aplVfp, -1) > 0)
+                    RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
 
-            // Initialize the result to 0
-            mpfr_init0  (&lpMemRes[uRes]);
+                // Initialize the result to 0
+                mpfr_init0  (&lpMemRes[uRes]);
 
-            // If the right arg is -1, return 0
-            if (mpfr_cmp_si (&lpatRht->aplVfp, -1) EQ 0)
-                return;
+                // If the right arg is -1, return 0
+                if (mpfr_cmp_si (&lpatRht->aplVfp, -1) EQ 0)
+                    return;
 
-            // Initialize the temps to 0
-            mpfr_init0  (&aplTmp2);
-            mpfr_init0  (&aplTmp3);
+                // Initialize the temps to 0
+                mpfr_init0  (&aplTmp2);
+                mpfr_init0  (&aplTmp3);
 
-            mpfr_add    (&aplTmp2       , &lpatRht->aplVfp, &mpfOne         , MPFR_RNDN);   // R + 1
-            mpfr_sub    (&aplTmp3       , &lpatRht->aplVfp, &mpfOne         , MPFR_RNDN);   // R - 1
-            mpfr_div    (&aplTmp3       , &aplTmp3        , &aplTmp2        , MPFR_RNDN);   // (R - 1) / (R + 1)
-            mpfr_sqrt   (&lpMemRes[uRes], &aplTmp3                          , MPFR_RNDN);   // sqrt ((R - 1) / (R + 1))
-////////////mpfr_add    (&aplTmp2       , &lpatRht->aplVfp, &mpfOne         , MPFR_RNDN);   // R + 1  -- Already set
-            mpfr_mul    (&lpMemRes[uRes], &aplTmp2        , &lpMemRes[uRes] , MPFR_RNDN);   // (R + 1) x sqrt ((R - 1) / (R + 1))
+                mpfr_add    (&aplTmp2       , &lpatRht->aplVfp, &mpfOne         , MPFR_RNDN);   // R + 1
+                mpfr_sub    (&aplTmp3       , &lpatRht->aplVfp, &mpfOne         , MPFR_RNDN);   // R - 1
+                mpfr_div    (&aplTmp3       , &aplTmp3        , &aplTmp2        , MPFR_RNDN);   // (R - 1) / (R + 1)
+                mpfr_sqrt   (&lpMemRes[uRes], &aplTmp3                          , MPFR_RNDN);   // sqrt ((R - 1) / (R + 1))
+////////////////mpfr_add    (&aplTmp2       , &lpatRht->aplVfp, &mpfOne         , MPFR_RNDN);   // R + 1  -- Already set
+                mpfr_mul    (&lpMemRes[uRes], &aplTmp2        , &lpMemRes[uRes] , MPFR_RNDN);   // (R + 1) x sqrt ((R - 1) / (R + 1))
 
-            // We no longer need this storage
-            mpfr_clear (&aplTmp3);
-            mpfr_clear (&aplTmp2);
+                // We no longer need this storage
+                mpfr_clear (&aplTmp3);
+                mpfr_clear (&aplTmp2);
 
-            // Check for NaN
-            if (mpfr_nan_p (&lpMemRes[uRes]))
-                RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
+                // Check for NaN
+                if (mpfr_nan_p (&lpMemRes[uRes]))
+                    RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
+            } // End IF/ELSE
 
             return;
-        } // End case -4
 
         case  -5:       // asinh (R)
                         // ln (R + sqrt (1 + R * 2))
@@ -1446,37 +1670,64 @@ void PrimFnDydCircleVisVvV
 
         case  -6:       // acosh (R)
                         // 2 x ln (sqrt ((R + 1) x 0.5) + sqrt ((R - 1) x 0.5))
-            // Check for Complex result
-            if (mpfr_cmp_si (&lpatRht->aplVfp, 1) < 0)
-                RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
+            if (IsMpfNaN (&lpatRht->aplVfp))
+            {
+                if (gAllowNaN)
+                    mpfr_set_nan (&lpMemRes[uRes]);
+                else
+                    break;
+            } else
+            {
+                // Check for Complex result
+                if (mpfr_cmp_si (&lpatRht->aplVfp, 1) < 0)
+                    RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
 
-            // Call subroutine
-            lpMemRes[uRes] = acoshVfp (lpatRht->aplVfp);
+                // Call subroutine
+                lpMemRes[uRes] = acoshVfp (lpatRht->aplVfp);
 
-            // Check for NaN
-            if (mpfr_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
+                // Check for NaN
+                if (mpfr_nan_p (&lpMemRes[uRes])
+                 && !gAllowNaN)
+                    break;
+            } // End IF/ELSE
+
             return;
 
         case  -7:       // atanh (R)
                         // 0.5 x (ln (1 + R) - ln (1 - R))
-            // Check for Complex result
-            if (mpfr_cmp_si (&lpatRht->aplVfp,  1) >= 0
-             || mpfr_cmp_si (&lpatRht->aplVfp, -1) <= 0)
-                RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
+            if (IsMpfNaN (&lpatRht->aplVfp))
+            {
+                if (gAllowNaN)
+                    mpfr_set_nan (&lpMemRes[uRes]);
+                else
+                    break;
+            } else
+            {
+                // Check for Complex result
+                if (mpfr_cmp_si (&lpatRht->aplVfp,  1) >= 0
+                 || mpfr_cmp_si (&lpatRht->aplVfp, -1) <= 0)
+                    RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
 
-            // Call subroutine
-            lpMemRes[uRes] = atanhVfp (lpatRht->aplVfp);
+                // Call subroutine
+                lpMemRes[uRes] = atanhVfp (lpatRht->aplVfp);
 
-            // Check for NaN
-            if (mpfr_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
+                // Check for NaN
+                if (mpfr_nan_p (&lpMemRes[uRes])
+                 && !gAllowNaN)
+                    break;
+            } // End IF/ELSE
+
             return;
 
         case  -8:       // -sqrt ((-1) - R * 2)
-            RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
+            if (IsMpfNaN (&lpatRht->aplVfp))
+            {
+                if (gAllowNaN)
+                    mpfr_set_nan (&lpMemRes[uRes]);
+                else
+                    break;
+            } else
+                RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
 
         case  -9:       // R
         case -10:       // +R
@@ -1490,7 +1741,14 @@ void PrimFnDydCircleVisVvV
 
         case -11:       // 0J1 x R
         case -12:       // *0J1 x R
-            RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
+            if (IsMpfNaN (&lpatRht->aplVfp))
+            {
+                if (gAllowNaN)
+                    mpfr_set_nan (&lpMemRes[uRes]);
+                else
+                    break;
+            } else
+                RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
 
             return;
 

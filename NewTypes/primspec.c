@@ -3058,8 +3058,9 @@ UBOOL PrimFnDydSimpNest_EM
                 bNaNLft = IsArgNaN (aplTypeCom, &atLft, 0);
                 bNaNRht = IsArgNaN (aplTypeCom, &atRht, 0);
 
-                // If either arg is a NaN, ...
-                if (bNaNLft || bNaNRht)
+                // If either arg is a NaN and not the Circle function, ...
+                if ((bNaNLft || bNaNRht)
+                 && (lptkFunc->tkData.tkChar NE UTF16_CIRCLE))
                 {
                     if (gbAllowNaN)         // 1x + {NaN} (3 4)
                     {
@@ -3522,8 +3523,9 @@ UBOOL PrimFnDydNestSimp_EM
                 bNaNLft = IsArgNaN (aplTypeCom, &atLft, 0);
                 bNaNRht = IsArgNaN (aplTypeCom, &atRht, 0);
 
-                // If either arg is a NaN, ...
-                if (bNaNLft || bNaNRht)
+                // If either arg is a NaN and not the Circle function, ...
+                if ((bNaNLft || bNaNRht)
+                 && (lptkFunc->tkData.tkChar NE UTF16_CIRCLE))
                 {
                     if (gbAllowNaN)         // {NaN} (3 4) + 1x
                     {
@@ -3986,8 +3988,9 @@ RESTART_EXCEPTION:
                     bNaNLft = IsArgNaN (aplTypeHetLft, &atLft.aplLongest, 0);
                     bNaNRht = IsArgNaN (aplTypeRht   ,  lpatRht         , 0);
 
-                    // If either arg is a NaN, ...
-                    if (bNaNLft || bNaNRht)
+                    // If either arg is a NaN and not the Circle function, ...
+                    if ((bNaNLft || bNaNRht)
+                     && (lptkFunc->tkData.tkChar NE UTF16_CIRCLE))
                     {
                         if (gbAllowNaN)         // ((,NaN) 3)NaN=NaN
                         {
@@ -4123,8 +4126,9 @@ RESTART_EXCEPTION:
             bNaNLft = IsArgNaN (aplTypeHetLft, lpatTmp, 0);
             bNaNRht = IsArgNaN (aplTypeRht   , lpatRht, 0);
 
-            // If either arg is a NaN, ...
-            if (bNaNLft || bNaNRht)
+            // If either arg is a NaN and not the Circle function, ...
+            if ((bNaNLft || bNaNRht)
+             && (lptkFunc->tkData.tkChar NE UTF16_CIRCLE))
             {
                 if (gbAllowNaN)         // #4:  {NaN} ({NaN} 3) + 1x
                 {
@@ -4799,8 +4803,9 @@ RESTART_EXCEPTION:
                     bNaNLft = IsArgNaN (aplTypeLft   ,  lpatLft         , 0);
                     bNaNRht = IsArgNaN (aplTypeHetRht, &atRht.aplLongest, 0);
 
-                    // If either arg is a NaN, ...
-                    if (bNaNLft || bNaNRht)
+                    // If either arg is a NaN and not the Circle function, ...
+                    if ((bNaNLft || bNaNRht)
+                     && (lptkFunc->tkData.tkChar NE UTF16_CIRCLE))
                     {
                         if (gbAllowNaN)         // NaN=((,NaN) 3)NaN
                         {
@@ -4932,8 +4937,9 @@ RESTART_EXCEPTION:
             bNaNLft = IsArgNaN (aplTypeLft   , lpatLft, 0);
             bNaNRht = IsArgNaN (aplTypeHetRht, lpatTmp, 0);
 
-            // If either arg is a NaN, ...
-            if (bNaNLft || bNaNRht)
+            // If either arg is a NaN and not the Circle function, ...
+            if ((bNaNLft || bNaNRht)
+             && (lptkFunc->tkData.tkChar NE UTF16_CIRCLE))
             {
                 if (gbAllowNaN)         // #5:  {NaN}x + 1 (2 3)
                 {
@@ -5943,8 +5949,9 @@ RESTART_EXCEPTION:
                 bNaNLft = IsArgNaN (aplTypeHetLft, lpMemLft, uLft);
                 bNaNRht = IsArgNaN (aplTypeHetRht, lpMemRht, uRht);
 
-                // If either arg is a NaN, ...
-                if (bNaNLft || bNaNRht)
+                // If either arg is a NaN and not the Circle function, ...
+                if ((bNaNLft || bNaNRht)
+                 && (lptkFunc->tkData.tkChar NE UTF16_CIRCLE))
                 {
                     if (gbAllowNaN)             // NaN=0
                     {

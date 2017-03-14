@@ -1,6 +1,20 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1711 -- Version 0.5.1.xx
+--------------------------------
+
+* Handle NaNs Locally In The Circle Functions
+
+Directory branches/bsmith/NewTypes:
+
+PF_CIRCLE.C:
+  Handle NaNs locally in each function as they are not handle globally anymore.
+
+PRIMSPEC.C:
+  Allow the Circle functions to handle NaNs locally rather than globally in the several <PrimFnDydXXXYYY_EM> functions.
+
+
 Build #1710 -- Version 0.5.1.xx
 --------------------------------
 

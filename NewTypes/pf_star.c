@@ -564,7 +564,7 @@ APLHC2F ExpHC2F_RE
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars); // Assert (lpplLocalVars NE NULL);
 
-    // If the ptr ti NULL (called from within ParsePointNotation), ...
+    // If the ptr is NULL (called from within ParsePointNotation), ...
     if (lpplLocalVars EQ NULL)
         // Fake ptr to the Ctrl-Break flag
         lpbCtrlBreak = &bCtrlBreak;
@@ -640,7 +640,7 @@ APLHC4F ExpHC4F_RE
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars); // Assert (lpplLocalVars NE NULL);
 
-    // If the ptr ti NULL (called from within ParsePointNotation), ...
+    // If the ptr is NULL (called from within ParsePointNotation), ...
     if (lpplLocalVars EQ NULL)
         // Fake ptr to the Ctrl-Break flag
         lpbCtrlBreak = &bCtrlBreak;
@@ -716,7 +716,7 @@ APLHC8F ExpHC8F_RE
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars); // Assert (lpplLocalVars NE NULL);
 
-    // If the ptr ti NULL (called from within ParsePointNotation), ...
+    // If the ptr is NULL (called from within ParsePointNotation), ...
     if (lpplLocalVars EQ NULL)
         // Fake ptr to the Ctrl-Break flag
         lpbCtrlBreak = &bCtrlBreak;
@@ -844,7 +844,7 @@ APLHC2V ExpHC2V_RE
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars); // Assert (lpplLocalVars NE NULL);
 
-    // If the ptr ti NULL (called from within ParsePointNotation), ...
+    // If the ptr is NULL (called from within ParsePointNotation), ...
     if (lpplLocalVars EQ NULL)
         // Fake ptr to the Ctrl-Break flag
         lpbCtrlBreak = &bCtrlBreak;
@@ -924,7 +924,7 @@ APLHC4V ExpHC4V_RE
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars); // Assert (lpplLocalVars NE NULL);
 
-    // If the ptr ti NULL (called from within ParsePointNotation), ...
+    // If the ptr is NULL (called from within ParsePointNotation), ...
     if (lpplLocalVars EQ NULL)
         // Fake ptr to the Ctrl-Break flag
         lpbCtrlBreak = &bCtrlBreak;
@@ -1004,7 +1004,7 @@ APLHC8V ExpHC8V_RE
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars); // Assert (lpplLocalVars NE NULL);
 
-    // If the ptr ti NULL (called from within ParsePointNotation), ...
+    // If the ptr is NULL (called from within ParsePointNotation), ...
     if (lpplLocalVars EQ NULL)
         // Fake ptr to the Ctrl-Break flag
         lpbCtrlBreak = &bCtrlBreak;
@@ -1610,7 +1610,7 @@ void PrimFnDydStarRisRvR
         // Extract the exponent
         uRht = mpz_get_ui (mpq_numref (&lpatRht->aplRat));
 
-        // Compute the powers
+            // Compute the powers
         mpz_pow_ui (mpq_numref (&lpMemRes[uRes]), mpq_numref (&lpMemRes[uRes]), uRht);
         mpz_pow_ui (mpq_denref (&lpMemRes[uRes]), mpq_denref (&lpMemRes[uRes]), uRht);
 
@@ -4018,14 +4018,21 @@ APLVFP sinCT_Vfp
     (APLVFP aplRht)
 
 {
-    APLVFP aplFlr,
-           aplRes = {0};
+    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory handle
+    APLVFP       aplFlr,
+                 aplRes = {0};
 
     // Initialize the temp to 0
     mpfr_init0 (&aplRes);
 
+    // Get the PerTabData ptr
+    lpMemPTD = GetMemPTD ();
+
+    // Initialize the VFP Pi if not already done
+    InitPTD_Pi (lpMemPTD);
+
     // Divide so we can compare it with its floor
-    mpfr_div (&aplRes, &aplRht, &GetMemPTD ()->mpfrPi, MPFR_RNDN);
+    mpfr_div (&aplRes, &aplRht, &lpMemPTD->mpfrPi, MPFR_RNDN);
 
     // Calculate the floor so we can see if it's an integer
     aplFlr = FloorHC1V (aplRes);

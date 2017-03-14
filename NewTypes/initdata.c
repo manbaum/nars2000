@@ -267,22 +267,70 @@ void InitPTDVars
 
 {
     // Free these vars unless already free
-    Myf_clear        (&lpMemPTD->mpfrPi);
-    Myf_clear        (&lpMemPTD->mpfrGamma);
     Myf_clear        (&lpMemPTD->mpfrE);
-
-    // Create a local value for Pi
-    mpfr_init0       (&lpMemPTD->mpfrPi);
-    mpfr_const_pi    (&lpMemPTD->mpfrPi, MPFR_RNDN);
-
-    // Create a local value for Gamma
-    mpfr_init0       (&lpMemPTD->mpfrGamma);
-    mpfr_const_euler (&lpMemPTD->mpfrGamma, MPFR_RNDN);
-
-    // Create a local value for e
-    mpfr_init_set_ui (&lpMemPTD->mpfrE,                1, MPFR_RNDN);
-    mpfr_exp         (&lpMemPTD->mpfrE, &lpMemPTD->mpfrE, MPFR_RNDN);
+    Myf_clear        (&lpMemPTD->mpfrGamma);
+    Myf_clear        (&lpMemPTD->mpfrPi);
 } // InitPTDVars
+
+
+//***************************************************************************
+//  $InitPTD_E
+//
+//  Initialize VFP E
+//***************************************************************************
+
+void InitPTD_E
+    (LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
+
+{
+    // If it's not already initialized, ...
+    if (lpMemPTD->mpfrE._mpfr_d EQ 0)
+    {
+        // Create a local value for e
+        mpfr_init_set_ui (&lpMemPTD->mpfrE,                1, MPFR_RNDN);
+        mpfr_exp         (&lpMemPTD->mpfrE, &lpMemPTD->mpfrE, MPFR_RNDN);
+    } // End IF
+} // End InitPTD_E
+
+
+//***************************************************************************
+//  $InitPTD_Gamma
+//
+//  Initialize VFP Gamma
+//***************************************************************************
+
+void InitPTD_Gamma
+    (LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
+
+{
+    // If it's not already initialized, ...
+    if (lpMemPTD->mpfrGamma._mpfr_d EQ 0)
+    {
+        // Create a local value for Gamma
+        mpfr_init0       (&lpMemPTD->mpfrGamma);
+        mpfr_const_euler (&lpMemPTD->mpfrGamma, MPFR_RNDN);
+    } // End IF
+} // End InitPTD_Gamma
+
+
+//***************************************************************************
+//  $InitPTD_Pi
+//
+//  Initialize VFP Pi
+//***************************************************************************
+
+void InitPTD_Pi
+    (LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
+
+{
+    // If it's not already initialized, ...
+    if (lpMemPTD->mpfrPi._mpfr_d EQ 0)
+    {
+        // Create a local value for Pi
+        mpfr_init0       (&lpMemPTD->mpfrPi);
+        mpfr_const_pi    (&lpMemPTD->mpfrPi, MPFR_RNDN);
+    } // End IF
+} // End InitPTD_Pi
 
 
 //***************************************************************************

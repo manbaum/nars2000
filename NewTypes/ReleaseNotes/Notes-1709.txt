@@ -1,0 +1,17 @@
+Build #1709 -- Version 0.5.1.xx
+--------------------------------
+
+* Defer Initializing MPFR Constants When Changing Precision Via []FPC
+
+Directory branches/bsmith/NewTypes:
+
+INITDATA.C:
+  Defer initializing MPFR Pi, e, and Gamma into their own individual functions.
+    This way, if the user changes []FPC to a high value (which takes some time to
+    initialize those constants), only when those constants are referenced will they
+    be initialized (and take some time to do so).
+
+PF_CIRCLE.C:
+PF_STAR.C:
+PN_PROC.C:
+  Ensure the MPFR constants Pi, and Gamma are initialized before referencing them.

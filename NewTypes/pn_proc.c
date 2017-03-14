@@ -3131,6 +3131,7 @@ LPPN_YYSTYPE PN_MakeEulerPoint
 
         case PN_NUMTYPE_VFP:
         {
+            LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory handle
 #ifdef DEBUG_FMT
             WCHAR wszTemp[512];
 #endif
@@ -3140,8 +3141,14 @@ LPPN_YYSTYPE PN_MakeEulerPoint
             strcpyW (wszTemp, L"Mul:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpYYMultiplier->at.aplVfp, 0) = WC_EOS; DbgMsgW (wszTemp);
             strcpyW (wszTemp, L"Exp:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpYYExponent->at.aplVfp, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
+            // Get the PerTabData ptr
+            lpMemPTD = GetMemPTD ();
+
+            // Initialize the VFP E if not already done
+            InitPTD_E (lpMemPTD);
+
             // The result is Multiplier x (*1) * Exponent
-            mpfr_pow (&atRes.aplVfp, &GetMemPTD ()->mpfrE, &lpYYExponent->at.aplVfp, MPFR_RNDN);
+            mpfr_pow (&atRes.aplVfp, &lpMemPTD->mpfrE, &lpYYExponent->at.aplVfp, MPFR_RNDN);
 #ifdef DEBUG_FMT
             strcpyW (wszTemp, L"e *:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], atRes.aplVfp, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
@@ -3448,7 +3455,7 @@ LPPN_YYSTYPE PN_MakeExpPoint
                 mpq_set_inf (&lpYYArg->at.aplRat, (lpszNumAccum[uNumAcc] EQ '-') ? -1 : 1);
             } else
             {
-                // Create 10 * exp
+                // Create 10 * abs (exp)
                 mpz_ui_pow_ui (&aplMpiExp, 10, mpz_get_ui (&aplMpiExp));
 
                 // If we inserted an exponent separator, ...
@@ -3647,13 +3654,20 @@ LPPN_YYSTYPE PN_MakeGammaPoint
 
         case PN_NUMTYPE_VFP:
         {
-            APLVFP aplVfpTmp = {0};
+            LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory handle
+            APLVFP       aplVfpTmp = {0};
 
             // Initialize the temp array
             mpfr_init0 (&aplVfpTmp);
 
+            // Get the PerTabData ptr
+            lpMemPTD = GetMemPTD ();
+
+            // Initialize the VFP Gamma if not already done
+            InitPTD_Gamma (lpMemPTD);
+
             // The result is Multiplier x Gamma * Exponent
-            mpfr_pow (&aplVfpTmp, &GetMemPTD ()->mpfrGamma, &lpYYExponent->at.aplVfp, MPFR_RNDN);
+            mpfr_pow (&aplVfpTmp, &lpMemPTD->mpfrGamma, &lpYYExponent->at.aplVfp, MPFR_RNDN);
 
             // Accumulate in the multiplier
             mpfr_mul (&lpYYMultiplier->at.aplVfp, &lpYYMultiplier->at.aplVfp, &aplVfpTmp, MPFR_RNDN);
@@ -3827,13 +3841,20 @@ LPPN_YYSTYPE PN_MakePiPoint
 
         case PN_NUMTYPE_VFP:
         {
-            APLVFP aplVfpTmp = {0};
+            LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory handle
+            APLVFP       aplVfpTmp = {0};
 
             // Initialize the temp array
             mpfr_init0 (&aplVfpTmp);
 
+            // Get the PerTabData ptr
+            lpMemPTD = GetMemPTD ();
+
+            // Initialize the VFP Pi if not already done
+            InitPTD_Pi (lpMemPTD);
+
             // The result is Multiplier x (o1) * Exponent
-            mpfr_pow (&aplVfpTmp, &GetMemPTD ()->mpfrPi, &lpYYExponent->at.aplVfp, MPFR_RNDN);
+            mpfr_pow (&aplVfpTmp, &lpMemPTD->mpfrPi, &lpYYExponent->at.aplVfp, MPFR_RNDN);
 
             // Accumulate in the multiplier
             mpfr_mul (&lpYYMultiplier->at.aplVfp, &lpYYMultiplier->at.aplVfp, &aplVfpTmp, MPFR_RNDN);

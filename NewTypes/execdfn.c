@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -953,6 +953,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     bFirstTime = TRUE;
 
     // Loop through the function lines
+    if (lpMemDfnHdr-> numFcnLines NE 0)
     while (TRUE)
     {
         // Get ptr to array of function line structs (FCNLINE[numFcnLines])
@@ -1141,7 +1142,7 @@ NEXTLINE:
                 uLineNum = 0;
             break;
         } // End IF
-    } // End WHILE
+    } // End IF/WHILE
 
     // If we're stopping on exit, ...
     if (lpMemDfnHdr->bStopHdr

@@ -1,6 +1,20 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1716 -- Version 0.5.1.xx
+--------------------------------
+
+* Change Wording Of )SYMB Command
+
+Directory branches/bsmith/NewTypes:
+
+SC_SYMB.C:
+  Change woridng of )SYMB command.
+
+TOKENIZE.C:
+  Change syntax color of # to avoid marking it as an unknown.
+
+
 Build #1715 -- Version 0.5.1.xx
 --------------------------------
 
@@ -276,7 +290,7 @@ QF_CS.C:
 Build #1695 -- Version 0.5.1.xx
 --------------------------------
 
-* Fix Bug When Using A Global Dead Key To Create An Accented Character Where The Base Character Doesn't have An Accented Form
+* Fix Bug When Using A Global Dead Key To Create An Accented Character Where The Base Character Doesn't Have An Accented Form
 
 Directory branches/bsmith/NewTypes:
 
@@ -446,7 +460,7 @@ Build #1685 -- Version 0.5.1.xx
 Directory branches/bsmith/NewTypes:
 
 PF_COLONBAR.C:
-  Reduce the column width of many lines by folding them to the nest.
+  Reduce the column width of many lines by folding them to the next.
   In Monadic and Dyadic Divide functions, calculate the denominator by multiplying the right arg by its conjugate.
     Previously we summed the squares, but this doesn't catch some errors with infinities.
 
@@ -566,7 +580,7 @@ MACROS.H:
 Build #1678 -- Version 0.5.1.xx
 --------------------------------
 
-* Implement Support Dead Keys On National Keyboards
+* Implement Support For Dead Keys On National Keyboards
 
 Directory branches/bsmith/NewTypes:
 

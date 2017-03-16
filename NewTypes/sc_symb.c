@@ -22,10 +22,7 @@
 
 #define STRICT
 #include <windows.h>
-#include <stdio.h>
-#include <time.h>
 #include "headers.h"
-#include "debug.h"              // For xxx_TEMP_OPEN macros
 
 
 //***************************************************************************
@@ -51,12 +48,12 @@ UBOOL CmdSymb_EM
                  iHshTabInuse = 0;  // # HTEs in use
     WCHAR        wszTemp[1024];     // Output save area
 
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
     // If there's a command tail, ...
     if (lpwszTail[0] NE WC_EOS)
-        return CmdSymbSet (lpwszTail);
+        return CmdSymbSet_EM (lpwszTail);
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     // Get a ptr to the HshTab & SymTab
     lphtsPTD = lpMemPTD->lphtsPTD;
@@ -110,8 +107,8 @@ UBOOL CmdSymb_EM
     // Format the output line
     MySprintfW (wszTemp,
                 sizeof (wszTemp),
-               L"SymTab:  Max = %8u, Total = %8u, Inuse = %u\r\n"
-               L"HshTab:  Max = %8u, Total = %8u, Inuse = %u",
+               L"SymTab:  Maximum # Entries %9u, Current %9u, In Use %9u\r\n"
+               L"HshTab:  Maximum # Entries %9u, Current %9u, In Use %9u",
                 iSymTabMax  ,
                 iSymTabTotal,
                 iSymTabInuse,
@@ -126,12 +123,19 @@ UBOOL CmdSymb_EM
 
 
 //***************************************************************************
-//  $CmdSymbSet
+//  $CmdSymbSet_EM
 //
 //  Set a new limit for the SymTab and HshTabs
+//
+//  The line should be of the form
+//
+//  )SYMB sss hhh
+//
+//  where sss is the new maximum size of Symtab
+//  and   hhh is the new maximum size of HshTab
 //***************************************************************************
 
-UBOOL CmdSymbSet
+UBOOL CmdSymbSet_EM
     (LPWCHAR lpwszTail)             // Ptr to command line tail
 
 {
@@ -139,7 +143,7 @@ UBOOL CmdSymbSet
     AppendLine (ERRMSG_NONCE_ERROR, FALSE, TRUE);
 
     return TRUE;
-} // End CmdSymbSet
+} // End CmdSymbSet_EM
 
 
 //***************************************************************************

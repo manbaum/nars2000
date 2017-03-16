@@ -6938,7 +6938,7 @@ TKCOLINDICES CharTransTK
             if (lptkLocalVars->bMFO)
                 return TKCOL_ALPHA;
             else
-                return TKCOL_UNK;
+                return TKCOL_SYS_NS;
 
         case L'`':
         case L'@':

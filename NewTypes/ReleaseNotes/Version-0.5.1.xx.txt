@@ -1,6 +1,26 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1714 -- Version 0.5.1.xx
+--------------------------------
+
+* Check For NaN In More Cases Of The Circle Functions
+
+Directory branches/bsmith/NewTypes:
+
+HC_PROC.C:
+  Define helper functions to detect if any part of a HC number is a NaN.
+
+MPCF.C:
+MPHF.C:
+MPOF.C:
+  Define helper functions to initialize and set a CHO number from another CHO number.
+
+PF_CIRCLE.C:
+PF_CIRCLE.MAC:
+  Check for NaN in more cases of the Circle functions.
+
+
 Build #1713 -- Version 0.5.1.xx
 --------------------------------
 

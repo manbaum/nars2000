@@ -949,6 +949,195 @@ void mphc8v_init_copy
 
 
 //***************************************************************************
+//  $fpcf_nan_p
+//
+//  Is any part of the arg a NaN?
+//***************************************************************************
+
+UBOOL fpcf_nan_p
+    (APLHC2F aplRht)
+
+{
+    int i;
+
+    // Loop through all of the parts
+    for (i = 0; i < 2; i++)
+    if (_isnan (aplRht.parts[i]))
+        return TRUE;
+
+    return FALSE;
+} // End fpcf_nan_p
+
+
+//***************************************************************************
+//  $mpcr_nan_p
+//
+//  Is any part of the arg a NaN?
+//***************************************************************************
+
+UBOOL mpcr_nan_p
+    (APLHC2R aplRht)
+
+{
+    int i;
+
+    // Loop through all of the parts
+    for (i = 0; i < 2; i++)
+    if (mpq_nan_p (&aplRht.parts[i]))
+        return TRUE;
+
+    return FALSE;
+} // End mpcr_nan_p
+
+
+//***************************************************************************
+//  $mpcf_nan_p
+//
+//  Is any part of the arg a NaN?
+//***************************************************************************
+
+UBOOL mpcf_nan_p
+    (APLHC2V aplRht)
+
+{
+    int i;
+
+    // Loop through all of the parts
+    for (i = 0; i < 2; i++)
+    if (mpfr_nan_p (&aplRht.parts[i]))
+        return TRUE;
+
+    return FALSE;
+} // End mpcf_nan_p
+
+
+//***************************************************************************
+//  $fphf_nan_p
+//
+//  Is any part of the arg a NaN?
+//***************************************************************************
+
+UBOOL fphf_nan_p
+    (APLHC4F aplRht)
+
+{
+    int i;
+
+    // Loop through all of the parts
+    for (i = 0; i < 4; i++)
+    if (_isnan (aplRht.parts[i]))
+        return TRUE;
+
+    return FALSE;
+} // End fphf_nan_p
+
+
+//***************************************************************************
+//  $mphr_nan_p
+//
+//  Is any part of the arg a NaN?
+//***************************************************************************
+
+UBOOL mphr_nan_p
+    (APLHC4R aplRht)
+
+{
+    int i;
+
+    // Loop through all of the parts
+    for (i = 0; i < 4; i++)
+    if (mpq_nan_p (&aplRht.parts[i]))
+        return TRUE;
+
+    return FALSE;
+} // End mphr_nan_p
+
+
+//***************************************************************************
+//  $mphf_nan_p
+//
+//  Is any part of the arg a NaN?
+//***************************************************************************
+
+UBOOL mphf_nan_p
+    (APLHC4V aplRht)
+
+{
+    int i;
+
+    // Loop through all of the parts
+    for (i = 0; i < 4; i++)
+    if (mpfr_nan_p (&aplRht.parts[i]))
+        return TRUE;
+
+    return FALSE;
+} // End mphf_nan_p
+
+
+//***************************************************************************
+//  $fpof_nan_p
+//
+//  Is any part of the arg a NaN?
+//***************************************************************************
+
+UBOOL fpof_nan_p
+    (APLHC8F aplRht)
+
+{
+    int i;
+
+    // Loop through all of the parts
+    for (i = 0; i < 8; i++)
+    if (_isnan (aplRht.parts[i]))
+        return TRUE;
+
+    return FALSE;
+} // End fpof_nan_p
+
+
+//***************************************************************************
+//  $mpor_nan_p
+//
+//  Is any part of the arg a NaN?
+//***************************************************************************
+
+UBOOL mpor_nan_p
+    (APLHC8R aplRht)
+
+{
+    int i;
+
+    // Loop through all of the parts
+    for (i = 0; i < 8; i++)
+    if (mpq_nan_p (&aplRht.parts[i]))
+        return TRUE;
+
+    return FALSE;
+} // End mpor_nan_p
+
+
+//***************************************************************************
+//  $mpof_nan_p
+//
+//  Is any part of the arg a NaN?
+//***************************************************************************
+
+UBOOL mpof_nan_p
+    (APLHC8V aplRht)
+
+{
+    int i;
+
+    // Loop through all of the parts
+    for (i = 0; i < 8; i++)
+    if (mpfr_nan_p (&aplRht.parts[i]))
+        return TRUE;
+
+    return FALSE;
+} // End mpof_nan_p
+
+
+//***************************************************************************
 //  $DistHC2I
 //***************************************************************************
 

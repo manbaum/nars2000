@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2015 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,6 +41,22 @@ void mphf_init0
     mpfr_init0 (&rop->parts[2]);
     mpfr_init0 (&rop->parts[3]);
 } // End mphf_init0
+
+
+//***************************************************************************
+//  $mphf_init_set
+//***************************************************************************
+
+void mphf_init_set
+    (mphf_t rop,
+     mphf_t op)
+
+{
+    mpfr_init_set (&rop->parts[0], &op->parts[0], MPFR_RNDN);
+    mpfr_init_set (&rop->parts[1], &op->parts[1], MPFR_RNDN);
+    mpfr_init_set (&rop->parts[2], &op->parts[2], MPFR_RNDN);
+    mpfr_init_set (&rop->parts[3], &op->parts[3], MPFR_RNDN);
+} // End mphf_init_set
 
 
 //***************************************************************************

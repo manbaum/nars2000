@@ -1,0 +1,12 @@
+Build #1713 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Negating A Rational Hypercomplex Zero When Negative 0 Allowed
+
+Directory branches/bsmith/NewTypes:
+
+PF_BAR.C:
+  Define matching <NegHC[124]R_RE> functions to handle exceptions that need to be raised at a higher degree of an exception such as HC2V to HC4V.
+
+PF_TIMES.C:
+  In <MulHC[248]R_RE>, call <NegHC[124]R_RE1> instead of <NegHC[124]_RE> so as to handle upgrading the exception from 2V to 4V to 8V.

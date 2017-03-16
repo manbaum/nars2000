@@ -2028,8 +2028,12 @@ APLHC2R MulHC2R_RE
         // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
         if (IsMpq0 (&a) && IsMpq0 (&c))
         {
-            mpq_mul  (&aplRes.parts[0], &d      , &b      );
-            mpq_neg  (&aplRes.parts[0], &aplRes.parts[0]);
+            APLHC1R aplTmp;
+
+            aplRes.partsLo = MulHC1R_RE (d, b );
+            aplTmp = NegHC1R_RE1 (aplRes.partsLo);
+            mphc1r_set (&aplRes.partsLo, &aplTmp);
+            Myhc1r_clear (&aplTmp);
         } else
         {
             // Use Cayley-Dickson construction
@@ -2887,7 +2891,7 @@ APLHC4R MulHC4R_RE
             APLHC2R aplTmp;
 
             aplRes.partsLo = MulHC2R_RE (dP, b );
-            aplTmp = NegHC2R_RE (aplRes.partsLo);
+            aplTmp = NegHC2R_RE1 (aplRes.partsLo);
             mphc2r_set (&aplRes.partsLo, &aplTmp);
             Myhc2r_clear (&aplTmp);
 
@@ -3848,7 +3852,7 @@ APLHC8R MulHC8R_RE
             APLHC4R aplTmp;
 
             aplRes.partsLo = MulHC4R_RE (dP, b );
-            aplTmp = NegHC4R_RE (aplRes.partsLo);
+            aplTmp = NegHC4R_RE1 (aplRes.partsLo);
             mphc4r_set (&aplRes.partsLo, &aplTmp);
             Myhc4r_clear (&aplTmp);
 

@@ -355,6 +355,50 @@ void PrimFnMonBarFisF
 
 
 //***************************************************************************
+//  $NegHC1R_RE1
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- NegHC1R_RE1"
+#else
+#define APPEND_NAME
+#endif
+
+APLRAT NegHC1R_RE1
+    (APLRAT aplRht)                 // Right arg
+
+{
+    __try
+    {
+        return NegHC1R_RE (aplRht);
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Split cases based upon the exception code
+        switch (exCode)
+        {
+            case EXCEPTION_RESULT_HC1V:
+                RaiseException (exCode + 2, 0, 0, NULL);
+
+                break;
+
+            default:
+                RaiseException (exCode, 0, 0, NULL);
+
+                break;
+        } // End SWITCH
+    } // End __try/__except
+
+    // We should never get here
+    return *(LPAPLRAT) NULL;
+} // End NegHC1R_RE1
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $NegHC1R_RE
 //***************************************************************************
 
@@ -627,6 +671,50 @@ void PrimFnMonBarHC2FisHC2F
 
 
 //***************************************************************************
+//  $NegHC2R_RE1
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- NegHC2R_RE1"
+#else
+#define APPEND_NAME
+#endif
+
+APLHC2R NegHC2R_RE1
+    (APLHC2R aplRht)                    // Right arg
+
+{
+    __try
+    {
+        return NegHC2R_RE (aplRht);
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Split cases based upon the exception code
+        switch (exCode)
+        {
+            case EXCEPTION_RESULT_HC2V:
+                RaiseException (exCode + 2, 0, 0, NULL);
+
+                break;
+
+            default:
+                RaiseException (exCode, 0, 0, NULL);
+
+                break;
+        } // End SWITCH
+    } // End __try/__except
+
+    // We should never get here
+    return *(LPAPLHC2R) NULL;
+} // End NegHC2R_RE1
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $NegHC2R_RE
 //***************************************************************************
 
@@ -894,6 +982,50 @@ void PrimFnMonBarHC4FisHC4F
     // Call subfunction
     lpMemRes[uRes] = NegHC4F_RE (lpatRht->aplHC4F);
 } // End PrimFnMonBarHC4FisHC4F
+
+
+//***************************************************************************
+//  $NegHC4R_RE1
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- NegHC4R_RE1"
+#else
+#define APPEND_NAME
+#endif
+
+APLHC4R NegHC4R_RE1
+    (APLHC4R aplRht)                    // Right arg
+
+{
+    __try
+    {
+        return NegHC4R_RE (aplRht);
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Split cases based upon the exception code
+        switch (exCode)
+        {
+            case EXCEPTION_RESULT_HC4V:
+                RaiseException (exCode + 2, 0, 0, NULL);
+
+                break;
+
+            default:
+                RaiseException (exCode, 0, 0, NULL);
+
+                break;
+        } // End SWITCH
+    } // End __try/__except
+
+    // We should never get here
+    return *(LPAPLHC4R) NULL;
+} // End NegHC4R_RE1
+#undef  APPEND_NAME
 
 
 //***************************************************************************

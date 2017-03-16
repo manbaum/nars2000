@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -426,9 +426,12 @@ APLBOOL ExpungeName
         *lphGlbQuadEM = hGlbQuadEM_DEF;
     } else
     {
-        // If the STE is not immediate and has a value, ...
+        // If the STE is not immediate
+        //   and is not a Direct Function/Operator,
+        //   and has a value, ...
         if (!lpSymEntry->stFlags.Imm
-         && lpSymEntry->stFlags.Value)
+         && !lpSymEntry->stFlags.FcnDir
+         &&  lpSymEntry->stFlags.Value)
         {
             // If the name is that of a UDFO/AFO, ...
             if (lpSymEntry->stFlags.UsrDfn)

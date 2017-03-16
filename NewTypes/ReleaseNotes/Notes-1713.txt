@@ -1,7 +1,7 @@
 Build #1713 -- Version 0.5.1.xx
 --------------------------------
 
-* Fix Bug When Negating A Rational Hypercomplex Zero When Negative 0 Allowed
+* Fix Bug When Negating A Rational Hypercomplex Zero When Negative 0 Is Allowed
 
 Directory branches/bsmith/NewTypes:
 

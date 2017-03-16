@@ -4523,10 +4523,19 @@ UBOOL DisplayGlbVector
             // Continue until we're out of cols
             while (aplDimNCols)
             {
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (*lpbCtrlBreak))
+                    goto ERROR_EXIT;
+
                 // Copy the chars to temp storage
                 for (uCnt = 0;
                      (uCnt < aplDimNCols) && (uCurPos < uQuadPW);
                      uCnt++, ((LPAPLCHAR) lpMemArr)++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // Check for Terminal Control chars
                     if (CheckTermCodes ((LPAPLCHAR) lpMemArr,   // Ptr to current char to test
                                         hWndEC,                 // EditCtrl window handle
@@ -4539,7 +4548,8 @@ UBOOL DisplayGlbVector
                         // Skip over the next two chars
                         uCnt                   += 2;
                         ((LPAPLCHAR) lpMemArr) += 2;
-                    } // End FOR/IF
+                    } // End IF
+                } // End FOR
                 // Ensure properly terminated
                 lpaplChar[0] = WC_EOS;
 
@@ -4560,10 +4570,6 @@ UBOOL DisplayGlbVector
                 if (aplDimNCols NE 0)
                     // Display the non-continued indent without ending CRLF
                     AppendLine (wszIndent, FALSE, FALSE);
-
-                // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
-                    goto ERROR_EXIT;
             } // End WHILE
 
             break;
@@ -4630,6 +4636,10 @@ UBOOL DisplayGlbVector
                 // While the line exceeds the width, ...
                 while (uCopyLen < ((lpaplCharNxt - 1) - lpaplCharIni))
                 {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
                     // If this is the first item on the line, ...
                     if (lpaplChar EQ lpaplCharIni)
                         // lpaplCharIni -> '11111111111234567890123456789r12345'

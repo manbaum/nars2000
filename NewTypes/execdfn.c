@@ -1877,6 +1877,7 @@ LPSYMENTRY LocalizeLabels
          uLineNum1 = lpFcnLines[uLineNum1 - 1].numNxtLabel1)
     {
         LPSYMENTRY lpSymEntrySrc;   // Ptr to source SYMENTRY
+        int        iSymOff;
 
         // Get a ptr to the token header
         lptkHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines[uLineNum1 - 1].offTknLine);
@@ -1884,47 +1885,54 @@ LPSYMENTRY LocalizeLabels
         // Get ptr to the tokens in the line
         lptkLine = TokenBaseToStart (lptkHdr);
 
+        // If this is an AFO, ...
+        if (lpMemDfnHdr->bAFO)
+        {
+            Assert (lptkLine[1].tkFlags.TknType EQ TKT_NOP);
+            iSymOff = 2;
+        } else
+            iSymOff = 1;
         Assert (lptkHdr->TokenCnt >= 3
              && (lptkLine[0].tkFlags.TknType EQ TKT_EOL
               || lptkLine[0].tkFlags.TknType EQ TKT_EOS)
-             && lptkLine[1].tkFlags.TknType EQ TKT_VARNAMED
-             && lptkLine[2].tkFlags.TknType EQ TKT_LABELSEP);
+             && lptkLine[iSymOff + 0].tkFlags.TknType EQ TKT_VARNAMED
+             && lptkLine[iSymOff + 1].tkFlags.TknType EQ TKT_LABELSEP);
 
-                // Get the source LPSYMENTRY
-                lpSymEntrySrc = lptkLine[1].tkData.tkSym;
+        // Get the source LPSYMENTRY
+        lpSymEntrySrc = lptkLine[iSymOff].tkData.tkSym;
 
-                // stData is an LPSYMENTRY
-                Assert (GetPtrTypeDir (lpSymEntrySrc) EQ PTRTYPE_STCONST);
+        // stData is an LPSYMENTRY
+        Assert (GetPtrTypeDir (lpSymEntrySrc) EQ PTRTYPE_STCONST);
 
-                // Copy the old SYMENTRY to the SIS
-                *lpSymEntryNxt = *lpSymEntrySrc;
+        // Copy the old SYMENTRY to the SIS
+        *lpSymEntryNxt = *lpSymEntrySrc;
 
-                // Clear the STE flags & data
-                *((UINT *) &lpSymEntrySrc->stFlags) &= *(UINT *) &stFlagsClr;
-////////////////lpSymEntrySrc->stData.stLongest = 0;        // stLongest set below via stInteger
+        // Clear the STE flags & data
+        *((UINT *) &lpSymEntrySrc->stFlags) &= *(UINT *) &stFlagsClr;
+////////lpSymEntrySrc->stData.stLongest = 0;        // stLongest set below via stInteger
 
-                // Initialize the SYMENTRY to an integer constant
-                lpSymEntrySrc->stFlags.Imm         = TRUE;
-                lpSymEntrySrc->stFlags.ImmType     = IMMTYPE_INT;
-                lpSymEntrySrc->stFlags.Inuse       = TRUE;
-                lpSymEntrySrc->stFlags.Value       = TRUE;
-                lpSymEntrySrc->stFlags.ObjName     = (lpSymEntryNxt->stFlags.ObjName EQ OBJNAME_SYS)
-                                                   ? OBJNAME_SYS
-                                                   : OBJNAME_USR;
-                lpSymEntrySrc->stFlags.stNameType  = NAMETYPE_VAR;
-                lpSymEntrySrc->stFlags.DfnLabel    = TRUE;
-                lpSymEntrySrc->stFlags.DfnSysLabel = (lpSymEntryNxt->stFlags.ObjName EQ OBJNAME_SYS);
-                lpSymEntrySrc->stData.stInteger    = uLineNum1;
+        // Initialize the SYMENTRY to an integer constant
+        lpSymEntrySrc->stFlags.Imm         = TRUE;
+        lpSymEntrySrc->stFlags.ImmType     = IMMTYPE_INT;
+        lpSymEntrySrc->stFlags.Inuse       = TRUE;
+        lpSymEntrySrc->stFlags.Value       = TRUE;
+        lpSymEntrySrc->stFlags.ObjName     = (lpSymEntryNxt->stFlags.ObjName EQ OBJNAME_SYS)
+                                           ? OBJNAME_SYS
+                                           : OBJNAME_USR;
+        lpSymEntrySrc->stFlags.stNameType  = NAMETYPE_VAR;
+        lpSymEntrySrc->stFlags.DfnLabel    = TRUE;
+        lpSymEntrySrc->stFlags.DfnSysLabel = (lpSymEntryNxt->stFlags.ObjName EQ OBJNAME_SYS);
+        lpSymEntrySrc->stData.stInteger    = uLineNum1;
 
-                // Set the ptr to the previous entry to the STE in its shadow chain
-                lpSymEntrySrc->stPrvEntry          = lpSymEntryNxt;
+        // Set the ptr to the previous entry to the STE in its shadow chain
+        lpSymEntrySrc->stPrvEntry          = lpSymEntryNxt;
 
-                // Save the SI level for this SYMENTRY
-                Assert (lpMemPTD->SILevel);
-                lpSymEntrySrc->stSILevel           = lpMemPTD->SILevel - 1;
+        // Save the SI level for this SYMENTRY
+        Assert (lpMemPTD->SILevel);
+        lpSymEntrySrc->stSILevel           = lpMemPTD->SILevel - 1;
 
-                // Skip to the next SYMENTRY
-                lpSymEntryNxt++;
+        // Skip to the next SYMENTRY
+        lpSymEntryNxt++;
     } // End FOR
 
     return lpSymEntryNxt;

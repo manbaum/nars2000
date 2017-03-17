@@ -6,7 +6,7 @@ Build #1716 -- Version 0.5.1.xx
 Directory branches/bsmith/NewTypes:
 
 SC_SYMB.C:
-  Change woridng of )SYMB command.
+  Change wording of )SYMB command.
 
 TOKENIZE.C:
   Change syntax color of # to avoid marking it as an unknown.

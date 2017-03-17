@@ -1,5 +1,5 @@
 ﻿//***************************************************************************
-//  NARS2000 -- Magic Function -- Squad
+//  NARS2000 -- Magic Function -- Slope
 //***************************************************************************
 
 /***************************************************************************
@@ -28,45 +28,25 @@
 
 
 //***************************************************************************
-//  Magic function for Dyadic Squad
+//  Magic function for Dyadic Slope
 //
-//  Dyadic Squad -- index with or without axis
+//  Dyadic Slope -- expand with or without axis
 //
-//  Return R[⊃∘.,/L]
+//  Return (1⌈|L)/[X] (L>0)\[X] R
 //***************************************************************************
 
 static LPAPLCHAR DydBody[] =
-{// Emulate L⌷[X] R or L⌷R
- L"Pro←0",
- L"L1::if 0≠⎕NC 'X'",
- L"  ⎕ERROR (~∧/X∊⍳⍴⍴R)/'AXIS ERROR'",
- L"  ⎕ERROR ((≢X)≢≢∪X)/'AXIS ERROR'",
- L"  A←((⍳⍴⍴R)∊X)\\L", // Double the \ to avoid it being confused with a character escape sequence
- L"  B←(⍳⍴⍴R)~X",
- L"  A[B]←⍳¨(⍴1/R)[B]",
- L":else",
- L"  A←L",
- L":end",
- L":if 0=⍴⍴R", // Because of R≡(⍳¨⍴R)⌷R
- L":andif L≡0⍴⊂⍬ ⋄ Z←R ⋄ →0 ⋄ :end",
-
- L":if 1=⍴⍴R", // Because of R≡(⍳¨⍴R)⌷R
- L":andif (2≡≡L)∧(,1)≡≡¨L ⋄ Z←R[↑L] ⋄ →0 ⋄ :end",
-
- L":if Pro ⋄ Z←(⍴⊃∘.,/A)⍴R",
- L":else   ⋄ Z←R[⊃∘.,/A]",
- L":end    ⋄ →0",
- L"⎕PRO:Pro←1",
- L"→L1",
+{// Emulate L\[X] R for Integer L
+ L"Z←(1⌈|L)/[X] (L>0)\\[X] R",	// Double the \ to avoid it being confused with a character escape sequence
 };
 
-MAGIC_FCNOPR MFO_DydSquad =
-{L"Z←L " MFON_DydSquad L"[X] R;A B Pro",
+MAGIC_FCNOPR MFO_DydSlope =			
+{L"Z←L " MFON_DydSlope L"[X] R",
  DydBody,
  countof (DydBody),
 };
 
 
 //***************************************************************************
-//  End of File: mf_squad.h
+//  End of File: mf_slope.h
 //***************************************************************************

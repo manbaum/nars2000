@@ -1,6 +1,27 @@
 Version 0.5.1.xx consists of the following Builds:
 
 
+Build #1718 -- Version 0.5.1.xx
+--------------------------------
+
+* Implement Extended Expand For Integer Left Arguments
+
+Directory branches/bsmith/NewTypes:
+
+EXECMFN.C:
+EXECMFN.H:
+  Define equates for Dyadic Slope Magic Function.
+
+MF_SLOPE.H:
+  Define Magic Function for Dyadic Slope.
+
+MF_SQUAD.H:
+  Move comment out of APL code into C code
+
+PF_SLOPE.C:
+  Call Magic Function if the left arg is not Boolean.
+
+
 Build #1717 -- Version 0.5.1.xx
 --------------------------------
 
@@ -20,7 +41,7 @@ Build #1716 -- Version 0.5.1.xx
 Directory branches/bsmith/NewTypes:
 
 SC_SYMB.C:
-  Change woridng of )SYMB command.
+  Change wording of )SYMB command.
 
 TOKENIZE.C:
   Change syntax color of # to avoid marking it as an unknown.

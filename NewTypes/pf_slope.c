@@ -237,6 +237,34 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
         } // End IF/ELSE
     } // End IF/ELSE
 
+    // If the left arg is not Boolean, ...
+    if (!IsSimpleBool (aplTypeLft))
+    {
+        HGLOBAL hGlbMFO;                // Magic function/operator global memory handle
+        TOKEN   tkAxis = {0};           // Axis token
+
+        // Fill in the axis token
+        tkAxis.tkFlags.TknType   = TKT_VARIMMED;
+        tkAxis.tkFlags.ImmType   = IMMTYPE_INT;
+////////tkAxis.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
+        tkAxis.tkData.tkInteger = GetQuadIO () + aplAxis;
+////////tkAxis.tkCharIndex       =                   // Ignored
+
+        // Get the magic function/operator global memory handle
+        hGlbMFO = GetMemPTD ()->hGlbMFO[MFOE_DydSlope];
+
+        //  Use an internal magic function/operator.
+        return
+          ExecuteMagicFunction_EM_YY (lptkLftArg,   // Ptr to left arg token
+                                      lptkFunc,     // Ptr to function token
+                                      NULL,         // Ptr to function strand
+                                      lptkRhtArg,   // Ptr to right arg token
+                                     &tkAxis,       // Ptr to axis token
+                                      hGlbMFO,      // Magic function/operator global memory handle
+                                      NULL,         // Ptr to HSHTAB struc (may be NULL)
+                                      LINENUM_ONE); // Starting line # type (see LINE_NUMS)
+    } // End IF
+
     // Get left and right arg's global ptrs
     aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
@@ -854,6 +882,16 @@ NORMAL_EXIT:
     return lpYYRes;
 } // End PrimFnDydSlope_EM_YY
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  Magic function/operator for dyadic slope
+//
+//  Dyadic Slope with its left arg extended to integers thanks to
+//    "manandpc" in the NARS2000 Forum, http://forum.nars2000.org/topic170.html
+//***************************************************************************
+
+#include "mf_slope.h"
 
 
 //***************************************************************************

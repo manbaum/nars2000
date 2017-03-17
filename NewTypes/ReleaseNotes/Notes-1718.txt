@@ -1,0 +1,19 @@
+Build #1718 -- Version 0.5.1.xx
+--------------------------------
+
+* Implement Extended Expand For Integer Left Arguments
+
+Directory branches/bsmith/NewTypes:
+
+EXECMFN.C:
+EXECMFN.H:
+  Define equates for Dyadic Slope Magic Function.
+
+MF_SLOPE.H:
+  Define Magic Function for Dyadic Slope.
+
+MF_SQUAD.H:
+  Move comment out of APL code into C code
+
+PF_SLOPE.C:
+  Call Magic Function if the left arg is not Boolean.

@@ -1,2 +1,2 @@
-#define VER_MODULE 49
-#define VER_MODULE_STR "49"
+#define VER_MODULE 0
+#define VER_MODULE_STR "0"

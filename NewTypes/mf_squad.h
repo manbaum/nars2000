@@ -47,21 +47,27 @@ static LPAPLCHAR DydBody[] =
  L":else",
  L"  A←L",
  L":end",
- L":if 0=⍴⍴R", // Because of R≡(⍳¨⍴R)⌷R
+ 
+ L":if 0=⍴⍴R", 		// Because of R≡(⍳¨⍴R)⌷R
  L":andif L≡0⍴⊂⍬ ⋄ Z←R ⋄ →0 ⋄ :end",
 
- L":if 1=⍴⍴R", // Because of R≡(⍳¨⍴R)⌷R
- L":andif (2≡≡L)∧(,1)≡≡¨L ⋄ Z←R[↑L] ⋄ →0 ⋄ :end",
+ L":if 1≥⍴⍴A",		// Scalar or vector
+ L":andif 1=1⌈≢A",	// of length 0 or 1
+ L"  f←↑",
+ L":else",
+ L"  f←⊃∘(∘.,/)",
+ L":end",
 
- L":if Pro ⋄ Z←(⍴⊃∘.,/A)⍴R",
- L":else   ⋄ Z←R[⊃∘.,/A]",
+ L":if Pro ⋄ Z←(⍴f A)⍴R",
+ L":else   ⋄ Z←R[f A]",
  L":end    ⋄ →0",
+ 
  L"⎕PRO:Pro←1",
  L"→L1",
 };
 
 MAGIC_FCNOPR MFO_DydSquad =
-{L"Z←L " MFON_DydSquad L"[X] R;A B Pro",
+{L"Z←L " MFON_DydSquad L"[X] R;A B f Pro",
  DydBody,
  countof (DydBody),
 };

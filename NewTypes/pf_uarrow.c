@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -587,7 +587,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemWVecRht = MyGlobalLock000 (hGlbWVecRht);
+    lpMemWVecRht = MyGlobalLockInt (hGlbWVecRht);
 
     // Loop through the dimensions of the right arg in reverse
     //   order {backscan} and compute the cumulative product
@@ -619,7 +619,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemOdoRht = MyGlobalLock000 (hGlbOdoRht);
+    lpMemOdoRht = MyGlobalLockInt (hGlbOdoRht);
 
     // Initialize the right arg odometer array
     CopyMemory (lpMemOdoRht, lpMemLoHiRht, (APLU3264) aplRankRes * sizeof (APLUINT));
@@ -640,7 +640,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemWVecRes = MyGlobalLock000 (hGlbWVecRes);
+    lpMemWVecRes = MyGlobalLockInt (hGlbWVecRes);
 
     // Loop through the dimensions of the result in reverse
     //   order {backscan} and compute the cumulative product
@@ -671,7 +671,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemOdoRes = MyGlobalLock000 (hGlbOdoRes);
+    lpMemOdoRes = MyGlobalLockInt (hGlbOdoRes);
 
     // Initialize the result odometer array
     CopyMemory (lpMemOdoRes, lpMemLoHiRes, (APLU3264) aplRankRes * sizeof (APLUINT));

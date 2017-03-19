@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -952,7 +952,7 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
         return NULL;
 
     // Lock the memory to get a ptr to it
-    lpMemTmpLft  = MyGlobalLock000 (hGlbTmpLft);
+    lpMemTmpLft  = MyGlobalLockInt (hGlbTmpLft);
     lpMemTmpLoRht = &lpMemTmpLft   [aplRankRes];
     lpMemTmpHiRht = &lpMemTmpLoRht [aplRankRes];
     if (!bDownArrow)

@@ -2354,6 +2354,9 @@ UBOOL PrimFnDydEpsilonOther_EM
     LPVOID            lpMemTmp;             // ...         global memory
     LPPL_YYSTYPE      lpYYTmp;              // Ptr to the temporary result
     UBOOL             bCmp;                 // TRUE iff the comparison is TRUE
+    APLSTYPE          aplTypeSubCom;        // Common storage type
+    ALLTYPES          atLft = {0},          // Temps
+                      atRht = {0};          // ...
 
     // This leaves:  Left vs.  Right
     //               BIAF vs.     HN
@@ -2381,6 +2384,9 @@ UBOOL PrimFnDydEpsilonOther_EM
             // Check for Ctrl-Break
             if (CheckCtrlBreak (*lpbCtrlBreak))
                 goto ERROR_EXIT;
+
+            // Initialize with something harmless
+            aplTypeSubCom = ARRAY_ERROR;
 
             // Get the next value from the right arg
             GetNextValueMem (lpMemRht,              // Ptr to right arg global memory
@@ -2425,103 +2431,65 @@ UBOOL PrimFnDydEpsilonOther_EM
                 if (bCmp)
                     goto SET_RESULT_BIT;
             } else
-            // If both items are simple, ...
-            if ((hGlbSubLft EQ NULL) && (hGlbSubRht EQ NULL))
+            // If both items are APLCHARs, ...
+            if (IsImmChr (immTypeSubLft) && IsImmChr (immTypeSubRht))
             {
-                // If both items are APLCHARs, ...
-                if (IsImmChr (immTypeSubLft) && IsImmChr (immTypeSubRht))
+                // Compare the APLCHARs
+                if (((APLCHAR) aplLongestSubLft) EQ (APLCHAR) aplLongestSubRht)
+                    goto SET_RESULT_BIT;
+            } else
+            // If one item is char and the other is numeric, ...
+            if (IsImmChr (immTypeSubLft) && (IsImmNum (immTypeSubRht) || IsImmGlbNum (immTypeSubRht))
+             || IsImmChr (immTypeSubRht) && (IsImmNum (immTypeSubLft) || IsImmGlbNum (immTypeSubLft)))
+                continue;
+            else
+            // If both items are simple or global numeric, ...
+            if ((IsImmNum (immTypeSubLft) || IsImmGlbNum (immTypeSubLft))
+             && (IsImmNum (immTypeSubRht) || IsImmGlbNum (immTypeSubRht)))
+            {
+                APLSTYPE aplTypeSubLft = TranslateImmTypeToArrayType (immTypeSubLft),
+                         aplTypeSubRht = TranslateImmTypeToArrayType (immTypeSubRht);
+
+                // This leaves BIFRV vs. BIFRV
+
+                // Calculate the common type
+                aplTypeSubCom = aTypePromote[aplTypeSubLft][aplTypeSubRht];
+
+                // Promote the left & right args to the common type
+                (*aTypeActPromote[aplTypeSubLft][aplTypeSubCom]) ((hGlbSubLft EQ NULL) ? &aplLongestSubLft : ClrPtrTypeDir (hGlbSubLft), 0, &atLft);
+                (*aTypeActPromote[aplTypeSubRht][aplTypeSubCom]) ((hGlbSubRht EQ NULL) ? &aplLongestSubRht : ClrPtrTypeDir (hGlbSubRht), 0, &atRht);
+
+                // Split cases based upon the common type
+                switch (aplTypeSubCom)
                 {
-                    // Compare the APLCHARs
-                    if (((APLCHAR) aplLongestSubLft) EQ (APLCHAR) aplLongestSubRht)
-                        goto SET_RESULT_BIT;
-                } else
-                // If both items are numeric, ...
-                if (IsImmNum (immTypeSubLft) && IsImmNum (immTypeSubRht))
-                {
-                    // This leaves BIF vs. BIF
+                    case ARRAY_BOOL:                // Com = BOOL
+                        if (((APLBOOL) aplLongestSubLft) EQ (APLBOOL) aplLongestSubRht)
+                            goto SET_RESULT_BIT;
+                        break;
 
-                    // Split cases based upon the left arg item immediate type
-                    switch (immTypeSubLft)
-                    {
-                        case IMMTYPE_BOOL:              // Lft = BOOL
-                            // Split cases based upon the right arg item immediate type
-                            switch (immTypeSubRht)
-                            {
-                                case IMMTYPE_BOOL:      // Lft = BOOL, Rht = BOOL
-                                    if (((APLBOOL) aplLongestSubLft) EQ (APLBOOL) aplLongestSubRht)
-                                        goto SET_RESULT_BIT;
-                                    break;
+                    case ARRAY_INT:                 // Com = INT
+                        if (((APLINT)  aplLongestSubLft) EQ (APLINT)  aplLongestSubRht)
+                            goto SET_RESULT_BIT;
+                        break;
 
-                                case IMMTYPE_INT:       // Lft = BOOL, Rht = INT
-                                    if (((APLBOOL) aplLongestSubLft) EQ (APLINT)  aplLongestSubRht)
-                                        goto SET_RESULT_BIT;
-                                    break;
+                    case ARRAY_FLOAT:               // Com = FLOAT
+                        if (CmpCT_F (*(LPAPLFLOAT) &aplLongestSubLft, *(LPAPLFLOAT) &aplLongestSubRht, fQuadCT, EQ))
+                            goto SET_RESULT_BIT;
+                        break;
 
-                                case IMMTYPE_FLOAT:     // Lft = BOOL, Rht = FLOAT
-                                    if (CmpCT_F ((APLBOOL) aplLongestSubLft, *(LPAPLFLOAT) &aplLongestSubRht, fQuadCT, EQ))
-                                        goto SET_RESULT_BIT;
-                                    break;
+                    case ARRAY_RAT:
+                        if (CmpCT_R (atLft.aplRat, atRht.aplRat, fQuadCT, EQ))
+                            goto SET_RESULT_BIT;
+                        break;
 
-                                defstop
-                                    break;
-                            } // End SWITCH
+                    case ARRAY_VFP:
+                        if (CmpCT_V (atLft.aplVfp, atRht.aplVfp, fQuadCT, EQ))
+                            goto SET_RESULT_BIT;
+                        break;
 
-                            break;
-
-                        case IMMTYPE_INT:               // Lft = INT
-                            // Split cases based upon the right arg item immediate type
-                            switch (immTypeSubRht)
-                            {
-                                case IMMTYPE_BOOL:      // Lft = INT, Rht = BOOL
-                                    if (((APLINT)  aplLongestSubLft) EQ (APLBOOL) aplLongestSubRht)
-                                        goto SET_RESULT_BIT;
-                                    break;
-
-                                case IMMTYPE_INT:       // Lft = INT, Rht = INT
-                                    if (((APLINT)  aplLongestSubLft) EQ (APLINT)  aplLongestSubRht)
-                                        goto SET_RESULT_BIT;
-                                    break;
-
-                                case IMMTYPE_FLOAT:     // Lft = INT, Rht = FLOAT
-                                    if (CmpCT_F ((APLFLOAT) (APLINT)  aplLongestSubLft, *(LPAPLFLOAT) &aplLongestSubRht, fQuadCT, EQ))
-                                        goto SET_RESULT_BIT;
-                                    break;
-
-                                defstop
-                                    break;
-                            } // End SWITCH
-
-                            break;
-
-                        case IMMTYPE_FLOAT:             // Lft = FLOAT
-                            // Split cases based upon the right arg item immediate type
-                            switch (immTypeSubRht)
-                            {
-                                case IMMTYPE_BOOL:      // Lft = FLOAT, Rht = BOOL
-                                    if (CmpCT_F (*(LPAPLFLOAT) &aplLongestSubLft, (APLBOOL) aplLongestSubRht, fQuadCT, EQ))
-                                        goto SET_RESULT_BIT;
-                                    break;
-
-                                case IMMTYPE_INT:       // Lft = FLOAT, Rht = INT
-                                    if (CmpCT_F (*(LPAPLFLOAT) &aplLongestSubLft, (APLFLOAT) (APLINT) aplLongestSubRht, fQuadCT, EQ))
-                                        goto SET_RESULT_BIT;
-                                    break;
-
-                                case IMMTYPE_FLOAT:     // Lft = FLOAT, Rht = FLOAT
-                                    if (CmpCT_F (*(LPAPLFLOAT) &aplLongestSubLft, *(LPAPLFLOAT) &aplLongestSubRht, fQuadCT, EQ))
-                                        goto SET_RESULT_BIT;
-                                    break;
-
-                                defstop
-                                    break;
-                            } // End SWITCH
-
-                            break;
-
-                        defstop
-                            break;
-                    } // End SWITCH
-                } // End IF/ELSE/...
+                    defstop
+                        break;
+                } // End SWITCH
             } else
             // If the left item is immediate and the right is global, ...
             if ((hGlbSubLft EQ NULL) && (hGlbSubRht NE NULL))
@@ -2716,6 +2684,17 @@ UBOOL PrimFnDydEpsilonOther_EM
 SET_RESULT_BIT:
             // Set the result bit
             *lpMemRes |= (BIT0 << uBitIndex);
+
+            // Check for valid
+            if (!IsErrorType (aplTypeSubCom))
+            {
+                // Free the old atLft & atRht (if any)
+                (*aTypeFree[aplTypeSubCom]) (&atLft, 0);
+                (*aTypeFree[aplTypeSubCom]) (&atRht, 0);
+
+                // Initialize with something harmless
+                aplTypeSubCom = ARRAY_ERROR;
+            } // End IF
 
             break;
         } // End FOR

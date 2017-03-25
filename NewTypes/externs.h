@@ -1171,7 +1171,9 @@ BITMAP  bmCheck;                        // Bitmap metrics for the marker
 
 EXTERN
 HCURSOR hCursorWait,                    // Hourglass cursor
-        hCursorIdle;                    // Arrow     ...
+        hCursorIdle,                    // Arrow     ...
+        hCursorNo,                      // Not valid move target
+        hCursorDragMove;                // Valid move target
 
 EXTERN
 WNDPROC lpfnOldTabCtrlWndProc;          // Save area for old Tab Control procedure

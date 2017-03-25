@@ -433,6 +433,8 @@ ICONS=$(A)About.ico     \
       $(A)Edit.bmp      \
       $(A)Objects.bmp
 
+CURSORS=$(A)drag_move.cur
+
 MANIFEST=$(ENAME).exe.manifest$(WIN)
 
 ## Cygwin-specific files
@@ -681,7 +683,7 @@ $(O)ver.obj:            $(@B).c         $(VER_DEP)
 $(O)webcolors.obj:      $(@B).c         $(WEBCOLORS_DEP)
 $(O)yyfns.obj:          $(@B).c         $(YYFNS_DEP)
 
-main.rc:                                $(MAIN_RCDEP) $(ICONS) $(MANIFEST)
+main.rc:                                $(MAIN_RCDEP) $(ICONS) $(CURSORS) $(MANIFEST)
 ver.rc:                                 $(VER_RCDEP)
 
 $(O)main.res:           $(@B).rc        $(MAIN_RCDEP)

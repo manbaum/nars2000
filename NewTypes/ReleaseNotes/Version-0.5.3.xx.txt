@@ -1,0 +1,36 @@
+Version 0.5.3.xx consists of the following Builds:
+
+
+Build #1722 -- Version 0.5.3.xx
+--------------------------------
+
+* Implement Drag/Move In The Function And Session Editors
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+  Define new cursor handles.
+
+MAIN.C:
+  Load new cursor handles.
+
+MAIN.RC:
+  Define new cursor resource.
+
+MAKEFILE.INC:
+  Define new cursor dependency.
+
+RESOURCE.H:
+  Define new cursor IDs.
+
+VER.RC:
+  Increment version # to 0.5.3.xx.
+
+
+Directory branches/bsmith/NewTypes/WineHQ:
+
+EDITCTRL.C:
+  Implement drag/move of a selection in the function and session editors.
+
+LOCAL.H:
+  Define externs for the Assert stmts and Drag/Move cursors.

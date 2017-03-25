@@ -3808,8 +3808,10 @@ UBOOL InitInstance
 ////hAccel = LoadAccelerators (hInstance, MAKEINTRESOURCE (IDR_ACCEL));
 
     // Initialize the cursors
-    hCursorWait = LoadCursor (NULL, MAKEINTRESOURCE (IDC_WAIT));
-    hCursorIdle = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
+    hCursorWait     = LoadCursor (NULL,      MAKEINTRESOURCE (IDC_WAIT    ));
+    hCursorIdle     = LoadCursor (NULL,      MAKEINTRESOURCE (IDC_ARROW   ));
+    hCursorNo       = LoadCursor (NULL,      MAKEINTRESOURCE (IDC_NO      ));
+    hCursorDragMove = LoadCursor (hInstance, MAKEINTRESOURCE (IDC_DRAGMOVE));
 
     // Initialize the window background brush
     ghBrushBG = CreateSolidBrush (gSyntaxColorText.crBack);

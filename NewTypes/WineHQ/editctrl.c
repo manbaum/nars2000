@@ -152,6 +152,7 @@ typedef struct tagEDITSTATE
     INT line_count;         /* number of lines */
     INT y_offset;           /* scroll offset in number of lines */
     BOOL bCaptureState;     /* flag indicating whether mouse was captured */
+    BOOL bMoveState;        /* flag indicating whether we're moving a region */
     BOOL bEnableState;      /* flag keeping the enable state */
     HWND hwndSelf;          /* the our window handle */
     HWND hwndParent;        /* Handle of parent for sending EN_* messages.
@@ -3827,20 +3828,39 @@ static LRESULT EDIT_WM_LButtonDblClk(EDITSTATE *es)
  */
 static LRESULT EDIT_WM_LButtonDown(EDITSTATE *es, DWORD keys, INT x, INT y)
 {
-    INT e;
+    INT  e, s, d;
     BOOL after_wrap;
 
-    es->bCaptureState = TRUE;
-    SetCapture(es->hwndSelf);
     EDIT_ConfinePoint(es, &x, &y);
-    e = EDIT_CharFromPos(es, x, y, &after_wrap);
-    EDIT_EM_SetSel(es, (keys & MK_SHIFT) ? es->selection_start : e, e, after_wrap);
-    EDIT_EM_ScrollCaret(es);
-    es->region_posx = es->region_posy = 0;
-    SetTimer(es->hwndSelf, 0, 100, NULL);
+    d = EDIT_CharFromPos(es, x, y, &after_wrap);    // Drop point
+    s = es->selection_start;                        // Selection start
+    e = es->selection_end  ;                        // Selection end
 
-    if (!(es->flags & EF_FOCUSED))
+    // The mouse must not be captured, ...
+    Assert (es->bCaptureState EQ FALSE);
+
+    // If the drop point is inside the selection region (SR), ...
+    if (s <= d
+     &&      d < e)
+    {
+        // Prepare to move the SR
+        es->bCaptureState = TRUE;
+        SetCapture(es->hwndSelf);
+        es->bMoveState = TRUE;
+    } else
+    {
+        // Prepare to define a SR
+        es->bCaptureState = TRUE;
+        SetCapture(es->hwndSelf);
+
+        EDIT_EM_SetSel(es, (keys & MK_SHIFT) ? es->selection_start : d, d, after_wrap);
+        EDIT_EM_ScrollCaret(es);
+        es->region_posx = es->region_posy = 0;
+        SetTimer(es->hwndSelf, 0, 100, NULL);
+
+        if (!(es->flags & EF_FOCUSED))
             SetFocus(es->hwndSelf);
+    } // End IF/ELSE
 
     return 0;
 } // End EDIT_WM_LButtonDown
@@ -3851,13 +3871,70 @@ static LRESULT EDIT_WM_LButtonDown(EDITSTATE *es, DWORD keys, INT x, INT y)
  *  WM_LBUTTONUP
  *
  */
-static LRESULT EDIT_WM_LButtonUp(EDITSTATE *es)
+static LRESULT EDIT_WM_LButtonUp(EDITSTATE *es, DWORD keys, INT x, INT y)
 {
+    // If we're moving a region, ...
+    if (es->bMoveState)
+    {
+        INT  e, s, d;
+        BOOL after_wrap;
+
+        EDIT_ConfinePoint(es, &x, &y);
+        d = EDIT_CharFromPos(es, x, y, &after_wrap);    // Drop point
+        s = es->selection_start;                        // Selection start
+        e = es->selection_end  ;                        // Selection end
+
+        // The mouse must be captured, ...
+        Assert (es->bCaptureState EQ TRUE);
+
+        // If the drop point is outside the selection region (SR),
+        //   and is not at the selection start, ...
+        if ((s > d
+          ||     d > e)
+         && d NE s)
+        {
+            UINT uGroupIndex;               // Group index
+
+            // Cut the SR from the text at [s,e]
+            SendMessageW (es->hwndSelf, WM_CUT, 0, 0);
+////////////EDIT_WM_Cut (es);
+
+            // If the index of the drop point is > the index of the start point, ...
+            if (d > s)
+                // Move the drop point
+                d -= e - s;
+
+            // Set the selection point to [d]
+            EDIT_EM_SetSel(es, d, d, after_wrap);
+
+            // Get the prev group index, and save it back
+            //   so as to make the Cut & Paste appear as one operation
+            uGroupIndex = GetWindowLongW (es->hwndParent, GWLSF_UNDO_GRP) - 1;
+            SetWindowLongW (es->hwndParent, GWLSF_UNDO_GRP, (UINT) uGroupIndex);
+
+            // Paste the SR into the text
+            SendMessageW (es->hwndSelf, WM_PASTE, 0, 0);
+
+            // No more region
+            es->region_posx = es->region_posy = 0;
+////////////EDIT_WM_Paste (es);
+        } // End IF
+
+        // Restore the original class cursor
+        SetCursor ((HCURSOR) GetClassLongPtrW (es->hwndSelf, GCLP_HCURSOR));
+
+        // We're no longer moving a region
+        es->bMoveState = FALSE;
+
+        if (GetCapture() == es->hwndSelf)
+            ReleaseCapture();
+    } else
     if (es->bCaptureState) {
         KillTimer(es->hwndSelf, 0);
         if (GetCapture() == es->hwndSelf) ReleaseCapture();
     }
     es->bCaptureState = FALSE;
+
     return 0;
 } // End EDIT_WM_LButtonUp
 
@@ -3895,13 +3972,44 @@ static LRESULT EDIT_WM_MouseMove(EDITSTATE *es, INT x, INT y)
      *  FIXME: gotta do some scrolling if outside client
      *      area.  Maybe reset the timer ?
      */
-    prex = x; prey = y;
-    EDIT_ConfinePoint(es, &x, &y);
-    es->region_posx = (prex < x) ? -1 : ((prex > x) ? 1 : 0);
-    es->region_posy = (prey < y) ? -1 : ((prey > y) ? 1 : 0);
-    e = EDIT_CharFromPos(es, x, y, &after_wrap);
-    EDIT_EM_SetSel(es, es->selection_start, e, after_wrap);
-    EDIT_SetCaretPos(es,es->selection_end,es->flags & EF_AFTER_WRAP);
+
+    // If we're moving a region, ...
+    if (es->bMoveState)
+    {
+        INT  e, s, d;
+        BOOL after_wrap;
+        LRESULT res;
+
+        EDIT_ConfinePoint(es, &x, &y);
+        d = EDIT_CharFromPos(es, x, y, &after_wrap);    // Drop point
+        s = es->selection_start;                        // Selection start
+        e = es->selection_end  ;                        // Selection end
+
+        // Ensure that the caret is on the line
+        res = EDIT_EM_PosFromChar(es, d, after_wrap);
+        SetCaretPos (LOWORD (res), HIWORD (res));
+
+        // Change the mouse cursor to indicate whether or not this is a valid drop point
+
+        // If the drop point is inside the selection region (SR), ...
+        if (s <= d
+         &&      d < e)
+            // Tell 'em NO
+            SetCursor (hCursorNo);
+        else
+            // Tell 'em YES
+            SetCursor (hCursorDragMove);
+    } else
+    {
+        prex = x; prey = y;
+        EDIT_ConfinePoint(es, &x, &y);
+        es->region_posx = (prex < x) ? -1 : ((prex > x) ? 1 : 0);
+        es->region_posy = (prey < y) ? -1 : ((prey > y) ? 1 : 0);
+        e = EDIT_CharFromPos(es, x, y, &after_wrap);
+        EDIT_EM_SetSel(es, es->selection_start, e, after_wrap);
+        EDIT_SetCaretPos(es,es->selection_end,es->flags & EF_AFTER_WRAP);
+    } // End IF/ELSE
+
     return 0;
 } // End EDIT_WM_MouseMove
 
@@ -5505,7 +5613,7 @@ static LRESULT EditWndProc_common( HWND hwnd, UINT msg,
         break;
 
     case WM_LBUTTONUP:
-        result = EDIT_WM_LButtonUp(es);
+        result = EDIT_WM_LButtonUp(es, (DWORD) wParam, (short)LOWORD(lParam), (short)HIWORD(lParam));
         break;
 
     case WM_MBUTTONDOWN:

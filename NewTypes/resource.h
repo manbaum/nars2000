@@ -34,6 +34,9 @@
 #define IDB_EDIT                                  42
 #define IDB_OBJECTS                               43
 
+// Cursor IDs
+#define IDC_DRAGMOVE                              50
+
 // Icon IDs
 #define IDI_MF_LARGE                             102
 #define IDI_MF_SMALL                             103

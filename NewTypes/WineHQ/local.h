@@ -48,6 +48,9 @@ void DbgBrk (void);
 BOOL IzitFE (HWND);
 extern int __cdecl dprintfWL0 (unsigned short *lpwszFmt,...);
 extern int __cdecl dprintfWL9 (unsigned short *lpwszFmt,...);
+extern void nop (void);
+extern HCURSOR hCursorNo;
+extern HCURSOR hCursorDragMove;
 #ifdef DEBUG
 extern int gDbgLvl;
 #endif

@@ -65,8 +65,11 @@ UBOOL AssignName_EM
     if (IsNameTypeVar (lptkNam->tkData.tkSym->stFlags.stNameType)
      && lptkNam->tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS)
     {
-        // If the target is a user-defined function/operator system label, signal a SYNTAX ERROR
-        if (lptkNam->tkData.tkSym->stFlags.DfnSysLabel)
+        // If the target is a user-defined function/operator system label,
+        //   or the source is a function/operator, ...
+        if (lptkNam->tkData.tkSym->stFlags.DfnSysLabel
+         || IsTknFcnOpr (lptkSrc))
+            // Signal a SYNTAX ERROR
             goto SYNTAX_EXIT;
 
         // Validate the value
@@ -88,13 +91,16 @@ UBOOL AssignName_EM
         // Signal a VALUE ERROR
         goto NAME_VALUE_EXIT;
 
-    // If the target is a user-defined function/operator label, ...
-    if (lptkNam->tkData.tkSym->stFlags.DfnLabel)
+    // If the target is a user-defined function/operator label,
+    //   or it's an internal function, ...
+    if (lptkNam->tkData.tkSym->stFlags.DfnLabel
+     || lptkNam->tkData.tkSym->stFlags.FcnDir)
         // Signal a SYNTAX ERROR
         goto SYNTAX_EXIT;
 
     // If the name is suspended or pendent, it's not eraseable
     if (IzitSusPendent (lptkNam->tkData.tkSym))
+        // Signal a SYNTAX ERROR
         goto SYNTAX_EXIT;
 
     // Split cases based upon the source token type

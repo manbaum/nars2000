@@ -28,7 +28,7 @@
 #include "headers.h"
 #include "debug.h"              // For xxx_TEMP_OPEN macros
 
-#ifdef DEBUG
+#ifdef RESDEBUG
 // Resource debugging variables
 extern HANDLE ahGLBALLOC [MAXOBJ];
 extern HANDLE ahSEMAPHORE[MAXOBJ];
@@ -449,6 +449,7 @@ void DisplayGlobals
                         // 2 = ...     all globals
 
 {
+#if RESDEBUG
     int          i;                 // Loop counter
     HGLOBAL      hGlb;              // Current global memory handle
     LPVOID       lpMem;             // Ptr to current global memory (static header)
@@ -981,6 +982,7 @@ void DisplayGlobals
         DbgMsgW (L"********** End Semaphores ******************************");
 
     UpdateDBWindow ();
+#endif
 } // End DisplayGlobals
 #endif
 
@@ -1259,6 +1261,7 @@ void DisplayHeap
     (void)
 
 {
+#if RESDEBUG
     int     i, j;               // Loop counters
     APLINT  aplSize;            // Size of the global memory
     HGLOBAL hGlb;               // Current global memory handle
@@ -1327,6 +1330,7 @@ void DisplayHeap
     } // End FOR/IF
 
     DbgMsgW (L"********** End Heap ************************************");
+#endif
 } // End DisplayHeap
 #endif
 

@@ -141,9 +141,6 @@
 
   #define DbgMsgW2(a)                     {if (gDbgLvl > 2) {DbgMsgW(a);}}
 
-  #define CheckMemStat()                  _CheckMemStat ()
-  #define CheckGlbStat(a)                 _CheckGlbStat (a)
-
   #define Assert(a)                       ((a) || (DbgBrk (), nop (), 0))
   #define BreakIf(a)                      Assert (!(a))
 //#define nop()                           // Use already defined function
@@ -181,9 +178,6 @@
   #define DbgMsgW(a)
   #define DbgMsgW2(a)
 
-  #define CheckMemStat()
-  #define CheckGlbStat(a)
-
   #define Assert(a)                       ((void) 0)
   #define BreakIf(a)                      ((void) 0)
 ////  #define Assert(a) ((a) || (AssertPrint(#a, FNLN), 0))
@@ -195,6 +189,14 @@
 
   #define dprintfWL0(a,...)
   #define dprintfWL9(a,...)
+#endif
+
+#if RESDEBUG
+  #define CheckMemStat()                  _CheckMemStat ()
+  #define CheckGlbStat(a)                 _CheckGlbStat (a)
+#else
+  #define CheckMemStat()
+  #define CheckGlbStat(a)
 #endif
 
 #define imul64_RE(a,b,c)    imul64 ((a), (b), NULL, EXCEPTION_RESULT_##c)

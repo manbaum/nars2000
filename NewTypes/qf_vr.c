@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -93,14 +93,14 @@ LPPL_YYSTYPE SysFnMonVR_EM_YY
 
     //  Use an internal magic function/operator.
     return
-      ExecuteMagicFunction_EM_YY (NULL,         // Ptr to left arg token
-                                  lptkFunc,     // Ptr to function token
-                                  NULL,         // Ptr to function strand
-                                  lptkRhtArg,   // Ptr to right arg token
-                                  lptkAxis,     // Ptr to axis token
-                                  hGlbMFO,      // Magic function/operator global memory handle
-                                  NULL,         // Ptr to HSHTAB struc (may be NULL)
-                                  LINENUM_ONE); // Starting line # type (see LINE_NUMS)
+      ExecuteMagicFunction_EM_YY (NULL,                     // Ptr to left arg token
+                                  lptkFunc,                 // Ptr to function token
+                                  NULL,                     // Ptr to function strand
+                                  lptkRhtArg,               // Ptr to right arg token
+                                  lptkAxis,                 // Ptr to axis token
+                                  hGlbMFO,                  // Magic function/operator global memory handle
+                                 &lpMemPTD->htsMFO_MonVR,   // Ptr to HSHTAB struc (may be NULL)
+                                  LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
 } // End SysFnMonVR_EM_YY
 
 

@@ -1,6 +1,29 @@
 Version 0.5.3.xx consists of the following Builds:
 
 
+Build #1725 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In The Magic Function For []VR Not Using A Local HSHTABSTR
+
+Directory branches/bsmith/NewTypes:
+
+EXECMFN.C:
+  Make explicit tests of ptr against "NE NULL".
+  In IF stmts always compare ptr against NULL.
+  In <Init1MagicFunction>, check for incoming <INIT_MFO> struc and handle accordingly.
+  In <InitMagicFunctions>, initialize a local struc <INIT_MFO> to pass additional args to <Init1MagicFunction>.
+
+PERTAB.H:
+  Allocate room for a local HSHTABSTR for the []VR magic function.
+
+QF_VR.C:
+  In <SysFnMonVR_EM_YY>, pass a ptr to the local HSHTABSTR for the magic function.
+
+SESSMAN.C:
+  In <SMWndProc/WM_DESTROY>, also delete the system vars in []VR's local HSHTABSTR.
+
+
 Build #1724 -- Version 0.5.3.xx
 --------------------------------
 

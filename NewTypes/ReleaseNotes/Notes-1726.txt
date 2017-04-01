@@ -1,0 +1,11 @@
+Build #1726 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Inner Product Using Wrong Storage Type
+
+Directory branches/bsmith/NewTypes:
+
+PO_DOT.C:
+  In <PrimOpDydDotCommon_EM_YY>, when doing the reduction part (i.e., calling <PrimFnDydSiScSiScSub_EM>),
+    we pass the wrong storage type for the reduction value so far.  This bug affects Inner Products whose
+    Comparison storage type is lower then the Reduction storage type, such as +.=.

@@ -3604,7 +3604,7 @@ RESTART_INNERPROD_RES:
                                                   aplTypeRes,               // Result storage type
                                                   aplTypeCmp,               // Comparison storage type
                                                  &atCmpLft,                 // Left arg as ALLTYPES
-                                                  aplTypeCmp,               // Comparison storage type
+                                                  aplTypeRes,               // Reduction storage type
                                                  &atCmpRht,                 // Left arg as ALLTYPES
                                                  &aplTypeNew,               // New storage type
                                                   lpPrimSpecLft);           // Ptr to reduction function PRIMSPEC

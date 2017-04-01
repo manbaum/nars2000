@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup
+    Condition="'$(Bison_RuleBeforeTargets)' == '' and '$(Bison_RuleAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <Bison_RuleBeforeTargets>Midl</Bison_RuleBeforeTargets>
+    <Bison_RuleAfterTargets>CustomBuild</Bison_RuleAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Bison_RuleDependsOn
+      Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(Bison_RuleDependsOn)</Bison_RuleDependsOn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Bison_Rule>
+      <CommandLineTemplate>$(PARGEN) -o$(OutDir)%(Filename).c -v -r all -l %(FullPath)
+$(MSVC)bin\nmake /f makefile.pro.parse O=$(OutDir)</CommandLineTemplate>
+      <Outputs>$(OutDir)%(Filename).c</Outputs>
+      <ExecutionDescription>Generate Parser for %(Filename)</ExecutionDescription>
+    </Bison_Rule>
+  </ItemDefinitionGroup>
+</Project>

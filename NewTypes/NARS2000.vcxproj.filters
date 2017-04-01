@@ -1,0 +1,808 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="afofns.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="assign.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="axisfns.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bjhash.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="common.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="convert.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="crash.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="crashserver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cs_proc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="customize.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="debug.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dictionary.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dispdbg.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="display.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dtoa.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WineHQ\editctrl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="editfcn.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="errmsg.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="except.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="execdfn.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="execfns.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="execmfn.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fastbool.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fh_proc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fmtspec.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="free.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="getfns.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="getreent.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="goto.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hungarian_dbl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hungarian_int.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hungarian_rat.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hungarian_vfp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="identfns.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="immexec.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="inifile.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="iniparser.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="initdata.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="malloc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\msieve\mp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mpfns.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mpifns.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="parseline.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="perfmon.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_bar.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_circle.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_colonbar.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_comma.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_cslope.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_cstar.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_cstile.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_darrow.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_dcaret.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_deltastile.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_domino.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_dotdot.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_dshoe.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_dstile.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_dtack.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_dtackjot.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_epsilon.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_epsund.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_equal.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_equalund.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_index.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_iota.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_iotaund.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_lcaret.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_lcaretund.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_lshoe.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_lshoeund.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_ltack.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_ndcaret.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_nequal.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_nucaret.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_pi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_plus.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_qdot.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_query.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_rcaret.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_rcaretund.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_rho.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_root.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_rshoe.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_rshoeund.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_rtack.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_section.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_slash.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_slope.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_squad.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_star.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_stile.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_tilde.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_times.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_uarrow.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_ucaret.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_ushoe.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_ustile.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_utack.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pf_utackjot.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pl_proc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pn_proc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_cmiddot.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_dicircle.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_didtack.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_dieresis.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_dijot.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_ditilde.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_dot.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_jot.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_jotdot.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_multiset.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_slash.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_slope.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="po_variant.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\msieve\prime_delta.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="primfns.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="primspec.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="progbar.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_a.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_at.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_av.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_cr.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_d.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_dl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_dr.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_ea.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_ec.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_em.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_error.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_es.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_et.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_ex.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_fmt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_fx.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_lc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_mf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_nc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_nfns.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_nl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_sysid.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_sysver.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_t.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_tc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_tf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_ts.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_ucs.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_vr.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_wa.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rebar.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="refcnt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="resdebug.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="savefcn.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sc_common.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sc_copy.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sc_drop.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sc_erase.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sc_fnov.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sc_in.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sc_inascii.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sc_lib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sc_load.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sc_out.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sc_reset.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sc_save.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sc_si.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sc_wsid.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sessman.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\msieve\smallfact.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sort.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\msieve\squfof.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="statusbar.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="strand.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="symtab.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="symtrans.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="syscmds.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sysvars.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tabctrl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\msieve\tinyqs.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tokenize.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="translate.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="typemote.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="updates.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ver.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="webcolors.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="yyfns.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hc_proc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_dc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)\cs_parse.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)\fh_parse.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(OutDir)\pn_parse.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mpcf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mpcho_com.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mphf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mpof.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fpcho_com.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mpci.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mphi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mpoi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_strace.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cr_proc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qf_cs.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sc_symb.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Bison_Rule Include="cs_parse.y">
+      <Filter>Source Files</Filter>
+    </Bison_Rule>
+    <Bison_Rule Include="fh_parse.y">
+      <Filter>Source Files</Filter>
+    </Bison_Rule>
+    <Bison_Rule Include="pn_parse.y">
+      <Filter>Source Files</Filter>
+    </Bison_Rule>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="aplerrors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="colornames.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cs_parse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="datatype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="defines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="display.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="editctrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="eventtypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="execmfn.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="externs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fh_parse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="grade.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="headers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hungarian_src.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="macros.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="nameclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parseline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="perfmon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pertab.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pl_parse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pn_parse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="primfns.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="primspec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="qf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="qf_ec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resdebug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="savefcn.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sis.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="startaddr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="symbolnames.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="symtab.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="syntaxcolors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sysvars.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="termcode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="threads.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tokenize.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tokens.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="transfer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Unicode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="uniscribe.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="unitranshdr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="unitranstab.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="workspace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="compro.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mpc\include\mpc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="edit.rch">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="main.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="version.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="dbgbrk32.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM64 Include="dbgbrk64.asm">
+      <Filter>Source Files</Filter>
+    </MASM64>
+  </ItemGroup>
+</Project>

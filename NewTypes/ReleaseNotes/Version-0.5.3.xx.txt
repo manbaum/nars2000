@@ -1,6 +1,18 @@
 Version 0.5.3.xx consists of the following Builds:
 
 
+Build #1728 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Inner Product With Storage Types
+
+Directory branches/bsmith/NewTypes:
+
+PO_DOT.C:
+  Fix bug in Inner Product with confusion with the storage type of the right argument in the first reduction and the same argument in the second and subsequent reductions.
+  Use <CopyAll> function to avoid spurious compiler warning.
+
+
 Build #1727 -- Version 0.5.3.xx
 --------------------------------
 

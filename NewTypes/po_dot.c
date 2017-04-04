@@ -3411,21 +3411,25 @@ RESTART_INNERPROD_RES:
     // If the result is simple non-hetero or global numeric, ...
     if (IsSimpleNHGlbNum (aplTypeRes))
     {
-        APLUINT  uInnLft,           // Index into left arg
-                 uInnRht;           // ...        right ...
-        TOKEN    tkRes = {0};       // Temporary token result
-        UINT     uBitIndex;         // Bit index for looping through Boolean result
+        APLUINT  uInnLft,               // Index into left arg
+                 uInnRht;               // ...        right ...
+        TOKEN    tkRes = {0};           // Temporary token result
+        UINT     uBitIndex;             // Bit index for looping through Boolean result
         HGLOBAL  lpSymGlbLft = NULL,    // Ptr to left arg global numeric
                  lpSymGlbRht = NULL,    // ...    right ...
                  lpSymGlbCmpLft = NULL, // ...    Left  comparison arg global numeric
                  lpSymGlbCmpRht = NULL; // ...    right ...
-        APLSTYPE aplTypeNew;            // New storage type
+        APLSTYPE aplTypeNew,            // New storage type
+                 aplTypeCmpRht;         // Comparison/Reduction storage type
 
         // Initialize the bit index
         uBitIndex = 0;
 
         // Get the common storage type between the left & right args
         aplTypeCom = aTypePromote[aplTypeLft][aplTypeRht];
+
+        // Initialize the <atCmpRht> storage type as the Comparison storage type
+        aplTypeCmpRht = aplTypeCmp;
 
         // Trundle through the left & right arg remaining dimensions
         for (uOutLft = 0; uOutLft < aplRestLft; uOutLft++)
@@ -3550,7 +3554,7 @@ RESTART_INNERPROD_RES:
                         FreeResultTkn (&tkRes);
 
                         // Copy the result to local storage
-                        tkRes = *CopyToken_EM (&lpYYRes2->tkToken, FALSE);
+                        CopyAll (&tkRes, CopyToken_EM (&lpYYRes2->tkToken, FALSE));
 
                         // Free the result item
                         FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
@@ -3604,13 +3608,16 @@ RESTART_INNERPROD_RES:
                                                   aplTypeRes,               // Result storage type
                                                   aplTypeCmp,               // Comparison storage type
                                                  &atCmpLft,                 // Left arg as ALLTYPES
-                                                  aplTypeRes,               // Reduction storage type
+                                                  aplTypeCmpRht,            // Comparison or Reduction storage type
                                                  &atCmpRht,                 // Left arg as ALLTYPES
                                                  &aplTypeNew,               // New storage type
                                                   lpPrimSpecLft);           // Ptr to reduction function PRIMSPEC
                     // Free the old atCmpLft and atCmpRht
                     (*aTypeFree[aplTypeCmp]) (&atCmpLft, 0);
                     (*aTypeFree[aplTypeCmp]) (&atCmpRht, 0);
+
+                    // Save the <atCmpRht> storage type as the reduction storage type <aplTypeRes>
+                    aplTypeCmpRht = aplTypeRes;
 
                     if (bRet)
                     {
@@ -3656,7 +3663,7 @@ RESTART_INNERPROD_RES:
                 if (tkRes.tkFlags.TknType EQ TKT_VARIMMED)
                 {
                     // Copy the immediate value to atCmpRht
-                    (*aTypeActPromote[aplTypeRes][aplTypeRes]) (&tkRes.tkData.tkLongest, 0, &atCmpRht);
+                    (*aTypeActPromote[aplTypeCmpRht][aplTypeCmpRht]) (&tkRes.tkData.tkLongest, 0, &atCmpRht);
 
                     // Point to it
                     lpSymGlbCmpRht = &atCmpRht;
@@ -3677,7 +3684,7 @@ RESTART_INNERPROD_RES:
                     lpMem = VarArrayDataFmBase (lpMemHdr);
 
                     // Copy the item to atCmpRht
-                    (*aTypeActPromote[aplTypeCmp][aplTypeCmp]) (lpMem, 0, &atCmpRht);
+                    (*aTypeActPromote[aplTypeCmpRht][aplTypeCmpRht]) (lpMem, 0, &atCmpRht);
 
                     // Point to it
                     lpSymGlbCmpRht = &atCmpRht;
@@ -3908,7 +3915,7 @@ RESTART_INNERPROD_RES:
                                  || lpYYRes2->tkToken.tkFlags.TknType EQ TKT_VARARRAY);
 
                             // Copy the result to the accumulated reduction token
-                            tkItmRed = *CopyToken_EM (&lpYYRes2->tkToken, FALSE);
+                            CopyAll (&tkItmRed, CopyToken_EM (&lpYYRes2->tkToken, FALSE));
 
                             // Free the result item (but not the storage)
                             YYFree (lpYYRes2); lpYYRes2 = NULL;
@@ -3919,7 +3926,7 @@ RESTART_INNERPROD_RES:
                     if (iInnMax EQ (APLINT) (aplInnrMax - 1))
                     {
                         // Copy the result to the accumulated reduction token
-                        tkItmRed = lpYYRes->tkToken;
+                        CopyAll (&tkItmRed, &lpYYRes->tkToken);
 
                         // Free the result item (but not the storage)
                         YYFree (lpYYRes); lpYYRes = NULL;
@@ -3959,7 +3966,7 @@ RESTART_INNERPROD_RES:
                             } // End IF
 
                             // Copy the result to the accumulated reduction token
-                            tkItmRed = lpYYRes2->tkToken;
+                            CopyAll (&tkItmRed, &lpYYRes2->tkToken);
 
                             // Free the result item (but not the storage)
                             YYFree (lpYYRes2); lpYYRes2 = NULL;

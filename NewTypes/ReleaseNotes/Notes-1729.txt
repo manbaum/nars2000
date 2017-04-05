@@ -1,0 +1,9 @@
+Build #1729 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Reduction Of An Empty Character Array
+
+Directory branches/bsmith/NewTypes:
+
+PO_SLASH.C:
+  If reducing an empty character vector, signal a DOMAIN ERROR unless the reduction operand is the Equal or NotEqual function.

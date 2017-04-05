@@ -356,8 +356,14 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         if (lpPrimFlagsLft->DydScalar
          && !IsNested (aplTypeRht))
         {
-            // If there's no identity element, ...
-            if (!lpPrimFlagsLft->IdentElem)
+            // If there's no identity element, or
+            //   the right arg is character and is not Equal or NotEqual, ...
+            if (!lpPrimFlagsLft->IdentElem
+             || (IsSimpleChar (aplTypeRht)
+              && (lpPrimFlagsLft->Index NE PF_INDEX_EQUAL
+              &&  lpPrimFlagsLft->Index NE PF_INDEX_NOTEQUAL)
+                )
+               )
                 goto DOMAIN_EXIT;
 
             // Get the identity element

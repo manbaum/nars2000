@@ -1,0 +1,12 @@
+Build #1730 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug When Ctrl-Break Pressed
+
+Directory branches/bsmith/NewTypes:
+
+EXECDFN.C:
+  In <ExecuteFunction_EM_YY>, suspend when <RESETFLAG_xxx> is <STOP>.
+
+IMMEXEC.C:
+  In <ImmExecStmtInThread>, after executing the stmt, if the <exitType> is <STOP>, don't act on errors.

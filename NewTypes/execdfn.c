@@ -1039,7 +1039,8 @@ RESTART_AFTER_ERROR:
         //   and we're not resetting,
         //   and there's no parent []EA/[]EC control, ...
         if (lpMemPTD->lpSISCur->bSuspended
-         && lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_NONE
+         && (lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_NONE
+          || lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_STOP)
          && lpMemPTD->lpSISCur->lpSISErrCtrl EQ NULL)
         {
             HWND hWndEC;        // Edit Ctrl window handle

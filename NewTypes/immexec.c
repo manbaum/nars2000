@@ -715,6 +715,11 @@ DWORD WINAPI ImmExecStmtInThread
         switch (exitType)
         {
             case EXITTYPE_STOP:
+                // Mark as not acting on errors
+                bActOnErrors = FALSE;
+
+                // Fall through to common code
+
             case EXITTYPE_QUADERROR_INIT:
                 // If there are no more SI layers, ...
                 if (lpSISPrv EQ NULL)

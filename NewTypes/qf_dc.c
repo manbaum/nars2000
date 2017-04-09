@@ -74,10 +74,10 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []DC -- Data Conversion
 //
-//  For 1-measurable numeric arrays (BOOL, INT, FLOAT, APA, RAT, or VFP),
+//  For 1-dimension numeric arrays (BOOL, INT, FLOAT, APA, RAT, or VFP),
 //    if the # cols is 1, 2, 4, or 8, convert the arg to the corresponding
 //    HyperComplex number.
-//  For 2-, 4-, or 8-measurable HC arrays, split out the individual
+//  For 2-, 4-, or 8-dimension HC arrays, split out the individual
 //    coefficients as a new (column) dimension.
 //  For all other arrays, signal an error.
 //***************************************************************************
@@ -135,6 +135,7 @@ LPPL_YYSTYPE SysFnMonDC_EM_YY
                                             aplRankRht,     // ...       rank
                                             aplColsRht,     //           # cols
                                             lptkFunc);      // Ptr to function token
+        case ARRAY_CHAR  :
         case ARRAY_HETERO:
         case ARRAY_NESTED:
             goto RIGHT_DOMAIN_EXIT;
@@ -193,16 +194,17 @@ LPPL_YYSTYPE SysFnMonDC_ToHC_EM_YY
     APLINT            apaOffRht,            // Right arg APA offset
                       apaMulRht;            // ...           multiplier
 
-    // Check the # cols
-    if (aplColsRht NE 1
-     && aplColsRht NE 2
-     && aplColsRht NE 4
-     && aplColsRht NE 8)
+    // If <aplColsRht> is out of range, ...
+    if (aplColsRht >= countof (iHCDimLog2))
         goto RIGHT_LENGTH_EXIT;
 
     // Get the HC Dimension index of the result (0, 1, 2, 3) for (1, 2, 4, 8)
     //   where 0 is not used as the result is always HC
-    uHCDimIndex = (UINT) log2 ((APLFLOAT) aplColsRht);
+    uHCDimIndex = iHCDimLog2[aplColsRht];
+
+    // Check for error
+    if (uHCDimIndex EQ -1)
+        goto RIGHT_LENGTH_EXIT;
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -414,7 +416,7 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $SysFnMonDC_ToSimp_EM_YY
 //
-//  The right arg is HyperComplex (HCxI, HCxF, HCxR, or HCxV) so convert it
+//  The right arg is Real or HyperComplex (HCxI, HCxF, HCxR, or HCxV) so convert it
 //    to the corresponding simple numeric (INT, FLOAT, RAT, or VFP) array
 //    with a new column dimension of 2, 4, or 8 as per the Dimension of
 //    the right arg.
@@ -447,22 +449,20 @@ LPPL_YYSTYPE SysFnMonDC_ToSimp_EM_YY
                       hGlbRes = NULL;       // Result    ...
     LPVOID            lpMemRht,             // Ptr to left arg global memory
                       lpMemRes;             // Ptr to result    ...
+    APLLONGEST        aplLongestRht;        // Data if right arg is immediate
     LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
 
     // Get the right arg global memory handle
-    hGlbRht = GetGlbHandle (lptkRhtArg);
-
-    Assert (hGlbRht NE NULL);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // Calculate the result # cols (= right arg HC Dimension)
     aplColsRes = TranslateArrayTypeToHCDim (aplTypeRht);
 
-    Assert (aplColsRes EQ 2
-         || aplColsRes EQ 4
-         || aplColsRes EQ 8);
-
     // Calculate the result storage type
-    aplTypeRes = aToSimple[aplTypeRht];
+    if (IsSimpleAPA (aplTypeRht))
+        aplTypeRes = aplTypeRht;
+    else
+        aplTypeRes = aToSimple[aplTypeRht];
 
     // Calculate the result NELM
     aplNELMRes = aplNELMRht * aplColsRes;
@@ -494,19 +494,23 @@ LPPL_YYSTYPE SysFnMonDC_ToSimp_EM_YY
     lpMemHdrRes->NELM       = aplNELMRes;
     lpMemHdrRes->Rank       = aplRankRes;
 
-    // Lock the memory to get a ptr to it
-    lpMemHdrRht = MyGlobalLockVar (hGlbRht);
-
     // Fill in the dimensions
-    if (aplRankRes)
+    if (!IsScalar (aplRankRht))
         CopyMemory (VarArrayBaseToDim (lpMemHdrRes),
                     VarArrayBaseToDim (lpMemHdrRht),
                     (APLU3264) (aplRankRht * sizeof (APLDIM)));
     // Fill in the last dimension
     (VarArrayBaseToDim (lpMemHdrRes))[aplRankRht] = aplColsRes;
 
+    // If the right arg is not an immediate, ...
+    if (hGlbRht NE NULL)
+        // Skip over the header and dimensions to the data
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+    else
+        // Point to the data
+        lpMemRht = &aplLongestRht;
+
     // Skip over the header and dimensions to the data
-    lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
     lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // Split cases based upon the result storage type
@@ -516,6 +520,13 @@ LPPL_YYSTYPE SysFnMonDC_ToSimp_EM_YY
         case ARRAY_FLOAT:
             // Copy the data to the result
             CopyMemory (lpMemRes, lpMemRht, (APLU3264) (aplNELMRht * TranslateArrayTypeToSizeof (aplTypeRht)));
+
+            break;
+
+        case ARRAY_APA:
+            // Copy the data to the result
+            ((LPAPLAPA) lpMemRes)->Off = ((LPAPLAPA) lpMemRht)->Off;
+            ((LPAPLAPA) lpMemRes)->Mul = ((LPAPLAPA) lpMemRht)->Mul;
 
             break;
 

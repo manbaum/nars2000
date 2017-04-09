@@ -204,7 +204,11 @@ LPPL_YYSTYPE PrimFnRightCaret_EM_YY
 //***************************************************************************
 //  $PrimFnMonRightCaret_EM_YY
 //
-//  Primitive function for monadic RightCaret (ERROR)
+//  Primitive function for monadic RightCaret ("Dilate")
+//
+//  For 1-, 2-, 4-, or 8-dimension Real or HC arrays, split out the individual
+//    coefficients as a new (column) dimension.
+//  For all other arrays, signal an error.
 //***************************************************************************
 
 #ifdef DEBUG
@@ -219,7 +223,58 @@ LPPL_YYSTYPE PrimFnMonRightCaret_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
+    APLSTYPE     aplTypeRht;        // Right arg storage type
+    APLNELM      aplNELMRht;        // ...       NELM
+    APLRANK      aplRankRht;        // ...       rank
+    APLDIM       aplColsRht;        // ...       # cols
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, &aplColsRht);
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL :
+        case ARRAY_INT  :
+        case ARRAY_FLOAT:
+        case ARRAY_APA  :
+        case ARRAY_RAT  :
+        case ARRAY_VFP  :
+        case ARRAY_HC2I :
+        case ARRAY_HC2F :
+        case ARRAY_HC2R :
+        case ARRAY_HC2V :
+        case ARRAY_HC4I :
+        case ARRAY_HC4F :
+        case ARRAY_HC4R :
+        case ARRAY_HC4V :
+        case ARRAY_HC8I :
+        case ARRAY_HC8F :
+        case ARRAY_HC8R :
+        case ARRAY_HC8V :
+            // Convert to simple
+            return SysFnMonDC_ToSimp_EM_YY (lptkRhtArg,     // Ptr to right arg token
+                                            aplTypeRht,     // Right arg storage type
+                                            aplNELMRht,     // ...       NELM
+                                            aplRankRht,     // ...       rank
+                                            aplColsRht,     //           # cols
+                                            lptkFunc);      // Ptr to function token
+        case ARRAY_CHAR  :
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            goto RIGHT_DOMAIN_EXIT;
+
+        defstop
+            goto ERROR_EXIT;
+    } // End SWITCH
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    return NULL;
 } // End PrimFnMonRightCaret_EM_YY
 #undef  APPEND_NAME
 

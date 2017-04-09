@@ -194,10 +194,83 @@ LPPL_YYSTYPE PrimFnLeftCaret_EM_YY
 
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return (*lpPrimSpec->PrimFnMon_EM_YY) (            lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
+        return PrimFnMonLeftCaret_EM_YY       (            lptkFunc, lptkRhtArg, lptkAxis);
     else
         return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
 } // End PrimFnLeftCaret_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PrimFnMonLeftCaret_EM_YY
+//
+//  Primitive function for monadic LeftCaret ("Condense")
+//
+//  For 1-dimension numeric arrays (BOOL, INT, FLOAT, APA, RAT, or VFP),
+//    if the # cols is 1, 2, 4, or 8, convert the arg to the corresponding
+//    HyperComplex number.
+//  For all other arrays, signal an error.
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PrimFnMonLeftCaret_EM_YY"
+#else
+#define APPEND_NAME
+#endif
+
+LPPL_YYSTYPE PrimFnMonLeftCaret_EM_YY
+    (LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    APLSTYPE aplTypeRht;            // Right arg storage type
+    APLNELM  aplNELMRht;            // ...       NELM
+    APLRANK  aplRankRht;            // ...       rank
+    APLDIM   aplColsRht;            // ...       # cols
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, &aplColsRht);
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL :
+        case ARRAY_INT  :
+        case ARRAY_FLOAT:
+        case ARRAY_APA  :
+        case ARRAY_RAT  :
+        case ARRAY_VFP  :
+            // Convert to Hypercomplex
+            return SysFnMonDC_ToHC_EM_YY (lptkRhtArg,       // Ptr to right arg token
+                                          aplTypeRht,       // Right arg storage type
+                                          aplNELMRht,       // ...       NELM
+                                          aplRankRht,       // ...       rank
+                                          aplColsRht,       //           # cols
+                                          lptkFunc);        // Ptr to function token
+////////case ARRAY_HC2I:
+////////case ARRAY_HC2F:
+////////case ARRAY_HC2R:
+////////case ARRAY_HC2V:
+////////case ARRAY_HC4I:
+////////case ARRAY_HC4F:
+////////case ARRAY_HC4R:
+////////case ARRAY_HC4V:
+////////case ARRAY_HC8I:
+////////case ARRAY_HC8F:
+////////case ARRAY_HC8R:
+////////case ARRAY_HC8V:
+////////case ARRAY_CHAR  :
+////////case ARRAY_HETERO:
+////////case ARRAY_NESTED:
+        default:
+            // Else, signal an error
+            ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                                       lptkRhtArg);
+            return NULL;
+    } // End SWITCH
+} // End PrimFnMonLeftCaret_EM_YY
 #undef  APPEND_NAME
 
 

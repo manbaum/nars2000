@@ -262,6 +262,19 @@ int   iHCDimPof2[8]
     8,                  // 7
    }
 #endif
+,     iHCDimLog2[9]
+#ifdef DEFINE_VALUES
+ = {-1,                 // 0
+     0,                 // 1
+     1,                 // 2
+    -1,                 // 3
+     2,                 // 4
+    -1,                 // 5
+    -1,                 // 6
+    -1,                 // 7
+     3,                 // 8
+   }
+#endif
 ;
 
 // Conversion table from iHCDim to uHCDimIndex

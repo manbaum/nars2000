@@ -2562,7 +2562,7 @@ typedef struct tagLANGCHARS
         {WS_UTF16_EQUAL             , {0}, L"Equal",
                                            L"Dimension:   =R " WS_UTF16_LEFTRIGHTARROWS L" Hypercomplex dimension (1, 2, 4, 8)\n\n"
                                            L"Equal To:   L=R  or  L=[X] R\n\n"
-                                           L"Keyboard:  '=' or Alt-'5'\n\n"
+                                           L"Keyboard:  '='\n\n"
                                            L"Unicode:  0x003D or 61"},
         {WS_UTF16_NOTEQUAL          , {0}, L"NotEqual",
                                            L"Norm:   " WS_UTF16_NOTEQUAL L"R " WS_UTF16_LEFTRIGHTARROWS L" Hypercomplex Norm (R" WS_UTF16_TIMES L"+R)\n\n"
@@ -2574,10 +2574,12 @@ typedef struct tagLANGCHARS
                                            L"Keyboard:  Alt-'4'\n\n"
                                            L"Unicode:  0x2264 or 8804"},
         {WS_UTF16_LEFTCARET         , {0}, L"LeftCaret",
+                                           L"Condense:  <R\n\n"
                                            L"Less Than:  L" WS_UTF16_LEFTCARET L"R  or  L" WS_UTF16_LEFTCARET L"[X] R\n\n"
                                            L"Keyboard:  '<' or Shift-',' or Alt-'6'\n\n"
                                            L"Unicode:  0x003C or 60"},
         {WS_UTF16_RIGHTCARET        , {0}, L"RightCaret",
+                                           L"Dilate:  >R\n\n"
                                            L"Greater Than:  L" WS_UTF16_RIGHTCARET L"R  or  L" WS_UTF16_RIGHTCARET L"[X] R\n\n"
                                            L"Keyboard:  '>' or Shift-'.' or Alt-'7'\n\n"
                                            L"Unicode:  0x003E or 62"},

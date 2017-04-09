@@ -62,6 +62,11 @@ http://portal.acm.org/citation.cfm?id=3324
   #error DEF_AFO_HSHTAB_NBLKS is not a power of two.
 #endif
 
+#define DEF_MFO_HSHTAB_NBLKS        128
+#if (DEF_MFO_HSHTAB_NBLKS & (DEF_MFO_HSHTAB_NBLKS - 1)) != 0
+  #error DEF_MFO_HSHTAB_NBLKS is not a power of two.
+#endif
+
 // # entries in each block -- can be any integer > 1
 // It can't be 1 as there needs to be at least one
 //   overflow entry in each block so we never assign
@@ -70,24 +75,29 @@ http://portal.acm.org/citation.cfm?id=3324
 #define DEF_HSHTAB_EPB         8
 
 // Hash table size multiplier
-#define HSHTABSIZE_MUL        (1024 * DEF_HSHTAB_EPB)
+#define LCL_HSHTABSIZE_MUL    (1024 * DEF_HSHTAB_EPB)
+#define AFO_HSHTABSIZE_MUL    (   1 * DEF_HSHTAB_EPB)
+#define MFO_HSHTABSIZE_MUL    (   1 * DEF_HSHTAB_EPB)
 
 // Maximum hash table size (# entries)
 #ifdef _WIN64
-  #define DEF_HSHTAB_MAXNELM  ( 256 * HSHTABSIZE_MUL)
+  #define DEF_HSHTAB_MAXNELM  ( 256 * LCL_HSHTABSIZE_MUL)
 #else
-  #define DEF_HSHTAB_MAXNELM  (  64 * HSHTABSIZE_MUL)
+  #define DEF_HSHTAB_MAXNELM  (  64 * LCL_HSHTABSIZE_MUL)
 #endif
 
-#define DEF_AFO_HSHTAB_MAXNELM      (256 * DEF_HSHTAB_EPB)
+#define DEF_AFO_HSHTAB_MAXNELM (256 * AFO_HSHTABSIZE_MUL)
+#define DEF_MFO_HSHTAB_MAXNELM (128 * MFO_HSHTABSIZE_MUL)
 
 // Starting hash table size (# entries)
 #define DEF_HSHTAB_INITNELM      (DEF_HSHTAB_NBLKS     * DEF_HSHTAB_EPB)
 #define DEF_AFO_HSHTAB_INITNELM  (DEF_AFO_HSHTAB_NBLKS * DEF_HSHTAB_EPB)
+#define DEF_MFO_HSHTAB_INITNELM  (DEF_MFO_HSHTAB_NBLKS * DEF_HSHTAB_EPB)
 
 // Amount to resize -- this value must be a divisor of DEF_HSHTAB_INITNELM
 #define DEF_HSHTAB_INCRNELM      DEF_HSHTAB_INITNELM
 #define DEF_AFO_HSHTAB_INCRNELM  DEF_AFO_HSHTAB_INITNELM
+#define DEF_MFO_HSHTAB_INCRNELM  16
 
 #if ((DEF_HSHTAB_INITNELM / DEF_HSHTAB_INCRNELM) * DEF_HSHTAB_INCRNELM) != \
       DEF_HSHTAB_INITNELM
@@ -99,6 +109,11 @@ http://portal.acm.org/citation.cfm?id=3324
   #error DEF_AFO_HSHTAB_INCRNELM not an integral divisor of DEF_AFO_HSHTAB_INITNELM.
 #endif
 
+#if ((DEF_MFO_HSHTAB_INITNELM / DEF_MFO_HSHTAB_INCRNELM) * DEF_MFO_HSHTAB_INCRNELM) != \
+      DEF_MFO_HSHTAB_INITNELM
+  #error DEF_MFO_HSHTAB_INCRNELM not an integral divisor of DEF_MFO_HSHTAB_INITNELM.
+#endif
+
 // Starting hash mask
 #define DEF_HSHTAB_HASHMASK (DEF_HSHTAB_NBLKS - 1)
 
@@ -107,9 +122,8 @@ http://portal.acm.org/citation.cfm?id=3324
 //   DEF_HSHTAB_INITNELM + DEF_HSHTAB_INCRNELM * {iota} DEF_HSHTAB_LARGEST / DEF_HSHTAB_INCRNELM
 // An easy way to make this happen is to use a prime guaranteed to be
 //   larger than the largest symbol table size, and then use as an increment
-//   DEF_HSHTAB_PRIME % iHshTabTotalNelm.
-#define DEF_HSHTAB_PRIME    ((UINT) 0x7FFFFFFF)  // (2^31 - 1)
-#define DEF_HSHTAB_INCRFREE (DEF_HSHTAB_PRIME % DEF_HSHTAB_INITNELM)
+//   DEF_HSHTAB_PRIME % uHshTabTotalNelm.
+#define DEF_HSHTAB_PRIME    ((int) 0x7FFFFFFF)      // (2^31 - 1)
 
 
 // Hash table flags
@@ -184,9 +198,11 @@ typedef struct tagHSHTABSTR
     UINT       bGlbHshTab:1,            // 2C:  00000001:  This HTS is global
                bSysNames:1,             //      00000002:  TRUE iff system names have been appended
                bGlbHshSymTabs:1,        //      00000004:  TRUE iff the Sym & Hsh tabs are allocated from global (not virtual) memory
-               :29;                     //      FFFFFFF8:  Available bits
+               bAFO:1,                  //      00000008:  TRUE iff these tables are for an AFO
+               bMFO:1,                  //      00000010:  TRUE iff these tables are for an MFO
+               :27;                     //      FFFFFFE0:  Available bits
     struct tagSYMENTRY
-              *lpSymTab,                // 30:  Ptr to start of Symtab
+              *lpSymTab,                // 30:  Ptr to start of SymTab
               *lpSymTabNext,            // 34:  Ptr to next available STE
               *lpSymQuad[SYSVAR_LENGTH];// 38:  Ptr to array of system var STEs (15*4 bytes)
     UINT       uSymTabIncrNelm;         // 74:  # STEs by which to resize when low
@@ -209,24 +225,29 @@ typedef struct tagHSHTABSTR
 //********************* SYMBOL TABLE ****************************************
 
 // Symbol table size multiplier
-#define SYMTABSIZE_MUL        (1024)
+#define LCL_SYMTABSIZE_MUL    (1024)
+#define AFO_SYMTABSIZE_MUL    (   1)
+#define MFO_SYMTABSIZE_MUL    (   1)
 
 // Maximum symbol table size (# entries)
 #ifdef _WIN64
-  #define DEF_SYMTAB_MAXNELM  ( 256 * SYMTABSIZE_MUL)
+  #define DEF_SYMTAB_MAXNELM  ( 256 * LCL_SYMTABSIZE_MUL)
 #else
-  #define DEF_SYMTAB_MAXNELM  (  64 * SYMTABSIZE_MUL)
+  #define DEF_SYMTAB_MAXNELM  (  64 * LCL_SYMTABSIZE_MUL)
 #endif
 
-#define DEF_AFO_SYMTAB_MAXNELM          256
+#define DEF_AFO_SYMTAB_MAXNELM (256 * AFO_SYMTABSIZE_MUL)
+#define DEF_MFO_SYMTAB_MAXNELM (256 * MFO_SYMTABSIZE_MUL)
 
 // Starting symbol table size (# entries)
 #define DEF_SYMTAB_INITNELM      (   4*1024)
 #define DEF_AFO_SYMTAB_INITNELM DEF_AFO_SYMTAB_MAXNELM
+#define DEF_MFO_SYMTAB_INITNELM DEF_MFO_SYMTAB_MAXNELM
 
 // Amount to resize -- this value must be a divisor of DEF_SYMTAB_INITNELM
-#define DEF_SYMTAB_INCRNELM      DEF_SYMTAB_INITNELM
-#define DEF_AFO_SYMTAB_INCRNELM DEF_AFO_SYMTAB_INITNELM
+#define DEF_SYMTAB_INCRNELM     DEF_SYMTAB_INITNELM
+#define DEF_AFO_SYMTAB_INCRNELM 16
+#define DEF_MFO_SYMTAB_INCRNELM 16
 
 typedef enum tagIMM_TYPES
 {

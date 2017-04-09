@@ -40,12 +40,12 @@ UBOOL CmdSymb_EM
     LPSYMENTRY   lpSymTab;          // ...            STEs
     LPHSHENTRY   lpHshTab,          // ...            HTEs
                  lpHshNext;         // ...     ending HTE
-    int          iSymTabMax      ,  // Maximum # HTEs
-                 iSymTabTotal    ,  // Size of SymTab
-                 iSymTabInuse = 0,  // # STEs in use
-                 iHshTabMax      ,  // Maximum # STEs
-                 iHshTabTotal    ,  // Size of HshTab
-                 iHshTabInuse = 0;  // # HTEs in use
+    size_t       uSymTabMax      ,  // Maximum # HTEs
+                 uSymTabTotal    ,  // Size of SymTab
+                 uSymTabInuse = 0,  // # STEs in use
+                 uHshTabMax      ,  // Maximum # STEs
+                 uHshTabTotal    ,  // Size of HshTab
+                 uHshTabInuse = 0;  // # HTEs in use
     WCHAR        wszTemp[1024];     // Output save area
 
     // If there's a command tail, ...
@@ -60,11 +60,11 @@ UBOOL CmdSymb_EM
     lpHshTab = lphtsPTD->lpHshTab;
 
     // Save current values
-    iHshTabTotal = lphtsPTD->iHshTabTotalNelm;
-    iSymTabTotal = lphtsPTD->iSymTabTotalNelm;
+    uHshTabTotal = lphtsPTD->iHshTabTotalNelm;
+    uSymTabTotal = lphtsPTD->iSymTabTotalNelm;
 
     // Set the ending ptr
-    lpHshNext = &lpHshTab[iHshTabTotal];
+    lpHshNext = &lpHshTab[uHshTabTotal];
 
     // Loop through the HTEs
     for (lpHshTab = lpHshTab;
@@ -72,11 +72,11 @@ UBOOL CmdSymb_EM
          lpHshTab++)
     {
         // Count it into the total
-        iHshTabTotal++;
+        uHshTabTotal++;
 
         // If it's in use, ...
         if (lpHshTab->htFlags.Inuse)
-            iHshTabInuse++;
+            uHshTabInuse++;
     } // End FOR
 
     // Loop through the STEs
@@ -85,36 +85,70 @@ UBOOL CmdSymb_EM
          lpSymTab++)
     {
         // Count it into the total
-        iSymTabTotal++;
+        uSymTabTotal++;
 
         // If it's in use, ...
         if (lpSymTab->stFlags.Inuse)
-            iSymTabInuse++;
+            uSymTabInuse++;
     } // End FOR
 
     // If the Hsh & Sym tabs are from global (not virtual) memory, ...
     if (lphtsPTD->bGlbHshSymTabs)
         // Mark as unlimited
-        iHshTabTotal =
-        iSymTabTotal = -1;
+        uHshTabTotal =
+        uSymTabTotal = -1;
     else
     {
         // Use the larger
-        iSymTabMax = max (((int) gSymTabSize), iSymTabTotal);
-        iHshTabMax = max (((int) gHshTabSize), iHshTabTotal);
+        uSymTabMax = max (gSymTabSize, uSymTabTotal);
+        uHshTabMax = max (gHshTabSize, uHshTabTotal);
     } // End IF/ELSE
 
+#define X   WS_UTF16_TIMES
     // Format the output line
     MySprintfW (wszTemp,
                 sizeof (wszTemp),
-               L"SymTab:  Maximum # Entries %9u, Current %9u, In Use %9u\r\n"
-               L"HshTab:  Maximum # Entries %9u, Current %9u, In Use %9u",
-                iSymTabMax  ,
-                iSymTabTotal,
-                iSymTabInuse,
-                iHshTabMax  ,
-                iHshTabTotal,
-                iHshTabInuse);
+               L"             Maximum       # " X L" Units   Current    In Use  Command Line Switch w/Default\r\n"
+               L"LclSymTab: %9d (%6d " X L" %4u) %9d %9d  -LclSymTabSize=%d\r\n"
+               L"LclHshTab: %9d (%6d " X L" %4u) %9d %9d  -LclHshTabSize=%d\r\n"
+               L"AFOSymTab: %9d (%6d " X L" %4u)                      -AFOSymTabSize=%d\r\n"
+               L"AFOHshTab: %9d (%6d " X L" %4u)                      -AFOHshTabSize=%d\r\n"
+               L"MFOSymTab: %9d (%6d " X L" %4u)                      -MFOSymTabSize=%d\r\n"
+               L"MFOHshTab: %9d (%6d " X L" %4u)                      -MFOHshTabSize=%d",
+#undef  X
+                uSymTabMax                                  ,
+                uSymTabMax  / LCL_SYMTABSIZE_MUL            ,
+                LCL_SYMTABSIZE_MUL                          ,
+                uSymTabTotal                                ,
+                uSymTabInuse                                ,
+                DEF_SYMTAB_MAXNELM / LCL_SYMTABSIZE_MUL     ,
+
+                uHshTabMax                                  ,
+                uHshTabMax  / LCL_HSHTABSIZE_MUL            ,
+                LCL_HSHTABSIZE_MUL                          ,
+                uHshTabTotal                                ,
+                uHshTabInuse                                ,
+                DEF_HSHTAB_MAXNELM / LCL_HSHTABSIZE_MUL     ,
+
+                gAFOSymTabSize                              ,
+                gAFOSymTabSize / AFO_SYMTABSIZE_MUL         ,
+                AFO_SYMTABSIZE_MUL                          ,
+                DEF_AFO_SYMTAB_MAXNELM / AFO_SYMTABSIZE_MUL ,
+
+                gAFOHshTabSize                              ,
+                gAFOHshTabSize / AFO_HSHTABSIZE_MUL         ,
+                AFO_HSHTABSIZE_MUL                          ,
+                DEF_AFO_HSHTAB_MAXNELM / AFO_HSHTABSIZE_MUL ,
+
+                gMFOSymTabSize                              ,
+                gMFOSymTabSize / MFO_SYMTABSIZE_MUL         ,
+                MFO_SYMTABSIZE_MUL                          ,
+                DEF_MFO_SYMTAB_MAXNELM / MFO_SYMTABSIZE_MUL ,
+
+                gMFOHshTabSize                              ,
+                gMFOHshTabSize / MFO_HSHTABSIZE_MUL         ,
+                MFO_HSHTABSIZE_MUL                          ,
+                DEF_MFO_HSHTAB_MAXNELM / MFO_HSHTABSIZE_MUL);
     // Display the line
     AppendLine (wszTemp, FALSE, TRUE);
 
@@ -131,7 +165,7 @@ UBOOL CmdSymb_EM
 //
 //  )SYMB sss hhh
 //
-//  where sss is the new maximum size of Symtab
+//  where sss is the new maximum size of SymTab
 //  and   hhh is the new maximum size of HshTab
 //***************************************************************************
 

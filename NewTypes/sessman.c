@@ -1195,6 +1195,10 @@ WM_NCCREATE_FAIL:
             // Link this struc into the chain
             LinkMVS (&lpLclMemVirtStr[PTDMEMVIRT_HTSPTD]);
 
+            // Initialize entries
+            lpMemPTD->lphtsPTD->bAFO = FALSE;
+            lpMemPTD->lphtsPTD->bMFO = FALSE;
+
             // *************** lphtsPTD->lpHshTab **********************
 
             lpLclMemVirtStr[PTDMEMVIRT_HSHTAB].lpText = "lpMemPTD->lphtsPTD->lpHshTab in <SMWndProc>";

@@ -30,6 +30,7 @@
 
 // **FIXME*** -- Distinguish between blocks (buckets) and entries
 // as well as size vs. blocks
+////#define DEBUG_CS
 
 #ifdef DEBUG_CS
   int gCSOHshTab = 0;
@@ -292,7 +293,7 @@ UBOOL HshTabFrisk
                  && lp->htSymEntry->stHshEntry EQ lp
                  && lp->htSymEntry->Sig.nature EQ SYM_HEADER_SIGNATURE))
                 {
-                    if (lp->htSymEntry EQ 0)
+                    if (lp->htSymEntry EQ NULL)
                         MBC ("HshTabFrisk:  lp->htSymEntry EQ 0")
                     else
                         MBC ("HshTabFrisk:  lp->htSymEntry->stHshEntry NE lp")
@@ -475,10 +476,11 @@ UBOOL HshTabResize_EM
 
 #ifdef DEBUG
     if (TlsGetValue (dwTlsPerTabData))
-        dprintfWL0 (L"||| Resizing the hash table from %u to %u (%S#%d)",
-                  lpHTS->iHshTabTotalNelm,
-                  lpHTS->iHshTabTotalNelm + iResize,
-                  FNLN);
+        dprintfWL0 (L"||| Resizing the %s hash   table from %u to %u (%S#%d)",
+                     (lpHTS->bAFO ? L"AFO" : lpHTS->bMFO ? L"MFO" : L"LCL"),
+                     lpHTS->iHshTabTotalNelm,
+                     lpHTS->iHshTabTotalNelm + iResize,
+                     FNLN);
 #endif
     // We need more entries
     iHshTabNewNelm = lpHTS->iHshTabTotalNelm + iResize;
@@ -592,9 +594,6 @@ UBOOL HshTabResize_EM
         lpHTS->lpHshTab[i].PrevSameHash = LPHSHENTRY_NONE;
     } // End FOR
 
-    // Because iHshTabTotalNelm changed, we need to change iHshTabIncrFree
-    lpHTS->iHshTabIncrFree  = DEF_HSHTAB_PRIME % lpHTS->iHshTabTotalNelm;
-
     // Set new hash table size
     lpHTS->iHshTabTotalNelm = iHshTabNewNelm;
 
@@ -649,10 +648,11 @@ UBOOL SymTabResize_EM
 
 #ifdef DEBUG
     if (TlsGetValue (dwTlsPerTabData))
-        dprintfWL0 (L"||| Resizing the symbol table from %u to %u (%S#%d)",
-                  lpHTS->iSymTabTotalNelm,
-                  lpHTS->iSymTabTotalNelm + iResize,
-                  FNLN);
+        dprintfWL0 (L"||| Resizing the %s symbol table from %u to %u (%S#%d)",
+                     (lpHTS->bAFO ? L"AFO" : lpHTS->bMFO ? L"MFO" : L"LCL"),
+                     lpHTS->iSymTabTotalNelm,
+                     lpHTS->iSymTabTotalNelm + iResize,
+                     FNLN);
 #endif
     // We need more entries
     iSymTabNewNelm = lpHTS->iSymTabTotalNelm + iResize;
@@ -745,30 +745,33 @@ UBOOL HshTabSplitNextEntry_EM
                  lpHshEntryHash;        // Ptr to split + base ...
     int          i, iCnt;               // Loop counters
 #ifdef DEBUG
-////int          iCntMoved = 0;
+    int          iCntMoved = 0;
 #endif
     UINT         uHashMaskNext;         // Mask for next higher hash function
-    UBOOL        bRet = TRUE;           // TRUE iff result is valid
+    UBOOL        bRet = FALSE;          // TRUE iff result is valid
+    static HSHENTRY HshTest;
 
     Assert (HshTabFrisk (lpHTS));
 
     if (TlsGetValue (dwTlsPerTabData))
     {
-        dprintfWL9 (L"||| Splitting Hash Table entry %u to %u (%S#%d)",
+        dprintfWL9 (L"||| Splitting Hash Table entry %p to %p (%S#%d)",
                   lpHTS->lpHshTabSplitNext,
-                 &lpHTS->lpHshTabSplitNext[lpHTS->iHshTabBaseNelm],
+                 &lpHTS->lpHshTabSplitNext[lpHTS->iHshTabBaseNelm + lpHTS->iHshTabEPB],
                   FNLN);
     } // End IF -- MUST use braces as dprintfWLx is empty for non-DEBUG
+
+    // If it's not the Global Hash table and not an MFO, ...
+    if (!lpHTS->bGlbHshTab
+     && !lpHTS->bMFO)
+        // Ensure it's valid memory by reading it
+        CopyAll (&HshTest, &lpHTS->lpHshTabSplitNext[lpHTS->iHshTabBaseNelm + lpHTS->iHshTabEPB]);
 
     // Ensure that &lpHshTabSplitNext[iHshTabBaseNelm] has been allocated.
     // If not, allocate it now
     if (&lpHTS->lpHshTabSplitNext[lpHTS->iHshTabBaseNelm] >= &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm]
      && !HshTabResize_EM (lpHTS))
-    {
-        bRet = FALSE;
-
         goto ERROR_EXIT;
-    } // End IF
 
     Assert (&lpHTS->lpHshTabSplitNext[lpHTS->iHshTabBaseNelm] < &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm]);
 
@@ -823,6 +826,11 @@ UBOOL HshTabSplitNextEntry_EM
 
             // Don't split
             lpHshEntryDest = FindNextFreeUsingHTE_EM (lpHshEntryHash, uHash, FALSE, lpHTS);
+
+            // Check for error
+            if (lpHshEntryDest EQ NULL)
+                goto ERROR_EXIT;
+
 #ifdef DEBUG
             if (i EQ 0)
                 Assert (lpHshEntryDest EQ lpHshEntryHash);  // The 1st time only
@@ -861,7 +869,7 @@ UBOOL HshTabSplitNextEntry_EM
                 lpSymEntrySrc->stHshEntry = lpHshEntryDest;
 
                 // Loop through all other SYMENTRYs in the same shadow chain
-                while (lpSymEntrySrc->stPrvEntry)
+                while (lpSymEntrySrc->stPrvEntry NE NULL)
                 {
                     lpSymEntrySrc = lpSymEntrySrc->stPrvEntry;
                     lpSymEntrySrc->stHshEntry = lpHshEntryDest;
@@ -902,8 +910,8 @@ UBOOL HshTabSplitNextEntry_EM
 ////////////
 ////////////Assert (HshTabFrisk (lpHTS));
 #ifdef DEBUG
-////////////// Count in another entry moved
-////////////iCntMoved++;
+            // Count in another entry moved
+            iCntMoved++;
 #endif
         } // End IF
     } // End FOR
@@ -944,8 +952,16 @@ UBOOL HshTabSplitNextEntry_EM
 ////}
 #endif
 
+    // Mark as successful
+    bRet = TRUE;
+
     Assert (HshTabFrisk (lpHTS));
+
+    goto NORMAL_EXIT;
+
 ERROR_EXIT:
+    Assert (iCntMoved EQ 0);
+NORMAL_EXIT:
     return bRet;
 } // End HshTabSplitNextEntry_EM
 
@@ -975,38 +991,15 @@ LPHSHENTRY FindNextFreeUsingHash_SPLIT_EM
     LPHSHENTRY   lpHshEntry,                // Ptr to temporary HSHENTRY
                  lpHshEntryHash;            // ...
     int          i;                         // Loop counter
+#ifdef DEBUG
+    int          iSplit = 0;                // Count of split entries
+#endif
     UBOOL        bFirstTime = TRUE;         // TRUE iff this run through if the first time
 
-    DBGENTER;
-
-    while (TRUE)
+    __try
     {
-        lpHshEntryHash = &lpHTS->lpHshTab[MaskTheHash (uHash, lpHTS)];
-
-        // Loop through the current block looking for
-        //   a free (not inuse) entry
-        // Note that because this is the same block as uHash,
-        //   this search allows PrinHash.
-        for (lpHshEntry = lpHshEntryHash, i = 0;
-             lpHshEntry->htFlags.Inuse
-          && i < lpHTS->iHshTabEPB;
-             lpHshEntry++, i++)
-        {}
-
-        // If we found it, return it
-        if (i < lpHTS->iHshTabEPB)
-            goto NORMAL_EXIT;
-        else
-        if (bSplitNext)
+        while (TRUE)
         {
-            UBOOL bTemp;
-
-            // Split the SplitNext entry
-            bTemp = HshTabSplitNextEntry_EM (uHash, lpHTS);
-            Assert (bTemp);
-
-            // Because we split an entry (and possibly resized the table)
-            //   we need to respecify some variables.
             lpHshEntryHash = &lpHTS->lpHshTab[MaskTheHash (uHash, lpHTS)];
 
             // Loop through the current block looking for
@@ -1022,45 +1015,89 @@ LPHSHENTRY FindNextFreeUsingHash_SPLIT_EM
             // If we found it, return it
             if (i < lpHTS->iHshTabEPB)
                 goto NORMAL_EXIT;
-        } // End IF/ELSE/IF
+            else
+            if (bSplitNext)
+            {
+                // Split the SplitNext entry
+                if (!HshTabSplitNextEntry_EM (uHash, lpHTS))
+                    goto HASH_FULL_EXIT;
+#ifdef DEBUG
+                // Count it in
+                iSplit++;
+#endif
+                // Because we split an entry (and possibly resized the table)
+                //   we need to respecify some variables.
+                lpHshEntryHash = &lpHTS->lpHshTab[MaskTheHash (uHash, lpHTS)];
 
-        // As we didn't find a free entry, continue searching
-        //   wrapping around to the start if necessary.
-        lpHshEntry = lpHshEntryHash;
-        do {
-            // Increment to the next entry (relatively prime to total size)
-            lpHshEntry += lpHTS->iHshTabIncrFree;
+                // Loop through the current block looking for
+                //   a free (not inuse) entry
+                // Note that because this is the same block as uHash,
+                //   this search allows PrinHash.
+                for (lpHshEntry = lpHshEntryHash, i = 0;
+                     lpHshEntry->htFlags.Inuse
+                  && i < lpHTS->iHshTabEPB;
+                     lpHshEntry++, i++)
+                {}
 
-            // If we're at or beyond the end, wrap to the start
-            if (lpHshEntry >= &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm])
-                lpHshEntry -= lpHTS->iHshTabTotalNelm;
+                // If we found it, return it
+                if (i < lpHTS->iHshTabEPB)
+                    goto NORMAL_EXIT;
+            } // End IF/ELSE/IF
 
-            // Check for not Inuse and not PrinHash
-            if (!(lpHshEntry->htFlags.Inuse || lpHshEntry->htFlags.PrinHash))
+            // As we didn't find a free entry, continue searching
+            //   wrapping around to the start if necessary.
+            lpHshEntry = lpHshEntryHash;
+#ifdef DEBUG
+            i = 0;
+#endif
+            do {
+                APLUINT aplHshEntry;
+
+                // Because we're dealing with number that may overflow the ptr size we need to use 64-bit offsets
+
+                // Calculate the current offset
+                aplHshEntry = lpHshEntry - lpHTS->lpHshTab;
+
+                // Increment to the next entry (relatively prime to total size)
+                aplHshEntry += lpHTS->iHshTabIncrFree;
+
+                // Wrap to the start
+                aplHshEntry = aplHshEntry % lpHTS->iHshTabTotalNelm;
+
+                // Convert back to a ptr
+                lpHshEntry = &lpHTS->lpHshTab[aplHshEntry];
+
+                // Check for not Inuse and not PrinHash
+                if (!(lpHshEntry->htFlags.Inuse || lpHshEntry->htFlags.PrinHash))
+                    break;
+#ifdef DEBUG
+                i++;
+#endif
+            } while (lpHshEntry NE lpHshEntryHash);
+
+            // If we found it, return it
+            if (lpHshEntry NE lpHshEntryHash)
+                goto NORMAL_EXIT;
+
+            Assert (i EQ lpHTS->iHshTabTotalNelm);
+
+            // As we didn't find a free entry, try to expand the hash table
+            if (!HshTabResize_EM (lpHTS))
+                goto ERROR_EXIT;
+
+            // Go around again unless we've done this before
+            if (bFirstTime)
+                bFirstTime = FALSE;
+            else
                 break;
-        } while (lpHshEntry NE lpHshEntryHash);
-
-        // If we found it, return it
-        if (lpHshEntry NE lpHshEntryHash)
-            goto NORMAL_EXIT;
-
-        // As we didn't find a free entry, try to expand the hash table
-        if (!HshTabResize_EM (lpHTS))
-            goto ERROR_EXIT;
-
-        // Go around again unless we've done this before
-        if (bFirstTime)
-            bFirstTime = FALSE;
-        else
-            break;
-    } // End WHILE
-
+        } // End WHILE
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {} // End __try/__except
+HASH_FULL_EXIT:
     ErrorMessageIndirect (ERRMSG_HASH_TABLE_FULL APPEND_NAME);
 ERROR_EXIT:
     lpHshEntry = NULL;
 NORMAL_EXIT:
-    DBGLEAVE;
-
     return lpHshEntry;
 } // End FindNextFreeUsingHash_SPLIT_EM
 #undef  APPEND_NAME
@@ -1091,38 +1128,15 @@ LPHSHENTRY FindNextFreeUsingHTE_EM
 {
     LPHSHENTRY   lpHshEntry;                // Ptr to temporary HSHENTRY
     int          i;                         // Loop counter
+#ifdef DEBUG
+    int          iSplit = 0;                // Count of split entries
+#endif
     UBOOL        bFirstTime = TRUE;         // TRUE iff this run through if the first time
 
-    DBGENTER;
-
-    while (TRUE)
+    __try
     {
-        // Loop through the current block looking for
-        //   a free (not inuse) entry
-        // Note that because this is the same block as uHash,
-        //   this search allows PrinHash.
-        for (lpHshEntry = lpHshEntryHash, i = 0;
-             lpHshEntry->htFlags.Inuse
-          && i < lpHTS->iHshTabEPB;
-             lpHshEntry++, i++)
-        {};
-
-        // If we found it, return it
-        if (i < lpHTS->iHshTabEPB)
-            goto NORMAL_EXIT;
-        else
-        if (bSplitNext)
+        while (TRUE)
         {
-            UBOOL bTemp;
-
-            // Split the SplitNext entry
-            bTemp = HshTabSplitNextEntry_EM (uHash, lpHTS);
-            Assert (bTemp);
-
-            // Because we split an entry (and possibly resized the table)
-            //   we need to respecify some variables.
-            lpHshEntryHash = &lpHTS->lpHshTab[MaskTheHash (uHash, lpHTS)];
-
             // Loop through the current block looking for
             //   a free (not inuse) entry
             // Note that because this is the same block as uHash,
@@ -1131,50 +1145,94 @@ LPHSHENTRY FindNextFreeUsingHTE_EM
                  lpHshEntry->htFlags.Inuse
               && i < lpHTS->iHshTabEPB;
                  lpHshEntry++, i++)
-            {}
+            {};
 
             // If we found it, return it
             if (i < lpHTS->iHshTabEPB)
                 goto NORMAL_EXIT;
-        } // End IF/ELSE/IF
+            else
+            if (bSplitNext)
+            {
+                // Split the SplitNext entry
+                if (!HshTabSplitNextEntry_EM (uHash, lpHTS))
+                    goto HASH_FULL_EXIT;
+#ifdef DEBUG
+                // Count it in
+                iSplit++;
+#endif
+                // Because we split an entry (and possibly resized the table)
+                //   we need to respecify some variables.
+                lpHshEntryHash = &lpHTS->lpHshTab[MaskTheHash (uHash, lpHTS)];
 
-        // As we didn't find a free entry, continue searching
-        //   wrapping around to the start if necessary.
-        lpHshEntry = lpHshEntryHash;
-        do {
-            // Increment to the next entry (relatively prime to total size)
-            lpHshEntry += lpHTS->iHshTabIncrFree;
+                // Loop through the current block looking for
+                //   a free (not inuse) entry
+                // Note that because this is the same block as uHash,
+                //   this search allows PrinHash.
+                for (lpHshEntry = lpHshEntryHash, i = 0;
+                     lpHshEntry->htFlags.Inuse
+                  && i < lpHTS->iHshTabEPB;
+                     lpHshEntry++, i++)
+                {}
 
-            // If we're at or beyond the end, wrap to the start
-            if (lpHshEntry >= &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm])
-                lpHshEntry -= lpHTS->iHshTabTotalNelm;
+                // If we found it, return it
+                if (i < lpHTS->iHshTabEPB)
+                    goto NORMAL_EXIT;
+            } // End IF/ELSE/IF
 
-            // Check for not Inuse and not PrinHash
-            if (!(lpHshEntry->htFlags.Inuse || lpHshEntry->htFlags.PrinHash))
+            // As we didn't find a free entry, continue searching
+            //   wrapping around to the start if necessary.
+            lpHshEntry = lpHshEntryHash;
+#ifdef DEBUG
+            i = 0;
+#endif
+            do {
+                APLUINT aplHshEntry;
+
+                // Because we're dealing with number that may overflow the ptr size we need to use 64-bit offsets
+
+                // Calculate the current offset
+                aplHshEntry = lpHshEntry - lpHTS->lpHshTab;
+
+                // Increment to the next entry (relatively prime to total size)
+                aplHshEntry += lpHTS->iHshTabIncrFree;
+
+                // Wrap to the start
+                aplHshEntry = aplHshEntry % lpHTS->iHshTabTotalNelm;
+
+                // Convert back to a ptr
+                lpHshEntry = &lpHTS->lpHshTab[aplHshEntry];
+
+                // Check for not Inuse and not PrinHash
+                if (!(lpHshEntry->htFlags.Inuse || lpHshEntry->htFlags.PrinHash))
+                    break;
+#ifdef DEBUG
+                i++;
+#endif
+            } while (lpHshEntry NE lpHshEntryHash);
+
+            // If we found it, return it
+            if (lpHshEntry NE lpHshEntryHash)
+                goto NORMAL_EXIT;
+
+            Assert (i EQ lpHTS->iHshTabTotalNelm);
+
+            // As we didn't find a free entry, try to expand the hash table
+            if (!HshTabResize_EM (lpHTS))
+                goto ERROR_EXIT;
+
+            // Go around again unless we've done this before
+            if (bFirstTime)
+                bFirstTime = FALSE;
+            else
                 break;
-        } while (lpHshEntry NE lpHshEntryHash);
-
-        // If we found it, return it
-        if (lpHshEntry NE lpHshEntryHash)
-            goto NORMAL_EXIT;
-
-        // As we didn't find a free entry, try to expand the hash table
-        if (!HshTabResize_EM (lpHTS))
-            goto ERROR_EXIT;
-
-        // Go around again unless we've done this before
-        if (bFirstTime)
-            bFirstTime = FALSE;
-        else
-            break;
-    } // End WHILE
-
+        } // End WHILE
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {} // End __try/__except
+HASH_FULL_EXIT:
     ErrorMessageIndirect (ERRMSG_HASH_TABLE_FULL APPEND_NAME);
 ERROR_EXIT:
     lpHshEntry = NULL;
 NORMAL_EXIT:
-    DBGLEAVE;
-
     return lpHshEntry;
 } // End FindNextFreeUsingHTE_EM
 #undef  APPEND_NAME
@@ -1999,7 +2057,7 @@ LPSYMENTRY SymTabHTSLookupNameLength
     {
         // Peel back the HshTabStrs so we lookup
         //   the name in the top level HshTabStr
-        while (lphtsPTD->lphtsPrvMFO)
+        while (lphtsPTD->lphtsPrvMFO NE NULL)
             lphtsPTD = lphtsPTD->lphtsPrvMFO;
     } // End IF
 
@@ -2785,7 +2843,7 @@ LPSYMENTRY SymTabHTSAppendNewName_EM
     {
         // Peel back the HshTabStrs so we append
         //   the name to the top level HshTabStr
-        while (lphtsPTD->lphtsPrvMFO)
+        while (lphtsPTD->lphtsPrvMFO NE NULL)
             lphtsPTD = lphtsPTD->lphtsPrvMFO;
     } // End IF
 
@@ -2934,7 +2992,7 @@ UBOOL AllocHshTab
     // Initialize HTS fields
     lpHTS->iHshTabTotalNelm = (UINT) uHshTabInitNelm;
     lpHTS->iHshTabBaseNelm  = (UINT) uHshTabInitNelm;
-    lpHTS->iHshTabIncrFree  = (UINT) (DEF_HSHTAB_PRIME % uHshTabInitNelm);
+    lpHTS->iHshTabIncrFree  =         DEF_HSHTAB_PRIME;
     lpHTS->iHshTabIncrNelm  = (UINT) uHshTabIncrNelm;
     lpHTS->uHashMask        = (UINT) uHshTabInitBlks - 1;
     lpHTS->iHshTabEPB       = DEF_HSHTAB_EPB;
@@ -3154,10 +3212,10 @@ void FreeHshSymTabs
     MyEnterCriticalSection (&CSOHshTab);
 
     // If we allocated the HshTab, ...
-    if (lpHTS->lpHshTab)
+    if (lpHTS->lpHshTab NE NULL)
     {
         // If we allocated the SymTab, ...
-        if (lpHTS->lpSymTab)
+        if (lpHTS->lpSymTab NE NULL)
         {
             // Delete HGLOBAL system vars
             DeleSysVars (lpHTS);
@@ -3256,7 +3314,7 @@ void FreeVirtUnlink
     } // End IF
 
     // If we allocated virtual storage, ...
-    if (lpLclMemVirtStr[uCnt].IniAddr)
+    if (lpLclMemVirtStr[uCnt].IniAddr NE NULL)
     {
         // Free the virtual storage
         MyVirtualFree (lpLclMemVirtStr[uCnt].IniAddr, 0, MEM_RELEASE); lpLclMemVirtStr[uCnt].IniAddr = NULL;

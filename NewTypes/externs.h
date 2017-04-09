@@ -2517,6 +2517,26 @@ size_t gSymTabSize
 #ifdef DEFINE_VALUES
 = {DEF_HSHTAB_MAXNELM}
 #endif
+,
+       gAFOSymTabSize
+#ifdef DEFINE_VALUES
+= {DEF_AFO_SYMTAB_MAXNELM}
+#endif
+,
+       gAFOHshTabSize
+#ifdef DEFINE_VALUES
+= {DEF_AFO_HSHTAB_MAXNELM}
+#endif
+,
+       gMFOSymTabSize
+#ifdef DEFINE_VALUES
+= {DEF_MFO_SYMTAB_MAXNELM}
+#endif
+,
+       gMFOHshTabSize
+#ifdef DEFINE_VALUES
+= {DEF_MFO_HSHTAB_MAXNELM}
+#endif
 ;
 
 

@@ -1,6 +1,54 @@
 Version 0.5.3.xx consists of the following Builds:
 
 
+Build #1731 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug When Hash Or Symbol Tables Are Low
+
+Directory branches/bsmith/NewTypes:
+
+EXCEPT.C:
+  Compare against correct equate instead of just 0.
+
+EXECMFN.C:
+  When allocating Hash & Symbol Tables, indicate whether or not the owner is an AFO or MFO.
+  Use equates for Hash & Symbol Table allocation sizes instead of constants.
+  Use variable name for Hash & Symbol Table maximum NELM instead of constant so it can be overridden on the command line.
+
+EXTERNS.H:
+  Define external vars for command line values.
+
+MAIN.C:
+  Use different equate for <iHshTabIncrFree> value.
+  In <TestCmdLine>, allow a colon as well as an equal sign to separate the keyword and it's matching value.
+  In <ParseCommandLine>, test for additional keywords.
+
+SAVEFCN.C:
+  When allocating Hash & Symbol Tables, indicate whether or not the owner is an AFO or MFO.
+  Use variable name for Hash & Symbol Table maximum NELM instead of constant so it can be overridden on the command line.
+
+SC_SYMB.C:
+  Change type from <int> to <size_t> and rename from <i...> to <u...> to reflect the unsigned nature.
+  Display Hash & Symbol Table info for AFOs and MFOs.
+
+SESSMAN.C:
+  When allocating Hash & Symbol Tables, indicate whether or not the owner is an AFO or MFO.
+
+SYMTAB.C:
+  Make explicit tests of ptr against "NE NULL".
+  In <HshTabSplitNextEntry_EM>, read from last byte we might split into so as to trigger the Page Fault early before we have moved any Hash Table Entries because we can't move them back if we fail.
+  In <FindNextFreeUsingHash_SPLIT_EM> and <FindNextFreeUsingHTE_EM>, trap errors in called functions so as to pass the error on to our caller,
+    and use 64-bit arithmetic on the offsets in case the 32-bit offset might overflow.
+
+SYMTAB.H:
+  Define equates for AFO and MFO Hash & Symbol Tables.
+  Define additional fields in <HSHTABSTR>.
+
+VER.C:
+  Use proper equates for Hash & Symbol Table multipliers.
+
+
 Build #1730 -- Version 0.5.3.xx
 --------------------------------
 

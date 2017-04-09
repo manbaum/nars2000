@@ -285,12 +285,12 @@ long CheckVirtAlloc
 #endif
         // Check on virtual allocs from <memVirtStr>
         iRet = CheckMemVirtStr (lpInvalidAddr);
-        if (iRet)
+        if (iRet NE EXCEPTION_CONTINUE_SEARCH)
             return iRet;
 
         // Check on virtual allocs in the <lpMemPTD->lpLstMVS> chain
         iRet = CheckPTDVirtStr (lpInvalidAddr);
-        if (iRet)
+        if (iRet NE EXCEPTION_CONTINUE_SEARCH)
             return iRet;
     } // End IF
 
@@ -317,7 +317,7 @@ int CheckPTDVirtStr
 
     // If lpMemPTD isn't set, just exit
     if (lpMemPTD EQ NULL)
-        return 0;
+        return EXCEPTION_CONTINUE_SEARCH;
 
     // Get the ptr to the last MVS
     lpLstMVS = lpMemPTD->lpLstMVS;
@@ -371,7 +371,7 @@ int CheckPTDVirtStr
     } // End FOR
 
     // Mark as no match
-    return 0;
+    return EXCEPTION_CONTINUE_SEARCH;
 } // End CheckPTDVirtStr
 
 
@@ -432,7 +432,7 @@ int CheckMemVirtStr
     } // End FOR
 
     // Mark as no match
-    return 0;
+    return EXCEPTION_CONTINUE_SEARCH;
 } // End CheckMemVirtStr
 
 
@@ -540,12 +540,12 @@ long CheckException
         case EXCEPTION_ACCESS_VIOLATION:
             // Check on virtual allocs from <memVirtStr>
             iRet = CheckMemVirtStr (glpInvalidAddr);
-            if (iRet)
+            if (iRet NE EXCEPTION_CONTINUE_SEARCH)
                 return iRet;
 
             // Check on virtual allocs in the <lpMemPTD->lpLstMVS> chain
             iRet = CheckPTDVirtStr (glpInvalidAddr);
-            if (iRet)
+            if (iRet NE EXCEPTION_CONTINUE_SEARCH)
                 return iRet;
 
             // Fall through to common handler execution

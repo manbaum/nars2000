@@ -3766,7 +3766,7 @@ UBOOL InitInstance
     htsGLB.lpHshTabSplitNext = htsGLB.lpHshTab;
     htsGLB.iHshTabBaseNelm   = DEF_GLBHSHTAB_INITNELM;
     htsGLB.iHshTabTotalNelm  = DEF_GLBHSHTAB_INITNELM;
-    htsGLB.iHshTabIncrFree   = DEF_GLBHSHTAB_INCRFREE;
+    htsGLB.iHshTabIncrFree   = DEF_HSHTAB_PRIME;
     htsGLB.iHshTabIncrNelm   = DEF_GLBHSHTAB_INCRNELM;
     htsGLB.iHshTabEPB        = DEF_GLBHSHTAB_EPB;
     htsGLB.uHashMask         = DEF_GLBHSHTAB_HASHMASK;
@@ -3860,19 +3860,19 @@ void UninitInstance
 UBOOL TestCmdLine
     (LPCHAR  *lplpCmdLine,      // Ptr to ptr to command line
      LPCHAR  lpKeyWord,         // Ptr to keyword
-     UINT    uMul,              // Multiplier
+     int     iMul,              // Multiplier
      LPUBOOL lpbDone,           // Ptr to bDone var
      LPUBOOL lpbRet,            // Ptr to bRet  var
      size_t *lpOutput)          // Ptr to output save area
 
 {
     size_t iSpn;
-    UINT   iVal;
+    int    iVal;
 
     // Find the trailing char
-    iSpn = strcspn (*lplpCmdLine, "= ");
+    iSpn = strcspn (*lplpCmdLine, "=: ");
 
-    // If it matches, ...
+    // If it matches (case insensitive), ...
     if (strncmpi (*lplpCmdLine, lpKeyWord, iSpn) EQ 0)
     {
         // Skip over the keyword
@@ -3881,14 +3881,13 @@ UBOOL TestCmdLine
         // Skip over leading space
         *lplpCmdLine = SkipWhite (*lplpCmdLine);
 
-        Assert ((*lplpCmdLine)[0] EQ '=');
-
         // If it's not the correct separator, ...
-        if ((*lplpCmdLine)[0] NE '=')
+        if ((*lplpCmdLine)[0] NE '='
+         && (*lplpCmdLine)[0] NE ':')
         {
             *lpbDone = TRUE;
             *lpbRet = FALSE;
-            MBW (L"Invalid command line argument -- missing '=' separator.");
+            MBW (L"Invalid command line argument -- missing '=' or ':' separator.");
 
             return FALSE;
         } else
@@ -3901,7 +3900,7 @@ UBOOL TestCmdLine
 
             iVal = abs (atoi (*lplpCmdLine));
             if (iVal NE 0)
-                *lpOutput = iVal * uMul;
+                *lpOutput = iVal * iMul;
              // Skip over the digits
              *lplpCmdLine += strspn (*lplpCmdLine, " 0123456789");
 
@@ -3948,17 +3947,58 @@ UBOOL ParseCommandLine
                 // Test for various keywords
                 if (TestCmdLine (&p,
                                  "symtabsize",
-                                 SYMTABSIZE_MUL,
+                                 LCL_SYMTABSIZE_MUL,
+                                &bDone,
+                                &bRet,
+                                &gSymTabSize))
+                    break;
+                if (TestCmdLine (&p,
+                                 "lclsymtabsize",
+                                 LCL_SYMTABSIZE_MUL,
                                 &bDone,
                                 &bRet,
                                 &gSymTabSize))
                     break;
                 if (TestCmdLine (&p,
                                  "hshtabsize",
-                                 HSHTABSIZE_MUL,
+                                 LCL_HSHTABSIZE_MUL,
                                 &bDone,
                                 &bRet,
                                 &gHshTabSize))
+                    break;
+                if (TestCmdLine (&p,
+                                 "lclhshtabsize",
+                                 LCL_HSHTABSIZE_MUL,
+                                &bDone,
+                                &bRet,
+                                &gHshTabSize))
+                    break;
+                if (TestCmdLine (&p,
+                                 "afosymtabsize",
+                                 AFO_SYMTABSIZE_MUL,
+                                &bDone,
+                                &bRet,
+                                &gAFOSymTabSize))
+                    break;
+                if (TestCmdLine (&p,
+                                 "afohshtabsize",
+                                 AFO_HSHTABSIZE_MUL,
+                                &bDone,
+                                &bRet,
+                                &gAFOHshTabSize))
+                if (TestCmdLine (&p,
+                                 "mfosymtabsize",
+                                 MFO_SYMTABSIZE_MUL,
+                                &bDone,
+                                &bRet,
+                                &gMFOSymTabSize))
+                    break;
+                if (TestCmdLine (&p,
+                                 "mfohshtabsize",
+                                 MFO_HSHTABSIZE_MUL,
+                                &bDone,
+                                &bRet,
+                                &gMFOHshTabSize))
                     break;
 
                 bDone = TRUE;

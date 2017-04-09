@@ -249,12 +249,16 @@ HGLOBAL Init1MagicFunction
 
             lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart].lpText = "lpInitMFO->htsMFO.lpHshTab in <Init1MagicFunction>";
 
+            // Initialize entries
+            lpInitMFO->lphtsMFO->bAFO = FALSE;
+            lpInitMFO->lphtsMFO->bMFO = TRUE;
+
             // Allocate virtual memory for the hash table
             if (!AllocHshTab (&lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart++],   // Ptr to this PTDMEMVIRT entry
                                lpInitMFO->lphtsMFO,                                         // Ptr to this HSHTABSTR
-                               128,                                                         // Initial # blocks in HshTab (@ EPB HTEs per block)
-                               16,                                                          // # HTEs by which to resize when low
-                               1024))                                                       // Maximum # HTEs
+                               DEF_MFO_HSHTAB_NBLKS,                                        // Initial # blocks in HshTab (@ EPB HTEs per block)
+                               DEF_MFO_HSHTAB_INCRNELM,                                     // # HTEs by which to resize when low
+                               gMFOHshTabSize))                                             // Maximum # HTEs
                 DbgStop ();
         } // End IF
 
@@ -265,14 +269,18 @@ HGLOBAL Init1MagicFunction
             Assert (lpInitMFO->uPtdMemVirtStart < lpInitMFO->uPtdMemVirtEnd);
 
             lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart].lpText = "lpInitMFO->htsMFO.lpSymTab in <Init1MagicFunction>";
-
+#ifdef DEBUG
+            // Initialize entries
+            lpInitMFO->lphtsMFO->bAFO = FALSE;
+            lpInitMFO->lphtsMFO->bMFO = TRUE;
+#endif
             // Allocate virtual memory for the symbol table
             if (!AllocSymTab (&lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart++],   // Ptr to this PTDMEMVIRT entry
                                lpMemPTD,                                                    // PerTabData global memory handle
                                lpInitMFO->lphtsMFO,                                         // Ptr to this HSHTABSTR
-                               256,                                                         // Initial # STEs in SymTab
-                               16,                                                          // # STEs by which to resize when low
-                               1024))                                                       // Maximum # STEs
+                               DEF_MFO_SYMTAB_INITNELM,                                     // Initial # STEs in SymTab
+                               DEF_MFO_SYMTAB_INCRNELM,                                     // # STEs by which to resize when low
+                               gMFOSymTabSize))                                             // Maximum # STEs
                 DbgStop ();
         } // End IF
 

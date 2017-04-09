@@ -1782,12 +1782,16 @@ UBOOL SaveFunctionCom
     // If we're saving an AFO, ...
     if (lpSF_Fcns->bAFO)
     {
+        // Initialize entries
+        lpSF_Fcns->htsDFN.bAFO = TRUE;
+        lpSF_Fcns->htsDFN.bMFO = FALSE;
+
         // Allocate a global HshTab
         if (!AllocHshTab (NULL,                     // Ptr to this entry in MemVirtStr (may be NULL if global allocation)
                          &lpSF_Fcns->htsDFN,        // Ptr to HshTab Struc
                           DEF_AFO_HSHTAB_NBLKS,     // # blocks in this HshTab
                           DEF_AFO_HSHTAB_INCRNELM,  // # HTEs by which to resize when low
-                          DEF_AFO_HSHTAB_MAXNELM))  // Maximum # HTEs
+                          gAFOHshTabSize))          // Maximum # HTEs
             goto WSFULL_EXIT;
 
         if (!AllocSymTab (NULL,                     // Ptr to this entry in MemVirtStr (may be NULL if global allocation)
@@ -1795,7 +1799,7 @@ UBOOL SaveFunctionCom
                          &lpSF_Fcns->htsDFN,        // Ptr to HshTab Struc
                           DEF_AFO_SYMTAB_INITNELM,  // Initial # STEs in SymTab
                           DEF_AFO_SYMTAB_INCRNELM,  // # STEs by which to resize when low
-                          DEF_AFO_SYMTAB_MAXNELM))  // Maximum # STEs
+                          gAFOSymTabSize))          // Maximum # STEs
             goto WSFULL_EXIT;
 
         // Mark as global Hsh & Sym tabs

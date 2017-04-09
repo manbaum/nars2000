@@ -288,7 +288,7 @@ APLU3264 CALLBACK AboutDlgProc
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
                          uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"SymTabSize %u\n",
-                         gSymTabSize / SYMTABSIZE_MUL);
+                         gSymTabSize / LCL_SYMTABSIZE_MUL);
             //***************************************************************************
             // HSHTABSIZE version
             //***************************************************************************
@@ -297,7 +297,7 @@ APLU3264 CALLBACK AboutDlgProc
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
                          uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"HshTabSize %u\n",
-                         gHshTabSize / HSHTABSIZE_MUL);
+                         gHshTabSize / LCL_HSHTABSIZE_MUL);
             // Write out the secondary version string
             SetDlgItemTextW (hDlg, IDC_VERSION2, wszTemp);
 

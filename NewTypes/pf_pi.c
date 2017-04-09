@@ -1679,7 +1679,7 @@ APLMPI PrimFnPiIsPrime
 //***************************************************************************
 //  $PrimFnPiNextPrime      1 {pi} R
 //
-//  Return the next prime after than a given #
+//  Return the next prime after a given #
 //***************************************************************************
 
 APLMPI PrimFnPiNextPrime

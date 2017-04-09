@@ -1,6 +1,26 @@
 Version 0.5.3.xx consists of the following Builds:
 
 
+Build #1732 -- Version 0.5.3.xx
+--------------------------------
+
+* Miscellaneous Changes
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  Insert blank line for clarity.
+
+EDITFCN.C:
+  In <LclECPaintHook>, re-organize the logic behind when we Syntax Color or not.
+
+MAIN.RC:
+  Increase the height of the Group Boxes surrounding the Foreground & Background columns in Syntax Coloring.
+
+PF_PI.C:
+  Fix typo in comment.
+
+
 Build #1731 -- Version 0.5.3.xx
 --------------------------------
 

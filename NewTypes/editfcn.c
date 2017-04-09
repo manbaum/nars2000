@@ -1500,7 +1500,7 @@ int LclECPaintHook
      long    lFlags,                        // PRF_ flags
      int     line_height,                   // Line height in screen coordinates
      int     char_width,                    // Average char width in screen coordinates
-     UBOOL   rev)                           // TRUE iff we're displaying in reverse mode
+     UBOOL   bRev)                          // TRUE iff we're displaying in reverse mode
 
 {
     RECT             rcScr,                 // Rect for actual width/height in screen coordinates
@@ -1572,45 +1572,42 @@ int LclECPaintHook
     } // End IF/ELSE
 
     // If we're not displaying in reverse color, ...
-    if (!rev)
+    if (!bRev)
     {
+        UBOOL bClrSess = (IzitSM (GetParent (hWndEC)) && OptionFlags.bSyntClrSess), // In SM and we're allowed to Syntax Color
+              bClrFcns = (IzitFE (GetParent (hWndEC)) && OptionFlags.bSyntClrFcns); // In FE ...
+
+        // Printing can occur in the Function Editor or Session Manager,
+        //   so if we're printing, we must be allowed to Syntax Color;
+        //   if we're not printing, then we can Syntax Color
+        //   if we're in the Session Manager and we're allowed to, or
+        //      we're in the Function Editor and we're allowed to.
         // If we're to Syntax Color the line, ...
-        if ((IzitSM (GetParent (hWndEC)) && OptionFlags.bSyntClrSess)
-         || (IzitFE (GetParent (hWndEC)) && OptionFlags.bSyntClrFcns))
+        if ((lFlags & PRF_PRINTCLIENT) ? OptionFlags.bSyntClrPrnt
+                                       : (bClrSess || bClrFcns))
         {
-            // If we're printing a session, ...
-            if (!((IzitSM (GetParent (hWndEC)) && OptionFlags.bSyntClrSess)
-               && (lFlags & PRF_PRINTCLIENT)
-               && !OptionFlags.bSyntClrPrnt))
+            // To do this, we use a FSA to parse the line from the start
+            //   through the last char to display
+
+            // Allocate space for the colors
+            hGlbClr = DbgGlobalAlloc (GHND, (uCol + uLen) * sizeof (lpMemClrIni[0]));
+            if (hGlbClr NE NULL)
             {
-                // To do this, we use a FSA to parse the line from the start
-                //   through the last char to display
+                // Lock the memory to get a ptr to it
+                lpMemClrIni = MyGlobalLock000 (hGlbClr);
 
-                // Allocate space for the colors
-                hGlbClr = DbgGlobalAlloc (GHND, (uCol + uLen) * sizeof (lpMemClrIni[0]));
-                if (hGlbClr NE NULL)
+                // Syntax color the line
+                if (!SyntaxColor (lpwsz, uCol + uLen, lpMemClrIni, hWndEC))
                 {
-                    // Lock the memory to get a ptr to it
-                    lpMemClrIni = MyGlobalLock000 (hGlbClr);
-
-                    // Syntax color the line
-                    if (!SyntaxColor (lpwsz, uCol + uLen, lpMemClrIni, hWndEC))
-                    {
-                        // Unlock and free (and set to NULL) a global name and ptr
-                        UnlFreeGlbName (hGlbClr, lpMemClrIni);
-                    } // End IF
-
-                    // Set the Window text colors
-                    SetTextColor (hDC, gSyntaxColorText.crFore);
-                    SetBkColor   (hDC, gSyntaxColorText.crBack);
+                    // Unlock and free (and set to NULL) a global name and ptr
+                    UnlFreeGlbName (hGlbClr, lpMemClrIni);
                 } // End IF
             } // End IF
-        } else
-        {
-            // Set the Window text colors
-            SetTextColor (hDC, gSyntaxColorText.crFore);
-            SetBkColor   (hDC, gSyntaxColorText.crBack);
-        } // End IF/ELSE
+        } // End IF
+
+        // Set the Window text colors
+        SetTextColor (hDC, gSyntaxColorText.crFore);
+        SetBkColor   (hDC, gSyntaxColorText.crBack);
     } // End IF
 
     // Set the coordinates

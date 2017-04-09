@@ -628,8 +628,8 @@ STYLE WS_CHILD | DS_SHELLFONT
 FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "Background Transparent"    , IDC_STATIC            ,200,  5, 45, 18
-    GROUPBOX        "Foreground"                , IDC_STATIC            , 95, 10, 48,252
-    GROUPBOX        "Background"                , IDC_STATIC            ,150, 10, 48,252
+    GROUPBOX        "Foreground"                , IDC_STATIC            , 95, 10, 48,272
+    GROUPBOX        "Background"                , IDC_STATIC            ,150, 10, 48,272
 
     LTEXT           ""                          , IDC_SYNTCLR_LT1       ,  5, 20, 90,  9    // "Global Name"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK1 , 97, 20,  8,  8, SS_BITMAP

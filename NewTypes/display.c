@@ -4550,6 +4550,7 @@ UBOOL DisplayGlbVector
                         ((LPAPLCHAR) lpMemArr) += 2;
                     } // End IF
                 } // End FOR
+
                 // Ensure properly terminated
                 lpaplChar[0] = WC_EOS;
 

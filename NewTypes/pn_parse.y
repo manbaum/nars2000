@@ -164,18 +164,43 @@ UnInteger:
 
 AlphaInt:
                Alphabet             {DbgMsgWP (L"%%AlphaInt:  Alphabet");
-                                     lppnLocalVars->uAlpAcc = 0;
-                                     PN_ChrAcc (lppnLocalVars, $1.chCur);
+                                     lppnLocalVars->uAlpAccInt = 0;
+                                     PN_ChrAccInt (lppnLocalVars, $1.chCur);
                                     }
     |          Digit                {DbgMsgWP (L"%%AlphaInt:  Digit");
-                                     lppnLocalVars->uAlpAcc = 0;
-                                     PN_ChrAcc (lppnLocalVars, $1.chCur);
+                                     lppnLocalVars->uAlpAccInt = 0;
+                                     PN_ChrAccInt (lppnLocalVars, $1.chCur);
                                     }
-    | AlphaInt Alphabet             {DbgMsgWP (L"%%AlphaInt:  Alphaint Alphabet");
-                                     PN_ChrAcc (lppnLocalVars, $2.chCur);
+    | AlphaInt Alphabet             {DbgMsgWP (L"%%AlphaInt:  AlphaInt Alphabet");
+                                     PN_ChrAccInt (lppnLocalVars, $2.chCur);
                                     }
     | AlphaInt Digit                {DbgMsgWP (L"%%AlphaInt:  AlphaInt Digit");
-                                     PN_ChrAcc (lppnLocalVars, $2.chCur);
+                                     PN_ChrAccInt (lppnLocalVars, $2.chCur);
+                                    }
+    ;
+
+AlphaDec:
+               Alphabet             {DbgMsgWP (L"%%AlphaDec:  Alphabet");
+                                     // Initialize lpszAlphaDec
+                                     lppnLocalVars->lpszAlphaDec = &lppnLocalVars->lpszAlphaInt[lppnLocalVars->uAlpAccInt];
+                                     lppnLocalVars->uAlpAccDec = 0;
+
+                                     // Accumulate the character
+                                     PN_ChrAccDec (lppnLocalVars, $1.chCur);
+                                    }
+    |          Digit                {DbgMsgWP (L"%%AlphaDec:  Digit");
+                                     // Initialize lpszAlphaDec
+                                     lppnLocalVars->lpszAlphaDec = &lppnLocalVars->lpszAlphaInt[lppnLocalVars->uAlpAccInt];
+                                     lppnLocalVars->uAlpAccDec = 0;
+
+                                     // Accumulate the character
+                                     PN_ChrAccDec (lppnLocalVars, $1.chCur);
+                                    }
+    | AlphaDec Alphabet             {DbgMsgWP (L"%%AlphaDec:  AlphaDec Alphabet");
+                                     PN_ChrAccDec (lppnLocalVars, $2.chCur);
+                                    }
+    | AlphaDec Digit                {DbgMsgWP (L"%%AlphaDec:  AlphaDec Digit");
+                                     PN_ChrAccDec (lppnLocalVars, $2.chCur);
                                     }
     ;
 
@@ -220,8 +245,23 @@ Decimal:
                                     }
     ;
 
+IntPoint:
+      Integer                       {DbgMsgWP (L"%%IntPoint:  Integer");
+                                     // Terminate the argument
+                                     PN_NumAcc (lppnLocalVars, '\0');
+
+                                     // Calculate the number
+                                     PN_NumCalc (lppnLocalVars, &$1, FALSE);
+
+                                     $$ = $1;
+                                    }
+    ;
+
 UnIntPoint:
       UnInteger                     {DbgMsgWP (L"%%UnIntPoint:  UnInteger");
+                                     // Terminate the argument
+                                     PN_NumAcc (lppnLocalVars, '\0');
+
                                      // Calculate the number
                                      PN_NumCalc (lppnLocalVars, &$1, FALSE);
 
@@ -761,20 +801,14 @@ PiPoint:
     ;
 
 ExpPoint:
-      DecPoint 'e' Integer          {DbgMsgWP (L"%%ExpPoint:  DecPoint 'e' Integer");
-                                     // Terminate the (Exponent) argument
-                                     PN_NumAcc (lppnLocalVars, '\0');
-
+      DecPoint 'e' IntPoint         {DbgMsgWP (L"%%ExpPoint:  DecPoint 'e' IntPoint");
                                      // Make it into a ExpPoint number
                                      lppnLocalVars->lpYYRes = PN_MakeExpPoint   (&$1, &$3,  lppnLocalVars);
                                      if (lppnLocalVars->lpYYRes EQ NULL)
                                          YYERROR2;
                                      $$ = *lppnLocalVars->lpYYRes;
                                     }
-    | DecPoint 'E' Integer          {DbgMsgWP (L"%%ExpPoint:  DecPoint 'E' Integer");
-                                     // Terminate the (Exponent) argument
-                                     PN_NumAcc (lppnLocalVars, '\0');
-
+    | DecPoint 'E' IntPoint         {DbgMsgWP (L"%%ExpPoint:  DecPoint 'E' IntPoint");
                                      // Make it into a ExpPoint number
                                      lppnLocalVars->lpYYRes = PN_MakeExpPoint   (&$1, &$3,  lppnLocalVars);
                                      if (lppnLocalVars->lpYYRes EQ NULL)
@@ -798,44 +832,32 @@ VfpPoint:
                                          YYERROR2;
                                      $$ = *lppnLocalVars->lpYYRes;
                                     }
-    | DecPoint 'e' Integer DEF_VFPSEP
-                                    {DbgMsgWP (L"%%VfpPoint:  DecPoint 'e' Integer 'v'");
-                                     // Terminate the (Exponent) argument
-                                     PN_NumAcc (lppnLocalVars, '\0');
-
+    | DecPoint 'e' IntPoint DEF_VFPSEP
+                                    {DbgMsgWP (L"%%VfpPoint:  DecPoint 'e' IntPoint 'v'");
                                      // Make it into a VfpPoint number
                                      lppnLocalVars->lpYYRes = PN_MakeVfpPoint   (&$1, &$3,  lppnLocalVars, NULL);
                                      if (lppnLocalVars->lpYYRes EQ NULL)
                                          YYERROR2;
                                      $$ = *lppnLocalVars->lpYYRes;
                                     }
-    | DecPoint 'e' Integer DEF_VFPSEP UnIntPoint
-                                    {DbgMsgWP (L"%%VfpPoint:  DecPoint 'e' Integer 'v'");
-                                     // Terminate the (Exponent) argument
-                                     PN_NumAcc (lppnLocalVars, '\0');
-
+    | DecPoint 'e' IntPoint DEF_VFPSEP UnIntPoint
+                                    {DbgMsgWP (L"%%VfpPoint:  DecPoint 'e' IntPoint 'v' UnIntPoint");
                                      // Make it into a VfpPoint number
                                      lppnLocalVars->lpYYRes = PN_MakeVfpPoint   (&$1, &$3,  lppnLocalVars, &$5.at.aplInteger);
                                      if (lppnLocalVars->lpYYRes EQ NULL)
                                          YYERROR2;
                                      $$ = *lppnLocalVars->lpYYRes;
                                     }
-    | DecPoint 'E' Integer DEF_VFPSEP
-                                    {DbgMsgWP (L"%%VfpPoint:  DecPoint 'E' Integer 'v'");
-                                     // Terminate the (Exponent) argument
-                                     PN_NumAcc (lppnLocalVars, '\0');
-
+    | DecPoint 'E' IntPoint DEF_VFPSEP
+                                    {DbgMsgWP (L"%%VfpPoint:  DecPoint 'E' IntPoint 'v'");
                                      // Make it into a VfpPoint number
                                      lppnLocalVars->lpYYRes = PN_MakeVfpPoint   (&$1, &$3,  lppnLocalVars, NULL);
                                      if (lppnLocalVars->lpYYRes EQ NULL)
                                          YYERROR2;
                                      $$ = *lppnLocalVars->lpYYRes;
                                     }
-    | DecPoint 'E' Integer DEF_VFPSEP UnIntPoint
-                                    {DbgMsgWP (L"%%VfpPoint:  DecPoint 'E' Integer 'v'");
-                                     // Terminate the (Exponent) argument
-                                     PN_NumAcc (lppnLocalVars, '\0');
-
+    | DecPoint 'E' IntPoint DEF_VFPSEP UnIntPoint
+                                    {DbgMsgWP (L"%%VfpPoint:  DecPoint 'E' IntPoint 'v' UnIntPoint");
                                      // Make it into a VfpPoint number
                                      lppnLocalVars->lpYYRes = PN_MakeVfpPoint   (&$1, &$3,  lppnLocalVars, &$5.at.aplInteger);
                                      if (lppnLocalVars->lpYYRes EQ NULL)
@@ -872,7 +894,30 @@ BaseArgs:
 BasePoint:
       BaseArgs   'b' AlphaInt       {DbgMsgWP (L"%%BasePoint:  BaseArgs 'b' AlphaInt");
                                      // Make it into a BasePoint number
-                                     lppnLocalVars->lpYYRes = PN_MakeBasePoint  (&$1, &$3,  lppnLocalVars);
+                                     lppnLocalVars->lpYYRes = PN_MakeBasePoint  (&$1, &$3, NULL, lppnLocalVars);
+                                     if (lppnLocalVars->lpYYRes EQ NULL)
+                                         YYERROR2;
+                                     $$ = *lppnLocalVars->lpYYRes;
+                                    }
+    | BaseArgs   'b' AlphaInt '.'   {DbgMsgWP (L"%%BasePoint:  BaseArgs 'b' AlphaInt '.'");
+                                     // Make it into a BasePoint number
+                                     lppnLocalVars->lpYYRes = PN_MakeBasePoint  (&$1, &$3, NULL, lppnLocalVars);
+                                     if (lppnLocalVars->lpYYRes EQ NULL)
+                                         YYERROR2;
+                                     $$ = *lppnLocalVars->lpYYRes;
+                                    }
+    | BaseArgs   'b'          '.' AlphaDec
+                                    {DbgMsgWP (L"%%BasePoint:  BaseArgs 'b' '.' AlphaDec");
+                                     // Make it into a BasePoint number
+                                     lppnLocalVars->lpYYRes = PN_MakeBasePoint  (&$1, NULL, &$4,  lppnLocalVars);
+                                     if (lppnLocalVars->lpYYRes EQ NULL)
+                                         YYERROR2;
+                                     $$ = *lppnLocalVars->lpYYRes;
+                                    }
+    | BaseArgs   'b' AlphaInt '.' AlphaDec
+                                    {DbgMsgWP (L"%%BasePoint:  BaseArgs 'b' AlphaInt '.' AlphaDec");
+                                     // Make it into a BasePoint number
+                                     lppnLocalVars->lpYYRes = PN_MakeBasePoint  (&$1, &$3, &$5,  lppnLocalVars);
                                      if (lppnLocalVars->lpYYRes EQ NULL)
                                          YYERROR2;
                                      $$ = *lppnLocalVars->lpYYRes;
@@ -972,13 +1017,14 @@ UBOOL ParsePointNotation
     int   i;                                // Loop counter
 
     // Initialize the starting indices
-    lppnLocalVars->uNumCur  =
-    lppnLocalVars->uNumIni  =
-    lppnLocalVars->uAlpAcc  =
-    lppnLocalVars->uNumAcc  =
-    lppnLocalVars->bNeedEOT =
-    lppnLocalVars->bEOT     =
-    lppnLocalVars->bEOS     = 0;
+    lppnLocalVars->uNumCur    =
+    lppnLocalVars->uNumIni    =
+    lppnLocalVars->uAlpAccInt =
+    lppnLocalVars->uAlpAccDec =
+    lppnLocalVars->uNumAcc    =
+    lppnLocalVars->bNeedEOT   =
+    lppnLocalVars->bEOT       =
+    lppnLocalVars->bEOS       = 0;
 
     // Loop through all of the parts
     for (i = 0; i < 8; i++)

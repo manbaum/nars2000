@@ -473,30 +473,26 @@ void PrimFnMonColonBarHC2FisHC2F
 
 
 //***************************************************************************
-//  $PrimFnMonColonBarHC2RisHC2R
-//
-//  Primitive scalar function monadic ColonBar:  HC2R {is} fn HC2R
+//  $InvHC2R_RE
 //***************************************************************************
 
-void PrimFnMonColonBarHC2RisHC2R
-    (LPAPLHC2R  lpMemRes,           // Ptr to the result
-     APLUINT    uRes,               // Index into the result
-     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+APLHC2R InvHC2R_RE
+    (APLHC2R aplRht)                    // Right arg
 
 {
     int     i;                  // Loop counter
     APLRAT  aplDen = {0};       // Denominator
     APLHC2R aplNum,             // Numerator
-            aplTmp;             // Temp
+            aplTmp,             // Temp
+            aplRes = {0};
     UBOOL   bAllowNeg0 = (UBOOL) gAllowNeg0,
             bImagRht;
 
     // Calculate the numerator
-    aplNum = ConjHC2R (lpatRht->aplHC2R);
+    aplNum = ConjHC2R (aplRht);
 
     // Calculate the denominator
-    aplTmp = MulHC2R_RE (lpatRht->aplHC2R, aplNum);
+    aplTmp = MulHC2R_RE (aplRht, aplNum);
 
     // Save the real part
     mpq_init_set (&aplDen, &aplTmp.parts[0]);
@@ -521,16 +517,16 @@ void PrimFnMonColonBarHC2RisHC2R
     // If the denominator is 0, ...
     if (IsMpq0 (&aplDen))
     {
-        lpMemRes[uRes].parts[0] =
-          *mpq_QuadICValue (&lpatRht->aplHC2R.parts[0],     // No left arg
+        aplRes.parts[0] =
+          *mpq_QuadICValue (&aplRht.parts[0],     // No left arg
                              ICNDX_DIV0,
-                            &lpatRht->aplHC2R.parts[0],
-                            &lpMemRes[uRes].parts[0],
+                            &aplRht.parts[0],
+                            &aplRes.parts[0],
                              FALSE);
         // Loop through the imaginary parts
         for (i = 1; i < 2; i++)
             // Initialize to 0/1
-            mpq_init (&lpMemRes[uRes].parts[i]);
+            mpq_init (&aplRes.parts[i]);
     } else
     // Check for special case:  {div}{neg}{inf}x
     if (bAllowNeg0
@@ -548,7 +544,7 @@ void PrimFnMonColonBarHC2RisHC2R
     {
         // Loop through all of the parts
         for (i = 0; i < 2; i++)
-            mpq_init_set_d (&lpMemRes[uRes].parts[i],
+            mpq_init_set_d (&aplRes.parts[i],
                             bAllowNeg0 ? ((SIGN_APLRAT (&aplNum.parts[i])
                                         EQ SIGN_APLRAT (&aplDen)) ?  0.0
                                                                   : -0.0)
@@ -556,11 +552,11 @@ void PrimFnMonColonBarHC2RisHC2R
     } else
     {
         // Initialize to 0/1
-        mphc2r_init (&lpMemRes[uRes]);
+        mphc2r_init (&aplRes);
 
         // Loop through all of the parts
         for (i = 0; i < 2; i++)
-            mpq_div (&lpMemRes[uRes].parts[i],
+            mpq_div (&aplRes.parts[i],
                      &aplNum.parts[i],
                      &aplDen);
     } // End IF/ELSE
@@ -568,6 +564,26 @@ void PrimFnMonColonBarHC2RisHC2R
     // Free the temps
     Myhc1r_clear (&aplDen);
     Myhc2r_clear (&aplNum);
+
+    return aplRes;
+} // End InvHC2R_RE
+
+
+//***************************************************************************
+//  $PrimFnMonColonBarHC2RisHC2R
+//
+//  Primitive scalar function monadic ColonBar:  HC2R {is} fn HC2R
+//***************************************************************************
+
+void PrimFnMonColonBarHC2RisHC2R
+    (LPAPLHC2R  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Save in the result
+    lpMemRes[uRes] = InvHC2R_RE (lpatRht->aplHC2R);
 } // End PrimFnMonColonBarHC2RisHC2R
 
 
@@ -778,35 +794,31 @@ void PrimFnMonColonBarHC4FisHC4F
 
 
 //***************************************************************************
-//  $PrimFnMonColonBarHC4RisHC4R
-//
-//  Primitive scalar function monadic ColonBar:  HC4R {is} fn HC4R
+//  $InvHC4R_RE
 //***************************************************************************
 
-void PrimFnMonColonBarHC4RisHC4R
-    (LPAPLHC4R  lpMemRes,           // Ptr to the result
-     APLUINT    uRes,               // Index into the result
-     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+APLHC4R InvHC4R_RE
+    (APLHC4R aplRht)                    // Right arg
 
 {
     int     i;                  // Loop counter
     APLRAT  aplDen = {0};       // Denominator
     APLHC4R aplNum,             // Numerator
-            aplTmp;             // Temp
+            aplTmp,             // Temp
+            aplRes = {0};
     UBOOL   bAllowNeg0 = (UBOOL) gAllowNeg0,
             bImagRht;
 
     // Calculate the numerator
-    aplNum = ConjHC4R (lpatRht->aplHC4R);
+    aplNum = ConjHC4R (aplRht);
 
     // If the user wants the left quotient, ...
     if (GetQuadDQ () EQ 'l')
         // Calculate the denominator
-        aplTmp = MulHC4R_RE (                  aplNum, lpatRht->aplHC4R);
+        aplTmp = MulHC4R_RE (        aplNum, aplRht);
     else
         // Calculate the denominator
-        aplTmp = MulHC4R_RE (lpatRht->aplHC4R, aplNum);
+        aplTmp = MulHC4R_RE (aplRht, aplNum);
 
     // Save the real part
     mpq_init_set (&aplDen, &aplTmp.parts[0]);
@@ -831,16 +843,16 @@ void PrimFnMonColonBarHC4RisHC4R
     // If the denominator is 0, ...
     if (IsMpq0 (&aplDen))
     {
-        lpMemRes[uRes].parts[0] =
-          *mpq_QuadICValue (&lpatRht->aplHC4R.parts[0],     // No left arg
+        aplRes.parts[0] =
+          *mpq_QuadICValue (&aplRht.parts[0],     // No left arg
                              ICNDX_DIV0,
-                            &lpatRht->aplHC4R.parts[0],
-                            &lpMemRes[uRes].parts[0],
+                            &aplRht.parts[0],
+                            &aplRes.parts[0],
                              FALSE);
         // Loop through the imaginary parts
         for (i = 1; i < 4; i++)
             // Initialize to 0/1
-            mpq_init (&lpMemRes[uRes].parts[i]);
+            mpq_init (&aplRes.parts[i]);
     } else
     // Check for special case:  {div}{neg}{inf}x
     if (bAllowNeg0
@@ -858,19 +870,19 @@ void PrimFnMonColonBarHC4RisHC4R
     {
         // Loop through all of the parts
         for (i = 0; i < 4; i++)
-            mpq_init_set_d (&lpMemRes[uRes].parts[i],
+            mpq_init_set_d (&aplRes.parts[i],
                             bAllowNeg0 ? ((SIGN_APLRAT (&aplNum.parts[i])
                                         EQ SIGN_APLRAT (&aplDen)) ?  0.0
                                                                   : -0.0)
-                                        : 0.0);
+                                       : 0.0);
     } else
     {
         // Initialize to 0/1
-        mphc4r_init (&lpMemRes[uRes]);
+        mphc4r_init (&aplRes);
 
         // Loop through all of the parts
         for (i = 0; i < 4; i++)
-            mpq_div (&lpMemRes[uRes].parts[i],
+            mpq_div (&aplRes.parts[i],
                      &aplNum.parts[i],
                      &aplDen);
     } // End IF/ELSE
@@ -878,6 +890,26 @@ void PrimFnMonColonBarHC4RisHC4R
     // Free the temps
     Myhc1r_clear (&aplDen);
     Myhc4r_clear (&aplNum);
+
+    return aplRes;
+} // End InvHC4R_RE
+
+
+//***************************************************************************
+//  $PrimFnMonColonBarHC4RisHC4R
+//
+//  Primitive scalar function monadic ColonBar:  HC4R {is} fn HC4R
+//***************************************************************************
+
+void PrimFnMonColonBarHC4RisHC4R
+    (LPAPLHC4R  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Save in the result
+    lpMemRes[uRes] = InvHC4R_RE (lpatRht->aplHC4R);
 } // End PrimFnMonColonBarHC4RisHC4R
 
 
@@ -1087,35 +1119,31 @@ void PrimFnMonColonBarHC8FisHC8F
 
 
 //***************************************************************************
-//  $PrimFnMonColonBarHC8RisHC8R
-//
-//  Primitive scalar function monadic ColonBar:  HC8R {is} fn HC8R
+//  $InvHC8R_RE
 //***************************************************************************
 
-void PrimFnMonColonBarHC8RisHC8R
-    (LPAPLHC8R  lpMemRes,           // Ptr to the result
-     APLUINT    uRes,               // Index into the result
-     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+APLHC8R InvHC8R_RE
+    (APLHC8R aplRht)                    // Right arg
 
 {
     int     i;                  // Loop counter
     APLRAT  aplDen = {0};       // Denominator
     APLHC8R aplNum,             // Numerator
-            aplTmp;             // Temp
+            aplTmp,             // Temp
+            aplRes = {0};
     UBOOL   bAllowNeg0 = (UBOOL) gAllowNeg0,
             bImagRht;
 
     // Calculate the numerator
-    aplNum = ConjHC8R (lpatRht->aplHC8R);
+    aplNum = ConjHC8R (aplRht);
 
     // If the user wants the left quotient, ...
     if (GetQuadDQ () EQ 'l')
         // Calculate the denominator
-        aplTmp = MulHC8R_RE (                  aplNum, lpatRht->aplHC8R);
+        aplTmp = MulHC8R_RE (        aplNum, aplRht);
     else
         // Calculate the denominator
-        aplTmp = MulHC8R_RE (lpatRht->aplHC8R, aplNum);
+        aplTmp = MulHC8R_RE (aplRht, aplNum);
 
     // Save the real part
     mpq_init_set (&aplDen, &aplTmp.parts[0]);
@@ -1140,16 +1168,16 @@ void PrimFnMonColonBarHC8RisHC8R
     // If the denominator is 0, ...
     if (IsMpq0 (&aplDen))
     {
-        lpMemRes[uRes].parts[0] =
-          *mpq_QuadICValue (&lpatRht->aplHC8R.parts[0],     // No left arg
+        aplRes.parts[0] =
+          *mpq_QuadICValue (&aplRht.parts[0],     // No left arg
                              ICNDX_DIV0,
-                            &lpatRht->aplHC8R.parts[0],
-                            &lpMemRes[uRes].parts[0],
+                            &aplRht.parts[0],
+                            &aplRes.parts[0],
                              FALSE);
         // Loop through the imaginary parts
         for (i = 1; i < 8; i++)
             // Initialize to 0/1
-            mpq_init (&lpMemRes[uRes].parts[i]);
+            mpq_init (&aplRes.parts[i]);
     } else
     // Check for special case:  {div}{neg}{inf}x
     if (bAllowNeg0
@@ -1167,20 +1195,19 @@ void PrimFnMonColonBarHC8RisHC8R
     {
         // Loop through all of the parts
         for (i = 0; i < 8; i++)
-            mpq_init_set_d (&lpMemRes[uRes].parts[i],
+            mpq_init_set_d (&aplRes.parts[i],
                             bAllowNeg0 ? ((SIGN_APLRAT (&aplNum.parts[i])
                                         EQ SIGN_APLRAT (&aplDen)) ?  0.0
                                                                   : -0.0)
                                        : 0.0);
-
     } else
     {
         // Initialize to 0/1
-        mphc8r_init (&lpMemRes[uRes]);
+        mphc8r_init (&aplRes);
 
         // Loop through all of the parts
         for (i = 0; i < 8; i++)
-            mpq_div (&lpMemRes[uRes].parts[i],
+            mpq_div (&aplRes.parts[i],
                      &aplNum.parts[i],
                      &aplDen);
     } // End IF/ELSE
@@ -1188,6 +1215,26 @@ void PrimFnMonColonBarHC8RisHC8R
     // Free the temps
     Myhc1r_clear (&aplDen);
     Myhc8r_clear (&aplNum);
+
+    return aplRes;
+} // End InvHC8R_RE
+
+
+//***************************************************************************
+//  $PrimFnMonColonBarHC8RisHC8R
+//
+//  Primitive scalar function monadic ColonBar:  HC8R {is} fn HC8R
+//***************************************************************************
+
+void PrimFnMonColonBarHC8RisHC8R
+    (LPAPLHC8R  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Save in the result
+    lpMemRes[uRes] = InvHC8R_RE (lpatRht->aplHC8R);
 } // End PrimFnMonColonBarHC8RisHC8R
 
 

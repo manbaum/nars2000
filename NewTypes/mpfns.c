@@ -1017,6 +1017,25 @@ void mpq_mul_si
 
 
 //***************************************************************************
+//  $mpq_pow_ui
+//***************************************************************************
+
+void mpq_pow_ui
+    (mpq_ptr dest,
+     mpq_ptr src,
+     mpir_ui exp)
+
+{
+    // Calculate the pow of the numerator
+    mpz_pow_ui (mpq_numref (dest), mpq_numref (src), exp);
+    mpz_pow_ui (mpq_denref (dest), mpq_denref (src), exp);
+
+    // Canonicalize the result
+    mpq_canonicalize (dest);
+} // End mpq_pow_ui
+
+
+//***************************************************************************
 //  $mpq_floor
 //***************************************************************************
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +22,9 @@
 
 typedef enum tagPN_NUMTYPE
 {
+    // N.B.  The following values *MUST* be in order I before F, for all types
+    //       so we can do arithmetic on them as in PN_NUMTYPE_INT + 1 to get
+    //       the corresponding _FLT (or HCxF) type.
     PN_NUMTYPE_BOOL,                // 00:  Boolean type
     PN_NUMTYPE_INT,                 // 01:  Integer ...
     PN_NUMTYPE_FLT,                 // 02:  Float   ...
@@ -123,30 +126,32 @@ typedef struct tagPNLOCALVARS       // Point Notation Local Vars
     UINT          uNumLen,          // 04:  # chars in lpszStart
                   uNumCur,          // 08:  Current index into lpszStart
                   uNumIni,          // 0C:  Initial index into lpszStart
-                  uAlpAcc,          // 10:  Current index into lpszAlphaInt
-                  uNumAcc,          // 14:  Current index into lpszNumAccum
-                  uCharIndex;       // 18:  Starting character index
-    LPCHAR        lpszAlphaInt,     // 1C:  Ptr to AlphaInt accumulator
-                  lpszNumAccum;     // 20:  Ptr to numeric accumulator (in case of overflow)
-    ALLTYPES      at;               // 24:  All datatypes as a union (64 bytes)
-    PNNUMTYPE     chType,           // 64:  The numeric type (see PNNUMTYPE)
-                  chComType;        // 68:  The common numeric type ...
-    UBOOL         bYYERROR;         // 6C:  TRUE iff there's been a YYERROR
-    HGLOBAL       hGlbRes,          // 70:  Result global memory handle
-                  hGlbVector;       // 74:  PN_VECTOR global memory handle (NULL = none)
-    UINT          uGlbVectorMaxLen, // 78:  Maximum length of memory in hGlbVector (units = PN_VECTOR)
-                  uGlbVectorCurLen; // 7C:  Current ...
-    LPPN_YYSTYPE  lpYYRes;          // 80:  Temp ptr
+                  uAlpAccInt,       // 10:  Current index into lpszAlphaInt
+                  uAlpAccDec,       // 14:  Current index into lpszAlphaDec
+                  uNumAcc,          // 18:  Current index into lpszNumAccum
+                  uCharIndex;       // 1C:  Starting character index
+    LPCHAR        lpszAlphaInt,     // 20:  Ptr to AlphaInt accumulator
+                  lpszAlphaDec,     // 24:  ...    AlphaDec ...
+                  lpszNumAccum;     // 28:  Ptr to numeric accumulator (in case of overflow)
+    ALLTYPES      at;               // 2C:  All datatypes as a union (64 bytes)
+    PNNUMTYPE     chType,           // 6C:  The numeric type (see PNNUMTYPE)
+                  chComType;        // 70:  The common numeric type ...
+    UBOOL         bYYERROR;         // 74:  TRUE iff there's been a YYERROR
+    HGLOBAL       hGlbRes,          // 78:  Result global memory handle
+                  hGlbVector;       // 7C:  PN_VECTOR global memory handle (NULL = none)
+    UINT          uGlbVectorMaxLen, // 80:  Maximum length of memory in hGlbVector (units = PN_VECTOR)
+                  uGlbVectorCurLen; // 84:  Current ...
+    LPPN_YYSTYPE  lpYYRes;          // 88:  Temp ptr
     struct tagTKLOCALVARS *
-                  lptkLocalVars;    // 84:  Ptr to Tokenize_EM local vars
-    LPVARARRAY_HEADER lpMemHdrRes;  // 88:  Ptr to hGlbRes header
-    UINT          bRatSep:1,        // 8C:  00000001:  TRUE iff there is at least one Rat sep and no Vfp sep
+                  lptkLocalVars;    // 8C:  Ptr to Tokenize_EM local vars
+    LPVARARRAY_HEADER lpMemHdrRes;  // 90:  Ptr to hGlbRes header
+    UINT          bRatSep:1,        // 94:  00000001:  TRUE iff there is at least one Rat sep and no Vfp sep
                   bNeedEOT:1,       //      00000002:  TRUE iff we need an EOT
                   bEOT:1,           //      00000004:  TRUE iff we just returned an EOT
                   bEOS:1,           //      00000008:  TRUE iff the EOT we returned was an EOS
                   :28;              //      FFFFFFF0:  Available bits
-    LPPN_YYSTYPE  lpCoeff[8];       // 90:  Ptrs to the possible coefficients (32 bytes)
-                                    // B0:  Length
+    LPPN_YYSTYPE  lpCoeff[8];       // 98:  Ptrs to the possible coefficients (32 bytes)
+                                    // B8:  Length
 } PNLOCALVARS, *LPPNLOCALVARS;
 
 // Error messages

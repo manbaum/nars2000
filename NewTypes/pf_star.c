@@ -1419,6 +1419,96 @@ void PrimFnDydStarFisIvI
 
 
 //***************************************************************************
+//  $PowHC1F_RE
+//***************************************************************************
+
+APLHC1F PowHC1F_RE
+    (APLHC1F aplLft,                // Left arg
+     APLHC1F aplRht)                // Right ...
+
+{
+    APLHC1F aplRes;                 // The result
+
+    // Check for indeterminates:  0 * 0
+    if (aplLft EQ 0
+     && aplRht EQ 0)
+    {
+        aplRes = TranslateQuadICIndex (aplLft,
+                                       ICNDX_0EXP0,
+                                       aplRht,
+                                       FALSE);
+    } else
+    // Check for indeterminates:  0 * +_
+    if (aplLft EQ 0
+     && IsFltPosInfinity (aplRht))
+    {
+        aplRes = TranslateQuadICIndex (aplLft,
+                                       ICNDX_0EXPPi,
+                                       aplRht,
+                                       FALSE);
+    } else
+    // Check for indeterminates:  0 * -_
+    if (aplLft EQ 0
+     && IsFltNegInfinity (aplRht))
+    {
+        aplRes = TranslateQuadICIndex (aplLft,
+                                       ICNDX_0EXPNi,
+                                       aplRht,
+                                       FALSE);
+    } else
+    // Check for indeterminates:  L * _ for L <= -1
+    if (aplLft <= -1
+     && IsFltPosInfinity (aplRht))
+    {
+        aplRes = TranslateQuadICIndex (aplLft,
+                                       ICNDX_NEXPPi,
+                                       aplRht,
+                                       FALSE);
+    } else
+    // Check for indeterminates:  L * -_ for -1 <= L < 0
+    if (IsFltNegInfinity (aplRht)
+     && aplLft >= -1
+     && aplLft <   0)
+    {
+        aplRes = TranslateQuadICIndex (aplLft,
+                                       ICNDX_N1to0EXPNi,
+                                       aplRht,
+                                       FALSE);
+    } else
+////// Check for indeterminates:  L * R for L < 0 and R not an integer
+////if (aplLft < 0
+//// && aplRht NE floor (aplRht))
+////////aplRes = TranslateQuadICIndex (aplLft,
+////                                   ICNDX_NegEXPFrc,
+////                                   aplRht,
+////                                   FALSE);
+    // Check for complex result
+    if (SIGN_APLFLOAT (aplLft)
+     && aplRht NE floor (aplRht))
+        RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+    else
+    // Check for special cases:  _ * 0 and -_ * 0
+    if (IsFltInfinity (aplLft)
+     && aplRht EQ 0)
+    {
+        aplRes = TranslateQuadICIndex (aplLft,
+                                       ICNDX_InfEXP0,
+                                       aplRht,
+                                       FALSE);
+    } else
+    // Check for special cases:  1 * _ and 1 * -_
+    if (aplLft EQ 1
+     && IsFltInfinity (aplRht))
+        aplRes = aplLft;
+    else
+        // Calculate the power
+        aplRes = pow (aplLft, aplRht);
+
+    return aplRes;
+} // End PowHC1F
+
+
+//***************************************************************************
 //  $PrimFnDydStarFisFvF
 //
 //  Primitive scalar function dyadic Star:  F {is} F fn F
@@ -1432,81 +1522,147 @@ void PrimFnDydStarFisFvF
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
+    // Call subfunction
+    lpMemRes[uRes] = PowHC1F_RE (lpatLft->aplHC1F, lpatRht->aplHC1F);
+} // End PrimFnDydStarFisFvF
+
+
+//***************************************************************************
+//  $PowHC1R_RE
+//***************************************************************************
+
+APLHC1R PowHC1R_RE
+    (APLHC1R aplLft,                // Left arg
+     APLHC1R aplRht)                // Right ...
+
+{
+    APLHC1R aplRes;                 // The result
+    mpir_ui uRht;
+
     // Check for indeterminates:  0 * 0
-    if (lpatLft->aplFloat EQ 0
-     && lpatRht->aplFloat EQ 0)
-    {
-        lpMemRes[uRes] = TranslateQuadICIndex (lpatLft->aplFloat,
-                                               ICNDX_0EXP0,
-                                               lpatRht->aplFloat,
-                                               FALSE);
-    } else
+    if (IsMpq0 (&aplLft)
+     && IsMpq0 (&aplRht))
+        aplRes = *mpq_QuadICValue (&aplLft,
+                                    ICNDX_0EXP0,
+                                   &aplRht,
+                                   &aplRes,
+                                    FALSE);
+    else
     // Check for indeterminates:  0 * +_
-    if (lpatLft->aplFloat EQ 0
-     && IsFltPosInfinity (lpatRht->aplFloat))
-    {
-        lpMemRes[uRes] = TranslateQuadICIndex (lpatLft->aplFloat,
-                                               ICNDX_0EXPPi,
-                                               lpatRht->aplFloat,
-                                               FALSE);
-    } else
+    if (IsMpq0 (&aplLft)
+     && mpq_cmp (&aplRht, &mpqPosInfinity) EQ 0)
+        aplRes = *mpq_QuadICValue (&aplLft,
+                                    ICNDX_0EXPPi,
+                                   &aplRht,
+                                   &aplRes,
+                                    FALSE);
+    else
     // Check for indeterminates:  0 * -_
-    if (lpatLft->aplFloat EQ 0
-     && IsFltNegInfinity (lpatRht->aplFloat))
-    {
-        lpMemRes[uRes] = TranslateQuadICIndex (lpatLft->aplFloat,
-                                               ICNDX_0EXPNi,
-                                               lpatRht->aplFloat,
-                                               FALSE);
-    } else
+    if (IsMpq0 (&aplLft)
+     && mpq_cmp (&aplRht, &mpqNegInfinity) EQ 0)
+        aplRes = *mpq_QuadICValue (&aplLft,
+                                    ICNDX_0EXPNi,
+                                   &aplRht,
+                                   &aplRes,
+                                    FALSE);
+    else
     // Check for indeterminates:  L * _ for L <= -1
-    if (lpatLft->aplFloat <= -1
-     && IsFltPosInfinity (lpatRht->aplFloat))
-    {
-        lpMemRes[uRes] = TranslateQuadICIndex (lpatLft->aplFloat,
-                                               ICNDX_NEXPPi,
-                                               lpatRht->aplFloat,
-                                               FALSE);
-    } else
+    if (mpq_cmp_si (&aplLft, -1, 1) <= 0
+     && mpq_cmp (&aplRht, &mpqPosInfinity) EQ 0)
+        aplRes = *mpq_QuadICValue (&aplLft,
+                                    ICNDX_NEXPPi,
+                                   &aplRht,
+                                   &aplRes,
+                                    FALSE);
+    else
     // Check for indeterminates:  L * -_ for -1 <= L < 0
-    if (IsFltNegInfinity (lpatRht->aplFloat)
-     && lpatLft->aplFloat >= -1
-     && lpatLft->aplFloat <   0)
-    {
-        lpMemRes[uRes] = TranslateQuadICIndex (lpatLft->aplFloat,
-                                               ICNDX_N1to0EXPNi,
-                                               lpatRht->aplFloat,
-                                               FALSE);
-    } else
+    if (mpq_cmp    (&aplRht, &mpqNegInfinity) EQ 0
+     && mpq_cmp_si (&aplLft, -1, 1) >= 0
+     && mpq_cmp_si (&aplLft,  0, 1) <  0)
+        aplRes = *mpq_QuadICValue (&aplLft,
+                                    ICNDX_N1to0EXPNi,
+                                   &aplRht,
+                                   &aplRes,
+                                    FALSE);
+    else
 ////// Check for indeterminates:  L * R for L < 0 and R not an integer
-////if (lpatLft->aplFloat < 0
-//// && lpatRht->aplFloat NE floor (lpatRht->aplFloat))
-////////lpMemRes[uRes] = TranslateQuadICIndex (lpatLft->aplFloat,
-////                                           ICNDX_NegEXPFrc,
-////                                           lpatRht->aplFloat,
-////                                           FALSE);
+////if (SIGN_APLRAT (&aplLft)
+//// && !mpq_integer_p (&aplRht))
+////    aplRes = *mpq_QuadICValue (&aplLft,
+////                                ICNDX_NegEXPFrc,
+////                               &aplRht,
+////                               &aplRes,
+////                                FALSE);
+////else
     // Check for complex result
-    if (SIGN_APLFLOAT (lpatLft->aplFloat)
-     && lpatRht->aplFloat NE floor (lpatRht->aplFloat))
-        RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+    if (SIGN_APLRAT (&aplLft)
+     && !mpq_integer_p (&aplRht))
+        RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
     else
     // Check for special cases:  _ * 0 and -_ * 0
-    if (IsFltInfinity (lpatLft->aplFloat)
-     && lpatRht->aplFloat EQ 0)
-    {
-        lpMemRes[uRes] = TranslateQuadICIndex (lpatLft->aplFloat,
-                                               ICNDX_InfEXP0,
-                                               lpatRht->aplFloat,
-                                               FALSE);
-    } else
-    // Check for special cases:  1 * _ and 1 * -_
-    if (lpatLft->aplFloat EQ 1
-     && IsFltInfinity (lpatRht->aplFloat))
-        lpMemRes[uRes] = lpatLft->aplFloat;
+    if (mpq_inf_p (&aplLft)
+     && IsMpq0 (&aplRht))
+        aplRes = *mpq_QuadICValue (&aplLft,
+                                    ICNDX_InfEXP0,
+                                   &aplRht,
+                                   &aplRes,
+                                    FALSE);
     else
-        // Calculate the power
-        lpMemRes[uRes] = pow (lpatLft->aplFloat, lpatRht->aplFloat);
-} // End PrimFnDydStarFisFvF
+    // Check for special cases:  1 * _ and 1 * -_
+    if (IsMpq1 (&aplLft)
+     && mpq_inf_p (&aplRht))
+        mpq_init_set (&aplRes, &aplLft);
+    else
+    // If the exponent's denominator is 1,
+    //   and the exponent's numerator fits in an UINT, ...
+    if (IsMpz1 (mpq_denref (&aplRht))
+     && mpz_fits_slong_p (mpq_numref (&aplRht)) NE 0)
+    {
+        // Initialize the base
+        mpq_init_set (&aplRes, &aplLft);
+
+        // Extract the exponent
+        uRht = mpz_get_ui (mpq_numref (&aplRht));
+
+        // Compute the powers
+        mpq_pow_ui (&aplRes, &aplRes, uRht);
+
+        // If the right arg is negative, ...
+        if (SIGN_APLRAT (&aplRht))
+        {
+            // Check for indeterminates:  {div} 0
+            if (IsMpq0 (&aplRes))
+                aplRes = *mpq_QuadICValue (&aplRes,         // No left arg
+                                            ICNDX_DIV0,
+                                           &aplRes,
+                                           &aplRes,
+                                            FALSE);
+            else
+                // Invert it
+                mpq_inv (&aplRes, &aplRes);
+        } // End IF
+    } else
+    // If the base is negative, ...
+    if (SIGN_APLRAT (&aplLft))
+    {
+        // If the denominator is even, ...
+        if (mpz_even_p (mpq_denref (&aplRht)))
+            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+//      else
+//      // If the numerator is even (and the denominator is odd), ...
+//      if (mpz_even_p (mpq_numref (&aplRht)))
+//          // Blowup to VFP positive:  (|L)*R
+//          RaiseException (EXCEPTION_RESULT_VFPPOS, 0, 0, NULL);
+//      else
+//      // The numerator and denominator are both odd
+//          // Blowup to VFP negative:  -(|L)*R
+//          RaiseException (EXCEPTION_RESULT_VFPNEG, 0, 0, NULL);
+    } else
+        // Otherwise, blowup to VFP
+        RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
+
+    return aplRes;
+} // End PowHC1R_RE
 
 
 //***************************************************************************
@@ -1523,130 +1679,8 @@ void PrimFnDydStarRisRvR
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    mpir_ui uRht;
-
-    // Check for indeterminates:  0 * 0
-    if (IsMpq0 (&lpatLft->aplRat)
-     && IsMpq0 (&lpatRht->aplRat))
-        lpMemRes[uRes] = *mpq_QuadICValue (&lpatLft->aplRat,
-                                            ICNDX_0EXP0,
-                                           &lpatRht->aplRat,
-                                           &lpMemRes[uRes],
-                                            FALSE);
-    else
-    // Check for indeterminates:  0 * +_
-    if (IsMpq0 (&lpatLft->aplRat)
-     && mpq_cmp (&lpatRht->aplRat, &mpqPosInfinity) EQ 0)
-        lpMemRes[uRes] = *mpq_QuadICValue (&lpatLft->aplRat,
-                                            ICNDX_0EXPPi,
-                                           &lpatRht->aplRat,
-                                           &lpMemRes[uRes],
-                                            FALSE);
-    else
-    // Check for indeterminates:  0 * -_
-    if (IsMpq0 (&lpatLft->aplRat)
-     && mpq_cmp (&lpatRht->aplRat, &mpqNegInfinity) EQ 0)
-        lpMemRes[uRes] = *mpq_QuadICValue (&lpatLft->aplRat,
-                                            ICNDX_0EXPNi,
-                                           &lpatRht->aplRat,
-                                           &lpMemRes[uRes],
-                                            FALSE);
-    else
-    // Check for indeterminates:  L * _ for L <= -1
-    if (mpq_cmp_si (&lpatLft->aplRat, -1, 1) <= 0
-     && mpq_cmp (&lpatRht->aplRat, &mpqPosInfinity) EQ 0)
-        lpMemRes[uRes] = *mpq_QuadICValue (&lpatLft->aplRat,
-                                            ICNDX_NEXPPi,
-                                           &lpatRht->aplRat,
-                                           &lpMemRes[uRes],
-                                            FALSE);
-    else
-    // Check for indeterminates:  L * -_ for -1 <= L < 0
-    if (mpq_cmp    (&lpatRht->aplRat, &mpqNegInfinity) EQ 0
-     && mpq_cmp_si (&lpatLft->aplRat, -1, 1) >= 0
-     && mpq_cmp_si (&lpatLft->aplRat,  0, 1) <  0)
-        lpMemRes[uRes] = *mpq_QuadICValue (&lpatLft->aplRat,
-                                            ICNDX_N1to0EXPNi,
-                                           &lpatRht->aplRat,
-                                           &lpMemRes[uRes],
-                                            FALSE);
-    else
-////// Check for indeterminates:  L * R for L < 0 and R not an integer
-////if (SIGN_APLRAT (&lpatLft->aplRat)
-//// && !mpq_integer_p (&lpatRht->aplRat))
-////    lpMemRes[uRes] = *mpq_QuadICValue (&lpatLft->aplRat,
-////                                        ICNDX_NegEXPFrc,
-////                                       &lpatRht->aplRat,
-////                                       &lpMemRes[uRes],
-////                                        FALSE);
-////else
-    // Check for complex result
-    if (SIGN_APLRAT (&lpatLft->aplRat)
-     && !mpq_integer_p (&lpatRht->aplRat))
-        RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
-    else
-    // Check for special cases:  _ * 0 and -_ * 0
-    if (mpq_inf_p (&lpatLft->aplRat)
-     && IsMpq0 (&lpatRht->aplRat))
-        lpMemRes[uRes] = *mpq_QuadICValue (&lpatLft->aplRat,
-                                            ICNDX_InfEXP0,
-                                           &lpatRht->aplRat,
-                                           &lpMemRes[uRes],
-                                            FALSE);
-    else
-    // Check for special cases:  1 * _ and 1 * -_
-    if (IsMpq1 (&lpatLft->aplRat)
-     && mpq_inf_p (&lpatRht->aplRat))
-        mpq_init_set (&lpMemRes[uRes], &lpatLft->aplRat);
-    else
-    // If the exponent's denominator is 1,
-    //   and the exponent's numerator fits in an UINT, ...
-    if (IsMpz1 (mpq_denref (&lpatRht->aplRat))
-     && mpz_fits_slong_p (mpq_numref (&lpatRht->aplRat)) NE 0)
-    {
-        // Initialize the base
-        mpq_init_set (&lpMemRes[uRes], &lpatLft->aplRat);
-
-        // Extract the exponent
-        uRht = mpz_get_ui (mpq_numref (&lpatRht->aplRat));
-
-            // Compute the powers
-        mpz_pow_ui (mpq_numref (&lpMemRes[uRes]), mpq_numref (&lpMemRes[uRes]), uRht);
-        mpz_pow_ui (mpq_denref (&lpMemRes[uRes]), mpq_denref (&lpMemRes[uRes]), uRht);
-
-        // If the right arg is negative, ...
-        if (SIGN_APLRAT (&lpatRht->aplRat))
-        {
-            // Check for indeterminates:  {div} 0
-            if (IsMpq0 (&lpMemRes[uRes]))
-                lpMemRes[uRes] = *mpq_QuadICValue (&lpMemRes[uRes],         // No left arg
-                                                    ICNDX_DIV0,
-                                                   &lpMemRes[uRes],
-                                                   &lpMemRes[uRes],
-                                                    FALSE);
-            else
-                // Invert it
-                mpq_inv (&lpMemRes[uRes], &lpMemRes[uRes]);
-        } // End IF
-    } else
-    // If the base is negative, ...
-    if (SIGN_APLRAT (&lpatLft->aplRat))
-    {
-        // If the denominator is even, ...
-        if (mpz_even_p (mpq_denref (&lpatRht->aplRat)))
-            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-//      else
-//      // If the numerator is even (and the denominator is odd), ...
-//      if (mpz_even_p (mpq_numref (&lpatRht->aplRat)))
-//          // Blowup to VFP positive:  (|L)*R
-//          RaiseException (EXCEPTION_RESULT_VFPPOS, 0, 0, NULL);
-//      else
-//      // The numerator and denominator are both odd
-//          // Blowup to VFP negative:  -(|L)*R
-//          RaiseException (EXCEPTION_RESULT_VFPNEG, 0, 0, NULL);
-    } else
-        // Otherwise, blowup to VFP
-        RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
+    // Call subfunction
+    lpMemRes[uRes] = PowHC1R_RE (lpatLft->aplHC1R, lpatRht->aplHC1R);
 } // End PrimFnDydStarRisRvR
 
 
@@ -1679,6 +1713,130 @@ void PrimFnDydStarVisRvR
 
 
 //***************************************************************************
+//  $PowHC1V_RE
+//***************************************************************************
+
+APLHC1V PowHC1V_RE
+    (APLHC1V aplLft,                // Left arg
+     APLHC1V aplRht)                // Right ...
+
+{
+    APLHC1V aplRes;                 // The result
+    APLVFP mpfTmp = {0};
+
+    // Check for indeterminates:  0 * 0
+    if (IsMpf0 (&aplLft)
+     && IsMpf0 (&aplRht))
+        aplRes = *mpfr_QuadICValue (&aplLft,
+                                             ICNDX_0EXP0,
+                                            &aplRht,
+                                            &aplRes,
+                                             FALSE);
+    else
+    // Check for indeterminates:  0 * +_
+    if (IsMpf0 (&aplLft)
+     && mpfr_cmp (&aplRht, &mpfPosInfinity) EQ 0)
+        aplRes = *mpfr_QuadICValue (&aplLft,
+                                             ICNDX_0EXPPi,
+                                            &aplRht,
+                                            &aplRes,
+                                             FALSE);
+    else
+    // Check for indeterminates:  0 * -_
+    if (IsMpf0 (&aplLft)
+     && mpfr_cmp (&aplRht, &mpfNegInfinity) EQ 0)
+        aplRes = *mpfr_QuadICValue (&aplLft,
+                                             ICNDX_0EXPNi,
+                                            &aplRht,
+                                            &aplRes,
+                                             FALSE);
+    else
+    // Check for indeterminates:  L * _ for L <= -1
+    if (mpfr_cmp_si (&aplLft, -1) <= 0
+     && mpfr_cmp (&aplRht, &mpfPosInfinity) EQ 0)
+        aplRes = *mpfr_QuadICValue (&aplLft,
+                                             ICNDX_NEXPPi,
+                                            &aplRht,
+                                            &aplRes,
+                                             FALSE);
+    else
+    // Check for indeterminates:  L * -_ for -1 <= L < 0
+    if (mpfr_cmp    (&aplRht, &mpfNegInfinity) EQ 0
+     && mpfr_cmp_si (&aplLft, -1) >= 0
+     && mpfr_cmp_si (&aplLft,  0) <  0)
+        aplRes = *mpfr_QuadICValue (&aplLft,
+                                             ICNDX_N1to0EXPNi,
+                                            &aplRht,
+                                            &aplRes,
+                                             FALSE);
+    else
+    // Check for indeterminates:  L * R for L < 0 and R not an integer
+////if (mpfr_sgn (&aplLft) < 0
+//// && !mpfr_integer_p (&aplRht))
+////    aplRes = *mpfr_QuadICValue (&aplLft,
+////                                         ICNDX_NegEXPFrc,
+////                                        &aplRht,
+////                                        &aplRes,
+////                                         FALSE);
+////else
+    // Check for complex result
+    if (mpfr_sgn (&aplLft) < 0
+     && !mpfr_integer_p (&aplRht))
+        RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
+    else
+    // Check for special cases:  _ * 0 and -_ * 0
+    if (mpfr_inf_p (&aplLft)
+     && IsMpf0 (&aplRht))
+        aplRes = *mpfr_QuadICValue (&aplLft,
+                                             ICNDX_InfEXP0,
+                                            &aplRht,
+                                            &aplRes,
+                                             FALSE);
+    else
+    // Check for special cases:  1 * _ and 1 * -_
+    if (IsMpf1 (&aplLft)
+     && mpfr_inf_p (&aplRht))
+        mpfr_init_copy (&aplRes, &aplLft);
+    else
+    // If the exponent is an integer, ...
+    if (mpfr_integer_p (&aplRht))
+    {
+        mpz_t mpzTmp = {0};
+
+        // Initialize the result and temp to 0
+        mpfr_init0  (&aplRes);
+        mpz_init   ( mpzTmp);
+
+        // Extract the exponent as MPZ
+        mpfr_get_z ( mpzTmp, &aplRht, MPFR_RNDN);
+
+        // Compute the power
+        mpfr_pow_z (&aplRes, &aplLft, mpzTmp, MPFR_RNDN);
+
+        // We no longer need this storage
+        Myz_clear  ( mpzTmp);
+    } else
+    {
+        // General exp a^z = exp (z * ln (a))
+
+        // Calculate ln (a)
+        PrimFnMonCircleStarVisV (&mpfTmp, 0, (LPALLTYPES) &aplLft, lpPrimSpec);
+
+        // Multiply by the exponent
+        mpfr_mul (&mpfTmp, &mpfTmp, &aplRht, MPFR_RNDN);
+
+        // Calculate the exp of that
+        aplRes = ExpVfp_RE (mpfTmp);
+
+        // We no longer need this storage
+        Myf_clear (&mpfTmp);
+    } // End IF/ELSE
+
+    return aplRes;
+} // End PowHC1V_RE
+
+
+//***************************************************************************
 //  $PrimFnDydStarVisVvV
 //
 //  Primitive scalar function dyadic Star:  V {is} V fn V
@@ -1692,115 +1850,8 @@ void PrimFnDydStarVisVvV
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLVFP mpfTmp = {0};
-
-    // Check for indeterminates:  0 * 0
-    if (IsMpf0 (&lpatLft->aplVfp)
-     && IsMpf0 (&lpatRht->aplVfp))
-        lpMemRes[uRes] = *mpfr_QuadICValue (&lpatLft->aplVfp,
-                                             ICNDX_0EXP0,
-                                            &lpatRht->aplVfp,
-                                            &lpMemRes[uRes],
-                                             FALSE);
-    else
-    // Check for indeterminates:  0 * +_
-    if (IsMpf0 (&lpatLft->aplVfp)
-     && mpfr_cmp (&lpatRht->aplVfp, &mpfPosInfinity) EQ 0)
-        lpMemRes[uRes] = *mpfr_QuadICValue (&lpatLft->aplVfp,
-                                             ICNDX_0EXPPi,
-                                            &lpatRht->aplVfp,
-                                            &lpMemRes[uRes],
-                                             FALSE);
-    else
-    // Check for indeterminates:  0 * -_
-    if (IsMpf0 (&lpatLft->aplVfp)
-     && mpfr_cmp (&lpatRht->aplVfp, &mpfNegInfinity) EQ 0)
-        lpMemRes[uRes] = *mpfr_QuadICValue (&lpatLft->aplVfp,
-                                             ICNDX_0EXPNi,
-                                            &lpatRht->aplVfp,
-                                            &lpMemRes[uRes],
-                                             FALSE);
-    else
-    // Check for indeterminates:  L * _ for L <= -1
-    if (mpfr_cmp_si (&lpatLft->aplVfp, -1) <= 0
-     && mpfr_cmp (&lpatRht->aplVfp, &mpfPosInfinity) EQ 0)
-        lpMemRes[uRes] = *mpfr_QuadICValue (&lpatLft->aplVfp,
-                                             ICNDX_NEXPPi,
-                                            &lpatRht->aplVfp,
-                                            &lpMemRes[uRes],
-                                             FALSE);
-    else
-    // Check for indeterminates:  L * -_ for -1 <= L < 0
-    if (mpfr_cmp    (&lpatRht->aplVfp, &mpfNegInfinity) EQ 0
-     && mpfr_cmp_si (&lpatLft->aplVfp, -1) >= 0
-     && mpfr_cmp_si (&lpatLft->aplVfp,  0) <  0)
-        lpMemRes[uRes] = *mpfr_QuadICValue (&lpatLft->aplVfp,
-                                             ICNDX_N1to0EXPNi,
-                                            &lpatRht->aplVfp,
-                                            &lpMemRes[uRes],
-                                             FALSE);
-    else
-    // Check for indeterminates:  L * R for L < 0 and R not an integer
-////if (mpfr_sgn (&lpatLft->aplVfp) < 0
-//// && !mpfr_integer_p (&lpatRht->aplVfp))
-////    lpMemRes[uRes] = *mpfr_QuadICValue (&lpatLft->aplVfp,
-////                                         ICNDX_NegEXPFrc,
-////                                        &lpatRht->aplVfp,
-////                                        &lpMemRes[uRes],
-////                                         FALSE);
-////else
-    // Check for complex result
-    if (mpfr_sgn (&lpatLft->aplVfp) < 0
-     && !mpfr_integer_p (&lpatRht->aplVfp))
-        RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
-    else
-    // Check for special cases:  _ * 0 and -_ * 0
-    if (mpfr_inf_p (&lpatLft->aplVfp)
-     && IsMpf0 (&lpatRht->aplVfp))
-        lpMemRes[uRes] = *mpfr_QuadICValue (&lpatLft->aplVfp,
-                                             ICNDX_InfEXP0,
-                                            &lpatRht->aplVfp,
-                                            &lpMemRes[uRes],
-                                             FALSE);
-    else
-    // Check for special cases:  1 * _ and 1 * -_
-    if (IsMpf1 (&lpatLft->aplVfp)
-     && mpfr_inf_p (&lpatRht->aplVfp))
-        mpfr_init_copy (&lpMemRes[uRes], &lpatLft->aplVfp);
-    else
-    // If the exponent is an integer, ...
-    if (mpfr_integer_p (&lpatRht->aplVfp))
-    {
-        mpz_t mpzTmp = {0};
-
-        // Initialize the result and temp to 0
-        mpfr_init0  (&lpMemRes[uRes]);
-        mpz_init   ( mpzTmp);
-
-        // Extract the exponent as MPZ
-        mpfr_get_z ( mpzTmp, &lpatRht->aplVfp, MPFR_RNDN);
-
-        // Compute the power
-        mpfr_pow_z (&lpMemRes[uRes], &lpatLft->aplVfp, mpzTmp, MPFR_RNDN);
-
-        // We no longer need this storage
-        Myz_clear  ( mpzTmp);
-    } else
-    {
-        // General exp a^z = exp (z * ln (a))
-
-        // Calculate ln (a)
-        PrimFnMonCircleStarVisV (&mpfTmp, 0, lpatLft, lpPrimSpec);
-
-        // Multiply by the exponent
-        mpfr_mul (&mpfTmp, &mpfTmp, &lpatRht->aplVfp, MPFR_RNDN);
-
-        // Calculate the exp of that
-        lpMemRes[uRes] = ExpVfp_RE (mpfTmp);
-
-        // We no longer need this storage
-        Myf_clear (&mpfTmp);
-    } // End IF/ELSE
+    // Call subfunction
+    lpMemRes[uRes] = PowHC1V_RE (lpatLft->aplHC1V, lpatRht->aplHC1V);
 } // End PrimFnDydStarVisVvV
 
 
@@ -2227,11 +2278,11 @@ APLHC2R PowHC2R_SUB
     // Get the real part of the exponent
     aplExp = ConvertToInteger_CT (ARRAY_HC2R, &aplRht, 0, 0.0, &bRet);
 
-    // If the exponent is a non-negative integer (and thus not imaginary), ...
-    if (bRet
-     && aplExp >= 0)
+    // If the exponent is an integer (and thus not imaginary), ...
+    if (bRet)
     {
         APLHC2R aplTmp;
+        APLINT  aplAbs;                     // Temp for abs64 (aplExp)
 
         // Initialize to 0/1
         mphc2r_init (&aplRes);
@@ -2239,8 +2290,11 @@ APLHC2R PowHC2R_SUB
         // Initialize with identity element for multiplication
         mpq_set_si (&aplRes.parts[0], 1, 1);
 
+        // Calculate the absolute value of aplExp
+        aplAbs = abs64 (aplExp);
+
         // Compute the powers
-        while (aplExp--)                        // ***OPTIMIZEME*** -- Use binary exponentiation
+        while (aplAbs--)                        // ***OPTIMIZEME*** -- Use binary exponentiation
         {
             // Accumulate the product
             aplTmp = MulHC2R_RE (aplRes, aplLft);
@@ -2251,6 +2305,18 @@ APLHC2R PowHC2R_SUB
             // We no longer need this resource
             Myhc2r_clear (&aplTmp);
         } // End WHILE
+
+        // If the exponent is negative, ...
+        if (aplExp < 0)
+        {
+            // Invert the result
+            aplTmp = InvHC2R_RE (aplRes);
+
+            // We no longer need this resource
+            Myhc2r_clear (&aplRes);
+
+            aplRes = aplTmp;
+        } // End IF
 //  } else
 //  // If the base is negative, ...
 //  if (SIGN_APLRAT (&aplLft.parts[0]))
@@ -2954,10 +3020,10 @@ APLHC4R PowHC4R_SUB
     aplExp = ConvertToInteger_CT (ARRAY_HC4R, &aplRht, 0, 0.0, &bRet);
 
     // If the exponent is a non-negative integer (and thus not imaginary), ...
-    if (bRet
-     && aplExp >= 0)
+    if (bRet)
     {
         APLHC4R aplTmp;
+        APLINT  aplAbs;                     // Temp for abs64 (aplExp)
 
         // Initialize to 0/1
         mphc4r_init (&aplRes);
@@ -2965,8 +3031,11 @@ APLHC4R PowHC4R_SUB
         // Initialize with identity element for multiplication
         mpq_set_si (&aplRes.parts[0], 1, 1);
 
+        // Calculate the absolute value of aplExp
+        aplAbs = abs64 (aplExp);
+
         // Compute the powers
-        while (aplExp--)                        // ***OPTIMIZEME*** -- Use binary exponentiation
+        while (aplAbs--)                        // ***OPTIMIZEME*** -- Use binary exponentiation
         {
             // Accumulate the product
             aplTmp = MulHC4R_RE (aplRes, aplLft);
@@ -2977,6 +3046,18 @@ APLHC4R PowHC4R_SUB
             // We no longer need this resource
             Myhc4r_clear (&aplTmp);
         } // End WHILE
+
+        // If the exponent is negative, ...
+        if (aplExp < 0)
+        {
+            // Invert the result
+            aplTmp = InvHC4R_RE (aplRes);
+
+            // We no longer need this resource
+            Myhc4r_clear (&aplRes);
+
+            aplRes = aplTmp;
+        } // End IF
 //  } else
 //  // If the base is negative, ...
 //  if (SIGN_APLRAT (&aplLft.parts[0]))
@@ -3679,10 +3760,10 @@ APLHC8R PowHC8R_SUB
     aplExp = ConvertToInteger_CT (ARRAY_HC8R, &aplRht, 0, 0.0, &bRet);
 
     // If the exponent is a non-negative integer (and thus not imaginary), ...
-    if (bRet
-     && aplExp >= 0)
+    if (bRet)
     {
         APLHC8R aplTmp;
+        APLINT  aplAbs;                     // Temp for abs64 (aplExp)
 
         // Initialize to 0/1
         mphc8r_init (&aplRes);
@@ -3690,8 +3771,11 @@ APLHC8R PowHC8R_SUB
         // Initialize with identity element for multiplication
         mpq_set_si (&aplRes.parts[0], 1, 1);
 
+        // Calculate the absolute value of aplExp
+        aplAbs = abs64 (aplExp);
+
         // Compute the powers
-        while (aplExp--)                        // ***OPTIMIZEME*** -- Use binary exponentiation
+        while (aplAbs--)                        // ***OPTIMIZEME*** -- Use binary exponentiation
         {
             // Accumulate the product
             aplTmp = MulHC8R_RE (aplRes, aplLft);
@@ -3702,6 +3786,18 @@ APLHC8R PowHC8R_SUB
             // We no longer need this resource
             Myhc8r_clear (&aplTmp);
         } // End WHILE
+
+        // If the exponent is negative, ...
+        if (aplExp < 0)
+        {
+            // Invert the result
+            aplTmp = InvHC8R_RE (aplRes);
+
+            // We no longer need this resource
+            Myhc8r_clear (&aplRes);
+
+            aplRes = aplTmp;
+        } // End IF
 //  } else
 //  // If the base is negative, ...
 //  if (SIGN_APLRAT (&aplLft.parts[0]))

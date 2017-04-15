@@ -2286,19 +2286,35 @@ void PN_NumCalc
 
 
 //***************************************************************************
-//  $PN_ChrAcc
+//  $PN_ChrAccInt
 //
 //  Append a new char to the internal buffer
 //***************************************************************************
 
-void PN_ChrAcc
+void PN_ChrAccInt
     (LPPNLOCALVARS lppnLocalVars,       // Ptr to local pnLocalVars
      char          chCur)               // The next char
 
 {
     // Accumulate this char
-    lppnLocalVars->lpszAlphaInt[lppnLocalVars->uAlpAcc++] = chCur;
-} // End PN_ChrAcc
+    lppnLocalVars->lpszAlphaInt[lppnLocalVars->uAlpAccInt++] = chCur;
+} // End PN_ChrAccInt
+
+
+//***************************************************************************
+//  $PN_ChrAccDec
+//
+//  Append a new char to the internal buffer
+//***************************************************************************
+
+void PN_ChrAccDec
+    (LPPNLOCALVARS lppnLocalVars,       // Ptr to local pnLocalVars
+     char          chCur)               // The next char
+
+{
+    // Accumulate this char
+    lppnLocalVars->lpszAlphaDec[lppnLocalVars->uAlpAccDec++] = chCur;
+} // End PN_ChrAccDec
 
 
 //***************************************************************************
@@ -2418,13 +2434,273 @@ LPPN_YYSTYPE PN_MakeRatPoint
 
 LPPN_YYSTYPE PN_MakeBasePoint
     (LPPN_YYSTYPE  lpYYBase,            // Ptr to the base part
-     LPPN_YYSTYPE  lpYYAlphaInt,        // Ptr to the AlphaInt part
+     LPPN_YYSTYPE  lpYYAlphaInt,        // Ptr to the Integer AlphaInt part (may be NULL)
+     LPPN_YYSTYPE  lpYYAlphaDec,        // Ptr to the Decimal AlphaInt part (may be NULL)
      LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
 
 {
-    UINT       uLen,                    // Length of lpszAlphaInt
-               uAcc;                    // Loop counter
-    LPCHAR     lpszAlphaInt;            // Ptr to next char in lpszAlphaInt
+    PN_YYSTYPE   pnBaseInt,             // Copy of lpYYBase for the Integer part and the Integer result
+                 pnBaseDec;             // ...                      Decimal ...          Decimal ...
+    UBOOL        bContinue = TRUE;      // TRUE iff we are to continue the WHILE loop
+    PNNUMTYPE    chType;                // The numeric type (see PNNUMTYPE)
+    APLSTYPE     aplTypeNum;            // ... as an APLSTYPE
+    ALLTYPES     atBaseInt = {0},       // Copy of lpYYBase->at for the Integer part
+                 atBaseDec = {0};       // ...                          Decimal ...
+
+    // If there's been a YYERROR, ...
+    if (lppnLocalVars->bYYERROR)
+        return NULL;
+
+    // Get the numeric type
+    chType = (lppnLocalVars->chComType EQ PN_NUMTYPE_INIT) ? lpYYBase->chType : lppnLocalVars->chComType;
+    aplTypeNum = TranslateNumTypeToArrayType (chType);
+
+    // Make a copy of the Base as it is overwritten by PN_MakeBasePointSub
+    (*aTypeActPromote[aplTypeNum][aplTypeNum])(&lpYYBase->at, 0, &atBaseInt);
+    CopyAll (&pnBaseInt   ,  lpYYBase);
+    CopyAll (&pnBaseInt.at, &atBaseInt);
+
+    // Make a copy of the Base as it is overwritten by PN_MakeBasePointSub
+    (*aTypeActPromote[aplTypeNum][aplTypeNum])(&lpYYBase->at, 0, &atBaseDec);
+    CopyAll (&pnBaseDec   ,  lpYYBase);
+    CopyAll (&pnBaseDec.at, &atBaseDec);
+
+    // Call subroutine on the integer part
+    if (!PN_MakeBasePointSub (&pnBaseInt,
+                               lpYYAlphaInt,
+                               lppnLocalVars->lpszAlphaInt,
+                               lppnLocalVars->uAlpAccInt,
+                               lppnLocalVars))
+            goto ERROR_EXIT;
+    // If there's a decimal part, ...
+    if (lppnLocalVars->uAlpAccDec NE 0)
+    {
+        if (!PN_MakeBasePointSub (&pnBaseDec,
+                                   lpYYAlphaDec,
+                                   lppnLocalVars->lpszAlphaDec,
+                                   lppnLocalVars->uAlpAccDec,
+                                   lppnLocalVars))
+            goto ERROR_EXIT;
+        // Calculate the common data type
+        chType = aNumTypePromote[pnBaseInt.chType][pnBaseDec.chType];
+
+        // Promote the Integer, Decimal, and Base parts to the common datatype
+        (*aNumTypeAction[pnBaseInt.chType][chType]) (&pnBaseInt, lppnLocalVars);
+        (*aNumTypeAction[pnBaseDec.chType][chType]) (&pnBaseDec, lppnLocalVars);
+        (*aNumTypeAction[lpYYBase->chType][chType]) (lpYYBase  , lppnLocalVars);
+
+        while (bContinue)
+        // Split cases based upon the numeric type of the base
+        switch (chType)
+        {
+            case PN_NUMTYPE_BOOL:
+            case PN_NUMTYPE_INT:
+                // Promote the Integer, Decimal, and Base parts to the common datatype
+                (*aNumTypeAction[chType][PN_NUMTYPE_FLT]) (&pnBaseInt, lppnLocalVars);
+                (*aNumTypeAction[chType][PN_NUMTYPE_FLT]) (&pnBaseDec, lppnLocalVars);
+                (*aNumTypeAction[chType][PN_NUMTYPE_FLT]) (lpYYBase  , lppnLocalVars);
+
+                // Set the new common type
+                chType = PN_NUMTYPE_FLT;
+
+                // Go around again
+                break;
+
+            case PN_NUMTYPE_HC2I:
+            case PN_NUMTYPE_HC4I:
+            case PN_NUMTYPE_HC8I:
+                // Promote the Integer, Decimal, and Base parts to the common datatype
+                (*aNumTypeAction[chType][chType + 1]) (&pnBaseInt, lppnLocalVars);
+                (*aNumTypeAction[chType][chType + 1]) (&pnBaseDec, lppnLocalVars);
+                (*aNumTypeAction[chType][chType + 1]) (lpYYBase  , lppnLocalVars);
+
+                // Set the new common type
+                chType++;
+
+                // Go around again
+                break;
+
+
+#define PN_BaseHCxF_MAC(N)                                                              \
+            {                                                                           \
+                APLHC##N##F aplPow, aplDiv, aplExp = {lppnLocalVars->uAlpAccDec};       \
+                                                                                        \
+                /* Calculate lpYYBase to the power uAlpAccDec                         */\
+                aplPow = PowHC##N##F_RE (lpYYBase->at.aplHC##N##F, aplExp);             \
+                                                                                        \
+                /* Divide pnBaseDec by the power                                      */\
+                aplDiv = DivHC##N##F_RE (pnBaseDec.at.aplHC##N##F, aplPow);             \
+                                                                                        \
+                /* Add to pnBaseInt for the result                                    */\
+                pnBaseInt.at.aplHC##N##F =                                              \
+                  AddHC##N##F_RE (pnBaseInt.at.aplHC##N##F, aplDiv);                    \
+                                                                                        \
+                /* We're done                                                         */\
+                bContinue = FALSE;                                                      \
+                                                                                        \
+                break;                                                                  \
+            } // End PN_NUMTYPE_HCxF
+
+            case PN_NUMTYPE_FLT:
+                PN_BaseHCxF_MAC (1)
+
+            case PN_NUMTYPE_HC2F:
+                PN_BaseHCxF_MAC (2)
+
+            case PN_NUMTYPE_HC4F:
+                PN_BaseHCxF_MAC (4)
+
+            case PN_NUMTYPE_HC8F:
+                PN_BaseHCxF_MAC (8)
+
+
+#define PN_BaseHCxR_MAC(N)                                                              \
+            {                                                                           \
+                APLHC##N##R aplPow,                                                     \
+                            aplDiv,                                                     \
+                            aplExp = {0},                                               \
+                            aplAdd;                                                     \
+                                                                                        \
+                /* Initialize the exponent to 0/1                                     */\
+                mphc##N##r_init (&aplExp);                                              \
+                                                                                        \
+                /* Save the exponent as HCxR                                          */\
+                mpq_set_sx ((LPAPLRAT) &aplExp, lppnLocalVars->uAlpAccDec, 1);          \
+                                                                                        \
+                /* Calculate lpYYBase to the power uAlpAccDec                         */\
+                aplPow = PowHC##N##R_RE (lpYYBase->at.aplHC##N##R, aplExp);             \
+                                                                                        \
+                /* Divide pnBaseDec by the power                                      */\
+                aplDiv = DivHC##N##R_RE (pnBaseDec.at.aplHC##N##R, aplPow);             \
+                                                                                        \
+                /* Add to pnBaseInt for the result                                    */\
+                aplAdd =                                                                \
+                  AddHC##N##R_RE (pnBaseInt.at.aplHC##N##R, aplDiv);                    \
+                mphc##N##r_set (&pnBaseInt.at.aplHC##N##R, &aplAdd);                    \
+                                                                                        \
+                /* We no longer need this storage                                     */\
+                Myhc##N##r_clear (&aplAdd);                                             \
+                Myhc##N##r_clear (&aplDiv);                                             \
+                Myhc##N##r_clear (&aplPow);                                             \
+                Myhc##N##r_clear (&aplExp);                                             \
+                                                                                        \
+                /* We're done                                                         */\
+                bContinue = FALSE;                                                      \
+                                                                                        \
+                break;                                                                  \
+            } // End PN_NUMTYPE_HCxR
+
+            case PN_NUMTYPE_RAT:
+                PN_BaseHCxR_MAC (1)
+
+            case PN_NUMTYPE_HC2R:
+                PN_BaseHCxR_MAC (2)
+
+            case PN_NUMTYPE_HC4R:
+                PN_BaseHCxR_MAC (4)
+
+            case PN_NUMTYPE_HC8R:
+                PN_BaseHCxR_MAC (8)
+
+
+#define PN_BaseHCxV_MAC(N)                                                              \
+            {                                                                           \
+                APLHC##N##V aplPow,                                                     \
+                            aplDiv,                                                     \
+                            aplExp = {0},                                               \
+                            aplAdd;                                                     \
+                                                                                        \
+                /* Initialize the exponent to 0                                       */\
+                mphc##N##v_init0 (&aplExp);                                             \
+                                                                                        \
+                /* Save the exponent as HCxV                                          */\
+                mpfr_set_sx ((LPAPLVFP) &aplExp, lppnLocalVars->uAlpAccDec, MPFR_RNDN); \
+                                                                                        \
+                /* Calculate lpYYBase to the power uAlpAccDec                         */\
+                aplPow = PowHC##N##V_RE (lpYYBase->at.aplHC##N##V, aplExp);             \
+                                                                                        \
+                /* Divide pnBaseDec by the power                                      */\
+                aplDiv = DivHC##N##V_RE (pnBaseDec.at.aplHC##N##V, aplPow);             \
+                                                                                        \
+                /* Add to pnBaseInt for the result                                    */\
+                aplAdd =                                                                \
+                  AddHC##N##V_RE (pnBaseInt.at.aplHC##N##V, aplDiv);                    \
+                mphc##N##v_set (&pnBaseInt.at.aplHC##N##V, &aplAdd);                    \
+                                                                                        \
+                /* We no longer need this storage                                     */\
+                Myhc##N##v_clear (&aplAdd);                                             \
+                Myhc##N##v_clear (&aplDiv);                                             \
+                Myhc##N##v_clear (&aplPow);                                             \
+                Myhc##N##v_clear (&aplExp);                                             \
+                                                                                        \
+                /* We're done                                                         */\
+                bContinue = FALSE;                                                      \
+                                                                                        \
+                break;                                                                  \
+            } // End PN_NUMTYPE_HCxV
+
+            case PN_NUMTYPE_VFP:
+                PN_BaseHCxV_MAC (1)
+
+            case PN_NUMTYPE_HC2V:
+                PN_BaseHCxV_MAC (2)
+
+            case PN_NUMTYPE_HC4V:
+                PN_BaseHCxV_MAC (4)
+
+            case PN_NUMTYPE_HC8V:
+                PN_BaseHCxV_MAC (8)
+
+            defstop
+                break;
+        } // End WHILE/SWITCH
+    } // End IF
+
+    // The result is in <pnBaseInt>
+
+    // Copy <pnBaseInt> to <lpYYBase>
+    PN_Copy (lpYYBase, &pnBaseInt);
+
+    goto NORMAL_EXIT;
+
+ERROR_EXIT:
+    // We no longer need this storage
+    PN_Free (lpYYBase  ); lpYYBase = NULL;
+NORMAL_EXIT:
+    // Clear the accumulators
+    lppnLocalVars->uAlpAccInt =
+    lppnLocalVars->uAlpAccDec = 0;
+
+    // We no longer need this storage
+    PN_Free (&pnBaseInt);
+    PN_Free (&pnBaseDec);
+
+    return lpYYBase;
+} // End PN_MakeBasePoint
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PN_MakeBasePointSub
+//
+//  Merge the base and AlphaInt part to form a number
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PN_MakeBasePointSub"
+#else
+#define APPEND_NAME
+#endif
+
+UBOOL PN_MakeBasePointSub
+    (LPPN_YYSTYPE  lpYYBase,            // Ptr to the base part
+     LPPN_YYSTYPE  lpYYAlphaInt,        // Ptr to the Integer AlphaInt part
+     LPCHAR        lpszAlphaInt,        // Ptr to szAlphaInt buffer
+     UINT          uLen,                // Length of lpAlphaInt
+     LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
+
+{
+    UINT       uAcc;                    // Loop counter
     APLINT     aplIntBase,              // Base as an integer
                aplIntPowBase,           // Base as successive powers
                aplIntTmp,               // Temporary integer
@@ -2444,18 +2720,11 @@ LPPN_YYSTYPE PN_MakeBasePoint
     int        i,                       // Loop counter
                iHCDim;                  // HC Dimension (1, 2, 4, 8)
 
-    // If there's been a YYERROR, ...
-    if (lppnLocalVars->bYYERROR)
-        return NULL;
-
-    // Get the string length
-    uLen = lppnLocalVars->uAlpAcc;
-
     // Copy the arg in case we promote
     pnBase = *lpYYBase;
 RESTART_BASEPOINT:
     // Get the ptr to the end of the AlphaInt string
-    lpszAlphaInt = &lppnLocalVars->lpszAlphaInt[uLen - 1];
+    lpszAlphaInt = &lpszAlphaInt[uLen - 1];
 
     // Get the numeric type
     chType = (lppnLocalVars->chComType EQ PN_NUMTYPE_INIT) ? pnBase.chType : lppnLocalVars->chComType;
@@ -2522,7 +2791,7 @@ RESTART_BASEPOINT:
                 } // End IF
 
                 // Convert the base value to Rational
-                mpq_init_set_sx (&pnBase.at.aplRat, pnBase.at.aplInteger, 1);
+                mpq_init_set_sx (&lpYYBase->at.aplRat, pnBase.at.aplInteger, 1);
 
                 // Get the ptr to the end of the AlphaInt string
                 lpszAlphaInt = &lppnLocalVars->lpszAlphaInt[uLen - 1];
@@ -2539,7 +2808,7 @@ RESTART_BASEPOINT:
                        aplRatTmp     = {0};
 
                 // Initialize and set the base value
-                mpq_init_set (&aplRatBase, &pnBase.at.aplRat);
+                mpq_init_set (&aplRatBase, &lpYYBase->at.aplRat);
 
                 // Initialize the accumulator and base power
                 mpq_set_ui (&lpYYBase->at.aplRat, 0, 1);
@@ -2586,7 +2855,7 @@ RESTART_BASEPOINT:
                        aplVfpTmp     = {0};
 
                 // Initialize and set the base value
-                mpfr_init_copy (&aplVfpBase, &pnBase.at.aplVfp);
+                mpfr_init_copy (&aplVfpBase, &lpYYBase->at.aplVfp);
 
                 // Initialize the accumulator and base power
                 mpfr_set_ui (&lpYYBase->at.aplVfp, 0, MPFR_RNDN);
@@ -2611,7 +2880,7 @@ RESTART_BASEPOINT:
                     // Times the power base and accumulate
                     mpfr_set_ui (&aplVfpTmp, chCur, MPFR_RNDN);
                     mpfr_mul (&aplVfpTmp, &aplVfpPowBase, &aplVfpTmp, MPFR_RNDN);
-                    mpfr_add (&lpYYBase->at.aplVfp, &pnBase.at.aplVfp, &aplVfpTmp, MPFR_RNDN);
+                    mpfr_add (&lpYYBase->at.aplVfp, &lpYYBase->at.aplVfp, &aplVfpTmp, MPFR_RNDN);
 
                     // Shift over the power base
                     mpfr_mul (&aplVfpPowBase, &aplVfpPowBase, &aplVfpBase, MPFR_RNDN);
@@ -2804,6 +3073,9 @@ RESTART_BASEPOINT:
                 // Initialize the real part to 1/1
                 mpq_set_sx (&atPowBase.aplHC8R.parts[0], 1, 1);
 
+                // Initialize to 0/1
+                mpq_init (&aplRatCur);
+
                 // Loop through the AlphaInt arg
                 for (uAcc = 0; uAcc < uLen; uAcc++)
                 {
@@ -2819,12 +3091,12 @@ RESTART_BASEPOINT:
                      &&        chCur <= 'z')
                         chCur -= 'a' - 10;
 
-                    // Convert <chCur> to a RAT
-                    mpq_set_sx (&aplRatCur, chCur, 1);
-
                     // Loop through all of the parts
                     for (i = 0; i < iHCDim; i++)
                     {
+                        // Convert <chCur> to a RAT
+                        mpq_set_sx (&aplRatCur, chCur, 1);
+
                         // Times the power base
                         // chCur * atPowBase
                         mpq_mul (&aplRatCur, &aplRatCur, &atPowBase.aplHC8R.parts[i]);
@@ -2836,21 +3108,41 @@ RESTART_BASEPOINT:
                     // Split cases based upon the dimension
                     switch (iHCDim)
                     {
+                        ALLTYPES atTmp;
+
                         case 2:
                             // Shift over the power base
-                            atPowBase.aplHC2R = MulHC2R_RE (atBase.aplHC2R, atPowBase.aplHC2R);
+                            atTmp.aplHC2R = MulHC2R_RE (atBase.aplHC2R, atPowBase.aplHC2R);
+
+                            // We no longer need this storage
+                            Myhc2r_clear (&atPowBase.aplHC2R);
+
+                            // Copy back
+                            atPowBase.aplHC2R = atTmp.aplHC2R;
 
                             break;
 
                         case 4:
                             // Shift over the power base
-                            atPowBase.aplHC4R = MulHC4R_RE (atBase.aplHC4R, atPowBase.aplHC4R);
+                            atTmp.aplHC4R = MulHC4R_RE (atBase.aplHC4R, atPowBase.aplHC4R);
+
+                            // We no longer need this storage
+                            Myhc4r_clear (&atPowBase.aplHC4R);
+
+                            // Copy back
+                            atPowBase.aplHC4R = atTmp.aplHC4R;
 
                             break;
 
                         case 8:
                             // Shift over the power base
-                            atPowBase.aplHC8R = MulHC8R_RE (atBase.aplHC8R, atPowBase.aplHC8R);
+                            atTmp.aplHC8R = MulHC8R_RE (atBase.aplHC8R, atPowBase.aplHC8R);
+
+                            // We no longer need this storage
+                            Myhc8r_clear (&atPowBase.aplHC8R);
+
+                            // Copy back
+                            atPowBase.aplHC8R = atTmp.aplHC8R;
 
                             break;
 
@@ -2885,6 +3177,9 @@ RESTART_BASEPOINT:
                 // Initialize the real part to 1/1
                 mpfr_set_sx (&atPowBase.aplHC8V.parts[0], 1, MPFR_RNDN);
 
+                // Initialize to 0
+                mpfr_init0 (&aplVfpCur);
+
                 // Loop through the AlphaInt arg
                 for (uAcc = 0; uAcc < uLen; uAcc++)
                 {
@@ -2900,12 +3195,12 @@ RESTART_BASEPOINT:
                      &&        chCur <= 'z')
                         chCur -= 'a' - 10;
 
-                    // Convert <chCur> to a VFP
-                    mpfr_set_sx (&aplVfpCur, chCur, MPFR_RNDN);
-
                     // Loop through all of the parts
                     for (i = 0; i < iHCDim; i++)
                     {
+                        // Convert <chCur> to a VFP
+                        mpfr_set_sx (&aplVfpCur, chCur, MPFR_RNDN);
+
                         // Times the power base
                         // chCur * atPowBase
                         mpfr_mul (&aplVfpCur, &aplVfpCur, &atPowBase.aplHC8V.parts[i], MPFR_RNDN);
@@ -2917,21 +3212,41 @@ RESTART_BASEPOINT:
                     // Split cases based upon the dimension
                     switch (iHCDim)
                     {
+                        ALLTYPES atTmp;
+
                         case 2:
                             // Shift over the power base
-                            atPowBase.aplHC2V = MulHC2V_RE (atBase.aplHC2V, atPowBase.aplHC2V);
+                            atTmp.aplHC2V = MulHC2V_RE (atBase.aplHC2V, atPowBase.aplHC2V);
+
+                            // We no longer need this storage
+                            Myhc2v_clear (&atPowBase.aplHC2V);
+
+                            // Copy back
+                            atPowBase.aplHC2V = atTmp.aplHC2V;
 
                             break;
 
                         case 4:
                             // Shift over the power base
-                            atPowBase.aplHC4V = MulHC4V_RE (atBase.aplHC4V, atPowBase.aplHC4V);
+                            atTmp.aplHC4V = MulHC4V_RE (atBase.aplHC4V, atPowBase.aplHC4V);
+
+                            // We no longer need this storage
+                            Myhc4v_clear (&atPowBase.aplHC4V);
+
+                            // Copy back
+                            atPowBase.aplHC4V = atTmp.aplHC4V;
 
                             break;
 
                         case 8:
                             // Shift over the power base
-                            atPowBase.aplHC8V = MulHC8V_RE (atBase.aplHC8V, atPowBase.aplHC8V);
+                            atTmp.aplHC8V = MulHC8V_RE (atBase.aplHC8V, atPowBase.aplHC8V);
+
+                            // We no longer need this storage
+                            Myhc8v_clear (&atPowBase.aplHC8V);
+
+                            // Copy back
+                            atPowBase.aplHC8V = atTmp.aplHC8V;
 
                             break;
 
@@ -3041,14 +3356,12 @@ ERROR_EXIT:
     goto ERROR_EXIT2;
 
 NORMAL_EXIT:
-    // Clear the accumulator
-    lppnLocalVars->uAlpAcc = 0;
 ERROR_EXIT2:
     Myq_clear (&aplRatCur);
     Myf_clear (&aplVfpCur);
 
-    return lpYYBase;
-} // End PN_MakeBasePoint
+    return (lpYYBase NE NULL);
+} // End PN_MakeBasePointSub
 #undef  APPEND_NAME
 
 
@@ -3257,7 +3570,7 @@ LPPN_YYSTYPE PN_MakeEulerPoint
             // Change the result type
             lpYYMultiplier->chType = PN_NUMTYPE_HC2V;
 
-            // We no longer need these resources
+            // We no longer need this storage
             Myhc2v_clear (&atRes.aplHC2V);
             Myhc2v_clear (&atMul.aplHC2V);
             Myhc2v_clear (&atTmp.aplHC2V);
@@ -3286,7 +3599,7 @@ LPPN_YYSTYPE PN_MakeEulerPoint
             // Change the result type
             lpYYMultiplier->chType = PN_NUMTYPE_HC4V;
 
-            // We no longer need these resources
+            // We no longer need this storage
             Myhc4v_clear (&atRes.aplHC4V);
             Myhc4v_clear (&atMul.aplHC4V);
             Myhc4v_clear (&atTmp.aplHC4V);
@@ -3315,7 +3628,7 @@ LPPN_YYSTYPE PN_MakeEulerPoint
             // Change the result type
             lpYYMultiplier->chType = PN_NUMTYPE_HC8V;
 
-            // We no longer need these resources
+            // We no longer need this storage
             Myhc8v_clear (&atRes.aplHC8V);
             Myhc8v_clear (&atMul.aplHC8V);
             Myhc8v_clear (&atTmp.aplHC8V);
@@ -3335,7 +3648,7 @@ LPPN_YYSTYPE PN_MakeEulerPoint
                 // Save in the result
                 mpfr_set (&lpYYMultiplier->at.aplHC2V.parts[i], &atRes.aplHC2V.parts[i], MPFR_RNDN);
 
-            // We no longer need these resources
+            // We no longer need this storage
             Myhc2v_clear (&atRes.aplHC2V);
             Myhc2v_clear (&atTmp.aplHC2V);
 
@@ -3353,7 +3666,7 @@ LPPN_YYSTYPE PN_MakeEulerPoint
                 // Save in the result
                 mpfr_set (&lpYYMultiplier->at.aplHC4V.parts[i], &atRes.aplHC4V.parts[i], MPFR_RNDN);
 
-            // We no longer need these resources
+            // We no longer need this storage
             Myhc4v_clear (&atRes.aplHC4V);
             Myhc4v_clear (&atTmp.aplHC4V);
 
@@ -3371,7 +3684,7 @@ LPPN_YYSTYPE PN_MakeEulerPoint
                 // Save in the result
                 mpfr_set (&lpYYMultiplier->at.aplHC8V.parts[i], &atRes.aplHC8V.parts[i], MPFR_RNDN);
 
-            // We no longer need these resources
+            // We no longer need this storage
             Myhc8v_clear (&atRes.aplHC8V);
             Myhc8v_clear (&atTmp.aplHC8V);
 
@@ -3710,7 +4023,7 @@ LPPN_YYSTYPE PN_MakeGammaPoint
             // Save in the result
             mphc2v_set (&lpYYMultiplier->at.aplHC2V, &atMul.aplHC2V);
 
-            // We no longer need these resources
+            // We no longer need this storage
             Myhc2v_clear (&atMul.aplHC2V);
             Myhc2v_clear (&atExp.aplHC2V);
 
@@ -3726,7 +4039,7 @@ LPPN_YYSTYPE PN_MakeGammaPoint
             // Save in the result
             mphc4v_set (&lpYYMultiplier->at.aplHC4V, &atMul.aplHC4V);
 
-            // We no longer need these resources
+            // We no longer need this storage
             Myhc4v_clear (&atMul.aplHC4V);
             Myhc4v_clear (&atExp.aplHC4V);
 
@@ -3742,7 +4055,7 @@ LPPN_YYSTYPE PN_MakeGammaPoint
             // Save in the result
             mphc8v_set (&lpYYMultiplier->at.aplHC8V, &atMul.aplHC8V);
 
-            // We no longer need these resources
+            // We no longer need this storage
             Myhc8v_clear (&atMul.aplHC8V);
             Myhc8v_clear (&atExp.aplHC8V);
 
@@ -3897,7 +4210,7 @@ LPPN_YYSTYPE PN_MakePiPoint
             // Save in the result
             mphc2v_set (&lpYYMultiplier->at.aplHC2V, &atMul.aplHC2V);
 
-            // We no longer need these resources
+            // We no longer need this storage
             Myhc2v_clear (&atMul.aplHC2V);
             Myhc2v_clear (&atExp.aplHC2V);
 
@@ -3913,7 +4226,7 @@ LPPN_YYSTYPE PN_MakePiPoint
             // Save in the result
             mphc4v_set (&lpYYMultiplier->at.aplHC4V, &atMul.aplHC4V);
 
-            // We no longer need these resources
+            // We no longer need this storage
             Myhc4v_clear (&atMul.aplHC4V);
             Myhc4v_clear (&atExp.aplHC4V);
 
@@ -3929,7 +4242,7 @@ LPPN_YYSTYPE PN_MakePiPoint
             // Save in the result
             mphc8v_set (&lpYYMultiplier->at.aplHC8V, &atMul.aplHC8V);
 
-            // We no longer need these resources
+            // We no longer need this storage
             Myhc8v_clear (&atMul.aplHC8V);
             Myhc8v_clear (&atExp.aplHC8V);
 
@@ -3998,7 +4311,7 @@ LPPN_YYSTYPE PN_MakeVfpPoint
     uNewPrec = 1 + (mp_prec_t) floor (uDig * M_LN10 / M_LN2);
 
     // If present, ...
-    if (lpYYExponent)
+    if (lpYYExponent NE NULL)
         // Insert the exponent separator
         lpszNumAccum[lpYYExponent->uNumAcc - 1] = 'e';
 
@@ -6018,6 +6331,151 @@ PN_YYSTYPE PN_SetNaN
 
     return pnYYRes;
 } // End PN_SetNaN
+
+
+//***************************************************************************
+//  $PN_Copy
+//***************************************************************************
+
+void PN_Copy
+    (LPPN_YYSTYPE lpYYDest,
+     LPPN_YYSTYPE lpYYSrc)
+
+{
+    Assert (lpYYDest->chType EQ lpYYSrc->chType);
+
+    // Split cases based upon the current numeric type
+    switch (lpYYSrc->chType)
+    {
+        case PN_NUMTYPE_BOOL:           // Just move the data
+
+        case PN_NUMTYPE_INT :           // ...
+        case PN_NUMTYPE_HC2I:           // ...
+        case PN_NUMTYPE_HC4I:           // ...
+        case PN_NUMTYPE_HC8I:           // ...
+
+        case PN_NUMTYPE_FLT :           // ...
+        case PN_NUMTYPE_HC2F:           // ...
+        case PN_NUMTYPE_HC4F:           // ...
+        case PN_NUMTYPE_HC8F:           // ...
+            CopyAll (lpYYDest, lpYYSrc);
+
+            break;
+
+        case PN_NUMTYPE_RAT :           // Copy the RAT
+            mphc1r_set (&lpYYDest->at.aplHC1R,
+                        &lpYYSrc ->at.aplHC1R);
+            break;
+
+        case PN_NUMTYPE_HC2R:           // Copy the RAT
+            mphc2r_set (&lpYYDest->at.aplHC2R,
+                        &lpYYSrc ->at.aplHC2R);
+            break;
+
+        case PN_NUMTYPE_HC4R:           // Copy the RAT
+            mphc4r_set (&lpYYDest->at.aplHC4R,
+                        &lpYYSrc ->at.aplHC4R);
+            break;
+
+        case PN_NUMTYPE_HC8R:           // Copy the RAT
+            mphc8r_set (&lpYYDest->at.aplHC8R,
+                        &lpYYSrc ->at.aplHC8R);
+            break;
+
+        case PN_NUMTYPE_VFP :           // Copy the VFP
+            mphc1v_set (&lpYYDest->at.aplHC1V,
+                        &lpYYSrc ->at.aplHC1V);
+            break;
+
+        case PN_NUMTYPE_HC2V:           // Copy the VFP
+            mphc2v_set (&lpYYDest->at.aplHC2V,
+                        &lpYYSrc ->at.aplHC2V);
+            break;
+
+        case PN_NUMTYPE_HC4V:           // Copy the VFP
+            mphc4v_set (&lpYYDest->at.aplHC4V,
+                        &lpYYSrc ->at.aplHC4V);
+            break;
+
+        case PN_NUMTYPE_HC8V:           // Copy the VFP
+            mphc8v_set (&lpYYDest->at.aplHC8V,
+                        &lpYYSrc ->at.aplHC8V);
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+} // End PN_Copy
+
+
+//***************************************************************************
+//  $PN_Free
+//***************************************************************************
+
+void PN_Free
+    (LPPN_YYSTYPE lpYYRes)
+
+{
+    // Split cases based upon the current numeric type
+    switch (lpYYRes->chType)
+    {
+        case PN_NUMTYPE_BOOL:           // Nothing to do when freeing
+
+        case PN_NUMTYPE_INT :           // Nothing to do when freeing
+        case PN_NUMTYPE_HC2I:           // ...
+        case PN_NUMTYPE_HC4I:           // ...
+        case PN_NUMTYPE_HC8I:           // ...
+
+        case PN_NUMTYPE_FLT :           // Nothing to do when freeing
+        case PN_NUMTYPE_HC2F:           // ...
+        case PN_NUMTYPE_HC4F:           // ...
+        case PN_NUMTYPE_HC8F:           // ...
+            break;
+
+        case PN_NUMTYPE_RAT :           // Free the RAT
+            Myhc1r_clear (&lpYYRes->at.aplHC1R);
+
+            break;
+
+        case PN_NUMTYPE_HC2R:           // Free the RAT
+            Myhc2r_clear (&lpYYRes->at.aplHC2R);
+
+            break;
+
+        case PN_NUMTYPE_HC4R:           // Free the RAT
+            Myhc4r_clear (&lpYYRes->at.aplHC4R);
+
+            break;
+
+        case PN_NUMTYPE_HC8R:           // Free the RAT
+            Myhc8r_clear (&lpYYRes->at.aplHC8R);
+
+            break;
+
+        case PN_NUMTYPE_VFP :           // Free the VFP
+            Myhc1v_clear (&lpYYRes->at.aplHC1V);
+
+            break;
+
+        case PN_NUMTYPE_HC2V:           // Free the VFP
+            Myhc2v_clear (&lpYYRes->at.aplHC2V);
+
+            break;
+
+        case PN_NUMTYPE_HC4V:           // Free the VFP
+            Myhc4v_clear (&lpYYRes->at.aplHC4V);
+
+            break;
+
+        case PN_NUMTYPE_HC8V:           // Free the VFP
+            Myhc8v_clear (&lpYYRes->at.aplHC8V);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+} // End PN_Free
 
 
 //***************************************************************************

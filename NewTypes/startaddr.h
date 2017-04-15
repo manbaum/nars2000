@@ -767,7 +767,8 @@ typedef struct tagSTART_ADDRESSES
     // pn_proc.c
     "PN_NumAcc"                 , (LPUCHAR) &PN_NumAcc                  ,
     "PN_NumCalc"                , (LPUCHAR) &PN_NumCalc                 ,
-    "PN_ChrAcc"                 , (LPUCHAR) &PN_ChrAcc                  ,
+    "PN_ChrAccDec"              , (LPUCHAR) &PN_ChrAccDec               ,
+    "PN_ChrAccInt"              , (LPUCHAR) &PN_ChrAccInt               ,
     "PN_MakeBasePoint"          , (LPUCHAR) &PN_MakeBasePoint           ,
     "PN_MakeEulerPoint"         , (LPUCHAR) &PN_MakeEulerPoint          ,
     "PN_MakeExpPoint"           , (LPUCHAR) &PN_MakeExpPoint            ,

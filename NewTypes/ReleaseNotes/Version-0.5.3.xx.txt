@@ -1,6 +1,17 @@
 Version 0.5.3.xx consists of the following Builds:
 
 
+Build #1737 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Monadic Epsilon W.R.T. Prototypes
+
+Directory branches/bsmith/NewTypes:
+
+PF_EPSILON.C:
+  In <PrimFnMonEpsilonGlbCount>, don't take into account prototypes as they don't contribute to the result.
+
+
 Build #1736 -- Version 0.5.3.xx
 --------------------------------
 

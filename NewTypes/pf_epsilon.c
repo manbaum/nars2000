@@ -486,9 +486,6 @@ void PrimFnMonEpsilonGlbCount
             // Skip over the header and dimensions to the data
             lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
-            // Take prototypes into account
-            aplNELMRht = max (aplNELMRht, 1);
-
             // Loop through the elements
             for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
             // Split cases based upon the ptr type

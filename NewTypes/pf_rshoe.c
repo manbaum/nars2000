@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3129,7 +3129,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
     // Ensure that the index is within range
     // N.B.:  Because APLLONGEST is unsigned, we don't have to worry about negatives
     if (aplLongestLft >= aplNELMRht)
-        goto DOMAIN_EXIT;
+        goto INDEX_EXIT;
 
     // Extract an element from the right arg
     GetNextValueGlb (hGlbRht,               // Right arg global memory handle
@@ -3168,6 +3168,11 @@ LENGTH_EXIT:
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    return NULL;
+
+INDEX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
                                lptkFunc);
     return NULL;
 } // End PrimFnDydRightShoeImmGlb_EM_YY
@@ -3213,7 +3218,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                       lpMemRht;         // Ptr to right ...
     LPAPLDIM          lpMemDimRht;      // Ptr to right arg dimensions
     APLUINT           uLft;             // Loop counter
-    UBOOL             bRet = TRUE;      // TRUE iff result is valid
+    UBOOL             bRet = TRUE,      // TRUE iff result is valid
+                      bErrIndex = FALSE;// TRUE iff the error exit is for an INDEX ERROR
     APLBOOL           bQuadIO;          // []IO
     LPSYMENTRY        lpSymTmp;         // Ptr to temporary LPSYMENTRY
     LPPLLOCALVARS     lpplLocalVars;    // Ptr to re-entrant vars
@@ -3354,9 +3360,10 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                             aplTmpSubLft += lpMemDimRht[iDim];
 
                         // Ensure the indices are within range
-                        if (lpMemDimRht[iDim] <= aplTmpSubLft)
+                        bErrIndex = (lpMemDimRht[iDim] <= aplTmpSubLft);
+                        if (bErrIndex)
                         {
-                            bRet = FALSE;
+                            bRet  = FALSE;
 
                             break;
                         } // End IF
@@ -3387,7 +3394,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                             aplTmpSubLft += lpMemDimRht[iDim];
 
                         // Ensure the indices are within range
-                        if (lpMemDimRht[iDim] <= aplTmpSubLft)
+                        bErrIndex = (lpMemDimRht[iDim] <= aplTmpSubLft);
+                        if (bErrIndex)
                         {
                             bRet = FALSE;
 
@@ -3420,7 +3428,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                             aplTmpSubLft += lpMemDimRht[iDim];
 
                         // Ensure the indices are within range
-                        if ((!bRet) || lpMemDimRht[iDim] <= aplTmpSubLft)
+                        bErrIndex = (lpMemDimRht[iDim] <= aplTmpSubLft);
+                        if (!bRet || bErrIndex)
                         {
                             bRet = FALSE;
 
@@ -3458,7 +3467,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                             aplTmpSubLft += lpMemDimRht[iDim];
 
                         // Ensure the indices are within range
-                        if (lpMemDimRht[iDim] <= aplTmpSubLft)
+                        bErrIndex = (lpMemDimRht[iDim] <= aplTmpSubLft);
+                        if (bErrIndex)
                         {
                             bRet = FALSE;
 
@@ -3516,7 +3526,8 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                             aplTmpSubLft += lpMemDimRht[iDim];
 
                         // Ensure the indices are within range
-                        if ((!bRet) || lpMemDimRht[iDim] <= aplTmpSubLft)
+                        bErrIndex = (lpMemDimRht[iDim] <= aplTmpSubLft);
+                        if (!bRet || bErrIndex)
                         {
                             bRet = FALSE;
 
@@ -3541,7 +3552,12 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
 
             // Check for error
             if (!bRet)
-                goto DOMAIN_EXIT;
+            {
+                if (bErrIndex)
+                    goto INDEX_EXIT;
+                else
+                    goto DOMAIN_EXIT;
+            } // End IF
         } else
         {
             // The left arg is an immediate or simple value
@@ -3610,7 +3626,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
             // Ensure that the index is within range
             // N.B.:  Because APLLONGEST is unsigned, we don't have to worry about negatives
             if (aplLongestSubLft >= aplNELMRht)
-                goto DOMAIN_EXIT;
+                goto INDEX_EXIT;
         } // End IF/ELSE
 
         // We no longer need this ptr
@@ -3895,6 +3911,11 @@ LENGTH_EXIT:
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+INDEX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_INDEX_ERROR APPEND_NAME,
                                lptkFunc);
     goto ERROR_EXIT;
 

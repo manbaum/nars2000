@@ -1,6 +1,20 @@
 Version 0.5.3.xx consists of the following Builds:
 
 
+Build #1735 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Dyadic DownStile Storage Calculation
+
+Directory branches/bsmith/NewTypes:
+
+PF_DSTILE.C:
+  In <PrimSpecDownStileStorageTypeDyd>, handle characters as an error.
+
+PO_SLASH.C:
+  Indent Left Brace properly.
+
+
 Build #1734 -- Version 0.5.3.xx
 --------------------------------
 

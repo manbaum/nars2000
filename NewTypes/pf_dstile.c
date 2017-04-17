@@ -1802,6 +1802,7 @@ APLSTYPE PrimSpecDownStileStorageTypeDyd
             return aplTypeRes;
 
         defstop
+        case ARRAY_CHAR:
         case ARRAY_HETERO:
             return ARRAY_ERROR;
     } // End IF/ELSE/SWITCH

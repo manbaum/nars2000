@@ -470,7 +470,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
          && !IsSimpleBool (aplTypeRht))
             aplTypeRes = ARRAY_NESTED;
         else
-    {
+        {
             // Get the corresponding lpPrimSpecLft
             lpPrimSpecLft = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];
 

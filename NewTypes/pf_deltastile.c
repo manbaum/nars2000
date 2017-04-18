@@ -1794,7 +1794,7 @@ APLINT PrimFnGradeCompare
                 lpSymGlbRht = ((LPAPLNESTED) lpMemRht)[aplUIntRht * aplNELMRest + uRest];
 
                 // Split cases based upon the difference
-                switch (HeNe_cmp (lpSymGlbLft, lpSymGlbRht, 0))
+                switch (HeNe_cmp (lpSymGlbLft, lpSymGlbRht, lpGradeData->bGradeAll, 0))
                 {
                     case  1:
                         return  1 * lpGradeData->iMul;

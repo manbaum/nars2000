@@ -623,9 +623,18 @@ int hcXY_cmp
     (APLSTYPE   aplTypeCom,         // Common storage type
      LPALLTYPES lpatLft,            // Ptr to left arg as ALLTYPES
      LPALLTYPES lpatRht,            // ...    right ...
+     UBOOL      bGradeAll,          // TRUE iff we can grade all arrays
      APLFLOAT   fQuadCT)            // []CT (0 = Exact comparison)
 
 {
+    // If we're not grading all, and
+    //    it's HC and imaginary, ...
+    if (!bGradeAll
+     && IsHCAny (aplTypeCom)
+     && (IzitImaginary (aplTypeCom, &lpatLft->aplHC2I)  // The actual HCxy doesn't matter as the function will sort that out
+      || IzitImaginary (aplTypeCom, &lpatRht->aplHC2I)))
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
     // Split cases based upon the common storage type
     switch (aplTypeCom)
     {
@@ -710,6 +719,7 @@ int hcXY_cmp
 int HeNe_cmp
     (APLHETERO lpSymGlbLft,             // Left arg
      APLHETERO lpSymGlbRht,             // Right ...
+     UBOOL     bGradeAll,               // TRUE iff we can grade all arrays
      APLFLOAT  fQuadCT)                 // []CT (0 = Exact comparison)
 
 {
@@ -830,6 +840,37 @@ int HeNe_cmp
             break;
     } // End SWITCH
 
+    // If we're not grading all arrays and either arg is HC, ...
+    if (!bGradeAll)
+    {
+        APLNELM u;                  // Loop counter
+        int     iSizeof;            // # bytes in each left/right arg item
+
+        // If the left arg is HC, ...
+        if (IsHCAny (aplTypeLft))
+        {
+            iSizeof = TranslateArrayTypeToSizeof (aplTypeLft);
+
+            // Loop through the elements of the left arg
+            for (u = 0; u < aplNELMLft; u++)
+            if (IzitImaginary (aplTypeLft, ByteAddr (lpMemSubLft, u * iSizeof)))
+                // Signal an error
+                RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+        } // End IF
+
+        // If the right arg is HC, ...
+        if (IsHCAny (aplTypeRht))
+        {
+            iSizeof = TranslateArrayTypeToSizeof (aplTypeRht);
+
+            // Loop through the elements of the left arg
+            for (u = 0; u < aplNELMRht; u++)
+            if (IzitImaginary (aplTypeRht, ByteAddr (lpMemSubRht, u * iSizeof)))
+                // Signal an error
+                RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+        } // End IF
+    } // End IF
+
     // If the ranks are different, ...
     if (aplRankLft NE aplRankRht)
     {
@@ -875,12 +916,19 @@ int HeNe_cmp
             // Convert the right arg item to a common storage type
             (*aTypeActPromote[aplTypeRht][aplTypeCom]) (lpMemSubRht, iDim, &atRht);
 
-            // Compare the two items
-            iDiff = hcXY_cmp (aplTypeCom, &atLft, &atRht, fQuadCT);
-
-            // Free the old atLft and atRht
-            (*aTypeFree[aplTypeCom]) (&atLft, 0);
-            (*aTypeFree[aplTypeCom]) (&atRht, 0);
+            __try
+            {
+                __try
+                {
+                    // Compare the two items
+                    iDiff = hcXY_cmp (aplTypeCom, &atLft, &atRht, bGradeAll, fQuadCT);
+                } __finally
+                {
+                    // Free the old atLft and atRht
+                    (*aTypeFree[aplTypeCom]) (&atLft, 0);
+                    (*aTypeFree[aplTypeCom]) (&atRht, 0);
+                } // End __try/__finally
+            } __except (EXCEPTION_CONTINUE_SEARCH) {}
 
             if (iDiff NE 0)
                 break;
@@ -897,8 +945,10 @@ int HeNe_cmp
                 for (iDim = 0; iDim < aplNELMLft; iDim++)
                 {
                     // Call recursively
-                    iDiff = HeNe_cmp (((LPAPLNESTED) lpMemSubLft)[iDim],
-                                      ((LPAPLNESTED) lpMemSubRht)[iDim], fQuadCT);
+                    iDiff = HeNe_cmp (((LPAPLNESTED) lpMemSubLft)[iDim],    // Left arg
+                                      ((LPAPLNESTED) lpMemSubRht)[iDim],    // Right ...
+                                      bGradeAll,                            // TRUE iff we can grade all arrays
+                                      fQuadCT);                             // []CT (0 = Exact comparison)
                     if (iDiff NE 0)
                         break;
                 } // End FOR
@@ -914,6 +964,7 @@ int HeNe_cmp
                                        aplTypeRht,  // STE's array storage type
                                       &atLft,       // Ptr to GLB's ALLTYPES (empty)
                         *(LPAPLNESTED) lpMemSubLft, // GLB's global memory handle
+                                       bGradeAll,   // TRUE iff we can grade all arrays
                                        fQuadCT);    // []CT
                 break;
 
@@ -926,6 +977,7 @@ int HeNe_cmp
                                        aplTypeLft,  // STE's array storage type
                                       &atRht,       // Ptr to GLB's ALLTYPES (empty)
                         *(LPAPLNESTED) lpMemSubRht, // GLB's global memory handle
+                                       bGradeAll,   // TRUE iff we can grade all arrays
                                        fQuadCT);    // []CT
                 break;
             case 2 * 1 + 1 * 1:         // Both   are STCONST
@@ -960,12 +1012,19 @@ int HeNe_cmp
                     (*aTypeActPromote[aplTypeLft][aplTypeCom]) (&lpSymGlbLft->stData.stLongest, 0, &atLft);
                     (*aTypeActPromote[aplTypeRht][aplTypeCom]) (&lpSymGlbRht->stData.stLongest, 0, &atRht);
 
-                    // Compare the two items
-                    iDiff = hcXY_cmp (aplTypeCom, &atLft, &atRht, fQuadCT);
-
-                    // Free the old atLft and atRht
-                    (*aTypeFree[aplTypeCom]) (&atLft, 0);
-                    (*aTypeFree[aplTypeCom]) (&atRht, 0);
+                    __try
+                    {
+                        __try
+                        {
+                            // Compare the two items
+                            iDiff = hcXY_cmp (aplTypeCom, &atLft, &atRht, bGradeAll, fQuadCT);
+                        } __finally
+                        {
+                            // Free the old atLft and atRht
+                            (*aTypeFree[aplTypeCom]) (&atLft, 0);
+                            (*aTypeFree[aplTypeCom]) (&atRht, 0);
+                        } // End __try/__finally
+                    } __except (EXCEPTION_CONTINUE_SEARCH) {}
                 } // End IF/ELSE/...
 
                 break;
@@ -1006,6 +1065,7 @@ int HeNe_cmpsub
      APLSTYPE   aplTypeSte,             // STE's array storage type
      LPALLTYPES lpatGlb,                // Ptr to GLB's ALLTYPES (empty)
      HGLOBAL    hGlb,                   // GLB's global memory handle
+     UBOOL      bGradeAll,              // TRUE iff we can grade all arrays
      APLFLOAT   fQuadCT)                // []CT
 
 {
@@ -1027,11 +1087,18 @@ int HeNe_cmpsub
     (*aTypeActPromote[aplTypeSte       ][aplTypeCom]) (lpatSte, 0, lpatSte);
     (*aTypeActPromote[lpMemHdr->ArrType][aplTypeCom]) (lpMem  , 0, lpatGlb);
 
-    // Compare the two items
-    iDiff = hcXY_cmp (aplTypeCom, lpatSte, lpatGlb, fQuadCT);
-
-    // Free the old atGlb
-    (*aTypeFree[aplTypeCom]) (lpatGlb, 0);
+    __try
+    {
+        __try
+        {
+            // Compare the two items
+            iDiff = hcXY_cmp (aplTypeCom, lpatSte, lpatGlb, bGradeAll, fQuadCT);
+        } __finally
+        {
+            // Free the old atGlb
+            (*aTypeFree[aplTypeCom]) (lpatGlb, 0);
+        } // End __try/__finally
+    } __except (EXCEPTION_CONTINUE_SEARCH) {}
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlb); lpMemHdr = NULL;

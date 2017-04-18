@@ -1,0 +1,12 @@
+Build #1738 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Grade Not Disallowing HC Numbers
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+PF_DELTASTILE.C:
+PF_EPSILON.C:
+PF_IOTA.C:
+  Pass <bGradeAll> flag to <hcXY_cmp>, <HeNe_cmp>, and <HeNe_cmpsub> so they can test for and disallow HC numbers with a non-zero imaginary part.

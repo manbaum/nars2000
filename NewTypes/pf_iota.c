@@ -1698,7 +1698,7 @@ UBOOL PrimFnDydIotaNvN_EM
             (*aTypeActPromote[aplTypeLft][aplTypeCom]) (lpMemLft, atGupLft.aplInteger, &atLft);
 
             // Check for a match
-            switch (hcXY_cmp (aplTypeCom, &atLft, &atRht, fQuadCT))
+            switch (hcXY_cmp (aplTypeCom, &atLft, &atRht, TRUE, fQuadCT))
             {
                 case 1:
                     iMax = iLft - 1;
@@ -1727,7 +1727,7 @@ UBOOL PrimFnDydIotaNvN_EM
                         // Get the next HCxy from the left arg
                         (*aTypeActPromote[aplTypeLft][aplTypeCom]) (lpMemLft, atGupLft.aplInteger, &atLft);
 
-                        if (hcXY_cmp (aplTypeCom, &atLft, &atRht, fQuadCT) NE 0)
+                        if (hcXY_cmp (aplTypeCom, &atLft, &atRht, TRUE, fQuadCT) NE 0)
                             break;
                         else
                             iLow = min (iLow, atGupLft.aplInteger);
@@ -1746,7 +1746,7 @@ UBOOL PrimFnDydIotaNvN_EM
                         // Get the next HCxy from the left arg
                         (*aTypeActPromote[aplTypeLft][aplTypeCom]) (lpMemLft, atGupLft.aplInteger, &atLft);
 
-                        if (hcXY_cmp (aplTypeCom, &atLft, &atRht, fQuadCT) NE 0)
+                        if (hcXY_cmp (aplTypeCom, &atLft, &atRht, TRUE, fQuadCT) NE 0)
                             break;
                         else
                             iLow = min (iLow, atGupLft.aplInteger);
@@ -1996,7 +1996,7 @@ UBOOL PrimFnDydIotaHeNe_EM
             (*aTypeActPromote[aplTypeLft][aplTypeCom]) (lpMemLft, lpMemGupLft[iLft], &atLft);
 
             // Check for a match
-            switch (HeNe_cmp (atLft.aplNested, atRht.aplNested, fQuadCT))
+            switch (HeNe_cmp (atLft.aplNested, atRht.aplNested, TRUE, fQuadCT))
             {
                 case 1:
                     iMax = iLft - 1;
@@ -2022,7 +2022,7 @@ UBOOL PrimFnDydIotaHeNe_EM
                         // Get the next HeNe from the left arg
                         (*aTypeActPromote[aplTypeLft][aplTypeCom]) (lpMemLft, lpMemGupLft[iCnt], &atLft);
 
-                        if (HeNe_cmp (atLft.aplNested, atRht.aplNested, fQuadCT) NE 0)
+                        if (HeNe_cmp (atLft.aplNested, atRht.aplNested, TRUE, fQuadCT) NE 0)
                             break;
                         else
                             iLow = min (iLow, lpMemGupLft[iCnt]);
@@ -2038,7 +2038,7 @@ UBOOL PrimFnDydIotaHeNe_EM
                         // Get the next HCxy from the left arg
                         (*aTypeActPromote[aplTypeLft][aplTypeCom]) (lpMemLft, lpMemGupLft[iCnt], &atLft);
 
-                        if (HeNe_cmp (atLft.aplNested, atRht.aplNested, fQuadCT) NE 0)
+                        if (HeNe_cmp (atLft.aplNested, atRht.aplNested, TRUE, fQuadCT) NE 0)
                             break;
                         else
                             iLow = min (iLow, lpMemGupLft[iCnt]);

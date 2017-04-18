@@ -2200,7 +2200,7 @@ UBOOL PrimFnDydEpsilonNvN_EM
 
         // Check for duplicate value from the left arg
         if (iLft
-         && hcXY_cmp (aplTypeCom, &atLft, &atLst, fQuadCT) EQ 0)
+         && hcXY_cmp (aplTypeCom, &atLft, &atLst, TRUE, fQuadCT) EQ 0)
         {
             // Save in the result
             lpMemRes[iRes >> LOG2NBIB] |=
@@ -2226,7 +2226,7 @@ UBOOL PrimFnDydEpsilonNvN_EM
             (*tpActionRht) (lpMemRht, lpMemGupRht[iRht], &atRht);
 
             // Check for a match
-            switch (hcXY_cmp (aplTypeCom, &atLft, &atRht, fQuadCT))
+            switch (hcXY_cmp (aplTypeCom, &atLft, &atRht, TRUE, fQuadCT))
             {
                 case -1:    // Lft < Rht
                     iMax = iRht - 1;

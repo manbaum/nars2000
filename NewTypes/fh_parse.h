@@ -55,8 +55,7 @@ typedef struct tagFCNLINE               // Function line structure, one per func
             bTrace:1,                   //      00000002:  Trace this line
             bEmpty:1,                   //      00000004:  Empty line
             bLabel:1,                   //      00000008:  Labeled line
-            bSysLbl:1,                  //      00000010:  System Labeled line
-            :27;                        //      FFFFFFE0:  Available bits
+            :28;                        //      FFFFFFF0:  Available bits
                                         // 10:  Length
 } FCNLINE, *LPFCNLINE;
 
@@ -82,19 +81,11 @@ typedef enum tagFCN_VALENCES            // User-Defined Function/Operator Valenc
 //   be sure to make a corresponding change to
 //   <lpwFcnHdr>, <lpwOp1Hdr>, and <lpwOp2Hdr> in <savefcn.c>
 
-typedef enum tagSYSLBL_CON
+typedef struct tagSYSLBL_ENTRY
 {
-    SYSLBL_CON_ID = 0,                  // 00:  System Label Context:  []ID
-    SYSLBL_CON_PRO,                     // 01:  ...                    []PRO
-    SYSLBL_CON_LENGTH                   // 02:  # entries in this enum
-} SYSLBL_CON, *LPSYSLBL_CON;
-
-typedef enum tagSYSLBL_VAR              // System Label Variant
-{
-    SYSLBL_VAR_INV,                     // 00:  System Label Variant:  []INV
-    SYSLBL_VAR_MS,                      // 01:  ...                    []MS
-    SYSLBL_VAR_LENGTH                   // 02:  # entries in this enum
-} SYSLBL_VAR, *LPSYSLBL_VAR;
+    UINT sysLblLine,                    // 00:  Line # of the entry point (Origin-1)
+         sysLblTkn;                     // 04:  Token # ...               (Origin-0)
+} SYSLBLENTRY, *LPSYSLBLENTRY;
 
 // User-defined function/operator header signature
 #define DFN_HEADER_SIGNATURE   'SNFD'
@@ -121,25 +112,23 @@ typedef struct tagDFN_HEADER            // Function header structure
                      bLclRL:1,          //      00100000:  TRUE iff []RL is localized in this function
                      :11;               //      FFE00000:  Available bits
     UINT             RefCnt,            // 0C:  Reference count
-                     nSysLblInv,        // 10:  Line # of the []ID  label (0 if not present)
-                     nSysLblId,         // 14:  Line # of the []INV label (0 if not present)
-                     nSysLblMs,         // 18:  Line # of the []MS  label (0 if not present)
-                     nSysLblPro,        // 1C:  Line # of the []PRO label (0 if not present)
-                     nSysLblPair        // 20:  Line # of the System Label pairs (Context vs. Variant) (12 bytes)
-                       [SYSLBL_CON_LENGTH][SYSLBL_VAR_LENGTH],
-                     numResultSTE,      // 2C:  # result STEs (may be zero if no result)
-                     offResultSTE,      // 30:  Offset to result STEs (ignored if numResultSTE is zero)
-                     numLftArgSTE,      // 34:  # left arg STEs (may be zero if niladic/monadic)
-                     offLftArgSTE,      // 38:  Offset to left arg STEs (ignored if numLftArgSTE is zero)
-                     numRhtArgSTE,      // 3C:  # right arg STEs (may be zero if niladic)
-                     offRhtArgSTE,      // 40:  Offset to right arg STEs (ignored if numRhtArgSTE is zero)
-                     numLocalsSTE,      // 44:  # right arg STEs (may be zero if niladic)
-                     offLocalsSTE,      // 48:  Offset to start of function lines (FCNLINE[nLines])
-                     numFcnLines,       // 4C:  # lines in the function (not counting the header)
-                     offFcnLines,       // 50:  Offset to start of function lines (FCNLINE[nLines])
-                     offTknLines,       // 54:  Offset to start of tokenized function lines
-                     numLblLines,       // 58:  # labeled lines in the function
-                     num1stLabel1;      // 5C:  Line # of 1st labeled line (origin-1)
+                     numResultSTE,      // 10:  # result STEs (may be zero if no result)
+                     offResultSTE,      // 14:  Offset to result STEs (ignored if numResultSTE is zero)
+                     numLftArgSTE,      // 18:  # left arg STEs (may be zero if niladic/monadic)
+                     offLftArgSTE,      // 1C:  Offset to left arg STEs (ignored if numLftArgSTE is zero)
+                     numRhtArgSTE,      // 20:  # right arg STEs (may be zero if niladic)
+                     offRhtArgSTE,      // 24:  Offset to right arg STEs (ignored if numRhtArgSTE is zero)
+                     numLocalsSTE,      // 28:  # right arg STEs (may be zero if niladic)
+                     offLocalsSTE,      // 2C:  Offset to start of function lines (FCNLINE[nLines])
+                     numFcnLines,       // 30:  # lines in the function (not counting the header)
+                     offFcnLines,       // 34:  Offset to start of function lines (FCNLINE[nLines])
+                     offTknLines,       // 38:  Offset to start of tokenized function lines
+                     numLblLines,       // 3C:  # labeled lines in the function
+                     num1stLabel1;      // 40:  Line # of 1st labeled line (origin-1)
+    SYSLBLENTRY      aSysLblId,         // 44:  Line/token #s of the []ID  label (0 if not present) (8 bytes)
+                     aSysLblInv,        // 4C:  Line/token #s of the []INV ...
+                     aSysLblMs,         // 54:  Line/token #s of the []MS  ...
+                     aSysLblPro;        // 5C:  Line/token #s of the []PRO ...
     LPSYMENTRY       steLftOpr,         // 60:  Left operand STE (may be NULL if not an operator)
                      steFcnName,        // 64:  Function name STE
                      steAxisOpr,        // 68:  Axis operator STE
@@ -163,25 +152,25 @@ typedef struct tagDFN_HEADER            // Function header structure
 //   <FreeResultGlobalDfn> in <free.c>.
 
 
-typedef struct tagFH_YYSTYPE        	// YYSTYPE for Function Header parser
+typedef struct tagFH_YYSTYPE            // YYSTYPE for Function Header parser
 {
-    TOKEN  tkToken;                 	// 00:  Token info (28 bytes)
-    UINT   uStrandLen:30,           	// 1C:  3FFFFFFF:  # elements in this strand
-           Indirect:1,              	//      40000000:  Indirect entry
-           List:1;                  	//      80000000:  Itsa list
-                                    	//      00000000:  No available bits
+    TOKEN  tkToken;                     // 00:  Token info (28 bytes)
+    UINT   uStrandLen:30,               // 1C:  3FFFFFFF:  # elements in this strand
+           Indirect:1,                  //      40000000:  Indirect entry
+           List:1;                      //      80000000:  Itsa list
+                                        //      00000000:  No available bits
     struct tagFH_YYSTYPE *
-           lpYYStrandIndirect;      	// 20:  Ptr to the indirect strand if .Indirect is set
+           lpYYStrandIndirect;          // 20:  Ptr to the indirect strand if .Indirect is set
     struct tagFH_YYSTYPE *
-           lpYYStrandBase;          	// 24:  Ptr to this token's strand base
-    UINT   offTknIndex;             	// 28:  Offset in tokens in hGlbTknHdr
-                                    	// 2C:  Length
-} FH_YYSTYPE, *LPFH_YYSTYPE;        	// Data type of yacc stack
+           lpYYStrandBase;              // 24:  Ptr to this token's strand base
+    UINT   offTknIndex;                 // 28:  Offset in tokens in hGlbTknHdr
+                                        // 2C:  Length
+} FH_YYSTYPE, *LPFH_YYSTYPE;            // Data type of yacc stack
 
 #define YYSTYPE_IS_DECLARED 1
 
 
-typedef struct tagFHLOCALVARS       	// Function Header Local Vars
+typedef struct tagFHLOCALVARS           // Function Header Local Vars
 {
     HWND           hWndEC;              // 00:  Window handle for Edit Ctrl
     HGLOBAL        hGlbTknHdr,          // 04:  Tokenized header global memory handle

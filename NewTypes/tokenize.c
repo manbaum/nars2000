@@ -2014,6 +2014,7 @@ UBOOL fnClnDone
 {
     TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
     TOKEN_DATA tkData = {0};            // Token data  ...
+    UBOOL      bSysLbl = FALSE;         // TRUE iff this token is a System Label
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     DbgMsgW (L"fnClnDone");
@@ -2025,22 +2026,28 @@ UBOOL fnClnDone
     // Copy current WCHAR
     tkData.tkChar = *lptkLocalVars->lpwszCur;
 
+    // If this is NOT an AFO, and
     // If the first token is a name, and
     //   this is the second token,
     //   then it's a label separator
     // OR
-    // This is an AFO, and
+    // If this is an AFO, and
     // If the first token is a NOP, and
     //   the next token is a sys name, and
     //   this is the third token,
     //   then it's a label separator
-    if ((lptkLocalVars->lptkStart[1].tkFlags.TknType EQ TKT_VARNAMED
+    if ((!lptkLocalVars->lpSF_Fcns->bAFO
+      && lptkLocalVars->lptkStart[1].tkFlags.TknType EQ TKT_VARNAMED
       && (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart) EQ 2)
      || (lptkLocalVars->lpSF_Fcns->bAFO
-      && lptkLocalVars->lptkStart[1].tkFlags.TknType EQ TKT_NOP
-      && IsTknSysName (&lptkLocalVars->lptkStart[2], TRUE)
-      && (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart) EQ 3))
+      && lptkLocalVars->lptkLastEOS[1].tkFlags.TknType EQ TKT_NOP
+      && (bSysLbl = IsTknSysLbl (&lptkLocalVars->lptkLastEOS[2]))
+      && (lptkLocalVars->lptkNext - lptkLocalVars->lptkLastEOS) EQ 3))
     {
+        // Mark the VARNAMED as a System Label if it is one
+        //   although we don't use this bit of info as yet
+        lptkLocalVars->lptkNext[-1].tkFlags.bSysLbl = bSysLbl;
+
         // Mark the data as a label separator
         tkFlags.TknType = TKT_LABELSEP;
 
@@ -5284,33 +5291,37 @@ a series of tokens.
 
 The format of a token is defined in tokens.h
 
-A single stmt line is coded as
-
-EOL ... SOS
-
-A multi stmt line is coded as
-
-EOS ... SOS  EOS ... SOS  EOL ... SOS
-
-where EOS is End-Of-Stmt
+Where EOS is End-Of-Stmt
       EOL is End-Of-Line
       SOS is Start-Of-Stmt
-      ... is a series of zero or more tokens none of which are EOS, EOL, nor SOS.
+      xxx is a series of zero or more tokens none of which are EOS, EOL, nor SOS.
 
-An AFO is coded as
+A single stmt line is coded in tokens as
 
-without a guard
+EOL xxx SOS
 
-EOS/EOL NOP ...       SOS EOS NOP ...        SOS
+A multi stmt line is coded in tokens as
 
-with a guard as in Cond:Stmt
+EOS xxx SOS  EOS xxx SOS  EOL xxx SOS
+
+An AFO is coded in tokens as
+
+* Without a guard
+
+EOS NOP xxx SOS   ...   EOL NOP xxx SOS
+
+* With a guard as in Cond:Stmt (which may appear anywhere in an AFO line)
 
         Guard Cond            Guard Stmt
-EOS/EOL AFOGUARD ... SOS EOS AFORETURN ... SOS
+...   EOS AFOGUARD xxx SOS   EOS/EOL AFORETURN xxx SOS   ...
 
-with a Set Alpha
+* With a Set Alpha (which may appear anywhere in an AFO line)
 
-EOS/EOL NOP ... SETALPHA SOS
+...   EOS/EOL NOP xxx SETALPHA SOS   ...
+
+* With a System Label (which may appear anywhere in an AFO line)
+
+...   EOS/EOL VARNAMED LABELSEP xxx SOS   ...
 
 */
 

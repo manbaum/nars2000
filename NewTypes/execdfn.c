@@ -299,7 +299,8 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
                  bNamedRhtFcn;      // ...          right ...
     UBOOL        bOldExecuting;     // Old value of bExecuting
     HWND         hWndEC;            // Edit Ctrl window handle
-    UINT         startLineNum;      // Starting line #
+    UINT         startLineNum,      // Starting line #
+                 startTknNum ;      // ...      token #
     LPHSHTABSTR  lphtsPTD = NULL;   // Save area for old HshTabStr
 
     // Get ptr to PerTabData global memory
@@ -392,27 +393,32 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     switch (startLineType)
     {
         case LINENUM_ONE:
-            startLineNum = 1;
+            startLineNum = 1;                                   // Origin-1
+            startTknNum  = 0;                                   // Origin-0 (offset to this stmt's EOS/EOL)
 
             break;
 
         case LINENUM_ID:
-            startLineNum = lpMemDfnHdr->nSysLblId;
+            startLineNum = lpMemDfnHdr->aSysLblId.sysLblLine;   // Origin-1
+            startTknNum  = lpMemDfnHdr->aSysLblId.sysLblTkn ;   // Origin-0 (offset to this stmt's EOS/EOL)
 
             break;
 
         case LINENUM_INV:
-            startLineNum = lpMemDfnHdr->nSysLblInv;
+            startLineNum = lpMemDfnHdr->aSysLblInv.sysLblLine;  // Origin-1
+            startTknNum  = lpMemDfnHdr->aSysLblInv.sysLblTkn ;  // Origin-0 (offset to this stmt's EOS/EOL)
 
             break;
 
         case LINENUM_MS:
-            startLineNum = lpMemDfnHdr->nSysLblMs;
+            startLineNum = lpMemDfnHdr->aSysLblMs.sysLblLine;   // Origin-1
+            startTknNum  = lpMemDfnHdr->aSysLblMs.sysLblTkn ;   // Origin-0 (offset to this stmt's EOS/EOL)
 
             break;
 
         case LINENUM_PRO:
-            startLineNum = lpMemDfnHdr->nSysLblPro;
+            startLineNum = lpMemDfnHdr->aSysLblPro.sysLblLine;  // Origin-1
+            startTknNum  = lpMemDfnHdr->aSysLblPro.sysLblTkn ;  // Origin-0 (offset to this stmt's EOS/EOL)
 
             break;
 
@@ -582,7 +588,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     {
         // Execute the user-defined function/operator
         lpYYRes =
-          ExecuteFunction_EM_YY (startLineNum, &lpYYFcnStr->tkToken);
+          ExecuteFunction_EM_YY (startLineNum, startTknNum, &lpYYFcnStr->tkToken);
     } __except (CheckException (GetExceptionInformation (), L"ExecDfnOprGlb_EM_YY"))
     {
         // Unlocalize the STEs on the innermost level
@@ -873,6 +879,7 @@ void _CheckSymEntries
 
 LPPL_YYSTYPE ExecuteFunction_EM_YY
     (UINT         uLineNum,         // Starting line # (origin-1)
+     UINT         uTknNum ,         // ...      token # (origin-0)
      LPTOKEN      lptkFunc)         // Ptr to function token (may be NULL)
 
 {
@@ -886,12 +893,10 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     HANDLE         hSemaphore;      // Semaphore handle
     UINT           numResultSTE,    // # result STEs (may be zero if no result)
                    numRes,          // Loop counter
-                   uTokenCnt,       // # tokens in the function line
-                   uTknNum;         // Next token # in the line
+                   uTokenCnt;       // # tokens in the function line
     LPSYMENTRY    *lplpSymEntry;    // Ptr to 1st result STE
     HGLOBAL        hGlbTknHdr;      // Tokenized header global memory handle
     UBOOL          bRet,            // TRUE iff result is valid
-                   bFirstTime,      // TRUE iff this is the first time executing
                    bStopLine,       // TRUE iff we're stopping on this line
                    bTraceLine,      // TRUE iff we're tracing the line
                    bStopRestart;    // TRUE iff we're restarting a []STOPped line
@@ -934,7 +939,7 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
     // Save current line & token #
     lpMemPTD->lpSISCur->CurLineNum = uLineNum;
     lpMemPTD->lpSISCur->NxtLineNum = uLineNum + 1;
-    lpMemPTD->lpSISCur->NxtTknNum  = uTknNum = 0;
+    lpMemPTD->lpSISCur->NxtTknNum  = uTknNum;
 
     // Create a semaphore
     hSemaphore =
@@ -948,9 +953,6 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
 #endif
     // Mark as not restarting a []STOPped line
     bStopRestart = FALSE;
-
-    // Mark as the first time executing
-    bFirstTime = TRUE;
 
     // Loop through the function lines
     if (lpMemDfnHdr-> numFcnLines NE 0)
@@ -978,24 +980,6 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
         // If the starting token # is outside the token count, ...
         if (uTknNum >= uTokenCnt)
             goto NEXTLINE;
-        // If this is not the first time,
-        //    and it's an AFO,
-        //    and the current line is a System Label, ...
-        if (!bFirstTime
-         && lpMemDfnHdr->bAFO
-         && lpFcnLines[uLineNum - 1].bSysLbl)
-        {
-            // Free any past result
-            EraseAfoResult (lpMemDfnHdr);
-
-            // Set the exit type
-            exitType = EXITTYPE_NONE;
-
-            break;
-        } // End IF
-
-        // Mark as no longer the first time
-        bFirstTime = FALSE;
 
 #ifdef DEBUG
         DisplayFcnLine (hGlbTxtLine, lpMemPTD, uLineNum);
@@ -1019,8 +1003,8 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
                          hGlbTxtLine,           // Text of function line global memory ahndle
                          NULL,                  // Ptr to line text global memory
                          lpMemPTD,              // Ptr to PerTabData global memory
-                         uLineNum,              // Function line # (1 for execute or immexec)
-                         uTknNum,               // Starting token # in the above function line
+                         uLineNum,              // Function line # (1 for execute or immexec) (origin-1)
+                         uTknNum,               // Starting token # in the above function line (origin-0)
                          bTraceLine,            // TRUE iff we're tracing this line
                          hGlbDfnHdr,            // User-defined function/operator global memory handle (NULL = execute/immexec)
                          lptkFunc,              // Ptr to function token used for AFO function name
@@ -1221,8 +1205,8 @@ NEXTLINE:
                              lpMemDfnHdr->hGlbTxtHdr,   // Text of tokenized line global memory handle
                              NULL,                      // Ptr to line text global memory
                              lpMemPTD,                  // Ptr to PerTabData global memory
-                             1,                         // Function line # (1 for execute or immexec)
-                             0,                         // Starting token # in the above function line
+                             1,                         // Function line # (1 for execute or immexec) (origin-1)
+                             0,                         // Starting token # in the above function line (origin-0)
                              FALSE,                     // TRUE iff we're tracing this line
                              hGlbDfnHdr,                // User-defined function/operator global memory handle (NULL = execute/immexec)
                              lptkFunc,                  // Ptr to function token used for AFO function name

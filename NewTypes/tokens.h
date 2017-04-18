@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -191,7 +191,8 @@ typedef struct tagTKFLAGS
          bGuardStmt:1,      // 00080000:  TRUE iff this stmt is an AFO Guard
          bAssignName:1,     // 00100000:  TRUE iff this token is a name that is the target of an assignment
          bTempAPV:1,        // 00200000:  TRUE iff this is a temporary APV used in place of an elided index
-         :10;               // FFC00000:  Available bits
+         bSysLbl:1,         // 00400000:  TRUE iff this stmt is a System Label
+         :9;                // FF800000:  Available bits
 } TKFLAGS, *LPTKFLAGS;
 
 // N.B.:  Whenever changing the above enum (TKFLAGS),

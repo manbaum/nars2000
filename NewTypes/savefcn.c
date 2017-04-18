@@ -3130,7 +3130,8 @@ UBOOL GetLabelNums
     LPFCNLINE      lpFcnLines,          // Ptr to array of function line structs (FCNLINE[numLogLines])
                    lpLstLabel;          // Ptr to the last labeled line
     LPTOKEN_HEADER lptkHdr;             // Ptr to header of tokenized line
-    LPTOKEN        lptkLine;            // Ptr to tokenized line
+    LPTOKEN        lptkLine,            // Ptr to tokenized line
+                   lptkStart;           // ...    start of tokenized line
     UBOOL          bRet;                // TRUE iff the result is valid
     HGLOBAL        hGlbName;            // Name's global memory handle
 
@@ -3166,128 +3167,150 @@ UBOOL GetLabelNums
         numTokens = lptkHdr->TokenCnt;
 
         // Get ptr to the tokens in the line
-        lptkLine = TokenBaseToStart (lptkHdr);
+        lptkStart =
+        lptkLine  = TokenBaseToStart (lptkHdr);
 
         Assert (lptkLine[0].tkFlags.TknType EQ TKT_EOL
              || lptkLine[0].tkFlags.TknType EQ TKT_EOS);
 
-        // If there are at least three tokens, ...
-        //   (TKT_EOL, TKT_VARNAMED, TKT_LABELSEP)
-        if (numTokens >= 3)
+        // If it's an AFO,
+        //   loop through the stmts looking for a SysLbl.
+        // If it's not an AFO (i.e., it's a UDFO),
+        //   look for a SysLbl in the first stmt only.
+        // This distinction is enforced at the end of the WHILE loop.
+        while (TRUE)
         {
-            // If the first token is a name
-            //   and the next one is a label separator,
-            // OR
-            // This is an AFO, and
-            // If the first token is a NOP
-            //   and the next token is a sys name
-            //   and the next one is a label separator, ...
-            if ((lptkLine[1].tkFlags.TknType EQ TKT_VARNAMED
-              && lptkLine[2].tkFlags.TknType EQ TKT_LABELSEP)
-             || (lpMemDfnHdr->bAFO
-              && lptkLine[1].tkFlags.TknType EQ TKT_NOP
-              && IsTknSysName (&lptkLine[2], TRUE)
-              && lptkLine[3].tkFlags.TknType EQ TKT_LABELSEP))
+            // If there are at least three (four if AFO) tokens, ...
+            //   (TKT_EOL, (TKT_NOP), TKT_VARNAMED, TKT_LABELSEP)
+            if (numTokens >= (3 + lpMemDfnHdr->bAFO))
             {
-                LPAPLCHAR lpMemName;    // Ptr to the name
-                UINT      uCnt;
-
-                // Identify the named token
-                if (IsTknNamed (&lptkLine[1]))
-                    uCnt = 1;
-                else
-                if (IsTknNamed (&lptkLine[2]))
-                    uCnt = 2;
-#ifdef DEBUG
-                else
-                    DbgBrk ();
-#endif
-                // stData is an LPSYMENTRY
-                Assert (GetPtrTypeDir (lptkLine[uCnt].tkData.tkSym) EQ PTRTYPE_STCONST);
-
-                // If the stHshEntry is valid, ...
-                //   (might not be if the System Label is mispelled)
-                if (lptkLine[uCnt].tkData.tkSym->stHshEntry NE NULL)
+                // This is NOT an AFO, and
+                // If the first token is a name
+                //   and the next one is a label separator,
+                // OR
+                // This is an AFO, and
+                // If the first token is a NOP
+                //   and the next token is a sys name
+                //   and the next one is a label separator, ...
+                if ((!lpMemDfnHdr->bAFO
+                  && lptkLine[1].tkFlags.TknType EQ TKT_VARNAMED
+                  && lptkLine[2].tkFlags.TknType EQ TKT_LABELSEP)
+                 || (lpMemDfnHdr->bAFO
+                  && lptkLine[1].tkFlags.TknType EQ TKT_NOP
+                  && IsTknSysName (&lptkLine[2], TRUE)
+                  && lptkLine[3].tkFlags.TknType EQ TKT_LABELSEP))
                 {
-                    // Get the Name's global memory handle
-                    hGlbName = lptkLine[uCnt].tkData.tkSym->stHshEntry->htGlbName;
+                    LPAPLCHAR lpMemName;    // Ptr to the name
+                    UINT      uCnt;
 
-                    // Lock the memory to get a ptr to it
-                    lpMemName = MyGlobalLockWsz (hGlbName);
-
-                    if (lstrcmpiW (lpMemName, $QUAD_ID ) EQ 0)
-                    {
-                        uDupLineNum1 = lpMemDfnHdr->nSysLblId;
-                        if (uDupLineNum1 NE 0)
-                            goto SYSDUP_EXIT;
-                        // Save line # in origin-1
-                        lpMemDfnHdr->nSysLblId  = uLineNum1;
-
-                        // Mark as a System Label
-                        lpFcnLines->bSysLbl = TRUE;
-                    } else
-                    if (lstrcmpiW (lpMemName, $QUAD_INV) EQ 0)
-                    {
-                        uDupLineNum1 = lpMemDfnHdr->nSysLblInv;
-                        if (uDupLineNum1 NE 0)
-                            goto SYSDUP_EXIT;
-                        // Save line # in origin-1
-                        lpMemDfnHdr->nSysLblInv = uLineNum1;
-
-                        // Mark as a System Label
-                        lpFcnLines->bSysLbl = TRUE;
-                    } else
-                    if (lstrcmpiW (lpMemName, $QUAD_MS ) EQ 0)
-                    {
-                        uDupLineNum1 = lpMemDfnHdr->nSysLblMs;
-                        if (uDupLineNum1 NE 0)
-                            goto SYSDUP_EXIT;
-                        // Save line # in origin-1
-                        lpMemDfnHdr->nSysLblMs  = uLineNum1;
-
-                        // Mark as a System Label
-                        lpFcnLines->bSysLbl = TRUE;
-                    } else
-                    if (lstrcmpiW (lpMemName, $QUAD_PRO) EQ 0)
-                    {
-                        uDupLineNum1 = lpMemDfnHdr->nSysLblPro;
-                        if (uDupLineNum1 NE 0)
-                            goto SYSDUP_EXIT;
-                        // Save line # in origin-1
-                        lpMemDfnHdr->nSysLblPro = uLineNum1;
-
-                        // Mark as a System Label
-                        lpFcnLines->bSysLbl = TRUE;
-                    } // End IF/ELSE/...
-
-                    // If there's a previous label, ...
-                    if (lpLstLabel NE NULL)
-                        // Save the line # of the next labeled line
-                        lpLstLabel->numNxtLabel1 = uLineNum1;
+                    // Identify the named token
+                    if (IsTknNamed (&lptkLine[1]))
+                        uCnt = 1;
                     else
-                        // Save the line # of the first labeled line
-                        lpMemDfnHdr->num1stLabel1 = uLineNum1;
-                    // Save as the ptr to the last labeled line
-                    lpLstLabel = lpFcnLines;
+                    if (IsTknNamed (&lptkLine[2]))
+                        uCnt = 2;
+#ifdef DEBUG
+                    else
+                        DbgBrk ();
+#endif
+                    // stData is an LPSYMENTRY
+                    Assert (GetPtrTypeDir (lptkLine[uCnt].tkData.tkSym) EQ PTRTYPE_STCONST);
 
-                    // Create a ptr to the LBLENTRY
-                    lplpLblEntry[lpMemDfnHdr->numLblLines] = lpLblEntry++;
+                    // If the stHshEntry is valid, ...
+                    //   (might not be if the System Label is mispelled)
+                    if (lptkLine[uCnt].tkData.tkSym->stHshEntry NE NULL)
+                    {
+                        // Get the Name's global memory handle
+                        hGlbName = lptkLine[uCnt].tkData.tkSym->stHshEntry->htGlbName;
 
-                    // Save the LBLENTRY of the label
-                    lplpLblEntry[lpMemDfnHdr->numLblLines]->lpSymEntry = lptkLine[1].tkData.tkSym;
-                    lplpLblEntry[lpMemDfnHdr->numLblLines]->uLineNum1  = uLineNum1;
+                        // Lock the memory to get a ptr to it
+                        lpMemName = MyGlobalLockWsz (hGlbName);
 
-                    // Mark as a labeled line
-                    lpLstLabel->bLabel = TRUE;
+                        if (lstrcmpiW (lpMemName, $QUAD_ID ) EQ 0)
+                        {
+                            uDupLineNum1 = lpMemDfnHdr->aSysLblId.sysLblLine;
+                            if (uDupLineNum1 NE 0)
+                                goto SYSDUP_EXIT;
+                            // Save line # in origin-1
+                            lpMemDfnHdr->aSysLblId.sysLblLine  = uLineNum1;
+                            lpMemDfnHdr->aSysLblId.sysLblTkn   = (UINT) (lptkLine - lptkStart);     // The preceding EOS/EOL
+                        } else
+                        if (lstrcmpiW (lpMemName, $QUAD_INV) EQ 0)
+                        {
+                            uDupLineNum1 = lpMemDfnHdr->aSysLblInv.sysLblLine;
+                            if (uDupLineNum1 NE 0)
+                                goto SYSDUP_EXIT;
+                            // Save line # in origin-1
+                            lpMemDfnHdr->aSysLblInv.sysLblLine = uLineNum1;
+                            lpMemDfnHdr->aSysLblInv.sysLblTkn  = (UINT) (lptkLine - lptkStart);     // The preceding EOS/EOL
+                        } else
+                        if (lstrcmpiW (lpMemName, $QUAD_MS ) EQ 0)
+                        {
+                            uDupLineNum1 = lpMemDfnHdr->aSysLblMs.sysLblLine;
+                            if (uDupLineNum1 NE 0)
+                                goto SYSDUP_EXIT;
+                            // Save line # in origin-1
+                            lpMemDfnHdr->aSysLblMs.sysLblLine  = uLineNum1;
+                            lpMemDfnHdr->aSysLblMs.sysLblTkn   = (UINT) (lptkLine - lptkStart);     // The preceding EOS/EOL
+                        } else
+                        if (lstrcmpiW (lpMemName, $QUAD_PRO) EQ 0)
+                        {
+                            uDupLineNum1 = lpMemDfnHdr->aSysLblPro.sysLblLine;
+                            if (uDupLineNum1 NE 0)
+                                goto SYSDUP_EXIT;
+                            // Save line # in origin-1
+                            lpMemDfnHdr->aSysLblPro.sysLblLine = uLineNum1;
+                            lpMemDfnHdr->aSysLblPro.sysLblTkn  = (UINT) (lptkLine - lptkStart);     // The preceding EOS/EOL
+                        } else
+                        {
+                            // If there's a previous label, ...
+                            if (lpLstLabel NE NULL)
+                                // Save the line # of the next labeled line
+                                lpLstLabel->numNxtLabel1 = uLineNum1;
+                            else
+                                // Save the line # of the first labeled line
+                                lpMemDfnHdr->num1stLabel1 = uLineNum1;
+                            // Save as the ptr to the last labeled line
+                            lpLstLabel = lpFcnLines;
 
-                    // Count in another labeled line
-                    lpMemDfnHdr->numLblLines++;
+                            // Create a ptr to the LBLENTRY
+                            lplpLblEntry[lpMemDfnHdr->numLblLines] = lpLblEntry++;
 
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbName); lpMemName = NULL;
+                            // Save the LBLENTRY of the label
+                            lplpLblEntry[lpMemDfnHdr->numLblLines]->lpSymEntry = lptkLine[1].tkData.tkSym;
+                            lplpLblEntry[lpMemDfnHdr->numLblLines]->uLineNum1  = uLineNum1;
+
+                            // Mark as a labeled line
+                            lpLstLabel->bLabel = TRUE;
+
+                            // Count in another labeled line
+                            lpMemDfnHdr->numLblLines++;
+                        } // End IF/ELSE/...
+
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbName); lpMemName = NULL;
+                    } // End IF
                 } // End IF
             } // End IF
-        } // End IF
+
+            // If this function is NOT an AFO, or
+            //   this token is an EOL, ...
+            if (!lpMemDfnHdr->bAFO
+             || lptkLine->tkFlags.TknType EQ TKT_EOL)
+                // We're done looking for any kind of label
+                break;
+
+            Assert (lptkLine->tkFlags.TknType EQ TKT_EOS);
+
+            // Account for the tokens in this stmt
+            numTokens -= lptkLine->tkData.tkIndex;
+
+            // Skip to the next EOS/EOL
+            lptkLine = &lptkLine[lptkLine->tkData.tkIndex];
+
+            Assert (lptkLine->tkFlags.TknType EQ TKT_EOS
+                 || lptkLine->tkFlags.TknType EQ TKT_EOL);
+        } // End WHILE
 
         // Skip to the next struct
         lpFcnLines++;

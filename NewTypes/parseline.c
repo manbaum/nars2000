@@ -3924,8 +3924,8 @@ EXIT_TYPES ParseLine
      HGLOBAL        hGlbTxtLine,            // Text of tokenized line global memory handle
      LPWCHAR        lpwszLine,              // Ptr to the line text (may be NULL)
      LPPERTABDATA   lpMemPTD,               // Ptr to PerTabData global memory
-     UINT           uLineNum,               // Function line #
-     UINT           uTknNum,                // Starting token # in the above function line
+     UINT           uLineNum,               // Function line # (1 for execute or immexec) (origin-1)
+     UINT           uTknNum,                // Starting token # in the above function line (origin-0)
      UBOOL          bTraceLine,             // TRUE iff we're tracing this line
      HGLOBAL        hGlbDfnHdr,             // User-defined function/operator global memory handle (NULL = execute/immexec)
      LPTOKEN        lptkFunc,               // Ptr to function token used for AFO function name
@@ -4111,11 +4111,15 @@ EXIT_TYPES ParseLine
         // Skip to the starting token
         plLocalVars.lptkNext  = &plLocalVars.lptkStart[uTknNum];
 
-        // If this token is an EOS/EOL, skip to the end of the stmt
-        //   and start executing there
+        // If this token is an EOS/EOL, ...
         if (plLocalVars.lptkNext->tkFlags.TknType EQ TKT_EOS
          || plLocalVars.lptkNext->tkFlags.TknType EQ TKT_EOL)
+        {
+            // Skip to the end of the stmt (SOS) and start executing there
             plLocalVars.lptkNext = &plLocalVars.lptkNext[plLocalVars.lptkNext->tkData.tkIndex - 1];
+
+            Assert (plLocalVars.lptkNext->tkFlags.TknType EQ TKT_SOS);
+        } // End IF
     } else
         // Skip to end of 1st stmt
         plLocalVars.lptkNext  = &plLocalVars.lptkStart[plLocalVars.lptkStart->tkData.tkIndex];

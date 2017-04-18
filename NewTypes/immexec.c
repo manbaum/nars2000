@@ -689,8 +689,8 @@ DWORD WINAPI ImmExecStmtInThread
                      NULL,                  // Text of tokenized line global mamory handle
                      lpwszCompLine,         // Ptr to the complete line
                      lpMemPTD,              // Ptr to PerTabData global memory
-                     1,                     // Function line #  (1 for execute or immexec)
-                     0,                     // Starting token # in the above function line
+                     1,                     // Function line # (1 for execute or immexec) (origin-1)
+                     0,                     // Starting token # in the above function line (origin-0)
                      FALSE,                 // TRUE iff we're tracing this line
                      NULL,                  // User-defined function/operator global memory handle (NULL = execute/immexec)
                      NULL,                  // Ptr to function token used for AFO function name

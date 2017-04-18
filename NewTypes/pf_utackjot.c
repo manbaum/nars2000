@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -599,8 +599,8 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
                  hGlbTxtLine,           // Text of tokenized line global memory handle
                  lpwszCompLine,         // Ptr to the complete line
                  lpMemPTD,              // Ptr to PerTabData global memory
-                 uLineNum,              // Function line # (1 for execute or immexec)
-                 uTknNum,               // Starting token # in the above function line
+                 uLineNum,              // Function line # (1 for execute or immexec) (origin-1)
+                 uTknNum,               // Starting token # in the above function line (origin-0)
                  FALSE,                 // TRUE iff we're tracing this line
                  NULL,                  // User-defined function/operator global memory handle (NULL = execute/immexec)
                  NULL,                  // Ptr to function token used for AFO function name

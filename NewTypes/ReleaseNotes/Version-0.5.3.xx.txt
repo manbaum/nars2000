@@ -1,6 +1,46 @@
 Version 0.5.3.xx consists of the following Builds:
 
 
+Build #1739 -- Version 0.5.3.xx
+--------------------------------
+
+* Implement System Labels In AFOs
+
+Directory branches/bsmith/NewTypes:
+
+EXECDFN.C:
+  Save Token # along with Line # for a System Label.
+  Pass starting token # to <ExecuteFunction_EM_YY>.
+  In <ExecuteFunction_EM_YY>, delete code to disallow falling into a SysLbl in an AFO.
+  Document the Line # and Token # values.
+
+EXECMFN.C:
+IMMEXEC.C:
+PF_UTACKJOT.C:
+  Document the Line # and Token # values.
+
+FH_PARSE.H:
+  Delete unneeded <bSysLbl> flag in <FCNLINE> struc.
+  Define <SYSLBLENTRY> struc to hold both the Line and Token #s for a SysLbl.
+
+PARSELINE.C:
+  Document the Line # and Token # values.
+  Handle initial non-zero Token #.
+
+PRIMFNS.C:
+  Define function to determine whether or not a Token is that of a System Label.
+
+SAVEFCN.C:
+  In <GetLabelNums>, look for SysLbls in any stmt in an AFO line.
+
+TOKENIZE.C:
+  In <fnClnDone>, check for a SysLbl in AFOs and mark as such.
+  Document the various stmts in terms of their tokens.
+
+TOKENS.H:
+  Define a flag in <TKFLAGS> to indicate that a stmt is a SysLbl.
+
+
 Build #1738 -- Version 0.5.3.xx
 --------------------------------
 

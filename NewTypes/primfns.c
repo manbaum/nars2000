@@ -4037,6 +4037,55 @@ UBOOL IsTknSysName
 
 
 //***************************************************************************
+//  $IsTknSysLbl
+//
+//  Return TRUE iff the given token is a System Label
+//***************************************************************************
+
+UBOOL IsTknSysLbl
+    (LPTOKEN lptkVar)                       // Ptr to token
+
+{
+    HGLOBAL   htGlbName;                    // SYMENTRY name global memory handle
+    LPAPLCHAR lpMemName;                    // Ptr to var name
+    UBOOL     bRet;                         // TRUE iff the name starts with a Quad or Quote-quad
+
+    // If it's not named, ...
+    if (!IsTknNamed (lptkVar))
+        return FALSE;
+
+    // In case we encounter a system name typo (e.g., []FCP),
+    //   we must test for it before we touch the HshEntry as
+    //   that ptr is NULL
+    if (lptkVar->tkData.tkSym->stFlags.ObjName EQ OBJNAME_NOVALUE_SYS)
+        return FALSE;
+
+    // Get the HshEntry name's global memory handle
+    htGlbName = lptkVar->tkData.tkSym->stHshEntry->htGlbName;
+
+    // Lock the memory to get a ptr to it
+    lpMemName = MyGlobalLockWsz (htGlbName);
+
+    // Izit a System Name?
+    bRet = IsSysName (lpMemName);
+
+    // If it's a System Name and not a System Label, ...
+    if (bRet
+     && lstrcmpiW (lpMemName, $QUAD_ID ) NE 0
+     && lstrcmpiW (lpMemName, $QUAD_INV) NE 0
+     && lstrcmpiW (lpMemName, $QUAD_MS ) NE 0
+     && lstrcmpiW (lpMemName, $QUAD_PRO) NE 0)
+        // Mark as not a System Label
+        bRet = FALSE;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (htGlbName); lpMemName = NULL;
+
+    return bRet;
+} // End IsTknSysLbl
+
+
+//***************************************************************************
 //  $mod64
 //
 //  Return the modulus of a 64-bit integer by a 64-bit integer

@@ -3261,7 +3261,12 @@ UBOOL GetLabelNums
                             // Save line # in origin-1
                             lpMemDfnHdr->aSysLblPro.sysLblLine = uLineNum1;
                             lpMemDfnHdr->aSysLblPro.sysLblTkn  = (UINT) (lptkLine - lptkStart);     // The preceding EOS/EOL
-                        } else
+                        } // End IF/ELSE/...
+
+                        // Because UDFOs allow branching to a System Label,
+                        //   we need to localize it as well as assign a value to it
+                        // If it's not an AFO, ...
+                        if (!lpMemDfnHdr->bAFO)
                         {
                             // If there's a previous label, ...
                             if (lpLstLabel NE NULL)
@@ -3285,7 +3290,7 @@ UBOOL GetLabelNums
 
                             // Count in another labeled line
                             lpMemDfnHdr->numLblLines++;
-                        } // End IF/ELSE/...
+                        } // End IF
 
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbName); lpMemName = NULL;

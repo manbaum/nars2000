@@ -1,6 +1,17 @@
 Version 0.5.3.xx consists of the following Builds:
 
 
+Build #1740 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In UDFO With Branching To A System Label
+
+Directory branches/bsmith/NewTypes:
+
+SAVEFCN.C:
+  In <GetLabelNums>, if an UDFO, localize and assign a value to the SysLbl.
+
+
 Build #1739 -- Version 0.5.3.xx
 --------------------------------
 

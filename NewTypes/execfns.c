@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -442,6 +442,22 @@ LPPL_YYSTYPE ExecFunc_EM_YY
 
             break;
         } // End TKT_DELAFO
+
+        case TKT_OP1IMMED:
+        case TKT_OP3IMMED:
+            lpYYRes =
+              ExecOp1_EM_YY (lptkLftArg,    // Ptr to left arg token
+                             lpYYFcnStr,    // Ptr to operator function strand
+                             lptkRhtArg);   // Ptr to right arg token
+            break;
+
+        case TKT_OP2IMMED:
+        case TKT_OPJOTDOT:
+            lpYYRes =
+              ExecOp2_EM_YY (lptkLftArg,    // Ptr to left arg token
+                             lpYYFcnStr,    // Ptr to operator function strand
+                             lptkRhtArg);   // Ptr to right arg token
+            break;
 
         defstop
             break;
@@ -1459,21 +1475,21 @@ LPPL_YYSTYPE ExecOp1_EM_YY
             return NULL;
 
         case UTF16_DOWNSHOESTILE:   // Multiset
-            return PrimOpDownShoeStile_EM_YY (lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
-                                              lpYYFcnStrOpr,    // Ptr to operator function strand
-                                              lptkRhtArg);      // Ptr to right arg token
+            return PrimOpDownShoeStile_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+                                              lpYYFcnStrOpr,        // Ptr to operator function strand
+                                              lptkRhtArg);          // Ptr to right arg token
         case UTF16_DIERESIS:        // Each
-            return PrimOpDieresis_EM_YY (lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
-                                         lpYYFcnStrOpr,         // Ptr to operator function strand
-                                         lptkRhtArg);           // Ptr to right arg token
+            return PrimOpDieresis_EM_YY (lptkLftArg,                // Ptr to left arg token (may be NULL if monadic)
+                                         lpYYFcnStrOpr,             // Ptr to operator function strand
+                                         lptkRhtArg);               // Ptr to right arg token
         case UTF16_DIERESISTILDE:   // Commute/Duplicate
-            return PrimOpDieresisTilde_EM_YY (lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
-                                              lpYYFcnStrOpr,    // Ptr to operator function strand
-                                              lptkRhtArg);      // Ptr to right arg token
+            return PrimOpDieresisTilde_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+                                              lpYYFcnStrOpr,        // Ptr to operator function strand
+                                              lptkRhtArg);          // Ptr to right arg token
         case UTF16_CIRCLEMIDDLEDOT: // Null Op
-            return PrimOpCircleMiddleDot_EM_YY (lptkLftArg,     // Ptr to left arg token (may be NULL if monadic)
-                                                lpYYFcnStrOpr,  // Ptr to operator function strand
-                                                lptkRhtArg);    // Ptr to right arg token
+            return PrimOpCircleMiddleDot_EM_YY (lptkLftArg,         // Ptr to left arg token (may be NULL if monadic)
+                                                lpYYFcnStrOpr,      // Ptr to operator function strand
+                                                lptkRhtArg);        // Ptr to right arg token
         case INDEX_OPTRAIN:         // Train
             // Execute as Train, skipping over the monadic operator
             return ExecTrain_EM_YY (lptkLftArg,                     // Ptr to left arg token

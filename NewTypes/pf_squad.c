@@ -1320,8 +1320,10 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
             iAxisNxt--;
         } // End IF/ELSE/WHILE
 
-        // If the result is non-empty, ...
-        if (aplNELMRes NE 0)
+        // If the result is non-empty,
+        //   or the result is nested (to fill in the prototype element), ...
+        if (aplNELMRes NE 0
+         || IsNested (aplTypeRes))
         {
             // If we're not assigning, ...
             if (lptkSetArg EQ NULL)

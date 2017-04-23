@@ -482,8 +482,9 @@ UBOOL CALLBACK EnumCallbackExpPrevGlb
 
         Assert (GetPtrTypeDir (MakeGlbFromVal (lParam)) EQ PTRTYPE_HGLOBAL);
 
-        // If they match, ...
-        if (ClrPtrTypeDir (hGlbDfnHdr) EQ ClrPtrTypeDir (MakeGlbFromVal (lParam)))
+        // If the handle is valid and they match, ...
+        if (hGlbDfnHdr NE NULL
+         && ClrPtrTypeDir (hGlbDfnHdr) EQ ClrPtrTypeDir (MakeGlbFromVal (lParam)))
             // Zap the previous global memory handle
             SetWindowLongPtrW (hWnd, GWLSF_HGLBDFNHDR, (HANDLE_PTR) NULL);
     } // End IF

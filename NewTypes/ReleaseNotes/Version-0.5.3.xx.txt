@@ -1,6 +1,17 @@
 Version 0.5.3.xx consists of the following Builds:
 
 
+Build #1742 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug When Erasing An AFO
+
+Directory branches/bsmith/NewTypes:
+
+QF_EX.C:
+  In <EnumCallbackExpPrevGlb>, ensure the handle is valid before using it.
+
+
 Build #1741 -- Version 0.5.3.xx
 --------------------------------
 

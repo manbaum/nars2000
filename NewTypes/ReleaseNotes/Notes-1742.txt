@@ -1,0 +1,9 @@
+Build #1742 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug When Erasing An AFO
+
+Directory branches/bsmith/NewTypes:
+
+QF_EX.C:
+  In <EnumCallbackExpPrevGlb>, ensure the handle is valid before using it.

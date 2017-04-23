@@ -87,7 +87,7 @@
 #define UTF16_QUADCOLON           0x2360        // Variant operator
 #define UTF16_LEFTSHOESTILE       0x2367        //
 #define UTF16_DIERESISRIGHTCARET  0x2369        //
-#define UTF16_DELTILDE            0x236B        // Del-tilde
+#define UTF16_DELTILDE            0x236B        // DelTilde
 #define UTF16_SEMICOLONUNDERBAR   0x236E        //
 #define UTF16_QUADNOTEQUAL        0x236F        //
 #define UTF16_QUADQUERY           0x2370        //
@@ -375,7 +375,7 @@
 #define WS_UTF16_QUADCOLON           L"\x2360"  // Variant operator
 #define WS_UTF16_LEFTSHOESTILE       L"\x2367"  //
 #define WS_UTF16_DIERESISRIGHTCARET  L"\x2369"  //
-#define WS_UTF16_DELTILDE            L"\x236B"  // Del-tilde
+#define WS_UTF16_DELTILDE            L"\x236B"  // DelTilde
 #define WS_UTF16_SEMICOLONUNDERBAR   L"\x236E"  //
 #define WS_UTF16_QUADNOTEQUAL        L"\x236F"  //
 #define WS_UTF16_QUADQUERY           L"\x2370"  //

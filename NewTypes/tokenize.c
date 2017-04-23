@@ -6829,6 +6829,7 @@ TKCOLINDICES CharTransTK
             return TKCOL_PRIM_OP1;
 
         case UTF16_VARIANT:             // Alt-'_' - variant
+        case UTF16_DELTILDE:            // Alt-'K' - Commutator
         case UTF16_DIERESISDEL:         // Alt-'G' - dual
         case UTF16_DIERESISJOT:         // Alt-'J' - rank (hoot)
         case UTF16_DIERESISDOWNTACK:    // Alt-'N' - convolution

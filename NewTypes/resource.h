@@ -992,7 +992,14 @@
 #define IDC_KEYB_BN_TC_C4                       4424
 #define IDC_KEYB_BN_TC_C5                       4425
 
-#define IDC_KEYB_BN_TC_LAST                     IDC_KEYB_BN_TC_C5
+#define IDC_KEYB_BN_TC_D0                       4430
+#define IDC_KEYB_BN_TC_D1                       4431
+#define IDC_KEYB_BN_TC_D2                       4432
+#define IDC_KEYB_BN_TC_D3                       4433
+#define IDC_KEYB_BN_TC_D4                       4434
+#define IDC_KEYB_BN_TC_D5                       4435
+
+#define IDC_KEYB_BN_TC_LAST                     IDC_KEYB_BN_TC_D5
 
 #define IDC_FONTS_LT1                           5000
 #define IDC_FONTS_LT2                           5001

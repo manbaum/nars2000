@@ -1,6 +1,32 @@
 Version 0.5.3.xx consists of the following Builds:
 
 
+Build #1744 -- Version 0.5.3.xx
+--------------------------------
+
+* Prepare For DelTilde
+
+Directory branches/bsmith/NewTypes:
+
+CUSTOMIZE.C:
+  Append a new row to the bottom of the APL TabCtrl and add DelTilde and NaN symbols.
+
+EXECFNS.C:
+  In <ExecOp2_EM_YY>, signal a NONCE ERROR for DelTilde.
+
+KEYBOARDS_BI.H:
+  In all built-in keyboards, move DelTilde from Alt-'k' to Alt-'K'.
+
+RESOURCE.H:
+  Define IDC_xxx codes for the new row in the APL TabCtrl in Keyboards.
+
+TOKENIZE.C:
+  In <CharTransTK>, mark DelTilde as a dyadic operator.
+
+UNICODE.H:
+  Correct the spelling for DelTilde.
+
+
 Build #1743 -- Version 0.5.3.xx
 --------------------------------
 

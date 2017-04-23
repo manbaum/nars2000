@@ -180,12 +180,13 @@ UINT aKTC_IDC_BEG[]
     IDC_KEYB_BN_TC_A0,
     IDC_KEYB_BN_TC_B0,
     IDC_KEYB_BN_TC_C0,
+    IDC_KEYB_BN_TC_D0,
    };
 
 #define NOCONTROL           -1
 
 #define KTC_TXT_CX      6           // # cols in KTC text
-#define KTC_TXT_CY     13           // # rows ...
+#define KTC_TXT_CY     14           // # rows ...
 
 WCHAR awKTC_APL[KTC_TXT_CY][KTC_TXT_CX]
 = {{UTF16_UPCARET       , UTF16_DOWNCARET       , UTF16_UPCARETTILDE    , UTF16_DOWNCARETTILDE   , UTF16_TILDE            , UTF16_ZILDE             },
@@ -201,6 +202,7 @@ WCHAR awKTC_APL[KTC_TXT_CY][KTC_TXT_CX]
    {UTF16_SLASH         , UTF16_SLASHBAR        , UTF16_SLOPE           , UTF16_SLOPEBAR         , UTF16_NOTEQUAL         , UTF16_SECTION           },
    {UTF16_EQUALUNDERBAR , UTF16_NOTEQUALUNDERBAR, UTF16_ALPHA           , UTF16_OMEGA            , UTF16_LEFTCARETUNDERBAR, UTF16_RIGHTCARETUNDERBAR},
    {UTF16_DIAMOND       , UTF16_COMMABAR        , UTF16_OVERBAR         , UTF16_LAMP             , UTF16_INFINITY         , UTF16_CIRCLEMIDDLEDOT   },
+   {UTF16_DELTILDE      , UTF16_NAN             , 0                     , 0                      , 0                      , 0                       },
   };
 
 WCHAR awKTC_ABC[KTC_TXT_CY][KTC_TXT_CX]
@@ -216,6 +218,7 @@ WCHAR awKTC_ABC[KTC_TXT_CY][KTC_TXT_CX]
    {L'S', L'T', L'U', L'V', L'W', L'X'},
    {L'Y', L'Z',   0 ,   0 ,   0 ,   0 },
    {  0 ,   0 ,   0 ,   0 ,   0 ,   0 },
+   {  0 ,   0 ,   0 ,   0 ,   0 ,   0 },
   };
 
 WCHAR awKTC_123[KTC_TXT_CY][KTC_TXT_CX]
@@ -229,6 +232,7 @@ WCHAR awKTC_123[KTC_TXT_CY][KTC_TXT_CX]
    {L'(', L')', L'[', L']', L'{', L'}'},
    {L'+', L'-', L'/', L'\\',L'<', L'>'},
    {L';', L':', L',', L'.', L'\'',L'"'},
+   {  0 ,   0 ,   0 ,   0 ,   0 ,   0 },
    {  0 ,   0 ,   0 ,   0 ,   0 ,   0 },
    {  0 ,   0 ,   0 ,   0 ,   0 ,   0 },
   };
@@ -246,23 +250,25 @@ WCHAR awKTC_BOX[KTC_TXT_CY][KTC_TXT_CX]
    {L'\x2588'           , L'\x258C'           , L'\x2590'           , 0 ,                 0 , 0},
    {L'\x2591'           , L'\x2592'           , L'\x2593'           , 0 ,                 0 , 0},
    {                  0 ,                   0 ,                   0 , 0 ,                 0 , 0},
+   {                  0 ,                   0 ,                   0 , 0 ,                 0 , 0},
   };
 
 
 WCHAR awKTC_NLS[KTC_TXT_CY][KTC_TXT_CX]
-= {{L'\x00E0', L'\x00E1', L'\x00E2', L'\x00E3', L'\x00E4', L'\x00E5'},    // a
-   {L'\x00C0', L'\x00C1', L'\x00C2', L'\x00C3', L'\x00C4', L'\x00C5'},    // A
-   {        0, L'\x0107', L'\x0109', L'\x010B', L'\x00E7', L'\x010D'},    // c
-   {        0, L'\x0106', L'\x0108', L'\x010A', L'\x00C7', L'\x010C'},    // C
-   {L'\x00E8', L'\x00E9', L'\x00EA',         0, L'\x00EB', L'\x00F8'},    // e
-   {L'\x00C8', L'\x00C9', L'\x00CA',         0, L'\x00CB', L'\x00F1'},    // E
-   {L'\x00EC', L'\x00ED', L'\x00EE', L'\x0129', L'\x00EF', L'\x00D1'},    // i
-   {L'\x00CC', L'\x00CD', L'\x00CE', L'\x0128', L'\x00CF', L'\x00DF'},    // I
-   {L'\x00F2', L'\x00F3', L'\x00F4', L'\x00F5', L'\x00F6',         0},    // o
-   {L'\x00D2', L'\x00D3', L'\x00D4', L'\x00D5', L'\x00D6',         0},    // O
-   {L'\x00F9', L'\x00FA', L'\x00FB', L'\x0169', L'\x00FC',         0},    // u
-   {L'\x00D9', L'\x00DA', L'\x00DB', L'\x0168', L'\x00DC',         0},    // U
-   {L'\x00A3', L'\x20AC', L'\x20A7', L'\x00A5', L'\x00BF', L'\x00A1'},    // Currency
+= {{L'\x00E0', L'\x00E1', L'\x00E2', L'\x00E3', L'\x00E4', L'\x00E5'},      // a
+   {L'\x00C0', L'\x00C1', L'\x00C2', L'\x00C3', L'\x00C4', L'\x00C5'},      // A
+   {        0, L'\x0107', L'\x0109', L'\x010B', L'\x00E7', L'\x010D'},      // c
+   {        0, L'\x0106', L'\x0108', L'\x010A', L'\x00C7', L'\x010C'},      // C
+   {L'\x00E8', L'\x00E9', L'\x00EA',         0, L'\x00EB', L'\x00F8'},      // e
+   {L'\x00C8', L'\x00C9', L'\x00CA',         0, L'\x00CB', L'\x00F1'},      // E
+   {L'\x00EC', L'\x00ED', L'\x00EE', L'\x0129', L'\x00EF', L'\x00D1'},      // i
+   {L'\x00CC', L'\x00CD', L'\x00CE', L'\x0128', L'\x00CF', L'\x00DF'},      // I
+   {L'\x00F2', L'\x00F3', L'\x00F4', L'\x00F5', L'\x00F6',         0},      // o
+   {L'\x00D2', L'\x00D3', L'\x00D4', L'\x00D5', L'\x00D6',         0},      // O
+   {L'\x00F9', L'\x00FA', L'\x00FB', L'\x0169', L'\x00FC',         0},      // u
+   {L'\x00D9', L'\x00DA', L'\x00DB', L'\x0168', L'\x00DC',         0},      // U
+   {L'\x00A3', L'\x20AC', L'\x20A7', L'\x00A5', L'\x00BF', L'\x00A1'},      // Currency
+   {        0,         0,         0,         0,         0,         0},      //
   };
 
 typedef struct tagKTC               // Keyb TabCtrl

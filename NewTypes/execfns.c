@@ -1558,6 +1558,18 @@ LPPL_YYSTYPE ExecOp2_EM_YY
 
             return NULL;
 
+        case UTF16_DELTILDE:        // DelTilde
+            return PrimFnNonceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
+
+            DbgBrk ();              // ***FINISHME*** -- UTF16_DELTILDE
+
+
+
+
+
+
+            return NULL;
+
         case UTF16_DIERESISJOT:     // Rank (as dyadic op)
             return PrimOpDieresisJot_EM_YY (lptkLftArg,     // Ptr to left arg token (may be NULL if monadic)
                                             lpYYFcnStrOpr,  // Ptr to operator function strand

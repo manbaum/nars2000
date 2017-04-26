@@ -1866,6 +1866,8 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         // If it's an immediate primitive function,
         //   and has an identity element, ...
         if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
+         && (lpPrimFlagsLft->MonScalar
+          || lpPrimFlagsLft->DydScalar)
          && lpPrimFlagsLft->IdentElem)
         {
             // If the right arg is nested, ...
@@ -2313,7 +2315,8 @@ RESTART_EXCEPTION:
                                               apaMulRht,        // APA multiplier (if needed)
                                              &tkRhtArg);        // Ptr to token in which to place the value
                     // In case we blew up, check to see if we must blow up tkRhtArg
-                    if (aplTypeRes NE aplTypeRht)
+                    if (aplTypeRes NE aplTypeRht
+                     && !IsNested (aplTypeRes))
                         (*aTypeTknPromote[aplTypeRht][aplTypeRes]) (&tkRhtArg);
 
                     // Loop backwards through the elements along the specified axis

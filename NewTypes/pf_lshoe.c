@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -581,7 +581,8 @@ UBOOL LftShoeGlbCom_EM
     UBOOL   bRet = TRUE;                // TRUE iff the result is valid
     APLNELM uRht,                       // Loop counter
             uSub,                       // ...
-            uOdo;                       // ...
+            uOdo,                       // ...
+            uNELM;                      // NELM to handle prototypes
 
     //***************************************************************
     // Allocate storage for this subarray,
@@ -605,12 +606,15 @@ UBOOL LftShoeGlbCom_EM
     if (!bRet)
         goto ERROR_EXIT;
 
+    // Handle NELM in case of prototypes
+    uNELM = max (lpComVars->aplNELMSub, 1);
+
     //***************************************************************
     // Copy data from the right arg to the subarray
     //***************************************************************
 
     // Traverse the subarray
-    for (uSub = 0; uSub < lpComVars->aplNELMSub; uSub++)
+    for (uSub = 0; uSub < uNELM; uSub++)
     {
         // Check for Ctrl-Break
         if (CheckCtrlBreak (*lpComVars->lpbCtrlBreak))

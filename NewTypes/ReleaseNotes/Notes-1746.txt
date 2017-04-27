@@ -1,0 +1,9 @@
+Build #1746 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In LeftShoe Enclosing With Axis An Empty Multidimensional Array
+
+Directory branches/bsmith/NewTypes:
+
+PF_LSHOE.C:
+  Fix bug in <LftShoeGlbCom_EM> when enclosing with axis a multidimensional empty array.

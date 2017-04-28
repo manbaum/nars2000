@@ -563,7 +563,7 @@ RESTART_EXCEPTION:
                 for (iLftRow = aplRowsLft - 1; iLftRow >= 0; iLftRow--)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Get left arg index
@@ -606,7 +606,7 @@ RESTART_EXCEPTION:
             for (iLftRow = aplRowsLft - 1; !bDoneFOR && iLftRow >= 0; iLftRow--)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Get left arg index
@@ -785,7 +785,7 @@ RESTART_EXCEPTION:
                     for (; iLftRow >= 0; iLftRow--)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         // Get left arg index

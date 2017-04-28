@@ -1086,7 +1086,7 @@ RESTART_EXCEPTION:
                 for (iDim = uDimAxRht - 2, uPrv = uDimRht + iDim * uDimHi; iDim >= 0; iDim--, uPrv -= uDimHi)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
 ////////////////////// Calculate the index of the previous element in this vector (now done in the FOR stmt)
@@ -1180,7 +1180,7 @@ RESTART_EXCEPTION:
                 for (iDim = uDimAxRht - 2; iDim >= 0; iDim--)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Calculate the index of the previous element in this vector
@@ -2323,7 +2323,7 @@ RESTART_EXCEPTION:
                     for (iDim = aplIntegerLftAbs - 2; iDim >= 0; iDim--)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         // Calculate the index of the previous element in this vector
@@ -2393,7 +2393,7 @@ RESTART_EXCEPTION:
                     for (iDim = 1; iDim < aplIntegerLftAbs; iDim++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         // Calculate the index of the next element in this vector

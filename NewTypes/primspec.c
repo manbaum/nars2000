@@ -1751,7 +1751,7 @@ RESTART_EXCEPTION:
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Save in the result
@@ -1767,7 +1767,7 @@ RESTART_EXCEPTION:
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Save in the result
@@ -1783,7 +1783,7 @@ RESTART_EXCEPTION:
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Save in the result
@@ -1799,7 +1799,7 @@ RESTART_EXCEPTION:
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Save in the result
@@ -1812,7 +1812,7 @@ RESTART_EXCEPTION:
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRem; uRes++)
                         {
                             // Check for Ctrl-Break
-                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                            if (CheckCtrlBreak (lpbCtrlBreak))
                                 goto ERROR_EXIT;
 
                             // Save in the result
@@ -1835,7 +1835,7 @@ RESTART_EXCEPTION:
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
                         {
                             // Check for Ctrl-Break
-                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                            if (CheckCtrlBreak (lpbCtrlBreak))
                                 goto ERROR_EXIT;
 
                             // Save in the result
@@ -1877,7 +1877,7 @@ RESTART_EXCEPTION:
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Save in the result
@@ -1893,7 +1893,7 @@ RESTART_EXCEPTION:
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Save in the result
@@ -1909,7 +1909,7 @@ RESTART_EXCEPTION:
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Save in the result
@@ -1925,7 +1925,7 @@ RESTART_EXCEPTION:
                             for (uRes = 0; uRes < (APLNELMSIGN) aplNELMTmp; uRes++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Save in the result
@@ -1938,7 +1938,7 @@ RESTART_EXCEPTION:
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRem; uRes++)
                         {
                             // Check for Ctrl-Break
-                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                            if (CheckCtrlBreak (lpbCtrlBreak))
                                 goto ERROR_EXIT;
 
                             // Save in the result
@@ -1961,7 +1961,7 @@ RESTART_EXCEPTION:
                         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
                         {
                             // Check for Ctrl-Break
-                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                            if (CheckCtrlBreak (lpbCtrlBreak))
                                 goto ERROR_EXIT;
 
                             // Save in the result
@@ -1990,7 +1990,7 @@ RESTART_EXCEPTION:
                 for (uRes = 0; bRet && uRes < (APLNELMSIGN) aplNELMRht; uRes++, ((APLNESTED *) lpMemRht)++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     switch (GetPtrTypeInd (lpMemRht))
@@ -2166,7 +2166,7 @@ RESTART_EXCEPTION:
                 for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRht; uRes++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Check for NaNs
@@ -2995,7 +2995,7 @@ UBOOL PrimFnDydSimpNest_EM
                  bNaNRht;                   // ...          right ...
 
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // If the left arg is not immediate, get the next value
@@ -3460,7 +3460,7 @@ UBOOL PrimFnDydNestSimp_EM
                  bNaNRht;                   // ...          right ...
 
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // If the right arg is not immediate, get the next value
@@ -5728,7 +5728,7 @@ UBOOL PrimFnDydSimpSimp_EM
                    ((LPAPLB64) lpSymGlbRht) += bIncRht)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Save in the result
@@ -5748,7 +5748,7 @@ UBOOL PrimFnDydSimpSimp_EM
                    ((LPAPLB32) lpSymGlbRht) += bIncRht)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Save in the result
@@ -5768,7 +5768,7 @@ UBOOL PrimFnDydSimpSimp_EM
                    ((LPAPLB16) lpSymGlbRht) += bIncRht)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Save in the result
@@ -5788,7 +5788,7 @@ UBOOL PrimFnDydSimpSimp_EM
                    ((LPAPLB08) lpSymGlbRht) += bIncRht)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Save in the result
@@ -5801,7 +5801,7 @@ UBOOL PrimFnDydSimpSimp_EM
         for (uRes = 0; uRes < (APLNELMSIGN) aplNELMRem; uRes++)
         {
             // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
+            if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
 
             // Copy the left arg to the common datatype
@@ -5902,7 +5902,7 @@ RESTART_EXCEPTION:
                  uRes++, uLft += uLftInc, uRht += uRhtInc)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // If the axis is significant, ...

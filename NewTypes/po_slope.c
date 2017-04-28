@@ -883,7 +883,7 @@ RESTART_EXCEPTION:
                 for (uAx = 1; uAx < uDimAxRht; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Calculate the index of the next element in this vector
@@ -1255,7 +1255,7 @@ RESTART_EXCEPTION:
                 for (iDim = uAx - 1; iDim >= 0; iDim--)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Calculate the index of the previous element in this vector

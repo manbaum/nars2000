@@ -502,7 +502,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     if (!IsSingleton (aplNELMLft))
@@ -542,7 +542,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     if (!IsSingleton (aplNELMLft))
@@ -585,7 +585,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     if (!IsSingleton (aplNELMLft))
@@ -625,7 +625,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     if (!IsSingleton (aplNELMLft))
@@ -657,7 +657,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     if (!IsSingleton (aplNELMLft))
@@ -695,7 +695,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     if (!IsSingleton (aplNELMLft))
@@ -726,7 +726,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     if (!IsSingleton (aplNELMLft))
@@ -767,7 +767,7 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
                 for (uAcc = uAx = 0; uAx < aplNELMLft; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     if (!IsSingleton (aplNELMLft))

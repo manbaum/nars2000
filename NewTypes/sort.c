@@ -487,7 +487,7 @@ UBOOL sift_in
     for (i = 2 * free; i < uCount; i += i)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         if (data_i_LESS_THAN_ (lpDst[i + 1]))
@@ -503,7 +503,7 @@ UBOOL sift_in
         && data_i_LESS_THAN_ (next))
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
        MOVE_i_TO_free

@@ -146,7 +146,7 @@
 //#define nop()                           // Use already defined function
 //#define DbgNop()                        // Use already defined function
   #define YYCheckInuse(a)                 _YYCheckInuse (a, FNLN)
-  #define CheckCtrlBreak(a)               _CheckCtrlBreak(a)
+  #define CheckCtrlBreak(a)               _CheckCtrlBreak (a)
 //#define DisplayGlbVar(a,b)              DisplayGlbVar (a, b)
 #else
   #define YYAlloc()     _YYAlloc ()
@@ -184,7 +184,7 @@
   #define nop()                           {}    // Nothing
   #define DbgNop()                        {}    // Nothing
   #define YYCheckInuse(a)                 {}    // Nothing
-  #define CheckCtrlBreak(a)               (a)
+  #define CheckCtrlBreak(a)               (*a)
   #define DisplayGlbVar(a,b)
 
   #define dprintfWL0(a,...)

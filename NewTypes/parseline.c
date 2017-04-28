@@ -1495,7 +1495,7 @@ LPPL_YYSTYPE plRedGO_A
         UnVarStrand (lpplYYLstRht);
 
     // Check for Ctrl-Break
-    if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+    if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
         goto ERROR_EXIT;
     else
     {
@@ -1810,7 +1810,7 @@ LPPL_YYSTYPE plRedCSFN_CSIA
         goto SYNTAX_EXIT;
 
     // Handle FOR statement
-    if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+    if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
         lpplLocalVars->bRet = FALSE;
     else
     {
@@ -1912,7 +1912,7 @@ LPPL_YYSTYPE plRedA_IDX
             // Unstrand the result object if necessary
             UnVarStrand (lpYYRes);
 
-        if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+        if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
             lpYYRes2 = NULL;
         else
             lpYYRes2 = ArrayIndexRef_EM_YY (&lpYYRes->tkToken, &lpYYVar->tkToken);
@@ -2260,7 +2260,7 @@ LPPL_YYSTYPE plRedCS1_A
                 goto SYNTAX_EXIT;
 
             // Handle ANDIF/ELSEIF/IF/ORIF/UNTIL/WHILE statements
-            if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+            if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                 lpplLocalVars->bRet = FALSE;
             else
                 lpplLocalVars->bRet =
@@ -2280,7 +2280,7 @@ LPPL_YYSTYPE plRedCS1_A
 
         case TKT_CS_ASSERT:
             // Handle ASSERT statement
-            if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+            if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                 lpplLocalVars->bRet = FALSE;
             else
                 lpplLocalVars->bRet =
@@ -2301,7 +2301,7 @@ LPPL_YYSTYPE plRedCS1_A
         case TKT_CS_CASE:
         case TKT_CS_CASELIST:
             // Handle CASE/CASELIST statement
-            if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+            if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                 lpplLocalVars->bRet = FALSE;
             else
                 lpplLocalVars->bRet =
@@ -2322,7 +2322,7 @@ LPPL_YYSTYPE plRedCS1_A
 
         case TKT_CS_CONTINUEIF:
             // Handle CONTINUEIF statement
-            if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+            if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                 lpplLocalVars->bRet = FALSE;
             else
                 lpplLocalVars->bRet =
@@ -2350,7 +2350,7 @@ LPPL_YYSTYPE plRedCS1_A
 
         case TKT_CS_LEAVEIF:
             // Handle LEAVEIF statement
-            if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+            if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                 lpplLocalVars->bRet = FALSE;
             else
                 lpplLocalVars->bRet =
@@ -2374,7 +2374,7 @@ LPPL_YYSTYPE plRedCS1_A
                 goto SYNTAX_EXIT;
 
             // Handle SELECT statement
-            if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+            if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                 lpplLocalVars->bRet = FALSE;
             else
                 lpplLocalVars->bRet =
@@ -3254,7 +3254,7 @@ LPPL_YYSTYPE plRedIO_SPA
 
     // Mark as NOT already displayed
     lpplYYLstRht->tkToken.tkFlags.NoDisplay = FALSE;
-    if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+    if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
         lpplLocalVars->bRet = FALSE;
     else
         lpplLocalVars->bRet =
@@ -3528,7 +3528,7 @@ LPPL_YYSTYPE plRedNAM_ISPA
     if (lpplYYLstRht->lpplYYIdxCurry->lpplYYIdxCurry NE NULL)
         goto NONCE_EXIT;
 
-    if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+    if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
         bRet = FALSE;
     else
     // If the left fcn is present (select spec as in NAM[A] F {is} A), ...
@@ -3623,7 +3623,7 @@ LPPL_YYSTYPE plRedNAM_SPCom
     {
         Assert (!lpplYYCurObj->YYStranding && !lpplYYLstRht->lpplYYFcnCurry->YYStranding);
 
-        if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+        if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
             lpYYRes = NULL;
         else
             lpYYRes =
@@ -7343,7 +7343,7 @@ LPPL_YYSTYPE ExecuteCS0
     {
         case TKT_CS_CONTINUE:
             // Handle CONTINUE statement
-            if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+            if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                 lpplLocalVars->bRet = FALSE;
             else
                 lpplLocalVars->bRet =
@@ -7366,7 +7366,7 @@ LPPL_YYSTYPE ExecuteCS0
 
         case TKT_CS_ELSE:
             // Handle ELSE statement
-            if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+            if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                 lpplLocalVars->bRet = FALSE;
             else
                 lpplLocalVars->bRet =
@@ -7390,7 +7390,7 @@ LPPL_YYSTYPE ExecuteCS0
         case TKT_CS_ENDFOR:
         case TKT_CS_ENDFORLCL:
             // Handle ENDFOR statement
-            if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+            if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                 lpplLocalVars->bRet = FALSE;
             else
                 lpplLocalVars->bRet =
@@ -7413,7 +7413,7 @@ LPPL_YYSTYPE ExecuteCS0
 
         case TKT_CS_ENDREPEAT:
             // Handle ENDREPEAT statement
-            if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+            if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                 lpplLocalVars->bRet = FALSE;
             else
                 lpplLocalVars->bRet =
@@ -7436,7 +7436,7 @@ LPPL_YYSTYPE ExecuteCS0
 
         case TKT_CS_ENDWHILE:
             // Handle ENDWHILE statement
-            if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+            if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                 lpplLocalVars->bRet = FALSE;
             else
                 lpplLocalVars->bRet =
@@ -7459,7 +7459,7 @@ LPPL_YYSTYPE ExecuteCS0
 
         case TKT_CS_LEAVE:
             // Handle LEAVE statement
-            if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+            if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                 lpplLocalVars->bRet = FALSE;
             else
                 lpplLocalVars->bRet =
@@ -7505,7 +7505,7 @@ LPPL_YYSTYPE ExecuteCS0
 
         case TKT_CS_SKIPCASE:
             // Handle SKIPCASE statement
-            if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+            if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                 lpplLocalVars->bRet = FALSE;
             else
                 lpplLocalVars->bRet =
@@ -7528,7 +7528,7 @@ LPPL_YYSTYPE ExecuteCS0
 
         case TKT_CS_SKIPEND:
             // Handle SKIPEND statement
-            if (CheckCtrlBreak (lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+            if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
                 lpplLocalVars->bRet = FALSE;
             else
                 lpplLocalVars->bRet =

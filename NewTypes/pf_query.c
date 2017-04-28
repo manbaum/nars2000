@@ -869,7 +869,7 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
         for (uLft = 0; uLft < aplIntegerLft; uLft++)
         {
             // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
+            if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
 
             // Calculate the next QuadRL
@@ -901,7 +901,7 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
         for (uLft = 0; uLft < aplIntegerLft; uLft++)    // :for I :in ({iota} L) - {quad}IO
         {
             // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
+            if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
                                                         // J {is} I + (?R - I) - {quad}IO
             // Calculate the next QuadRL

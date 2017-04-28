@@ -617,7 +617,7 @@ UBOOL LftShoeGlbCom_EM
     for (uSub = 0; uSub < uNELM; uSub++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpComVars->lpbCtrlBreak))
+        if (CheckCtrlBreak (lpComVars->lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Use the index in lpMemOdo to calculate the

@@ -1406,7 +1406,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
         HGLOBAL    lpSymGlbLst;             // Ptr to global numeric
 
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Get the next index from the list arg

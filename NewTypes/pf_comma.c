@@ -1057,7 +1057,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                     UINT uBitMask;
 
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Use the index in lpMemOdo to calculate the
@@ -1102,7 +1102,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
                 for (uRes = 0; uRes < aplNELMRht; uRes++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Use the index in lpMemOdo to calculate the
@@ -1917,7 +1917,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                     for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         *((LPAPLBOOL) lpMemRes) |= (APLBOOL) (aplIntegerLft << uBitIndexRes);
@@ -1937,7 +1937,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                     for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         if (IsSimpleAPA (aplTypeLft))
@@ -1972,7 +1972,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                     for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         *((LPAPLBOOL) lpMemRes) |= (APLBOOL) (aplIntegerRht << uBitIndexRes);
@@ -1992,7 +1992,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                     for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         if (IsSimpleAPA (aplTypeRht))
@@ -2115,7 +2115,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbLft);
@@ -2125,7 +2125,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 aplVal = (uBitMaskLft & *((LPAPLBOOL) lpMemLft)) ? TRUE : FALSE;
@@ -2155,7 +2155,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbLft);
@@ -2165,7 +2165,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 aplVal = *((LPAPLINT) lpMemLft)++;
@@ -2186,7 +2186,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbLft);
@@ -2196,7 +2196,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 aplVal = *((LPAPLINT) lpMemLft)++;
@@ -2217,7 +2217,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbLft);
@@ -2227,7 +2227,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 aplVal = *((LPAPLCHAR) lpMemLft)++;
@@ -2246,7 +2246,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                         {
                             // Check for Ctrl-Break
-                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                            if (CheckCtrlBreak (lpbCtrlBreak))
                                 goto ERROR_EXIT;
 
                             aplVal = apaOffLft + apaMulLft * uEndLft++;
@@ -2269,7 +2269,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbLft);
@@ -2279,7 +2279,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (*((LPAPLNESTED) lpMemLft)++);
@@ -2311,7 +2311,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++)
                         {
                             // Check for Ctrl-Break
-                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                            if (CheckCtrlBreak (lpbCtrlBreak))
                                 goto ERROR_EXIT;
 
                             *((LPAPLNESTED) lpMemRes)++ =
@@ -2343,7 +2343,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbRht);
@@ -2353,7 +2353,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 aplVal = (uBitMaskRht & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE;
@@ -2384,7 +2384,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbRht);
@@ -2394,7 +2394,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 aplVal = *((LPAPLINT) lpMemRht)++;
@@ -2415,7 +2415,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbRht);
@@ -2425,7 +2425,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 aplVal = *((LPAPLINT) lpMemRht)++;
@@ -2446,7 +2446,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbRht);
@@ -2456,7 +2456,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 aplVal = *((LPAPLCHAR) lpMemRht)++;
@@ -2475,7 +2475,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                         {
                             // Check for Ctrl-Break
-                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                            if (CheckCtrlBreak (lpbCtrlBreak))
                                 goto ERROR_EXIT;
 
                             aplVal = apaOffRht + apaMulRht * uEndRht++;
@@ -2498,7 +2498,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (lpSymGlbRht);
@@ -2508,7 +2508,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                             for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (*((LPAPLNESTED) lpMemRht)++);
@@ -2540,7 +2540,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                         for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++)
                         {
                             // Check for Ctrl-Break
-                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                            if (CheckCtrlBreak (lpbCtrlBreak))
                                 goto ERROR_EXIT;
 
                             *((LPAPLNESTED) lpMemRes)++ =
@@ -2599,7 +2599,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                 for (uEnd = 0; uEnd < aplDimLftEnd; uEnd++, uRes++, uLft++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // If the left arg is not a scalar, ...
@@ -2620,7 +2620,7 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
                 for (uEnd = 0; uEnd < aplDimRhtEnd; uEnd++, uRes++, uRht++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // If the right arg is not a scalar, ...

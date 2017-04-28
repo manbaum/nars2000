@@ -559,7 +559,7 @@ UBOOL DisplayGlbArr_EM
         } // End SWITCH
 
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Propagate the row & col count up the line
@@ -662,7 +662,7 @@ UBOOL DisplayGlbArr_EM
         } // End SWITCH
 
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // If we didn't use raw output in the
@@ -773,7 +773,7 @@ UBOOL DisplayGlbArr_EM
                         wcCur = *lpwszNxt++;
 
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         // Split cases based upon the character
@@ -4524,7 +4524,7 @@ UBOOL DisplayGlbVector
             while (aplDimNCols)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Copy the chars to temp storage
@@ -4533,7 +4533,7 @@ UBOOL DisplayGlbVector
                      uCnt++, ((LPAPLCHAR) lpMemArr)++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Check for Terminal Control chars
@@ -4638,7 +4638,7 @@ UBOOL DisplayGlbVector
                 while (uCopyLen < ((lpaplCharNxt - 1) - lpaplCharIni))
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // If this is the first item on the line, ...
@@ -4689,7 +4689,7 @@ UBOOL DisplayGlbVector
                 lpaplChar = lpaplCharNxt;
 
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
             } // End FOR
 

@@ -659,7 +659,7 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
     for (iLft = 0; iLft < (APLINT) aplNELMLft; iLft++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Call common routine
@@ -1330,7 +1330,7 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
         for (iRht = 0; iRht < (APLINT) aplNELMRht; iRht++)
         {
             // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
+            if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
 
             // Fill the result with NotFound
@@ -1346,7 +1346,7 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
     for (iRht = 0; iRht < (APLINT) aplNELMRht; iRht++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Call common routine
@@ -1957,7 +1957,7 @@ LPPL_YYSTYPE PrimFnDydMM_EM_YY
                                 lpMemGupRht,    // Ptr to right arg grade-up global memory
                                 lpbCtrlBreak);  // Ptr to Ctrl-Break flag
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
     } // End IF/ELSE
 
@@ -2040,7 +2040,7 @@ APLBOOL PrimFnDydMM_IvI
     for (uRes = 0; uRes < aplNELMLft; uRes++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Get the next integer from the left arg
@@ -2086,7 +2086,7 @@ APLBOOL PrimFnDydMM_NvN
     for (uRes = 0; uRes < aplNELMLft; uRes++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Get the next float from the left arg
@@ -2130,7 +2130,7 @@ APLBOOL PrimFnDydMM_CvC
     for (uRes = 0; uRes < aplNELMLft; uRes++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         if (lpMemLft[lpMemGupLft[uRes].Index] NE lpMemRht[lpMemGupRht[uRes].Index])

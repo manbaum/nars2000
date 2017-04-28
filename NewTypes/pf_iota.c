@@ -278,7 +278,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
                 for (iRes = bQuadIO; iRes < iLim; iRes++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Initialize and save the value
@@ -289,7 +289,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
                 for (iRes = bQuadIO; iRes < iLim; iRes++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Initialize and save the value
@@ -306,7 +306,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
                 for (iRes = bQuadIO; iRes < iLim; iRes++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Initialize and save the value
@@ -317,7 +317,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
                 for (iRes = bQuadIO; iRes < iLim; iRes++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Initialize and save the value
@@ -949,7 +949,7 @@ UBOOL PrimFnDydIotaBvB_EM
     for (Found[uBit] = FALSE, Index[uBit] = bQuadIO, uLft = 0; uLft < (BytesInLftBits - 1); uLft++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Get the index of the next occurrence of uBit
@@ -995,7 +995,7 @@ UBOOL PrimFnDydIotaBvB_EM
     for (uRht = 0; uRht < aplNELMRht; uRht++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Save the appropriate value in the result
@@ -1081,7 +1081,7 @@ UBOOL PrimFnDydIotaBvN_EM
     for (Found[uBit] = FALSE, Index[uBit] = bQuadIO, uLft = 0; uLft < (BytesInLftBits - 1); uLft++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Get the index of the next occurrence of uBit
@@ -1134,7 +1134,7 @@ UBOOL PrimFnDydIotaBvN_EM
     for (uRht = 0; uRht < aplNELMRht; uRht++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Split cases based upon the right arg storage type
@@ -1270,7 +1270,7 @@ UBOOL PrimFnDydIotaAvN_EM
     for (iRht = 0; iRht < (APLINT) aplNELMRht; iRht++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Attempt to convert the right arg to the common storage type using []CT
@@ -1393,7 +1393,7 @@ UBOOL PrimFnDydIotaPvN_EM
     for (uRht = 0; uRht < aplNELMRht; uRht++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Attempt to convert the HCxy to an APLINT
@@ -1496,7 +1496,7 @@ UBOOL PrimFnDydIotaCvC_EM
     for (uRht = 0; uRht < aplNELMRht; uRht++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Save the index from the TT in the result
@@ -1660,7 +1660,7 @@ UBOOL PrimFnDydIotaNvN_EM
     for (iRht = 0; iRht < (APLINT) aplNELMRht; iRht++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Convert the right arg item to the common storage type
@@ -1961,7 +1961,7 @@ UBOOL PrimFnDydIotaHeNe_EM
     for (iRht = 0; iRht < (APLINT) aplNELMRht; iRht++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Convert the right arg item to the common storage type
@@ -2204,7 +2204,7 @@ UBOOL PrimFnDydIotaOther_EM
         for (uLft = 0; uLft < aplNELMLft; uLft++)
         {
             // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
+            if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
 
             // Get the next value from the left arg

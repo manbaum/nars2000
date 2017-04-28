@@ -562,7 +562,7 @@ UBOOL mpz_next_prime
 
     while (!mpz_likely_prime_p (mpzRes, lpMemPTD->randState, 0))
     {
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         mpz_add_ui (mpzRes, mpzRes, 2);
@@ -595,7 +595,7 @@ UBOOL mpz_prev_prime
 
     while (!mpz_likely_prime_p (mpzRes, lpMemPTD->randState, 0))
     {
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         mpz_sub_ui (mpzRes, mpzRes, 2);

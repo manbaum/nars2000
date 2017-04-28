@@ -78,7 +78,7 @@ void BreakMessage
             lpMemName = MyGlobalLockWsz (lpSISCur->hGlbFcnName);
 
 ////////////// Copy the leading text
-////////////strcpyW (lpMemPTD->lpwszTemp, ERRMSG_ELLIPSIS WS_CR);
+////////////strcpyW (lpMemPTD->lpwszTemp, ERRMSG_INTERRUPT WS_CR);
 ////////////
 ////////////// Calculate the length so far
 ////////////aplNELMRes = lstrlenW (lpMemPTD->lpwszTemp);
@@ -99,8 +99,8 @@ void BreakMessage
         } // End IF
     } else
     {
-        // Prepend an ellipsis
-        lpMemPTD->lpwszErrorMessage = ERRMSG_ELLIPSIS;
+        // Prepend a message
+        lpMemPTD->lpwszErrorMessage = ERRMSG_INTERRUPT;
 
         // Calculate length of error message text
         aplNELMRes = lstrlenW (lpMemPTD->lpwszErrorMessage);

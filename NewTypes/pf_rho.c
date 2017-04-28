@@ -771,7 +771,7 @@ UBOOL PrimFnDydRhoRhtCopyData
                     for (uRes = 0; uRes < uNELM; uRes++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         *((LPAPLBOOL) lpMemRes)++ = aplBool;
@@ -796,7 +796,7 @@ UBOOL PrimFnDydRhoRhtCopyData
                     for (uRes = 0; uRes < aplNELMRes; uRes++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         *((LPAPLINT) lpMemRes)++ = aplInt;
@@ -817,7 +817,7 @@ UBOOL PrimFnDydRhoRhtCopyData
                     for (uRes = 0; bRet && uRes < aplNELMRes; uRes++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         *((LPAPLFLOAT) lpMemRes)++ = aplFloat;
@@ -838,7 +838,7 @@ UBOOL PrimFnDydRhoRhtCopyData
                     for (uRes = 0; uRes < aplNELMRes; uRes++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         *((LPAPLCHAR) lpMemRes)++ = aplChar;
@@ -878,7 +878,7 @@ UBOOL PrimFnDydRhoRhtCopyData
                     for (uRes = 0; uRes < uNELM; uRes++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         *((LPAPLBOOL) lpMemRes)++ = aplBool;
@@ -903,7 +903,7 @@ UBOOL PrimFnDydRhoRhtCopyData
                     for (uRes = 0; uRes < aplNELMRes; uRes++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         *((LPAPLINT) lpMemRes)++ = aplInt;
@@ -924,7 +924,7 @@ UBOOL PrimFnDydRhoRhtCopyData
                     for (uRes = 0; bRet && uRes < aplNELMRes; uRes++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         *((LPAPLFLOAT) lpMemRes)++ = aplFloat;
@@ -945,7 +945,7 @@ UBOOL PrimFnDydRhoRhtCopyData
                     for (uRes = 0; uRes < aplNELMRes; uRes++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         *((LPAPLCHAR) lpMemRes)++ = aplChar;
@@ -2040,7 +2040,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Check to see if we should start over again
@@ -2082,7 +2082,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Check to see if we should start the right arg's
@@ -2103,7 +2103,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Check to see if we should start the right arg's
@@ -2124,7 +2124,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Check to see if we should start the right arg's
@@ -2148,7 +2148,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             for (uRes = uRht = 0; bRet && uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Check to see if we should start the right arg's
@@ -2222,7 +2222,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
                 for (apaLen = uRes = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, apaLen++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Check to see if we should start the right arg's
@@ -2242,7 +2242,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Check to see if we should start the right arg's
@@ -2263,7 +2263,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Check to see if we should start the right arg's
@@ -2284,7 +2284,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Check to see if we should start the right arg's
@@ -2305,7 +2305,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Check to see if we should start the right arg's
@@ -2326,7 +2326,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Check to see if we should start the right arg's
@@ -2349,7 +2349,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Check to see if we should start the right arg's
@@ -2372,7 +2372,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Check to see if we should start the right arg's
@@ -2393,7 +2393,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Check to see if we should start the right arg's
@@ -2414,7 +2414,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Check to see if we should start the right arg's
@@ -2437,7 +2437,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Check to see if we should start the right arg's
@@ -2460,7 +2460,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Check to see if we should start the right arg's
@@ -2481,7 +2481,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Check to see if we should start the right arg's
@@ -2502,7 +2502,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Check to see if we should start the right arg's
@@ -2525,7 +2525,7 @@ UBOOL PrimFnDydRhoRhtGlbCopyData_EM
             for (uRes = uRht = 0; uRes < (APLNELMSIGN) aplNELMRes; uRes++, uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Check to see if we should start the right arg's

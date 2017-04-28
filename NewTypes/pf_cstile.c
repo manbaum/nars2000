@@ -474,7 +474,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                 for (uAx = 0; uAx < uDimAx; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     uRes = uDim +                 uAx  * uDimHi;
@@ -500,7 +500,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                 for (uAx = 0; uAx < uDimAx; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Loop through all of the parts
@@ -524,7 +524,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                 for (uAx = 0; uAx < uDimAx; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Loop through all of the parts
@@ -545,7 +545,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                 for (uAx = 0; uAx < uDimAx; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     ((LPAPLCHAR) lpMemRes)[uDim +                 uAx  * uDimHi] =
@@ -578,7 +578,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                 for (uAx = 0; uAx < uDimAx; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     ((LPAPLINT) lpMemRes)[uDim +                 uAx  * uDimHi] =
@@ -598,7 +598,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                 for (uAx = 0; uAx < uDimAx; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     ((LPAPLNESTED) lpMemRes)[uDim +                 uAx  * uDimHi] = CopySymGlbDir_PTB
@@ -620,7 +620,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                 for (uAx = 0; uAx < uDimAx; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Loop through all of the parts
@@ -644,7 +644,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
                 for (uAx = 0; uAx < uDimAx; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Loop through all of the parts
@@ -1031,7 +1031,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                 for (uAx = 0; uAx < uDimAx; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     uRes = uDim +                  uAx           * uDimHi;
@@ -1061,7 +1061,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                 for (uAx = 0; uAx < uDimAx; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Loop through all of the parts
@@ -1089,7 +1089,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                 for (uAx = 0; uAx < uDimAx; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Loop through all of the parts
@@ -1114,7 +1114,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                 for (uAx = 0; uAx < uDimAx; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     ((LPAPLCHAR) lpMemRes)[uDim +                  uAx           * uDimHi] =
@@ -1142,7 +1142,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                 for (uAx = 0; uAx < uDimAx; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     ((LPAPLINT) lpMemRes)[uDim +                  uAx           * uDimHi] =
@@ -1166,7 +1166,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                 for (uAx = 0; uAx < uDimAx; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     ((LPAPLNESTED) lpMemRes)[uDim +                  uAx           * uDimHi] = CopySymGlbDir_PTB
@@ -1192,7 +1192,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                 for (uAx = 0; uAx < uDimAx; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Loop through all of the parts
@@ -1220,7 +1220,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
                 for (uAx = 0; uAx < uDimAx; uAx++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Loop through all of the parts

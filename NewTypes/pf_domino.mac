@@ -70,7 +70,7 @@
     for (uCol = 0; uCol < uNumColsRht; uCol++)                                                                  \
     {                                                                                                           \
         /* Check for Ctrl-Break                                                                               */\
-        if (CheckCtrlBreak (*lpbCtrlBreak))                                                                     \
+        if (CheckCtrlBreak (lpbCtrlBreak))                                                                      \
             goto ERROR_EXIT##N##;                                                                               \
                                                                                                                 \
         /* Loop through the rows of lpMemRht[uNumInds{drop}lpMemInd;]                                         */\
@@ -113,7 +113,7 @@
         if (uInd NE uRow)                                                                                       \
         {                                                                                                       \
             /* Check for Ctrl-Break                                                                           */\
-            if (CheckCtrlBreak (*lpbCtrlBreak))                                                                 \
+            if (CheckCtrlBreak (lpbCtrlBreak))                                                                  \
                 goto ERROR_EXIT##N##;                                                                           \
                                                                                                                 \
             /* Get the coefficient to zero                                                                    */\

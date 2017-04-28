@@ -1249,7 +1249,7 @@ void PrimFnDydQuoteDotFisIvI
                  II++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     break;
 
                 TI2 = imul64 (ZI, II + TI, &bRet, EXCEPTION_RESULT_FLOAT);
@@ -1412,7 +1412,7 @@ void PrimFnDydQuoteDotFisFvF
                      IF++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         break;
 
                     ZF = (ZF * (IF + TF)) / IF;

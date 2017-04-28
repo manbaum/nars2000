@@ -265,7 +265,7 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
     Assert (aplNELMRes EQ mpz_get_sx (&aplMPIRes));
 
     // Check for Ctrl-Break
-    if (CheckCtrlBreak (*lpbCtrlBreak))
+    if (CheckCtrlBreak (lpbCtrlBreak))
         goto ERROR_EXIT;
 
     // Calculate space needed for the result
@@ -1004,7 +1004,7 @@ APLMPI PrimFnPiCommon
          uRes++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Initialize the prime
@@ -1062,7 +1062,7 @@ APLMPI PrimFnPiCommon
     while (mpz_cmp_ui (mpzRht, 1) > 0)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Try to factor aplIntegerRht using various methods
@@ -1305,7 +1305,7 @@ APLMPI PrimeFactor
             uVal = MySqufof (&mpzRes, lpProcPrime->lpbCtrlBreak);
 
             // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpProcPrime->lpbCtrlBreak))
+            if (CheckCtrlBreak (lpProcPrime->lpbCtrlBreak))
                 goto BREAK_EXIT;
 
             switch (uVal)
@@ -1339,7 +1339,7 @@ APLMPI PrimeFactor
                     } // End IF -- MUST use braces as dprintfWLx is empty for non-DEBUG
 
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpProcPrime->lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpProcPrime->lpbCtrlBreak))
                         goto BREAK_EXIT;
 
                     break;
@@ -1381,7 +1381,7 @@ APLMPI PrimeFactor
         } // End IF
 
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpProcPrime->lpbCtrlBreak))
+        if (CheckCtrlBreak (lpProcPrime->lpbCtrlBreak))
             goto BREAK_EXIT;
 
         if (uVal)
@@ -1467,7 +1467,7 @@ APLMPI PrimeFactor
     iVal = ecm_factor (&mpzFactor1, &mpzRes, dB1, ecmParams);                                                   \
                                                                                                                 \
     /* Check for Ctrl-Break */                                                                                  \
-    if (CheckCtrlBreak (*lpProcPrime->lpbCtrlBreak))                                                            \
+    if (CheckCtrlBreak (lpProcPrime->lpbCtrlBreak))                                                            \
         goto BREAK_EXIT;                                                                                        \
                                                                                                                 \
     /* If there was an error, ... */                                                                            \
@@ -1860,7 +1860,7 @@ UBOOL NthPrime
         while (mpz_cmp (&mpzArg, &mpzLow) > 0)
         {
             // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
+            if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
 
             // Increment the count
@@ -1879,7 +1879,7 @@ UBOOL NthPrime
         while (mpz_cmp (&mpzArg, &mpzUpp) < 0)
         {
             // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
+            if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
 
             // Decrement the count
@@ -1965,7 +1965,7 @@ APLMPI PrimFnPiNthPrime
                        uCnt))
             goto NORMAL_EXIT2;
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
     } // End IF
 
@@ -1991,7 +1991,7 @@ APLMPI PrimFnPiNthPrime
                        -1))
             goto NORMAL_EXIT;
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
     } else
     {
@@ -2018,7 +2018,7 @@ APLMPI PrimFnPiNthPrime
                            -1))
                 goto NORMAL_EXIT;
             // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
+            if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
         } else
         {
@@ -2215,7 +2215,7 @@ UBOOL NumPrimes
         while (mpz_cmp (&mpzDif, &mpzLow) > 0)
         {
             // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
+            if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
 
             // Increment the count
@@ -2234,7 +2234,7 @@ UBOOL NumPrimes
         while (mpz_cmp (&mpzDif, &mpzUpp) < 0)
         {
             // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
+            if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
 
             // Decrement the count

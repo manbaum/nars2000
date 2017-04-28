@@ -637,7 +637,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         for (uRht = 0; uRht < aplNELMRht; uRht++)
                         {
                             // Check for Ctrl-Break
-                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                            if (CheckCtrlBreak (lpbCtrlBreak))
                                 goto ERROR_EXIT;
 
                             *(*(LPAPLBOOL *) lplpMemRes) |= ((uBitMask & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE) << *lpuBitIndex;
@@ -668,7 +668,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         // Split cases based upon the ptr type
@@ -754,7 +754,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         // Split cases based upon the ptr type
@@ -817,7 +817,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         aplVal = (uBitMask & *((LPAPLBOOL) lpMemRht)) ? TRUE : FALSE;
@@ -846,7 +846,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         aplVal = *((LPAPLINT) lpMemRht)++;
@@ -866,7 +866,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         aplVal = *(LPAPLLONGEST) ((LPAPLFLOAT) lpMemRht)++;
@@ -886,7 +886,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         aplVal = apaOffRht + apaMulRht * uRht;
@@ -906,7 +906,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     for (uRht = 0; uRht < aplNELMRht; uRht++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         aplVal = *((LPAPLCHAR) lpMemRht)++;
@@ -941,7 +941,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         // Split cases based upon the ptr type
@@ -1028,7 +1028,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                     for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLRAT) lpMemRht)++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         *(*(LPAPLHETERO *) lplpMemRes)++ =
@@ -1072,7 +1072,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Split cases based upon the right arg storage type
@@ -1115,7 +1115,7 @@ UBOOL PrimFnMonEpsilonGlbCopy_EM
                         for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLNESTED) lpMemRht)++)
                         {
                             // Check for Ctrl-Break
-                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                            if (CheckCtrlBreak (lpbCtrlBreak))
                                 goto ERROR_EXIT;
 
                             // Split cases based upon the ptr type
@@ -1541,7 +1541,7 @@ UBOOL PrimFnDydEpsilonBvB
     for (Found[uBit] = FALSE, uRht = 0; uRht < (BytesInRhtBits - 1); uRht++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         if (FastBoolTrans[lpMemRht[uRht]][fbtFirst[uBit]] < NBIB)
@@ -1573,7 +1573,7 @@ UBOOL PrimFnDydEpsilonBvB
         for (uLft = 0; uLft < (BytesInLftBits - 1); uLft++)
         {
             // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
+            if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
 
             *lpMemRes++ = ~*lpMemLft++;
@@ -1646,7 +1646,7 @@ UBOOL PrimFnDydEpsilonNvB
     for (Found[uBit] = FALSE, uRht = 0; uRht < (BytesInRhtBits - 1); uRht++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         if (FastBoolTrans[lpMemRht[uRht]][fbtFirst[uBit]] < NBIB)
@@ -1681,7 +1681,7 @@ UBOOL PrimFnDydEpsilonNvB
     for (uLft = 0; uLft < aplNELMLft; uLft++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Attempt to convert the current item from the left arg to a BOOL
@@ -1762,7 +1762,7 @@ UBOOL PrimFnDydEpsilonNvA_EM
     for (iLft = 0; iLft < (APLINT) aplNELMLft; iLft++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Split cases based upon the left arg storage type
@@ -1870,7 +1870,7 @@ UBOOL PrimFnDydEpsilonNvP_EM
     for (uLft = 0; uLft < aplNELMLft; uLft++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Split cases based upon the left arg storage type
@@ -1991,7 +1991,7 @@ UBOOL PrimFnDydEpsilonCvC_EM
     for (uRht = 0; uRht < aplNELMRht; uRht++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Get the APLCHAR from the right arg
@@ -2006,7 +2006,7 @@ UBOOL PrimFnDydEpsilonCvC_EM
     for (uLft = 0; uLft < aplNELMLft; uLft++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Get the APLCHAR from the left arg
@@ -2186,7 +2186,7 @@ UBOOL PrimFnDydEpsilonNvN_EM
         bRet = FALSE;
 
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 #ifdef GRADE2ND
         // Save the left arg value as the last one
@@ -2379,7 +2379,7 @@ UBOOL PrimFnDydEpsilonOther_EM
         for (uRht = 0; uRht < aplNELMRht; uRht++)
         {
             // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
+            if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
 
             // Initialize with something harmless

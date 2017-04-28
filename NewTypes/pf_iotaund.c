@@ -461,7 +461,7 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // If it's a one, ...
@@ -492,7 +492,7 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
         for (uRht = 0; uRht < aplNELMRht; uRht++)
         {
             // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
+            if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
 
             // Split cases based upon the right arg storage type
@@ -545,7 +545,7 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
                  uRht++, aplIntegerRep++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // If it's a one, ...
@@ -595,7 +595,7 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
             for (uRep = 0; uRep < uLen; uRep++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Save the value in the result

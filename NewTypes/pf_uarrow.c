@@ -685,7 +685,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     for (uRes = 0; uRes < aplNELMCom; uRes++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Use the index in lpMemOdoRht to calculate the
@@ -899,7 +899,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 if (((LPAPLNESTED) lpMemRes)[uRes] EQ NULL)
@@ -922,7 +922,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 if (((LPAPLNESTED) lpMemRes)[uRes] EQ NULL)
@@ -943,7 +943,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 if (IsMpqNULL (&((LPAPLRAT) lpMemRes)[uRes]))
@@ -958,7 +958,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 if (IsMpfNULL (&((LPAPLVFP) lpMemRes)[uRes]))
@@ -973,7 +973,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Loop through all of the parts
@@ -990,7 +990,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Loop through all of the parts
@@ -1007,7 +1007,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Loop through all of the parts
@@ -1024,7 +1024,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Loop through all of the parts
@@ -1041,7 +1041,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Loop through all of the parts
@@ -1058,7 +1058,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Loop through all of the parts

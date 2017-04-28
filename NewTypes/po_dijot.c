@@ -304,7 +304,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Split cases based the item ptr type

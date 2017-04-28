@@ -660,7 +660,7 @@ __try
 #undef  lpwszOut
 
     // Check for Ctrl-Break
-    if (CheckCtrlBreak (*lpbCtrlBreak))
+    if (CheckCtrlBreak (lpbCtrlBreak))
         goto ERROR_EXIT;
 NORMAL_EXIT:
     // Allocate a new YYRes
@@ -2907,7 +2907,7 @@ void AppendBlankRows
             break;
 
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             return;
 
         AppendLine (L"", FALSE, TRUE);
@@ -3264,7 +3264,7 @@ LPAPLCHAR FormatArrSimple
                     *lpwszOut = WC_EOS;
 
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         return NULL;
 
                     // If we're not already done with output for this row, ...
@@ -3489,7 +3489,7 @@ LPAPLCHAR FormatArrNested
                 } // End SWITCH
 
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     return NULL;
 
                 // Return the output string ptr

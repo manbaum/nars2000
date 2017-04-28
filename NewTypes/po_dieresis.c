@@ -638,7 +638,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Copy the value to the arg token
@@ -672,7 +672,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Copy the value to the arg token
@@ -696,7 +696,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Copy the value to the arg token
@@ -720,7 +720,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Copy the value to the arg token
@@ -749,7 +749,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Copy the value to the arg token
@@ -777,7 +777,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPAPLHETERO) lpMemRht)++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Split cases based upon the ptr type
@@ -832,7 +832,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Set the token & immediate type
@@ -871,7 +871,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Set the token & immediate type
@@ -921,7 +921,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Set the token & immediate type
@@ -1515,7 +1515,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     for (uRes = 0; uRes < aplNELMRes; uRes++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // If there's an axis, ...

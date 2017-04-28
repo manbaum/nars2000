@@ -583,7 +583,7 @@ RESTART_JOTDOT:
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Promote the right arg to the common type
@@ -792,7 +792,7 @@ RESTART_JOTDOT:
     for (uRht = 0; uRht < aplNELMRht; uRht++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // If the left arg is not immediate, get the next value
@@ -963,7 +963,7 @@ UBOOL PrimOpDydJotDotProto_EM
     UBOOL        bRet;                          // TRUE iff the result is valid
 
     // Check for Ctrl-Break
-    if (CheckCtrlBreak (*lpbCtrlBreak))
+    if (CheckCtrlBreak (lpbCtrlBreak))
         return FALSE;
 
     // Execute the right operand between the left & right prototypes

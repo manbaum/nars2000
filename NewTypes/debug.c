@@ -44,10 +44,10 @@ WNDPROC    lpfnOldListboxWndProc;   // Save area for old Listbox window proc
 //***************************************************************************
 
 UBOOL _CheckCtrlBreak
-    (UBOOL bCtrlBreak)
+    (LPUBOOL lpbCtrlBreak)
 
 {
-    if (bCtrlBreak)
+    if (*lpbCtrlBreak)
         return TRUE;
     else
         return FALSE;

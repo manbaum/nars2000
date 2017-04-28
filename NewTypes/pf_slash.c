@@ -669,7 +669,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         uRes = uDimRes + uAcc * uDimHi;
@@ -698,7 +698,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         ((LPAPLINT) lpMemRes)[uDimRes + uAcc * uDimHi] = aplIntegerRep;
@@ -725,7 +725,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         ((LPAPLFLOAT) lpMemRes)[uDimRes + uAcc * uDimHi] = aplFloatRep;
@@ -752,7 +752,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         ((LPAPLCHAR) lpMemRes)[uDimRes + uAcc * uDimHi] = aplCharRep;
@@ -784,7 +784,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         ((LPAPLINT) lpMemRes)[uDimRes + uAcc * uDimHi] = aplIntegerRep;
@@ -812,7 +812,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         ((LPAPLNESTED) lpMemRes)[uDimRes + uAcc * uDimHi] = CopySymGlbDir_PTB (aplNestRep);
@@ -845,7 +845,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         mpq_init_set (&((LPAPLRAT) lpMemRes)[uDimRes + uAcc * uDimHi], &atRep.aplRat);
@@ -878,7 +878,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         mpfr_init_copy (&((LPAPLVFP) lpMemRes)[uDimRes + uAcc * uDimHi], &atRep.aplVfp);
@@ -908,7 +908,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         ((LPAPLHC2I) lpMemRes)[uDimRes + uAcc * uDimHi] = atRep.aplHC2I;
@@ -938,7 +938,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         ((LPAPLHC4I) lpMemRes)[uDimRes + uAcc * uDimHi] = atRep.aplHC4I;
@@ -968,7 +968,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         ((LPAPLHC8I) lpMemRes)[uDimRes + uAcc * uDimHi] = atRep.aplHC8I;
@@ -998,7 +998,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         ((LPAPLHC2F) lpMemRes)[uDimRes + uAcc * uDimHi] = atRep.aplHC2F;
@@ -1028,7 +1028,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         ((LPAPLHC4F) lpMemRes)[uDimRes + uAcc * uDimHi] = atRep.aplHC4F;
@@ -1058,7 +1058,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         ((LPAPLHC8F) lpMemRes)[uDimRes + uAcc * uDimHi] = atRep.aplHC8F;
@@ -1095,7 +1095,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         // Loop through all of the parts
@@ -1135,7 +1135,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         // Loop through all of the parts
@@ -1175,7 +1175,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         // Loop through all of the parts
@@ -1217,7 +1217,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         // Loop through all of the parts
@@ -1259,7 +1259,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         // Loop through all of the parts
@@ -1301,7 +1301,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                     for (uRep = 0; uRep < uLen; uRep++, uAcc++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         // Loop through all of the parts

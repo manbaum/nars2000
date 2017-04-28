@@ -614,7 +614,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Use the index in lpMemOdo to calculate the
@@ -650,7 +650,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Use the index in lpMemOdo to calculate the
@@ -679,7 +679,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Use the index in lpMemOdo to calculate the
@@ -710,7 +710,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Use the index in lpMemOdo to calculate the
@@ -734,7 +734,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Use the index in lpMemOdo to calculate the
@@ -759,7 +759,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Use the index in lpMemOdo to calculate the
@@ -786,7 +786,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Use the index in lpMemOdo to calculate the
@@ -815,7 +815,7 @@ LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
             for (uRes = 0; uRes < aplNELMRes; uRes++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Use the index in lpMemOdo to calculate the

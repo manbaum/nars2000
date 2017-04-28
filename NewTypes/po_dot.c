@@ -694,7 +694,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
                             for (uCol = 0; uCol < aplNELMRht; uCol++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 lpGslMatrixU->data[uCol] = (uBitMask & *(LPAPLBOOL) lpMemRht) ? TRUE : FALSE;
@@ -717,7 +717,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
                             for (uCol = 0; uCol < aplNELMRht; uCol++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 lpGslMatrixU->data[uCol] = (APLFLOAT) ((LPAPLINT) lpMemRht)[uCol];
@@ -739,7 +739,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
 ////////////////////////////for (uCol = 0; uCol < aplNELMRht; uCol++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
-////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////    if (CheckCtrlBreak (lpbCtrlBreak))
 ////////////////////////////        goto ERROR_EXIT;
 ////////////////////////////
 ////////////////////////////    lpGslMatrixU->data[uCol] = ((LPAPLFLOAT) lpMemRht)[uCol];
@@ -757,7 +757,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
                             for (uCol = 0; uCol < aplNELMRht; uCol++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 lpGslMatrixU->data[uCol] = (APLFLOAT) (APLINT) (apaOffRht + apaMulRht * uCol);
@@ -1712,7 +1712,7 @@ UBOOL GaussJordanDetHC1R
     for (uRow = 0; uRow < aplDimRows; uRow++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Get the diagonal element to be used as a divisor
@@ -1726,7 +1726,7 @@ UBOOL GaussJordanDetHC1R
             for (uTmp = uRow + 1; uTmp < aplDimRows; uTmp++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Get the diagonal element to be used as a divisor (if non-zero)
@@ -1749,7 +1749,7 @@ UBOOL GaussJordanDetHC1R
             for (uCol = 0; uCol < aplDimRows; uCol++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Exchange the two rows <uTmp> and <uRow>
@@ -1769,7 +1769,7 @@ UBOOL GaussJordanDetHC1R
         for (uTmp = uRow + 1; uTmp < aplDimRows; uTmp++)
         {
             // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
+            if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
 
             // Divide the lpMemRht[uTmp][uRow] by the divisor
@@ -1840,7 +1840,7 @@ ERROR_EXIT:
     for (uRow = 0; uRow < aplDimRows; uRow++)                                                               \
     {                                                                                                       \
         /* Check for Ctrl-Break                                                                           */\
-        if (CheckCtrlBreak (*lpbCtrlBreak))                                                                 \
+        if (CheckCtrlBreak (lpbCtrlBreak))                                                                 \
             goto ERROR_EXIT##N;                                                                             \
                                                                                                             \
         /* Get the diagonal element to be used as a divisor                                               */\
@@ -1854,7 +1854,7 @@ ERROR_EXIT:
             for (uTmp = uRow + 1; uTmp < aplDimRows; uTmp++)                                                \
             {                                                                                               \
                 /* Check for Ctrl-Break                                                                   */\
-                if (CheckCtrlBreak (*lpbCtrlBreak))                                                         \
+                if (CheckCtrlBreak (lpbCtrlBreak))                                                         \
                     goto ERROR_EXIT##N;                                                                     \
                                                                                                             \
                 /* Get the diagonal element to be used as a divisor (if non-zero)                         */\
@@ -1877,7 +1877,7 @@ ERROR_EXIT:
             for (uCol = 0; uCol < aplDimRows; uCol++)                                                       \
             {                                                                                               \
                 /* Check for Ctrl-Break                                                                   */\
-                if (CheckCtrlBreak (*lpbCtrlBreak))                                                         \
+                if (CheckCtrlBreak (lpbCtrlBreak))                                                         \
                     goto ERROR_EXIT##N;                                                                     \
                                                                                                             \
                 /* Exchange the two rows <uTmp> and <uRow>                                                */\
@@ -1897,7 +1897,7 @@ ERROR_EXIT:
         for (uTmp = uRow + 1; uTmp < aplDimRows; uTmp++)                                                    \
         {                                                                                                   \
             /* Check for Ctrl-Break                                                                       */\
-            if (CheckCtrlBreak (*lpbCtrlBreak))                                                             \
+            if (CheckCtrlBreak (lpbCtrlBreak))                                                             \
                 goto ERROR_EXIT##N;                                                                         \
                                                                                                             \
             /* Divide the lpMemRht[uTmp][uRow] by the divisor                                             */\
@@ -2045,7 +2045,7 @@ UBOOL GaussJordanDetHCxF
     for (uRow = 0; uRow < aplDimRows; uRow++)                                                               \
     {                                                                                                       \
         /* Check for Ctrl-Break                                                                           */\
-        if (CheckCtrlBreak (*lpbCtrlBreak))                                                                 \
+        if (CheckCtrlBreak (lpbCtrlBreak))                                                                 \
             goto ERROR_EXIT##N;                                                                             \
                                                                                                             \
         /* Get the diagonal element to be used as a divisor                                               */\
@@ -2059,7 +2059,7 @@ UBOOL GaussJordanDetHCxF
             for (uTmp = uRow + 1; uTmp < aplDimRows; uTmp++)                                                \
             {                                                                                               \
                 /* Check for Ctrl-Break                                                                   */\
-                if (CheckCtrlBreak (*lpbCtrlBreak))                                                         \
+                if (CheckCtrlBreak (lpbCtrlBreak))                                                         \
                     goto ERROR_EXIT##N;                                                                     \
                                                                                                             \
                 /* Get the diagonal element to be used as a divisor (if non-zero)                         */\
@@ -2082,7 +2082,7 @@ UBOOL GaussJordanDetHCxF
             for (uCol = 0; uCol < aplDimRows; uCol++)                                                       \
             {                                                                                               \
                 /* Check for Ctrl-Break                                                                   */\
-                if (CheckCtrlBreak (*lpbCtrlBreak))                                                         \
+                if (CheckCtrlBreak (lpbCtrlBreak))                                                         \
                     goto ERROR_EXIT##N;                                                                     \
                                                                                                             \
                 /* Exchange the two rows <uTmp> and <uRow>                                                */\
@@ -2102,7 +2102,7 @@ UBOOL GaussJordanDetHCxF
         for (uTmp = uRow + 1; uTmp < aplDimRows; uTmp++)                                                    \
         {                                                                                                   \
             /* Check for Ctrl-Break                                                                       */\
-            if (CheckCtrlBreak (*lpbCtrlBreak))                                                             \
+            if (CheckCtrlBreak (lpbCtrlBreak))                                                             \
                 goto ERROR_EXIT##N;                                                                         \
                                                                                                             \
             /* Divide the lpMemRht[uTmp][uRow] by the divisor                                             */\
@@ -2275,7 +2275,7 @@ UBOOL GaussJordanDetHCxR
     for (uRow = 0; uRow < aplDimRows; uRow++)                                                               \
     {                                                                                                       \
         /* Check for Ctrl-Break                                                                           */\
-        if (CheckCtrlBreak (*lpbCtrlBreak))                                                                 \
+        if (CheckCtrlBreak (lpbCtrlBreak))                                                                 \
             goto ERROR_EXIT##N;                                                                             \
                                                                                                             \
         /* Get the diagonal element to be used as a divisor                                               */\
@@ -2289,7 +2289,7 @@ UBOOL GaussJordanDetHCxR
             for (uTmp = uRow + 1; uTmp < aplDimRows; uTmp++)                                                \
             {                                                                                               \
                 /* Check for Ctrl-Break                                                                   */\
-                if (CheckCtrlBreak (*lpbCtrlBreak))                                                         \
+                if (CheckCtrlBreak (lpbCtrlBreak))                                                         \
                     goto ERROR_EXIT##N;                                                                     \
                                                                                                             \
                 /* Get the diagonal element to be used as a divisor (if non-zero)                         */\
@@ -2312,7 +2312,7 @@ UBOOL GaussJordanDetHCxR
             for (uCol = 0; uCol < aplDimRows; uCol++)                                                       \
             {                                                                                               \
                 /* Check for Ctrl-Break                                                                   */\
-                if (CheckCtrlBreak (*lpbCtrlBreak))                                                         \
+                if (CheckCtrlBreak (lpbCtrlBreak))                                                         \
                     goto ERROR_EXIT##N;                                                                     \
                                                                                                             \
                 /* Exchange the two rows <uTmp> and <uRow>                                                */\
@@ -2332,7 +2332,7 @@ UBOOL GaussJordanDetHCxR
         for (uTmp = uRow + 1; uTmp < aplDimRows; uTmp++)                                                    \
         {                                                                                                   \
             /* Check for Ctrl-Break                                                                       */\
-            if (CheckCtrlBreak (*lpbCtrlBreak))                                                             \
+            if (CheckCtrlBreak (lpbCtrlBreak))                                                             \
                 goto ERROR_EXIT##N;                                                                         \
                                                                                                             \
             /* Divide the lpMemRht[uTmp][uRow] by the divisor                                             */\
@@ -3442,7 +3442,7 @@ RESTART_INNERPROD_RES:
             for (iInnMax = aplInnrMax - 1; iInnMax >= 0; iInnMax--)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 // Calc left inner index, taking into account scalar extension
@@ -3773,7 +3773,7 @@ RESTART_INNERPROD_RES:
         for (uOutRht = 0; uOutRht < aplRestRht; uOutRht++)
         {
             // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
+            if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
 
 ////////////// Calc result index -- unneeded as we compute the result in row major order

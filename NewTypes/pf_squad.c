@@ -1057,7 +1057,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
         IMM_TYPES  immTypeSub;
 
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Calc ptr to last of actual axes

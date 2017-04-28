@@ -267,7 +267,7 @@ APLINT PrimFnMonEqualUnderBarGlb_PTB
                 for (uRht = 0; uRht < aplNELMRht; uRht++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Split cases based upon the ptr type of the element
@@ -649,7 +649,7 @@ UBOOL PrimFnDydEqualUnderbarSimpleOrd
     for (uDim = 0; bRet && uDim < (APLINT) aplNELMLft; uDim++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Promote the left arg to the common type
@@ -940,7 +940,7 @@ UBOOL PrimFnDydEqualUnderbarNested
     for (uDim = 0; bRet && uDim < aplNELMLoop; uDim++, ((LPAPLNESTED) lpMemLft)++, ((LPAPLNESTED) lpMemRht)++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // The ptr types must be the same

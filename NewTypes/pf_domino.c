@@ -933,7 +933,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
             for (uCol = 0; uCol < aplNELMRht; uCol++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 lpGslMatrixU->data[uCol] = GetNextFloat (lpMemRht, aplTypeRht, uCol);
@@ -990,7 +990,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                 for (uCol = 0; uCol < uNumCols; uCol++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // If it's a NaN and we don't allow them, ...
@@ -1040,7 +1040,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                             for (uCol = 0; uCol < aplNELMRht; uCol++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Loop through all of the parts
@@ -1658,7 +1658,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
             for (uCol = 0; uCol < aplNELMRht; uCol++)
             {
                 // Check for Ctrl-Break
-                if (CheckCtrlBreak (*lpbCtrlBreak))
+                if (CheckCtrlBreak (lpbCtrlBreak))
                     goto ERROR_EXIT;
 
                 lpGslMatrixU->data[uCol] = GetNextFloat (lpMemRht, aplTypeRht, uCol);
@@ -1687,7 +1687,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                 for (uRow = 0; uRow < uNumRowsLft; uRow++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     lpGslVectorB->data[uRow] = GetNextFloat (lpMemLft, aplTypeLft, uRow * uNumColsLft + uCol);
@@ -1714,7 +1714,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                 for (uRow = 0; uRow < uNumRowsRes; uRow++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     lpMemData[uRow * uNumColsRes + uCol] = lpGslVectorX->data[uRow];
@@ -1766,7 +1766,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                             for (uCol = 0; uCol < aplNELMRht; uCol++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLHC2F) lpGslCMatrixU->data)[uCol].parts[0] = GetNextFloat (lpMemRht, aplTypeRht, uCol);
@@ -1779,7 +1779,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                             for (uCol = 0; uCol < aplNELMRht; uCol++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Loop through all of the parts
@@ -1844,7 +1844,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                         for (uRow = 0; uRow < uNumRowsLft; uRow++)
                         {
                             // Check for Ctrl-Break
-                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                            if (CheckCtrlBreak (lpbCtrlBreak))
                                 goto ERROR_EXIT;
 
                             // Copy the parts to the temp
@@ -1861,7 +1861,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                         for (uRow = 0; uRow < uNumRowsLft; uRow++)
                         {
                             // Check for Ctrl-Break
-                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                            if (CheckCtrlBreak (lpbCtrlBreak))
                                 goto ERROR_EXIT;
 
                             // Loop through all of the parts
@@ -1879,7 +1879,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                         for (uRow = 0; uRow < uNumRowsLft; uRow++)
                         {
                             // Check for Ctrl-Break
-                            if (CheckCtrlBreak (*lpbCtrlBreak))
+                            if (CheckCtrlBreak (lpbCtrlBreak))
                                 goto ERROR_EXIT;
 
                             // Loop through all of the parts
@@ -1912,7 +1912,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
                 for (uRow = 0; uRow < uNumRowsRes; uRow++)
                 {
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Loop through all of the parts

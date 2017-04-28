@@ -482,7 +482,7 @@ RESTART_EXCEPTION:
                     uInnRht;            // ...        right ...
 
             // Check for Ctrl-Break
-            if (CheckCtrlBreak (*lpbCtrlBreak))
+            if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
 
             // Calc left inner index, taking into account scalar extension

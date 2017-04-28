@@ -491,7 +491,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     for (aplNELMRes = 0, uRht = 0; uRht < aplNELMNstRht; uRht++)
     {
         // Check for Ctrl-Break
-        if (CheckCtrlBreak (*lpbCtrlBreak))
+        if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
         // Split cases based upon the ptr type of the item
@@ -690,7 +690,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
             {
                 case PTRTYPE_STCONST:   // Ignore (simple) scalar items
                     // Check for Ctrl-Break
-                    if (CheckCtrlBreak (*lpbCtrlBreak))
+                    if (CheckCtrlBreak (lpbCtrlBreak))
                         goto ERROR_EXIT;
 
                     // Split cases based upon the storage type of the result
@@ -898,7 +898,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
                                 // Get the index into the Boolean array
                                 aplIndex = (uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast);
@@ -916,7 +916,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 ////////////////////////////for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
-////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////    if (CheckCtrlBreak (lpbCtrlBreak))
 ////////////////////////////        goto ERROR_EXIT;
 ////////////////////////////
 ////////////////////////////    ((LPAPLBOOL)   lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -929,7 +929,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 ////////////////////////////for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
-////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////    if (CheckCtrlBreak (lpbCtrlBreak))
 ////////////////////////////        goto ERROR_EXIT;
 ////////////////////////////
 ////////////////////////////    ((LPAPLBOOL)   lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -947,7 +947,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLINT)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -963,7 +963,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 ////////////////////////////for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
-////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////    if (CheckCtrlBreak (lpbCtrlBreak))
 ////////////////////////////        goto ERROR_EXIT;
 ////////////////////////////
 ////////////////////////////    ((LPAPLINT)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -976,7 +976,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 ////////////////////////////for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
-////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////    if (CheckCtrlBreak (lpbCtrlBreak))
 ////////////////////////////        goto ERROR_EXIT;
 ////////////////////////////
 ////////////////////////////    ((LPAPLINT)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -994,7 +994,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLFLOAT)  lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -1010,7 +1010,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 ////////////////////////////for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
-////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////    if (CheckCtrlBreak (lpbCtrlBreak))
 ////////////////////////////        goto ERROR_EXIT;
 ////////////////////////////
 ////////////////////////////    ((LPAPLFLOAT)  lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -1023,7 +1023,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 ////////////////////////////for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
-////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////    if (CheckCtrlBreak (lpbCtrlBreak))
 ////////////////////////////        goto ERROR_EXIT;
 ////////////////////////////
 ////////////////////////////    ((LPAPLFLOAT)  lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -1039,7 +1039,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLCHAR)   lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -1052,7 +1052,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLCHAR)   lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -1065,7 +1065,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLCHAR)   lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -1081,7 +1081,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Convert this item to the target storage type
@@ -1104,7 +1104,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Initialize to 0/1
@@ -1117,7 +1117,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Initialize to 0/1
@@ -1133,7 +1133,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Convert this item to the target storage type
@@ -1156,7 +1156,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 mpfr_init0   (&((LPAPLVFP)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)]);
@@ -1168,7 +1168,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 mpfr_init0   (&((LPAPLVFP)    lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)]);
@@ -1183,7 +1183,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Convert this item to the target storage type
@@ -1209,7 +1209,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 ////////////////////////////for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
-////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////    if (CheckCtrlBreak (lpbCtrlBreak))
 ////////////////////////////        goto ERROR_EXIT;
 ////////////////////////////
 ////////////////////////////    // Loop through all of the parts
@@ -1223,7 +1223,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 ////////////////////////////for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
-////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////    if (CheckCtrlBreak (lpbCtrlBreak))
 ////////////////////////////        goto ERROR_EXIT;
 ////////////////////////////
 ////////////////////////////    // Loop through all of the parts
@@ -1240,7 +1240,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Convert this item to the target storage type
@@ -1266,7 +1266,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 ////////////////////////////for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
-////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////    if (CheckCtrlBreak (lpbCtrlBreak))
 ////////////////////////////        goto ERROR_EXIT;
 ////////////////////////////
 ////////////////////////////    // Loop through all of the parts
@@ -1280,7 +1280,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 ////////////////////////////for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
-////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////    if (CheckCtrlBreak (lpbCtrlBreak))
 ////////////////////////////        goto ERROR_EXIT;
 ////////////////////////////
 ////////////////////////////    // Loop through all of the parts
@@ -1297,7 +1297,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Convert this item to the target storage type
@@ -1323,7 +1323,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 ////////////////////////////for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
-////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////    if (CheckCtrlBreak (lpbCtrlBreak))
 ////////////////////////////        goto ERROR_EXIT;
 ////////////////////////////
 ////////////////////////////    // Loop through all of the parts
@@ -1337,7 +1337,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 ////////////////////////////for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
-////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////    if (CheckCtrlBreak (lpbCtrlBreak))
 ////////////////////////////        goto ERROR_EXIT;
 ////////////////////////////
 ////////////////////////////    // Loop through all of the parts
@@ -1354,7 +1354,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Convert this item to the target storage type
@@ -1380,7 +1380,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 ////////////////////////////for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
-////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////    if (CheckCtrlBreak (lpbCtrlBreak))
 ////////////////////////////        goto ERROR_EXIT;
 ////////////////////////////
 ////////////////////////////    // Loop through all of the parts
@@ -1394,7 +1394,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 ////////////////////////////for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
-////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////    if (CheckCtrlBreak (lpbCtrlBreak))
 ////////////////////////////        goto ERROR_EXIT;
 ////////////////////////////
 ////////////////////////////    // Loop through all of the parts
@@ -1411,7 +1411,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Convert this item to the target storage type
@@ -1437,7 +1437,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 ////////////////////////////for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
-////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////    if (CheckCtrlBreak (lpbCtrlBreak))
 ////////////////////////////        goto ERROR_EXIT;
 ////////////////////////////
 ////////////////////////////    // Loop through all of the parts
@@ -1451,7 +1451,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 ////////////////////////////for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
-////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////    if (CheckCtrlBreak (lpbCtrlBreak))
 ////////////////////////////        goto ERROR_EXIT;
 ////////////////////////////
 ////////////////////////////    // Loop through all of the parts
@@ -1468,7 +1468,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Convert this item to the target storage type
@@ -1494,7 +1494,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 ////////////////////////////for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
-////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////    if (CheckCtrlBreak (lpbCtrlBreak))
 ////////////////////////////        goto ERROR_EXIT;
 ////////////////////////////
 ////////////////////////////    // Loop through all of the parts
@@ -1508,7 +1508,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 ////////////////////////////for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
 ////////////////////////////{
 ////////////////////////////    // Check for Ctrl-Break
-////////////////////////////    if (CheckCtrlBreak (*lpbCtrlBreak))
+////////////////////////////    if (CheckCtrlBreak (lpbCtrlBreak))
 ////////////////////////////        goto ERROR_EXIT;
 ////////////////////////////
 ////////////////////////////    // Loop through all of the parts
@@ -1525,7 +1525,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Convert this item to the target storage type
@@ -1548,7 +1548,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Loop through all of the parts
@@ -1563,7 +1563,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Loop through all of the parts
@@ -1581,7 +1581,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Convert this item to the target storage type
@@ -1604,7 +1604,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Loop through all of the parts
@@ -1619,7 +1619,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Loop through all of the parts
@@ -1637,7 +1637,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Convert this item to the target storage type
@@ -1660,7 +1660,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Loop through all of the parts
@@ -1675,7 +1675,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Loop through all of the parts
@@ -1693,7 +1693,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Convert this item to the target storage type
@@ -1716,7 +1716,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Loop through all of the parts
@@ -1730,7 +1730,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Loop through all of the parts
@@ -1747,7 +1747,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Convert this item to the target storage type
@@ -1770,7 +1770,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Loop through all of the parts
@@ -1784,7 +1784,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Loop through all of the parts
@@ -1801,7 +1801,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast =        0; uSubLast < aplNELMSubLast; uSubLast++, uSub++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Convert this item to the target storage type
@@ -1824,7 +1824,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Loop through all of the parts
@@ -1838,7 +1838,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 // Loop through all of the parts
@@ -1887,7 +1887,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                     for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -1943,7 +1943,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -1966,7 +1966,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -1991,7 +1991,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -2007,7 +2007,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -2020,7 +2020,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -2044,7 +2044,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -2060,7 +2060,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -2073,7 +2073,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -2092,7 +2092,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -2108,7 +2108,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -2121,7 +2121,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -2140,7 +2140,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -2156,7 +2156,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -2169,7 +2169,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -2213,7 +2213,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -2226,7 +2226,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -2239,7 +2239,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -2342,7 +2342,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMSubLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -2364,7 +2364,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = aplNELMSubLast; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -2383,7 +2383,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                             for (uSubLast = 0; uSubLast < aplNELMComLast; uSubLast++)
                             {
                                 // Check for Ctrl-Break
-                                if (CheckCtrlBreak (*lpbCtrlBreak))
+                                if (CheckCtrlBreak (lpbCtrlBreak))
                                     goto ERROR_EXIT;
 
                                 ((LPAPLNESTED) lpMemRes)[(uRht * aplNELMCom) + uSubLast + (uSubRest * aplNELMComLast)] =
@@ -3346,7 +3346,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                     for (iDim = aplRankRht - 1; iDim >= 0; iDim--)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         uBitMask = BIT0 << (MASKLOG2NBIB & (UINT) iDim);
@@ -3382,7 +3382,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                     for (iDim = aplRankRht - 1; iDim >= 0; iDim--)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         // Get the left arg item value in origin-0
@@ -3416,7 +3416,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                     for (iDim = aplRankRht - 1; iDim >= 0; iDim--)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         // Attempt to convert the float to an integer using System []CT
@@ -3455,7 +3455,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                     for (iDim = aplRankRht - 1; iDim >= 0; iDim--)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         // Get the left arg item value in origin-0
@@ -3514,7 +3514,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                     for (iDim = aplRankRht - 1; iDim >= 0; iDim--)
                     {
                         // Check for Ctrl-Break
-                        if (CheckCtrlBreak (*lpbCtrlBreak))
+                        if (CheckCtrlBreak (lpbCtrlBreak))
                             goto ERROR_EXIT;
 
                         // Attempt to convert the RAT to an integer using System []CT

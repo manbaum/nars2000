@@ -1,0 +1,21 @@
+Build #1748 -- Version 0.5.3.xx
+--------------------------------
+
+* Catch Ctrl-Break More Often
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+PF_DTACKJOT.C:
+  Catch Ctrl-Break during display of an array.
+
+EXECDFN.C:
+  Display "INTERRUPT" instead of "..." for a Ctrl-Break.
+
+PARSELINE.C:
+  Catch Ctrl-Break during parsing.
+
+SESSMAN.C:
+STRAND.C:
+SYMTAB.C:
+  Improve comments.

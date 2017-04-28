@@ -1975,6 +1975,7 @@ NORMAL_EXIT:
                             // Signal the event
                             SetEvent (hWaitEvent);
                         } else
+                            // Mark as interrupted
                             lpMemPTD->lpPLCur->bCtrlBreak = TRUE;
                     } // End IF
 

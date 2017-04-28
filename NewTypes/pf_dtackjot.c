@@ -304,7 +304,7 @@ __try
     switch (aplTypeRht)
     {
         case ARRAY_BOOL:
-////////////lpaplChar =
+            lpaplChar =
               CompileArrBool    (bSimpleScalar ? (LPAPLBOOL) &aplIntegerRht
                                                : (LPAPLBOOL)   lpMemRht,    // Ptr to right arg memory
                                  lpFmtHeader,                               // Ptr to parent header
@@ -344,7 +344,7 @@ __try
             } // End IF/ELSE
 
         case ARRAY_HETERO:
-////////////lpaplChar =
+            lpaplChar =
               CompileArrHetero  ((LPAPLHETERO) lpMemRht,        // Ptr to right arg memory
                                  lpFmtHeader,                   // Ptr to parent header
                                  lpFmtColStr,                   // Ptr to vector of ColStrs
@@ -358,7 +358,7 @@ __try
             break;
 
         case ARRAY_NESTED:
-////////////lpaplChar =
+            lpaplChar =
               CompileArrNested  ((LPAPLNESTED) lpMemRht,        // Ptr to right arg memory
                                  lpFmtHeader,                   // Ptr to parent header
                                  lpFmtColStr,                   // Ptr to vector of ColStrs
@@ -375,7 +375,7 @@ __try
         case ARRAY_HC2I:
         case ARRAY_HC4I:
         case ARRAY_HC8I:
-////////////lpaplChar =
+            lpaplChar =
               CompileArrHCxI    (bSimpleScalar ? &aplIntegerRht
                                                : lpMemRht,      // Ptr to right arg memory
                                  lpFmtHeader,                   // Ptr to parent header
@@ -393,7 +393,7 @@ __try
         case ARRAY_HC2F:
         case ARRAY_HC4F:
         case ARRAY_HC8F:
-////////////lpaplChar =
+            lpaplChar =
               CompileArrHCxF    (bSimpleScalar ? &aplFloatRht
                                                : lpMemRht,      // Ptr to right arg memory
                                  lpFmtHeader,                   // Ptr to parent header
@@ -411,7 +411,7 @@ __try
         case ARRAY_HC2R:
         case ARRAY_HC4R:
         case ARRAY_HC8R:
-////////////lpaplChar =
+            lpaplChar =
               CompileArrHCxR    (lpMemRht,                      // Ptr to right arg memory
                                  lpFmtHeader,                   // Ptr to parent header
                                  lpFmtColStr,                   // Ptr to vector of ColStrs
@@ -428,7 +428,7 @@ __try
         case ARRAY_HC2V:
         case ARRAY_HC4V:
         case ARRAY_HC8V:
-////////////lpaplChar =
+            lpaplChar =
               CompileArrHCxV    (lpMemRht,                      // Ptr to right arg memory
                                  lpFmtHeader,                   // Ptr to parent header
                                  lpFmtColStr,                   // Ptr to vector of ColStrs
@@ -508,6 +508,9 @@ __try
             break;
     } // End SWITCH
 } // End __try/__except
+
+    if (lpaplChar EQ NULL)
+        goto ERROR_EXIT;
 
     // Propagate the row & col count up the line
     PropagateRowColCount (lpFmtHeader);
@@ -620,7 +623,7 @@ __try
         case ARRAY_HC8F:
         case ARRAY_HC8R:
         case ARRAY_HC8V:
-////////////lpaplChar =
+            lpaplChar =
               FormatArrSimple (lpFmtHeader,             // Ptr to FMTHEADER
                                lpFmtColStr,             // Ptr to vector of <aplDimNCols> FMTCOLSTRs
                                lpaplCharStart,          // Ptr to compiled input
@@ -638,7 +641,7 @@ __try
             break;
 
         case ARRAY_NESTED:
-////////////lpaplChar =
+            lpaplChar =
               FormatArrNested (lpFmtHeader,             // Ptr to FMTHEADER
                                lpMemRht,                // Ptr to raw input
                                lpFmtColStr,             // Ptr to vector of <aplDimNCols> FMTCOLSTRs
@@ -658,6 +661,9 @@ __try
             break;
     } // End SWITCH
 #undef  lpwszOut
+
+    if (lpaplChar EQ NULL)
+        goto ERROR_EXIT;
 
     // Check for Ctrl-Break
     if (CheckCtrlBreak (lpbCtrlBreak))
@@ -1208,14 +1214,26 @@ LPAPLCHAR CompileArrNested
      UBOOL       bTopLevel)     // TRUE iff top level array
 
 {
-    APLDIM      aplDimCol,          // Loop counter
-                aplDimRow;          // ...
-    APLRANK     aplRowRankCur,      // Maximum rank across the current row
-                aplRowRankNxt,      // ...                     next    ...
-                aplRowRankMax;      // Maximum of aplRowRankCur and aplRowRankNxt
-    LPFMTROWSTR lpFmtRowLcl = NULL; // Ptr to local FMTROWSTR
-    UINT        NotCharPlusPrv,     // ({rho}{rho}L) + NOTCHAR L
-                NotCharPlusCur;     // ...        R            R
+    APLDIM        aplDimCol,            // Loop counter
+                  aplDimRow;            // ...
+    APLRANK       aplRowRankCur,        // Maximum rank across the current row
+                  aplRowRankNxt,        // ...                     next    ...
+                  aplRowRankMax;        // Maximum of aplRowRankCur and aplRowRankNxt
+    LPFMTROWSTR   lpFmtRowLcl = NULL;   // Ptr to local FMTROWSTR
+    UINT          NotCharPlusPrv,       // ({rho}{rho}L) + NOTCHAR L
+                  NotCharPlusCur;       // ...        R            R
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
+
+    // Check for Ctrl-Break
+    if (CheckCtrlBreak (lpbCtrlBreak))
+        goto ERROR_EXIT;
 
     // Set the Matrix result bit if the arg is
     //   a matrix or higher rank array
@@ -1373,6 +1391,9 @@ LPAPLCHAR CompileArrNested
     PropagateRowColCount (lpFmtHeader);
 
     return lpaplChar;
+
+ERROR_EXIT:
+    return NULL;
 } // End CompileArrNested
 
 
@@ -1397,6 +1418,18 @@ LPAPLCHAR CompileArrNestedCon
     LPFMTCOLSTR lpFmtColStr;        // This col's FMTCOLSTR
     IMM_TYPES   immTypeCon;         // Constant immediate type
     UINT        uMax;               // Maximum of NotCharPluses
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
+
+    // Check for Ctrl-Break
+    if (CheckCtrlBreak (lpbCtrlBreak))
+        goto ERROR_EXIT;
 
 
 #define aplDimNRows     1
@@ -1540,6 +1573,9 @@ LPAPLCHAR CompileArrNestedCon
 
     return lpaplChar;
 
+ERROR_EXIT:
+    return NULL;
+
 #undef  aplRank
 #undef  aplDimNCols
 #undef  aplDimNRows
@@ -1577,6 +1613,18 @@ LPAPLCHAR CompileArrNestedGlb
     APLINT      aplInteger;
     APLFLOAT    aplFloat;
     APLCHAR     aplChar;
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
+
+    // Check for Ctrl-Break
+    if (CheckCtrlBreak (lpbCtrlBreak))
+        goto ERROR_EXIT;
 
     // Get the attributes (Type, NELM, Rank) of the global
     AttrsOfGlb (hGlb, &aplType, &aplNELM, &aplRank, NULL);
@@ -1828,6 +1876,9 @@ LPAPLCHAR CompileArrNestedGlb
     PropagateRowColCount (lpFmtHeader);
 
     return lpaplChar;
+
+ERROR_EXIT:
+    return NULL;
 } // End CompileArrNestedGlb
 
 

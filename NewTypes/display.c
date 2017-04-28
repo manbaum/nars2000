@@ -433,7 +433,7 @@ UBOOL DisplayGlbArr_EM
         switch (aplType)
         {
             case ARRAY_BOOL:
-////////////////lpaplChar =
+                lpaplChar =
                   CompileArrBool    ((LPAPLBOOL)   lpMemArr,// Ptr to right arg memory
                                      lpFmtHeader,           // Ptr to parent header
                                      lpFmtColStr,           // Ptr to vector of ColStrs
@@ -446,7 +446,7 @@ UBOOL DisplayGlbArr_EM
                 break;
 
             case ARRAY_CHAR:
-////////////////lpaplChar =
+                lpaplChar =
                   CompileArrChar    ((LPAPLCHAR)   lpMemArr,// Ptr to right arg memory
                                      lpFmtHeader,           // Ptr to parent header
                                      lpFmtColStr,           // Ptr to vector of ColStrs
@@ -459,7 +459,7 @@ UBOOL DisplayGlbArr_EM
                 break;
 
             case ARRAY_HETERO:
-////////////////lpaplChar =
+                lpaplChar =
                   CompileArrHetero  ((LPAPLHETERO) lpMemArr,// Ptr to right arg memory
                                      lpFmtHeader,           // Ptr to parent header
                                      lpFmtColStr,           // Ptr to vector of ColStrs
@@ -473,7 +473,7 @@ UBOOL DisplayGlbArr_EM
                 break;
 
             case ARRAY_NESTED:
-////////////////lpaplChar =
+                lpaplChar =
                   CompileArrNested  ((LPAPLNESTED) lpMemArr,// Ptr to right arg memory
                                      lpFmtHeader,           // Ptr to parent header
                                      lpFmtColStr,           // Ptr to vector of ColStrs
@@ -490,7 +490,7 @@ UBOOL DisplayGlbArr_EM
             case ARRAY_HC2I:
             case ARRAY_HC4I:
             case ARRAY_HC8I:
-////////////////lpaplChar =
+                lpaplChar =
                   CompileArrHCxI    (lpMemArr,              // Ptr to right arg memory
                                      lpFmtHeader,           // Ptr to parent header
                                      lpFmtColStr,           // Ptr to vector of ColStrs
@@ -507,7 +507,7 @@ UBOOL DisplayGlbArr_EM
             case ARRAY_HC2F:
             case ARRAY_HC4F:
             case ARRAY_HC8F:
-////////////////lpaplChar =
+                lpaplChar =
                   CompileArrHCxF    (lpMemArr,              // Ptr to right arg memory
                                      lpFmtHeader,           // Ptr to parent header
                                      lpFmtColStr,           // Ptr to vector of ColStrs
@@ -524,7 +524,7 @@ UBOOL DisplayGlbArr_EM
             case ARRAY_HC2R:
             case ARRAY_HC4R:
             case ARRAY_HC8R:
-////////////////lpaplChar =
+                lpaplChar =
                   CompileArrHCxR    (lpMemArr,              // Ptr to right arg memory
                                      lpFmtHeader,           // Ptr to parent header
                                      lpFmtColStr,           // Ptr to vector of ColStrs
@@ -541,7 +541,7 @@ UBOOL DisplayGlbArr_EM
             case ARRAY_HC2V:
             case ARRAY_HC4V:
             case ARRAY_HC8V:
-////////////////lpaplChar =
+                lpaplChar =
                   CompileArrHCxV    (lpMemArr,              // Ptr to right arg memory
                                      lpFmtHeader,           // Ptr to parent header
                                      lpFmtColStr,           // Ptr to vector of ColStrs
@@ -557,6 +557,9 @@ UBOOL DisplayGlbArr_EM
             defstop
                 break;
         } // End SWITCH
+
+        if (lpaplChar EQ NULL)
+            goto ERROR_EXIT;
 
         // Check for Ctrl-Break
         if (CheckCtrlBreak (lpbCtrlBreak))
@@ -623,7 +626,7 @@ UBOOL DisplayGlbArr_EM
             case ARRAY_HC8F:
             case ARRAY_HC8R:
             case ARRAY_HC8V:
-////////////////lpaplChar =
+                lpaplChar =
                   FormatArrSimple (lpFmtHeader,             // Ptr to FMTHEADER
                                    lpFmtColStr,             // Ptr to vector of <aplChrNCols> FMTCOLSTRs
                                    lpaplCharStart,          // Ptr to compiled input
@@ -641,7 +644,7 @@ UBOOL DisplayGlbArr_EM
                 break;
 
             case ARRAY_NESTED:
-////////////////lpaplChar =
+                lpaplChar =
                   FormatArrNested (lpFmtHeader,             // Ptr to FMTHEADER
                                    lpMemArr,                // Ptr to raw input
                                    lpFmtColStr,             // Ptr to vector of <aplDimNCols> FMTCOLSTRs
@@ -660,6 +663,9 @@ UBOOL DisplayGlbArr_EM
             defstop
                 break;
         } // End SWITCH
+
+        if (lpaplChar EQ NULL)
+            goto ERROR_EXIT;
 
         // Check for Ctrl-Break
         if (CheckCtrlBreak (lpbCtrlBreak))

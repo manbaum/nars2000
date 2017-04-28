@@ -1049,7 +1049,7 @@ RESTART_AFTER_ERROR:
                 // If we're not at a []STOP, ...
                 if (!bStopLine)
                     // Display the error message
-                    AppendLine (ERRMSG_ELLIPSIS APPEND_NAME, FALSE, TRUE);
+                    AppendLine (ERRMSG_INTERRUPT APPEND_NAME, FALSE, TRUE);
 
                 // If the function is an AFO, ...
                 if (lpSISCur->bAFO && lptkFunc NE NULL)

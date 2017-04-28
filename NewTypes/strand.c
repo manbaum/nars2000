@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1741,7 +1741,7 @@ HGLOBAL MakeGlbEntry_EM
     (ARRAY_TYPES  aplTypeRes,       // Array Type to use (see ARRAY_TYPES)
      LPVOID       lpVal,            // Ptr to value to use
      UBOOL        bInit,            // TRUE iff we should initialize the target first
-     LPTOKEN      lptkFunc)         // Ptr to token to use in case of error
+     LPTOKEN      lptkFunc)         // Ptr to token to use in case of error (may be NULL)
 
 {
     HGLOBAL           hGlbRes = NULL;       // Result global memory handle

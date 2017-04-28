@@ -2189,7 +2189,7 @@ ERROR_EXIT:
 LPSYMENTRY MakeSymEntry_EM
     (IMM_TYPES    immType,          // ImmType to use (see IMM_TYPES)
      LPAPLLONGEST lpVal,            // Ptr to value to use
-     LPTOKEN      lptkFunc)         // Ptr to token to use in case of error
+     LPTOKEN      lptkFunc)         // Ptr to token to use in case of error (may be NULL)
 
 {
     LPSYMENTRY lpSymDst;        // Ptr to dest SYMENTRY
@@ -2224,7 +2224,7 @@ LPSYMENTRY MakeSymEntry_EM
     } // End SWITCH
 
     // If it failed and there's a function token, set the error token
-    if (lpSymDst EQ NULL && lptkFunc)
+    if (lpSymDst EQ NULL && lptkFunc NE NULL)
         ErrorMessageSetToken (lptkFunc);
 
     return lpSymDst;

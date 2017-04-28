@@ -4780,6 +4780,10 @@ PARSELINE_REDUCE:
                     goto PARSELINE_START;
                 } // Ebd IF
 
+                // Check for Ctrl-Break
+                if (CheckCtrlBreak (&plLocalVars.bCtrlBreak))
+                    goto PARSELINE_ERROR;
+
                 // Check for error
                 if (lpYYRes EQ NULL)
                     goto PARSELINE_ERROR;

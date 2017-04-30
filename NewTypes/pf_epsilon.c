@@ -479,6 +479,11 @@ void PrimFnMonEpsilonGlbCount
                 *lpaplTypeRes = aTypePromote[*lpaplTypeRes][aplTypeRht];
                 (*lpaplNELMRes) += aplNELMRht;
             } else
+            // If it's an empty APA, ...
+            if (IsSimpleAPA (aplTypeRht))
+                // Call it an integer so we don't fail later on
+                *lpaplTypePro = ARRAY_INT;
+            else
                 *lpaplTypePro = aplTypeRht;
             break;
 

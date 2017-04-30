@@ -1,6 +1,17 @@
 Version 0.5.3.xx consists of the following Builds:
 
 
+Build #1751 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Enlist With Empty APV
+
+Directory branches/bsmith/NewTypes:
+
+PF_EPSILON.C:
+  In <PrimFnMonEpsilonGlbCount>, convert an empty APV to an INT array for the purposes of Enlist.
+
+
 Build #1750 -- Version 0.5.3.xx
 --------------------------------
 

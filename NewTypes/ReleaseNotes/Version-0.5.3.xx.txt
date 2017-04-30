@@ -1,6 +1,17 @@
 Version 0.5.3.xx consists of the following Builds:
 
 
+Build #1750 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Grade Each 0 0{rho}0
+
+Directory branches/bsmith/NewTypes:
+
+PF_DELTASTILE.C:
+  Fix bug in <PermVecGrade> missing the case of a Boolean APV.
+
+
 Build #1749 -- Version 0.5.3.xx
 --------------------------------
 

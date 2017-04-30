@@ -693,6 +693,7 @@ UBOOL PermVecGrade
         // Split cases based upon the right arg storage type
         switch (lpGradeData->aplTypeRht)
         {
+            case ARRAY_BOOL:
             case ARRAY_INT:
                 // Loop through the right arg
                 for (uRht = 0; uRht < aplNELMRht; uRht++)

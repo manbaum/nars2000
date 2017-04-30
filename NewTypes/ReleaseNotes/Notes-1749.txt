@@ -1,0 +1,9 @@
+Build #1749 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Enlist With Empty Nested Array
+
+Directory branches/bsmith/NewTypes:
+
+PF_EPSILON.C:
+  In <PrimFnMonEpsilonGlbCount>, handle empty nested arrays.

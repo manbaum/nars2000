@@ -483,6 +483,10 @@ void PrimFnMonEpsilonGlbCount
             break;
 
         case ARRAY_NESTED:
+            // Initialize the prototype storage type
+            //   in case the nested array is empty
+            *lpaplTypePro = ARRAY_BOOL;
+
             // Skip over the header and dimensions to the data
             lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
@@ -492,7 +496,11 @@ void PrimFnMonEpsilonGlbCount
             switch (GetPtrTypeInd (lpMemRht))
             {
                 case PTRTYPE_STCONST:
-                    *lpaplTypeRes = aTypePromote[*lpaplTypeRes][TranslateImmTypeToArrayType ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType)];
+                    // Set the prototype and result storage type
+                    *lpaplTypePro = TranslateImmTypeToArrayType ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType);
+                    *lpaplTypeRes = aTypePromote[*lpaplTypeRes][*lpaplTypePro];
+
+                    // Count in another item
                     (*lpaplNELMRes)++;
 
                     break;

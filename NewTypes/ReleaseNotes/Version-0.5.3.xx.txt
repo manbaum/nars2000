@@ -1,6 +1,17 @@
 Version 0.5.3.xx consists of the following Builds:
 
 
+Build #1753 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug With No-Result Functions And The Dyadic Derived Function From The Each Operator
+
+Directory branches/bsmith/NewTypes:
+
+PO_DIERESIS.C:
+  Fix bug in the dyadic derived function fom the Each operator where the VALUE ERROR count is compared against the wrong NELM.
+
+
 Build #1752 -- Version 0.5.3.xx
 --------------------------------
 

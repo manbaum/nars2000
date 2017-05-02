@@ -969,7 +969,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     } // End IF
 
     // Check for VALUE ERROR
-    if (uValErrCnt)
+    if (uValErrCnt NE 0)
     {
         // Check for all VALUE ERRORs
         if (uValErrCnt EQ aplNELMRht)
@@ -1594,10 +1594,10 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     } // End IF
 
     // Check for VALUE ERROR
-    if (uValErrCnt)
+    if (uValErrCnt NE 0)
     {
         // Check for all VALUE ERRORs
-        if (uValErrCnt EQ aplNELMRht)
+        if (uValErrCnt EQ aplNELMRes)
         {
             // We no longer need this storage
             FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;

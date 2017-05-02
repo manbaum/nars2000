@@ -3,9 +3,9 @@
 16 = 10 (bg-image-height) + 6 (bg-pos-y)
  */
 
-.apl, code
+.apl, code, pre
 {
-  font-family: "SImPL medium", "SImPL", "APL385 Unicode", "APLX Upright", monospace;
+  font-family: "SImPL medium", "SImPL", "APL385 Unicode", "APLX Upright", monospace !important;
 }
 
 .apll

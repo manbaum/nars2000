@@ -1085,12 +1085,17 @@ void PrimFnDydQuoteDotIisIvI
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLINT aplIntegerTmp,
-           aplIntegerRes,
-           aplIntegerInd;
+    APLINT   aplIntegerTmp,
+             aplIntegerRes,
+             aplIntegerInd;
+    ALLTYPES atLft = *lpatLft,
+             atRht = *lpatRht;
 
-#define L   lpatLft->aplInteger
-#define R   lpatRht->aplInteger
+    // Because this algorithm changes L and R, we need to copy those
+    //   initial values to temps to avoid changing the caller's values.
+
+#define L   atLft.aplInteger
+#define R   atRht.aplInteger
 #define T   aplIntegerTmp
 #define Z   aplIntegerRes
 #define I   aplIntegerInd
@@ -1132,7 +1137,7 @@ void PrimFnDydQuoteDotIisIvI
 ////////////L = L;
             R = L-(R+1);
 
-            PrimFnDydQuoteDotIisIvI (lpMemRes, uRes, lpatLft, lpatRht, lpPrimSpec);
+            PrimFnDydQuoteDotIisIvI (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
 
             // Handle sign
             lpMemRes[uRes] = ((L%2) ? -1: 1) * lpMemRes[uRes];
@@ -1156,7 +1161,7 @@ void PrimFnDydQuoteDotIisIvI
             L = -(R+1);
             R = -(T+1);
 
-            PrimFnDydQuoteDotIisIvI (lpMemRes, uRes, lpatLft, lpatRht, lpPrimSpec);
+            PrimFnDydQuoteDotIisIvI (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
 
             // Handle sign
             lpMemRes[uRes] = (((R-L)%2) ? -1: 1) * lpMemRes[uRes];
@@ -1203,6 +1208,8 @@ void PrimFnDydQuoteDotFisIvI
                   aplIntegerRes,    // ...
                   aplIntegerInd,    // ...
                   aplIntegerTmp2;   // ...
+    ALLTYPES      atLft = *lpatLft, // ...
+                  atRht = *lpatRht; // ...
     UBOOL         bRet = TRUE;      // Assume the result is valid
     LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
@@ -1216,15 +1223,18 @@ void PrimFnDydQuoteDotFisIvI
     // FYI:  The only way this function can be called is
     //   from an exception raised from IisIvI above.
 
-#define LI  lpatLft->aplInteger
-#define RI  lpatRht->aplInteger
+    // Because this algorithm changes LI, RI, LF, and RF we need to copy those
+    //   initial values to temps to avoid changing the caller's values.
+
+#define LI  atLft.aplInteger
+#define RI  atRht.aplInteger
 #define TI  aplIntegerTmp
 #define TI2 aplIntegerTmp2
 #define ZI  aplIntegerRes
 #define II  aplIntegerInd
 
-#define LF  lpatLft->aplFloat
-#define RF  lpatRht->aplFloat
+#define LF  atLft.aplFloat
+#define RF  atRht.aplFloat
 #define TF  aplFloatTmp
 #define ZF  aplFloatRes
 #define IF  aplFloatInd
@@ -1293,7 +1303,7 @@ void PrimFnDydQuoteDotFisIvI
 ////////////LI = LI;
             RI = LI-(RI+1);
 
-            PrimFnDydQuoteDotFisIvI (lpMemRes, uRes, lpatLft, lpatRht, lpPrimSpec);
+            PrimFnDydQuoteDotFisIvI (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
 
             // Handle sign
             lpMemRes[uRes] = ((LI%2) ? -1: 1) * lpMemRes[uRes];
@@ -1320,7 +1330,7 @@ void PrimFnDydQuoteDotFisIvI
             LI = -(RI+1);
             RI = -(TI+1);
 
-            PrimFnDydQuoteDotFisIvI (lpMemRes, uRes, lpatLft, lpatRht, lpPrimSpec);
+            PrimFnDydQuoteDotFisIvI (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
 
             // Handle sign
             lpMemRes[uRes] = (((RI-LI)%2) ? -1: 1) * lpMemRes[uRes];
@@ -1371,6 +1381,8 @@ void PrimFnDydQuoteDotFisFvF
     APLFLOAT      aplFloatTmp,      // Temp vars
                   aplFloatRes,      // ...
                   aplFloatInd;      // ...
+    ALLTYPES      atLft = *lpatLft, // ...
+                  atRht = *lpatRht; // ...
     LPPLLOCALVARS lpplLocalVars;    // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;     // Ptr to Ctrl-Break flag
 
@@ -1380,8 +1392,11 @@ void PrimFnDydQuoteDotFisFvF
     // Get the ptr to the Ctrl-Break flag
     lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
-#define LF  lpatLft->aplFloat
-#define RF  lpatRht->aplFloat
+    // Because this algorithm changes LF and RF, we need to copy those
+    //   initial values to temps to avoid changing the caller's values.
+
+#define LF  atLft.aplFloat
+#define RF  atRht.aplFloat
 #define TF  aplFloatTmp
 #define ZF  aplFloatRes
 #define IF  aplFloatInd
@@ -1444,7 +1459,7 @@ void PrimFnDydQuoteDotFisFvF
 ////////////////LF = LF;
                 RF = LF-(RF+1);
 
-                PrimFnDydQuoteDotFisFvF (lpMemRes, uRes, lpatLft, lpatRht, lpPrimSpec);
+                PrimFnDydQuoteDotFisFvF (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
 
                 // Handle sign
                 lpMemRes[uRes] = (fmod (LF, 2) ? -1: 1) * lpMemRes[uRes];
@@ -1471,7 +1486,7 @@ void PrimFnDydQuoteDotFisFvF
                 LF = -(RF+1);
                 RF = -(TF+1);
 
-                PrimFnDydQuoteDotFisFvF (lpMemRes, uRes, lpatLft, lpatRht, lpPrimSpec);
+                PrimFnDydQuoteDotFisFvF (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
 
                 // Handle sign
                 lpMemRes[uRes] = (fmod (RF-LF, 2) ? -1: 1) * lpMemRes[uRes];

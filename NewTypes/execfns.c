@@ -1490,6 +1490,11 @@ LPPL_YYSTYPE ExecOp1_EM_YY
             return PrimOpCircleMiddleDot_EM_YY (lptkLftArg,         // Ptr to left arg token (may be NULL if monadic)
                                                 lpYYFcnStrOpr,      // Ptr to operator function strand
                                                 lptkRhtArg);        // Ptr to right arg token
+        case UTF16_DOUBLESHRIEK:    // Combinatorial Op
+        case INDEX_OPDOUBLESHRIEK:  // ...
+            return PrimOpCombinatorial_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+                                              lpYYFcnStrOpr,        // Ptr to operator function strand
+                                              lptkRhtArg);          // Ptr to right arg token
         case INDEX_OPTRAIN:         // Train
             // Execute as Train, skipping over the monadic operator
             return ExecTrain_EM_YY (lptkLftArg,                     // Ptr to left arg token

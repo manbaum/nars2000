@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -138,7 +138,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCircle_EM_YY
 {
     return
       PrimFnValenceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
-} // End PrimOpDieresisCircle_EM_YY
+} // End PrimOpMonDieresisCircle_EM_YY
 #undef  APPEND_NAME
 
 

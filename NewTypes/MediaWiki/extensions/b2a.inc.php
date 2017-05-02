@@ -1,12 +1,14 @@
 <?php
 
-// On the server, this file should be saved into /var/www/cgi-bin/
+// On the server, this file should be saved into both
+//    /var/www/cgi-bin/
+//    /root/usr/local/mediawiki/extensions/
 
 // Define the array of conversions
 $br2a = array (
 
 '!'                     => 0x0021,
-'shreik'                => 0x0021,
+'shriek'                => 0x0021,
 'factorial'             => 0x0021,
 
 '#'                     => 0x0023,
@@ -101,6 +103,9 @@ $br2a = array (
 
 'dagger'                => 0x2020,
 'doubledagger'          => 0x2021,
+
+'doubleshriek'          => 0x203C,
+'comb'                  => 0x203C,
 
 'peseta'                => 0x20A7,
 

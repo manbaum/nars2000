@@ -422,8 +422,9 @@ BEGIN
     CONTROL         ""             , IDC_KEYB_TC
                                    , WC_TABCONTROLW
                                    , TCS_MULTILINE
-                                   | TCS_FIXEDWIDTH      ,  5, 30, 69,196
+                                   | TCS_FIXEDWIDTH      ,  5, 30, 69,209
 
+    // Tab Control buttons with names APL/abc/123/Box/NLS
     PUSHBUTTON      ""             , IDC_KEYB_BN_TC_00   , 10, 55, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
     PUSHBUTTON      ""             , IDC_KEYB_BN_TC_01   , 20, 55, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
     PUSHBUTTON      ""             , IDC_KEYB_BN_TC_02   , 30, 55, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
@@ -515,6 +516,14 @@ BEGIN
     PUSHBUTTON      ""             , IDC_KEYB_BN_TC_C4   , 50,211, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
     PUSHBUTTON      ""             , IDC_KEYB_BN_TC_C5   , 60,211, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
 
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_D0   , 10,224, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_D1   , 20,224, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_D2   , 30,224, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_D3   , 40,224, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_D4   , 50,224, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+    PUSHBUTTON      ""             , IDC_KEYB_BN_TC_D5   , 60,224, 10, 12, BS_PUSHBUTTON | BS_OWNERDRAW
+
+    // Keycap buttons representing the Keyboard
     PUSHBUTTON      ""             , IDC_KEYB_BN_KC_00   , 75, 30, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
     PUSHBUTTON      ""             , IDC_KEYB_BN_KC_01   , 90, 30, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW
     PUSHBUTTON      ""             , IDC_KEYB_BN_KC_02   ,105, 30, 14, 14, BS_PUSHBUTTON | BS_OWNERDRAW

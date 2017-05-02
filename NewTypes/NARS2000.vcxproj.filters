@@ -627,6 +627,9 @@
     <ClCompile Include="sc_symb.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="po_comb.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Bison_Rule Include="cs_parse.y">

@@ -142,6 +142,7 @@
   #include "pn_parse.pro"
   #include "pn_proc.pro"
   #include "po_cmiddot.pro"
+  #include "po_comb.pro"
   #include "po_dicircle.pro"
   #include "po_didtack.pro"
   #include "po_dieresis.pro"

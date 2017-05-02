@@ -455,27 +455,27 @@ $(O)pn_parse.obj:       $(O)$(@B).c     $(PN_PARSE_DEP)
 $(O)editctrl.obj:       $(WS)$(@B).c    $(EDITCTRL_DEP)     $(WS)local.h
 
 ## Msieve-specific files
-$(O)mp.obj:             $(MS_DIR)$(@B).c    $(MP_DEP)           $(MS_DIR)mp.h
-$(O)prime_delta.obj:    $(MS_DIR)$(@B).c    $(PRIME_DELTA_DEP)  $(MS_DIR)common.h
-$(O)smallfact.obj:      $(MS_DIR)$(@B).c    $(SMALLFACT_DEP)    $(MS_DIR)common.h
-$(O)squfof.obj:         $(MS_DIR)$(@B).c    $(SQUFOF_DEP)       $(MS_DIR)common.h
-$(O)tinyqs.obj:         $(MS_DIR)$(@B).c    $(TINYQS_DEP)       $(MS_DIR)common.h
+$(O)mp.obj:             $(MS_DIR)$(@B).c    $(MP_DEP)               $(MS_DIR)common.h  $(MS_DIR)mp.h
+$(O)prime_delta.obj:    $(MS_DIR)$(@B).c    $(PRIME_DELTA_DEP)      $(MS_DIR)common.h
+$(O)smallfact.obj:      $(MS_DIR)$(@B).c    $(SMALLFACT_DEP)        $(MS_DIR)common.h
+$(O)squfof.obj:         $(MS_DIR)$(@B).c    $(SQUFOF_DEP)           $(MS_DIR)common.h
+$(O)tinyqs.obj:         $(MS_DIR)$(@B).c    $(TINYQS_DEP)           $(MS_DIR)common.h
 
 #ifdef MPQS_ENABLED
 ## Msieve-MPQS-specific files
-$(O)gf2.obj:            $(MS_DIR)$(@B).c    $(GF2_DEP)          $(MS_DIR)mpqs.h
-$(O)lanczos.obj:        $(MS_DIR)$(@B).c    $(LANCZOS_DEP)      $(MS_DIR)lanczos.h
-$(O)lanczos_pre.obj:    $(MS_DIR)$(@B).c    $(LANCZOS_PRE_DEP)  $(MS_DIR)lanczos.h
+$(O)gf2.obj:            $(MS_DIR)$(@B).c    $(GF2_DEP)              $(MS_DIR)mpqs.h
+$(O)lanczos.obj:        $(MS_DIR)$(@B).c    $(LANCZOS_DEP)          $(MS_DIR)lanczos.h
+$(O)lanczos_pre.obj:    $(MS_DIR)$(@B).c    $(LANCZOS_PRE_DEP)      $(MS_DIR)lanczos.h
 $(O)lanczos_matmul0.obj: $(MS_DIR)$(@B).c   $(LANCZOS_MATMUL0_DEP)  $(MS_DIR)lanczos.h
 $(O)lanczos_matmul1.obj: $(MS_DIR)$(@B).c   $(LANCZOS_MATMUL1_DEP)  $(MS_DIR)lanczos.h
 $(O)lanczos_matmul2.obj: $(MS_DIR)$(@B).c   $(LANCZOS_MATMUL2_DEP)  $(MS_DIR)lanczos.h
-$(O)lanczos_vv.obj:     $(MS_DIR)$(@B).c    $(LANCZOS_VV_DEP)   $(MS_DIR)lanczos.h
-$(O)matmul_util.obj:    $(MS_DIR)$(@B).c    $(MATMUL_UTIL_DEP)  $(MS_DIR)lanczos.h
-$(O)mpqs.obj:           $(MS_DIR)$(@B).c    $(MPQS_DEP)         $(MS_DIR)mpqs.h
-$(O)prime_sieve.obj:    $(MS_DIR)$(@B).c    $(PRIME_SIEVE_DEP)  $(MS_DIR)common.h
-##$(O)relation.obj:       $(MS_DIR)$(@B).c    $(RELATION_DEP)     $(MS_DIR)mpqs.h
-$(O)sieve.obj:          $(MS_DIR)$(@B).c    $(SIEVE_DEP)        $(MS_DIR)mpqs.h
-$(O)sqrt.obj:           $(MS_DIR)$(@B).c    $(SQRT_DEP)         $(M_DIRS)mpqs.h
+$(O)lanczos_vv.obj:     $(MS_DIR)$(@B).c    $(LANCZOS_VV_DEP)       $(MS_DIR)lanczos.h
+$(O)matmul_util.obj:    $(MS_DIR)$(@B).c    $(MATMUL_UTIL_DEP)      $(MS_DIR)lanczos.h
+$(O)mpqs.obj:           $(MS_DIR)$(@B).c    $(MPQS_DEP)             $(MS_DIR)mpqs.h
+$(O)prime_sieve.obj:    $(MS_DIR)$(@B).c    $(PRIME_SIEVE_DEP)      $(MS_DIR)common.h
+##$(O)relation.obj:       $(MS_DIR)$(@B).c    $(RELATION_DEP)       $(MS_DIR)mpqs.h
+$(O)sieve.obj:          $(MS_DIR)$(@B).c    $(SIEVE_DEP)            $(MS_DIR)mpqs.h
+$(O)sqrt.obj:           $(MS_DIR)$(@B).c    $(SQRT_DEP)             $(M_DIRS)mpqs.h
 #endif
 
 $(MS_DIR)common.h:      $(MS_DIR)msieve.h
@@ -597,6 +597,7 @@ $(O)pf_utackjot.obj:    $(@B).c         $(PF_UTACKJOT_DEP)
 $(O)pl_proc.obj:        $(@B).c         $(PL_PROC_DEP)
 $(O)pn_proc.obj:        $(@B).c         $(PN_PROC_DEP)
 $(O)po_cmiddot.obj:     $(@B).c         $(PO_CMIDDOT_DEP)
+$(O)po_comb.obj:        $(@B).c         $(PO_COMB_DEP)
 $(O)po_dicircle.obj:    $(@B).c         $(PO_DICIRCLE_DEP)
 $(O)po_didtack.obj:     $(@B).c         $(PO_DIDTACK_DEP)
 $(O)po_dieresis.obj:    $(@B).c         $(PO_DIERESIS_DEP)

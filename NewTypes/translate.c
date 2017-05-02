@@ -870,6 +870,15 @@ APLCHAR TranslateFcnOprToChar
         case INDEX_OPSLOPEBAR:                  // 0x05           // ...       {slopebar} ...
             return UTF16_SLOPEBAR;
 
+        case INDEX_OPTRAIN:                     // 0x06           // ...       Train      ...
+            // We should never get here
+            DbgStop ();
+
+            return '\0';
+
+        case INDEX_OPDOUBLESHRIEK:              // 0x07           // ...       {doubleshriek} ...
+            return UTF16_DOUBLESHRIEK;
+
         default:
             return fcnOpr;
     } // End SWITCH

@@ -4177,6 +4177,10 @@ int PASCAL WinMain
     InitializeCriticalSection (&CSOTokenize);
     InitializeCriticalSection (&CSOHshTab);
     InitializeCriticalSection (&CSOPthread);
+    InitializeCriticalSection (&CSOCombPNI);
+    InitializeCriticalSection (&CSOCombPNR);
+    InitializeCriticalSection (&CSOCombSN2I);
+    InitializeCriticalSection (&CSOCombSN2R);
 
     // Mark as CSO defined
     bCSO = TRUE;
@@ -4213,6 +4217,9 @@ int PASCAL WinMain
 
     // Initialize tables for Primitive Fns, Operators, etc.
     InitPrimTabs ();
+
+    // Initialize Combinatorial cache
+    InitCombCache ();
 
 ////PERFMON
 
@@ -4293,6 +4300,9 @@ int PASCAL WinMain
 
     // GetMessageW returned FALSE for a Quit message
 EXIT5:
+    // Uninitialize Combinatorial cache
+    UninitCombCache ();
+
     // Uninitialize global numeric constants
     UninitGlbNumConstants ();
 EXIT4:
@@ -4305,6 +4315,10 @@ EXIT4:
     // Delete globals created by <MakePermVars>.
     DelePermVars ();
 
+    DeleteCriticalSection (&CSOCombSN2R);
+    DeleteCriticalSection (&CSOCombSN2I);
+    DeleteCriticalSection (&CSOCombPNR);
+    DeleteCriticalSection (&CSOCombPNI);
     DeleteCriticalSection (&CSOPthread);
     DeleteCriticalSection (&CSOHshTab);
     DeleteCriticalSection (&CSOTokenize);

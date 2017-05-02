@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -432,6 +432,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 
         case UTF16_DELSTILE:                // Monadic:  Grade down, Dyadic: Grade down
         case UTF16_DELTASTILE:              // ...             up    ...           up
+        case UTF16_DOUBLESHRIEK:            // ...       Combinatorial
             // Validate the right operand as
             //   a simple numeric scalar or one-element vector
             if (IsMultiRank (aplRankRhtOpr))
@@ -939,7 +940,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
             if (!IsNumeric (aplTypeRhtOpr))
                 goto RIGHT_OPERAND_DOMAIN_EXIT;
 
-            // Compute the rising/falling factorial using the Shreik primitive
+            // Compute the rising/falling factorial using the Shriek primitive
 
             // Get the magic function/operator global memory handle
             hGlbMFO = lpMemPTD->hGlbMFO[MFOE_DydVOFact];

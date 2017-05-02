@@ -202,7 +202,7 @@ WCHAR awKTC_APL[KTC_TXT_CY][KTC_TXT_CX]
    {UTF16_SLASH         , UTF16_SLASHBAR        , UTF16_SLOPE           , UTF16_SLOPEBAR         , UTF16_NOTEQUAL         , UTF16_SECTION           },
    {UTF16_EQUALUNDERBAR , UTF16_NOTEQUALUNDERBAR, UTF16_ALPHA           , UTF16_OMEGA            , UTF16_LEFTCARETUNDERBAR, UTF16_RIGHTCARETUNDERBAR},
    {UTF16_DIAMOND       , UTF16_COMMABAR        , UTF16_OVERBAR         , UTF16_LAMP             , UTF16_INFINITY         , UTF16_CIRCLEMIDDLEDOT   },
-   {UTF16_DELTILDE      , UTF16_NAN             , 0                     , 0                      , 0                      , 0                       },
+   {UTF16_DELTILDE      , UTF16_NAN             , UTF16_DOUBLESHRIEK    , 0                      , 0                      , 0                       },
   };
 
 WCHAR awKTC_ABC[KTC_TXT_CY][KTC_TXT_CX]

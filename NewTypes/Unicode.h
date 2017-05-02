@@ -32,7 +32,8 @@
 #define INDEX_OPSLOPE             0x04          // ...       {slope}    ...
 #define INDEX_OPSLOPEBAR          0x05          // ...       {slopebar} ...
 #define INDEX_OPTRAIN             0x06          // ...       Train      ...
-///////                          0x07-0x18      // (available)
+#define INDEX_OPDOUBLESHRIEK      0x07          // ...       {doubleshriek} ...
+///////                          0x08-0x18      // (available)
 
 // N.B.:  Whenever changing any of the UTF16_xxx symbol
 //   names below, be sure to make a corresponding change
@@ -87,7 +88,6 @@
 #define UTF16_QUADCOLON           0x2360        // Variant operator
 #define UTF16_LEFTSHOESTILE       0x2367        //
 #define UTF16_DIERESISRIGHTCARET  0x2369        //
-#define UTF16_DELTILDE            0x236B        // DelTilde
 #define UTF16_SEMICOLONUNDERBAR   0x236E        //
 #define UTF16_QUADNOTEQUAL        0x236F        //
 #define UTF16_QUADQUERY           0x2370        //
@@ -133,7 +133,7 @@
 #define UTF16_DELTA               0x2206        // Alt-'h' - delta
 #define UTF16_IOTA                0x2373        // Alt-'i' - iota
 #define UTF16_JOT                 0x2218        // Alt-'j' - Compose operator (jot)
-#define UTF16_APOSTROPHE          0x0027        // Alt-'k' - single quote
+#define UTF16_DOUBLESHRIEK        0x203C        // Alt-'k' - Combinatorial Operator
 #define UTF16_QUAD                0x2395        // Alt-'l' - quad (not 0x25AF)
 #define UTF16_DOWNSHOESTILE       0x2366        // Alt-'m' - down-shoe-stile
 #define UTF16_DOWNTACK            0x22A4        // Alt-'n' - representation
@@ -161,7 +161,7 @@
 #define UTF16_DELTAUNDERBAR       0x2359        // Alt-'H' - delta-underbar
 #define UTF16_IOTAUNDERBAR        0x2378        // Alt-'I' - iota-underbar
 #define UTF16_DIERESISJOT         0x2364        // Alt-'J' - Rank operator        (hoot)
-//efine UTF16_                                  // Alt-'K' - (none)
+#define UTF16_DELTILDE            0x236B        // Alt-'K' - DelTilde
 #define UTF16_SQUAD               0x2337        // Alt-'L' - squad
 #define UTF16_STILETILDE          0x236D        // Alt-'M' - Partition operator   (dagger)
 #define UTF16_DIERESISDOWNTACK    0x2361        // Alt-'N' - Convolution operator (snout)
@@ -244,6 +244,7 @@
 #define UTF16_DOLLAR              0x0024        // Dollar
 #define UTF16_PERCENT             0x0025        // Percent
 #define UTF16_AMPERSAND           0x0026        // Ampersand
+#define UTF16_APOSTROPHE          0x0027        // Apostrophe
 #define UTF16_SINGLEQUOTE         0x0027        // Single quote (a.k.a. Apostrophe)
 #define UTF16_LEFTPAREN           0x0028        // Left paren
 #define UTF16_RIGHTPAREN          0x0029        // Right paren
@@ -375,7 +376,6 @@
 #define WS_UTF16_QUADCOLON           L"\x2360"  // Variant operator
 #define WS_UTF16_LEFTSHOESTILE       L"\x2367"  //
 #define WS_UTF16_DIERESISRIGHTCARET  L"\x2369"  //
-#define WS_UTF16_DELTILDE            L"\x236B"  // DelTilde
 #define WS_UTF16_SEMICOLONUNDERBAR   L"\x236E"  //
 #define WS_UTF16_QUADNOTEQUAL        L"\x236F"  //
 #define WS_UTF16_QUADQUERY           L"\x2370"  //
@@ -421,7 +421,7 @@
 #define WS_UTF16_DELTA               L"\x2206"  // Alt-'h' - delta
 #define WS_UTF16_IOTA                L"\x2373"  // Alt-'i' - iota
 #define WS_UTF16_JOT                 L"\x2218"  // Alt-'j' - Compose operator (jot)
-#define WS_UTF16_APOSTROPHE          L"\x0027"  // Alt-'k' - single quote
+#define WS_UTF16_DOUBLESHRIEK        L"\x203C"  // Alt-'k' - Combinatorial Operator
 #define WS_UTF16_QUAD                L"\x2395"  // Alt-'l' - quad (not \x25AF)
 #define WS_UTF16_DOWNSHOESTILE       L"\x2366"  // Alt-'m' - down-shoe-stile
 #define WS_UTF16_DOWNTACK            L"\x22A4"  // Alt-'n' - representation
@@ -449,7 +449,7 @@
 #define WS_UTF16_DELTAUNDERBAR       L"\x2359"  // Alt-'H' - delta-underbar
 #define WS_UTF16_IOTAUNDERBAR        L"\x2378"  // Alt-'I' - iota-underbar
 #define WS_UTF16_DIERESISJOT         L"\x2364"  // Alt-'J' - Rank operator        (hoot)
-//efine WS_UTF16_                               // Alt-'K' - (none)
+#define WS_UTF16_DELTILDE            L"\x236B"  // Alt-'K' - DelTilde
 #define WS_UTF16_SQUAD               L"\x2337"  // Alt-'L' - squad
 #define WS_UTF16_STILETILDE          L"\x236D"  // Alt-'M' - Partition operator   (dagger)
 #define WS_UTF16_DIERESISDOWNTACK    L"\x2361"  // Alt-'N' - Convolution operator (snout)
@@ -532,6 +532,7 @@
 #define WS_UTF16_DOLLAR              L"\x0024"  // Dollar
 #define WS_UTF16_PERCENT             L"\x0025"  // Percent
 #define WS_UTF16_AMPERSAND           L"\x0026"  // Ampersand
+#define WS_UTF16_APOSTROPHE          L"\x0027"  // Apostrophe
 #define WS_UTF16_SINGLEQUOTE         L"\x0027"  // Single quote (a.k.a. Apostrophe)
 #define WS_UTF16_LEFTPAREN           L"\x0028"  // Left paren
 #define WS_UTF16_RIGHTPAREN          L"\x0029"  // Right paren

@@ -1969,6 +1969,31 @@ APLRAT ConvertToRAT_SCT
 
 
 //***************************************************************************
+//  $ConvertToVFP_SCT
+//
+//  Convert a value to a VFP (if possible) using System []CT
+//***************************************************************************
+
+APLVFP ConvertToVFP_SCT
+    (APLSTYPE   aplTypeArg,             // Argument storage type
+     LPVOID     lpSymGlbArg,            // ...      global memory handle
+     APLUINT    uArg,                   // Index into <lpSymGlbArg>
+     LPUBOOL    lpbRet)                 // Ptr to TRUE iff the result is valid
+
+{
+    ALLTYPES atArg = {0};
+
+    // Mark as using SYS_CT
+    atArg.enumCT = ENUMCT_SYS;
+
+    // Attempt to convert the value in <lpSymGlbArg> to a VFP using System []CT
+    (*aTypeActConvert[aplTypeArg][ARRAY_VFP]) (lpSymGlbArg, uArg, &atArg, lpbRet);
+
+    return atArg.aplVfp;
+} // End ConvertToVFP_SCT
+
+
+//***************************************************************************
 //  $ConvertToMPI_SCT
 //
 //  Convert a value to a multi-precision integer (if possible) using System []CT

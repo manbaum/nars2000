@@ -418,7 +418,11 @@ CRITICAL_SECTION CSO0,                  // Critical Section Object #0
 #endif
                  CSOPL,                 // ...                     for ParseLine
                  CSOTokenize,           // ...                     for tokenization
-                 CSOHshTab;             // ...                     for HshTab access
+                 CSOHshTab,             // ...                     for HshTab access
+                 CSOCombPNI,            // ...                     for Partition Numbers as INTs
+                 CSOCombPNR,            // ...                     ...                      RATs
+                 CSOCombSN2I,           // ...                     for Sterling Numbers of the 2nd kind as INTs
+                 CSOCombSN2R;           // ...                     ...                                     RATs
 
 LRESULT WINAPI EditWndProcA (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 LRESULT WINAPI EditWndProcW (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -2538,6 +2542,41 @@ size_t gSymTabSize
 = {DEF_MFO_HSHTAB_MAXNELM}
 #endif
 ;
+
+
+//***************************************************************************
+//  Combinatorial stuff
+//***************************************************************************
+
+typedef struct tagCOMB_ARGS
+{
+    APLINT  aplIntBalls,        // 00:  # Balls as an INT
+            aplIntBoxes;        // 04:  # Boxes ...
+    APLRAT  aplRatBalls,        // 08:  # Balls as a RAT
+            aplRatBoxes;        // 0C:  # Boxes ...
+    LPTOKEN lptkFunc,           // 10:  Ptr to function  token
+            lptkRhtArg;         // 14:  ...    right arg ...
+    UINT    bIntBalls:1,        // 18:  00000001:  TRUE iff aplIntBalls is valid
+            bIntBoxes:1,        //      00000002:  ...      aplIntBoxes ...
+            :30;                //      FFFFFFFC:  Available bits
+    LPUBOOL lpbCtrlBreak;       // 1C:  Ptr to Ctrl-Break flag
+                                // 20:  Length
+} COMBARGS, *LPCOMBARGS;
+
+EXTERN
+HGLOBAL ghGlbPNI,               // PN global memory handle for INTs
+        ghGlbPNR,               // ...                         RATs
+        ghGlbSN2I,              // SN2 ...                     INTs
+        ghGlbSN2R;              // ...                         RATs
+EXTERN
+APLINT  gCurLenPNI,             // Current length of PN global memory for INTs
+        gCurLenPNR,             // ...                                    RATs
+        gCurLenSN2I,            // ...               SN2 ...              INTs
+        gCurLenSN2R,            // ...                                    RATs
+        gMaxLenPNI,             // Maximum ...       PN  ...          for INTs
+        gMaxLenPNR,             // ...               PN  ...              RATs
+        gMaxLenSN2I,            // ...               SN2 ...              INTs
+        gMaxLenSN2R;            // ...                                    RATs
 
 
 //***************************************************************************

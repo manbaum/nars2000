@@ -2804,6 +2804,7 @@ typedef struct tagLANGCHARS
 ////////{WS_UTF16_DIERESISSTAR      , {0}, L""},       // Uncomment when implemented
 ////////{WS_UTF16_DIERESISDOT       , {0}, L""},       // ...
 ////////{WS_UTF16_DIERESISDEL       , {0}, L""},       // ...
+////////{WS_UTF16_DELTILDE          , {0}, L""},       // ...
         {WS_UTF16_DIERESISDOWNTACK  , {0}, L"DieresisDownTack",
                                            L"Convolution Operator:  L f" WS_UTF16_DIERESISDOWNTACK L"g R\n\n"
                                            L"Keyboard:  Alt-'N' or Alt-shift-'n'\n\n"
@@ -2837,6 +2838,10 @@ typedef struct tagLANGCHARS
                                            L"                 L (f" WS_UTF16_VARIANT L"b) R\n\n"
                                            L"Keyboard:  Alt-'_'\n\n"
                                            L"Unicode:  0x2360 or 9056"},
+        {WS_UTF16_DOUBLESHRIEK      , {0}, L"DoubleShriek",
+                                           L"Combinatorial Operator:  a" WS_UTF16_DOUBLESHRIEK L"R\n\n"
+                                           L"Keyboard:  Alt-'k'\n\n"
+                                           L"Unicode:  0x203C or 8252"},
         LANGCHARS_SEPARATOR
         {WS_UTF16_QUOTEQUAD         , {0}, L"QuoteQuad",
                                            L"Character input from the keyboard:  A" WS_UTF16_LEFTARROW WS_UTF16_QUOTEQUAD L"\n"

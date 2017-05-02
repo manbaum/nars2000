@@ -6165,7 +6165,7 @@ UBOOL AppendNewToken_EM
 
     // Insert this token into the stream:
     if (lptkData NE NULL)
-        lptkLocalVars->lptkNext->tkData.tkCtrlStruc = lptkData->tkCtrlStruc;
+        CopyAll (&lptkLocalVars->lptkNext->tkData.tkCtrlStruc, &lptkData->tkCtrlStruc);
     else
         lptkLocalVars->lptkNext->tkData.tkLongest   = 0;
     lptkLocalVars->lptkNext->tkFlags                = *lptkFlags;   // Append the flags
@@ -6408,7 +6408,7 @@ UBOOL AppendNewCSToken_EM
     tkCS.tkCharIndex            = tkCharIndex;
 
     // Save the token on the CS stack
-    *lpMemPTD->lptkCSNxt++ = tkCS;
+    CopyAll (lpMemPTD->lptkCSNxt++,  &tkCS);
 SKIP_EXIT:
     return TRUE;
 } // End AppendNewCSToken_EM
@@ -6821,6 +6821,7 @@ TKCOLINDICES CharTransTK
         case UTF16_SLOPEBAR:            // Alt-'.' - slope-bar
         case UTF16_SLASH:               //     '/' - slash
         case UTF16_SLASHBAR:            // Alt-'/' - slash-bar
+        case UTF16_DOUBLESHRIEK:        // Alt-'k' - combinatorial
         case UTF16_DIERESIS:            // Alt-'1' - dieresis
         case UTF16_DOWNSHOESTILE:       // Alt-'m' - down-shoe-stile
         case UTF16_STILETILDE:          // Alt-'M' - partition (dagger)

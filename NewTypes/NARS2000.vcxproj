@@ -157,7 +157,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
       <Optimization>Disabled</Optimization>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>.\;$(OutDir);$(MPIR_DIR)include;$(MPFR_DIR)include;$(MPC_DIR)include;$(ECM_DIR)include;$(MS_DIR);$(NARSROOT)qdebug;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32;_WIN64;_AMD64_;_CRT_SECURE_NO_WARNINGS;NTDDI_VERSION=NTDDI_WINXP;_WIN32_WINNT=_WIN32_WINNT_WINXP;_WIN32_IE=0x0600;DEBUG;RESDEBUG=1;_STDINT_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;_WIN64;_AMD64_;_CRT_SECURE_NO_WARNINGS;NTDDI_VERSION=NTDDI_WINXP;_WIN32_WINNT=_WIN32_WINNT_WINXP;_WIN32_IE=0x0600;DEBUG;RESDEBUG=0;_STDINT_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -479,6 +479,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     <ClCompile Include="pl_proc.c" />
     <ClCompile Include="pn_proc.c" />
     <ClCompile Include="po_cmiddot.c" />
+    <ClCompile Include="po_comb.c" />
     <ClCompile Include="po_dicircle.c" />
     <ClCompile Include="po_didtack.c" />
     <ClCompile Include="po_dieresis.c" />

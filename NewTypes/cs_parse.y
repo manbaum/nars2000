@@ -852,8 +852,17 @@ AssertStmt:
                                                                 }
   ;
 
+_FOR:
+    FOR                                                         {DbgMsgWP (L"%%_FOR:  FOR");
+                                                                    /* Mark as a main CS stmt for AFO */
+                                                                    lpcsLocalVars->bMainStmt = TRUE;
+
+                                                                    /* Set start of stmt */
+                                                                    CS_LinkStmt (lpcsLocalVars, &$1);
+                                                                }
+
 ForStmt:
-    FOR NEC INFOR NSS CSCLCSRec EndFor                          {DbgMsgWP (L"%%ForStmt:  FOR NEC INFOR NSS CSCLCSRec EndFor");
+    _FOR NEC INFOR NSS CSCLCSRec EndFor                         {DbgMsgWP (L"%%ForStmt:  _FOR NEC INFOR NSS CSCLCSRec EndFor");
                                                                     // Ensure the FOR token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -911,8 +920,17 @@ ForStmt:
                                                                 }
   ;
 
+_FORLCL:
+    FORLCL                                                      {DbgMsgWP (L"%%_FORLCL:  FORLCL");
+                                                                    /* Mark as a main CS stmt for AFO */
+                                                                    lpcsLocalVars->bMainStmt = TRUE;
+
+                                                                    /* Set start of stmt */
+                                                                    CS_LinkStmt (lpcsLocalVars, &$1);
+                                                                }
+
 ForLclStmt:
-    FORLCL NEC INFOR NSS CSCLCSRec EndForLcl                   {DbgMsgWP (L"%%ForStmt:  FORLCL NEC INFOR NSS CSCLCSRec EndForLcl");
+    _FORLCL NEC INFOR NSS CSCLCSRec EndForLcl                   {DbgMsgWP (L"%%ForStmt:  _FORLCL NEC INFOR NSS CSCLCSRec EndForLcl");
                                                                     // Ensure the FORLCL token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -1279,8 +1297,17 @@ ElseIfElse:
                                                                 }
   ;
 
+_IF:
+    IF                                                          {DbgMsgWP (L"%%_IF:  IF");
+                                                                    /* Mark as a main CS stmt for AFO */
+                                                                    lpcsLocalVars->bMainStmt = TRUE;
+
+                                                                    /* Set start of stmt */
+                                                                    CS_LinkStmt (lpcsLocalVars, &$1);
+                                                                }
+
 IfStmt:
-    IF NSS                                CSCLCSRec EndIf       {DbgMsgWP (L"%%IfStmt:  IF NSS CSCLCSRec EndIf");
+    _IF NSS                                CSCLCSRec EndIf      {DbgMsgWP (L"%%IfStmt:  _IF NSS CSCLCSRec EndIf");
                                                                     // Ensure the IF token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -1306,7 +1333,7 @@ IfStmt:
 
                                                                     $$ = $4;
                                                                 }
-  | IF NSS           CSCLCSRec ElseIfRec  CSCLCSRec EndIf       {DbgMsgWP (L"%%IfStmt:  IF NSS CSCLCSRec ElseIfRec CSCLCSRec EndIf");
+  | _IF NSS           CSCLCSRec ElseIfRec  CSCLCSRec EndIf       {DbgMsgWP (L"%%IfStmt:  _IF NSS CSCLCSRec ElseIfRec CSCLCSRec EndIf");
                                                                     // Ensure the IF token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -1367,7 +1394,7 @@ IfStmt:
 
                                                                     $$ = $6;
                                                                 }
-  | IF NSS           CSCLCSRec ElseIfElse CSCLCSRec EndIf       {DbgMsgWP (L"%%IfStmt:  IF NSS CSCLCSRec ElseIfElse CSCLCSRec EndIf");
+  | _IF NSS           CSCLCSRec ElseIfElse CSCLCSRec EndIf       {DbgMsgWP (L"%%IfStmt:  _IF NSS CSCLCSRec ElseIfElse CSCLCSRec EndIf");
                                                                     // Ensure the IF token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -1428,7 +1455,7 @@ IfStmt:
 
                                                                     $$ = $6;
                                                                 }
-  | IF NS  OrIfAndIf                      CSCLCSRec EndIf       {DbgMsgWP (L"%%IfStmt:  IF NS OrIfAndIf CSCLCSRec EndIf");
+  | _IF NS  OrIfAndIf                      CSCLCSRec EndIf       {DbgMsgWP (L"%%IfStmt:  _IF NS OrIfAndIf CSCLCSRec EndIf");
                                                                     // Ensure the IF token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -1457,7 +1484,7 @@ IfStmt:
 
                                                                     $$ = $5;
                                                                 }
-  | IF NS  OrIfAndIf CSCLCSRec ElseIfRec  CSCLCSRec EndIf       {DbgMsgWP (L"%%IfStmt:  IF NS OrIfAndIf CSCLCSRec ElseIfRec CSCLCSRec EndIf");
+  | _IF NS  OrIfAndIf CSCLCSRec ElseIfRec  CSCLCSRec EndIf       {DbgMsgWP (L"%%IfStmt:  _IF NS OrIfAndIf CSCLCSRec ElseIfRec CSCLCSRec EndIf");
                                                                     // Ensure the IF token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -1521,7 +1548,7 @@ IfStmt:
 
                                                                     $$ = $7;
                                                                 }
-  | IF NS  OrIfAndIf CSCLCSRec ElseIfElse CSCLCSRec EndIf       {DbgMsgWP (L"%%IfStmt:  IF NS OrIfAndIf CSCLCSRec ElseIfElse CSCLCSRec EndIf");
+  | _IF NS  OrIfAndIf CSCLCSRec ElseIfElse CSCLCSRec EndIf       {DbgMsgWP (L"%%IfStmt:  _IF NS OrIfAndIf CSCLCSRec ElseIfElse CSCLCSRec EndIf");
                                                                     // Ensure the IF token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -1616,8 +1643,17 @@ Until:
                                                                 }
   ;
 
+_REPEAT:
+    REPEAT                                                      {DbgMsgWP (L"%%_REPEAT:  REPEAT");
+                                                                    /* Mark as a main CS stmt for AFO */
+                                                                    lpcsLocalVars->bMainStmt = TRUE;
+
+                                                                    /* Set start of stmt */
+                                                                    CS_LinkStmt (lpcsLocalVars, &$1);
+                                                                }
+
 RepeatStmt:
-    REPEAT SOSStmts CSCLCSRec EndRepeat                         {DbgMsgWP (L"%%RepeatStmt:  REPEAT SOSStmts CSCLCSRec EndRepeat");
+    _REPEAT SOSStmts CSCLCSRec EndRepeat                        {DbgMsgWP (L"%%RepeatStmt:  _REPEAT SOSStmts CSCLCSRec EndRepeat");
                                                                     // Ensure the REPEAT token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -1654,7 +1690,7 @@ RepeatStmt:
 
                                                                     $$ = $4;
                                                                 }
-  | REPEAT SOSStmts CSCLCSRec Until                             {DbgMsgWP (L"%%RepeatStmt:  REPEAT SOSStmts CSCLCSRec Until");
+  | _REPEAT SOSStmts CSCLCSRec Until                             {DbgMsgWP (L"%%RepeatStmt:  _REPEAT SOSStmts CSCLCSRec Until");
                                                                     // Ensure the REPEAT token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -1910,8 +1946,17 @@ CCListCS:
                                                                 }
   ;
 
+_SELECT:
+    SELECT                                                      {DbgMsgWP (L"%%_SELECT:  SELECT");
+                                                                    /* Mark as a main CS stmt for AFO */
+                                                                    lpcsLocalVars->bMainStmt = TRUE;
+
+                                                                    /* Set start of stmt */
+                                                                    CS_LinkStmt (lpcsLocalVars, &$1);
+                                                                }
+
 SelectStmt:
-    SELECT NS CCListCS                     EndSelect            {DbgMsgWP (L"%%SelectStmt:  SELECT NS CCListCS EndSelect");
+    _SELECT NS CCListCS                     EndSelect           {DbgMsgWP (L"%%SelectStmt:  _SELECT NS CCListCS EndSelect");
                                                                     // Ensure the SELECT token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -1961,7 +2006,7 @@ SelectStmt:
 
                                                                     $$ = $4;
                                                                 }
-  | SELECT NS CCListCS ELSE SOSStmts       EndSelect            {DbgMsgWP (L"%%SelectStmt:  SELECT NS CCListCS ELSE SOSStmts EndSelect");
+  | _SELECT NS CCListCS ELSE SOSStmts       EndSelect            {DbgMsgWP (L"%%SelectStmt:  _SELECT NS CCListCS ELSE SOSStmts EndSelect");
                                                                     // Ensure the SELECT token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -2021,7 +2066,7 @@ SelectStmt:
 
                                                                     $$ = $6;
                                                                 }
-  | SELECT NS CCListCS ELSE SOSStmts CSRec EndSelect            {DbgMsgWP (L"%%SelectStmt:  SELECT NS CCListCS ELSE SOSStmts CSRec EndSelect");
+  | _SELECT NS CCListCS ELSE SOSStmts CSRec EndSelect            {DbgMsgWP (L"%%SelectStmt:  _SELECT NS CCListCS ELSE SOSStmts CSRec EndSelect");
                                                                     // Ensure the SELECT token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -2090,8 +2135,17 @@ SelectStmt:
                                                                 }
   ;
 
+_WHILE:
+    WHILE                                                       {DbgMsgWP (L"%%_WHILE:  WHILE");
+                                                                    /* Mark as a main CS stmt for AFO */
+                                                                    lpcsLocalVars->bMainStmt = TRUE;
+
+                                                                    /* Set start of stmt */
+                                                                    CS_LinkStmt (lpcsLocalVars, &$1);
+                                                                }
+
 WhileStmt:
-    WHILE NSS           CSCLCSRec EndWhile                      {DbgMsgWP (L"%%WhileStmt:  WHILE NSS CSCLCSRec EndWhile");
+    _WHILE NSS           CSCLCSRec EndWhile                     {DbgMsgWP (L"%%WhileStmt:  _WHILE NSS CSCLCSRec EndWhile");
                                                                     // Ensure the WHILE token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -2134,7 +2188,7 @@ WhileStmt:
 
                                                                     $$ = $4;
                                                                 }
-  | WHILE NS  OrIfAndIf CSCLCSRec EndWhile                      {DbgMsgWP (L"%%WhileStmt:  WHILE NS OrIfAndIf CSCLCSRec EndWhile");
+  | _WHILE NS  OrIfAndIf CSCLCSRec EndWhile                      {DbgMsgWP (L"%%WhileStmt:  _WHILE NS OrIfAndIf CSCLCSRec EndWhile");
                                                                     // Ensure the WHILE token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -2194,7 +2248,7 @@ WhileStmt:
 
                                                                     $$ = $5;
                                                                 }
-  | WHILE NSS           CSCLCSRec Until                         {DbgMsgWP (L"%%WhileStmt:  WHILE NSS CSCLCSRec Until");
+  | _WHILE NSS           CSCLCSRec Until                         {DbgMsgWP (L"%%WhileStmt:  _WHILE NSS CSCLCSRec Until");
                                                                     // Ensure the WHILE token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -2237,7 +2291,7 @@ WhileStmt:
 
                                                                     $$ = $4;
                                                                 }
-  | WHILE NS  OrIfAndIf CSCLCSRec Until                         {DbgMsgWP (L"%%WhileStmt:  WHILE NS OrIfAndIf CSCLCSRec Until");
+  | _WHILE NS  OrIfAndIf CSCLCSRec Until                         {DbgMsgWP (L"%%WhileStmt:  _WHILE NS OrIfAndIf CSCLCSRec Until");
                                                                     // Ensure the WHILE token is SOS
                                                                     if (!$1.lptkCur->tkData.bSOS)
                                                                     {
@@ -2536,21 +2590,9 @@ CS_YYLEX_START:
             return ENDWHILE;
 
         case TKT_CS_FOR:                    // ...                 FOR
-            // Mark as a main CS stmt for AFO
-            lpcsLocalVars->bMainStmt = TRUE;
-
-            // Set start of stmt
-            CS_LinkStmt (lpcsLocalVars, lpYYLval);
-
             return FOR;
 
         case TKT_CS_FORLCL:                 // ...                 FORLCL
-            // Mark as a main CS stmt for AFO
-            lpcsLocalVars->bMainStmt = TRUE;
-
-            // Set start of stmt
-            CS_LinkStmt (lpcsLocalVars, lpYYLval);
-
             return FORLCL;
 
         case TKT_CS_GOTO:                   // ...                 GOTO
@@ -2560,12 +2602,6 @@ CS_YYLEX_START:
             return GOTO;
 
         case TKT_CS_IF:                     // ...                 IF
-            // Mark as a main CS stmt for AFO
-            lpcsLocalVars->bMainStmt = TRUE;
-
-            // Set start of stmt
-            CS_LinkStmt (lpcsLocalVars, lpYYLval);
-
             return IF;
 
         case TKT_CS_IN:                     // ...                 IN
@@ -2584,12 +2620,6 @@ CS_YYLEX_START:
             return NEC;
 
         case TKT_CS_REPEAT:                 // ...                 REPEAT
-            // Mark as a main CS stmt for AFO
-            lpcsLocalVars->bMainStmt = TRUE;
-
-            // Set start of stmt
-            CS_LinkStmt (lpcsLocalVars, lpYYLval);
-
             return REPEAT;
 
         case TKT_CS_RETURN:                 // ...                 RETURN
@@ -2599,12 +2629,6 @@ CS_YYLEX_START:
             return RETURN;
 
         case TKT_CS_SELECT:                 // ...                 SELECT
-            // Mark as a main CS stmt for AFO
-            lpcsLocalVars->bMainStmt = TRUE;
-
-            // Set start of stmt
-            CS_LinkStmt (lpcsLocalVars, lpYYLval);
-
             return SELECT;
 
         case TKT_CS_SKIPCASE:               // ...                 Special token
@@ -2617,12 +2641,6 @@ CS_YYLEX_START:
             return UNTIL;
 
         case TKT_CS_WHILE:                  // ...                 WHILE
-            // Mark as a main CS stmt for AFO
-            lpcsLocalVars->bMainStmt = TRUE;
-
-            // Set start of stmt
-            CS_LinkStmt (lpcsLocalVars, lpYYLval);
-
             return WHILE;
 
         case TKT_LABELSEP:

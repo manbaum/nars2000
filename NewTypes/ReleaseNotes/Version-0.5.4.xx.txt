@@ -1,6 +1,21 @@
 Version 0.5.4.xx consists of the following Builds:
 
 
+Build #1755 -- Version 0.5.4.xx
+--------------------------------
+
+* Fix Bug In )SAVE And )LOAD With Non-Empty SI
+
+Directory branches/bsmith/NewTypes:
+
+SC_LOAD.C:
+  If the workspace has a non-empty SI, display a message about it, and don't load the SI levels.
+
+SC_SAVE.C:
+  If the workspace has a non-empty SI, display a message noting SI cleared on )LOAD.
+  Remove duplicate message about non-empty SI.
+
+
 Build #1754 -- Version 0.5.4.xx
 --------------------------------
 

@@ -378,6 +378,13 @@ UBOOL LoadWorkspace_EM
         // Mark as suspended to handle the initial case
         bSuspended = TRUE;
 
+        // Check SI level
+        if (uSILevel > 0)
+            ReplaceLastLineCRPmt (L"WARNING:  SI cleared on )LOAD");
+
+        // Because we don't handle non-emptySI levels, this fix avoids problems later
+        uSILevel = 0;                       // ***FIXME*** -- Implement an APL Stack
+
         // Loop through the SI levels
         for (uSID = 0; uSID <= uSILevel; uSID++)
         {

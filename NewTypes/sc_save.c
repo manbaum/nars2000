@@ -203,7 +203,7 @@ UBOOL CmdSave_EM
 
     // Note if the SI is non-empty
     if (lpMemPTD->SILevel NE 0)
-        ReplaceLastLineCRPmt (L"WARNING:  SI non-empty -- not restartable after )LOAD");
+        ReplaceLastLineCRPmt (L"WARNING:  SI non-empty, cleared on )LOAD");
 
     // Calculate space needed for the two counters
     ByteRes = 2 * sizeof (UINT) * (lpMemPTD->SILevel + 1);
@@ -279,9 +279,6 @@ UBOOL CmdSave_EM
     {
         WCHAR wszTemp[128];
         UINT  i;
-
-        // Note that the SI is non-empty
-        ReplaceLastLineCRPmt (L"WARNING:  SI non-empty -- not restartable after )LOAD");
 
         // Create the [SI] section
         ProfileSetSection (SECTNAME_SI,             // Ptr to the section name

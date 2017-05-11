@@ -3346,9 +3346,9 @@ HGLOBAL _ValidObj
      UINT    uSig)          // Signature of   ...
 
 {
-    LPVOID  lpMem;
-    UINT    uLen,
-            uSiz;
+    LPVOID lpMem;
+    SIZE_T uLen,
+           uSiz;
 
     // Lock the memory to get a ptr to it
     lpMem = GlobalLock (ClrPtrTypeDir(hMem));

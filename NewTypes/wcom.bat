@@ -29,6 +29,7 @@ Set MS_DIR=%NARSROOT%msieve^\
 Set MPC_DIR=%NARSROOT%mpc^\
 Set MPIR_DIR=%NARSROOT%mpir^\
 Set MPFR_DIR=%NARSROOT%mpfr^\
+Set FLINT_DIR=%NARSROOT%flint^\
 Set GSL_DIR=%NARSROOT%gsl^\
 Set ECM_DIR=%NARSROOT%ecm^\
 

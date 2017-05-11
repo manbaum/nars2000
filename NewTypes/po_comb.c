@@ -24,12 +24,55 @@
 #include <windows.h>
 #include "headers.h"
 
-#define GlobalLock2(a)      a
-#define GlobalUnlock2(a)
+#define GlobalAlloc3(a,b)           GlobalAlloc (a, b)
+#define GlobalLock3(a)              a
+#define GlobalUnlock3(a)
+#define GlobalFree3(a)              GlobalFree (a)
+
+#define GlobalAllocGHND(a,b)        dlmalloc (b)            // GlobalAlloc (GHND, b)
+#define GlobalReAllocGHND(a,b,c)    dlrealloc (a, b)        // GlobalReAlloc (a, b, c)
+#define GlobalLockGHND(a)           (a)                     // GlobalLock (a)
+#define GlobalUnlockGHND(a)                                 // GlobalUnlock (a)
+#define GlobalFreeGHND(a)           dlfree (a)              // GlobalFree (a)
 
 // Uncomment out the following line to look for unset values from PNR in PNI
 // The timings don't show any advantage of doing this
 //#define USE_PNI
+
+// Above this value, we use PNPentMpi to calculate the # Partitions of N into N parts
+//   because the intermediate results are not representable as an INT
+#define PN_PENT_INT_TOO_BIG     395
+
+// Above this value, we use HRR to calculate the # partitions of N into N parts
+//   because calculating the result requires too much time or stack space
+#define PN_PENT_RAT_TOO_LONG    395
+
+// Uncomment this #define when we get HRR to work
+#define USE_HRR
+
+#ifdef USE_HRR
+void arith_number_of_partitions_mpfr(mpfr_t x, ulong n);
+#endif
+
+HGLOBAL ghGlbPNI,               // PN global memory handle for INTs
+        ghGlbPNJ,               // ...                         INTs accumulating as per FS001
+        ghGlbPNR,               // ...                         RATs
+        ghGlbPNZ,               // ...                         MPIs accumulating as per FS001
+        ghGlbSN2I,              // SN2 ...                     INTs
+        ghGlbSN2R;              // ...                         RATs
+
+APLINT  gCurLenPNI,             // Current length of PN global memory for INTs
+        gCurLenPNJ,             // ...                                    INTs accumulating as per FS001
+        gCurLenPNR,             // ...                                    RATs
+        gCurLenPNZ,             // ...                                    MPIs accumulating as per FS001
+        gCurLenSN2I,            // ...               SN2 ...              INTs
+        gCurLenSN2R,            // ...                                    RATs
+        gMaxLenPNI,             // Maximum ...       PN  ...          for INTs
+        gMaxLenPNJ,             // ...                                    INTs accumulating as per FS001
+        gMaxLenPNR,             // ...                                    RATs
+        gMaxLenPNZ,             // ...                                    MPIs accumulating as per FS001
+        gMaxLenSN2I,            // ...               SN2 ...              INTs
+        gMaxLenSN2R;            // ...                                    RATs
 
 
 //***************************************************************************
@@ -155,11 +198,13 @@ LPPL_YYSTYPE PrimOpMonCombinatorial_EM_YY
                       hGlbRht = NULL;       // Right arg
     LPVARARRAY_HEADER lpMemHdrOpr = NULL,   // Ptr to left operand header
                       lpMemHdrRht = NULL;   // ...    right arg    ...
-    APLLONGEST        aplLongestOpr;        // Left operand immediate data
+    APLLONGEST        aplLongestOpr,        // Left operand immediate data
+                      aplLongestRht;        // Right arg    ...
     LPVOID            lpMemOpr,             // Ptr to left operand data
                       lpMemRht;             // ...    right arg data
     APLINT            aplFS,                // Function Selector
                       aplCvG;               // Count (0) v. Generate (1) flag
+    APLUINT           uRht;                 // Index of the right arg
     UBOOL             bRet;                 // TRUE iff the result is valid
     LPTOKEN           lptkAxisOpr,          // Ptr to operator axis token (may be NULL)
                       lptkAxisLft;          // Ptr to left operand axis token (may be NULL)
@@ -208,7 +253,7 @@ LPPL_YYSTYPE PrimOpMonCombinatorial_EM_YY
         lptkAxisLft = NULL;
 
     // The syntax of this operator is
-    //   FS!! L R
+    //   FS!!V  where V is a one- or two-element vector
 
     // Get the attributes of the left operand
     AttrsOfToken (&lpYYFcnStrLft->tkToken, &aplTypeOpr, &aplNELMOpr, &aplRankOpr, NULL);
@@ -258,12 +303,13 @@ LPPL_YYSTYPE PrimOpMonCombinatorial_EM_YY
     // Get the attributes of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
-    // The right arg must be a two-element vector
-    if (!IsVector (aplRankRht))
+    // The right arg must be a one- or two-element vector
+    if (IsMultiRank (aplRankRht))
         goto RIGHT_RANK_EXIT;
 
     // Check for LENGTH ERROR
-    if (aplNELMRht NE 2)
+    if (aplNELMRht NE 1
+     && aplNELMRht NE 2)
         goto RIGHT_LENGTH_EXIT;
 
     // Check for DOMAIN ERROR
@@ -272,32 +318,40 @@ LPPL_YYSTYPE PrimOpMonCombinatorial_EM_YY
         goto RIGHT_DOMAIN_EXIT;
 
     // Lock the memory to get a ptr to it
-    GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
-    // Point to the data
-    lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+    // If the right arg is immediate, ...
+    if (hGlbRht EQ NULL)
+        // Point to the data
+        lpMemRht = &aplLongestRht;
+    else
+        // Point to the data
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+
+    // If the right arg is a singleton, ...
+    uRht = !IsSingleton (aplNELMRht);
 
     // Get the # Balls as an INT
-    combArgs.aplIntBalls = ConvertToInteger_SCT (aplTypeRht, lpMemRht, 0, &bRet);
+    combArgs.aplIntBalls = ConvertToInteger_SCT (aplTypeRht, lpMemRht,    0, &bRet);
     if (bRet)
         // Mark as valid
         combArgs.bIntBalls = TRUE;
 
     // Get the # Boxes as an INT
-    combArgs.aplIntBoxes = ConvertToInteger_SCT (aplTypeRht, lpMemRht, 1, &bRet);
+    combArgs.aplIntBoxes = ConvertToInteger_SCT (aplTypeRht, lpMemRht, uRht, &bRet);
     if (bRet)
         // Mark as valid
         combArgs.bIntBoxes = TRUE;
 
     // Get the # Balls as a RAT
-    combArgs.aplRatBalls = ConvertToRAT_SCT (aplTypeRht, lpMemRht, 0, &bRet);
+    combArgs.aplRatBalls = ConvertToRAT_SCT     (aplTypeRht, lpMemRht,    0, &bRet);
     if (!bRet
      || !mpq_integer_p (&combArgs.aplRatBalls)
      ||  mpq_inf_p     (&combArgs.aplRatBalls))
         goto RIGHT_DOMAIN_EXIT;
 
     // Get the # Boxes as a RAT
-    combArgs.aplRatBoxes = ConvertToRAT_SCT (aplTypeRht, lpMemRht, 1, &bRet);
+    combArgs.aplRatBoxes = ConvertToRAT_SCT     (aplTypeRht, lpMemRht, uRht, &bRet);
     if (!bRet
      || !mpq_integer_p (&combArgs.aplRatBoxes)
      ||  mpq_inf_p     (&combArgs.aplRatBoxes))
@@ -659,41 +713,48 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $PNSubInt_RE
+//  $PNPentInt_RE
 //
-//  Count Partition Numbers as INTs
+//  Count Partition Numbers of L into exactly L parts as INTs
+//    using Euler's Pentagonal Number Theorem
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- PNSubInt_RE"
+#define APPEND_NAME     L" -- PNPentInt_RE"
 #else
 #define APPEND_NAME
 #endif
 
-APLINT PNSubInt_RE
-    (APLINT     aplIntLft,          // Left arg (# Balls)
-     APLINT     aplIntRht,          // Right arg (# Boxes)
-     LPUBOOL    lpbCtrlBreak)       // Ptr to Ctrl-Break flag
+APLINT PNPentInt_RE
+    (APLINT  aplIntLft,             // Common arg
+     UBOOL   bInit,                 // TRUE iff this is the top level call
+     LPUBOOL lpbCtrlBreak)          // Ptr to Ctrl-Break flag
 
 {
-    LPAPLNESTED     lpMemComb = NULL;               /// Ptr to temp global memory
-    APLUINT         ByteRes;                        // # bytes in the temp result
-    LPAPLINT        lpaplInt1 = NULL,               // Ptr to PNI row to be added
-                    lpaplInt2 = NULL;               // ...            with the value
-    APLINT          aplIntRes;                      // The result
-    UBOOL           bCSO,                           // TRUE iff the CSO has been entered
-                    bRet;                           // TRUE iff the result is valid
+    LPAPLINT        lpaplInt2 = NULL;               // Ptr to PNJ row with the value
+    APLINT          aplIntRes,                      // The result
+                    aplIntGPN,                      // Accumulated Generalized Pentagonal Numbers
+                    aplIntCnt,                      // Loop counter
+                    aplIntTmp;                      // Temp
+    UBOOL           bCSO = FALSE,                   // TRUE iff the CSO has been entered
+                    bRet = TRUE;                    // TRUE iff the result is valid
     EXCEPTION_CODES exCode = EXCEPTION_CTRL_BREAK;  // Exception code in case we're to signal an exception
 
-    // Assume we'll be successful
-    bRet = TRUE;
+    // Check for DOMAIN ERROR
+    // Not all of the intermediate results for
+    //   args greater than this can be represented as INTs
+    if (aplIntLft > PN_PENT_INT_TOO_BIG)
+        goto DOMAIN_EXIT;
+
+    // If the args fit in a ULONG, and
+    //   the common value is too big, ...
+    if (aplIntLft EQ (ulong) aplIntLft
+     && aplIntLft > PN_PENT_RAT_TOO_LONG)
+        goto DOMAIN_EXIT;
 
     // Check for edge conditions
-    if (aplIntLft < aplIntRht
-     || aplIntLft <= 0
-     || aplIntRht <= 0)
-        return (aplIntLft EQ 0)
-            && (aplIntRht EQ 0);
+    if (aplIntLft <= 0)
+        return (aplIntLft EQ 0);
 
     // Check for Ctrl-Break
     if (CheckCtrlBreak (lpbCtrlBreak))
@@ -703,113 +764,104 @@ APLINT PNSubInt_RE
     {
         __try
         {
-            EnterCriticalSection (&CSOCombPNI); bCSO = TRUE;
-
-            // If we need to expand ghGlbPNI, ...
-            if (aplIntLft > gMaxLenPNI)
+            if (bInit)
             {
-                if (!NestedReAlloc (&ghGlbPNI, aplIntLft, gCurLenPNI, &gMaxLenPNI))
+                EnterCriticalSection (&CSOCombPNJ); bCSO = TRUE;
+            } // End IF
+
+            // If we need to expand ghGlbPNJ, ...
+            if (aplIntLft > gMaxLenPNJ)
+            {
+                if (!MpiIntReAlloc (&ghGlbPNJ, aplIntLft, TRUE, &gMaxLenPNJ))
                     goto WSFULL_EXIT;
             } // End IF
 
             // Lock the memory to get a ptr to it
-            lpMemComb = GlobalLock (ghGlbPNI);
+            lpaplInt2 = GlobalLockGHND (ghGlbPNJ);
 
-            // If we need another row in ghGlbPNI, ...
-            while (aplIntLft > gCurLenPNI)
-            {
-                // Check for Ctrl-Break
-                if (CheckCtrlBreak (lpbCtrlBreak))
-                    goto ERROR_EXIT;
-
-                // Calclate # bytes in this row
-                ByteRes = (gCurLenPNI + 1) * sizeof (APLINT);
-
-                // Allocate an Item row
-                lpMemComb[gCurLenPNI] = GlobalAlloc (GPTR, (APLU3264) ByteRes);
-
-                // Check for error
-                if (lpMemComb[gCurLenPNI] EQ NULL)
-                    goto WSFULL_EXIT;
-
-                // Lock the memory to get a ptr to it
-                lpaplInt1 = GlobalLock2 (lpMemComb[gCurLenPNI]);
-
-                // Fill in the row with a leading and trailing 1 with all -1s in between
-                FillMemory (&lpaplInt1[1], (APLU3264) ((gCurLenPNI - 1) * sizeof (APLINT)), 0xFF);
-
-                lpaplInt1[0]          =
-                lpaplInt1[gCurLenPNI] = 1;
-
-                // We no longer need this ptr
-                GlobalUnlock2 (lpMemComb[gCurLenPNI]); lpaplInt1 = NULL;
-
-                // Count in another row
-                gCurLenPNI++;
-            } // End WHILE
-
-            // Now calculate the PNI
-
-            // Lock the memory to get a ptr to it
-            lpaplInt2 = GlobalLock2 (lpMemComb[aplIntLft - 1]);
+            // Now calculate the PNJ
 
             // Get the value
-            aplIntRes = lpaplInt2[aplIntRht - 1];
-
-            // We no longer need this ptr
-            GlobalUnlock2 (lpMemComb[aplIntLft - 1]); lpaplInt2 = NULL;
+            aplIntRes = lpaplInt2[aplIntLft - 1];
 
             // If it's not valid, ...
             if (aplIntRes EQ -1)
             {
-                LeaveCriticalSection (&CSOCombPNI); bCSO = FALSE;
+////            // Prepare to recurse
+////            LeaveCriticalSection (&CSOCombPNJ); bCSO = FALSE;
 
-                // Recurse
-                aplIntRes = iadd64 (PNSubInt_RE (aplIntLft - aplIntRht, aplIntRht    , lpbCtrlBreak),
-                                    PNSubInt_RE (aplIntLft - 1        , aplIntRht - 1, lpbCtrlBreak),
-                                   &bRet, 0);
-                if (!bRet)
-                    goto DOMAIN_EXIT;
+                // Initialize
+                aplIntRes = 0;      // Result
+                aplIntGPN = 0;      // Accumulated Generalized Pentagonal Numbers
+                aplIntCnt = 0;      // Loop counter
 
-                EnterCriticalSection (&CSOCombPNI); bCSO = TRUE;
+                // Loop through the Pentagonal Numbers
+                while (TRUE)
+                {
+                    APLINT aplIntNdx;
 
-                // Lock the memory to get a ptr to it
-                lpaplInt2 = GlobalLock2 (lpMemComb[aplIntLft - 1]);
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (lpbCtrlBreak))
+                        goto ERROR_EXIT;
 
-                // Save the value
-                lpaplInt2[aplIntRht - 1] = aplIntRes;
+                    // Accumulate the next Generalized Pentagonal Number
+                    aplIntGPN += (++aplIntCnt % 2) ? aplIntCnt : aplIntCnt / 2;
 
-                // We no longer need this ptr
-                GlobalUnlock2 (lpMemComb[aplIntLft - 1]); lpaplInt2 = NULL;
+                    // Calculate the index
+                    aplIntNdx = aplIntLft - aplIntGPN;
+
+                    // If the index is invalid, ...
+                    if (aplIntNdx < 0)
+                        break;
+
+                    // If the index is at the start, ...
+                    if (aplIntNdx EQ 0)
+                        aplIntTmp = 1;
+                    else
+                    {
+                        // If the value has already been calculated, ...
+                        aplIntTmp = lpaplInt2[aplIntNdx - 1];
+                        if (aplIntTmp EQ -1)
+                        {
+                            // Recurse
+                            aplIntTmp = PNPentInt_RE (aplIntNdx, FALSE, lpbCtrlBreak);
+
+                            // Save in the global
+                            lpaplInt2[aplIntNdx - 1] = aplIntTmp;
+                        } // End IF
+                    } // End IF/ELSE
+
+                    // If the index is odd, ...
+                    if (((aplIntCnt + 1) /2) & BIT0)
+                        aplIntRes  = iadd64 (aplIntRes, aplIntTmp, &bRet, 0);
+                    else
+                        aplIntRes  = isub64 (aplIntRes, aplIntTmp, &bRet, 0);
+                    if (!bRet)
+                        goto DOMAIN_EXIT;
+                } // End WHILE
+
+                // Save in the global
+                Assert (lpaplInt2[aplIntLft - 1] EQ -1);
+                lpaplInt2[aplIntLft - 1] = aplIntRes;
+
+////            EnterCriticalSection (&CSOCombPNJ); bCSO = TRUE;
             } // End IF
         } __finally
         {
-            if (lpaplInt1 NE NULL)
-            {
-                // We no longer need this ptr
-                GlobalUnlock2 (lpMemComb[gCurLenPNI]); lpaplInt1 = NULL;
-            } // End IF
-
             if (lpaplInt2 NE NULL)
             {
                 // We no longer need this ptr
-                GlobalUnlock2 (lpMemComb[aplIntLft - 1]); lpaplInt2 = NULL;
+                GlobalUnlockGHND (ghGlbPNJ); lpaplInt2 = NULL;
             } // End IF
 
-            if (lpMemComb NE NULL)
+            if (bInit)
             {
-                // We no longer need this ptr
-                GlobalUnlock (ghGlbPNI); lpMemComb = NULL;
-            } // End IF
-
-            if (bCSO)
-            {
-                LeaveCriticalSection (&CSOCombPNI); bCSO = FALSE;
+                LeaveCriticalSection (&CSOCombPNJ); bCSO = bInit = FALSE;
             } // End IF
         } // End __try/__finally
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -817,16 +869,13 @@ APLINT PNSubInt_RE
         switch (exCode)
         {
             case EXCEPTION_RESULT_FLOAT:
-            case EXCEPTION_DOMAIN_ERROR:
                 goto DOMAIN_EXIT;
 
+            case EXCEPTION_DOMAIN_ERROR:
             case EXCEPTION_WS_FULL:
-                goto WSFULL_EXIT;
-
+            case EXCEPTION_STACK_OVERFLOW:
             default:
-                RaiseException (exCode, 0, 0, NULL);
-
-                break;
+                goto ERROR_EXIT;
         } // End SWITCH
     } // End __try/__except
 
@@ -848,25 +897,191 @@ ERROR_EXIT:
     // Mark as NOT successful
     bRet = FALSE;
 NORMAL_EXIT:
-    if (lpaplInt1 NE NULL)
-    {
-        // We no longer need this ptr
-        GlobalUnlock2 (lpMemComb[gCurLenPNI]); lpaplInt1 = NULL;
-    } // End IF
-
     if (lpaplInt2 NE NULL)
     {
         // We no longer need this ptr
-        GlobalUnlock2 (lpMemComb[aplIntLft - 1]); lpaplInt2 = NULL;
+        GlobalUnlockGHND (ghGlbPNJ); lpaplInt2 = NULL;
+    } // End IF
+
+    if (bInit)
+    {
+        LeaveCriticalSection (&CSOCombPNJ); bCSO = FALSE;
+    } // End IF
+
+    if (!bRet)
+        RaiseException (exCode, 0, 0, NULL);
+
+    return aplIntRes;
+} // End PNPentInt_RE
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $PNSubInt_RE
+//
+//  Count Partition Numbers of L into exactly R parts as INTs
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PNSubInt_RE"
+#else
+#define APPEND_NAME
+#endif
+
+APLINT PNSubInt_RE
+    (APLINT  aplIntLft,             // Left arg (# Balls)
+     APLINT  aplIntRht,             // Right arg (# Boxes)
+     UBOOL   bInit,                 // TRUE iff this is the top level call
+     LPUBOOL lpbCtrlBreak)          // Ptr to Ctrl-Break flag
+
+{
+    LPAPLNESTED     lpMemComb = NULL;               /// Ptr to temp global memory
+    LPAPLINT        lpaplInt2 = NULL;               // Ptr to PNI row with the value
+    APLINT          aplIntRes;                      // The result
+    UBOOL           bCSO = FALSE,                   // TRUE iff the CSO has been entered
+                    bRet = TRUE;                    // TRUE iff the result is valid
+    EXCEPTION_CODES exCode = EXCEPTION_CTRL_BREAK;  // Exception code in case we're to signal an exception
+
+    // Check for edge conditions
+    if (aplIntLft < aplIntRht
+     || aplIntLft <= 0
+     || aplIntRht <= 0)
+        return (aplIntLft EQ 0)
+            && (aplIntRht EQ 0);
+
+    // Check for Ctrl-Break
+    if (CheckCtrlBreak (lpbCtrlBreak))
+        goto ERROR_EXIT;
+
+    __try
+    {
+        __try
+        {
+            if (bInit)
+            {
+                EnterCriticalSection (&CSOCombPNI); bCSO = TRUE;
+            } // End IF
+
+            // If we need to expand ghGlbPNI, ...
+            if (aplIntLft > gMaxLenPNI)
+            {
+                if (!NestedReAlloc (&ghGlbPNI, aplIntLft, gCurLenPNI, &gMaxLenPNI))
+                    goto WSFULL_EXIT;
+            } // End IF
+
+            // If we need another row in ghGlbPNI, ...
+            if (aplIntLft > gCurLenPNI)
+                // (Initialize those rows
+                InitCombRowCacheInt_EM_RE (aplIntLft, ghGlbPNI, &gCurLenPNI, lpbCtrlBreak);
+
+            // Lock the memory to get a ptr to it
+            lpMemComb = GlobalLockGHND (ghGlbPNI);
+
+            // Now calculate the PNI
+
+            // Lock the memory to get a ptr to it
+            lpaplInt2 = GlobalLock3 (lpMemComb[aplIntLft - 1]);
+
+            // Get the value
+            aplIntRes = lpaplInt2[aplIntRht - 1];
+
+            // We no longer need this ptr
+            GlobalUnlock3 (lpMemComb[aplIntLft - 1]); lpaplInt2 = NULL;
+
+            // If it's not valid, ...
+            if (aplIntRes EQ -1)
+            {
+////            // Prepare to recurse
+////            LeaveCriticalSection (&CSOCombPNI); bCSO = FALSE;
+
+                // Recurse
+                aplIntRes = iadd64 (PNSubInt_RE (aplIntLft - aplIntRht, aplIntRht    , FALSE, lpbCtrlBreak),
+                                    PNSubInt_RE (aplIntLft - 1        , aplIntRht - 1, FALSE, lpbCtrlBreak),
+                                   &bRet, 0);
+                if (!bRet)
+                    goto DOMAIN_EXIT;
+
+////            EnterCriticalSection (&CSOCombPNI); bCSO = TRUE;
+
+                // Lock the memory to get a ptr to it
+                lpaplInt2 = GlobalLock3 (lpMemComb[aplIntLft - 1]);
+
+                // Save the value
+                lpaplInt2[aplIntRht - 1] = aplIntRes;
+
+                // We no longer need this ptr
+                GlobalUnlock3 (lpMemComb[aplIntLft - 1]); lpaplInt2 = NULL;
+            } // End IF
+        } __finally
+        {
+            if (lpaplInt2 NE NULL)
+            {
+                // We no longer need this ptr
+                GlobalUnlock3 (lpMemComb[aplIntLft - 1]); lpaplInt2 = NULL;
+            } // End IF
+
+            if (lpMemComb NE NULL)
+            {
+                // We no longer need this ptr
+                GlobalUnlockGHND (ghGlbPNI); lpMemComb = NULL;
+            } // End IF
+
+            if (bInit)
+            {
+                LeaveCriticalSection (&CSOCombPNI); bCSO = bInit = FALSE;
+            } // End IF
+        } // End __try/__finally
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Split cases based upon the exception code
+        switch (exCode)
+        {
+            case EXCEPTION_RESULT_FLOAT:
+                goto DOMAIN_EXIT;
+
+            case EXCEPTION_DOMAIN_ERROR:
+            case EXCEPTION_WS_FULL:
+            case EXCEPTION_STACK_OVERFLOW:
+            default:
+                goto ERROR_EXIT;
+        } // End SWITCH
+    } // End __try/__except
+
+    goto NORMAL_EXIT;
+
+DOMAIN_EXIT:
+    // Mark as a DOMAIN ERROR
+    exCode = EXCEPTION_DOMAIN_ERROR;
+
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    // Mark as a WS FULL
+    exCode = EXCEPTION_WS_FULL;
+
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    // Mark as NOT successful
+    bRet = FALSE;
+NORMAL_EXIT:
+    if (lpaplInt2 NE NULL)
+    {
+        // We no longer need this ptr
+        GlobalUnlock3 (lpMemComb[aplIntLft - 1]); lpaplInt2 = NULL;
     } // End IF
 
     if (lpMemComb NE NULL)
     {
         // We no longer need this ptr
-        GlobalUnlock (ghGlbPNI); lpMemComb = NULL;
+        GlobalUnlockGHND (ghGlbPNI); lpMemComb = NULL;
     } // End IF
 
-    if (bCSO)
+    if (bInit)
     {
         LeaveCriticalSection (&CSOCombPNI); bCSO = FALSE;
     } // End IF
@@ -880,14 +1095,218 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
+//  $PNPentMpi_RE
+//
+//  Count Partition Numbers of L into exactly L parts as MPIs
+//    using Euler's Pentagonal Number Theorem
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- PNPentMpi_RE"
+#else
+#define APPEND_NAME
+#endif
+
+APLMPI PNPentMpi_RE
+    (APLINT  aplIntLft,             // Common arg
+     UBOOL   bInit,                 // TRUE iff this is the top level call
+     LPUBOOL lpbCtrlBreak)          // Ptr to Ctrl-Break flag
+
+{
+    LPAPLMPI        lpaplMpi2 = NULL;               // Ptr to PNZ row with the value
+    APLMPI          aplMpiRes,                      // The result
+                    aplMpiTmp;                      // Temp
+    APLINT          aplIntGPN,                      // Accumulated Generalized Pentagonal Numbers
+                    aplIntCnt;                      // Loop counter
+    UBOOL           bCSO = FALSE,                   // TRUE iff the CSO has been entered
+                    bRet = TRUE;                    // TRUE iff the result is valid
+    EXCEPTION_CODES exCode = EXCEPTION_CTRL_BREAK;  // Exception code in case we're to signal an exception
+
+    // Check for edge conditions
+    if (aplIntLft <= 0)
+    {
+        mpz_init_set_si (&aplMpiRes, aplIntLft EQ 0);
+
+        return aplMpiRes;
+    } // End IF
+
+    // Check for Ctrl-Break
+    if (CheckCtrlBreak (lpbCtrlBreak))
+        goto ERROR_EXIT;
+
+#ifdef USE_HRR
+    // If the args fit in a ulong, and
+    //   the common value is large enough, ...
+    if (aplIntLft EQ (ulong) aplIntLft
+     && aplIntLft > PN_PENT_RAT_TOO_LONG)
+        // Call HRR from FLINT
+        return FS001C_mpi ((ulong) aplIntLft);
+#endif
+
+    __try
+    {
+        __try
+        {
+            if (bInit)
+            {
+                EnterCriticalSection (&CSOCombPNZ); bCSO = TRUE;
+            } // End IF
+
+            // If we need to expand ghGlbPNZ, ...
+            if (aplIntLft > gMaxLenPNZ)
+            {
+                if (!MpiIntReAlloc (&ghGlbPNZ, aplIntLft, FALSE, &gMaxLenPNZ))
+                    goto WSFULL_EXIT;
+            } // End IF
+
+            // Lock the memory to get a ptr to it
+            lpaplMpi2 = GlobalLockGHND (ghGlbPNZ);
+
+            // Now calculate the PNZ
+
+            // Get the value
+            mpz_init_set (&aplMpiRes, &lpaplMpi2[aplIntLft - 1]);
+
+            // If it's not valid, ...
+            if (mpz_cmp_si (&aplMpiRes, -1) EQ 0)
+            {
+////            // Prepare to recurse
+////            LeaveCriticalSection (&CSOCombPNZ); bCSO = FALSE;
+
+                // Initialize to 0
+                mpz_set_si (&aplMpiRes, 0);     // Result
+                aplIntGPN = 0;                  // Accumulated Generalized Pentagonal Numbers
+                aplIntCnt = 0;                  // Loop counter
+
+                // Loop through the Pentagonal Numbers
+                while (TRUE)
+                {
+                    APLINT aplIntNdx;
+
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    // Accumulate the next Generalized Pentagonal Number
+                    aplIntGPN += (++aplIntCnt % 2) ? aplIntCnt : aplIntCnt / 2;
+
+                    // Calculate the index
+                    aplIntNdx = aplIntLft - aplIntGPN;
+
+                    // If the index is invalid, ...
+                    if (aplIntNdx < 0)
+                        break;
+
+                    // If the index is at the start, ...
+                    if (aplIntNdx EQ 0)
+                        aplMpiTmp = *mpq_numref (&mpqOne);
+                    else
+                    {
+                        // If the value has already been calculated, ...
+                        aplMpiTmp = lpaplMpi2[aplIntNdx - 1];
+                        if (mpz_cmp_si (&aplMpiTmp, -1) EQ 0)
+                        {
+                            // Recurse
+                            aplMpiTmp = PNPentMpi_RE (aplIntNdx, FALSE, lpbCtrlBreak);
+
+                            // Save in the global
+                            mpz_set (&lpaplMpi2[aplIntNdx - 1], &aplMpiTmp);
+                        } // End IF
+                    } // End IF/ELSE
+
+                    // If the index is odd, ...
+                    if (((aplIntCnt + 1) /2) & BIT0)
+                        mpz_add (&aplMpiRes, &aplMpiRes, &aplMpiTmp);
+                    else
+                        mpz_sub (&aplMpiRes, &aplMpiRes, &aplMpiTmp);
+                } // End WHILE
+
+                // Save in the global
+                Assert (mpz_cmp_si (&lpaplMpi2[aplIntLft - 1], -1) EQ 0);
+                mpz_set (&lpaplMpi2[aplIntLft - 1], &aplMpiRes);
+
+////            EnterCriticalSection (&CSOCombPNZ); bCSO = TRUE;
+            } // End IF
+        } __finally
+        {
+            if (lpaplMpi2 NE NULL)
+            {
+                // We no longer need this ptr
+                GlobalUnlockGHND (ghGlbPNZ); lpaplMpi2 = NULL;
+            } // End IF
+
+            if (bInit)
+            {
+                LeaveCriticalSection (&CSOCombPNZ); bCSO = bInit = FALSE;
+            } // End IF
+        } // End __try/__finally
+    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    {
+        exCode = MyGetExceptionCode ();  // The exception code
+
+        dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
+
+        // Split cases based upon the exception code
+        switch (exCode)
+        {
+            case EXCEPTION_RESULT_FLOAT:
+                goto DOMAIN_EXIT;
+
+            case EXCEPTION_DOMAIN_ERROR:
+            case EXCEPTION_WS_FULL:
+            case EXCEPTION_STACK_OVERFLOW:
+            default:
+                goto ERROR_EXIT;
+        } // End SWITCH
+    } // End __try/__except
+
+    goto NORMAL_EXIT;
+
+DOMAIN_EXIT:
+    // Mark as a DOMAIN ERROR
+    exCode = EXCEPTION_DOMAIN_ERROR;
+
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    // Mark as a WS FULL
+    exCode = EXCEPTION_WS_FULL;
+
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    // Mark as NOT successful
+    bRet = FALSE;
+NORMAL_EXIT:
+    if (lpaplMpi2 NE NULL)
+    {
+        // We no longer need this ptr
+        GlobalUnlockGHND (ghGlbPNZ); lpaplMpi2 = NULL;
+    } // End IF
+
+    if (bInit)
+    {
+        LeaveCriticalSection (&CSOCombPNZ); bCSO = FALSE;
+    } // End IF
+
+    if (!bRet)
+        RaiseException (exCode, 0, 0, NULL);
+
+    return aplMpiRes;
+} // End PNPentMpi_RE
+#undef  APPEND_NAME
+
+
+//***************************************************************************
 //  $PNSubRat_RE
 //
-//  Count Partition Numbers as RATs
+//  Count Partition Numbers of L into exactly R parts as RATs
 //***************************************************************************
 
 APLRAT PNSubRat_RE
     (APLINT     aplIntLft,          // Left arg (# Balls)
      APLINT     aplIntRht,          // Right arg (# Boxes)
+     UBOOL      bInit,              // TRUE iff this is the top level call
      LPUBOOL    lpbCtrlBreak)       // Ptr to Ctrl-Break flag
 
 {
@@ -897,18 +1316,13 @@ APLRAT PNSubRat_RE
     LPAPLINT        lpaplInt2 = NULL;               // Ptr to INTs
     APLINT          aplIntRes;                      // The result from PNI
 #endif
-    APLUINT         ByteRes;                        // # bytes in the temp result
     LPAPLRAT        lpaplRat1 = NULL,               // Ptr to RATs to be added
                     lpaplRat2 = NULL;               // ...    RATs with the value
     APLRAT          aplRatRes = {0},                // The result
                     aplRatTmp;                      // Temp as a RAT
-    APLINT          i;                              // Loop counter
-    UBOOL           bCSO,                           // TRUE iff the CSO has been entered
-                    bRet;                           // TRUE iff the result is valid
+    UBOOL           bCSO = FALSE,                   // TRUE iff the CSO has been entered
+                    bRet = TRUE;                    // TRUE iff the result is valid
     EXCEPTION_CODES exCode = EXCEPTION_CTRL_BREAK;  // Exception code in case we're to signal an exception
-
-    // Assume we'll be successful
-    bRet = TRUE;
 
     // Check for edge conditions
     if (aplIntLft < aplIntRht
@@ -920,13 +1334,27 @@ APLRAT PNSubRat_RE
         return aplRatRes;
     } // End IF
 
+#ifdef USE_HRR
+    // If the args are equal, and
+    //   they fit in a ulong, and
+    //   the common value is large enough, ...
+    if (aplIntLft EQ aplIntRht
+     && aplIntLft EQ (ulong) aplIntLft
+     && aplIntLft > PN_PENT_RAT_TOO_LONG)
+        // Call HRR from FLINT
+        return FS001C_rat ((ulong) aplIntLft);
+#endif
+
     // Check for Ctrl-Break
     if (CheckCtrlBreak (lpbCtrlBreak))
         goto ERROR_EXIT;
 
     __try
     {
-        EnterCriticalSection (&CSOCombPNR); bCSO = TRUE;
+        if (bInit)
+        {
+            EnterCriticalSection (&CSOCombPNR); bCSO = TRUE;
+        } // End IF
 
         // If we need to expand ghGlbPNR, ...
         if (aplIntLft > gMaxLenPNR)
@@ -935,53 +1363,24 @@ APLRAT PNSubRat_RE
                 goto WSFULL_EXIT;
         } // End IF
 
-        // Lock the memory to get a ptr to it
-        lpMemComb = GlobalLock (ghGlbPNR);
-
         // If we need another row in ghGlbPNR, ...
         while (aplIntLft > gCurLenPNR)
-        {
-            // Check for Ctrl-Break
-            if (CheckCtrlBreak (lpbCtrlBreak))
-                goto ERROR_EXIT;
+                // (Initialize those rows
+                InitCombRowCacheRat_EM_RE (aplIntLft, ghGlbPNR, &gCurLenPNR, lpbCtrlBreak);
 
-            // Calclate # bytes in this row
-            ByteRes = (gCurLenPNR + 1) * sizeof (APLRAT);
-
-            // Allocate an Item row
-            lpMemComb[gCurLenPNR] = GlobalAlloc (GPTR, (APLU3264) ByteRes);
-
-            // Check for error
-            if (lpMemComb[gCurLenPNR] EQ NULL)
-                goto WSFULL_EXIT;
-
-            // Lock the memory to get a ptr to it
-            lpaplRat1 = GlobalLock2 (lpMemComb[gCurLenPNR]);
-
-            // Fill in the row with a leading and trailing 1 with all -1s in between
-            for (i = 1; i < gCurLenPNR; i++)
-                mpq_init_set_sx (&lpaplRat1[i], -1, 1);
-
-            mpq_init_set (&lpaplRat1[0],          &mpqOne);
-            mpq_init_set (&lpaplRat1[gCurLenPNR], &mpqOne);
-
-            // We no longer need this ptr
-            GlobalUnlock2 (lpMemComb[gCurLenPNR]); lpaplRat1 = NULL;
-
-            // Count in another row
-            gCurLenPNR++;
-        } // End WHILE
+        // Lock the memory to get a ptr to it
+        lpMemComb = GlobalLockGHND (ghGlbPNR);
 
         // Now calculate the PNR
 
         // Lock the memory to get a ptr to it
-        lpaplRat2 = GlobalLock2 (lpMemComb[aplIntLft - 1]);
+        lpaplRat2 = GlobalLock3 (lpMemComb[aplIntLft - 1]);
 
         // Get the value
         mpq_init_set (&aplRatRes, &lpaplRat2[aplIntRht - 1]);
 
         // We no longer need this ptr
-        GlobalUnlock2 (lpMemComb[aplIntLft - 1]); lpaplRat2 = NULL;
+        GlobalUnlock3 (lpMemComb[aplIntLft - 1]); lpaplRat2 = NULL;
 
         // If it's not valid, ...
         if (mpq_cmp_si (&aplRatRes, -1, 1) EQ 0)
@@ -995,19 +1394,19 @@ APLRAT PNSubRat_RE
             if (aplIntLft <= gCurLenPNI)
             {
                 // Lock the memory to get a ptr to it
-                lpMemPNI = GlobalLock (ghGlbPNI);
+                lpMemPNI = GlobalLockGHND (ghGlbPNI);
 
                 // Lock the memory to get a ptr to it
-                lpaplInt2 = GlobalLock2 (lpMemPNI[aplIntLft - 1]);
+                lpaplInt2 = GlobalLock3 (lpMemPNI[aplIntLft - 1]);
 
                 // Get the value
                 aplIntRes = lpaplInt2[aplIntRht - 1];
 
                 // We no longer need this ptr
-                GlobalUnlock2 (lpMemPNI[aplIntLft - 1]); lpaplInt2 = NULL;
+                GlobalUnlock3 (lpMemPNI[aplIntLft - 1]); lpaplInt2 = NULL;
 
                 // We no longer need this ptr
-                GlobalUnlock (ghGlbPNI); lpMemPNI = NULL;
+                GlobalUnlockGHND (ghGlbPNI); lpMemPNI = NULL;
             } else
                 // Mark as not present in PNI
                 aplIntRes = -1;
@@ -1019,61 +1418,61 @@ APLRAT PNSubRat_RE
             else
 #endif
             {
-                // Prepare to recurse
-                LeaveCriticalSection (&CSOCombPNR); bCSO = FALSE;
+////            // Prepare to recurse
+////            LeaveCriticalSection (&CSOCombPNR); bCSO = FALSE;
 
                 Myq_clear (&aplRatRes);
 
-                aplRatRes = PNSubRat_RE (aplIntLft - aplIntRht, aplIntRht    , lpbCtrlBreak);
-                aplRatTmp = PNSubRat_RE (aplIntLft - 1        , aplIntRht - 1, lpbCtrlBreak);
+                aplRatRes = PNSubRat_RE (aplIntLft - aplIntRht, aplIntRht    , FALSE, lpbCtrlBreak);
+                aplRatTmp = PNSubRat_RE (aplIntLft - 1        , aplIntRht - 1, FALSE, lpbCtrlBreak);
 
                 mpq_add (&aplRatRes, &aplRatRes, &aplRatTmp);
 
                 Myq_clear (&aplRatTmp);
 
-                EnterCriticalSection (&CSOCombPNR); bCSO = TRUE;
+////            EnterCriticalSection (&CSOCombPNR); bCSO = TRUE;
             } // End IF
 
             // Lock the memory to get a ptr to it
-            lpaplRat2 = GlobalLock2 (lpMemComb[aplIntLft - 1]);
+            lpaplRat2 = GlobalLock3 (lpMemComb[aplIntLft - 1]);
 
             // Save in the global struc
             mpq_set (&lpaplRat2[aplIntRht - 1], &aplRatRes);
 
             // We no longer need this ptr
-            GlobalUnlock2 (lpMemComb[aplIntLft - 1]); lpaplRat2 = NULL;
+            GlobalUnlock3 (lpMemComb[aplIntLft - 1]); lpaplRat2 = NULL;
         } // End IF
     } __finally
     {
         if (lpaplRat1 NE NULL)
         {
             // We no longer need this ptr
-            GlobalUnlock2 (lpMemComb[gCurLenPNR]); lpaplRat1 = NULL;
+            GlobalUnlock3 (lpMemComb[gCurLenPNR]); lpaplRat1 = NULL;
         } // End IF
 
         if (lpaplRat2 NE NULL)
         {
             // We no longer need this ptr
-            GlobalUnlock2 (lpMemComb[aplIntLft - 1]); lpaplRat2 = NULL;
+            GlobalUnlock3 (lpMemComb[aplIntLft - 1]); lpaplRat2 = NULL;
         } // End IF
 
 #ifdef USE_PNI
         if (lpaplInt2 NE NULL)
         {
             // We no longer need this ptr
-            GlobalUnlock2 (lpMemPNI[aplIntLft - 1]); lpaplInt2 = NULL;
+            GlobalUnlock3 (lpMemPNI[aplIntLft - 1]); lpaplInt2 = NULL;
         } // End IF
 #endif
 
         if (lpMemComb NE NULL)
         {
             // We no longer need this ptr
-            GlobalUnlock (ghGlbPNR); lpMemComb = NULL;
+            GlobalUnlockGHND (ghGlbPNR); lpMemComb = NULL;
         } // End IF
 
-        if (bCSO)
+        if (bInit)
         {
-            LeaveCriticalSection (&CSOCombPNR); bCSO = FALSE;
+            LeaveCriticalSection (&CSOCombPNR); bCSO = bInit = FALSE;
         } // End IF
     } // End __try/__finally
 
@@ -1096,30 +1495,30 @@ NORMAL_EXIT:
     if (lpaplRat1 NE NULL)
     {
         // We no longer need this ptr
-        GlobalUnlock2 (lpMemComb[gCurLenPNR]); lpaplRat1 = NULL;
+        GlobalUnlock3 (lpMemComb[gCurLenPNR]); lpaplRat1 = NULL;
     } // End IF
 
     if (lpaplRat2 NE NULL)
     {
         // We no longer need this ptr
-        GlobalUnlock2 (lpMemComb[aplIntLft - 1]); lpaplRat2 = NULL;
+        GlobalUnlock3 (lpMemComb[aplIntLft - 1]); lpaplRat2 = NULL;
     } // End IF
 
 #ifdef USE_PNI
     if (lpaplInt2 NE NULL)
     {
         // We no longer need this ptr
-        GlobalUnlock2 (lpMemPNI[aplIntLft - 1]); lpaplInt2 = NULL;
+        GlobalUnlock3 (lpMemPNI[aplIntLft - 1]); lpaplInt2 = NULL;
     } // End IF
 #endif
 
     if (lpMemComb NE NULL)
     {
         // We no longer need this ptr
-        GlobalUnlock (ghGlbPNR); lpMemComb = NULL;
+        GlobalUnlockGHND (ghGlbPNR); lpMemComb = NULL;
     } // End IF
 
-    if (bCSO)
+    if (bInit)
     {
         LeaveCriticalSection (&CSOCombPNR); bCSO = FALSE;
     } // End IF
@@ -1146,20 +1545,17 @@ NORMAL_EXIT:
 APLINT SN2SubInt_RE
     (APLINT  aplIntLft,             // Left arg (# Balls)
      APLINT  aplIntRht,             // Right arg (# Boxes)
+     UBOOL   bInit,                 // TRUE iff this is the top level call
      LPUBOOL lpbCtrlBreak)          // Ptr to Ctrl-Break flag
 
 {
     LPAPLNESTED     lpMemComb = NULL;               // Ptr to SN2I vector of vectors of INTs
-    APLUINT         ByteRes;                        // # bytes in the temp result
     LPAPLINT        lpaplInt1 = NULL,               // Ptr to SN2I row to be added
                     lpaplInt2 = NULL;               // ...            with the value
     APLINT          aplIntRes;                      // The result
-    UBOOL           bCSO,                           // TRUE iff the CSO has been entered
-                    bRet;                           // TRUE iff the result is valid
+    UBOOL           bCSO = FALSE,                   // TRUE iff the CSO has been entered
+                    bRet = TRUE;                    // TRUE iff the result is valid
     EXCEPTION_CODES exCode = EXCEPTION_CTRL_BREAK;  // Exception code in case we're to signal an exception
-
-    // Assume we'll be successful
-    bRet = TRUE;
 
     // Check for edge conditions
     if (aplIntLft < aplIntRht
@@ -1176,7 +1572,10 @@ APLINT SN2SubInt_RE
     {
         __try
         {
-            EnterCriticalSection (&CSOCombSN2I); bCSO = TRUE;
+            if (bInit)
+            {
+                EnterCriticalSection (&CSOCombSN2I); bCSO = TRUE;
+            } // End IF
 
             // If we need to expand ghGlbSN2I, ...
             if (aplIntLft > gMaxLenSN2I)
@@ -1185,52 +1584,24 @@ APLINT SN2SubInt_RE
                     goto WSFULL_EXIT;
             } // End IF
 
-            // Lock the memory to get a ptr to it
-            lpMemComb = GlobalLock (ghGlbSN2I);
-
             // If we need another row in ghGlbSN2I, ...
-            while (aplIntLft > gCurLenSN2I)
-            {
-                // Check for Ctrl-Break
-                if (CheckCtrlBreak (lpbCtrlBreak))
-                    goto ERROR_EXIT;
+            if (aplIntLft > gCurLenSN2I)
+                // Initialize those rows
+                InitCombRowCacheInt_EM_RE (aplIntLft, ghGlbSN2I, &gCurLenSN2I, lpbCtrlBreak);
 
-                // Calclate # bytes in this row
-                ByteRes = (gCurLenSN2I + 1) * sizeof (APLINT);
-
-                // Allocate an Item row
-                lpMemComb[gCurLenSN2I] = GlobalAlloc (GPTR, (APLU3264) ByteRes);
-
-                // Check for error
-                if (lpMemComb[gCurLenSN2I] EQ NULL)
-                    goto WSFULL_EXIT;
-
-                // Lock the memory to get a ptr to it
-                lpaplInt1 = GlobalLock2 (lpMemComb[gCurLenSN2I]);
-
-                // Fill in the row with a leading and trailing 1 with all -1s in between
-                FillMemory (&lpaplInt1[1], (APLU3264) ((gCurLenSN2I - 1) * sizeof (APLINT)), 0xFF);
-
-                lpaplInt1[0]          =
-                lpaplInt1[gCurLenSN2I] = 1;
-
-                // We no longer need this ptr
-                GlobalUnlock2 (lpMemComb[gCurLenSN2I]); lpaplInt1 = NULL;
-
-                // Count in another row
-                gCurLenSN2I++;
-            } // End WHILE
+            // Lock the memory to get a ptr to it
+            lpMemComb = GlobalLockGHND (ghGlbSN2I);
 
             // Now calculate the SN2I
 
             // Lock the memory to get a ptr to it
-            lpaplInt2 = GlobalLock2 (lpMemComb[aplIntLft - 1]);
+            lpaplInt2 = GlobalLock3 (lpMemComb[aplIntLft - 1]);
 
             // Get the value
             aplIntRes = lpaplInt2[aplIntRht - 1];
 
             // We no longer need this ptr
-            GlobalUnlock2 (lpMemComb[aplIntLft - 1]); lpaplInt2 = NULL;
+            GlobalUnlock3 (lpMemComb[aplIntLft - 1]); lpaplInt2 = NULL;
 
             // If it's not valid, ...
             if (aplIntRes EQ -1)
@@ -1238,54 +1609,55 @@ APLINT SN2SubInt_RE
                 UBOOL bRet0,            // TRUE iff the temp result is valid
                       bRet1;            // ...
 
-                LeaveCriticalSection (&CSOCombSN2I); bCSO = FALSE;
+////            // Prepare to recurse
+////            LeaveCriticalSection (&CSOCombSN2I); bCSO = FALSE;
 
                 // Recurse
-                aplIntRes = iadd64 (imul64 (aplIntRht, SN2SubInt_RE (aplIntLft - 1, aplIntRht    , lpbCtrlBreak), &bRet0, 0),
-                                                       SN2SubInt_RE (aplIntLft - 1, aplIntRht - 1, lpbCtrlBreak),
+                aplIntRes = iadd64 (imul64 (aplIntRht, SN2SubInt_RE (aplIntLft - 1, aplIntRht    , FALSE, lpbCtrlBreak), &bRet0, 0),
+                                                       SN2SubInt_RE (aplIntLft - 1, aplIntRht - 1, FALSE, lpbCtrlBreak),
                                    &bRet1, 0);
                 if (!bRet0 || !bRet1)
                     goto DOMAIN_EXIT;
 
-                EnterCriticalSection (&CSOCombSN2I); bCSO = TRUE;
+////            EnterCriticalSection (&CSOCombSN2I); bCSO = TRUE;
 
                 // Lock the memory to get a ptr to it
-                lpaplInt2 = GlobalLock2 (lpMemComb[aplIntLft - 1]);
+                lpaplInt2 = GlobalLock3 (lpMemComb[aplIntLft - 1]);
 
                 // Save the value
                 lpaplInt2[aplIntRht - 1] = aplIntRes;
 
                 // We no longer need this ptr
-                GlobalUnlock2 (lpMemComb[aplIntLft - 1]); lpaplInt2 = NULL;
+                GlobalUnlock3 (lpMemComb[aplIntLft - 1]); lpaplInt2 = NULL;
             } // End IF
         } __finally
         {
             if (lpaplInt1 NE NULL)
             {
                 // We no longer need this ptr
-                GlobalUnlock2 (lpMemComb[gCurLenSN2I]); lpaplInt1 = NULL;
+                GlobalUnlock3 (lpMemComb[gCurLenSN2I]); lpaplInt1 = NULL;
             } // End IF
 
             if (lpaplInt2 NE NULL)
             {
                 // We no longer need this ptr
-                GlobalUnlock2 (lpMemComb[aplIntLft - 1]); lpaplInt2 = NULL;
+                GlobalUnlock3 (lpMemComb[aplIntLft - 1]); lpaplInt2 = NULL;
             } // End IF
 
             if (lpMemComb NE NULL)
             {
                 // We no longer need this ptr
-                GlobalUnlock (ghGlbSN2I); lpMemComb = NULL;
+                GlobalUnlockGHND (ghGlbSN2I); lpMemComb = NULL;
             } // End IF
 
-            if (bCSO)
+            if (bInit)
             {
-                LeaveCriticalSection (&CSOCombSN2I); bCSO = FALSE;
+                LeaveCriticalSection (&CSOCombSN2I); bCSO = bInit = FALSE;
             } // End IF
         } // End __try/__finally
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -1293,11 +1665,11 @@ APLINT SN2SubInt_RE
         switch (exCode)
         {
             case EXCEPTION_RESULT_FLOAT:
-            case EXCEPTION_DOMAIN_ERROR:
                 goto DOMAIN_EXIT;
 
+            case EXCEPTION_DOMAIN_ERROR:
             case EXCEPTION_WS_FULL:
-                goto WSFULL_EXIT;
+                goto ERROR_EXIT;
 
             default:
                 RaiseException (exCode, 0, 0, NULL);
@@ -1327,22 +1699,22 @@ NORMAL_EXIT:
     if (lpaplInt1 NE NULL)
     {
         // We no longer need this ptr
-        GlobalUnlock2 (lpMemComb[gCurLenSN2I]); lpaplInt1 = NULL;
+        GlobalUnlock3 (lpMemComb[gCurLenSN2I]); lpaplInt1 = NULL;
     } // End IF
 
     if (lpaplInt2 NE NULL)
     {
         // We no longer need this ptr
-        GlobalUnlock2 (lpMemComb[aplIntLft - 1]); lpaplInt2 = NULL;
+        GlobalUnlock3 (lpMemComb[aplIntLft - 1]); lpaplInt2 = NULL;
     } // End IF
 
     if (lpMemComb NE NULL)
     {
         // We no longer need this ptr
-        GlobalUnlock (ghGlbSN2I); lpMemComb = NULL;
+        GlobalUnlockGHND (ghGlbSN2I); lpMemComb = NULL;
     } // End IF
 
-    if (bCSO)
+    if (bInit)
     {
         LeaveCriticalSection (&CSOCombSN2I); bCSO = FALSE;
     } // End IF
@@ -1364,6 +1736,7 @@ NORMAL_EXIT:
 APLRAT SN2SubRat_RE
     (APLINT  aplIntLft,             // Left arg (# Balls)
      APLINT  aplIntRht,             // Right arg (# Boxes)
+     UBOOL   bInit,                 // TRUE iff this is the top level call
      LPUBOOL lpbCtrlBreak)          // Ptr to Ctrl-Break flag
 
 {
@@ -1373,19 +1746,14 @@ APLRAT SN2SubRat_RE
     LPAPLINT        lpaplInt2 = NULL;               // Ptr to INTs
     APLINT          aplIntRes;                      // The result from SN2I
 #endif
-    APLUINT         ByteRes;                        // # bytes in the temp result
     LPAPLRAT        lpaplRat1 = NULL,               // Ptr to RATs to be added
                     lpaplRat2 = NULL;               // ...    RATs with the value
     APLRAT          aplRatRes = {0},                // The result
                     aplRatTmp1,                     // Temp as a RAT
                     aplRatTmp2;                     // ...
-    APLINT          i;                              // Loop counter
-    UBOOL           bCSO,                           // TRUE iff the CSO has been entered
-                    bRet;                           // TRUE iff the result is valid
+    UBOOL           bCSO = FALSE,                   // TRUE iff the CSO has been entered
+                    bRet = TRUE;                    // TRUE iff the result is valid
     EXCEPTION_CODES exCode = EXCEPTION_CTRL_BREAK;  // Exception code in case we're to signal an exception
-
-    // Assume we'll be successful
-    bRet = TRUE;
 
     // Check for edge conditions
     if (aplIntLft < aplIntRht
@@ -1403,7 +1771,10 @@ APLRAT SN2SubRat_RE
 
     __try
     {
-        EnterCriticalSection (&CSOCombSN2R); bCSO = TRUE;
+        if (bInit)
+        {
+            EnterCriticalSection (&CSOCombSN2R); bCSO = TRUE;
+        } // End IF
 
         // If we need to expand ghGlbSN2R, ...
         if (aplIntLft > gMaxLenSN2R)
@@ -1412,53 +1783,24 @@ APLRAT SN2SubRat_RE
                 goto WSFULL_EXIT;
         } // End IF
 
-        // Lock the memory to get a ptr to it
-        lpMemComb = GlobalLock (ghGlbSN2R);
-
         // If we need another row in ghGlbSN2R, ...
         while (aplIntLft > gCurLenSN2R)
-        {
-            // Check for Ctrl-Break
-            if (CheckCtrlBreak (lpbCtrlBreak))
-                goto ERROR_EXIT;
+            // Initialize those rows
+            InitCombRowCacheRat_EM_RE (aplIntLft, ghGlbSN2R, &gCurLenSN2R, lpbCtrlBreak);
 
-            // Calclate # bytes in this row
-            ByteRes = (gCurLenSN2R + 1) * sizeof (APLRAT);
-
-            // Allocate an Item row
-            lpMemComb[gCurLenSN2R] = GlobalAlloc (GPTR, (APLU3264) ByteRes);
-
-            // Check for error
-            if (lpMemComb[gCurLenSN2R] EQ NULL)
-                goto WSFULL_EXIT;
-
-            // Lock the memory to get a ptr to it
-            lpaplRat1 = GlobalLock2 (lpMemComb[gCurLenSN2R]);
-
-            // Fill in the row with a leading and trailing 1 with all -1s in between
-            for (i = 1; i < gCurLenSN2R; i++)
-                mpq_init_set_sx (&lpaplRat1[i], -1, 1);
-
-            mpq_init_set (&lpaplRat1[0],          &mpqOne);
-            mpq_init_set (&lpaplRat1[gCurLenSN2R], &mpqOne);
-
-            // We no longer need this ptr
-            GlobalUnlock2 (lpMemComb[gCurLenSN2R]); lpaplRat1 = NULL;
-
-            // Count in another row
-            gCurLenSN2R++;
-        } // End WHILE
+        // Lock the memory to get a ptr to it
+        lpMemComb = GlobalLockGHND (ghGlbSN2R);
 
         // Now calculate the SN2R
 
         // Lock the memory to get a ptr to it
-        lpaplRat2 = GlobalLock2 (lpMemComb[aplIntLft - 1]);
+        lpaplRat2 = GlobalLock3 (lpMemComb[aplIntLft - 1]);
 
         // Get the value
         mpq_init_set (&aplRatRes, &lpaplRat2[aplIntRht - 1]);
 
         // We no longer need this ptr
-        GlobalUnlock2 (lpMemComb[aplIntLft - 1]); lpaplRat2 = NULL;
+        GlobalUnlock3 (lpMemComb[aplIntLft - 1]); lpaplRat2 = NULL;
 
         // If it's not valid, ...
         if (mpq_cmp_si (&aplRatRes, -1, 1) EQ 0)
@@ -1472,19 +1814,19 @@ APLRAT SN2SubRat_RE
             if (aplIntLft <= gCurLenSN2I)
             {
                 // Lock the memory to get a ptr to it
-                lpMemSN2I = GlobalLock (ghGlbSN2I);
+                lpMemSN2I = GlobalLockGHND (ghGlbSN2I);
 
                 // Lock the memory to get a ptr to it
-                lpaplInt2 = GlobalLock2 (lpMemSN2I[aplIntLft - 1]);
+                lpaplInt2 = GlobalLock3 (lpMemSN2I[aplIntLft - 1]);
 
                 // Get the value
                 aplIntRes = lpaplInt2[aplIntRht - 1];
 
                 // We no longer need this ptr
-                GlobalUnlock2 (lpMemSN2I[aplIntLft - 1]); lpaplInt2 = NULL;
+                GlobalUnlock3 (lpMemSN2I[aplIntLft - 1]); lpaplInt2 = NULL;
 
                 // We no longer need this ptr
-                GlobalUnlock (ghGlbSN2I); lpMemSN2I = NULL;
+                GlobalUnlockGHND (ghGlbSN2I); lpMemSN2I = NULL;
             } else
                 // Mark as not present in SN2I
                 aplIntRes = -1;
@@ -1496,67 +1838,67 @@ APLRAT SN2SubRat_RE
             else
 #endif
             {
-                // Prepare to recurse
-                LeaveCriticalSection (&CSOCombSN2R); bCSO = FALSE;
+////            // Prepare to recurse
+////            LeaveCriticalSection (&CSOCombSN2R); bCSO = FALSE;
 
-                aplRatTmp1 = SN2SubRat_RE (aplIntLft - 1, aplIntRht    , lpbCtrlBreak); // S(n-1, k)
+                aplRatTmp1 = SN2SubRat_RE (aplIntLft - 1, aplIntRht    , FALSE, lpbCtrlBreak);  // S(n-1, k)
 
-                mpq_init_set_sx (&aplRatTmp2, aplIntRht, 1);                            // k
+                mpq_init_set_sx (&aplRatTmp2, aplIntRht, 1);                                    // k
 
-                mpq_mul (&aplRatRes, &aplRatTmp2, &aplRatTmp1);                         // k * S(n-1, k)
+                mpq_mul (&aplRatRes, &aplRatTmp2, &aplRatTmp1);                                 // k * S(n-1, k)
 
                 Myq_clear (&aplRatTmp1);
                 Myq_clear (&aplRatTmp2);
 
-                aplRatTmp1 = SN2SubRat_RE (aplIntLft - 1, aplIntRht - 1, lpbCtrlBreak); // S(n-1, k-1)
+                aplRatTmp1 = SN2SubRat_RE (aplIntLft - 1, aplIntRht - 1, FALSE, lpbCtrlBreak);  // S(n-1, k-1)
 
-                mpq_add (&aplRatRes, &aplRatRes, &aplRatTmp1);                          // S(n, k) = k * S(n-1, k) + S(n-1, k-1)
+                mpq_add (&aplRatRes, &aplRatRes, &aplRatTmp1);                                  // S(n, k) = k * S(n-1, k) + S(n-1, k-1)
 
                 Myq_clear (&aplRatTmp1);
 
-                EnterCriticalSection (&CSOCombSN2R); bCSO = TRUE;
+////            EnterCriticalSection (&CSOCombSN2R); bCSO = TRUE;
             } // End IF
 
             // Lock the memory to get a ptr to it
-            lpaplRat2 = GlobalLock2 (lpMemComb[aplIntLft - 1]);
+            lpaplRat2 = GlobalLock3 (lpMemComb[aplIntLft - 1]);
 
             // Save in the global struc
             mpq_set (&lpaplRat2[aplIntRht - 1], &aplRatRes);
 
             // We no longer need this ptr
-            GlobalUnlock2 (lpMemComb[aplIntLft - 1]); lpaplRat2 = NULL;
+            GlobalUnlock3 (lpMemComb[aplIntLft - 1]); lpaplRat2 = NULL;
         } // End IF
     } __finally
     {
         if (lpaplRat1 NE NULL)
         {
             // We no longer need this ptr
-            GlobalUnlock2 (lpMemComb[gCurLenSN2R]); lpaplRat1 = NULL;
+            GlobalUnlock3 (lpMemComb[gCurLenSN2R]); lpaplRat1 = NULL;
         } // End IF
 
         if (lpaplRat2 NE NULL)
         {
             // We no longer need this ptr
-            GlobalUnlock2 (lpMemComb[aplIntLft - 1]); lpaplRat2 = NULL;
+            GlobalUnlock3 (lpMemComb[aplIntLft - 1]); lpaplRat2 = NULL;
         } // End IF
 
 #ifdef USE_SN2I
         if (lpaplInt2 NE NULL)
         {
             // We no longer need this ptr
-            GlobalUnlock2 (lpMemSN2I[aplIntLft - 1]); lpaplInt2 = NULL;
+            GlobalUnlock3 (lpMemSN2I[aplIntLft - 1]); lpaplInt2 = NULL;
         } // End IF
 #endif
 
         if (lpMemComb NE NULL)
         {
             // We no longer need this ptr
-            GlobalUnlock (ghGlbSN2R); lpMemComb = NULL;
+            GlobalUnlockGHND (ghGlbSN2R); lpMemComb = NULL;
         } // End IF
 
-        if (bCSO)
+        if (bInit)
         {
-            LeaveCriticalSection (&CSOCombSN2R); bCSO = FALSE;
+            LeaveCriticalSection (&CSOCombSN2R); bCSO = bInit = FALSE;
         } // End IF
     } // End __try/__finally
 
@@ -1575,30 +1917,30 @@ NORMAL_EXIT:
     if (lpaplRat1 NE NULL)
     {
         // We no longer need this ptr
-        GlobalUnlock2 (lpMemComb[gCurLenSN2R]); lpaplRat1 = NULL;
+        GlobalUnlock3 (lpMemComb[gCurLenSN2R]); lpaplRat1 = NULL;
     } // End IF
 
     if (lpaplRat2 NE NULL)
     {
         // We no longer need this ptr
-        GlobalUnlock2 (lpMemComb[aplIntLft - 1]); lpaplRat2 = NULL;
+        GlobalUnlock3 (lpMemComb[aplIntLft - 1]); lpaplRat2 = NULL;
     } // End IF
 
 #ifdef USE_SN2I
     if (lpaplInt2 NE NULL)
     {
         // We no longer need this ptr
-        GlobalUnlock2 (lpMemSN2I[aplIntLft - 1]); lpaplInt2 = NULL;
+        GlobalUnlock3 (lpMemSN2I[aplIntLft - 1]); lpaplInt2 = NULL;
     } // End IF
 #endif
 
     if (lpMemComb NE NULL)
     {
         // We no longer need this ptr
-        GlobalUnlock (ghGlbSN2R); lpMemComb = NULL;
+        GlobalUnlockGHND (ghGlbSN2R); lpMemComb = NULL;
     } // End IF
 
-    if (bCSO)
+    if (bInit)
     {
         LeaveCriticalSection (&CSOCombSN2R); bCSO = FALSE;
     } // End IF
@@ -1608,6 +1950,58 @@ NORMAL_EXIT:
 
     return aplRatRes;
 } // End SN2SubRat_RE
+
+
+//***************************************************************************
+//  $FS001C_mpi
+//
+//  HRR from FLINT returning an MPI
+//***************************************************************************
+
+APLMPI FS001C_mpi
+    (ulong uIntLft)
+
+{
+    APLVFP aplVfpRes = {0};
+    APLMPI aplMpiRes = {0};
+
+    // Initialize
+    mpfr_init (&aplVfpRes);
+    mpz_init  (&aplMpiRes);
+
+    // Call HRR from FLINT to set the result as a VFP
+    arith_number_of_partitions_mpfr (&aplVfpRes, uIntLft);
+
+    // Extract the result as an MPI
+    mpfr_get_z (&aplMpiRes, &aplVfpRes, MPFR_RNDN);
+
+    // We no longer need this storage
+    Myf_clear (&aplVfpRes);
+
+    return aplMpiRes;
+} // End FS001C_mpi
+
+
+//***************************************************************************
+//  $FS001C_rat
+//
+//  HRR from FLINT returning a RAT
+//***************************************************************************
+
+APLRAT FS001C_rat
+    (ulong uIntLft)
+
+{
+    APLRAT aplRatRes = {0};
+
+    // Initialize the denominator of the result to 1
+    mpz_init_set_si (mpq_denref (&aplRatRes), 1);
+
+    // Call HRR from FLINT to set the numerator of the result
+    *mpq_numref (&aplRatRes) = FS001C_mpi (uIntLft);
+
+    return aplRatRes;
+} // End FS001C_rat
 
 
 //***************************************************************************
@@ -1626,16 +2020,17 @@ LPPL_YYSTYPE FS001C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
-    APLINT        aplIntLft,            // L  as an INT
-                  aplIntRht,            // R  ...
-                  aplIntRes,            // The result as an integer
-                  i;
-    APLRAT        aplRatRes = {0},      // Result as a RAT
-                  aplRatTmp;            // Temp   ...
-    HGLOBAL       hGlbRes = NULL;       // The result's global memory handle
-    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPL_YYSTYPE    lpYYRes = NULL;                 // Ptr to the result
+    APLINT          aplIntLft,                      // L  as an INT
+                    aplIntRht,                      // R  ...
+                    aplIntRes,                      // The result as an integer
+                    i;                              // Loop counter
+    APLRAT          aplRatRes = {0};                // Result as a RAT
+    APLRAT          aplRatTmp;                      // Temp   ...
+    HGLOBAL         hGlbRes = NULL;                 // The result's global memory handle
+    LPPLLOCALVARS   lpplLocalVars;                  // Ptr to re-entrant vars
+    LPUBOOL         lpbCtrlBreak;                   // Ptr to Ctrl-Break flag
+    EXCEPTION_CODES exCode = EXCEPTION_CTRL_BREAK;  // Exception code in case we're to signal an exception
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -1657,21 +2052,26 @@ LPPL_YYSTYPE FS001C_EM_YY
         {
             UBOOL bRet;                 // TRUE iff the temp result is valid
 
+            // If the args are equal, ...
+            if (aplIntLft EQ aplIntRht)
+                // Use Euler's Pentagonal Number Theorem
+                aplIntRes = PNPentInt_RE (aplIntRht, TRUE, lpbCtrlBreak);
+            else
             // Loop through the right args 0..R
             for (i = aplIntRes = 0; i <= aplIntRht; i++)
             {
                 // Call common subroutine for INTs
-                aplIntRes = iadd64 (aplIntRes, PNSubInt_RE (aplIntLft, i, lpbCtrlBreak), &bRet, 0);
+                aplIntRes = iadd64 (aplIntRes, PNSubInt_RE (aplIntLft, i, TRUE, lpbCtrlBreak), &bRet, 0);
 
                 if (!bRet)
                     RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
-            } // End FOR
+            } // End IF/ELSE/FOR
 
         } else
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -1680,26 +2080,51 @@ LPPL_YYSTYPE FS001C_EM_YY
         {
             case EXCEPTION_RESULT_FLOAT:
             case EXCEPTION_DOMAIN_ERROR:
-                // Initialize to 0/1
-                mpq_init (&aplRatRes);
-
                 __try
                 {
-                    // Loop through the right args 0..R
-                    for (i = 0; i <= lpCombArgs->aplIntBoxes; i++)
+#ifdef USE_HRR
+                    // If the args are equal, and
+                    //   they fit in a ulong, and
+                    //   the common value is large enough, ...
+                    if (aplIntLft EQ aplIntRht
+                     && aplIntLft EQ (ulong) aplIntLft
+                     && aplIntLft > PN_PENT_RAT_TOO_LONG)
                     {
-                        // Call common subroutine for RATs
-                        aplRatTmp = PNSubRat_RE (aplIntLft, i, lpbCtrlBreak);
+                        // Call HRR from FLINT
+                        aplRatRes = FS001C_rat ((ulong) aplIntLft);
 
-                        // Add into the result
-                        mpq_add (&aplRatRes, &aplRatRes, &aplRatTmp);
+                        break;
+                    } // End IF
+#endif
+                    // If the args are equal, ...
+                    if (mpq_cmp (&lpCombArgs->aplRatBalls, &lpCombArgs->aplRatBoxes) EQ 0)
+                    {
+                        // Use Euler's Pentagonal Number Theorem
+                        *mpq_numref (&aplRatRes) = PNPentMpi_RE (aplIntRht, TRUE, lpbCtrlBreak);
 
-                        // We no longer need this storage
-                        Myq_clear (&aplRatTmp);
-                    } // End FOR
+                        // Initialize to 1
+                        mpz_init_set_si (mpq_denref (&aplRatRes), 1);
+                    } else
+                    {
+                        // Initialize to 0/1
+                        mpq_init (&aplRatRes);
+
+                        // Loop through the right args 0..R
+                        for (i = 0; i <= lpCombArgs->aplIntBoxes; i++)
+                        {
+                            // Call common subroutine for RATs
+                            aplRatTmp = PNSubRat_RE (aplIntLft, i, TRUE, lpbCtrlBreak);
+
+                            // Add into the result
+                            mpq_add (&aplRatRes, &aplRatRes, &aplRatTmp);
+
+                            // We no longer need this storage
+                            Myq_clear (&aplRatTmp);
+                        } // End FOR
+                    } // End IF/ELSE
                 } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
                 {
-                    EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+                    exCode = MyGetExceptionCode ();  // The exception code
 
                     dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -1724,6 +2149,26 @@ LPPL_YYSTYPE FS001C_EM_YY
                 } // End __try/__except
 
                 break;
+
+            case EXCEPTION_STACK_OVERFLOW:
+                // If the args are equal, and
+                //   they fit in a ulong, and
+                //   the common value is large enough, ...
+                if (aplIntLft EQ aplIntRht
+                 && aplIntLft EQ (ulong) aplIntLft
+                 && aplIntLft > PN_PENT_RAT_TOO_LONG)
+#ifdef USE_HRR
+                {
+                    // Call HRR from FLINT
+                    aplRatRes = FS001C_rat ((ulong) aplIntLft);
+
+                    break;
+                } else
+#endif
+                    goto LIMIT_EXIT;
+
+            case EXCEPTION_CTRL_BREAK:
+                goto ERROR_EXIT;
 
             default:
                 RaiseException (exCode, 0, 0, NULL);
@@ -1787,6 +2232,11 @@ DOMAIN_EXIT:
 
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lpCombArgs->lptkFunc);
+    goto ERROR_EXIT;
+
+LIMIT_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
                                lpCombArgs->lptkFunc);
     goto ERROR_EXIT;
 
@@ -1939,19 +2389,20 @@ LPPL_YYSTYPE FS001G_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
-    APLINT            aplIntRes;            // The result as an integer
-    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to the result's header
-    LPAPLNESTED       lpMemRes;             // Ptr to the result's global memory
-    LPAPLINT          lpMemTmpA = NULL;     // ...    temp vector
-    HGLOBAL           hGlbRes = NULL;       // The result's global memory handle
-    APLUINT           ByteRes;              // # bytes in the temp result
-    APLINT            aplIntLft,            // R        as an INT
-                      aplIntRht,            // L        ...
-                      i;                    // Loop counter
-    APLBOOL           bQuadIO;              // []IO
-    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPL_YYSTYPE      lpYYRes = NULL;                   // Ptr to the result
+    APLINT            aplIntRes;                        // The result as an integer
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;               // Ptr to the result's header
+    LPAPLNESTED       lpMemRes;                         // Ptr to the result's global memory
+    LPAPLINT          lpMemTmpA = NULL;                 // ...    temp vector
+    HGLOBAL           hGlbRes = NULL;                   // The result's global memory handle
+    APLUINT           ByteRes;                          // # bytes in the temp result
+    APLINT            aplIntLft,                        // R        as an INT
+                      aplIntRht,                        // L        ...
+                      i;                                // Loop counter
+    APLBOOL           bQuadIO;                          // []IO
+    LPPLLOCALVARS     lpplLocalVars;                    // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;                     // Ptr to Ctrl-Break flag
+    EXCEPTION_CODES   exCode = EXCEPTION_CTRL_BREAK;    // Exception code in case we're to signal an exception
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -1974,17 +2425,22 @@ LPPL_YYSTYPE FS001G_EM_YY
         if (lpCombArgs->bIntBalls
          && lpCombArgs->bIntBoxes)
         {
+            // If the args are equal, ...
+            if (aplIntLft EQ aplIntRht)
+                // Use Euler's Pentagonal Number Theorem
+                aplIntRes = PNPentInt_RE (aplIntRht, TRUE, lpbCtrlBreak);
+            else
             // Loop through the right args 0..R
             for (i = aplIntRes = 0; i <= aplIntRht; i++)
             {
                 // Calculate Res += L PN i
-                aplIntRes += PNSubInt_RE (aplIntLft, i, lpbCtrlBreak);
+                aplIntRes += PNSubInt_RE (aplIntLft, i, TRUE, lpbCtrlBreak);
             } // End IF
         } else
             goto WSFULL_EXIT;
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__ "FS001G"))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -2027,7 +2483,7 @@ LPPL_YYSTYPE FS001G_EM_YY
         ByteRes = (aplIntLft + 1) * sizeof (APLINT);
 
         // Allocate a temp integer vector of length <L+1>
-        lpMemTmpA = DbgGlobalAlloc (GPTR, (APLU3264) ByteRes);
+        lpMemTmpA = GlobalAlloc3 (GPTR, (APLU3264) ByteRes);
         if (lpMemTmpA EQ NULL)
             goto WSFULL_EXIT;
 
@@ -2046,7 +2502,7 @@ LPPL_YYSTYPE FS001G_EM_YY
                 goto ERROR_EXIT;
         } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__ "FS001S1"))
         {
-            EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+            exCode = MyGetExceptionCode ();  // The exception code
 
             dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -2100,7 +2556,7 @@ ERROR_EXIT:
 NORMAL_EXIT:
     if (lpMemTmpA NE NULL)
     {
-        MyGlobalFree (lpMemTmpA); lpMemTmpA = NULL;
+        GlobalFree3 (lpMemTmpA); lpMemTmpA = NULL;
     } // End IF
 
     if (hGlbRes NE NULL)
@@ -2132,14 +2588,15 @@ LPPL_YYSTYPE FS002C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
-    APLINT        aplIntRes,            // The result as an integer
-                  aplIntLft,            // R        as an INT
-                  aplIntRht;            // L        ...
-    APLRAT        aplRatRes   = {0};    // Result as a RAT
-    HGLOBAL       hGlbRes = NULL;       // The result's global memory handle
-    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPL_YYSTYPE    lpYYRes = NULL;                 // Ptr to the result
+    APLINT          aplIntRes,                      // The result as an integer
+                    aplIntLft,                      // R        as an INT
+                    aplIntRht;                      // L        ...
+    APLRAT          aplRatRes   = {0};              // Result as a RAT
+    HGLOBAL         hGlbRes = NULL;                 // The result's global memory handle
+    LPPLLOCALVARS   lpplLocalVars;                  // Ptr to re-entrant vars
+    LPUBOOL         lpbCtrlBreak;                   // Ptr to Ctrl-Break flag
+    EXCEPTION_CODES exCode = EXCEPTION_CTRL_BREAK;  // Exception code in case we're to signal an exception
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -2159,13 +2616,19 @@ LPPL_YYSTYPE FS002C_EM_YY
         if (lpCombArgs->bIntBalls
          && lpCombArgs->bIntBoxes)
         {
-            // Call common subroutine
-            aplIntRes = PNSubInt_RE (aplIntLft, aplIntRht, lpbCtrlBreak);
+            // If the args are 2 to 1, ...
+            // Note that if  2 * R  overflows, it'll be negative and never match L
+            if (aplIntLft EQ (2 * aplIntRht))
+                // Use Euler's Pentagonal Number Theorem
+                aplIntRes = PNPentInt_RE (aplIntRht, TRUE, lpbCtrlBreak);
+            else
+                // Call common subroutine
+                aplIntRes = PNSubInt_RE (aplIntLft, aplIntRht, TRUE, lpbCtrlBreak);
         } else
             goto DOMAIN_EXIT;
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -2174,7 +2637,19 @@ LPPL_YYSTYPE FS002C_EM_YY
         {
             case EXCEPTION_RESULT_FLOAT:
             case EXCEPTION_DOMAIN_ERROR:
-                goto DOMAIN_EXIT;
+                // If the args are 2 to 1, ...
+                // Note that if  2 * R  overflows, it'll be negative and never match L
+                if (aplIntLft EQ (2 * aplIntRht))
+                {
+                    // Use Euler's Pentagonal Number Theorem
+                    *mpq_numref (&aplRatRes) = PNPentMpi_RE (aplIntRht, TRUE, lpbCtrlBreak);
+
+                    // Initialize to 1
+                    mpz_init_set_si (mpq_denref (&aplRatRes), 1);
+                } else
+                    // Call common subroutine
+                    aplRatRes = PNSubRat_RE (aplIntLft, aplIntRht, TRUE, lpbCtrlBreak);
+                break;
 
             default:
                 RaiseException (exCode, 0, 0, NULL);
@@ -2365,21 +2840,23 @@ LPPL_YYSTYPE FS002G_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
-    APLINT            aplIntRes;            // The result as an integer
-    APLDIM            aplDimRes[2];         // The result's dimensions
-    APLNELM           aplNELMRes;           // Result NELM
-    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to the result's header
-    LPAPLINT          lpMemRes,             // Ptr to the result's global memory
-                      lpMemTmpA = NULL;     // ...    temp vector
-    HGLOBAL           hGlbRes = NULL;       // The result's global memory handle
-    APLUINT           ByteRes;              // # bytes in the temp result
-    APLINT            aplIntLft,            // R        as an INT
-                      aplIntRht;            // L        ...
-    APLBOOL           bQuadIO;              // []IO
-    UBOOL             bRet;                 // TRUE iff the result is valid
-    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPL_YYSTYPE      lpYYRes = NULL;                   // Ptr to the result
+    APLINT            aplIntRes;                        // The result as an integer
+    APLRAT            aplRatRes   = {0};                // ...              RAT
+    APLDIM            aplDimRes[2];                     // The result's dimensions
+    APLNELM           aplNELMRes;                       // Result NELM
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;               // Ptr to the result's header
+    LPAPLINT          lpMemRes,                         // Ptr to the result's global memory
+                      lpMemTmpA = NULL;                 // ...    temp vector
+    HGLOBAL           hGlbRes = NULL;                   // The result's global memory handle
+    APLUINT           ByteRes;                          // # bytes in the temp result
+    APLINT            aplIntLft,                        // R        as an INT
+                      aplIntRht;                        // L        ...
+    APLBOOL           bQuadIO;                          // []IO
+    UBOOL             bRet;                             // TRUE iff the result is valid
+    LPPLLOCALVARS     lpplLocalVars;                    // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;                     // Ptr to Ctrl-Break flag
+    EXCEPTION_CODES   exCode = EXCEPTION_CTRL_BREAK;    // Exception code in case we're to signal an exception
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -2402,13 +2879,19 @@ LPPL_YYSTYPE FS002G_EM_YY
         if (lpCombArgs->bIntBalls
          && lpCombArgs->bIntBoxes)
         {
-            // Call common subroutine
-            aplIntRes = PNSubInt_RE (aplIntLft, aplIntRht, lpbCtrlBreak);
+            // If the args are 2 to 1, ...
+            // Note that if  2 * R  overflows, it'll be negative and never match L
+            if (aplIntLft EQ (2 * aplIntRht))
+                // Use Euler's Pentagonal Number Theorem
+                aplIntRes = PNPentInt_RE (aplIntRht, TRUE, lpbCtrlBreak);
+            else
+                // Call common subroutine
+                aplIntRes = PNSubInt_RE (aplIntLft, aplIntRht, TRUE, lpbCtrlBreak);
         } else
             goto WSFULL_EXIT;
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -2417,7 +2900,19 @@ LPPL_YYSTYPE FS002G_EM_YY
         {
             case EXCEPTION_RESULT_FLOAT:
             case EXCEPTION_DOMAIN_ERROR:
-                goto WSFULL_EXIT;
+                // If the args are 2 to 1, ...
+                // Note that if  2 * R  overflows, it'll be negative and never match L
+                if (aplIntLft EQ (2 * aplIntRht))
+                {
+                    // Use Euler's Pentagonal Number Theorem
+                    *mpq_numref (&aplRatRes) = PNPentMpi_RE (aplIntRht, TRUE, lpbCtrlBreak);
+
+                    // Initialize to 1
+                    mpz_init_set_si (mpq_denref (&aplRatRes), 1);
+                } else
+                    // Call common subroutine
+                    aplRatRes = PNSubRat_RE (aplIntLft, aplIntRht, TRUE, lpbCtrlBreak);
+                break;
 
             default:
                 RaiseException (exCode, 0, 0, NULL);
@@ -2457,7 +2952,7 @@ LPPL_YYSTYPE FS002G_EM_YY
         ByteRes = (aplIntRht + 1) * sizeof (APLINT);
 
         // Allocate a temp Integer vector of length <R+1>
-        lpMemTmpA = DbgGlobalAlloc (GPTR, (APLU3264) ByteRes);
+        lpMemTmpA = GlobalAlloc3 (GPTR, (APLU3264) ByteRes);
         if (lpMemTmpA EQ NULL)
             goto WSFULL_EXIT;
 
@@ -2505,7 +3000,7 @@ ERROR_EXIT:
 NORMAL_EXIT:
     if (lpMemTmpA NE NULL)
     {
-        MyGlobalFree (lpMemTmpA); lpMemTmpA = NULL;
+        GlobalFree3 (lpMemTmpA); lpMemTmpA = NULL;
     } // End IF
 
     if (hGlbRes NE NULL)
@@ -2537,10 +3032,11 @@ LPPL_YYSTYPE FS010C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
-    APLINT       aplIntRes;             // The result as an integer
-    APLRAT       aplRatRes   = {0};     // Result as a RAT
-    HGLOBAL      hGlbRes = NULL;        // The result's global memory handle
+    LPPL_YYSTYPE    lpYYRes = NULL;                 // Ptr to the result
+    APLINT          aplIntRes;                      // The result as an integer
+    APLRAT          aplRatRes   = {0};              // Result as a RAT
+    HGLOBAL         hGlbRes = NULL;                 // The result's global memory handle
+    EXCEPTION_CODES exCode = EXCEPTION_CTRL_BREAK;  // Exception code in case we're to signal an exception
 
     // The result is the integer value of L!R
 
@@ -2554,7 +3050,7 @@ LPPL_YYSTYPE FS010C_EM_YY
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -2740,20 +3236,21 @@ LPPL_YYSTYPE FS010G_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
-    APLINT            aplIntRes,            // The result as an integer
-                      i;                    // Temp
-    APLDIM            aplDimRes[2];         // The result's dimensions
-    APLNELM           aplNELMRes;           // Result NELM
-    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to the result's header
-    LPAPLINT          lpMemRes,             // Ptr to the result's global memory
-                      lpMemTmp = NULL;      // ...    temp         ...
-    HGLOBAL           hGlbRes = NULL;       // The result's global memory handle
-    UBOOL             bRet;                 // TRUE iff the result is valid
-    APLUINT           ByteTmp;              // # bytes in the Temp
-    APLBOOL           bQuadIO;              // []IO
-    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPL_YYSTYPE      lpYYRes = NULL;                   // Ptr to the result
+    APLINT            aplIntRes,                        // The result as an integer
+                      i;                                // Temp
+    APLDIM            aplDimRes[2];                     // The result's dimensions
+    APLNELM           aplNELMRes;                       // Result NELM
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;               // Ptr to the result's header
+    LPAPLINT          lpMemRes,                         // Ptr to the result's global memory
+                      lpMemTmp = NULL;                  // ...    temp         ...
+    HGLOBAL           hGlbRes = NULL;                   // The result's global memory handle
+    UBOOL             bRet;                             // TRUE iff the result is valid
+    APLUINT           ByteTmp;                          // # bytes in the Temp
+    APLBOOL           bQuadIO;                          // []IO
+    LPPLLOCALVARS     lpplLocalVars;                    // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;                     // Ptr to Ctrl-Break flag
+    EXCEPTION_CODES   exCode = EXCEPTION_CTRL_BREAK;    // Exception code in case we're to signal an exception
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -2776,7 +3273,7 @@ LPPL_YYSTYPE FS010G_EM_YY
             goto WSFULL_EXIT;
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -2819,7 +3316,7 @@ LPPL_YYSTYPE FS010G_EM_YY
         goto WSFULL_EXIT;
 
     // Allocate a temp Integer vector of length <aplDimRes[1] + 2>
-    lpMemTmp = DbgGlobalAlloc (GPTR, (APLU3264) ByteTmp);
+    lpMemTmp = GlobalAlloc3 (GPTR, (APLU3264) ByteTmp);
     if (lpMemTmp EQ NULL)
         goto WSFULL_EXIT;
 
@@ -2883,7 +3380,7 @@ ERROR_EXIT:
 NORMAL_EXIT:
     if (lpMemTmp NE NULL)
     {
-        MyGlobalFree (lpMemTmp); lpMemTmp = NULL;
+        GlobalFree3 (lpMemTmp); lpMemTmp = NULL;
     } // End IF
 
     if (hGlbRes NE NULL)
@@ -2915,14 +3412,15 @@ LPPL_YYSTYPE FS011C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
-    APLINT       aplIntRes;             // The result as an integer
-    APLRAT       aplRatRes   = {0};     // Result as a RAT
-    HGLOBAL      hGlbRes = NULL;        // The result's global memory handle
-    APLINT       aplIntLft,             // L        as an INT
-                 aplIntRht;             // L+R-1    ...
-    APLRAT       aplRatLft = {0},       // L        as a RAT
-                 aplRatRht = {0};       // L+R-1    ...
+    LPPL_YYSTYPE    lpYYRes = NULL;                 // Ptr to the result
+    APLINT          aplIntRes;                      // The result as an integer
+    APLRAT          aplRatRes   = {0};              // Result as a RAT
+    HGLOBAL         hGlbRes = NULL;                 // The result's global memory handle
+    APLINT          aplIntLft,                      // L        as an INT
+                    aplIntRht;                      // L+R-1    ...
+    APLRAT          aplRatLft = {0},                // L        as a RAT
+                    aplRatRht = {0};                // L+R-1    ...
+    EXCEPTION_CODES exCode = EXCEPTION_CTRL_BREAK;  // Exception code in case we're to signal an exception
 
     // The result is the integer value of L!L+R-1
 
@@ -2940,7 +3438,7 @@ LPPL_YYSTYPE FS011C_EM_YY
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -3052,26 +3550,27 @@ LPPL_YYSTYPE FS011G_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
-    APLINT            aplIntRes;            // The result as an integer
-    APLRAT            aplRatRes   = {0};    // Result as a RAT
-    APLDIM            aplDimRes[2];         // The result's dimensions
-    APLNELM           aplNELMRes;           // Result NELM
-    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to the result's header
-    LPAPLINT          lpMemRes,             // Ptr to the result's global memory
-                      lpMemTmp = NULL;      // ...    temp         ...
-    HGLOBAL           hGlbRes = NULL;       // The result's global memory handle
-    APLINT            i,                    // Loop counters
-                      j;                    // ...
-    APLINT            aplIntLft,            // L        as an INT
-                      aplIntRht;            // L+R-1    ...
-    APLRAT            aplRatLft = {0},      // L        as a RAT
-                      aplRatRht = {0};      // L+R-1    ...
-    UBOOL             bRet;                 // TRUE iff the result is valid
-    APLUINT           ByteTmp;              // # bytes in the Temp
-    APLBOOL           bQuadIO;              // []IO
-    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPL_YYSTYPE      lpYYRes = NULL;                   // Ptr to the result
+    APLINT            aplIntRes;                        // The result as an integer
+    APLRAT            aplRatRes   = {0};                // Result as a RAT
+    APLDIM            aplDimRes[2];                     // The result's dimensions
+    APLNELM           aplNELMRes;                       // Result NELM
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;               // Ptr to the result's header
+    LPAPLINT          lpMemRes,                         // Ptr to the result's global memory
+                      lpMemTmp = NULL;                  // ...    temp         ...
+    HGLOBAL           hGlbRes = NULL;                   // The result's global memory handle
+    APLINT            i,                                // Loop counters
+                      j;                                // ...
+    APLINT            aplIntLft,                        // L        as an INT
+                      aplIntRht;                        // L+R-1    ...
+    APLRAT            aplRatLft = {0},                  // L        as a RAT
+                      aplRatRht = {0};                  // L+R-1    ...
+    UBOOL             bRet;                             // TRUE iff the result is valid
+    APLUINT           ByteTmp;                          // # bytes in the Temp
+    APLBOOL           bQuadIO;                          // []IO
+    LPPLLOCALVARS     lpplLocalVars;                    // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;                     // Ptr to Ctrl-Break flag
+    EXCEPTION_CODES   exCode = EXCEPTION_CTRL_BREAK;    // Exception code in case we're to signal an exception
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -3098,7 +3597,7 @@ LPPL_YYSTYPE FS011G_EM_YY
             goto WSFULL_EXIT;
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -3141,7 +3640,7 @@ LPPL_YYSTYPE FS011G_EM_YY
         goto WSFULL_EXIT;
 
     // Allocate a temp Integer vector of length <aplDimRes[1] + 2>
-    lpMemTmp = DbgGlobalAlloc (GPTR, (APLU3264) ByteTmp);
+    lpMemTmp = GlobalAlloc3 (GPTR, (APLU3264) ByteTmp);
     if (lpMemTmp EQ NULL)
         goto WSFULL_EXIT;
 
@@ -3201,7 +3700,7 @@ ERROR_EXIT:
 NORMAL_EXIT:
     if (lpMemTmp NE NULL)
     {
-        MyGlobalFree (lpMemTmp); lpMemTmp = NULL;
+        GlobalFree3 (lpMemTmp); lpMemTmp = NULL;
     } // End IF
 
     if (hGlbRes NE NULL)
@@ -3233,14 +3732,15 @@ LPPL_YYSTYPE FS012C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
-    APLINT       aplIntRes;             // The result as an integer
-    APLRAT       aplRatRes   = {0};     // Result as a RAT
-    HGLOBAL      hGlbRes = NULL;        // The result's global memory handle
-    APLINT       aplIntLft,             // L        as an INT
-                 aplIntRht;             // L+R-1    ...
-    APLRAT       aplRatLft = {0},       // L        as a RAT
-                 aplRatRht = {0};       // L+R-1    ...
+    LPPL_YYSTYPE    lpYYRes = NULL;                 // Ptr to the result
+    APLINT          aplIntRes;                      // The result as an integer
+    APLRAT          aplRatRes   = {0};              // Result as a RAT
+    HGLOBAL         hGlbRes = NULL;                 // The result's global memory handle
+    APLINT          aplIntLft,                      // L        as an INT
+                    aplIntRht;                      // L+R-1    ...
+    APLRAT          aplRatLft = {0},                // L        as a RAT
+                    aplRatRht = {0};                // L+R-1    ...
+    EXCEPTION_CODES exCode = EXCEPTION_CTRL_BREAK;  // Exception code in case we're to signal an exception
 
     // The result is the integer value of (R-1)!L-1
 
@@ -3258,7 +3758,7 @@ LPPL_YYSTYPE FS012C_EM_YY
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -3371,24 +3871,25 @@ LPPL_YYSTYPE FS012G_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
-    APLINT            aplIntRes;            // The result as an integer
-    APLDIM            aplDimRes[2];         // The result's dimensions
-    APLNELM           aplNELMRes;           // Result NELM
-    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to the result's header
-    LPAPLINT          lpMemRes,             // Ptr to the result's global memory
-                      lpMemTmp = NULL;      // ...    temp         ...
-    HGLOBAL           hGlbRes = NULL;       // The result's global memory handle
-    APLINT            i,                    // Loop counters
-                      j;                    // ...
-    APLINT            aplIntLft,            // R-1      as an INT
-                      aplIntRht,            // L-1      ...
-                      aplIntTmp;            // Temp var
-    UBOOL             bRet;                 // TRUE iff the result is valid
-    APLUINT           ByteTmp;              // # bytes in the Temp
-    APLBOOL           bQuadIO;              // []IO
-    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPL_YYSTYPE      lpYYRes = NULL;                   // Ptr to the result
+    APLINT            aplIntRes;                        // The result as an integer
+    APLDIM            aplDimRes[2];                     // The result's dimensions
+    APLNELM           aplNELMRes;                       // Result NELM
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;               // Ptr to the result's header
+    LPAPLINT          lpMemRes,                         // Ptr to the result's global memory
+                      lpMemTmp = NULL;                  // ...    temp         ...
+    HGLOBAL           hGlbRes = NULL;                   // The result's global memory handle
+    APLINT            i,                                // Loop counters
+                      j;                                // ...
+    APLINT            aplIntLft,                        // R-1      as an INT
+                      aplIntRht,                        // L-1      ...
+                      aplIntTmp;                        // Temp var
+    UBOOL             bRet;                             // TRUE iff the result is valid
+    APLUINT           ByteTmp;                          // # bytes in the Temp
+    APLBOOL           bQuadIO;                          // []IO
+    LPPLLOCALVARS     lpplLocalVars;                    // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;                     // Ptr to Ctrl-Break flag
+    EXCEPTION_CODES   exCode = EXCEPTION_CTRL_BREAK;    // Exception code in case we're to signal an exception
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -3415,7 +3916,7 @@ LPPL_YYSTYPE FS012G_EM_YY
             goto WSFULL_EXIT;
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -3462,7 +3963,7 @@ LPPL_YYSTYPE FS012G_EM_YY
         goto WSFULL_EXIT;
 
     // Allocate a temp Integer vector of length <aplDimRes[1] + 2>
-    lpMemTmp = DbgGlobalAlloc (GPTR, (APLU3264) ByteTmp);
+    lpMemTmp = GlobalAlloc3 (GPTR, (APLU3264) ByteTmp);
     if (lpMemTmp EQ NULL)
         goto WSFULL_EXIT;
 
@@ -3545,7 +4046,7 @@ ERROR_EXIT:
 NORMAL_EXIT:
     if (lpMemTmp NE NULL)
     {
-        MyGlobalFree (lpMemTmp); lpMemTmp = NULL;
+        GlobalFree3 (lpMemTmp); lpMemTmp = NULL;
     } // End IF
 
     if (hGlbRes NE NULL)
@@ -3577,16 +4078,17 @@ LPPL_YYSTYPE FS101C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
-    APLINT        aplIntLft,            // L  as an INT
-                  aplIntRht,            // R  ...
-                  aplIntRes,            // The result as an integer
-                  i;                    // Loop counter
-    APLRAT        aplRatRes = {0},      // Result as a RAT
-                  aplRatTmp;            // Temp   ...
-    HGLOBAL       hGlbRes = NULL;       // The result's global memory handle
-    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPL_YYSTYPE    lpYYRes = NULL;                 // Ptr to the result
+    APLINT          aplIntLft,                      // L  as an INT
+                    aplIntRht,                      // R  ...
+                    aplIntRes,                      // The result as an integer
+                    i;                              // Loop counter
+    APLRAT          aplRatRes = {0},                // Result as a RAT
+                    aplRatTmp;                      // Temp   ...
+    HGLOBAL         hGlbRes = NULL;                 // The result's global memory handle
+    LPPLLOCALVARS   lpplLocalVars;                  // Ptr to re-entrant vars
+    LPUBOOL         lpbCtrlBreak;                   // Ptr to Ctrl-Break flag
+    EXCEPTION_CODES exCode = EXCEPTION_CTRL_BREAK;  // Exception code in case we're to signal an exception
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -3612,7 +4114,7 @@ LPPL_YYSTYPE FS101C_EM_YY
             for (i = aplIntRes = 0; i <= aplIntRht; i++)
             {
                 // Call common subroutine for INTs
-                aplIntRes = iadd64 (aplIntRes, SN2SubInt_RE (aplIntLft, i, lpbCtrlBreak), &bRet, 0);
+                aplIntRes = iadd64 (aplIntRes, SN2SubInt_RE (aplIntLft, i, TRUE, lpbCtrlBreak), &bRet, 0);
 
                 if (!bRet)
                     RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
@@ -3621,7 +4123,7 @@ LPPL_YYSTYPE FS101C_EM_YY
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -3639,7 +4141,7 @@ LPPL_YYSTYPE FS101C_EM_YY
                     for (i = 0; i <= lpCombArgs->aplIntBoxes; i++)
                     {
                         // Call common subroutine for RATs
-                        aplRatTmp = SN2SubRat_RE (aplIntLft, i, lpbCtrlBreak);
+                        aplRatTmp = SN2SubRat_RE (aplIntLft, i, TRUE, lpbCtrlBreak);
 
                         // Add into the result
                         mpq_add (&aplRatRes, &aplRatRes, &aplRatTmp);
@@ -3649,7 +4151,7 @@ LPPL_YYSTYPE FS101C_EM_YY
                     } // End FOR
                 } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
                 {
-                    EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+                    exCode = MyGetExceptionCode ();  // The exception code
 
                     dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -3782,7 +4284,7 @@ void FS101S1
 
 //H1:
     // Initialize <a>
-    FillMemory (a, (APLU3264) (n *sizeof (a[0])), 0);
+    ZeroMemory (a, (APLU3264) (n *sizeof (a[0])));
 
     if (n <= 1
      || t EQ 0)
@@ -3888,22 +4390,23 @@ LPPL_YYSTYPE FS101G_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
-    APLINT            aplIntRes;            // The result as an integer
-    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to the result's header
-    LPAPLNESTED       lpMemRes;             // Ptr to the result's global memory
-    LPAPLINT          lpMemTmpA = NULL,     // ...    temp         ...
-                      lpMemTmpB = NULL;     // ...
-    HGLOBAL           hGlbRes = NULL;       // The result's global memory handle
-    APLINT            aplIntLft,            // L        as an INT
-                      aplIntLftProto,       // L        as an INT prototype length
-                      aplIntRht,            // R        ...
-                      i;
-    UBOOL             bRet;                 // TRUE iff the result is valid
-    APLUINT           ByteTmp;              // # bytes in the Temp
-    APLBOOL           bQuadIO;              // []IO
-    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPL_YYSTYPE      lpYYRes = NULL;                   // Ptr to the result
+    APLINT            aplIntRes;                        // The result as an integer
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;               // Ptr to the result's header
+    LPAPLNESTED       lpMemRes;                         // Ptr to the result's global memory
+    LPAPLINT          lpMemTmpA = NULL,                 // ...    temp         ...
+                      lpMemTmpB = NULL;                 // ...
+    HGLOBAL           hGlbRes = NULL;                   // The result's global memory handle
+    APLINT            aplIntLft,                        // L        as an INT
+                      aplIntLftProto,                   // L        as an INT prototype length
+                      aplIntRht,                        // R        ...
+                      i;                                // Loop counter
+    UBOOL             bRet;                             // TRUE iff the result is valid
+    APLUINT           ByteTmp;                          // # bytes in the Temp
+    APLBOOL           bQuadIO;                          // []IO
+    LPPLLOCALVARS     lpplLocalVars;                    // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;                     // Ptr to Ctrl-Break flag
+    EXCEPTION_CODES   exCode = EXCEPTION_CTRL_BREAK;    // Exception code in case we're to signal an exception
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -3930,7 +4433,7 @@ LPPL_YYSTYPE FS101G_EM_YY
             for (i = aplIntRes = 0; i <= aplIntRht; i++)
             {
                 // Calculate Res += L SN2 i
-                aplIntRes = iadd64 (aplIntRes, SN2SubInt_RE (aplIntLft, i, lpbCtrlBreak), &bRet, 0);
+                aplIntRes = iadd64 (aplIntRes, SN2SubInt_RE (aplIntLft, i, TRUE, lpbCtrlBreak), &bRet, 0);
 
                 if (!bRet)
                     goto DOMAIN_EXIT;
@@ -3939,7 +4442,7 @@ LPPL_YYSTYPE FS101G_EM_YY
             goto WSFULL_EXIT;
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -3976,12 +4479,12 @@ LPPL_YYSTYPE FS101G_EM_YY
         goto WSFULL_EXIT;
 
     // Allocate a temp Integer vector of length <L>
-    lpMemTmpA = DbgGlobalAlloc (GPTR, (APLU3264) ByteTmp);
+    lpMemTmpA = GlobalAlloc3 (GPTR, (APLU3264) ByteTmp);
     if (lpMemTmpA EQ NULL)
         goto WSFULL_EXIT;
 
     // Allocate a temp Integer vector of length <L>
-    lpMemTmpB = DbgGlobalAlloc (GPTR, (APLU3264) ByteTmp);
+    lpMemTmpB = GlobalAlloc3 (GPTR, (APLU3264) ByteTmp);
     if (lpMemTmpB EQ NULL)
         goto WSFULL_EXIT;
 
@@ -4037,12 +4540,12 @@ ERROR_EXIT:
 NORMAL_EXIT:
     if (lpMemTmpB NE NULL)
     {
-        MyGlobalFree (lpMemTmpB); lpMemTmpB = NULL;
+        GlobalFree3 (lpMemTmpB); lpMemTmpB = NULL;
     } // End IF
 
     if (lpMemTmpA NE NULL)
     {
-        MyGlobalFree (lpMemTmpA); lpMemTmpA = NULL;
+        GlobalFree3 (lpMemTmpA); lpMemTmpA = NULL;
     } // End IF
 
     if (hGlbRes NE NULL)
@@ -4074,14 +4577,15 @@ LPPL_YYSTYPE FS102C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
-    APLINT        aplIntLft,            // L  as an INT
-                  aplIntRht,            // R  ...
-                  aplIntRes;            // The result as an integer
-    APLRAT        aplRatRes = {0};      // Result as a RAT
-    HGLOBAL       hGlbRes = NULL;       // The result's global memory handle
-    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPL_YYSTYPE    lpYYRes = NULL;                 // Ptr to the result
+    APLINT          aplIntLft,                      // L  as an INT
+                    aplIntRht,                      // R  ...
+                    aplIntRes;                      // The result as an integer
+    APLRAT          aplRatRes = {0};                // Result as a RAT
+    HGLOBAL         hGlbRes = NULL;                 // The result's global memory handle
+    LPPLLOCALVARS   lpplLocalVars;                  // Ptr to re-entrant vars
+    LPUBOOL         lpbCtrlBreak;                   // Ptr to Ctrl-Break flag
+    EXCEPTION_CODES exCode = EXCEPTION_CTRL_BREAK;  // Exception code in case we're to signal an exception
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -4101,12 +4605,12 @@ LPPL_YYSTYPE FS102C_EM_YY
         if (lpCombArgs->bIntBalls
          && lpCombArgs->bIntBoxes)
             // Call common subroutine for INTs
-            aplIntRes = SN2SubInt_RE (aplIntLft, aplIntRht, lpbCtrlBreak);
+            aplIntRes = SN2SubInt_RE (aplIntLft, aplIntRht, TRUE, lpbCtrlBreak);
         else
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -4116,7 +4620,7 @@ LPPL_YYSTYPE FS102C_EM_YY
             case EXCEPTION_RESULT_FLOAT:
             case EXCEPTION_DOMAIN_ERROR:
                 // Call common subroutine for RATs
-                aplRatRes = SN2SubRat_RE (aplIntLft, aplIntRht, lpbCtrlBreak);
+                aplRatRes = SN2SubRat_RE (aplIntLft, aplIntRht, TRUE, lpbCtrlBreak);
 
                 break;
 
@@ -4252,14 +4756,14 @@ HGLOBAL FS102S2
 
             // Allocate a temp Integer vector of length <n>
             //   to hold the grade of this row
-            hGlbGrd = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+            hGlbGrd = GlobalAlloc3 (GPTR, (APLU3264) ByteRes);
 
             // Check for error
             if (hGlbGrd EQ NULL)
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemGrd = MyGlobalLock (hGlbGrd);
+            lpMemGrd = GlobalLock3 (hGlbGrd);
 
             // GradeUp the array <a>
             GradeUp (a,                 // Source
@@ -4272,14 +4776,14 @@ HGLOBAL FS102S2
 
             // Allocate a temp Integer vector of length <n>
             //   to hold the block of this row
-            hGlbBlk = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+            hGlbBlk = GlobalAlloc3 (GPTR, (APLU3264) ByteRes);
 
             // Check for error
             if (hGlbBlk EQ NULL)
                 goto WSFULL_EXIT;
 
             // Lock the memory to get a ptr to it
-            lpMemBlk = MyGlobalLock (hGlbBlk);
+            lpMemBlk = GlobalLock3 (hGlbBlk);
 
             // Initialize the Match value
             for (iMatch = 0; iMatch < n; iMatch++)
@@ -4380,20 +4884,20 @@ NORMAL_EXIT:
     {
         if (lpMemBlk NE NULL)
         {
-            MyGlobalUnlock (hGlbBlk); lpMemBlk = NULL;
+            GlobalUnlock3 (hGlbBlk); lpMemBlk = NULL;
         } // End IF
 
-        MyGlobalFree (hGlbBlk); hGlbBlk = NULL;
+        GlobalFree3 (hGlbBlk); hGlbBlk = NULL;
     } // End IF
 
     if (hGlbGrd NE NULL)
     {
         if (lpMemGrd NE NULL)
         {
-            MyGlobalUnlock (hGlbGrd); lpMemGrd = NULL;
+            GlobalUnlock3 (hGlbGrd); lpMemGrd = NULL;
         } // End IF
 
-        MyGlobalFree (hGlbGrd); hGlbGrd = NULL;
+        GlobalFree3 (hGlbGrd); hGlbGrd = NULL;
     } // End IF
 
     if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
@@ -4443,7 +4947,7 @@ void FS102S1
 
 //H1:
     // Initialize <a> to zero
-    FillMemory (a, (APLU3264) (n *sizeof (a[0])), 0);
+    ZeroMemory (a, (APLU3264) (n *sizeof (a[0])));
 
     if (n <= 1
      || n < t
@@ -4550,21 +5054,22 @@ LPPL_YYSTYPE FS102G_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
-    APLINT            aplIntRes;            // The result as an integer
-    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to the result's header
-    LPAPLNESTED       lpMemRes;             // Ptr to the result's global memory
-    LPAPLINT          lpMemTmpA = NULL,     // ...    temp         ...
-                      lpMemTmpB = NULL;     // ...
-    HGLOBAL           hGlbRes = NULL;       // The result's global memory handle
-    APLINT            aplIntLft,            // L        as an INT
-                      aplIntLftProto,       // L        as an INT prototype length
-                      aplIntRht;            // R        ...
-    UBOOL             bRet;                 // TRUE iff the result is valid
-    APLUINT           ByteTmp;              // # bytes in the Temp
-    APLBOOL           bQuadIO;              // []IO
-    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPL_YYSTYPE      lpYYRes = NULL;                   // Ptr to the result
+    APLINT            aplIntRes;                        // The result as an integer
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;               // Ptr to the result's header
+    LPAPLNESTED       lpMemRes;                         // Ptr to the result's global memory
+    LPAPLINT          lpMemTmpA = NULL,                 // ...    temp         ...
+                      lpMemTmpB = NULL;                 // ...
+    HGLOBAL           hGlbRes = NULL;                   // The result's global memory handle
+    APLINT            aplIntLft,                        // L        as an INT
+                      aplIntLftProto,                   // L        as an INT prototype length
+                      aplIntRht;                        // R        ...
+    UBOOL             bRet;                             // TRUE iff the result is valid
+    APLUINT           ByteTmp;                          // # bytes in the Temp
+    APLBOOL           bQuadIO;                          // []IO
+    LPPLLOCALVARS     lpplLocalVars;                    // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;                     // Ptr to Ctrl-Break flag
+    EXCEPTION_CODES   exCode = EXCEPTION_CTRL_BREAK;    // Exception code in case we're to signal an exception
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -4587,12 +5092,12 @@ LPPL_YYSTYPE FS102G_EM_YY
         if (lpCombArgs->bIntBalls
          && lpCombArgs->bIntBoxes)
             // Calculate L SN2 R as an INT
-            aplIntRes = SN2SubInt_RE (aplIntLft, aplIntRht, lpbCtrlBreak);
+            aplIntRes = SN2SubInt_RE (aplIntLft, aplIntRht, TRUE, lpbCtrlBreak);
         else
             goto WSFULL_EXIT;
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -4629,7 +5134,7 @@ LPPL_YYSTYPE FS102G_EM_YY
         goto WSFULL_EXIT;
 
     // Allocate a temp Integer vector of length <max (L, 1)>
-    lpMemTmpA = DbgGlobalAlloc (GPTR, (APLU3264) ByteTmp);
+    lpMemTmpA = GlobalAlloc3 (GPTR, (APLU3264) ByteTmp);
     if (lpMemTmpA EQ NULL)
         goto WSFULL_EXIT;
 
@@ -4638,7 +5143,7 @@ LPPL_YYSTYPE FS102G_EM_YY
         goto ERROR_EXIT;
 
     // Allocate a temp Integer vector of length <max (L, 1)>
-    lpMemTmpB = DbgGlobalAlloc (GPTR, (APLU3264) ByteTmp);
+    lpMemTmpB = GlobalAlloc3 (GPTR, (APLU3264) ByteTmp);
     if (lpMemTmpB EQ NULL)
         goto WSFULL_EXIT;
 
@@ -4694,12 +5199,12 @@ ERROR_EXIT:
 NORMAL_EXIT:
     if (lpMemTmpB NE NULL)
     {
-        MyGlobalFree (lpMemTmpB); lpMemTmpB = NULL;
+        GlobalFree3 (lpMemTmpB); lpMemTmpB = NULL;
     } // End IF
 
     if (lpMemTmpA NE NULL)
     {
-        MyGlobalFree (lpMemTmpA); lpMemTmpA = NULL;
+        GlobalFree3 (lpMemTmpA); lpMemTmpA = NULL;
     } // End IF
 
     if (hGlbRes NE NULL)
@@ -4731,18 +5236,19 @@ LPPL_YYSTYPE FS110C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
-    APLINT       aplIntRes;             // The result as an integer
-    APLRAT       aplRatRes   = {0};     // Result as a RAT
-    HGLOBAL      hGlbRes = NULL;        // The result's global memory handle
-    APLINT       aplIntLft,             // L        as an INT
-                 aplIntRht,             // R        ...
-                 aplIntTmp,             // Temp
-                 i;                     // Loop counter
-    UBOOL        bRet;                  // TRUE iff the result is valid
-    APLRAT       aplRatLft = {0},       // L        as a RAT
-                 aplRatRht = {0},       // R        ...
-                 aplRatTmp = {0};       // Temp     ...
+    LPPL_YYSTYPE    lpYYRes = NULL;                 // Ptr to the result
+    APLINT          aplIntRes;                      // The result as an integer
+    APLRAT          aplRatRes   = {0};              // Result as a RAT
+    HGLOBAL         hGlbRes = NULL;                 // The result's global memory handle
+    APLINT          aplIntLft,                      // L        as an INT
+                    aplIntRht,                      // R        ...
+                    aplIntTmp,                      // Temp
+                    i;                              // Loop counter
+    UBOOL           bRet;                           // TRUE iff the result is valid
+    APLRAT          aplRatLft = {0},                // L        as a RAT
+                    aplRatRht = {0},                // R        ...
+                    aplRatTmp = {0};                // Temp     ...
+    EXCEPTION_CODES exCode = EXCEPTION_CTRL_BREAK;  // Exception code in case we're to signal an exception
 
     // The result is the integer value of Rx(R-1)x(R-2)...x(R-(L-1))
 
@@ -4773,7 +5279,7 @@ LPPL_YYSTYPE FS110C_EM_YY
                 RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
         } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
         {
-            EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+            exCode = MyGetExceptionCode ();  // The exception code
 
             dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -4990,33 +5496,34 @@ LPPL_YYSTYPE FS110G_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
-    APLINT            aplIntRes;            // The result as an integer
-    APLDIM            aplDimRes[2];         // The result's dimensions
-    APLNELM           aplNELMRes;           // Result NELM
-    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to the result's header
-    LPAPLINT          lpMemRes,             // Ptr to the result's global memory
-                      lpMemTmpM = NULL,     // ...    temp         ...
-                      lpMemTmpA = NULL,     // ...
-                      lpMemTmpC = NULL,     // ...
-                      lpMemTmpO = NULL,     // ...
-                      lpMemTmpT = NULL,     // ...
-                      lpMemTmpLp2 = NULL;   // ...
-    HGLOBAL           hGlbRes = NULL;       // The result's global memory handle
-    APLINT            i,                    // Loop counters
-                      iT,                   // ...
-                      iM,                   // ...
-                      j;                    // ...
-    APLINT            aplIntLft,            // R-1      as an INT
-                      aplIntRht,            // L-1      ...
-                      aplIntFac,            // !L
-                      aplIntCmb,            // L!R
-                      aplIntTmp;            // Temp var
-    UBOOL             bRet;                 // TRUE iff the result is valid
-    APLUINT           ByteTmp;              // # bytes in the Temp
-    APLBOOL           bQuadIO;              // []IO
-    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPL_YYSTYPE      lpYYRes = NULL;                   // Ptr to the result
+    APLINT            aplIntRes;                        // The result as an integer
+    APLDIM            aplDimRes[2];                     // The result's dimensions
+    APLNELM           aplNELMRes;                       // Result NELM
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;               // Ptr to the result's header
+    LPAPLINT          lpMemRes,                         // Ptr to the result's global memory
+                      lpMemTmpM = NULL,                 // ...    temp         ...
+                      lpMemTmpA = NULL,                 // ...
+                      lpMemTmpC = NULL,                 // ...
+                      lpMemTmpO = NULL,                 // ...
+                      lpMemTmpT = NULL,                 // ...
+                      lpMemTmpLp2 = NULL;               // ...
+    HGLOBAL           hGlbRes = NULL;                   // The result's global memory handle
+    APLINT            i,                                // Loop counters
+                      iT,                               // ...
+                      iM,                               // ...
+                      j;                                // ...
+    APLINT            aplIntLft,                        // R-1      as an INT
+                      aplIntRht,                        // L-1      ...
+                      aplIntFac,                        // !L
+                      aplIntCmb,                        // L!R
+                      aplIntTmp;                        // Temp var
+    UBOOL             bRet;                             // TRUE iff the result is valid
+    APLUINT           ByteTmp;                          // # bytes in the Temp
+    APLBOOL           bQuadIO;                          // []IO
+    LPPLLOCALVARS     lpplLocalVars;                    // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;                     // Ptr to Ctrl-Break flag
+    EXCEPTION_CODES   exCode = EXCEPTION_CTRL_BREAK;    // Exception code in case we're to signal an exception
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -5069,7 +5576,7 @@ LPPL_YYSTYPE FS110G_EM_YY
                 goto WSFULL_EXIT;
         } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
         {
-            EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+            exCode = MyGetExceptionCode ();  // The exception code
 
             dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -5119,17 +5626,17 @@ LPPL_YYSTYPE FS110G_EM_YY
             goto WSFULL_EXIT;
 
         // Allocate a temp Integer vector of length <L>
-        lpMemTmpA = DbgGlobalAlloc (GPTR, (APLU3264) ByteTmp);
+        lpMemTmpA = GlobalAlloc3 (GPTR, (APLU3264) ByteTmp);
         if (lpMemTmpA EQ NULL)
             goto WSFULL_EXIT;
 
         // Allocate a temp Integer vector of length <L>
-        lpMemTmpC = DbgGlobalAlloc (GPTR, (APLU3264) ByteTmp);
+        lpMemTmpC = GlobalAlloc3 (GPTR, (APLU3264) ByteTmp);
         if (lpMemTmpC EQ NULL)
             goto WSFULL_EXIT;
 
         // Allocate a temp Integer vector of length <L>
-        lpMemTmpO = DbgGlobalAlloc (GPTR, (APLU3264) ByteTmp);
+        lpMemTmpO = GlobalAlloc3 (GPTR, (APLU3264) ByteTmp);
         if (lpMemTmpO EQ NULL)
             goto WSFULL_EXIT;
 
@@ -5171,7 +5678,7 @@ LPPL_YYSTYPE FS110G_EM_YY
                 goto WSFULL_EXIT;
 
             // Allocate a temp Integer matrix of shape <(!L) L>
-            lpMemTmpM = DbgGlobalAlloc (GPTR, (APLU3264) ByteTmp);
+            lpMemTmpM = GlobalAlloc3 (GPTR, (APLU3264) ByteTmp);
             if (lpMemTmpM EQ NULL)
                 goto WSFULL_EXIT;
 
@@ -5184,7 +5691,7 @@ LPPL_YYSTYPE FS110G_EM_YY
                 goto WSFULL_EXIT;
 
             // Allocate a temp Integer vector of length <L + 2>
-            lpMemTmpLp2 = DbgGlobalAlloc (GPTR, (APLU3264) ByteTmp);
+            lpMemTmpLp2 = GlobalAlloc3 (GPTR, (APLU3264) ByteTmp);
             if (lpMemTmpLp2 EQ NULL)
                 goto WSFULL_EXIT;
 
@@ -5274,27 +5781,27 @@ ERROR_EXIT:
 NORMAL_EXIT:
     if (lpMemTmpLp2 NE NULL)
     {
-        MyGlobalFree (lpMemTmpLp2); lpMemTmpLp2 = NULL;
+        GlobalFree3 (lpMemTmpLp2); lpMemTmpLp2 = NULL;
     } // End IF
 
     if (lpMemTmpO NE NULL)
     {
-        MyGlobalFree (lpMemTmpO); lpMemTmpO = NULL;
+        GlobalFree3 (lpMemTmpO); lpMemTmpO = NULL;
     } // End IF
 
     if (lpMemTmpC NE NULL)
     {
-        MyGlobalFree (lpMemTmpC); lpMemTmpC = NULL;
+        GlobalFree3 (lpMemTmpC); lpMemTmpC = NULL;
     } // End IF
 
     if (lpMemTmpA NE NULL)
     {
-        MyGlobalFree (lpMemTmpA); lpMemTmpA = NULL;
+        GlobalFree3 (lpMemTmpA); lpMemTmpA = NULL;
     } // End IF
 
     if (lpMemTmpM NE NULL)
     {
-        MyGlobalFree (lpMemTmpM); lpMemTmpM = NULL;
+        GlobalFree3 (lpMemTmpM); lpMemTmpM = NULL;
     } // End IF
 
     if (hGlbRes NE NULL)
@@ -5325,14 +5832,15 @@ LPPL_YYSTYPE FS111C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE lpYYRes = NULL;        // Ptr to the result
-    APLINT       aplIntRes;             // The result as an integer
-    APLRAT       aplRatRes   = {0};     // Result as a RAT
-    HGLOBAL      hGlbRes = NULL;        // The result's global memory handle
-    APLINT       aplIntLft,             // L        as an INT
-                 aplIntRht;             // L+R-1    ...
-    APLRAT       aplRatLft = {0},       // L        as a RAT
-                 aplRatRht = {0};       // L+R-1    ...
+    LPPL_YYSTYPE    lpYYRes = NULL;                 // Ptr to the result
+    APLINT          aplIntRes;                      // The result as an integer
+    APLRAT          aplRatRes   = {0};              // Result as a RAT
+    HGLOBAL         hGlbRes = NULL;                 // The result's global memory handle
+    APLINT          aplIntLft,                      // L        as an INT
+                    aplIntRht;                      // L+R-1    ...
+    APLRAT          aplRatLft = {0},                // L        as a RAT
+                    aplRatRht = {0};                // L+R-1    ...
+    EXCEPTION_CODES exCode = EXCEPTION_CTRL_BREAK;  // Exception code in case we're to signal an exception
 
     // The result is the integer value of R*L
 
@@ -5351,7 +5859,7 @@ LPPL_YYSTYPE FS111C_EM_YY
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -5462,20 +5970,21 @@ LPPL_YYSTYPE FS111G_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
-    APLINT            aplIntRes;            // The result as an integer
-    APLDIM            aplDimRes[2];         // The result's dimensions
-    APLNELM           aplNELMRes;           // Result NELM
-    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to the result's header
-    LPAPLINT          lpMemRes;             // Ptr to the result's global memory
-    HGLOBAL           hGlbRes = NULL;       // The result's global memory handle
-    APLINT            aplIntLft,            // R        as an INT
-                      aplIntRht;            // L        ...
-    APLINT            i,                    // Loop counters
-                      j,                    // ...
-                      t;                    // Temp var
-    UBOOL             bRet;                 // TRUE iff the result is valid
-    APLBOOL           bQuadIO;              // []IO
+    LPPL_YYSTYPE      lpYYRes = NULL;                   // Ptr to the result
+    APLINT            aplIntRes;                        // The result as an integer
+    APLDIM            aplDimRes[2];                     // The result's dimensions
+    APLNELM           aplNELMRes;                       // Result NELM
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;               // Ptr to the result's header
+    LPAPLINT          lpMemRes;                         // Ptr to the result's global memory
+    HGLOBAL           hGlbRes = NULL;                   // The result's global memory handle
+    APLINT            aplIntLft,                        // R        as an INT
+                      aplIntRht;                        // L        ...
+    APLINT            i,                                // Loop counters
+                      j,                                // ...
+                      t;                                // Temp var
+    UBOOL             bRet;                             // TRUE iff the result is valid
+    APLBOOL           bQuadIO;                          // []IO
+    EXCEPTION_CODES   exCode = EXCEPTION_CTRL_BREAK;    // Exception code in case we're to signal an exception
 
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
@@ -5504,7 +6013,7 @@ LPPL_YYSTYPE FS111G_EM_YY
             goto WSFULL_EXIT;
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -5614,16 +6123,17 @@ LPPL_YYSTYPE FS112C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to the result
-    APLINT        aplIntLft,            // L  as an INT
-                  aplIntRht,            // R  ...
-                  aplIntRes;            // The result as an integer
-    APLRAT        aplRatRes = {0},      // Result as a RAT
-                  aplRatTmp;
-    UBOOL         bRet;                 // TRUE iff the temp result is valid
-    HGLOBAL       hGlbRes = NULL;       // The result's global memory handle
-    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPL_YYSTYPE    lpYYRes = NULL;                 // Ptr to the result
+    APLINT          aplIntLft,                      // L  as an INT
+                    aplIntRht,                      // R  ...
+                    aplIntRes;                      // The result as an integer
+    APLRAT          aplRatRes = {0},                // Result as a RAT
+                    aplRatTmp;                      // Temp   ...
+    UBOOL           bRet;                           // TRUE iff the temp result is valid
+    HGLOBAL         hGlbRes = NULL;                 // The result's global memory handle
+    LPPLLOCALVARS   lpplLocalVars;                  // Ptr to re-entrant vars
+    LPUBOOL         lpbCtrlBreak;                   // Ptr to Ctrl-Break flag
+    EXCEPTION_CODES exCode = EXCEPTION_CTRL_BREAK;  // Exception code in case we're to signal an exception
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -5647,7 +6157,7 @@ LPPL_YYSTYPE FS112C_EM_YY
             PrimFnMonQuoteDotIisI (&aplIntRes, 0, (LPALLTYPES) &aplIntRht, NULL);
 
             // Calculate L SN2 R as an INT
-            aplIntRes = imul64 (aplIntRes, SN2SubInt_RE (aplIntLft, aplIntRht, lpbCtrlBreak), &bRet, 0);
+            aplIntRes = imul64 (aplIntRes, SN2SubInt_RE (aplIntLft, aplIntRht, TRUE, lpbCtrlBreak), &bRet, 0);
 
             if (!bRet)
                 RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
@@ -5655,7 +6165,7 @@ LPPL_YYSTYPE FS112C_EM_YY
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -5677,7 +6187,7 @@ LPPL_YYSTYPE FS112C_EM_YY
                 Myq_clear (&aplRatTmp);
 
                 // Calculate L SN2 R as a RAT
-                aplRatTmp = SN2SubRat_RE (aplIntLft, aplIntRht, lpbCtrlBreak);
+                aplRatTmp = SN2SubRat_RE (aplIntLft, aplIntRht, TRUE, lpbCtrlBreak);
 
                 // Calculate (!R) * L SN2 R
                 mpq_mul (&aplRatRes, &aplRatRes, &aplRatTmp);
@@ -5771,30 +6281,31 @@ LPPL_YYSTYPE FS112G_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
 
 {
-    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
-    LPVARARRAY_HEADER lpMemHdrRes = NULL;   // Ptr to the result's header
-    LPAPLNESTED       lpMemRes;             // Ptr to the result's global memory
-    LPAPLINT          lpMemTmpA = NULL,     // ...    temp         ...
-                      lpMemTmpC = NULL,     // ...
-                      lpMemTmpO = NULL,     // ...
-                      lpMemTmpM = NULL,     // ...
-                      lpMemTmpB = NULL;     // ...
-    LPAPLNESTED       lpMemTmpS = NULL;     // ...
-    HGLOBAL           hGlbRes = NULL;       // The result's global memory handle
-    APLINT            aplIntRes,            // (!R) * L SN2 R
-                      aplIntLft,            // L        as an INT
-                      aplIntLftProto,       // L        as an INT prototype length
-                      aplIntRht,            // R        ...
-                      aplIntRhtProto,       // R        ...       prototype length
-                      aplIntSN2,            // L SN2 R
-                      aplIntSN2Proto,       // L SN2 R            prototype length
-                      aplIntFac,            // !R
-                      i, j, k;              // Loop counters
-    UBOOL             bRet;                 // TRUE iff the result is valid
-    APLUINT           ByteTmp;              // # bytes in the Temp
-    APLBOOL           bQuadIO;              // []IO
-    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
-    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    LPPL_YYSTYPE      lpYYRes = NULL;                   // Ptr to the result
+    LPVARARRAY_HEADER lpMemHdrRes = NULL;               // Ptr to the result's header
+    LPAPLNESTED       lpMemRes;                         // Ptr to the result's global memory
+    LPAPLINT          lpMemTmpA = NULL,                 // ...    temp         ...
+                      lpMemTmpC = NULL,                 // ...
+                      lpMemTmpO = NULL,                 // ...
+                      lpMemTmpM = NULL,                 // ...
+                      lpMemTmpB = NULL;                 // ...
+    LPAPLNESTED       lpMemTmpS = NULL;                 // ...
+    HGLOBAL           hGlbRes = NULL;                   // The result's global memory handle
+    APLINT            aplIntRes,                        // (!R) * L SN2 R
+                      aplIntLft,                        // L        as an INT
+                      aplIntLftProto,                   // L        as an INT prototype length
+                      aplIntRht,                        // R        ...
+                      aplIntRhtProto,                   // R        ...       prototype length
+                      aplIntSN2,                        // L SN2 R
+                      aplIntSN2Proto,                   // L SN2 R            prototype length
+                      aplIntFac,                        // !R
+                      i, j, k;                          // Loop counters
+    UBOOL             bRet;                             // TRUE iff the result is valid
+    APLUINT           ByteTmp;                          // # bytes in the Temp
+    APLBOOL           bQuadIO;                          // []IO
+    LPPLLOCALVARS     lpplLocalVars;                    // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;                     // Ptr to Ctrl-Break flag
+    EXCEPTION_CODES   exCode = EXCEPTION_CTRL_BREAK;    // Exception code in case we're to signal an exception
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -5821,7 +6332,7 @@ LPPL_YYSTYPE FS112G_EM_YY
             PrimFnMonQuoteDotIisI (&aplIntFac, 0, (LPALLTYPES) &aplIntRht, NULL);
 
             // Calculate        L SN2 R as an INT
-            aplIntSN2 = SN2SubInt_RE (aplIntLft, aplIntRht, lpbCtrlBreak);
+            aplIntSN2 = SN2SubInt_RE (aplIntLft, aplIntRht, TRUE, lpbCtrlBreak);
 
             // Calculate (!R) * L SN2 R as an INT
             aplIntRes = imul64 (aplIntFac, aplIntSN2, &bRet, 0);
@@ -5832,7 +6343,7 @@ LPPL_YYSTYPE FS112G_EM_YY
             goto WSFULL_EXIT;
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
-        EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
+        exCode = MyGetExceptionCode ();  // The exception code
 
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L": %s (%S#%d)", MyGetExceptionStr (exCode), FNLN);
 
@@ -5881,7 +6392,7 @@ LPPL_YYSTYPE FS112G_EM_YY
         goto WSFULL_EXIT;
 
     // Allocate a temp Integer vector of length <max (max (L, R), 1)>
-    lpMemTmpA = DbgGlobalAlloc (GPTR, (APLU3264) ByteTmp);
+    lpMemTmpA = GlobalAlloc3 (GPTR, (APLU3264) ByteTmp);
     if (lpMemTmpA EQ NULL)
         goto WSFULL_EXIT;
 
@@ -5896,7 +6407,7 @@ LPPL_YYSTYPE FS112G_EM_YY
         goto WSFULL_EXIT;
 
     // Allocate a temp Integer vector of length <max (R, 1)>
-    lpMemTmpC = DbgGlobalAlloc (GPTR, (APLU3264) ByteTmp);
+    lpMemTmpC = GlobalAlloc3 (GPTR, (APLU3264) ByteTmp);
     if (lpMemTmpC EQ NULL)
         goto WSFULL_EXIT;
 
@@ -5905,7 +6416,7 @@ LPPL_YYSTYPE FS112G_EM_YY
         goto ERROR_EXIT;
 
     // Allocate a temp Integer vector of length <max (R, 1)>
-    lpMemTmpO = DbgGlobalAlloc (GPTR, (APLU3264) (ByteTmp));
+    lpMemTmpO = GlobalAlloc3 (GPTR, (APLU3264) (ByteTmp));
     if (lpMemTmpO EQ NULL)
         goto WSFULL_EXIT;
 
@@ -5922,7 +6433,7 @@ LPPL_YYSTYPE FS112G_EM_YY
         goto WSFULL_EXIT;
 
     // Allocate a temp Integer matrix of shape <(!R), max (R, 1)>
-    lpMemTmpM = DbgGlobalAlloc (GPTR, (APLU3264) ByteTmp);
+    lpMemTmpM = GlobalAlloc3 (GPTR, (APLU3264) ByteTmp);
     if (lpMemTmpM EQ NULL)
         goto WSFULL_EXIT;
 
@@ -5939,7 +6450,7 @@ LPPL_YYSTYPE FS112G_EM_YY
         goto WSFULL_EXIT;
 
     // Allocate a temp Integer vector of length <max (L, 1)>
-    lpMemTmpB = DbgGlobalAlloc (GPTR, (APLU3264) ByteTmp);
+    lpMemTmpB = GlobalAlloc3 (GPTR, (APLU3264) ByteTmp);
     if (lpMemTmpB EQ NULL)
         goto WSFULL_EXIT;
 
@@ -5954,7 +6465,7 @@ LPPL_YYSTYPE FS112G_EM_YY
         goto WSFULL_EXIT;
 
     // Allocate a temp Nested vector of length <L SN2 R>
-    lpMemTmpS = DbgGlobalAlloc (GPTR, (APLU3264) ByteTmp);
+    lpMemTmpS = GlobalAlloc3 (GPTR, (APLU3264) ByteTmp);
     if (lpMemTmpS EQ NULL)
         goto WSFULL_EXIT;
 
@@ -6075,34 +6586,34 @@ NORMAL_EXIT:
 
     if (lpMemTmpS NE NULL)
     {
-        MyGlobalFree (lpMemTmpS); lpMemTmpS = NULL;
+        GlobalFree3 (lpMemTmpS); lpMemTmpS = NULL;
     } // End IF
 
     if (lpMemTmpB NE NULL)
     {
-        MyGlobalFree (lpMemTmpB); lpMemTmpB = NULL;
+        GlobalFree3 (lpMemTmpB); lpMemTmpB = NULL;
     } // End IF
 
     if (lpMemTmpM NE NULL)
     {
-        MyGlobalFree (lpMemTmpM); lpMemTmpM = NULL;
+        GlobalFree3 (lpMemTmpM); lpMemTmpM = NULL;
     } // End IF
 
     if (lpMemTmpO NE NULL)
     {
-        MyGlobalFree (lpMemTmpO); lpMemTmpO = NULL;
+        GlobalFree3 (lpMemTmpO); lpMemTmpO = NULL;
     } // End IF
 
     if (lpMemTmpC NE NULL)
     {
-        MyGlobalFree (lpMemTmpC); lpMemTmpC = NULL;
+        GlobalFree3 (lpMemTmpC); lpMemTmpC = NULL;
     } // End IF
 
     CheckMemStat ();
 
     if (lpMemTmpA NE NULL)
     {
-        MyGlobalFree (lpMemTmpA); lpMemTmpA = NULL;
+        GlobalFree3 (lpMemTmpA); lpMemTmpA = NULL;
     } // End IF
 
     if (hGlbRes NE NULL)
@@ -6150,7 +6661,7 @@ LPPL_YYSTYPE PrimOpDydCombinatorial_EM_YY
 //***************************************************************************
 
 UBOOL NestedReAlloc
-    (HGLOBAL *lphGlb,           // Ptr to HGLOBAL to ReAlloc
+    (HGLOBAL *lphGlb,           // Ptr to HGLOBAL to ReAlloc (allocated with GHND)
      APLINT   aplIntLft,        // New max length
      APLINT   CurLen,           // Current length
      LPAPLINT lpMaxLen)         // Ptr to max length
@@ -6158,8 +6669,6 @@ UBOOL NestedReAlloc
 {
     APLUINT     ByteRes;        // # bytes in the temp result
     HGLOBAL     hGlbTmp;
-    LPAPLNESTED lpMemComb = NULL;
-    LPAPLNESTED lpMemTmp;
 
     // Calculate # bytes needed
     ByteRes = aplIntLft * sizeof (APLNESTED);
@@ -6169,31 +6678,14 @@ UBOOL NestedReAlloc
         goto WSFULL_EXIT;
 
     // Attempt to reallocate the original HGLOBAL
-    hGlbTmp = GlobalReAlloc (*lphGlb, (APLU3264) ByteRes, GHND);
+    hGlbTmp = GlobalReAllocGHND (*lphGlb, (APLU3264) ByteRes, GHND);
 
     // Check for error
     if (hGlbTmp EQ NULL)
         goto WSFULL_EXIT;
     else
-    if (*lphGlb NE hGlbTmp)
-    {
-        // Lock the two global memory handles to get a ptr to them
-        lpMemComb = GlobalLock (*lphGlb);
-        lpMemTmp  = GlobalLock (hGlbTmp );
-
-        // Copy the old memory to the new
-        CopyMemory (lpMemTmp, lpMemComb, (APLU3264) (CurLen * sizeof (APLNESTED)));
-
-        // We no longer need these ptrs
-        GlobalUnlock (*lphGlb); lpMemComb = NULL;
-        GlobalUnlock (hGlbTmp); lpMemTmp  = NULL;
-
-        // Free the old handle
-        GlobalFree (*lphGlb); *lphGlb = NULL;
-
         // Save as the new handle
         *lphGlb = hGlbTmp;
-    } // End IF/ELSE
 
     // Save as new maximum
     *lpMaxLen = aplIntLft;
@@ -6203,6 +6695,645 @@ UBOOL NestedReAlloc
 WSFULL_EXIT:
     return FALSE;
 } // End NestedReAlloc
+
+
+//***************************************************************************
+//  $MpiIntReAlloc
+//
+//  Expand an APLINT array by GlobalReAlloc
+//***************************************************************************
+
+UBOOL MpiIntReAlloc
+    (HGLOBAL *lphGlb,           // Ptr to HGLOBAL to ReAlloc (allocated with GHND)
+     APLINT   aplIntLft,        // New max length
+     UBOOL    bIsAplint,        // TRUE iff this vector consists of APLINTs
+     LPAPLINT lpMaxLen)         // Ptr to max length
+
+{
+    APLUINT  ByteRes;           // # bytes in the temp result
+    HGLOBAL  hGlbTmp;
+
+    // Calculate # bytes needed
+    ByteRes = aplIntLft * (bIsAplint ? sizeof (APLINT) : sizeof (APLMPI));
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
+    // Attempt to reallocate the original HGLOBAL
+    hGlbTmp = GlobalReAllocGHND (*lphGlb, (APLU3264) ByteRes, GHND);
+
+    // Check for error
+    if (hGlbTmp EQ NULL)
+        goto WSFULL_EXIT;
+    else
+        // Save as the new handle
+        *lphGlb = hGlbTmp;
+
+    if (bIsAplint)
+    {
+        LPAPLINT lpMemAplInt;
+
+        // Lock the memory to get a ptr to it
+        lpMemAplInt = GlobalLockGHND (*lphGlb);
+
+        // Fill the new items with -1s
+        FillMemory (&lpMemAplInt[*lpMaxLen], (APLU3264) ((aplIntLft - *lpMaxLen) * sizeof (APLINT)), 0xFF);
+
+        // We no longer need this ptr
+        GlobalUnlockGHND (*lphGlb); lpMemAplInt = NULL;
+    } else
+    {
+        LPAPLMPI lpMemAplMpi;
+
+        // Lock the memory to get a ptr to it
+        lpMemAplMpi = GlobalLockGHND (*lphGlb);
+
+        // Fill the new items with -1s
+        while (aplIntLft > *lpMaxLen)
+            // Initialize to 0
+            mpz_init_set_si (&lpMemAplMpi[(*lpMaxLen)++], -1);
+
+        // We no longer need this ptr
+        GlobalUnlockGHND (*lphGlb); lpMemAplMpi = NULL;
+    } // End IF/ELSE
+
+    // Save as new maximum
+    *lpMaxLen = aplIntLft;
+
+    return TRUE;
+
+WSFULL_EXIT:
+    return FALSE;
+} // End MpiIntReAlloc
+
+
+//***************************************************************************
+//  $InitCombCache
+//
+//  Initialize Combinatorial cache
+//***************************************************************************
+
+void InitCombCache
+    (LPUBOOL lpbCtrlBreak)          // Ptr to Ctrl-Break flag (may be NULL)
+
+{
+    LPAPLINT lpMemCombInt;          // Ptr to PNJ vector of APLINTs
+    LPAPLMPI lpMemCombMpi;          // ...    PNZ ...       APLMPIs
+    APLINT   i;                     // Loop counter
+
+    // Set the lengths
+    gCurLenPNI  =
+    gCurLenPNJ  =
+    gCurLenPNR  =
+    gCurLenPNZ  =
+    gCurLenSN2I =
+    gCurLenSN2R = 1;
+    gMaxLenPNI  = PN_PENT_INT_TOO_BIG;
+    gMaxLenPNR  =
+    gMaxLenSN2I =
+    gMaxLenSN2R = 1000;
+
+    gMaxLenPNJ  =
+    gMaxLenPNZ  = PN_PENT_INT_TOO_BIG;
+
+    //***************************************************************
+    // ghGlbPNx is the global memory handle to a vector of length
+    //   gMaxLenPNx where the first gCurLenPNx elements are ptrs to a
+    //   vector of APLINTs/APLRATs
+    //***************************************************************
+
+    // Initialize a Nested vector of APLINTs
+    ghGlbPNI = InitNestedINTs (gMaxLenPNI);
+
+    // Initialize those rows
+    InitCombRowCacheInt_EM_RE (gMaxLenPNI, ghGlbPNI, &gCurLenPNI, lpbCtrlBreak);
+
+
+    // Initialize a Nested vector of APLINTs
+    ghGlbPNR = InitNestedRATs (gMaxLenPNR);
+
+    // Initialize those rows
+    InitCombRowCacheRat_EM_RE (gMaxLenPNR, ghGlbPNR, &gCurLenPNR, lpbCtrlBreak);
+
+
+    // Allocate a vector of APLINTs
+    ghGlbPNJ = GlobalAllocGHND (GPTR, (APLU3264) (gMaxLenPNJ * sizeof (APLINT)));
+////if (ghGlbPNJ EQ NULL)
+////    goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemCombInt = GlobalLockGHND (ghGlbPNJ);
+
+    // Fill in the first value with a 1
+    lpMemCombInt[0] = 1;
+
+    // Fill in the remaining values with -1s
+    FillMemory (&lpMemCombInt[1], (APLU3264) ((gMaxLenPNJ - 1) * sizeof (APLINT)), 0xFF);
+
+    // We no longer need this ptr
+    GlobalUnlockGHND (ghGlbPNI1); lpMemCombInt = NULL;
+
+
+
+    // Allocate a vector of APLMPIs
+    ghGlbPNZ = GlobalAllocGHND (GPTR, (APLU3264) (gMaxLenPNZ * sizeof (APLMPI)));
+////if (ghGlbPNZ EQ NULL)
+////    goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemCombMpi = GlobalLockGHND (ghGlbPNZ);
+
+    // Fill in the first value with a 1
+    mpz_init_set_si (&lpMemCombMpi[0], 1);
+
+    // Fill in the remaining values with -1s
+    for (i = 1; i < gMaxLenPNZ; i++)
+        mpz_init_set_si (&lpMemCombMpi[i], -1);
+
+    // We no longer need this ptr
+    GlobalUnlockGHND (ghGlbPNZ); lpMemCombMpi = NULL;
+
+
+    //***************************************************************
+    // ghGlbSN2x is the global memory handle to a vector of length
+    //   gMaxLenSN2x where the first gCurLenSN2x elements are ptrs to a
+    //   vector of APLINTs/APLRATs
+    //***************************************************************
+
+    // Initialize a Nested vector of APLINTs
+    ghGlbSN2I = InitNestedINTs (gMaxLenSN2I);
+
+    // Initialize those rows
+    InitCombRowCacheInt_EM_RE (gMaxLenSN2I, ghGlbSN2I, &gCurLenSN2I, lpbCtrlBreak);
+
+    // Initialize a Nested vector of APLINTs
+    ghGlbSN2R = InitNestedRATs (gMaxLenSN2R);
+
+    // Initialize those rows
+    InitCombRowCacheRat_EM_RE (gMaxLenSN2R, ghGlbSN2R, &gCurLenSN2R, lpbCtrlBreak);
+} // End InitCombCache
+
+
+//***************************************************************************
+//  $InitCombRowCacheInt_EM_RE
+//
+//  Initialize rows in a Combinatorial Cache as INTs
+//***************************************************************************
+
+void InitCombRowCacheInt_EM_RE
+    (APLINT      aplIntLft,                         // # rows to reach
+     HGLOBAL     ghGlb,                             // Cache global memory handle (allocated with GHND)
+     LPAPLINT    lpgCurLen,                         // Ptr to current length
+     LPUBOOL     lpbCtrlBreak)                      // Ptr to Ctrl-Break flag (may be NULL)
+
+{
+    APLUINT         ByteRes;                        // # bytes in the temp result
+    LPAPLINT        lpaplInt1 = NULL;               // Ptr to cache row to be added
+    UBOOL           bRet = TRUE;                    // TRUE iff the result is valid
+    LPAPLNESTED     lpMemComb = NULL;               // Ptr to the cache global memory
+    EXCEPTION_CODES exCode = EXCEPTION_CTRL_BREAK;  // Exception code in case we're to signal an exception
+
+    // Lock the memory to get a ptr to it
+    lpMemComb = GlobalLockGHND (ghGlb);
+
+    // If we need another row in ghGlb, ...
+    while (aplIntLft > *lpgCurLen)
+    {
+        // Check for Ctrl-Break
+        if (lpbCtrlBreak NE NULL && CheckCtrlBreak (lpbCtrlBreak))
+            goto ERROR_EXIT;
+
+        // Calculate # bytes in this row
+        ByteRes = (*lpgCurLen + 1) * sizeof (APLINT);
+
+        // Allocate an Item row
+        lpMemComb[*lpgCurLen] = GlobalAlloc3 (GPTR, (APLU3264) ByteRes);
+
+        // Check for error
+        if (lpMemComb[*lpgCurLen] EQ NULL)
+            goto WSFULL_EXIT;
+
+        // Lock the memory to get a ptr to it
+        lpaplInt1 = GlobalLock3 (lpMemComb[*lpgCurLen]);
+
+        // Fill in the row with a leading and trailing 1 with all -1s in between
+        FillMemory (&lpaplInt1[1], (APLU3264) ((*lpgCurLen - 1) * sizeof (APLINT)), 0xFF);
+
+        lpaplInt1[0]          =
+        lpaplInt1[*lpgCurLen] = 1;
+
+        // We no longer need this ptr
+        GlobalUnlock3 (lpMemComb[*lpgCurLen]); lpaplInt1 = NULL;
+
+        // Count in another row
+        (*lpgCurLen)++;
+    } // End WHILE
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    // Mark as a WS FULL
+    exCode = EXCEPTION_WS_FULL;
+
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    // Mark as NOT successful
+    bRet = FALSE;
+NORMAL_EXIT:
+    if (lpaplInt1 NE NULL)
+    {
+        // We no longer need this ptr
+        GlobalUnlock3 (lpMemComb[*lpgCurLen]); lpaplInt1 = NULL;
+    } // End IF
+
+    if (lpMemComb NE NULL)
+    {
+        // We no longer need this ptr
+        GlobalUnlockGHND (ghGlb); lpMemComb = NULL;
+    } // End IF
+
+    if (!bRet)
+        RaiseException (exCode, 0, 0, NULL);
+} // End InitCombRowCacheInt_EM_RE
+
+
+//***************************************************************************
+//  $InitCombRowCacheRat_EM_RE
+//
+//  Initialize rows in a Combinatorial Cache as RATs
+//***************************************************************************
+
+void InitCombRowCacheRat_EM_RE
+    (APLINT      aplIntLft,                         // # rows to reach
+     HGLOBAL     ghGlb,                             // Cache global memory handle
+     LPAPLINT    lpgCurLen,                         // Ptr to current length
+     LPUBOOL     lpbCtrlBreak)                      // Ptr to Ctrl-Break flag (may be NULL)
+
+{
+    APLUINT         ByteRes;                        // # bytes in the temp result
+    APLINT          i;                              // Loop counter
+    LPAPLRAT        lpaplRat1 = NULL;               // Ptr to cache row to be added
+    UBOOL           bRet = TRUE;                    // TRUE iff the result is valid
+    LPAPLNESTED     lpMemComb = NULL;               // Ptr to the cache global memory
+    EXCEPTION_CODES exCode = EXCEPTION_CTRL_BREAK;  // Exception code in case we're to signal an exception
+
+    // Lock the memory to get a ptr to it
+    lpMemComb = GlobalLockGHND (ghGlb);
+
+    // If we need another row in ghGlb, ...
+    while (aplIntLft > *lpgCurLen)
+    {
+        // Check for Ctrl-Break
+        if (lpbCtrlBreak NE NULL && CheckCtrlBreak (lpbCtrlBreak))
+            goto ERROR_EXIT;
+
+        // Calculate # bytes in this row
+        ByteRes = (*lpgCurLen + 1) * sizeof (APLRAT);
+
+        // Allocate an Item row
+        lpMemComb[*lpgCurLen] = GlobalAlloc3 (GPTR, (APLU3264) ByteRes);
+
+        // Check for error
+        if (lpMemComb[*lpgCurLen] EQ NULL)
+            goto WSFULL_EXIT;
+
+        // Lock the memory to get a ptr to it
+        lpaplRat1 = GlobalLock3 (lpMemComb[*lpgCurLen]);
+
+        // Fill in the row with a leading and trailing 1 with all -1s in between
+        for (i = 1; i < *lpgCurLen; i++)
+            mpq_init_set_sx (&lpaplRat1[i], -1, 1);
+
+        mpq_init_set (&lpaplRat1[0],          &mpqOne);
+        mpq_init_set (&lpaplRat1[*lpgCurLen], &mpqOne);
+
+        // We no longer need this ptr
+        GlobalUnlock3 (lpMemComb[*lpgCurLen]); lpaplRat1 = NULL;
+
+        // Count in another row
+        (*lpgCurLen)++;
+    } // End WHILE
+
+    goto NORMAL_EXIT;
+
+WSFULL_EXIT:
+    // Mark as a WS FULL
+    exCode = EXCEPTION_WS_FULL;
+
+    FormatSystemErrorMessage (L"InitCombRowCacheRat_EM_RE");
+
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    // Mark as NOT successful
+    bRet = FALSE;
+NORMAL_EXIT:
+    if (lpaplRat1 NE NULL)
+    {
+        // We no longer need this ptr
+        GlobalUnlock3 (lpMemComb[*lpgCurLen]); lpaplRat1 = NULL;
+    } // End IF
+
+    if (lpMemComb NE NULL)
+    {
+        // We no longer need this ptr
+        GlobalUnlockGHND (ghGlb); lpMemComb = NULL;
+    } // End IF
+
+    if (!bRet)
+        RaiseException (exCode, 0, 0, NULL);
+} // End InitCombRowCacheRat_EM_RE
+
+
+//***************************************************************************
+//  $InitNestedINTs
+//
+//  Initialize a nested vector of APLINTs
+//***************************************************************************
+
+HGLOBAL InitNestedINTs
+    (APLINT MaxLen)
+
+{
+    HGLOBAL     hGlbRes;
+    APLUINT     ByteRes;        // # bytes in the result
+    LPAPLNESTED lpMemComb;
+    LPAPLINT    lpaplInt;
+
+    // Calculate the space needed for the PNI constants
+    ByteRes = MaxLen * sizeof (APLNESTED);
+
+    // Allocate space for the PN  constants
+    hGlbRes = GlobalAllocGHND (GPTR, (APLU3264) ByteRes);
+
+////// Check for error (if we get an error at this point, we're in big trouble)
+////if (hGlbRes EQ NULL)
+////    goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemComb = GlobalLockGHND (hGlbRes);
+
+    // Calculate the space needed for the first PN  constant
+    ByteRes = 1 * sizeof (APLINT);
+
+    // Save the first ptr to a INT 1
+    lpMemComb[0] = GlobalAlloc3 (GPTR, (APLU3264) ByteRes);
+
+////// Check for error (if we get an error at this point, we're in big trouble)
+////if (lpMemComb[0] EQ NULL)
+////    goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpaplInt = GlobalLock3 (lpMemComb[0]);
+
+    // Save the value
+    lpaplInt[0]  = 1;
+
+    // We no longer need this ptr
+    GlobalUnlock3 (lpMemComb[0]); lpaplInt = NULL;
+
+    // We no longer need this ptr
+    GlobalUnlockGHND (hGlbRes); lpMemComb = NULL;
+
+    return hGlbRes;
+} // End InitNestedINTs
+
+
+//***************************************************************************
+//  $InitNestedRATs
+//
+//  Initialize a nested vector of APLRATs
+//***************************************************************************
+
+HGLOBAL InitNestedRATs
+    (APLINT MaxLen)
+
+{
+    HGLOBAL     hGlbRes;
+    APLUINT     ByteRes;        // # bytes in the result
+    LPAPLNESTED lpMemComb;
+    LPAPLRAT    lpaplRat;
+
+    // Calculate the space needed for the PNR constants
+    ByteRes = MaxLen * sizeof (APLNESTED);
+
+    // Allocate space for the PN  constants
+    hGlbRes = GlobalAllocGHND (GPTR, (APLU3264) ByteRes);
+
+////// Check for error (if we get an error at this point, we're in big trouble)
+////if (hGlbRes EQ NULL)
+////    goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemComb = GlobalLockGHND (hGlbRes);
+
+    // Calculate the space needed for the first PN  constant
+    ByteRes = 1 * sizeof (APLRAT);
+
+    // Save the first ptr to a RAT 1
+    lpMemComb[0] = GlobalAlloc3 (GPTR, (APLU3264) ByteRes);
+
+////// Check for error (if we get an error at this point, we're in big trouble)
+////if (lpMemComb[0] EQ NULL)
+////    goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpaplRat = GlobalLock3 (lpMemComb[0]);
+
+    // Save the value
+    mpq_init_set (&lpaplRat[0], &mpqOne);
+
+    // We no longer need this ptr
+    GlobalUnlock3 (lpMemComb[0]); lpaplRat = NULL;
+
+    // We no longer need this ptr
+    GlobalUnlockGHND (hGlbRes); lpMemComb = NULL;
+
+    return hGlbRes;
+} // End InitNestedRATs
+
+
+//***************************************************************************
+//  $UninitCombCache
+//
+//  Uninitialize Combinatorial cache
+//***************************************************************************
+
+void UninitCombCache
+    (void)
+
+{
+    APLINT      i, j;           // Loop counters
+    LPAPLNESTED lpMemComb;
+    LPAPLRAT    lpMemPart;
+    LPAPLMPI    lpMemMpi;
+
+//***************************************************************************
+//  MPFR
+//***************************************************************************
+
+    // Free the MPFR cache
+////mpfr_free_cache ();
+    flint_cleanup ();
+
+//***************************************************************************
+//  PNI
+//***************************************************************************
+
+    EnterCriticalSection (&CSOCombPNI);
+
+    // Lock the memory to get a ptr to it
+    lpMemComb = GlobalLockGHND (ghGlbPNI);
+
+    // Loop through the PNI ptrs
+    for (i = 0; i < gCurLenPNI; i++)
+    {
+        // As these ptrs point to vectors of APLINTs,
+        //   we can just free the memory
+        GlobalFree3 (lpMemComb[i]); lpMemComb[i] = NULL;
+    } // End FOR
+
+    // We no longer need this ptr
+    GlobalUnlockGHND (ghGlbPNI); lpMemComb = NULL;
+
+    // We no longer need this storage
+    GlobalFreeGHND (ghGlbPNI); ghGlbPNI = NULL;
+
+    LeaveCriticalSection (&CSOCombPNI);
+
+//***************************************************************************
+//  PNJ
+//***************************************************************************
+
+    EnterCriticalSection (&CSOCombPNJ);
+
+    // We no longer need this storage
+    GlobalFreeGHND (ghGlbPNJ); ghGlbPNJ = NULL;
+
+    LeaveCriticalSection (&CSOCombPNJ);
+
+//***************************************************************************
+//  PNR
+//***************************************************************************
+
+    EnterCriticalSection (&CSOCombPNR);
+
+    // Lock the memory to get a ptr to it
+    lpMemComb = GlobalLockGHND (ghGlbPNR);
+
+    // Loop through the PNR ptrs
+    for (i = 0; i < gCurLenPNR; i++)
+    {
+        // Point to the vector of RAT entries
+        lpMemPart = GlobalLock3 (lpMemComb[i]);
+
+        // Loop through the PNR RAT entries
+        for (j = 0; j < i; j++)
+            // Free the memory
+            Myq_clear (&lpMemPart[j]);
+
+        // We no longer need this ptr
+        GlobalUnlock3 (lpMemComb[i]); lpMemPart = NULL;
+
+        // As these ptrs point to vectors of APLRATs,
+        //   and we just freed all of those RATs,
+        //   we can just free the memory
+        GlobalFree (lpMemComb[i]); lpMemComb[i] = NULL;
+    } // End FOR
+
+    // We no longer need this ptr
+    GlobalUnlockGHND (ghGlbPNR); lpMemComb = NULL;
+
+    // We no longer need this storage
+    GlobalFreeGHND (ghGlbPNR); ghGlbPNR = NULL;
+
+    LeaveCriticalSection (&CSOCombPNR);
+
+//***************************************************************************
+//  PNZ
+//***************************************************************************
+
+    EnterCriticalSection (&CSOCombPNZ);
+
+    // Lock the memory to get a ptr to it
+    lpMemMpi = GlobalLockGHND (ghGlbPNZ);
+
+    // Loop through the PNZ items
+    for (i = 0; i < gCurLenPNZ; i++)
+        Myz_clear (&lpMemMpi[i]);
+
+    // We no longer need this ptr
+    GlobalUnlockGHND (ghGlbPNZ); lpMemMpi = NULL;
+
+    // We no longer need this storage
+    GlobalFreeGHND (ghGlbPNZ); ghGlbPNZ = NULL;
+
+    LeaveCriticalSection (&CSOCombPNZ);
+
+//***************************************************************************
+//  SN2I
+//***************************************************************************
+
+    EnterCriticalSection (&CSOCombSN2I);
+
+    // Lock the memory to get a ptr to it
+    lpMemComb = GlobalLockGHND (ghGlbSN2I);
+
+    // Loop through the SN2I ptrs
+    for (i = 0; i < gCurLenSN2I; i++)
+    {
+        // As these ptrs point to vectors of APLINTs,
+        //   we can just free the memory
+        GlobalFree (lpMemComb[i]); lpMemComb[i] = NULL;
+    } // End FOR
+
+    // We no longer need this ptr
+    GlobalUnlockGHND (ghGlbSN2I); lpMemComb = NULL;
+
+    // We no longer need this storage
+    GlobalFreeGHND (ghGlbSN2I); ghGlbSN2I = NULL;
+
+    LeaveCriticalSection (&CSOCombSN2I);
+
+//***************************************************************************
+//  SN2R
+//***************************************************************************
+
+    EnterCriticalSection (&CSOCombSN2R);
+
+    // Lock the memory to get a ptr to it
+    lpMemComb = GlobalLockGHND (ghGlbSN2R);
+
+    // Loop through the SN2R ptrs
+    for (i = 0; i < gCurLenSN2R; i++)
+    {
+        // Point to the vector of RAT entries
+        lpMemPart = GlobalLock3 (lpMemComb[i]);
+
+        // Loop through the SN2R RAT entries
+        for (j = 0; j < i; j++)
+            // Free the memory
+            Myq_clear (&lpMemPart[j]);
+
+        // We no longer need this ptr
+        GlobalUnlock3 (lpMemComb[i]); lpMemPart = NULL;
+
+        // As these ptrs point to vectors of APLRATs,
+        //   and we just freed all of those RATs,
+        //   we can just free the memory
+        GlobalFree3 (lpMemComb[i]); lpMemComb[i] = NULL;
+    } // End FOR
+
+    // We no longer need this ptr
+    GlobalUnlockGHND (ghGlbSN2R); lpMemComb = NULL;
+
+    // We no longer need this storage
+    GlobalFreeGHND (ghGlbSN2R); ghGlbSN2R = NULL;
+
+    LeaveCriticalSection (&CSOCombSN2R);
+} // End UninitCombCache
 
 
 //***************************************************************************
@@ -6235,6 +7366,14 @@ LPPL_YYSTYPE ClearCombCache_EM_YY
     LPVOID            lpMemRht;             // Ptr to right arg data
     LPAPLCHAR         lpMemRes;             // Ptr to the result's global memory
     UBOOL             bRet;                 // TRUE iff the result is valid
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Ensure that the right arg is a scalar or one-element vector with value 1
 
@@ -6277,7 +7416,7 @@ LPPL_YYSTYPE ClearCombCache_EM_YY
     UninitCombCache ();
 
     // Initialize Combinatorial cache
-    InitCombCache ();
+    InitCombCache (lpbCtrlBreak);
 
     // Return a message
 

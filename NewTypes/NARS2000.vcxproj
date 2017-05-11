@@ -102,7 +102,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\;$(OutDir);$(MPIR_DIR)include;$(MPFR_DIR)include;$(MPC_DIR)include;$(ECM_DIR)include;$(MS_DIR);$(NARSROOT)qdebug;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(OutDir);$(MPIR_DIR)include;$(MPFR_DIR)include;$(FLINT_DIR)include;$(MPC_DIR)include;$(ECM_DIR)include;$(MS_DIR);$(NARSROOT)qdebug;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32;_CRT_SECURE_NO_WARNINGS;NTDDI_VERSION=NTDDI_WINXP;_WIN32_WINNT=_WIN32_WINNT_WINXP;_WIN32_IE=0x0600;DEBUG;RESDEBUG=1;_STDINT_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
@@ -121,8 +121,8 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     </ProjectReference>
     <Link>
       <AdditionalOptions>/ignore:4099 comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib MSImg32.lib dbghelp.lib Shlwapi.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>mpir32d.lib;mpfr32d.lib;mpc32d.lib;ecm32d.lib;gsl.lib;cblas.lib;qdebug32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(MPIR_DIR)lib;$(MPFR_DIR)lib;$(MPC_DIR)lib;$(ECM_DIR)lib;$(CS_DIR)lib;$(GSL_DIR)x86\lib;$(NARSROOT)qdebug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mpir32d.lib;mpfr32d.lib;flint32d.lib;mpc32d.lib;vcompd.lib;ecm32d.lib;gsl.lib;cblas.lib;qdebug32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(MPIR_DIR)lib;$(MPFR_DIR)lib;$(FLINT_DIR)lib;$(MPC_DIR)lib;$(ECM_DIR)lib;$(CS_DIR)lib;$(GSL_DIR)x86\lib;$(NARSROOT)qdebug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>NARS2000.exe.manifest32;%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <ModuleDefinitionFile>main32.def</ModuleDefinitionFile>
@@ -156,7 +156,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\;$(OutDir);$(MPIR_DIR)include;$(MPFR_DIR)include;$(MPC_DIR)include;$(ECM_DIR)include;$(MS_DIR);$(NARSROOT)qdebug;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(OutDir);$(MPIR_DIR)include;$(MPFR_DIR)include;$(FLINT_DIR)include;$(MPC_DIR)include;$(ECM_DIR)include;$(MS_DIR);$(NARSROOT)qdebug;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32;_WIN64;_AMD64_;_CRT_SECURE_NO_WARNINGS;NTDDI_VERSION=NTDDI_WINXP;_WIN32_WINNT=_WIN32_WINNT_WINXP;_WIN32_IE=0x0600;DEBUG;RESDEBUG=0;_STDINT_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
@@ -175,8 +175,8 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     </ProjectReference>
     <Link>
       <AdditionalOptions>/ignore:4099 comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib MSImg32.lib dbghelp.lib Shlwapi.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>mpir64d.lib;mpfr64d.lib;mpc64d.lib;ecm64d.lib;gsl.lib;cblas.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(MPIR_DIR)lib;$(MPFR_DIR)lib;$(MPC_DIR)lib;$(ECM_DIR)lib;$(CS_DIR)lib;$(GSL_DIR)x64\lib;$(NARSROOT)qdebug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mpir64d.lib;mpfr64d.lib;flint64d.lib;mpc64d.lib;ecm64d.lib;vcompd.lib;gsl.lib;cblas.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(MPIR_DIR)lib;$(MPFR_DIR)lib;$(FLINT_DIR)lib;$(MPC_DIR)lib;$(ECM_DIR)lib;$(CS_DIR)lib;$(GSL_DIR)x64\lib;$(NARSROOT)qdebug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>NARS2000.exe.manifest64;%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <ModuleDefinitionFile>main64.def</ModuleDefinitionFile>
@@ -210,7 +210,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\;$(OutDir);$(MPIR_DIR)include;$(MPFR_DIR)include;$(MPC_DIR)include;$(ECM_DIR)include;$(MS_DIR);$(NARSROOT)qdebug;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(OutDir);$(MPIR_DIR)include;$(MPFR_DIR)include;$(FLINT_DIR)include;$(MPC_DIR)include;$(ECM_DIR)include;$(MS_DIR);$(NARSROOT)qdebug;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32;_CRT_SECURE_NO_WARNINGS;NTDDI_VERSION=NTDDI_WINXP;_WIN32_WINNT=_WIN32_WINNT_WINXP;_WIN32_IE=0x0600;_STDINT_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
@@ -229,8 +229,8 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     </ProjectReference>
     <Link>
       <AdditionalOptions>/ignore:4099 comctl32.lib Wininet.lib version.lib libcmt.lib oldnames.lib MSImg32.lib dbghelp.lib Shlwapi.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>mpir32.lib;mpfr32.lib;mpc32.lib;ecm32.lib;gsl.lib;cblas.lib;qdebug32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(MPIR_DIR)lib;$(MPFR_DIR)lib;$(MPC_DIR)lib;$(ECM_DIR)lib;$(CS_DIR)lib;$(GSL_DIR)x86\lib;$(NARSROOT)qdebug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mpir32.lib;mpfr32.lib;flint32.lib;mpc32.lib;ecm32.lib;vcomp.lib;gsl.lib;cblas.lib;qdebug32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(MPIR_DIR)lib;$(MPFR_DIR)lib;$(FLINT_DIR)lib;$(MPC_DIR)lib;$(ECM_DIR)lib;$(CS_DIR)lib;$(GSL_DIR)x86\lib;$(NARSROOT)qdebug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>NARS2000.exe.manifest32;%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <ModuleDefinitionFile>main32.def</ModuleDefinitionFile>
@@ -263,7 +263,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\;$(OutDir);$(MPIR_DIR)include;$(MPFR_DIR)include;$(MPC_DIR)include;$(ECM_DIR)include;$(MS_DIR);$(NARSROOT)qdebug;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(OutDir);$(MPIR_DIR)include;$(MPFR_DIR)include;$(FLINT_DIR)include;$(MPC_DIR)include;$(ECM_DIR)include;$(MS_DIR);$(NARSROOT)qdebug;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32;_WIN64;_AMD64_;_CRT_SECURE_NO_WARNINGS;NTDDI_VERSION=NTDDI_WINXP;_WIN32_WINNT=_WIN32_WINNT_WINXP;_WIN32_IE=0x0600;_STDINT_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
@@ -282,8 +282,8 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     </ProjectReference>
     <Link>
       <AdditionalOptions>/ignore:4099 comctl32.lib Wininet.lib version.lib libcmt.lib oldnames.lib MSImg32.lib dbghelp.lib Shlwapi.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>mpir64.lib;mpfr64.lib;mpc64.lib;ecm64.lib;gsl.lib;cblas.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(MPIR_DIR)lib;$(MPFR_DIR)lib;$(MPC_DIR)lib;$(ECM_DIR)lib;$(CS_DIR)lib;$(GSL_DIR)x64\lib;$(NARSROOT)qdebug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mpir64.lib;mpfr64.lib;flint64.lib;mpc64.lib;ecm64.lib;vcomp.lib;gsl.lib;cblas.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(MPIR_DIR)lib;$(MPFR_DIR)lib;$(FLINT_DIR)lib;$(MPC_DIR)lib;$(ECM_DIR)lib;$(CS_DIR)lib;$(GSL_DIR)x64\lib;$(NARSROOT)qdebug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>NARS2000.exe.manifest64;%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <ModuleDefinitionFile>main64.def</ModuleDefinitionFile>

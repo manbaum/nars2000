@@ -212,7 +212,7 @@ END
 // Dialogs
 //
 
-IDD_ABOUT DIALOGEX DISCARDABLE  4, 4, 225,173
+IDD_ABOUT DIALOGEX DISCARDABLE  4, 4, 235,183
 STYLE WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "About NARS2000"
 FONT 8, "MS Shell Dlg"
@@ -220,7 +220,7 @@ BEGIN
     DEFPUSHBUTTON   "&OK"     , IDOK          ,165,  5, 50, 14
     LTEXT           "NARS2000 (WinXX)#%u.%u%u"
                               , IDC_VERSION   , 10,  8,135, 14, NOT WS_GROUP
-    LTEXT           ""        , IDC_VERSION2  , 10, 25,210,118
+    LTEXT           ""        , IDC_VERSION2  , 10, 25,225,118
     PUSHBUTTON      "Copy"    , IDC_ABOUT_COPY,165, 90, 50, 14
     LTEXT           "Copyright \xA9 2006-2017 Sudley Place Software\nAll rights reserved."
                               , IDC_ABOUT_NOTE, 10,118,170, 18, NOT WS_GROUP

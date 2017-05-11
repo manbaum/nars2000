@@ -1,6 +1,3 @@
-Version 0.5.4.xx consists of the following Builds:
-
-
 Build #1756 -- Version 0.5.4.xx
 --------------------------------
 
@@ -67,32 +64,3 @@ Directory branches/bsmith/NewTypes/htdocs:
 
 CONTRIBUTORS-BODY.AHTML:
   Mention D. E. Knuth in List of Contributors.
-
-
-Build #1755 -- Version 0.5.4.xx
---------------------------------
-
-* Fix Bug In )SAVE And )LOAD With Non-Empty SI
-
-Directory branches/bsmith/NewTypes:
-
-SC_LOAD.C:
-  If the workspace has a non-empty SI, display a message about it, and don't load the SI levels.
-
-SC_SAVE.C:
-  If the workspace has a non-empty SI, display a message noting SI cleared on )LOAD.
-  Remove duplicate message about non-empty SI.
-
-
-Build #1754 -- Version 0.5.4.xx
---------------------------------
-
-* Fix Bug In Control Structures With AFO Restricted Stmts
-
-Directory branches/bsmith/NewTypes:
-
-CS_PARSE.Y:
-  The prohibition on IF/FOR/FORLCL/REPEAT/SELECT/WHILE stmts in AFO was enforced at the wrong time in <cs_yylex> instead of inline.
-
-VER.RC:
-  Increment version # to 0.5.4.xx.

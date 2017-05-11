@@ -74,6 +74,10 @@
 !error Environment variable MPFR_DIR= not defined.
 !endif
 
+!ifndef FLINT_DIR
+!error Environment variable FLINT_DIR= not defined.
+!endif
+
 !ifndef ECM_DIR
 !error Environment variable ECM_DIR= not defined.
 !endif
@@ -125,11 +129,12 @@ LFLAGS_NDEF=/NODEFAULTLIB:libcmtd.lib
 GSL1_LIB=$(GSL_DIR)$(XWIN)\lib\gsl.lib      # GSL library
 GSL2_LIB=$(GSL_DIR)$(XWIN)\lib\cblas.lib    # CBLAS library
 
-MS_INC   = $(MS_DIR)
-MPC_INC  = $(MPC_DIR)include^\
-MPIR_INC = $(MPIR_DIR)include^\
-MPFR_INC = $(MPFR_DIR)include^\
-ECM_INC  = $(ECM_DIR)include^\
+MS_INC    = $(MS_DIR)
+MPC_INC   = $(MPC_DIR)include^\
+MPIR_INC  = $(MPIR_DIR)include^\
+MPFR_INC  = $(MPFR_DIR)include^\
+FLINT_INC = $(FLINT_DIR)include^\
+ECM_INC   = $(ECM_DIR)include^\
 
 !if [if not exist $(MPC_INC)*.h  exit 1]
 !error Incorrect value for MPC_INC=$(MPC_INC)
@@ -140,6 +145,9 @@ ECM_INC  = $(ECM_DIR)include^\
 !if [if not exist $(MPFR_INC)*.h  exit 1]
 !error Incorrect value for MPFR_INC=$(MPFR_INC)
 !endif
+!if [if not exist $(FLINT_INC)*.h  exit 1]
+!error Incorrect value for FLINT_INC=$(FLINT_INC)
+!endif
 !if [if not exist $(ECM_INC)*.h exit 1]
 !error Incorrect value for ECM_INC=$(ECM_INC)
 !endif
@@ -147,7 +155,7 @@ ECM_INC  = $(ECM_DIR)include^\
 WDEF=_WIN$(WIN)
 MFEXT=w$(WIN)
 
-I98=.\;$(SDK_INC);$(MSVC)INCLUDE;$(MS_INC);$(MPC_INC);$(MPIR_INC);$(MPFR_INC);$(ECM_INC);$(GSL_INC);$(CS_DIR)include;$(QDEBUG)
+I98=.\;$(SDK_INC);$(MSVC)INCLUDE;$(MS_INC);$(MPC_INC);$(MPIR_INC);$(MPFR_INC);$(FLINT_INC);$(ECM_INC);$(GSL_INC);$(CS_DIR)include;$(QDEBUG)
 
 MV=makever
 
@@ -156,10 +164,12 @@ MV=makever
 ##   mkn LINKDEBUG=1
 LINKDEBUG=0
 
-MPC_LIB  = $(MPC_DIR)lib\mpc$(WIN)$(DEBUG_LIBSUFFIX).lib
-MPIR_LIB = $(MPIR_DIR)lib\mpir$(WIN)$(DEBUG_LIBSUFFIX).lib
-MPFR_LIB = $(MPFR_DIR)lib\mpfr$(WIN)$(DEBUG_LIBSUFFIX).lib
-ECM_LIB  = $(ECM_DIR)lib\ecm$(WIN)$(DEBUG_LIBSUFFIX).lib
+MPC_LIB   = $(MPC_DIR)lib\mpc$(WIN)$(DEBUG_LIBSUFFIX).lib
+MPIR_LIB  = $(MPIR_DIR)lib\mpir$(WIN)$(DEBUG_LIBSUFFIX).lib
+MPFR_LIB  = $(MPFR_DIR)lib\mpfr$(WIN)$(DEBUG_LIBSUFFIX).lib
+FLINT_LIB = $(FLINT_DIR)lib\flint$(WIN)$(DEBUG_LIBSUFFIX).lib
+ECM_LIB   = $(ECM_DIR)lib\ecm$(WIN)$(DEBUG_LIBSUFFIX).lib
+VCOMP_LIB = vcomp$(DEBUG_SUFFIX).lib
 
 !if "$(DEBUG)" == "1"
 CS_FILES=
@@ -182,10 +192,12 @@ CFLAGS_DEBUG=$(CFLAGS_DEBUG) /D "RESDEBUG=$(RESDEBUG)" /D "_STDINT_H"
 
 VERSION_FLAGS = /D "NTDDI_VERSION=NTDDI_WINXP" /D "_WIN32_WINNT=_WIN32_WINNT_WINXP" /D "_WIN32_IE=0x0600"
 CFLAGS_WEXE = /nologo /GA /W3 /WX /Oy- /Ot $(CFLAGS_DEBUG) /D "_WIN32" /c /D "_CRT_SECURE_NO_WARNINGS"
-CFLAGS_WEXE = $(CFLAGS_WEXE) $(VERSION_FLAGS) /D "_MBCS" /Qpar /O2
+CFLAGS_WEXE = $(CFLAGS_WEXE) $(VERSION_FLAGS) /D "_MBCS" /Qpar /O2 /D "_OPENMP"
 ##CFLAGS_WEXE = $(CFLAGS_WEXE) /GL
+
 LFLAGS_WEXE2 = /NOLOGO /MAP /LARGEADDRESSAWARE /OPT:REF /DYNAMICBASE:NO /MANIFEST:NO /SUBSYSTEM:WINDOWS /IGNOREIDL /NXCOMPAT /DEBUG
 LFLAGS_WEXE  = $(LFLAGS_WEXE2) /LTCG
+
 !if "$(WIN)" == "64"
 CFLAGS_WEXE = $(CFLAGS_WEXE) /D "_AMD64_" /D "_M_AMD64" /D "_WIN64" /Gd
 LFLAGS_WEXE = $(LFLAGS_WEXE) /MACHINE:X64
@@ -214,10 +226,12 @@ LIBS_WEXE =                     \
 !else
             libcmt.lib          \
 !endif
+            $(VCOMP_LIB)        \
 ##VS2015    legacy_stdio_definitions.lib \
-            $(MPC_LIB)          \
             $(MPIR_LIB)         \
             $(MPFR_LIB)         \
+            $(FLINT_LIB)        \
+            $(MPC_LIB)          \
             $(ECM_LIB)          \
             $(GSL1_LIB)         \
             $(GSL2_LIB)
@@ -708,9 +722,10 @@ OBJS=   $(SRC:???=obj)                  \
 
 $(O)$(ENAME).exe:       $(OBJS)             \
                         $(DEFFILE)          \
-                        $(MPC_LIB)          \
                         $(MPIR_LIB)         \
                         $(MPFR_LIB)         \
+                        $(FLINT_LIB)        \
+                        $(MPC_LIB)          \
                         $(ECM_LIB)          \
                         $(GSL1_LIB)         \
                         $(GSL2_LIB)         \

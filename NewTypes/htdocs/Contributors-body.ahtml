@@ -79,6 +79,10 @@ Contributors</h1>
     <li>Paul Godfrey contributed his <a class="linkleft" href="http://my.fit.edu/~gabdo/gamma.txt">explanation</a> of how to calculate
       the coefficients of the Lanczos approximation to the Gamma function to an arbitrary degree of precision.  This allowed me to
       implement the Factorial and Binomial primitive functions on multiple-precision Hypercomplex arguments.</li>
+
+    <li>Donald E. Knuth contributed many excellent Combinatorial Algorithms to the Combinatorial Operator through his "The Art of Computer Programming",
+      Volume 4A, "Combinatorial Algorithms", Addison Wesley.
+    </li>
   </ul>
 </div>
 
@@ -95,10 +99,10 @@ Contributors</h1>
       href="http://portal.acm.org/citation.cfm?id=28371&amp;coll=portal&amp;dl=ACM">The Syntax of APL: An
       Old Approach Revisited"</a> by Jean Jacques Giardot &amp;
       Florence Rollin, ACM SIGAPL APL87 Conference Proceedings, pp. 441-449.</li>
-	  
-    <li>The Syntax Analyzer (which replaced the above LALR(n) Parser) is based upon the paper 
-	  <a class="linkleft" href="http://dl.acm.org/citation.cfm?id=801081">"APL two by two-syntax analysis by pairwise reduction"</a>, 
-	  Gerth, John A. and Bunda, John D., in ACM SIGAPL APL Quote Quad 06/1984; 14(4):85-94.</li>
+
+    <li>The Syntax Analyzer (which replaced the above LALR(n) Parser) is based upon the paper
+      <a class="linkleft" href="http://dl.acm.org/citation.cfm?id=801081">"APL two by two-syntax analysis by pairwise reduction"</a>,
+      Gerth, John A. and Bunda, John D., in ACM SIGAPL APL Quote Quad 06/1984; 14(4):85-94.</li>
 
     <li>The algorithm for the character grade functions was taken from
       <a class="linkleft" href="http://portal.acm.org/citation.cfm?id=804449&amp;dl=ACM&amp;coll=portal">

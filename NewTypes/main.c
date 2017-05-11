@@ -4178,7 +4178,9 @@ int PASCAL WinMain
     InitializeCriticalSection (&CSOHshTab);
     InitializeCriticalSection (&CSOPthread);
     InitializeCriticalSection (&CSOCombPNI);
+    InitializeCriticalSection (&CSOCombPNJ);
     InitializeCriticalSection (&CSOCombPNR);
+    InitializeCriticalSection (&CSOCombPNZ);
     InitializeCriticalSection (&CSOCombSN2I);
     InitializeCriticalSection (&CSOCombSN2R);
 
@@ -4219,7 +4221,7 @@ int PASCAL WinMain
     InitPrimTabs ();
 
     // Initialize Combinatorial cache
-    InitCombCache ();
+    InitCombCache (NULL);
 
 ////PERFMON
 
@@ -4317,7 +4319,9 @@ EXIT4:
 
     DeleteCriticalSection (&CSOCombSN2R);
     DeleteCriticalSection (&CSOCombSN2I);
+    DeleteCriticalSection (&CSOCombPNZ);
     DeleteCriticalSection (&CSOCombPNR);
+    DeleteCriticalSection (&CSOCombPNJ);
     DeleteCriticalSection (&CSOCombPNI);
     DeleteCriticalSection (&CSOPthread);
     DeleteCriticalSection (&CSOHshTab);

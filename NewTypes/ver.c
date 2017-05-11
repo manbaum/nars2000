@@ -34,7 +34,7 @@ WCHAR wszVarFileInfo[] = WS_SLOPE L"VarFileInfo" WS_SLOPE L"Translation",
 HWND    hWndStatic;                 // Handle to static control
 WNDPROC lpfnOldStaticWndProc;       // Save area for old Static Control procedure
 extern HICON hIconAbout;
-extern char  ecm_version[];
+const char * ecm_version (void);
 extern WCHAR crsh_dll[];
 extern WCHAR crsh_version[];
 
@@ -245,7 +245,19 @@ APLU3264 CALLBACK AboutDlgProc
             MySprintfW (&wszTemp[lstrlenW (wszTemp)],
                          uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%S\n",
-                         ecm_version);
+                         ecm_version ());
+            //***************************************************************************
+            // FLINT version
+            //***************************************************************************
+
+            // Copy the FLINT prefix to the text
+            MyStrcatW (wszTemp, sizeof (wszTemp), L"FLINT Version #");
+
+            // Append the FLINT version #
+            MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
+                        L"%S\n",
+                         flint_version);
             //***************************************************************************
             // COMCTL32.DLL version
             //***************************************************************************

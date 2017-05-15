@@ -141,6 +141,7 @@
 #define plRedMF_MOP     plRedLftOper_MOP
 #define plRedMF_MOPN    plRedLftOper_MOP
 #define plRedF_MR       plRedLftOper_MOP
+#define plRedMOP_MR     plRedLftOper_MOP
 #define plRedF_HR       plRedLftOper_MOP
 
 #define plRedHY_MOPN    plRedHY_MOP
@@ -1650,7 +1651,7 @@ LPPL_YYSTYPE plRedA_FFR
     // Start with the root
     lpYYRes = lpplYYLstRht;
 
-    // While the FcnCurry slot is in use, ...
+    // Look for an empty ->lpplYYFcnCurry
     while (lpYYRes->lpplYYFcnCurry NE NULL)
         // Recurse through the root to the next available lpplYYFcnCurry
         lpYYRes = lpYYRes->lpplYYFcnCurry;
@@ -2674,10 +2675,17 @@ LPPL_YYSTYPE plRedLftOper_MOP
         lpYYRes->lpplYYIdxCurry = lpplYYCurObj;
     } else
     {
-        Assert (lpYYRes->lpplYYFcnCurry EQ NULL);
+        LPPL_YYSTYPE lpplYYFcnCurry;
+
+        // Copy ptr to lpplYYFcnCurry
+        lpplYYFcnCurry = lpYYRes;
+
+        // Look for an empty ->lpplYYFcnCurry
+        while (lpplYYFcnCurry->lpplYYFcnCurry NE NULL)
+            lpplYYFcnCurry = lpplYYFcnCurry->lpplYYFcnCurry;
 
         // Append the left operand to the function strand
-        lpYYRes->lpplYYFcnCurry = lpplYYCurObj;
+        lpplYYFcnCurry->lpplYYFcnCurry = lpplYYCurObj;
     } // End IF/ELSE
 
     // Change the tkSynObj

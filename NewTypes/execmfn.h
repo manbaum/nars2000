@@ -144,10 +144,12 @@ typedef enum tagMFO
 #define $DISCLOSE       WS_UTF16_RIGHTSHOE
 #define $DIVIDE         WS_UTF16_COLONBAR
 #define $DOMINO         WS_UTF16_DOMINO
+#define $DS             WS_UTF16_DOUBLESHRIEK
 #define $DUPLICATE      WS_UTF16_DIERESISTILDE
 #define $EACH           WS_UTF16_DIERESIS
 #define $ENCLOSE        WS_UTF16_LEFTSHOE
 #define $ENCODE         WS_UTF16_DOWNTACK
+#define $EPS            WS_UTF16_EPSILON
 #define $EPSILON        WS_UTF16_EPSILON
 #define $EXECUTE        WS_UTF16_UPTACKJOT
 #define $FIRST          WS_UTF16_UPARROW
@@ -174,6 +176,7 @@ typedef enum tagMFO
 #define $LDC_LT_VERT_L  WS_UTF16_LDC_LT_VERT_L
 #define $LDC_LT_HORZ_D  WS_UTF16_LDC_LT_HORZ_D
 #define $LDC_LT_HORZ_U  WS_UTF16_LDC_LT_HORZ_U
+#define $LE             WS_UTF16_LEFTCARETUNDERBAR
 #define $LOPER          WS_UTF16_LFTOPER
 #define $MATCH          WS_UTF16_EQUALUNDERBAR
 #define $MAX            WS_UTF16_UPSTILE

@@ -1,6 +1,3 @@
-Version 0.5.5.xx consists of the following Builds:
-
-
 Build #1758 -- Version 0.5.5.xx
 --------------------------------
 
@@ -16,18 +13,3 @@ NARS2000.VCXPROJ:
 
 REBAR.C:
   Include a description of each of the operands to the DoubleShriek operator in the Language Bar.
-
-
-Build #1757 -- Version 0.5.5.xx
---------------------------------
-
-* Recognize The Syntax (? MOP MOP)
-
-Directory branches/bsmith/NewTypes:
-
-PARSELINE.C:
-PARSELINE.H:
-  Recognize the syntax (? MOP MOP) as a MOP where ? can be one of {jot}, A, or F.
-
-VER.RC:
-  Increment version # to 0.5.5.xx.

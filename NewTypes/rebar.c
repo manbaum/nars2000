@@ -2440,6 +2440,7 @@ typedef struct tagLANGCHARS
 } LANGCHARS, *LPLANGCHARS;
 
 #define LANGCHARS_SEPARATOR     {NULL, {0}},
+#define H                       $LDC_LT_HORZ        // Line Drawing Character: Light Horizointal Bar
 
     static LANGCHARS langChars[] =
     {
@@ -2839,7 +2840,35 @@ typedef struct tagLANGCHARS
                                            L"Keyboard:  Alt-'_'\n\n"
                                            L"Unicode:  0x2360 or 9056"},
         {WS_UTF16_DOUBLESHRIEK      , {0}, L"DoubleShriek",
-                                           L"Combinatorial Operator:  a" WS_UTF16_DOUBLESHRIEK L"R\n\n"
+                                           L"Combinatorial Operator:  LO" $DS L"R\n"
+                                           L"  where LO is a non-negative numeric scalar\n"
+                                           L"  or one- or two-element vector\n"
+                                           L"  with (FS CG)" $IS L"2" $TAKE L"LO\n"
+                                           L"  FS is the Function Selector\n"
+                                           L"  CG" $EPS L"0 1 is the Count/Generate flag\n\n"
+                                           L"  R is a non-negative numeric scalar\n"
+                                           L"  or one- or two-element vector\n"
+                                           L"  with (M N)" $IS L"2" $RHO L"R\n"
+                                           L"FS  CG        Combinatorial Function\n"
+                                           H H H H H H H H H H H H
+                                           H H H H H H H H H H H H
+                                           H H H H H H H H H H H H
+                                           H H H H H H H H H H H H
+                                           H H H H H
+                                           L"\n"
+                                           L"000 CG" $DS L"M M:   M Pigeons into N holes\n"
+                                           L"001 CG" $DS L"M M:   Partitions of M into " $LE L"N parts\n"
+                                           L"002 CG" $DS L"M M:   Partitions of M into N parts\n"
+                                           L"010 CG" $DS L"M M:   M Combinations of N items\n"
+                                           L"011 CG" $DS L"M M:   M Multisets of N items\n"
+                                           L"011 CG" $DS L"M M:   Compositions of M into N parts\n"
+                                           L"       a.k.a. Partitions of M into N ordered parts\n"
+                                           L"100 CG" $DS L"M M:   M Pigeons into N holes\n"
+                                           L"101 CG" $DS L"M M:   Partitions of {" $IOTA L"M} into " $LE L"N parts\n"
+                                           L"102 CG" $DS L"M M:   Partitions of {" $IOTA L"M} into N parts\n"
+                                           L"110 CG" $DS L"M M:   M Permutations of N items\n"
+                                           L"111 CG" $DS L"M M:   M Tuples of N items\n"
+                                           L"112 CG" $DS L"M M:   Partitions of {" $IOTA L"M} into N ordered parts\n\n"
                                            L"Keyboard:  Alt-'k'\n\n"
                                            L"Unicode:  0x203C or 8252"},
         LANGCHARS_SEPARATOR

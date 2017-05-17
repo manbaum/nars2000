@@ -408,6 +408,7 @@ void MdiActivate
         KeepFirstVisibleLine (hWnd, hWndEC);
 
         SetFocus (hWnd);
+        ShowCaret (hWndEC);
     } else
         // Save the first visible line #
         SaveFirstVisibleLine (hWnd, hWndEC);

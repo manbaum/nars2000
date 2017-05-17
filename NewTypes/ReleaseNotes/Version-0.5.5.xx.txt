@@ -1,6 +1,17 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1760 -- Version 0.5.5.xx
+--------------------------------
+
+* Upon MDI Window Activation, Ensure The Caret Is Showing
+
+Directory branches/bsmith/NewTypes:
+
+EDITFCN.C:
+  In <MdiActivate>, ensure that the caret is showing.
+
+
 Build #1759 -- Version 0.5.5.xx
 --------------------------------
 

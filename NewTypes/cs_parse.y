@@ -859,6 +859,8 @@ _FOR:
 
                                                                     /* Set start of stmt */
                                                                     CS_LinkStmt (lpcsLocalVars, &$1);
+
+                                                                    $$ = $1;
                                                                 }
 
 ForStmt:
@@ -927,6 +929,8 @@ _FORLCL:
 
                                                                     /* Set start of stmt */
                                                                     CS_LinkStmt (lpcsLocalVars, &$1);
+
+                                                                    $$ = $1;
                                                                 }
 
 ForLclStmt:
@@ -1304,6 +1308,8 @@ _IF:
 
                                                                     /* Set start of stmt */
                                                                     CS_LinkStmt (lpcsLocalVars, &$1);
+
+                                                                    $$ = $1;
                                                                 }
 
 IfStmt:
@@ -1650,6 +1656,8 @@ _REPEAT:
 
                                                                     /* Set start of stmt */
                                                                     CS_LinkStmt (lpcsLocalVars, &$1);
+
+                                                                    $$ = $1;
                                                                 }
 
 RepeatStmt:
@@ -1953,6 +1961,8 @@ _SELECT:
 
                                                                     /* Set start of stmt */
                                                                     CS_LinkStmt (lpcsLocalVars, &$1);
+
+                                                                    $$ = $1;
                                                                 }
 
 SelectStmt:
@@ -2142,6 +2152,8 @@ _WHILE:
 
                                                                     /* Set start of stmt */
                                                                     CS_LinkStmt (lpcsLocalVars, &$1);
+
+                                                                    $$ = $1;
                                                                 }
 
 WhileStmt:

@@ -1,6 +1,17 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1759 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In Certain Control Structures
+
+Directory branches/bsmith/NewTypes:
+
+CS_PARSE.Y:
+  Include missing ending assignment for _IF _FOR _FORLCL _REPEAT _SELECT _WHILE.
+
+
 Build #1758 -- Version 0.5.5.xx
 --------------------------------
 

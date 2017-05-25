@@ -30,7 +30,7 @@
 //***************************************************************************
 //  $signumflt
 //
-//  Return -1, 0, 1 as per the sign of teh argument
+//  Return -1, 0, 1 as per the sign of the argument
 //
 //  Using a macro instead of a defined function risks duplicate
 //    execution of the argument as well as tricky handling
@@ -48,7 +48,7 @@ int signumint
 //***************************************************************************
 //  $signumflt
 //
-//  Return -1, 0, 1 as per the sign of teh argument
+//  Return -1, 0, 1 as per the sign of the argument
 //
 //  For some reason, using
 //

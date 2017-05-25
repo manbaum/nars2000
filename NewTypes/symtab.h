@@ -308,6 +308,12 @@ typedef enum tagNAME_TYPES
                             // 09-0F:  Available entries (4 bits)
 } NAME_TYPES;
 
+// N.B.:  These values are stored in saved workspaces in the form nn=<f>=<nt>=:<g>
+//   where nn is the function # under the (say) [Fcns.0] section, <f> is the
+//   function name, <nt> is the above name type index from '0' to ':', and :<g> is the
+//   global index from the [Globals] section.  DO NOT CHANGE THEM without taking
+//   that into consideration.
+
 // N.B.:  Whenever changing the above enum (NAME_TYPES),
 //   be sure to make a corresponding change to
 //   NAMETYPEMASK_FN and NAMETYPEMASK_OP, and

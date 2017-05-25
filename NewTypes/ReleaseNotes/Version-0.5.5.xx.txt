@@ -1,6 +1,23 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1764 -- Version 0.5.5.xx
+--------------------------------
+
+* Document Permanence Of NAMETYPE_xxx
+* Fix Typos In Comments
+
+Directory branches/bsmith/NewTypes:
+
+AFOFNS.C:
+CONVERT.C:
+SYMTAB.H:
+  Fix typos in comments.
+
+SYMTAB.H:
+  Document the permanence of NAMETYPE_xxx as it's saved in workspaces.
+
+
 Build #1763 -- Version 0.5.5.xx
 --------------------------------
 

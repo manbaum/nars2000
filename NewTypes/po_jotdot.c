@@ -825,9 +825,9 @@ RESTART_JOTDOT:
                                lpPrimProtoRht);     // Ptr to right operand prototype function
         // Free the left & right arg tokens
         if (lpMemHdrLft NE NULL)
-            FreeResultTkn (&tkRhtArg);
-        if (lpMemHdrRht NE NULL)
             FreeResultTkn (&tkLftArg);
+        if (lpMemHdrRht NE NULL)
+            FreeResultTkn (&tkRhtArg);
         // If it failed, ...
         if (!bRet)
             goto ERROR_EXIT;

@@ -1,0 +1,9 @@
+Build #1761 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Memory Leak In Outer Product With Scalars
+
+Directory branches/bsmith/NewTypes:
+
+PO_JOTDOT.C:
+  Switch IF stmts for left and right <FreeResultTkn> calls to avoid memory leak with scalar left or right args.

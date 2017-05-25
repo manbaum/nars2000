@@ -1,6 +1,18 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1763 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Memory Leak In Demotion To Real Code
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC.C:
+  Improve comments.
+  In <PrimFnDydNestSiSc_EM> and <PrimFnDydSiScNest_EM>, move code that frees <hGlbLft2> and <hGlbRht2> out of <ERROR_EXIT:> into <NORMAL_EXIT:> as it needs to be freed on all exits not just errors.
+
+
 Build #1762 -- Version 0.5.5.xx
 --------------------------------
 

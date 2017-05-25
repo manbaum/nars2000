@@ -2614,6 +2614,8 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
 
             // Lock the memory to get a ptr to it
             lpMemHdrLft = MyGlobalLockVar (hGlbLft);
+
+            // Note that we need to delete the left arg (hGlbLft2) on exit
         } // End IF
 
         // If the right arg is HC, ...
@@ -2641,6 +2643,8 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
 
             // Lock the memory to get a ptr to it
             lpMemHdrRht = MyGlobalLockVar (hGlbRht);
+
+            // Note that we need to delete the right arg (hGlbRht2) on exit
         } // End IF
     } // End IF
 
@@ -2760,14 +2764,14 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    // If we allocated to demote data
+    // If we allocated to demote data, ...
     if (hGlbLft2 NE NULL)
     {
         // We no longer need this resource
         FreeResultGlobalIncompleteVar (hGlbLft2); hGlbLft2 = NULL;
     } // End IF
 
-    // If we allocated to demote data
+    // If we allocated to demote data, ...
     if (hGlbRht2 NE NULL)
     {
         // We no longer need this resource
@@ -3920,6 +3924,8 @@ RESTART_EXCEPTION:
 
             // Lock the memory to get a ptr to it
             lpMemHdrLft = MyGlobalLockVar (hGlbLft);
+
+            // Note that we need to delete the left arg (hGlbLft2) on exit
         } // End IF
     } // End IF
 
@@ -4316,20 +4322,6 @@ WSFULL_EXIT:
 ERROR_EXIT:
     bRet = FALSE;
 
-    // If we allocated to demote data
-    if (lpatRht2 NE NULL)
-    {
-        // We no longer need this resource
-        (*aTypeFree[aplTypeRht2]) (lpatRht2, 0);
-    } // End IF
-
-    // If we allocated to demote data
-    if (hGlbLft2 NE NULL)
-    {
-        // We no longer need this resource
-        FreeResultGlobalIncompleteVar (hGlbLft2); hGlbLft2 = NULL;
-    } // End IF
-
     if (hGlbRes NE NULL)
     {
         if (lpMemHdrRes NE NULL)
@@ -4342,6 +4334,20 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
+    // If we allocated to demote data, ...
+    if (lpatRht2 NE NULL)
+    {
+        // We no longer need this resource
+        (*aTypeFree[aplTypeRht2]) (lpatRht2, 0);
+    } // End IF
+
+    // If we allocated to demote data, ...
+    if (hGlbLft2 NE NULL)
+    {
+        // We no longer need this resource
+        FreeResultGlobalIncompleteVar (hGlbLft2); hGlbLft2 = NULL;
+    } // End IF
+
     if (lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
@@ -4735,6 +4741,8 @@ RESTART_EXCEPTION:
 
             // Lock the memory to get a ptr to it
             lpMemHdrRht = MyGlobalLockVar (hGlbRht);
+
+            // Note that we need to delete the right arg (hGlbRht2) on exit
         } // End IF
     } // End IF
 
@@ -5127,20 +5135,6 @@ WSFULL_EXIT:
 ERROR_EXIT:
     bRet = FALSE;
 
-    // If we allocated to demote data
-    if (lpatLft2 NE NULL)
-    {
-        // We no longer need this resource
-        (*aTypeFree[aplTypeLft2]) (lpatLft2, 0);
-    } // End IF
-
-    // If we allocated to demote data
-    if (hGlbRht2 NE NULL)
-    {
-        // We no longer need this resource
-        FreeResultGlobalIncompleteVar (hGlbRht2); hGlbRht2 = NULL;
-    } // End IF
-
     if (hGlbRes NE NULL)
     {
         if (lpMemHdrRes NE NULL)
@@ -5153,6 +5147,20 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
+    // If we allocated to demote data, ...
+    if (lpatLft2 NE NULL)
+    {
+        // We no longer need this resource
+        (*aTypeFree[aplTypeLft2]) (lpatLft2, 0);
+    } // End IF
+
+    // If we allocated to demote data, ...
+    if (hGlbRht2 NE NULL)
+    {
+        // We no longer need this resource
+        FreeResultGlobalIncompleteVar (hGlbRht2); hGlbRht2 = NULL;
+    } // End IF
+
     if (lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr

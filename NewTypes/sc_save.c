@@ -479,6 +479,8 @@ UBOOL CmdSave_EM
                         *lpaplChar++ = L'=';
 
                         // Append the name type
+                        // N.B.:  This very poorly designed calculation "overflows" for
+                        //        NAMETYPE_TRN (0A) and returns ':' for that name type.  Yuck!
                         *lpaplChar++ = L'0' + stFlags.stNameType;
 
                         // Append separator

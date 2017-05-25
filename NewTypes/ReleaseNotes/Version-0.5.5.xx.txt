@@ -1,6 +1,19 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1762 -- Version 0.5.5.xx
+--------------------------------
+
+* Document Poorly Designed Calculation
+
+Directory branches/bsmith/NewTypes:
+
+SC_LOAD.C:
+SC_SAVE.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  Document poorly designed calculation.
+
+
 Build #1761 -- Version 0.5.5.xx
 --------------------------------
 

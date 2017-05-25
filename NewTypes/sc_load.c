@@ -135,7 +135,7 @@ UBOOL CmdLoadCom_EM
         lpwszLibDirs = MyGlobalLock (hGlbLibDirs);
 
         // If the command tail starts with a drive letter, or a backslash, ...
-        if (wszDrive[0]
+        if (wszDrive[0] NE WC_EOS
          || wszDir[0] EQ WC_SLOPE)
         {
             // Process this directory
@@ -814,7 +814,10 @@ UBOOL LoadWorkspace_EM
                 // Skip over the zapped L'='
                 lpwSrc++;
 
-                // Parse the name type (2 = FN0, 3 = FN12, 4 = OP1, 5 = OP2, 6 = OP3)
+                // Parse the name type (2 = FN0, 3 = FN12, 4 = OP1, 5 = OP2, 6 = OP3, 7 = FILL1, 8 = LIST, 9 = FILL2, ':' = TRN)
+                // N.B.:  The very poorly designed calculation matching the one in
+                //         <CmdSave_EM> in file <sc_save.c> "overflows" for NAMETYPE_TRN (0A)
+                //         and returns ':' for that name type.  Yuck!
                 nameType = *lpwSrc++ - '0';
 
                 Assert (*lpwSrc EQ L'='); lpwSrc++;
@@ -2239,7 +2242,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                     L"",                // Ptr to the default value
                                     lpDict);            // Ptr to workspace dictionary
                 // If there's monitor info, ...
-                if (lpwszProf[0])
+                if (lpwszProf[0] NE WC_EOS)
                 {
                     LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator header
                     LPINTMONINFO lpMemMonInfo;          // Ptr to function line monitoring info
@@ -2640,7 +2643,7 @@ HGLOBAL LoadWsGlbVarConv
                                   lpLoadWsGlbVarParm->lpwSrc,       // Ptr to next available byte
                                   lpLoadWsGlbVarParm->iMaxSize,     // Maximum size of lpwSrc
                                   lpLoadWsGlbVarParm->hWndEC,       // Edit Ctrl window handle
-                                  NULL,                             // Ptr to SYMENTRY of teh source (may be NULL)
+                                  NULL,                             // Ptr to SYMENTRY of the source (may be NULL)
                                   lpLoadWsGlbVarParm->lplpSymLink,  // Ptr to ptr to SYMENTRY link
                                   lpLoadWsGlbVarParm->lpwszVersion, // Ptr to workspace version text
                                   lpLoadWsGlbVarParm->lpDict,       // Ptr to workspace dictionary

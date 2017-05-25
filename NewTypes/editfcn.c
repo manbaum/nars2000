@@ -5775,7 +5775,7 @@ UBOOL QueryCloseFE
         return TRUE;
 
     // Ask the user what to do
-    switch (MessageBox (hWndMF, szCloseMessage, lpszAppName, MB_YESNOCANCEL | MB_ICONQUESTION))
+    switch (MessageBox (NULL, szCloseMessage, lpszAppName, MB_YESNOCANCEL | MB_ICONQUESTION))
     {
         case IDYES:         // Save the function
             return SaveFunction (hWndFE);

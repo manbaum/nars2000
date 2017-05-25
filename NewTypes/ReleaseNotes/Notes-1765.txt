@@ -1,0 +1,9 @@
+Build #1765 -- Version 0.5.5.xx
+--------------------------------
+
+* Remove Window Handle From Call To MessageBox
+
+Directory branches/bsmith/NewTypes:
+
+EDITFCN.C:
+  In <QueryClose>, remove the window handle from the call to <MessageBox> in case that's what is hanging the system when DEBUGging.

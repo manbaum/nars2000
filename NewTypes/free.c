@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -329,6 +329,9 @@ void FreeResultSub
         case TKT_FCNAFO:    // ...                           UDFO header
         case TKT_OP1AFO:    // ...                           ...
         case TKT_OP2AFO:    // ...                           ...
+        case TKT_FCNDFN:    // ...                           ...
+        case TKT_OP1DFN:    // ...                           ...
+        case TKT_OP2DFN:    // ...                           ...
         case TKT_DELAFO:    // ...                           ...
             // Get the global memory handle
             lphGlbData = GetPtrGlbDataToken (lptkRes);
@@ -840,6 +843,9 @@ UBOOL FreeResultGlobalFcn
                 case TKT_FCNAFO:
                 case TKT_OP1AFO:
                 case TKT_OP2AFO:
+                case TKT_FCNDFN:
+                case TKT_OP1DFN:
+                case TKT_OP2DFN:
                 case TKT_DELAFO:
                     // Get the global memory handle
                     lphGlbLcl = GetPtrGlbDataToken (&lpYYToken->tkToken);

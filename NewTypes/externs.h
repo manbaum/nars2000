@@ -417,7 +417,6 @@ CRITICAL_SECTION CSO0,                  // Critical Section Object #0
                  CSORsrc,               // ...                     for _SaveObj/_DeleObj
 #endif
                  CSOPL,                 // ...                     for ParseLine
-                 CSOTokenize,           // ...                     for tokenization
                  CSOHshTab,             // ...                     for HshTab access
                  CSOCombPNI,            // ...                     for Partition Numbers as INTs
                  CSOCombPNJ,            // ...                     ...                      INTs accumulating as per FS001

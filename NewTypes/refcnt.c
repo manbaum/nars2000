@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -460,11 +460,8 @@ int ChangeRefCntFcnArray
             break;
 
         case TKT_FCNARRAY:      // Increment the RefCnt in the the function array
-            // This DEBUG stmt probably never is triggered because
-            //    YYCopyFcnStr converts all Function Arrays to items
-#ifdef DEBUG
-            DbgStop ();         // ***Probably never executed***
-#endif
+                                // This case is triggered by referencing a Train inside another Train
+                                //   such as f{is}( - , +)  and  g{is}(| f *)
             // Increment the RefCnt
             DbgChangeRefCntTkn (&lpYYToken->tkToken, iChangeRefCnt); // EXAMPLE:  ***Probably never executed***
 
@@ -473,6 +470,9 @@ int ChangeRefCntFcnArray
         case TKT_FCNAFO:
         case TKT_OP1AFO:
         case TKT_OP2AFO:
+        case TKT_FCNDFN:
+        case TKT_OP1DFN:
+        case TKT_OP2DFN:
         case TKT_DELAFO:
             // Increment the RefCnt
             DbgChangeRefCntTkn (&lpYYToken->tkToken, iChangeRefCnt); // EXAMPLE:  f{is}{-omega}{jot}{divide} {diamond} f 3

@@ -635,6 +635,9 @@ static STRAND_TYPES tabConvert[][STRAND_LENGTH] =
             case TKT_FCNAFO:            // Anonymous function
             case TKT_OP1AFO:            // ...       monadic operator
             case TKT_OP2AFO:            // ...       dyadic  ...
+            case TKT_FCNDFN:            // Anonymous UDFO
+            case TKT_OP1DFN:            // ...       monadic UDFO
+            case TKT_OP2DFN:            // ...       dyadic  ...
             case TKT_GLBDFN:            // Placeholder for hGlbDfnHdr
             case TKT_NOP:               // NOP
             case TKT_AFOGUARD:          // AFO guard
@@ -3097,6 +3100,9 @@ LPTOKEN CopyToken_EM
         case TKT_FCNAFO:
         case TKT_OP1AFO:
         case TKT_OP2AFO:
+        case TKT_FCNDFN:
+        case TKT_OP1DFN:
+        case TKT_OP2DFN:
         case TKT_DELAFO:        // Del Anon -- either a monadic or dyadic operator, bound to its operands
             // Get the global memory handle
             hGlbData = GetGlbDataToken (lpToken);

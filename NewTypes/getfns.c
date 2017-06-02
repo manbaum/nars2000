@@ -3017,6 +3017,9 @@ APLLONGEST GetGlbPtrs_LOCK
         case TKT_DELDEL:
         case TKT_OP1AFO:
         case TKT_OP2AFO:
+        case TKT_FCNDFN:
+        case TKT_OP1DFN:
+        case TKT_OP2DFN:
             *lphGlb = lpToken->tkData.tkGlbData;
 
             // stData is a valid HGLOBAL function array
@@ -3473,6 +3476,9 @@ LPPRIMFNS GetPrototypeFcnPtr
         case TKT_FCNAFO:        // Handle as any other function
         case TKT_OP1AFO:        // ...
         case TKT_OP2AFO:        // ...
+        case TKT_FCNDFN:        // ...
+        case TKT_OP1DFN:        // ...
+        case TKT_OP2DFN:        // ...
         case TKT_FCNNAMED:      // e.g. []VR{each}0{rho}{enclose}'abc'
         case TKT_OP1NAMED:      // ...
         case TKT_OP2NAMED:      // ...
@@ -3638,6 +3644,9 @@ LPPRIMFLAGS GetPrimFlagsPtr
         case TKT_FCNAFO:
         case TKT_OP1AFO:
         case TKT_OP2AFO:
+        case TKT_FCNDFN:
+        case TKT_OP1DFN:
+        case TKT_OP2DFN:
             // Get a ptr to the prototype function for the user-defined function/operator
             return &DfnIdentFns;
 

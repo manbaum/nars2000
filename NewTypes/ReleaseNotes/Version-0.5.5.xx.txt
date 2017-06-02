@@ -1,6 +1,88 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1766 -- Version 0.5.5.xx
+--------------------------------
+
+* Support New Syntax Such As (MOPN MOPN)  And Related
+* When Converting A Hybrid Symbol, Handle More Cases
+* Define New Tokens For Unnamed UDFOs
+* Allow Tokenize To Be Re-entrant
+* Fix Bug When Displaying Trains
+* Handle Global Function Entries In Saved Workspaces
+
+Directory branches/bsmith/NewTypes:
+
+ASSIGN.C:
+  Handle new TKT_xxxDFN tokens.
+  When assigning a Fcn Array into a name, calculate the token type from the source.
+  Fix typos in comments.
+
+DISPDBG.C:
+  Define three new tokens for unnamed UDFOs (TKT_FCNDFN, TKT_OP1DFN, and TKT_OP2DFN).
+  Re-order the existing tokens to group related objects.
+  In <DisplayFcnGlb>, fix bug of displaying the right most function in a Train separately to the left of the start of the Train.
+  In <DisplayFcnSub>, use <FillDfnName> to fill in the UDFO name so as to handle <:g> entries in a loaded workspace.
+  Handle new TKT_xxxDFN tokens.
+
+EXECDFN.C:
+EXECFNS.C:
+FREE.C:
+GETFNS.C:
+PRIMFNS.C:
+STRAND.C:
+  Handle new TKT_xxxDFN tokens.
+
+EXTERNS.H:
+MAIN.C:
+  Allow <Tokenize_EM> to be re-entrant.
+
+PARSELINE.C:
+  Define reduction actions for new syntax of (MOPN MOPN) and related.
+  In <ConvertHY2PFO>, handle more source tokens, and define a new argument for Fcn Array items.
+  Improve some comments.
+  Always set the token count in a PL_YYSTYPE.
+  In <pl_yylexCOM>, consolidate blocks of similar code into a function.
+  Handle new TKT_xxxDFN tokens.
+
+PARSELINE.H:
+  Define new syntax such as (MOPN MOPN) and related.
+  Fix bug in syntax of nested Trains by making Trans and MOPs at the same level.
+
+QF_AT.C:
+  In <AttributeFixTime> separate Fcn Arrays from UDFOs solely as a DEBUG aid.
+
+REFCNT.C:
+  In <ChangeRefCntFcnArray>, remove <DbgStop> for nested Trains as that expression triggers this case.
+  Handle new TKT_xxxDFN tokens.
+
+TOKENIZE.C:
+  Allow <Tokenize_EM> to be re-entrant.
+  In <IsLocalname>, handle trailing comments on Line Continuations.
+  Delete <DbgMsgW> stmts no longer needed.
+  Delete stmts to get <lpMemPTD> that are no longer needed.
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  In <CheckConstantCopyLoad>, fill in Fcn Array case even though I'm not sure how it can occur.
+  Handle new TKT_xxxDFN tokens.
+
+TOKENS.H:
+  Define three new tokens for unnamed UDFOs (TKT_FCNDFN, TKT_OP1DFN, and TKT_OP2DFN).
+  Re-order the existing tokens to group related objects.
+  Fix mistakes in comments.
+
+TOKENSO.H:
+  Number the entries in <tokenSo> for DEBUGging purposes.
+  Define three new tokens for unnamed UDFOs (TKT_FCNDFN, TKT_OP1DFN, and TKT_OP2DFN).
+  Re-order the existing tokens to group related objects.
+
+TRANSLATE.C:
+  Define new routine to translate an <SO_ENUM> type to a named token type.
+
+YYFNS.C:
+  In <YYAlloc>, initialize the token count in the result.
+  In <YYCopyFcnTrn>, split cases based upon the token type.
+
+
 Build #1765 -- Version 0.5.5.xx
 --------------------------------
 

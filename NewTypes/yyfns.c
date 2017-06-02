@@ -151,6 +151,8 @@ LPPL_YYSTYPE _YYAlloc
     // Mark as inuse
     lpYYRes->YYInuse = TRUE;
 NORMAL_EXIT:
+    // Initialize the token count
+    lpYYRes->TknCount = 1;
 #ifdef DEBUG
     lpYYRes->SILevel = lpMemPTD->SILevel;   // Save the SI Level
 
@@ -670,8 +672,89 @@ LPPL_YYSTYPE YYCopyFcnTrn
 
     while (TRUE)
     {
-        // Copy the root token
-        YYCopyToMem (lpYYMem++, lpYYArg);
+        // Split cases based upon the token type
+        switch (lpYYArg->tkToken.tkFlags.TknType)
+        {
+            case TKT_FCNNAMED:
+                // Copy the root token
+                YYCopyToMem (lpYYMem, lpYYArg);
+
+                // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
+                ConvertNamedFopToUnnamed (lpYYMem, soF, TKT_FCNIMMED, TKT_FCNAFO, TKT_FCNDFN);
+
+                // Skip to the next save area element
+                lpYYMem++;
+
+                break;
+
+            case TKT_OP1NAMED:
+                // Copy the root token
+                YYCopyToMem (lpYYMem, lpYYArg);
+
+                // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
+                ConvertNamedFopToUnnamed (lpYYMem, soMOP, TKT_OP1IMMED, TKT_OP1AFO, TKT_OP1DFN);
+
+                // Skip to the next save area element
+                lpYYMem++;
+
+                break;
+
+            case TKT_OP2NAMED:
+                // Copy the root token
+                YYCopyToMem (lpYYMem, lpYYArg);
+
+                // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
+                ConvertNamedFopToUnnamed (lpYYMem, soDOP, TKT_OP2IMMED, TKT_OP2AFO, TKT_OP2DFN);
+
+                // Skip to the next save area element
+                lpYYMem++;
+
+                break;
+
+            case TKT_OP3NAMED:
+                // Copy the root token
+                YYCopyToMem (lpYYMem, lpYYArg);
+
+                // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
+                ConvertNamedFopToUnnamed (lpYYMem, soMOP, TKT_OP3IMMED, TKT_OP1AFO, TKT_OP1DFN);
+
+                // Skip to the next save area element
+                lpYYMem++;
+
+                break;
+
+            case TKT_VARNAMED:
+            case TKT_CHRSTRAND:
+            case TKT_NUMSTRAND:
+            case TKT_NUMSCALAR:
+            case TKT_VARARRAY:
+            case TKT_DELAFO:
+            case TKT_AXISIMMED:
+            case TKT_AXISARRAY:
+            case TKT_STRNAMED:
+            case TKT_FILLJOT:
+                DbgBrk ();
+
+            case TKT_VARIMMED:
+            case TKT_FCNIMMED:
+            case TKT_OP1IMMED:
+            case TKT_OP2IMMED:
+            case TKT_OP3IMMED:
+            case TKT_FCNARRAY:
+            case TKT_FCNAFO:
+            case TKT_OP1AFO:
+            case TKT_OP2AFO:
+            case TKT_FCNDFN:
+            case TKT_OP1DFN:
+            case TKT_OP2DFN:
+                // Copy the root token
+                YYCopyToMem (lpYYMem++, lpYYArg);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
 
         // Count it in
         TknCount++;

@@ -142,6 +142,7 @@
 #define plRedMF_MOPN    plRedLftOper_MOP
 #define plRedF_MR       plRedLftOper_MOP
 #define plRedMOP_MR     plRedLftOper_MOP
+#define plRedMOPN_MR    plRedLftOper_MOP
 #define plRedF_HR       plRedLftOper_MOP
 
 #define plRedHY_MOPN    plRedHY_MOP
@@ -155,6 +156,8 @@
 #define plRedF_RP       plRedCom_RP
 #define plRedHY_RP      plRedCom_RP
 #define plRedDOP_RP     plRedCom_RP
+#define plRedDOPN_RP    plRedCom_RP
+#define plRedMOPN_RP    plRedMOP_RP
 
 #define plRedSP_SA      plRedSP_A
 #define plRedSP_ARBK    plRedSP_A
@@ -1185,16 +1188,19 @@ void ConvertHY2PFO
     (LPPL_YYSTYPE lpYYArg,              // Ptr to current PL_YYSTYPE
      TOKEN_TYPES  tknType,              // New token type
      IMM_TYPES    immType,              // New immediate type
+     NAME_TYPES   nameType,             // New NAMETYPE_xxx if the token is TKT_FCNARRAY
      SO_ENUM      soEnum)               // New Syntax Object type
 
 {
-    HGLOBAL      hGlbFcn;
-    LPPL_YYSTYPE lpMemFcnStr;
+    HGLOBAL           hGlbFcn;          // Fcn Array global memory handle
+    LPFCNARRAY_HEADER lpMemHdrFcn;      // Ptr to Fcn Array header
+    LPPL_YYSTYPE      lpMemFcnStr;      // Ptr to Fcn Array LPPL_YYSTYPEs
+    UINT              tknNELM,          // # tokens in the Fcn Array
+                      uCnt;             // Loop counter
 
     // Split cases based upon the token type
     switch (lpYYArg->tkToken.tkFlags.TknType)
     {
-        case TKT_OP1IMMED:
         case TKT_OP3IMMED:
             // Convert the token properties to an immediate function/operator
             lpYYArg->tkToken.tkFlags.TknType = tknType;
@@ -1203,27 +1209,79 @@ void ConvertHY2PFO
 
             break;
 
+        case TKT_OP1IMMED:
+        case TKT_OP2IMMED:
+            // Get the # LPPL_YYSTYPEs in the arg
+            tknNELM = lpYYArg->TknCount;
+
+            // Search through the LPPL_YYSTYPEs looking for the TKT_OP3IMMED
+            for (uCnt = 0; uCnt < tknNELM; uCnt++)
+            if (lpYYArg[uCnt].tkToken.tkFlags.TknType EQ TKT_OP3IMMED
+             || lpYYArg[uCnt].tkToken.tkFlags.TknType EQ TKT_UNUSED
+             || lpYYArg[uCnt].tkToken.tkFlags.TknType >= TKT_LENGTH)
+                break;
+            else
+            if (lpYYArg[uCnt].tkToken.tkFlags.TknType EQ TKT_FCNARRAY)
+            {
+                // Find and convert the HY to a primitive function/operator
+                ConvertHY2PFO (&lpYYArg[uCnt],
+                                tknType,
+                                immType,
+                                nameType,
+                                soEnum);
+                // Change the SynObj in the root
+                lpYYArg[0   ].tkToken.tkSynObj        = soEnum;
+
+                break;
+            } // End FOR/IF/ELSE/...
+
+            if (lpYYArg[uCnt].tkToken.tkFlags.TknType NE TKT_FCNARRAY)
+            {
+                Assert (lpYYArg[uCnt].tkToken.tkFlags.TknType EQ TKT_OP3IMMED);
+
+                // Convert the token properties to an immediate function/operator
+                lpYYArg[uCnt].tkToken.tkFlags.TknType = tknType;
+                lpYYArg[uCnt].tkToken.tkFlags.ImmType = immType;
+                lpYYArg[uCnt].tkToken.tkSynObj        =
+                lpYYArg[0   ].tkToken.tkSynObj        = soEnum;
+            } // End IF
+
+            break;
+
         case TKT_FCNARRAY:
             // Get the global memory handle
             hGlbFcn = GetGlbHandle (&lpYYArg->tkToken);
 
             // Lock the memory to get a ptr to it
-            lpMemFcnStr = MyGlobalLockFcn (hGlbFcn);
+            lpMemHdrFcn = MyGlobalLockFcn (hGlbFcn);
 
-            Assert (((LPFCNARRAY_HEADER) lpMemFcnStr)->RefCnt EQ 1);
+            Assert (lpMemHdrFcn->RefCnt EQ 1);
 
-            // Skip over the header to the YYSTYPEs
-            lpMemFcnStr = FcnArrayBaseToData (lpMemFcnStr);
+            // Get the token count
+            tknNELM = lpMemHdrFcn->tknNELM;
 
-            Assert (lpMemFcnStr->tkToken.tkFlags.TknType EQ TKT_OP3IMMED);
+            // Skip over the header to the LPPL_YYSTYPEs
+            lpMemFcnStr = FcnArrayBaseToData (lpMemHdrFcn);
+
+            // Search through the LPPL_YYSTYPEs looking for the TKT_OP3IMMED
+            for (uCnt = 0; uCnt < tknNELM; uCnt++)
+            if (lpMemFcnStr[uCnt].tkToken.tkFlags.TknType EQ TKT_OP3IMMED)
+                break;
+
+            Assert (lpMemFcnStr[uCnt].tkToken.tkFlags.TknType EQ TKT_OP3IMMED);
 
             // Convert the token properties to an immediate function/operator
-            lpMemFcnStr->tkToken.tkFlags.TknType = tknType;
-            lpMemFcnStr->tkToken.tkFlags.ImmType = immType;
-            lpMemFcnStr->tkToken.tkSynObj        = soEnum;
+            lpMemFcnStr[uCnt].tkToken.tkFlags.TknType = tknType;
+            lpMemFcnStr[uCnt].tkToken.tkFlags.ImmType = immType;
+            lpMemFcnStr[uCnt].tkToken.tkSynObj        = soEnum;
+
+            // If TKT_OP3IMMED is the first token, ...
+            if (uCnt EQ 0)
+                // Change the NAMETYPE in the header
+                lpMemHdrFcn->fnNameType = nameType;
 
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbFcn); lpMemFcnStr = NULL;
+            MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL;
 
             // Change the tkSynObj in the outer token
             lpYYArg->tkToken.tkSynObj = soEnum;
@@ -1255,6 +1313,7 @@ LPPL_YYSTYPE plRedA_HY
     ConvertHY2PFO (lpplYYLstRht,
                    TKT_FCNIMMED,
                    IMMTYPE_PRIMFCN,
+                   NAMETYPE_FN12,
                    soF);
     // Call common code
     return plRedA_F (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
@@ -1423,6 +1482,7 @@ LPPL_YYSTYPE plRedDOP_HY
     ConvertHY2PFO (lpplYYLstRht,
                    TKT_FCNIMMED,
                    IMMTYPE_PRIMFCN,
+                   NAMETYPE_FN12,
                    soF);
     // Call common code
     return plRedDOP_RhtOper (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
@@ -1446,6 +1506,7 @@ LPPL_YYSTYPE plRedJ_HY
     ConvertHY2PFO (lpplYYLstRht,
                    TKT_FCNIMMED,
                    IMMTYPE_PRIMFCN,
+                   NAMETYPE_FN12,
                    soF);
     // Call common code
     return plRedLftOper_MOP (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
@@ -1862,6 +1923,7 @@ LPPL_YYSTYPE plRedA_HR
     ConvertHY2PFO (lpplYYLstRht,
                    TKT_FCNIMMED,
                    IMMTYPE_PRIMFCN,
+                   NAMETYPE_FN12,
                    soF);
     // Call common code
     return plRedA_FR (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
@@ -2526,6 +2588,7 @@ LPPL_YYSTYPE plRedF_HY
     ConvertHY2PFO (lpplYYLstRht,
                    TKT_OP1IMMED,
                    IMMTYPE_PRIMOP1,
+                   NAMETYPE_OP1,
                    soMOP);
     // Call common code
     return plRedLftOper_MOP (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
@@ -2595,6 +2658,7 @@ LPPL_YYSTYPE plRedHY_MR
     ConvertHY2PFO (lpplYYCurObj,
                    TKT_FCNIMMED,
                    IMMTYPE_PRIMFCN,
+                   NAMETYPE_FN12,
                    soF);
     // Call common code
     return plRedLftOper_MOP (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
@@ -2618,6 +2682,7 @@ LPPL_YYSTYPE plRedHY_MOP
     ConvertHY2PFO (lpplYYCurObj,
                    TKT_FCNIMMED,
                    IMMTYPE_PRIMFCN,
+                   NAMETYPE_FN12,
                    soF);
     // Call common code
     return plRedLftOper_MOP (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
@@ -2712,6 +2777,7 @@ LPPL_YYSTYPE plRedHY_FR
     ConvertHY2PFO (lpplYYCurObj,
                    TKT_FCNIMMED,
                    IMMTYPE_PRIMFCN,
+                   NAMETYPE_FN12,
                    soF);
     // Call common code
     return plRedF_FR (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
@@ -2783,6 +2849,7 @@ LPPL_YYSTYPE plRedHY_FFR
     ConvertHY2PFO (lpplYYCurObj,
                    TKT_FCNIMMED,
                    IMMTYPE_PRIMFCN,
+                   NAMETYPE_FN12,
                    soF);
     // Call common code
     return plRedF_FFR (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
@@ -2876,10 +2943,11 @@ LPPL_YYSTYPE plRedLP_HFR
          && lpplYYLstRht->tkToken.tkData.tkChar   EQ INDEX_OPTRAIN
          && lpplYYLstRht->tkToken.tkSynObj        EQ soHFR);
 
-    // Convert the OP1 to a primitive function
+    // Convert the HY to a primitive function
     ConvertHY2PFO (lpplYYLstRht,
                    TKT_FCNIMMED,
                    IMMTYPE_PRIMFCN,
+                   NAMETYPE_FN12,
                    soFFR);
     // Call common code
     return plRedLP_FFR (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
@@ -4265,10 +4333,11 @@ PARSELINE_SCAN:
             if (lftSynObj EQ soHY
              && curSynObj EQ soHY)
             {
-                // Convert the righthand HY to a primitive operator
+                // Convert the current HY to a primitive operator
                 ConvertHY2PFO (lpplYYCurObj,
                                TKT_OP1IMMED,
                                IMMTYPE_PRIMOP1,
+                               NAMETYPE_OP1,
                                soMOP);
                 // Reset the value as it has changed
                 curSynObj = CURSYNOBJ;
@@ -4613,6 +4682,7 @@ PARSELINE_REDUCE:
                     ConvertHY2PFO (lpplYYLstRht,
                                    TKT_FCNIMMED,
                                    IMMTYPE_PRIMFCN,
+                                   NAMETYPE_FN12,
                                    soF);
                     // Change the soType
                     lstSynObj = soF;
@@ -5852,6 +5922,9 @@ SO_ENUM GetLftSynObj
     {
         PL_YYSTYPE plYYLval = {0};  // Temporary YYRes
 
+        // Initialize the token count
+        plYYLval.TknCount = 1;
+
         // Get the PL_YYSTYPE result
         pl_yylexCOM (lpplLocalVars, &plYYLval, TRUE);
 
@@ -5893,6 +5966,9 @@ TOKEN GetLftToken
     {
         PL_YYSTYPE plYYLval = {0};  // Temporary YYRes
 
+        // Initialize the token count
+        plYYLval.TknCount = 1;
+
         // Get the PL_YYSTYPE result
         pl_yylexCOM (lpplLocalVars, &plYYLval, TRUE);
 
@@ -5926,9 +6002,6 @@ void pl_yylexCOM
     LPPERTABDATA      lpMemPTD;     // Ptr to PerTabData global memory
     LPSIS_HEADER      lpSISCur;     // Ptr to current SIS layer
     LPTOKEN           lptkOrigNext; // Ptr to original token stack
-    LPDFN_HEADER      lpMemDfnHdr;  // Ptr to UDFO/AFO header
-    LPFCNARRAY_HEADER lpMemHdrFcn;  // Ptr to FCNARRAY header
-    HGLOBAL           hGlbFcn;      // Global Fcn/Opr handle
 
     // Save the original token stack ptr
     lptkOrigNext = lpplLocalVars->lptkNext;
@@ -5986,80 +6059,8 @@ PL_YYLEX_FCNNAMED:
                 {
                     // If we should not restore the token stack ptr,
                     if (!bRestoreStk)
-                    {
-                        // If it's an immediate, ...
-                        if (lpplYYLval->tkToken.tkData.tkSym->stFlags.Imm)
-                        {
-                            // If the function is a hybrid, ...
-                            if (IsTknHybrid (&lpplYYLval->tkToken))
-                                // Mark is as a hybrid
-                                lpplYYLval->tkToken.tkSynObj = soHY;
-                            else
-                                // Mark it as a Fcn so it can't be re-assigned.
-                                lpplYYLval->tkToken.tkSynObj = soF;
-
-                            // Convert this to an unnamed immediate fcn
-                            lpplYYLval->tkToken.tkFlags.TknType   = TKT_FCNIMMED;
-                            lpplYYLval->tkToken.tkFlags.ImmType   = lpplYYLval->tkToken.tkData.tkSym->stFlags.ImmType;
-                            lpplYYLval->tkToken.tkData .tkChar    = lpplYYLval->tkToken.tkData.tkSym->stData.stChar;
-                        } else
-                        // If it's not a (named) direct function, ...
-                        if (!lpplYYLval->tkToken.tkData.tkSym->stFlags.FcnDir)
-                        {
-                            // Get the global memory handle
-                            hGlbFcn = GetGlbHandle (&lpplYYLval->tkToken);
-
-                            // Split cases based upon the array signature
-                            switch (GetSignatureGlb_PTB (hGlbFcn))
-                            {
-                                case FCNARRAY_HEADER_SIGNATURE:
-                                    // Lock the memory to get a ptr to it
-                                    lpMemHdrFcn = MyGlobalLockFcn (hGlbFcn);
-
-                                    // Convert this to an unnamed global fcn array
-                                    lpplYYLval->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
-                                    lpplYYLval->tkToken.tkData .tkGlbData = hGlbFcn;
-                                    lpplYYLval->tkToken.tkSynObj          = soF;        // ***FIXME*** -- can this ever be soNF ???
-
-                                    // We no longer need this ptr
-                                    MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL;
-
-                                    // Increment the RefCnt of each item
-                                    DbgIncrRefCntFcnArray (hGlbFcn);
-
-                                    break;
-
-                                case DFN_HEADER_SIGNATURE:
-                                    // Lock the memory to get a ptr to it
-                                    lpMemDfnHdr = MyGlobalLockDfn (hGlbFcn);
-
-#if FALSE       // Enable this code when we have a TKT_FCNDFN (unnamed FCN DFN)
-                                    // Convert this to an unnamed global fcn array
-                                    lpplYYLval->tkToken.tkFlags.TknType   = lpMemDfnHdr->bAFO ? TKT_FCNAFO : TKT_FCNDFN;
-                                    lpplYYLval->tkToken.tkData .tkGlbData = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
-////////////////////////////////////lpplYYLval->tkToken.tkSynObj          = ????        // See below
-#endif
-                                    // Set the tkSynObj value from the UDFO header
-                                    lpplYYLval->tkToken.tkSynObj = TranslateDfnTypeToSOType (lpMemDfnHdr);
-
-                                    // We no longer need this ptr
-                                    MyGlobalUnlock (hGlbFcn); lpMemDfnHdr = NULL;
-
-                                    // Increment the refcnt
-                                    DbgIncrRefCntTkn (&lpplYYLval->tkToken);    // EXAMPLE:  any unassigned named non-UDFO
-
-                                    break;
-
-                                defstop
-                                    break;
-                            } // End SWITCH
-                        } // End IF/ELSE/...
-
-                        // If the SynObj is still the default, ...
-                        if (lpplYYLval->tkToken.tkSynObj EQ soA)
-                            // Mark it as a Fcn so it can't be re-assigned.
-                            lpplYYLval->tkToken.tkSynObj = soF;
-                    } // End IF
+                        // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
+                        ConvertNamedFopToUnnamed (lpplYYLval, soF, TKT_FCNIMMED, TKT_FCNAFO, TKT_FCNDFN);
                 } else
                     lpplYYLval->tkToken.tkSynObj = soNAM;
             } // End IF
@@ -6406,6 +6407,7 @@ PL_YYLEX_FCNNAMED:
             break;
 
         case TKT_FCNAFO:            // Anonymous function
+        case TKT_FCNDFN:            // Unnamed UDFO
         case TKT_DELAFO:            // Del Anon -- either a function, or a monadic or dyadic operator, bound to its operands
             Assert (lpplYYLval->tkToken.tkSynObj EQ soF
                  || lpplYYLval->tkToken.tkSynObj EQ soNF);
@@ -6417,6 +6419,7 @@ PL_YYLEX_FCNNAMED:
             break;
 
         case TKT_OP1AFO:            // Anonymous monadic operator
+        case TKT_OP1DFN:            // Unnamed UDFO
             Assert (lpplYYLval->tkToken.tkSynObj EQ soMOP
                  || lpplYYLval->tkToken.tkSynObj EQ soMOPN);
 
@@ -6428,6 +6431,7 @@ PL_YYLEX_FCNNAMED:
             break;
 
         case TKT_OP2AFO:            // Anonymous dyadic operator
+        case TKT_OP2DFN:            // Unnamed UDFO
             Assert (lpplYYLval->tkToken.tkSynObj EQ soDOP
                  || lpplYYLval->tkToken.tkSynObj EQ soDOPN);
 
@@ -6581,82 +6585,8 @@ PL_YYLEX_OP1NAMED:
             {
                 // If we should not restore the token stack ptr,
                 if (!bRestoreStk)
-                {
-                    // If it's an immediate, ...
-                    if (lpplYYLval->tkToken.tkData.tkSym->stFlags.Imm)
-                    {
-////////////////////////// If the function is a hybrid, ...
-////////////////////////if (lpplYYLval->tkToken.tkData.tkSym->stFlags.ImmType EQ IMMTYPE_PRIMOP3)
-////////////////////////    // Mark is as a hybrid
-////////////////////////    lpplYYLval->tkToken.tkSynObj = soHY;
-////////////////////////else
-                            // Mark it as a MOP so it can't be re-assigned.
-                            lpplYYLval->tkToken.tkSynObj = soMOP;   // N.B.:  No immediate MOPNs
-
-                        // Convert this to an unnamed immediate op1
-                        lpplYYLval->tkToken.tkFlags.TknType   = TKT_OP1IMMED;
-                        lpplYYLval->tkToken.tkFlags.ImmType   = lpplYYLval->tkToken.tkData.tkSym->stFlags.ImmType;
-                        lpplYYLval->tkToken.tkData .tkChar    = lpplYYLval->tkToken.tkData.tkSym->stData.stChar;
-                    } else
-                    // If it's not a (named) direct fcn/opr ...
-                    if (!lpplYYLval->tkToken.tkData.tkSym->stFlags.FcnDir)
-                    {
-                        // Get the global memory handle
-                        hGlbFcn = GetGlbHandle (&lpplYYLval->tkToken);
-
-                        // Split cases based upon the array signature
-                        switch (GetSignatureGlb_PTB (hGlbFcn))
-                        {
-                            case FCNARRAY_HEADER_SIGNATURE:
-                                DbgBrk ();      // How do we ever get here?
-
-                                // Lock the memory to get a ptr to it
-                                lpMemHdrFcn = MyGlobalLockFcn (hGlbFcn);
-
-                                // Convert this to an unnamed global fcn array
-                                lpplYYLval->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
-                                lpplYYLval->tkToken.tkData .tkGlbData = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
-                                lpplYYLval->tkToken.tkSynObj          = soMOP;      // ***FIXME*** -- can this ever be soMOPN ???
-
-                                // We no longer need this ptr
-                                MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL;
-
-                                // Increment the RefCnt of each item
-                                DbgIncrRefCntFcnArray (hGlbFcn);
-
-                                break;
-
-                            case DFN_HEADER_SIGNATURE:
-                                // Lock the memory to get a ptr to it
-                                lpMemDfnHdr = MyGlobalLockDfn (hGlbFcn);
-
-#if FALSE       // Enable this code when we have a TKT_OP1DFN (unnamed OP1 DFN)
-                                // Convert this to an unnamed global fcn array
-                                lpplYYLval->tkToken.tkFlags.TknType   = lpMemDfnHdr->bAFO ? TKT_OP1AFO : TKT_OP1DFN;
-                                lpplYYLval->tkToken.tkData .tkGlbData = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
-////////////////////////////////lpplYYLval->tkToken.tkSynObj          = ????        // See below
-#endif
-                                // Set the tkSynObj value from the UDFO header
-                                lpplYYLval->tkToken.tkSynObj = TranslateDfnTypeToSOType (lpMemDfnHdr);
-
-                                // We no longer need this ptr
-                                MyGlobalUnlock (hGlbFcn); lpMemDfnHdr = NULL;
-
-                                // Increment the refcnt
-                                DbgIncrRefCntTkn (&lpplYYLval->tkToken);    // EXAMPLE:  Any named OP2
-
-                                break;
-
-                            defstop
-                                break;
-                        } // End SWITCH
-                    } // End IF/ELSE/...
-
-                    // If the SynObj is still the default, ...
-                    if (lpplYYLval->tkToken.tkSynObj EQ soA)
-                        // Mark it as a MOP so it can't be re-assigned.
-                        lpplYYLval->tkToken.tkSynObj = soMOP;
-                } // End IF
+                    // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
+                    ConvertNamedFopToUnnamed (lpplYYLval, soMOP, TKT_OP1IMMED, TKT_OP1AFO, TKT_OP1DFN);
             } else
                 lpplYYLval->tkToken.tkSynObj = soNAM;
 
@@ -6669,82 +6599,8 @@ PL_YYLEX_OP2NAMED:
             {
                 // If we should not restore the token stack ptr,
                 if (!bRestoreStk)
-                {
-                    // If it's an immediate, ...
-                    if (lpplYYLval->tkToken.tkData.tkSym->stFlags.Imm)
-                    {
-////////////////////////// If the function is a hybrid, ...
-////////////////////////if (lpplYYLval->tkToken.tkData.tkSym->stFlags.ImmType EQ IMMTYPE_PRIMOP3)
-////////////////////////    // Mark is as a hybrid
-////////////////////////    lpplYYLval->tkToken.tkSynObj = soHY;
-////////////////////////else
-                            // Mark it as a DOP so it can't be re-assigned.
-                            lpplYYLval->tkToken.tkSynObj = soDOP;   // N.B.:  No immediate DOPNs
-
-                        // Convert this to an unnamed immediate op2
-                        lpplYYLval->tkToken.tkFlags.TknType   = TKT_OP2IMMED;
-                        lpplYYLval->tkToken.tkFlags.ImmType   = lpplYYLval->tkToken.tkData.tkSym->stFlags.ImmType;
-                        lpplYYLval->tkToken.tkData .tkChar    = lpplYYLval->tkToken.tkData.tkSym->stData.stChar;
-                    } else
-                    // If it's not a (named) direct fcn/opr, ...
-                    if (!lpplYYLval->tkToken.tkData.tkSym->stFlags.FcnDir)
-                    {
-                        // Get the global memory handle
-                        hGlbFcn = GetGlbHandle (&lpplYYLval->tkToken);
-
-                        // Split cases based upon the array signature
-                        switch (GetSignatureGlb_PTB (hGlbFcn))
-                        {
-                            case FCNARRAY_HEADER_SIGNATURE:
-                                DbgBrk ();      // How do we ever get here?
-
-                                // Lock the memory to get a ptr to it
-                                lpMemHdrFcn = MyGlobalLockFcn (hGlbFcn);
-
-                                // Convert this to an unnamed global fcn array
-                                lpplYYLval->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
-                                lpplYYLval->tkToken.tkData .tkGlbData = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
-                                lpplYYLval->tkToken.tkSynObj          = soDOP;      // ***FIXME*** -- can this ever be soDOPN ???
-
-                                // We no longer need this ptr
-                                MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL;
-
-                                // Increment the RefCnt of each item
-                                DbgIncrRefCntFcnArray (hGlbFcn);
-
-                                break;
-
-                            case DFN_HEADER_SIGNATURE:
-                                // Lock the memory to get a ptr to it
-                                lpMemDfnHdr = MyGlobalLockDfn (hGlbFcn);
-
-#if FALSE       // Enable this code when we have a TKT_OP2DFN (unnamed OP2 DFN)
-                                // Convert this to an unnamed global fcn array
-                                lpplYYLval->tkToken.tkFlags.TknType   = lpMemDfnHdr->bAFO ? TKT_OP2AFO : TKT_OP2DFN;
-                                lpplYYLval->tkToken.tkData .tkGlbData = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
-////////////////////////////////lpplYYLval->tkToken.tkSynObj          = ????        // See below
-#endif
-                                // Set the tkSynObj value from the UDFO header
-                                lpplYYLval->tkToken.tkSynObj = TranslateDfnTypeToSOType (lpMemDfnHdr);
-
-                                // We no longer need this ptr
-                                MyGlobalUnlock (hGlbFcn); lpMemDfnHdr = NULL;
-
-                                // Increment the refcnt
-                                DbgIncrRefCntTkn (&lpplYYLval->tkToken);    // EXAMPLE:  Any named OP2
-
-                                break;
-
-                            defstop
-                                break;
-                        } // End SWITCH
-                    } // End IF
-
-                    // If the SynObj is still the default, ...
-                    if (lpplYYLval->tkToken.tkSynObj EQ soA)
-                        // Mark it as an DOP so it can't be re-assigned.
-                        lpplYYLval->tkToken.tkSynObj = soDOP;
-                } // End IF
+                    // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
+                    ConvertNamedFopToUnnamed (lpplYYLval, soDOP, TKT_OP2IMMED, TKT_OP2AFO, TKT_OP2DFN);
             } else
                 lpplYYLval->tkToken.tkSynObj = soNAM;
 
@@ -6773,7 +6629,7 @@ PL_YYLEX_OP3NAMED:
                             lpplYYLval->tkToken.tkData .tkChar    = lpplYYLval->tkToken.tkData.tkSym->stData.stChar;
                         } else
                         {
-                            // Convert this to an unnamed global fcn
+                            // Convert this to an unnamed global Fcn Array
                             lpplYYLval->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
 
                             // Copy the memory in case the hybrid changes to a function or operator
@@ -7623,6 +7479,93 @@ LPPL_YYSTYPE plExecuteFn0
 
     return lpYYRes;     // Might be NULL
 } // End plExecuteFn0
+
+
+//***************************************************************************
+//  $ConvertNamedFopToUnnamed
+//
+//  Convert a named Fcn/Op1/Op2/Op3 to an unnamed form
+//***************************************************************************
+
+void ConvertNamedFopToUnnamed
+    (LPPL_YYSTYPE lpplYYLval,       // Ptr to lpYYLval
+     SO_ENUM      soTKN_IMMED,      // Syntax Object for immediates
+     TOKEN_TYPES  tktImmed,         // TKT_OPxIMMED of TKT_FCNIMMED
+     TOKEN_TYPES  tktAFO,           // TKT_OPxAFO or TKT_FCNAFO
+     TOKEN_TYPES  tktDFN)           // TKT_OPxDFN or TKT_FCNDFN
+
+{
+    HGLOBAL      hGlbFcn;           // Global Fcn/Opr handle
+    LPDFN_HEADER lpMemDfnHdr;       // Ptr to UDFO/AFO header
+
+    // If it's an immediate, ...
+    if (lpplYYLval->tkToken.tkData.tkSym->stFlags.Imm)
+    {
+        // If the function is a hybrid, ...
+        if (IsTknHybrid (&lpplYYLval->tkToken))
+            // Mark is as a hybrid
+            lpplYYLval->tkToken.tkSynObj = soHY;
+        else
+            // Mark it as a Fcn/Opx so it can't be re-assigned.
+            lpplYYLval->tkToken.tkSynObj = soTKN_IMMED;
+
+        // Convert this to an unnamed immediate fcn
+        lpplYYLval->tkToken.tkFlags.TknType   = tktImmed;
+        lpplYYLval->tkToken.tkFlags.ImmType   = lpplYYLval->tkToken.tkData.tkSym->stFlags.ImmType;
+        lpplYYLval->tkToken.tkData .tkChar    = lpplYYLval->tkToken.tkData.tkSym->stData.stChar;
+    } else
+    // If it's not a (named) direct function, ...
+    if (!lpplYYLval->tkToken.tkData.tkSym->stFlags.FcnDir)
+    {
+        // Get the global memory handle
+        hGlbFcn = GetGlbHandle (&lpplYYLval->tkToken);
+
+        // Split cases based upon the array signature
+        switch (GetSignatureGlb_PTB (hGlbFcn))
+        {
+            case FCNARRAY_HEADER_SIGNATURE:
+                // Convert this to an unnamed global Fcn/Opx array
+                lpplYYLval->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
+                lpplYYLval->tkToken.tkData .tkGlbData = hGlbFcn;
+////////////////lpplYYLval->tkToken.tkSynObj          = soTKN_IMMED;    // Already set by caller
+
+                Assert (soTKN_IMMED EQ lpplYYLval->tkToken.tkSynObj);
+
+                // Increment the RefCnt of each item
+                DbgIncrRefCntFcnArray (hGlbFcn);
+
+                break;
+
+            case DFN_HEADER_SIGNATURE:
+                // Lock the memory to get a ptr to it
+                lpMemDfnHdr = MyGlobalLockDfn (hGlbFcn);
+
+                // Convert this to an unnamed global Fcn/Opx array
+                lpplYYLval->tkToken.tkFlags.TknType   = lpMemDfnHdr->bAFO ? tktAFO : tktDFN;
+                lpplYYLval->tkToken.tkData .tkGlbData = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
+////////////////lpplYYLval->tkToken.tkSynObj          = ????        // See below
+
+                // Set the tkSynObj value from the UDFO header
+                lpplYYLval->tkToken.tkSynObj = TranslateDfnTypeToSOType (lpMemDfnHdr);
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbFcn); lpMemDfnHdr = NULL;
+
+                // Increment the refcnt
+                DbgIncrRefCntTkn (&lpplYYLval->tkToken);    // EXAMPLE:  any unassigned named non-UDFO
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } // End IF/ELSE/...
+
+    // If the SynObj is still the default, ...
+    if (lpplYYLval->tkToken.tkSynObj EQ soA)
+        // Mark it as a Fcn/Opx so it can't be re-assigned.
+        lpplYYLval->tkToken.tkSynObj = soTKN_IMMED;
+} // End ConvertNamedFopToUnnamed
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -109,6 +109,9 @@ UBOOL AssignName_EM
         case TKT_FCNAFO:
         case TKT_OP1AFO:
         case TKT_OP2AFO:
+        case TKT_FCNDFN:
+        case TKT_OP1DFN:
+        case TKT_OP2DFN:
             // Get the source global memory handle
             hGlbSrc = GetGlbHandle (lptkSrc);
 
@@ -330,13 +333,20 @@ UBOOL AssignName_EM
             break;
 
         case TKT_FCNARRAY:
+        {
+            TOKEN_TYPES tknType;
+
             // tkData is a valid HGLOBAL function array
             Assert (IsGlbTypeFcnDir_PTB (lptkSrc->tkData.tkVoid));
 
+            // Distinguish between Fcns, OP1s, OP2s, and OP3s
+            tknType = TranslateSOTypeToNamedTokenType (lptkSrc->tkSynObj);
+
             // Call function common to TKT_VARARRAY and TKT_FCNARRAY
-            AssignArrayCommon (lptkNam, lptkSrc, TKT_FCNNAMED);
+            AssignArrayCommon (lptkNam, lptkSrc, tknType);
 
             break;
+        } // End TKT_FCNARRAY
 
         defstop
             break;
@@ -525,6 +535,9 @@ NAME_TYPES GetNameType
         case TKT_FCNAFO:
         case TKT_OP1AFO:
         case TKT_OP2AFO:
+        case TKT_FCNDFN:
+        case TKT_OP1DFN:
+        case TKT_OP2DFN:
             // Set the UDFO/AFO properties
             return plSetDfn (lptkFunc, GetGlbDataToken (lptkFunc));
 
@@ -545,7 +558,7 @@ NAME_TYPES GetNameType
             return NAMETYPE_OP3;
 
         case TKT_DEL:       // Del      -- always a function
-        case TKT_DELDEL:    // Del Del  -- either a monadic of dyadic operator
+        case TKT_DELDEL:    // Del Del  -- either a monadic or dyadic operator
             hGlbData = lptkFunc->tkData.tkSym->stData.stGlbData;
 
             break;          // Continue with common hGlbData code

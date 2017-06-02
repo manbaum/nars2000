@@ -93,10 +93,146 @@ NAME_TYPES TranslateSOTypeToNameType
 
 
 //***************************************************************************
+//  $TranslateSOTypeToNamedTokenType
+//
+//  Translate a SynObj type (see SO_ENUM)
+//    to a Named Token type (see TOKEN_TYPES).
+//***************************************************************************
+
+TOKEN_TYPES TranslateSOTypeToNamedTokenType
+    (SO_ENUM soType)            // SynObj type
+
+{
+    // Split cases based upon the Syntax Object type
+    switch (soType)
+    {
+        // Flavors of vars
+        case soA:
+        case soSA:
+        case soSPA:
+        case soIDX:
+            return TKT_VARNAMED;
+
+        // Flavors of monadic/dyadic functions
+        case soF:
+        case soFR:
+        case soFFR:
+        case soSPF:
+        case soSPFR:
+        case soMF:
+            return TKT_FCNNAMED;
+
+        // Flavors of niladic functions
+        case soNF:
+        case soSPNF:
+            return TKT_FCNNAMED;
+
+        // Flavors of monadic operators
+        case soMOP:
+        case soMOPN:
+        case soJD:
+        case soSPM:
+        case soSPMN:
+        case soSPMR:
+            return TKT_OP1NAMED;
+
+        // Flavors of dyadic operators
+        case soDOP:
+        case soDOPN:
+        case soSPD:
+        case soSPDN:
+        case soSPDR:
+            return TKT_OP2NAMED;
+
+        // Flavors of hybrids
+        case soHY:
+        case soSPHY:
+        case soSPHR:
+            return TKT_OP3NAMED;
+
+        defstop
+            return TKT_UNUSED;
+    } // End SWITCH
+} // End TranslateSOTypeToNamedTokenType
+
+
+//***************************************************************************
+//  $TranslateSOTypeToBasicSOType
+//
+//  Translate a SynObj type (see SO_ENUM)
+//    to a Basic SynObj type (see SO_ENUM).
+//***************************************************************************
+
+SO_ENUM TranslateSOTypeToBasicSOType
+    (SO_ENUM soType)            // SynObj type
+
+{
+    // Split cases based upon the Syntax Object type
+    switch (soType)
+    {
+        // Flavors of vars
+        case soA:
+        case soSA:
+        case soSPA:
+            return soA;
+
+        case soIDX:
+            return soIDX;
+
+        // Flavors of monadic/dyadic functions
+        case soF:
+        case soFR:
+        case soFFR:
+        case soSPF:
+        case soSPFR:
+        case soMF:
+            return soF;
+
+        // Flavors of niladic functions
+        case soNF:
+        case soSPNF:
+            return soNF;
+
+        // Flavors of niladic derived fns from monadic operators
+        case soMOPN:
+        case soSPMN:
+            return soMOPN;
+
+        // Flavors of monadic/dyadic derived fns from monadic operators
+        case soMOP:
+        case soJD:
+        case soSPM:
+        case soSPMR:
+            return soMOP;
+
+        // Flavors of niladic derived fns from from dyadic operators
+        case soDOPN:
+        case soSPDN:
+            return soDOPN;
+
+        // Flavors of monadic/dyadic derived fns from dyadic operators
+        case soDOP:
+        case soSPD:
+        case soSPDR:
+            return soDOP;
+
+        // Flavors of hybrids
+        case soHY:
+        case soSPHY:
+        case soSPHR:
+            return soHY;
+
+        defstop
+            return soUNK;
+    } // End SWITCH
+} // End TranslateSOTypeToBasicSOType
+
+
+//***************************************************************************
 //  $TranslateNameTypeToSOType
 //
-//  Translate a function type (see NAME_TYPES).
-//    to a SynObj type (see SO_ENUM)
+//  Translate a function type (see NAME_TYPES)
+//    to a SynObj type (see SO_ENUM).
 //***************************************************************************
 
 SO_ENUM TranslateNameTypeToSOType

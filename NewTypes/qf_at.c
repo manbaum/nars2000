@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -668,19 +668,34 @@ LPAPLUINT AttributeFixTime
                 // Get the user-defined function/operator global memory handle
                 hGlbObj = lpSymEntry->stData.stGlbData;
 
-                // Lock the memory to get a ptr to it
-                lpMemHdrObj = MyGlobalLockDfn (hGlbObj);
+                // Split cases based upon the function signature
+                switch (GetSignatureGlb_PTB (hGlbObj))
+                {
+                    case FCNARRAY_HEADER_SIGNATURE:
+                        // Lock the memory to get a ptr to it
+                        lpMemHdrObj = MyGlobalLockFcn (hGlbObj);
 
-                // If it's a user-defined function/operator
-                if (lpSymEntry->stFlags.UsrDfn)
-#define lpHeader    ((LPDFN_HEADER) lpMemHdrObj)
-                    ftLastMod = lpHeader->ftLastMod;
-#undef  lpHeader
-                else
-                // It's a function array
+                        // It's a function array
 #define lpHeader    ((LPFCNARRAY_HEADER) lpMemHdrObj)
-                    ftLastMod = lpHeader->ftLastMod;
+                        ftLastMod = lpHeader->ftLastMod;
 #undef  lpHeader
+                        break;
+
+                    case DFN_HEADER_SIGNATURE:
+                        // Lock the memory to get a ptr to it
+                        lpMemHdrObj = MyGlobalLockDfn (hGlbObj);
+
+                        // If it's a user-defined function/operator
+                        if (lpSymEntry->stFlags.UsrDfn)
+#define lpHeader    ((LPDFN_HEADER) lpMemHdrObj)
+                            ftLastMod = lpHeader->ftLastMod;
+#undef  lpHeader
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
                 if (hGlbObj NE NULL && lpMemHdrObj NE NULL)
                 {
                     // We no longer need this ptr

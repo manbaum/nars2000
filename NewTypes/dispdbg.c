@@ -1499,10 +1499,10 @@ static TOKENNAMES tokenNames[] =
  {"LSTIMMED"      , TKT_LSTIMMED      },    // 4E: List in brackets, single element, immed (data is immediate)
  {"LSTARRAY"      , TKT_LSTARRAY      },    // 4F: List in brackets, single element, array (data is HGLOBAL)
  {"LSTMULT"       , TKT_LSTMULT       },    // 50: List in brackets, multiple elements (data is HGLOBAL)
- {"FCNARRAY"      , TKT_FCNARRAY      },    // 51: Array of functions (data is HGLOBAL)
- {"FCNNAMED"      , TKT_FCNNAMED      },    // 52: Symbol table entry for a named function (data is LPSYMENTRY)
- {"AXISIMMED"     , TKT_AXISIMMED     },    // 53: An immediate axis specification (data is immediate)
- {"AXISARRAY"     , TKT_AXISARRAY     },    // 54: An array of  ...   (data is HGLOBAL)
+ {"AXISIMMED"     , TKT_AXISIMMED     },    // 51: An immediate axis specification (data is immediate)
+ {"AXISARRAY"     , TKT_AXISARRAY     },    // 52: An array of  ...   (data is HGLOBAL)
+ {"FCNARRAY"      , TKT_FCNARRAY      },    // 53: Array of functions (data is HGLOBAL)
+ {"FCNNAMED"      , TKT_FCNNAMED      },    // 54: Symbol table entry for a named function (data is LPSYMENTRY)
  {"OP1NAMED"      , TKT_OP1NAMED      },    // 55: A named monadic primitive operator (data is LPSYMENTRY)
  {"OP2NAMED"      , TKT_OP2NAMED      },    // 56: ...     dyadic  ...
  {"OP3NAMED"      , TKT_OP3NAMED      },    // 57: ...     ambiguous ...
@@ -1511,6 +1511,9 @@ static TOKENNAMES tokenNames[] =
  {"CS_EOL"        , TKT_CS_EOL        },    // 5A: ...                 Special token (cs_yyparse only)
  {"CS_ENS"        , TKT_CS_ENS        },    // 5B: ...                 Special token (cs_yyparse only)
  {"FILLJOT"       , TKT_FILLJOT       },    // 5C: Fill jot
+ {"TKT_FCNDFN"    , TKT_FCNDFN        },    // 5D: An unnamed UDFO                            (data is LPSYMENTRY)
+ {"TKT_OP1DFN"    , TKT_OP1DFN        },    // 5E: ...        monadic UDFO                    (data is HGLOBAL)
+ {"TKT_OP2DFN"    , TKT_OP2DFN        },    // 5F: ...        dyadic  ...
 };
 
 // The # rows in the above table
@@ -1843,23 +1846,24 @@ LPWCHAR DisplayFcnSub
             // Get the token count to the left operand
             TknLftCount = 1 + bAxisOper;    // Skip over the function & axis (if any)
 
-            // If there's room for a left operand, ...
-            if (tknNELM > TknLftCount)
-                // Display the left operand
-                lpaplChar =
-                  DisplayFcnSub (lpaplChar,                                         // Fcn
-                                &lpYYMem[TknLftCount],
-                                 lpYYMem[TknLftCount].TknCount,
-                                 lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL var to FMTSTR_GLBOBJ (may be NULL)
-                                 lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
-                                 lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
-                                 lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
             // If the monadic operator is not INDEX_OPTRAIN, ...
             if (lpYYMem[0].tkToken.tkData.tkChar NE INDEX_OPTRAIN)
+            {
+                // If there's room for a left operand, ...
+                if (tknNELM > TknLftCount)
+                    // Display the left operand
+                    lpaplChar =
+                      DisplayFcnSub (lpaplChar,                                         // Fcn
+                                    &lpYYMem[TknLftCount],
+                                     lpYYMem[TknLftCount].TknCount,
+                                     lpSavedWsGlbVarConv,   // Ptr to function to convert an HGLOBAL var to FMTSTR_GLBOBJ (may be NULL)
+                                     lpSavedWsGlbVarParm,   // Ptr to extra parameters for lpSavedWsGlbVarConv (may be NULL)
+                                     lpSavedWsGlbFcnConv,   // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
+                                     lpSavedWsGlbFcnParm);  // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
                 // Translate from INDEX_xxx to UTF16_xxx
                 // Display the immediate operator
                 *lpaplChar++ = TranslateFcnOprToChar (lpYYMem[0].tkToken.tkData.tkChar);// Op1
-            else
+            } else
             {
                 // Skip to the next entry
                 lpMemFcnArr = &lpYYMem[tknNELM];
@@ -2043,9 +2047,12 @@ LPWCHAR DisplayFcnSub
                             // Lock the memory to get a ptr to it
                             lpMemDfnHdr = MyGlobalLockDfn (hGlbData);
 
-                            // Append the function name from the symbol table
-                            lpaplChar = CopySteName (lpaplChar, lpMemDfnHdr->steFcnName, NULL);
-
+                            lpaplChar =
+                              FillDfnName (lpaplChar,               // Ptr to output save area      // Dfn
+                                           hGlbData,                // Global memory handle
+                                           lpMemDfnHdr,             // Ptr to global memory
+                                           lpSavedWsGlbFcnConv,     // Ptr to function to convert an HGLOBAL fcn to FMTSTR_GLBOBJ (may be NULL)
+                                           lpSavedWsGlbFcnParm);    // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
                             // We no longer need this ptr
                             MyGlobalUnlock (hGlbData); lpMemDfnHdr = NULL;
 
@@ -2331,6 +2338,7 @@ LPWCHAR DisplayFcnSub
             break;
 
         case TKT_FCNAFO:
+        case TKT_FCNDFN:
             // Get the AFO global memory handle
             hGlbData = GetGlbHandle (&lpYYMem->tkToken);
 
@@ -2361,6 +2369,7 @@ LPWCHAR DisplayFcnSub
             break;
 
         case TKT_OP1AFO:
+        case TKT_OP1DFN:
             // Get the AFO global memory handle
             hGlbData = GetGlbHandle (&lpYYMem->tkToken);
 
@@ -2409,6 +2418,7 @@ LPWCHAR DisplayFcnSub
             break;
 
         case TKT_OP2AFO:
+        case TKT_OP2DFN:
             // Get the AFO global memory handle
             hGlbData = GetGlbHandle (&lpYYMem->tkToken);
 

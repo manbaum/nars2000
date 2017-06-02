@@ -47,10 +47,6 @@ functions, etc. as necessary.
 
  */
 
-#ifdef DEBUG
-UINT gInUse = 0;
-#endif
-
 extern TOKEN_SO tokenSo[];
 
 #define DEF_TOKEN_SIZE  1024    // Default initial amount of memory
@@ -825,7 +821,7 @@ UBOOL IsLocalName
 
 {
     static LPWCHAR  lpwBrkLead = L"({[ ]});" WS_UTF16_LEFTARROW WS_CRLF,
-                    lpwBrkTerm = L"({[ ]});" WS_UTF16_LEFTARROW WS_CRLF WS_UTF16_LAMP;
+                    lpwBrkTerm = L"({[ ]});" WS_UTF16_LEFTARROW WS_CRLF;
     LPWCHAR         wp,                         // Ptr to temp char
                     lpwBlk;                     // Ptr to block of lines
     APLU3264        uLineLen;                   // Line length
@@ -841,8 +837,8 @@ UBOOL IsLocalName
     uLineLen = GetBlockLength (hWndEC, 0);
 
     // Allocate storage for the block including
-    //   the trailing lamp and terminating zero
-    lpwBlk = DbgGlobalAlloc (GPTR, (uLineLen + 1 + 1) * sizeof (WCHAR));
+    //   the terminating zero
+    lpwBlk = DbgGlobalAlloc (GPTR, (uLineLen + 1) * sizeof (WCHAR));
 
     // Check for error
     if (lpwBlk EQ NULL)
@@ -852,9 +848,6 @@ UBOOL IsLocalName
     // Copy the function header block
     //   including a terminating zero if there's enough room
     uLineLen = CopyBlockLines (hWndEC, 0, lpwBlk);
-
-    // Append a trailing marker
-    lpwBlk[uLineLen] = UTF16_LAMP;
 
     // Copy the base of the line
     wp = lpwBlk;
@@ -873,8 +866,13 @@ UBOOL IsLocalName
         while (strchrW (lpwBrkLead, *wp))
             wp++;
 
-        // Check for ending char
+        // Check for embedded comments
         if (*wp EQ UTF16_LAMP)
+            // Find next terminating char
+            wp = strpbrkW (wp, lpwBrkTerm);
+
+        // If we're at the end, ...
+        if (wp EQ NULL || *wp EQ WC_EOS)
             break;
 
         // Compare the incoming name with the header text
@@ -894,6 +892,10 @@ UBOOL IsLocalName
 
         // Find next terminating char
         wp = strpbrkW (wp, lpwBrkTerm);
+
+        // If we're at the end, ...
+        if (wp EQ NULL || *wp EQ WC_EOS)
+            break;
     } // End WHILE
 
     // If position is desired, ...
@@ -943,10 +945,6 @@ UBOOL fnSysNSInit
     TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
     TOKEN_DATA tkData = {0};            // Token data  ...
 
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnSysNSInit");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
 
@@ -975,10 +973,6 @@ UBOOL scSysNSInit
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scSysNSInit");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -1015,10 +1009,6 @@ UBOOL fnSysNSIncr
 {
     LPTOKEN lptkPrv;                    // Ptr to previous token
 
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnSysNSIncr");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
 
@@ -1053,10 +1043,6 @@ UBOOL scSysNSIncr
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scSysNSIncr");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -1085,10 +1071,6 @@ UBOOL fnSysNSDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnSysNSDone");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
 
@@ -1107,10 +1089,6 @@ UBOOL scSysNSDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scSysNSDone");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -1141,10 +1119,6 @@ UBOOL fnAlpha
 {
     UBOOL   bRet;                       // TRUE iff result is valid
     LPWCHAR lpwszStr;                   // Ptr to Str global memory
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnAlpha");
-#endif
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
@@ -1185,10 +1159,6 @@ UBOOL scAlpha
                  uLen,                  // Loop length
                  uClr;                  // Color index
     LPSYMENTRY   lpSymEntry;            // Ptr to this name's SYMENTRY
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scAlpha");
-#endif
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
@@ -1397,15 +1367,7 @@ UBOOL fnAlpDone
     UBOOL        bRet = TRUE;           // TRUE iff the result is valid
     TKFLAGS      tkFlags = {0};         // Token flags for AppendNewToken_EM
     TOKEN_DATA   tkData = {0};          // Token data  ...
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPWCHAR      lpwszStr;              // Ptr to Str global memory
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnAlpDone");
-#endif
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Lock the memory to get a ptr to it
     lpwszStr = MyGlobalLockPad (lptkLocalVars->hGlbStr);
@@ -1445,16 +1407,16 @@ UBOOL fnAlpDone
         if (lstrcmpiW (lpwszStr, WS_UTF16_QUAD L"z") EQ 0)
         {
             // Get the SYMENTRY for []Z
-            lpSymEntry = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_Z];
+            lpSymEntry = lptkLocalVars->lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_Z];
 
             // If we're not fixing a function via []TF,
             //   and we're not tokenizing an AFO, ...
-            if (!lpMemPTD->bInTF
+            if (!lptkLocalVars->lpMemPTD->bInTF
              && !lptkLocalVars->lpSF_Fcns->bAFO)
                 // N.B.:  Use steNoValueUsr NOT steNoValueSys
                 //   as the former has a valid stHshEntry
                 //   and the latter doesn't
-                lpSymEntry = lpMemPTD->lphtsPTD->steNoValueUsr;
+                lpSymEntry = lptkLocalVars->lpMemPTD->lphtsPTD->steNoValueUsr;
         } else
         {
             STFLAGS stFlags = {0};              // STE flags
@@ -1479,7 +1441,7 @@ UBOOL fnAlpDone
                     goto ERROR_EXIT;
                 } else
                     // Just call it NoValueSys
-                    lpSymEntry = lpMemPTD->lphtsPTD->steNoValueSys;
+                    lpSymEntry = lptkLocalVars->lpMemPTD->lphtsPTD->steNoValueSys;
             } // End IF
         } // End IF
     } else
@@ -1489,7 +1451,7 @@ UBOOL fnAlpDone
         LPHSHTABSTR lpHTS = lptkLocalVars->lpHTS,   // Ptr to current HTS
                     lpLastHTS;                      // Ptr to last non-NULL HTS
 
-        while (lpHTS)
+        while (lpHTS NE NULL)
         {
             // Because we're in an AFO, first lookup this name (but don't append it) in the local HTS
 
@@ -1577,10 +1539,6 @@ UBOOL scAlpDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scAlpDone");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -1607,18 +1565,10 @@ UBOOL fnDirIdent
                  bAFO;                  // TRUE iff we're tokenizing an AFO
     TKFLAGS      tkFlags = {0};         // Token flags for AppendNewToken_EM
     TOKEN_DATA   tkData = {0};          // Token data  ...
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     LPWCHAR      lpwszStr;              // Ptr to Str global memory
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnDirIdent");
-#endif
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Lock the memory to get a ptr to it
     lpwszStr = MyGlobalLockPad (lptkLocalVars->hGlbStr);
@@ -1717,10 +1667,6 @@ UBOOL scDirIdent
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scDirIdent");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -1752,10 +1698,6 @@ UBOOL fnAsnDone
     TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
     TOKEN_DATA tkData = {0};            // Token data  ...
     UBOOL      bAFO;                    // TRUE iff this stmt is in an AFO
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnAsnDone");
-#endif
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
@@ -1913,10 +1855,6 @@ UBOOL scAsnDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scAsnDone");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -1948,10 +1886,6 @@ UBOOL fnLstDone
     TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
     TOKEN_DATA tkData = {0};            // Token data  ...
 
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (l"fnLstDone");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
 
@@ -1980,10 +1914,6 @@ UBOOL scLstDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (l"scLstDone");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -2015,10 +1945,6 @@ UBOOL fnClnDone
     TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
     TOKEN_DATA tkData = {0};            // Token data  ...
     UBOOL      bSysLbl = FALSE;         // TRUE iff this token is a System Label
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnClnDone");
-#endif
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
@@ -2117,10 +2043,6 @@ UBOOL scClnDone
          uLblIni,           // Start of label (if any)
          uLen;              // Loop length
 
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scClnDone");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -2197,10 +2119,6 @@ UBOOL fnCtrlDone
 {
     TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
     TOKEN_DATA tkData = {0};            // Token data  ...
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnCtrlDone");
-#endif
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
@@ -2367,10 +2285,6 @@ UBOOL scCtrlDone
 {
     UINT uCnt;                          // Loop counter
 
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scCtrlDone");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -2411,10 +2325,6 @@ UBOOL fnPrmDone
 {
     TKFLAGS tkFlags = {0};              // Token flags for AppendNewToken_EM
     TOKEN_DATA tkData = {0};            // Token data  ...
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnPrmDone");
-#endif
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
@@ -2463,10 +2373,6 @@ UBOOL scPrmDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scPrmDone");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -2495,18 +2401,8 @@ UBOOL fnPointAcc
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
     UBOOL        bRet;          // TRUE iff result is valid
     WCHAR        wchCur;        // The current WCHAR
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnPointAcc");
-#endif
-
-////LCLODS ("fnPointAcc\r\n");
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Check for need to resize hGlbNum
     bRet = CheckResizeNum_EM (lptkLocalVars);
@@ -2535,7 +2431,7 @@ UBOOL fnPointAcc
         wchCur = NaN1;
 
     // Use subroutine
-    if (!fnPointSub (lptkLocalVars, lpMemPTD, wchCur))
+    if (!fnPointSub (lptkLocalVars, wchCur))
         // Mark as a SYNTAX ERROR
         lptkLocalVars->lptkLastEOS->tkFlags.bSyntErr = TRUE;
 ERROR_EXIT:
@@ -2553,9 +2449,6 @@ UBOOL scPointAcc
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scPointAcc");
-#endif
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -2578,16 +2471,11 @@ UBOOL scPointAcc
 
 UBOOL fnPointSub
     (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
-     LPPERTABDATA  lpMemPTD,            // Ptr to PerTabData global memory
      WCHAR         wchCur)              // The char to accumulate
 
 {
     LPCHAR       lpszNum;               // Ptr to Num global memory
     UBOOL        bRet;                  // TRUE iff result is valid
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnPointSub");
-#endif
 
     // Lock the memory to get a ptr to it
     lpszNum = MyGlobalLockPad (lptkLocalVars->hGlbNum);
@@ -2622,7 +2510,6 @@ UBOOL fnPointDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     UBOOL        bRet;                  // TRUE iff result is valid
     LPCHAR       lpszNum;               // Ptr to Num global memory
     PNLOCALVARS  pnLocalVars = {0};     // PN Local vars
@@ -2632,15 +2519,6 @@ UBOOL fnPointDone
     APLSTYPE     aplTypeRes;            // Result storage type
     APLRANK      aplRankRes;            // ...    rank
     char         cZap;                  // Temporary char
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnPointDone");
-#endif
-
-////LCLODS ("fnPointDone\r\n");
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Lock the memory to get a ptr to it
     lpszNum = MyGlobalLockPad (lptkLocalVars->hGlbNum);
@@ -2653,8 +2531,8 @@ UBOOL fnPointDone
     pnLocalVars.lpszStart     = lpszNum;
     pnLocalVars.uNumLen       = lptkLocalVars->iNumLen;
     pnLocalVars.uCharIndex    = lptkLocalVars->uCharStart;
-    pnLocalVars.lpszAlphaInt  = (LPCHAR) lpMemPTD->lpwszTemp;
-    pnLocalVars.lpszNumAccum  = (LPCHAR) lpMemPTD->lpwszFormat;
+    pnLocalVars.lpszAlphaInt  = (LPCHAR) lptkLocalVars->lpMemPTD->lpwszTemp;
+    pnLocalVars.lpszNumAccum  = (LPCHAR) lptkLocalVars->lpMemPTD->lpwszFormat;
     pnLocalVars.chComType     = PN_NUMTYPE_INIT;
 ////pnLocalVars.hGlbRes       = NULL;           // Already zero from = {0}
     pnLocalVars.lptkLocalVars = lptkLocalVars;
@@ -2776,7 +2654,7 @@ UBOOL fnPointDone
         } else
         {
             // Get the attrs of a global
-            AttrsOfGlb (pnLocalVars.hGlbRes, &aplTypeRes, NULL, &aplRankRes, NULL);
+            AttrsOfGlb (pnLocalVars.hGlbRes, NULL, NULL, &aplRankRes, NULL);
 
             // If the value is a scalar, ...
             if (IsScalar (aplRankRes))
@@ -2827,15 +2705,11 @@ UBOOL CheckConstantCopyLoad
      && lptkLocalVars->lpMemPTD->lpLoadWsGlbVarConv)
     {
         HGLOBAL      hGlbObj;           // Object global memory handle
-        LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-
-        // Get ptr to PerTabData global memory
-        lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
         // Convert the :CONSTANT to an HGLOBAL
         hGlbObj =
-          (*lpMemPTD->lpLoadWsGlbVarConv) ((UINT) lppnLocalVars->at.aplInteger,
-                                           lpMemPTD->lpLoadWsGlbVarParm);
+          (*lptkLocalVars->lpMemPTD->lpLoadWsGlbVarConv) ((UINT) lppnLocalVars->at.aplInteger,
+                                                          lptkLocalVars->lpMemPTD->lpLoadWsGlbVarParm);
         // Split cases based upon the global memory signature
         switch (GetSignatureGlb (hGlbObj))
         {
@@ -2854,8 +2728,16 @@ UBOOL CheckConstantCopyLoad
                 // This DEBUG stmt probably never is triggered because
                 //    UnFcnStrand converts all named or unnamed function array items to inline items
 #ifdef DEBUG
-                DbgStop ();         // ***Probably never executed***
+                DbgBrk ();          // ***Probably never executed***
 #endif
+                // Fill in the result token
+                lptkPrv->tkFlags.TknType   = TKT_FCNARRAY;
+////////////////lptkPrv->tkFlags.ImmType   =        // Same as for TKT_COLON
+                lptkPrv->tkFlags.NoDisplay = FALSE;
+                lptkPrv->tkData.tkGlbData  = MakePtrTypeGlb (hGlbObj);
+////////////////lptkPrv->tkCharIndex       =        // Same as for TKT_COLON
+                lptkPrv->tkSynObj          = soF;   // ***FIXME*** -- soNF, soMOP, soMOPN, soDOP, soDOPN, ...
+
                 break;
 
             case DFN_HEADER_SIGNATURE:
@@ -2873,19 +2755,19 @@ UBOOL CheckConstantCopyLoad
                 {
                     case DFNTYPE_OP1:
                         // Fill in the result token
-                        lptkPrv->tkFlags.TknType = TKT_OP1NAMED;
+                        lptkPrv->tkFlags.TknType = TKT_OP1DFN;
 
                         break;
 
                     case DFNTYPE_OP2:
                         // Fill in the result token
-                        lptkPrv->tkFlags.TknType = TKT_OP2NAMED;
+                        lptkPrv->tkFlags.TknType = TKT_OP2DFN;
 
                         break;
 
                     case DFNTYPE_FCN:
                         // Fill in the result token
-                        lptkPrv->tkFlags.TknType = TKT_FCNNAMED;
+                        lptkPrv->tkFlags.TknType = TKT_FCNDFN;
 
                         break;
 
@@ -2934,10 +2816,6 @@ UBOOL scPointDone
            uLen;                        // Loop length
     LPCHAR lpszNum;                     // Ptr to Num global memory
     SCTYPE scType;                      // Name type
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scPointDone");
-#endif
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
@@ -3034,10 +2912,6 @@ UBOOL fnOp1Done
     TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
     TOKEN_DATA tkData = {0};            // Token data  ...
 
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnOp1Done");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
 
@@ -3078,10 +2952,6 @@ UBOOL scOp1Done
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scOp1Done");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -3110,10 +2980,6 @@ UBOOL fnOp2Done
     TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
     TOKEN_DATA tkData = {0};            // Token data  ...
 
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnOp2Done");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
 
@@ -3141,10 +3007,6 @@ UBOOL scOp2Done
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scOp2Done");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -3170,10 +3032,6 @@ UBOOL scOp2DoneX
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scOp2DoneX");
-#endif
-
     // Back to initial state
     SetTokenStatesTK (lptkLocalVars, TKROW_INIT);
 
@@ -3195,10 +3053,6 @@ UBOOL fnDelDone
     UBOOL        bRet;                  // TRUE iff result is valid
     TKFLAGS      tkFlags = {0};         // Token flags for AppendNewToken_EM
     TOKEN_DATA   tkData = {0};          // Token data  ...
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnDelDone");
-#endif
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
@@ -3256,10 +3110,6 @@ UBOOL scDelDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scDelDone");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -3287,10 +3137,6 @@ UBOOL fnDotDone
 {
     TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
     TOKEN_DATA tkData = {0};            // Token data  ...
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnDotDone");
-#endif
 
     //  Initialize the accumulation variables for the next constant
     InitAccumVars (lptkLocalVars);
@@ -3322,10 +3168,6 @@ UBOOL scDotDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scDotDone");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -3354,10 +3196,6 @@ UBOOL fnJotDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnJotDone");
-#endif
-
     return fnJotDoneSub (lptkLocalVars, TRUE);
 } // End fnJotDone
 
@@ -3372,10 +3210,6 @@ UBOOL scJotDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scJotDone");
-#endif
-
     return scJotDoneSub (lptkLocalVars, TRUE);
 } // End scJotDone
 
@@ -3391,10 +3225,6 @@ UBOOL fnJotDone0
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnJotDone0");
-#endif
-
     return fnJotDoneSub (lptkLocalVars, FALSE);
 } // End fnJotDone0
 
@@ -3410,10 +3240,6 @@ UBOOL scJotDone0
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scJotDone0");
-#endif
-
     return scJotDoneSub (lptkLocalVars, FALSE);
 } // End scJotDone0
 
@@ -3431,10 +3257,6 @@ UBOOL fnJotDoneSub
 {
     TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
     TOKEN_DATA tkData = {0};            // Token data  ...
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnJotDoneSub");
-#endif
 
     if (bInitAcc)
         //  Initialize the accumulation variables for the next constant
@@ -3470,10 +3292,6 @@ UBOOL scJotDoneSub
      UBOOL         bInitAcc)            // TRUE iff we should initialize the accumulator vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scJotDoneSub");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -3506,10 +3324,6 @@ UBOOL fnOutDone
     TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
     TOKEN_DATA tkData = {0};            // Token data  ...
 
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnOutDone");
-#endif
-
     //  Initialize the accumulation variables for the next constant
     InitAccumVars (lptkLocalVars);
 
@@ -3541,10 +3355,6 @@ UBOOL scOutDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scOutDone");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -3586,10 +3396,6 @@ UBOOL fnComDone
 {
     APLI3264 iLen;
     LPWCHAR  wp;
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnComDone");
-#endif
 
     // Get the length of the comment (up to but not including any WS_CRLF)
     iLen = lptkLocalVars->uActLen - lptkLocalVars->uChar;   // Including the leading comment symbol
@@ -3637,10 +3443,6 @@ UBOOL scComDone
              iVar;                  // Loop counter
     LPWCHAR  wp;
 
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scComDone");
-#endif
-
     // Get the length of the comment (up to but not including any WS_CRLF)
     iLen = lptkLocalVars->uActLen - lptkLocalVars->uChar;   // Including the leading comment symbol
 
@@ -3658,7 +3460,7 @@ UBOOL scComDone
     iVar = iLen;
 
     // Loop through the chars
-    while (iVar--)
+    while (iVar-- NE 0)
     {
         // Save the column index
         lptkLocalVars->lpMemClrNxt->colIndex = TKCOL_LAMP;
@@ -3688,10 +3490,6 @@ UBOOL fnQuo1Init
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnQuo1Init");
-#endif
-
     return fnQuoAccumSub (lptkLocalVars, SC_UNMATCHGRP, TKCOL_QUOTE1);
 } // End fnQuo1Init
 
@@ -3706,10 +3504,6 @@ UBOOL scQuo1Init
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scQuo1Init");
-#endif
-
     return scQuoAccumSub (lptkLocalVars, SC_UNMATCHGRP, TKCOL_QUOTE1);
 } // End scQuo1Init
 
@@ -3724,10 +3518,6 @@ UBOOL fnQuo2Init
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnQuo2Init");
-#endif
-
     return fnQuoAccumSub (lptkLocalVars, SC_UNMATCHGRP, TKCOL_QUOTE2);
 } // End fnQuo2Init
 
@@ -3742,10 +3532,6 @@ UBOOL scQuo2Init
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scQuo2Init");
-#endif
-
     return scQuoAccumSub (lptkLocalVars, SC_UNMATCHGRP, TKCOL_QUOTE2);
 } // End scQuo2Init
 
@@ -3760,10 +3546,6 @@ UBOOL fnQuo1Accum
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnQuo1Accum");
-#endif
-
     return fnQuoAccumSub (lptkLocalVars, SC_CHRCONST, TKCOL_QUOTE1);
 } // End fnQuo1Accum
 
@@ -3778,10 +3560,6 @@ UBOOL scQuo1Accum
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scQuo1Accum");
-#endif
-
     return scQuoAccumSub (lptkLocalVars, SC_CHRCONST, TKCOL_QUOTE1);
 } // End scQuo1Accum
 
@@ -3796,10 +3574,6 @@ UBOOL fnQuo2Accum
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnQuo2Accum");
-#endif
-
     return fnQuoAccumSub (lptkLocalVars, SC_CHRCONST, TKCOL_QUOTE2);
 } // End fnQuo2Accum
 
@@ -3814,10 +3588,6 @@ UBOOL scQuo2Accum
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scQuo2Accum");
-#endif
-
     return scQuoAccumSub (lptkLocalVars, SC_CHRCONST, TKCOL_QUOTE2);
 } // End scQuo2Accum
 
@@ -3840,16 +3610,8 @@ UBOOL fnQuoAccumSub
      TKCOLINDICES  tkColQuote)          // The starting quote
 
 {
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     UBOOL        bRet;                  // TRUE iff result is valid
     LPWCHAR      lpwszStr;              // Ptr to Str global memory
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnQuoAccumSub");
-#endif
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
@@ -3885,10 +3647,6 @@ UBOOL scQuoAccumSub
      TKCOLINDICES  tkColQuote)          // The starting quote
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scQuoAccumSub");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -3914,10 +3672,6 @@ UBOOL fnQuo1Done
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnQuo1Done");
-#endif
-
     return fnQuoDoneSub (lptkLocalVars, TRUE, TKCOL_QUOTE1);
 } // End fnQuo1Done
 
@@ -3932,10 +3686,6 @@ UBOOL scQuo1Done
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scQuo1Done");
-#endif
-
     return scQuoDoneSub (lptkLocalVars, TRUE, TKCOL_QUOTE1);
 } // End scQuo1Done
 
@@ -3950,10 +3700,6 @@ UBOOL fnQuo2Done
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnQuo2Done");
-#endif
-
     return fnQuoDoneSub (lptkLocalVars, TRUE, TKCOL_QUOTE2);
 } // End fnQuo2Done
 
@@ -3968,10 +3714,6 @@ UBOOL scQuo2Done
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scQuo2Done");
-#endif
-
     return scQuoDoneSub (lptkLocalVars, TRUE, TKCOL_QUOTE2);
 } // End scQuo2Done
 
@@ -3986,10 +3728,6 @@ UBOOL fnQuo1Exit
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnQuo1Exit");
-#endif
-
     return fnQuoDoneSub (lptkLocalVars, FALSE, TKCOL_QUOTE1);
 } // End fnQuo1Exit
 
@@ -4004,10 +3742,6 @@ UBOOL scQuo1Exit
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scQuo1Exit");
-#endif
-
     return scQuoDoneSub (lptkLocalVars, FALSE, TKCOL_QUOTE1);
 } // End scQuo1Exit
 
@@ -4022,10 +3756,6 @@ UBOOL fnQuo2Exit
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnQuo2Exit");
-#endif
-
     return fnQuoDoneSub (lptkLocalVars, FALSE, TKCOL_QUOTE2);
 } // End fnQuo2Exit
 
@@ -4040,10 +3770,6 @@ UBOOL scQuo2Exit
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scQuo2Exit");
-#endif
-
     return scQuoDoneSub (lptkLocalVars, FALSE, TKCOL_QUOTE2);
 } // End scQuo2Exit
 
@@ -4069,16 +3795,8 @@ UBOOL fnQuoDoneSub
     HGLOBAL      hGlb;                  // Temporary global memory handle
     TKFLAGS      tkFlags = {0};         // Token flags for AppendNewToken_EM
     TOKEN_DATA   tkData = {0};          // Token data  ...
-    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
     UBOOL        bRet = TRUE;           // TRUE iff result is valid
     LPWCHAR      lpwszStr;              // Ptr to Str global memory
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnQuoDoneSub");
-#endif
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = lptkLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
     // Lock the memory to get a ptr to it
     lpwszStr = MyGlobalLockPad (lptkLocalVars->hGlbStr);
@@ -4225,10 +3943,6 @@ UBOOL scQuoDoneSub
 {
     LPCLRCOL lpMemClrCol;
 
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scQuoDoneSub");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -4270,10 +3984,6 @@ UBOOL fnParInit
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnParInit");
-#endif
-
     return fnGroupInitSub (lptkLocalVars, TKT_LEFTPAREN);
 } // End fnParInit
 
@@ -4288,10 +3998,6 @@ UBOOL scParInit
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scParInit");
-#endif
-
     return scGroupInitSub (lptkLocalVars, TKT_LEFTPAREN);
 } // End scParInit
 
@@ -4306,10 +4012,6 @@ UBOOL fnBrkInit
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnBrkInit");
-#endif
-
     return fnGroupInitSub (lptkLocalVars, TKT_LEFTBRACKET);
 } // End fnBrkInit
 
@@ -4324,10 +4026,6 @@ UBOOL scBrkInit
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scBrkInit");
-#endif
-
     return scGroupInitSub (lptkLocalVars, TKT_LEFTBRACKET);
 } // End scBrkInit
 
@@ -4342,10 +4040,6 @@ UBOOL fnBrcInit
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnBrcInit");
-#endif
-
     return fnGroupInitSub (lptkLocalVars, TKT_LEFTBRACE);
 } // End fnBrcInit
 
@@ -4360,10 +4054,6 @@ UBOOL scBrcInit
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scBrcInit");
-#endif
-
     return scGroupInitSub (lptkLocalVars, TKT_LEFTBRACE);
 } // End scBrcInit
 
@@ -4388,10 +4078,6 @@ UBOOL fnGroupInitSub
     TOKEN_DATA  tkData = {0};           // Token data  ...
     UBOOL       bRet = TRUE;
     LPTOKEN     lptkNext;
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnGroupInitSub");
-#endif
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
@@ -4427,10 +4113,6 @@ UBOOL scGroupInitSub
      TOKEN_TYPES   tknType)             // Token type (see TOKEN_TYPES)
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scGroupInitSub");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -4465,10 +4147,6 @@ UBOOL fnParDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnParDone");
-#endif
-
     return fnGroupDoneSub (lptkLocalVars, TKT_RIGHTPAREN, TKT_LEFTPAREN);
 } // End fnParDone
 
@@ -4483,10 +4161,6 @@ UBOOL scParDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scParDone");
-#endif
-
     return scGroupDoneSub (lptkLocalVars, TKT_RIGHTPAREN, TKT_LEFTPAREN);
 } // End scParDone
 
@@ -4501,10 +4175,6 @@ UBOOL fnBrkDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnBrkDone");
-#endif
-
     return fnGroupDoneSub (lptkLocalVars, TKT_RIGHTBRACKET, TKT_LEFTBRACKET);
 } // End fnBrkDone
 
@@ -4519,10 +4189,6 @@ UBOOL scBrkDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scBrkDone");
-#endif
-
     return scGroupDoneSub (lptkLocalVars, TKT_RIGHTBRACKET, TKT_LEFTBRACKET);
 } // End scBrkDone
 
@@ -4537,10 +4203,6 @@ UBOOL fnBrcDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnBrcDone");
-#endif
-
     return fnGroupDoneSub (lptkLocalVars, TKT_RIGHTBRACE, TKT_LEFTBRACE);
 } // End fnBrcDone
 
@@ -4555,10 +4217,6 @@ UBOOL scBrcDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scBrcDone");
-#endif
-
     return scGroupDoneSub (lptkLocalVars, TKT_RIGHTBRACE, TKT_LEFTBRACE);
 } // End scBrcDone
 
@@ -4583,10 +4241,6 @@ UBOOL fnGroupDoneSub
 {
     UINT  uPrevGroup;                   // Index of the previous grouping symbol
     UBOOL bRet = TRUE;                  // TRUE iff the result is valid
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnGroupDoneSub");
-#endif
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
@@ -4646,10 +4300,6 @@ UBOOL scGroupDoneSub
                                SC_MATCHGRP2,
                                SC_MATCHGRP3,
                                SC_MATCHGRP4};
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scGroupDoneSub");
-#endif
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
@@ -4737,10 +4387,6 @@ UBOOL fnDiaDone
     TOKEN_DATA tkData  = {0};           // Token data  ...
     UINT       uChar;                   // Index to current char
 
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnDiaDone");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
 
@@ -4797,10 +4443,6 @@ UBOOL scDiaDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scDiaDone");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -4840,10 +4482,6 @@ UBOOL fnSyntQuote
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnSyntQuote");
-#endif
-
     // Mark as successful
     return TRUE;
 } // End fnSyntQuote
@@ -4860,10 +4498,6 @@ UBOOL scSyntQuote
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scSyntQuote");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -4889,10 +4523,6 @@ UBOOL fnSyntWhite
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnSyntWhite");
-#endif
-
     // Mark as successful
     return TRUE;
 } // End fnSyntWhite
@@ -4908,10 +4538,6 @@ UBOOL scSyntWhite
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scSyntWhite");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -4940,10 +4566,6 @@ UBOOL fnLbrInit
     UBOOL      bRet;                    // The result
     TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
     TOKEN_DATA tkData = {0};            // Token data  ...
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnLbrInit");
-#endif
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
@@ -4996,10 +4618,6 @@ UBOOL scLbrInit
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scLbrInit");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -5028,10 +4646,6 @@ UBOOL fnRbrInit
 
 {
     UBOOL bRet;                         // The result
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnRbrInit");
-#endif
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
@@ -5082,10 +4696,6 @@ UBOOL scRbrInit
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scRbrInit");
-#endif
-
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
 
@@ -5114,10 +4724,6 @@ UBOOL fnLbrAlpha
 
 {
     WCHAR wszStr[3];                // Temp var
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnLbrAlpha");
-#endif
 
     // If we're inside the top level, ...
     if (lptkLocalVars->lbrCount EQ 1)
@@ -5173,10 +4779,6 @@ UBOOL scLbrAlpha
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scLbrAlpha");
-#endif
-
     // Mark as successful
     return TRUE;
 } // End scLbrAlpha
@@ -5194,10 +4796,6 @@ UBOOL fnUnkDone
 {
     TKFLAGS    tkFlags = {0};           // Token flags for AppendNewToken_EM
     TOKEN_DATA tkData = {0};            // Token data  ...
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"fnUnkDone");
-#endif
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt EQ NULL);
@@ -5227,10 +4825,6 @@ UBOOL scUnkDone
 
 {
     SCTYPE scType;
-
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"scUnkDone");
-#endif
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
@@ -5351,22 +4945,6 @@ HGLOBAL Tokenize_EM
     LPTOKEN      lptkCSNxt;         // Ptr to next token on the CS stack
     SF_FCNS      SF_Fcns;           // Temp value in case lpSF_Fcns is NULL
 
-////LCLODS ("About to enter <Tokenize_EM>\r\n");
-
-    // Avoid re-entrant code
-    EnterCriticalSection (&CSOTokenize);
-
-////LCLODS ("Entering <Tokenize_EM>\r\n");
-
-#ifdef DEBUG
-    // Check for re-entrant
-    if (gInUse)
-        DbgBrk ();          // #ifdef DEBUG
-    else
-        // Mark as now in use
-        gInUse++;
-#endif
-
 __try
 {
     // Check for lpSF_Fcns NULL
@@ -5407,7 +4985,7 @@ __try
     //   via a system command, in which case there is
     //   no PTD for that thread.
     tkLocalVars.hGlbToken = DbgGlobalAlloc (GHND, DEF_TOKEN_SIZE * sizeof (TOKEN));
-    if (!tkLocalVars.hGlbToken)
+    if (tkLocalVars.hGlbToken EQ NULL)
     {
         // Mark as no caret
         uChar = NEG1U;
@@ -5437,7 +5015,7 @@ __try
     // Allocate storage for hGlbNum
     tkLocalVars.hGlbNum =
       DbgGlobalAlloc (GHND, tkLocalVars.iNumLim * sizeof (char));
-    if (!tkLocalVars.hGlbNum)
+    if (tkLocalVars.hGlbNum EQ NULL)
         goto ERROR_EXIT;
 
     // Set initial limit for hGlbStr
@@ -5446,12 +5024,11 @@ __try
     // Allocate storage for hGlbStr
     tkLocalVars.hGlbStr =
       DbgGlobalAlloc (GHND, tkLocalVars.iStrLim * sizeof (APLCHAR));
-    if (!tkLocalVars.hGlbStr)
+    if (tkLocalVars.hGlbStr EQ NULL)
         goto ERROR_EXIT;
 
 #if (defined (DEBUG)) && (defined (EXEC_TRACE))
     // Display the tokens so far
-    DbgMsgW (L"*** Tokenize_EM Start");
     DisplayTokens (tkLocalVars.hGlbToken);
 #endif
 
@@ -5569,12 +5146,12 @@ __try
         SetTokenStatesTK (&tkLocalVars, fsaActTableTK[tkLocalVars.State[0]][colIndex].iNewState);
 
         // Check for primary action
-        if (fnAction1_EM
+        if (fnAction1_EM NE NULL
          && !(*fnAction1_EM) (&tkLocalVars))
             goto ERROR_EXIT;
 
         // Check for secondary action
-        if (fnAction2_EM
+        if (fnAction2_EM NE NULL
          && !(*fnAction2_EM) (&tkLocalVars))
             goto ERROR_EXIT;
 
@@ -5612,7 +5189,7 @@ __try
 
                 uNext = (UINT) (tkLocalVars.lptkNext - tkLocalVars.lptkStart);
 
-                if (tkLocalVars.lpHeader)
+                if (tkLocalVars.lpHeader NE NULL)
                 {
                     // We no longer need this ptr
                     MyGlobalUnlock (tkLocalVars.hGlbToken);
@@ -5669,9 +5246,9 @@ ERROR_EXIT:
         (*lpErrHandFn) (lpMemPTD->lpwszErrorMessage, lpwszLine, uErrorCharIndex);
     } // End IF
 
-    if (tkLocalVars.hGlbToken)
+    if (tkLocalVars.hGlbToken NE NULL)
     {
-        if (tkLocalVars.lpHeader)
+        if (tkLocalVars.lpHeader NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (tkLocalVars.hGlbToken);
@@ -5699,13 +5276,13 @@ FREED_EXIT:
 #endif
 
     // Free the global memory:  hGlbNum
-    if (tkLocalVars.hGlbNum)
+    if (tkLocalVars.hGlbNum NE NULL)
     {
         DbgGlobalFree (tkLocalVars.hGlbNum); tkLocalVars.hGlbNum = NULL;
     } // End IF
 
     // Free the global memory:  hGlbStr
-    if (tkLocalVars.hGlbStr)
+    if (tkLocalVars.hGlbStr NE NULL)
     {
         DbgGlobalFree (tkLocalVars.hGlbStr); tkLocalVars.hGlbStr = NULL;
     } // End IF
@@ -5716,7 +5293,7 @@ FREED_EXIT:
         lpMemPTD->lptkCSNxt = lptkCSNxt;
 } __except (CheckException (GetExceptionInformation (), L"Tokenize_EM"))
 {
-    if (tkLocalVars.hGlbToken)
+    if (tkLocalVars.hGlbToken NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (tkLocalVars.hGlbToken);
@@ -5730,42 +5307,28 @@ FREED_EXIT:
     } // End IF
 
     // Free the global memory:  hGlbNum
-    if (tkLocalVars.hGlbNum)
+    if (tkLocalVars.hGlbNum NE NULL)
     {
         DbgGlobalFree (tkLocalVars.hGlbNum); tkLocalVars.hGlbNum = NULL;
     } // End IF
 
     // Free the global memory:  hGlbStr
-    if (tkLocalVars.hGlbStr)
+    if (tkLocalVars.hGlbStr NE NULL)
     {
         DbgGlobalFree (tkLocalVars.hGlbStr); tkLocalVars.hGlbStr = NULL;
     } // End IF
 #ifdef DEBUG
-    // Mark as no longer in use
-    gInUse--;
+    // Ensure numeric length has been reset
+    Assert (tkLocalVars.iNumLen EQ 0);
 #endif
-////LCLODS ("Exiting  <Tokenize_EM>\r\n");
-
-    // Release the Critical Section
-    LeaveCriticalSection (&CSOTokenize);
-
     // Pass on the exception
     RaiseException (MyGetExceptionCode (), 0, 0, NULL);
 } // End __try/__except
 
 #ifdef DEBUG
     // Ensure numeric length has been reset
-    if (tkLocalVars.iNumLen NE 0)
-        DbgBrk ();          // #ifdef DEBUG
-    // Mark as no longer in use
-    gInUse--;
+    Assert (tkLocalVars.iNumLen EQ 0);
 #endif
-
-////LCLODS ("Exiting  <Tokenize_EM>\r\n");
-
-    // Release the Critical Section
-    LeaveCriticalSection (&CSOTokenize);
-
     return tkLocalVars.hGlbToken;
 } // End Tokenize_EM
 #undef  APPEND_NAME
@@ -5851,6 +5414,22 @@ void Untokenize
         case TKT_VARARRAY:          // Array of data (data is HGLOBAL)
             // Free the array and all elements of it
             if (FreeResultGlobalVar (lpToken->tkData.tkGlbData))
+            {
+#ifdef DEBUG_ZAP
+                dprintfWL9 (L"**Zapping in Untokenize: %p (%S#%d)",
+                          ClrPtrTypeDir (lpToken->tkData.tkGlbData),
+                          FNLN);
+#endif
+                lpToken->tkData.tkGlbData = NULL;
+            } // End IF
+
+            break;
+
+        case TKT_FCNDFN:            // Anonymous UDFO
+        case TKT_OP1DFN:            // Anonymous monadic UDFO
+        case TKT_OP2DFN:            // Anonymous dyadic UDFO
+            // Free the function and all elements of it
+            if (FreeResultGlobalDfn (lpToken->tkData.tkGlbData))
             {
 #ifdef DEBUG_ZAP
                 dprintfWL9 (L"**Zapping in Untokenize: %p (%S#%d)",

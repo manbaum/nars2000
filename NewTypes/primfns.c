@@ -196,17 +196,20 @@ char TokenTypeFV
         case TKT_FCNNAMED:
         case TKT_FILLJOT:
         case TKT_FCNAFO:
+        case TKT_FCNDFN:
             return 'F';
 
         case TKT_OP1IMMED:
         case TKT_OP1NAMED:
         case TKT_OPJOTDOT:
         case TKT_OP1AFO:
+        case TKT_OP1DFN:
             return '1';
 
         case TKT_OP2IMMED:
         case TKT_OP2NAMED:
         case TKT_OP2AFO:
+        case TKT_OP2DFN:
             return '2';
 
         case TKT_OP3IMMED:
@@ -2333,6 +2336,9 @@ HGLOBAL CopyArray_EM_PTB
                     case TKT_FCNAFO:
                     case TKT_OP1AFO:
                     case TKT_OP2AFO:
+                    case TKT_FCNDFN:
+                    case TKT_OP1DFN:
+                    case TKT_OP2DFN:
                         // Get the item global memory handle
                         hGlbItm = lpMemFcn->tkToken.tkData.tkGlbData;
 
@@ -3742,6 +3748,9 @@ UBOOL IsTknAFO
 
         case TKT_OP1NAMED:
         case TKT_OP2NAMED:
+        case TKT_FCNDFN:
+        case TKT_OP1DFN:
+        case TKT_OP2DFN:
             // Get the global memory handle
             hGlbFcn = GetGlbHandle (lpToken);
 
@@ -3842,6 +3851,9 @@ UBOOL IsTknTypeFcnOpr
         case TKT_FCNAFO:
         case TKT_OP1AFO:
         case TKT_OP2AFO:
+        case TKT_FCNDFN:
+        case TKT_OP1DFN:
+        case TKT_OP2DFN:
             return TRUE;
 
         default:

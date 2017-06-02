@@ -153,11 +153,11 @@ typedef enum tagTOKEN_TYPES
  TKT_LSTIMMED      ,        // 4E: List in brackets, single element, immed (data is immediate)
  TKT_LSTARRAY      ,        // 4F: List in brackets, single element, array (data is HGLOBAL)
  TKT_LSTMULT       ,        // 50: List in brackets, multiple elements     (data is HGLOBAL)
- TKT_FCNARRAY      ,        // 51: Array of functions and/or operators     (data is HGLOBAL)
- TKT_FCNNAMED      ,        // 52: A named function                        (data is LPSYMENTRY)
- TKT_AXISIMMED     ,        // 53: An immediate axis specification         (data is immediate)
- TKT_AXISARRAY     ,        // 54: An array of  ...                        (data is HGLOBAL)
- TKT_OP1NAMED      ,        // 55: A named monadic primitive operator      (data is LPSYMENTRY)
+ TKT_AXISIMMED     ,        // 51: An immediate axis specification         (data is immediate)
+ TKT_AXISARRAY     ,        // 52: An array of  ...                        (data is HGLOBAL)
+ TKT_FCNARRAY      ,        // 53: Array of functions and/or operators     (data is HGLOBAL)
+ TKT_FCNNAMED      ,        // 54: A named UDFO                            (data is LPSYMENTRY)
+ TKT_OP1NAMED      ,        // 55: ...     monadic UDFO                    (data is LPSYMENTRY)
  TKT_OP2NAMED      ,        // 56: ...     dyadic  ...
  TKT_OP3NAMED      ,        // 57: ...     ambiguous ...
  TKT_STRNAMED      ,        // 58: A named strand
@@ -165,17 +165,20 @@ typedef enum tagTOKEN_TYPES
  TKT_CS_EOL        ,        // 5A: Control structure:  Special token (cs_yyparse only)
  TKT_CS_ENS        ,        // 5B: Control structure:  Special token (cs_yyparse only)
  TKT_FILLJOT       ,        // 5C: Fill jot
-                            // 5D-7F:  Available entries (7 bits)
+ TKT_FCNDFN        ,        // 5D: An unnamed UDFO                            (data is LPSYMENTRY)
+ TKT_OP1DFN        ,        // 5E: ...        monadic UDFO                    (data is HGLOBAL)
+ TKT_OP2DFN        ,        // 5F: ...        dyadic  ...
+ TKT_LENGTH                 // 60-7F:  Available entries (7 bits)
 } TOKEN_TYPES;
 
 // N.B.:  Whenever changing the above enum (TOKEN_TYPES),
 //   be sure to make a corresponding change to
 //   <Untokenize> and <AppendNewToken_EM> in <tokenize.c>,
-//   <pl_yylex> in <pl_parse.y>,
+//   <pl_yylexCOM> in <parseline.c>,
 //   <MakeVarStrand_EM_YY> and <CopyToken_EM> in <strand.c>,
 //   <GetTokenTypeName> in <dispdbg.c>,
 //   <GetNameType> in <assign.c>,
-//   <tokenSo> in <parseline.c>,
+//   <tokenSo> in <tokenso.h>,
 //   and <TokenTypeFV>, <IsTknNamed>, <IsTknNamedVar>, and <IsTknImmed> in <primfns.c>.
 
 

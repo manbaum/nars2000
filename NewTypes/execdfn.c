@@ -2423,6 +2423,9 @@ UBOOL InitFcnSTEs
 
                 case TKT_FCNARRAY:
                 case TKT_FCNAFO:
+                case TKT_FCNDFN:
+                case TKT_OP1DFN:
+                case TKT_OP2DFN:
                 {
                     HGLOBAL      hGlbDfnHdr;
                     LPDFN_HEADER lpMemDfnHdr;
@@ -2528,6 +2531,9 @@ UBOOL InitFcnSTEs
                 case TKT_FCNAFO:
                 case TKT_OP1AFO:
                 case TKT_OP2AFO:
+                case TKT_FCNDFN:
+                case TKT_OP1DFN:
+                case TKT_OP2DFN:
                     // Increment the RefCnt
                     DbgIncrRefCntDir_PTB (GetGlbHandle (&lpYYArg->tkToken));    // EXAMPLE:  UDFO[X] A
 

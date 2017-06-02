@@ -4174,7 +4174,6 @@ int PASCAL WinMain
     InitializeCriticalSection (&CSORsrc);
 #endif
     InitializeCriticalSection (&CSOPL);
-    InitializeCriticalSection (&CSOTokenize);
     InitializeCriticalSection (&CSOHshTab);
     InitializeCriticalSection (&CSOPthread);
     InitializeCriticalSection (&CSOCombPNI);
@@ -4325,7 +4324,6 @@ EXIT4:
     DeleteCriticalSection (&CSOCombPNI);
     DeleteCriticalSection (&CSOPthread);
     DeleteCriticalSection (&CSOHshTab);
-    DeleteCriticalSection (&CSOTokenize);
     DeleteCriticalSection (&CSOPL);
 #if RESDEBUG
     DeleteCriticalSection (&CSORsrc);

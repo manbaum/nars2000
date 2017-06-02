@@ -350,6 +350,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
 
         case TKT_FCNARRAY:
         case TKT_FCNAFO:
+        case TKT_FCNDFN:
             // Get the global memory handle
             hGlbFcn = GetGlbDataToken (&lpYYFcnStr->tkToken);
 
@@ -445,6 +446,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
 
         case TKT_OP1IMMED:
         case TKT_OP3IMMED:
+        case TKT_OP1DFN:
             lpYYRes =
               ExecOp1_EM_YY (lptkLftArg,    // Ptr to left arg token
                              lpYYFcnStr,    // Ptr to operator function strand
@@ -453,6 +455,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
 
         case TKT_OP2IMMED:
         case TKT_OPJOTDOT:
+        case TKT_OP2DFN:
             lpYYRes =
               ExecOp2_EM_YY (lptkLftArg,    // Ptr to left arg token
                              lpYYFcnStr,    // Ptr to operator function strand
@@ -1276,6 +1279,9 @@ LPPL_YYSTYPE ExecFuncStrLine_EM_YY
         case TKT_FCNAFO:
         case TKT_OP1AFO:
         case TKT_OP2AFO:
+        case TKT_FCNDFN:
+        case TKT_OP1DFN:
+        case TKT_OP2DFN:
                                 // 1.  User-defined operator
                                 //   e.g., Z{is}L (F FOO G) R
                                 //         +foo- 1 2

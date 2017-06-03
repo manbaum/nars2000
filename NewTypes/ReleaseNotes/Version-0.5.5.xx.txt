@@ -1,6 +1,17 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1768 -- Version 0.5.5.xx
+--------------------------------
+
+* Change Semantics Of Set Function Timestamp
+
+Directory branches/bsmith/NewTypes:
+
+QF_FX.C:
+  Change the semantics of the Set Function Timestamp function as per the wiki.
+
+
 Build #1767 -- Version 0.5.5.xx
 --------------------------------
 

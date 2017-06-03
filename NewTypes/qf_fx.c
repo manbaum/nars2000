@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -469,7 +469,7 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $SysFnDydFX_EM_YY
 //
-//  Dyadic []FX -- Set Fcn Properties
+//  Dyadic []FX -- Fix Function and Set Properties
 //***************************************************************************
 
 #ifdef DEBUG
@@ -486,55 +486,58 @@ LPPL_YYSTYPE SysFnDydFX_EM_YY
 
 {
     APLSTYPE          aplTypeLft,               // Left  arg storage type
-                      aplTypeRht;               // Right ...
-    APLNELM           aplNELMLft,               // Left arg  NELM
-                      aplNELMRht;               // Right ...
-    APLRANK           aplRankLft,               // Left arg Rank
-                      aplRankRht;               // Right ...
-    HGLOBAL           hGlbLft,                  // Left  arg global memory handle
-                      hGlbRht,                  // Right ...
-                      hGlbRes,                  // Result ...
-                      hGlbDfnHdr;               // ...       item global memory handle
+                      aplTypeFix;               // Fixed ...
+    APLNELM           aplNELMLft;               // Left arg NELM
+    APLRANK           aplRankLft;               // Left arg Rank
+    HGLOBAL           hGlbLft = NULL,           // Left  arg global memory handle
+                      hGlbFix = NULL,           // Fixed ...
+                      hGlbDfnHdr;               // Function  ...
     LPDFN_HEADER      lpMemDfnHdr = NULL;       // Ptr to UDFO header
     LPFCNARRAY_HEADER lpMemFcnHdr = NULL;       // ...    FCNARRAY ...
     LPVARARRAY_HEADER lpMemHdrLft = NULL,       // Ptr to left  arg header
-                      lpMemHdrRht = NULL;       // ...    right ...
+                      lpMemHdrFix = NULL;       // ...    fixed ...
     APLLONGEST        aplLongestLft,            // Left arg immediate value
-                      aplLongestRht;            // Right ...
+                      aplLongestFix;            // Fixed ...
     LPAPLINT          lpMemLft;                 // Ptr to left  arg global memory
-    LPAPLCHAR         lpMemRht;                 // ...    right ...
+    LPAPLCHAR         lpMemFix;                 // ...    fixed ...
     APLUINT           uLft;                     // Loop counter
-    LPPL_YYSTYPE      lpYYRes = NULL;           // Ptr to the result
-    LPSYMENTRY        lpSymEntry;               // Ptr to SYMENTRY of the right arg fcn name
-    STFLAGS           stFlags = {0};            // STE flags for the right arg
+    LPPL_YYSTYPE      lpYYRes;                  // Ptr to the result
+    LPSYMENTRY        lpSymEntry;               // Ptr to SYMENTRY of the fixed arg fcn name
+    STFLAGS           stFlags = {0};            // STE flags for the fixed arg
     SYSTEMTIME        systemTimeInp,            // Save area for the left arg time as input
-                      systemTimeOut,            // ...                                output
-                      systemTimeRes;            // ...                                result
-    FILETIME          ftFix,                    // File time from systemTimeInp
-                      ftLocalTime;              // ...       for the result
+                      systemTimeOut;            // ...                                output
+    FILETIME          ftFix;                    // File time from systemTimeInp
     UBOOL             bRet;                     // TRUE iff the left arg item is valid
+    LPTOKEN           lptkFixArg;               // Ptr to fixed argument
+
+    // Fix the function with the current timestamp
+    lpYYRes = SysFnMonFX_EM_YY (lptkFunc, lptkRhtArg, lptkAxis);
+
+    // Check for error
+    if (lpYYRes EQ NULL)
+        goto ERROR_EXIT;
+
+    // Copy the ptr to the token
+    lptkFixArg = &lpYYRes->tkToken;
 
     // Get the attributes (Type, NELM, and Rank)
-    //   of the left & right args
+    //   of the left & fixed args
     AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+    AttrsOfToken (lptkFixArg, &aplTypeFix, NULL       , NULL       , NULL);
 
-    // Check for LEFT & RIGHT RANK ERRORs
-    if (IsMultiRank (aplRankRht))
-        goto RIGHT_RANK_EXIT;
-
+    // Check for LEFT RANK ERROR
     if (IsMultiRank (aplRankLft))
         goto LEFT_RANK_EXIT;
 
-    // Check for RIGHT DOMAIN ERROR
-    if (!IsSimpleChar (aplTypeRht))
-        goto RIGHT_DOMAIN_EXIT;
+    // Check for numeric result
+    if (IsSimpleInt (aplTypeFix))
+        goto NORMAL_EXIT;
 
-    // Get left & right arg's global ptrs
+    // Get left & fixed arg's global ptrs
     aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
+    aplLongestFix = GetGlbPtrs_LOCK (lptkFixArg, &hGlbFix, &lpMemHdrFix);
 
-    // If the left arg an immediate, ...
+    // If the left arg is an immediate, ...
     if (lpMemHdrLft EQ NULL)
         // Point to the data
         lpMemLft = (LPAPLINT)  &aplLongestLft;
@@ -542,13 +545,13 @@ LPPL_YYSTYPE SysFnDydFX_EM_YY
         // Skip over the header to the data
         lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
 
-    // If the right arg an immediate, ...
-    if (lpMemHdrRht EQ NULL)
+    // If the fixed arg is an immediate, ...
+    if (lpMemHdrFix EQ NULL)
         // Point to the data
-        lpMemRht = (LPAPLCHAR) &aplLongestRht;
+        lpMemFix = (LPAPLCHAR) &aplLongestFix;
     else
         // Skip over the header to the data
-        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+        lpMemFix = VarArrayDataFmBase (lpMemHdrFix);
 
     // Set the flags for what we're looking up
     stFlags.Inuse   = TRUE;
@@ -556,13 +559,13 @@ LPPL_YYSTYPE SysFnDydFX_EM_YY
 
     // Look up the function name
     lpSymEntry =
-      SymTabLookupName (lpMemRht, &stFlags);
+      SymTabLookupName (lpMemFix, &stFlags);
 
     // Check for error
     if (lpSymEntry EQ NULL)
-        goto RIGHT_DOMAIN_EXIT;
+        goto FIXED_DOMAIN_EXIT;
 
-    // Ensure the right arg names a function or operator
+    // Ensure the fixed arg names a function or operator
     // Split cases based upon the Name Type
     switch (lpSymEntry->stFlags.stNameType)
     {
@@ -574,14 +577,14 @@ LPPL_YYSTYPE SysFnDydFX_EM_YY
         case NAMETYPE_OP3:
             // Check for user-defined functions
             if (lpSymEntry->stFlags.ObjName NE OBJNAME_USR)
-                goto RIGHT_DOMAIN_EXIT;
+                goto FIXED_DOMAIN_EXIT;
             break;
 
         default:
-            goto RIGHT_DOMAIN_EXIT;
+            goto FIXED_DOMAIN_EXIT;
     } // End SWITCH
 
-    // Get the right arg function's global memory handle
+    // Get the fixed arg function's global memory handle
     hGlbDfnHdr = lpSymEntry->stData.stGlbData;
 
     Assert (hGlbDfnHdr NE NULL);
@@ -676,16 +679,6 @@ LPPL_YYSTYPE SysFnDydFX_EM_YY
                 // Lock the memory to get a ptr to it
                 lpMemFcnHdr = MyGlobalLockFcn (hGlbDfnHdr);
 
-                // If the result is to use local time (instead of UTC), ...
-                if (OptionFlags.bUseLocalTime)
-                    // Convert the last mod time to local time for the result
-                    FileTimeToLocalFileTime (&lpMemFcnHdr->ftLastMod, &ftLocalTime);
-                else
-                    // Copy last mod time as local Time for the result
-                    ftLocalTime = lpMemFcnHdr->ftLastMod;
-                // Convert the local time to system time so we can return it as the (shy) result
-                FileTimeToSystemTime (&ftLocalTime, &systemTimeRes);
-
                 // Set the new fix time
                 lpMemFcnHdr->ftCreation =
                 lpMemFcnHdr->ftLastMod  = ftFix;
@@ -698,16 +691,6 @@ LPPL_YYSTYPE SysFnDydFX_EM_YY
                 // Lock the memory to get a ptr to it
                 lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
-                // If the result is to use local time (instead of UTC), ...
-                if (OptionFlags.bUseLocalTime)
-                    // Convert the last mod time to local time for the result
-                    FileTimeToLocalFileTime (&lpMemDfnHdr->ftLastMod, &ftLocalTime);
-                else
-                    // Copy last mod time as local Time for the result
-                    ftLocalTime = lpMemDfnHdr->ftLastMod;
-                // Convert the local time to system time so we can return it as the (shy) result
-                FileTimeToSystemTime (&ftLocalTime, &systemTimeRes);
-
                 // Set the new fix time
                 lpMemDfnHdr->ftCreation =
                 lpMemDfnHdr->ftLastMod  = ftFix;
@@ -716,23 +699,6 @@ LPPL_YYSTYPE SysFnDydFX_EM_YY
                 MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
             } else
                 DbgStop ();         // We should never get here
-
-            // Allocate space for a timestamp
-            hGlbRes = TimestampAllocate (&systemTimeRes);
-
-            // Check for error
-            if (hGlbRes EQ NULL)
-                goto WSFULL_EXIT;
-
-            // Allocate a new YYRes
-            lpYYRes = YYAlloc ();
-
-            // Fill in the result token
-            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-            lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
-            lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
-            lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
             break;
 
@@ -747,11 +713,6 @@ LEFT_RANK_EXIT:
                                lptkLftArg);
     goto ERROR_EXIT;
 
-RIGHT_RANK_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                               lptkRhtArg);
-    goto ERROR_EXIT;
-
 LEFT_LENGTH_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
                                lptkLftArg);
@@ -762,17 +723,20 @@ LEFT_DOMAIN_EXIT:
                                lptkLftArg);
     goto ERROR_EXIT;
 
-RIGHT_DOMAIN_EXIT:
+FIXED_DOMAIN_EXIT:
+#ifdef DEBUG
+    DbgStop ();             // This should never occur
+#endif
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkRhtArg);
-    goto ERROR_EXIT;
-
-WSFULL_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
     goto ERROR_EXIT;
 
 ERROR_EXIT:
+    if (lpYYRes NE NULL)
+    {
+        // Free the result
+        FreeResult (lpYYRes); lpYYRes = NULL;
+    } // End IF
 NORMAL_EXIT:
     if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
     {
@@ -780,10 +744,10 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
     } // End IF
 
-    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
+    if (hGlbFix NE NULL && lpMemHdrFix NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
+        MyGlobalUnlock (hGlbFix); lpMemHdrFix = NULL;
     } // End IF
 
     return lpYYRes;

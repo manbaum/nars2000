@@ -44,10 +44,6 @@ LPPL_YYSTYPE SysFnFX_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
-
     //***************************************************************
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
@@ -473,7 +469,7 @@ NORMAL_EXIT:
 //***************************************************************************
 //  $SysFnDydFX_EM_YY
 //
-//  Dyadic []FX -- ERROR
+//  Dyadic []FX -- Set Fcn Properties
 //***************************************************************************
 
 #ifdef DEBUG
@@ -489,7 +485,308 @@ LPPL_YYSTYPE SysFnDydFX_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
+    APLSTYPE          aplTypeLft,               // Left  arg storage type
+                      aplTypeRht;               // Right ...
+    APLNELM           aplNELMLft,               // Left arg  NELM
+                      aplNELMRht;               // Right ...
+    APLRANK           aplRankLft,               // Left arg Rank
+                      aplRankRht;               // Right ...
+    HGLOBAL           hGlbLft,                  // Left  arg global memory handle
+                      hGlbRht,                  // Right ...
+                      hGlbRes,                  // Result ...
+                      hGlbDfnHdr;               // ...       item global memory handle
+    LPDFN_HEADER      lpMemDfnHdr = NULL;       // Ptr to UDFO header
+    LPFCNARRAY_HEADER lpMemFcnHdr = NULL;       // ...    FCNARRAY ...
+    LPVARARRAY_HEADER lpMemHdrLft = NULL,       // Ptr to left  arg header
+                      lpMemHdrRht = NULL;       // ...    right ...
+    APLLONGEST        aplLongestLft,            // Left arg immediate value
+                      aplLongestRht;            // Right ...
+    LPAPLINT          lpMemLft;                 // Ptr to left  arg global memory
+    LPAPLCHAR         lpMemRht;                 // ...    right ...
+    APLUINT           uLft;                     // Loop counter
+    LPPL_YYSTYPE      lpYYRes = NULL;           // Ptr to the result
+    LPSYMENTRY        lpSymEntry;               // Ptr to SYMENTRY of the right arg fcn name
+    STFLAGS           stFlags = {0};            // STE flags for the right arg
+    SYSTEMTIME        systemTimeInp,            // Save area for the left arg time as input
+                      systemTimeOut,            // ...                                output
+                      systemTimeRes;            // ...                                result
+    FILETIME          ftFix,                    // File time from systemTimeInp
+                      ftLocalTime;              // ...       for the result
+    UBOOL             bRet;                     // TRUE iff the left arg item is valid
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the left & right args
+    AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+
+    // Check for LEFT & RIGHT RANK ERRORs
+    if (IsMultiRank (aplRankRht))
+        goto RIGHT_RANK_EXIT;
+
+    if (IsMultiRank (aplRankLft))
+        goto LEFT_RANK_EXIT;
+
+    // Check for RIGHT DOMAIN ERROR
+    if (!IsSimpleChar (aplTypeRht))
+        goto RIGHT_DOMAIN_EXIT;
+
+    // Get left & right arg's global ptrs
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
+
+    // If the left arg an immediate, ...
+    if (lpMemHdrLft EQ NULL)
+        // Point to the data
+        lpMemLft = (LPAPLINT)  &aplLongestLft;
+    else
+        // Skip over the header to the data
+        lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
+
+    // If the right arg an immediate, ...
+    if (lpMemHdrRht EQ NULL)
+        // Point to the data
+        lpMemRht = (LPAPLCHAR) &aplLongestRht;
+    else
+        // Skip over the header to the data
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+
+    // Set the flags for what we're looking up
+    stFlags.Inuse   = TRUE;
+    stFlags.ObjName = OBJNAME_USR;
+
+    // Look up the function name
+    lpSymEntry =
+      SymTabLookupName (lpMemRht, &stFlags);
+
+    // Check for error
+    if (lpSymEntry EQ NULL)
+        goto RIGHT_DOMAIN_EXIT;
+
+    // Ensure the right arg names a function or operator
+    // Split cases based upon the Name Type
+    switch (lpSymEntry->stFlags.stNameType)
+    {
+        case NAMETYPE_FN0:
+        case NAMETYPE_FN12:
+        case NAMETYPE_TRN:
+        case NAMETYPE_OP1:
+        case NAMETYPE_OP2:
+        case NAMETYPE_OP3:
+            // Check for user-defined functions
+            if (lpSymEntry->stFlags.ObjName NE OBJNAME_USR)
+                goto RIGHT_DOMAIN_EXIT;
+            break;
+
+        default:
+            goto RIGHT_DOMAIN_EXIT;
+    } // End SWITCH
+
+    // Get the right arg function's global memory handle
+    hGlbDfnHdr = lpSymEntry->stData.stGlbData;
+
+    Assert (hGlbDfnHdr NE NULL);
+
+    // Split cases based upon the left arg length
+    switch (aplNELMLft)
+    {
+        case 7:                                         // Fix time
+            // Check for LEFT DOMAIN ERROR
+            if (!IsNumeric (aplTypeLft))
+                goto LEFT_DOMAIN_EXIT;
+
+            // Copy the left arg to systemTime
+            for (uLft = 0; uLft < aplNELMLft; uLft++)
+            {
+                APLINT aplInteger;
+
+                // Attemtp to convert the next item in the left arg to an integer
+                aplInteger = ConvertToInteger_SCT (aplTypeLft, lpMemLft, uLft, &bRet);
+
+                if (!bRet || aplInteger NE LOWORD (aplInteger))
+                    goto LEFT_DOMAIN_EXIT;
+
+                // Save the value in the corresponding position in systemTime
+                switch (uLft)
+                {
+                    case 0:
+                        systemTimeInp.wYear         = LOWORD (aplInteger);
+
+                        break;
+
+                    case 1:
+                        systemTimeInp.wMonth        = LOWORD (aplInteger);
+
+                        break;
+
+                    case 2:
+                        systemTimeInp.wDay          = LOWORD (aplInteger);
+
+                        break;
+
+                    case 3:
+                        systemTimeInp.wHour         = LOWORD (aplInteger);
+
+                        break;
+
+                    case 4:
+                        systemTimeInp.wMinute       = LOWORD (aplInteger);
+
+                        break;
+
+                    case 5:
+                        systemTimeInp.wSecond       = LOWORD (aplInteger);
+
+                        break;
+
+                    case 6:
+                        systemTimeInp.wMilliseconds = LOWORD (aplInteger);
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } // End FOR
+
+            // Validate the left arg by converting it to FileTime and back
+            if (SystemTimeToFileTime (&systemTimeInp, &ftFix) EQ 0)
+                goto LEFT_DOMAIN_EXIT;
+
+            if (FileTimeToSystemTime (&ftFix, &systemTimeOut) EQ 0)
+                goto LEFT_DOMAIN_EXIT;
+
+            // Compare the two system times
+            if (systemTimeInp.wYear         NE systemTimeOut.wYear
+             || systemTimeInp.wMonth        NE systemTimeOut.wMonth
+             || systemTimeInp.wDay          NE systemTimeOut.wDay
+             || systemTimeInp.wHour         NE systemTimeOut.wHour
+             || systemTimeInp.wMinute       NE systemTimeOut.wMinute
+             || systemTimeInp.wSecond       NE systemTimeOut.wSecond
+             || systemTimeInp.wMilliseconds NE systemTimeOut.wMilliseconds)
+                goto LEFT_DOMAIN_EXIT;
+
+            // If the incoming time is local (instead of UTC), ...
+            if (OptionFlags.bUseLocalTime)
+                // Convert the incoming time from local to file time (UTC)
+                LocalFileTimeToFileTime (&ftFix, &ftFix);
+
+            // Split cases based upon the type
+            if (IsGlbTypeFcnDir_PTB (hGlbDfnHdr))
+            {
+                // Lock the memory to get a ptr to it
+                lpMemFcnHdr = MyGlobalLockFcn (hGlbDfnHdr);
+
+                // If the result is to use local time (instead of UTC), ...
+                if (OptionFlags.bUseLocalTime)
+                    // Convert the last mod time to local time for the result
+                    FileTimeToLocalFileTime (&lpMemFcnHdr->ftLastMod, &ftLocalTime);
+                else
+                    // Copy last mod time as local Time for the result
+                    ftLocalTime = lpMemFcnHdr->ftLastMod;
+                // Convert the local time to system time so we can return it as the (shy) result
+                FileTimeToSystemTime (&ftLocalTime, &systemTimeRes);
+
+                // Set the new fix time
+                lpMemFcnHdr->ftCreation =
+                lpMemFcnHdr->ftLastMod  = ftFix;
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbDfnHdr); lpMemFcnHdr = NULL;
+            } else
+            if (IsGlbTypeDfnDir_PTB (hGlbDfnHdr))
+            {
+                // Lock the memory to get a ptr to it
+                lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
+
+                // If the result is to use local time (instead of UTC), ...
+                if (OptionFlags.bUseLocalTime)
+                    // Convert the last mod time to local time for the result
+                    FileTimeToLocalFileTime (&lpMemDfnHdr->ftLastMod, &ftLocalTime);
+                else
+                    // Copy last mod time as local Time for the result
+                    ftLocalTime = lpMemDfnHdr->ftLastMod;
+                // Convert the local time to system time so we can return it as the (shy) result
+                FileTimeToSystemTime (&ftLocalTime, &systemTimeRes);
+
+                // Set the new fix time
+                lpMemDfnHdr->ftCreation =
+                lpMemDfnHdr->ftLastMod  = ftFix;
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+            } else
+                DbgStop ();         // We should never get here
+
+            // Allocate space for a timestamp
+            hGlbRes = TimestampAllocate (&systemTimeRes);
+
+            // Check for error
+            if (hGlbRes EQ NULL)
+                goto WSFULL_EXIT;
+
+            // Allocate a new YYRes
+            lpYYRes = YYAlloc ();
+
+            // Fill in the result token
+            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+            lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
+            lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+            lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+            break;
+
+        default:
+            goto LEFT_LENGTH_EXIT;
+    } // End SWITCH
+
+    goto NORMAL_EXIT;
+
+LEFT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+LEFT_LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+LEFT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+NORMAL_EXIT:
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
+    } // End IF
+
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
+    } // End IF
+
+    return lpYYRes;
 } // End SysFnDydFX_EM_YY
 #undef  APPEND_NAME
 

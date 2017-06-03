@@ -1743,7 +1743,7 @@ typedef struct tagOPTIONFLAGS
          bUnderbarToLowercase:1,    // 00000002:  ...      Paste of underbar letters translates to lowercase
          bNewTabOnClear      :1,    // 00000004:  ...      )CLEAR creates a new tab
          bNewTabOnLoad       :1,    // 00000008:  ...      )LOAD  ...
-         bUseLocalTime       :1,    // 00000010:  ...      LocalTime is used instead of SystemTime (GMT)
+         bUseLocalTime       :1,    // 00000010:  ...      LocalTime is used instead of SystemTime (UTC)
          bBackupOnLoad       :1,    // 00000020:  ...      Make a backup copy on all )LOADs
          bBackupOnSave       :1,    // 00000040:  ...      Make a backup copy on all )SAVEs
          bNoCopyrightMsg     :1,    // 00000080:  ...      Suppress the copright msg at startup

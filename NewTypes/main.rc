@@ -902,7 +902,7 @@ BEGIN
                     IDC_USER_PREFS_XB_NEWTABONCLEAR      , 10, 52,260, 10
     AUTOCHECKBOX    "New tab on )LOAD",
                     IDC_USER_PREFS_XB_NEWTABONLOAD       , 10, 65,260, 10
-    AUTOCHECKBOX    "Use local time (instead of GMT)",
+    AUTOCHECKBOX    "Use local time (instead of UTC)",
                     IDC_USER_PREFS_XB_USELOCALTIME       , 10, 78,260, 10
     AUTOCHECKBOX    "Make backup of workspace on )LOAD",
                     IDC_USER_PREFS_XB_BACKUPONLOAD       , 10, 91,260, 10

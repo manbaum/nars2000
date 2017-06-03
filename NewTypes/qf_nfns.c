@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1276,7 +1276,7 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
                 case NPROP_LASTMOD:                     // 3:  Last modification time (sensitive to bUseLocalTime) (numeric vector)
                     // Get the file's last write time
 
-                    // If we're to use local time (instead of GMT), ...
+                    // If we're to use local time (instead of UTC), ...
                     if (OptionFlags.bUseLocalTime)
                         // Convert the last mod time to local time
                         FileTimeToLocalFileTime (&fileInfo.ftLastWriteTime, &ftLocalTime);

@@ -36,7 +36,7 @@
 
 
 // System Time Stamp for "1 CLEANSPACE"
-// SAVED 1966-11-27 18.53.59 (GMT-4)
+// SAVED 1966-11-27 18.53.59 (UTC-4)
 SYSTEMTIME cleanspaceTime = {1966,      // Year
                                11,      // Month           (1=Jan)
                                 0,      // Day of the week (0=Sun)

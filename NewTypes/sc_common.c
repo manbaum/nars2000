@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -180,7 +180,7 @@ void DisplaySavedMsg
      LPWCHAR    lpwszVersion)       // Workspace version # (may be NULL)
 
 {
-#define TIMESTAMP_FMT L"SAVED MM/DD/YYYY hh:mm:ss (GMT) (ver 0.00)"
+#define TIMESTAMP_FMT L"SAVED MM/DD/YYYY hh:mm:ss (UTC) (ver 0.00)"
 
     // "+ 1" for the trailing zero
     WCHAR wszTemp[strcountof (TIMESTAMP_FMT) + 1];
@@ -197,7 +197,7 @@ void DisplaySavedMsg
                  systemTime.wHour,
                  systemTime.wMinute,
                  systemTime.wSecond,
-                 bUseLocalTime ? L"" : L" (GMT)");
+                 bUseLocalTime ? L"" : L" (UTC)");
 #ifdef DEBUG
     if (lpwszVersion NE NULL)
         // Append the workspace version

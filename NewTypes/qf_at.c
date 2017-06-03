@@ -702,7 +702,7 @@ LPAPLUINT AttributeFixTime
                     MyGlobalUnlock (hGlbObj); lpMemHdrObj = NULL;
                 } // End IF
 
-                // If we're to use local time (instead of GMT), ...
+                // If we're to use local time (instead of UTC), ...
                 if (OptionFlags.bUseLocalTime)
                     // Convert the last mod time to local time
                     FileTimeToLocalFileTime (&ftLastMod  , &ftLocalTime);

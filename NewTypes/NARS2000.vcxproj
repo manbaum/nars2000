@@ -527,6 +527,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     <ClCompile Include="qf_nc.c" />
     <ClCompile Include="qf_nfns.c" />
     <ClCompile Include="qf_nl.c" />
+    <ClCompile Include="qf_si.c" />
     <ClCompile Include="qf_strace.c" />
     <ClCompile Include="qf_sysid.c" />
     <ClCompile Include="qf_sysver.c" />

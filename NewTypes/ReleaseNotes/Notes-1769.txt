@@ -1,0 +1,17 @@
+Build #1769 -- Version 0.5.5.xx
+--------------------------------
+
+* Implement []SI
+
+Directory branches/bsmith/NewTypes:
+
+COMPRO.H:
+MAKEFILE.INC:
+MAKEFILE.SRC:
+NARS2000.VCXPROJ:
+NARS2000.VCXPROJ.FILTERS:
+SYSVARS.C:
+  Include definition for []SI.
+
+QF_SI.C:
+  Implement []SI.

@@ -76,6 +76,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"lc"       ,      0,      FALSE, TRUE , SysFnLC_EM_YY       , 0              },    // Line Counter
     {WS_UTF16_QUAD L"nnames"   ,      0,      FALSE, FALSE, SysFnNNAMES_EM_YY   , 0              },    // Names of Open Native Files
     {WS_UTF16_QUAD L"nnums"    ,      0,      FALSE, FALSE, SysFnNNUMS_EM_YY    , 0              },    // Tie Numbers of Open Native Files
+    {WS_UTF16_QUAD L"si"       ,      0,      FALSE, FALSE, SysFnSI_EM_YY       , 0              },    // State Indicator
     {WS_UTF16_QUAD L"sysid"    ,      0,      FALSE, FALSE, SysFnSYSID_EM_YY    , 0              },    // System Identifier
     {WS_UTF16_QUAD L"sysver"   ,      0,      FALSE, FALSE, SysFnSYSVER_EM_YY   , 0              },    // System Version
     {WS_UTF16_QUAD L"t"        ,      0,      FALSE, FALSE, SysFnT_EM_YY        , 0              },    // High Resolution Time

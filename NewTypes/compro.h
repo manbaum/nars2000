@@ -182,6 +182,7 @@
   #include "qf_nc.pro"
   #include "qf_nfns.pro"
   #include "qf_nl.pro"
+  #include "qf_si.pro"
   #include "qf_strace.pro"
   #include "qf_sysid.pro"
   #include "qf_sysver.pro"

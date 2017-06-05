@@ -2073,8 +2073,9 @@ UBOOL SaveFunctionCom
                     else
                         // Mark the line in error
                         lpSF_Fcns->uErrLine = 0;
-                    goto ERROR_EXIT;
                 } // End IF/ELSE
+
+                goto ERROR_EXIT;
             } // End FOR/IF
 
             // If it's a UDFO, ...

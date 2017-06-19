@@ -1,0 +1,17 @@
+Build #1771 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug When Saving A Maximized Program
+
+Directory branches/bsmith/NewTypes:
+
+DEFINES.H:
+  Define a new user local Window message.
+
+MAIN.C:
+  Rename <nMinState> to <nWinState> to better reflect its meaning.
+  In <MFWndProc> define and save the initial alue of <MFState> from
+    the .ini fileto test later on as the latter value can change
+    before we need the original value.
+  If the original value of <MFState> says to maximize the initial
+    window, do so after the <WM_CREATE> message.

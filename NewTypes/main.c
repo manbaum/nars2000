@@ -65,7 +65,7 @@ typedef struct tagENUMPASSMSG
     LPARAM lParam;
 } ENUMPASSMSG, *LPENUMPASSMSG;
 
-int  nMinState,                         // Minimized state as per WinMain
+int  nWinState,                         // SW_xxx state as per WinMain
      iScrollSize;                       // Width of a vertical scrollbar
 UBOOL fHelp = FALSE,                    // TRUE iff we displayed help
       bCommandLine = FALSE;             // ...      there is a filename on the command line
@@ -1322,13 +1322,14 @@ LRESULT APIENTRY MFWndProc
      LPARAM lParam)     // ...
 
 {
-    RECT         rcDtop;        // Rectangle for desktop
-    HWND         hWndActive,    // Active window handle
-                 hWndMC,        // MDI Client ...
-                 hWndSM;        // Session Manager ...
-    UINT         uCnt;          // Loop counter
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    static HWND  hWndTC_TT;     // Window handle for TT in TC
+    RECT         rcDtop;            // Rectangle for desktop
+    HWND         hWndActive,        // Active window handle
+                 hWndMC,            // MDI Client ...
+                 hWndSM;            // Session Manager ...
+    UINT         uCnt;              // Loop counter
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    static UINT  iniMFSizeState;    // Initial value of MFSizeState
+    static HWND  hWndTC_TT;         // Window handle for TT in TC
 ////static DWORD aHelpIDs[] = {
 ////                           IDOK,             IDH_OK,
 ////                           IDCANCEL,         IDH_CANCEL,
@@ -1359,6 +1360,9 @@ LRESULT APIENTRY MFWndProc
             // Read in window-specific .ini file entries
             ReadIniFileWnd (hWnd);
 
+            // Save initial value of MFSizeState
+            iniMFSizeState = MFSizeState;
+
             // *************** Bitmaps *********************************
             hBitmapCheck  = MyLoadBitmap (NULL, MAKEINTRESOURCE (OBM_CHECK));
             if (hBitmapCheck NE NULL)
@@ -1388,15 +1392,11 @@ LRESULT APIENTRY MFWndProc
 ////        if (MFPosCtr.y > rcDtop.bottom) // If center is below the bottom, ...
 ////            MFPosCtr.y = rcDtop.bottom;
 ////
-            // Check the last SizeState
-            if (MFSizeState EQ SIZE_MAXIMIZED)
-                nMinState = SW_MAXIMIZE;
-
             // Reposition the window to previous center & size
             MoveWindowPosSize (hWnd, MFPosCtr, MFSize);
 
-            // Show and paint the window
-            ShowWindow (hWnd, SW_SHOWNORMAL);
+            // Show and paint the window as per the parameter from WinMain ()
+            ShowWindow (hWnd, nWinState);
             UpdateWindow (hWnd);
 
             // Initialize window-specific resources
@@ -1454,7 +1454,20 @@ LRESULT APIENTRY MFWndProc
                     SetUpdChkTimer ();
             } // End IF
 
+            // Perform post-WM_CREATE processing
+            PostMessage (hWnd, MYWM_POST_CREATE, 0, 0);
+
             break;                  // Continue with next handler
+
+        case MYWM_POST_CREATE:
+            // Check the last SizeState
+            if (iniMFSizeState EQ SIZE_MAXIMIZED)
+            {
+                ShowWindow (hWnd, SW_MAXIMIZE);
+                UpdateWindow (hWnd);
+            } // End IF
+
+            return FALSE;           // We handled the msg
 
         case WM_TIMER:                      // wTimerID = wParam            // Timer identifier
                                             // tmpc = (TIMERPROC *) lParam  // Ptr to timer callback
@@ -1513,7 +1526,6 @@ LRESULT APIENTRY MFWndProc
             if (fwSizeType EQ SIZE_MAXIMIZED
              || fwSizeType EQ SIZE_RESTORED)
             {
-                SIZE S;
                 HDWP hdwp;
                 RECT rc,                    // Rectangle for new MF client area
                      rcRB;                  // ...           Rebar Ctrl
@@ -1619,18 +1631,22 @@ LRESULT APIENTRY MFWndProc
                 EndDeferWindowPos (hdwp);
 
                 // Save the current Maximized or Normal state
-                MFSizeState = (UINT) wParam;
+                MFSizeState = (int) fwSizeType;
 
-                S.cx = LOWORD (lParam);
-                S.cy = HIWORD (lParam);
+                if (fwSizeType EQ SIZE_RESTORED)
+                {
+                    SIZE S;
 
-                // Convert client area size to window size
-                MFSize = ClientToWindowSize (hWnd, S);
+                    S.cx = nWidth;
+                    S.cy = nHeight;
 
-                // Because we track the center position of the window,
-                // we need to modify that as well.  Note that we needn't
-                // specify lParam as our MYWM_MOVE code doesn't use it.
-                PostMessageW (hWnd, MYWM_MOVE, 0, 0);
+                    // Convert client area size to window size
+                    MFSize = ClientToWindowSize (hWnd, S);
+
+                    // Because we track the center position of the window,
+                    // we need to modify that as well.
+                    PostMessageW (hWnd, MYWM_MOVE, wParam, lParam);
+                } // End IF
 
                 // Normally we pass this message on to the MDI Child Window,
                 //   so it can resize itself, however, in this case we're
@@ -1654,7 +1670,7 @@ LRESULT APIENTRY MFWndProc
             return FALSE;           // We handled the msg
 
         case WM_MOVE:
-            PostMessageW (hWnd, MYWM_MOVE, 0, 0);
+            PostMessageW (hWnd, MYWM_MOVE, wParam, lParam);
 
             break;                  // Continue with next handler
 
@@ -4130,7 +4146,7 @@ int PASCAL WinMain
 ////PERFMON
 
     // Save initial state
-    nMinState = nCmdShow;
+    nWinState = nCmdShow;
 
     // Allocate TLS indices
     dwTlsType        = TlsAlloc ();     // Thread type ('MF', 'TC', 'PL', etc.)

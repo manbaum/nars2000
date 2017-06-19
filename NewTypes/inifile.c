@@ -503,7 +503,7 @@ UBOOL ReadIniFileGlb
     WCHAR       (*lpwszRecentFiles)[][_MAX_PATH];   // Ptr to list of recent files
     LPKEYBLAYOUTS lpKeybLayouts;                    // Ptr to keyboard layouts global memory
     LPWSZLIBDIRS  lpwszLibDirs;                     // Ptr to LibDirs
-    WORD          hkl;                              // Default keyboard layout
+    LANGID        langId;                           // Default keyboard layout language ID
     LPWCHAR       lpKeybLayout;                     // Ptr to default keyboard layout name
 
 #define TEMPBUFLEN      countof (wszTemp)
@@ -1252,16 +1252,16 @@ UBOOL ReadIniFileGlb
                              KEYNAME_KEYBSTATE,     // Ptr to the key name
                              0,                     // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-    // Get the default keyboard layout for the current thread
+    // Get the default keyboard layout language ID for the current thread
     // LANG_DANISH  == 0x06  SUBLANG_DANISH_DENMARK == 0x01
     // LANG_ENGLISH == 0x09  SUBLANG_ENGLISH_US     == 0x01
     // LANG_ENGLISH == 0x09  SUBLANG_ENGLISH_UK     == 0x02
     // LANG_FRENCH  == 0x0C  SUBLANG_FRENCH         -- 0x01
     // LANG_GERMAN  == 0x07  SUBLANG_GERMAN         -- 0x01
-    hkl = LOWORD (GetKeyboardLayout (0));
+    langId = LOWORD (GetKeyboardLayout (0));
 
     // Split cases based upon the primary language ID (LANG_xxx)
-    switch (PRIMARYLANGID (hkl))
+    switch (PRIMARYLANGID (langId))
     {
         case LANG_DANISH:
             lpKeybLayout = KEYBLAYOUT_DK_ALT;
@@ -1270,7 +1270,7 @@ UBOOL ReadIniFileGlb
 
         case LANG_ENGLISH:
             // Split cases based upon the sublanguage ID (SUBLANG_xxx)
-            switch (SUBLANGID (hkl))
+            switch (SUBLANGID (langId))
             {
                 case SUBLANG_ENGLISH_UK:
                     lpKeybLayout = KEYBLAYOUT_UK_ALT;
@@ -2059,9 +2059,9 @@ void ReadIniFileWnd
             &uTmp[1],           // &gstUpdChk.wMonth,
             &uTmp[2]);          // &gstUpdChk.wDay,
     // Copy the temps to the SYSTEMTIME struc
-    gstUpdChk.wYear     = (WORD)uTmp[0];
-    gstUpdChk.wMonth    = (WORD)uTmp[1];
-    gstUpdChk.wDay      = (WORD)uTmp[2];
+    gstUpdChk.wYear     = (WORD) (uTmp[0]);
+    gstUpdChk.wMonth    = (WORD) (uTmp[1]);
+    gstUpdChk.wDay      = (WORD) (uTmp[2]);
 } // End ReadIniFileWnd
 
 

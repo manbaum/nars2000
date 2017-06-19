@@ -1,4 +1,18 @@
 Version 0.5.5.xx consists of the following Builds:
+\
+
+Build #1773 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug When A Var In A Saved Workspace Is Referenced But Not Defined
+
+Directory branches/bsmith/NewTypes:
+
+SC_COPY.C:
+  Define new return parameter to <ParseSavedWsVar_EM> to indicate that the var was deleted.
+
+SC_LOAD.C:
+  Handle the unusual case where a var in a saved workspace is referenced but not defined by deleting the var and notifying the user.
 
 
 Build #1772 -- Version 0.5.5.xx

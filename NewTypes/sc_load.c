@@ -35,6 +35,8 @@
 #include "debug.h"              // For xxx_TEMP_OPEN macros
 
 
+#define HGLOBAL_DELETED     ((HGLOBAL) -1)
+
 // System Time Stamp for "1 CLEANSPACE"
 // SAVED 1966-11-27 18.53.59 (UTC-4)
 SYSTEMTIME cleanspaceTime = {1966,      // Year
@@ -629,6 +631,8 @@ UBOOL LoadWorkspace_EM
                     if (!lpSymEntry->stFlags.Value
                      || lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS)
                     {
+                        UBOOL bDeleted;             // TRUE iff the var is deleted by ParseSavedWsVar_EM
+
                         // Clear so we save a clean value
                         aplLongestObj = 0;
 
@@ -645,6 +649,7 @@ UBOOL LoadWorkspace_EM
                                              &bImmed,           // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
                                               FALSE,            // TRUE iff to save SymTabAppend values, FALSE to save values directly
                                               FALSE,            // TRUE iff this is called from )COPY
+                                             &bDeleted,         // Ptr to Deleted Flag (NULL = none)
                                               hWndEC,           // Edit Ctrl window handle
                                              &lpSymLink,        // Ptr to ptr to SYMENTRY link
                                               wszVersion,       // Workspace version text
@@ -653,72 +658,46 @@ UBOOL LoadWorkspace_EM
                         if (lpwSrc EQ NULL)
                             goto ETO_ERRMSG_EXIT;
 
-                        // Out with the old
-                        // Release the current value of the STE
-                        //   if it's a global and has a value
-                        if (!lpSymEntry->stFlags.Imm
-                         &&  lpSymEntry->stFlags.Value)
+                        // If the var has not been deleted, ...
+                        if (!bDeleted)
                         {
-                            FreeResultGlobalVar (lpSymEntry->stData.stGlbData); lpSymEntry->stData.stGlbData = NULL;
-                        } // End IF
-
-                        // In with the new
-                        if (bImmed)
-                            lpSymEntry->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeObj);
-                        else
-                            lpSymEntry->stFlags.ImmType  = IMMTYPE_ERROR;
-                        // Set the common values
-                        lpSymEntry->stFlags.Imm        = bImmed;
-                        lpSymEntry->stFlags.Value      = TRUE;
-                        lpSymEntry->stFlags.ObjName    = (IsSysName (lpwSrcStart) ? OBJNAME_SYS : OBJNAME_USR);
-                        lpSymEntry->stFlags.stNameType = NAMETYPE_VAR;
-                        lpSymEntry->stData.stLongest   = aplLongestObj;
-
-                        // If this is a sys var, ...
-                        if (lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS)
-                        {
-                            TOKEN        tkNam = {0};
-                            static WCHAR wszTemp[512];
-                            LPWCHAR      lpMemName;
-
-                            // Fill in the name token
-                            tkNam.tkFlags.TknType   = TKT_VARNAMED;
-////////////////////////////tkNam.tkFlags.ImmType   = IMMTYPE_ERROR;    // Unused
-////////////////////////////tkNam.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
-////////////////////////////tkNam.>tkCharIndex      =                   // Unused
-                            tkNam.tkData.tkSym      = lpSymEntry;
-
-                            // If the target is a user-defined function/operator system label, ...
-                            if (tkNam.tkData.tkSym->stFlags.DfnSysLabel)
+                            // Out with the old
+                            // Release the current value of the STE
+                            //   if it's a global and has a value
+                            if (!lpSymEntry->stFlags.Imm
+                             &&  lpSymEntry->stFlags.Value)
                             {
-                                // Lock the memory to get a ptr to it
-                                lpMemName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
-
-                                // Format the error message text
-                                MySprintfW (wszTemp,
-                                            sizeof (wszTemp),
-                                           L"Error Assigning to SysLbl:  %s",
-                                            lpMemName);
-                                // We no longer need this ptr
-                                MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;
-
-                                // Set the error message text
-                                lpwErrMsg = &wszTemp[0];
-
-                                goto ETO_ERRMSG_EXIT;
+                                FreeResultGlobalVar (lpSymEntry->stData.stGlbData); lpSymEntry->stData.stGlbData = NULL;
                             } // End IF
 
-                            // If it's not []DM, ...
-                            if (!IsSymSysName (lpSymEntry, $QUAD_DM))
-                            {
-                                // Validate the value
-                                bRet = (*aSysVarValidSet[tkNam.tkData.tkSym->stFlags.SysVarValid]) (&tkNam, &tkNam);
+                            // In with the new
+                            if (bImmed)
+                                lpSymEntry->stFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeObj);
+                            else
+                                lpSymEntry->stFlags.ImmType  = IMMTYPE_ERROR;
+                            // Set the common values
+                            lpSymEntry->stFlags.Imm        = bImmed;
+                            lpSymEntry->stFlags.Value      = TRUE;
+                            lpSymEntry->stFlags.ObjName    = (IsSysName (lpwSrcStart) ? OBJNAME_SYS : OBJNAME_USR);
+                            lpSymEntry->stFlags.stNameType = NAMETYPE_VAR;
+                            lpSymEntry->stData.stLongest   = aplLongestObj;
 
-                                // If it validated, ...
-                                if (bRet)
-                                    // Execute the post-validation function
-                                    (*aSysVarValidPost[tkNam.tkData.tkSym->stFlags.SysVarValid]) (&tkNam);
-                                else
+                            // If this is a sys var, ...
+                            if (lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS)
+                            {
+                                TOKEN        tkNam = {0};
+                                static WCHAR wszTemp[512];
+                                LPWCHAR      lpMemName;
+
+                                // Fill in the name token
+                                tkNam.tkFlags.TknType   = TKT_VARNAMED;
+////////////////////////////////tkNam.tkFlags.ImmType   = IMMTYPE_ERROR;    // Unused
+////////////////////////////////tkNam.tkFlags.NoDisplay = FALSE;            // Already zero from = {0}
+////////////////////////////////tkNam.>tkCharIndex      =                   // Unused
+                                tkNam.tkData.tkSym      = lpSymEntry;
+
+                                // If the target is a user-defined function/operator system label, ...
+                                if (tkNam.tkData.tkSym->stFlags.DfnSysLabel)
                                 {
                                     // Lock the memory to get a ptr to it
                                     lpMemName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
@@ -726,7 +705,7 @@ UBOOL LoadWorkspace_EM
                                     // Format the error message text
                                     MySprintfW (wszTemp,
                                                 sizeof (wszTemp),
-                                               L"Error validating SysVar:  %s",
+                                               L"Error Assigning to SysLbl:  %s",
                                                 lpMemName);
                                     // We no longer need this ptr
                                     MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;
@@ -735,6 +714,36 @@ UBOOL LoadWorkspace_EM
                                     lpwErrMsg = &wszTemp[0];
 
                                     goto ETO_ERRMSG_EXIT;
+                                } // End IF
+
+                                // If it's not []DM, ...
+                                if (!IsSymSysName (lpSymEntry, $QUAD_DM))
+                                {
+                                    // Validate the value
+                                    bRet = (*aSysVarValidSet[tkNam.tkData.tkSym->stFlags.SysVarValid]) (&tkNam, &tkNam);
+
+                                    // If it validated, ...
+                                    if (bRet)
+                                        // Execute the post-validation function
+                                        (*aSysVarValidPost[tkNam.tkData.tkSym->stFlags.SysVarValid]) (&tkNam);
+                                    else
+                                    {
+                                        // Lock the memory to get a ptr to it
+                                        lpMemName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
+
+                                        // Format the error message text
+                                       MySprintfW (wszTemp,
+                                                    sizeof (wszTemp),
+                                                   L"Error validating SysVar:  %s",
+                                                    lpMemName);
+                                        // We no longer need this ptr
+                                        MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;
+
+                                        // Set the error message text
+                                        lpwErrMsg = &wszTemp[0];
+
+                                        goto ETO_ERRMSG_EXIT;
+                                    } // End IF
                                 } // End IF
                             } // End IF
                         } // End IF
@@ -940,6 +949,8 @@ ERRMSG_EXIT:
 ETO_ERROR_EXIT:
     EXIT_TEMP_OPEN
 ERROR_EXIT:
+    // Mark as in error
+    bRet = FALSE;
 NORMAL_EXIT:
     if (hGlbDPFE NE NULL && lpwszDPFE NE NULL)
     {
@@ -983,7 +994,7 @@ UBOOL IsSymSysName
     MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpwGlbName = NULL;
 
     return bRet;
-} // End IsSymSysname
+} // End IsSymSysName
 
 
 //***************************************************************************
@@ -1180,6 +1191,7 @@ LPWCHAR ParseSavedWsVar_EM
      LPUBOOL       lpbImmed,            // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
      UBOOL         bSymTab,             // TRUE iff to save SymTabAppend values, FALSE to save values directly
      UBOOL         bCopyCmd,            // TRUE iff this is called from )COPY
+     LPUBOOL       lpbDeleted,          // Ptr to TRUE iff the var is deleted (NULL = none)
      HWND          hWndEC,              // Edit Ctrl window handle
      LPSYMENTRY   *lplpSymLink,         // Ptr to ptr to SYMENTRY link
      LPWCHAR       lpwszVersion,        // Ptr to workspace version text
@@ -1252,33 +1264,44 @@ LPWCHAR ParseSavedWsVar_EM
         // Restore the original value
         *lpwCharEnd = wcTmp;
 
-        // Save in the result and skip over it
-        *((LPAPLNESTED) *lplpMemObj)++ = hGlbObj;
-
-        // Increment the reference count
-        DbgIncrRefCntDir_PTB (hGlbObj);
-
         // Skip to the next field
         lpwSrc = &lpwCharEnd[1];
 
-        // If the caller wants the storage type, ...
-        if (lpaplTypeObj NE NULL)
+        // If the var has been deleted, ...
+        if (hGlbObj EQ HGLOBAL_DELETED)
         {
-            LPVARARRAY_HEADER lpMemHdrObj = NULL;   // Ptr to object header
+            // If the caller wants to know, ...
+            if (lpbDeleted NE NULL)
+                *lpbDeleted = TRUE;
+#ifdef DEBUG
+            else
+                DbgStop ();         // #ifdef DEBUG
+#endif
+        } else
+        {
+            // Save in the result and skip over it
+            *((LPAPLNESTED) *lplpMemObj)++ = hGlbObj;
 
-            // stData is a valid HGLOBAL variable array
-            Assert (IsGlbTypeVarDir_PTB (hGlbObj));
+            // Increment the reference count
+            DbgIncrRefCntDir_PTB (hGlbObj);
 
-            // Lock the memory to get a ptr to it
-            lpMemHdrObj = MyGlobalLockVar (hGlbObj);
+            // If the caller wants the storage type, ...
+            if (lpaplTypeObj NE NULL)
+            {
+                LPVARARRAY_HEADER lpMemHdrObj = NULL;   // Ptr to object header
 
-            // Save the storage type
-#define lpHeader        lpMemHdrObj
-            *lpaplTypeObj = lpHeader->ArrType;
-#undef  lpHeader
+                // stData is a valid HGLOBAL variable array
+                Assert (IsGlbTypeVarDir_PTB (hGlbObj));
 
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbObj); lpMemHdrObj = NULL;
+                // Lock the memory to get a ptr to it
+                lpMemHdrObj = MyGlobalLockVar (hGlbObj);
+
+                // Save the storage type
+                *lpaplTypeObj = lpMemHdrObj->ArrType;
+
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbObj); lpMemHdrObj = NULL;
+            } // End IF
         } // End IF
 
         // If the caller wants the immediate flag, ...
@@ -1514,7 +1537,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
     // Ensure it's non-empty
     if  (lpwszProf[0] EQ WC_EOS)
-        goto CORRUPTWS_EXIT;
+        goto CORRUPTWS_EXIT_NAME;
 
     // Split cases based upon Variable vs. Function/Operator
     switch (*lpwszProf++)
@@ -1527,7 +1550,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
             // Ensure there's a valid separator
             if (*lpwszProf NE L' ')
-                goto CORRUPTWS_EXIT;
+                goto CORRUPTWS_EXIT_FMT;
 
             // Skip over it
             lpwszProf++;
@@ -1537,7 +1560,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
             // Ensure there's a valid separator
             if (*lpwszProf NE L' ')
-                goto CORRUPTWS_EXIT;
+                goto CORRUPTWS_EXIT_FMT;
 
             // Skip over it
             lpwszProf++;
@@ -1547,7 +1570,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
             // Ensure there's a valid separator
             if (*lpwszProf NE L' ')
-                goto CORRUPTWS_EXIT;
+                goto CORRUPTWS_EXIT_FMT;
 
             // Skip over it
             lpwszProf++;
@@ -1809,6 +1832,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                               NULL,         // Ptr to SYMENTRY of the source (may be NULL)
                                               TRUE,         // TRUE iff to save SymTabAppend values, FALSE to save values directly
                                               FALSE,        // TRUE iff this is called from )COPY
+                                              NULL,         // Ptr to Deleted Flag (NULL = none)
                                               hWndEC,       // Edit Ctrl window handle
                                               lplpSymLink,  // Ptr to ptr to SYMENTRY link
                                               lpwszVersion, // Ptr to workspace version text
@@ -2420,6 +2444,47 @@ HGLOBAL LoadWorkspaceGlobal_EM
        *lplpSymLink           =  lpSymEntry;
         lpSymEntry->stSymLink =  lpSymLink;
     } // End IF
+
+    goto NORMAL_EXIT;
+
+CORRUPTWS_EXIT_NAME:
+    // Lock the memory to get a ptr to it
+    lpwFcnName = MyGlobalLockInt (lpSymEntrySrc->stHshEntry->htGlbName);
+
+    // Format the error message
+    wsprintfW (lpwszFormat,
+               L"The name <%s> is referenced but not defined in this <%s> -- THE NAME HAS BEEN DELETED FROM WORKSPACE",
+               lpwFcnName,
+               lpDict->lpwszDPFE);
+    MBW (lpwszFormat);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpSymEntrySrc->stHshEntry->htGlbName); lpwFcnName = NULL;
+
+    goto CORRUPTWS_EXIT_DELETE;
+
+CORRUPTWS_EXIT_FMT:
+    // Lock the memory to get a ptr to it
+    lpwFcnName = MyGlobalLockInt (lpSymEntrySrc->stHshEntry->htGlbName);
+
+    // Format the error message
+    wsprintfW (lpwszFormat,
+               L"The name <%s> is not properly formatted in this <%s> -- THE NAME HAS BEEN DELETED FROM WORKSPACE",
+               lpwFcnName,
+               lpDict->lpwszDPFE);
+    MBW (lpwszFormat);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpSymEntrySrc->stHshEntry->htGlbName); lpwFcnName = NULL;
+
+    goto CORRUPTWS_EXIT_DELETE;
+
+CORRUPTWS_EXIT_DELETE:
+    // Delete the name from the workspace
+    EraseSTE (lpSymEntrySrc, FALSE);
+
+    // Mark as deleted
+    hGlbObj = HGLOBAL_DELETED;
 
     goto NORMAL_EXIT;
 

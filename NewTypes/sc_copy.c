@@ -538,6 +538,7 @@ int CopyWsVars
                                  &bImmed,           // Ptr to immediate flag (TRUE iff result is immediate) (may be NULL)
                                   FALSE,            // TRUE iff to save SymTabAppend values, FALSE to save values directly
                                   TRUE,             // TRUE iff this is called from )COPY
+                                  NULL,             // Ptr to Deleted Flag (NULL = none)
                                   hWndEC,           // Edit Ctrl window handle
                                   lplpSymLink,      // Ptr to ptr to SYMENTRY link
                                   lpwszVersion,     // Ptr to workspace version text

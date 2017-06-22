@@ -41,7 +41,8 @@
 #include "headers.h"
 
 extern HICON hIconCustom;
-WNDPROC lpfnOldKeybEditCtrlWndProc,     // Save area for old EditCtrl window proc
+WNDPROC lpfnOldKeybEditCtrlWndProc,     // Save area for old EditCtrl window proc for KEYBS Property Page
+        lpfnOldUserEditCtrlWndProc,     // ...                                        USER_PREFS ...
         lpfnOldFontsStaticTextWndProc,  // ...               Static Text ...
         lpfnOldFEATUREComboLboxWndProc; // ...               []FEATURE ComboLbox window proc
 
@@ -1235,6 +1236,9 @@ INT_PTR CALLBACK CustomizeDlgProc
 
                             // We're done here
                             DestroyWindow (hDlg);
+
+                            // Return dialog result
+                            DlgMsgDone (hDlg);                      // We handled the msg
                         } // End IF
 
                         // Lock the memory to get a ptr to it
@@ -1655,10 +1659,10 @@ INT_PTR CALLBACK CustomizeDlgProc
                         // Display the new value
                         DisplayKeybTCValue (hWndProp, -1, FALSE);
 
-                        (HANDLE_PTR) lpfnOldKeybEditCtrlWndProc =
+                        (HANDLE_PTR) lpfnOldUserEditCtrlWndProc =
                           SetWindowLongPtrW (GetDlgItem (hWndProp, IDC_USER_PREFS_EC_UNICODE),
                                              GWLP_WNDPROC,
-                                             (APLU3264) (LONG_PTR) (WNDPROC) &LclKeybEditCtrlWndProc);
+                                             (APLU3264) (LONG_PTR) (WNDPROC) &LclUserEditCtrlWndProc);
                         // ***FIXME*** -- Make these work so we don't have to gray out the choices
                         {
                             CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_NEWTABONCLEAR      , TRUE                            );
@@ -3183,6 +3187,9 @@ INT_PTR CALLBACK CustomizeDlgProc
 
                             // We're done here
                             DestroyWindow (hDlg);
+
+                            // Return dialog result
+                            DlgMsgDone (hDlg);                      // We handled the msg
                         } // End IF
 
                         // Lock the memory to get a ptr to it
@@ -5407,6 +5414,49 @@ LRESULT WINAPI LclKeybEditCtrlWndProc
      LPARAM lParam)     // ...
 
 {
+    return LclUserKeybEditCtrlWndProc (lpfnOldKeybEditCtrlWndProc,
+                                       hWnd,
+                                       message,
+                                       wParam,
+                                       lParam);
+} // End LclKeybEditCtrlWndProc
+
+
+//***************************************************************************
+//  $LclUserEditCtrlWndProc
+//
+//  Local window procedure for the Customize's EDITCTRL
+//***************************************************************************
+
+LRESULT WINAPI LclUserEditCtrlWndProc
+    (HWND   hWnd,       // Window handle
+     UINT   message,    // Type of message
+     WPARAM wParam,     // Additional information
+     LPARAM lParam)     // ...
+
+{
+    return LclUserKeybEditCtrlWndProc (lpfnOldUserEditCtrlWndProc,
+                                       hWnd,
+                                       message,
+                                       wParam,
+                                       lParam);
+} // End LclUserEditCtrlWndProc
+
+
+//***************************************************************************
+//  $LclUserKeybEditCtrlWndProc
+//
+//  Local window procedure for the Customize's EDITCTRL
+//***************************************************************************
+
+LRESULT WINAPI LclUserKeybEditCtrlWndProc
+    (WNDPROC lpfnOldUserKeybEditCtrlWndProc,    // Ptr to the original WNDPROC
+     HWND    hWnd,                              // Window handle
+     UINT    message,                           // Type of message
+     WPARAM  wParam,                            // Additional information
+     LPARAM  lParam)                            // ...
+
+{
 ////LCLODSAPI ("LEC: ", hWnd, message, wParam, lParam);
 
     // Split cases
@@ -5449,12 +5499,12 @@ LRESULT WINAPI LclKeybEditCtrlWndProc
     } // End SWITCH
 
 ////LCLODSAPI ("LECZ: ", hWnd, message, wParam, lParam);
-    return CallWindowProcW (lpfnOldKeybEditCtrlWndProc,
+    return CallWindowProcW (lpfnOldUserKeybEditCtrlWndProc,
                             hWnd,
                             message,
                             wParam,
                             lParam);    // Pass on down the line
-} // End LclKeybEditCtrlWndProc
+} // End LclUserKeybEditCtrlWndProc
 
 
 //***************************************************************************
@@ -5958,6 +6008,9 @@ UBOOL CALLBACK NewKeybDlgProc
         case WM_CLOSE:
             EndDialog (hDlg, FALSE);                // Fail this dialog
 
+            // Return dialog result
+            DlgMsgDone (hDlg);                      // We handled the msg
+
 #define idCtl               GET_WM_COMMAND_ID   (wParam, lParam)
 #define cmdCtl              GET_WM_COMMAND_CMD  (wParam, lParam)
 #define hwndCtl             GET_WM_COMMAND_HWND (wParam, lParam)
@@ -5998,6 +6051,9 @@ UBOOL CALLBACK NewKeybDlgProc
                             strcpyW (newKeybDlg.lpwKeybLayoutName, lpwTemp);
 
                             EndDialog (hDlg, TRUE);         // Quit this dialog
+
+                            // Return dialog result
+                            DlgMsgDone (hDlg);              // We handled the msg
                         } else
                             MessageBoxW (hDlg, L"Duplicate Keyboard Layout Name -- Please try again.", WS_APPNAME, MB_OK | MB_ICONWARNING);
                     } else
@@ -6011,6 +6067,9 @@ UBOOL CALLBACK NewKeybDlgProc
 
                 case IDCANCEL:
                     EndDialog (hDlg, FALSE);        // Fail this dialog
+
+                    // Return dialog result
+                    DlgMsgDone (hDlg);              // We handled the msg
             } // End SWITCH
 
             break;

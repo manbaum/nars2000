@@ -1,6 +1,26 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1775 -- Version 0.5.5.xx
+--------------------------------
+
+* Change Variant Operator Operand Names For Times To Interior And Exterior
+
+Directory branches/bsmith/NewTypes:
+
+ENUMS.H:
+PF_TIMES.C:
+PO_VARIANT.C:
+  Change the names for Variant Operator operand for the Times function to Interior and Exterior.
+
+
+Directory branches/bsmith/NewTypes/MediaWiki/extensions:
+
+APL.CSS:
+  Document the destination directory for this file.
+  Include a font-face to define and load the Fallback00-1F.ttf font.
+
+
 Build #1774 -- Version 0.5.5.xx
 --------------------------------
 

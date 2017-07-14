@@ -398,8 +398,8 @@ typedef enum tagENUM_CT
 typedef enum tagENUM_HCMUL
 {
     ENUMHCM_NONE = 0,       // 00:  Normal multiplication
-    ENUMHCM_COMM = 1,       // 01:  Commutative ...
-    ENUMHCM_ANTI = 2,       // 02:  Anti-commutative ...
+    ENUMHCM_INT  = 1,       // 01:  Interior product
+    ENUMHCM_EXT  = 2,       // 02:  Exterior ...
 } ENUM_HCMUL, *LPENUM_HCMUL;
 
 

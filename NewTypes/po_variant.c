@@ -1027,13 +1027,13 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
             // Ensure the value is valid
             switch (tolowerW (aplCharRhtOpr))
             {
-                case L'a':
-                    lpMemPTD->eHCMul = ENUMHCM_ANTI;
+                case L'i':
+                    lpMemPTD->eHCMul = ENUMHCM_INT;
 
                     break;
 
-                case L'c':
-                    lpMemPTD->eHCMul = ENUMHCM_COMM;
+                case L'e':
+                    lpMemPTD->eHCMul = ENUMHCM_EXT;
 
                     break;
 

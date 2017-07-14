@@ -1,4 +1,6 @@
 /*
+This file should be saved in /rul/mediawiki/extensions
+
 23 = 19 (bg-image-width) + 4 (space between image and text)
 16 = 10 (bg-image-height) + 6 (bg-pos-y)
  */
@@ -59,3 +61,12 @@
   color: navy;
   background-color: gainsboro;
 }
+
+@font-face
+{
+  font-family: 'Fallback00-1F';
+  src:
+    local("Fallback00-1F"),
+    url("http://www.sudleyplace.com/fonts/Fallback00-1F.ttf") format("truetype");
+}
+

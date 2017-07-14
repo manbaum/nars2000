@@ -2353,7 +2353,7 @@ APLHC4I MulHC4I_RE_HC
     // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
     switch (eHCMul)
     {
-        case ENUMHCM_ANTI:
+        case ENUMHCM_EXT:
             // Loop through all of the parts
             for (i = 0; i < 4; i++)
             {
@@ -2366,7 +2366,7 @@ APLHC4I MulHC4I_RE_HC
 
             break;
 
-        case ENUMHCM_COMM:
+        case ENUMHCM_INT:
             // Loop through all of the parts
             for (i = 0; i < 4; i++)
             {
@@ -2461,8 +2461,8 @@ void PrimFnDydTimesHC4IisHC4IvHC4I
 
                 break;
 
-            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
-            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
+            case ENUMHCM_INT:       // ((a x b + b x a) / 2
                 // Call subbfunction
                 lpMemRes[uRes] = MulHC4I_RE_HC (lpatLft->aplHC4I, lpatRht->aplHC4I, lpPrimSpec->eHCMul);
 
@@ -2526,8 +2526,8 @@ void PrimFnDydTimesHC4FisHC4IvHC4I
 
                 break;
 
-            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
-            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
+            case ENUMHCM_INT:       // ((a x b + b x a) / 2
                 // Call subbfunction
                 lpMemRes[uRes] = MulHC4F_RE_HC (atLft.aplHC4F, atRht.aplHC4F, lpPrimSpec->eHCMul);
 
@@ -2576,7 +2576,7 @@ APLHC4F MulHC4F_RE_HC
     // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
     switch (eHCMul)
     {
-        case ENUMHCM_ANTI:
+        case ENUMHCM_EXT:
             // Loop through all of the parts
             for (i = 0; i < 4; i++)
             {
@@ -2589,7 +2589,7 @@ APLHC4F MulHC4F_RE_HC
 
             break;
 
-        case ENUMHCM_COMM:
+        case ENUMHCM_INT:
             // Loop through all of the parts
             for (i = 0; i < 4; i++)
             {
@@ -2731,8 +2731,8 @@ void PrimFnDydTimesHC4FisHC4FvHC4F
 
                 break;
 
-            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
-            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
+            case ENUMHCM_INT:       // ((a x b + b x a) / 2
                 // Call subbfunction
                 lpMemRes[uRes] = MulHC4F_RE_HC (lpatLft->aplHC4F, lpatRht->aplHC4F, lpPrimSpec->eHCMul);
 
@@ -2781,7 +2781,7 @@ APLHC4R MulHC4R_RE_HC
     // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
     switch (eHCMul)
     {
-        case ENUMHCM_ANTI:
+        case ENUMHCM_EXT:
             // Loop through all of the parts
             for (i = 0; i < 4; i++)
             {
@@ -2794,7 +2794,7 @@ APLHC4R MulHC4R_RE_HC
 
             break;
 
-        case ENUMHCM_COMM:
+        case ENUMHCM_INT:
             // Loop through all of the parts
             for (i = 0; i < 4; i++)
             {
@@ -2977,8 +2977,8 @@ void PrimFnDydTimesHC4RisHC4RvHC4R
 
                 break;
 
-            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
-            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
+            case ENUMHCM_INT:       // ((a x b + b x a) / 2
                 // Call subbfunction
                 lpMemRes[uRes] = MulHC4R_RE_HC (lpatLft->aplHC4R, lpatRht->aplHC4R, lpPrimSpec->eHCMul);
 
@@ -3027,7 +3027,7 @@ APLHC4V MulHC4V_RE_HC
     // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
     switch (eHCMul)
     {
-        case ENUMHCM_ANTI:
+        case ENUMHCM_EXT:
             // Loop through all of the parts
             for (i = 0; i < 4; i++)
             {
@@ -3040,7 +3040,7 @@ APLHC4V MulHC4V_RE_HC
 
             break;
 
-        case ENUMHCM_COMM:
+        case ENUMHCM_INT:
             // Loop through all of the parts
             for (i = 0; i < 4; i++)
             {
@@ -3258,8 +3258,8 @@ void PrimFnDydTimesHC4VisHC4VvHC4V
 
                 break;
 
-            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
-            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
+            case ENUMHCM_INT:       // ((a x b + b x a) / 2
                 // Call subbfunction
                 lpMemRes[uRes] = MulHC4V_RE_HC (lpatLft->aplHC4V, lpatRht->aplHC4V, lpPrimSpec->eHCMul);
 
@@ -3308,7 +3308,7 @@ APLHC8I MulHC8I_RE_HC
     // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
     switch (eHCMul)
     {
-        case ENUMHCM_ANTI:
+        case ENUMHCM_EXT:
             // Loop through all of the parts
             for (i = 0; i < 8; i++)
             {
@@ -3321,7 +3321,7 @@ APLHC8I MulHC8I_RE_HC
 
             break;
 
-        case ENUMHCM_COMM:
+        case ENUMHCM_INT:
             // Loop through all of the parts
             for (i = 0; i < 8; i++)
             {
@@ -3416,8 +3416,8 @@ void PrimFnDydTimesHC8IisHC8IvHC8I
 
                 break;
 
-            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
-            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
+            case ENUMHCM_INT:       // ((a x b + b x a) / 2
                 // Call subbfunction
                 lpMemRes[uRes] = MulHC8I_RE_HC (lpatLft->aplHC8I, lpatRht->aplHC8I, lpPrimSpec->eHCMul);
 
@@ -3481,8 +3481,8 @@ void PrimFnDydTimesHC8FisHC8IvHC8I
 
                 break;
 
-            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
-            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
+            case ENUMHCM_INT:       // ((a x b + b x a) / 2
                 // Call subbfunction
                 lpMemRes[uRes] = MulHC8F_RE_HC (atLft.aplHC8F, atRht.aplHC8F, lpPrimSpec->eHCMul);
 
@@ -3531,7 +3531,7 @@ APLHC8F MulHC8F_RE_HC
     // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
     switch (eHCMul)
     {
-        case ENUMHCM_ANTI:
+        case ENUMHCM_EXT:
             // Loop through all of the parts
             for (i = 0; i < 8; i++)
             {
@@ -3544,7 +3544,7 @@ APLHC8F MulHC8F_RE_HC
 
             break;
 
-        case ENUMHCM_COMM:
+        case ENUMHCM_INT:
             // Loop through all of the parts
             for (i = 0; i < 8; i++)
             {
@@ -3692,8 +3692,8 @@ void PrimFnDydTimesHC8FisHC8FvHC8F
 
                 break;
 
-            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
-            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
+            case ENUMHCM_INT:       // ((a x b + b x a) / 2
                 // Call subbfunction
                 lpMemRes[uRes] = MulHC8F_RE_HC (lpatLft->aplHC8F, lpatRht->aplHC8F, lpPrimSpec->eHCMul);
 
@@ -3742,7 +3742,7 @@ APLHC8R MulHC8R_RE_HC
     // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
     switch (eHCMul)
     {
-        case ENUMHCM_ANTI:
+        case ENUMHCM_EXT:
             // Loop through all of the parts
             for (i = 0; i < 8; i++)
             {
@@ -3755,7 +3755,7 @@ APLHC8R MulHC8R_RE_HC
 
             break;
 
-        case ENUMHCM_COMM:
+        case ENUMHCM_INT:
             // Loop through all of the parts
             for (i = 0; i < 8; i++)
             {
@@ -3938,8 +3938,8 @@ void PrimFnDydTimesHC8RisHC8RvHC8R
 
                 break;
 
-            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
-            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
+            case ENUMHCM_INT:       // ((a x b + b x a) / 2
                 // Call subbfunction
                 lpMemRes[uRes] = MulHC8R_RE_HC (lpatLft->aplHC8R, lpatRht->aplHC8R, lpPrimSpec->eHCMul);
 
@@ -3988,7 +3988,7 @@ APLHC8V MulHC8V_RE_HC
     // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
     switch (eHCMul)
     {
-        case ENUMHCM_ANTI:
+        case ENUMHCM_EXT:
             // Loop through all of the parts
             for (i = 0; i < 8; i++)
             {
@@ -4001,7 +4001,7 @@ APLHC8V MulHC8V_RE_HC
 
             break;
 
-        case ENUMHCM_COMM:
+        case ENUMHCM_INT:
             // Loop through all of the parts
             for (i = 0; i < 8; i++)
             {
@@ -4214,8 +4214,8 @@ void PrimFnDydTimesHC8VisHC8VvHC8V
 
                 break;
 
-            case ENUMHCM_ANTI:      // ((a x b - b x a) / 2
-            case ENUMHCM_COMM:      // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
+            case ENUMHCM_INT:       // ((a x b + b x a) / 2
                 // Call subbfunction
                 lpMemRes[uRes] = MulHC8V_RE_HC (lpatLft->aplHC8V, lpatRht->aplHC8V, lpPrimSpec->eHCMul);
 

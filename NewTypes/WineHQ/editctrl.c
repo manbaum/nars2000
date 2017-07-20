@@ -194,6 +194,8 @@ typedef struct tagEDITSTATE
              (LPARAM)(es->hwndSelf)); \
     } while(0)
 
+static void ChangeDragCursor (EDITSTATE *es);
+
 
 /*********************************************************************
  *
@@ -3769,9 +3771,42 @@ static LRESULT EDIT_WM_KeyDown(EDITSTATE *es, INT key)
     case VK_TAB:
         SendMessageW(es->hwndParent, WM_NEXTDLGCTL, shift, 0);
         break;
+    case VK_CONTROL:
+        // If we're moving an SR, change the mouse cursor as appropriate
+        ChangeDragCursor (es);
+        break;
     }
     return 0;
 } // End EDIT_WM_KeyDown
+
+
+/*********************************************************************
+ *
+ *  WM_KEYUP
+ *
+ *  Handling of special keys that don't produce a WM_CHAR
+ *  (i.e. non-printable keys) & Backspace & Delete
+ *
+ */
+static LRESULT EDIT_WM_KeyUp(EDITSTATE *es, INT key)
+{
+////BOOL shift;
+////BOOL control;
+
+    if (GetKeyState(VK_MENU) & 0x8000)
+        return 0;
+
+////shift = GetKeyState(VK_SHIFT) & 0x8000;
+////control = GetKeyState(VK_CONTROL) & 0x8000;
+
+    switch (key) {
+    case VK_CONTROL:
+        // If we're moving an SR, change the mouse cursor as appropriate
+        ChangeDragCursor (es);
+        break;
+    }
+    return 0;
+} // End EDIT_WM_KeyUp
 
 
 /*********************************************************************
@@ -3893,31 +3928,51 @@ static LRESULT EDIT_WM_LButtonUp(EDITSTATE *es, DWORD keys, INT x, INT y)
           ||     d > e)
          && d NE s)
         {
-            UINT uGroupIndex;               // Group index
+            UINT  uGroupIndex;              // Group index
+            UBOOL ksCtrl;                   // Ctrl key state
 
-            // Cut the SR from the text at [s,e]
-            SendMessageW (es->hwndSelf, WM_CUT, 0, 0);
-////////////EDIT_WM_Cut (es);
+            // Get the Ctrl key state
+            ksCtrl  = (GetKeyState (VK_CONTROL) & BIT15) ? TRUE : FALSE;
 
-            // If the index of the drop point is > the index of the start point, ...
-            if (d > s)
-                // Move the drop point
-                d -= e - s;
+            // If the Ctrl key is pressed, copy the text
+            //   otherwise, cut and paste the text
+
+            // If the Ctrl key is not pressed, ...
+            if (!ksCtrl)
+            {
+                // Cut the SR from the text at [s,e]
+                SendMessageW (es->hwndSelf, WM_CUT, 0, 0);
+////////////////EDIT_WM_Cut (es);
+
+                // If the index of the drop point is > the index of the start point, ...
+                if (d > s)
+                    // Move the drop point
+                    d -= e - s;
+            } else
+            {
+                // Copy the SR from the text at [s,e]
+                SendMessageW (es->hwndSelf, WM_COPY, 0, 0);
+////////////////EDIT_WM_Copy (es);
+            } // End IF/ELSE
 
             // Set the selection point to [d]
             EDIT_EM_SetSel(es, d, d, after_wrap);
 
-            // Get the prev group index, and save it back
-            //   so as to make the Cut & Paste appear as one operation
-            uGroupIndex = GetWindowLongW (es->hwndParent, GWLSF_UNDO_GRP) - 1;
-            SetWindowLongW (es->hwndParent, GWLSF_UNDO_GRP, (UINT) uGroupIndex);
+            // If the Ctrl key is not pressed, ...
+            if (!ksCtrl)
+            {
+                // Get the prev group index, and save it back
+                //   so as to make the Cut & Paste appear as one operation
+                uGroupIndex = GetWindowLongW (es->hwndParent, GWLSF_UNDO_GRP) - 1;
+                SetWindowLongW (es->hwndParent, GWLSF_UNDO_GRP, (UINT) uGroupIndex);
+            } // End IF
 
             // Paste the SR into the text
             SendMessageW (es->hwndSelf, WM_PASTE, 0, 0);
+////////////EDIT_WM_Paste (es);
 
             // No more region
             es->region_posx = es->region_posy = 0;
-////////////EDIT_WM_Paste (es);
         } // End IF
 
         // Restore the original class cursor
@@ -3949,6 +4004,23 @@ static LRESULT EDIT_WM_MButtonDown(EDITSTATE *es)
     SendMessageW(es->hwndSelf, WM_PASTE, 0, 0);
     return 0;
 } // End EDIT_WM_MButtonDown
+
+
+/*********************************************************************
+ *
+ * SetDragCursor
+ *
+ */
+
+static void SetDragCursor (void)
+{
+    UBOOL ksCtrl;                   // Ctrl key state
+
+    // Get the Ctrl key state
+    ksCtrl  = (GetKeyState (VK_CONTROL) & BIT15) ? TRUE : FALSE;
+
+    SetCursor (ksCtrl ? hCursorDragCopy : hCursorDragMove);
+} // End SetDragCursor
 
 
 /*********************************************************************
@@ -3998,7 +4070,7 @@ static LRESULT EDIT_WM_MouseMove(EDITSTATE *es, INT x, INT y)
             SetCursor (hCursorNo);
         else
             // Tell 'em YES
-            SetCursor (hCursorDragMove);
+            SetDragCursor ();
     } else
     {
         prex = x; prey = y;
@@ -4012,6 +4084,31 @@ static LRESULT EDIT_WM_MouseMove(EDITSTATE *es, INT x, INT y)
 
     return 0;
 } // End EDIT_WM_MouseMove
+
+
+/*********************************************************************
+ *
+ * ChangeDragCursor
+ *
+ */
+
+static void ChangeDragCursor (EDITSTATE *es)
+{
+    // If we're moving a SR, ...
+    if (es->bMoveState)
+    {
+        POINT ptCur;
+
+        // Get the cursor position in screen coordinates
+        GetCursorPos (&ptCur);
+
+        // Convert the screen coords to client coords
+        ScreenToClient (es->hwndSelf, &ptCur);
+
+        // Simulate a Mouse Move so we display the proper cursor
+        EDIT_WM_MouseMove (es, ptCur.x, ptCur.y);
+    } // End IF
+} // End ChangeDragCursor
 
 
 /*********************************************************************
@@ -5598,6 +5695,10 @@ static LRESULT EditWndProc_common( HWND hwnd, UINT msg,
 
     case WM_KEYDOWN:
         result = EDIT_WM_KeyDown(es, (INT)wParam);
+        break;
+
+    case WM_KEYUP:
+        result = EDIT_WM_KeyUp(es, (INT)wParam);
         break;
 
     case WM_KILLFOCUS:

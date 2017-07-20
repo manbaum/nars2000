@@ -1,0 +1,36 @@
+Build #1776 -- Version 0.5.5.xx
+--------------------------------
+
+* Implement Drag/Copy Of A Selection In Any Edit Ctrl
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+  Define new cursor handle.
+
+MAIN.C:
+  Load new cursor handle.
+
+MAIN.RC:
+  Define new cursor resource.
+
+MAKEFILE.INC:
+  Define new cursor dependency.
+
+RESOURCE.H:
+  Define new cursor ID.
+
+
+Directory branches/bsmith/NewTypes/Images:
+
+DRAG_COPY.CUR:
+  Include cursor file.
+
+
+Directory branches/bsmith/NewTypes/WineHQ:
+
+EDITCTRL.C:
+  Implement drag/copy of a selection in any edit ctrl including the function and session editors.
+
+LOCAL.H:
+  Define extern for the Drag/Copy cursor.

@@ -447,7 +447,8 @@ ICONS=$(A)About.ico     \
       $(A)Edit.bmp      \
       $(A)Objects.bmp
 
-CURSORS=$(A)drag_move.cur
+CURSORS=$(A)drag_move.cur   \
+        $(A)drag_copy.cur
 
 MANIFEST=$(ENAME).exe.manifest$(WIN)
 

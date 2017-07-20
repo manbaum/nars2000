@@ -1316,6 +1316,7 @@ IDB_OBJECTS             BITMAP  DISCARDABLE     "Images\\Objects.bmp"
 // Cursor
 //
 IDC_DRAGMOVE            CURSOR  DISCARDABLE     "Images\\drag_move.cur"
+IDC_DRAGCOPY            CURSOR  DISCARDABLE     "Images\\drag_copy.cur"
 
 
 /////////////////////////////////////////////////////////////////////////////

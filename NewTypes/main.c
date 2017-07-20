@@ -3828,6 +3828,7 @@ UBOOL InitInstance
     hCursorIdle     = LoadCursor (NULL,      MAKEINTRESOURCE (IDC_ARROW   ));
     hCursorNo       = LoadCursor (NULL,      MAKEINTRESOURCE (IDC_NO      ));
     hCursorDragMove = LoadCursor (hInstance, MAKEINTRESOURCE (IDC_DRAGMOVE));
+    hCursorDragCopy = LoadCursor (hInstance, MAKEINTRESOURCE (IDC_DRAGCOPY));
 
     // Initialize the window background brush
     ghBrushBG = CreateSolidBrush (gSyntaxColorText.crBack);

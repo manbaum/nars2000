@@ -36,6 +36,7 @@
 
 // Cursor IDs
 #define IDC_DRAGMOVE                              50
+#define IDC_DRAGCOPY                              51
 
 // Icon IDs
 #define IDI_MF_LARGE                             102

@@ -1178,7 +1178,8 @@ EXTERN
 HCURSOR hCursorWait,                    // Hourglass cursor
         hCursorIdle,                    // Arrow     ...
         hCursorNo,                      // Not valid move target
-        hCursorDragMove;                // Valid move target
+        hCursorDragMove,                // Valid move target
+        hCursorDragCopy;                // ...
 
 EXTERN
 WNDPROC lpfnOldTabCtrlWndProc;          // Save area for old Tab Control procedure

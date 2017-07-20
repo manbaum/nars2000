@@ -631,7 +631,7 @@ UBOOL LoadWorkspace_EM
                     if (!lpSymEntry->stFlags.Value
                      || lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS)
                     {
-                        UBOOL bDeleted;             // TRUE iff the var is deleted by ParseSavedWsVar_EM
+                        UBOOL bDeleted = FALSE;     // TRUE iff the var is deleted by ParseSavedWsVar_EM
 
                         // Clear so we save a clean value
                         aplLongestObj = 0;

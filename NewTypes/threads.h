@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,8 +47,9 @@ typedef struct tagIE_THREAD         // Thread struct for ImmExecStmtInThread
 
 typedef struct tagCDB_THREAD        // Thread struct for CreateDebuggerInThread
 {
-    LPPERTABDATA lpMemPTD;          // 00:  Ptr to PerTabData global memory
-                                    // 04:  Length
+    HWND  hWndParent;               // 00:  Window handle of the parent
+    DWORD dwThreadId;               // 04:  Thread Id
+                                    // 08:  Length
 } CDB_THREAD, *LPCDB_THREAD;
 
 

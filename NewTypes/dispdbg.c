@@ -426,12 +426,7 @@ void UpdateDBWindow
     (void)
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
-    UpdateWindow (lpMemPTD->hWndDB);
+    UpdateWindow (hWndDB);
 } // End UpdateDBWindow
 #endif
 

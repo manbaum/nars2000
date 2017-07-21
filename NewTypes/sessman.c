@@ -1723,15 +1723,6 @@ NORMAL_EXIT:
 #undef  idChild
 #undef  fwEvent
 
-#ifdef DEBUG
-        case MYWM_INIT_SMDB:
-            // If the Debugger window handle is active, ...
-            if (lpMemPTD->hWndDB NE NULL)
-                PostMessageW (hWnd, MYWM_KEYDOWN, VK_F9, 0);
-            else
-                PostMessageW (hWnd, MYWM_INIT_SMDB, 0, 0);
-            break;
-#endif
         case MYWM_INIT_EC:
             // Wait for the third receipt of this message
             //   so we are sure everything is initialized
@@ -1773,9 +1764,7 @@ NORMAL_EXIT:
 
             // Tell the Edit Ctrl about its font
             SendMessageW (hWndEC, WM_SETFONT, (WPARAM) GetFSIndFontHandle (FONTENUM_SM), MAKELPARAM (TRUE, 0));
-#ifdef DEBUG
-            PostMessageW (hWnd, MYWM_INIT_SMDB, 0, 0);
-#endif
+
             // If requested, execute []LX
             if (lpMemPTD->bExecLX)
             {
@@ -2208,56 +2197,6 @@ NORMAL_EXIT:
                     return FALSE;
 #endif
 #ifdef DEBUG
-                case VK_F9:             // Resize Debugger and Session Manager windows
-                {
-                    RECT rc;
-                    int  nWidthMC,  nHeightMC,
-                         nHeightDB, nHeightSM;
-                    HWND hWndMC;
-
-                    // Get the window handle to the MDI Client (our parent)
-                    hWndMC = GetParent (hWnd);
-
-                    // Get its client rectangle
-                    GetClientRect (hWndMC, &rc);
-
-                    // Calculate its width & height
-                    nWidthMC  = rc.right  - rc.left;
-                    nHeightMC = rc.bottom - rc.top;
-
-                    // Calculate the height of the DB & SM windows
-                    nHeightDB = nHeightMC / 3;
-                    nHeightSM = nHeightMC - nHeightDB;
-
-                    // Resize the Debugger window
-                    //   to the top of the client area
-                    SetWindowPos (lpMemPTD->hWndDB, // Window handle to position
-                                  0,                // SWP_NOZORDER
-                                  0,                // X-position
-                                  0,                // Y-...
-                                  nWidthMC,         // Width
-                                  nHeightDB,        // Height
-                                  SWP_NOZORDER      // Flags
-                                | SWP_SHOWWINDOW
-                                 );
-                    // Resize the Session Manager window
-                    //   to the bottom of the client area
-                    SetWindowPos (lpMemPTD->hWndSM, // Window handle to position
-                                  0,                // SWP_NOZORDER
-                                  0,                // X-position
-                                  nHeightDB,        // Y-...
-                                  nWidthMC,         // Width
-                                  nHeightSM,        // Height
-                                  SWP_NOZORDER      // Flags
-                                | SWP_SHOWWINDOW
-                                 );
-                    // Tell the debugger window to scroll the last line into view
-                    SendMessageW (lpMemPTD->hWndDB, MYWM_DBGMSG_SCROLL, (WPARAM) -1, 0);
-
-                    return FALSE;
-                } // End VK_F9
-#endif
-#ifdef DEBUG
                 case VK_F11:            // DbgBrk ()
                 {
                     LPSYMENTRY   lpSym = NULL;
@@ -2406,8 +2345,8 @@ NORMAL_EXIT:
             FreeGlobalStorage (lpMemPTD);
 #ifdef DEBUG
             // If the debugger is still active, close it
-            if (lpMemPTD->hWndDB NE NULL)
-                SendMessageW (lpMemPTD->hWndMC, WM_MDIDESTROY, (WPARAM) lpMemPTD->hWndDB, 0);
+            if (hWndDB NE NULL)
+                DestroyWindow (hWndDB);
 #endif
 ////////////// *************** lptkStackBase ***************************
 ////////////if (lpMemPTD->lptkStackBase NE NULL)

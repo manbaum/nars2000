@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -397,11 +397,6 @@ UBOOL WINAPI CreateNewTabInThread
 
     // Resize the Master Frame so as to size this MDI Client window
     PostMessageW (hWndMF, MYWM_RESIZE, 0, 0);
-#ifdef DEBUG
-    // Create the Debugger window first
-    //   so it can be used by subsequent windows
-    CreateDebuggerWindow (lpMemPTD);
-#endif
 
     // Save hWndMC for use inside message loop
     //   so we can unlock the per-tab data memory
@@ -505,11 +500,6 @@ NORMAL_EXIT:
     // Destroy any windows we might have created
     if (lpMemPTD NE NULL && lpMemPTD->hWndMC NE NULL)
     {
-        if (lpMemPTD->hWndDB NE NULL)
-        {
-            SendMessageW (lpMemPTD->hWndMC, WM_MDIDESTROY, (WPARAM) (lpMemPTD->hWndDB), 0); lpMemPTD->hWndDB = NULL;
-        } // End IF
-
         if (lpMemPTD->hWndSM NE NULL)
         {
             SendMessageW (lpMemPTD->hWndMC, WM_MDIDESTROY, (WPARAM) (lpMemPTD->hWndSM), 0); lpMemPTD->hWndSM = NULL;

@@ -1,6 +1,47 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1778 -- Version 0.5.5.xx
+--------------------------------
+
+* Use A Single Debug Window Instead Of One per Tab
+
+Directory branches/bsmith/NewTypes:
+
+DEBUG.C:
+  Create the Debugger Window as a separate window in a separate thread, not a child MDI window.
+
+DEFINES.H:
+  Delete DB-specific window message as it is no longer used.
+
+DISPDBG.C:
+PERTAB.H:
+  Remove PTD-specific DEBUG info as it is not tab-specific anymore.
+
+EXTERNS.H:
+  Define global DEBUG window handle as it is not tab-specific anymore.
+
+MAIN.C:
+  Remove PTD-specific DEBUG info as it is not tab-specific anymore.
+  Move code to create the Debugger Window from the Tab Ctrl to the Master Frame Window.
+
+SESSMAN.C:
+  Remove PTD-specific DEBUG info as it is not tab-specific anymore.
+  Remove F9 DEBUG window positioning.
+
+TABCTRL.C:
+  Move code to create the Debugger Window from the Tab Ctrl to the Master Frame Window.
+  Delete code to destroy the Debugger Window from the Tab Ctrl as it is no longer created there.
+
+THREADS.H:
+  Define parameters passed to the Debugger Window thread.
+
+Directory branches/bsmith/NewTypes/htdocs/download:
+
+DOWNLOAD-BODY.PHP:
+  Exclude VC redistribution files from the list of files in the Downloads Section.
+
+
 Build #1777 -- Version 0.5.5.xx
 --------------------------------
 

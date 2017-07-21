@@ -229,9 +229,11 @@ Downloads</h1>
     while (false !== ($File = readdir ($dh)))
     {
         if (!is_dir ($DirName . $File)
-         && strcmp  ($File, "linestat.txt") != 0
-         && strcmp  ($File, "nars2000.ver") != 0
-         && strncmp ($File, "Notes-", 6)    != 0)
+         && strcmp  ($File, "linestat.txt"     ) != 0
+         && strcmp  ($File, "vcredist_x86.exe" ) != 0
+         && strcmp  ($File, "vcredist_x64.exe" ) != 0
+         && strcmp  ($File, "nars2000.ver"     ) != 0
+         && strncmp ($File, "Notes-", 6        ) != 0)
         {
             if (strncmp ($File, "Version-", 8) == 0)
             {

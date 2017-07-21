@@ -87,13 +87,11 @@ UBOOL _CheckCtrlBreak
 //***************************************************************************
 
 void CreateDebuggerWindow
-    (LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
+    (HWND hWndParent)
 
 {
-    DWORD dwThreadId;       // Thread ID
-
-    // Pass parameters to thread
-    cdbThread.lpMemPTD = lpMemPTD;
+    // Pass parameter to thread
+    cdbThread.hWndParent = hWndParent;
 
     // Create the thread
     CreateThread (NULL,                         // No security attrs
@@ -101,7 +99,7 @@ void CreateDebuggerWindow
                  &CreateDebuggerInThread,       // Starting routine
                  &cdbThread,                    // Param to thread func
                   0,                            // Creation flag
-                 &dwThreadId);                  // Returns thread id
+                 &cdbThread.dwThreadId);        // Returns thread id
 } // End CreateDebuggerWindow
 #endif
 
@@ -117,41 +115,31 @@ UBOOL WINAPI CreateDebuggerInThread
     (LPCDB_THREAD lpcdbThread)
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    HWND         hWndMC,        // MDI Client window handle
-                 hWndDB;        // Debugger window handle
-    MSG          Msg;           // Message for GetMessageW loop
+    MSG Msg;            // Message for GetMessageW loop
 
     __try
     {
         // Save the thread type ('DB')
         TlsSetValue (dwTlsType, TLSTYPE_DB);
 
-        // Extract values from the arg struc
-        lpMemPTD = lpcdbThread->lpMemPTD;
-
-        // Save ptr to PerTabData global memory
-        TlsSetValue (dwTlsPerTabData, lpMemPTD);
-
-        // Get the MDI Client window handle
-        hWndMC = lpMemPTD->hWndMC;
-
         // Create the debugger window
         hWndDB =
-          CreateMDIWindowW (LDBWNDCLASS,        // Class name
-                            wszDBTitle,         // Window title
-                            0
-                          | WS_CLIPCHILDREN,    // Styles
-                            CW_USEDEFAULT,      // X-pos
-                            CW_USEDEFAULT,      // Y-pos
-                            CW_USEDEFAULT,      // Height
-                            CW_USEDEFAULT,      // Width
-                            hWndMC,             // Parent
-                            _hInstance,         // Instance
-                            0);                 // Extra data
-        // Save in PerTabData
-        lpMemPTD->hWndDB = hWndDB;
-
+          CreateWindowExW (0L,                      // Extended styles
+                           LDBWNDCLASS,             // Class name
+                           wszDBTitle,              // Window title
+                           0
+                         | WS_OVERLAPPEDWINDOW
+                         | WS_VSCROLL
+                         | WS_HSCROLL
+                           ,                        // Styles
+                           CW_USEDEFAULT,           // X-pos
+                           CW_USEDEFAULT,           // Y-pos
+                           CW_USEDEFAULT,           // Height
+                           CW_USEDEFAULT,           // Width
+                           lpcdbThread->hWndParent, // Parent
+                           NULL,                    // Menu
+                           _hInstance,              // Instance
+                           NULL);                   // No extra data
         // If it didn't succeed, ...
         if (hWndDB EQ NULL)
             MB (pszNoCreateDBWnd);
@@ -164,15 +152,11 @@ UBOOL WINAPI CreateDebuggerInThread
             // Make sure we can communicate between windows
             AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
 
-            // Tell the SM we're active
-            PostMessageW (lpMemPTD->hWndSM, WM_PARENTNOTIFY, MAKEWPARAM (WM_CREATE, IDWC_SM_DB), (LPARAM) hWndDB);
-
             // Main message loop
             while (GetMessageW (&Msg, NULL, 0, 0))
             {
-                // Handle MDI messages and accelerators
-                if (!TranslateMDISysAccel (hWndMC, &Msg)
-                 && ((!hAccel) || !TranslateAcceleratorW (hWndMF, hAccel, &Msg)))
+                // Handle accelerators
+                if (!hAccel || !TranslateAcceleratorW (hWndMF, hAccel, &Msg))
                 {
                     TranslateMessage (&Msg);
                     DispatchMessageW (&Msg);
@@ -243,8 +227,6 @@ LRESULT APIENTRY DBWndProc
                  iHeight;
     RECT         rcClient;
     HWND         hWndLB;            // ListBox window handle
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    LRESULT      lResult = FALSE;   // Result from DefMDIChildProcW
 
 #define PROP_LINENUM    L"iLineNum"
 
@@ -288,9 +270,6 @@ LRESULT APIENTRY DBWndProc
             ShowWindow (hWndLB, SW_SHOWNORMAL);
             ShowWindow (hWnd,   SW_SHOWNORMAL);
 
-            // Get ptr to PerTabData global memory
-            lpMemPTD = GetMemPTD ();
-
             // Subclass the List Box so we can pass
             //   certain WM_KEYDOWN messages to the
             //   session manager.
@@ -305,14 +284,13 @@ LRESULT APIENTRY DBWndProc
             //   to be drawn.
             PostMessageW (hWnd, MYWM_INIT_DB, 0, 0);
 
-////////////goto NORMAL_EXIT;       // We handled the msg
             break;
 
         case MYWM_INIT_DB:
             // Tell the Listbox Control about its font
             SendMessageW (hWndLB, WM_SETFONT, (WPARAM) hFontSM, MAKELPARAM (TRUE, 0));
 
-            goto NORMAL_EXIT;       // We handled the msg
+            return FALSE;           // We handled the msg
 
         case WM_SETFONT:            // hFont = (HFONT) wParam;
                                     // fRedraw = LOWORD (lParam);
@@ -320,7 +298,7 @@ LRESULT APIENTRY DBWndProc
             // Pass these messages through to the ListBox
             SendMessageW (hWndLB, message, wParam, lParam);
 
-            goto NORMAL_EXIT;       // We handled the msg
+            return FALSE;           // We handled the msg
 
         case WM_SYSCOLORCHANGE:
         case WM_SETTINGCHANGE:
@@ -361,7 +339,7 @@ LRESULT APIENTRY DBWndProc
             //   less a little so as to cram more into the ListBox
             lpmis->itemHeight = GetFSDirAveCharSize (FONTENUM_SM)->cy - 2;
 
-            goto NORMAL_EXIT;       // We handled the msg
+            return FALSE;           // We handled the msg
         } // End WM_MEASUREITEM
 
         case WM_ERASEBKGND:
@@ -524,9 +502,7 @@ LRESULT APIENTRY DBWndProc
             SetBkMode    (lpdis->hDC, bkMode);
 
             // Set the result to indciate we processed the message
-            lResult = TRUE;
-
-            goto NORMAL_EXIT;       // We handled the msg
+            return TRUE;
         } // End WM_DRAWITEM
 
         case MYWM_DBGMSGA:          // Single-char message
@@ -549,7 +525,7 @@ LRESULT APIENTRY DBWndProc
             // Scroll this item into view
             SendMessageW (hWnd, MYWM_DBGMSG_SCROLL, iIndex, 0);
 
-            goto NORMAL_EXIT;       // We handled the msg
+            return FALSE;           // We handled the msg
 
         case MYWM_DBGMSGW:          // Double-char message
             iLineNum = HandleToULong (GetPropW (hWnd, PROP_LINENUM));
@@ -572,7 +548,7 @@ LRESULT APIENTRY DBWndProc
             // Scroll this item into view
             SendMessageW (hWnd, MYWM_DBGMSG_SCROLL, iIndex, 0);
 
-            goto NORMAL_EXIT;       // We handled the msg
+            return FALSE;           // We handled the msg
 
         case MYWM_DBGMSG_SCROLL:    // Scroll item into view
             iIndex = (int) wParam;  // Get the item #
@@ -594,7 +570,7 @@ LRESULT APIENTRY DBWndProc
 
             UpdateWindow (hWnd);    // Redraw the screen now
 
-            goto NORMAL_EXIT;       // We handled the msg
+            return FALSE;           // We handled the msg
 
         case MYWM_DBGMSG_CLR:
             // Start over again
@@ -604,7 +580,7 @@ LRESULT APIENTRY DBWndProc
 
             UpdateWindow (hWnd);    // Redraw the screen now
 
-            goto NORMAL_EXIT;       // We handled the msg
+            return FALSE;           // We handled the msg
 
         case WM_CLOSE:
             // Remove saved window properties
@@ -612,7 +588,7 @@ LRESULT APIENTRY DBWndProc
 
             DestroyWindow (hWnd);
 
-            goto NORMAL_EXIT;       // We handled the msg
+            break;                  // Continue with next handler
 
         case WM_DESTROY:
             // Uninitialize window-specific resources
@@ -621,16 +597,11 @@ LRESULT APIENTRY DBWndProc
             // Tell the thread to quit, too
             PostQuitMessage (0);
 
-            goto NORMAL_EXIT;       // We handled the msg
+            break;                  // Continue with next handler
     } // End SWITCH
 
-////LCLODSAPI ("DBY:", hWnd, message, wParam, lParam);
-    lResult =
-      DefMDIChildProcW (hWnd, message, wParam, lParam);
-NORMAL_EXIT:
 ////LCLODSAPI ("DBZ:", hWnd, message, wParam, lParam);
-
-    return lResult;
+    return DefWindowProcW (hWnd, message, wParam, lParam);
 } // End DBWndProc
 #endif
 
@@ -662,7 +633,6 @@ LRESULT WINAPI LclListboxWndProc
     LPWCHAR      lpSel,
                  p;
     LRESULT      lResult;
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
 ////LCLODSAPI ("LLB: ", hWnd, message, wParam, lParam);
 
@@ -905,37 +875,6 @@ LRESULT WINAPI LclListboxWndProc
             DestroyMenu (hMenu);
 
             break;
-
-        case WM_KEYDOWN:            // nVirtKey = (int) wParam;     // virtual-key code
-                                    // lKeyData = lParam;           // Key data
-#define nVirtKey ((int) wParam)
-        {
-            // Process the virtual key
-            switch (nVirtKey)
-            {
-                case VK_F1:
-                case VK_F2:
-                case VK_F3:
-                case VK_F4:
-                case VK_F5:
-                case VK_F6:
-                case VK_F7:
-                case VK_F8:
-                case VK_F9:
-                case VK_F10:
-                case VK_F11:
-                case VK_F12:
-                    // Get ptr to PerTabData global memory
-                    lpMemPTD = GetMemPTD ();
-
-                    PostMessageW (lpMemPTD->hWndSM, message, wParam, lParam);
-
-                    return FALSE;   // We handled the msg
-            } // End SWITCH
-
-            break;
-        } // End WM_KEYDOWN
-#undef  nVirtKey
     } // End SWITCH
 
 ////LCLODSAPI ("LLBZ: ", hWnd, message, wParam, lParam);
@@ -960,16 +899,7 @@ void DbgMsg
     (LPCHAR szTemp)
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
-
-    // Ensure it's a valid ptr
-    if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
-        return;
-
-    if (lpMemPTD->hWndDB)
+    if (hWndDB NE NULL)
     {
         WCHAR wszTemp[1024];        // Temporary storage for the message in wide form
 
@@ -993,20 +923,7 @@ void DbgMsgW
     (LPWCHAR wszTemp)
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    HWND         hWndDB;        // Debugger window handle
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = TlsGetValue (dwTlsPerTabData); // Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
-
-    // Ensure it's a valid ptr
-    if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
-        return;
-
-    // Get the debugger window handle
-    hWndDB = lpMemPTD->hWndDB;
-
-    if (hWndDB)
+    if (hWndDB NE NULL)
         SendMessageW (hWndDB, MYWM_DBGMSGW, 0, (LPARAM) wszTemp);
 } // End DbgMsgW
 #endif
@@ -1023,13 +940,8 @@ void DbgClr
     (void)
 
 {
-    LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
-
-    if (lpMemPTD->hWndDB)
-        PostMessageW (lpMemPTD->hWndDB, MYWM_DBGMSG_CLR, 0, 0);
+    if (hWndDB NE NULL)
+        PostMessageW (hWndDB, MYWM_DBGMSG_CLR, 0, 0);
 } // End DbgClr
 #endif
 

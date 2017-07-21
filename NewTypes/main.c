@@ -1009,8 +1009,8 @@ void ApplyNewFontSM
     enumSetFontW.lpwClassName = LDBWNDCLASS;
     enumSetFontW.hFont        = hFont;
 
-    // Refont the DB windows
-    EnumChildWindows (hWndMF, &EnumCallbackSetFontW, (LPARAM) &enumSetFontW);
+    // Refont the DB window
+    SendMessageW (hWndDB, WM_SETFONT, (WPARAM) hFont, MAKELPARAM (TRUE, 0));
 #endif
 } // End ApplyNewFontSM
 
@@ -1353,6 +1353,12 @@ LRESULT APIENTRY MFWndProc
             break;                  // Continue with next handler
 
         case WM_CREATE:
+#ifdef DEBUG
+            // Create the Debugger window first
+            //   so it can be used by subsequent windows
+            CreateDebuggerWindow (hWnd);
+#endif
+
             // Create the child windows
             if (CreateChildWindows (hWnd) EQ FALSE)
                 return -1;          // Stop the whole process

@@ -4852,7 +4852,11 @@ UBOOL scUnkDone
                 break;
 
             default:
-                scType = SC_UNK;
+                if (*lptkLocalVars->lpwszCur <= 0x1F
+                 || *lptkLocalVars->lpwszCur EQ UTF16_REPLACEMENT0000)
+                    scType = SC_ODB;
+                else
+                    scType = SC_UNK;
 
                 break;
         } // End SWITCH
@@ -6256,7 +6260,6 @@ TKCOLINDICES CharTransTK
             return TKCOL_DIGIT;
 
         case L' ':
-        case WC_HT:
             return TKCOL_SPACE;
 
         case UTF16_ALPHA:               // Alt-'a' - alpha
@@ -6538,6 +6541,7 @@ TKCOLINDICES CharTransTK
         case L'%':
         case L'&':
         case WC_EOS:
+        case WC_HT:
             return TKCOL_UNK;
 
         default:

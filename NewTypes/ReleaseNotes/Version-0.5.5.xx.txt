@@ -1,6 +1,22 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1779 -- Version 0.5.5.xx
+--------------------------------
+
+* Define Separate Syntax Color For Output Debugging
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+INIFILE.C:
+MAIN.RC:
+RESOURCE.H:
+SYNTAXCOLORS.H:
+TOKENIZE.C:
+  Define separate syntax color for Output Debugging.
+
+
 Build #1778 -- Version 0.5.5.xx
 --------------------------------
 

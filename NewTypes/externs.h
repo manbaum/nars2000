@@ -1450,7 +1450,8 @@ SYNTAXCOLORNAME gSyntaxColorName[SC_LENGTH]
     {{DEF_SC_UNNESTED   }, L"Improper Nesting"                  },  // 16:  Improperly Nested Grouping Symbols [] () {}
     {{DEF_SC_UNK        }, L"Unknown Symbols"                   },  // 17:  Unknown symbol
     {{DEF_SC_LINECONT   }, L"Line Continuation"                 },  // 18:  Line Continuation
-    {{DEF_SC_WINTEXT    }, L"Window Text"                       },  // 19:  Window text
+    {{DEF_SC_ODB        }, L"Output Debugging"                  },  // 19:  Output Debugging
+    {{DEF_SC_WINTEXT    }, L"Window Text"                       },  // 1A:  Window text
   }
 #endif
 ;
@@ -1494,7 +1495,8 @@ UBOOL gSyntClrBGTrans[SC_LENGTH]
     FALSE,                  // 16:  Improperly Nested Grouping Symbols
     FALSE,                  // 17:  Unknown symbol
     TRUE,                   // 18:  Line Continuation
-    FALSE,                  // 19:  Window background
+    TRUE,                   // 19:  Output Debugging
+    FALSE,                  // 1A:  Window background
   }
 #endif
 ;

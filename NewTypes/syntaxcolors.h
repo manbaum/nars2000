@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,7 +46,8 @@
 #define DEF_SC_UNMATCHGRP      DEF_SCN_BLUE         , DEF_SCN_LIGHTCYAN
 #define DEF_SC_UNNESTED        DEF_SCN_BLUE         , DEF_SCN_LIGHTPINK
 #define DEF_SC_UNK             DEF_SCN_BLUE         , DEF_SCN_VIOLET
-#define DEF_SC_LINECONT        DEF_SCN_DODGERBLUE   , DEF_SCN_TRANSPARENT   
+#define DEF_SC_LINECONT        DEF_SCN_DODGERBLUE   , DEF_SCN_TRANSPARENT
+#define DEF_SC_ODB             DEF_SCN_LIGHTCORAL   , DEF_SCN_TRANSPARENT
 #define DEF_SC_WINTEXT         DEF_SCN_BLACK        , DEF_SCN_WHITE
 
 // Syntax Coloring categories
@@ -78,8 +79,9 @@ typedef enum tagSC_TYPE
     SC_UNNESTED,        // 16:  Improperly Nested Grouping Symbols [] () {}
     SC_UNK,             // 17:  Unknown symbol
     SC_LINECONT,        // 18:  Line Continuation
-    SC_WINTEXT,         // 19:  Window text
-    SC_LENGTH           // 1A:  # entries in this enum
+    SC_ODB,             // 19:  Output Debugging
+    SC_WINTEXT,         // 1A:  Window text
+    SC_LENGTH           // 1B:  # entries in this enum
                         //      Because this enum is origin-0, this value is the # valid columns.
 } SCTYPE, *LPSCTYPE;
 

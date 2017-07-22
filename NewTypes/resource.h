@@ -366,8 +366,9 @@
 #define IDC_SYNTCLR_LT23                        1422    // 16:  Improperly Nested Grouping Symbols
 #define IDC_SYNTCLR_LT24                        1423    // 17:  Unknown symbol
 #define IDC_SYNTCLR_LT25                        1424    // 18:  Line Continuation
-#define IDC_SYNTCLR_LT26                        1425    // 19:  Window background
-#define IDC_SYNTCLR_LT_LAST                     IDC_SYNTCLR_LT26
+#define IDC_SYNTCLR_LT26                        1425    // 19:  Output Debugging
+#define IDC_SYNTCLR_LT27                        1426    // 1A:  Window background
+#define IDC_SYNTCLR_LT_LAST                     IDC_SYNTCLR_LT27
 
 #define IDC_SYNTCLR_XB_TRANS1                   1500    // 00:  Global Name
 #define IDC_SYNTCLR_XB_TRANS2                   1501    // 01:  Local  ...
@@ -394,8 +395,9 @@
 #define IDC_SYNTCLR_XB_TRANS23                  1522    // 16:  Improperly Nested Grouping Symbols
 #define IDC_SYNTCLR_XB_TRANS24                  1523    // 17:  Unknown symbol
 #define IDC_SYNTCLR_XB_TRANS25                  1524    // 18:  Line Continuation
-#define IDC_SYNTCLR_XB_TRANS26                  1525    // 19:  Window background
-#define IDC_SYNTCLR_XB_TRANS_LAST               IDC_SYNTCLR_XB_TRANS26
+#define IDC_SYNTCLR_XB_TRANS26                  1525    // 19:  Output Debugging
+#define IDC_SYNTCLR_XB_TRANS27                  1526    // 1A:  Window background
+#define IDC_SYNTCLR_XB_TRANS_LAST               IDC_SYNTCLR_XB_TRANS27
 
 #define IDC_SYNTCLR_BN_FGCLR1                   1600    // 00:  Global Name
 #define IDC_SYNTCLR_BN_FGCLR2                   1601    // 01:  Local  ...
@@ -422,8 +424,9 @@
 #define IDC_SYNTCLR_BN_FGCLR23                  1622    // 16:  Improperly Nested Grouping Symbols
 #define IDC_SYNTCLR_BN_FGCLR24                  1623    // 17:  Unknown symbol
 #define IDC_SYNTCLR_BN_FGCLR25                  1624    // 18:  Line Continuation
-#define IDC_SYNTCLR_BN_FGCLR26                  1625    // 19:  Window background
-#define IDC_SYNTCLR_BN_FGCLR_LAST               IDC_SYNTCLR_BN_FGCLR25
+#define IDC_SYNTCLR_BN_FGCLR26                  1625    // 19:  Output Debugging
+#define IDC_SYNTCLR_BN_FGCLR27                  1626    // 1A:  Window background
+#define IDC_SYNTCLR_BN_FGCLR_LAST               IDC_SYNTCLR_BN_FGCLR27
 
 #define IDC_SYNTCLR_BN_BGCLR1                   1700    // 00:  Global Name
 #define IDC_SYNTCLR_BN_BGCLR2                   1701    // 01:  Local  ...
@@ -450,8 +453,9 @@
 #define IDC_SYNTCLR_BN_BGCLR23                  1722    // 16:  Improperly Nested Grouping Symbols
 #define IDC_SYNTCLR_BN_BGCLR24                  1723    // 17:  Unknown symbol
 #define IDC_SYNTCLR_BN_BGCLR25                  1724    // 18:  Line Continuation
-#define IDC_SYNTCLR_BN_BGCLR26                  1725    // 19:  Window background
-#define IDC_SYNTCLR_BN_BGCLR_LAST               IDC_SYNTCLR_BN_BGCLR26
+#define IDC_SYNTCLR_BN_BGCLR26                  1725    // 19:  Output Debugging
+#define IDC_SYNTCLR_BN_BGCLR27                  1726    // 1A:  Window background
+#define IDC_SYNTCLR_BN_BGCLR_LAST               IDC_SYNTCLR_BN_BGCLR27
 
 #define IDC_SYNTCLR_LT_FGMRK1                   1800    // 00:  Global Name
 #define IDC_SYNTCLR_LT_FGMRK2                   1801    // 01:  Local  ...
@@ -478,8 +482,9 @@
 #define IDC_SYNTCLR_LT_FGMRK23                  1822    // 16:  Improperly Nested Grouping Symbols
 #define IDC_SYNTCLR_LT_FGMRK24                  1823    // 17:  Unknown symbol
 #define IDC_SYNTCLR_LT_FGMRK25                  1824    // 18:  Line Continuation
-#define IDC_SYNTCLR_LT_FGMRK26                  1825    // 19:  Window background
-#define IDC_SYNTCLR_LT_FGMRK_LAST               IDC_SYNTCLR_LT_FGMRK26
+#define IDC_SYNTCLR_LT_FGMRK26                  1825    // 19:  Output Debugging
+#define IDC_SYNTCLR_LT_FGMRK27                  1826    // 1A:  Window background
+#define IDC_SYNTCLR_LT_FGMRK_LAST               IDC_SYNTCLR_LT_FGMRK27
 
 #define IDC_SYNTCLR_LT_BGMRK1                   1900    // 00:  Global Name
 #define IDC_SYNTCLR_LT_BGMRK2                   1901    // 01:  Local  ...
@@ -506,8 +511,9 @@
 #define IDC_SYNTCLR_LT_BGMRK23                  1922    // 16:  Improperly Nested Grouping Symbols
 #define IDC_SYNTCLR_LT_BGMRK24                  1923    // 17:  Unknown symbol
 #define IDC_SYNTCLR_LT_BGMRK25                  1924    // 18:  Line Continuation
-#define IDC_SYNTCLR_LT_BGMRK26                  1925    // 19:  Window background
-#define IDC_SYNTCLR_LT_BGMRK_LAST               IDC_SYNTCLR_LT_BGMRK26
+#define IDC_SYNTCLR_LT_BGMRK26                  1925    // 19:  Output Debugging
+#define IDC_SYNTCLR_LT_BGMRK27                  1926    // 1A:  Window background
+#define IDC_SYNTCLR_LT_BGMRK_LAST               IDC_SYNTCLR_LT_BGMRK27
 
 #define IDC_WEBCLR_LT001                        2001
 #define IDC_WEBCLR_LT002                        2002

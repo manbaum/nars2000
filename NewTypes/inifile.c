@@ -144,6 +144,7 @@
 #define KEYNAME_SC_UNNESTED             L"UnnestedGrp"
 #define KEYNAME_SC_UNK                  L"Unk"
 #define KEYNAME_SC_LINECONT             L"LineContinuation"
+#define KEYNAME_SC_ODB                  L"OutputDebugging"
 #define KEYNAME_SC_WINTEXT              L"WinText"
 
 #define KEYNAME_CUSTOMCOLORS            L"CustomColors"
@@ -198,7 +199,8 @@ LPWCHAR aColorKeyNames[] =
  KEYNAME_SC_UNNESTED    ,       // 16:  Improperly Nested Grouping Symbols [] () {}
  KEYNAME_SC_UNK         ,       // 17:  Unknown symbol
  KEYNAME_SC_LINECONT    ,       // 18:  Line Continuation
- KEYNAME_SC_WINTEXT     ,       // 19:  Window text
+ KEYNAME_SC_ODB         ,       // 19:  Output Debugging
+ KEYNAME_SC_WINTEXT     ,       // 1A:  Window text
 };
 
 // Array of keynames for use in [Toolbars] section

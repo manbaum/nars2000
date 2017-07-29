@@ -73,7 +73,8 @@ typedef enum tagMFO
     MFOE_MonExecute      ,      // 2F:  Monadic Execute with []FPC localized
     MFOE_DydSquad        ,      // 30:  Dyadic Squad
     MFOE_DydSlope        ,      // 31:  Dyadic Slope
-    MFOE_LENGTH                 // 32:  # entries in this enum
+    MFOE_MonShriek       ,      // 32:  Monadic Shriek
+    MFOE_LENGTH                 // 33:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -127,6 +128,7 @@ typedef enum tagMFO
 #define MFON_MonExecute         L"#MonExecute"
 #define MFON_DydSquad           L"#DydSquad"
 #define MFON_DydSlope           L"#DydSlope"
+#define MFON_MonShriek          L"#MonShriek"
 
 // Magic Function/Operator Variables
 #define $ALPHA          WS_UTF16_ALPHA

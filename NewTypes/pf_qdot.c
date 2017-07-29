@@ -32,8 +32,7 @@
 
 #include "headers.h"
 #include <gsl/gsl_sf_gamma.h>
-#include <gsl/gsl_sf_result.h>
-#include <gsl/gsl_errno.h>
+#include <gsl/gsl_eigen.h>
 
 
 #ifndef PROTO
@@ -77,11 +76,11 @@ PRIMSPEC PrimSpecQuoteDot =
 
     NULL,   // &PrimFnMonQuoteDotHC8IisHC8I, -- Can't happen w/QuoteDot
     NULL,   // &PrimFnMonQuoteDotHC8IisHC8F, -- Can't happen w/QuoteDot
-    &PrimFnMonQuoteDotHC8FisHC8I,
-    &PrimFnMonQuoteDotHC8FisHC8F,
+    NULL,   // &PrimFnMonQuoteDotHC8FisHC8I, -- Can't happen w/QuoteDot
+    NULL,   // &PrimFnMonQuoteDotHC8FisHC8F, -- Can't happen w/QuoteDot
     NULL,   // &PrimFnMonQuoteDotHC8RisHC8R, -- Can't happen w/QuoteDot
-    &PrimFnMonQuoteDotHC8VisHC8R,
-    &PrimFnMonQuoteDotHC8VisHC8V,
+    NULL,   // &PrimFnMonQuoteDotHC8VisHC8R, -- Can't happen w/QuoteDot
+    NULL,   // &PrimFnMonQuoteDotHC8VisHC8V, -- Can't happen w/QuoteDot
 
     // Monadic FLT result HC arg functions (indexable)
     NULL,   // &PrimFnMonQuoteDotFisHC2I, -- Can't happen w/QuoteDot
@@ -151,13 +150,13 @@ PRIMSPEC PrimSpecQuoteDot =
     &PrimFnDydQuoteDotHC4VisHC4RvHC4R,
     &PrimFnDydQuoteDotHC4VisHC4VvHC4V,
 
-    &PrimFnDydQuoteDotHC8IisHC8IvHC8I,
+    NULL,   // &PrimFnDydQuoteDotHC8IisHC8IvHC8I, -- Can't happen w/QuoteDot
     NULL,   // &PrimFnDydQuoteDotHC8IisHC8FvHC8F, -- Can't happen w/QuoteDot
-    &PrimFnDydQuoteDotHC8FisHC8IvHC8I,
-    &PrimFnDydQuoteDotHC8FisHC8FvHC8F,
-    &PrimFnDydQuoteDotHC8RisHC8RvHC8R,
-    &PrimFnDydQuoteDotHC8VisHC8RvHC8R,
-    &PrimFnDydQuoteDotHC8VisHC8VvHC8V,
+    NULL,   // &PrimFnDydQuoteDotHC8FisHC8IvHC8I, -- Can't happen w/QuoteDot
+    NULL,   // &PrimFnDydQuoteDotHC8FisHC8FvHC8F, -- Can't happen w/QuoteDot
+    NULL,   // &PrimFnDydQuoteDotHC8RisHC8RvHC8R, -- Can't happen w/QuoteDot
+    NULL,   // &PrimFnDydQuoteDotHC8VisHC8RvHC8R, -- Can't happen w/QuoteDot
+    NULL,   // &PrimFnDydQuoteDotHC8VisHC8VvHC8V, -- Can't happen w/QuoteDot
 
     // Monadic Boolean chunk functions
     NULL,   // &PrimFnMonQuoteDotB64isB64, -- Can't happen w/QuoteDot
@@ -235,6 +234,23 @@ APLSTYPE PrimSpecQuoteDotStorageTypeMon
     //   the same as that of the right arg
     aplTypeRes = *lpaplTypeRht;
 
+    // Call common promotion routine
+    aplTypeRes = PrimSpecQuoteDotStorageTypeCom (aplTypeRes);
+
+    return aplTypeRes;
+} // End PrimSpecQuoteDotStorageTypeMon
+
+
+//***************************************************************************
+//  $PrimSpecQuoteDotStorageTypeCom
+//
+//  Common primitive monadic scalar function special handling:  Storage type
+//***************************************************************************
+
+APLSTYPE PrimSpecQuoteDotStorageTypeCom
+    (APLSTYPE aplTypeRes)
+
+{
     // Split cases based upon the storage type
     switch (aplTypeRes)
     {
@@ -243,12 +259,10 @@ APLSTYPE PrimSpecQuoteDotStorageTypeMon
         case ARRAY_FLOAT:
         case ARRAY_HC2F:
         case ARRAY_HC4F:
-        case ARRAY_HC8F:
         case ARRAY_RAT:
         case ARRAY_VFP:
         case ARRAY_HC2V:
         case ARRAY_HC4V:
-        case ARRAY_HC8V:
         case ARRAY_NESTED:
             break;
 
@@ -261,14 +275,16 @@ APLSTYPE PrimSpecQuoteDotStorageTypeMon
         // Except that HCINT -> HCFLT, HCRAT -> HCVFP, etc.
         case ARRAY_HC2I:
         case ARRAY_HC4I:
-        case ARRAY_HC8I:
         case ARRAY_HC2R:
         case ARRAY_HC4R:
-        case ARRAY_HC8R:
             aplTypeRes++;               // Assuming order as in <ARRAY_TYPES>
 
             break;
 
+        case ARRAY_HC8I:
+        case ARRAY_HC8F:
+        case ARRAY_HC8R:
+        case ARRAY_HC8V:
         case ARRAY_CHAR:
         case ARRAY_HETERO:
             aplTypeRes = ARRAY_ERROR;
@@ -280,7 +296,7 @@ APLSTYPE PrimSpecQuoteDotStorageTypeMon
     } // End SWITCH
 
     return aplTypeRes;
-} // End PrimSpecQuoteDotStorageTypeMon
+} // End PrimSpecQuoteDotStorageTypeCom
 
 
 //***************************************************************************
@@ -729,6 +745,302 @@ void PrimFnMonQuoteDotHC2FisHC2F
 
 
 //***************************************************************************
+//  $FactHCxF
+//
+//  Primitive scalar function monadic QuoteDot:  HCxF {is} fn HCxF
+//    using matrix form.  This routine may be called with N = 1, 2, 4
+//    but is not needed for anything but Quaternions as the other cases
+//    are handled by special purpose code elsewhere.
+//***************************************************************************
+
+APLHC8F FactHCxF
+    (APLHC8F aplRht,                // The input
+     int     N)                     // The dimension (1, 2, 4, 8)
+
+{
+    APLHC8F                       aplRes = {0};                 // The result
+    gsl_matrix                   *lpGslMatrixA = NULL;          // GSL Temp
+    gsl_vector_complex           *lpGslCVectorEval = NULL;      // Eigenvalues
+    gsl_matrix_complex           *lpGslCMatrixEvec = NULL,      // Eigenvectors
+                                 *lpGslCMatrixZ    = NULL;      // Eigenvectors
+    gsl_eigen_nonsymmv_workspace *lpGslEigenWs = NULL;          // Ptr to the GSL workspace
+    APLUINT                       ByteRes;                      // # bytes in the result
+    EXCEPTION_CODES               exCode = EXCEPTION_SUCCESS;   // Exception code in case we're to signal an exception
+    int                           ErrCode,                      // Error code
+                                  iCntV,                        // Loop counter for vectors
+                                  iCntM;                        // ...              matrices
+
+    // Allocate GSL arrays
+    lpGslMatrixA     = gsl_matrix_alloc  (N, N);        // N x N
+    lpGslCVectorEval = gsl_vector_complex_alloc (N);    // N
+    lpGslCMatrixEvec = gsl_matrix_complex_alloc (N, N); // N x N
+    lpGslCMatrixZ    = gsl_matrix_complex_alloc (N, N); // N x N
+    lpGslEigenWs     = gsl_eigen_nonsymmv_alloc (N);
+
+    // Check the return codes for the above allocations
+    if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixA
+     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslCMatrixZ
+     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslCVectorEval
+     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslCMatrixEvec
+     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslEigenWs)
+        goto WSFULL_EXIT;
+
+    // Calculate the byte size of the vector data
+    ByteRes = N * sizeof (aplRht.parts[0]);
+
+////// Check for overflow (can't happen with N = 1, 2, 4, or 8
+////if (ByteRes NE (APLU3264) ByteRes)
+////    goto WSFULL_EXIT;
+////
+    // Split cases based upon the dimension
+    switch (N)
+    {
+        case 1:
+            // Represent the Real number as a 1x1 matrix
+            lpGslMatrixA->data[0] = aplRht.parts[0];
+
+            break;
+
+        case 2:
+            // Represent the Complex number as a 2x2 matrix
+            //   using the standard Complex number matrix form
+            //   as A = (a, -b,
+            //           b,  a)
+            lpGslMatrixA->data[0] =
+            lpGslMatrixA->data[3] =  aplRht.parts[0];
+            lpGslMatrixA->data[1] = -aplRht.parts[1];
+            lpGslMatrixA->data[2] =  aplRht.parts[1];
+
+            break;
+
+        case 4:
+            // Represent the Quaternion number as a 4x4 matrix
+            //   using one of the 48 Quaternion number matrix forms
+            //   as A = (a, -b, -c, -d,
+            //           b,  a, -d,  c,
+            //           c,  d,  a, -b,
+            //           d, -c,  b,  a)
+            lpGslMatrixA->data[ 0] =
+            lpGslMatrixA->data[ 5] =
+            lpGslMatrixA->data[10] =
+            lpGslMatrixA->data[15] =  aplRht.parts[0];
+            lpGslMatrixA->data[ 1] =
+            lpGslMatrixA->data[11] = -aplRht.parts[1];
+            lpGslMatrixA->data[ 2] =
+            lpGslMatrixA->data[13] = -aplRht.parts[2];
+            lpGslMatrixA->data[ 3] =
+            lpGslMatrixA->data[ 6] = -aplRht.parts[3];
+            lpGslMatrixA->data[ 4] =
+            lpGslMatrixA->data[14] =  aplRht.parts[1];
+            lpGslMatrixA->data[ 7] =
+            lpGslMatrixA->data[ 8] =  aplRht.parts[2];
+            lpGslMatrixA->data[ 9] =
+            lpGslMatrixA->data[12] =  aplRht.parts[3];
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Set params
+////gsl_eigen_nonsymmv_params (0);  // 0 is the default
+
+    // Calculate the Eigenvalues and Eigenvectors
+    ErrCode =
+      gsl_eigen_nonsymmv (lpGslMatrixA,
+                          lpGslCVectorEval,
+                          lpGslCMatrixEvec,
+                          lpGslEigenWs);
+    // Check the error code
+    if (ErrCode NE GSL_SUCCESS)
+        goto DOMAIN_EXIT;
+
+    // Calculate the factorial of the eigenvalues (in lpGslCVectorEval)
+    //   and store them into the diagonal of Z (lpGslCMatrixZ)
+    for (iCntV = iCntM = 0; iCntV < N; iCntV++, iCntM += N + 1)
+    {
+        __try
+        {
+            ((LPAPLHC2F) lpGslCMatrixZ->data)[iCntM] = FactHC2F (((LPAPLHC2F) lpGslCVectorEval->data)[iCntV]);
+        } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+        {
+            exCode = MyGetExceptionCode ();
+
+            goto ERROR_EXIT;
+        } // End __try/__except
+    } // End FOR
+
+    // The result is the N-dimensional number  <9{circle}(Evec+.×Z+.×{domino}Evec)[;1]
+
+    // Finish off the result with a Magic Function
+    {
+        HGLOBAL           hGlbMFO;              // Magic function/operator ...
+        LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
+        LPPL_YYSTYPE      lpYYRes;              // The result of the Magic Function
+        TOKEN             tkLftArg = {0},       // Left arg token to the Magic Function
+                          tkRhtArg = {0},       // Right ...
+                          tkFunc   = {0};       // Function token
+        HGLOBAL           hGlbTmp;              // Temp global memory handle
+        LPVARARRAY_HEADER lpMemHdrTmp = NULL;   // Ptr to the header
+        LPAPLHC2F         lpMemTmp;             // Ptr to the global memory data
+        APLDIM            NxN[2] = {N, N};      // The array dimensions
+        int               iSizeofRes;           // Sizeof an item in the result
+
+        // Setup the left arg token as Evec
+
+        // Allocate space for Evec as an NxN Complex Floating Point matrix
+        hGlbTmp = AllocateGlobalArray (ARRAY_HC2F, N * N, 2, &NxN[0]);
+        if (hGlbTmp EQ NULL)
+            goto DOMAIN_EXIT;
+
+        // Lock the memory to get a ptr to it
+        lpMemHdrTmp = MyGlobalLockVar (hGlbTmp);
+
+        // Skip over the header and dimensions to the data
+        lpMemTmp = VarArrayDataFmBase (lpMemHdrTmp);
+
+        // Copy Evec to the left arg global memory data
+        CopyMemory (lpMemTmp, lpGslCMatrixEvec->data, N * N * sizeof (lpMemTmp[0]));
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbTmp); lpMemHdrTmp = NULL;
+
+        // Fill in the left arg token
+        tkLftArg.tkFlags.TknType   = TKT_VARARRAY;
+////////tkLftArg.tkFlags.ImmType   =
+////////tkLftArg.tkFlags.NoDisplay = FALSE; // Already zero from = {0}
+        tkLftArg.tkData.tkGlbData  = MakePtrTypeGlb (hGlbTmp);
+////////tkLftArg.tkCharIndex       = tkFunc.tkCharIndex;
+
+        // Setup the right arg token as Z
+
+        // Allocate space for Z as an NxN Complex Floating Point matrix
+        hGlbTmp = AllocateGlobalArray (ARRAY_HC2F, N * N, 2, &NxN[0]);
+        if (hGlbTmp EQ NULL)
+            goto DOMAIN_EXIT;
+
+        // Lock the memory to get a ptr to it
+        lpMemHdrTmp = MyGlobalLockVar (hGlbTmp);
+
+        // Skip over the header and dimensions to the data
+        lpMemTmp = VarArrayDataFmBase (lpMemHdrTmp);
+
+        // Copy Z to the right arg global memory data
+        CopyMemory (lpMemTmp, lpGslCMatrixZ->data, N * N * sizeof (lpMemTmp[0]));
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbTmp); lpMemHdrTmp = NULL;
+
+        // Fill in the right arg token
+        tkRhtArg.tkFlags.TknType   = TKT_VARARRAY;
+////////tkRhtArg.tkFlags.ImmType   =
+////////tkRhtArg.tkFlags.NoDisplay = FALSE; // Already zero from = {0}
+        tkRhtArg.tkData.tkGlbData  = MakePtrTypeGlb (hGlbTmp);
+////////tkRhtArg.tkCharIndex       = tkFunc.tkCharIndex;
+
+        // Get ptr to PerTabData global memory
+        lpMemPTD = GetMemPTD ();
+
+        // Get the magic function/operator global memory handle
+        hGlbMFO = lpMemPTD->hGlbMFO[MFOE_MonShriek];
+
+        //  Use an internal magic function/operator.
+        lpYYRes =
+          ExecuteMagicFunction_EM_YY (&tkLftArg,        // Ptr to left arg token
+                                      &tkFunc,          // Ptr to function token
+                                       NULL,            // Ptr to function strand
+                                      &tkRhtArg,        // Ptr to right arg token
+                                       NULL,            // Ptr to axis token
+                                       hGlbMFO,         // Magic function/operator global memory handle
+                                       NULL,            // Ptr to HSHTAB struc (may be NULL)
+                                       LINENUM_ONE);    // Starting line # type (see LINE_NUMS)
+        // We no longer need this storage
+        FreeResultTkn (&tkRhtArg);
+        FreeResultTkn (&tkLftArg);
+
+        // Check for error
+        if (lpYYRes EQ NULL)
+            goto ERROR_EXIT;
+
+        // Get the global memory handle
+        hGlbTmp = lpYYRes->tkToken.tkData.tkGlbData;
+
+        // Lock the memory to get a ptr to it
+        lpMemHdrTmp = MyGlobalLockVar (hGlbTmp);
+
+        Assert (lpMemHdrTmp->NELM EQ 1);
+        Assert (lpMemHdrTmp->Rank EQ 0);
+
+        // Skip over the header and dimensions to the data
+        lpMemTmp = VarArrayDataFmBase (lpMemHdrTmp);
+
+        // Calculate the size of an element in lpMemHdrTmp
+        iSizeofRes = TranslateArrayTypeToSizeof (lpMemHdrTmp->ArrType);
+
+        // The result is the singleton value in lpMemTmp
+        CopyMemory (&aplRes, lpMemTmp, iSizeofRes);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbTmp); lpMemHdrTmp = NULL;
+
+        // We no longer need this storage
+        FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+    } // End Magic Function
+
+    goto NORMAL_EXIT;
+
+DOMAIN_EXIT:
+    exCode = EXCEPTION_DOMAIN_ERROR;
+
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    exCode = EXCEPTION_WS_FULL;
+
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+NORMAL_EXIT:
+    if (lpGslEigenWs NE NULL)
+    {
+        gsl_eigen_nonsymmv_free (lpGslEigenWs); lpGslEigenWs = NULL;
+    } // End IF
+
+    if (lpGslCMatrixZ NE NULL)
+    {
+        // We no longer need this storage and ptr
+        gsl_matrix_complex_free (lpGslCMatrixZ); lpGslCMatrixZ = NULL;
+    } // End IF
+
+    if (lpGslCMatrixEvec NE NULL)
+    {
+        // We no longer need this storage and ptr
+        gsl_matrix_complex_free (lpGslCMatrixEvec); lpGslCMatrixEvec = NULL;
+    } // End IF
+
+    if (lpGslCVectorEval NE NULL)
+    {
+        // We no longer need this storage and ptr
+        gsl_vector_complex_free (lpGslCVectorEval); lpGslCVectorEval = NULL;
+    } // End IF
+
+    if (lpGslMatrixA NE NULL)
+    {
+        // We no longer need this storage and ptr
+        gsl_matrix_free (lpGslMatrixA); lpGslMatrixA = NULL;
+    } // End IF
+
+    // If we're exiting on an error, ...
+    if (exCode NE EXCEPTION_SUCCESS)
+        // Signal the error to the caller
+        RaiseException (exCode, 0, 0, NULL);
+
+    return aplRes;
+} // End FactHCxF
+
+
+//***************************************************************************
 //  $FactHC2V
 //
 //  Primitive scalar function monadic QuoteDot:  HC2V {is} fn HC2V
@@ -740,7 +1052,7 @@ APLHC2V FactHC2V
 {
     APLHC2V aplRes = {0};           // The result
 
-    NONCE_RE                // ***FINISHME***
+    NONCE_RE                // ***FINISHME*** -- !HC2V
 
     return aplRes;
 } // End FactHC2V
@@ -796,11 +1108,7 @@ APLHC4F FactHC4F
     (APLHC4F aplRht)
 
 {
-    APLHC4F aplRes = {0};           // The result
-
-    NONCE_RE                // ***FINISHME***
-
-    return aplRes;
+    return FactHCxF (*(LPAPLHC8F) &aplRht, 4).partsLo[0];
 } // End FactHC4F
 
 
@@ -856,7 +1164,7 @@ APLHC4V FactHC4V
 {
     APLHC4V aplRes = {0};           // The result
 
-    NONCE_RE                // ***FINISHME***
+    NONCE_RE                // ***FINISHME*** -- !HC4V
 
     return aplRes;
 } // End FactHC4V
@@ -903,119 +1211,10 @@ void PrimFnMonQuoteDotHC4VisHC4V
 
 
 //***************************************************************************
-//  $FactHC8F
-//
-//  Primitive scalar function monadic QuoteDot:  HC8F {is} fn HC8F
+//  Magic function/operator used to finish off Monadic Shriek
 //***************************************************************************
 
-APLHC8F FactHC8F
-    (APLHC8F aplRht)
-
-{
-    APLHC8F aplRes = {0};           // The result
-
-    NONCE_RE                // ***FINISHME***
-
-    return aplRes;
-} // End FactHC8F
-
-
-//***************************************************************************
-//  $PrimFnMonQuoteDotHC8FisHC8I
-//
-//  Primitive scalar function monadic QuoteDot:  HC8F {is} fn HC8I
-//***************************************************************************
-
-void PrimFnMonQuoteDotHC8FisHC8I
-    (LPAPLHC8F  lpMemRes,           // Ptr to the result
-     APLUINT    uRes,               // Index into the result
-     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
-
-{
-    ALLTYPES atRht = {0};
-
-    // Convert the right arg to the result type
-    (*aTypeActPromote[ARRAY_HC8I][ARRAY_HC8F]) (lpatRht, 0, &atRht);
-
-    // Pass it on
-    PrimFnMonQuoteDotHC8FisHC8F (lpMemRes, uRes, &atRht, lpPrimSpec);
-} // End PrimFnMonQuoteDotHC8FisHC8I
-
-
-//***************************************************************************
-//  $PrimFnMonQuoteDotHC8FisHC8F
-//
-//  Primitive scalar function monadic QuoteDot:  HC8F {is} fn HC8F
-//***************************************************************************
-
-void PrimFnMonQuoteDotHC8FisHC8F
-    (LPAPLHC8F  lpMemRes,           // Ptr to the result
-     APLUINT    uRes,               // Index into the result
-     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
-
-{
-    lpMemRes[uRes] = FactHC8F (lpatRht->aplHC8F);
-} // End PrimFnMonQuoteDotHC8FisHC8F
-
-
-//***************************************************************************
-//  $FactHC8V
-//
-//  Primitive scalar function monadic QuoteDot:  HC8V {is} fn HC8V
-//***************************************************************************
-
-APLHC8V FactHC8V
-    (APLHC8V aplRht)
-
-{
-    APLHC8V aplRes = {0};           // The result
-
-    NONCE_RE                // ***FINISHME***
-
-    return aplRes;
-} // End FactHC8V
-
-
-//***************************************************************************
-//  $PrimFnMonQuoteDotHC8VisHC8R
-//
-//  Primitive scalar function monadic QuoteDot:  HC8V {is} fn HC8R
-//***************************************************************************
-
-void PrimFnMonQuoteDotHC8VisHC8R
-    (LPAPLHC8V  lpMemRes,           // Ptr to the result
-     APLUINT    uRes,               // Index into the result
-     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
-
-{
-    ALLTYPES atRht = {0};
-
-    // Convert the right arg to the result type
-    (*aTypeActPromote[ARRAY_HC8R][ARRAY_HC8V]) (lpatRht, 0, &atRht);
-
-    // Pass it on
-    PrimFnMonQuoteDotHC8VisHC8V (lpMemRes, uRes, &atRht, lpPrimSpec);
-} // End PrimFnMonQuoteDotHC8VisHC8R
-
-
-//***************************************************************************
-//  $PrimFnMonQuoteDotHC8VisHC8V
-//
-//  Primitive scalar function monadic QuoteDot:  HC8V {is} fn HC8V
-//***************************************************************************
-
-void PrimFnMonQuoteDotHC8VisHC8V
-    (LPAPLHC8V  lpMemRes,           // Ptr to the result
-     APLUINT    uRes,               // Index into the result
-     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
-
-{
-    lpMemRes[uRes] = FactHC8V (lpatRht->aplHC8V);
-} // End PrimFnMonQuoteDotHC8VisHC8V
+#include "mf_shriek.h"
 
 
 //***************************************************************************
@@ -1046,6 +1245,9 @@ APLSTYPE PrimSpecQuoteDotStorageTypeDyd
 
     // Calculate the storage type of the result
     aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);
+
+    // Call common promotion routine
+    aplTypeRes = PrimSpecQuoteDotStorageTypeCom (aplTypeRes);
 
     return aplTypeRes;
 } // End PrimSpecQuoteDotStorageTypeDyd
@@ -2208,161 +2410,6 @@ void PrimFnDydQuoteDotHC4VisHC4VvHC4V
     Myhc4v_clear (&aplTmp4);
     Myhc4v_clear (&aplTmp1);
 } // End PrimFnDydQuoteDotHC4VisHC4VvHC4V
-
-
-//***************************************************************************
-//  $PrimFnDydQuoteDotHC8IisHC8IvHC8I
-//
-//  Primitive scalar function dyadic QuoteDot:  HC8I {is} HC8I fn HC8I
-//***************************************************************************
-
-void PrimFnDydQuoteDotHC8IisHC8IvHC8I
-    (LPAPLHC8I  lpMemRes,           // Ptr to the result
-     APLUINT    uRes,               // Index into the result
-     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
-     LPALLTYPES lpatRht,            // ...    right ...
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
-
-{
-    RaiseException (EXCEPTION_RESULT_HC8F, 0, 0, NULL);
-} // End PrimFnDydQuoteDotHC8IisHC8IvHC8I
-
-
-//***************************************************************************
-//  $PrimFnDydQuoteDotHC8FisHC8IvHC8I
-//
-//  Primitive scalar function dyadic QuoteDot:  HC8F {is} HC8I fn HC8I
-//***************************************************************************
-
-void PrimFnDydQuoteDotHC8FisHC8IvHC8I
-    (LPAPLHC8F  lpMemRes,           // Ptr to the result
-     APLUINT    uRes,               // Index into the result
-     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
-     LPALLTYPES lpatRht,            // ...    right ...
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
-
-{
-    ALLTYPES atLft = {0},
-             atRht = {0};
-
-    // Convert HC8I to HC8F
-    (*aTypeActPromote[ARRAY_HC8I][ARRAY_HC8F]) (lpatLft, 0, &atLft);
-    (*aTypeActPromote[ARRAY_HC8I][ARRAY_HC8F]) (lpatRht, 0, &atRht);
-
-    // Pass it on
-    PrimFnDydQuoteDotHC8FisHC8FvHC8F (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
-} // End PrimFnDydQuoteDotHC8FisHC8IvHC8I
-
-
-//***************************************************************************
-//  $PrimFnDydQuoteDotHC8FisHC8FvHC8F
-//
-//  Primitive scalar function dyadic QuoteDot:  HC8F {is} HC8F fn HC8F
-//***************************************************************************
-
-void PrimFnDydQuoteDotHC8FisHC8FvHC8F
-    (LPAPLHC8F  lpMemRes,           // Ptr to the result
-     APLUINT    uRes,               // Index into the result
-     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
-     LPALLTYPES lpatRht,            // ...    right ...
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
-
-{
-    APLHC8F aplLft,
-            aplRht,
-            aplTmp1 = {0},
-            aplTmp8 = {0};
-
-    // Z = (!R) / (!L) * !R-L
-    aplLft = FactHC8F (lpatLft->aplHC8F);                               // !L
-    aplRht = FactHC8F (lpatRht->aplHC8F);                               // !R
-
-    aplTmp1 = SubHC8F_RE (lpatRht->aplHC8F, lpatLft->aplHC8F);          // R-L
-    aplTmp8 = FactHC8F (aplTmp1);                                       // !R-L
-
-    aplTmp1 = MulHC8F_RE (aplLft, aplTmp8);                             // (!L) * !R-L
-    lpMemRes[uRes] = DivHC8F_RE (aplRht, aplTmp1);                      // (!R) / ((!L) * !R-L)
-} // End PrimFnDydQuoteDotHC8FisHC8FvHC8F
-
-
-//***************************************************************************
-//  $PrimFnDydQuoteDotHC8RisHC8RvHC8R
-//
-//  Primitive scalar function dyadic QuoteDot:  HC8R {is} HC8R fn HC8R
-//***************************************************************************
-
-void PrimFnDydQuoteDotHC8RisHC8RvHC8R
-    (LPAPLHC8R  lpMemRes,           // Ptr to the result
-     APLUINT    uRes,               // Index into the result
-     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
-     LPALLTYPES lpatRht,            // ...    right ...
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
-
-{
-    RaiseException (EXCEPTION_RESULT_HC8V, 0, 0, NULL);
-} // End PrimFnDydQuoteDotHC8RisHC8RvHC8R
-
-
-//***************************************************************************
-//  $PrimFnDydQuoteDotHC8VisHC8RvHC8R
-//
-//  Primitive scalar function dyadic QuoteDot:  HC8V {is} HC8R fn HC8R
-//***************************************************************************
-
-void PrimFnDydQuoteDotHC8VisHC8RvHC8R
-    (LPAPLHC8V  lpMemRes,           // Ptr to the result
-     APLUINT    uRes,               // Index into the result
-     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
-     LPALLTYPES lpatRht,            // ...    right ...
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
-
-{
-    ALLTYPES atLft = {0},
-             atRht = {0};
-
-    // Convert HC8R to HC8V
-    (*aTypeActPromote[ARRAY_HC8R][ARRAY_HC8V]) (lpatLft, 0, &atLft);
-    (*aTypeActPromote[ARRAY_HC8R][ARRAY_HC8V]) (lpatRht, 0, &atRht);
-
-    // Pass it on
-    PrimFnDydQuoteDotHC8VisHC8VvHC8V (lpMemRes, uRes, &atLft, &atRht, lpPrimSpec);
-} // End PrimFnDydQuoteDotHC8VisHC8RvHC8R
-
-
-//***************************************************************************
-//  $PrimFnDydQuoteDotHC8VisHC8VvHC8V
-//
-//  Primitive scalar function dyadic QuoteDot:  HC8V {is} HC8V fn HC8V
-//***************************************************************************
-
-void PrimFnDydQuoteDotHC8VisHC8VvHC8V
-    (LPAPLHC8V  lpMemRes,           // Ptr to the result
-     APLUINT    uRes,               // Index into the result
-     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
-     LPALLTYPES lpatRht,            // ...    right ...
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
-
-{
-    APLHC8V aplLft,
-            aplRht,
-            aplTmp1 = {0},
-            aplTmp8 = {0};
-
-    // Z = (!R) / (!L) * !R-L
-    aplLft = FactHC8V (lpatLft->aplHC8V);                               // !L
-    aplRht = FactHC8V (lpatRht->aplHC8V);                               // !R
-
-    aplTmp1 = SubHC8V_RE (lpatRht->aplHC8V, lpatLft->aplHC8V);          // R-L
-    aplTmp8 = FactHC8V (aplTmp1);                                       // !R-L
-
-    Myhc8v_clear (&aplTmp1);
-
-    aplTmp1 = MulHC8V_RE (aplLft, aplTmp8);                             // (!L) * !R-L
-    lpMemRes[uRes] = DivHC8V_RE (aplRht, aplTmp1);                      // (!R) / ((!L) * !R-L)
-
-    Myhc8v_clear (&aplTmp8);
-    Myhc8v_clear (&aplTmp1);
-} // End PrimFnDydQuoteDotHC8VisHC8VvHC8V
 
 
 //***************************************************************************

@@ -1,6 +1,26 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1784 -- Version 0.5.5.xx
+--------------------------------
+
+* Implement Factorial On Fixed-Precision Quaternion Numbers
+
+Directory branches/bsmith/NewTypes:
+
+EXECMFN.C:
+EXECMFN.H:
+  Include Magic Function for Shriek function in Magic Function/Operator tables.
+
+MF_SHRIEK.H:
+  Define Magic Function to finish Monadic Shriek on Quaternions.
+
+PF_QDOT.C:
+  Delete entries for Monadic and Dyadic Shriek functions for Octonions as they are not defined on that datatype.
+  Define routine to return the factorial of a Quaternion Floating Point number.
+  Include Magic Function file to finish the calculation of Factorial on Quaternions.
+
+
 Build #1783 -- Version 0.5.5.xx
 --------------------------------
 

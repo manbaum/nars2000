@@ -71,6 +71,7 @@ extern MAGIC_FCNOPR MFO_DydVOFact;
 extern MAGIC_FCNOPR MFO_MonExecute;
 extern MAGIC_FCNOPR MFO_DydSquad;
 extern MAGIC_FCNOPR MFO_DydSlope;
+extern MAGIC_FCNOPR MFO_MonShriek;
 
 
 //***************************************************************************
@@ -798,6 +799,7 @@ UBOOL InitMagicFunctions
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonExecute       ]  = Init1MagicFunction (MFON_MonExecute       , &MFO_MonExecute       , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydSquad         ]  = Init1MagicFunction (MFON_DydSquad         , &MFO_DydSquad         , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydSlope         ]  = Init1MagicFunction (MFON_DydSlope         , &MFO_DydSlope         , lpMemPTD, hWndEC, NULL));
+    bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonShriek        ]  = Init1MagicFunction (MFON_MonShriek        , &MFO_MonShriek        , lpMemPTD, hWndEC, NULL));
 
     return bRet;
 } // InitMagicFunctions

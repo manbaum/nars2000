@@ -1,6 +1,17 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1780 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In Member Of With Nested Hypercomplex Numbers
+
+Directory branches/bsmith/NewTypes:
+
+PF_EPSILON.C:
+  In <PrimFnDydEpsilonOther_EM>, handle more cases.
+
+
 Build #1779 -- Version 0.5.5.xx
 --------------------------------
 

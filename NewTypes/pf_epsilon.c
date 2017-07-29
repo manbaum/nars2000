@@ -2469,37 +2469,13 @@ UBOOL PrimFnDydEpsilonOther_EM
                 (*aTypeActPromote[aplTypeSubLft][aplTypeSubCom]) ((hGlbSubLft EQ NULL) ? &aplLongestSubLft : ClrPtrTypeDir (hGlbSubLft), 0, &atLft);
                 (*aTypeActPromote[aplTypeSubRht][aplTypeSubCom]) ((hGlbSubRht EQ NULL) ? &aplLongestSubRht : ClrPtrTypeDir (hGlbSubRht), 0, &atRht);
 
-                // Split cases based upon the common type
-                switch (aplTypeSubCom)
-                {
-                    case ARRAY_BOOL:                // Com = BOOL
-                        if (((APLBOOL) aplLongestSubLft) EQ (APLBOOL) aplLongestSubRht)
-                            goto SET_RESULT_BIT;
-                        break;
-
-                    case ARRAY_INT:                 // Com = INT
-                        if (((APLINT)  aplLongestSubLft) EQ (APLINT)  aplLongestSubRht)
-                            goto SET_RESULT_BIT;
-                        break;
-
-                    case ARRAY_FLOAT:               // Com = FLOAT
-                        if (CmpCT_F (*(LPAPLFLOAT) &aplLongestSubLft, *(LPAPLFLOAT) &aplLongestSubRht, fQuadCT, EQ))
-                            goto SET_RESULT_BIT;
-                        break;
-
-                    case ARRAY_RAT:
-                        if (CmpCT_R (atLft.aplRat, atRht.aplRat, fQuadCT, EQ))
-                            goto SET_RESULT_BIT;
-                        break;
-
-                    case ARRAY_VFP:
-                        if (CmpCT_V (atLft.aplVfp, atRht.aplVfp, fQuadCT, EQ))
-                            goto SET_RESULT_BIT;
-                        break;
-
-                    defstop
-                        break;
-                } // End SWITCH
+                // If they compare equally, ...
+                if (hcXY_cmp (aplTypeSubCom,
+                             &atLft,
+                             &atRht,
+                              TRUE,
+                              fQuadCT) EQ 0)
+                    goto SET_RESULT_BIT;
             } else
             // If the left item is immediate and the right is global, ...
             if ((hGlbSubLft EQ NULL) && (hGlbSubRht NE NULL))

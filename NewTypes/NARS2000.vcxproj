@@ -500,7 +500,16 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     <ClCompile Include="po_multiset.c" />
     <ClCompile Include="po_slash.c" />
     <ClCompile Include="po_slope.c" />
-    <ClCompile Include="po_variant.c" />
+    <ClCompile Include="po_variant.c">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug32|Win32'">$(INCLUDE);$(GSL_DIR)\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug64|Win32'">$(INCLUDE);$(GSL_DIR)\x64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <IgnoreStandardIncludePath Condition="'$(Configuration)|$(Platform)'=='Debug32|Win32'">true</IgnoreStandardIncludePath>
+      <IgnoreStandardIncludePath Condition="'$(Configuration)|$(Platform)'=='Debug64|Win32'">true</IgnoreStandardIncludePath>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release32|Win32'">$(INCLUDE);$(GSL_DIR)\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release64|Win32'">$(INCLUDE);$(GSL_DIR)\x64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <IgnoreStandardIncludePath Condition="'$(Configuration)|$(Platform)'=='Release32|Win32'">true</IgnoreStandardIncludePath>
+      <IgnoreStandardIncludePath Condition="'$(Configuration)|$(Platform)'=='Release64|Win32'">true</IgnoreStandardIncludePath>
+    </ClCompile>
     <ClCompile Include="primfns.c" />
     <ClCompile Include="primspec.c" />
     <ClCompile Include="progbar.c" />

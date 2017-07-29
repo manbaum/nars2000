@@ -1,6 +1,21 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1783 -- Version 0.5.5.xx
+--------------------------------
+
+* Extend The Variant Operator To Domino To Calculate Eigenvalues And Eigenvectors
+
+Directory branches/bsmith/NewTypes:
+
+NARS2000.VCXPROJ:
+  Change the #includes for the Variant operator source file.
+
+PO_VARIANT.C:
+  Extend the Variant operator to the Domino function to calculate Eigenvalues and Eigenvectors.
+  Rename <PrimOpVariantValKeyGlb_EM> to remove the trailing _EM as it no longers sets an error message.
+
+
 Build #1782 -- Version 0.5.5.xx
 --------------------------------
 

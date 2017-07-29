@@ -23,6 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include "headers.h"
+#include <gsl/gsl_eigen.h>
 
 
 //***************************************************************************
@@ -282,33 +283,59 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
      UBOOL        bPrototyping)             // TRUE iff protoyping
 
 {
-    LPTOKEN           lptkAxisOpr;          // Ptr to axis token (may be NULL)
-    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
-////                  lpYYRes2;             // Ptr to secondary result
-    LPTOKEN           lptkAxisLft;          // Ptr to axis token on the left operand
-    APLSTYPE          aplTypeRhtOpr;        // Right operand storage type
-    APLNELM           aplNELMRhtOpr;        // Right operand NELM
-    APLRANK           aplRankRhtOpr;        // Right operand rank
-    APLINT            aplIntegerRhtOpr;     // Right operand integer value
-    APLCHAR           aplCharRhtOpr;        // Right operand character value
-    APLFLOAT          aplFloatRhtOpr;       // Right operand float value
-    UBOOL             bRet = TRUE,          // TRUE iff the result is valid
-                      bQuadCTFound = FALSE, // TRUE iff []CT value found
-                      bQuadIOFound = FALSE, // ...      []IO ...
-                      bQuadDQFound = FALSE, // ...      []DQ ...
-                      bQuadDTFound = FALSE; // ...      []DT ...
-    APLFLOAT          fQuadCT;              // []CT
-    APLCHAR           cQuadDQ,              // []DQ
-                      cQuadDT;              // []DT
-    APLBOOL           bQuadIO;              // []IO
-    APLINT            uQuadPPV;             // []PP for VFPs
-    TOKEN             tkFcn = {0},          // Function token
-                      tkRht = {0};          // Right arg token
-    HGLOBAL           hGlbRhtOpr;           // Right operand global memory handle
-    LPVOID            lpMemRhtOpr;          // Ptr to right operand memory
-    HGLOBAL           hGlbMFO;              // Magic function/operator global memory handle
-    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
-    ENUM_HCMUL        eHCMul;               // Hypercomplex Arithmetic Multiplication choice
+    LPTOKEN             lptkAxisOpr;                // Ptr to axis token (may be NULL)
+    LPPL_YYSTYPE        lpYYRes = NULL;             // Ptr to the result
+////                    lpYYRes2;                   // Ptr to secondary result
+    LPTOKEN             lptkAxisLft;                // Ptr to axis token on the left operand
+    APLSTYPE            aplTypeRhtOpr,              // Right operand storage type
+                        aplTypeRht;                 // right arg     ...
+    APLNELM             aplNELMRhtOpr,              // Right operand NELM
+                        aplNELMRht;                 // Right arg     ...
+    APLRANK             aplRankRhtOpr,              // Right operand rank
+                        aplRankRht;                 // Right arg     ...
+    APLDIM              aplColsRht,                 // Right arg # cols
+                        aplRowsRht;                 // ...         rows
+    APLINT              aplIntegerRhtOpr;           // Right operand integer value
+    APLCHAR             aplCharRhtOpr;              // Right operand character value
+    APLFLOAT            aplFloatRhtOpr;             // Right operand float value
+    UBOOL               bRet = TRUE,                // TRUE iff the result is valid
+                        bQuadCTFound = FALSE,       // TRUE iff []CT value found
+                        bQuadIOFound = FALSE,       // ...      []IO ...
+                        bQuadDQFound = FALSE,       // ...      []DQ ...
+                        bQuadDTFound = FALSE;       // ...      []DT ...
+    APLFLOAT            fQuadCT;                    // []CT
+    APLCHAR             cQuadDQ,                    // []DQ
+                        cQuadDT;                    // []DT
+    APLBOOL             bQuadIO;                    // []IO
+    APLINT              uQuadPPV;                   // []PP for VFPs
+    TOKEN               tkFcn = {0},                // Function token
+                        tkRht = {0};                // Right arg token
+    HGLOBAL             hGlbRhtOpr,                 // Right operand global memory handle
+                        hGlbRht = NULL,             // Right arg     ...
+                        hGlbRes = NULL,             // Result        ...
+                        hGlbEval = NULL,            // Eigenvalues   ...
+                        hGlbEvec = NULL;            // Eigenvectors  ...
+    LPAPLFLOAT          lpMemEval = NULL,
+                        lpMemEvec = NULL;
+    LPVARARRAY_HEADER   lpMemHdrRht = NULL,         // Ptr to right arg global memory header
+                        lpMemHdrRes = NULL,         // ...    result    ...
+                        lpMemHdrEval = NULL,        // ...    Evalues   ...
+                        lpMemHdrEvec = NULL;        // ...    Evectors  ...
+    LPVOID              lpMemRhtOpr,                // Ptr to right operand memory
+                        lpMemRht = NULL,            // Ptr to right arg global memory data
+                        lpMemRes = NULL;            // Ptr to result    ...
+    HGLOBAL             hGlbMFO;                    // Magic function/operator global memory handle
+    LPPERTABDATA        lpMemPTD;                   // Ptr to PerTabData global memory
+    ENUM_HCMUL          eHCMul;                     // Hypercomplex Arithmetic Multiplication choice
+    int                 i,                          // Loop counter
+                        ErrCode;                    // Error code
+    APLDIM              NxN[2],                     // The array dimensions
+                        iTwo = 2;                   // Constant 2
+    APLLONGEST          aplLongestRht;              // Right arg if immediate
+    gsl_matrix         *lpGslMatrixA = NULL;        // GSL Temp
+    gsl_vector_complex *lpGslCVectorEval = NULL;    // Eigenvalues
+    gsl_matrix_complex *lpGslCMatrixEvec = NULL;    // Eigenvectors
+    gsl_eigen_nonsymmv_workspace *lpGslEigenWs = NULL;          // Ptr to the GSL workspace
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -328,8 +355,21 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 
     //***************************************************************
     // Get the attributes (Type, NELM, and Rank) of the right operand
+    //    and right arg
     //***************************************************************
     AttrsOfToken (&lpYYFcnStrRht->tkToken, &aplTypeRhtOpr, &aplNELMRhtOpr, &aplRankRhtOpr, NULL);
+    AttrsOfToken (lptkRhtArg             , &aplTypeRht   , &aplNELMRht   , &aplRankRht   , &aplColsRht);
+
+    // Get right arg's global ptrs
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
+
+    // If the right arg is a global, ...
+    if (lpMemHdrRht NE NULL)
+        // Point to the data
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+    else
+        // Point to the data
+        lpMemRht = &aplLongestRht;
 
     // If the left operand is not an immediate function, or
     //    the right operand is nested or hetero, ...
@@ -1051,6 +1091,188 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 
             break;
 
+        // Eigenvalues/Eigenvectors
+        case UTF16_DOMINO:
+            // Validate the right operand as
+            //   a simple numeric scalar or one-element vector
+            if (IsMultiRank (aplRankRhtOpr))
+                goto RIGHT_OPERAND_RANK_EXIT;
+            if (aplNELMRhtOpr NE 1)
+                goto RIGHT_OPERAND_LENGTH_EXIT;
+
+            // Get the first value as an integer from the token
+            aplIntegerRhtOpr =
+              GetNextIntegerToken (&lpYYFcnStrRht->tkToken, // Ptr to arg token
+                                    0,                      // Index
+                                    aplTypeRhtOpr,          // Arg storage type
+                                   &bRet);                  // Ptr to TRUE iff the result is valid
+            // Check for error
+            if (!bRet)
+                goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+            // Validate the right operand as the number 1, 2, or 3
+            if (!(1 <= aplIntegerRhtOpr
+                &&     aplIntegerRhtOpr <= 3))
+                goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+            // Validate the right arg as a square matrix
+            if (!IsMatrix (aplRankRht))
+                goto RIGHT_RANK_EXIT;
+
+            if (IsZeroDim (aplColsRht))
+                aplRowsRht = 0;
+            else
+                aplRowsRht = aplNELMRht / aplColsRht;
+
+            if (aplColsRht NE aplRowsRht)
+                goto RIGHT_LENGTH_EXIT;
+
+            // Save as the two dimensions of the matrix
+            NxN[0] =
+            NxN[1] = aplColsRht;
+
+            // Check for DOMAIN ERROR
+            if (!(IsSimpleInt (aplTypeRht)
+               || IsSimpleFlt (aplTypeRht)))
+                goto RIGHT_DOMAIN_EXIT;
+
+            // Sadly, GSL ABORTS! if asked to handle an empty array:  Boo
+            if (!IsZeroDim (aplColsRht))
+            {
+                // Allocate GSL arrays
+                lpGslMatrixA     = gsl_matrix_alloc         ((int) aplRowsRht, (int) aplColsRht);   // N x N
+                lpGslCVectorEval = gsl_vector_complex_alloc ((int) aplColsRht                  );   // N
+                lpGslCMatrixEvec = gsl_matrix_complex_alloc ((int) aplRowsRht, (int) aplColsRht);   // N x N
+                lpGslEigenWs     = gsl_eigen_nonsymmv_alloc ((int) aplColsRht                  );   // N
+
+                // Check the return codes for the above allocations
+                if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixA
+                 || GSL_ENOMEM EQ (HANDLE_PTR) lpGslCVectorEval
+                 || GSL_ENOMEM EQ (HANDLE_PTR) lpGslCMatrixEvec
+                 || GSL_ENOMEM EQ (HANDLE_PTR) lpGslEigenWs)
+                    goto WSFULL_EXIT;
+
+                // Loop through all of the elements
+                for (i = 0; i < aplNELMRht; i++)
+                    // Copy the next element from the right arg as a float
+                    lpGslMatrixA->data[i] = GetNextFloat (lpMemRht, aplTypeRht, i);
+
+                // Calculate the Eigenvalues and Eigenvectors
+                ErrCode =
+                  gsl_eigen_nonsymmv (lpGslMatrixA,
+                                      lpGslCVectorEval,
+                                      lpGslCMatrixEvec,
+                                      lpGslEigenWs);
+                // Check the error code
+                if (ErrCode NE GSL_SUCCESS)
+                    goto RIGHT_DOMAIN_EXIT;
+            } // End IF
+
+            // Split cases based upon the right operand value
+            switch (aplIntegerRhtOpr)
+            {
+                case 1:
+                    // Allocate a global array for the result
+                    hGlbRes = AllocateGlobalArray (ARRAY_HC2F, aplColsRht, 1, &NxN[0]);
+
+                    break;
+
+                case 2:
+                    // Allocate a global array for the result
+                    hGlbRes = AllocateGlobalArray (ARRAY_HC2F, aplNELMRht, 2, &NxN[0]);
+
+                    break;
+
+                case 3:
+                    // Allocate a global array for the result
+                    hGlbRes = AllocateGlobalArray (ARRAY_NESTED, iTwo, 1, &iTwo);
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // Check for error
+            if (hGlbRes EQ NULL)
+                goto WSFULL_EXIT;
+
+            // Lock the memory to get a ptr to it
+            lpMemHdrRes = MyGlobalLockVar (hGlbRes);
+
+            // Skip over the header and dimensions to the data
+            lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+
+            // Split cases based upon the right operand value
+            switch (aplIntegerRhtOpr)
+            {
+                case 1:
+                    // Copy the Eigenvalues to the result
+                    CopyMemory (lpMemRes, lpGslCVectorEval->data, (APLU3264) (aplColsRht * 2 * sizeof (APLFLOAT)));
+
+                    break;
+
+                case 2:
+                    // Copy the Eigenvectors to the result
+                    CopyMemory (lpMemRes, lpGslCMatrixEvec->data, (APLU3264) (aplNELMRht * 2 * sizeof (APLFLOAT)));
+
+                    break;
+
+                case 3:
+                    // Allocate a global array for the Eigenvalues
+                    hGlbEval = AllocateGlobalArray (ARRAY_HC2F, aplColsRht, 1, &NxN[0]);
+
+                    // Allocate a global array for the Eigenvectors
+                    hGlbEvec = AllocateGlobalArray (ARRAY_HC2F, aplNELMRht, 2, &NxN[0]);
+
+                    // Check for errors
+                    if (hGlbEval EQ NULL
+                     || hGlbEvec EQ NULL)
+                        goto WSFULL_EXIT;
+                    // Save the global memory handles in the result
+                    ((LPAPLNESTED) lpMemRes)[0] = MakePtrTypeGlb (hGlbEval);
+                    ((LPAPLNESTED) lpMemRes)[1] = MakePtrTypeGlb (hGlbEvec);
+
+                    // If there are any cols, ...
+                    if (!IsZeroDim (aplColsRht))
+                    {
+                        // Lock the memory to get a ptr to it
+                        lpMemHdrEval = MyGlobalLockVar (hGlbEval);
+
+                        // Skip over the header and dimensions to the data
+                        lpMemEval = VarArrayDataFmBase (lpMemHdrEval);
+
+                        // Copy the Eigenvalues to the result
+                        CopyMemory (lpMemEval, lpGslCVectorEval->data, (APLU3264) (aplColsRht * 2 * sizeof (APLFLOAT)));
+
+                        // Lock the memory to get a ptr to it
+                        lpMemHdrEvec = MyGlobalLockVar (hGlbEvec);
+
+                        // Skip over the header and dimensions to the data
+                        lpMemEvec = VarArrayDataFmBase (lpMemHdrEvec);
+
+                        // Copy the Eigenvectors to the result
+                        CopyMemory (lpMemEvec, lpGslCMatrixEvec->data, (APLU3264) (aplNELMRht * 2 * sizeof (APLFLOAT)));
+                    } // End IF
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            // Allocate a new YYRes
+            lpYYRes = YYAlloc ();
+
+            // Fill in the result token
+            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+            lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+            lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+
+            break;
+
 ////////// []CF:  Circular Functions divisor:
 //////////   L{circle}{variant}X R   is   L{circle}R{divide}X{divide}{circle}0.5
 ////////case UTF16_CIRCLE:                  // Dyadic w/ L=-3 -2 -1 1 2 3
@@ -1199,13 +1421,115 @@ RIGHT_OPERAND_DOMAIN_EXIT:
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
 
+RIGHT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+RIGHT_LENGTH_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
 ERROR_EXIT:
-    if (lpYYRes)
+    if (lpYYRes NE NULL)
     {
         // Free the YYRes
         FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
     } // End IF
+
+    if (hGlbEval NE NULL)
+    {
+        if (lpMemHdrEval NE NULL)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbEval); lpMemHdrEval = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalVar (hGlbEval); hGlbEval = NULL;
+    } // End IF
+
+    if (hGlbEvec NE NULL)
+    {
+        if (lpMemHdrEvec NE NULL)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbEvec); lpMemHdrEvec = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalVar (hGlbEvec); hGlbEvec = NULL;
+    } // End IF
+
+    if (hGlbRes NE NULL)
+    {
+        if (lpMemHdrRes NE NULL)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
 NORMAL_EXIT:
+    if (hGlbEval NE NULL
+     && lpMemHdrEval NE NULL)
+    {
+         // We no longer need this ptr
+        MyGlobalUnlock (hGlbEval); lpMemHdrEval = NULL;
+    } // End IF
+
+    if (hGlbEvec NE NULL
+     && lpMemHdrEvec NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbEvec); lpMemHdrEvec = NULL;
+    } // End IF
+
+    if (hGlbRes NE NULL
+     && lpMemHdrRes NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+    } // End IF
+
+    if (hGlbRht NE NULL
+     && lpMemHdrRht NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
+    } // End IF
+
+    if (lpGslCMatrixEvec NE NULL)
+    {
+        // We no longer need this storage and ptr
+        gsl_matrix_complex_free (lpGslCMatrixEvec); lpGslCMatrixEvec = NULL;
+    } // End IF
+
+    if (lpGslCVectorEval NE NULL)
+    {
+        // We no longer need this storage and ptr
+        gsl_vector_complex_free (lpGslCVectorEval); lpGslCVectorEval = NULL;
+    } // End IF
+
+    if (lpGslMatrixA NE NULL)
+    {
+        // We no longer need this storage and ptr
+        gsl_matrix_free (lpGslMatrixA); lpGslMatrixA = NULL;
+    } // End IF
+
     return lpYYRes;
 } // End PrimOpVariantCommon_EM_YY
 #undef  APPEND_NAME
@@ -1872,7 +2196,7 @@ UBOOL PrimOpVariantValidateGlb_EM
         goto RIGHT_OPERAND_DOMAIN_EXIT;
 
     // Validate the keyword
-    varKey = PrimOpVariantValKeyGlb_EM (lpMemRhtOpr[0], lptkFunc);
+    varKey = PrimOpVariantValKeyGlb (lpMemRhtOpr[0]);
     if (varKey EQ VARIANT_KEY_ERROR)
         goto ERROR_EXIT;
 
@@ -1933,7 +2257,7 @@ NORMAL_EXIT:
     // Mark as valid
     bRet = TRUE;
 ERROR_EXIT:
-    if (lpMemRhtOpr)
+    if (lpMemRhtOpr NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRhtOpr); lpMemRhtOpr = NULL;
@@ -1988,24 +2312,24 @@ UBOOL VariantValidateSymVal_EM
 
 
 //***************************************************************************
-//  $PrimOpVariantValKeyGlb_EM
+//  $PrimOpVariantValKeyGlb
 //
 //  Validate a keyword in a global memory handle
 //***************************************************************************
 
-VARIANTKEYS PrimOpVariantValKeyGlb_EM
-    (HGLOBAL hGlbKey,                   // Keyword global memory handle
-     LPTOKEN lptkFunc)                  // Ptr to function token
+VARIANTKEYS PrimOpVariantValKeyGlb
+    (HGLOBAL hGlbKey)                   // Keyword global memory handle
 
 {
-    VARIANTKEYS varKey;                 // Loop counter and the result
-    LPAPLCHAR   lpMemKey;               // Ptr to key global memory
+    VARIANTKEYS       varKey;               // Loop counter and the result
+    LPVARARRAY_HEADER lpMemHdrKey = NULL;   // Ptr to key header
+    LPAPLCHAR         lpMemKey;             // Ptr to key global memory data
 
     // Lock the memory to get a ptr to it
-    lpMemKey = MyGlobalLockVar (hGlbKey);
+    lpMemHdrKey = MyGlobalLockVar (hGlbKey);
 
     // Skip over header and dimensions to the data
-    lpMemKey = VarArrayDataFmBase (lpMemKey);
+    lpMemKey = VarArrayDataFmBase (lpMemHdrKey);
 
     // Compare the keyword with valid ones
     for (varKey = 0; varKey < countof (aVariantKeyStr); varKey++)
@@ -2013,10 +2337,10 @@ VARIANTKEYS PrimOpVariantValKeyGlb_EM
         break;
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbKey); lpMemKey = NULL;
+    MyGlobalUnlock (hGlbKey); lpMemHdrKey = NULL;
 
     return varKey;
-} // End PrimOpVariantValKeyGlb_EM
+} // End PrimOpVariantValKeyGlb
 
 
 //***************************************************************************

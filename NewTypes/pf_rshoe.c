@@ -3698,16 +3698,14 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         // Promote the immediate set value to the right arg storage type
                         (*aTypeActPromote[aplTypeSet][aplTypeRht]) (lpSet, 0, &atRht);
 
-                        // Save the new value in the real part, freeing the old one
-                        mpq_set (&((LPAPLRAT) lpMemRht)[0 + iHCDimRht * aplLongestSubLft], &atRht.aplHC8R.parts[0]);
+                        // Loop through all of the parts
+                        for (i = 0; i < iHCDimRht; i++)
+                            // Set the new value freeing the old one
+                            mpq_set (&((LPAPLRAT) lpMemRht)[i + iHCDimRht * aplLongestSubLft], &atRht.aplHC8R.parts[i]);
 
                         // Free the old atSub
                         (*aTypeFree[aplTypeRht]) (&atRht, 0);
 
-                        // Loop through the imaginary parts
-                        for (i = 1; i < iHCDimRht; i++)
-                            // Initialize to 0.1, freeing the old one
-                            mpq_set_sx (&((LPAPLRAT) lpMemRht)[i + iHCDimRht * aplLongestSubLft], 0, 1);
                         break;
 
                     case ARRAY_VFP:
@@ -3717,16 +3715,14 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         // Promote the immediate set value to the right arg storage type
                         (*aTypeActPromote[aplTypeSet][aplTypeRht]) (lpSet, 0, &atRht);
 
-                        // Save the new value in the real part, freeing the old one
-                        mpfr_copy (&((LPAPLVFP) lpMemRht)[0 + iHCDimRht * aplLongestSubLft], &atRht.aplHC8V.parts[0]);
+                        // Loop through all of the parts
+                        for (i = 0; i < iHCDimRht; i++)
+                            // Set the new value freeing the old one
+                            mpfr_copy (&((LPAPLVFP) lpMemRht)[i + iHCDimRht * aplLongestSubLft], &atRht.aplHC8V.parts[i]);
 
                         // Free the old atSub
                         (*aTypeFree[aplTypeRht]) (&atRht, 0);
 
-                        // Loop through the imaginary parts
-                        for (i = 1; i < iHCDimRht; i++)
-                            // Save the new value, freeing the old one
-                            mpfr_set_sx (&((LPAPLVFP) lpMemRht)[i + iHCDimRht * aplLongestSubLft], 0, MPFR_RNDN);
                         break;
 
                     case ARRAY_HC2I:
@@ -3735,16 +3731,14 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         // Promote the immediate set value to the right arg storage type
                         (*aTypeActPromote[aplTypeSet][aplTypeRht]) (lpSet, 0, &atRht);
 
-                        // Save the new value in the real part, freeing the old one
-                        ((LPAPLINT) lpMemRht)[0 + iHCDimRht * aplLongestSubLft] = atRht.aplHC8I.parts[0];
+                        // Loop through all of the parts
+                        for (i = 0; i < iHCDimRht; i++)
+                            // Set the new value freeing the old one
+                            ((LPAPLINT) lpMemRht)[i + iHCDimRht * aplLongestSubLft] = atRht.aplHC8I.parts[i];
 
                         // Free the old atSub
                         (*aTypeFree[aplTypeRht]) (&atRht, 0);
 
-                        // Loop through the imaginary parts
-                        for (i = 1; i < iHCDimRht; i++)
-                            // Save the new value, freeing the old one
-                            ((LPAPLINT) lpMemRht)[i + iHCDimRht * aplLongestSubLft] = 0;
                         break;
 
                     case ARRAY_HC2F:
@@ -3753,16 +3747,14 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
                         // Promote the immediate set value to the right arg storage type
                         (*aTypeActPromote[aplTypeSet][aplTypeRht]) (lpSet, 0, &atRht);
 
-                        // Save the new value in the real part, freeing the old one
-                        ((LPAPLFLOAT) lpMemRht)[0 + iHCDimRht * aplLongestSubLft] = atRht.aplHC8F.parts[0];
+                        // Loop through all of the parts
+                        for (i = 0; i < iHCDimRht; i++)
+                            // Set the new value freeing the old one
+                            ((LPAPLFLOAT) lpMemRht)[i + iHCDimRht * aplLongestSubLft] = atRht.aplHC8F.parts[i];
 
                         // Free the old atSub
                         (*aTypeFree[aplTypeRht]) (&atRht, 0);
 
-                        // Loop through the imaginary parts
-                        for (i = 1; i < iHCDimRht; i++)
-                            // Save the new value, freeing the old one
-                            ((LPAPLFLOAT) lpMemRht)[i + iHCDimRht * aplLongestSubLft] = 0.0;
                         break;
 
                     case ARRAY_BOOL:

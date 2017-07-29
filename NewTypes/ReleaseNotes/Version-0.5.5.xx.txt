@@ -1,6 +1,18 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1781 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In Indexed Assignment Of Hypercomplex Numbers
+
+Directory branches/bsmith/NewTypes:
+
+PF_RSHOE.C:
+  In <PrimFnDydRightShoeGlbGlb_EM_YY>, when assigning a Hypercomplex number
+    into an array, assign all parts, not just the Real part.
+
+
 Build #1780 -- Version 0.5.5.xx
 --------------------------------
 

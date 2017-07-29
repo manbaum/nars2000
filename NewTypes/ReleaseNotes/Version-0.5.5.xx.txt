@@ -1,6 +1,17 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1782 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In Inner Product With Empty Hypercomplex Arrays
+
+Directory branches/bsmith/NewTypes:
+
+PO_DOT.C:
+  Fix bug in <PrimOpDydDotCommon_EM_YY>, where Hypercomplex numbers are not handled in all cases.
+
+
 Build #1781 -- Version 0.5.5.xx
 --------------------------------
 

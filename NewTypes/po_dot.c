@@ -2689,14 +2689,14 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
         aplInnrMax = max (aplColsLft, aplFrstRht);
 
     // Calc product of the remaining dimensions in left arg
-    if (aplColsLft)
+    if (!IsZeroDim (aplColsLft))
         aplRestLft = aplNELMLft / aplColsLft;
     else
     for (aplRestLft = 1, uOutLft = 0; uOutLft < (aplRankLft - 1); uOutLft++)
         aplRestLft *= (VarArrayBaseToDim (lpMemHdrLft))[uOutLft];
 
     // Calc product of the remaining dimensions in right arg
-    if (aplFrstRht)
+    if (!IsZeroDim (aplFrstRht))
         aplRestRht = aplNELMRht / aplFrstRht;
     else
     for (aplRestRht = 1, uOutRht = 1; uOutRht < aplRankRht; uOutRht++)
@@ -3086,8 +3086,20 @@ RESTART_INNERPROD_RES:
 
                         break;
 
+                    case ARRAY_HC2I:
+                    case ARRAY_HC4I:
+                    case ARRAY_HC8I:
+                    case ARRAY_HC2F:
+                    case ARRAY_HC4F:
+                    case ARRAY_HC8F:
                     case ARRAY_RAT:
+                    case ARRAY_HC2R:
+                    case ARRAY_HC4R:
+                    case ARRAY_HC8R:
                     case ARRAY_VFP:
+                    case ARRAY_HC2V:
+                    case ARRAY_HC4V:
+                    case ARRAY_HC8V:
                         // Fill in the left arg item token
                         tkItmRht.tkFlags.TknType   = TKT_VARARRAY;
                         tkItmRht.tkFlags.ImmType   = IMMTYPE_ERROR;
@@ -3095,20 +3107,6 @@ RESTART_INNERPROD_RES:
                         tkItmRht.tkData.tkGlbData  = CopySymGlbDir_PTB (hGlbRht);
 
                         break;
-
-                    case ARRAY_HC2I:
-                    case ARRAY_HC4I:
-                    case ARRAY_HC8I:
-                    case ARRAY_HC2F:
-                    case ARRAY_HC4F:
-                    case ARRAY_HC8F:
-                    case ARRAY_HC2R:
-                    case ARRAY_HC4R:
-                    case ARRAY_HC8R:
-                    case ARRAY_HC2V:
-                    case ARRAY_HC4V:
-                    case ARRAY_HC8V:
-                        goto NONCE_EXIT;
 
                     case ARRAY_HETERO:          // Can't occur:  there are no empty HETEROs
                     defstop
@@ -4057,11 +4055,6 @@ VALENCE_EXIT:
 
 LENGTH_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                              &lpYYFcnStrOpr->tkToken);
-    goto ERROR_EXIT;
-
-NONCE_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                               &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 

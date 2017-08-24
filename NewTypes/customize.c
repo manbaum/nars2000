@@ -1705,6 +1705,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         CheckDlgButton (hWndProp, IDC_HC_PREFS_XB_J4i                , OptionFlags.bJ4i                );
                         CheckDlgButton (hWndProp, IDC_HC_PREFS_XB_DISP0IMAG          , OptionFlags.bDisp0Imag          );
                         CheckDlgButton (hWndProp, IDC_HC_PREFS_XB_DISPINFIX          , OptionFlags.bDispInfix          );
+                        CheckDlgButton (hWndProp, IDC_HC_PREFS_XB_DISPOCTODIG        , OptionFlags.bDispOctoDig        );
 
                         break;
 
@@ -3415,6 +3416,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         OptionFlags.bJ4i                 = IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_XB_J4i                );
                         OptionFlags.bDisp0Imag           = IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_XB_DISP0IMAG          );
                         OptionFlags.bDispInfix           = IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_XB_DISPINFIX          );
+                        OptionFlags.bDispOctoDig         = IsDlgButtonChecked (hWndProp, IDC_HC_PREFS_XB_DISPOCTODIG        );
                     } // End IF
 
                     // Disable the Apply button
@@ -5231,6 +5233,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                 case IDC_HC_PREFS_XB_J4i:
                 case IDC_HC_PREFS_XB_DISP0IMAG:
                 case IDC_HC_PREFS_XB_DISPINFIX:
+                case IDC_HC_PREFS_XB_DISPOCTODIG:
                     // We care about BN_CLICKED only
                     if (BN_CLICKED EQ cmdCtl)
                         // Enable the Apply button

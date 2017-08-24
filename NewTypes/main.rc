@@ -965,6 +965,8 @@ BEGIN
                     IDC_HC_PREFS_XB_DISP0IMAG            , 10, 39,260, 10
     AUTOCHECKBOX    "Display Hypercomplex numbers using Infix instead of Postfix notation",
                     IDC_HC_PREFS_XB_DISPINFIX            , 10, 52,260, 10
+    AUTOCHECKBOX    "Display Octonion numbers using Octonion Digraphs",
+                    IDC_HC_PREFS_XB_DISPOCTODIG          , 10, 65,260, 10
 END
 
 IDD_NEWKEYB DIALOGEX DISCARDABLE  0, 0, 140, 65

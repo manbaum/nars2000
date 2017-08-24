@@ -2842,6 +2842,7 @@ UBOOL scPointDone
             case 'J':               // ...
             case 'k':               // ...
             case 'l':               // ...
+            case 'o':               // Octonion digraph
             case 's':               // Postfix Real Part ...
                 // Hypercomplex notation separator
                 scType = SC_HCSEP;
@@ -2875,6 +2876,21 @@ UBOOL scPointDone
          && (lpszNum[uVar + 1] EQ 'd'
           || lpszNum[uVar + 1] EQ 'r'
           || lpszNum[uVar + 1] EQ 'u'))
+        {
+            // Save the color
+            lptkLocalVars->lpMemClrNxt++->syntClr =
+              gSyntaxColorName[scType].syntClr;
+            // Skip over it
+            uVar++;
+        } // End IF
+
+        // If the current char is Octonion Digraph ('o'),
+        //   and the next char is 's', 'i', 'j', or 'k', ...
+        if (lpszNum[uVar] EQ 'o'
+         && (lpszNum[uVar + 1] EQ 's'
+          || lpszNum[uVar + 1] EQ 'i'
+          || lpszNum[uVar + 1] EQ 'j'
+          || lpszNum[uVar + 1] EQ 'k'))
         {
             // Save the color
             lptkLocalVars->lpMemClrNxt++->syntClr =

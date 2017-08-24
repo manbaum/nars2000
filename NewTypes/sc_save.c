@@ -66,7 +66,8 @@ UBOOL CmdSave_EM
                  bDispMPSuf,                // Save area for OptionFlags value
                  bJ4i,                      // ...
                  bDisp0Imag,                // ...
-                 bDispInfix;                // ...
+                 bDispInfix,                // ...
+                 bDispOctoDig;              // ...
     APLU3264     uNameLen;                  // Length of the object name in WCHARs
     int          iCmp;                      // Comparison result
     UINT         uGlbCnt=0;                 // # entries in [Globals] section
@@ -85,7 +86,7 @@ UBOOL CmdSave_EM
     // Save OptionFlags for display to fixed
     //   values so we convert values on )LOAD,
     //   )SAVE, )COPY, )OUT, and []TF consistently.
-    SetOptionFlagsDisplay (&bJ4i, &bDisp0Imag, &bDispInfix, &bDispMPSuf);
+    SetOptionFlagsDisplay (&bJ4i, &bDisp0Imag, &bDispInfix, &bDispOctoDig, &bDispMPSuf);
 
     // Skip to the next blank
     lpw = SkipToCharDQW (lpwszTail, L' ');
@@ -679,7 +680,7 @@ NORMAL_EXIT:
     EXIT_TEMP_OPEN
 
     // Restore the OptionFlags values
-    RestoreOptionFlagsDisplay (bJ4i, bDisp0Imag, bDispInfix, bDispMPSuf);
+    RestoreOptionFlagsDisplay (bJ4i, bDisp0Imag, bDispInfix, bDispOctoDig, bDispMPSuf);
 
     return bRet;
 } // End CmdSave_EM
@@ -2344,6 +2345,7 @@ void SetOptionFlagsDisplay
     (LPUBOOL lpbJ4i,            // Ptr to save area for bJ4i
      LPUBOOL lpbDisp0Imag,      // ...                  bDisp0Imag
      LPUBOOL lpbDispInfix,      // ...                  bDispInfix
+     LPUBOOL lpbDispOctoDig,    // ...                  bDispOctoDig
      LPUBOOL lpbDispMPSuf)      // ...                  bDispMPSuf
 
 {
@@ -2361,6 +2363,11 @@ void SetOptionFlagsDisplay
     //  so we convert values the same way every time
     *lpbDispInfix = OptionFlags.bDispInfix;
     OptionFlags.bDispInfix = TRUE;
+
+    // Save the current bDispOctoDig flag and set to FALSE
+    //  so we convert values the same way every time
+    *lpbDispOctoDig = OptionFlags.bDispOctoDig;
+    OptionFlags.bDispOctoDig = FALSE;
 
     // Save the current bDispMPSuf flag and set to FALSE
     //  so we convert values the same way every time
@@ -2381,13 +2388,15 @@ void RestoreOptionFlagsDisplay
     (UBOOL bJ4i,                // Original value for bJ4I
      UBOOL bDisp0Imag,          // ...                bDisp0Imag
      UBOOL bDispInfix,          // ...                bDispInfix
+     UBOOL bDispOctoDig,        // ...                bDispOctoDig
      UBOOL bDispMPSuf)          // ...                bDispMPSuf
 
 {
-    OptionFlags.bJ4i       = bJ4i      ;
-    OptionFlags.bDisp0Imag = bDisp0Imag;
-    OptionFlags.bDispInfix = bDispInfix;
-    OptionFlags.bDispMPSuf = bDispMPSuf;
+    OptionFlags.bJ4i         = bJ4i      ;
+    OptionFlags.bDisp0Imag   = bDisp0Imag;
+    OptionFlags.bDispInfix   = bDispInfix;
+    OptionFlags.bDispOctoDig = bDispOctoDig;
+    OptionFlags.bDispMPSuf   = bDispMPSuf;
 } // End RestoreOptionFlagsDisplay
 
 

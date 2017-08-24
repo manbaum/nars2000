@@ -1766,7 +1766,8 @@ typedef struct tagOPTIONFLAGS
          bJ4i                :1,    // 04000000:  ...      Use 'J' instead of 'i' as Complex # separator on output
          bDisp0Imag          :1,    // 08000000:  ...      Display all imaginary parts
          bDispInfix          :1,    // 10000000:  ...      Display CHO numbers using infix notation
-                             :3;    // E0000000:  Available bits
+         bDispOctoDig        :1,    // 20000000:  ...      Display Octonions using Digraphs
+                             :2;    // C0000000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 // N.B.:  Whenever changing the above struct (OPTIONFLAGS),
@@ -1799,6 +1800,7 @@ OPTIONFLAGS OptionFlags
     DEF_J4i,
     DEF_DISP0IMAG,
     DEF_DISPINFIX,
+    DEF_DISPOCTODIG,
    }
 #endif
 ;

@@ -25,6 +25,8 @@
 //  Hypercomplex separators, indices, dimensions, etc.
 //***************************************************************************
 
+#define HC8SEP  (OptionFlags.bDispOctoDig ? hc8SepDig : hc8SepDef)
+
 EXTERN
 LPWCHAR hc2Sep[1]
 #ifdef DEFINE_VALUES
@@ -36,9 +38,14 @@ LPWCHAR hc2Sep[1]
  = {DEF_HC4SEP}
 #endif
 ,
-        hc8Sep[7]
+        hc8SepDef[7]
 #ifdef DEFINE_VALUES
- = {DEF_HC8SEP}
+ = {DEF_HC8SEPDEF}
+#endif
+,
+        hc8SepDig[7]
+#ifdef DEFINE_VALUES
+ = {DEF_HC8SEPDIG}
 #endif
 ;
 

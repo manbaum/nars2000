@@ -2872,10 +2872,10 @@ LPAPLCHAR FormatAplHCxIFC
         {
             // Append the next HCx separator
             //  overwriting the trailing blank
-            strcpyW (&lpaplChar[-1], hc8Sep[i - 1]);
+            strcpyW (&lpaplChar[-1], HC8SEP[i - 1]);
 
             // Skip over the separator
-            lpaplChar += lstrlenW (hc8Sep[i - 1]) - 1;
+            lpaplChar += lstrlenW (HC8SEP[i - 1]) - 1;
         } // End IF
 
         // Format the next imag part
@@ -2888,10 +2888,10 @@ LPAPLCHAR FormatAplHCxIFC
         {
             // Append the next HCx separator
             //  overwriting the trailing blank
-            strcpyW (&lpaplChar[-1], hc8Sep[i - 1]);
+            strcpyW (&lpaplChar[-1], HC8SEP[i - 1]);
 
             // Skip over the separator
-            lpaplChar += lstrlenW (hc8Sep[i - 1]) - 1;
+            lpaplChar += lstrlenW (HC8SEP[i - 1]) - 1;
         } // End IF
     } // End FOR/IF
 
@@ -3140,12 +3140,16 @@ LPAPLCHAR FormatAplHCxFFC
     // If the next imaginary part is non-zero, ...
     if (lpaplHC8F->parts[i] || OptionFlags.bDisp0Imag)
     {
-        // Append the next HC4 separator
-        //  overwriting the trailing blank
-        strcpyW (&lpaplChar[-1], hc8Sep[i - 1]);
+        // If we are displaying HC in infix form, ...
+        if (OptionFlags.bDispInfix)
+        {
+            // Append the next HCx separator
+            //  overwriting the trailing blank
+            strcpyW (&lpaplChar[-1], HC8SEP[i - 1]);
 
-        // Skip over the separator
-        lpaplChar += lstrlenW (hc8Sep[i - 1]) - 1;
+            // Skip over the separator
+            lpaplChar += lstrlenW (HC8SEP[i - 1]) - 1;
+        } // End IF
 
         // Format the next imag part
         lpaplChar =
@@ -3157,6 +3161,16 @@ LPAPLCHAR FormatAplHCxFFC
                           aplCharOverbar,       // Char to use as overbar
                           fltDispFmt,           // Float display format (see FLTDISPFMT)
                           bSubstInf);           // TRUE iff we're to substitute text for infinity
+        // If we are NOT displaying HC in infix form, ...
+        if (!OptionFlags.bDispInfix)
+        {
+            // Append the next HCx separator
+            //  overwriting the trailing blank
+            strcpyW (&lpaplChar[-1], HC8SEP[i - 1]);
+
+            // Skip over the separator
+            lpaplChar += lstrlenW (HC8SEP[i - 1]) - 1;
+        } // End IF
     } // End FOR/IF
 
     // If we are NOT displaying HC in infix form, ...
@@ -3405,10 +3419,10 @@ LPAPLCHAR FormatAplHCxRFC
         {
             // Append the next HCx separator
             //  overwriting the trailing blank
-            strcpyW (&lpaplChar[-1], hc8Sep[i - 1]);
+            strcpyW (&lpaplChar[-1], HC8SEP[i - 1]);
 
             // Skip over the separator
-            lpaplChar += lstrlenW (hc8Sep[i - 1]) - 1;
+            lpaplChar += lstrlenW (HC8SEP[i - 1]) - 1;
         } // End IF
 
         // Format the next imag part
@@ -3424,10 +3438,10 @@ LPAPLCHAR FormatAplHCxRFC
         {
             // Append the next HCx separator
             //  overwriting the trailing blank
-            strcpyW (&lpaplChar[-1], hc8Sep[i - 1]);
+            strcpyW (&lpaplChar[-1], HC8SEP[i - 1]);
 
             // Skip over the separator
-            lpaplChar += lstrlenW (hc8Sep[i - 1]) - 1;
+            lpaplChar += lstrlenW (HC8SEP[i - 1]) - 1;
         } // End IF
     } // End FOR/IF
 
@@ -3711,10 +3725,10 @@ LPAPLCHAR FormatAplHCxVFC
         {
             // Append the next imaginary separator
             //  overwriting the trailing blank
-            strcpyW (&lpaplChar[-1], hc8Sep[i - 1]);
+            strcpyW (&lpaplChar[-1], HC8SEP[i - 1]);
 
             // Skip over the separator
-            lpaplChar += lstrlenW (hc8Sep[i - 1]) - 1;
+            lpaplChar += lstrlenW (HC8SEP[i - 1]) - 1;
         } // End IF
 
         // Format the next imag part
@@ -3736,10 +3750,10 @@ LPAPLCHAR FormatAplHCxVFC
         {
             // Append the next HCx separator
             //  overwriting the trailing blank
-            strcpyW (&lpaplChar[-1], hc8Sep[i - 1]);
+            strcpyW (&lpaplChar[-1], HC8SEP[i - 1]);
 
             // Skip over the separator
-            lpaplChar += lstrlenW (hc8Sep[i - 1]) - 1;
+            lpaplChar += lstrlenW (HC8SEP[i - 1]) - 1;
         } // End IF
     } // End FOR/IF
 
@@ -3920,12 +3934,13 @@ LPWCHAR DisplayTransferGlb2
                       bDispMPSuf,           // Save area for OptionFlags value
                       bJ4i,                 // ...
                       bDisp0Imag,           // ...
-                      bDispInfix;           // ...
+                      bDispInfix,           // ...
+                      bDispOctoDig;         // ...
 
     // Save OptionFlags for display to fixed
     //   values so we convert values on )LOAD,
     //   )SAVE, )COPY, )OUT, and []TF consistently.
-    SetOptionFlagsDisplay (&bJ4i, &bDisp0Imag, &bDispInfix, &bDispMPSuf);
+    SetOptionFlagsDisplay (&bJ4i, &bDisp0Imag, &bDispInfix, &bDispOctoDig, &bDispMPSuf);
 
     // Lock the memory to get a ptr to it
     lpMemHdrArg = MyGlobalLockVar (hGlbArg);
@@ -4245,7 +4260,7 @@ LPWCHAR DisplayTransferGlb2
     MyGlobalUnlock (hGlbArg); lpMemHdrArg = NULL;
 
     // Restore the OptionFlags values
-    RestoreOptionFlagsDisplay (bJ4i, bDisp0Imag, bDispInfix, bDispMPSuf);
+    RestoreOptionFlagsDisplay (bJ4i, bDisp0Imag, bDispInfix, bDispOctoDig, bDispMPSuf);
 
     return lpwszTemp;
 } // End DisplayTansferGlb2

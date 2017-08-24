@@ -1501,7 +1501,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                       bDispMPSuf,           // Save area for OptionFlags value
                       bJ4i,                 // ...
                       bDisp0Imag,           // ...
-                      bDispInfix;           // ...
+                      bDispInfix,           // ...
+                      bDispOctoDig;         // ...
     LPVARARRAY_HEADER lpMemHdrObj = NULL;   // Ptr to the array header
     LPVOID            lpMemObj;             // Ptr to object global memory
     APLINT            aplInteger;           // Temporary integer
@@ -1513,7 +1514,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
     // Save OptionFlags for display to fixed
     //   values so we convert values on )LOAD,
     //   )SAVE, )COPY, )OUT, and []TF consistently.
-    SetOptionFlagsDisplay (&bJ4i, &bDisp0Imag, &bDispInfix, &bDispMPSuf);
+    SetOptionFlagsDisplay (&bJ4i, &bDisp0Imag, &bDispInfix, &bDispOctoDig, &bDispMPSuf);
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -2013,8 +2014,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                 &lpwszProf,             // Ptr to ptr to input
                                  lpwszFormat,           // Ptr to scratch area
                                  lpMemPTD,              // Ptr to PerTabData global memory
-                                &hc8Sep[0],             // Ptr to HC separators
-                                 countof (hc8Sep));     // # HC separators
+                                &hc8SepDef[0],          // Ptr to HC separators
+                                 countof (hc8SepDef));  // # HC separators
                     break;
 
                 case ARRAY_HC2R:
@@ -2046,8 +2047,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                 &lpwszProf,             // Ptr to ptr to input
                                  lpwszFormat,           // Ptr to scratch area
                                  lpMemPTD,              // Ptr to PerTabData global memory
-                                &hc8Sep[0],             // Ptr to HC separators
-                                 countof (hc8Sep));     // # HC separators
+                                &hc8SepDef[0],          // Ptr to HC separators
+                                 countof (hc8SepDef));  // # HC separators
                     break;
 
                 case ARRAY_HC2V:
@@ -2082,8 +2083,8 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                  lpwszFormat,           // Ptr to scratch area
                                  lpMemPTD,              // Ptr to PerTabData global memory
                                  uCommPrec,             // Common precision
-                                &hc8Sep[0],             // Ptr to HC separators
-                                 countof (hc8Sep));     // # HC separators
+                                &hc8SepDef[0],          // Ptr to HC separators
+                                 countof (hc8SepDef));  // # HC separators
                     break;
 
                 defstop
@@ -2502,7 +2503,7 @@ ERROR_EXIT:
     hGlbObj = NULL;
 NORMAL_EXIT:
     // Restore the OptionFlags values
-    RestoreOptionFlagsDisplay (bJ4i, bDisp0Imag, bDispInfix, bDispMPSuf);
+    RestoreOptionFlagsDisplay (bJ4i, bDisp0Imag, bDispInfix, bDispOctoDig, bDispMPSuf);
 
     return hGlbObj;
 } // End LoadWorkspaceGlobal_EM

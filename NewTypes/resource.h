@@ -340,6 +340,7 @@
 #define IDC_HC_PREFS_XB_J4i                     1200
 #define IDC_HC_PREFS_XB_DISP0IMAG               1201
 #define IDC_HC_PREFS_XB_DISPINFIX               1202
+#define IDC_HC_PREFS_XB_DISPOCTODIG             1203
 
 #define IDC_SYNTCLR_LT1                         1400    // 00:  Global Name
 #define IDC_SYNTCLR_LT2                         1401    // 01:  Local  ...

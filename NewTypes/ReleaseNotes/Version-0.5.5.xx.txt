@@ -1,6 +1,62 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1785 -- Version 0.5.5.xx
+--------------------------------
+
+* Implement Octonion Digraph Notation
+
+Directory branches/bsmith/NewTypes:
+
+CUSTOMIZE.C:
+  Define checkbox for Octonion Digraph display choice.
+
+DEFINES.H:
+  Define Default and Digraph Octonion separators.
+  Define default setting for Octonion Digraph display.
+
+DISPLAY.C:
+  Display Octonions with Digraphs is the user asks to.
+  Fix bug in display of Quaternion floats ignoring Postfix notation.
+  Save, set to a common state, and restore HC states over )LOAD.
+
+EXTERNS.H:
+  Define Option Flags for Octonion Digraph display.
+
+HC_PROC.H:
+  Define macro to choose the Octonion number display.
+  Define alternate Octonion number separators.
+
+INIFILE.C:
+  Define inifile keynames when saving Octonion Digraph state choice.
+  Read in saved Octonion Digraph state choice.
+  Write out any changes to the Octonion Digraph state choice.
+
+MAIN.RC:
+  Define checkbox for Octonion Digraph state choice.
+
+PN_PARSE.Y:
+  Parse Octonion Digraph separators for both Infix and Postfix notation.
+
+PN_PROC.C:
+  Fix typo in comment.
+
+RESOURCE.H:
+  define Control ID for Octonion Digraph state checkbox.
+
+SC_COPY.C:
+  Save, set to a common state, and restore HC states over )COPY.
+
+SC_LOAD.C:
+  Save, set to a common state, and restore HC states over )LOAD.
+
+SC_SAVE.C:
+  Save, set to a common state, and restore HC states over )SAVE.
+
+TOKENIZE.C:
+  Set the Syntax Color for Octonion Digraph separators.
+
+
 Build #1784 -- Version 0.5.5.xx
 --------------------------------
 

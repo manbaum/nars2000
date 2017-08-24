@@ -96,13 +96,20 @@
 #define DEF_HC4SEP        L"i",     \
                           L"j",     \
                           L"k"          // ...     Quaternion ...
-#define DEF_HC8SEP        L"i",     \
+#define DEF_HC8SEPDEF     L"i",     \
                           L"j",     \
                           L"k",     \
                           L"l",     \
                           L"ij",    \
                           L"jk",    \
-                          L"kl"         // ...     Octonion
+                          L"kl"         // ...     Octonion Default
+#define DEF_HC8SEPDIG     L"i",     \
+                          L"j",     \
+                          L"k",     \
+                          L"os",    \
+                          L"oi",    \
+                          L"oj",    \
+                          L"ok"         // ...     Octonion Digraphs
 #define GetHC2Sep       (OptionFlags.bJ4i ? DEF_HC2SEP    : L'i')
 #define GetHC2SepWS     (OptionFlags.bJ4i ? DEF_HC2SEP_WS : L"i")
 #define PFMN            &PrimFnMonNonceError_RE
@@ -205,6 +212,7 @@
 #define DEF_J4i                     TRUE
 #define DEF_DISP0IMAG               TRUE
 #define DEF_DISPINFIX               TRUE
+#define DEF_DISPOCTODIG             FALSE
 
 
 // Range limits for []vars

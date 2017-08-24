@@ -5398,7 +5398,7 @@ ERROR_EXIT:
 //***************************************************************************
 //  $PN_MakeHcxCo
 //
-//  Make a Hypercomplex nuber coefficient
+//  Make a Hypercomplex number coefficient
 //***************************************************************************
 
 PN_YYSTYPE PN_MakeHcxCo

@@ -116,6 +116,7 @@
 #define KEYNAME_J4i                     L"Use_J_AsHC2SepOnOutput"
 #define KEYNAME_DISP0IMAG               L"Display0ImaginaryParts"
 #define KEYNAME_DISPINFIX               L"DisplayHCAsInfix"
+#define KEYNAME_DISPOCTODIG             L"DisplayHCAsOctoDig"
 #define KEYNAME_DISPMPSUF               L"DisplayMPSuffix"
 #define KEYNAME_OUTPUTDEBUG             L"OutputDebug"
 
@@ -738,6 +739,12 @@ UBOOL ReadIniFileGlb
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
                              KEYNAME_DISPINFIX,     // Ptr to the key name
                              DEF_DISPINFIX,         // Default value if not found
+                             lpwszIniFile);         // Ptr to the file name
+    // Read in bDispOctoDig
+    OptionFlags.bDispOctoDig =
+      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
+                             KEYNAME_DISPOCTODIG,   // Ptr to the key name
+                             DEF_DISPOCTODIG,       // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     // Read in the Line Continuation char as an integer
     uUserChar =
@@ -2523,6 +2530,16 @@ void SaveIniFile
     // Write out bDispInfix
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
                                 KEYNAME_DISPINFIX,          // Ptr to the key name
+                                wszTemp,                    // Ptr to the key value
+                                lpwszIniFile);              // Ptr to the file name
+    //******************* bDispOctoDig ************************
+    // Format bDispOctoDig
+    wszTemp[0] = L'0' + OptionFlags.bDispOctoDig;
+    wszTemp[1] = WC_EOS;
+
+    // Write out bDispoctoDig
+    WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
+                                KEYNAME_DISPOCTODIG,        // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* uUserChar ***************************

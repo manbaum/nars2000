@@ -89,7 +89,7 @@ void pn_yyprint     (FILE *yyoutput, unsigned short int yytoknum, PN_YYSTYPE con
 %name-prefix "pn_yy"
 %parse-param {LPPNLOCALVARS lppnLocalVars}
 %lex-param   {LPPNLOCALVARS lppnLocalVars}
-%token EXT INF OVR EOT I J K L IJ JK KL S NaN
+%token EXT INF OVR EOT I J K L IJ JK KL S OS OI OJ OK NaN
 
 %start VectorRes
 
@@ -533,10 +533,16 @@ Do4:
       DRVPoint L                    {DbgMsgWP (L"%%Do4:  DRVPoint L");
                                      $$ = PN_MakeHcxCo (4, &$1, lppnLocalVars);
                                     }
+    | DRVPoint OS                   {DbgMsgWP (L"%%Do4:  DRVPoint OS");
+                                     $$ = PN_MakeHcxCo (4, &$1, lppnLocalVars);
+                                    }
     ;
 
 Do5:
       DRVPoint IJ                   {DbgMsgWP (L"%%Do5:  DRVPoint IJ");
+                                     $$ = PN_MakeHcxCo (5, &$1, lppnLocalVars);
+                                    }
+    | DRVPoint OI                   {DbgMsgWP (L"%%Do5:  DRVPoint OI");
                                      $$ = PN_MakeHcxCo (5, &$1, lppnLocalVars);
                                     }
     ;
@@ -545,10 +551,16 @@ Do6:
       DRVPoint JK                   {DbgMsgWP (L"%%Do6:  DRVPoint JK");
                                      $$ = PN_MakeHcxCo (6, &$1, lppnLocalVars);
                                     }
+    | DRVPoint OJ                   {DbgMsgWP (L"%%Do6:  DRVPoint OJ");
+                                     $$ = PN_MakeHcxCo (6, &$1, lppnLocalVars);
+                                    }
     ;
 
 Do7:
       DRVPoint KL                   {DbgMsgWP (L"%%Do7:  DRVPoint KL");
+                                     $$ = PN_MakeHcxCo (7, &$1, lppnLocalVars);
+                                    }
+    | DRVPoint OK                   {DbgMsgWP (L"%%Do7:  DRVPoint OK");
                                      $$ = PN_MakeHcxCo (7, &$1, lppnLocalVars);
                                     }
     ;
@@ -624,6 +636,9 @@ Co4:
       'l'     DRVPoint              {DbgMsgWP (L"%%Co4:  'l' DRVPoint");
                                      $$ = PN_MakeHcxCo (4, &$2, lppnLocalVars);
                                     }
+    | 'o' 's' DRVPoint              {DbgMsgWP (L"%%Co4:  'o' 's' DRVPoint");
+                                     $$ = PN_MakeHcxCo (4, &$3, lppnLocalVars);
+                                    }
     ;
 
 Co5:
@@ -631,6 +646,9 @@ Co5:
                                      $$ = PN_MakeHcxCo (5, &$3, lppnLocalVars);
                                     }
     | 'i' 'j' DRVPoint              {DbgMsgWP (L"%%Co5:  'i' 'j' DRVPoint");
+                                     $$ = PN_MakeHcxCo (5, &$3, lppnLocalVars);
+                                    }
+    | 'o' 'i' DRVPoint              {DbgMsgWP (L"%%Co5:  'o' 'i' DRVPoint");
                                      $$ = PN_MakeHcxCo (5, &$3, lppnLocalVars);
                                     }
     ;
@@ -645,6 +663,9 @@ Co6:
     | 'j' 'k' DRVPoint              {DbgMsgWP (L"%%Co6:  'j' 'k' DRVPoint");
                                      $$ = PN_MakeHcxCo (6, &$3, lppnLocalVars);
                                     }
+    | 'o' 'j' DRVPoint              {DbgMsgWP (L"%%Co6:  'o' 'j' DRVPoint");
+                                     $$ = PN_MakeHcxCo (6, &$3, lppnLocalVars);
+                                    }
     ;
 
 Co7:
@@ -655,6 +676,9 @@ Co7:
                                      $$ = PN_MakeHcxCo (7, &$3, lppnLocalVars);
                                     }
     | 'k' 'l' DRVPoint              {DbgMsgWP (L"%%Co7:  'k' 'l' DRVPoint");
+                                     $$ = PN_MakeHcxCo (7, &$3, lppnLocalVars);
+                                    }
+    | 'o' 'k' DRVPoint              {DbgMsgWP (L"%%Co7:  'o' 'k' DRVPoint");
                                      $$ = PN_MakeHcxCo (7, &$3, lppnLocalVars);
                                     }
     ;
@@ -1213,7 +1237,7 @@ int pn_yylex
 
     // If the current char is a HC separator, ...
     if (uChar NE AC_EOS
-     && strchr ("sijJkl", uChar) NE NULL)
+     && strchr ("sijJklo", uChar) NE NULL)
     {
         LPCHAR lpChar;
         UCHAR  uCharPrv,
@@ -1231,7 +1255,7 @@ int pn_yylex
         //   "uChar" came.
         lppnLocalVars->lpszStart[lppnLocalVars->uNumLen] = AC_EOS;
         lpChar = SkipPastStr (&lppnLocalVars->lpszStart[lppnLocalVars->uNumCur - 1],
-                               "sijJkl0123456789rv.eE" OVERBAR1_STR);
+                               "sijJklo0123456789rv.eE" OVERBAR1_STR);
 
         // Get the char at the end of and after the HC notation chars
         uCharPrv = lpChar[-1];
@@ -1246,7 +1270,7 @@ int pn_yylex
 
         // If the ending char is a HC separator,
         //   and the next char is an EOS or white space, ...
-        if (strchr ("sijJkl", uCharPrv) NE NULL
+        if (strchr ("sijJklo", uCharPrv) NE NULL
          && (uCharNxt EQ AC_EOS || IsWhite (uCharNxt)))
         {
             // Mark as needing an EOT
@@ -1293,6 +1317,41 @@ int pn_yylex
 
                 case 's':
                     return S;
+
+                case 'o':
+                    // If this is a digraph OS, ...
+                    if (lppnLocalVars->lpszStart[lppnLocalVars->uNumCur] EQ 's')
+                    {
+                        // Account for absorbing this token
+                        lppnLocalVars->uNumCur++;
+
+                        return OS;
+                    } else
+                    // If this is a digraph OI, ...
+                    if (lppnLocalVars->lpszStart[lppnLocalVars->uNumCur] EQ 'i')
+                    {
+                        // Account for absorbing this token
+                        lppnLocalVars->uNumCur++;
+
+                        return OI;
+                    } else
+                    // If this is a digraph OJ, ...
+                    if (lppnLocalVars->lpszStart[lppnLocalVars->uNumCur] EQ 'j')
+                    {
+                        // Account for absorbing this token
+                        lppnLocalVars->uNumCur++;
+
+                        return OJ;
+                    } else
+                    // If this is a digraph OK, ...
+                    if (lppnLocalVars->lpszStart[lppnLocalVars->uNumCur] EQ 'k')
+                    {
+                        // Account for absorbing this token
+                        lppnLocalVars->uNumCur++;
+
+                        return OK;
+                    } else
+                        return 0;
 
                 defstop
                     break;

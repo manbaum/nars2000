@@ -661,9 +661,6 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
         case ARRAY_INT:
         case ARRAY_APA:
         case ARRAY_FLOAT:
-            // No aborting on error!
-            gsl_set_error_handler_off ();
-
             // Allocate space for the GSL matrices
             lpGslMatrixU = gsl_matrix_alloc      ((APLU3264) aplDimRows, (APLU3264) aplDimCols);    // M x N
             lpGslPermP   = gsl_permutation_alloc ((APLU3264) aplDimRows);                           // M
@@ -871,9 +868,6 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
 
         case ARRAY_HC2I:
         case ARRAY_HC2F:
-            // No aborting on error!
-            gsl_set_error_handler_off ();
-
             // Allocate space for a copy of the right arg
             lpGslCMatrixU = gsl_matrix_complex_alloc ((APLU3264) aplDimRows, (APLU3264) aplDimCols);   // M x N
             lpGslPermP    = gsl_permutation_alloc    ((APLU3264) aplDimRows);                          // M

@@ -910,9 +910,6 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     switch (aplTypeRes)
     {
         case ARRAY_FLOAT:
-            // No aborting on error!
-            gsl_set_error_handler_off ();
-
             // Allocate space for the GSL matrices
             Assert (uNumRows EQ (APLU3264) uNumRows);
             Assert (uNumCols EQ (APLU3264) uNumCols);
@@ -1005,9 +1002,6 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
             break;
 
         case ARRAY_HC2F:
-            // No aborting on error!
-            gsl_set_error_handler_off ();
-
             // Allocate space for the GSL matrices
             Assert (uNumRows EQ (APLU3264) uNumRows);
             Assert (uNumCols EQ (APLU3264) uNumCols);
@@ -1631,9 +1625,6 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     switch (aplTypeRes)
     {
         case ARRAY_FLOAT:
-            // No aborting on error!
-            gsl_set_error_handler_off ();
-
             // Ensure no overflow
             Assert (uNumRowsLft EQ (APLU3264) uNumRowsLft);
             Assert (uNumRowsRht EQ (APLU3264) uNumRowsRht);
@@ -1725,9 +1716,6 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
             break;
 
         case ARRAY_HC2F:
-            // No aborting on error!
-            gsl_set_error_handler_off ();
-
             // Ensure no overflow
             Assert (uNumRowsLft EQ (APLU3264) uNumRowsLft);
             Assert (uNumRowsRht EQ (APLU3264) uNumRowsRht);

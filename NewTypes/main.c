@@ -27,6 +27,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <versionhelpers.h>
+#include <gsl/gsl_errno.h>
 
 #define DEFINE_VARS
 #define DEFINE_VALUES
@@ -4208,6 +4209,9 @@ int PASCAL WinMain
 
     // Mark as CSO defined
     bCSO = TRUE;
+
+    // No aborting on error!
+    gsl_set_error_handler_off ();
 
 ////PERFMON
 

@@ -1,6 +1,19 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1786 -- Version 0.5.5.xx
+--------------------------------
+
+* Move GSL Call To Global Location
+
+Directory branches/bsmith/NewTypes:
+
+MAIN.C:
+PF_DOMINO.C:
+PO_DOT.C:
+  Move call to <gsl_set_error_handler_off> to <WinMain> as we need to call it only once.
+
+
 Build #1785 -- Version 0.5.5.xx
 --------------------------------
 

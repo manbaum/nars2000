@@ -137,7 +137,7 @@ void ShowHideChildWindows
         hWndAct = (HWND) SendMessageW (hWndMC, WM_MDIGETACTIVE, 0, 0);
         if (hWndAct)
         {
-            SetFocus (hWndAct);
+            MySetFocus (hWndAct);
             SendMessageW ((HWND) GetWindowLongPtrW (hWndAct, GWLSF_HWNDEC), WM_SETCURSOR, 0, 0);
         } else
             DbgStop ();

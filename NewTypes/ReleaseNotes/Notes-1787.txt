@@ -1,0 +1,54 @@
+Build #1787 -- Version 0.5.5.xx
+--------------------------------
+
+* Debug Non-blinking Text Caret
+
+Directory branches/bsmith/NewTypes:
+
+DEBUG.C:
+  Delete call to <AttachThreadInput> which links the message queues of the Debug and Main windows as they no longer are shared.
+  Format the code better.
+
+DEFINES.H:
+  Define common macro for displaying a File, Line #, and Function name.
+  Include common file of equates for WineHQ and the main code.
+
+EDITFCN.C:
+  Convert calls to static messages to Unicode.
+  Use local function <MySetFocus> instead of <SetFocus> API so we can check the return code more easily.
+  Omit <SetCaret> from <MdiActivate> as it should be done by the routine that handles <WM_SETFOCUS>.
+  Include Text Caret DEBUG code in <FEWndProc> and <LclEditCtrlWndProc>.
+
+MACROS.H:
+  Define macro for <ExecAssert> which executes the expression and validates the result.
+  Define various Boolean macros to aid in dealing with them.
+
+MAIN.C:
+  Declare <cdbThread> an extern so we can reference it.
+  Use <PostThreadMessageW< instead of <SendMessageW> when setting the font for the DEBUG window.
+  Delete call to <DestroyCaret> from <MFWndProc/WM_NOTIFY/TCN_SELCHANGING> as it should be called from <WM_KILLFOCUS/WM_SETFOCUS> only.
+  Handle message <WM_SETFOCUS> in <MFWndProc>.
+
+SAVEFCN.C:
+  Use local function <MySetFocus> instead of <SetFocus> API so we can check the return code more easily.
+
+SESSMAN.C:
+  Include Text Caret DEBUG code in <FEWndProc> and <LclEditCtrlWndProc>.
+  Use local function <MySetFocus> instead of <SetFocus> API so we can check the return code more easily.
+
+TABCTRL.C:
+  Use local function <MySetFocus> instead of <SetFocus> API so we can check the return code more easily.
+
+
+Directory branches/bsmith/NewTypes/WineHQ:
+
+EDITCTRL.C:
+  Include Text Caret DEBUG code in <FEWndProc> and <LclEditCtrlWndProc>.
+  Use local function <MySetFocus> instead of <SetFocus> API so we can check the return code more easily.
+
+LOCAL.H:
+  Include <WineHQ\WineCom.h> which contains common equates.
+  Define prototypes for various external functions.
+
+WINECOM.H:
+  Define common equate for checking Text Carets.

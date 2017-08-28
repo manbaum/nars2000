@@ -47,8 +47,8 @@ extern DWORD LclGetTabbedTextExtentW (HFONT, HFONT, HDC, LPWSTR, int, int, const
 
 extern UBOOL bMainDestroy;
 extern TKACTSTR fsaActTableTK [][TKCOL_LENGTH];
-char szCloseMessage[] = "You have changed the body of this function;"
-                        " save the changes?";
+WCHAR wszCloseMessage[] = L"You have changed the body of this function;"
+                          L" save the changes?";
 
 // VK_CANCEL scan code for some keyboards
 // The initial value is unimportant as it is overridden
@@ -407,8 +407,7 @@ void MdiActivate
         //   scroll the caret into view
         KeepFirstVisibleLine (hWnd, hWndEC);
 
-        SetFocus (hWnd);
-        ShowCaret (hWndEC);
+        MySetFocus (hWnd);
     } else
         // Save the first visible line #
         SaveFirstVisibleLine (hWnd, hWndEC);
@@ -467,6 +466,9 @@ LRESULT APIENTRY FEWndProc
                  lpUndoNxt;         // ...    next available slot in the Undo Buffer
     LPMEMVIRTSTR lpLclMemVirtStr;   // Ptr to local MemVirtStr
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+#if (defined DEBUG) && (defined CHECK_CARET)
+    char         szTemp[1024];      // Temp buffer
+#endif
 
 ////static DWORD aHelpIDs[] = {
 ////                           IDOK,             IDH_OK,
@@ -950,13 +952,17 @@ LRESULT APIENTRY FEWndProc
 
         case MYWM_SETFOCUS:
             // Set the focus to the Function Editor so the cursor displays
-            SetFocus (hWnd);
+            MySetFocus (hWnd);
 
             return FALSE;           // We handled the msg
 
         case WM_SETFOCUS:
+#if (defined DEBUG) && (defined CHECK_CARET)
+            dprintfWL0 (L"Messsage HWND %p %S (%S#%d-%S)", hWnd, APIMsg (hWnd, message, wParam, lParam, szTemp, FALSE), FNLNFCN);
+            oprintfW   (L"Messsage HWND %p %S (%S#%d-%S)", hWnd, APIMsg (hWnd, message, wParam, lParam, szTemp, FALSE), FNLNFCN);
+#endif
             // Pass on to the Edit Ctrl
-            SetFocus (hWndEC);
+            MySetFocus (hWndEC);
 
             // Draw the line #s
             DrawLineNumsFE (hWndEC);
@@ -2157,6 +2163,9 @@ LRESULT WINAPI LclEditCtrlWndProc
                 &EditWndProcW;
     LPWCHAR      lpwszTemp;                 // Ptr to temporary storage
     static UINT  uAltNum = 0;               // Accumulator for Alt-nnn (NumPad only)
+#if (defined DEBUG) && (defined CHECK_CARET)
+    char         szTemp[1024];              // Temp buffer
+#endif
 
     // If the thread is MF, ...
     if (TLSTYPE_MF EQ TlsGetValue (dwTlsType))
@@ -2174,7 +2183,9 @@ LRESULT WINAPI LclEditCtrlWndProc
         lpwszTemp = lpMemPTD->lpwszTemp;
     } // End IF/ELSE
 
-////LCLODSAPI ("EC: ", hWnd, message, wParam, lParam);
+#if (defined DEBUG) && (defined CHECK_CARET)
+    LCLODSAPI ("EC: ", hWnd, message, wParam, lParam);
+#endif
     // Split cases
     switch (message)
     {
@@ -4145,6 +4156,10 @@ LRESULT WINAPI LclEditCtrlWndProc
         } // End WM_PAINT
 
         case WM_SETFOCUS:           // hwndLoseFocus = (HWND) wParam; // handle of window losing focus
+#if (defined DEBUG) && (defined CHECK_CARET)
+            dprintfWL0 (L"Messsage HWND %p %S (%S#%d-%S)", hWnd, APIMsg (hWnd, message, wParam, lParam, szTemp, FALSE), FNLNFCN);
+            oprintfW   (L"Messsage HWND %p %S (%S#%d-%S)", hWnd, APIMsg (hWnd, message, wParam, lParam, szTemp, FALSE), FNLNFCN);
+#endif
         case WM_LBUTTONDOWN:        // fwKeys = wParam;         // key flags
                                     // xPos = LOSHORT(lParam);  // horizontal position of cursor
                                     // yPos = HISHORT(lParam);  // vertical position of cursor
@@ -4526,10 +4541,10 @@ void CopyAPLChars_EM
         hGlbText = GlobalAlloc (GHND | GMEM_DDESHARE, (numChars + 1 ) * sizeof (WCHAR));
         if (hGlbText EQ NULL)
         {
-            MessageBox (hWndMF,
-                        "Unable to allocate memory for the copy of CF_UNICODETEXT format",
-                        lpszAppName,
-                        MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+            MessageBoxW (hWndMF,
+                        L"Unable to allocate memory for the copy of CF_UNICODETEXT format",
+                         lpwszAppName,
+                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
             goto ERROR_EXIT;
         } // End IF
 
@@ -4549,10 +4564,10 @@ void CopyAPLChars_EM
         hGlbText = GlobalAlloc (GHND | GMEM_DDESHARE, numChars * sizeof (WCHAR));
         if (hGlbText EQ NULL)
         {
-            MessageBox (hWndMF,
-                        "Unable to allocate memory for the copy of CF_UNICODETEXT format",
-                        lpszAppName,
-                        MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+            MessageBoxW (hWndMF,
+                        L"Unable to allocate memory for the copy of CF_UNICODETEXT format",
+                         lpwszAppName,
+                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
             goto ERROR_EXIT;
         } // End IF
 
@@ -4682,10 +4697,10 @@ void PasteAPLChars_EM
     hGlbFmts = DbgGlobalAlloc (GHND, uCount * sizeof (CLIPFMTS));
     if (hGlbFmts EQ NULL)
     {
-        MessageBox (hWndMF,
-                    "Unable to allocate memory for the clipboard formats",
-                    lpszAppName,
-                    MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+        MessageBoxW (hWndMF,
+                    L"Unable to allocate memory for the clipboard formats",
+                     lpwszAppName,
+                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
         goto ERROR_EXIT;
     } // End IF
 
@@ -4744,10 +4759,10 @@ void PasteAPLChars_EM
             hGlbText = GlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
             if (hGlbText EQ NULL)
             {
-                MessageBox (hWndMF,
-                            "Unable to allocate memory for the copy of CF_UNICODETEXT/CF_PRIVATEFIRST format",
-                            lpszAppName,
-                            MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                MessageBoxW (hWndMF,
+                            L"Unable to allocate memory for the copy of CF_UNICODETEXT/CF_PRIVATEFIRST format",
+                             lpwszAppName,
+                             MB_OK | MB_ICONWARNING | MB_APPLMODAL);
                 goto ERROR_EXIT;
             } // End IF
 
@@ -4770,10 +4785,10 @@ void PasteAPLChars_EM
             hGlbText = GlobalAlloc (GHND | GMEM_DDESHARE, dwSize);
             if (hGlbText EQ NULL)
             {
-                MessageBox (hWndMF,
-                            "Unable to allocate memory for the copy of CF_UNICODETEXT/CF_PRIVATEFIRST format",
-                            lpszAppName,
-                            MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                MessageBoxW (hWndMF,
+                            L"Unable to allocate memory for the copy of CF_UNICODETEXT/CF_PRIVATEFIRST format",
+                             lpwszAppName,
+                             MB_OK | MB_ICONWARNING | MB_APPLMODAL);
                 goto ERROR_EXIT;
             } // End IF
 
@@ -5775,7 +5790,7 @@ UBOOL QueryCloseFE
         return TRUE;
 
     // Ask the user what to do
-    switch (MessageBox (NULL, szCloseMessage, lpszAppName, MB_YESNOCANCEL | MB_ICONQUESTION))
+    switch (MessageBoxW (NULL, wszCloseMessage, lpwszAppName, MB_YESNOCANCEL | MB_ICONQUESTION))
     {
         case IDYES:         // Save the function
             return SaveFunction (hWndFE);
@@ -6150,6 +6165,22 @@ void ActivateMDIMenu
             break;
     } // End FOR/SWITCH
 } // End ActivateMDIMenu
+
+
+//***************************************************************************
+//  $MySetFocus
+//
+//  Set the focus to a window and check the result
+//***************************************************************************
+
+HWND MySetFocus (HWND hWnd)
+{
+    HWND hWndRet = SetFocus (hWnd);
+
+    Assert (hWndRet NE NULL);
+
+    return hWndRet;
+} // End MySetFocus
 
 
 //***************************************************************************

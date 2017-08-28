@@ -49,6 +49,7 @@ extern int Debug = 1;
 #endif
 WCHAR crsh_dll[] = L"CRASHRPT.DLL",
       crsh_version[32] = L" ***NOT LOADED***";
+extern CDB_THREAD cdbThread;                // Temporary global
 
 
 //************************** Data Area **************************************
@@ -1011,7 +1012,7 @@ void ApplyNewFontSM
     enumSetFontW.hFont        = hFont;
 
     // Refont the DB window
-    SendMessageW (hWndDB, WM_SETFONT, (WPARAM) hFont, MAKELPARAM (TRUE, 0));
+    PostThreadMessageW (cdbThread.dwThreadId, WM_SETFONT, (WPARAM) hFont, MAKELPARAM (TRUE, 0));
 #endif
 } // End ApplyNewFontSM
 
@@ -1977,8 +1978,6 @@ LRESULT APIENTRY MFWndProc
                 //***************************************************************
                 case TCN_SELCHANGING:       // idTabCtl = (int) LOWORD(wParam);
                                             // lpnmhdr = (LPNMHDR) lParam;
-                    DestroyCaret ();        // 'cause we just lost the focus
-
                     // If the user clicked on the close button,
                     //   disallow this change so as to avoid
                     //   screen flicker
@@ -3043,6 +3042,18 @@ LRESULT APIENTRY MFWndProc
                 return FALSE;       // We handled the msg
             else
                 break;              // Continue with default handler
+
+        case WM_SETFOCUS:
+            // Start with a fresh caret
+            DestroyCaret ();
+
+            //  Get the Edit Ctrl window handle of the currently active MDI Client
+            hWndActive = GetActiveEC (hWndTC);
+
+            // Give it the focus
+            MySetFocus (hWndActive);
+
+            break;
 
         default:
             break;                  // Continue with default handler

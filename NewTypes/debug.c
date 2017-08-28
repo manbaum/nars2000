@@ -149,9 +149,6 @@ UBOOL WINAPI CreateDebuggerInThread
             ShowWindow (hWndDB, SW_SHOWNORMAL);
             UpdateWindow (hWndDB);
 
-            // Make sure we can communicate between windows
-            AttachThreadInput (GetCurrentThreadId (), dwMainThreadId, TRUE);
-
             // Main message loop
             while (GetMessageW (&Msg, NULL, 0, 0))
             {
@@ -966,10 +963,11 @@ int oprintfW
     va_start (vl, lpwszFmt);
 
     // wsprintfW the list
-    hResult = StringCbVPrintfW (wszTemp,
-                  sizeof (wszTemp),
-                  lpwszFmt,
-                  vl);
+    hResult =
+      StringCbVPrintfW (wszTemp,
+                        sizeof (wszTemp),
+                        lpwszFmt,
+                        vl);
     // End the variable list
     va_end (vl);
 
@@ -1006,10 +1004,11 @@ int dprintfWL0
     va_start (vl, lpwszFmt);
 
     // wsprintfW the list
-    hResult = StringCbVPrintfW (wszTemp,
-                  sizeof (wszTemp),
-                  lpwszFmt,
-                  vl);
+    hResult =
+      StringCbVPrintfW (wszTemp,
+                        sizeof (wszTemp),
+                        lpwszFmt,
+                        vl);
     // End the variable list
     va_end (vl);
 
@@ -1049,10 +1048,11 @@ int dprintfWL9
     va_start (vl, lpwszFmt);
 
     // wsprintfW the list
-    hResult = StringCbVPrintfW (wszTemp,
-                  sizeof (wszTemp),
-                  lpwszFmt,
-                  vl);
+    hResult =
+      StringCbVPrintfW (wszTemp,
+                        sizeof (wszTemp),
+                        lpwszFmt,
+                        vl);
     // End the variable list
     va_end (vl);
 

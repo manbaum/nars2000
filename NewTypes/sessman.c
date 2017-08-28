@@ -954,6 +954,9 @@ LRESULT APIENTRY SMWndProc
     LPUNDO_BUF   lpUndoBeg;             // Ptr to start of Undo Buffer
     static UBOOL bLoadMsgDisp = FALSE;  // TRUE iff )LOAD message has been displayed
     LPMEMVIRTSTR lpLclMemVirtStr;       // Ptr to local MemVirtStr
+#if (defined DEBUG) && (defined CHECK_CARET)
+    char         szTemp[1024];          // Temp buffer
+#endif
 
     // Get the handle to the Edit Ctrl
     (HANDLE_PTR) hWndEC = GetWindowLongPtrW (hWnd, GWLSF_HWNDEC);
@@ -1794,7 +1797,7 @@ NORMAL_EXIT:
             } // End IF/ELSE
 
             // Ensure the SM has the focus
-            SetFocus (hWnd);
+            MySetFocus (hWnd);
 
             // Set all statusbar states
             SetStatusAll ();
@@ -1869,14 +1872,25 @@ NORMAL_EXIT:
             // Fall through to common code
 
         case WM_KILLFOCUS:          // hwndGainFocus = (HWND) wParam; // handle of window gaining focus
+////////case WM_SETFOCUS:           // hwndLoseFocus = (HWND) wParam; // handle of window losing focus
+        {
+#if (defined DEBUG) && (defined CHECK_CARET)
+            dprintfWL0 (L"Messsage HWND %p %S (%S#%d-%S)", hWnd, APIMsg (hWnd, message, wParam, lParam, szTemp, FALSE), FNLNFCN);
+            oprintfW   (L"Messsage HWND %p %S (%S#%d-%S)", hWnd, APIMsg (hWnd, message, wParam, lParam, szTemp, FALSE), FNLNFCN);
+#endif
             // Pass these messages through to the EditCtrl
             SendMessageW (hWndEC, message, wParam, lParam);
 
             break;
+        } // End WM_KILLFOCUS/WM_SETFOCUS
 
         case WM_SETFOCUS:           // hwndLoseFocus = (HWND) wParam; // handle of window losing focus
+#if (defined DEBUG) && (defined CHECK_CARET)
+            dprintfWL0 (L"Messsage HWND %p %S (%S#%d-%S)", hWnd, APIMsg (hWnd, message, wParam, lParam, szTemp, FALSE), FNLNFCN);
+            oprintfW   (L"Messsage HWND %p %S (%S#%d-%S)", hWnd, APIMsg (hWnd, message, wParam, lParam, szTemp, FALSE), FNLNFCN);
+#endif
             // Pass on to the edit ctrl
-            SetFocus (hWndEC);
+            MySetFocus (hWndEC);
 
             break;                  // *MUST* pass on to DefMDIChildProc
 
@@ -1887,7 +1901,7 @@ NORMAL_EXIT:
 
         case MYWM_SETFOCUS:
             // Set the focus to the Session Manager so the cursor displays
-            SetFocus (hWnd);
+            MySetFocus (hWnd);
 
             return FALSE;           // We handled the msg
 

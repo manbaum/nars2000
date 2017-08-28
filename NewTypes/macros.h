@@ -142,6 +142,7 @@
   #define DbgMsgW2(a)                     {if (gDbgLvl > 2) {DbgMsgW(a);}}
 
   #define Assert(a)                       ((a) || (DbgBrk (), nop (), 0))
+  #define ExecAssert(a)                   Assert (a)
   #define BreakIf(a)                      Assert (!(a))
 //#define nop()                           // Use already defined function
 //#define DbgNop()                        // Use already defined function
@@ -179,6 +180,7 @@
   #define DbgMsgW2(a)
 
   #define Assert(a)                       ((void) 0)
+  #define ExecAssert(a)                   (a)
   #define BreakIf(a)                      ((void) 0)
 ////  #define Assert(a) ((a) || (AssertPrint(#a, FNLN), 0))
   #define nop()                           {}    // Nothing
@@ -528,6 +530,9 @@
 
 #define GetImmTypeFcn(a)            IMMTYPE_PRIMFCN
 
+#define NextBooleanByte(lpMem,uRes) ((LPAPLBOOL) lpMem)[((UINT) (uRes)) >> LOG2NBIB]
+#define GetNextBoolean(lpMem,uRes)  (BIT0 & (NextBooleanByte (lpMem, uRes) >> (MASKLOG2NBIB & (UINT) (uRes))))
+#define ShiftBoolean(value,uRes)    (value) << (MASKLOG2NBIB & (UINT) (uRes))
 #define GetNextChar8(a,t,c)         ((LPUINT8   ) a)[c]
 #define GetNextChar16(a,t,c)        ((LPUINT16  ) a)[c]
 #define GetNextChar32(a,t,c)        ((LPUINT32  ) a)[c]

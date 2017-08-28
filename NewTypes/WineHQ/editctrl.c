@@ -3738,7 +3738,7 @@ static LRESULT EDIT_WM_KeyDown(EDITSTATE *es, INT key)
         else
         {
             MyCreateCaret (es->hwndSelf, 0, CARETWIDTH, es->line_height);
-            ShowCaret(es->hwndSelf);
+            ExecAssert (ShowCaret(es->hwndSelf));
         }
         break;
     case VK_RETURN:
@@ -3818,6 +3818,9 @@ static LRESULT EDIT_WM_KillFocus(EDITSTATE *es)
 {
     es->flags &= ~EF_FOCUSED;
     DestroyCaret();
+#if (defined DEBUG) && (defined CHECK_CARET)
+    oprintfW   (L"DestroyCaret:  hWnd %p (%S#%d-%S)", es->hwndSelf, FNLNFCN);
+#endif
     if(!(es->style & ES_NOHIDESEL))
         EDIT_InvalidateText(es, es->selection_start, es->selection_end);
     EDIT_NOTIFY_PARENT(es, EN_KILLFOCUS);
@@ -3894,7 +3897,7 @@ static LRESULT EDIT_WM_LButtonDown(EDITSTATE *es, DWORD keys, INT x, INT y)
         SetTimer(es->hwndSelf, 0, 100, NULL);
 
         if (!(es->flags & EF_FOCUSED))
-            SetFocus(es->hwndSelf);
+            MySetFocus(es->hwndSelf);
     } // End IF/ELSE
 
     return 0;
@@ -4408,7 +4411,7 @@ static void EDIT_WM_SetFocus(EDITSTATE *es)
     MyCreateCaret(es->hwndSelf, 0, CARETWIDTH, es->line_height);
     EDIT_SetCaretPos(es, es->selection_end,
              es->flags & EF_AFTER_WRAP);
-    ShowCaret(es->hwndSelf);
+    ExecAssert (ShowCaret (es->hwndSelf));
     EDIT_NOTIFY_PARENT(es, EN_SETFOCUS);
 } // End EDIT_WM_SetFocus
 
@@ -4458,7 +4461,7 @@ static void EDIT_WM_SetFont(EDITSTATE *es, HFONT font, BOOL redraw)
         MyCreateCaret(es->hwndSelf, 0, CARETWIDTH, es->line_height);
         EDIT_SetCaretPos(es, es->selection_end,
                  es->flags & EF_AFTER_WRAP);
-        ShowCaret(es->hwndSelf);
+        ExecAssert (ShowCaret(es->hwndSelf));
     }
 } // End EDIT_WM_SetFont
 
@@ -5260,6 +5263,9 @@ static LRESULT EditWndProc_common( HWND hwnd, UINT msg,
 {
     EDITSTATE *es = (EDITSTATE *)GetWindowLongPtrW( hwnd, GWLEC_ES );
     LRESULT result = 0;
+#if (defined DEBUG) && (defined CHECK_CARET)
+    char szTemp[1024];
+#endif
 
     TRACE("hwnd=%p msg=%x (%s) wparam=%x lparam=%lx\n", hwnd, msg, SPY_GetMsgName(msg, hwnd), wParam, lParam);
 
@@ -5702,6 +5708,9 @@ static LRESULT EditWndProc_common( HWND hwnd, UINT msg,
         break;
 
     case WM_KILLFOCUS:
+#if (defined DEBUG) && (defined CHECK_CARET)
+        oprintfW   (L"Messsage HWND %p %S", hwnd, APIMsg (hwnd, msg, wParam, lParam, szTemp, FALSE));
+#endif
         result = EDIT_WM_KillFocus(es);
         break;
 
@@ -5754,6 +5763,9 @@ static LRESULT EditWndProc_common( HWND hwnd, UINT msg,
         break;
 
     case WM_SETFOCUS:
+#if (defined DEBUG) && (defined CHECK_CARET)
+        oprintfW   (L"Messsage HWND %p %S", hwnd, APIMsg (hwnd, msg, wParam, lParam, szTemp, FALSE));
+#endif
         EDIT_WM_SetFocus(es);
         break;
 

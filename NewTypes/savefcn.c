@@ -1456,7 +1456,7 @@ HGLOBAL SF_UndoBufferFE
                              L"Insufficient memory to save Undo buffer!!",
                              lpwszAppName,
                              MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-                SetFocus (GetParent (hWndEC));
+                MySetFocus (GetParent (hWndEC));
 
                 return NULL;
             } // End IF
@@ -1533,7 +1533,7 @@ HGLOBAL SF_UndoBufferLW
                      L"Insufficient memory to save Undo buffer!!",
                      lpwszAppName,
                      MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-        SetFocus (GetParent (hWndEC));
+        MySetFocus (GetParent (hWndEC));
 
         return NULL;
     } // End IF
@@ -1876,7 +1876,7 @@ UBOOL SaveFunctionCom
                          L"Insufficient memory to save the function header text!!",
                          lpwszAppName,
                          MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-            SetFocus (GetParent (hWndEC));
+            MySetFocus (GetParent (hWndEC));
         } else
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                        lpSF_Fcns->lptkFunc);
@@ -1943,7 +1943,7 @@ UBOOL SaveFunctionCom
                         wszTemp,
                         lpwszAppName,
                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-            SetFocus (GetParent (hWndEC));
+            MySetFocus (GetParent (hWndEC));
         } // End IF
 
         goto ERROR_EXIT;
@@ -1970,7 +1970,7 @@ UBOOL SaveFunctionCom
                          L"Insufficient memory to save the function header strand stack!!",
                          lpwszAppName,
                          MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-            SetFocus (GetParent (hWndEC));
+            MySetFocus (GetParent (hWndEC));
         } else
             ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                        lpSF_Fcns->lptkFunc);
@@ -2062,7 +2062,7 @@ UBOOL SaveFunctionCom
                                  L"SI Damage in pending function:  changes to this function NOT saved",
                                  lpwszAppName,
                                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-                    SetFocus (GetParent (hWndEC));
+                    MySetFocus (GetParent (hWndEC));
                 } else
                 {
                     // If we're NOT called from []FX, ...
@@ -2117,7 +2117,7 @@ UBOOL SaveFunctionCom
                                  wszTemp,
                                  lpwszAppName,
                                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-                    SetFocus (GetParent (hWndEC));
+                    MySetFocus (GetParent (hWndEC));
                 } else
                     ErrorMessageIndirectToken (ERRMSG_NOT_SAVED_FILE_ERROR APPEND_NAME,
                                                lpSF_Fcns->lptkFunc);
@@ -2197,7 +2197,7 @@ UBOOL SaveFunctionCom
                              L"Insufficient memory to save the function header!!",
                              lpwszAppName,
                              MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-                SetFocus (GetParent (hWndEC));
+                MySetFocus (GetParent (hWndEC));
             } else
                 ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                            lpSF_Fcns->lptkFunc);
@@ -2379,7 +2379,7 @@ UBOOL SaveFunctionCom
                                  wszTemp,
                                  lpwszAppName,
                                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-                    SetFocus (GetParent (hWndEC));
+                    MySetFocus (GetParent (hWndEC));
                 } else
                     // Save the line # in error (origin-0)
                     lpSF_Fcns->uErrLine = uLineNum;
@@ -2422,7 +2422,7 @@ UBOOL SaveFunctionCom
                              wszTemp,
                              lpwszAppName,
                              MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-                SetFocus (GetParent (hWndEC));
+                MySetFocus (GetParent (hWndEC));
             } else
                 // Save the line # in error (origin-0)
                 lpSF_Fcns->uErrLine = csLocalVars.tkCSErr.tkData.Orig.c.uLineNum;
@@ -2594,7 +2594,7 @@ WSFULL_EXIT:
 ERROR_EXIT:
     if (hWndFE NE NULL)
         // Ensure the FE window redraws the caret
-        SetFocus (hWndFE);
+        MySetFocus (hWndFE);
 
     if (hGlbDfnHdr NE NULL)
     {
@@ -2713,7 +2713,7 @@ UINT SaveFunctionLine
                          L"Insufficient memory to save a function line!!",
                          lpwszAppName,
                          MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-            SetFocus (GetParent (hWndEC));
+            MySetFocus (GetParent (hWndEC));
 
             goto ERROR_EXIT;
         } else
@@ -2844,7 +2844,7 @@ UINT SaveFunctionLine
                         wszTemp,
                         lpwszAppName,
                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-            SetFocus (GetParent (hWndEC));
+            MySetFocus (GetParent (hWndEC));
         } // End IF
 
         goto ERROR_EXIT;
@@ -3369,7 +3369,7 @@ SYSDUP_EXIT:
 
 ERROR_EXIT:
     if (bDispErrMsg && hWndEC NE NULL)
-        SetFocus (GetParent (hWndEC));
+        MySetFocus (GetParent (hWndEC));
 
     // Mark as in error
     bRet = FALSE;

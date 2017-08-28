@@ -381,8 +381,10 @@ default:        \
     DbgStop();
 
 #define FNLN    FileNameOnly (__FILE__), __LINE__
+#define FNLNFCN FNLN,__FUNCTION__
 
 #ifdef DEBUG
+  #include "WineHQ\WineCom.h"
   #define LCLODS        ODS
   #define LCLODSDD      ODSDD
   #define LCLODSRECT    ODSRECT

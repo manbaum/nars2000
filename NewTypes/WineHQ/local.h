@@ -1,3 +1,4 @@
+#include "WineCom.h"
 
 #define GCL_HBRBACKGROUND       (-10)
 #define NM_LAST                 (0U- 99U)
@@ -48,12 +49,14 @@ void DbgBrk (void);
 BOOL IzitFE (HWND);
 extern int __cdecl dprintfWL0 (unsigned short *lpwszFmt,...);
 extern int __cdecl dprintfWL9 (unsigned short *lpwszFmt,...);
+extern int __cdecl oprintfW   (unsigned short *lpwszFmt,...);
 extern void nop (void);
 extern HCURSOR hCursorNo;
 extern HCURSOR hCursorDragMove;
 extern HCURSOR hCursorDragCopy;
 #ifdef DEBUG
 extern int gDbgLvl;
+extern char * FileNameOnly(char * lpFileName);
 #endif
 
 extern HFONT hFontPR;
@@ -77,10 +80,12 @@ void DrawLineContSub (HWND, HDC, int, int, int);
 #undef  EXTERN
 
 extern HGLOBAL __cdecl SplitLines (HGLOBAL, UINT, LPUBOOL);
+extern HWND            MySetFocus (HWND);
 
 #ifdef DEBUG
   #define   LCLODSAPI   ODSAPI
 extern void __cdecl ODSAPI(char *lpStr,struct HWND__ *hWnd,unsigned int message,unsigned int wParam,long lParam);
+extern char * __cdecl APIMsg(struct HWND__ *hWnd,unsigned int message,unsigned int wParam,long lParam,char *lpStr, BOOL bFlag);
 #else
   #define   LCLODSAPI
 #endif

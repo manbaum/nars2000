@@ -1,0 +1,9 @@
+Build #1790 -- Version 0.5.5.xx
+--------------------------------
+
+* Miscellaneous Minor Changes, Part II
+
+Directory branches/bsmith/NewTypes/WineHQ:
+
+WINECOM.H:
+  File omitted from a previous build.

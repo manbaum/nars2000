@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -65,8 +65,8 @@
 #define DEF_MIN_QUADFEATURE 0                   // Minimum value for []FEATURE
 #define DEF_MAX_QUADFEATURE 1                   // Maximum ...
 
-#define DEF_MIN_QUADFPC     53                  // Minimum value for []FPC
-#define DEF_MAX_QUADFPC     INT_MAX             // Maximum ...
+#define DEF_MIN_QUADFPC     MPFR_PREC_MIN       // Minimum value for []FPC
+#define DEF_MAX_QUADFPC     MPFR_PREC_MAX       // Maximum ...
 
 #define DEF_MIN_QUADIC      ICVAL_MINVAL        // Minimum value for []IC
 #define DEF_MAX_QUADIC      ICVAL_MAXVAL        // Maximum ...

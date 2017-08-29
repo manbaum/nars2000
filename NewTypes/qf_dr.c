@@ -512,9 +512,8 @@ LPPL_YYSTYPE SysFnDR_GetPrec_EM_YY
         case ARRAY_HETERO:
         case ARRAY_NESTED:
         case ARRAY_CHAR:
-            // Return the numeric precision
-            // ***FIXME*** -- should this be an error?
-            aplIntegerRes = 0;
+            // Return the character precision in bits
+            aplIntegerRes = 16;
             immTypeRes    = IMMTYPE_INT;
 
             break;

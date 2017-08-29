@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ LPPL_YYSTYPE PrimOpCircleMiddleDot_EM_YY
 //  $PrimProtoOpCircleMiddleDot_EM_YY
 //
 //  Generate a prototype for the derived functions from
-//    monadic operator CircleMiddleDot ("duplicate" and "commute")
+//    monadic operator CircleMiddleDot ("null op" and "null op")
 //***************************************************************************
 
 LPPL_YYSTYPE PrimProtoOpCircleMiddleDot_EM_YY
@@ -100,7 +100,7 @@ LPPL_YYSTYPE PrimProtoOpCircleMiddleDot_EM_YY
 //***************************************************************************
 //  $PrimOpMonCircleMiddleDot_EM_YY
 //
-//  Primitive operator for monadic derived function from CircleMiddleDot ("duplicate")
+//  Primitive operator for monadic derived function from CircleMiddleDot ("null op")
 //***************************************************************************
 
 LPPL_YYSTYPE PrimOpMonCircleMiddleDot_EM_YY
@@ -118,7 +118,7 @@ LPPL_YYSTYPE PrimOpMonCircleMiddleDot_EM_YY
 //***************************************************************************
 //  $PrimOpMonCircleMiddleDot_EM_YY
 //
-//  Primitive operator for monadic derived function from CircleMiddleDot ("duplicate")
+//  Primitive operator for monadic derived function from CircleMiddleDot ("null op")
 //***************************************************************************
 
 #ifdef DEBUG
@@ -201,7 +201,7 @@ LEFT_OPERAND_NONCE_EXIT:
 //***************************************************************************
 //  $PrimOpDydCircleMiddleDot_EM_YY
 //
-//  Primitive operator for dyadic derived function from CircleMiddleDot ("commute")
+//  Primitive operator for dyadic derived function from CircleMiddleDot ("null op")
 //***************************************************************************
 
 LPPL_YYSTYPE PrimOpDydCircleMiddleDot_EM_YY
@@ -221,7 +221,7 @@ LPPL_YYSTYPE PrimOpDydCircleMiddleDot_EM_YY
 //***************************************************************************
 //  $PrimOpDydCircleMiddleDotCommon_EM_YY
 //
-//  Primitive operator for dyadic derived function from CircleMiddleDot ("commute")
+//  Primitive operator for dyadic derived function from CircleMiddleDot ("null op")
 //***************************************************************************
 
 #ifdef DEBUG

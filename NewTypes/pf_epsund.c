@@ -954,7 +954,6 @@ UBOOL EqualAny
 //  Define macro for all routines
 //***************************************************************************
 
-#define GetNextBool(lpMem,typeMem,uRes)     (BIT0 & (((LPAPLBOOL) lpMem)[(uRes) >> LOG2NBIB] >> (MASKLOG2NBIB & (uRes))))
 #define GetNextDir(lpMem,typeMem,uRes)       lpMem[uRes]
 #define GetNextRAT(lpMem,typeMem,uRes)      ((LPAPLRAT) lpMem)[uRes]
 #define GetNextVFP(lpMem,typeMem,uRes)      ((LPAPLVFP) lpMem)[uRes]
@@ -1130,7 +1129,7 @@ APLLONGEST GetNextSN
     switch (typeMem)
     {
         case ARRAY_BOOL:
-            return (APLLONGEST) GetNextBool (lpMem, typeMem, uRes);
+            return (APLLONGEST) GetNextBoolean (lpMem, uRes);
 
         case ARRAY_INT:
             return (APLLONGEST) ((LPAPLINT) lpMem)[uRes];

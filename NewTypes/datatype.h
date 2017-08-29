@@ -207,8 +207,8 @@ typedef enum tagARRAY_TYPES
 typedef struct tagAPLAPA                // Offset + Multiplier {times} {iota} NELM (origin-0)
 {
     APLINT  Off,                        // 00:  Offset
-            Mul;                        // 04:  Multiplier
-                                        // 08:  Length
+            Mul;                        // 08:  Multiplier
+                                        // 10:  Length
 } APLAPA, * LPAPLAPA;
 
 /*

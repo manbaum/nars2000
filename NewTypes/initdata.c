@@ -443,7 +443,7 @@ void InitPrimFns
 ////                                                                            // Alt-'C' - (none)
 ////                                                                            // Alt-'D' - (none)
     InitPrimFn (UTF16_EPSILONUNDERBAR     , &PrimFnEpsilonUnderbar_EM_YY    );  // Alt-'E' - epsilon-underbar
-////                                                                            // Alt-'F' - (none)
+////                                                                            // Alt-'F' - quad-jot
 ////                                                                            // Alt-'G' - dieresis-del (dual)
 ////                                                                            // Alt-'H' - delta-underbar
     InitPrimFn (UTF16_IOTAUNDERBAR        , &PrimFnIotaUnderbar_EM_YY       );  // Alt-'I' - iota-underbar
@@ -672,7 +672,7 @@ void InitPrimProtoFns
 ////                                                                                        // Alt-'C' - (none)
 ////                                                                                        // Alt-'D' - (none)
     InitPrimProtoFn (UTF16_EPSILONUNDERBAR     , &PrimProtoFnEpsilonUnderbar_EM_YY    );    // Alt-'E' - epsilon-underbar
-////                                                                                        // Alt-'F' - (none)
+    InitPrimProtoOp (UTF16_QUADJOT             , &PrimProtoOpQuadJot_EM_YY            );    // Alt-'F' - quad-jot
     InitPrimProtoOp (UTF16_DIERESISDEL         , &PrimProtoOpDieresisDel_EM_YY        );    // Alt-'G' - dieresis-del (dual)
 ////                                                                                        // Alt-'H' - delta-underbar
     InitPrimProtoFn (UTF16_IOTAUNDERBAR        , &PrimProtoFnIotaUnderbar_EM_YY       );    // Alt-'I' - iota-underbar
@@ -951,6 +951,7 @@ void InitPrimFlags
     Init1PrimFlag (UTF16_NOR                 , PF_FB                         | PF_MS | PF_DS                         | PF_INDEX_NOR       , (LPPRIMOPS) PrimIdentFnScalar_EM_YY           );
     Init1PrimFlag (UTF16_NOTEQUAL            , PF_FB | PF_AB                 | PF_MS | PF_DS | PF_ID | PF_LI | PF_RI | PF_INDEX_NOTEQUAL  , (LPPRIMOPS) PrimIdentFnScalar_EM_YY           );
     Init1PrimFlag (UTF16_PLUS                , 0     | PF_AB | PF_AN         | PF_MS | PF_DS | PF_ID | PF_LI | PF_RI | PF_INDEX_PLUS      , (LPPRIMOPS) PrimIdentFnScalar_EM_YY           );
+    Init1PrimFlag (UTF16_QUADJOT             , 0                                                                                          ,             NULL ); // PrimIdentOpQuadJot_EM_YY  );
     Init1PrimFlag (UTF16_QUOTEDOT            , PF_FB                         | PF_MS | PF_DS | PF_ID | PF_LI         | PF_INDEX_LESSEQ    , (LPPRIMOPS) PrimIdentFnScalar_EM_YY           );
     Init1PrimFlag (UTF16_QUERY               , 0                             | PF_MS                                                      , (LPPRIMOPS) PrimIdentFnScalar_EM_YY           );
     Init1PrimFlag (UTF16_RHO                 , 0                                             | PF_ID | PF_LI                              , (LPPRIMOPS) PrimIdentFnRho_EM_YY              );

@@ -203,7 +203,7 @@ WCHAR awKTC_APL[KTC_TXT_CY][KTC_TXT_CX]
    {UTF16_SLASH         , UTF16_SLASHBAR        , UTF16_SLOPE           , UTF16_SLOPEBAR         , UTF16_NOTEQUAL         , UTF16_SECTION           },
    {UTF16_EQUALUNDERBAR , UTF16_NOTEQUALUNDERBAR, UTF16_ALPHA           , UTF16_OMEGA            , UTF16_LEFTCARETUNDERBAR, UTF16_RIGHTCARETUNDERBAR},
    {UTF16_DIAMOND       , UTF16_COMMABAR        , UTF16_OVERBAR         , UTF16_LAMP             , UTF16_INFINITY         , UTF16_CIRCLEMIDDLEDOT   },
-   {UTF16_DELTILDE      , UTF16_NAN             , UTF16_DOUBLESHRIEK    , 0                      , 0                      , 0                       },
+   {UTF16_DELTILDE      , UTF16_NAN             , UTF16_DOUBLESHRIEK    , UTF16_QUADJOT          , 0                      , 0                       },
   };
 
 WCHAR awKTC_ABC[KTC_TXT_CY][KTC_TXT_CX]
@@ -3616,7 +3616,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                             MessageBoxW (hWndProp, L"This Field is not a correctly formed non-negative number.  Please fix it before changing focus.", lpwszAppName, MB_OK | MB_ICONERROR);
 
                             // Return the focus to the Edit Ctrl
-                            SetFocus (GetDlgItem (hWndProp, IDC_CLEARWS_CT_EC));
+                            MySetFocus (GetDlgItem (hWndProp, IDC_CLEARWS_CT_EC));
 
                             break;
 
@@ -6004,7 +6004,7 @@ UBOOL CALLBACK NewKeybDlgProc
             SetWindowTextW (GetDlgItem (hDlg, IDC_NEWKEYB_EC), wszTmpKeybLayoutName);
 
             // Return the focus to the Edit Ctrl
-            SetFocus (GetDlgItem (hDlg, IDC_NEWKEYB_EC));
+            MySetFocus (GetDlgItem (hDlg, IDC_NEWKEYB_EC));
 
             return DLG_MSGNODEFFOCUS;               // We set the focus
 
@@ -6063,7 +6063,7 @@ UBOOL CALLBACK NewKeybDlgProc
                         MessageBoxW (hDlg, L"Empty Keyboard Layout Name -- Please try again.", WS_APPNAME, MB_OK | MB_ICONWARNING);
 
                     // Return the focus to the Edit Ctrl
-                    SetFocus (GetDlgItem (hDlg, IDC_NEWKEYB_EC));
+                    MySetFocus (GetDlgItem (hDlg, IDC_NEWKEYB_EC));
 
                     // Return dialog result
                     DlgMsgDone (hDlg);              // We handled the msg
@@ -6473,12 +6473,12 @@ void InitThemes
 ////    zDrawThemeText                 = (PFNDRAWTHEMETEXT)                 GetProcAddress (hModThemes, "DrawThemeText");
 ////    zGetThemeBackgroundContentRect = (PFNGETTHEMEBACKGROUNDCONTENTRECT) GetProcAddress (hModThemes, "GetThemeBackgroundContentRect");
 
-        //If they all loaded, ...
-        if (zOpenThemeData
-         && zDrawThemeBackground
-         && zCloseThemeData
-////     && zDrawThemeText
-////     && zGetThemeBackgroundContentRect
+        // If they all loaded, ...
+        if (zOpenThemeData                 NE NULL
+         && zDrawThemeBackground           NE NULL
+         && zCloseThemeData                NE NULL
+////     && zDrawThemeText                 NE NULL
+////     && zGetThemeBackgroundContentRect NE NULL
            )
             // Set the global flag
             bThemeLibLoaded = TRUE;

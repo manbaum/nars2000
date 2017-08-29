@@ -558,8 +558,8 @@ $(O)pf_circle.obj:      $(@B).c         $(PF_CIRCLE_DEP)
 $(O)pf_colonbar.obj:    $(@B).c         $(PF_COLONBAR_DEP)
 $(O)pf_comma.obj:       $(@B).c         $(PF_COMMA_DEP)
 $(O)pf_cslope.obj:      $(@B).c         $(PF_CSLOPE_DEP)
-$(O)pf_cstile.obj:      $(@B).c         $(PF_CSTILE_DEP)
 $(O)pf_cstar.obj:       $(@B).c         $(PF_CSTAR_DEP)
+$(O)pf_cstile.obj:      $(@B).c         $(PF_CSTILE_DEP)
 $(O)pf_darrow.obj:      $(@B).c         $(PF_DARROW_DEP)
 $(O)pf_dcaret.obj:      $(@B).c         $(PF_DCARET_DEP)
 $(O)pf_deltastile.obj:  $(@B).c         $(PF_DELTASTILE_DEP)
@@ -622,6 +622,7 @@ $(O)po_dot.obj:         $(@B).c         $(PO_DOT_DEP)
 $(O)po_jot.obj:         $(@B).c         $(PO_JOT_DEP)
 $(O)po_jotdot.obj:      $(@B).c         $(PO_JOTDOT_DEP)
 $(O)po_multiset.obj:    $(@B).c         $(PO_MULTISET_DEP)
+$(O)po_quadjot.obj:     $(@B).c         $(PO_QUADJOT_DEP)
 $(O)po_slash.obj:       $(@B).c         $(PO_SLASH_DEP)
 $(O)po_slope.obj:       $(@B).c         $(PO_SLOPE_DEP)
 $(O)po_variant.obj:     $(@B).c         $(PO_VARIANT_DEP)
@@ -710,6 +711,8 @@ $(O)main.res:           $(@B).rc        $(MAIN_RCDEP)
 
 $(BC)$(ENAME).hlp:      $(ENAME).rtf
         $(HLP) -o $@ -xr %s
+
+defines.h:              $(WS)WineCom.h
 
 $(WS)local.h:           defines.h       \
                         editctrl.h      \

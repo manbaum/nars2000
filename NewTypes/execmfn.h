@@ -74,7 +74,8 @@ typedef enum tagMFO
     MFOE_DydSquad        ,      // 30:  Dyadic Squad
     MFOE_DydSlope        ,      // 31:  Dyadic Slope
     MFOE_MonShriek       ,      // 32:  Monadic Shriek
-    MFOE_LENGTH                 // 33:  # entries in this enum
+    MFOE_MatOpr          ,      // 33:  Matrix Operator
+    MFOE_LENGTH                 // 34:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -129,11 +130,13 @@ typedef enum tagMFO
 #define MFON_DydSquad           L"#DydSquad"
 #define MFON_DydSlope           L"#DydSlope"
 #define MFON_MonShriek          L"#MonShriek"
+#define MFON_MatOpr             L"#MatOpr"
 
 // Magic Function/Operator Variables
 #define $ALPHA          WS_UTF16_ALPHA
 #define $AFORESULT      WS_UTF16_QUAD L"Z"
 #define $AND            WS_UTF16_UPCARET
+#define $ARROWS         WS_UTF16_LEFTARROW WS_UTF16_RIGHTARROW
 #define $CEILING        WS_UTF16_UPSTILE
 #define $COMMABAR       WS_UTF16_COMMABAR
 #define $COMMENT        WS_UTF16_LAMP
@@ -196,7 +199,9 @@ typedef enum tagMFO
 #define $PICK           WS_UTF16_RIGHTSHOE
 #define $PSUBSET        WS_UTF16_LEFTSHOE
 #define $PSUPERSET      WS_UTF16_RIGHTSHOE
+#define $QJ             WS_UTF16_QUADJOT
 #define $QUAD           WS_UTF16_QUAD
+#define $QUADJOT        WS_UTF16_QUADJOT
 #define $QUAD_ALX       WS_UTF16_QUAD L"ALX"
 #define $QUAD_AT        WS_UTF16_QUAD L"AT"
 #define $QUAD_CT        WS_UTF16_QUAD L"CT"

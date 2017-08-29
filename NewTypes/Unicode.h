@@ -60,7 +60,6 @@
 #define UTF16_QUADEQUAL           0x2338        //
 #define UTF16_QUADDIVIDE          0x2339        //
 #define UTF16_QUADDIAMOND         0x233A        //
-#define UTF16_QUADJOT             0x233B        //
 #define UTF16_QUADCIRCLE          0x233C        //
 #define UTF16_CIRCLEJOT           0x233E        //
 #define UTF16_QUADSLASH           0x2341        //
@@ -155,14 +154,14 @@
 //efine UTF16_                                  // Alt-'B' - (none)
 //efine UTF16_                                  // Alt-'C' - (none)
 //efine UTF16_                                  // Alt-'D' - (none)
-#define UTF16_EPSILONUNDERBAR     0x2377        // Alt-'E' - epsilon-underbar
-//efine UTF16_                                  // Alt-'F' - (none)
+#define UTF16_EPSILONUNDERBAR     0x2377        // Alt-'E' - Epsilon-Underbar
+#define UTF16_QUADJOT             0x233B        // Alt-'F' - Matrix operator      (quad-jot)
 #define UTF16_DIERESISDEL         0x2362        // Alt-'G' - Dual operator        (frog)
-#define UTF16_DELTAUNDERBAR       0x2359        // Alt-'H' - delta-underbar
-#define UTF16_IOTAUNDERBAR        0x2378        // Alt-'I' - iota-underbar
+#define UTF16_DELTAUNDERBAR       0x2359        // Alt-'H' - Delta-Underbar
+#define UTF16_IOTAUNDERBAR        0x2378        // Alt-'I' - Iota-Underbar
 #define UTF16_DIERESISJOT         0x2364        // Alt-'J' - Rank operator        (hoot)
 #define UTF16_DELTILDE            0x236B        // Alt-'K' - DelTilde
-#define UTF16_SQUAD               0x2337        // Alt-'L' - squad
+#define UTF16_SQUAD               0x2337        // Alt-'L' - Squad
 #define UTF16_STILETILDE          0x236D        // Alt-'M' - Partition operator   (dagger)
 #define UTF16_DIERESISDOWNTACK    0x2361        // Alt-'N' - Convolution operator (snout)
 #define UTF16_DIERESISCIRCLE      0x2365        // Alt-'O' - Composition operator (holler)
@@ -348,7 +347,6 @@
 #define WS_UTF16_QUADEQUAL           L"\x2338"  //
 #define WS_UTF16_QUADDIVIDE          L"\x2339"  //
 #define WS_UTF16_QUADDIAMOND         L"\x233A"  //
-#define WS_UTF16_QUADJOT             L"\x233B"  //
 #define WS_UTF16_QUADCIRCLE          L"\x233C"  //
 #define WS_UTF16_CIRCLEJOT           L"\x233E"  //
 #define WS_UTF16_QUADSLASH           L"\x2341"  //
@@ -443,14 +441,14 @@
 //efine WS_UTF16_                               // Alt-'B' - (none)
 //efine WS_UTF16_                               // Alt-'C' - (none)
 //efine WS_UTF16_                               // Alt-'D' - (none)
-#define WS_UTF16_EPSILONUNDERBAR     L"\x2377"  // Alt-'E' - epsilon-underbar
-//efine WS_UTF16_                               // Alt-'F' - (none)
+#define WS_UTF16_EPSILONUNDERBAR     L"\x2377"  // Alt-'E' - Epsilon-underbar
+#define WS_UTF16_QUADJOT             L"\x233B"  // Alt-'F' - Matrix operator      (quad-jot)
 #define WS_UTF16_DIERESISDEL         L"\x2362"  // Alt-'G' - Dual operator        (frog)
-#define WS_UTF16_DELTAUNDERBAR       L"\x2359"  // Alt-'H' - delta-underbar
-#define WS_UTF16_IOTAUNDERBAR        L"\x2378"  // Alt-'I' - iota-underbar
+#define WS_UTF16_DELTAUNDERBAR       L"\x2359"  // Alt-'H' - Delta-underbar
+#define WS_UTF16_IOTAUNDERBAR        L"\x2378"  // Alt-'I' - Iota-underbar
 #define WS_UTF16_DIERESISJOT         L"\x2364"  // Alt-'J' - Rank operator        (hoot)
 #define WS_UTF16_DELTILDE            L"\x236B"  // Alt-'K' - DelTilde
-#define WS_UTF16_SQUAD               L"\x2337"  // Alt-'L' - squad
+#define WS_UTF16_SQUAD               L"\x2337"  // Alt-'L' - Squad
 #define WS_UTF16_STILETILDE          L"\x236D"  // Alt-'M' - Partition operator   (dagger)
 #define WS_UTF16_DIERESISDOWNTACK    L"\x2361"  // Alt-'N' - Convolution operator (snout)
 #define WS_UTF16_DIERESISCIRCLE      L"\x2365"  // Alt-'O' - Composition operator (holler)

@@ -152,6 +152,7 @@
   #include "po_jot.pro"
   #include "po_jotdot.pro"
   #include "po_multiset.pro"
+  #include "po_quadjot.pro"
   #include "po_slash.pro"
   #include "po_slope.pro"
   #include "po_variant.pro"

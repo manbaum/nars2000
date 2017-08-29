@@ -514,6 +514,51 @@ void AttrsOfGlb
 
 
 //***************************************************************************
+//  $AttrsOfSymGlb_PTB
+//
+//  Return the attributes (Type, NELM, and Rank) of a
+//    SymEntry or global memory handle as per the Ptr Type Bits.
+//***************************************************************************
+
+void AttrsOfSymGlb_PTB
+    (HGLOBAL   hGlbData,        // Memory handle
+     APLSTYPE *lpaplType,       // Ptr to token storage type (may be NULL)
+     LPAPLNELM lpaplNELM,       // ...          NELM (may be NULL)
+     LPAPLRANK lpaplRank,       // ...          rank (may be NULL)
+     LPAPLUINT lpaplCols)       // ...          # cols in the array (scalar = 1) (may be NULL)
+
+{
+    // Split cases based upon the ptrtype bits
+    switch (GetPtrTypeDir (hGlbData))
+    {
+        case PTRTYPE_STCONST:
+#define lpSymData   ((LPSYMENTRY) hGlbData)
+            if (lpaplType NE NULL)
+                *lpaplType = TranslateImmTypeToArrayType (lpSymData->stFlags.ImmType);
+            if (lpaplNELM NE NULL)
+                *lpaplNELM = 1;
+            if (lpaplRank NE NULL)
+                *lpaplRank = 0;
+            if (lpaplCols NE NULL)
+                *lpaplCols = 1;
+#undef  lpSymData
+            break;
+
+        case PTRTYPE_HGLOBAL:
+            AttrsOfGlb (hGlbData,   // Memory handle
+                        lpaplType,  // Ptr to token storage type (may be NULL)
+                        lpaplNELM,  // ...          NELM (may be NULL)
+                        lpaplRank,  // ...          rank (may be NULL)
+                        lpaplCols); // ...          # cols in the array (scalar = 1) (may be NULL)
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+} // End AttrsOfSymGlb_PTB
+
+
+//***************************************************************************
 //  $StorageType
 //
 //  Return the storage type for a dyadic scalar function

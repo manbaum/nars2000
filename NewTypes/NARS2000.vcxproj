@@ -503,6 +503,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     <ClCompile Include="po_jot.c" />
     <ClCompile Include="po_jotdot.c" />
     <ClCompile Include="po_multiset.c" />
+    <ClCompile Include="po_quadjot.c" />
     <ClCompile Include="po_slash.c" />
     <ClCompile Include="po_slope.c" />
     <ClCompile Include="po_variant.c">

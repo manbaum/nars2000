@@ -1,6 +1,93 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1791 -- Version 0.5.5.xx
+--------------------------------
+
+* Implement Matrix Operator
+* Obtain Schur Vectors and QR Matrices From Variant Operator On Domino
+
+Directory branches/bsmith/NewTypes:
+
+COMPRO.H:
+  Include prototype file in header.
+
+CUSTOMIZE.C:
+  Include new symbol in Keyboard Customize preferences.
+  Use local function <MySetFocus> instead of <SetFocus> API so we can check the return code more easily.
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+
+EXECFNS.C:
+  Handle QuadJot as a Monadic Operator.
+
+EXECMFN.C:
+EXECMFN.H:
+  Convert calls to static messages to Unicode.
+  Include Magic Operator for Matrix Operator in Magic Function/Operator tables.
+
+INITDATA.C:
+  Change documentation for QuadJot from Alt-D to Alt-F.
+  Define entry in <InitPrimProtoFns> for QuadJot.
+  Define entry in <InitPrimFlags> for QuadJot.
+
+KEYBOARDS_BI.H:
+  Note that Alt-F is no longer an available keystroke.
+  Define QuadJot for the built-in for both Alt- and Ctrl- keyboard tables .
+
+MAKEFILE.INC:
+MAKEFILE.SRC:
+  Alphabetize the file names.
+  Include the file name for QuadJot.
+  Note that <defines.h> depends upon <WineHQ\WineCom.h>.
+
+MF_QUADJOT.H:
+  Define Magic Operator to handle Matrix Operator.
+
+MF_VARIANT.H:
+  Document a Magic Function.
+
+NARS2000.VCXPROJ:
+NARS2000.VCXPROJ.FILTERS:
+  Document new source file <po_quadjot.c>.
+
+PF_DOMINO.C:
+  Consolidate code into subroutines so they may be called multiple times.
+  Attempt to demote HCxF matrices to HC1F so we can use GSL Real code instead of GSL Complex.
+  Attempt to demote HC2F matrix using GSL Complex instead of Gauss-Jordan on RATs.
+  If Gauss-Jordan on HC4F/HC8F fails, attempt to demote to HC2F so we can use GSL Complex.
+
+PO_QUADJOT.C:
+PO_QUADJOT.H:
+  Implement Matrix Operator.
+
+PO_VARIANT.C:
+  Extend Variant operator on QuadJot operator to be sensitive to []DQ.
+  Extend Variant operator on Domino function to return Schur vectors and QR matrices.
+  If the left operand is the Domino function, allow the right operand to be a function.
+  If the left operand is the Domino function and the right operand is a function, call a Magic Operator to execute it.
+  If the right arg is not a simple integer or float, see if it can be demoted to that type.
+
+PRIMFNS.C:
+  Define function to returns attributes of either a SYMENTRY or HGLOBAL.
+
+PRIMSPEC.C:
+  Fix typo in comment.
+
+REBAR.C:
+  Document the QuadJot operator on the Language Bar.
+
+TOKENIZE.C:
+  Include QuadJot as a monadic operator in various tables.
+
+TYPEMOTE.C:
+  Improve comments.
+  Define routines to demote data as appropriate.
+
+UNICODE.H:
+  Define Unicode value for QuadJot symbol.
+  Improve comments.
+
+
 Build #1790 -- Version 0.5.5.xx
 --------------------------------
 

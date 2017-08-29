@@ -6366,7 +6366,7 @@ TKCOLINDICES CharTransTK
 ////////case UTF16_                     // Alt-'C' - (none)
 ////////case UTF16_                     // Alt-'D' - (none)
         case UTF16_EPSILONUNDERBAR:     // Alt-'E' - epsilon-underbar
-////////case UTF16_                     // Alt-'F' - (none)
+////////case UTF16_QUADJOT:             // Alt-'F' - quad-jot (TKCOL_PRIM_OP1)
 ////////case UTF16_DIERESISDEL:         // Alt-'G' - dual (TKCOL_PRIM_OP2)
 ////////case UTF16_DELTAUNDERBAR:       // Alt-'H' - delta-underbar (TKCOL_ALPHA)
         case UTF16_IOTAUNDERBAR:        // Alt-'I' - iota-underbar
@@ -6422,6 +6422,7 @@ TKCOLINDICES CharTransTK
         case UTF16_DOUBLESHRIEK:        // Alt-'k' - combinatorial
         case UTF16_DIERESIS:            // Alt-'1' - dieresis
         case UTF16_DOWNSHOESTILE:       // Alt-'m' - down-shoe-stile
+        case UTF16_QUADJOT:             // Alt-'F' - matrix
         case UTF16_STILETILDE:          // Alt-'M' - partition (dagger)
         case UTF16_DIERESISTILDE:       // Alt-'T' - commute/duplicate
         case UTF16_CIRCLEMIDDLEDOT:     // Alt-'?' - circle-middle-dot

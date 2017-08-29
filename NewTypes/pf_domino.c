@@ -387,15 +387,14 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     LPVARARRAY_HEADER   lpMemHdrRht = NULL,     // Ptr to right arg header
                         lpMemHdrRes = NULL,     // ...    result
                         lpMemHdrSgl = NULL;     // ...    singleton
-    LPVOID              lpMemRht,               // Ptr to right arg global memory
+    LPVOID              lpMemRht,               // Ptr to right arg global memory data
                         lpMemRes,               // Ptr to result    ...
                         lpMemSgl,               // Ptr to singleton ...
                         lpMemTmp = NULL;        // Ptr to temporary ...
     APLUINT             ByteRes;                // # bytes in the result
     APLDIM              uNumRows,               // # rows in the right arg
                         uNumCols,               // # cols ...
-                        uRow,                   // Loop counter
-                        uCol;                   // ...
+                        uRow;                   // Loop counter
     APLLONGEST          aplLongestRht;          // ...       as immediate
     LPPL_YYSTYPE        lpYYRes = NULL;         // Ptr to the result
     gsl_matrix         *lpGslMatrixU = NULL,    // GSL temp
@@ -406,10 +405,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     gsl_matrix_complex *lpGslCMatrixU  = NULL,  // ...
                        *lpGslCMatrixInv = NULL; // ...
     gsl_permutation    *lpGslPermP = NULL;      // ...
-    int                 ErrCode,                // Error code
-                        signum,                 // Sign of the LU permutation
-                        i,                      // Loop counter
-                        iSizeofRes,             // # bytes in each result item
+    int                 iSizeofRes,             // # bytes in each result item
                         iHCDimRht;              // Right arg HC Dimension (1, 2, 4, 8)
     LPPLLOCALVARS       lpplLocalVars;          // Ptr to re-entrant vars
     LPUBOOL             lpbCtrlBreak;           // Ptr to Ctrl-Break flag
@@ -417,6 +413,8 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     ALLTYPES            atRes = {0};            // Result arg as ALLTYPES
     LPAPLDIM            lpMemDimRht;            // Ptr to right arg dimensions
     LPPERTABDATA        lpMemPTD;               // Ptr to PerTabData global memory
+    UBOOL               bRet = TRUE;            // TRUE iff the result is valid
+    UINT                uRet = 0;               // Return code from InvertHCxF
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -910,195 +908,206 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     switch (aplTypeRes)
     {
         case ARRAY_FLOAT:
-            // Allocate space for the GSL matrices
-            Assert (uNumRows EQ (APLU3264) uNumRows);
-            Assert (uNumCols EQ (APLU3264) uNumCols);
-
-            lpGslMatrixU = gsl_matrix_alloc  ((APLU3264) uNumRows, (APLU3264) uNumCols);    // M x N
-            lpGslMatrixV = gsl_matrix_alloc  ((APLU3264) uNumCols, (APLU3264) uNumCols);    // N x N
-            lpGslVectorS = gsl_vector_alloc  ((APLU3264) uNumCols);                         // N
-            lpGslVectorW = gsl_vector_alloc  ((APLU3264) uNumCols);                         // N
-
-            // Check the return codes for the above allocations
-            if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixU
-             || GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixV
-             || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorS
-             || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorW)
-                goto WSFULL_EXIT;
-
-            // Copy the right arg to the GSL matrix U
-            for (uCol = 0; uCol < aplNELMRht; uCol++)
+            // Attempt to invert the HC1F matrix using GSL Real
+            switch (InvertHC1F (uNumRows,           // # rows in the right arg
+                                uNumCols,           // # cols ...
+                                aplTypeRht,         // Right arg storage type
+                                aplNELMRht,         // ...       NELM
+                                aplRankRht,         // ...       rank
+                                iHCDimRht,          // ...       HC Dimension (1, 2, 4, 8)
+                                lpMemRht,           // Ptr to right arg global memory data
+                                lpMemRes,           // Ptr to result    global memory data
+                                lpMemPTD,           // Ptr to PerTabData global memory
+                                lpbCtrlBreak,       // Ptr to Ctrl-Break flag
+                       (LPVOID) lpGslMatrixU,       // Ptr to GSL temp
+                       (LPVOID) lpGslMatrixV,       // ...
+                       (LPVOID) lpGslVectorS,       // ...
+                       (LPVOID) lpGslVectorW,       // ...
+                       (LPVOID) lpGslVectorI))      // ...
             {
-                // Check for Ctrl-Break
-                if (CheckCtrlBreak (lpbCtrlBreak))
-                    goto ERROR_EXIT;
+                case 0:
+                    break;
 
-                lpGslMatrixU->data[uCol] = GetNextFloat (lpMemRht, aplTypeRht, uCol);
-            } // End FOR
+                case 1:
+                    goto WSFULL_EXIT;
 
-            // Calculate the SVD (Singular Value Decomposition)
-            //   with the result in U and S (S is the diagonal of the matrix)
-            ErrCode =
-              gsl_linalg_SV_decomp (lpGslMatrixU,               // M x N
-                                    lpGslMatrixV,               // N x N
-                                    lpGslVectorS,               // N
-                                    lpGslVectorW);              // N
-            // Check the error code
-            if (ErrCode NE GSL_SUCCESS)
-                goto DOMAIN_EXIT;
-
-            // Solve the system Ax = b
-            //   where x is the result, and b is the MxM identity matrix
-
-            // Allocate and zero a working vector (for the identity matrix)
-            lpGslVectorI = gsl_vector_alloc  ((APLU3264) uNumRows); // M
-
-            // Check the return code for the above allocation
-            if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorI)
-                goto WSFULL_EXIT;
-
-            gsl_vector_set_zero (lpGslVectorI);
-
-            // The solution rows are now L[;I] +.x V +.x (1/S) +.x U*
-            //   where L is an identity matrix
-            for (uRow = 0; uRow < uNumRows; uRow++)             // 0 to M-1
-            {
-                // If we're not at the first row, clear the previous value
-                if (uRow NE 0)
-                    lpGslVectorI->data[uRow - 1] = 0;
-
-                // Set the next value
-                lpGslVectorI->data[uRow] = 1;
-
-                // Call GSL function to solve for this column
-                ErrCode =
-                  gsl_linalg_SV_solve (lpGslMatrixU,            // M x N
-                                       lpGslMatrixV,            // N x N
-                                       lpGslVectorS,            // N
-                                       lpGslVectorI,            // M
-                                       lpGslVectorW);           // N
-                // Check the error code
-                if (ErrCode NE GSL_SUCCESS)
+                case 2:
                     goto DOMAIN_EXIT;
 
-#define lpMemData   ((LPAPLFLOAT) lpMemRes)
-
-                // Copy the values from W to the result
-                for (uCol = 0; uCol < uNumCols; uCol++)
-                {
-                    // Check for Ctrl-Break
-                    if (CheckCtrlBreak (lpbCtrlBreak))
-                        goto ERROR_EXIT;
-
-                    // If it's a NaN and we don't allow them, ...
-                    if (_isnan (lpGslVectorW->data[uCol]) && !gbAllowNaN)
-                        goto DOMAIN_EXIT;
-                    else
-                        lpMemData[uCol * uNumRows + uRow] = lpGslVectorW->data[uCol];
-                } // End FOR
-#undef  lpMemData
-            } // End FOR
-
-            break;
-
-        case ARRAY_HC2F:
-            // Allocate space for the GSL matrices
-            Assert (uNumRows EQ (APLU3264) uNumRows);
-            Assert (uNumCols EQ (APLU3264) uNumCols);
-
-            lpGslCMatrixU   = gsl_matrix_complex_alloc ((APLU3264) uNumRows, (APLU3264) uNumCols);  // M x N
-            lpGslCMatrixInv = gsl_matrix_complex_alloc ((APLU3264) uNumRows, (APLU3264) uNumCols);  // M x N
-            lpGslPermP      = gsl_permutation_alloc    ((APLU3264) uNumRows);                       // M
-
-            // Check the return codes for the above allocations
-            if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslCMatrixU
-             || GSL_ENOMEM EQ (HANDLE_PTR) lpGslCMatrixInv
-             || GSL_ENOMEM EQ (HANDLE_PTR) lpGslPermP)
-                goto WSFULL_EXIT;
-
-            // Copy the right arg to the GSL matrix U
-            // Split cases based upon the right arg's rank
-            switch (aplRankRht)
-            {
-////////////////case 0:         // Scalar
-////////////////    lpGslMatrixU->data[0] = aplFloatRht;
-////////////////
-////////////////    break;
-////////////////
-                case 1:         // Vector
-                case 2:         // Matrix
-                    // Split cases based upon the right arg storage type
-                    switch (aplTypeRht)
-                    {
-                        case ARRAY_HC2I:
-                            for (uCol = 0; uCol < aplNELMRht; uCol++)
-                            {
-                                // Check for Ctrl-Break
-                                if (CheckCtrlBreak (lpbCtrlBreak))
-                                    goto ERROR_EXIT;
-
-                                // Loop through all of the parts
-                                for (i = 0; i < iHCDimRht; i++)
-                                    ((LPAPLHC2F) lpGslCMatrixU->data)[uCol].parts[i] =
-                                      (APLFLOAT) ((LPAPLHC2I) lpMemRht)[uCol].parts[i];
-                            } // End FOR
-
-                            break;
-
-                        case ARRAY_HC2F:
-                            Assert (sizeof (double) EQ sizeof (APLFLOAT));
-
-                            // Calculate space needed for the result
-                            ByteRes = aplNELMRes * sizeof (APLHC2F);
-
-                            // Check for overflow
-                            if (ByteRes NE (APLU3264) ByteRes)
-                                goto WSFULL_EXIT;
-
-                            // Copy the HC2F data to the GSL temp
-                            CopyMemory (lpGslCMatrixU->data, lpMemRht, (APLU3264) ByteRes);
-
-                            break;
-
-                        defstop
-                            break;
-                    } // End SWITCH
-
-                    break;
+                case 3:
+                    goto ERROR_EXIT;
 
                 defstop
                     break;
             } // End SWITCH
 
-            // Calculate the LU (Lower/Upper) Decomposition of the square matrix LU
-            //   with the result in LU and P (P is a temporary used by LU decomp only)
-            ErrCode =
-              gsl_linalg_complex_LU_decomp (lpGslCMatrixU,      // M x N
-                                            lpGslPermP,         // M
-                                           &signum);            // Ptr to sign of the perm
-            // Check the error code
-            if (ErrCode NE GSL_SUCCESS)
-                goto DOMAIN_EXIT;
 
-            // Calculate the inverse
-            ErrCode =
-              gsl_linalg_complex_LU_invert (lpGslCMatrixU,      // M x N
-                                            lpGslPermP,         // M
-                                            lpGslCMatrixInv);   // M x N
-            // Check the error code
-            if (ErrCode NE GSL_SUCCESS)
-                goto DOMAIN_EXIT;
+            break;
 
-            // Calculate space needed for the result
-            ByteRes = aplNELMRes * sizeof (APLHC2F);
+        case ARRAY_HC2F:
+            // Set the temp storage type
+            aplTypeTmp = ARRAY_FLOAT;
 
-            // Copy the data from the inverse to the result
-            CopyMemory (lpMemRes, lpGslCMatrixInv->data, (APLU3264) ByteRes);
+            // Can we convert the right arg to HC1F?
+            hGlbTmp =
+              DemoteMemToHCxF (aplTypeRht,      // Right arg storage type
+                               aplNELMRht,      // ...       NELM
+                               lpMemRht,        // Ptr to right arg global memory data
+                               aplTypeTmp);     // Result storage type
+            // If it worked, ...
+            if (hGlbTmp NE NULL)
+            {
+                // Lock the memory to get a ptr to it
+                lpMemTmp = MyGlobalLockInt (hGlbTmp);
+
+                // Note that we re-use hGlbRes although it is bigger than we need
+
+                // Attempt to invert the HC1F matrix using GSL Real instead of GSL Complex
+                uRet =
+                  InvertHC1F (uNumRows,           // # rows in the right arg
+                              uNumCols,           // # cols ...
+                              aplTypeTmp,         // Right arg storage type
+                              aplNELMRht,         // ...       NELM
+                              aplRankRht,         // ...       rank
+                              iHCDimRht,          // ...       HC Dimension (1, 2, 4, 8)
+                              lpMemTmp,           // Ptr to right arg global memory data
+                              lpMemRes,           // Ptr to result    global memory data
+                              lpMemPTD,           // Ptr to PerTabData global memory
+                              lpbCtrlBreak,       // Ptr to Ctrl-Break flag
+                     (LPVOID) lpGslMatrixU,       // Ptr to GSL temp
+                     (LPVOID) lpGslMatrixV,       // ...
+                     (LPVOID) lpGslVectorS,       // ...
+                     (LPVOID) lpGslVectorW,       // ...
+                     (LPVOID) lpGslVectorI);      // ...
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbTmp); lpMemTmp = NULL;
+
+                // We no longer need this storage
+                MyGlobalFree (hGlbTmp); hGlbTmp = NULL;
+
+                // Split cases based upon the return code
+                switch (uRet)
+                {
+                    case 0:
+                        // Set the new result type
+                        lpMemHdrRes->ArrType = aplTypeTmp;
+
+                        break;
+
+                    case 1:
+                        goto WSFULL_EXIT;
+
+                    case 2:
+                        goto DOMAIN_EXIT;
+
+                    case 3:
+                        goto ERROR_EXIT;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } else
+            {
+                // Attempt to invert the HC2F matrix using GSL Complex instead of Gauss-Jordan on RATs
+                switch (InvertHC2F (uNumRows,           // # rows in the right arg
+                                    uNumCols,           // # cols ...
+                                    aplTypeRht,         // Right arg storage type
+                                    aplNELMRht,         // ...       NELM
+                                    aplRankRht,         // ...       rank
+                                    iHCDimRht,          // ...       HC Dimension (1, 2, 4, 8)
+                                    lpMemRht,           // Ptr to right arg global memory data
+                                    lpMemRes,           // Ptr to result    global memory data
+                                    lpbCtrlBreak,       // Ptr to Ctrl-Break flag
+                           (LPVOID) lpGslCMatrixU,      // Ptr to GSL temp
+                           (LPVOID) lpGslCMatrixInv,    // ...
+                           (LPVOID) lpGslPermP))        // ...
+                {
+                    case 0:
+                        break;
+
+                    case 1:
+                        goto WSFULL_EXIT;
+
+                    case 2:
+                        goto DOMAIN_EXIT;
+
+                    case 3:
+                        goto ERROR_EXIT;
+
+                    defstop
+                        break;
+                } // End SWITCH
+            } // End IF/ELSE
 
             break;
 
         case ARRAY_HC4F:
         case ARRAY_HC8F:
+            // Can we convert the right arg to HC1F?
+            hGlbTmp =
+              DemoteMemToHCxF (aplTypeRht,      // Right arg storage type
+                               aplNELMRht,      // ...       NELM
+                               lpMemRht,        // Ptr to right arg global memory data
+                               ARRAY_FLOAT);    // Result storage type
+            // If it worked, ...
+            if (hGlbTmp NE NULL)
+            {
+                // Set the temp storage type
+                aplTypeTmp = ARRAY_FLOAT;
+
+                // Lock the memory to get a ptr to it
+                lpMemTmp = MyGlobalLock000 (hGlbTmp);
+
+                // Note that we re-use hGlbRes although it is bigger than we need
+
+                // Attempt to invert the HC1F matrix using GSL Real instead of GSL Complex
+                uRet =
+                  InvertHC1F (uNumRows,           // # rows in the right arg
+                              uNumCols,           // # cols ...
+                              ARRAY_HC1F,         // Right arg storage type
+                              aplNELMRht,         // ...       NELM
+                              aplRankRht,         // ...       rank
+                              iHCDimRht,          // ...       HC Dimension (1, 2, 4, 8)
+                              lpMemTmp,           // Ptr to right arg global memory data
+                              lpMemRes,           // Ptr to result    global memory data
+                              lpMemPTD,           // Ptr to PerTabData global memory
+                              lpbCtrlBreak,       // Ptr to Ctrl-Break flag
+                     (LPVOID) lpGslMatrixU,       // Ptr to GSL temp
+                     (LPVOID) lpGslMatrixV,       // ...
+                     (LPVOID) lpGslVectorS,       // ...
+                     (LPVOID) lpGslVectorW,       // ...
+                     (LPVOID) lpGslVectorI);      // ...
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbTmp); lpMemTmp = NULL;
+
+                // We no longer need this storage
+                MyGlobalFree (hGlbTmp); hGlbTmp = NULL;
+
+                // Split cases based upon the return code
+                switch (uRet)
+                {
+                    case 0:
+                        // Set the new result type
+                        lpMemHdrRes->ArrType = aplTypeTmp;
+
+                        break;
+
+                    case 1:
+                        goto WSFULL_EXIT;
+
+                    case 2:
+                        goto DOMAIN_EXIT;
+
+                    case 3:
+                        goto ERROR_EXIT;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                break;
+            } // End IF
+
             // The storage type of lpMemTmpLft & lpMemTmpRht is
             //   the same HC Dimension as that of the right arg, but as a HCxR
             //   so it can be run through GaussJordan, a HCxR-only routine.
@@ -1130,6 +1139,91 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
 
             // Use Gauss-Jordan elimination to invert the matrix
             if (!GaussJordan (lpMemTmp, uNumRows, uNumCols, NULL, 0, iHCDimRht, lpbCtrlBreak))
+            {
+                // Free the temp RAT
+                FreeRatMat (hGlbTmp, lpMemTmp, uNumRows, uNumCols, iHCDimRht); hGlbTmp = NULL; lpMemTmp = NULL;
+
+                // Set the new temp type
+                aplTypeTmp = ARRAY_HC2F;
+
+                // Translate the temp array type to sizeof
+                iSizeofTmp = TranslateArrayTypeToSizeof (aplTypeTmp);
+
+                // Allocate a temp array to hold the HC4F/HC8Fs to HC2Fs
+                hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) (uNumRows * uNumCols * iSizeofTmp));
+                if (hGlbTmp EQ NULL)
+                    goto WSFULL_EXIT;
+
+                // Lock the memory to get a ptr to it
+                lpMemTmp = MyGlobalLock000 (hGlbTmp);
+
+                // Loop through the rows and cols
+                for (uRow = 0; uRow < aplNELMRht; uRow++)
+                {
+                    // Convert from HCxI/HCxF to HC2F
+                    (*aTypeActConvert[aplTypeRht][aplTypeTmp]) (lpMemRht, uRow, &atRes, &bRet);
+
+                    if (!bRet)
+                    {
+                        // We no longer need this ptr
+                        MyGlobalUnlock (hGlbTmp); lpMemTmp = NULL;
+
+                        // We no longer need this stroage
+                        DbgGlobalFree (hGlbTmp); hGlbTmp = NULL;
+
+                        goto DOMAIN_EXIT;
+                    } // End IF
+
+                    // Copy over to the temp
+                    CopyMemory (&((LPBYTE) lpMemTmp)[uRow * iSizeofTmp], &atRes, (APLU3264) iSizeofTmp);
+
+                    // Zero the memory in case we might free it
+                    ZeroMemory (&atRes, sizeof (atRes));
+                } // End FOR
+
+                // Note that we re-use hGlbRes although it is bigger than we need
+
+                // Attempt to invert the HC2F matrix using GSL Complex instead of Gauss-Jordan on RATs
+                uRet =
+                  InvertHC2F (uNumRows,         // # rows in the right arg
+                              uNumCols,         // # cols ...
+                              ARRAY_HC2F,       // Right arg storage type
+                              aplNELMRht,       // ...       NELM
+                              aplRankRht,       // ...       rank
+                              iHCDimRht,        // ...       HC Dimension (1, 2, 4, 8)
+                              lpMemTmp,         // Ptr to right arg global memory data
+                              lpMemRes,         // Ptr to result    global memory data
+                              lpbCtrlBreak,     // Ptr to Ctrl-Break flag
+                     (LPVOID) lpGslCMatrixU,    // Ptr to GSL temp
+                     (LPVOID) lpGslCMatrixInv,  // ...
+                     (LPVOID) lpGslPermP);      // ...
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbTmp); lpMemTmp = NULL;
+
+                // We no longer need this storage
+                MyGlobalFree (hGlbTmp); hGlbTmp = NULL;
+
+                // Split cases based upon the return code
+                switch (uRet)
+                {
+                    case 0:
+                        // Set the new result type
+                        lpMemHdrRes->ArrType = aplTypeTmp;
+
+                        break;
+
+                    case 1:
+                        goto WSFULL_EXIT;
+
+                    case 2:
+                        goto DOMAIN_EXIT;
+
+                    case 3:
+                        goto ERROR_EXIT;
+                } // End SWITCH
+
+                break;
+            } else
                 goto DOMAIN_EXIT;
 
             // Copy to the result and convert back to FLTs
@@ -1293,6 +1387,317 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
+    // Free the temp RAT
+    FreeRatMat (hGlbTmp, lpMemTmp, uNumRows, uNumCols, iHCDimRht);
+
+    return lpYYRes;
+} // End PrimFnMonDomino_EM_YY
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $InvertHC1F
+//
+//  Attempt to invert a HC1F matrix
+//
+//  Return value:  0 = Success
+//                 1 = WSFULL_EXIT
+//                 2 = DOMAIN_EXIT
+//                 3 = ERROR_EXIT
+//***************************************************************************
+
+UINT InvertHC1F
+    (APLDIM              uNumRows,          // # rows in the right arg
+     APLDIM              uNumCols,          // # cols ...
+     APLSTYPE            aplTypeRht,        // Right arg storage type
+     APLNELM             aplNELMRht,        // ...       NELM
+     APLRANK             aplRankRht,        // ...       rank
+     int                 iHCDimRht,         // ...       HC Dimension (1, 2, 4, 8)
+     LPVOID              lpMemRht,          // Ptr to right arg global memory data
+     LPAPLFLOAT          lpMemRes,          // Ptr to result    global memory data
+     LPPERTABDATA        lpMemPTD,          // Ptr to PerTabData global memory
+     LPUBOOL             lpbCtrlBreak,      // Ptr to Ctrl-Break flag
+     LPVOID             _lpGslMatrixU,      // GSL temp
+     LPVOID             _lpGslMatrixV,      // ...
+     LPVOID             _lpGslVectorS,      // ...
+     LPVOID             _lpGslVectorW,      // ...
+     LPVOID             _lpGslVectorI)      // ...
+
+{
+    APLDIM uRow,                            // Loop counter
+           uCol;                            // ...
+    int    ErrCode;                         // Error code
+
+#define lpGslMatrixU    ((gsl_matrix *) _lpGslMatrixU)  // GSL temp
+#define lpGslMatrixV    ((gsl_matrix *) _lpGslMatrixV)  // ...
+#define lpGslVectorS    ((gsl_vector *) _lpGslVectorS)  // ...
+#define lpGslVectorW    ((gsl_vector *) _lpGslVectorW)  // ...
+#define lpGslVectorI    ((gsl_vector *) _lpGslVectorI)  // ...
+
+    // Allocate space for the GSL matrices
+    Assert (uNumRows EQ (APLU3264) uNumRows);
+    Assert (uNumCols EQ (APLU3264) uNumCols);
+
+    lpGslMatrixU = gsl_matrix_alloc  ((APLU3264) uNumRows, (APLU3264) uNumCols);    // M x N
+    lpGslMatrixV = gsl_matrix_alloc  ((APLU3264) uNumCols, (APLU3264) uNumCols);    // N x N
+    lpGslVectorS = gsl_vector_alloc  ((APLU3264) uNumCols);                         // N
+    lpGslVectorW = gsl_vector_alloc  ((APLU3264) uNumCols);                         // N
+
+    // Allocate and zero a working vector (for the identity matrix)
+    lpGslVectorI = gsl_vector_calloc  ((APLU3264) uNumRows); // M
+
+    // Check the return codes for the above allocations
+    if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixU
+     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixV
+     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorS
+     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorW
+     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorI)
+        goto WSFULL_EXIT;
+
+    // Copy the right arg to the GSL matrix U
+    for (uCol = 0; uCol < aplNELMRht; uCol++)
+    {
+        // Check for Ctrl-Break
+        if (CheckCtrlBreak (lpbCtrlBreak))
+            goto ERROR_EXIT;
+
+        lpGslMatrixU->data[uCol] = GetNextFloat (lpMemRht, aplTypeRht, uCol);
+    } // End FOR
+
+    // Calculate the SVD (Singular Value Decomposition)
+    //   with the result in U and S (S is the diagonal of the matrix)
+    ErrCode =
+      gsl_linalg_SV_decomp (lpGslMatrixU,               // M x N
+                            lpGslMatrixV,               // N x N
+                            lpGslVectorS,               // N
+                            lpGslVectorW);              // N
+    // Check the error code
+    if (ErrCode NE GSL_SUCCESS)
+        goto DOMAIN_EXIT;
+
+    // Solve the system Ax = b
+    //   where x is the result, and b is the MxM identity matrix
+
+    // The solution rows are now L[;I] +.x V +.x (1/S) +.x U*
+    //   where L is an identity matrix
+    for (uRow = 0; uRow < uNumRows; uRow++)             // 0 to M-1
+    {
+        // If we're not at the first row, clear the previous value
+        if (uRow NE 0)
+            lpGslVectorI->data[uRow - 1] = 0;
+
+        // Set the next value
+        lpGslVectorI->data[uRow] = 1;
+
+        // Call GSL function to solve for this column
+        ErrCode =
+          gsl_linalg_SV_solve (lpGslMatrixU,            // M x N
+                               lpGslMatrixV,            // N x N
+                               lpGslVectorS,            // N
+                               lpGslVectorI,            // M
+                               lpGslVectorW);           // N
+        // Check the error code
+        if (ErrCode NE GSL_SUCCESS)
+            goto DOMAIN_EXIT;
+
+        // Copy the values from W to the result
+        for (uCol = 0; uCol < uNumCols; uCol++)
+        {
+            // Check for Ctrl-Break
+            if (CheckCtrlBreak (lpbCtrlBreak))
+                goto ERROR_EXIT;
+
+            // If it's a NaN and we don't allow them, ...
+            if (_isnan (lpGslVectorW->data[uCol]) && !gbAllowNaN)
+                goto DOMAIN_EXIT;
+            else
+                lpMemRes[uCol * uNumRows + uRow] = lpGslVectorW->data[uCol];
+        } // End FOR
+    } // End FOR
+
+    return 0;
+
+WSFULL_EXIT:
+    return 1;
+
+DOMAIN_EXIT:
+    return 2;
+
+ERROR_EXIT:
+    return 3;
+
+#undef  lpGslVectorI
+#undef  lpGslVectorW
+#undef  lpGslVectorS
+#undef  lpGslMatrixV
+#undef  lpGslMatrixU
+} // End InvertHC1F
+
+
+//***************************************************************************
+//  $InvertHC2F
+//
+//  Attempt to invert a HC2F matrix
+//
+//  Return value:  0 = Success
+//                 1 = WSFULL_EXIT
+//                 2 = DOMAIN_EXIT
+//                 3 = ERROR_EXIT
+//***************************************************************************
+
+UINT InvertHC2F
+    (APLDIM              uNumRows,          // # rows in the right arg
+     APLDIM              uNumCols,          // # cols ...
+     APLSTYPE            aplTypeRht,        // Right arg storage type
+     APLNELM             aplNELMRht,        // ...       NELM
+     APLRANK             aplRankRht,        // ...       rank
+     int                 iHCDimRht,         // ...       HC Dimension (1, 2, 4, 8)
+     LPVOID              lpMemRht,          // Ptr to right arg global memory data
+     LPVOID              lpMemRes,          // Ptr to result    global memory data
+     LPUBOOL             lpbCtrlBreak,      // Ptr to Ctrl-Break flag
+     LPVOID             _lpGslCMatrixU,     // GSL temp
+     LPVOID             _lpGslCMatrixInv,   // ...
+     LPVOID             _lpGslPermP)        // ...
+
+{
+    APLDIM  uCol;               // Loop counter
+    int     ErrCode,            // Error code
+            signum,             // Sign of the LU permutation
+            i;                  // Loop counter
+    APLUINT ByteRes;            // # bytes in the result
+
+#define lpGslCMatrixU   ((gsl_matrix_complex *) _lpGslCMatrixU  )   // GSL temp
+#define lpGslCMatrixInv ((gsl_matrix_complex *) _lpGslCMatrixInv)   // ...
+#define lpGslPermP      ((gsl_permutation    *) _lpGslPermP     )   // ...
+
+    // Allocate space for the GSL matrices
+    Assert (uNumRows EQ (APLU3264) uNumRows);
+    Assert (uNumCols EQ (APLU3264) uNumCols);
+
+    lpGslCMatrixU   = gsl_matrix_complex_alloc ((APLU3264) uNumRows, (APLU3264) uNumCols);  // M x N
+    lpGslCMatrixInv = gsl_matrix_complex_alloc ((APLU3264) uNumRows, (APLU3264) uNumCols);  // M x N
+    lpGslPermP      = gsl_permutation_alloc    ((APLU3264) uNumRows);                       // M
+
+    // Check the return codes for the above allocations
+    if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslCMatrixU
+     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslCMatrixInv
+     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslPermP)
+        goto WSFULL_EXIT;
+
+    // Copy the right arg to the GSL matrix U
+    // Split cases based upon the right arg's rank
+    switch (aplRankRht)
+    {
+////////case 0:         // Scalar
+////////    lpGslMatrixU->data[0] = aplFloatRht;
+////////
+////////    break;
+////////
+        case 1:         // Vector
+        case 2:         // Matrix
+            // Split cases based upon the right arg storage type
+            switch (aplTypeRht)
+            {
+                case ARRAY_HC2I:
+                    for (uCol = 0; uCol < aplNELMRht; uCol++)
+                    {
+                        // Check for Ctrl-Break
+                        if (CheckCtrlBreak (lpbCtrlBreak))
+                            goto ERROR_EXIT;
+
+                        // Loop through all of the parts
+                        for (i = 0; i < iHCDimRht; i++)
+                            ((LPAPLHC2F) lpGslCMatrixU->data)[uCol].parts[i] =
+                              (APLFLOAT) ((LPAPLHC2I) lpMemRht)[uCol].parts[i];
+                    } // End FOR
+
+                    break;
+
+                case ARRAY_HC2F:
+                    Assert (sizeof (double) EQ sizeof (APLFLOAT));
+
+                    // Calculate space needed for the result
+                    ByteRes = aplNELMRht * sizeof (APLHC2F);
+
+                    // Check for overflow
+                    if (ByteRes NE (APLU3264) ByteRes)
+                        goto WSFULL_EXIT;
+
+                    // Copy the HC2F data to the GSL temp
+                    CopyMemory (lpGslCMatrixU->data, lpMemRht, (APLU3264) ByteRes);
+
+                    break;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Calculate the LU (Lower/Upper) Decomposition of the square matrix LU
+    //   with the result in LU and P (P is a temporary used by LU decomp only)
+    ErrCode =
+      gsl_linalg_complex_LU_decomp (lpGslCMatrixU,      // M x N
+                                    lpGslPermP,         // M
+                                   &signum);            // Ptr to sign of the perm
+    // Check the error code
+    if (ErrCode NE GSL_SUCCESS)
+        goto DOMAIN_EXIT;
+
+    // Calculate the inverse
+    ErrCode =
+      gsl_linalg_complex_LU_invert (lpGslCMatrixU,      // M x N
+                                    lpGslPermP,         // M
+                                    lpGslCMatrixInv);   // M x N
+    // Check the error code
+    if (ErrCode NE GSL_SUCCESS)
+        goto DOMAIN_EXIT;
+
+    // Calculate space needed for the result
+    ByteRes = aplNELMRht * sizeof (APLHC2F);
+
+    // Copy the data from the inverse to the result
+    CopyMemory (lpMemRes, lpGslCMatrixInv->data, (APLU3264) ByteRes);
+
+    return 0;
+
+WSFULL_EXIT:
+    return 1;
+
+DOMAIN_EXIT:
+    return 2;
+
+ERROR_EXIT:
+    return 3;
+
+#undef  lpGslPermP
+#undef  lpGslCMatrixInv
+#undef  lpGslCMatrixU
+} // End InvertHC2F
+
+
+//***************************************************************************
+//  $FreeRatMat
+//
+//  Free a temp RAT matrix
+//***************************************************************************
+
+void FreeRatMat
+    (HGLOBAL  hGlbTmp,          // Global memory handle to free
+     LPAPLRAT lpMemTmp,         // Ptr to global memory data
+     APLDIM   uNumRows,         // # rows in the right arg
+     APLDIM   uNumCols,         // # cols ...
+     int      iHCDimRht)        // HC Dimension (1, 2, 4, 8)
+
+{
+    APLDIM uRow,                // Loop counter
+           uCol;                // ...
+
+    // Free the temp RAT
     if (hGlbTmp NE NULL)
     {
         if (lpMemTmp NE NULL)
@@ -1300,7 +1705,7 @@ NORMAL_EXIT:
             // Loop through the rows and cols
             for (uRow = 0; uRow < uNumRows; uRow++)
             for (uCol = 0; uCol < uNumCols; uCol++)
-                Myhcxr_clear (&((LPAPLRAT) lpMemTmp)[(uRow * uNumRows + uCol) * iHCDimRht], iHCDimRht);
+                Myhcxr_clear (&lpMemTmp[(uRow * uNumRows + uCol) * iHCDimRht], iHCDimRht);
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbTmp); lpMemTmp = NULL;
@@ -1309,10 +1714,7 @@ NORMAL_EXIT:
         // We no longer need this storage
         DbgGlobalFree (hGlbTmp); hGlbTmp = NULL;
     } // End IF
-
-    return lpYYRes;
-} // End PrimFnMonDomino_EM_YY
-#undef  APPEND_NAME
+} // End FreeRatMat
 
 
 //***************************************************************************

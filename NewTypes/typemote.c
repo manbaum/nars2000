@@ -1219,7 +1219,7 @@ UBOOL DemoteData
     //   the right arg.
     switch (aplTypeRes)
     {
-        case ARRAY_BOOL:            // Res = BOOL, Rht = INT/FLOAT/HETERO/NESTED
+        case ARRAY_BOOL:            // Res = BOOL, Rht = INT/FLOAT/HCxy/HETERO/NESTED
             uBitIndex = 0;
 
             // Split cases based upon the right arg's storage type
@@ -1399,7 +1399,7 @@ UBOOL DemoteData
 
             break;
 
-        case ARRAY_INT:         // Res = INT, Rht = FLOAT/HETERO/NESTED
+        case ARRAY_INT:         // Res = INT, Rht = FLOAT/HCxy/HETERO/NESTED
             // Split cases based upon the right arg's storage type
             switch (aplTypeRht)
             {
@@ -1539,7 +1539,7 @@ UBOOL DemoteData
 
             break;
 
-        case ARRAY_FLOAT:       // Res = FLOAT, Rht = HETERO/NESTED
+        case ARRAY_FLOAT:       // Res = FLOAT, Rht = FLOAT/HCxy/HETERO/NESTED
             // Split cases based upon the right arg's storage type
             switch (aplTypeRht)
             {
@@ -1690,7 +1690,7 @@ UBOOL DemoteData
 
             break;
 
-        case ARRAY_RAT:
+        case ARRAY_RAT:         // Res = RAT, Rht = HCxy/HETERO/NESTED
             // Split cases based upon the right arg's storage type
             switch (aplTypeRht)
             {
@@ -1811,7 +1811,7 @@ UBOOL DemoteData
 
             break;
 
-        case ARRAY_VFP:
+        case ARRAY_VFP:         // Res = VFP, Rht = HCxy/HETERO/NESTED
             // Split cases based upon the right arg's storage type
             switch (aplTypeRht)
             {
@@ -2208,10 +2208,10 @@ UBOOL DemoteData
 
                     break;
 
-                    if (bDimDemote)
                 case ARRAY_HC2R:        // Reduce the dimension
                 case ARRAY_HC4R:        // ...
                 case ARRAY_HC8R:        // ...
+                    if (bDimDemote)
                     // Loop through the elements
                     for (uRht = 0; uRht < aplNELMRht; uRht++, ((LPBYTE) lpMemRht) += (iSizeofRht - iSizeofRes))
                     // Loop through all of the parts
@@ -17004,6 +17004,197 @@ WSFULL_EXIT:
 NORMAL_EXIT:
     return hGlbRes;
 } // End AllocateDemote
+
+
+//***************************************************************************
+//  $SimpleDemote
+//
+//  Attempt to demote to a simple integer or float type
+//***************************************************************************
+
+UBOOL SimpleDemote
+    (HGLOBAL  hGlbArg,              // Arg global memory handle
+     HGLOBAL *lphGlbArg,            // Ptr to outgoing global memory handle
+     LPUBOOL  lpbRet)               // Ptr to TRUE iff the result is not demotable (may be NULL)
+
+{
+    APLSTYPE aplTypeArg;            // Arg storage type
+    APLNELM  aplNELMArg;            // ... NELM
+    APLRANK  aplRankArg;            // ... rank
+
+    // Assume we fail
+    *lphGlbArg = NULL;
+    if (lpbRet NE NULL)
+        *lpbRet = FALSE;
+
+    // Get the attributes (Type, NELM, and Rank) of the right arg
+    AttrsOfGlb (hGlbArg, &aplTypeArg, &aplNELMArg, &aplRankArg, NULL);
+
+    // Check for DOMAIN ERROR or type demotion
+    if (!(IsSimpleInt (aplTypeArg)
+       || IsSimpleFlt (aplTypeArg)))
+    {
+        APLSTYPE aplTypeArg2;           // Base storage type
+        UBOOL    bRet;                  // TRUE iff the arg is demotable
+
+        // Calculate the right arg base storage type
+        aplTypeArg2 = aToSimple[aplTypeArg];
+
+        // If the demoted type is not a simple integer or float, ...
+        if (!(IsSimpleInt (aplTypeArg2)
+           || IsSimpleFlt (aplTypeArg2)))
+            return FALSE;
+
+        // Convert tiny FLTs to zero
+        ConvertTinyFlt2Zero (hGlbArg);
+
+        // Allocate new and Demote the arg
+        *lphGlbArg =
+          AllocateDemote (aplTypeArg2,      // Base storage type
+                          hGlbArg,          // Global memory handle (may be NULL
+                          NULL,             // Ptr to ALLTYPES values (may be NULL)
+                          aplTypeArg,       // Arg storage type
+                          aplNELMArg,       // ... NELM
+                          aplRankArg,       // ... rank
+                         &bRet);            // Ptr to TRUE iff the result is not a DOMAIN ERROR
+        // Set result if the caller asked
+        if (lpbRet NE NULL)
+            *lpbRet = bRet;
+
+        // Check for error
+        if (!bRet)
+        {
+            Assert (*lphGlbArg EQ NULL);
+
+            return FALSE;
+        } // End IF
+
+        return (*lphGlbArg NE NULL);
+    } else
+        return TRUE;
+} // End SimpleDemote
+
+
+//***************************************************************************
+//  $ConvertTinyFlt2Zero
+//
+//  Convert tiny FLTs to zero
+//***************************************************************************
+
+void ConvertTinyFlt2Zero
+    (HGLOBAL hGlbArg)
+
+{
+    APLSTYPE          aplTypeArg,           // Arg storage type
+                      aplTypeBase;          // Base ...
+    APLNELM           aplNELMArg;           // ... NELM
+    APLNELM           iCnt,                 // Loop counter
+                      i,                    // ...
+                      iHCDimArg;            // HC Dimension (1, 2, 4, 8)
+    LPVARARRAY_HEADER lpMemHdrArg = NULL;   // Ptr to arg header
+    LPAPLFLOAT        lpMemArg;             // Ptr to global memory data
+
+    Assert (hGlbArg NE NULL);
+
+    // Get the attributes (Type, NELM, and Rank) of the right arg
+    AttrsOfGlb (hGlbArg, &aplTypeArg, &aplNELMArg, NULL, NULL);
+
+    // Calculate the base result type (IFRV)
+    aplTypeBase = aToSimple[aplTypeArg];
+
+    // If it's not a FLT, ...
+    if (!IsSimpleFlt (aplTypeBase))
+        return;
+
+    // Calculate the arg HC dimension (1, 2, 4, 8)
+    iHCDimArg = TranslateArrayTypeToHCDim (aplTypeArg);
+
+    // Lock the memory to get a ptr to it
+    lpMemHdrArg = MyGlobalLockVar (hGlbArg);
+
+    // Point to the data
+    lpMemArg = VarArrayDataFmBase (lpMemHdrArg);
+
+    // Loop through the elements
+    for (iCnt = 0; iCnt < aplNELMArg; iCnt++)
+    // Loop through all of the parts
+    for (i = 0; i < iHCDimArg; i++)
+    // If the part is tiny, ...
+    if (fabs (lpMemArg[i + iCnt * iHCDimArg]) < SYS_CT)
+              // Set to zero
+              lpMemArg[i + iCnt * iHCDimArg] = 0.0;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbArg); lpMemHdrArg = NULL;
+} // End ConvertTinyFlt2Zero
+
+
+//***************************************************************************
+//  $DemoteMemToHCxF
+//
+//  Demotet the memory pointed to into a lower dimensional HCxF array
+//
+//  Note that the result is a raw global without an APL array header.
+//***************************************************************************
+
+HGLOBAL DemoteMemToHCxF
+    (APLSTYPE   aplTypeRht,     // Right arg storage type
+     APLNELM    aplNELMRht,     // ...       NELM
+     LPAPLFLOAT lpMemRht,       // Ptr to right arg global memory data
+     APLSTYPE   aplTypeRes)     // Result storage type
+{
+    int      iSizeofRes;        // The size of an element in the result
+    HGLOBAL  hGlbRes;           // The result global memory handle
+    LPVOID   lpMemRes;          // Ptr to result global memory data
+    ALLTYPES atRes = {0};       // Result arg as ALLTYPES
+    APLNELM  uRow;              // Loop counter
+    UBOOL    bRet;              // TRUE iff the result is valid
+
+    // Translate the result array type to sizeof
+    iSizeofRes = TranslateArrayTypeToSizeof (aplTypeRes);
+
+    // Allocate the result array to hold the higher-dimensiona FLTS when converted to lower-dimensional FLTs
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) (aplNELMRht * iSizeofRes));
+    if (hGlbRes EQ NULL)
+        goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemRes = MyGlobalLock000 (hGlbRes);
+
+    // Loop through the rows and cols
+    for (uRow = 0; uRow < aplNELMRht; uRow++)
+    {
+        // Convert from HCxI/HCxF to HCxF
+        (*aTypeActConvert[aplTypeRht][aplTypeRes]) (lpMemRht, uRow, &atRes, &bRet);
+
+        // If it failed, ...
+        if (!bRet)
+            goto DOMAIN_EXIT;
+
+        // Copy over to the result
+        CopyMemory (&((LPBYTE) lpMemRes)[uRow * iSizeofRes], &atRes, (APLU3264) iSizeofRes);
+
+////////// Zero the memory in case we might free it
+////////ZeroMemory (&atRes, sizeof (atRes));
+    } // End FOR
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+    return hGlbRes;
+
+DOMAIN_EXIT:
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+
+    // We no longer need this storage
+    MyGlobalFree (hGlbRes); hGlbRes = NULL;
+
+    // Fall through to common error exit
+
+WSFULL_EXIT:
+    return NULL;
+} // End DemoteMemToHCxF
 
 
 //***************************************************************************

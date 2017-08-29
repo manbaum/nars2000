@@ -1,5 +1,5 @@
 ﻿//***************************************************************************
-//  NARS2000 -- Magic Function -- Variant Operator
+//  NARS2000 -- Magic Function -- Matrix Operator
 //***************************************************************************
 
 /***************************************************************************
@@ -28,40 +28,26 @@
 
 
 //***************************************************************************
-//  Magic function/operator for rising/falling factorials
+//  Magic function/operator for Domino with a function right operand
+//    a.k.a. Matrix Operator
 //***************************************************************************
 
-static LPAPLCHAR DydVOFactBody[] =
+static LPAPLCHAR MatOprBody[] =
 {L"⎕PRO:",
- L"⎕IO←0",
- L"→(2=≢X)/L1 ⋄ X←X,1",
- L"L1:Z←×/¨R+((×X[0])×|X[1])×⊂⍳|X[0]",
+ // Calculate the {L} LO of the (square) matrix R
+ L":if 0=⎕NC 'L' ⋄ L←⊢ ⋄ :endif",
+ L"(Eval Evec)←⌹⍠3 R",
+ L"⎕ERROR ((⍴Eval)≠⍴∪Eval)/'EIGENVALUE ERROR'",
+ L"Z←Evec+.×(∘⌻L LO Eval)+.×⌹Evec",
 };
 
-MAGIC_FCNOPR MFO_DydVOFact =
-{L"Z←" MFON_DydVOFact L"[X] R;⎕IO",
- DydVOFactBody,
- countof (DydVOFactBody),
-};
-
-
-//***************************************************************************
-//  Magic function/operator for Execute with local ⎕FPC
-//***************************************************************************
-
-static LPAPLCHAR MonExecuteBody[] =
-{L"⎕PRO:",
- L"⎕FPC←L",
- L"Z←⍎R",
-};
-
-MAGIC_FCNOPR MFO_MonExecute =
-{L"Z←L " MFON_MonExecute L" R;⎕FPC",
- MonExecuteBody,
- countof (MonExecuteBody),
+MAGIC_FCNOPR MFO_MatOpr =
+{L"Z←{L} (LO " MFON_MatOpr L") R;Eval Evec T",
+ MatOprBody,
+ countof (MatOprBody),
 };
 
 
 //***************************************************************************
-//  End of File: mf_variant.h
+//  End of File: mf_quadjot.h
 //***************************************************************************

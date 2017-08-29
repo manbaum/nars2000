@@ -2471,7 +2471,7 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
         // Calculate the left arg base storage type
         aplTypeLft2 = aToSimple[aplTypeLft];
 
-        // Calculate the left arg base storage type
+        // Calculate the right arg base storage type
         aplTypeRht2 = aToSimple[aplTypeRht];
 
         // Set the result storage type to the base type

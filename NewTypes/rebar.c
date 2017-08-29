@@ -2871,6 +2871,17 @@ typedef struct tagLANGCHARS
                                            L"112 CG" $DS L"M M:   Partitions of {" $IOTA L"M} into N ordered parts\n\n"
                                            L"Keyboard:  Alt-'k'\n\n"
                                            L"Unicode:  0x203C or 8252"},
+        {WS_UTF16_QUADJOT           , {0}, L"QuadJot",
+                                           L"Matrix Operator:  LO" $QJ L"R\n"
+                                           L"                L LO" $QJ L"R\n"
+                                           L"                   " $JOT $QJ L"R\n"
+                                           L"  where LO is a function.\n\n"
+                                           L"  For S a Hypercomplex scalar and V a simple or nested vector\n\n"
+                                           L"  " $JOT $QJ L"S " $ARROWS L" a matrix representation of the Hypercomplex number S\n"
+                                           L"  " $JOT $QJ L"V " $ARROWS L" a diagonal matrix with the elements of V (simple\n"
+                                           L"         numeric Scalars, Vectors, or Matrices) in the diagonal\n\n"
+                                           L"Keyboard:  Alt-'F'\n\n"
+                                           L"Unicode:  0x233B or 9019"},
         LANGCHARS_SEPARATOR
         {WS_UTF16_QUOTEQUAD         , {0}, L"QuoteQuad",
                                            L"Character input from the keyboard:  A" WS_UTF16_LEFTARROW WS_UTF16_QUOTEQUAD L"\n"

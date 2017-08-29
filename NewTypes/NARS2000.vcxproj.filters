@@ -633,6 +633,9 @@
     <ClCompile Include="qf_si.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="po_quadjot.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Bison_Rule Include="cs_parse.y">

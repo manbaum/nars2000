@@ -72,6 +72,7 @@ extern MAGIC_FCNOPR MFO_MonExecute;
 extern MAGIC_FCNOPR MFO_DydSquad;
 extern MAGIC_FCNOPR MFO_DydSlope;
 extern MAGIC_FCNOPR MFO_MonShriek;
+extern MAGIC_FCNOPR MFO_MatOpr;
 
 
 //***************************************************************************
@@ -321,10 +322,10 @@ HGLOBAL Init1MagicFunction
     hGlbTxtHdr = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (lpMemTxtLine->C));
     if (hGlbTxtHdr EQ NULL)
     {
-        MessageBox (hWndMF,
-                    "Insufficient memory to save the magic function/operator header text!!",
-                    lpszAppName,
-                    MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+        MessageBoxW (hWndMF,
+                    L"Insufficient memory to save the magic function/operator header text!!",
+                     lpwszAppName,
+                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
         goto ERROR_EXIT;
     } // End IF
 
@@ -398,10 +399,10 @@ HGLOBAL Init1MagicFunction
                   PAGE_READWRITE);
     if (!lclMemVirtStr[0].IniAddr)
     {
-        MessageBox (hWndMF,
-                    "Insufficient memory to save the function header strand stack!!",
-                    lpszAppName,
-                    MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+        MessageBoxW (hWndMF,
+                    L"Insufficient memory to save the function header strand stack!!",
+                     lpwszAppName,
+                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
         goto ERROR_EXIT;    // Mark as failed
     } // End IF
 
@@ -477,10 +478,10 @@ HGLOBAL Init1MagicFunction
                               + uOffset);
         if (hGlbDfnHdr EQ NULL)
         {
-            MessageBox (hWndMF,
-                        "Insufficient memory to save the function header!!",
-                        lpszAppName,
-                        MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+            MessageBoxW (hWndMF,
+                        L"Insufficient memory to save the function header!!",
+                         lpwszAppName,
+                         MB_OK | MB_ICONWARNING | MB_APPLMODAL);
             goto ERROR_EXIT;
         } // End IF
 
@@ -800,6 +801,7 @@ UBOOL InitMagicFunctions
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydSquad         ]  = Init1MagicFunction (MFON_DydSquad         , &MFO_DydSquad         , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydSlope         ]  = Init1MagicFunction (MFON_DydSlope         , &MFO_DydSlope         , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonShriek        ]  = Init1MagicFunction (MFON_MonShriek        , &MFO_MonShriek        , lpMemPTD, hWndEC, NULL));
+    bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MatOpr           ]  = Init1MagicFunction (MFON_MatOpr           , &MFO_MatOpr           , lpMemPTD, hWndEC, NULL));
 
     return bRet;
 } // InitMagicFunctions

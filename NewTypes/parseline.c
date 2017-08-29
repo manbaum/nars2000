@@ -2509,6 +2509,22 @@ LPPL_YYSTYPE plRedF_IDX
     // The result is the current object
     lpYYRes = lpplYYCurObj;
 
+    Assert (lpplYYLstRht NE NULL);
+
+    // If there's a curried index to the function, ...
+    if (lpYYRes->lpplYYIdxCurry NE NULL)
+    {
+        // Collapse the IDX chain
+        lpplYYLstRht =
+          plRedA_IDX (lpplLocalVars,            // Ptr to plLocalVars
+                      lpYYRes->lpplYYIdxCurry,  // Ptr to current PL_YYSTYPE
+                      lpplYYLstRht,             // ...    last right ...
+                      soA);                     // Next SO_ENUM value
+        // Zap it as we've used it up
+        lpYYRes->lpplYYIdxCurry = NULL;
+    } else
+        Assert (lpplYYLstRht->lpplYYIdxCurry EQ NULL);
+
     // Make it into an axis operand
     lpYYVar = MakeAxis_YY (lpplYYLstRht);
 

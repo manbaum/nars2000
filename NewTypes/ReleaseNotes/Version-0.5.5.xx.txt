@@ -1,6 +1,22 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1793 -- Version 0.5.5.xx
+--------------------------------
+
+* Signal DOMAIN ERROR on Non-numeric Args
+* Change Error Message For Non-distinct Eigenvalues
+
+Directory branches/bsmith/NewTypes:
+
+MF_QUADJOT.H:
+  Change error message for QuadJot operator when the eigenvalues are not distinct.
+
+PO_QUADJOT.C:
+  Check for DOMAIN ERROR earlier than before.
+  Fix bug of mistakenly calling a RANK ERROR a DOMAIN ERROR.
+
+
 Build #1792 -- Version 0.5.5.xx
 --------------------------------
 

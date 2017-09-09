@@ -37,7 +37,7 @@ static LPAPLCHAR MatOprBody[] =
  // Calculate the {L} LO of the (square) matrix R
  L":if 0=⎕NC 'L' ⋄ L←⊢ ⋄ :endif",
  L"(Eval Evec)←⌹⍠3 R",
- L"⎕ERROR ((⍴Eval)≠⍴∪Eval)/'EIGENVALUE ERROR'",
+ L"⎕ERROR ((⍴Eval)≠⍴∪Eval)/'EIGENVALUES NOT DISTINCT'",
  L"Z←Evec+.×(∘⌻L LO Eval)+.×⌹Evec",
 };
 

@@ -156,6 +156,10 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
     // Get the attributes (Type, NELM, and Rank) of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, &aplColsRht);
 
+    // Check for DOMAIN ERRORs
+    if (!IsNumeric (aplTypeRht))
+        goto RIGHT_DOMAIN_EXIT;
+
     // Fill in the array dimensions
     NxN[0] =
     NxN[1] = aplColsRht;
@@ -229,7 +233,7 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
 
                     // Check for RANK ERROR
                     if (IsRank3P (aplRankItm))
-                        goto RIGHT_DOMAIN_EXIT;
+                        goto RIGHT_RANK_EXIT;
 
                     // Promote the type as appropriate
                     aplTypeRes = aTypePromote[aplTypeRes][aplTypeItm];
@@ -671,10 +675,6 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
 
             // Translate the array type to sizeof
             iSizeofRht = TranslateArrayTypeToSizeof (aplTypeRht);
-
-            // Check for DOMAIN ERROR
-            if (!IsNumeric (aplTypeRht))
-                goto RIGHT_DOMAIN_EXIT;
 
             // Calculate the result type (IFRV)
             aplTypeRes = aToSimple[aplTypeRht];

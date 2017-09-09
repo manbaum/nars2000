@@ -3976,7 +3976,18 @@ static LRESULT EDIT_WM_LButtonUp(EDITSTATE *es, DWORD keys, INT x, INT y)
 
             // No more region
             es->region_posx = es->region_posy = 0;
-        } // End IF
+        } else
+        // The mouse cursor is inside the SR
+        {
+            // No more region
+            es->region_posx = es->region_posy = 0;
+
+            // No more selection
+            EDIT_EM_SetSel(es, s, s, after_wrap);
+
+            // Set caret position to start of the selection
+            EDIT_SetCaretPos(es, s, es->flags & EF_AFTER_WRAP);
+        } // End IF/ELSE
 
         // Restore the original class cursor
         SetCursor ((HCURSOR) GetClassLongPtrW (es->hwndSelf, GCLP_HCURSOR));

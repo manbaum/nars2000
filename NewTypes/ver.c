@@ -37,6 +37,7 @@ extern HICON hIconAbout;
 const char * ecm_version (void);
 extern WCHAR crsh_dll[];
 extern WCHAR crsh_version[];
+extern char *gsl_version;
 
 
 //***************************************************************************
@@ -258,6 +259,18 @@ APLU3264 CALLBACK AboutDlgProc
                          uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%S\n",
                          flint_version);
+            //***************************************************************************
+            // GSL version
+            //***************************************************************************
+
+            // Copy the GSL prefix to the text
+            MyStrcatW (wszTemp, sizeof (wszTemp), L"GSL Version #");
+
+            // Append the GSL version #
+            MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
+                        L"%S\n",
+                         gsl_version);
             //***************************************************************************
             // COMCTL32.DLL version
             //***************************************************************************

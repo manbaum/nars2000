@@ -29,6 +29,7 @@
 #include "bom.h"
 
 
+////HMENU hMenuDB;                      // Handle for Debug Window menu
 CDB_THREAD cdbThread;               // Temporary global
 WNDPROC    lpfnOldListboxWndProc;   // Save area for old Listbox window proc
 
@@ -233,6 +234,11 @@ LRESULT APIENTRY DBWndProc
 ////LCLODSAPI ("DB: ", hWnd, message, wParam, lParam);
     switch (message)
     {
+////////case WM_NCCREATE:       // lpcs = (LPCREATESTRUCTW) lParam
+////////    hMenuDB = LoadMenu (_hInstance, MAKEINTRESOURCE (IDR_DBMENU));
+////////
+////////    break;                  // Continue with next handler
+
         case WM_CREATE:
             iLineNum = 0;
             SetPropW (hWnd, PROP_LINENUM, ULongToHandle (iLineNum));
@@ -578,6 +584,25 @@ LRESULT APIENTRY DBWndProc
             UpdateWindow (hWnd);    // Redraw the screen now
 
             return FALSE;           // We handled the msg
+
+        case WM_COMMAND:            // wNotifyCode = HIWORD (wParam); // notification code
+                                    // wID = LOWORD (wParam);         // item, control, or accelerator identifier
+                                    // hwndCtrl = (HWND) lParam;      // handle of control
+        {
+            UINT idCtl    = GET_WM_COMMAND_ID   (wParam, lParam);
+            UINT cmdCtl   = GET_WM_COMMAND_CMD  (wParam, lParam);
+            HWND hwndCtrl = GET_WM_COMMAND_HWND (wParam, lParam);
+
+            switch (idCtl)
+            {
+                case IDM_EXIT:
+                    PostMessageW (hWnd, WM_CLOSE, 0, 0);
+
+                    return FALSE;       // We handled the msg
+            } // End SWITCH
+
+            break;                  // Continue with next handler ***MUST***
+        } // End WM_COMMAND
 
         case WM_CLOSE:
             // Remove saved window properties

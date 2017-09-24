@@ -25,6 +25,7 @@
 #define IDR_MFMENU                                20
 #define IDR_SMMENU                                21
 #define IDR_FEMENU                                22
+#define IDR_DBMENU                                23
 
 // Accelerator IDs
 #define IDR_ACCEL                                 30

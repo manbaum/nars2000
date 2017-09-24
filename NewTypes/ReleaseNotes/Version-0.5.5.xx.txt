@@ -1,6 +1,37 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1795 -- Version 0.5.5.xx
+--------------------------------
+
+* Define And Display A Menu For the DEBUG Window
+* Show The GSL Version # In The About Box
+* Define A Handler For GSL Errors
+* Rename The GSL Include And Library Directories And Libraries
+
+Directory branches/bsmith/NewTypes:
+
+DEBUG.C:
+  Handle responses for the DEBUG window menu.
+
+MAIN.C:
+  Use <PostMessage> instead of <PostThreadMessage> as the two windows have the same parent.
+  Define a separate DEBUG window menu.
+  Define and place into service a handler for GSL errors.
+
+MAIN.RC:
+  Show the GSL version # in the About box display.
+
+NARS2000.VCXPROJ:
+  Rename the GSL include and library directories and the libraries.
+
+RESOURCE.H:
+  Define the resource for the DEBUG window menu.
+
+VER.C:
+  Show the GSL version # in the About box display.
+
+
 Build #1794 -- Version 0.5.5.xx
 --------------------------------
 

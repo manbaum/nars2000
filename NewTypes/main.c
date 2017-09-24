@@ -1012,7 +1012,7 @@ void ApplyNewFontSM
     enumSetFontW.hFont        = hFont;
 
     // Refont the DB window
-    PostThreadMessageW (cdbThread.dwThreadId, WM_SETFONT, (WPARAM) hFont, MAKELPARAM (TRUE, 0));
+    PostMessageW (hWndDB, WM_SETFONT, (WPARAM) hFont, MAKELPARAM (TRUE, 0));
 #endif
 } // End ApplyNewFontSM
 
@@ -3403,7 +3403,7 @@ UBOOL InitApplication
     wcw.hIconSm         = hIconDB_Small;
     wcw.hCursor         = LoadCursor (NULL, MAKEINTRESOURCE (IDC_ARROW));
     wcw.hbrBackground   = GetStockObject (WHITE_BRUSH);
-    wcw.lpszMenuName    = MAKEINTRESOURCEW (IDR_SMMENU);
+    wcw.lpszMenuName    = MAKEINTRESOURCEW (IDR_DBMENU);
     wcw.lpszClassName   = LDBWNDCLASS;
 
     // Register the Debugger window class
@@ -4071,6 +4071,29 @@ UBOOL ParseCommandLine
 
 
 //***************************************************************************
+//  $MyGsl_error_handler
+//***************************************************************************
+
+void MyGsl_error_handler
+    (const char *reason,
+     const char *file,
+     int         line,
+     int         gsl_errno)
+
+{
+    DbgStop ();
+
+    /* do nothing */
+    reason = 0;
+    file = 0;
+    line = 0;
+    gsl_errno = 0;
+
+    return;
+} // End MyGsl_error_handler
+
+
+//***************************************************************************
 //  $WinMain
 //
 //  Start the process
@@ -4222,7 +4245,7 @@ int PASCAL WinMain
     bCSO = TRUE;
 
     // No aborting on error!
-    gsl_set_error_handler_off ();
+    gsl_set_error_handler (MyGsl_error_handler);
 
 ////PERFMON
 

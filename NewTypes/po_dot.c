@@ -461,6 +461,42 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
             break;
     } // End SWITCH
 
+    // Check for multi-element vector
+    if (IsVector (aplRankRht))
+        goto GENERAL_DET;
+
+    // If the left operand is the immediate function (+), ...
+    // If the right operand is the immediate function (x), ...
+    if (IsTknImmed (&lpYYFcnStrLft->tkToken)
+     && lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_PLUS
+     && IsTknImmed (&lpYYFcnStrRht->tkToken)
+     && lpYYFcnStrRht->tkToken.tkData.tkChar EQ UTF16_TIMES)
+    {
+        HGLOBAL hGlbMFO;
+
+        //***************************************************************
+        // From here on, the derived function is +.x
+        //***************************************************************
+
+        // Check for DOMAIN ERROR
+        if (!IsNumeric (aplTypeRht))
+            goto RIGHT_DOMAIN_EXIT;
+
+        // Get the magic function/operator global memory handle
+        hGlbMFO = GetMemPTD ()->hGlbMFO[MFOE_DetPerm];
+
+        lpYYRes =
+          ExecuteMagicFunction_EM_YY (NULL,                     // Ptr to left arg token
+                                     &lpYYFcnStrOpr->tkToken,   // Ptr to function token
+                                      lpYYFcnStrOpr,            // Ptr to function strand
+                                      lptkRhtArg,               // Ptr to right arg token
+                                      lptkAxis,                 // Ptr to axis token
+                                      hGlbMFO,                  // Magic function/operator global memory handle
+                                      NULL,                     // Ptr to HSHTAB struc (may be NULL)
+                                      LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
+        goto NORMAL_EXIT;
+    } // End IF
+
     // Check for non-square matrix or multi-element vector
     if (aplDimRows NE aplDimCols)
         goto GENERAL_DET;

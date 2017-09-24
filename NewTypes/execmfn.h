@@ -75,7 +75,8 @@ typedef enum tagMFO
     MFOE_DydSlope        ,      // 31:  Dyadic Slope
     MFOE_MonShriek       ,      // 32:  Monadic Shriek
     MFOE_MatOpr          ,      // 33:  Matrix Operator
-    MFOE_LENGTH                 // 34:  # entries in this enum
+    MFOE_DetPerm         ,      // 34:  Permanent of a matrix
+    MFOE_LENGTH                 // 35:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -131,6 +132,7 @@ typedef enum tagMFO
 #define MFON_DydSlope           L"#DydSlope"
 #define MFON_MonShriek          L"#MonShriek"
 #define MFON_MatOpr             L"#MatOpr"
+#define MFON_DetPerm            L"#DetPerm"
 
 // Magic Function/Operator Variables
 #define $ALPHA          WS_UTF16_ALPHA

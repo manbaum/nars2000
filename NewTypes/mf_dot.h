@@ -150,5 +150,34 @@ MAGIC_FCNOPR MFO_DetSing =
 
 
 //***************************************************************************
+//  Magic function/operator for determinant operator from the
+//    inner product operator.
+//
+//	Calculate the permanent of R (a.k.a. +.×R)
+//    using H.J. Ryser's algorithm in Combinatorial Mathematics (1963),
+//    #14 of the Carus Mathematical Monographs, published by the
+//    Mathematical Association of America, ISBN 0-88385-014-1, p. 26-27.
+//***************************************************************************
+
+static LPAPLCHAR DetPermBody[] =
+{L"⎕IO←0 ⋄ (m n)←⍴R",
+ L":if m>n ⋄ Z←+/∇¨⊂[1 2] R[10 1‼n m;]",
+ L":else",
+ L"  B←(n⍴2)⊤(¯1+2*n)..0",
+ L"  S←n-+⌿B",
+ L"  SS←(n+1)⍴0 ⋄ SS[S]+←×/¨+/¨(⊂[0] B)/¨⊂R",
+ L"  I←0..m-1 ⋄ J←I!I+n-m",
+ L"  Z←-/J×SS[(n-m)..n-1]",
+ L":endif",
+};
+
+MAGIC_FCNOPR MFO_DetPerm =
+{L"Z←" MFON_DetPerm L" R;m n B S ⎕IO I J SS",
+ DetPermBody,
+ countof (DetPermBody),
+};
+
+
+//***************************************************************************
 //  End of File: mf_dot.h
 //***************************************************************************

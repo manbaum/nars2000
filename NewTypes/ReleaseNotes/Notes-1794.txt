@@ -1,0 +1,16 @@
+Build #1794 -- Version 0.5.5.xx
+--------------------------------
+
+* Implement Permanent Of A Matrix As Special Case Of Determinant Operator
+
+Directory branches/bsmith/NewTypes:
+
+EXECMFN.C:
+EXECMFN.H:
+  Include entries for a new Magic Function.
+
+MF_DOT.H:
+  Define the new Magic Function.
+
+PO_DOT.C:
+  Recognize +.x and call the new Magic Function.

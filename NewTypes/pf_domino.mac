@@ -29,6 +29,13 @@
                   mpqDiv = {0},        /* ...                                                                 */\
                   mpqMul = {0},        /* ...                                                                 */\
                   mpqSub = {0};        /* ...                                                                 */\
+    APLCHAR       cQuadDQ;             /* []DQ                                                                */\
+                                                                                                                \
+    /* Save the current value for []DQ                                                                        */\
+    cQuadDQ = GetQuadDQ ();                                                                                     \
+                                                                                                                \
+    /* Put the new value into effect                                                                          */\
+    SetQuadDQ (L'l');                                                                                           \
                                                                                                                 \
     /* Initialize the temp                                                                                    */\
     mphc##N##r_init (&mpqCof);                                                                                  \
@@ -123,8 +130,8 @@
             for (uCol2 = uCol; uCol2 < uNumColsRht; uCol2++)                                                    \
             {                                                                                                   \
                 mpqMul =                                                                                        \
-                  MulHC##N##R_RE (lpMemRht[uRow * uNumColsRht + uCol2],                                         \
-                                  mpqCof);                                                                      \
+                  MulHC##N##R_RE (mpqCof,                                                                       \
+                                  lpMemRht[uRow * uNumColsRht + uCol2]);                                        \
                 mpqSub =                                                                                        \
                   SubHC##N##R_RE (lpMemRht[uInd * uNumColsRht + uCol2],                                         \
                                   mpqMul);                                                                      \
@@ -138,8 +145,8 @@
             for (uCol2 = 0; uCol2 < uNumColsLft; uCol2++)                                                       \
             {                                                                                                   \
                 mpqMul =                                                                                        \
-                  MulHC##N##R_RE (lpMemAux[uRow * uNumColsLft + uCol2],                                         \
-                                  mpqCof);                                                                      \
+                  MulHC##N##R_RE (mpqCof,                                                                       \
+                                  lpMemAux[uRow * uNumColsLft + uCol2]);                                        \
                 mpqSub =                                                                                        \
                   SubHC##N##R_RE (lpMemAux[uInd * uNumColsLft + uCol2],                                         \
                                   mpqMul);                                                                      \
@@ -205,6 +212,9 @@ NORMAL_EXIT##N##:                                                               
                                                                                                                 \
     /* We no longer need this storage                                                                         */\
     Myhc##N##r_clear (&mpqCof);                                                                                 \
+                                                                                                                \
+    /* Restore the original value                                                                             */\
+    SetQuadDQ (cQuadDQ);                                                                                        \
                                                                                                                 \
     return bRet;                                                                                                \
 }

@@ -100,7 +100,7 @@ A=Images\                           # Images & artwork
 BC=$(BIN)COM\                       # Directory for common binaries
 WS=WineHQ\                          # Wine source
 OLDPATH=$(PATH)                     # Save the current path
-GSL_INC=$(GSL_DIR)$(XWIN)\include\  # Directory of GSL includes
+GSL_INC=$(GSL_DIR)include\          # Directory of GSL includes
 SDK_INC=$(INCLUDE)                  # Directories of SDK includes
 
 QDEBUG=$(NARSROOT)qdebug\           # Directory for QDEBUG files/libraries
@@ -117,6 +117,7 @@ RESDEBUG=1
 CFLAGS_DEBUG=/Zi /D "DEBUG"
 BUILD_DIR=Debug
 DEBUG_LIBSUFFIX=d
+WIND=$(WIN)$(DEBUG_LIBSUFF)
 LFLAGS_NDEF=/NODEFAULTLIB:libcmt.lib /SAFESEH:NO
 !else
 RESDEBUG=0
@@ -126,8 +127,8 @@ DEBUG_LIBSUFFIX=
 LFLAGS_NDEF=/NODEFAULTLIB:libcmtd.lib
 !endif
 
-GSL1_LIB=$(GSL_DIR)$(XWIN)\lib\gsl.lib      # GSL library
-GSL2_LIB=$(GSL_DIR)$(XWIN)\lib\cblas.lib    # CBLAS library
+WIND=$(WIN)$(DEBUG_LIBSUFF)
+GSL_LIB=$(GSL_DIR)\lib\libgsl$(WIND)-double.lib     # GSL library
 
 MS_INC    = $(MS_DIR)
 MPC_INC   = $(MPC_DIR)include^\
@@ -233,8 +234,7 @@ LIBS_WEXE =                     \
             $(FLINT_LIB)        \
             $(MPC_LIB)          \
             $(ECM_LIB)          \
-            $(GSL1_LIB)         \
-            $(GSL2_LIB)
+            $(GSL_LIB)
 
 RCFLAGS = /nologo $(VERSION_FLAGS)
 !if "$(DEBUG)" == "1"
@@ -732,8 +732,7 @@ $(O)$(ENAME).exe:       $(OBJS)             \
                         $(FLINT_LIB)        \
                         $(MPC_LIB)          \
                         $(ECM_LIB)          \
-                        $(GSL1_LIB)         \
-                        $(GSL2_LIB)         \
+                        $(GSL_LIB)          \
                         $(CS_FILES)         \
                         $(FONT)             \
                         makefile.inc        \

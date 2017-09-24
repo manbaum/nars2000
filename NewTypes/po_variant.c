@@ -1111,6 +1111,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
             break;
 
         // Eigenvalues/Eigenvectors/Schur Vectors
+        // []DQ:  Division Quotient:  'l' (left quotient) or 'r' (right quotient)
         case UTF16_DOMINO:
             // Validate the right operand as
             //   a simple numeric scalar or one-element vector
@@ -1119,379 +1120,404 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
             if (aplNELMRhtOpr NE 1)
                 goto RIGHT_OPERAND_LENGTH_EXIT;
 
-            // Get the first value as an integer from the token
-            aplIntegerRhtOpr =
-              GetNextIntegerToken (&lpYYFcnStrRht->tkToken, // Ptr to arg token
-                                    0,                      // Index
-                                    aplTypeRhtOpr,          // Arg storage type
-                                   &bRet);                  // Ptr to TRUE iff the result is valid
-            // Check for error
-            if (!bRet)
-                goto RIGHT_OPERAND_DOMAIN_EXIT;
-
-            // Validate the right operand as the number 1..5
-            if (!(1 <= aplIntegerRhtOpr
-                &&     aplIntegerRhtOpr <= 5))
-                goto RIGHT_OPERAND_DOMAIN_EXIT;
-
-            // Validate the right arg as a square matrix
-            if (!IsMatrix (aplRankRht))
-                goto RIGHT_RANK_EXIT;
-
-            if (IsZeroDim (aplColsRht))
-                aplRowsRht = 0;
-            else
-                aplRowsRht = aplNELMRht / aplColsRht;
-
-            // If it's not square, ...
-            if (aplColsRht NE aplRowsRht)
-                goto RIGHT_LENGTH_EXIT;
-
-            // Save as the two dimensions of the matrix
-            NxN[0] =
-            NxN[1] = aplColsRht;
-
-            // Check for DOMAIN ERROR or type demotion
-            if (!(IsSimpleInt (aplTypeRht)
-               || IsSimpleFlt (aplTypeRht)))
+            if (IsSimpleChar (aplTypeRhtOpr))
             {
-                APLSTYPE aplTypeRht2;           // Right arg base storage type
+                // Validate the value
+                if (!ValidateCharScalar_EM (NULL,                   // Ptr to name token
+                                           &lpYYFcnStrRht->tkToken, // Ptr to value token
+                                            DEF_QUADDQ_CWS[0],      // Default value
+                                            DEF_QUADDQ_ALLOW,       // Ptr to vector of allowed values
+                                           &aplCharRhtOpr))         // Ptr to return value
+                    goto RIGHT_OPERAND_DOMAIN_EXIT;
+                // Save the current value for []DQ
+                cQuadDQ = GetQuadDQ ();
 
-                // Calculate the right arg base storage type
-                aplTypeRht2 = aToSimple[aplTypeRht];
+                // Put the new value into effect
+                SetQuadDQ (aplCharRhtOpr);
 
-                // If the demoted type is not a simple integer or float, ...
-                if (!(IsSimpleInt (aplTypeRht2)
-                   || IsSimpleFlt (aplTypeRht2)))
-                    goto RIGHT_DOMAIN_EXIT;
-
-                // Allocate new and Demote the right arg
-                hGlbRht2 = AllocateDemote (aplTypeRht2,         // Base storage type
-                                           hGlbRht,             // Right arg global memory handle (may be NULL
-                                           NULL,                // Ptr to ALLTYPES values (may be NULL)
-                                           aplTypeRht,          // ... storage type
-                                           aplNELMRht,          // ... NELM
-                                           aplRankRht,          // ... rank
-                                          &bRet);               // TRUE iff the result is not a WS FULL
-                // We no longer need this ptr
-                MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
-
+                // Execute the function
+                lpYYRes =
+                  ExecFunc_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+                                  lpYYFcnStrLft,        // Ptr to function strand
+                                  lptkRhtArg);          // Ptr to right arg token
+                // Restore the original value
+                SetQuadDQ (cQuadDQ);
+            } else
+            {
+                // Get the first value as an integer from the token
+                aplIntegerRhtOpr =
+                  GetNextIntegerToken (&lpYYFcnStrRht->tkToken, // Ptr to arg token
+                                        0,                      // Index
+                                        aplTypeRhtOpr,          // Arg storage type
+                                       &bRet);                  // Ptr to TRUE iff the result is valid
                 // Check for error
                 if (!bRet)
-                    goto RIGHT_DOMAIN_EXIT;
-                if (hGlbRht2 EQ NULL)
-                    goto WSFULL_EXIT;
-                // Save as the new global handle and storage type
-                hGlbRht    = hGlbRht2;
-                aplTypeRht = aplTypeRht2;
+                    goto RIGHT_OPERAND_DOMAIN_EXIT;
 
-                // Lock the memory to get a ptr to it
-                lpMemHdrRht = MyGlobalLockVar (hGlbRht);
+                // Validate the right operand as the number 1..5
+                if (!(1 <= aplIntegerRhtOpr
+                    &&     aplIntegerRhtOpr <= 5))
+                    goto RIGHT_OPERAND_DOMAIN_EXIT;
 
-                // Point to the data
-                lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+                // Validate the right arg as a square matrix
+                if (!IsMatrix (aplRankRht))
+                    goto RIGHT_RANK_EXIT;
 
-                // Note that we need to delete the right arg (hGlbRht2) on exit
-            } // End IF
+                if (IsZeroDim (aplColsRht))
+                    aplRowsRht = 0;
+                else
+                    aplRowsRht = aplNELMRht / aplColsRht;
 
-            // Sadly, GSL ABORTS! if asked to handle an empty array:  Boo
-            if (!IsZeroDim (aplColsRht))
-            {
-                // If we're calculating the QR matrices, ...
-                if (aplIntegerRhtOpr EQ 5)
+                // If it's not square, ...
+                if (aplColsRht NE aplRowsRht)
+                    goto RIGHT_LENGTH_EXIT;
+
+                // Save as the two dimensions of the matrix
+                NxN[0] =
+                NxN[1] = aplColsRht;
+
+                // Check for DOMAIN ERROR or type demotion
+                if (!(IsSimpleInt (aplTypeRht)
+                   || IsSimpleFlt (aplTypeRht)))
                 {
-                    // Allocate GSL arrays for case 5
-                    lpGslMatrixA   = gsl_matrix_alloc ((int) aplRowsRht, (int) aplColsRht);     // N x N
-                    lpGslMatrixQ   = gsl_matrix_alloc ((int) aplRowsRht, (int) aplColsRht);     // N x N
-                    lpGslMatrixR   = gsl_matrix_alloc ((int) aplRowsRht, (int) aplColsRht);     // N x N
-                    lpGslVectorTau = gsl_vector_alloc (                  (int) aplColsRht);     // N
+                    APLSTYPE aplTypeRht2;           // Right arg base storage type
 
-                    // Check the return codes for the above allocations
-                    if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixA
-                     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixQ
-                     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixR
-                     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorTau
-                       )
+                    // Calculate the right arg base storage type
+                    aplTypeRht2 = aToSimple[aplTypeRht];
+
+                    // If the demoted type is not a simple integer or float, ...
+                    if (!(IsSimpleInt (aplTypeRht2)
+                       || IsSimpleFlt (aplTypeRht2)))
+                        goto RIGHT_DOMAIN_EXIT;
+
+                    // Allocate new and Demote the right arg
+                    hGlbRht2 = AllocateDemote (aplTypeRht2,         // Base storage type
+                                               hGlbRht,             // Right arg global memory handle (may be NULL
+                                               NULL,                // Ptr to ALLTYPES values (may be NULL)
+                                               aplTypeRht,          // ... storage type
+                                               aplNELMRht,          // ... NELM
+                                               aplRankRht,          // ... rank
+                                              &bRet);               // TRUE iff the result is not a WS FULL
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
+
+                    // Check for error
+                    if (!bRet)
+                        goto RIGHT_DOMAIN_EXIT;
+                    if (hGlbRht2 EQ NULL)
                         goto WSFULL_EXIT;
-                } else
+                    // Save as the new global handle and storage type
+                    hGlbRht    = hGlbRht2;
+                    aplTypeRht = aplTypeRht2;
+
+                    // Lock the memory to get a ptr to it
+                    lpMemHdrRht = MyGlobalLockVar (hGlbRht);
+
+                    // Point to the data
+                    lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+
+                    // Note that we need to delete the right arg (hGlbRht2) on exit
+                } // End IF
+
+                // Sadly, GSL ABORTS! if asked to handle an empty array:  Boo
+                if (!IsZeroDim (aplColsRht))
                 {
-                    // Allocate GSL arrays for cases 1-4
-                    lpGslMatrixA     = gsl_matrix_alloc         ((int) aplRowsRht, (int) aplColsRht);   // N x N
-                    lpGslCVectorEval = gsl_vector_complex_alloc (                  (int) aplColsRht);   // N
-                    lpGslCMatrixEvec = gsl_matrix_complex_alloc ((int) aplRowsRht, (int) aplColsRht);   // N x N
-                    lpGslEigenWs     = gsl_eigen_nonsymmv_alloc (                  (int) aplColsRht);   // N
-                    lpGslMatrixZ     = gsl_matrix_alloc         ((int) aplRowsRht, (int) aplColsRht);   // N x N
+                    // If we're calculating the QR matrices, ...
+                    if (aplIntegerRhtOpr EQ 5)
+                    {
+                        // Allocate GSL arrays for case 5
+                        lpGslMatrixA   = gsl_matrix_alloc ((int) aplRowsRht, (int) aplColsRht);     // N x N
+                        lpGslMatrixQ   = gsl_matrix_alloc ((int) aplRowsRht, (int) aplColsRht);     // N x N
+                        lpGslMatrixR   = gsl_matrix_alloc ((int) aplRowsRht, (int) aplColsRht);     // N x N
+                        lpGslVectorTau = gsl_vector_alloc (                  (int) aplColsRht);     // N
 
-                    // Check the return codes for the above allocations
-                    if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixA
-                     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslCVectorEval
-                     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslCMatrixEvec
-                     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslEigenWs
-                     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixZ
-                       )
-                        goto WSFULL_EXIT;
-                } // End IF/ELSE
+                        // Check the return codes for the above allocations
+                        if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixA
+                         || GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixQ
+                         || GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixR
+                         || GSL_ENOMEM EQ (HANDLE_PTR) lpGslVectorTau
+                           )
+                            goto WSFULL_EXIT;
+                    } else
+                    {
+                        // Allocate GSL arrays for cases 1-4
+                        lpGslMatrixA     = gsl_matrix_alloc         ((int) aplRowsRht, (int) aplColsRht);   // N x N
+                        lpGslCVectorEval = gsl_vector_complex_alloc (                  (int) aplColsRht);   // N
+                        lpGslCMatrixEvec = gsl_matrix_complex_alloc ((int) aplRowsRht, (int) aplColsRht);   // N x N
+                        lpGslEigenWs     = gsl_eigen_nonsymmv_alloc (                  (int) aplColsRht);   // N
+                        lpGslMatrixZ     = gsl_matrix_alloc         ((int) aplRowsRht, (int) aplColsRht);   // N x N
 
-                // Loop through all of the elements
-                for (i = 0; i < aplNELMRht; i++)
-                    // Copy the next element from the right arg as a float
-                    lpGslMatrixA->data[i] = GetNextFloat (lpMemRht, aplTypeRht, i);
+                        // Check the return codes for the above allocations
+                        if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixA
+                         || GSL_ENOMEM EQ (HANDLE_PTR) lpGslCVectorEval
+                         || GSL_ENOMEM EQ (HANDLE_PTR) lpGslCMatrixEvec
+                         || GSL_ENOMEM EQ (HANDLE_PTR) lpGslEigenWs
+                         || GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixZ
+                           )
+                            goto WSFULL_EXIT;
+                    } // End IF/ELSE
 
-                // If we're calculating the QR matrices, ...
-                if (aplIntegerRhtOpr EQ 5)
-                {
-                    ErrCode =
-                      gsl_linalg_QR_decomp (lpGslMatrixA,
-                                            lpGslVectorTau);
+                    // Loop through all of the elements
+                    for (i = 0; i < aplNELMRht; i++)
+                        // Copy the next element from the right arg as a float
+                        lpGslMatrixA->data[i] = GetNextFloat (lpMemRht, aplTypeRht, i);
+
+                    // If we're calculating the QR matrices, ...
+                    if (aplIntegerRhtOpr EQ 5)
+                    {
+                        ErrCode =
+                          gsl_linalg_QR_decomp (lpGslMatrixA,
+                                                lpGslVectorTau);
+                        // Check the error code
+                        if (ErrCode NE GSL_SUCCESS)
+                            goto RIGHT_DOMAIN_EXIT;
+                        // Unpack the QR matrices
+                        ErrCode =
+                          gsl_linalg_QR_unpack (lpGslMatrixA,
+                                                lpGslVectorTau,
+                                                lpGslMatrixQ,
+                                                lpGslMatrixR);
+                    } else
+                    // If we're calculating Eigenvalues, Eigenvectors, and Schur vectors, ...
+                    if (aplIntegerRhtOpr EQ 4)
+                        // Calculate the Eigenvalues, Eigenvectors, and Schur vectors
+                        ErrCode =
+                          gsl_eigen_nonsymmv_Z (lpGslMatrixA,
+                                                lpGslCVectorEval,
+                                                lpGslCMatrixEvec,
+                                                lpGslMatrixZ,
+                                                lpGslEigenWs);
+                    else
+                        // Calculate the Eigenvalues and Eigenvectors
+                        ErrCode =
+                          gsl_eigen_nonsymmv   (lpGslMatrixA,
+                                                lpGslCVectorEval,
+                                                lpGslCMatrixEvec,
+                                                lpGslEigenWs);
                     // Check the error code
                     if (ErrCode NE GSL_SUCCESS)
                         goto RIGHT_DOMAIN_EXIT;
-                    // Unpack the QR matrices
-                    ErrCode =
-                      gsl_linalg_QR_unpack (lpGslMatrixA,
-                                            lpGslVectorTau,
-                                            lpGslMatrixQ,
-                                            lpGslMatrixR);
-                } else
-                // If we're calculating Eigenvalues, Eigenvectors, and Schur vectors, ...
-                if (aplIntegerRhtOpr EQ 4)
-                    // Calculate the Eigenvalues, Eigenvectors, and Schur vectors
-                    ErrCode =
-                      gsl_eigen_nonsymmv_Z (lpGslMatrixA,
-                                            lpGslCVectorEval,
-                                            lpGslCMatrixEvec,
-                                            lpGslMatrixZ,
-                                            lpGslEigenWs);
-                else
-                    // Calculate the Eigenvalues and Eigenvectors
-                    ErrCode =
-                      gsl_eigen_nonsymmv   (lpGslMatrixA,
-                                            lpGslCVectorEval,
-                                            lpGslCMatrixEvec,
-                                            lpGslEigenWs);
-                // Check the error code
-                if (ErrCode NE GSL_SUCCESS)
-                    goto RIGHT_DOMAIN_EXIT;
-            } // End IF
+                } // End IF
 
-            // Split cases based upon the right operand value
-            switch (aplIntegerRhtOpr)
-            {
-                case 1:
-                    // Allocate a global array for the result
-                    hGlbRes = AllocateGlobalArray (ARRAY_HC2F, aplColsRht, 1, &NxN[0]);
+                // Split cases based upon the right operand value
+                switch (aplIntegerRhtOpr)
+                {
+                    case 1:
+                        // Allocate a global array for the result
+                        hGlbRes = AllocateGlobalArray (ARRAY_HC2F, aplColsRht, 1, &NxN[0]);
 
-                    break;
+                        break;
 
-                case 2:
-                    // Allocate a global array for the result
-                    hGlbRes = AllocateGlobalArray (ARRAY_HC2F, aplNELMRht, 2, &NxN[0]);
+                    case 2:
+                        // Allocate a global array for the result
+                        hGlbRes = AllocateGlobalArray (ARRAY_HC2F, aplNELMRht, 2, &NxN[0]);
 
-                    break;
+                        break;
 
-                case 3:
-                    // Allocate a global array for the result
-                    hGlbRes = AllocateGlobalArray (ARRAY_NESTED, iTwo, 1, &iTwo);
+                    case 3:
+                        // Allocate a global array for the result
+                        hGlbRes = AllocateGlobalArray (ARRAY_NESTED, iTwo, 1, &iTwo);
 
-                    break;
+                        break;
 
-                case 4:
-                    // Allocate a global array for the result
-                    hGlbRes = AllocateGlobalArray (ARRAY_NESTED, iThree, 1, &iThree);
+                    case 4:
+                        // Allocate a global array for the result
+                        hGlbRes = AllocateGlobalArray (ARRAY_NESTED, iThree, 1, &iThree);
 
-                    break;
+                        break;
 
-                case 5:
-                    // Allocate a global array for the result
-                    hGlbRes = AllocateGlobalArray (ARRAY_NESTED, iTwo, 1, &iTwo);
+                    case 5:
+                        // Allocate a global array for the result
+                        hGlbRes = AllocateGlobalArray (ARRAY_NESTED, iTwo, 1, &iTwo);
 
-                    break;
+                        break;
 
-                defstop
-                    break;
-            } // End SWITCH
+                    defstop
+                        break;
+                } // End SWITCH
 
-            // Check for error
-            if (hGlbRes EQ NULL)
-                goto WSFULL_EXIT;
+                // Check for error
+                if (hGlbRes EQ NULL)
+                    goto WSFULL_EXIT;
 
-            // Lock the memory to get a ptr to it
-            lpMemHdrRes = MyGlobalLockVar (hGlbRes);
+                // Lock the memory to get a ptr to it
+                lpMemHdrRes = MyGlobalLockVar (hGlbRes);
 
-            // Skip over the header and dimensions to the data
-            lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+                // Skip over the header and dimensions to the data
+                lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
-            // Split cases based upon the right operand value
-            switch (aplIntegerRhtOpr)
-            {
-                case 1:
-                    // Copy the Eigenvalues to the result
-                    CopyMemory (lpMemRes, lpGslCVectorEval->data, (APLU3264) (aplColsRht * 2 * sizeof (APLFLOAT)));
-
-                    break;
-
-                case 2:
-                    // Copy the Eigenvectors to the result
-                    CopyMemory (lpMemRes, lpGslCMatrixEvec->data, (APLU3264) (aplNELMRht * 2 * sizeof (APLFLOAT)));
-
-                    // Convert tiny FLTs to zero
-                    ConvertTinyFlt2Zero (hGlbRes);
-
-                    break;
-
-                case 3:
-                case 4:
-                    // Allocate a global array for a vector of Complex Eigenvalues
-                    hGlbEval  = AllocateGlobalArray (ARRAY_HC2F, aplColsRht, 1, &NxN[0]);
-
-                    // Allocate a global array for a matrix of Complex Eigenvectors
-                    hGlbEvec  = AllocateGlobalArray (ARRAY_HC2F, aplNELMRht, 2, &NxN[0]);
-
-                    // If we're also calculating Schur vectors, ...
-                    if (aplIntegerRhtOpr EQ 4)
-                    {
-                        // Allocate a global array for a matrix of Real Schur vectors
-                        hGlbSchur = AllocateGlobalArray (ARRAY_HC1F, aplNELMRht, 2, &NxN[0]);
-
-                        // Check for errors
-                        if (hGlbSchur EQ NULL)
-                            goto WSFULL_EXIT;
-                    } // End IF
-
-                    // Check for errors
-                    if (hGlbEval EQ NULL
-                     || hGlbEvec EQ NULL)
-                        goto WSFULL_EXIT;
-
-                    // Save the global memory handles in the result
-                    ((LPAPLNESTED) lpMemRes)[0] = MakePtrTypeGlb (hGlbEval);
-                    ((LPAPLNESTED) lpMemRes)[1] = MakePtrTypeGlb (hGlbEvec);
-
-                    // If we're also calculating Schur vectors, ...
-                    if (aplIntegerRhtOpr EQ 4)
-                        ((LPAPLNESTED) lpMemRes)[2] = MakePtrTypeGlb (hGlbSchur);
-
-                    // If there are any cols, ...
-                    if (!IsZeroDim (aplColsRht))
-                    {
-                        //***************************************************************
-                        //  Copy Eigenvalues to an item in the result
-                        //***************************************************************
-
-                        // Lock the memory to get a ptr to it
-                        lpMemHdrEval = MyGlobalLockVar (hGlbEval);
-
-                        // Skip over the header and dimensions to the data
-                        lpMemEval = VarArrayDataFmBase (lpMemHdrEval);
-
+                // Split cases based upon the right operand value
+                switch (aplIntegerRhtOpr)
+                {
+                    case 1:
                         // Copy the Eigenvalues to the result
-                        CopyMemory (lpMemEval, lpGslCVectorEval->data, (APLU3264) (aplColsRht * 2 * sizeof (APLFLOAT)));
+                        CopyMemory (lpMemRes, lpGslCVectorEval->data, (APLU3264) (aplColsRht * 2 * sizeof (APLFLOAT)));
 
-                        //***************************************************************
-                        //  Copy Eigenvectors to an item in the result
-                        //***************************************************************
+                        break;
 
-                        // Lock the memory to get a ptr to it
-                        lpMemHdrEvec = MyGlobalLockVar (hGlbEvec);
-
-                        // Skip over the header and dimensions to the data
-                        lpMemEvec = VarArrayDataFmBase (lpMemHdrEvec);
-
+                    case 2:
                         // Copy the Eigenvectors to the result
-                        CopyMemory (lpMemEvec, lpGslCMatrixEvec->data, (APLU3264) (aplNELMRht * 2 * sizeof (APLFLOAT)));
+                        CopyMemory (lpMemRes, lpGslCMatrixEvec->data, (APLU3264) (aplNELMRht * 2 * sizeof (APLFLOAT)));
 
                         // Convert tiny FLTs to zero
-                        ConvertTinyFlt2Zero (hGlbEvec);
+                        ConvertTinyFlt2Zero (hGlbRes);
+
+                        break;
+
+                    case 3:
+                    case 4:
+                        // Allocate a global array for a vector of Complex Eigenvalues
+                        hGlbEval  = AllocateGlobalArray (ARRAY_HC2F, aplColsRht, 1, &NxN[0]);
+
+                        // Allocate a global array for a matrix of Complex Eigenvectors
+                        hGlbEvec  = AllocateGlobalArray (ARRAY_HC2F, aplNELMRht, 2, &NxN[0]);
 
                         // If we're also calculating Schur vectors, ...
                         if (aplIntegerRhtOpr EQ 4)
                         {
+                            // Allocate a global array for a matrix of Real Schur vectors
+                            hGlbSchur = AllocateGlobalArray (ARRAY_HC1F, aplNELMRht, 2, &NxN[0]);
+
+                            // Check for errors
+                            if (hGlbSchur EQ NULL)
+                                goto WSFULL_EXIT;
+                        } // End IF
+
+                        // Check for errors
+                        if (hGlbEval EQ NULL
+                         || hGlbEvec EQ NULL)
+                            goto WSFULL_EXIT;
+
+                        // Save the global memory handles in the result
+                        ((LPAPLNESTED) lpMemRes)[0] = MakePtrTypeGlb (hGlbEval);
+                        ((LPAPLNESTED) lpMemRes)[1] = MakePtrTypeGlb (hGlbEvec);
+
+                        // If we're also calculating Schur vectors, ...
+                        if (aplIntegerRhtOpr EQ 4)
+                            ((LPAPLNESTED) lpMemRes)[2] = MakePtrTypeGlb (hGlbSchur);
+
+                        // If there are any cols, ...
+                        if (!IsZeroDim (aplColsRht))
+                        {
                             //***************************************************************
-                            //  Copy Schur vectors to an item in the result
+                            //  Copy Eigenvalues to an item in the result
                             //***************************************************************
 
                             // Lock the memory to get a ptr to it
-                            lpMemHdrSchur = MyGlobalLockVar (hGlbSchur);
+                            lpMemHdrEval = MyGlobalLockVar (hGlbEval);
 
                             // Skip over the header and dimensions to the data
-                            lpMemSchur = VarArrayDataFmBase (lpMemHdrSchur);
+                            lpMemEval = VarArrayDataFmBase (lpMemHdrEval);
 
-                            // Copy the Schur vectors to the result
-                            CopyMemory (lpMemSchur, lpGslMatrixZ->data    , (APLU3264) (aplNELMRht     * sizeof (APLFLOAT)));
+                            // Copy the Eigenvalues to the result
+                            CopyMemory (lpMemEval, lpGslCVectorEval->data, (APLU3264) (aplColsRht * 2 * sizeof (APLFLOAT)));
+
+                            //***************************************************************
+                            //  Copy Eigenvectors to an item in the result
+                            //***************************************************************
+
+                            // Lock the memory to get a ptr to it
+                            lpMemHdrEvec = MyGlobalLockVar (hGlbEvec);
+
+                            // Skip over the header and dimensions to the data
+                            lpMemEvec = VarArrayDataFmBase (lpMemHdrEvec);
+
+                            // Copy the Eigenvectors to the result
+                            CopyMemory (lpMemEvec, lpGslCMatrixEvec->data, (APLU3264) (aplNELMRht * 2 * sizeof (APLFLOAT)));
 
                             // Convert tiny FLTs to zero
-                            ConvertTinyFlt2Zero (hGlbSchur);
+                            ConvertTinyFlt2Zero (hGlbEvec);
+
+                            // If we're also calculating Schur vectors, ...
+                            if (aplIntegerRhtOpr EQ 4)
+                            {
+                                //***************************************************************
+                                //  Copy Schur vectors to an item in the result
+                                //***************************************************************
+
+                                // Lock the memory to get a ptr to it
+                                lpMemHdrSchur = MyGlobalLockVar (hGlbSchur);
+
+                                // Skip over the header and dimensions to the data
+                                lpMemSchur = VarArrayDataFmBase (lpMemHdrSchur);
+
+                                // Copy the Schur vectors to the result
+                                CopyMemory (lpMemSchur, lpGslMatrixZ->data    , (APLU3264) (aplNELMRht     * sizeof (APLFLOAT)));
+
+                                // Convert tiny FLTs to zero
+                                ConvertTinyFlt2Zero (hGlbSchur);
+                            } // End IF
                         } // End IF
-                    } // End IF
 
-                    break;
+                        break;
 
-                case 5:
-                    // Allocate a global array for the Q matrix
-                    hGlbQ = AllocateGlobalArray (ARRAY_FLOAT, aplNELMRht, 2, &NxN[0]);
+                    case 5:
+                        // Allocate a global array for the Q matrix
+                        hGlbQ = AllocateGlobalArray (ARRAY_FLOAT, aplNELMRht, 2, &NxN[0]);
 
-                    // Allocate a global array for the R matrix
-                    hGlbR = AllocateGlobalArray (ARRAY_FLOAT, aplNELMRht, 2, &NxN[0]);
+                        // Allocate a global array for the R matrix
+                        hGlbR = AllocateGlobalArray (ARRAY_FLOAT, aplNELMRht, 2, &NxN[0]);
 
-                    // Check for errors
-                    if (hGlbQ EQ NULL
-                     || hGlbR EQ NULL)
-                        goto WSFULL_EXIT;
-                    // Save the global memory handles in the result
-                    ((LPAPLNESTED) lpMemRes)[0] = MakePtrTypeGlb (hGlbQ);
-                    ((LPAPLNESTED) lpMemRes)[1] = MakePtrTypeGlb (hGlbR);
+                        // Check for errors
+                        if (hGlbQ EQ NULL
+                         || hGlbR EQ NULL)
+                            goto WSFULL_EXIT;
+                        // Save the global memory handles in the result
+                        ((LPAPLNESTED) lpMemRes)[0] = MakePtrTypeGlb (hGlbQ);
+                        ((LPAPLNESTED) lpMemRes)[1] = MakePtrTypeGlb (hGlbR);
 
-                    // If there are any cols, ...
-                    if (!IsZeroDim (aplColsRht))
-                    {
-                        //***************************************************************
-                        //  Copy Q to an item in the result
-                        //***************************************************************
+                        // If there are any cols, ...
+                        if (!IsZeroDim (aplColsRht))
+                        {
+                            //***************************************************************
+                            //  Copy Q to an item in the result
+                            //***************************************************************
 
-                        // Lock the memory to get a ptr to it
-                        lpMemHdrQ = MyGlobalLockVar (hGlbQ);
+                            // Lock the memory to get a ptr to it
+                            lpMemHdrQ = MyGlobalLockVar (hGlbQ);
 
-                        // Skip over the header and dimensions to the data
-                        lpMemQ = VarArrayDataFmBase (lpMemHdrQ);
+                            // Skip over the header and dimensions to the data
+                            lpMemQ = VarArrayDataFmBase (lpMemHdrQ);
 
-                        // Copy the Q matrix to the result
-                        CopyMemory (lpMemQ, lpGslMatrixQ->data, (APLU3264) (aplNELMRht * sizeof (APLFLOAT)));
+                            // Copy the Q matrix to the result
+                            CopyMemory (lpMemQ, lpGslMatrixQ->data, (APLU3264) (aplNELMRht * sizeof (APLFLOAT)));
 
-                        // Convert tiny FLTs to zero
-                        ConvertTinyFlt2Zero (hGlbQ);
+                            // Convert tiny FLTs to zero
+                            ConvertTinyFlt2Zero (hGlbQ);
 
-                        //***************************************************************
-                        //  Copy R to an item in the result
-                        //***************************************************************
+                            //***************************************************************
+                            //  Copy R to an item in the result
+                            //***************************************************************
 
-                        // Lock the memory to get a ptr to it
-                        lpMemHdrR = MyGlobalLockVar (hGlbR);
+                            // Lock the memory to get a ptr to it
+                            lpMemHdrR = MyGlobalLockVar (hGlbR);
 
-                        // Skip over the header and dimensions to the data
-                        lpMemR = VarArrayDataFmBase (lpMemHdrR);
+                            // Skip over the header and dimensions to the data
+                            lpMemR = VarArrayDataFmBase (lpMemHdrR);
 
-                        // Copy the R matrix to the result
-                        CopyMemory (lpMemR, lpGslMatrixR->data, (APLU3264) (aplNELMRht * sizeof (APLFLOAT)));
+                            // Copy the R matrix to the result
+                            CopyMemory (lpMemR, lpGslMatrixR->data, (APLU3264) (aplNELMRht * sizeof (APLFLOAT)));
 
-                        // Convert tiny FLTs to zero
-                        ConvertTinyFlt2Zero (hGlbR);
-                    } // End IF
+                            // Convert tiny FLTs to zero
+                            ConvertTinyFlt2Zero (hGlbR);
+                        } // End IF
 
-                    break;
+                        break;
 
-                defstop
-                    break;
-            } // End SWITCH
+                    defstop
+                        break;
+                } // End SWITCH
 
-            // Allocate a new YYRes
-            lpYYRes = YYAlloc ();
+                // Allocate a new YYRes
+                lpYYRes = YYAlloc ();
 
-            // Fill in the result token
-            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-            lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
-            lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+                // Fill in the result token
+                lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+                lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+                lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+            }// End IF/ELSE
 
             break;
 

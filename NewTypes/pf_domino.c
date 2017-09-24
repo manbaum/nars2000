@@ -1223,8 +1223,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                 } // End SWITCH
 
                 break;
-            } else
-                goto DOMAIN_EXIT;
+            } // End IF
 
             // Copy to the result and convert back to FLTs
             for (uRow = 0; uRow < (aplNELMRht * iHCDimRht); uRow++)

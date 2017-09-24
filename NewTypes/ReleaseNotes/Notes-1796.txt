@@ -1,0 +1,19 @@
+Build #1796 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bugs When Inverting FLT and MP Non-commutative Matrices.
+
+Directory branches/bsmith/NewTypes:
+
+MAKEFILE.INC:
+  Include file omitted from the last build.
+
+PF_DOMINO.C:
+  Fix bug not allowing Quaternion and Octonion Matrix Inverse on FLTs.
+
+PF_DOMINO.MAC:
+  Fix bug in macro used for inverting Multiple-Precision matrices in the
+    non-commutative cases.
+
+PO_VARIANT.C:
+  Allow a Variant operator short form for []DQ applied to Matrix Inverse/Divide.

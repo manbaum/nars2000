@@ -1380,6 +1380,11 @@ RESTART_EXCEPTION_VARIMMED:
 
                         break;
 
+                    case EXCEPTION_ERRMSG_ALREADY_SET:
+                        MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                        goto ERRMSG_ALREADY_SET_EXIT;
+
                     default:
                         // Display message for unhandled exception
                         DisplayException ();
@@ -1487,6 +1492,11 @@ WSFULL_EXIT:
 NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                                lptkFunc);
+    return NULL;
+
+ERRMSG_ALREADY_SET_EXIT:
+    ErrorMessageSetToken (lptkFunc);
+
     return NULL;
 } // End PrimFnMon_EM_YY
 #undef  APPEND_NAME
@@ -1664,6 +1674,11 @@ HGLOBAL PrimFnMonGlb_EM
                     DbgBrk ();                  // This can never happen as no APA result is GlbNum
 
                     break;
+
+                case EXCEPTION_ERRMSG_ALREADY_SET:
+                    MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                    goto ERRMSG_ALREADY_SET_EXIT;
 
                 default:
                     // Display message for unhandled exception
@@ -2284,6 +2299,11 @@ RESTART_EXCEPTION:
 
                 break;
 
+            case EXCEPTION_ERRMSG_ALREADY_SET:
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                goto ERRMSG_ALREADY_SET_EXIT;
+
             default:
                 // Display message for unhandled exception
                 DisplayException ();
@@ -2310,6 +2330,11 @@ NONCE_EXIT:
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
+    goto ERROR_EXIT;
+
+ERRMSG_ALREADY_SET_EXIT:
+    ErrorMessageSetToken (lptkFunc);
+
     goto ERROR_EXIT;
 
 ERROR_EXIT:
@@ -4272,6 +4297,11 @@ RESTART_EXCEPTION:
 
                             break;
 
+                        case EXCEPTION_ERRMSG_ALREADY_SET:
+                            MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                            goto ERRMSG_ALREADY_SET_EXIT;
+
                         default:
                             // Display message for unhandled exception
                             DisplayException ();
@@ -4317,6 +4347,11 @@ DOMAIN_EXIT:
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
+    goto ERROR_EXIT;
+
+ERRMSG_ALREADY_SET_EXIT:
+    ErrorMessageSetToken (lptkFunc);
+
     goto ERROR_EXIT;
 
 ERROR_EXIT:
@@ -5085,6 +5120,11 @@ RESTART_EXCEPTION:
 
                             break;
 
+                        case EXCEPTION_ERRMSG_ALREADY_SET:
+                            MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                            goto ERRMSG_ALREADY_SET_EXIT;
+
                         default:
                             // Display message for unhandled exception
                             DisplayException ();
@@ -5130,6 +5170,11 @@ DOMAIN_EXIT:
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
+    goto ERROR_EXIT;
+
+ERRMSG_ALREADY_SET_EXIT:
+    ErrorMessageSetToken (lptkFunc);
+
     goto ERROR_EXIT;
 
 ERROR_EXIT:
@@ -5473,6 +5518,11 @@ RESTART_EXCEPTION_IMMED:
 
                 break;
 
+            case EXCEPTION_ERRMSG_ALREADY_SET:
+                MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                goto ERRMSG_ALREADY_SET_EXIT;
+
             default:
                 // Display message for unhandled exception
                 DisplayException ();
@@ -5496,6 +5546,11 @@ NONCE_EXIT:
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
+    goto ERROR_EXIT;
+
+ERRMSG_ALREADY_SET_EXIT:
+    ErrorMessageSetToken (lptkFunc);
+
     goto ERROR_EXIT;
 
 ERROR_EXIT:
@@ -6255,6 +6310,11 @@ RESTART_EXCEPTION:
 
                     break;
 
+                case EXCEPTION_ERRMSG_ALREADY_SET:
+                    MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
+
+                    goto ERRMSG_ALREADY_SET_EXIT;
+
 ////////////////case EXCEPTION_RESULT_RAT:
                 default:
                     // Display message for unhandled exception
@@ -6319,6 +6379,11 @@ NONCE_EXIT:
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
+    goto ERROR_EXIT;
+
+ERRMSG_ALREADY_SET_EXIT:
+    ErrorMessageSetToken (lptkFunc);
+
     goto ERROR_EXIT;
 
 ERROR_EXIT:

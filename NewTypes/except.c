@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -232,6 +232,9 @@ LPWSTR MyGetExceptionStr
 
         case STATUS_UNWIND_CONSOLIDATE:
             return L"STATUS_UNWIND_CONSOLIDATE";
+
+        case EXCEPTION_ERRMSG_ALREADY_SET:
+            return L"EXCEPTION_ERRMSG_ALREADY_SET";
 
         default:
             MySprintfW (wszTemp,
@@ -478,6 +481,9 @@ long CheckHCDim
 ////////    else
 ////////        return EXCEPTION_EXECUTE_HANDLER;
 ////////
+        case EXCEPTION_ERRMSG_ALREADY_SET:
+            return EXCEPTION_EXECUTE_HANDLER;
+
         default:
             return EXCEPTION_CONTINUE_SEARCH;
     } // End SWITCH
@@ -569,6 +575,7 @@ long CheckException
         case EXCEPTION_SINGLE_STEP:
         case EXCEPTION_GUARD_PAGE:
         case EXCEPTION_STACK_OVERFLOW:
+        case EXCEPTION_ERRMSG_ALREADY_SET:
             return EXCEPTION_EXECUTE_HANDLER;
 
         case EXCEPTION_BREAKPOINT:

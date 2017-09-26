@@ -127,23 +127,25 @@ typedef enum tagSYSCMDS_ENUM    // System Commands
 
 typedef enum tagEXCEPTION_CODES // Exception Codes
 {
-    EXCEPTION_SUCCESS = 0 ,     // 00:  All OK
-    EXCEPTION_DOMAIN_ERROR ,    // 01:  Signal a DOMAIN ERROR
-    EXCEPTION_LIMIT_ERROR  ,    // 02:  Signal a LIMIT ERROR
-    EXCEPTION_NONCE_ERROR  ,    // 03:  Signal a NONCE ERROR
-    EXCEPTION_WS_FULL      ,    // 04:  Signal a WS FULL
-    EXCEPTION_CTRL_BREAK   ,    // 05:  Ctrl-Break pressed
-                                // N.B.  The following values *MUST* be in order F, V, F, V, etc.
-                                //       so we can do arithmetic on them as in
-                                //       EXCEPTION_RESULT_FLOAT + 2 * iHCDimIndex
-    EXCEPTION_RESULT_FLOAT ,    // 06:  Result should be Float
-    EXCEPTION_RESULT_VFP   ,    // 07:  Result should be VFP
-    EXCEPTION_RESULT_HC2F  ,    // 08:  Result should be HC2F
-    EXCEPTION_RESULT_HC2V  ,    // 09:  Result should be HC2V
-    EXCEPTION_RESULT_HC4F  ,    // 0A:  Result should be HC4F
-    EXCEPTION_RESULT_HC4V  ,    // 0B:  Result should be HC4V
-    EXCEPTION_RESULT_HC8F  ,    // 0C:  Result should be HC8F
-    EXCEPTION_RESULT_HC8V  ,    // 0D:  Result should be HC8V
+    EXCEPTION_SUCCESS = 0       ,   // 00:  All OK
+    EXCEPTION_DOMAIN_ERROR      ,   // 01:  Signal a DOMAIN ERROR
+    EXCEPTION_LIMIT_ERROR       ,   // 02:  Signal a LIMIT ERROR
+    EXCEPTION_NONCE_ERROR       ,   // 03:  Signal a NONCE ERROR
+    EXCEPTION_WS_FULL           ,   // 04:  Signal a WS FULL
+    EXCEPTION_CTRL_BREAK        ,   // 05:  Ctrl-Break pressed
+                                    // N.B.  The following values *MUST* be in order F, V, F, V, etc.
+                                    //       so we can do arithmetic on them as in
+                                    //       EXCEPTION_RESULT_FLOAT + 2 * iHCDimIndex
+    EXCEPTION_RESULT_FLOAT      ,   // 06:  Result should be Float
+    EXCEPTION_RESULT_VFP        ,   // 07:  Result should be VFP
+    EXCEPTION_RESULT_HC2F       ,   // 08:  Result should be HC2F
+    EXCEPTION_RESULT_HC2V       ,   // 09:  Result should be HC2V
+    EXCEPTION_RESULT_HC4F       ,   // 0A:  Result should be HC4F
+    EXCEPTION_RESULT_HC4V       ,   // 0B:  Result should be HC4V
+    EXCEPTION_RESULT_HC8F       ,   // 0C:  Result should be HC8F
+    EXCEPTION_RESULT_HC8V       ,   // 0D:  Result should be HC8V
+
+    EXCEPTION_ERRMSG_ALREADY_SET,   // 0E:  Look in lpMemPTD->lpwszErrorMessage
 
     EXCEPTION_RESULT_HC1F = EXCEPTION_RESULT_FLOAT, // To simplify common macros
     EXCEPTION_RESULT_HC1V = EXCEPTION_RESULT_VFP  , // ...

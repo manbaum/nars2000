@@ -31,18 +31,13 @@
 //  Magic function/operator for Monadic Shriek for Quaternions
 //***************************************************************************
 
-static APLCHAR DydHeader[] =
-  L"Z←L " MFON_MonShriek L" R";
-
-static APLCHAR DydLine1[] = 
-  L"Z←<9○(L+.×R+.×⌹L)[;⎕IO]";
-
 static LPAPLCHAR DydBody[] =
-{DydLine1,
+{ L"⎕ERROR ((⍴R)≠⍴∪R)/'EIGENVALUES NOT DISTINCT'",
+  L"Z←<9○(L+.×(∘⌻!R)+.×⌹L)[;⎕IO]",
  };
 
 MAGIC_FCNOPR MFO_MonShriek =
-{DydHeader,
+{L"Z←L " MFON_MonShriek L" R",
  DydBody,
  countof (DydBody),
 };

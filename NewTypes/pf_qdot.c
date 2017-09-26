@@ -961,7 +961,7 @@ APLHC8F FactHCxF
 
         // Check for error
         if (lpYYRes EQ NULL)
-            goto ERROR_EXIT;
+            goto ERRMSG_ALREADY_SET_EXIT;
 
         // Get the global memory handle
         hGlbTmp = lpYYRes->tkToken.tkData.tkGlbData;
@@ -997,6 +997,11 @@ DOMAIN_EXIT:
 
 WSFULL_EXIT:
     exCode = EXCEPTION_WS_FULL;
+
+    goto ERROR_EXIT;
+
+ERRMSG_ALREADY_SET_EXIT:
+    exCode = EXCEPTION_ERRMSG_ALREADY_SET;
 
     goto ERROR_EXIT;
 

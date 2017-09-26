@@ -1,6 +1,32 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1797 -- Version 0.5.5.xx
+--------------------------------
+
+* Allow Magic Functions In Scalar Functions.
+
+Directory branches/bsmith/NewTypes:
+
+ENUMS.H:
+  Define new exception code.
+
+EXCEPT.C:
+  Define associated entries for new exception code.
+
+MF_SHRIEK.H:
+  Include []ERROR call if the Eigenvalues are not distinct.
+
+PF_QDOT.C:
+  In <FactHCxF> use new exception code if the call to the Magic Function
+    fails.  With this new code, the proper response is to use the existing
+    error message in lpMemPTD->lpwszErrorMessage and the caret is set to the
+    function.
+
+PRIMSPEC.C:
+  Handle new exception code as described above.
+
+
 Build #1796 -- Version 0.5.5.xx
 --------------------------------
 

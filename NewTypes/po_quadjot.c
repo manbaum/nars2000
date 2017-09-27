@@ -23,7 +23,9 @@
 #define STRICT
 #include <windows.h>
 #include "headers.h"
+#define DEFINE_VALUES
 #include "po_quadjot.h"
+#undef  DEFINE_VALUES
 
 
 //***************************************************************************
@@ -157,7 +159,8 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, &aplColsRht);
 
     // Check for DOMAIN ERRORs
-    if (!IsNumeric (aplTypeRht))
+    if (!IsNumeric (aplTypeRht)
+     && !IsNested  (aplTypeRht))
         goto RIGHT_DOMAIN_EXIT;
 
     // Fill in the array dimensions
@@ -700,22 +703,6 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
             // lpMemRht points to the scalar value as IFRV of any HC dimension
             // The Booolean case is handled by aplLongestRht to which lpMemRht points
             // There is no such thing as a scalar APA
-
-typedef APLINT   (*LPAPLINT2)[2][2];
-typedef APLINT   (*LPAPLINT4)[4][4];
-typedef APLINT   (*LPAPLINT8)[8][8];
-
-typedef APLFLOAT (*LPAPLFLT2)[2][2];
-typedef APLFLOAT (*LPAPLFLT4)[2][2];
-typedef APLFLOAT (*LPAPLFLT8)[8][8];
-
-typedef APLRAT   (*LPAPLRAT2)[2][2];
-typedef APLRAT   (*LPAPLRAT4)[4][4];
-typedef APLRAT   (*LPAPLRAT8)[8][8];
-
-typedef APLVFP   (*LPAPLVFP2)[2][2];
-typedef APLVFP   (*LPAPLVFP4)[4][4];
-typedef APLVFP   (*LPAPLVFP8)[8][8];
 
             // Split cases based upon the HC dimension
             switch (iHCDimRht)

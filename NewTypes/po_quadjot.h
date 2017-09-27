@@ -20,6 +20,25 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+
+typedef APLINT   (*LPAPLINT2)[2][2];
+typedef APLINT   (*LPAPLINT4)[4][4];
+typedef APLINT   (*LPAPLINT8)[8][8];
+
+typedef APLFLOAT (*LPAPLFLT2)[2][2];
+typedef APLFLOAT (*LPAPLFLT4)[4][4];
+typedef APLFLOAT (*LPAPLFLT8)[8][8];
+
+typedef APLRAT   (*LPAPLRAT2)[2][2];
+typedef APLRAT   (*LPAPLRAT4)[4][4];
+typedef APLRAT   (*LPAPLRAT8)[8][8];
+
+typedef APLVFP   (*LPAPLVFP2)[2][2];
+typedef APLVFP   (*LPAPLVFP4)[4][4];
+typedef APLVFP   (*LPAPLVFP8)[8][8];
+
+
+#ifdef DEFINE_VALUES
 int MatRep2[2][2] =
 {
     {  0, -1},
@@ -55,6 +74,12 @@ int MatRep2[2][2] =
     {  6,  7,  4, -5, -2,  3,  0, -1 },
     {  7, -6,  5,  4, -3, -2,  1,  0 },
 };
+#else
+extern int MatRep2[2][2];
+extern int MatRep4[4][4];
+extern int MatRep8L[8][8];
+extern int MatRep8R[8][8];
+#endif
 
 #define MATREP_INT(N,NLR)                                               \
                                                                         \

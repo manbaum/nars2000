@@ -31,6 +31,7 @@
 #define __GSL_MATRIX_COMPLEX_LONG_DOUBLE_H__
 
 #include "headers.h"
+#include "po_quadjot.h"
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_eigen.h>
 
@@ -761,25 +762,23 @@ APLHC8F FactHCxF
     APLHC8F                       aplRes = {0};                 // The result
     gsl_matrix                   *lpGslMatrixA = NULL;          // GSL Temp
     gsl_vector_complex           *lpGslCVectorEval = NULL;      // Eigenvalues
-    gsl_matrix_complex           *lpGslCMatrixEvec = NULL,      // Eigenvectors
-                                 *lpGslCMatrixZ    = NULL;      // Eigenvectors
+    gsl_matrix_complex           *lpGslCMatrixEvec = NULL;      // Eigenvectors
     gsl_eigen_nonsymmv_workspace *lpGslEigenWs = NULL;          // Ptr to the GSL workspace
     APLUINT                       ByteRes;                      // # bytes in the result
     EXCEPTION_CODES               exCode = EXCEPTION_SUCCESS;   // Exception code in case we're to signal an exception
     int                           ErrCode,                      // Error code
-                                  iCntV,                        // Loop counter for vectors
-                                  iCntM;                        // ...              matrices
+                                  i,                            // Loop counter
+                                  j,                            // ...
+                                  k;                            // ...
 
     // Allocate GSL arrays
     lpGslMatrixA     = gsl_matrix_alloc  (N, N);        // N x N
     lpGslCVectorEval = gsl_vector_complex_alloc (N);    // N
     lpGslCMatrixEvec = gsl_matrix_complex_alloc (N, N); // N x N
-    lpGslCMatrixZ    = gsl_matrix_complex_alloc (N, N); // N x N
     lpGslEigenWs     = gsl_eigen_nonsymmv_alloc (N);
 
     // Check the return codes for the above allocations
     if (GSL_ENOMEM EQ (HANDLE_PTR) lpGslMatrixA
-     || GSL_ENOMEM EQ (HANDLE_PTR) lpGslCMatrixZ
      || GSL_ENOMEM EQ (HANDLE_PTR) lpGslCVectorEval
      || GSL_ENOMEM EQ (HANDLE_PTR) lpGslCMatrixEvec
      || GSL_ENOMEM EQ (HANDLE_PTR) lpGslEigenWs)
@@ -806,10 +805,12 @@ APLHC8F FactHCxF
             //   using the standard Complex number matrix form
             //   as A = (a, -b,
             //           b,  a)
-            lpGslMatrixA->data[0] =
-            lpGslMatrixA->data[3] =  aplRht.parts[0];
-            lpGslMatrixA->data[1] = -aplRht.parts[1];
-            lpGslMatrixA->data[2] =  aplRht.parts[1];
+
+#define lpMemRht    (aplRht.parts)
+#define lpMemRes    (lpGslMatrixA->data)
+            MATREP_FLT (2, 2)
+#undef  lpMemRes
+#undef  lpMemRht
 
             break;
 
@@ -820,22 +821,11 @@ APLHC8F FactHCxF
             //           b,  a, -d,  c,
             //           c,  d,  a, -b,
             //           d, -c,  b,  a)
-            lpGslMatrixA->data[ 0] =
-            lpGslMatrixA->data[ 5] =
-            lpGslMatrixA->data[10] =
-            lpGslMatrixA->data[15] =  aplRht.parts[0];
-            lpGslMatrixA->data[ 1] =
-            lpGslMatrixA->data[11] = -aplRht.parts[1];
-            lpGslMatrixA->data[ 2] =
-            lpGslMatrixA->data[13] = -aplRht.parts[2];
-            lpGslMatrixA->data[ 3] =
-            lpGslMatrixA->data[ 6] = -aplRht.parts[3];
-            lpGslMatrixA->data[ 4] =
-            lpGslMatrixA->data[14] =  aplRht.parts[1];
-            lpGslMatrixA->data[ 7] =
-            lpGslMatrixA->data[ 8] =  aplRht.parts[2];
-            lpGslMatrixA->data[ 9] =
-            lpGslMatrixA->data[12] =  aplRht.parts[3];
+#define lpMemRht    (aplRht.parts)
+#define lpMemRes    (lpGslMatrixA->data)
+            MATREP_FLT (4, 4)
+#undef  lpMemRes
+#undef  lpMemRht
 
             break;
 
@@ -856,22 +846,7 @@ APLHC8F FactHCxF
     if (ErrCode NE GSL_SUCCESS)
         goto DOMAIN_EXIT;
 
-    // Calculate the factorial of the eigenvalues (in lpGslCVectorEval)
-    //   and store them into the diagonal of Z (lpGslCMatrixZ)
-    for (iCntV = iCntM = 0; iCntV < N; iCntV++, iCntM += N + 1)
-    {
-        __try
-        {
-            ((LPAPLHC2F) lpGslCMatrixZ->data)[iCntM] = FactHC2F (((LPAPLHC2F) lpGslCVectorEval->data)[iCntV]);
-        } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
-        {
-            exCode = MyGetExceptionCode ();
-
-            goto ERROR_EXIT;
-        } // End __try/__except
-    } // End FOR
-
-    // The result is the N-dimensional number  <9{circle}(Evec+.×Z+.×{domino}Evec)[;1]
+    // The result is the N-dimensional number  <9{circle}(Evec+.×(Diag !Eval)+.×{domino}Evec)[;1]
 
     // Finish off the result with a Magic Function
     {
@@ -913,10 +888,10 @@ APLHC8F FactHCxF
         tkLftArg.tkData.tkGlbData  = MakePtrTypeGlb (hGlbTmp);
 ////////tkLftArg.tkCharIndex       = tkFunc.tkCharIndex;
 
-        // Setup the right arg token as Z
+        // Setup the right arg token as Eval
 
-        // Allocate space for Z as an NxN Complex Floating Point matrix
-        hGlbTmp = AllocateGlobalArray (ARRAY_HC2F, N * N, 2, &NxN[0]);
+        // Allocate space for Eval as a length N Complex Floating Point vector
+        hGlbTmp = AllocateGlobalArray (ARRAY_HC2F, N, 1, &NxN[0]);
         if (hGlbTmp EQ NULL)
             goto DOMAIN_EXIT;
 
@@ -926,8 +901,8 @@ APLHC8F FactHCxF
         // Skip over the header and dimensions to the data
         lpMemTmp = VarArrayDataFmBase (lpMemHdrTmp);
 
-        // Copy Z to the right arg global memory data
-        CopyMemory (lpMemTmp, lpGslCMatrixZ->data, N * N * sizeof (lpMemTmp[0]));
+        // Copy Eval to the right arg global memory data
+        CopyMemory (lpMemTmp, lpGslCVectorEval->data, N * sizeof (lpMemTmp[0]));
 
         // We no longer need this ptr
         MyGlobalUnlock (hGlbTmp); lpMemHdrTmp = NULL;
@@ -1010,12 +985,6 @@ NORMAL_EXIT:
     if (lpGslEigenWs NE NULL)
     {
         gsl_eigen_nonsymmv_free (lpGslEigenWs); lpGslEigenWs = NULL;
-    } // End IF
-
-    if (lpGslCMatrixZ NE NULL)
-    {
-        // We no longer need this storage and ptr
-        gsl_matrix_complex_free (lpGslCMatrixZ); lpGslCMatrixZ = NULL;
     } // End IF
 
     if (lpGslCMatrixEvec NE NULL)

@@ -1190,8 +1190,13 @@ void PrimFnDydCircleFisFvF
                 if (fabs (lpatRht->aplFloat) < 1)
                     RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
 
-                // Call assembler function
-                iAsmCircleN4Flt (&lpMemRes[uRes], &lpatRht->aplFloat);
+                // If the right arg is infinity, ...
+                if (IsFltInfinity (lpatRht->aplFloat))
+                    // The result is infnity
+                    lpMemRes[uRes] = fltPosInfinity;
+                else
+                    // Call assembler function
+                    iAsmCircleN4Flt (&lpMemRes[uRes], &lpatRht->aplFloat);
 
                 // Check for NaN
                 if (_isnan (lpMemRes[uRes]))
@@ -1644,24 +1649,31 @@ void PrimFnDydCircleVisVvV
                 // Initialize the result to 0
                 mpfr_init0  (&lpMemRes[uRes]);
 
-                // If the right arg is -1, return 0
-                if (mpfr_cmp_si (&lpatRht->aplVfp, -1) EQ 0)
-                    return;
+                // If the right arg is infinity, ...
+                if (IsMpfInfinity (&lpatRht->aplHC1V))
+                    // The result is infinity
+                    mpfr_set_inf (&lpMemRes[uRes], 1);
+                else
+                {
+                    // If the right arg is -1, return 0
+                    if (mpfr_cmp_si (&lpatRht->aplVfp, -1) EQ 0)
+                        return;
 
-                // Initialize the temps to 0
-                mpfr_init0  (&aplTmp2);
-                mpfr_init0  (&aplTmp3);
+                    // Initialize the temps to 0
+                    mpfr_init0  (&aplTmp2);
+                    mpfr_init0  (&aplTmp3);
 
-                mpfr_add    (&aplTmp2       , &lpatRht->aplVfp, &mpfOne         , MPFR_RNDN);   // R + 1
-                mpfr_sub    (&aplTmp3       , &lpatRht->aplVfp, &mpfOne         , MPFR_RNDN);   // R - 1
-                mpfr_div    (&aplTmp3       , &aplTmp3        , &aplTmp2        , MPFR_RNDN);   // (R - 1) / (R + 1)
-                mpfr_sqrt   (&lpMemRes[uRes], &aplTmp3                          , MPFR_RNDN);   // sqrt ((R - 1) / (R + 1))
-////////////////mpfr_add    (&aplTmp2       , &lpatRht->aplVfp, &mpfOne         , MPFR_RNDN);   // R + 1  -- Already set
-                mpfr_mul    (&lpMemRes[uRes], &aplTmp2        , &lpMemRes[uRes] , MPFR_RNDN);   // (R + 1) x sqrt ((R - 1) / (R + 1))
+                    mpfr_add    (&aplTmp2       , &lpatRht->aplVfp, &mpfOne         , MPFR_RNDN);   // R + 1
+                    mpfr_sub    (&aplTmp3       , &lpatRht->aplVfp, &mpfOne         , MPFR_RNDN);   // R - 1
+                    mpfr_div    (&aplTmp3       , &aplTmp3        , &aplTmp2        , MPFR_RNDN);   // (R - 1) / (R + 1)
+                    mpfr_sqrt   (&lpMemRes[uRes], &aplTmp3                          , MPFR_RNDN);   // sqrt ((R - 1) / (R + 1))
+////////////////////mpfr_add    (&aplTmp2       , &lpatRht->aplVfp, &mpfOne         , MPFR_RNDN);   // R + 1  -- Already set
+                    mpfr_mul    (&lpMemRes[uRes], &aplTmp2        , &lpMemRes[uRes] , MPFR_RNDN);   // (R + 1) x sqrt ((R - 1) / (R + 1))
 
-                // We no longer need this storage
-                mpfr_clear (&aplTmp3);
-                mpfr_clear (&aplTmp2);
+                    // We no longer need this storage
+                    mpfr_clear (&aplTmp3);
+                    mpfr_clear (&aplTmp2);
+                } // End IF/ELSE
 
                 // Check for NaN
                 if (mpfr_nan_p (&lpMemRes[uRes]))
@@ -2392,35 +2404,48 @@ void PrimFnDydCircleHC2FisHC2FvHC2F
                                 __FUNCTION__))
                 return;
 
+            // If the imaginary parts are zero, ...
+            if (!IzitImaginary (ARRAY_HC2F, lpatRht))
+            {
+                // (-1) + R * 2
+                lpMemRes[uRes] = AddHC2F_RE (confpof_N1.partsLo[0].partsLo[0],
+                                             MulHC2F_RE (lpatRht->aplHC2F,
+                                                         lpatRht->aplHC2F));
+                // sqrt ((-1) + R * 2)
+                lpMemRes[uRes] = SqrtHCxF_RE (*(LPAPLHC8F) &lpMemRes[uRes], 2).partsLo[0].partsLo[0];
+            } else
+            {
 #ifdef USE_HYPOT
-            lpMemRes[uRes] = fpcf_hypot (-1,
-                                         confpof_1.partsLo[0].partsLo[0],
-                                          1,
-                                         lpatRht->aplHC2F);
+                lpMemRes[uRes] = fpcf_hypot (-1,
+                                             confpof_1.partsLo[0].partsLo[0],
+                                              1,
+                                             lpatRht->aplHC2F);
 #else
-            //  (R - 1) / (R + 1)
-            lpMemRes[uRes] = DivHC2F_RE (SubHC2F_RE (lpatRht->aplHC2F,
-                                                     confpof_1.partsLo[0].partsLo[0]),
-                                         AddHC2F_RE (lpatRht->aplHC2F,
-                                                     confpof_1.partsLo[0].partsLo[0]));
-            // sqrt (((R - 1) / (R + 1))
-            lpMemRes[uRes] = SqrtHCxF_RE (*(LPAPLHC8F) &lpMemRes[uRes], 2).partsLo[0].partsLo[0];
+                //  (R - 1) / (R + 1)
+                lpMemRes[uRes] = DivHC2F_RE (SubHC2F_RE (lpatRht->aplHC2F,
+                                                         confpof_1.partsLo[0].partsLo[0]),
+                                             AddHC2F_RE (lpatRht->aplHC2F,
+                                                         confpof_1.partsLo[0].partsLo[0]));
+                // sqrt (((R - 1) / (R + 1))
+                lpMemRes[uRes] = SqrtHCxF_RE (*(LPAPLHC8F) &lpMemRes[uRes], 2).partsLo[0].partsLo[0];
 
-            // (R + 1) × sqrt ((R - 1) / (R + 1))
-            lpMemRes[uRes] = MulHC2F_RE (AddHC2F_RE (lpatRht->aplHC2F,
-                                                     confpof_1.partsLo[0].partsLo[0]),
-                                         lpMemRes[uRes]);
+                // (R + 1) × sqrt ((R - 1) / (R + 1))
+                lpMemRes[uRes] = MulHC2F_RE (AddHC2F_RE (lpatRht->aplHC2F,
+                                                         confpof_1.partsLo[0].partsLo[0]),
+                                             lpMemRes[uRes]);
 #endif
+            } // End IF/ELSE
+
             // If the real part of the arg is zero, and the
             //   absolute value of the imag part of the arg
             //   is <= 1, ...
-            if (lpatRht->aplHC2F.parts[0] EQ 0
-             && fabs (lpatRht->aplHC2F.parts[1]) <= 1)
+            if (lpatRht->aplHC2F.parts[0] EQ 0.0
+             && fabs (lpatRht->aplHC2F.parts[1]) <= 1.0)
             {
                 Assert (lpMemRes[uRes].parts[0] < SYS_CT);
 
                 // Set the real part of the result to zero
-                lpMemRes[uRes].parts[0] = 0;
+                lpMemRes[uRes].parts[0] = 0.0;
             } // End IF
 
             // Check for NaN

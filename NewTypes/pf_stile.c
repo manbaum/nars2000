@@ -1690,45 +1690,11 @@ APLHC1R ModHC1R
         mpq_init_set (&aplRes, &aplRht);
     } else
     {
-#ifdef RAT_EXACT
         // Initialize the result to 0/1
         mpq_init (&aplRes);
 
         // Calculate the residue
         mpq_mod (&aplRes, &aplRht, &aplLft);
-#else
-        APLHC1R  aplFlr  = {0},
-                 aplCel  = {0},
-                 aplTmp  = {0};
-        APLFLOAT fQuadCT = GetQuadCT ();
-
-        // Initialize the temps & result to 0/1
-        mpq_init (&aplFlr);
-        mpq_init (&aplCel);
-        mpq_init (&aplTmp);
-        mpq_init (&aplRes);
-
-        // Ensure both arguments are non-negative
-        mpq_abs (&aplFlr, &aplLft);
-        mpq_abs (&aplCel, &aplRht);
-
-        // Calculate right divided-by left
-        mpq_div (&aplTmp, &aplCel, &aplFlr);
-
-        // If Rht divided-by Lft is near an integer within CT
-        //   aplRes = 0.
-        mpq_floor (&aplFlr, &aplTmp);
-        mpq_ceil  (&aplCel, &aplTmp);
-        if (CmpCT_R (aplTmp, aplFlr, fQuadCT, NE)
-         && CmpCT_R (aplTmp, aplCel, fQuadCT, NE))
-            // Calculate the residue
-            mpq_mod (&aplRes, &aplRht, &aplLft);
-
-        // We no longer need this storage
-        Myq_clear (&aplTmp);
-        Myq_clear (&aplCel);
-        Myq_clear (&aplFlr);
-#endif
     } // End IF/ELSE/...
 
     // The sign of the result is the sign of the left arg

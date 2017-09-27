@@ -1,6 +1,50 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1798 -- Version 0.5.5.xx
+--------------------------------
+
+* Handle More Infinity and NaN Special cases
+
+Directory branches/bsmith/NewTypes:
+
+PF_BAR.C:
+  Remove special casing in favor of handling in common functions.
+
+PF_CIRCLE.C:
+PF_CIRCLE.MAC:
+  Handle -4{circle} specially for infinities as the Standard
+    expression doesn't work.
+
+PF_COLONBAR.C:
+  Handle special cases in Reciprocal and Divide.
+
+PF_EQUAL.C:
+  Use incoming <fQuadCT> instead of global []CT.
+  Define <EqualHCxy> to handle Equal comparisons with NaNs.
+
+PF_IOTA.C:
+  Use <EqualHCxy> to handle Equal comparisons with NaNs.
+
+PF_PLUS.C:
+  Remove special casing in favor of handling in common functions.
+
+PF_ROOT.C:
+  Handle special cases in Root function.
+
+PF_STAR.C:
+  Handle special case of 0*0J1 and the like.
+
+PF_STILE.C:
+  Change back to handling Residue on MP INTs/RATs as exact.
+
+PF_TIMES.C:
+  Remove special casing in favor of handling in common functions.
+
+PRIMSPEC.C:
+  Handle comparison functions with NaNs specially in <PrimFnDydXxxxYyyy> functions.
+
+
 Build #1797 -- Version 0.5.5.xx
 --------------------------------
 

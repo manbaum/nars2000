@@ -2006,23 +2006,9 @@ APLHC2F SubHC2F_RE
 {
     int     i;
     APLHC2F aplRes;
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
-
-    // Is either arg a NaN?
-    bNaNLft = IsArgNaN (ARRAY_HC2F, &aplLft, 0);
-    bNaNRht = IsArgNaN (ARRAY_HC2F, &aplRht, 0);
 
     // No exceptions in this code
 
-    // If the either arg is a NaN, ...
-    if (bNaNLft || bNaNRht)
-    {
-        if (bNaNLft)
-            aplRes = aplLft;
-        else
-            aplRes = aplRht;
-    } else
     // Loop through all of the parts
     for (i = 0; i < 2; i++)
         // Subtract the two integers
@@ -2064,21 +2050,7 @@ APLHC2R SubHC2R_RE
 {
     int     i;
     APLHC2R aplRes;
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
 
-    // Is either arg a NaN?
-    bNaNLft = IsArgNaN (ARRAY_HC2R, &aplLft, 0);
-    bNaNRht = IsArgNaN (ARRAY_HC2R, &aplRht, 0);
-
-    // If either arg is a NaN, ...
-    if (bNaNLft || bNaNRht)
-    {
-        if (bNaNLft)
-            mphc2r_init_set (&aplRes, &aplLft);
-        else
-            mphc2r_init_set (&aplRes, &aplRht);
-    } else
     // Loop through all of the parts
     for (i = 0; i < 2; i++)
     {
@@ -2164,21 +2136,7 @@ APLHC2V SubHC2V_RE
 {
     int     i;
     APLHC2V aplRes;
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
 
-    // Is either arg a NaN?
-    bNaNLft = IsArgNaN (ARRAY_HC2V, &aplLft, 0);
-    bNaNRht = IsArgNaN (ARRAY_HC2V, &aplRht, 0);
-
-    // If either arg is a NaN, ...
-    if (bNaNLft || bNaNRht)
-    {
-        if (bNaNLft)
-            mphc2v_init_set (&aplRes, &aplLft);
-        else
-            mphc2v_init_set (&aplRes, &aplRht);
-    } else
     // Loop through all of the parts
     for (i = 0; i < 2; i++)
     {
@@ -2378,23 +2336,9 @@ APLHC4F SubHC4F_RE
 {
     int     i;
     APLHC4F aplRes;
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
-
-    // Is either arg a NaN?
-    bNaNLft = IsArgNaN (ARRAY_HC4F, &aplLft, 0);
-    bNaNRht = IsArgNaN (ARRAY_HC4F, &aplRht, 0);
 
     // No exceptions in this code
 
-    // If the either arg is a NaN, ...
-    if (bNaNLft || bNaNRht)
-    {
-        if (bNaNLft)
-            aplRes = aplLft;
-        else
-            aplRes = aplRht;
-    } else
     // Loop through all of the parts
     for (i = 0; i < 4; i++)
         // Subtract the two FLOATs
@@ -2436,21 +2380,7 @@ APLHC4R SubHC4R_RE
 {
     int     i;
     APLHC4R aplRes;
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
 
-    // Is either arg a NaN?
-    bNaNLft = IsArgNaN (ARRAY_HC4R, &aplLft, 0);
-    bNaNRht = IsArgNaN (ARRAY_HC4R, &aplRht, 0);
-
-    // If either arg is a NaN, ...
-    if (bNaNLft || bNaNRht)
-    {
-        if (bNaNLft)
-            mphc4r_init_set (&aplRes, &aplLft);
-        else
-            mphc4r_init_set (&aplRes, &aplRht);
-    } else
     // Loop through all of the parts
     for (i = 0; i < 4; i++)
     {
@@ -2536,21 +2466,7 @@ APLHC4V SubHC4V_RE
 {
     int     i;
     APLHC4V aplRes;
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
 
-    // Is either arg a NaN?
-    bNaNLft = IsArgNaN (ARRAY_HC4V, &aplLft, 0);
-    bNaNRht = IsArgNaN (ARRAY_HC4V, &aplRht, 0);
-
-    // If either arg is a NaN, ...
-    if (bNaNLft || bNaNRht)
-    {
-        if (bNaNLft)
-            mphc4v_init_set (&aplRes, &aplLft);
-        else
-            mphc4v_init_set (&aplRes, &aplRht);
-    } else
     // Loop through all of the parts
     for (i = 0; i < 4; i++)
     {
@@ -2750,23 +2666,9 @@ APLHC8F SubHC8F_RE
 {
     int     i;
     APLHC8F aplRes;
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
-
-    // Is either arg a NaN?
-    bNaNLft = IsArgNaN (ARRAY_HC8F, &aplLft, 0);
-    bNaNRht = IsArgNaN (ARRAY_HC8F, &aplRht, 0);
 
     // No exceptions in this code
 
-    // If the either arg is a NaN, ...
-    if (bNaNLft || bNaNRht)
-    {
-        if (bNaNLft)
-            aplRes = aplLft;
-        else
-            aplRes = aplRht;
-    } else
     // Loop through all of the parts
     for (i = 0; i < 8; i++)
         // Subtract the two integers
@@ -2808,21 +2710,7 @@ APLHC8R SubHC8R_RE
 {
     int     i;
     APLHC8R aplRes;
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
 
-    // Is either arg a NaN?
-    bNaNLft = IsArgNaN (ARRAY_HC8R, &aplLft, 0);
-    bNaNRht = IsArgNaN (ARRAY_HC8R, &aplRht, 0);
-
-    // If either arg is a NaN, ...
-    if (bNaNLft || bNaNRht)
-    {
-        if (bNaNLft)
-            mphc8r_init_set (&aplRes, &aplLft);
-        else
-            mphc8r_init_set (&aplRes, &aplRht);
-    } else
     // Loop through all of the parts
     for (i = 0; i < 8; i++)
     {
@@ -2908,21 +2796,7 @@ APLHC8V SubHC8V_RE
 {
     int     i;
     APLHC8V aplRes;
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
 
-    // Is either arg a NaN?
-    bNaNLft = IsArgNaN (ARRAY_HC8V, &aplLft, 0);
-    bNaNRht = IsArgNaN (ARRAY_HC8V, &aplRht, 0);
-
-    // If either arg is a NaN, ...
-    if (bNaNLft || bNaNRht)
-    {
-        if (bNaNLft)
-            mphc8v_init_set (&aplRes, &aplLft);
-        else
-            mphc8v_init_set (&aplRes, &aplRht);
-    } else
     // Loop through all of the parts
     for (i = 0; i < 8; i++)
     {

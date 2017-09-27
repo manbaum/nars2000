@@ -1878,6 +1878,11 @@ APLHC2I PowHC2I_RE
      && IsZeroHCxI (&aplRht, 2))
         RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
     else
+    // Check for special cases:  0 * Imag
+    if (IsZeroHCxI (&aplLft, 2)
+     && IzitImaginary (ARRAY_HC2I, &aplRht))
+        RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
+    else
     // Check for special cases:  (|1) * R
     if (abs64 (aplLft.parts[0]) EQ 1
      &&        !IzitImaginary (ARRAY_HC2I, &aplLft))
@@ -2093,10 +2098,28 @@ APLHC2F PowHC2F_SUB
      APLHC2F aplRht)                // Right ...
 
 {
-    APLHC2F aplRes;                 // The result
+    APLHC2F aplRes = {0};           // The result
     APLINT  aplExp;                 // Temp for Exponent
     UBOOL   bRet;                   // TRUE iff the result is valid
     int     i;                      // Loop counter
+
+    // Check for special cases:  0 * Imag
+    if (IsZeroHCxF (&aplLft, 2)
+     && IzitImaginary (ARRAY_HC2F, &aplRht)
+     && gAllowNaN)
+    {
+        // The real part is NaN
+        aplRes.parts[0] = fltNaN;
+
+        // Loop through the imaginary parts
+        for (i = 1; i < 2; i++)
+        // If that coefficient is non-zero, ...
+        if (aplRht.parts[i] NE 0.0)
+            // Set the corresponding coefficient in the resul to NaN
+            aplRes.parts[i] = fltNaN;
+
+        return aplRes;
+    } // End IF
 
     // Get the real part of the exponent
     aplExp = ConvertToInteger_CT (ARRAY_HC2F, &aplRht, 0, 0.0, &bRet);
@@ -2523,6 +2546,28 @@ APLHC2V PowHC2V_SUB
             aplMul;                 // ...
     UBOOL   bRet = FALSE;           // TRUE iff the exponent is an intger
     APLINT  aplExp;                 // Temp for Exponent
+    int     i;                      // Loop counter
+
+    // Check for special cases:  0 * Imag
+    if (IsZeroHCxV (&aplLft, 2)
+     && IzitImaginary (ARRAY_HC2V, &aplRht)
+     && gAllowNaN)
+    {
+        // Initialize to 0
+        mphc2v_init0 (&aplRes);
+
+        // The real part is NaN
+        mpfr_set_nan (&aplRes.parts[0]);
+
+        // Loop through the imaginary parts
+        for (i = 1; i < 2; i++)
+        // If that coefficient is non-zero, ...
+        if (!IsZeroHCxV (&aplRht.parts[i], 2))
+            // Set the corresponding coefficient in the result to NaN
+            mpfr_set_nan (&aplRes.parts[i]);
+
+        return aplRes;
+    } // End IF
 
     // Get the real part of the exponent
     aplExp = ConvertToInteger_CT (ARRAY_HC2V, &aplRht, 0, 0.0, &bRet);
@@ -2834,10 +2879,28 @@ APLHC4F PowHC4F_SUB
      APLHC4F aplRht)                // Right ...
 
 {
-    APLHC4F aplRes;                 // The result
+    APLHC4F aplRes = {0};           // The result
     APLINT  aplExp;                 // Temp for Exponent
     UBOOL   bRet;                   // TRUE iff the result is valid
     int     i;                      // Loop counter
+
+    // Check for special cases:  0 * Imag
+    if (IsZeroHCxF (&aplLft, 4)
+     && IzitImaginary (ARRAY_HC4F, &aplRht)
+     && gAllowNaN)
+    {
+        // The real part is NaN
+        aplRes.parts[0] = fltNaN;
+
+        // Loop through the imaginary parts
+        for (i = 1; i < 4; i++)
+        // If that coefficient is non-zero, ...
+        if (aplRht.parts[i] NE 0.0)
+            // Set the corresponding coefficient in the resul to NaN
+            aplRes.parts[i] = fltNaN;
+
+        return aplRes;
+    } // End IF
 
     // Get the real part of the exponent
     aplExp = ConvertToInteger_CT (ARRAY_HC4F, &aplRht, 0, 0.0, &bRet);
@@ -3263,6 +3326,28 @@ APLHC4V PowHC4V_SUB
             aplMul;                 // ...
     UBOOL   bRet = FALSE;           // TRUE iff the exponent is an intger
     APLINT  aplExp;                 // Temp for Exponent
+    int     i;                      // Loop counter
+
+    // Check for special cases:  0 * Imag
+    if (IsZeroHCxV (&aplLft, 4)
+     && IzitImaginary (ARRAY_HC4F, &aplRht)
+     && gAllowNaN)
+    {
+        // Initialize to 0
+        mphc4v_init0 (&aplRes);
+
+        // The real part is NaN
+        mpfr_set_nan (&aplRes.parts[0]);
+
+        // Loop through the imaginary parts
+        for (i = 1; i < 4; i++)
+        // If that coefficient is non-zero, ...
+        if (!IsZeroHCxV (&aplRht.parts[i], 4))
+            // Set the corresponding coefficient in the result to NaN
+            mpfr_set_nan (&aplRes.parts[i]);
+
+        return aplRes;
+    } // End IF/ELSE
 
     // Get the real part of the exponent
     aplExp = ConvertToInteger_CT (ARRAY_HC4V, &aplRht, 0, 0.0, &bRet);
@@ -3574,10 +3659,28 @@ APLHC8F PowHC8F_SUB
      APLHC8F aplRht)                // Right ...
 
 {
-    APLHC8F aplRes;                 // The result
+    APLHC8F aplRes = {0};           // The result
     APLINT  aplExp;                 // Temp for Exponent
     UBOOL   bRet;                   // TRUE iff the result is valid
     int     i;                      // Loop counter
+
+    // Check for special cases:  0 * Imag
+    if (IsZeroHCxF (&aplLft, 8)
+     && IzitImaginary (ARRAY_HC8F, &aplRht)
+     && gAllowNaN)
+    {
+        // The real part is NaN
+        aplRes.parts[0] = fltNaN;
+
+        // Loop through the imaginary parts
+        for (i = 1; i < 8; i++)
+        // If that coefficient is non-zero, ...
+        if (aplRht.parts[i] NE 0.0)
+            // Set the corresponding coefficient in the resul to NaN
+            aplRes.parts[i] = fltNaN;
+
+        return aplRes;
+    } // End IF
 
     // Get the real part of the exponent
     aplExp = ConvertToInteger_CT (ARRAY_HC8F, &aplRht, 0, 0.0, &bRet);
@@ -4006,6 +4109,28 @@ APLHC8V PowHC8V_SUB
             aplMul;                 // ...
     UBOOL   bRet = FALSE;           // TRUE iff the exponent is an intger
     APLINT  aplExp;                 // Temp for Exponent
+    int     i;                      // Loop counter
+
+    // Check for special cases:  0 * Imag
+    if (IsZeroHCxV (&aplLft, 8)
+     && IzitImaginary (ARRAY_HC8F, &aplRht)
+     && gAllowNaN)
+    {
+        // Initialize to 0
+        mphc8v_init0 (&aplRes);
+
+        // The real part is NaN
+        mpfr_set_nan (&aplRes.parts[0]);
+
+        // Loop through the imaginary parts
+        for (i = 1; i < 8; i++)
+        // If that coefficient is non-zero, ...
+        if (!IsZeroHCxV (&aplRht.parts[i], 8))
+            // Set the corresponding coefficient in the result to NaN
+            mpfr_set_nan (&aplRes.parts[i]);
+
+        return aplRes;
+    } // End IF/ELSE
 
     // Get the real part of the exponent
     aplExp = ConvertToInteger_CT (ARRAY_HC8V, &aplRht, 0, 0.0, &bRet);

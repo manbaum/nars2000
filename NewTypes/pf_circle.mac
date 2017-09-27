@@ -272,6 +272,7 @@
             return;                                                                                                 \
                                                                                                                     \
         case  -4:       /* (R + 1) × sqrt ((R - 1) / (R + 1))                                                     */\
+                        /* a.k.a. sqrt ((-1) + R * 2)                                                             */\
             /* If the right arg is -1, return 0                                                                   */\
             if (EqualHCxVvHCxV (lpatRht,                                                                            \
                   (LPALLTYPES) &conmpof_N1##suf,                                                                    \
@@ -282,32 +283,50 @@
                 mp##cho##f_init0 (&lpMemRes[uRes]);                                                                 \
             else                                                                                                    \
             {                                                                                                       \
-                /*  (R - 1)                                                                                       */\
-                aplSub[0] = SubHC##N##V_RE (lpatRht->aplHC##N##V,                                                   \
-                                            conmpof_1##suf);                                                        \
-                /*  (R + 1)                                                                                       */\
-                aplAdd[0] = AddHC##N##V_RE (lpatRht->aplHC##N##V,                                                   \
-                                            conmpof_1##suf);                                                        \
-                /*  (R - 1) / (R + 1)                                                                             */\
-                aplDiv[0]= DivHC##N##V_RE (aplSub[0],                                                               \
-                                           aplAdd[0]);                                                              \
-                /* We no longer need this storage                                                                 */\
-                mp##cho##f_clear (aplAdd);                                                                          \
-                mp##cho##f_clear (aplSub);                                                                          \
+                /* If the imaginary parts are zero, ...                                                           */\
+                if (!IzitImaginary (ARRAY_HC##N##V, lpatRht))                                                       \
+                {                                                                                                   \
+                    /* R * 2                                                                                      */\
+                    aplMul[0] = MulHC##N##V_RE (lpatRht->aplHC##N##V,                                               \
+                                                lpatRht->aplHC##N##V);                                              \
+                    /*  (-1) + (R * 2)                                                                            */\
+                    aplAdd[0] = AddHC##N##V_RE (conmpof_N1##suf,                                                    \
+                                                aplMul[0]);                                                         \
+                    /* sqrt ((-1) + (R * 2))                                                                      */\
+                    lpMemRes[uRes] = SqrtHCxV_RE (*(LPAPLHC8V) &aplAdd[0], N)suf;                                   \
                                                                                                                     \
-                /* sqrt ((R - 1 / (R + 1))                                                                        */\
-                aplTmp[0] = SqrtHCxV_RE (*(LPAPLHC8V) &aplDiv[0], N)suf;                                            \
+                    /* We no longer need this storage                                                             */\
+                    mp##cho##f_clear (aplAdd);                                                                      \
+                    mp##cho##f_clear (aplMul);                                                                      \
+                } else                                                                                              \
+                {                                                                                                   \
+                    /*  (R - 1)                                                                                   */\
+                    aplSub[0] = SubHC##N##V_RE (lpatRht->aplHC##N##V,                                               \
+                                                conmpof_1##suf);                                                    \
+                    /*  (R + 1)                                                                                   */\
+                    aplAdd[0] = AddHC##N##V_RE (lpatRht->aplHC##N##V,                                               \
+                                                conmpof_1##suf);                                                    \
+                    /*  (R - 1) / (R + 1)                                                                         */\
+                    aplDiv[0]= DivHC##N##V_RE (aplSub[0],                                                           \
+                                               aplAdd[0]);                                                          \
+                    /* We no longer need this storage                                                             */\
+                    mp##cho##f_clear (aplAdd);                                                                      \
+                    mp##cho##f_clear (aplSub);                                                                      \
                                                                                                                     \
-                /* (R + 1)                                                                                        */\
-                aplAdd[0] = AddHC##N##V_RE (lpatRht->aplHC##N##V,                                                   \
-                                            conmpof_1##suf),                                                        \
-                /* (R + 1) x sqrt ((R - 1 / (R + 1))                                                              */\
-                lpMemRes[uRes] = MulHC##N##V_RE (aplAdd[0],                                                         \
-                                                 aplTmp[0]);                                                        \
-                /* We no longer need this storage                                                                 */\
-                mp##cho##f_clear (aplAdd);                                                                          \
-                mp##cho##f_clear (aplTmp);                                                                          \
-                mp##cho##f_clear (aplDiv);                                                                          \
+                    /* sqrt ((R - 1) / (R + 1))                                                                   */\
+                    aplTmp[0] = SqrtHCxV_RE (*(LPAPLHC8V) &aplDiv[0], N)suf;                                        \
+                                                                                                                    \
+                    /* (R + 1)                                                                                    */\
+                    aplAdd[0] = AddHC##N##V_RE (lpatRht->aplHC##N##V,                                               \
+                                                conmpof_1##suf),                                                    \
+                    /* (R + 1) x sqrt ((R - 1) / (R + 1))                                                         */\
+                    lpMemRes[uRes] = MulHC##N##V_RE (aplAdd[0],                                                     \
+                                                     aplTmp[0]);                                                    \
+                    /* We no longer need this storage                                                             */\
+                    mp##cho##f_clear (aplAdd);                                                                      \
+                    mp##cho##f_clear (aplTmp);                                                                      \
+                    mp##cho##f_clear (aplDiv);                                                                      \
+                } /* End IF/ELSE                                                                                  */\
             } /* End IF/ELSE                                                                                      */\
                                                                                                                     \
             /* Check for NaN                                                                                      */\
@@ -595,6 +614,7 @@
             return;                                                                                                 \
                                                                                                                     \
         case  -4:       /* (R + 1) × sqrt ((R - 1) / (R + 1))                                                     */\
+                        /* a.k.a. sqrt ((-1) + R * 2)                                                             */\
             /* If the right arg is -1, return 0                                                                   */\
             if (EqualHCxFvHCxF (lpatRht,                                                                            \
                   (LPALLTYPES) &confpof_N1##suf,                                                                    \
@@ -603,18 +623,31 @@
                                 __FUNCTION__))                                                                      \
                 return;                                                                                             \
                                                                                                                     \
-            /*  (R - 1) / (R + 1)                                                                                 */\
-            lpMemRes[uRes] = DivHC##N##F_RE (SubHC##N##F_RE (lpatRht->aplHC##N##F,                                  \
-                                                             confpof_1##suf),                                       \
-                                             AddHC##N##F_RE (lpatRht->aplHC##N##F,                                  \
-                                                             confpof_1##suf));                                      \
-            /* sqrt ((R - 1 / (R + 1))                                                                            */\
-            lpMemRes[uRes] = SqrtHCxF_RE (*(LPAPLHC8F) &lpMemRes[uRes], N)suf;                                      \
+            /* If the imaginary parts are zero, ...                                                               */\
+            if (!IzitImaginary (ARRAY_HC##N##F, lpatRht))                                                           \
+            {                                                                                                       \
+                /* (-1) + R * 2                                                                                   */\
+                lpMemRes[uRes] = AddHC##N##F_RE (confpof_N1##suf,                                                   \
+                                                 MulHC##N##F_RE (lpatRht->aplHC##N##F,                              \
+                                                                 lpatRht->aplHC##N##F));                            \
+                /* sqrt ((-1) + R * 2)                                                                            */\
+                lpMemRes[uRes] = SqrtHCxF_RE (*(LPAPLHC8F) &lpMemRes[uRes], N)suf;                                  \
+            } else                                                                                                  \
+            {                                                                                                       \
+                /*  (R - 1) / (R + 1)                                                                             */\
+                lpMemRes[uRes] = DivHC##N##F_RE (SubHC##N##F_RE (lpatRht->aplHC##N##F,                              \
+                                                                 confpof_1##suf),                                   \
+                                                 AddHC##N##F_RE (lpatRht->aplHC##N##F,                              \
+                                                                 confpof_1##suf));                                  \
+                /* sqrt ((R - 1) / (R + 1))                                                                       */\
+                lpMemRes[uRes] = SqrtHCxF_RE (*(LPAPLHC8F) &lpMemRes[uRes], N)suf;                                  \
                                                                                                                     \
-            /* (R + 1) x sqrt ((R - 1 / (R + 1))                                                                  */\
-            lpMemRes[uRes] = MulHC##N##F_RE (AddHC##N##F_RE (lpatRht->aplHC##N##F,                                  \
-                                                             confpof_1##suf),                                       \
-                                             lpMemRes[uRes]);                                                       \
+                /* (R + 1) x sqrt ((R - 1) / (R + 1))                                                             */\
+                lpMemRes[uRes] = MulHC##N##F_RE (AddHC##N##F_RE (lpatRht->aplHC##N##F,                              \
+                                                                 confpof_1##suf),                                   \
+                                                 lpMemRes[uRes]);                                                   \
+            } /* End IF/ELSE                                                                                      */\
+                                                                                                                    \
             /* If the real part of the arg is zero, and the                                                       */\
             /*   magnitude of the imag parts of the arg                                                           */\
             /*   is <= 1, ...                                                                                     */\

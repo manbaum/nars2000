@@ -580,7 +580,7 @@ UBOOL EqualHCxIvHCxI
 ////    aplDist = fltPosInfinity;
 ////} // End __try/__except
 ////
-////return (aplDist <= (GetQuadCT () * max (aplMagLft, aplMagRht))));
+////return (aplDist <= (fQuadCT * max (aplMagLft, aplMagRht))));
 } // End EqualHCxIvHCxI
 
 
@@ -698,7 +698,7 @@ UBOOL EqualHCxFvHCxF
         switch (iHCDim)
         {
             case 1:
-                return CmpCT_F (lpatLft->aplFloat, lpatRht->aplFloat, GetQuadCT (), EQ);
+                return CmpCT_F (lpatLft->aplFloat, lpatRht->aplFloat, fQuadCT, EQ);
 
             case 2:
                 // Calculate the magnitudes
@@ -896,7 +896,7 @@ UBOOL EqualHCxRvHCxR
         switch (iHCDim)
         {
             case 1:
-                return CmpCT_R (lpatLft->aplRat, lpatRht->aplRat, GetQuadCT (), EQ);
+                return CmpCT_R (lpatLft->aplRat, lpatRht->aplRat, fQuadCT, EQ);
 
             case 2:
                 // Calculate the magnitudes
@@ -1100,7 +1100,7 @@ UBOOL EqualHCxVvHCxV
         switch (iHCDim)
         {
             case 1:
-                return CmpCT_V (lpatLft->aplVfp, lpatRht->aplVfp, GetQuadCT (), EQ);
+                return CmpCT_V (lpatLft->aplVfp, lpatRht->aplVfp, fQuadCT, EQ);
 
             case 2:
                 // Calculate the magnitudes
@@ -1279,6 +1279,86 @@ void PrimFnDydEqualBisHC8VvHC8V
                        TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
                        __FUNCTION__);   // Ptr to CheckExceptionS msg
 } // End PrimFnDydEqualBisHC8VvHC8V
+
+
+//***************************************************************************
+//  $EqualHCxy
+//
+//  Single value comparison where both of the args are NaNs.
+//  The args may be of different dimension and base type.
+//***************************************************************************
+
+UBOOL EqualHCxy
+    (APLSTYPE   aplTypeLft,             // Left arg storage type
+     LPALLTYPES lpatLft,                // Ptr to left arg
+     APLINT     uLft,                   // Index into the left arg
+     APLSTYPE   aplTypeRht,             // Right arg storage type
+     LPALLTYPES lpatRht,                // Ptr to right arg
+     APLINT     uRht)                   // Index into the right arg
+
+{
+    APLSTYPE aplTypeCom = aTypePromote[aplTypeLft][aplTypeRht];
+    int      iHCDimCom = TranslateArrayTypeToHCDim (aplTypeCom),
+             i;
+    APLFLOAT fQuadCT = GetQuadCT ();
+    UBOOL    bRet = TRUE;
+    ALLTYPES atLft = {0},
+             atRht = {0};
+
+    // Promote the args to the common storage type
+    (*aTypeActPromote[aplTypeLft][aplTypeCom]) (lpatLft, uLft, &atLft);
+    (*aTypeActPromote[aplTypeRht][aplTypeCom]) (lpatRht, uRht, &atRht);
+
+    // Split cases based upon the base type
+    switch (aToSimple[aplTypeCom])
+    {
+////////case ARRAY_INT:                     // No INT NaNs
+////////    // Loop through all of the parts
+////////    for (i = 0; bRet && i < iHCDimCom; i++)
+////////    if (atLft.aplHC8I.parts[i] NE atRht.aplHC8I.parts[i])
+////////        bRet = FALSE;
+////////    break;
+////////
+        case ARRAY_FLOAT:
+            // Compare the individual coordinates
+            for (i = 0; bRet && i < iHCDimCom; i++)
+            if (CmpCT_F (atLft.aplHC8F.parts[i],
+                         atRht.aplHC8F.parts[i],
+                         fQuadCT,
+                         NE))
+                bRet = FALSE;
+            break;
+
+        case ARRAY_RAT:
+            // Compare the individual coordinates
+            for (i = 0; bRet && i < iHCDimCom; i++)
+            if (CmpCT_R (atLft.aplHC8R.parts[i],
+                         atRht.aplHC8R.parts[i],
+                         fQuadCT,
+                         NE))
+                bRet = FALSE;
+            break;
+
+        case ARRAY_VFP:
+            // Compare the individual coordinates
+            for (i = 0; bRet && i < iHCDimCom; i++)
+            if (CmpCT_V (atLft.aplHC8V.parts[i],
+                         atRht.aplHC8V.parts[i],
+                         fQuadCT,
+                         NE))
+                bRet = FALSE;
+            break;
+
+        defstop
+            return FALSE;
+    } // End FOR
+
+    // Free the temps
+    (*aTypeFree[aplTypeCom]) (&atLft, 0);
+    (*aTypeFree[aplTypeCom]) (&atRht, 0);
+
+    return bRet;
+} // End EqualHCxy
 
 
 //***************************************************************************

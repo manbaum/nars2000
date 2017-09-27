@@ -475,11 +475,58 @@ APLHC8F SqrtHCxF_RE
                 aplRes.parts[1] = sqrt (fabs (aplRht.parts[0]));
             } // End IF/ELSE
         } else
-            // Calculate the real Sqrt of the right arg real part
-            aplRes.parts[0] = sqrt (aplRht.parts[0]);
+        {
+            // If the imaginary parts are all 0, ...
+            if (aplIMag EQ 0)
+            {
+                // Calculate v = r_atan2 (g, h) / 2
+                aplV = atan2 (aplIMag, aplRht.parts[0]) / 2;
+
+                // Calculate the real part
+                aplRes.parts[0] = aplU * cos (aplV);                    // p
+
+                // Loop through all but the 1st of the imaginary parts
+                for (i = 2; i < iHCDimRes; i++)
+                    // Initialize to 0
+                    aplRes.parts[i] = 0.0;
+
+                // If the real part is negative, ...
+                if (aplRht.parts[0] < 0)
+                {
+                    // Set the real part to 0
+                    aplRes.parts[0] = 0;
+
+                    // Set the 1st imaginary part to aplU
+                    aplRes.parts[1] = aplU;
+                } else
+                    // Set the 1st imaginary part to 0
+                    aplRes.parts[1] = 0;
+            } else
+            {
+                // Calculate v = r_atan2 (g, h) / 2
+                aplV   = atan2 (aplIMag, aplRht.parts[0]) / 2;              // v
+
+                // Calculate sin (v)
+                aplV   = sin (aplV);
+
+                // Calculate u * sin (v)
+                aplMul = MulHC1F_RE (aplU, aplV);
+
+                // Calculate u * sin (v) / g
+                aplMul = DivHC1F_RE (aplMul, aplIMag);                      // q
+
+                // Calculate the real Sqrt of the right arg real & imag parts
+                aplRes.parts[0] = sqrt (aplRht.parts[0]);
+
+                // Loop through the imaginary parts
+                for (i = 1; i < iHCDimRes; i++)
+                    aplRes.parts[i] = aplMul * aplRht.parts[i];
+            } // End IF/ELSE
+        } // End IF/ELSE
     } else
     {
-        aplV = atan2 (aplIMag, aplRht.parts[0]) / 2;
+        // Calculate v = r_atan2 (g, h) / 2
+        aplV = atan2 (aplIMag, aplRht.parts[0]) / 2;                    // v
 
         // Calculate the real part
         aplRes.parts[0] = aplU * cos (aplV);                            // p
@@ -512,7 +559,7 @@ APLHC8F SqrtHCxF_RE
             aplV   = DivHC1F_RE (aplV, aplIMag);
 
             // Calculate u * sin (v) / g
-            aplMul = MulHC1F_RE (aplU, aplV);
+            aplMul = MulHC1F_RE (aplU, aplV);                           // q
 
             // If the multiplier is bogus (from {Inf} / {Inf}), ...
             if (_isnan (aplMul))
@@ -764,8 +811,11 @@ APLHC8V SqrtHCxV_RE
                 mpfr_sqrt (&aplRes.parts[1], &aplV, MPFR_RNDN);
             } // End IF/ELSE
         } else
-            // Return the real Sqrt
+        {
+            // Calculate the real Sqrt of the right arg real & imag parts
             mpfr_sqrt (&aplRes.parts[0], &aplRht.parts[0], MPFR_RNDN);
+            mpfr_sqrt (&aplRes.parts[1], &aplIMag        , MPFR_RNDN);
+        } // End IF/ELSE
     } else
     {
         // Calculate atan2 (g, h) /2

@@ -1854,23 +1854,8 @@ APLHC2F MulHC2F_RE
 
 {
     APLHC2F aplRes;
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
-
-    // Is either arg a NaN?
-    bNaNLft = IsArgNaN (ARRAY_HC2F, &aplLft, 0);
-    bNaNRht = IsArgNaN (ARRAY_HC2F, &aplRht, 0);
 
     // Check for indeterminates:  _ {times} _  or  -_ {times} -_
-
-    // If the either arg is a NaN, ...
-    if (bNaNLft || bNaNRht)
-    {
-        if (bNaNLft)
-            aplRes = aplLft;
-        else
-            aplRes = aplRht;
-    } else
 
 #define a   aplLft.partsLo
 #define b   aplLft.partsHi
@@ -1973,30 +1958,15 @@ APLHC2R MulHC2R_RE
     APLHC2R aplRes = {0};
     APLRAT  aplTmp1,
             aplTmp2;
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
-
-    // Is either arg a NaN?
-    bNaNLft = IsArgNaN (ARRAY_HC2R, &aplLft, 0);
-    bNaNRht = IsArgNaN (ARRAY_HC2R, &aplRht, 0);
 
     // Check for indeterminates:  _ {times} _  or  -_ {times} -_
 
-    // If the either arg is a NaN, ...
-    if (bNaNLft || bNaNRht)
-    {
-        if (bNaNLft)
-            mphc2r_init_set (&aplRes, &aplLft);
-        else
-            mphc2r_init_set (&aplRes, &aplRht);
-    } else
-    {
-        // Initialize to 0/1
-        mphc2r_init (&aplRes);
+    // Initialize to 0/1
+    mphc2r_init (&aplRes);
 
-        // Initialize to 0/1
-        mpq_init    (&aplTmp1);
-        mpq_init    (&aplTmp2);
+    // Initialize to 0/1
+    mpq_init    (&aplTmp1);
+    mpq_init    (&aplTmp2);
 
 ////    aplRes.parts[0] = aplLft.parts[0] * aplRht.parts[0],
 ////                    - aplLft.parts[1] * aplRht.parts[1];
@@ -2008,79 +1978,78 @@ APLHC2R MulHC2R_RE
 #define c   aplRht.partsLo
 #define d   aplRht.partsHi
 
-        // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
-        if (IsMpq0 (&b) && IsMpq0 (&d))
-        {
-            mpq_mul (&aplRes.parts[0], &a      , &c      );
-        } else
-        // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
-        if (IsMpq0 (&b))
-        {
-            mpq_mul (&aplRes.parts[0], &a      , &c      );
-            mpq_mul (&aplRes.parts[1], &d      , &a      );
-        } else
-        // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
-        if (IsMpq0 (&d))
-        {
-            mpq_mul (&aplRes.parts[0], &a      , &c      );
-            mpq_mul (&aplRes.parts[1], &b      , &c      );
-        } else
-        // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
-        if (IsMpq0 (&a) && IsMpq0 (&c))
-        {
-            APLHC1R aplTmp;
+    // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
+    if (IsMpq0 (&b) && IsMpq0 (&d))
+    {
+        mpq_mul (&aplRes.parts[0], &a      , &c      );
+    } else
+    // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
+    if (IsMpq0 (&b))
+    {
+        mpq_mul (&aplRes.parts[0], &a      , &c      );
+        mpq_mul (&aplRes.parts[1], &d      , &a      );
+    } else
+    // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
+    if (IsMpq0 (&d))
+    {
+        mpq_mul (&aplRes.parts[0], &a      , &c      );
+        mpq_mul (&aplRes.parts[1], &b      , &c      );
+    } else
+    // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
+    if (IsMpq0 (&a) && IsMpq0 (&c))
+    {
+        APLHC1R aplTmp;
 
-            aplRes.partsLo = MulHC1R_RE (d, b );
-            aplTmp = NegHC1R_RE1 (aplRes.partsLo);
-            mphc1r_set (&aplRes.partsLo, &aplTmp);
-            Myhc1r_clear (&aplTmp);
-        } else
-        {
-            // Use Cayley-Dickson construction
-            // (a,b) x (c,d) = (ac - db, da + bc)
-            mpq_mul (&aplTmp1,         &a      , &c      );
-            mpq_mul (&aplTmp2,         &d      , &b      );
-            mpq_sub (&aplRes.parts[0], &aplTmp1, &aplTmp2);
+        aplRes.partsLo = MulHC1R_RE (d, b );
+        aplTmp = NegHC1R_RE1 (aplRes.partsLo);
+        mphc1r_set (&aplRes.partsLo, &aplTmp);
+        Myhc1r_clear (&aplTmp);
+    } else
+    {
+        // Use Cayley-Dickson construction
+        // (a,b) x (c,d) = (ac - db, da + bc)
+        mpq_mul (&aplTmp1,         &a      , &c      );
+        mpq_mul (&aplTmp2,         &d      , &b      );
+        mpq_sub (&aplRes.parts[0], &aplTmp1, &aplTmp2);
 
-            mpq_mul (&aplTmp1,         &d      , &a      );
-            mpq_mul (&aplTmp2,         &b      , &c      );
-            mpq_add (&aplRes.parts[1], &aplTmp1, &aplTmp2);
-        } // End IF/ELSE
+        mpq_mul (&aplTmp1,         &d      , &a      );
+        mpq_mul (&aplTmp2,         &b      , &c      );
+        mpq_add (&aplRes.parts[1], &aplTmp1, &aplTmp2);
+    } // End IF/ELSE
 
 #undef  d
 #undef  c
 #undef  b
 #undef  a
 
-        Myq_clear (&aplTmp2);
-        Myq_clear (&aplTmp1);
+    Myq_clear (&aplTmp2);
+    Myq_clear (&aplTmp1);
 
-        // Loop through all of the parts
-        for (i = 0; i < 2; i++)
-        // Check for indeterminates:  0 {times} _  or  _ {times} 0
-        if ((IsMpq0 (&aplLft.parts[i])
-          && IsMpqPosInfinity (&aplRht.parts[i]))
-         || (IsMpqPosInfinity (&aplLft.parts[i])
-          && IsMpq0 (&aplRht.parts[i])))
-            mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
-                                                         ICNDX_0MULPi,
-                                                       &aplRht.parts[i],
-                                                       &aplRes.parts[i],
-                                                        IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
-                                                                                  : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
-        else
-        // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
-        if ((IsMpq0 (&aplLft.parts[i])
-          && IsMpqNegInfinity (&aplRht.parts[i]))
-         || (IsMpqNegInfinity (&aplLft.parts[i])
-          && IsMpq0 (&aplRht.parts[i])))
-            mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
-                                                         ICNDX_0MULNi,
-                                                        &aplRht.parts[i],
-                                                        &aplRes.parts[i],
-                                                         IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
-                                                                                   : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
-    } // End IF/ELSE
+    // Loop through all of the parts
+    for (i = 0; i < 2; i++)
+    // Check for indeterminates:  0 {times} _  or  _ {times} 0
+    if ((IsMpq0 (&aplLft.parts[i])
+      && IsMpqPosInfinity (&aplRht.parts[i]))
+     || (IsMpqPosInfinity (&aplLft.parts[i])
+      && IsMpq0 (&aplRht.parts[i])))
+        mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
+                                                     ICNDX_0MULPi,
+                                                   &aplRht.parts[i],
+                                                   &aplRes.parts[i],
+                                                    IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
+                                                                              : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
+    else
+    // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
+    if ((IsMpq0 (&aplLft.parts[i])
+      && IsMpqNegInfinity (&aplRht.parts[i]))
+     || (IsMpqNegInfinity (&aplLft.parts[i])
+      && IsMpq0 (&aplRht.parts[i])))
+        mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
+                                                     ICNDX_0MULNi,
+                                                    &aplRht.parts[i],
+                                                    &aplRes.parts[i],
+                                                     IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
+                                                                               : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
 
     return aplRes;
 } // End MulHC2R_RE
@@ -2142,118 +2111,102 @@ APLHC2V MulHC2V_RE
     APLVFP  aplTmp1 = {0},
             aplTmp2 = {0};
 ////WCHAR   wszTemp[1024];
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
-
-    // Is either arg a NaN?
-    bNaNLft = IsArgNaN (ARRAY_HC2V, &aplLft, 0);
-    bNaNRht = IsArgNaN (ARRAY_HC2V, &aplRht, 0);
 
     // Check for indeterminates:  _ {times} _  or  -_ {times} -_
 
-    // If the either arg is a NaN, ...
-    if (bNaNLft || bNaNRht)
-    {
-        if (bNaNLft)
-            mphc2v_init_set (&aplRes, &aplLft);
-        else
-            mphc2v_init_set (&aplRes, &aplRht);
-    } else
-    {
-////////strcpyW (wszTemp, L"Lft (Mul):  "); *FormatAplHC2V (&wszTemp[lstrlenW (wszTemp)], &aplLft, 0) = WC_EOS; DbgMsgW (wszTemp);
-////////strcpyW (wszTemp, L"Rht (Mul):  "); *FormatAplHC2V (&wszTemp[lstrlenW (wszTemp)], &aplRht, 0) = WC_EOS; DbgMsgW (wszTemp);
+////strcpyW (wszTemp, L"Lft (Mul):  "); *FormatAplHC2V (&wszTemp[lstrlenW (wszTemp)], &aplLft, 0) = WC_EOS; DbgMsgW (wszTemp);
+////strcpyW (wszTemp, L"Rht (Mul):  "); *FormatAplHC2V (&wszTemp[lstrlenW (wszTemp)], &aplRht, 0) = WC_EOS; DbgMsgW (wszTemp);
 
-        // Initialize to 0
-        mphc2v_init0 (&aplRes);
-        mpfr_init0   (&aplTmp1);
-        mpfr_init0   (&aplTmp2);
+    // Initialize to 0
+    mphc2v_init0 (&aplRes);
+    mpfr_init0   (&aplTmp1);
+    mpfr_init0   (&aplTmp2);
 
-////////aplRes.parts[0] = aplLft.parts[0] * aplRht.parts[0],
-////////                - aplLft.parts[1] * aplRht.parts[1];
-////////aplRes.parts[1] = aplLft.parts[0] * aplRht.parts[1]
-////////                + aplLft.parts[1] * aplRht.parts[0];
+////aplRes.parts[0] = aplLft.parts[0] * aplRht.parts[0],
+////                - aplLft.parts[1] * aplRht.parts[1];
+////aplRes.parts[1] = aplLft.parts[0] * aplRht.parts[1]
+////                + aplLft.parts[1] * aplRht.parts[0];
 
 #define a   aplLft.partsLo
 #define b   aplLft.partsHi
 #define c   aplRht.partsLo
 #define d   aplRht.partsHi
 
-        // ***FIXME*** -- Use MulHC1V and friends inside __try/__except
-        //                instead of mpfr_XXX
+    // ***FIXME*** -- Use MulHC1V and friends inside __try/__except
+    //                instead of mpfr_XXX
 
-        // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
-        if (IsMpf0 (&b) && IsMpf0 (&d))
-        {
-            mpfr_mul (&aplRes.parts[0], &a      , &c      , MPFR_RNDN);
-        } else
-        // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
-        if (IsMpf0 (&b))
-        {
-            mpfr_mul (&aplRes.parts[0], &a      , &c      , MPFR_RNDN);
-            mpfr_mul (&aplRes.parts[1], &d      , &a      , MPFR_RNDN);
-        } else
-        // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
-        if (IsMpf0 (&d))
-        {
-            mpfr_mul (&aplRes.parts[0], &a      , &c      , MPFR_RNDN);
-            mpfr_mul (&aplRes.parts[1], &b      , &c      , MPFR_RNDN);
-        } else
-        // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
-        if (IsMpf0 (&a) && IsMpf0 (&c))
-        {
-            mpfr_mul  (&aplRes.parts[0], &d      , &b     , MPFR_RNDN);
-            mpfr_neg  (&aplRes.parts[0], &aplRes.parts[0] , MPFR_RNDN);
-        } else
-        {
-            // Use Cayley-Dickson construction
-            // (a,b) x (c,d) = (ac - db, da + bc)
-            mpfr_mul (&aplTmp1,         &a      , &c      , MPFR_RNDN);
-            mpfr_mul (&aplTmp2,         &d      , &b      , MPFR_RNDN);
-            mpfr_sub (&aplRes.parts[0], &aplTmp1, &aplTmp2, MPFR_RNDN);
+    // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
+    if (IsMpf0 (&b) && IsMpf0 (&d))
+    {
+        mpfr_mul (&aplRes.parts[0], &a      , &c      , MPFR_RNDN);
+    } else
+    // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
+    if (IsMpf0 (&b))
+    {
+        mpfr_mul (&aplRes.parts[0], &a      , &c      , MPFR_RNDN);
+        mpfr_mul (&aplRes.parts[1], &d      , &a      , MPFR_RNDN);
+    } else
+    // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
+    if (IsMpf0 (&d))
+    {
+        mpfr_mul (&aplRes.parts[0], &a      , &c      , MPFR_RNDN);
+        mpfr_mul (&aplRes.parts[1], &b      , &c      , MPFR_RNDN);
+    } else
+    // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
+    if (IsMpf0 (&a) && IsMpf0 (&c))
+    {
+        mpfr_mul  (&aplRes.parts[0], &d      , &b     , MPFR_RNDN);
+        mpfr_neg  (&aplRes.parts[0], &aplRes.parts[0] , MPFR_RNDN);
+    } else
+    {
+        // Use Cayley-Dickson construction
+        // (a,b) x (c,d) = (ac - db, da + bc)
+        mpfr_mul (&aplTmp1,         &a      , &c      , MPFR_RNDN);
+        mpfr_mul (&aplTmp2,         &d      , &b      , MPFR_RNDN);
+        mpfr_sub (&aplRes.parts[0], &aplTmp1, &aplTmp2, MPFR_RNDN);
 
-            mpfr_mul (&aplTmp1,         &d      , &a      , MPFR_RNDN);
-            mpfr_mul (&aplTmp2,         &b      , &c      , MPFR_RNDN);
-            mpfr_add (&aplRes.parts[1], &aplTmp1, &aplTmp2, MPFR_RNDN);
-        } // End IF/ELSE
+        mpfr_mul (&aplTmp1,         &d      , &a      , MPFR_RNDN);
+        mpfr_mul (&aplTmp2,         &b      , &c      , MPFR_RNDN);
+        mpfr_add (&aplRes.parts[1], &aplTmp1, &aplTmp2, MPFR_RNDN);
+    } // End IF/ELSE
 
 #undef  d
 #undef  c
 #undef  b
 #undef  a
 
-        Myf_clear (&aplTmp2);
-        Myf_clear (&aplTmp1);
+    Myf_clear (&aplTmp2);
+    Myf_clear (&aplTmp1);
 
-////////strcpyW (wszTemp, L"Res (Mul):  "); *FormatAplHC2V (&wszTemp[lstrlenW (wszTemp)], &aplRes, 0) = WC_EOS; DbgMsgW (wszTemp);
+////strcpyW (wszTemp, L"Res (Mul):  "); *FormatAplHC2V (&wszTemp[lstrlenW (wszTemp)], &aplRes, 0) = WC_EOS; DbgMsgW (wszTemp);
 
-        // Loop through all of the parts
-        for (i = 0; i < 2; i++)
-        // Check for indeterminates:  0 {times} _  or  _ {times} 0
-        if ((IsMpf0 (&aplLft.parts[i])
-          && IsMpfPosInfinity (&aplRht.parts[i]))
-         || (IsMpfPosInfinity (&aplLft.parts[i])
-          && IsMpf0 (&aplRht.parts[i])))
-            mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
-                                                           ICNDX_0MULPi,
-                                                          &aplRht.parts[i],
-                                                          &aplRes.parts[i],
-                                                           IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
-                                                                                     : SIGN_APLVFP (&aplRht.parts[i])),
-                                        MPFR_RNDN);
-        else
-        // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
-        if ((IsMpf0 (&aplLft.parts[i])
-          && IsMpfNegInfinity (&aplRht.parts[i]))
-         || (IsMpfNegInfinity (&aplLft.parts[i])
-          && IsMpf0 (&aplRht.parts[i])))
-            mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
-                                                           ICNDX_0MULNi,
-                                                          &aplRht.parts[i],
-                                                          &aplRes.parts[i],
-                                                           IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
-                                                                                     : SIGN_APLVFP (&aplRht.parts[i])),
-                                        MPFR_RNDN);
-    } // End IF/ELSE
+    // Loop through all of the parts
+    for (i = 0; i < 2; i++)
+    // Check for indeterminates:  0 {times} _  or  _ {times} 0
+    if ((IsMpf0 (&aplLft.parts[i])
+      && IsMpfPosInfinity (&aplRht.parts[i]))
+     || (IsMpfPosInfinity (&aplLft.parts[i])
+      && IsMpf0 (&aplRht.parts[i])))
+        mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
+                                                       ICNDX_0MULPi,
+                                                      &aplRht.parts[i],
+                                                      &aplRes.parts[i],
+                                                       IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
+                                                                                 : SIGN_APLVFP (&aplRht.parts[i])),
+                                    MPFR_RNDN);
+    else
+    // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
+    if ((IsMpf0 (&aplLft.parts[i])
+      && IsMpfNegInfinity (&aplRht.parts[i]))
+     || (IsMpfNegInfinity (&aplLft.parts[i])
+      && IsMpf0 (&aplRht.parts[i])))
+        mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
+                                                       ICNDX_0MULNi,
+                                                      &aplRht.parts[i],
+                                                      &aplRes.parts[i],
+                                                       IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
+                                                                                 : SIGN_APLVFP (&aplRht.parts[i])),
+                                    MPFR_RNDN);
 
     return aplRes;
 } // End MulHC2V_RE
@@ -2622,77 +2575,61 @@ APLHC4F MulHC4F_RE
 {
     APLHC4F aplRes;
     APLHC2F dP, cP;
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
-
-    // Is either arg a NaN?
-    bNaNLft = IsArgNaN (ARRAY_HC4F, &aplLft, 0);
-    bNaNRht = IsArgNaN (ARRAY_HC4F, &aplRht, 0);
 
     // Check for indeterminates:  _ {times} _  or  -_ {times} -_
 
-    // If the either arg is a NaN, ...
-    if (bNaNLft || bNaNRht)
-    {
-        if (bNaNLft)
-            aplRes = aplLft;
-        else
-            aplRes = aplRht;
-    } else
-    {
-        // Use Cayley-Dickson construction
-        // (a,b) x (c,d) = (ac - d'b, da + bc')
-        //   where d' = conjugate (d)
-        //   where c' = conjugate (c)
+    // Use Cayley-Dickson construction
+    // (a,b) x (c,d) = (ac - d'b, da + bc')
+    //   where d' = conjugate (d)
+    //   where c' = conjugate (c)
 
 #define a   aplLft.partsLo[0]
 #define b   aplLft.partsHi[0]
 #define c   aplRht.partsLo[0]
 #define d   aplRht.partsHi[0]
 
-        dP = ConjHC2F (d);
-        cP = ConjHC2F (c);
+    dP = ConjHC2F (d);
+    cP = ConjHC2F (c);
 
-        // ***FIXME*** -- Use __try/__except to catch blowup due to -0
+    // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
-        // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
-        if (IsZeroHCxF (&b, 2) && IsZeroHCxF (&d, 2))
-        {
-            aplRes.partsLo[0] = MulHC2F_RE (a, c);
-            aplRes.partsHi[0].partsLo =
-            aplRes.partsHi[0].partsHi = 0.0;
-        } else
-        // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
-        if (IsZeroHCxF (&b, 2))
-        {
-            aplRes.partsLo[0] = MulHC2F_RE (a, c );
-            aplRes.partsHi[0] = MulHC2F_RE (d, a );
-        } else
-        // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
-        if (IsZeroHCxF (&d, 2))
-        {
-            aplRes.partsLo[0] = MulHC2F_RE (a, c );
-            aplRes.partsHi[0] = MulHC2F_RE (b, cP);
-        } else
-        // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
-        if (IsZeroHCxF (&a, 2) && IsZeroHCxF (&c, 2))
-        {
-            aplRes.partsLo[0] = NegHC2F_RE (MulHC2F_RE (dP, b));
-            aplRes.partsHi[0].partsLo =
-            aplRes.partsHi[0].partsHi = 0.0;
-        } else
-        {
-            aplRes.partsLo[0] = SubHC2F_RE (MulHC2F_RE (a  , c ),
-                                            MulHC2F_RE (dP , b ));
-            aplRes.partsHi[0] = AddHC2F_RE (MulHC2F_RE (d  , a ),
-                                            MulHC2F_RE (b  , cP));
-        } // End IF/ELSE
+    // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
+    if (IsZeroHCxF (&b, 2) && IsZeroHCxF (&d, 2))
+    {
+        aplRes.partsLo[0] = MulHC2F_RE (a, c);
+        aplRes.partsHi[0].partsLo =
+        aplRes.partsHi[0].partsHi = 0.0;
+    } else
+    // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
+    if (IsZeroHCxF (&b, 2))
+    {
+        aplRes.partsLo[0] = MulHC2F_RE (a, c );
+        aplRes.partsHi[0] = MulHC2F_RE (d, a );
+    } else
+    // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
+    if (IsZeroHCxF (&d, 2))
+    {
+        aplRes.partsLo[0] = MulHC2F_RE (a, c );
+        aplRes.partsHi[0] = MulHC2F_RE (b, cP);
+    } else
+    // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
+    if (IsZeroHCxF (&a, 2) && IsZeroHCxF (&c, 2))
+    {
+        aplRes.partsLo[0] = NegHC2F_RE (MulHC2F_RE (dP, b));
+        aplRes.partsHi[0].partsLo =
+        aplRes.partsHi[0].partsHi = 0.0;
+    } else
+    {
+        aplRes.partsLo[0] = SubHC2F_RE (MulHC2F_RE (a  , c ),
+                                        MulHC2F_RE (dP , b ));
+        aplRes.partsHi[0] = AddHC2F_RE (MulHC2F_RE (d  , a ),
+                                        MulHC2F_RE (b  , cP));
+    } // End IF/ELSE
 
 #undef  d
 #undef  c
 #undef  b
 #undef  a
-    } // End IF/ELSE/...
 
     return aplRes;
 } // End MulHC4F_RE
@@ -2832,113 +2769,97 @@ APLHC4R MulHC4R_RE
     int     i;
     APLHC4R aplRes = {0};
     APLHC2R dP, cP;
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
-
-    // Is either arg a NaN?
-    bNaNLft = IsArgNaN (ARRAY_HC4R, &aplLft, 0);
-    bNaNRht = IsArgNaN (ARRAY_HC4R, &aplRht, 0);
 
     // Check for indeterminates:  _ {times} _  or  -_ {times} -_
 
-    // If the either arg is a NaN, ...
-    if (bNaNLft || bNaNRht)
-    {
-        if (bNaNLft)
-            mphc4r_init_set (&aplRes, &aplLft);
-        else
-            mphc4r_init_set (&aplRes, &aplRht);
-    } else
-    {
-        // Use Cayley-Dickson construction
-        // (a,b) x (c,d) = (ac - d'b, da + bc')
-        //   where d' = conjugate (d)
-        //   where c' = conjugate (c)
+    // Use Cayley-Dickson construction
+    // (a,b) x (c,d) = (ac - d'b, da + bc')
+    //   where d' = conjugate (d)
+    //   where c' = conjugate (c)
 
 #define a   aplLft.partsLo
 #define b   aplLft.partsHi
 #define c   aplRht.partsLo
 #define d   aplRht.partsHi
 
-        dP = ConjHC2R (d);
-        cP = ConjHC2R (c);
+    dP = ConjHC2R (d);
+    cP = ConjHC2R (c);
 
-        // ***FIXME*** -- Use __try/__except to catch blowup due to -0
+    // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
-        // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
-        if (IsZeroHCxR (&b, 2) && IsZeroHCxR (&d, 2))
-        {
-            aplRes.partsLo = MulHC2R_RE (a, c );
+    // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
+    if (IsZeroHCxR (&b, 2) && IsZeroHCxR (&d, 2))
+    {
+        aplRes.partsLo = MulHC2R_RE (a, c );
 
-            // Initialize to 0/1
-            mphc2r_init (&aplRes.partsHi);
-        } else
-        // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
-        if (IsZeroHCxR (&b, 2))
-        {
-            aplRes.partsLo = MulHC2R_RE (a, c );
-            aplRes.partsHi = MulHC2R_RE (d, a );
-        } else
-        // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
-        if (IsZeroHCxR (&d, 2))
-        {
-            aplRes.partsLo = MulHC2R_RE (a, c );
-            aplRes.partsHi = MulHC2R_RE (b, cP);
-        } else
-        // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
-        if (IsZeroHCxR (&a, 2) && IsZeroHCxR (&c, 2))
-        {
-            APLHC2R aplTmp;
+        // Initialize to 0/1
+        mphc2r_init (&aplRes.partsHi);
+    } else
+    // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
+    if (IsZeroHCxR (&b, 2))
+    {
+        aplRes.partsLo = MulHC2R_RE (a, c );
+        aplRes.partsHi = MulHC2R_RE (d, a );
+    } else
+    // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
+    if (IsZeroHCxR (&d, 2))
+    {
+        aplRes.partsLo = MulHC2R_RE (a, c );
+        aplRes.partsHi = MulHC2R_RE (b, cP);
+    } else
+    // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
+    if (IsZeroHCxR (&a, 2) && IsZeroHCxR (&c, 2))
+    {
+        APLHC2R aplTmp;
 
-            aplRes.partsLo = MulHC2R_RE (dP, b );
-            aplTmp = NegHC2R_RE1 (aplRes.partsLo);
-            mphc2r_set (&aplRes.partsLo, &aplTmp);
-            Myhc2r_clear (&aplTmp);
+        aplRes.partsLo = MulHC2R_RE (dP, b );
+        aplTmp = NegHC2R_RE1 (aplRes.partsLo);
+        mphc2r_set (&aplRes.partsLo, &aplTmp);
+        Myhc2r_clear (&aplTmp);
 
-            // Initialize to 0/1
-            mphc2r_init (&aplRes.partsHi);
-        } else
-        {
-            aplRes.partsLo = SubHC2R_RE (MulHC2R_RE (a  , c  ),
-                                         MulHC2R_RE (dP , b  ));
-            aplRes.partsHi = AddHC2R_RE (MulHC2R_RE (d  , a  ),
-                                         MulHC2R_RE (b  , cP ));
-        } // End IF/ELSE
+        // Initialize to 0/1
+        mphc2r_init (&aplRes.partsHi);
+    } else
+    {
+        aplRes.partsLo = SubHC2R_RE (MulHC2R_RE (a  , c  ),
+                                     MulHC2R_RE (dP , b  ));
+        aplRes.partsHi = AddHC2R_RE (MulHC2R_RE (d  , a  ),
+                                     MulHC2R_RE (b  , cP ));
+    } // End IF/ELSE
 
 #undef  d
 #undef  c
 #undef  b
 #undef  a
 
-        Myhc2r_clear (&cP);
-        Myhc2r_clear (&dP);
+    Myhc2r_clear (&cP);
+    Myhc2r_clear (&dP);
 
-        // Loop through all of the parts
-        for (i = 0; i < 4; i++)
-        // Check for indeterminates:  0 {times} _  or  _ {times} 0
-        if ((IsMpq0 (&aplLft.parts[i])
-          && IsMpqPosInfinity (&aplRht.parts[i]))
-         || (IsMpqPosInfinity (&aplLft.parts[i])
-          && IsMpq0 (&aplRht.parts[i])))
-            mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
-                                                         ICNDX_0MULPi,
-                                                       &aplRht.parts[i],
-                                                       &aplRes.parts[i],
-                                                        IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
-                                                                                  : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
-        else
-        // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
-        if ((IsMpq0 (&aplLft.parts[i])
-          && IsMpqNegInfinity (&aplRht.parts[i]))
-         || (IsMpqNegInfinity (&aplLft.parts[i])
-          && IsMpq0 (&aplRht.parts[i])))
-            mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
-                                                         ICNDX_0MULNi,
-                                                        &aplRht.parts[i],
-                                                        &aplRes.parts[i],
-                                                         IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
+    // Loop through all of the parts
+    for (i = 0; i < 4; i++)
+    // Check for indeterminates:  0 {times} _  or  _ {times} 0
+    if ((IsMpq0 (&aplLft.parts[i])
+      && IsMpqPosInfinity (&aplRht.parts[i]))
+     || (IsMpqPosInfinity (&aplLft.parts[i])
+      && IsMpq0 (&aplRht.parts[i])))
+        mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
+                                                     ICNDX_0MULPi,
+                                                   &aplRht.parts[i],
+                                                   &aplRes.parts[i],
+                                                    IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
+                                                                              : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
+    else
+    // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
+    if ((IsMpq0 (&aplLft.parts[i])
+      && IsMpqNegInfinity (&aplRht.parts[i]))
+     || (IsMpqNegInfinity (&aplLft.parts[i])
+      && IsMpq0 (&aplRht.parts[i])))
+        mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
+                                                     ICNDX_0MULNi,
+                                                    &aplRht.parts[i],
+                                                    &aplRes.parts[i],
+                                                     IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
                                                                                    : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
-    } // End IF/ELSE
 
     return aplRes;
 } // End MulHC4R_RE
@@ -3078,120 +2999,104 @@ APLHC4V MulHC4V_RE
     int     i;
     APLHC4V aplRes = {0};
     APLHC2V dP,cP;
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
-
-    // Is either arg a NaN?
-    bNaNLft = IsArgNaN (ARRAY_HC4V, &aplLft, 0);
-    bNaNRht = IsArgNaN (ARRAY_HC4V, &aplRht, 0);
 
     // Check for indeterminates:  _ {times} _  or  -_ {times} -_
 
-    // If the either arg is a NaN, ...
-    if (bNaNLft || bNaNRht)
-    {
-        if (bNaNLft)
-            mphc4v_init_set (&aplRes, &aplLft);
-        else
-            mphc4v_init_set (&aplRes, &aplRht);
-    } else
-    {
-////////aplRes.parts[0] = aplLft.parts[0] * aplRht.parts[0],
-////////                - aplLft.parts[1] * aplRht.parts[1];
-////////aplRes.parts[1] = aplLft.parts[0] * aplRht.parts[1]
-////////                + aplLft.parts[1] * aplRht.parts[0];
+////aplRes.parts[0] = aplLft.parts[0] * aplRht.parts[0],
+////                - aplLft.parts[1] * aplRht.parts[1];
+////aplRes.parts[1] = aplLft.parts[0] * aplRht.parts[1]
+////                + aplLft.parts[1] * aplRht.parts[0];
 
-        // Use Cayley-Dickson construction
-        // (a,b) x (c,d) = (ac - d'b, da + bc')
-        //   where d' = conjugate (d)
-        //   where c' = conjugate (c)
+    // Use Cayley-Dickson construction
+    // (a,b) x (c,d) = (ac - d'b, da + bc')
+    //   where d' = conjugate (d)
+    //   where c' = conjugate (c)
 
 #define a   aplLft.partsLo
 #define b   aplLft.partsHi
 #define c   aplRht.partsLo
 #define d   aplRht.partsHi
 
-        dP = ConjHC2V (d);
-        cP = ConjHC2V (c);
+    dP = ConjHC2V (d);
+    cP = ConjHC2V (c);
 
-        // ***FIXME*** -- Use __try/__except to catch blowup due to -0
+    // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
-        // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
-        if (IsZeroHCxV (&b, 2) && IsZeroHCxV (&d, 2))
-        {
-            aplRes.partsLo = MulHC2V_RE (a, c );
+    // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
+    if (IsZeroHCxV (&b, 2) && IsZeroHCxV (&d, 2))
+    {
+        aplRes.partsLo = MulHC2V_RE (a, c );
 
-            // Initialize to 0
-            mphc2v_init0 (&aplRes.partsHi);
-        } else
-        // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
-        if (IsZeroHCxV (&b, 2))
-        {
-            aplRes.partsLo = MulHC2V_RE (a, c );
-            aplRes.partsHi = MulHC2V_RE (d, a );
-        } else
-        // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
-        if (IsZeroHCxV (&d, 2))
-        {
-            aplRes.partsLo = MulHC2V_RE (a, c );
-            aplRes.partsHi = MulHC2V_RE (b, cP);
-        } else
-        // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
-        if (IsZeroHCxV (&a, 2) && IsZeroHCxV (&c, 2))
-        {
-            APLHC2V aplTmp;
+        // Initialize to 0
+        mphc2v_init0 (&aplRes.partsHi);
+    } else
+    // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
+    if (IsZeroHCxV (&b, 2))
+    {
+        aplRes.partsLo = MulHC2V_RE (a, c );
+        aplRes.partsHi = MulHC2V_RE (d, a );
+    } else
+    // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
+    if (IsZeroHCxV (&d, 2))
+    {
+        aplRes.partsLo = MulHC2V_RE (a, c );
+        aplRes.partsHi = MulHC2V_RE (b, cP);
+    } else
+    // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
+    if (IsZeroHCxV (&a, 2) && IsZeroHCxV (&c, 2))
+    {
+        APLHC2V aplTmp;
 
-            aplRes.partsLo = MulHC2V_RE (dP, b );
-            aplTmp = NegHC2V_RE (aplRes.partsLo);
-            mphc2v_set (&aplRes.partsLo, &aplTmp);
-            Myhc2v_clear (&aplTmp);
+        aplRes.partsLo = MulHC2V_RE (dP, b );
+        aplTmp = NegHC2V_RE (aplRes.partsLo);
+        mphc2v_set (&aplRes.partsLo, &aplTmp);
+        Myhc2v_clear (&aplTmp);
 
-            // Initialize to 0
-            mphc2v_init0 (&aplRes.partsHi);
-        } else
-        {
-            aplRes.partsLo = SubHC2V_RE (MulHC2V_RE (a  , c  ),
-                                         MulHC2V_RE (dP , b  ));
-            aplRes.partsHi = AddHC2V_RE (MulHC2V_RE (d  , a  ),
-                                         MulHC2V_RE (b  , cP ));
-        } // End IF/ELSE
+        // Initialize to 0
+        mphc2v_init0 (&aplRes.partsHi);
+    } else
+    {
+        aplRes.partsLo = SubHC2V_RE (MulHC2V_RE (a  , c  ),
+                                     MulHC2V_RE (dP , b  ));
+        aplRes.partsHi = AddHC2V_RE (MulHC2V_RE (d  , a  ),
+                                     MulHC2V_RE (b  , cP ));
+    } // End IF/ELSE
 
 #undef  d
 #undef  c
 #undef  b
 #undef  a
 
-        Myhc2v_clear (&cP);
-        Myhc2v_clear (&dP);
+    Myhc2v_clear (&cP);
+    Myhc2v_clear (&dP);
 
-        // Loop through all of the parts
-        for (i = 0; i < 4; i++)
-        // Check for indeterminates:  0 {times} _  or  _ {times} 0
-        if ((IsMpf0 (&aplLft.parts[i])
-          && IsMpfPosInfinity (&aplRht.parts[i]))
-         || (IsMpfPosInfinity (&aplLft.parts[i])
-          && IsMpf0 (&aplRht.parts[i])))
-            mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
-                                                           ICNDX_0MULPi,
-                                                          &aplRht.parts[i],
-                                                          &aplRes.parts[i],
-                                                           IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
-                                                                                     : SIGN_APLVFP (&aplRht.parts[i])),
-                                        MPFR_RNDN);
-        else
-        // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
-        if ((IsMpf0 (&aplLft.parts[i])
-          && IsMpfNegInfinity (&aplRht.parts[i]))
-         || (IsMpfNegInfinity (&aplLft.parts[i])
-          && IsMpf0 (&aplRht.parts[i])))
-            mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
-                                                           ICNDX_0MULNi,
-                                                          &aplRht.parts[i],
-                                                          &aplRes.parts[i],
-                                                           IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
-                                                                                     : SIGN_APLVFP (&aplRht.parts[i])),
-                                        MPFR_RNDN);
-    } // End IF/ELSE
+    // Loop through all of the parts
+    for (i = 0; i < 4; i++)
+    // Check for indeterminates:  0 {times} _  or  _ {times} 0
+    if ((IsMpf0 (&aplLft.parts[i])
+      && IsMpfPosInfinity (&aplRht.parts[i]))
+     || (IsMpfPosInfinity (&aplLft.parts[i])
+      && IsMpf0 (&aplRht.parts[i])))
+        mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
+                                                       ICNDX_0MULPi,
+                                                      &aplRht.parts[i],
+                                                      &aplRes.parts[i],
+                                                       IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
+                                                                                 : SIGN_APLVFP (&aplRht.parts[i])),
+                                    MPFR_RNDN);
+    else
+    // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
+    if ((IsMpf0 (&aplLft.parts[i])
+      && IsMpfNegInfinity (&aplRht.parts[i]))
+     || (IsMpfNegInfinity (&aplLft.parts[i])
+      && IsMpf0 (&aplRht.parts[i])))
+        mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
+                                                       ICNDX_0MULNi,
+                                                      &aplRht.parts[i],
+                                                      &aplRes.parts[i],
+                                                       IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
+                                                                                 : SIGN_APLVFP (&aplRht.parts[i])),
+                                    MPFR_RNDN);
 
     return aplRes;
 } // End MulHC4V_RE
@@ -3577,83 +3482,67 @@ APLHC8F MulHC8F_RE
 {
     APLHC8F aplRes;
     APLHC4F dP, cP;
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
-
-    // Is either arg a NaN?
-    bNaNLft = IsArgNaN (ARRAY_HC8F, &aplLft, 0);
-    bNaNRht = IsArgNaN (ARRAY_HC8F, &aplRht, 0);
 
     // Check for indeterminates:  _ {times} _  or  -_ {times} -_
 
-    // If the either arg is a NaN, ...
-    if (bNaNLft || bNaNRht)
-    {
-        if (bNaNLft)
-            aplRes = aplLft;
-        else
-            aplRes = aplRht;
-    } else
-    {
-        // Use Cayley-Dickson construction
-        // (a,b) x (c,d) = (ac - d'b, da + bc')
-        //   where d' = conjugate (d)
-        //   where c' = conjugate (c)
+    // Use Cayley-Dickson construction
+    // (a,b) x (c,d) = (ac - d'b, da + bc')
+    //   where d' = conjugate (d)
+    //   where c' = conjugate (c)
 
 #define a   aplLft.partsLo[0]
 #define b   aplLft.partsHi[0]
 #define c   aplRht.partsLo[0]
 #define d   aplRht.partsHi[0]
 
-        dP = ConjHC4F (d);
-        cP = ConjHC4F (c);
+    dP = ConjHC4F (d);
+    cP = ConjHC4F (c);
 
-        // ***FIXME*** -- Use __try/__except to catch blowup due to -0
+    // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
-        // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
-        if (IsZeroHCxF (&b, 4) && IsZeroHCxF (&d, 4))
-        {
-            aplRes.partsLo[0] = MulHC4F_RE (a, c );
+    // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
+    if (IsZeroHCxF (&b, 4) && IsZeroHCxF (&d, 4))
+    {
+        aplRes.partsLo[0] = MulHC4F_RE (a, c );
 
-            // Initialize to 0.0
-            aplRes.partsHi[0].partsLo[0].partsLo =
-            aplRes.partsHi[0].partsLo[0].partsHi =
-            aplRes.partsHi[0].partsHi[0].partsLo =
-            aplRes.partsHi[0].partsHi[0].partsHi = 0.0;
-        } else
-        // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
-        if (IsZeroHCxF (&b, 4))
-        {
-            aplRes.partsLo[0] = MulHC4F_RE (a, c );
-            aplRes.partsHi[0] = MulHC4F_RE (d, a );
-        } else
-        // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
-        if (IsZeroHCxF (&d, 4))
-        {
-            aplRes.partsLo[0] = MulHC4F_RE (a, c );
-            aplRes.partsHi[0] = MulHC4F_RE (b, cP);
-        } else
-        // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
-        if (IsZeroHCxF (&a, 4) && IsZeroHCxF (&c, 4))
-        {
-            aplRes.partsLo[0] = NegHC4F_RE (MulHC4F_RE (dP, b));
-            aplRes.partsHi[0].partsLo[0].partsLo =
-            aplRes.partsHi[0].partsLo[0].partsHi =
-            aplRes.partsHi[0].partsHi[0].partsLo =
-            aplRes.partsHi[0].partsHi[0].partsHi = 0.0;
-        } else
-        {
-            aplRes.partsLo[0] = SubHC4F_RE (MulHC4F_RE (a  , c ),
-                                            MulHC4F_RE (dP , b ));
-            aplRes.partsHi[0] = AddHC4F_RE (MulHC4F_RE (d  , a ),
-                                            MulHC4F_RE (b  , cP));
-        } // End IF/ELSE
+        // Initialize to 0.0
+        aplRes.partsHi[0].partsLo[0].partsLo =
+        aplRes.partsHi[0].partsLo[0].partsHi =
+        aplRes.partsHi[0].partsHi[0].partsLo =
+        aplRes.partsHi[0].partsHi[0].partsHi = 0.0;
+    } else
+    // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
+    if (IsZeroHCxF (&b, 4))
+    {
+        aplRes.partsLo[0] = MulHC4F_RE (a, c );
+        aplRes.partsHi[0] = MulHC4F_RE (d, a );
+    } else
+    // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
+    if (IsZeroHCxF (&d, 4))
+    {
+        aplRes.partsLo[0] = MulHC4F_RE (a, c );
+        aplRes.partsHi[0] = MulHC4F_RE (b, cP);
+    } else
+    // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
+    if (IsZeroHCxF (&a, 4) && IsZeroHCxF (&c, 4))
+    {
+        aplRes.partsLo[0] = NegHC4F_RE (MulHC4F_RE (dP, b));
+        aplRes.partsHi[0].partsLo[0].partsLo =
+        aplRes.partsHi[0].partsLo[0].partsHi =
+        aplRes.partsHi[0].partsHi[0].partsLo =
+        aplRes.partsHi[0].partsHi[0].partsHi = 0.0;
+    } else
+    {
+        aplRes.partsLo[0] = SubHC4F_RE (MulHC4F_RE (a  , c ),
+                                        MulHC4F_RE (dP , b ));
+        aplRes.partsHi[0] = AddHC4F_RE (MulHC4F_RE (d  , a ),
+                                        MulHC4F_RE (b  , cP));
+    } // End IF/ELSE
 
 #undef  d
 #undef  c
 #undef  b
 #undef  a
-    } // End IF/ELSE/...
 
     return aplRes;
 } // End MulHC8F_RE
@@ -3793,113 +3682,97 @@ APLHC8R MulHC8R_RE
     int     i;
     APLHC8R aplRes = {0};
     APLHC4R dP, cP;
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
-
-    // Is either arg a NaN?
-    bNaNLft = IsArgNaN (ARRAY_HC8R, &aplLft, 0);
-    bNaNRht = IsArgNaN (ARRAY_HC8R, &aplRht, 0);
 
     // Check for indeterminates:  _ {times} _  or  -_ {times} -_
 
-    // If the either arg is a NaN, ...
-    if (bNaNLft || bNaNRht)
-    {
-        if (bNaNLft)
-            mphc8r_init_set (&aplRes, &aplLft);
-        else
-            mphc8r_init_set (&aplRes, &aplRht);
-    } else
-    {
-        // Use Cayley-Dickson construction
-        // (a,b) x (c,d) = (ac - d'b, da + bc')
-        //   where d' = conjugate (d)
-        //   where c' = conjugate (c)
+    // Use Cayley-Dickson construction
+    // (a,b) x (c,d) = (ac - d'b, da + bc')
+    //   where d' = conjugate (d)
+    //   where c' = conjugate (c)
 
 #define a   aplLft.partsLo
 #define b   aplLft.partsHi
 #define c   aplRht.partsLo
 #define d   aplRht.partsHi
 
-        dP = ConjHC4R (d);
-        cP = ConjHC4R (c);
+    dP = ConjHC4R (d);
+    cP = ConjHC4R (c);
 
-        // ***FIXME*** -- Use __try/__except to catch blowup due to -0
+    // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
-        // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
-        if (IsZeroHCxR (&b, 4) && IsZeroHCxR (&d, 4))
-        {
-            aplRes.partsLo = MulHC4R_RE (a, c );
+    // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
+    if (IsZeroHCxR (&b, 4) && IsZeroHCxR (&d, 4))
+    {
+        aplRes.partsLo = MulHC4R_RE (a, c );
 
-            // Initialize to 0/1
-            mphc4r_init (&aplRes.partsHi);
-        } else
-        // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
-        if (IsZeroHCxR (&b, 4))
-        {
-            aplRes.partsLo = MulHC4R_RE (a, c );
-            aplRes.partsHi = MulHC4R_RE (d, a );
-        } else
-        // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
-        if (IsZeroHCxR (&d, 4))
-        {
-            aplRes.partsLo = MulHC4R_RE (a, c );
-            aplRes.partsHi = MulHC4R_RE (b, cP);
-        } else
-        // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
-        if (IsZeroHCxR (&a, 4) && IsZeroHCxR (&c, 4))
-        {
-            APLHC4R aplTmp;
+        // Initialize to 0/1
+        mphc4r_init (&aplRes.partsHi);
+    } else
+    // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
+    if (IsZeroHCxR (&b, 4))
+    {
+        aplRes.partsLo = MulHC4R_RE (a, c );
+        aplRes.partsHi = MulHC4R_RE (d, a );
+    } else
+    // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
+    if (IsZeroHCxR (&d, 4))
+    {
+        aplRes.partsLo = MulHC4R_RE (a, c );
+        aplRes.partsHi = MulHC4R_RE (b, cP);
+    } else
+    // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
+    if (IsZeroHCxR (&a, 4) && IsZeroHCxR (&c, 4))
+    {
+        APLHC4R aplTmp;
 
-            aplRes.partsLo = MulHC4R_RE (dP, b );
-            aplTmp = NegHC4R_RE1 (aplRes.partsLo);
-            mphc4r_set (&aplRes.partsLo, &aplTmp);
-            Myhc4r_clear (&aplTmp);
+        aplRes.partsLo = MulHC4R_RE (dP, b );
+        aplTmp = NegHC4R_RE1 (aplRes.partsLo);
+        mphc4r_set (&aplRes.partsLo, &aplTmp);
+        Myhc4r_clear (&aplTmp);
 
-            // Initialize to 0/1
-            mphc4r_init (&aplRes.partsHi);
-        } else
-        {
-            aplRes.partsLo = SubHC4R_RE (MulHC4R_RE (a  , c  ),
-                                         MulHC4R_RE (dP , b  ));
-            aplRes.partsHi = AddHC4R_RE (MulHC4R_RE (d  , a  ),
-                                         MulHC4R_RE (b  , cP ));
-        } // End IF/ELSE
+        // Initialize to 0/1
+        mphc4r_init (&aplRes.partsHi);
+    } else
+    {
+        aplRes.partsLo = SubHC4R_RE (MulHC4R_RE (a  , c  ),
+                                     MulHC4R_RE (dP , b  ));
+        aplRes.partsHi = AddHC4R_RE (MulHC4R_RE (d  , a  ),
+                                     MulHC4R_RE (b  , cP ));
+    } // End IF/ELSE
 
 #undef  d
 #undef  c
 #undef  b
 #undef  a
 
-        Myhc4r_clear (&cP);
-        Myhc4r_clear (&dP);
+    Myhc4r_clear (&cP);
+    Myhc4r_clear (&dP);
 
-        // Loop through all of the parts
-        for (i = 0; i < 8; i++)
-        // Check for indeterminates:  0 {times} _  or  _ {times} 0
-        if ((IsMpq0 (&aplLft.parts[i])
-          && IsMpqPosInfinity (&aplRht.parts[i]))
-         || (IsMpqPosInfinity (&aplLft.parts[i])
-          && IsMpq0 (&aplRht.parts[i])))
-            mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
-                                                         ICNDX_0MULPi,
-                                                       &aplRht.parts[i],
-                                                       &aplRes.parts[i],
-                                                        IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
-                                                                                  : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
-        else
-        // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
-        if ((IsMpq0 (&aplLft.parts[i])
-          && IsMpqNegInfinity (&aplRht.parts[i]))
-         || (IsMpqNegInfinity (&aplLft.parts[i])
-          && IsMpq0 (&aplRht.parts[i])))
-            mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
-                                                         ICNDX_0MULNi,
-                                                        &aplRht.parts[i],
-                                                        &aplRes.parts[i],
-                                                         IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
-                                                                                   : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
-    } // End IF/ELSE
+    // Loop through all of the parts
+    for (i = 0; i < 8; i++)
+    // Check for indeterminates:  0 {times} _  or  _ {times} 0
+    if ((IsMpq0 (&aplLft.parts[i])
+      && IsMpqPosInfinity (&aplRht.parts[i]))
+     || (IsMpqPosInfinity (&aplLft.parts[i])
+      && IsMpq0 (&aplRht.parts[i])))
+        mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
+                                                     ICNDX_0MULPi,
+                                                   &aplRht.parts[i],
+                                                   &aplRes.parts[i],
+                                                    IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
+                                                                              : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
+    else
+    // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
+    if ((IsMpq0 (&aplLft.parts[i])
+      && IsMpqNegInfinity (&aplRht.parts[i]))
+     || (IsMpqNegInfinity (&aplLft.parts[i])
+      && IsMpq0 (&aplRht.parts[i])))
+        mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
+                                                     ICNDX_0MULNi,
+                                                    &aplRht.parts[i],
+                                                    &aplRes.parts[i],
+                                                     IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
+                                                                               : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
 
     return aplRes;
 } // End MulHC8R_RE
@@ -4039,115 +3912,99 @@ APLHC8V MulHC8V_RE
     int     i;
     APLHC8V aplRes;
     APLHC4V dP,cP;
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
-
-    // Is either arg a NaN?
-    bNaNLft = IsArgNaN (ARRAY_HC8V, &aplLft, 0);
-    bNaNRht = IsArgNaN (ARRAY_HC8V, &aplRht, 0);
 
     // Check for indeterminates:  _ {times} _  or  -_ {times} -_
 
-    // If the either arg is a NaN, ...
-    if (bNaNLft || bNaNRht)
-    {
-        if (bNaNLft)
-            mphc8v_init_set (&aplRes, &aplLft);
-        else
-            mphc8v_init_set (&aplRes, &aplRht);
-    } else
-    {
-        // Use Cayley-Dickson construction
-        // (a,b) x (c,d) = (ac - d'b, da + bc')
-        //   where d' = conjugate (d)
-        //   where c' = conjugate (c)
+    // Use Cayley-Dickson construction
+    // (a,b) x (c,d) = (ac - d'b, da + bc')
+    //   where d' = conjugate (d)
+    //   where c' = conjugate (c)
 
 #define a   aplLft.partsLo
 #define b   aplLft.partsHi
 #define c   aplRht.partsLo
 #define d   aplRht.partsHi
 
-        dP = ConjHC4V (d);
-        cP = ConjHC4V (c);
+    dP = ConjHC4V (d);
+    cP = ConjHC4V (c);
 
-        // ***FIXME*** -- Use __try/__except to catch blowup due to -0
+    // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
-        // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
-        if (IsZeroHCxV (&b, 4) && IsZeroHCxV (&d, 4))
-        {
-            aplRes.partsLo = MulHC4V_RE (a, c );
+    // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
+    if (IsZeroHCxV (&b, 4) && IsZeroHCxV (&d, 4))
+    {
+        aplRes.partsLo = MulHC4V_RE (a, c );
 
-            // Initialize to 0
-            mphc4v_init0 (&aplRes.partsHi);
-        } else
-        // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
-        if (IsZeroHCxV (&b, 4))
-        {
-            aplRes.partsLo = MulHC4V_RE (a, c );
-            aplRes.partsHi = MulHC4V_RE (d, a );
-        } else
-        // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
-        if (IsZeroHCxV (&d, 4))
-        {
-            aplRes.partsLo = MulHC4V_RE (a, c );
-            aplRes.partsHi = MulHC4V_RE (b, cP);
-        } else
-        // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
-        if (IsZeroHCxV (&a, 4) && IsZeroHCxV (&c, 4))
-        {
-            APLHC4V aplTmp;
+        // Initialize to 0
+        mphc4v_init0 (&aplRes.partsHi);
+    } else
+    // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
+    if (IsZeroHCxV (&b, 4))
+    {
+        aplRes.partsLo = MulHC4V_RE (a, c );
+        aplRes.partsHi = MulHC4V_RE (d, a );
+    } else
+    // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
+    if (IsZeroHCxV (&d, 4))
+    {
+        aplRes.partsLo = MulHC4V_RE (a, c );
+        aplRes.partsHi = MulHC4V_RE (b, cP);
+    } else
+    // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
+    if (IsZeroHCxV (&a, 4) && IsZeroHCxV (&c, 4))
+    {
+        APLHC4V aplTmp;
 
-            aplRes.partsLo = MulHC4V_RE (dP, b );
-            aplTmp = NegHC4V_RE (aplRes.partsLo);
-            mphc4v_set (&aplRes.partsLo, &aplTmp);
-            Myhc4v_clear (&aplTmp);
+        aplRes.partsLo = MulHC4V_RE (dP, b );
+        aplTmp = NegHC4V_RE (aplRes.partsLo);
+        mphc4v_set (&aplRes.partsLo, &aplTmp);
+        Myhc4v_clear (&aplTmp);
 
-            // Initialize to 0
-            mphc4v_init0 (&aplRes.partsHi);
-        } else
-        {
-            aplRes.partsLo = SubHC4V_RE (MulHC4V_RE (a  , c  ),
-                                         MulHC4V_RE (dP , b  ));
-            aplRes.partsHi = AddHC4V_RE (MulHC4V_RE (d  , a  ),
-                                         MulHC4V_RE (b  , cP ));
-        } // End IF/ELSE
+        // Initialize to 0
+        mphc4v_init0 (&aplRes.partsHi);
+    } else
+    {
+        aplRes.partsLo = SubHC4V_RE (MulHC4V_RE (a  , c  ),
+                                     MulHC4V_RE (dP , b  ));
+        aplRes.partsHi = AddHC4V_RE (MulHC4V_RE (d  , a  ),
+                                     MulHC4V_RE (b  , cP ));
+    } // End IF/ELSE
 
 #undef  d
 #undef  c
 #undef  b
 #undef  a
 
-        Myhc4v_clear (&cP);
-        Myhc4v_clear (&dP);
+    Myhc4v_clear (&cP);
+    Myhc4v_clear (&dP);
 
-        // Loop through all of the parts
-        for (i = 0; i < 8; i++)
-        // Check for indeterminates:  0 {times} _  or  _ {times} 0
-        if ((IsMpf0 (&aplLft.parts[i])
-          && IsMpfPosInfinity (&aplRht.parts[i]))
-         || (IsMpfPosInfinity (&aplLft.parts[i])
-          && IsMpf0 (&aplRht.parts[i])))
-            mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
-                                                           ICNDX_0MULPi,
-                                                          &aplRht.parts[i],
-                                                          &aplRes.parts[i],
-                                                           IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
-                                                                                     : SIGN_APLVFP (&aplRht.parts[i])),
-                                        MPFR_RNDN);
-        else
-        // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
-        if ((IsMpf0 (&aplLft.parts[i])
-          && IsMpfNegInfinity (&aplRht.parts[i]))
-         || (IsMpfNegInfinity (&aplLft.parts[i])
-          && IsMpf0 (&aplRht.parts[i])))
-            mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
-                                                           ICNDX_0MULNi,
-                                                          &aplRht.parts[i],
-                                                          &aplRes.parts[i],
-                                                           IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
-                                                                                     : SIGN_APLVFP (&aplRht.parts[i])),
-                                        MPFR_RNDN);
-    } // End IF/ELSE
+    // Loop through all of the parts
+    for (i = 0; i < 8; i++)
+    // Check for indeterminates:  0 {times} _  or  _ {times} 0
+    if ((IsMpf0 (&aplLft.parts[i])
+      && IsMpfPosInfinity (&aplRht.parts[i]))
+     || (IsMpfPosInfinity (&aplLft.parts[i])
+      && IsMpf0 (&aplRht.parts[i])))
+        mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
+                                                       ICNDX_0MULPi,
+                                                      &aplRht.parts[i],
+                                                      &aplRes.parts[i],
+                                                       IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
+                                                                                 : SIGN_APLVFP (&aplRht.parts[i])),
+                                    MPFR_RNDN);
+    else
+    // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
+    if ((IsMpf0 (&aplLft.parts[i])
+      && IsMpfNegInfinity (&aplRht.parts[i]))
+     || (IsMpfNegInfinity (&aplLft.parts[i])
+      && IsMpf0 (&aplRht.parts[i])))
+        mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
+                                                       ICNDX_0MULNi,
+                                                      &aplRht.parts[i],
+                                                      &aplRes.parts[i],
+                                                       IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
+                                                                                 : SIGN_APLVFP (&aplRht.parts[i])),
+                                    MPFR_RNDN);
 
     return aplRes;
 } // End MulHC8V_RE

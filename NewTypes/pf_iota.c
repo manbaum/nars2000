@@ -1671,8 +1671,8 @@ UBOOL PrimFnDydIotaNvN_EM
         iRes = lpMemGupRht[iRht];
 
         // Check for duplicate value from the right arg
-        if (iRht
-         && EqualHCxy (aplTypeCom, &atLft, &atRht))
+        if (iRht NE 0
+         && EqualHCxy (aplTypeCom, &atLft, 0, aplTypeCom, &atRht, 0))
         {
             // Save in the result
             lpMemRes[iRes] = uLastVal;

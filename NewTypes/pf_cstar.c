@@ -639,6 +639,11 @@ APLHC8F ArcHCxF_RE
 
         // Loop through the imaginary parts
         for (i = 1; i < iHCDimRes; i++)
+        // If the imaginary part is infinite, ...
+        if (_isinf (aplRht.parts[i]))
+            // Set the imaginary part to ±Pi/2
+            aplRes.parts[i] = (aplRht.parts[i] < 0) ? -FloatPi2 : FloatPi2;
+        else
             // Multiply each of the imaginary parts by the arctan2
             aplRes.parts[i] = aplRht.parts[i] * aplMul;
     } else                                                          // g == 0
@@ -993,6 +998,15 @@ APLHC8V ArcHCxV_RE
 
         // Loop through the imaginary parts
         for (i = 1; i < iHCDimRes; i++)
+        // If the imaginary part is infinite, ...
+        if (mpfr_inf_p (&aplRht.parts[i]))
+        {
+            // Set the imaginary part to ±Pi/2
+            mpfr_init_set (&aplRes.parts[i], &aplPi2HC8V.parts[0], MPFR_RNDN);
+
+            if (signumvfp (&aplRht.parts[i]) < 0)
+                mpfr_neg (&aplRes.parts[i], &aplRes.parts[i], MPFR_RNDN);
+        } else
             // Multiply each of the imaginary parts by the arctan2
             aplRes.parts[i] = MulHC1V_RE (aplRht.parts[i], aplMul);
 

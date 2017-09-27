@@ -1,6 +1,17 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1800 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In 12{circle}0J{infinity}
+
+Directory branches/bsmith/NewTypes:
+
+PF_CSTAR.C:
+  Fix bug in both fixed- and multiple-precision handling of 12{circle}0J{infinity}.
+
+
 Build #1799 -- Version 0.5.5.xx
 --------------------------------
 

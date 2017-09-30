@@ -792,6 +792,7 @@ APLSTYPE PrimSpecCircleStorageTypeDyd
 
         case ARRAY_CHAR:
         case ARRAY_HETERO:
+        case ARRAY_ERROR:
             aplTypeRes = ARRAY_ERROR;
 
             break;

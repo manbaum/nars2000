@@ -639,13 +639,61 @@ APLHC8F ArcHCxF_RE
 
         // Loop through the imaginary parts
         for (i = 1; i < iHCDimRes; i++)
-        // If the imaginary part is infinite, ...
-        if (_isinf (aplRht.parts[i]))
-            // Set the imaginary part to 켗i/2
-            aplRes.parts[i] = (aplRht.parts[i] < 0) ? -FloatPi2 : FloatPi2;
-        else
-            // Multiply each of the imaginary parts by the arctan2
-            aplRes.parts[i] = aplRht.parts[i] * aplMul;
+        // Split cases based upon whether or not the Real and/or Imaginary parts are infinite
+        switch (2 * _isinf (aplRht.parts[0]) + 1 * _isinf (aplRht.parts[i]))
+        {
+            case 2 * 0 + 1 * 0:         // Finite, finite
+                // Multiply each of the imaginary parts by the arctan2
+                aplRes.parts[i] = aplRht.parts[i] * aplMul;
+
+                break;
+
+            case 2 * 0 + 1 * 1:         // Finite, infinite
+                // Set the imaginary part to 켗i/2 depending upon the sign of the imaginary part
+                aplRes.parts[i] = (aplRht.parts[i] < 0) ? -FloatPi2 : FloatPi2;
+
+                break;
+
+            case 2 * 1 + 1 * 0:         // Infinite, finite
+                // Set the imaginary part to 0 or Pi depending upon the sign of the real part
+                aplRes.parts[i] = (aplRht.parts[0] < 0) ? FloatPi : 0;
+
+                break;
+
+            case 2 * 1 + 1 * 1:         // Infinite, infinite
+                // Split cases based upon the signs of the real and imaginary parts
+                switch ((2 * (aplRht.parts[0] < 0) + 1 * (aplRht.parts[i] < 0)))
+                {
+                    // Set the imaginary part to Pi/4 � N * Pi/2 depending upon the signs of the real and imaginary parts
+                    case 2 * 0 + 1 * 0:         // Pos, Pos
+                        aplRes.parts[i] =  1 * FloatPi2 / 2;
+
+                        break;
+
+                    case 2 * 1 + 1 * 0:         // Neg, Pos
+                        aplRes.parts[i] =  3 * FloatPi2 / 2;
+
+                        break;
+
+                    case 2 * 1 + 1 * 1:         // Neg, Neg
+                        aplRes.parts[i] = -3 * FloatPi2 / 2;
+
+                        break;
+
+                    case 2 * 0 + 1 * 1:         // Pos, Neg
+                        aplRes.parts[i] = -1 * FloatPi2 / 2;
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
     } else                                                          // g == 0
     {
         // Set the real part of the result to 0
@@ -998,17 +1046,78 @@ APLHC8V ArcHCxV_RE
 
         // Loop through the imaginary parts
         for (i = 1; i < iHCDimRes; i++)
-        // If the imaginary part is infinite, ...
-        if (mpfr_inf_p (&aplRht.parts[i]))
+        // Split cases based upon whether or not the Real and/or Imaginary parts are infinite
+        switch (2 * mpfr_inf_p (&aplRht.parts[0]) + 1 * mpfr_inf_p (&aplRht.parts[i]))
         {
-            // Set the imaginary part to 켗i/2
-            mpfr_init_set (&aplRes.parts[i], &aplPi2HC8V.parts[0], MPFR_RNDN);
+            case 2 * 0 + 1 * 0:         // Finite, finite
+                // Multiply each of the imaginary parts by the arctan2
+                aplRes.parts[i] = MulHC1V_RE (aplRht.parts[i], aplMul);
 
-            if (signumvfp (&aplRht.parts[i]) < 0)
-                mpfr_neg (&aplRes.parts[i], &aplRes.parts[i], MPFR_RNDN);
-        } else
-            // Multiply each of the imaginary parts by the arctan2
-            aplRes.parts[i] = MulHC1V_RE (aplRht.parts[i], aplMul);
+                break;
+
+            case 2 * 0 + 1 * 1:         // Finite, infinite
+                // Set the imaginary part to 켗i/2
+                mpfr_init_set (&aplRes.parts[i], &aplPi2HC8V.parts[0], MPFR_RNDN);
+
+                if (signumvfp (&aplRht.parts[i]) < 0)
+                    mpfr_neg (&aplRes.parts[i], &aplRes.parts[i], MPFR_RNDN);
+
+                break;
+
+            case 2 * 1 + 1 * 0:         // Infinite, finite
+                // Set the imaginary part to 0 or Pi depending upon the sign of the real part
+                mpfr_init_set (&aplRes.parts[i], (signumvfp (&aplRht.parts[0]) < 0) ? &aplPiHC8V.parts[0] : &mpfZero, MPFR_RNDN);
+
+                break;
+
+            case 2 * 1 + 1 * 1:         // Infinite, infinite
+                // Copy Pi/2
+                mpfr_set (&aplMul, &aplPi2HC8V.parts[0], MPFR_RNDN);
+
+                // Calculate Pi/4
+                mpfr_div_ui (&aplMul, &aplMul, 2, MPFR_RNDN);
+
+                // Split cases based upon the signs of the real and imaginary parts
+                switch ((2 * (signumvfp (&aplRht.parts[0]) < 0) + 1 * (signumvfp (&aplRht.parts[i]) < 0)))
+                {
+                    // Set the imaginary part to Pi/4 � N * Pi/2 depending upon the signs of the real and imaginary parts
+                    case 2 * 0 + 1 * 0:         // Pos, Pos
+////////////////////////aplRes.parts[i] =  1 * FloatPi2 / 2;
+////////////////////////mpfr_mul_d (&aplMul, &aplMul,  1.0, MPFR_RNDN);
+                        mpfr_init_set (&aplRes.parts[i], &aplMul, MPFR_RNDN);
+
+                        break;
+
+                    case 2 * 1 + 1 * 0:         // Neg, Pos
+////////////////////////aplRes.parts[i] =  3 * FloatPi2 / 2;
+                        mpfr_mul_d (&aplMul, &aplMul,  3.0, MPFR_RNDN);
+                        mpfr_init_set (&aplRes.parts[i], &aplMul, MPFR_RNDN);
+
+                        break;
+
+                    case 2 * 1 + 1 * 1:         // Neg, Neg
+////////////////////////aplRes.parts[i] = -3 * FloatPi2 / 2;
+                        mpfr_mul_d (&aplMul, &aplMul, -3.0, MPFR_RNDN);
+                        mpfr_init_set (&aplRes.parts[i], &aplMul, MPFR_RNDN);
+
+                        break;
+
+                    case 2 * 0 + 1 * 1:         // Pos, Neg
+////////////////////////aplRes.parts[i] = -1 * FloatPi2 / 2;
+                        mpfr_mul_d (&aplMul, &aplMul, -1.0, MPFR_RNDN);
+                        mpfr_init_set (&aplRes.parts[i], &aplMul, MPFR_RNDN);
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
 
         // We no longer need this storage
         Myf_clear (&aplMul);

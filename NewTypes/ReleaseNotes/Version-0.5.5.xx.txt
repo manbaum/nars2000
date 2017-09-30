@@ -1,6 +1,21 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1801 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bugs In 12{circle}{켲nfinity}J{켲nfinity}
+* Fix Bug in 12{circle}'a'
+
+Directory branches/bsmith/NewTypes:
+
+PF_CIRCLE.C:
+  In <PrimSpecCircleStorageTypeDyd>, handle <ARRAY_ERROR> in the switch stmt.
+
+PF_CSTAR.C:
+  Fix bug in both fixed- and multiple-precision handling of 12{circle}{켲nfinity}J{켲nfinity}.
+
+
 Build #1800 -- Version 0.5.5.xx
 --------------------------------
 

@@ -2990,9 +2990,9 @@ typedef struct tagLANGCHARS
                                            L"This infix notation make it easy to enter numeric constants in an abritrary base as in 16bFFFF to represent 16" WS_UTF16_UPTACK L"15 15 15 15 or 65535.  "
                                            L"The number to the left of the b is the base of the number system for the characters to the right of the b."
                                            },
-        {L"e"                       , {0}, L"Exponential Point Notation",
+        {L"eE"                      , {0}, L"Exponential Point Notation",
                                            L"This infix notation allows you to enter numeric constants by specifying a signed multiplier and a signed base 10 exponent "
-                                           L"as in 1.23e" WS_UTF16_OVERBAR L"3 to represent 1.23" WS_UTF16_TIMES L"10*" WS_UTF16_OVERBAR L"3."
+                                           L"as in 1.23e" WS_UTF16_OVERBAR L"3 to represent 1.23" WS_UTF16_TIMES L"10*" WS_UTF16_OVERBAR L"3 " WS_UTF16_LDC_LT_HORZ L" also can be written as 1.23E" WS_UTF16_OVERBAR L"3."
                                            },
         {L"g"                       , {0}, L"Gamma Point Notation",
                                            L"This infix notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES WS_UTF16_GAMMA L"*E "
@@ -3011,7 +3011,9 @@ typedef struct tagLANGCHARS
                                            },
         {L"ijkl"                    , {0}, L"Octonion Point Notation",
                                            L"This infix notation alllows you to enter numeric constants of the form 1i2j3k4l5ij6jk7kl8 as an Octonion number."
-                                           L"  A infix/suffix notation with many forms such as 2j3kl (=0i0j2k0l0ij0jk0kl3) is also recognized."
+                                           L"  A infix/suffix notation with many forms such as 2j3kl (=0i0j2k0l0ij0jk0kl3) is also recognized, along with an"
+                                           L" infix notation of 1i2j3k4os5oi6oj7ok8 using a single letter for the Quaternion part and two letters for"
+                                           L" the Octonion part as well a matching infix/suffix form."
                                            },
         {L"p"                       , {0}, L"Pi Point Notation",
                                            L"This infix notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(" WS_UTF16_CIRCLE L"1)*E "
@@ -3025,6 +3027,7 @@ typedef struct tagLANGCHARS
         {DEF_VFPSEP_WS              , {0}, L"Multi-precision Floating Point Notation",
                                            L"This suffix notation allows you to enter multi-precision Floating Point numbers as in 1.3v to represent 1.3 or 12v to represent 12 where both have "
                                            L"a precision controlled by the current value of " WS_UTF16_QUAD L"FPC, as opposed to the 53-bit precision of IEEE-754 fixed-precision Floating Point numbers."
+                                           L"  An infix notation of 1.3v64 allows you to specify a numeric constant along with a specific precision."
                                            },
         {L"x"                       , {0}, L"Euler Point Notation",
                                            L"This infix notation allows you to enter numeric constants of the form M" WS_UTF16_TIMES L"(*1)*E "

@@ -1,0 +1,9 @@
+Build #1802 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Omissions In The Language Bar
+
+Directory branches/bsmith/NewTypes:
+
+REBAR.C:
+  Fix omissions in the Language Bar.

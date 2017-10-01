@@ -1,0 +1,12 @@
+Build #1803 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug When Comparing NaN FLT With Finite FLT
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+  In <hcXY_cmp> when comparing FLTs, ensure that both are finite (not INF nor NaN).
+
+NARS2000.TXT:
+  Include file in version control.

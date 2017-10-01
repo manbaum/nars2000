@@ -28,7 +28,7 @@
 
 
 //***************************************************************************
-//  $signumflt
+//  $signumint
 //
 //  Return -1, 0, 1 as per the sign of the argument
 //
@@ -645,7 +645,9 @@ int hcXY_cmp
             return signumint (lpatLft->aplInteger - lpatRht->aplInteger);
 
         case ARRAY_FLOAT:
-            if (fQuadCT EQ 0.0)
+            if (fQuadCT EQ 0.0
+             && _finite (lpatLft->aplFloat)
+             && _finite (lpatRht->aplFloat))
                 return signumflt (lpatLft->aplFloat - lpatRht->aplFloat);
             else
                 return flt_cmp_ct (lpatLft->aplFloat, lpatRht->aplFloat, fQuadCT, FALSE);
@@ -655,7 +657,7 @@ int hcXY_cmp
 
         case ARRAY_RAT:
             if (fQuadCT EQ 0.0)
-                return signumint (mpq_cmp (&lpatLft->aplRat, &lpatRht->aplRat));
+            return signumint (mpq_cmp (&lpatLft->aplRat, &lpatRht->aplRat));
             else
                 return signumint (CmpCT_R ( lpatLft->aplRat,  lpatRht->aplRat, fQuadCT, -));
 

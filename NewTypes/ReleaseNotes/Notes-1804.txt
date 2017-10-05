@@ -9,4 +9,4 @@ MPFNS.C:
   Revert to <mpfr_copy> and <mpfr_init_copy> to preserve the source precision in the target.
 
 STRAND.C:
-  In <MakrGlbEntry_EM>, use <mpfr_init_copy> instead of <mpfr_init_set> so we preserve the source precision in the target.
+  In <MakeGlbEntry_EM>, use <mpfr_init_copy> instead of <mpfr_init_set> so we preserve the source precision in the target.

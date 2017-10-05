@@ -1,6 +1,17 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1805 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In 3 []DR Where We Don't Trundle Through A Hetero Array To Find Lowest Precision
+
+Directory branches/bsmith/NewTypes:
+
+QF_DR.C:
+  In <SysFnDR_GetPrec_EM_YY>, handle HETERO arrays element-by-element to find the lowest precision.
+
+
 Build #1804 -- Version 0.5.5.xx
 --------------------------------
 
@@ -12,7 +23,7 @@ MPFNS.C:
   Revert to <mpfr_copy> and <mpfr_init_copy> to preserve the source precision in the target.
 
 STRAND.C:
-  In <MakrGlbEntry_EM>, use <mpfr_init_copy> instead of <mpfr_init_set> so we preserve the source precision in the target.
+  In <MakeGlbEntry_EM>, use <mpfr_init_copy> instead of <mpfr_init_set> so we preserve the source precision in the target.
 
 
 Build #1803 -- Version 0.5.5.xx

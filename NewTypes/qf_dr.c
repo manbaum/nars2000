@@ -426,13 +426,17 @@ LPPL_YYSTYPE SysFnDR_GetPrec_EM_YY
     IMM_TYPES         immTypeRes;           // Result immediate storage type
     APLNELM           aplNELMRht;           // Right arg NELM
     APLLONGEST        aplLongestRht;        // Right arg as immediate
-    HGLOBAL           hGlbRht = NULL;       // Right arg global memory handle
-    LPVARARRAY_HEADER lpMemHdrRht = NULL;   // Ptr to right arg global memory
+    HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
+                      hGlbTmp;              // Temp      ...
+    LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg global memory
+                      lpMemHdrTmp = NULL;   // ...    temp
+    LPVOID            lpMemTmp;
     LPAPLVFP          lpMemRht;             // Ptr to VFP global memory data
     APLINT            aplIntegerRes;        // The result
     UINT              uCnt;                 // Loop counter
     APLINT            aplPrec;              // Temporary for the precision
-    int               iHCDim;               // HC Dimension (1, 2, 4, 8)
+    int               iHCDim,               // HC Dimension (1, 2, 4, 8)
+                      i;                    // Loop counter
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -444,7 +448,7 @@ LPPL_YYSTYPE SysFnDR_GetPrec_EM_YY
     // If the array is empty, ...
     if (IsEmpty (aplNELMRht))
     {
-        // Return the numeric precision
+        // Return the pseudo-precision
         aplIntegerRes = POS_INFINITY;
         immTypeRes    = IMMTYPE_FLOAT;
     } else
@@ -510,7 +514,139 @@ LPPL_YYSTYPE SysFnDR_GetPrec_EM_YY
             break;
 
         case ARRAY_HETERO:
+            // Skip over the header and dimensions to the data
+            lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+
+            // Set to identity element for Floor
+            aplIntegerRes = MAX_APLINT;
+            immTypeRes    = IMMTYPE_INT;
+
+            // Loop through the array looking for the lowest precision
+            for (uCnt = 0; uCnt < aplNELMRht; uCnt++)
+            // Split cases based upon the ptr type bits
+            switch (GetPtrTypeDir (((LPAPLHETERO) lpMemRht)[uCnt]))
+            {
+                case PTRTYPE_HGLOBAL:
+                    // Get the HGLOBAL ptr
+                    hGlbTmp = ((LPAPLHETERO) lpMemRht)[uCnt];
+
+                    // Lock the memory to get a ptr to it
+                    lpMemHdrTmp = MyGlobalLockVar (hGlbTmp);
+
+                    // Skip over the header and dimensions to the data
+                    lpMemTmp = VarArrayDataFmBase (lpMemHdrTmp);
+
+                    // Split cases based upon the array type
+                    switch (lpMemHdrTmp->ArrType)
+                    {
+                        case ARRAY_HC2I:
+                        case ARRAY_HC4I:
+                        case ARRAY_HC8I:
+                        case ARRAY_HC2F:
+                        case ARRAY_HC4F:
+                        case ARRAY_HC8F:
+////////////////////////////// Get the precision                            // No need to calculate as there's always an immediate char
+////////////////////////////                                                //   with a lower precision
+////////////////////////////aplPrec = 64;
+////////////////////////////
+////////////////////////////// Use the smaller
+////////////////////////////aplIntegerRes = min (aplIntegerRes, aplPrec);
+////////////////////////////
+                            break;
+
+                        case ARRAY_RAT:
+                        case ARRAY_HC2R:
+                        case ARRAY_HC4R:
+                        case ARRAY_HC8R:
+////////////////////////////// Get the precision                            // No need to calculate as there's always an immediate char
+////////////////////////////                                                //   with a lower precision
+////////////////////////////aplPrec = MAX_APLINT;
+////////////////////////////
+////////////////////////////// Use the smaller
+////////////////////////////aplIntegerRes = min (aplIntegerRes, aplPrec);
+////////////////////////////
+                            break;
+
+                        case ARRAY_VFP:
+                        case ARRAY_HC2V:
+                        case ARRAY_HC4V:
+                        case ARRAY_HC8V:
+                            // Get the HC Dimension (1, 2, 4, 8)
+                            iHCDim = TranslateArrayTypeToHCDim (lpMemHdrTmp->ArrType);
+
+                            // Loop through all of the parts
+                            for (i = 0; i < iHCDim; i++)
+                            {
+                                // Get the precision
+                                aplPrec = mpfr_get_prec (&((LPAPLVFP) lpMemTmp)[i]);
+
+                                // Use the smaller
+                                aplIntegerRes = min (aplIntegerRes, aplPrec);
+                            } // End FOR
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbTmp); lpMemHdrTmp = NULL;
+
+                    break;
+
+                case PTRTYPE_STCONST:
+                    // Split cases based upon the immediate type
+                    switch (((LPAPLHETERO) lpMemRht)[uCnt]->stFlags.ImmType)
+                    {
+                        case IMMTYPE_BOOL:
+                            // Get the precision
+                            aplPrec = 1;
+
+                            // Use the smaller
+                            aplIntegerRes = min (aplIntegerRes, aplPrec);
+
+                            break;
+
+                        case IMMTYPE_INT:
+                        case IMMTYPE_FLOAT:
+////////////////////////////// Get the precision                            // No need to calculate as there's always an immediate char
+////////////////////////////                                                //   with a lower precision
+////////////////////////////aplPrec = 64;
+////////////////////////////
+////////////////////////////// Use the smaller
+////////////////////////////aplIntegerRes = min (aplIntegerRes, aplPrec);
+////////////////////////////
+                            break;
+
+                        case IMMTYPE_CHAR:
+                            // Get the precision
+                            aplPrec = 16;
+
+                            // Use the smaller
+                            aplIntegerRes = min (aplIntegerRes, aplPrec);
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
+                    break;
+
+                defstop
+                    break;
+            } // End FOR/SWITCH
+
+            break;
+
         case ARRAY_NESTED:
+            // Return the pseudo-precision
+            aplIntegerRes = POS_INFINITY;
+            immTypeRes    = IMMTYPE_FLOAT;
+
+            break;
+
         case ARRAY_CHAR:
             // Return the character precision in bits
             aplIntegerRes = 16;

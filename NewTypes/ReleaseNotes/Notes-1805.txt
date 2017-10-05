@@ -1,0 +1,9 @@
+Build #1805 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In 3 []DR Where We Don't Trundle Through A Hetero Array To Find Lowest Precision
+
+Directory branches/bsmith/NewTypes:
+
+QF_DR.C:
+  In <SysFnDR_GetPrec_EM_YY>, handle HETERO arrays element-by-element to find the lowest precision.

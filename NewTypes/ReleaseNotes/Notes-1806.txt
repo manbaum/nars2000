@@ -1,0 +1,9 @@
+Build #1806 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In Parsing F {DOP} A A
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.H:
+  Set the binding strength of "} A" and "} SA" to the same as "A A" so as to defer parsing until we know whether or not the object inside braces is a DOP.

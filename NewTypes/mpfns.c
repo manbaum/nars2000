@@ -1445,8 +1445,11 @@ void mpfr_copy
      mpfr_ptr val)
 
 {
-    mpfr_set_prec (dest, mpfr_get_prec (val));
-    mpfr_set      (dest, val, MPFR_RNDN);
+    // If the source is finite, ...
+    if (!mpfr_inf_p (val)
+     && !mpfr_nan_p (val))
+        mpfr_set_prec (dest, mpfr_get_prec (val));
+    mpfr_set (dest, val, MPFR_RNDN);
 } // End mpfr_copy
 
 
@@ -1461,8 +1464,13 @@ void mpfr_init_copy
      mpfr_ptr val)
 
 {
-    mpfr_init2 (dest, mpfr_get_prec (val));
-    mpfr_set   (dest, val, MPFR_RNDN);
+    // If the source is finite, ...
+    if (!mpfr_inf_p (val)
+     && !mpfr_nan_p (val))
+        mpfr_init2 (dest, mpfr_get_prec (val));
+    else
+        mpfr_init  (dest);
+    mpfr_set (dest, val, MPFR_RNDN);
 } // End mpfr_init_copy
 
 

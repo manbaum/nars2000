@@ -1,6 +1,17 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1807 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In Previous Build On Infinity & NaN
+
+Directory branches/bsmith/NewTypes:
+
+MPFNS.C:
+  Fix bug in <mpfr_copy> and <mpfr_init_copy> not handling Infs & NaNs.
+
+
 Build #1806 -- Version 0.5.5.xx
 --------------------------------
 

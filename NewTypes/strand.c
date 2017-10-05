@@ -1833,7 +1833,7 @@ HGLOBAL MakeGlbEntry_EM
                 // Loop through all of the parts
                 for (i = 0; i < iHCDimRes; i++)
                     // Initialize the result and copy the value
-                    mpfr_init_set (((LPAPLVFP) lpMemRes)++, ((LPAPLVFP) lpVal)++, MPFR_RNDN);
+                    mpfr_init_copy (((LPAPLVFP) lpMemRes)++, ((LPAPLVFP) lpVal)++);
             else
                 // Loop through all of the parts
                 for (i = 0; i < iHCDimRes; i++)

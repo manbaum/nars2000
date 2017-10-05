@@ -1445,7 +1445,7 @@ void mpfr_copy
      mpfr_ptr val)
 
 {
-////mpfr_set_prec (dest, mpfr_get_prec (val));
+    mpfr_set_prec (dest, mpfr_get_prec (val));
     mpfr_set      (dest, val, MPFR_RNDN);
 } // End mpfr_copy
 
@@ -1461,8 +1461,7 @@ void mpfr_init_copy
      mpfr_ptr val)
 
 {
-////mpfr_init2 (dest, mpfr_get_prec (val));
-    mpfr_init0 (dest);
+    mpfr_init2 (dest, mpfr_get_prec (val));
     mpfr_set   (dest, val, MPFR_RNDN);
 } // End mpfr_init_copy
 

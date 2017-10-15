@@ -28,7 +28,7 @@
                                                                                         \
     /*                                                                                  \
         From http://tamivox.org/redbear/qtrn_calc/index.html                            \
-        Ln of a Hypercomplex number:                                                    \
+        Exp of a Hypercomplex number:                                                   \
           With g = magnitude of the imaginary parts                                     \
                h = real part                                                            \
         The real part is                                                                \
@@ -94,7 +94,7 @@
                                                                                         \
     /*                                                                                  \
         From http://tamivox.org/redbear/qtrn_calc/index.html                            \
-        Ln of a Hypercomplex number:                                                    \
+        Exp of a Hypercomplex number:                                                   \
           With g = magnitude of the imaginary parts                                     \
                h = real part                                                            \
         The real part is                                                                \

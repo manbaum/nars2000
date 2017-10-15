@@ -1,6 +1,31 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1809 -- Version 0.5.5.xx
+--------------------------------
+
+* Change URL For "Browse Code"
+* Fix Typo In Comments
+
+Directory branches/bsmith/NewTypes:
+
+PF_STAR.MAC:
+  Fix typo in comments in macros for Exponentiation.
+
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+CONTRIBUTORS-MENU.HTML:
+INDEX-MENU.HTML:
+LICENSE-MENU.HTML:
+  Change URL for "Browse Code".
+
+Directory branches/bsmith/NewTypes/htdocs/download:
+
+DOWNLOAD-MENU.HTML:
+  Change URL for "Browse Code".
+
+
 Build #1808 -- Version 0.5.5.xx
 --------------------------------
 

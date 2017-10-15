@@ -213,7 +213,8 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     lpYYFcnStrLft = GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr);
 
     // Ensure the left operand is a function
-    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
+    if (lpYYFcnStrLft EQ NULL
+     || !IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
         goto LEFT_OPERAND_SYNTAX_EXIT;
 
@@ -1425,7 +1426,8 @@ RESTART_EXCEPTION:
 
 LEFT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                              &lpYYFcnStrLft->tkToken);
+     (lpYYFcnStrLft EQ NULL) ? NULL
+                             : &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
 WSFULL_EXIT:
@@ -1715,7 +1717,8 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     lpYYFcnStrLft = GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr);
 
     // Ensure the left operand is a function
-    if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
+    if (lpYYFcnStrLft EQ NULL
+     || !IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
      || IsTknFillJot (&lpYYFcnStrLft->tkToken))
         goto LEFT_OPERAND_SYNTAX_EXIT;
 
@@ -2616,7 +2619,8 @@ RESTART_EXCEPTION:
 
 LEFT_OPERAND_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                              &lpYYFcnStrLft->tkToken);
+     (lpYYFcnStrLft EQ NULL) ? NULL
+                             : &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
 LEFT_OPERAND_NONCE_EXIT:

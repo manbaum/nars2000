@@ -1037,7 +1037,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 
             // Set ptr to right operand,
             //   skipping over the operator and axis token (if present)
-            lptkLftArg = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr).tkToken;
+            lptkLftArg = &lpYYFcnStrRht->tkToken;
 
             // Get the magic function/operator global memory handle
             hGlbMFO = lpMemPTD->hGlbMFO[MFOE_MonExecute];

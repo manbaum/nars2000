@@ -1,0 +1,15 @@
+Build #1808 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In Monadic/Dyadic Operator Operand Macros
+
+Directory branches/bsmith/NewTypes:
+
+MACROS.H:
+  Fix bug in macros for Monadic/Dyadic Operator operand specifications.
+
+PO_SLASH.C:
+  Test for NULL from <GetMonLftOper> and handle the error message caret appropriately.
+
+PO_VARIANT.C:
+  Fix compiler bug that didn't catch '.' vs. '->'.

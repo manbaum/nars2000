@@ -587,8 +587,8 @@
 #define mpfr_set_ux     mpfr_set_uj
 
 // Define macros for extracting the left and right operands from operators
-#define GetMonLftOper(lpYYFcnStrOpr,lptkAxisOpr)    &lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)]
-#define GetDydLftOper(lpYYFcnStrRht)                &lpYYFcnStrRht[lpYYFcnStrRht->TknCount]
+#define GetMonLftOper(lpYYFcnStrOpr,lptkAxisOpr)    ((lpYYFcnStrOpr->TknCount EQ 1) ? NULL : (&lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL)]))
+#define GetDydLftOper(lpYYFcnStrRht)                ((lpYYFcnStrOpr->TknCount EQ 1) ? NULL : (&lpYYFcnStrRht[lpYYFcnStrRht->TknCount]))
 #define GetDydRhtOper(lpYYFcnStrOpr,lptkAxisOpr)    GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr)
 
 // Define macro to free and YYFree a result, and set to NULL

@@ -1,6 +1,22 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1810 -- Version 0.5.5.xx
+--------------------------------
+
+* Implement Lexicographic And Gray Code Combinatorial Results
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+  Define struct for Special Combinatorial Function
+  Define new elements of CombArgs struct.
+
+PO_COMB.C:
+  Improve comments.
+  Implement Lexicographic and Gray Code combinatorial results.
+
+
 Build #1809 -- Version 0.5.5.xx
 --------------------------------
 

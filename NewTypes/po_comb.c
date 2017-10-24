@@ -253,7 +253,8 @@ LPPL_YYSTYPE PrimOpMonCombinatorial_EM_YY
         lptkAxisLft = NULL;
 
     // The syntax of this operator is
-    //   FS!!V  where V is a one- or two-element vector
+    //   FS!!V  where V is a scalar or one- or two-element numeric vector
+    //          and  FS is a scalar or one- or two-element numeric vector
 
     // Get the attributes of the left operand
     AttrsOfToken (&lpYYFcnStrLft->tkToken, &aplTypeOpr, &aplNELMOpr, &aplRankOpr, NULL);
@@ -293,8 +294,28 @@ LPPL_YYSTYPE PrimOpMonCombinatorial_EM_YY
         // Get the CvG flag
         aplCvG = ConvertToInteger_SCT (aplTypeOpr, lpMemOpr, 1, &bRet);
 
-        // The CvG flag must be Boolean
-        if (!bRet || !IsBooleanValue (aplCvG))
+        if (bRet)
+        {
+            switch (aplFS)
+            {
+                case  10:
+                case  11:
+                case  12:
+                case 110:
+                case 111:
+                    // The CvG flag must be Integer 0..3 for FS=010 011 012 110 111
+                    if (!(0 <= aplCvG
+                      &&       aplCvG <= 3))
+                        goto LEFT_OPERAND_DOMAIN_EXIT;
+                    break;
+
+                default:
+                    // The CvG flag must be Boolean for all other FS
+                    if (!IsBooleanValue (aplCvG))
+                        goto LEFT_OPERAND_DOMAIN_EXIT;
+                    break;
+            } // End SWITCH
+        } else
             goto LEFT_OPERAND_DOMAIN_EXIT;
     } else
         // The default is to Count
@@ -373,6 +394,7 @@ LPPL_YYSTYPE PrimOpMonCombinatorial_EM_YY
     combArgs.lptkRhtArg   = lptkRhtArg;
     combArgs.lptkFunc     = &lpYYFcnStrOpr->tkToken;
     combArgs.lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
+    combArgs.aplGF        = aplCvG;
 
     __try
     {
@@ -444,17 +466,55 @@ LPPL_YYSTYPE PrimOpMonCombinatorial_EM_YY
                 break;
 
             case 110:   // L Permutations of R items
-                if (aplCvG EQ 0)
-                    lpYYRes = FS110C_EM_YY (&combArgs);
-                else
-                    lpYYRes = FS110G_EM_YY (&combArgs);
+                switch (aplCvG)
+                {
+                    case 0:             // Count only
+                        lpYYRes = FS110C_EM_YY (&combArgs);
+
+                        break;
+
+                    case 1:             // Enumerate:  order unspecified
+                    case 3:             // Enumerate:  Gray Code
+                        combArgs.lpCombFn = FS110S_G;
+                        lpYYRes = FS110G_EM_YY (&combArgs);
+
+                        break;
+
+                    case 2:             // Enumerate:  Lexicographic
+                        combArgs.lpCombFn = FS110S_L;
+                        lpYYRes = FS110G_EM_YY (&combArgs);
+
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
                 break;
 
             case 111:   // L Tuples of R items
-                if (aplCvG EQ 0)
-                    lpYYRes = FS111C_EM_YY (&combArgs);
-                else
-                    lpYYRes = FS111G_EM_YY (&combArgs);
+                switch (aplCvG)
+                {
+                    case 0:             // Count only
+                        lpYYRes = FS111C_EM_YY (&combArgs);
+
+                        break;
+
+                    case 1:             // Enumerate:  order unspecified
+                    case 2:             // Enumerate:  Lexicographic
+                        lpYYRes = FS111L_EM_YY (&combArgs);
+
+                        break;
+
+                    case 3:             // Enumerate:  Gray Code
+                        ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                                                  &lpYYFcnStrLft->tkToken);
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
                 break;
 
             case 112:   // Partitions of the set {{iota}L} into R ordered parts
@@ -3145,6 +3205,193 @@ void FS010S
     (APLINT    sm,              // Stride for m
      APLINT    t,               // # Balls
      APLINT    n,               // # Boxes
+     APLINT    nCnt,            // # rows in the result
+     APLINT    GF,              // Generate Flag
+     LPAPLINT  c,               // Ptr to temp
+     LPAPLINT  m,               // Ptr to result
+     LPUBOOL   lpbCtrlBreak)    // Ptr to Ctrl-Break flag
+
+{
+    // Handle special cases
+    if (t <= 0
+     || n <= 0)
+        goto NORMAL_EXIT;
+
+    // Split cases based upon the Generate Flag
+    switch (GF)
+    {
+        case 1:
+        case 3:
+            FS010S_G (sm, t, n, nCnt, c, m, lpbCtrlBreak);
+
+            break;
+
+        case 2:
+            FS010S_L (sm, t, n, nCnt, c, m, lpbCtrlBreak);
+
+            break;
+
+        case 0:
+        defstop
+            break;
+    } // End SWITCH
+NORMAL_EXIT:
+    return;
+} // End FS010S
+
+
+//***************************************************************************
+//  $FS010S_G
+//
+//  Subroutine to FS010S for Gray Code ordering
+//
+//  This algorithm was taken from Knuth, TAoCP, Vol 4A, p. 363, Algorithm R.
+//  The above algorithm was written in origin-1 for n > t > 1.
+//***************************************************************************
+
+void FS010S_G
+    (APLINT    sm,              // Stride for m
+     APLINT    t,               // # Balls
+     APLINT    n,               // # Boxes
+     APLINT    nCnt,            // # rows in the result (UNUSED)
+     LPAPLINT  c,               // Ptr to temp
+     LPAPLINT  m,               // Ptr to result
+     LPUBOOL   lpbCtrlBreak)    // Ptr to Ctrl-Break flag
+
+{
+    APLINT i,
+           j;
+
+#define I1  1-1
+#define I2  2-1
+#define Ij  j-1
+
+//R1:
+    // Handle special cases
+    if (t EQ 0
+     || t > n)
+        return;
+
+    if (t EQ n)
+    {
+        // Fill in the result with {iota}t
+        for (i = 0; i < t; i++)
+            m[i] = i;
+
+        goto R6;
+    } // End IF
+
+    if (t EQ 1)
+    {
+        // Fill in the result with n 1{rho}{iota}n
+        for (i = 0; i < n; i++)
+        {
+            m[0] = i;
+
+            Assert (sm EQ 1);
+
+            // Skip to the next row in the result
+            m += sm;
+        } // End FOR
+
+        goto R6;
+    } // End IF
+
+    // Initialize the (t + 1) elements of the temp
+    for (i = 0; i < t; i++)
+        c[i] = i;
+    c[t] = n;
+
+    j = t;
+R2:
+    // Check for Ctrl-Break
+    if (CheckCtrlBreak (lpbCtrlBreak))
+        goto ERROR_EXIT;
+
+    // Copy the temp to the result
+    //   adding in []IO
+    for (i = 0; i < t; i++)
+        m[i] = c[i];
+
+    // Skip to the next row in the result
+    m += sm;
+//R3:
+    // If t is odd, ...
+    if (t & BIT0)
+    {
+        if ((c[I1] + 1) < c[I2])
+        {
+            c[I1]++;
+
+            goto R2;
+        } // End IF
+
+        j = 2;
+
+        goto R4;
+    } else
+    {
+        if (c[I1] > 0)
+        {
+            c[I1]--;
+
+            goto R2;
+        } // End IF
+
+        j = 2;
+
+        goto R5;
+    } // End IF/ELSE
+R4:
+    Assert (c[Ij] EQ (c[Ij - 1] + 1));
+
+    if (c[Ij] >= j)
+    {
+        c[Ij] = c[Ij - 1];
+        c[Ij - 1]= j - 2;
+
+        goto R2;
+    } // End IF
+
+    j++;
+R5:
+    Assert (c[Ij - 1] EQ (j - 2));
+
+    if ((c[Ij] + 1) < c[Ij + 1])
+    {
+        c[Ij - 1] = c[Ij];
+        c[Ij]++;
+
+        goto R2;
+    } // End IF
+
+    j++;
+
+    if (j <= t)
+        goto R4;
+R6:
+ERROR_EXIT:
+    return;
+#undef  Ij
+#undef  I2
+#undef  I1
+} // End FS010S_G
+
+
+//***************************************************************************
+//  $FS010S_L
+//
+//  Subroutine to FS010S for Lexicographic ordering
+//
+//  This algorithm was taken from Knuth, TAoCP, Vol 4A, p. 359, Algorithm T.
+//  The above algorithm was written in origin-1 for t < n.
+//***************************************************************************
+
+void FS010S_L
+    (APLINT    sm,              // Stride for m
+     APLINT    t,               // # Balls
+     APLINT    n,               // # Boxes
+     APLINT    nCnt,            // # rows in the result
      LPAPLINT  c,               // Ptr to temp
      LPAPLINT  m,               // Ptr to result
      LPUBOOL   lpbCtrlBreak)    // Ptr to Ctrl-Break flag
@@ -3167,21 +3414,26 @@ void FS010S
 
     if (t EQ n)
     {
-        // Copy the temp to the result
-        CopyMemory (m, c, (APLU3264) (t * sizeof (m[0])));
+        // Copy the reverse of the temp to the result
+        for (i = 0; i < t; i++)
+            m[i] = (n - 1) - c[(t - 1) - i];
 
         goto T7;
     } // End IF
+
+    // Skip to the last row in the result
+    m += sm * (nCnt - 1);
 T2:
     // Check for Ctrl-Break
     if (CheckCtrlBreak (lpbCtrlBreak))
         goto ERROR_EXIT;
 
-    // Copy the temp to the result
-    CopyMemory (m, c, (APLU3264) (t * sizeof (m[0])));
+    // Copy the reverse of the temp to the end of the result
+    for (i = 0; i < t; i++)
+        m[i] = (n - 1) - c[(t - 1) - i];
 
-    // Skip to the next row in the result
-    m += sm;
+    // Skip to the previous row in the result
+    m -= sm;
 
     if (j > 0)
     {
@@ -3217,7 +3469,7 @@ ERROR_EXIT:
 #undef  Ij
 #undef  I2
 #undef  I1
-} // End FS010S
+} // End FS010S_L
 
 
 //***************************************************************************
@@ -3329,16 +3581,20 @@ LPPL_YYSTYPE FS010G_EM_YY
         // Skip over the header and dimensions to the data
         lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
-#define u   lpCombArgs->aplIntBalls
-#define t   lpCombArgs->aplIntBalls
-#define n   lpCombArgs->aplIntBoxes
-#define m   lpMemRes
-#define c   lpMemTmp
+#define u       lpCombArgs->aplIntBalls         // L
+#define t       lpCombArgs->aplIntBalls         // L
+#define n       lpCombArgs->aplIntBoxes         // R
+#define nCnt    aplIntRes                       // # rows in the result
+#define GF      lpCombArgs->aplGF               // GF
+#define c       lpMemTmp                        // Temp var (length aplDimRes[1]+2)
+#define m       lpMemRes                        // m output array of shape (L!R) L
         // Generate the result into <lpMemRes>
-        FS010S (u, t, n, c, m, lpbCtrlBreak);
-#undef  c
-#undef  n
+        FS010S (u, t, n, nCnt, GF, c, m, lpbCtrlBreak);
 #undef  m
+#undef  c
+#undef  GF
+#undef  nCnt
+#undef  n
 #undef  t
 #undef  u
         // Check for Ctrl-Break
@@ -3653,16 +3909,20 @@ LPPL_YYSTYPE FS011G_EM_YY
         // Skip over the header and dimensions to the data
         lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
-#define u   aplIntLft                       // L
-#define t   aplIntLft                       // L
-#define n   aplIntRht                       // R
-#define m   lpMemRes
-#define c   lpMemTmp
+#define u       aplIntLft                       // L
+#define t       aplIntLft                       // L
+#define n       aplIntRht                       // R
+#define nCnt    aplIntRes                       // # rows in the result
+#define GF      lpCombArgs->aplGF               // GF
+#define c       lpMemTmp                        // Temp var (length aplDimRes[1]+2)
+#define m       lpMemRes                        // m output array of shape X x L
         // Generate the result into <lpMemRes>
-        FS010S (u, t, n, c, m, lpbCtrlBreak);
-#undef  c
-#undef  n
+        FS010S (u, t, n, nCnt, GF, c, m, lpbCtrlBreak);
 #undef  m
+#undef  c
+#undef  GF
+#undef  nCnt
+#undef  n
 #undef  t
 #undef  u
         // Check for Ctrl-Break
@@ -3891,6 +4151,10 @@ LPPL_YYSTYPE FS012G_EM_YY
     LPUBOOL           lpbCtrlBreak;                     // Ptr to Ctrl-Break flag
     EXCEPTION_CODES   exCode = EXCEPTION_CTRL_BREAK;    // Exception code in case we're to signal an exception
 
+    // If we're doing Gray Codes, ...
+    if (lpCombArgs->aplGF EQ 3)
+        goto NONCE_EXIT;
+
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
 
@@ -3976,16 +4240,20 @@ LPPL_YYSTYPE FS012G_EM_YY
         // Skip over the header and dimensions to the data
         lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
-#define u   aplIntRht                       // R
-#define t   aplIntRht-1                     // R-1
-#define n   aplIntLft-1                     // L-1
-#define m   lpMemRes
-#define c   lpMemTmp
+#define u       aplIntRht                       // R
+#define t       aplIntRht-1                     // R-1
+#define n       aplIntLft-1                     // L-1
+#define nCnt    aplIntRes                       // # rows in the result
+#define GF      lpCombArgs->aplGF               // GF
+#define c       lpMemTmp                        // Temp var (length aplDimRes[1]+2)
+#define m       lpMemRes                        // m output array of shape X x L
         // Generate the result into <lpMemRes>
-        FS010S (u, t, n, c, m, lpbCtrlBreak);
-#undef  c
-#undef  n
+        FS010S (u, t, n, nCnt, GF, c, m, lpbCtrlBreak);
 #undef  m
+#undef  c
+#undef  GF
+#undef  nCnt
+#undef  n
 #undef  t
 #undef  u
         // Check for Ctrl-Break
@@ -4036,6 +4304,11 @@ LPPL_YYSTYPE FS012G_EM_YY
 ////lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex; // Set by caller
 
     goto NORMAL_EXIT;
+
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+                               lpCombArgs->lptkFunc);
+    goto ERROR_EXIT;
 
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
@@ -5388,7 +5661,7 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $FS110S
+//  $FS110S_G
 //
 //  Generate R-permutations of R items
 //  This algorithm was taken from Knuth, TAoCP, Vol 4A, p. 322, Algorithm P.
@@ -5396,12 +5669,12 @@ NORMAL_EXIT:
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- FS110S"
+#define APPEND_NAME     L" -- FS110S_G"
 #else
 #define APPEND_NAME
 #endif
 
-void FS110S
+void FS110S_G
     (APLINT    sm,              // Stride for m
      APLINT    n,               // # Balls
      LPAPLINT  a,               // Ptr to temp
@@ -5476,7 +5749,96 @@ P7:
 ERROR_EXIT:
     return;
 #undef  Ij
-} // End FS110S
+} // End FS110S_G
+#undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $FS110S_L
+//
+//  Generate R-permutations of R items
+//  This algorithm was taken from Knuth, TAoCP, Vol 4A, p. 319, Algorithm L.
+//  The above algorithm was written in origin-1 for n >= 1.
+//***************************************************************************
+
+#ifdef DEBUG
+#define APPEND_NAME     L" -- FS110S_L"
+#else
+#define APPEND_NAME
+#endif
+
+void FS110S_L
+    (APLINT    sm,              // Stride for m
+     APLINT    n,               // # Balls
+     LPAPLINT  a,               // Ptr to temp
+     LPAPLINT  c,               // ...
+     LPAPLINT  o,               // ...
+     LPAPLINT  m,               // Ptr to result
+     APLBOOL   bQuadIO,         // []IO
+     LPUBOOL   lpbCtrlBreak)    // Ptr to Ctrl-Break flag
+
+{
+    APLINT i,           // Loop counter
+           j,           // Temp var
+           k,           // ...
+           l,           // ...
+           t;           // ...
+
+    // Check for none
+    if (n EQ 0)
+        return;
+//L0:
+    // Fill the temp a with -1,{iota}n (at the outer origin)
+    a[0] = -1;
+    for (i = 0; i < n; i++)
+        a[i + 1] = i + bQuadIO;
+L1:
+    // Check for Ctrl-Break
+    if (CheckCtrlBreak (lpbCtrlBreak))
+        goto ERROR_EXIT;
+
+    // Copy 1{drop}a to m
+    CopyMemory (m, &a[1], (APLU3264) (n * sizeof (m[0])));
+
+    // Skip to the next row in the result
+    m += sm;
+//L2:
+    j = n - 1;
+
+    while (a[j] >= a[j + 1])
+        j--;
+    if (j EQ 0)
+        goto NORMAL_EXIT;
+//L3:
+    l = n;
+
+    while (a[j] >= a[l])
+        l--;
+    // Exchange a[j] and a[l]
+    t = a[j];
+    a[j] = a[l];
+    a[l] = t;
+//L4:
+    k = j + 1;
+    l = n;
+
+    while (k < l)
+    {
+        // Exchange a[k] and a[l]
+        t = a[k];
+        a[k] = a[l];
+        a[l] = t;
+
+        k++;
+        l--;
+    } // End WHILE
+
+    goto L1;
+
+ERROR_EXIT:
+NORMAL_EXIT:
+    return;
+} // End FS110S_L
 #undef  APPEND_NAME
 
 
@@ -5519,7 +5881,8 @@ LPPL_YYSTYPE FS110G_EM_YY
                       aplIntCmb,                        // L!R
                       aplIntTmp;                        // Temp var
     UBOOL             bRet;                             // TRUE iff the result is valid
-    APLUINT           ByteTmp;                          // # bytes in the Temp
+    APLUINT           ByteTmp,                          // # bytes in the Temp
+                      ByteTmp1;                         // ...
     APLBOOL           bQuadIO;                          // []IO
     LPPLLOCALVARS     lpplLocalVars;                    // Ptr to re-entrant vars
     LPUBOOL           lpbCtrlBreak;                     // Ptr to Ctrl-Break flag
@@ -5618,15 +5981,28 @@ LPPL_YYSTYPE FS110G_EM_YY
     if (!IsEmpty (aplNELMRes))
     {
         // Calculate space needed for a temp Integer vector of length <L>
-        ByteTmp = imul64 (aplIntLft, sizeof (APLINT), &bRet, 0);
+        ByteTmp  = imul64 (aplIntLft    , sizeof (APLINT), &bRet, 0);
 
         // Check for overflow
         if (!bRet
          || ByteTmp NE (APLU3264) ByteTmp)
             goto WSFULL_EXIT;
 
-        // Allocate a temp Integer vector of length <L>
-        lpMemTmpA = GlobalAlloc3 (GPTR, (APLU3264) ByteTmp);
+        // Calculate space needed for a temp Integer vector of length <L+1>
+        ByteTmp1 = imul64 (aplIntLft + 1, sizeof (APLINT), &bRet, 0);
+
+        // Check for overflow
+        if (!bRet
+         || ByteTmp1 NE (APLU3264) ByteTmp1)
+            goto WSFULL_EXIT;
+
+        //***************************************************************************
+        //  lpMemTmpA is used in both FS110S_G of length L and FS110S_L of length L+1
+        //  For convenience, we allocate room for L+1 so it can be used in both places.
+        //***************************************************************************
+
+        // Allocate a temp Integer vector of length <L+1>
+        lpMemTmpA = GlobalAlloc3 (GPTR, (APLU3264) ByteTmp1);
         if (lpMemTmpA EQ NULL)
             goto WSFULL_EXIT;
 
@@ -5648,20 +6024,26 @@ LPPL_YYSTYPE FS110G_EM_YY
 
         // If L=R, ...
         if (aplIntLft EQ aplIntRht)
+        {
             // Fill the temp Integer matrix with <perm L> in origin-[]IO
-            FS110S (aplIntLft,              // Stride for m
-                    aplIntLft,              // # Balls
-                    lpMemTmpA,              // Ptr to temp of length <L>
-                    lpMemTmpC,              // ...                   <L>
-                    lpMemTmpO,              // ...                   <L>
-                    lpMemRes,               // m output array of shape <aplIntRes L>
-                    bQuadIO,                // []IO
-                    lpbCtrlBreak);          // Ptr to Ctrl-Break flag
+            (*lpCombArgs->lpCombFn)
+                     (aplIntLft,            // Stride for m
+                      aplIntLft,            // # Balls
+                      lpMemTmpA,            // Ptr to temp of length <L+1>
+                      lpMemTmpC,            // ...                   <L>
+                      lpMemTmpO,            // ...                   <L>
+                      lpMemRes,             // m output array of shape <aplIntRes L>
+                      bQuadIO,              // []IO
+                      lpbCtrlBreak);        // Ptr to Ctrl-Break flag
             // Check for Ctrl-Break
             if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
-        else
+        } else
         {
+            // We can't handle as yet GF > 1
+            if (lpCombArgs->aplGF NE 1)
+                goto NONCE_EXIT;
+
             // Calculate space needed for a temp Integer matrix of shape <(!L) L>
             ByteTmp = imul64 (aplIntFac, aplIntLft      , &bRet, 0);
 
@@ -5696,14 +6078,15 @@ LPPL_YYSTYPE FS110G_EM_YY
                 goto WSFULL_EXIT;
 
             // Fill the temp Integer matrix with <perm L> in origin-0
-            FS110S (aplIntLft,              // Stride for m
-                    aplIntLft,              // # Balls
-                    lpMemTmpA,              // Ptr to temp of length <L>
-                    lpMemTmpC,              // ...                   <L>
-                    lpMemTmpO,              // ...                   <L>
-                    lpMemTmpM,              // m output array of shape <(!L) L>
-                    0,                      // []IO
-                    lpbCtrlBreak);          // Ptr to Ctrl-Break flag
+            (*lpCombArgs->lpCombFn)
+                     (aplIntLft,            // Stride for m
+                      aplIntLft,            // # Balls
+                      lpMemTmpA,            // Ptr to temp of length <L+1>
+                      lpMemTmpC,            // ...                   <L>
+                      lpMemTmpO,            // ...                   <L>
+                      lpMemTmpM,            // m output array of shape <(!L) L>
+                      0,                    // []IO
+                      lpbCtrlBreak);        // Ptr to Ctrl-Break flag
             // Check for Ctrl-Break
             if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
@@ -5715,15 +6098,19 @@ LPPL_YYSTYPE FS110G_EM_YY
             //   at the top of lpMemRes
             lpMemTmpT = &lpMemRes[(aplIntRes - aplIntCmb) * aplIntLft];
 
-#define u   lpCombArgs->aplIntBalls     // Stride for m
-#define t   lpCombArgs->aplIntBalls     // L
-#define n   lpCombArgs->aplIntBoxes     // R
-#define c   lpMemTmpLp2                 // Temp var (length L+2)
-#define m   lpMemTmpT                   // m output array of shape (L!R) L
-        // Generate the <L comb R> result into <lpMemTmpLp2>
-        FS010S (u, t, n, c, m, lpbCtrlBreak);
-#undef  c
+#define u       lpCombArgs->aplIntBalls     // Stride for m
+#define t       lpCombArgs->aplIntBalls     // L
+#define n       lpCombArgs->aplIntBoxes     // R
+#define nCnt    aplIntRes                       // # rows in the result
+#define GF      lpCombArgs->aplGF           // GF
+#define c       lpMemTmpLp2                 // Temp var (length L+2)
+#define m       lpMemTmpT                   // m output array of shape (!L) L
+            // Generate the <L comb R> result into <lpMemTmpLp2>
+            FS010S (u, t, n, nCnt, GF, c, m, lpbCtrlBreak);
 #undef  m
+#undef  c
+#undef  GF
+#undef  nCnt
 #undef  n
 #undef  t
 #undef  u
@@ -5774,6 +6161,11 @@ LPPL_YYSTYPE FS110G_EM_YY
 
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lpCombArgs->lptkFunc);
+    goto ERROR_EXIT;
+
+NONCE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                                lpCombArgs->lptkFunc);
     goto ERROR_EXIT;
 
@@ -5955,18 +6347,18 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $FS111G_EM_YY
+//  $FS111L_EM_YY
 //
-//  Generate L Tuples of R Items
+//  Generate L Tuples of R Items Lexicographically2
 //***************************************************************************
 
 #ifdef DEBUG
-#define APPEND_NAME     L" -- FS111G_EM_YY"
+#define APPEND_NAME     L" -- FS111L_EM_YY"
 #else
 #define APPEND_NAME
 #endif
 
-LPPL_YYSTYPE FS111G_EM_YY
+LPPL_YYSTYPE FS111L_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
 
 {
@@ -6103,7 +6495,7 @@ NORMAL_EXIT:
     } // End IF
 
     return lpYYRes;
-} // End FS111G_EM_YY
+} // End FS111L_EM_YY
 #undef  APPEND_NAME
 
 
@@ -6376,7 +6768,7 @@ LPPL_YYSTYPE FS112G_EM_YY
         goto ERROR_EXIT;
 
     //***************************************************************************
-    //  lpMemTmpA is used in both FS110S of length R and FS102S1 of length L
+    //  lpMemTmpA is used in both FS110S_G of length R and FS102S1 of length L
     //  For convenience, we allocate room for the larger of L and R so it can
     //    be used in both places.
     //***************************************************************************
@@ -6470,7 +6862,7 @@ LPPL_YYSTYPE FS112G_EM_YY
         goto WSFULL_EXIT;
 
     // Fill the temp Integer matrix with <perm R> in origin-0
-    FS110S (aplIntRht,              // Stride for m
+    FS110S_G (aplIntRht,            // Stride for m
             aplIntRht,              // # Balls
             lpMemTmpA,              // Ptr to temp of length <max (L, R>>
             lpMemTmpC,              // ...                   <R>

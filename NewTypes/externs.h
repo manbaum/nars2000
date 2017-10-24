@@ -2555,19 +2555,31 @@ size_t gSymTabSize
 //  Combinatorial stuff
 //***************************************************************************
 
+// Special combinatorial function
+typedef void (*LPCOMBFN) (APLINT   ,
+                          APLINT   ,
+                          LPAPLINT ,
+                          LPAPLINT ,
+                          LPAPLINT ,
+                          LPAPLINT ,
+                          APLBOOL  ,
+                          LPUBOOL  );
+
 typedef struct tagCOMB_ARGS
 {
-    APLINT  aplIntBalls,        // 00:  # Balls as an INT
-            aplIntBoxes;        // 04:  # Boxes ...
-    APLRAT  aplRatBalls,        // 08:  # Balls as a RAT
-            aplRatBoxes;        // 0C:  # Boxes ...
-    LPTOKEN lptkFunc,           // 10:  Ptr to function  token
-            lptkRhtArg;         // 14:  ...    right arg ...
-    UINT    bIntBalls:1,        // 18:  00000001:  TRUE iff aplIntBalls is valid
-            bIntBoxes:1,        //      00000002:  ...      aplIntBoxes ...
-            :30;                //      FFFFFFFC:  Available bits
-    LPUBOOL lpbCtrlBreak;       // 1C:  Ptr to Ctrl-Break flag
-                                // 20:  Length
+    APLINT   aplIntBalls,       // 00:  # Balls as an INT
+             aplIntBoxes;       // 04:  # Boxes ...
+    APLRAT   aplRatBalls,       // 08:  # Balls as a RAT
+             aplRatBoxes;       // 0C:  # Boxes ...
+    LPTOKEN  lptkFunc,          // 10:  Ptr to function  token
+             lptkRhtArg;        // 14:  ...    right arg ...
+    UINT     bIntBalls:1,       // 18:  00000001:  TRUE iff aplIntBalls is valid
+             bIntBoxes:1,       //      00000002:  ...      aplIntBoxes ...
+             :30;               //      FFFFFFFC:  Available bits
+    APLINT   aplGF;             // 1C:  Generate Flag
+    LPUBOOL  lpbCtrlBreak;      // 20:  Ptr to Ctrl-Break flag
+    LPCOMBFN lpCombFn;          // 24:  Ptr to special function
+                                // 28:  Length
 } COMBARGS, *LPCOMBARGS;
 
 

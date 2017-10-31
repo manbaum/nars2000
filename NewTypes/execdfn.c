@@ -191,7 +191,7 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
      && IsTknOp1 (&lpYYFcnStrOpr->tkToken))
     {
         // Set ptr to left operand
-        lpYYFcnStrLft = GetMonLftOper (lpYYFcnStrOpr, lptkAxisLcl);
+        lpYYFcnStrLft = GetMonLftOper (lpYYFcnStrOpr, lptkAxisLcl); Assert (lpYYFcnStrLft NE NULL);
 
         // Zap the right operand
         lpYYFcnStrRht = NULL;
@@ -200,11 +200,11 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
     if (lpYYFcnStrOpr NE NULL
      && IsTknOp2 (&lpYYFcnStrOpr->tkToken))
     {
-            // Set ptr to right operand
-        lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisLcl);
+        // Set ptr to right operand
+        lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisLcl               ); Assert (lpYYFcnStrRht NE NULL);
 
         // Set ptr to left operand
-        lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
+        lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrOpr, lptkAxisLcl, lpYYFcnStrRht); Assert (lpYYFcnStrLft NE NULL);
     } else
         lpYYFcnStrLft = lpYYFcnStrRht = NULL;
 

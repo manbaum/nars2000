@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -159,8 +159,8 @@ LPPL_YYSTYPE PrimIdentOpDieresisDownTack_EM_YY
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr);
-    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr               ); Assert (lpYYFcnStrRht NE NULL);
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrOpr, lptkAxisOpr, lpYYFcnStrRht); Assert (lpYYFcnStrLft NE NULL);
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
@@ -375,8 +375,8 @@ LPPL_YYSTYPE PrimOpDydDieresisDownTackCommon_EM_YY
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, NULL);
-    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, NULL               ); Assert (lpYYFcnStrRht NE NULL);
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrOpr, NULL, lpYYFcnStrRht); Assert (lpYYFcnStrLft NE NULL);
 
     return
       PrimOpDieresisDownTackCommon_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic derived function)

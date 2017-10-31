@@ -234,7 +234,7 @@ LPPL_YYSTYPE PrimOpMonCombinatorial_EM_YY
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr);
+    lpYYFcnStrLft = GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr); Assert (lpYYFcnStrLft NE NULL);
 
     // If the left operand is a Jot, ...
     if (IsTknFillJot (&lpYYFcnStrLft->tkToken))

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,13 +49,14 @@ typedef struct tagPL_YYSTYPE        // YYSTYPE for ParseLine
            *lpplYYOpRCurry;         // 38:  ...    right operand ...
     LPTOKEN lptkLftBrace,           // 3C:  Ptr to the AFO's left brace token
             lptkRhtBrace;           // 40:  ...              right ...
+    size_t  uBackOff;               // 44:  Offset to previous Operator YYSTYPE (0 = root)
 #ifdef DEBUG
-    UINT    SILevel;                // 44:  SI Level (needed for YYResIsEmpty)
-    LPCHAR  lpFileName;             // 48:  Ptr to filename where allocated
-    UINT    uLineNum;               // 4C:  Line # where allocated
-                                    // 50:  Length
+    UINT    SILevel;                // 48:  SI Level (needed for YYResIsEmpty)
+    LPCHAR  lpFileName;             // 4C:  Ptr to filename where allocated
+    UINT    uLineNum;               // 50:  Line # where allocated
+                                    // 54:  Length
 #else
-                                    // 44:  Length
+                                    // 48:  Length
 #endif
 } PL_YYSTYPE, *LPPL_YYSTYPE;        // Data type of yacc stack
 

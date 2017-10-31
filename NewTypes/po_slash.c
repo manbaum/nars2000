@@ -210,7 +210,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr);
+    lpYYFcnStrLft = GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr); Assert (lpYYFcnStrLft NE NULL);
 
     // Ensure the left operand is a function
     if (lpYYFcnStrLft EQ NULL
@@ -1714,7 +1714,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
 
     // Set ptr to left operand,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrLft = GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr);
+    lpYYFcnStrLft = GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr); Assert (lpYYFcnStrLft NE NULL);
 
     // Ensure the left operand is a function
     if (lpYYFcnStrLft EQ NULL

@@ -163,8 +163,8 @@ LPPL_YYSTYPE PrimIdentOpVariant_EM_YY
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr);
-    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr               ); Assert (lpYYFcnStrRht NE NULL);
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrOpr, lptkAxisOpr, lpYYFcnStrRht); Assert (lpYYFcnStrLft NE NULL);
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
@@ -249,8 +249,8 @@ LPPL_YYSTYPE PrimOpMonVariantCommon_EM_YY
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, CheckAxisOper (lpYYFcnStrOpr));
-    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, CheckAxisOper (lpYYFcnStrOpr)               ); Assert (lpYYFcnStrRht NE NULL);
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrOpr, CheckAxisOper (lpYYFcnStrOpr), lpYYFcnStrRht); Assert (lpYYFcnStrLft NE NULL);
 
     return
       PrimOpVariantCommon_EM_YY (NULL,                  // Ptr to left arg token (may be NULL if monadic derived function)
@@ -2054,8 +2054,8 @@ LPPL_YYSTYPE PrimOpDydVariantCommon_EM_YY
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, CheckAxisOper (lpYYFcnStrOpr));
-    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, CheckAxisOper (lpYYFcnStrOpr)               ); Assert (lpYYFcnStrRht NE NULL);
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrOpr, CheckAxisOper (lpYYFcnStrOpr), lpYYFcnStrRht); Assert (lpYYFcnStrLft NE NULL);
 
     return
       PrimOpVariantCommon_EM_YY (lptkLftArg,            // Ptr to left arg token (may be NULL if monadic derived function)

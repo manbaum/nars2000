@@ -1888,6 +1888,7 @@ UBOOL UnFcnStrand_EM
     LPPL_YYSTYPE      lpYYRes,          // Ptr to the result
                       lpYYMemStart,     // Ptr to start of strand data
                       lpYYMemData,      // ...
+                      lpYYMemRoot,      // ...
                       lpYYArg = *lp2YYArg;
     NAME_TYPES        actNameType;      // Actual type of the strand
     UINT              uIniLen,          // Initial strand length
@@ -1994,13 +1995,17 @@ UBOOL UnFcnStrand_EM
             // Initialize token count
             TknCount = 0;
 
+            // Initialize the Backoff offset
+            lpYYMemData->uBackOff = 0;
+            lpYYMemRoot = lpYYMemData;
+
             // If it's a Train, ...
             if (fnNameType EQ NAMETYPE_TRN)
                 // Copy the PL_YYSTYPEs in the Train to the global memory
-                lpYYMemData = YYCopyFcnTrn (lpYYMemData, lpYYArg, &TknCount);
+                lpYYMemData = YYCopyFcnTrn ( lpYYMemData, lpYYArg, &TknCount);
             else
                 // Copy the PL_YYSTYPEs in the Function Strand to the global memory
-                lpYYMemData = YYCopyFcnStr (lpYYMemData, lpYYArg, &TknCount);
+                lpYYMemData = YYCopyFcnStr (&lpYYMemRoot, lpYYMemData, lpYYArg, &TknCount);
 
            if (bSaveTxtLine)
                // Make a function array text line

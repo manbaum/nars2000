@@ -913,6 +913,9 @@ typedef struct tagSTART_ADDRESSES
     // qf_d.c
     "SysFnD_EM_YY"              , (LPUCHAR) &SysFnD_EM_YY               ,
 
+    // qf_dc.c
+    "SysFnDC_EM_YY"             , (LPUCHAR) &SysFnDC_EM_YY              ,
+
     // qf_dl.c
     "SysFnDL_EM_YY"             , (LPUCHAR) &SysFnDL_EM_YY              ,
 

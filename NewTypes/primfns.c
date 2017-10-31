@@ -78,6 +78,21 @@ UBOOL IsTknOp2
 
 
 //***************************************************************************
+//  $IsTknAxis
+//
+//  Is the token an axis operator?
+//***************************************************************************
+
+UBOOL IsTknAxis
+    (LPTOKEN lptkFcnAxis)           // Ptr to token
+
+{
+    return (lptkFcnAxis->tkFlags.TknType EQ TKT_AXISIMMED
+         || lptkFcnAxis->tkFlags.TknType EQ TKT_AXISARRAY);
+} // End IsTknAxis
+
+
+//***************************************************************************
 //  $GetTknOpType
 //
 //  Is the token a monadic operator?
@@ -99,6 +114,34 @@ UBOOL GetTknOpType
             // Check the immediate type
             bRet = (GetImmedType (lptkFcnOpr) EQ immType);
         else
+        // If the token is a direct function/operator, ...
+        if (IsTknFopDir (lptkFcnOpr))
+        {
+            // Split cases based upon the NameType
+            switch (lptkFcnOpr->tkData.tkSym->stFlags.stNameType)
+            {
+                case NAMETYPE_FN12:
+                    bRet = (dfnType EQ DFNTYPE_FCN);
+
+                    break;
+
+                case NAMETYPE_OP1:
+                case NAMETYPE_OP3:
+                    bRet = (dfnType EQ DFNTYPE_OP1);
+
+                    break;
+
+                case NAMETYPE_OP2:
+                    bRet = (dfnType EQ DFNTYPE_OP2);
+
+                    break;
+
+                default:
+////////////////////bRet = FALSE;       // Already set to FALSE
+
+                    break;
+            } // End SWITCH
+        } else
         {
             HGLOBAL hGlbData;
 
@@ -4140,6 +4183,32 @@ UBOOL IsTknSysLbl
 
     return bRet;
 } // End IsTknSysLbl
+
+
+//***************************************************************************
+//  $IsTknFopDir
+//
+//  Return TRUE iff the given token is a Direct (System) Function/Operator
+//***************************************************************************
+
+UBOOL IsTknFopDir
+    (LPTOKEN lptkFop)                       // Ptr to token
+
+{
+    UBOOL     bRet = FALSE;                 // TRUE iff the name starts with a Quad or Quote-quad
+
+    // If the token is named, ...
+    if (IsTknNamed (lptkFop))
+    {
+        Assert (GetPtrTypeDir (lptkFop->tkData.tkGlbData) EQ PTRTYPE_STCONST);
+
+        // Return the Boolean value
+        bRet = lptkFop->tkData.tkSym->stFlags.FcnDir;
+////        || lptkFop->tkData.tkSym->stFlags.OprDir;
+    } // End IF
+
+     return bRet;
+} // End IsTknFopDir
 
 
 //***************************************************************************

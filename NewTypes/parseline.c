@@ -7543,9 +7543,7 @@ void ConvertNamedFopToUnnamed
                 // Convert this to an unnamed global Fcn/Opx array
                 lpplYYLval->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
                 lpplYYLval->tkToken.tkData .tkGlbData = hGlbFcn;
-////////////////lpplYYLval->tkToken.tkSynObj          = soTKN_IMMED;    // Already set by caller
-
-                Assert (soTKN_IMMED EQ lpplYYLval->tkToken.tkSynObj);
+                lpplYYLval->tkToken.tkSynObj          = soTKN_IMMED;
 
                 // Increment the RefCnt of each item
                 DbgIncrRefCntFcnArray (hGlbFcn);

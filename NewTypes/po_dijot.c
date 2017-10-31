@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -144,11 +144,15 @@ LPPL_YYSTYPE PrimOpMonDieresisJotCommon_EM_YY
 {
     LPPL_YYSTYPE lpYYFcnStrLft,         // Ptr to left operand function strand
                  lpYYFcnStrRht;         // Ptr to right ...
+    LPTOKEN      lptkAxisOpr;           // Ptr to operator axis token
+
+    // Check for operator axis token
+    lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, CheckAxisOper (lpYYFcnStrOpr));
-    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr               ); Assert (lpYYFcnStrRht NE NULL);
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrOpr, lptkAxisOpr, lpYYFcnStrRht); Assert (lpYYFcnStrLft NE NULL);
 
     return
       PrimOpDieresisJotCommon_EM_YY (NULL,              // Ptr to left arg token (may be NULL if monadic derived function)
@@ -490,11 +494,15 @@ LPPL_YYSTYPE PrimOpDydDieresisJotCommon_EM_YY
 {
     LPPL_YYSTYPE lpYYFcnStrLft,         // Ptr to left operand function strand
                  lpYYFcnStrRht;         // Ptr to right ...
+    LPTOKEN      lptkAxisOpr;           // Ptr to operator axis token
+
+    // Check for operator axis token
+    lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, CheckAxisOper (lpYYFcnStrOpr));
-    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr               ); Assert (lpYYFcnStrRht NE NULL);
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrOpr, lptkAxisOpr, lpYYFcnStrRht); Assert (lpYYFcnStrLft NE NULL);
 
     return
       PrimOpDieresisJotCommon_EM_YY (lptkLftArg,        // Ptr to left arg token (may be NULL if monadic derived function)

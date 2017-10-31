@@ -492,7 +492,8 @@ UINT YYCountFcnTrn
 //***************************************************************************
 
 LPPL_YYSTYPE YYCopyFcnStr
-    (LPPL_YYSTYPE  lpYYMem,             // Ptr to result memory object
+    (LPPL_YYSTYPE *lplpYYMemRoot,       // Ptr to ptr to root memory object
+     LPPL_YYSTYPE  lpYYMem,             // Ptr to result memory object
      LPPL_YYSTYPE  lpYYArg,             // Ptr to function arg
      LPINT         lpTknCount)          // Ptr to resulting token count
 
@@ -502,12 +503,15 @@ LPPL_YYSTYPE YYCopyFcnStr
                   TknCount,             // # tokens added for this element of the function strand
                   TmpCount,             // ... temp version
                   TotalTknCount = 0;    // Total token count
-    UBOOL         bCopyRoot;            // TRUE iff we should copy the root item
+    UBOOL         bFcnArray;            // TRUE iff it's a function array (we should NOT copy the root item)
     LPPL_YYSTYPE  lpYYMem0,             // Ptr to temporary YYSTYPE
+                  lpYYMemC,             // ...
                   lpYYArgI;             // ...
 
     // Get the token count in this function strand
     iLen = lpYYArg->TknCount;
+
+    Assert (iLen > 0);
 
     // Overcome zero in single function tokens
     iLen = max (iLen, 1);
@@ -516,8 +520,11 @@ LPPL_YYSTYPE YYCopyFcnStr
     //   so save its address in the array.
     lpYYMem0 = lpYYMem;
 
+    // Izit a function array?
+    bFcnArray = IsTknFcnArray (&lpYYArg->tkToken);
+
     // If the arg is a function array, ...
-    if (IsTknFcnArray (&lpYYArg->tkToken))
+    if (bFcnArray)
     {
 #ifdef DEBUG
         LPFCNARRAY_HEADER lpYYHdrArgI;
@@ -543,18 +550,13 @@ LPPL_YYSTYPE YYCopyFcnStr
         TotalTknCount = 0;
 
         // Copy the PL_YYSTYPEs in the Function Strand to the global memory
-        lpYYMem = YYCopyFcnStr (lpYYMem, lpYYArgI, &TotalTknCount);
+        lpYYMem = YYCopyFcnStr (lplpYYMemRoot, lpYYMem, lpYYArgI, &TotalTknCount);
 
         // We no longer need this ptr
         MyGlobalUnlock (lpYYArg->tkToken.tkData.tkGlbData); lpYYArgI = NULL;
 
-        // Mark as NOT copying the root item
-        bCopyRoot = FALSE;
-
         Assert (iLen EQ 1);
-    } else
-        // Mark as copying the root item
-        bCopyRoot = TRUE;
+    } // End IF
 
     // Loop through the tokens associated with this symbol
     for (i = 0; i < iLen; i++)
@@ -569,10 +571,29 @@ LPPL_YYSTYPE YYCopyFcnStr
         Assert (lpYYArg[i].lpplYYArgCurry EQ NULL);
 
         // If we should copy the root, ...
-        if (bCopyRoot)
+        if (!bFcnArray)
         {
+            size_t uTmpCount;
+
             // Copy the root token
             YYCopyToMem (lpYYMem++, &lpYYArg[i]);
+
+            // If the just copied arg is an operator, ...
+            if (IsTknOp1 (&lpYYMem[-1].tkToken)
+             || IsTknOp2 (&lpYYMem[-1].tkToken))
+            {
+                // Set the Backoff offset
+                lpYYMem[-1].uBackOff = lpYYMem - *lplpYYMemRoot - 1;
+
+                // If the previous operator is dyadic, this token is its right operand
+                //   in which case we shouldn't mark this as a new root
+                uTmpCount = lpYYMem[-1].uBackOff;
+
+                if (!((uTmpCount >= 1 &&                                     IsTknOp2 (&lpYYMem[-2].tkToken))
+                   || (uTmpCount >= 2 && IsTknAxis (&lpYYMem[-2].tkToken) && IsTknOp2 (&lpYYMem[-3].tkToken))))
+                    // Mark as a new root
+                    *lplpYYMemRoot = lpYYMem - 1;
+            } // End IF
 
             // Initialize it
             TknCount = 1;
@@ -599,11 +620,20 @@ LPPL_YYSTYPE YYCopyFcnStr
         // If the token has a right operand, ...
         if (lpYYArg->lpplYYOpRCurry)
         {
+            LPPL_YYSTYPE lpYYLclRoot;       // Ptr to temporary YYSTYPE
+
             // Initialize the count
             TmpCount = 0;
 
+            // Copy the global root as a local root
+            //   but do not update the global root
+            lpYYLclRoot = *lplpYYMemRoot;
+
             // Copy the right operand
-            lpYYMem = YYCopyFcnStr (lpYYMem, lpYYArg[i].lpplYYOpRCurry, &TmpCount);
+            lpYYMemC = YYCopyFcnStr (&lpYYLclRoot, lpYYMem, lpYYArg[i].lpplYYOpRCurry, &TmpCount);
+
+            // Save as ptr to next entry
+            lpYYMem = lpYYMemC;
 
             // YYFree it
             YYFree (lpYYArg[i].lpplYYOpRCurry); lpYYArg[i].lpplYYOpRCurry = NULL;
@@ -615,11 +645,38 @@ LPPL_YYSTYPE YYCopyFcnStr
         // If the token has a curried function, ...
         if (lpYYArg->lpplYYFcnCurry)
         {
+            LPPL_YYSTYPE lpYYLclRoot;       // Ptr to temporary YYSTYPE
+
             // Initialize the count
             TmpCount = 0;
 
+            // Copy the global root as a local root
+            lpYYLclRoot = *lplpYYMemRoot;
+
             // Copy the curried function
-            lpYYMem = YYCopyFcnStr (lpYYMem, lpYYArg[i].lpplYYFcnCurry, &TmpCount);
+            lpYYMemC = YYCopyFcnStr (lplpYYMemRoot, lpYYMem, lpYYArg[i].lpplYYFcnCurry, &TmpCount);
+
+            // If the copied token is an operator, ...
+            if (IsTknOp1 (&lpYYMem->tkToken)
+             || IsTknOp2 (&lpYYMem->tkToken))
+            {
+                // Initialize the BackOff offset
+                lpYYMem->uBackOff = lpYYMem - lpYYLclRoot;
+
+                // Mark as a new root
+                *lplpYYMemRoot = lpYYMem;
+            } else
+            {
+                // Loop through the linked list of previous operators
+                for (lpYYMem = lpYYLclRoot;
+                     lpYYMem->uBackOff NE 0;
+                     lpYYMem -= lpYYMem->uBackOff)
+                    // Count in the # tokens in the curried function
+                    lpYYMem->TknCount += TmpCount;
+            } // End IF/ELSE
+
+            // Save as ptr to next entry
+            lpYYMem = lpYYMemC;
 
             // YYFree it
             YYFree (lpYYArg[i].lpplYYFcnCurry); lpYYArg[i].lpplYYFcnCurry = NULL;
@@ -633,7 +690,7 @@ LPPL_YYSTYPE YYCopyFcnStr
     } // End FOR
 
     // If we're a function array, ...
-    if (!bCopyRoot)
+    if (bFcnArray)
     {
         // Free it
         FreeTopResult (lpYYArg); lpYYArg = NULL;

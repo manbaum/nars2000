@@ -143,8 +143,8 @@ LPPL_YYSTYPE PrimIdentOpDot_EM_YY
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr);
-    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr               ); Assert (lpYYFcnStrRht NE NULL);
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrOpr, lptkAxisOpr, lpYYFcnStrRht); Assert (lpYYFcnStrLft NE NULL);
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
@@ -343,7 +343,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
     LPUBOOL             lpbCtrlBreak;           // Ptr to Ctrl-Break flag
     LPPL_YYSTYPE        lpYYFcnStrLft,          // Ptr to left operand function strand
                         lpYYFcnStrRht;          // Ptr to right ...
-    LPTOKEN             lptkAxis,               // Ptr to axis token (may be NULL)
+    LPTOKEN             lptkAxisOpr,            // Ptr to axis token (may be NULL)
                         lptkFunc;               // ...    function token
     APLSTYPE            aplTypeRht,             // Right arg storage type
                         aplTypeRes;             // Result    ...
@@ -394,19 +394,19 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
     lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Check for axis operator
-    lptkAxis = CheckAxisOper (lpYYFcnStrOpr);
+    lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
 
     //***************************************************************
     // The derived functions from this operator are not sensitive to
     //   the axis operator, so signal a syntax error if present
     //***************************************************************
-    if (lptkAxis NE NULL)
+    if (lptkAxisOpr NE NULL)
         goto AXIS_SYNTAX_EXIT;
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, CheckAxisOper (lpYYFcnStrOpr));
-    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr               ); Assert (lpYYFcnStrRht NE NULL);
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrOpr, lptkAxisOpr, lpYYFcnStrRht); Assert (lpYYFcnStrLft NE NULL);
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
@@ -490,7 +490,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
                                      &lpYYFcnStrOpr->tkToken,   // Ptr to function token
                                       lpYYFcnStrOpr,            // Ptr to function strand
                                       lptkRhtArg,               // Ptr to right arg token
-                                      lptkAxis,                 // Ptr to axis token
+                                      lptkAxisOpr,              // Ptr to axis token
                                       hGlbMFO,                  // Magic function/operator global memory handle
                                       NULL,                     // Ptr to HSHTAB struc (may be NULL)
                                       LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
@@ -1493,7 +1493,7 @@ GENERAL_DET:
 
 AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                               lptkAxis);
+                               lptkAxisOpr);
     goto ERROR_EXIT;
 
 LEFT_OPERAND_DOMAIN_EXIT:
@@ -2645,8 +2645,8 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
-    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr);
-    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrRht);
+    lpYYFcnStrRht = GetDydRhtOper (lpYYFcnStrOpr, lptkAxisOpr               ); Assert (lpYYFcnStrRht NE NULL);
+    lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrOpr, lptkAxisOpr, lpYYFcnStrRht); Assert (lpYYFcnStrLft NE NULL);
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)

@@ -149,6 +149,8 @@
   #define YYCheckInuse(a)                 _YYCheckInuse (a, FNLN)
   #define CheckCtrlBreak(a)               _CheckCtrlBreak (a)
 //#define DisplayGlbVar(a,b)              DisplayGlbVar (a, b)
+
+  #define MySetFocus(a)                   _MySetFocus((a), FNLN)
 #else
   #define YYAlloc()     _YYAlloc ()
   #define YYFree(a)     _YYFree (a)
@@ -191,6 +193,8 @@
 
   #define dprintfWL0(a,...)
   #define dprintfWL9(a,...)
+
+  #define MySetFocus(a)                   SetFocus(a)
 #endif
 
 #if RESDEBUG

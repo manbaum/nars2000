@@ -1,6 +1,25 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1813 -- Version 0.5.5.xx
+--------------------------------
+
+* Provide Additional DEBUG Information For <MySetFocus>
+
+Directory branches/bsmith/NewTypes:
+
+EDITFCN.C:
+  Define <_MySetFocus> in DEBUG mode only to replace <MySetFocus> and to provide additional DEBUG information.
+
+MACROS.H:
+  Define <MySetFocus> depending pon the DEBUG mode.
+
+Directory branches/bsmith/NewTypes/WineHQ:
+
+LOCAL.H:
+  Declare <_MySetFocus> as an extern.
+
+
 Build #1812 -- Version 0.5.5.xx
 --------------------------------
 

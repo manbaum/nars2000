@@ -80,7 +80,9 @@ void DrawLineContSub (HWND, HDC, int, int, int);
 #undef  EXTERN
 
 extern HGLOBAL __cdecl SplitLines (HGLOBAL, UINT, LPUBOOL);
-extern HWND            MySetFocus (HWND);
+#ifdef DEBUG
+  extern HWND _MySetFocus (HWND, LPCHAR, UINT);
+#endif
 
 #ifdef DEBUG
   #define   LCLODSAPI   ODSAPI

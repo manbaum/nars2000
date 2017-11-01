@@ -6167,20 +6167,25 @@ void ActivateMDIMenu
 } // End ActivateMDIMenu
 
 
+#ifdef DEBUG
 //***************************************************************************
-//  $MySetFocus
+//  $_MySetFocus
 //
 //  Set the focus to a window and check the result
 //***************************************************************************
 
-HWND MySetFocus (HWND hWnd)
+HWND _MySetFocus
+    (HWND   hWnd,           // Incoming window handle
+     LPCHAR lpFileName,     // Ptr to filename
+     UINT   uLine)          // Line #
 {
     HWND hWndRet = SetFocus (hWnd);
 
     Assert (hWndRet NE NULL);
 
     return hWndRet;
-} // End MySetFocus
+} // End _MySetFocus
+#endif
 
 
 //***************************************************************************

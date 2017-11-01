@@ -3288,8 +3288,6 @@ void FS010S_G
         {
             m[0] = i;
 
-            Assert (sm EQ 1);
-
             // Skip to the next row in the result
             m += sm;
         } // End FOR
@@ -3309,7 +3307,6 @@ R2:
         goto ERROR_EXIT;
 
     // Copy the temp to the result
-    //   adding in []IO
     for (i = 0; i < t; i++)
         m[i] = c[i];
 

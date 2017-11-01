@@ -30,7 +30,6 @@ extern MAGIC_FCNOPR MFO_DydIota;
 extern MAGIC_FCNOPR MFO_MonDnShoe;
 extern MAGIC_FCNOPR MFO_MonRank;
 extern MAGIC_FCNOPR MFO_DydRank;
-extern MAGIC_FCNOPR MFO_Conform;
 extern MAGIC_FCNOPR MFO_MonFMT;
 extern MAGIC_FCNOPR MFO_BoxFMT;
 extern MAGIC_FCNOPR MFO_MonVR;
@@ -752,7 +751,6 @@ UBOOL InitMagicFunctions
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonDnShoe        ]  = Init1MagicFunction (MFON_MonDnShoe        , &MFO_MonDnShoe        , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonRank          ]  = Init1MagicFunction (MFON_MonRank          , &MFO_MonRank          , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydRank          ]  = Init1MagicFunction (MFON_DydRank          , &MFO_DydRank          , lpMemPTD, hWndEC, NULL));
-    bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_Conform          ]  = Init1MagicFunction (MFON_Conform          , &MFO_Conform          , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonFMT           ]  = Init1MagicFunction (MFON_MonFMT           , &MFO_MonFMT           , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_BoxFMT           ]  = Init1MagicFunction (MFON_BoxFMT           , &MFO_BoxFMT           , lpMemPTD, hWndEC, NULL));
     initMFO.lphtsMFO = &lpMemPTD->htsMFO_MonVR;     // Set local HTS so []VR can use ##. to look up a name in the parent Sym & Hash Tables

@@ -28,7 +28,7 @@ typedef enum tagMFO
     MFOE_MonDnShoe       ,      // 02:  Monadic Down Shoe
     MFOE_MonRank         ,      // 03:  Monadic Derived Function from Rank Operator
     MFOE_DydRank         ,      // 04:  Dyadic  ...
-    MFOE_Conform         ,      // 05:  Conform  (for Rank Operator)
+    MFOE_DetPerm         ,      // 05:  Permanent of a matrix
     MFOE_MonFMT          ,      // 06:  Monadic []FMT
     MFOE_BoxFMT          ,      // 07:  Box (for monadic []FMT)
     MFOE_MonVR           ,      // 08:  Monadic []VR
@@ -75,8 +75,7 @@ typedef enum tagMFO
     MFOE_DydSlope        ,      // 31:  Dyadic Slope
     MFOE_MonShriek       ,      // 32:  Monadic Shriek
     MFOE_MatOpr          ,      // 33:  Matrix Operator
-    MFOE_DetPerm         ,      // 34:  Permanent of a matrix
-    MFOE_LENGTH                 // 35:  # entries in this enum
+    MFOE_LENGTH                 // 34:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -85,7 +84,6 @@ typedef enum tagMFO
 #define MFON_MonDnShoe          L"#MonDnShoe"
 #define MFON_MonRank            L"#MonRank"
 #define MFON_DydRank            L"#DydRank"
-#define MFON_Conform            L"#Conform"
 #define MFON_MonFMT             L"#MonFMT"
 #define MFON_BoxFMT             L"#BoxFMT"
 #define MFON_MonVR              L"#MonVR"

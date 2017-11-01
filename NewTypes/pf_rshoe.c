@@ -303,6 +303,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                       lpMemSub;             // Ptr to right arg item global memory
     LPAPLDIM          lpMemDimRht = NULL,   // Ptr to right arg dimensions
                       lpMemDimCom = NULL,   // Ptr to right arg common item dimensions
+                      lpMemDimSub,          // ...              item dimensions
                       lpMemDimRes;          // Ptr to result dimensions
     LPAPLUINT         lpMemAxisHead = NULL, // Ptr to axis values, fleshed out by CheckAxis_EM
                       lpMemLft;             // Ptr to left arg global memory
@@ -319,10 +320,12 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                       aplRankRes,           // Result rank
                       aplRankCom,           // Right arg common item rank
                       aplRankSub;           // Right arg item rank
-    UBOOL             bRet = TRUE;          // TRUE iff result is valid
+    UBOOL             bRet = TRUE,          // TRUE iff result is valid
+                      bScalarItem = FALSE;  // TRUE iff the right arg contains a scalar item
     UINT              uBitMask;             // Bit mask for looping through Booleans
     APLNELM           uRht,                 // Loop counter
                       uCom,                 // ...
+                      uDim,                 // ...
                       uSub;                 // ...
     APLSTYPE          aplTypeRht,           // Right arg storage type
                       aplTypeSub,           // Right arg item storage type
@@ -397,17 +400,8 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                 //   of the item
                 AttrsOfGlb (((LPAPLNESTED) lpMemRht)[uRht], NULL, NULL, &aplRankSub, NULL);
 
-                // If the item is not a scalar, ...
-                if (!IsScalar (aplRankSub))
-                {
-                    // If the result rank hasn't been specified as yet, ...
-                    if (IsScalar (aplRankCom))
-                        aplRankCom = aplRankSub;
-                    else
-                    // If the result rank and the item rank are unequal, ...
-                    if (aplRankCom NE aplRankSub)
-                        goto RANK_EXIT;
-                } // End IF
+                // Calculate the higher rank
+                aplRankCom = max (aplRankCom, aplRankSub);
 
                 break;
 
@@ -461,6 +455,8 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     // From here on, the right arg is ARRAY_NESTED.
     //***************************************************************
 
+    Assert (IsNested (aplTypeRht));
+
     // Calculate space needed for the dimensions
     ByteRes = sizeof (APLUINT) * aplRankCom;
 
@@ -498,6 +494,10 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
         switch (GetPtrTypeDir (((LPAPLNESTED) lpMemRht)[uRht]))
         {
             case PTRTYPE_STCONST:   // Ignore (simple) scalar items
+                // Mark as a scalar item
+                bScalarItem = TRUE;
+
+                // Calculate its storage type
                 aplTypeSub = TranslateImmTypeToArrayType (((LPAPLHETERO) lpMemRht)[uRht]->stFlags.ImmType);
 
                 // Keep track of the type of the first simple scalar
@@ -517,16 +517,28 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                     lpMemHdrSub = MyGlobalLockVar (((LPAPLNESTED) lpMemRht)[uRht]);
 
                     // Skip over the header to the dimensions
-                    lpMemSub = VarArrayBaseToDim (lpMemHdrSub);
+                    lpMemDimSub = VarArrayBaseToDim (lpMemHdrSub);
 
                     // Loop through the dimensions of the item
                     //   calculating the maximum of the corresponding dimensions
-                    for (uSub = 0; uSub < aplRankSub; uSub++)
-                        lpMemDimCom[uSub] = max (lpMemDimCom[uSub], ((LPAPLDIM) lpMemSub)[uSub]);
+                    for (uDim = aplRankCom - aplRankSub, uSub = 0; uSub < aplRankSub; uDim++, uSub++)
+                        lpMemDimCom[uDim] = max (lpMemDimCom[uDim], ((LPAPLDIM) lpMemDimSub)[uSub]);
+                    // Keep track of the type of the first simple scalar
+                    if (IsErrorType (aplType1SS)
+                     && IsSimpleHet (aplTypeSub))
+                    {
+                        // Skip over the header and dimensions to the data
+                        lpMemSub = VarArrayDataFmBase (lpMemHdrSub);
+
+                        // Calculate its storage type
+                        aplType1SS = TranslateImmTypeToArrayType (((LPAPLHETERO) lpMemSub)[0]->stFlags.ImmType);
+                    } // End IF
+
                     // We no longer need this ptr
                     MyGlobalUnlock (((LPAPLNESTED) lpMemRht)[uRht]); lpMemHdrSub = NULL;
-                } // End IF
-
+                } else
+                    // Mark as a scalar item
+                    bScalarItem = TRUE;
                 break;
 
             defstop
@@ -535,7 +547,15 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
 
         // Include this type in the mix
         aplTypeRes = aTypePromote[aplTypeRes][aplTypeSub];
-    } // End IF/FOR
+    } // End FOR
+
+    // If the right arg contains a scalar, ...
+    if (bScalarItem)
+    // Loop through the dimensions of the item
+    for (uSub = 0; uSub < aplRankSub; uSub++)
+        // Each new dimension in the result is at least one
+        //   as the scalar is extended to be of shape all 1s
+        lpMemDimCom[uSub] = max (lpMemDimCom[uSub], 1);
 
     // Trundle through the common item's shape and calculate its NELM
     if (!IsScalar (aplRankCom))
@@ -2519,11 +2539,6 @@ NORMAL_EXIT:
 
 AXIS_EXIT:
     ErrorMessageIndirectToken (ERRMSG_AXIS_ERROR APPEND_NAME,
-                               lptkFunc);
-    goto ERROR_EXIT;
-
-RANK_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                                lptkFunc);
     goto ERROR_EXIT;
 

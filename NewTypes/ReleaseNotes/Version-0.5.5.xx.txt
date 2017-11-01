@@ -1,6 +1,31 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1812 -- Version 0.5.5.xx
+--------------------------------
+
+* Implement Conforming Disclose In The Monadic Primitive {rightshoe}
+* Remove Magic Function For Conforming Disclose From Call To Rank Operator
+* Adjust The Magic Function For The Rank operator
+
+Directory branches/bsmith/NewTypes:
+
+EXECMFN.C:
+EXECMFN.H:
+  Remove magic function for conforming Disclose.
+
+MF_DIJOT.H:
+  In both monadic and dyadic Rank operator, handle non-result returning left operands.
+  Remove magic function for conforming Disclose.
+  Adjust the magic function for the Rank operator.
+
+PF_RSHOE.C:
+  Implement conforming Disclose in the monadic primitive {rightshoe}.
+
+PO_DIJOT.C:
+  Remove magic function for conforming Disclose from call to Rank operator.
+
+
 Build #1811 -- Version 0.5.5.xx
 --------------------------------
 

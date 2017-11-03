@@ -228,7 +228,7 @@
 
 // Empty assignment to []vars as Fixed System value (TRUE) or .ini file value (FALSE)
 #define DEF_RESETVARS_CT            FALSE
-#define DEF_RESETVARS_DQ            FALSE
+#define DEF_RESETVARS_LR            FALSE
 #define DEF_RESETVARS_DT            FALSE
 #define DEF_RESETVARS_FC            FALSE
 #define DEF_RESETVARS_FEATURE       FALSE

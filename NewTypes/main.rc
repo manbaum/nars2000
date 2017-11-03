@@ -300,8 +300,8 @@ BEGIN
     LTEXT           "Floating Point Scalar",
                                IDC_STATIC              ,200, 52, 80, 13
 
-    LTEXT           "DQ"      ,IDC_STATIC              ,  5, 70, 40, 13
-    COMBOBOX                   IDC_CLEARWS_DQ_CB       , 45, 66,100, 40,WS_BORDER | CBS_DROPDOWNLIST
+    LTEXT           "LR"      ,IDC_STATIC              ,  5, 70, 40, 13
+    COMBOBOX                   IDC_CLEARWS_LR_CB       , 45, 66,100, 40,WS_BORDER | CBS_DROPDOWNLIST
 
     LTEXT           "DT"      ,IDC_STATIC              ,  5, 88, 40, 13
     COMBOBOX                   IDC_CLEARWS_DT_CB       , 45, 84,100, 40,WS_BORDER | CBS_DROPDOWNLIST
@@ -859,9 +859,9 @@ BEGIN
     AUTORADIOBUTTON ""              ,IDC_RESET_CT_RADIO1      ,55, 86, 16, 8
     AUTORADIOBUTTON ""              ,IDC_RESET_CT_RADIO2      ,95, 86, 16, 8
 
-    LTEXT           "DQ"            ,IDC_STATIC               , 5,101, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_DQ_RADIO1      ,55,101, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_DQ_RADIO2      ,95,101, 16, 8
+    LTEXT           "LR"            ,IDC_STATIC               , 5,101, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_LR_RADIO1      ,55,101, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_LR_RADIO2      ,95,101, 16, 8
 
     LTEXT           "DT"            ,IDC_STATIC               , 5,116, 50, 8
     AUTORADIOBUTTON ""              ,IDC_RESET_DT_RADIO1      ,55,116, 16, 8

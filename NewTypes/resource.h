@@ -181,7 +181,7 @@
 #define IDC_CLEARWS_ALX_EC                       820
 #define IDC_CLEARWS_ALX_LEN                      821
 #define IDC_CLEARWS_CT_EC                        822
-#define IDC_CLEARWS_DQ_CB                        823
+#define IDC_CLEARWS_LR_CB                        823
 #define IDC_CLEARWS_DT_CB                        824
 #define IDC_CLEARWS_ELX_EC                       825
 #define IDC_CLEARWS_ELX_LEN                      826
@@ -266,8 +266,8 @@
 
 #define IDC_RESET_CT_RADIO1                      901
 #define IDC_RESET_CT_RADIO2                      902
-#define IDC_RESET_DQ_RADIO1                      903
-#define IDC_RESET_DQ_RADIO2                      904
+#define IDC_RESET_LR_RADIO1                      903
+#define IDC_RESET_LR_RADIO2                      904
 #define IDC_RESET_DT_RADIO1                      905
 #define IDC_RESET_DT_RADIO2                      906
 #define IDC_RESET_FC_RADIO1                      907

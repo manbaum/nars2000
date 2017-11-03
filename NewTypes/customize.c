@@ -437,7 +437,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                                            &FontsRadio8[0],
                                           };
     static UINT         ResetRadioCT      [] = {IDC_RESET_CT_RADIO1      , IDC_RESET_CT_RADIO2      },
-                        ResetRadioDQ      [] = {IDC_RESET_DQ_RADIO1      , IDC_RESET_DQ_RADIO2      },
+                        ResetRadioLR      [] = {IDC_RESET_LR_RADIO1      , IDC_RESET_LR_RADIO2      },
                         ResetRadioDT      [] = {IDC_RESET_DT_RADIO1      , IDC_RESET_DT_RADIO2      },
                         ResetRadioFC      [] = {IDC_RESET_FC_RADIO1      , IDC_RESET_FC_RADIO2      },
                         ResetRadioFEATURE [] = {IDC_RESET_FEATURE_RADIO1 , IDC_RESET_FEATURE_RADIO2 },
@@ -448,7 +448,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         ResetRadioPW      [] = {IDC_RESET_PW_RADIO1      , IDC_RESET_PW_RADIO2      },
                         ResetRadioRL      [] = {IDC_RESET_RL_RADIO1      , IDC_RESET_RL_RADIO2      };
     static LPUINT       ResetRadioPtr[] = {&ResetRadioCT      [0],
-                                           &ResetRadioDQ      [0],
+                                           &ResetRadioLR      [0],
                                            &ResetRadioDT      [0],
                                            &ResetRadioFC      [0],
                                            &ResetRadioFEATURE [0],
@@ -478,9 +478,9 @@ INT_PTR CALLBACK CustomizeDlgProc
     static CHOOSECOLORW cc = {0};               // Struct for ChooseColorW
     static UBOOL        gbFore;                 // TRUE iff the button is FOREGROUND
     static UINT         guIndex;                // Index of the button
-    static LPWCHAR      lpwszQuadDQNames[] = {DEF_QUADDQ_NAMES};
+    static LPWCHAR      lpwszQuadLRNames[] = {DEF_QUADLR_NAMES};
     static LPWCHAR      lpwszQuadDTNames[] = {DEF_QUADDT_NAMES};
-    static   WCHAR        wszQuadDQAllow[] = {DEF_QUADDQ_ALLOW};
+    static   WCHAR        wszQuadLRAllow[] = {DEF_QUADLR_ALLOW};
     static   WCHAR        wszQuadDTAllow[] = {DEF_QUADDT_ALLOW};
 
     static COLORNAMES scMenuItems[] =
@@ -702,7 +702,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         // Set the font for each Edit Ctrl or ComboBox
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ALX_EC      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []ALX
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_CT_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []CT
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_DQ_CB       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []DQ
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_LR_CB       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []LR
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_DT_CB       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []DT
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_ELX_EC      ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []ELX
                         SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_FC_EC       ), WM_SETFONT, (WPARAM) (HANDLE_PTR) hFontCWS, MAKELPARAM (FALSE, 0));  // []FC
@@ -776,19 +776,19 @@ INT_PTR CALLBACK CustomizeDlgProc
                         SetDlgItemTextW (hWndProp, IDC_CLEARWS_CT_EC,  lpwszGlbTemp);
 
                         //***************************************************************
-                        // []DQ -- CLEAR WS Values
+                        // []LR -- CLEAR WS Values
                         //***************************************************************
 
-                        // Loop through the []DQ names
-                        for (uCnt = 0; uCnt < strcountof (wszQuadDQAllow); uCnt++)
-                            // Insert the []DQ names
-                            SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_DQ_CB), CB_ADDSTRING, 0, (LPARAM) (HANDLE_PTR) lpwszQuadDQNames[uCnt]);
+                        // Loop through the []LR names
+                        for (uCnt = 0; uCnt < strcountof (wszQuadLRAllow); uCnt++)
+                            // Insert the []LR names
+                            SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_LR_CB), CB_ADDSTRING, 0, (LPARAM) (HANDLE_PTR) lpwszQuadLRNames[uCnt]);
 
                         // Get the index of the current value
-                        uCnt = (UINT) (strchrW (wszQuadDQAllow, cQuadDQ_CWS) - wszQuadDQAllow);
+                        uCnt = (UINT) (strchrW (wszQuadLRAllow, cQuadLR_CWS) - wszQuadLRAllow);
 
                         // Select the current value
-                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_DQ_CB), CB_SETCURSEL, uCnt, 0);
+                        SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_LR_CB), CB_SETCURSEL, uCnt, 0);
 
                         //***************************************************************
                         // []DT -- CLEAR WS Values
@@ -1588,7 +1588,7 @@ INT_PTR CALLBACK CustomizeDlgProc
 
                         // Set the radio button initial states
                         SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[ 0][lclResetVars.CT     ]), BM_SETCHECK, TRUE, 0);
-                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[ 1][lclResetVars.DQ     ]), BM_SETCHECK, TRUE, 0);
+                        SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[ 1][lclResetVars.LR     ]), BM_SETCHECK, TRUE, 0);
                         SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[ 2][lclResetVars.DT     ]), BM_SETCHECK, TRUE, 0);
                         SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[ 3][lclResetVars.FC     ]), BM_SETCHECK, TRUE, 0);
                         SendMessageW (GetDlgItem (hWndProp, ResetRadioPtr[ 4][lclResetVars.FEATURE]), BM_SETCHECK, TRUE, 0);
@@ -2942,15 +2942,15 @@ INT_PTR CALLBACK CustomizeDlgProc
                         fQuadCT_CWS = MyStrtod (szTemp, NULL);
 
                         //***************************************************************
-                        // []DQ
+                        // []LR
                         //***************************************************************
 
-                        // Get the index of the currently selected []DQ name
+                        // Get the index of the currently selected []LR name
                         uCnt = (UINT)
-                          SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_DQ_CB), CB_GETCURSEL, 0, 0);
+                          SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_LR_CB), CB_GETCURSEL, 0, 0);
 
                         // Save in global
-                        cQuadDQ_CWS = wszQuadDQAllow[uCnt];
+                        cQuadLR_CWS = wszQuadLRAllow[uCnt];
 
                         //***************************************************************
                         // []DT
@@ -3307,7 +3307,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                           SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
 
                         bResetVars.CT      = IsDlgButtonChecked (hWndProp, IDC_RESET_CT_RADIO2      );
-                        bResetVars.DQ      = IsDlgButtonChecked (hWndProp, IDC_RESET_DQ_RADIO2      );
+                        bResetVars.LR      = IsDlgButtonChecked (hWndProp, IDC_RESET_LR_RADIO2      );
                         bResetVars.DT      = IsDlgButtonChecked (hWndProp, IDC_RESET_DT_RADIO2      );
                         bResetVars.FC      = IsDlgButtonChecked (hWndProp, IDC_RESET_FC_RADIO2      );
                         bResetVars.FEATURE = IsDlgButtonChecked (hWndProp, IDC_RESET_FEATURE_RADIO2 );
@@ -3627,7 +3627,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                     // Return dialog result
                     DlgMsgDone (hDlg);              // We handled the msg
 
-                case IDC_CLEARWS_DQ_CB:
+                case IDC_CLEARWS_LR_CB:
                 case IDC_CLEARWS_DT_CB:
                     // We care about CBN_SELCHANGE only
                     if (CBN_SELCHANGE EQ cmdCtl)
@@ -5030,13 +5030,13 @@ INT_PTR CALLBACK CustomizeDlgProc
                     // Return dialog result
                     DlgMsgDone (hDlg);              // We handled the msg
 
-                case IDC_RESET_DQ_RADIO1:
-                case IDC_RESET_DQ_RADIO2:
+                case IDC_RESET_LR_RADIO1:
+                case IDC_RESET_LR_RADIO2:
                     // We care about BN_CLICKED only
                     if (BN_CLICKED EQ cmdCtl)
                     {
                         // Save the new setting in our local copy
-                        lclResetVars.DQ = (IDC_RESET_DQ_RADIO2 EQ idCtl);
+                        lclResetVars.LR = (IDC_RESET_LR_RADIO2 EQ idCtl);
 
                         // Enable the Apply button
                         EnableWindow (hWndApply, TRUE);

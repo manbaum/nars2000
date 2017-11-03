@@ -302,10 +302,10 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
     UBOOL               bRet = TRUE,                // TRUE iff the result is valid
                         bQuadCTFound = FALSE,       // TRUE iff []CT value found
                         bQuadIOFound = FALSE,       // ...      []IO ...
-                        bQuadDQFound = FALSE,       // ...      []DQ ...
+                        bQuadLRFound = FALSE,       // ...      []LR ...
                         bQuadDTFound = FALSE;       // ...      []DT ...
     APLFLOAT            fQuadCT;                    // []CT
-    APLCHAR             cQuadDQ,                    // []DQ
+    APLCHAR             cQuadLR,                    // []LR
                         cQuadDT;                    // []DT
     APLBOOL             bQuadIO;                    // []IO
     APLINT              uQuadPPV;                   // []PP for VFPs
@@ -577,7 +577,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 
             break;
 
-        // []DQ:  Division Quotient
+        // []LR:  Division Quotient
         case UTF16_COLONBAR:                // Dyadic only (Division)
         case UTF16_DOWNCARET:               // ...         (GCD)
         case UTF16_UPCARET:                 // ...         (LCM)
@@ -599,15 +599,15 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
             // Validate the value
             if (!ValidateCharScalar_EM (NULL,                   // Ptr to name token
                                        &lpYYFcnStrRht->tkToken, // Ptr to value token
-                                        DEF_QUADDQ_CWS[0],      // Default value
-                                        DEF_QUADDQ_ALLOW,       // Ptr to vector of allowed values
+                                        DEF_QUADLR_CWS[0],      // Default value
+                                        DEF_QUADLR_ALLOW,       // Ptr to vector of allowed values
                                        &aplCharRhtOpr))         // Ptr to return value
                 goto RIGHT_OPERAND_DOMAIN_EXIT;
-            // Save the current value for []DQ
-            cQuadDQ = GetQuadDQ ();
+            // Save the current value for []LR
+            cQuadLR = GetQuadLR ();
 
             // Put the new value into effect
-            SetQuadDQ (aplCharRhtOpr);
+            SetQuadLR (aplCharRhtOpr);
 
             // ***TESTME*** -- At some point we'll need to worry about multiple threads in the same workspace.
 
@@ -617,11 +617,11 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
                               lpYYFcnStrLft,        // Ptr to function strand
                               lptkRhtArg);          // Ptr to right arg token
             // Restore the original value
-            SetQuadDQ (cQuadDQ);
+            SetQuadLR (cQuadLR);
 
             break;
 
-        // []CT & []DQ:  Division Quotient:  'l' (left quotient) or 'r' (right quotient)
+        // []CT & []LR:  Division Quotient:  'l' (left quotient) or 'r' (right quotient)
         case UTF16_STILE:                   // Dyadic only  (Residue)
         case UTF16_STILE2:                  // ...          (Residue)
             // Ensure there's a left arg
@@ -699,7 +699,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
                                         NULL,                   // ...        immediate type (see IMM_TYPES) (may be NULL)
                                         NULL);                  // ...        array type:  ARRAY_TYPES (may be NULL)
                     // Set the flag
-                    bQuadDQFound = TRUE;    // In aplCharRhtOpr
+                    bQuadLRFound = TRUE;    // In aplCharRhtOpr
 
                     break;
 
@@ -711,7 +711,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
                     if (!PrimOpVariantCheckHetero (lpMemRhtOpr,         // Ptr to right operand global memory data
                                                    0,                   // Index into lpMemRhtOpr to use
                                                   &bQuadCTFound,        // Ptr to bQuadCTFound
-                                                  &bQuadDQFound,        // ...    ...  DQ ...
+                                                  &bQuadLRFound,        // ...    ...  LR ...
                                                    NULL,
                                                   &aplFloatRhtOpr,      // ...    aplFloatRhtOpr
                                                   &aplCharRhtOpr))      // ...    ...Char ...
@@ -721,7 +721,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
                     if (!PrimOpVariantCheckHetero (lpMemRhtOpr,         // Ptr to right operand global memory data
                                                    1,                   // Index into lpMemRhtOpr to use
                                                   &bQuadCTFound,        // Ptr to bQuadCTFound
-                                                  &bQuadDQFound,        // ...    ...  DQ ...
+                                                  &bQuadLRFound,        // ...    ...  LR ...
                                                    NULL,
                                                   &aplFloatRhtOpr,      // ...    aplFloatRhtOpr
                                                   &aplCharRhtOpr))      // ...    ...Char ...
@@ -736,8 +736,8 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
                         goto RIGHT_OPERAND_DOMAIN_EXIT;
 
                     // Test the value
-                    if (bQuadDQFound
-                     && (strchrW (DEF_QUADDQ_ALLOW, aplCharRhtOpr) EQ NULL))
+                    if (bQuadLRFound
+                     && (strchrW (DEF_QUADLR_ALLOW, aplCharRhtOpr) EQ NULL))
                         goto RIGHT_OPERAND_DOMAIN_EXIT;
 
                     break;
@@ -747,15 +747,15 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
                     break;
             } // End SWITCH
 
-            // Save the current values for []CT & []DQ
+            // Save the current values for []CT & []LR
             fQuadCT = GetQuadCT ();
-            cQuadDQ = GetQuadDQ ();
+            cQuadLR = GetQuadLR ();
 
             // Put the new value(s) into effect
             if (bQuadCTFound)
                 SetQuadCT (aplFloatRhtOpr);
-            if (bQuadDQFound)
-                SetQuadDQ (aplCharRhtOpr);
+            if (bQuadLRFound)
+                SetQuadLR (aplCharRhtOpr);
 
             // ***TESTME*** -- At some point we'll need to worry about multiple threads in the same workspace.
 
@@ -765,7 +765,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
                               lpYYFcnStrLft,        // Ptr to function strand
                               lptkRhtArg);          // Ptr to right arg token
             // Restore the original values
-            SetQuadDQ (cQuadDQ);
+            SetQuadLR (cQuadLR);
             SetQuadCT (fQuadCT);
 
             break;
@@ -1111,7 +1111,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
             break;
 
         // Eigenvalues/Eigenvectors/Schur Vectors
-        // []DQ:  Division Quotient:  'l' (left quotient) or 'r' (right quotient)
+        // []LR:  Division Quotient:  'l' (left quotient) or 'r' (right quotient)
         case UTF16_DOMINO:
             // Validate the right operand as
             //   a simple numeric scalar or one-element vector
@@ -1125,15 +1125,15 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
                 // Validate the value
                 if (!ValidateCharScalar_EM (NULL,                   // Ptr to name token
                                            &lpYYFcnStrRht->tkToken, // Ptr to value token
-                                            DEF_QUADDQ_CWS[0],      // Default value
-                                            DEF_QUADDQ_ALLOW,       // Ptr to vector of allowed values
+                                            DEF_QUADLR_CWS[0],      // Default value
+                                            DEF_QUADLR_ALLOW,       // Ptr to vector of allowed values
                                            &aplCharRhtOpr))         // Ptr to return value
                     goto RIGHT_OPERAND_DOMAIN_EXIT;
-                // Save the current value for []DQ
-                cQuadDQ = GetQuadDQ ();
+                // Save the current value for []LR
+                cQuadLR = GetQuadLR ();
 
                 // Put the new value into effect
-                SetQuadDQ (aplCharRhtOpr);
+                SetQuadLR (aplCharRhtOpr);
 
                 // Execute the function
                 lpYYRes =
@@ -1141,7 +1141,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
                                   lpYYFcnStrLft,        // Ptr to function strand
                                   lptkRhtArg);          // Ptr to right arg token
                 // Restore the original value
-                SetQuadDQ (cQuadDQ);
+                SetQuadLR (cQuadLR);
             } else
             {
                 // Get the first value as an integer from the token
@@ -2265,7 +2265,7 @@ LPPL_YYSTYPE PrimOpVariantKeyword_EM_YY
                                               &lpYYFcnStrRht->tkToken)) // Ptr to function token
                     goto ERROR_EXIT;
 
-                // If we found a value for []DQ
+                // If we found a value for []LR
                 if (bChrFound
                     // Save the SymEntry, validate the value
                  && !VariantValidateSymVal_EM (IMMTYPE_CHAR,            // Item immediate type
@@ -2273,7 +2273,7 @@ LPPL_YYSTYPE PrimOpVariantKeyword_EM_YY
                               *(LPAPLLONGEST) &aplCharRhtOpr,           // Immediate value
                                                FALSE,                   // TRUE iff assignment value is empty (we're resetting to CLEAR WS/System)
                                               &varUseStr[0],            // Ptr to variant use struc
-                                               VARIANT_KEY_DQ,          // Variant key index
+                                               VARIANT_KEY_LR,          // Variant key index
                                                lpMemPTD,                // Ptr to PerTabData global memory
                                               &lpYYFcnStrRht->tkToken)) // Ptr to function token
                     goto ERROR_EXIT;

@@ -72,7 +72,7 @@
 
 #define KEYNAME_QUADALX                 L"QuadALX"
 #define KEYNAME_QUADCT                  L"QuadCT"
-#define KEYNAME_QUADDQ                  L"QuadDQ"
+#define KEYNAME_QUADLR                  L"QuadLR"
 #define KEYNAME_QUADDT                  L"QuadDT"
 #define KEYNAME_QUADELX                 L"QuadELX"
 #define KEYNAME_QUADFC                  L"QuadFC"
@@ -781,16 +781,16 @@ UBOOL ReadIniFileGlb
                                KEYNAME_QUADCT,      // Ptr to the key name
                                DEF_QUADCT_CWS,      // Ptr to the default value
                                lpwszIniFile);       // Ptr to the file name
-    // Read in []DQ
+    // Read in []LR
     GetPrivateProfileStringW (SECTNAME_SYSVARS,     // Ptr to the section name
-                              KEYNAME_QUADDQ,       // Ptr to the key name
-                              DEF_QUADDQ_CWS,       // Ptr to the default value
+                              KEYNAME_QUADLR,       // Ptr to the key name
+                              DEF_QUADLR_CWS,       // Ptr to the default value
                               wszTemp,              // Ptr to the output buffer
                               TEMPBUFLEN,           // Count of the output buffer
                               lpwszIniFile);        // Ptr to the file name
     // Convert any {name}s to symbols
     ConvertNameInPlace (wszTemp);
-    cQuadDQ_CWS = wszTemp[0];
+    cQuadLR_CWS = wszTemp[0];
 
     // Read in []DT
     GetPrivateProfileStringW (SECTNAME_SYSVARS,     // Ptr to the section name
@@ -1040,11 +1040,11 @@ UBOOL ReadIniFileGlb
                              KEYNAME_QUADCT,        // Ptr to the key name
                              DEF_RESETVARS_CT,      // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
-    // Read in bResetVars.DQ
-    bResetVars.DQ =
+    // Read in bResetVars.LR
+    bResetVars.LR =
       GetPrivateProfileIntW (SECTNAME_RESETVARS,    // Ptr to the section name
-                             KEYNAME_QUADDQ,        // Ptr to the key name
-                             DEF_RESETVARS_DQ,      // Default value if not found
+                             KEYNAME_QUADLR,        // Ptr to the key name
+                             DEF_RESETVARS_LR,      // Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     // Read in bResetVars.DT
     bResetVars.DT =
@@ -2593,17 +2593,17 @@ void SaveIniFile
                                 KEYNAME_QUADCT,             // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
-    //************************ []DQ ***************************
-    // Format []DQ
+    //************************ []LR ***************************
+    // Format []LR
     wszTemp[0] = WC_SQ;
     uLen = (UINT)
-      ConvertWideToNameLength (&wszTemp[1], &cQuadDQ_CWS, 1);
+      ConvertWideToNameLength (&wszTemp[1], &cQuadLR_CWS, 1);
     wszTemp[uLen + 1] = WC_SQ;
     wszTemp[uLen + 2] = WC_EOS;
 
-    // Write out []DQ
+    // Write out []LR
     WritePrivateProfileStringW (SECTNAME_SYSVARS,           // Ptr to the section name
-                                KEYNAME_QUADDQ,             // Ptr to the key name
+                                KEYNAME_QUADLR,             // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //************************ []DT ***************************
@@ -2910,14 +2910,14 @@ void SaveIniFile
                                 KEYNAME_QUADCT,             // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
-    //****************** bResetVars.DQ ************************
-    // Format bResetVars.DQ
-    wszTemp[0] = L'0' + bResetVars.DQ;
+    //****************** bResetVars.LR ************************
+    // Format bResetVars.LR
+    wszTemp[0] = L'0' + bResetVars.LR;
     wszTemp[1] = WC_EOS;
 
-    // Write out bResetVars.DQ
+    // Write out bResetVars.LR
     WritePrivateProfileStringW (SECTNAME_RESETVARS,         // Ptr to the section name
-                                KEYNAME_QUADDQ,             // Ptr to the key name
+                                KEYNAME_QUADLR,             // Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //****************** bResetVars.DT ************************

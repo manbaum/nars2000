@@ -24,9 +24,9 @@
 //   when not overridden by user preferences.
 #define DEF_QUADCT_CWS      3E-15
 #define DEF_QUADxCT_CWS     0x3CEB05876E5B0120      // 3E-15 in hex
-#define DEF_QUADDQ_CWS      L"r"
-#define DEF_QUADDQ_ALLOW    L"lr"
-#define DEF_QUADDQ_NAMES    L"Left", L"Right"
+#define DEF_QUADLR_CWS      L"r"
+#define DEF_QUADLR_ALLOW    L"lr"
+#define DEF_QUADLR_NAMES    L"Left", L"Right"
 #define DEF_QUADDT_CWS      L"r"
 #define DEF_QUADDT_ALLOW    L"rgp"
 #define DEF_QUADDT_NAMES    L"Rectangular", L"Gaussian", L"Poisson"
@@ -131,7 +131,7 @@ typedef enum tagSYS_VARS
     SYSVAR_ALX     ,            // 01:  []ALX
     SYSVAR_CT      ,            // 02:  []CT
     SYSVAR_DM      ,            // 03:  []DM
-    SYSVAR_DQ      ,            // 04:  []DQ
+    SYSVAR_LR      ,            // 04:  []LR
     SYSVAR_DT      ,            // 05:  []DT
     SYSVAR_ELX     ,            // 06:  []ELX
     SYSVAR_FC      ,            // 07:  []FC

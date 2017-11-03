@@ -389,7 +389,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
     int               iHCDimRes,                // HC Dimension (1, 2, 4, 8)
                       iSizeofRes;               // Sizeof of an item
     APLFLOAT          fQuadCT = GetQuadCT ();   // Current value of []CT
-    WCHAR             cQuadDQ = GetQuadDQ ();   // Current value of []DQ
+    WCHAR             cQuadLR = GetQuadLR ();   // Current value of []LR
     typedef void (*LPMPHCXY_INIT) (LPVOID, int);
     LPMPHCXY_INIT     lpmphcXY_init;
 
@@ -397,7 +397,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
     SetQuadCT (0);
 
     // Change to right quotients
-    SetQuadDQ ('r');
+    SetQuadLR ('r');
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -882,8 +882,8 @@ NORMAL_EXIT:
         MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    // Restore the original value for []DQ
-    SetQuadDQ (cQuadDQ);
+    // Restore the original value for []LR
+    SetQuadLR (cQuadLR);
 
     // Restore the original value for []CT
     SetQuadCT (fQuadCT);

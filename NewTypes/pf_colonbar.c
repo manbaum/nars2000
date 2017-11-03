@@ -639,7 +639,7 @@ void PrimFnMonColonBarHC2VisHC2V
     aplNum = ConjHC2V (lpatRht->aplHC2V);
 
     // If the user wants the left quotient, ...
-    if (GetQuadDQ () EQ 'l')
+    if (GetQuadLR () EQ 'l')
         // Calculate the denominator
         aplTmp = MulHC2V_RE (                  aplNum, lpatRht->aplHC2V);
     else
@@ -821,7 +821,7 @@ APLHC4R InvHC4R_RE
     aplNum = ConjHC4R (aplRht);
 
     // If the user wants the left quotient, ...
-    if (GetQuadDQ () EQ 'l')
+    if (GetQuadLR () EQ 'l')
         // Calculate the denominator
         aplTmp = MulHC4R_RE (        aplNum, aplRht);
     else
@@ -970,7 +970,7 @@ void PrimFnMonColonBarHC4VisHC4V
     aplNum = ConjHC4V (lpatRht->aplHC4V);
 
     // If the user wants the left quotient, ...
-    if (GetQuadDQ () EQ 'l')
+    if (GetQuadLR () EQ 'l')
         // Calculate the denominator
         aplTmp = MulHC4V_RE (                  aplNum, lpatRht->aplHC4V);
     else
@@ -1151,7 +1151,7 @@ APLHC8R InvHC8R_RE
     aplNum = ConjHC8R (aplRht);
 
     // If the user wants the left quotient, ...
-    if (GetQuadDQ () EQ 'l')
+    if (GetQuadLR () EQ 'l')
         // Calculate the denominator
         aplTmp = MulHC8R_RE (        aplNum, aplRht);
     else
@@ -1300,7 +1300,7 @@ void PrimFnMonColonBarHC8VisHC8V
     aplNum = ConjHC8V (lpatRht->aplHC8V);
 
     // If the user wants the left quotient, ...
-    if (GetQuadDQ () EQ 'l')
+    if (GetQuadLR () EQ 'l')
         // Calculate the denominator
         aplTmp = MulHC8V_RE (                  aplNum, lpatRht->aplHC8V);
     else
@@ -2419,7 +2419,7 @@ APLHC4I DivHC4I_RE
     aplNum = ConjHC4I (aplRht);
 
     // If the user wants the left quotient, ...
-    if (GetQuadDQ () EQ 'l')
+    if (GetQuadLR () EQ 'l')
         // Calculate the numerator
         aplNum = MulHC4I_RE (        aplNum, aplLft);
     else
@@ -2528,7 +2528,7 @@ APLHC4F DivHC4F_RE
     // Check for indeterminates:  _ {div} _  or  -_ {div} -_
 
     // If the user wants the left quotient, ...
-    if (GetQuadDQ () EQ 'l')
+    if (GetQuadLR () EQ 'l')
     {
         // Calculate the numerator
         aplNum = MulHC4F_RE (        ConjHC4F (aplRht), aplLft);
@@ -2675,7 +2675,7 @@ APLHC4R DivHC4R_RE
     aplConj = ConjHC4R (aplRht);
 
     // If the user wants the left quotient, ...
-    if (GetQuadDQ () EQ 'l')
+    if (GetQuadLR () EQ 'l')
     {
         // Calculate the numerator
         aplNum = MulHC4R_RE (        aplConj, aplLft);
@@ -2834,7 +2834,7 @@ APLHC4V DivHC4V_RE
     aplConj = ConjHC4V (aplRht);
 
     // If the user wants the left quotient, ...
-    if (GetQuadDQ () EQ 'l')
+    if (GetQuadLR () EQ 'l')
     {
         // Calculate the numerator
         aplNum = MulHC4V_RE (        aplConj, aplLft);
@@ -3037,7 +3037,7 @@ APLHC8I DivHC8I_RE
     aplNum = ConjHC8I (aplRht);
 
     // If the user wants the left quotient, ...
-    if (GetQuadDQ () EQ 'l')
+    if (GetQuadLR () EQ 'l')
         // Calculate the numerator
         aplNum = MulHC8I_RE (        aplNum, aplLft);
     else
@@ -3146,7 +3146,7 @@ APLHC8F DivHC8F_RE
     // Check for indeterminates:  _ {div} _  or  -_ {div} -_
 
     // If the user wants the left quotient, ...
-    if (GetQuadDQ () EQ 'l')
+    if (GetQuadLR () EQ 'l')
     {
         // Calculate the numerator
         aplNum = MulHC8F_RE (        ConjHC8F (aplRht), aplLft);
@@ -3293,7 +3293,7 @@ APLHC8R DivHC8R_RE
     aplConj = ConjHC8R (aplRht);
 
     // If the user wants the left quotient, ...
-    if (GetQuadDQ () EQ 'l')
+    if (GetQuadLR () EQ 'l')
     {
         // Calculate the numerator
         aplNum = MulHC8R_RE (        aplConj, aplLft);
@@ -3452,7 +3452,7 @@ APLHC8V DivHC8V_RE
     aplConj = ConjHC8V (aplRht);
 
     // If the user wants the left quotient, ...
-    if (GetQuadDQ () EQ 'l')
+    if (GetQuadLR () EQ 'l')
     {
         // Calculate the numerator
         aplNum = MulHC8V_RE (        aplConj, aplLft);

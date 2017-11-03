@@ -3200,31 +3200,31 @@ void SetQuadCT
 
 
 //***************************************************************************
-//  $GetQuadDQ
+//  $GetQuadLR
 //
-//  Get the current value of []DQ
+//  Get the current value of []LR
 //***************************************************************************
 
-APLCHAR GetQuadDQ
+APLCHAR GetQuadLR
     (void)
 
 {
-    return GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_DQ]->stData.stChar;
-} // End GetQuadDQ
+    return GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_LR]->stData.stChar;
+} // End GetQuadLR
 
 
 //***************************************************************************
-//  $SetQuadDQ
+//  $SetQuadLR
 //
-//  Set the current value of []DQ
+//  Set the current value of []LR
 //***************************************************************************
 
-void SetQuadDQ
-    (APLCHAR cQuadDQ)
+void SetQuadLR
+    (APLCHAR cQuadLR)
 
 {
-    GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_DQ]->stData.stChar = tolower (cQuadDQ);
-} // End SetQuadDQ
+    GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_LR]->stData.stChar = tolower (cQuadLR);
+} // End SetQuadLR
 
 
 //***************************************************************************

@@ -1,0 +1,24 @@
+Build #1815 -- Version 0.5.5.xx
+--------------------------------
+
+* Change Name Of []DQ To []LR To Reflect Its Wider Usage
+
+Directory branches/bsmith/NewTypes:
+
+CUSTOMIZE.C:
+DEFINES.H:
+EXTERNS.H:
+GETFNS.C:
+INIFILE.C:
+MAIN.RC:
+PF_COLONBAR.C:
+PF_DOMINO.MAC:
+PF_DTACK.C:
+PF_STILE.C:
+PO_QUADJOT.C:
+PO_VARIANT.C:
+RESOURCE.H:
+SYSVARS.C:
+SYSVARS.H:
+  Change the name of []DQ to []LR to reflect its wider usage as both Left/Right Division Quotient
+    and Left/Right Octonion Matrix Representation

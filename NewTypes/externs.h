@@ -225,7 +225,7 @@ HGLOBAL  hGlbQuadALX_CWS     ,          // []ALX     ([]dm)
          hGlbQuadWSID_CWS    ,          // []WSID    (WS_EOS)
          hGlbQuadPR_CWS      ;          // []PR      (L"") (When an empty vector)
 EXTERN
-APLCHAR  cQuadDQ_CWS         ,          // []DQ
+APLCHAR  cQuadLR_CWS         ,          // []LR
          cQuadDT_CWS         ;          // []DT
 
 EXTERN
@@ -282,7 +282,7 @@ RANGELIMIT bRangeLimit
 typedef struct tagRESET_VARS
 {
     UBOOL CT     :1,
-          DQ     :1,
+          LR     :1,
           DT     :1,
           FC     :1,
           FEATURE:1,
@@ -298,7 +298,7 @@ EXTERN
 RESET_VARS bResetVars
 #ifdef DEFINE_VALUES
  = {DEF_RESETVARS_CT,       // []CT
-    DEF_RESETVARS_DQ,       // []DQ
+    DEF_RESETVARS_LR,       // []LR
     DEF_RESETVARS_DT,       // []DT
     DEF_RESETVARS_FC,       // []FC
     DEF_RESETVARS_FEATURE,  // []FEATURE
@@ -1345,7 +1345,7 @@ typedef enum tagVARIANT_KEYS
 {
     VARIANT_KEY_ALX = 0 ,   // 00:  []ALX
     VARIANT_KEY_CT      ,   // 01:  []CT
-    VARIANT_KEY_DQ      ,   // 02:  []DQ
+    VARIANT_KEY_LR      ,   // 02:  []LR
     VARIANT_KEY_DT      ,   // 03:  []DT
     VARIANT_KEY_ELX     ,   // 04:  []ALX
     VARIANT_KEY_FC      ,   // 05:  []FC
@@ -1372,7 +1372,7 @@ typedef struct tagVARIANT_KEY_STR
 
 UBOOL ValidSetALX_EM     (LPTOKEN, LPTOKEN);
 UBOOL ValidSetCT_EM      (LPTOKEN, LPTOKEN);
-UBOOL ValidSetDQ_EM      (LPTOKEN, LPTOKEN);
+UBOOL ValidSetLR_EM      (LPTOKEN, LPTOKEN);
 UBOOL ValidSetDT_EM      (LPTOKEN, LPTOKEN);
 UBOOL ValidSetELX_EM     (LPTOKEN, LPTOKEN);
 UBOOL ValidSetFC_EM      (LPTOKEN, LPTOKEN);
@@ -1387,7 +1387,7 @@ VARIANTKEYSTR aVariantKeyStr[VARIANT_KEY_LENGTH]
 #ifdef DEFINE_VALUES
  = {{L"ALX"     , SYSVAR_ALX     , ValidSetALX_EM     },
     {L"CT"      , SYSVAR_CT      , ValidSetCT_EM      },
-    {L"DQ"      , SYSVAR_DQ      , ValidSetDQ_EM      },
+    {L"LR"      , SYSVAR_LR      , ValidSetLR_EM      },
     {L"DT"      , SYSVAR_DT      , ValidSetDT_EM      },
     {L"ELX"     , SYSVAR_ELX     , ValidSetELX_EM     },
     {L"FC"      , SYSVAR_FC      , ValidSetFC_EM      },

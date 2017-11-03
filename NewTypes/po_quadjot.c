@@ -852,18 +852,18 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
 
                 case 8:
                 {
-                    APLCHAR cQuadDQ = GetQuadDQ ();
+                    APLCHAR cQuadLR = GetQuadLR ();
 
                     // Represent the Octonion number as a 4x4 matrix
                     //   using one of the 2 Octonion number matrix forms
-                    //   depending upon the setting of []DQ
+                    //   depending upon the setting of []LR
 
                     // Split cases based upon the result storage type
                     switch (aplTypeRes)
                     {
                         case ARRAY_INT:
-                            // Split cases based upon the value of []DQ
-                            switch (cQuadDQ)
+                            // Split cases based upon the value of []LR
+                            switch (cQuadLR)
                             {
                                 case 'l':
                                     MATREP_INT (8, 8L);
@@ -882,8 +882,8 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
                             break;
 
                         case ARRAY_FLOAT:
-                            // Split cases based upon the value of []DQ
-                            switch (cQuadDQ)
+                            // Split cases based upon the value of []LR
+                            switch (cQuadLR)
                             {
                                 case 'l':
                                     MATREP_FLT (8, 8L);
@@ -902,8 +902,8 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
                             break;
 
                         case ARRAY_RAT:
-                            // Split cases based upon the value of []DQ
-                            switch (cQuadDQ)
+                            // Split cases based upon the value of []LR
+                            switch (cQuadLR)
                             {
                                 case 'l':
                                     MATREP_RAT (8, 8L);
@@ -922,8 +922,8 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
                             break;
 
                         case ARRAY_VFP:
-                            // Split cases based upon the value of []DQ
-                            switch (cQuadDQ)
+                            // Split cases based upon the value of []LR
+                            switch (cQuadLR)
                             {
                                 case 'l':
                                     MATREP_VFP (8, 8L);

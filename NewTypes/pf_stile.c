@@ -1973,7 +1973,7 @@ APLHC2I ModHC2I
 
         // Calculate Lft * 1 | Rht / Lft
         // Note that because Complex numbers are commutative,
-        //   we don't need to be sensitive to []DQ in the
+        //   we don't need to be sensitive to []LR in the
         //   following multiplication
         aplTmp = MulHC2F_RE (aplFltL, aplTmp);
 
@@ -2049,7 +2049,7 @@ APLHC2F ModHC2F
 
         // Calculate Lft * 1 | Rht / Lft
         // Note that because Complex numbers are commutative,
-        //   we don't need to be sensitive to []DQ in the
+        //   we don't need to be sensitive to []LR in the
         //   following multiplication
         aplRes = MulHC2F_RE (aplLft, aplTmp);
     } // End IF/ELSE/...
@@ -2172,7 +2172,7 @@ APLHC2R ModHC2R
 
         // Calculate Lft * 1 | Rht / Lft
         // Note that because Complex numbers are commutative,
-        //   we don't need to be sensitive to []DQ in the
+        //   we don't need to be sensitive to []LR in the
         //   following multiplication
         aplRes = MulHC2R_RE (aplLft, aplSub);
 
@@ -2277,7 +2277,7 @@ APLHC2V ModHC2V
 
         // Calculate Lft * 1 | Rht / Lft
         // Note that because Complex numbers are commutative,
-        //   we don't need to be sensitive to []DQ in the
+        //   we don't need to be sensitive to []LR in the
         //   following multiplication
         aplRes = MulHC2V_RE (aplLft, aplSub);
 
@@ -2344,14 +2344,14 @@ APLHC4I ModHC4I
         } // End FOR
 
         // Calculate Rht / Lft
-        // This function is sensitive to []DQ
+        // This function is sensitive to []LR
         aplTmp = DivHC4F_RE (aplFltR, aplFltL);
 
         // Calculate 1 | Rht / Lft
         // a.k.a. (Rht / Lft) - floor (Rht / Lft)
         aplTmp = SubHC4F_RE (aplTmp, FloorHC4F (aplTmp));
 
-        if (GetQuadDQ () EQ 'l')
+        if (GetQuadLR () EQ 'l')
             // Calculate Lft * 1 | Rht / Lft
             aplTmp = MulHC4F_RE (        aplFltL, aplTmp);
         else
@@ -2422,14 +2422,14 @@ APLHC4F ModHC4F
         else
         {
             // Calculate Rht / Lft
-            // This function is sensitive to []DQ
+            // This function is sensitive to []LR
             aplTmp = DivHC4F_RE (aplRht, aplLft);
 
             // Calculate 1 | Rht / Lft
             // a.k.a. (Rht / Lft) - floor (Rht / Lft)
             aplTmp = SubHC4F_RE (aplTmp, FloorHC4F (aplTmp));
 
-            if (GetQuadDQ () EQ 'l')
+            if (GetQuadLR () EQ 'l')
                 // Calculate Lft * 1 | Rht / Lft
                 aplRes = MulHC4F_RE (        aplLft, aplTmp);
             else
@@ -2607,14 +2607,14 @@ APLHC4R ModHC4R
         int     i;                      // Loop counter
 
         // Calculate Rht / Lft
-        // This function is sensitive to []DQ
+        // This function is sensitive to []LR
         aplTmp = DivHC4R_RE (aplRht, aplLft);
 
         // Calculate 1 | Rht / Lft
         // a.k.a. (Rht / Lft) - floor (Rht / Lft)
         aplSub = SubHC4R_RE (aplTmp, FloorHC4R (aplTmp));
 
-        if (GetQuadDQ () EQ 'l')
+        if (GetQuadLR () EQ 'l')
             // Calculate Lft * 1 | Rht / Lft
             aplRes = MulHC4R_RE (        aplLft, aplSub);
         else
@@ -2796,14 +2796,14 @@ APLHC4V ModHC4V
         int     i;                      // Loop counter
 
         // Calculate Rht / Lft
-        // This function is sensitive to []DQ
+        // This function is sensitive to []LR
         aplTmp = DivHC4V_RE (aplRht, aplLft);
 
         // Calculate 1 | Rht / Lft
         // a.k.a. (Rht / Lft) - floor (Rht / Lft)
         aplSub = SubHC4V_RE (aplTmp, FloorHC4V (aplTmp));
 
-        if (GetQuadDQ () EQ 'l')
+        if (GetQuadLR () EQ 'l')
             // Calculate Lft * 1 | Rht / Lft
             aplRes = MulHC4V_RE (        aplLft, aplSub);
         else

@@ -2367,8 +2367,8 @@ UBOOL InitFcnSTEs
      LPSYMENTRY  *lplpSymEntry) // Ptr to LPSYMENTRYs
 
 {
-    STFLAGS stFlagsClr = {0};   // Flags for clearing an STE
-    UINT    TknCount;           // Token count
+    STFLAGS      stFlagsClr = {0};  // Flags for clearing an STE
+    UINT         TknCount;          // Token count
 
     Assert (IsBooleanValue (numArgSTE));
 
@@ -2445,15 +2445,19 @@ UBOOL InitFcnSTEs
 ////////////////////(*lplpSymEntry)->stFlags.ImmType    = IMMTYPE_ERROR;    // ...
                     (*lplpSymEntry)->stFlags.Value      = TRUE;
                     (*lplpSymEntry)->stFlags.ObjName    = OBJNAME_USR;
-                    (*lplpSymEntry)->stFlags.stNameType = NAMETYPE_FN12;
+                    (*lplpSymEntry)->stFlags.stNameType = TranslateDfnToNameType (lpMemDfnHdr->DfnType, lpMemDfnHdr->FcnValence);
                     (*lplpSymEntry)->stFlags.UsrDfn     = (GetSignatureGlb_PTB (hGlbDfnHdr) EQ DFN_HEADER_SIGNATURE);
                     (*lplpSymEntry)->stFlags.DfnAxis    = (*lplpSymEntry)->stFlags.UsrDfn ? lpMemDfnHdr->DfnAxis : FALSE;
 ////////////////////(*lplpSymEntry)->stFlags.FcnDir     = FALSE;            // Already zero from above
-                    (*lplpSymEntry)->stData.stGlbData   = CopySymGlbDir_PTB (hGlbDfnHdr);
+                    // Copy the UDFO (e.g., "f {each}" where "f" is a UDFO, not an AFO which is handled differently)
+                    (*lplpSymEntry)->stData.stGlbData   = CopyUDFO (hGlbDfnHdr, *lplpSymEntry);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
+                    // If it failed, ...
+                    if ((*lplpSymEntry)->stData.stGlbData EQ NULL)
+                        goto WSFULL_EXIT;
                     break;
                 } // End TKT_FCNARRAY/TKT_FCNAFO
 
@@ -2528,15 +2532,20 @@ UBOOL InitFcnSTEs
                 case TKT_NUMSTRAND:
                 case TKT_NUMSCALAR:
                 case TKT_AXISARRAY:
+                    // Increment the RefCnt
+                    DbgIncrRefCntDir_PTB (GetGlbHandle (&lpYYArg->tkToken));    // EXAMPLE:  UDFO[X] A
+
+                    break;
+
                 case TKT_FCNAFO:
                 case TKT_OP1AFO:
                 case TKT_OP2AFO:
                 case TKT_FCNDFN:
                 case TKT_OP1DFN:
                 case TKT_OP2DFN:
-                    // Increment the RefCnt
-                    DbgIncrRefCntDir_PTB (GetGlbHandle (&lpYYArg->tkToken));    // EXAMPLE:  UDFO[X] A
-
+                    // Copy the UDFO (e.g., "+mop mop" where "mop" is a monadic UDFO operator, not an AFO which is handled differently)
+                    if (!SetGlbHandle (&lpYYArg->tkToken, CopyUDFO (GetGlbHandle (&lpYYArg->tkToken), *lplpSymEntry)))
+                        goto WSFULL_EXIT;
                     break;
 
                 case TKT_AXISIMMED:

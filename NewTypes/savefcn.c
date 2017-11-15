@@ -127,7 +127,7 @@ UBOOL SaveFunction
     SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesFE;     // Ptr to get # physical lines function
     SF_Fcns.SF_NumLogLines  = SF_NumLogLinesFE;     // Ptr to get # logical  ...
     SF_Fcns.SF_CreationTime = SF_CreationTimeCom;   // Ptr to get function creation time
-    SF_Fcns.SF_LastModTime  = SF_LastModTimeCom;    // Ptr to get function creation time
+    SF_Fcns.SF_LastModTime  = SF_LastModTimeCom;    // Ptr to get function last modification time
     SF_Fcns.SF_UndoBuffer   = SF_UndoBufferFE;      // Ptr to get function Undo Buffer global memory handle
     SF_Fcns.LclParams       = &LW_Params;           // Ptr to local parameters in case it's an AFO
     SF_Fcns.sfTypes         = SFTYPES_FE;           // Caller type
@@ -137,6 +137,65 @@ UBOOL SaveFunction
                            &SF_Fcns);               // Ptr to common values
 } // End SaveFunction
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $CopyUDFO
+//
+//  Copy a UDFO
+//***************************************************************************
+
+HGLOBAL CopyUDFO
+    (HGLOBAL    hGlbDfnHdr,         // User-defined function/operator header global memory handle
+     LPSYMENTRY lpSymEntry)         // Ptr to target SYMENTRY
+
+{
+    SF_FCNS      SF_Fcns = {0};     // SaveFunction local vars
+    LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header global memory
+    UDFO_PARAMS  UDFO_Params = {0}; // Local  ...
+    UBOOL        bAFO;              // TRUE iff this function is an AFO
+
+    Assert (hGlbDfnHdr NE NULL);
+
+    // Lock the memory to get a ptr to it
+    lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
+
+    // Get the AFO flag
+    bAFO = lpMemDfnHdr->bAFO;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+
+    // If this function is an AFO, ...
+    if (bAFO)
+        // Handle the old way
+        return CopySymGlbDir_PTB (hGlbDfnHdr);
+
+    // Save local params
+    UDFO_Params.hGlbDfnHdr = hGlbDfnHdr;
+    UDFO_Params.lpSymEntry = lpSymEntry;
+
+    // Fill in common values
+    SF_Fcns.bDisplayErr     = TRUE;                 // Display Errors
+////SF_Fcns.bAFO            = FALSE;                // Parsing an AFO (already FALSE from = {0})
+    SF_Fcns.SF_LineLen      = SF_LineLenUDFO;       // Ptr to line length function
+    SF_Fcns.SF_ReadLine     = SF_ReadLineUDFO;      // Ptr to read line function
+    SF_Fcns.SF_IsLineCont   = SF_IsLineContUDFO;    // Ptr to Is Line Continued function
+    SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesUDFO;   // Ptr to get # physical lines function
+    SF_Fcns.SF_NumLogLines  = SF_NumLogLinesUDFO;   // Ptr to get # logical  ...
+    SF_Fcns.SF_CreationTime = SF_CreationTimeCom;   // Ptr to get function creation time
+    SF_Fcns.SF_LastModTime  = SF_LastModTimeCom;    // Ptr to get function last modification time
+    SF_Fcns.SF_UndoBuffer   = SF_UndoBufferUDFO;    // Ptr to get function Undo Buffer global memory handle
+    SF_Fcns.LclParams       = &UDFO_Params;         // Ptr to local parameters in case it's an AFO
+    SF_Fcns.sfTypes         = SFTYPES_UDFO;         // Caller type
+
+    // If the common routine succeeded, ...
+    if (SaveFunctionCom (NULL,                   // Function Edit window handle (not-[]FX only)
+                        &SF_Fcns))               // Ptr to common values
+        return SF_Fcns.hGlbDfnHdr;
+    else
+        return NULL;
+} // End CopyUDFO
 
 
 //***************************************************************************
@@ -242,6 +301,86 @@ UINT SF_LineLenAN
         return lpLW_Params->lpYYRht->lptkRhtBrace->tkCharIndex
             - (lpLW_Params->lpYYRht->lptkLftBrace->tkCharIndex + 1);
 } // End SF_LineLenAN
+
+
+//***************************************************************************
+//  $SF_GlbtxtUDFO
+//
+//  Return the global memory handle of the corresponding text line
+//    when copying a UDFO
+//***************************************************************************
+
+HGLOBAL SF_GlbTxtUDFO
+    (LPDFN_HEADER lpMemDfnHdr,      // Ptr to user-defined function/operator header global memory
+     UINT         uLineNum)         // Function line # (0 = header)
+
+{
+    HGLOBAL hGlbTxtLine;            // Text global memory handle
+
+    // If it's the header, ...
+    if (uLineNum EQ 0)
+        // Get the global memory handle
+        hGlbTxtLine = lpMemDfnHdr->hGlbTxtHdr;
+    else
+    {
+        LPFCNLINE lpFcnLines;       // Ptr to array of function line structs (FCNLINE[numLogLines])
+
+        // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+        lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+
+        // Get the ptr to the given line's tokenized header global memory
+        hGlbTxtLine = lpFcnLines[uLineNum - 1].hGlbTxtLine;
+    } // End IF/ELSE
+
+    return hGlbTxtLine;
+} // End SF_GlbTxtUDFO
+
+
+//***************************************************************************
+//  $SF_IsLineContUDFO
+//
+//  Return TRUE iff the line is continued to the next line
+//    when copying a UDFO
+//***************************************************************************
+
+UINT SF_IsLineContUDFO
+    (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
+     LPSF_FCNS   lpSF_Fcns,         // Ptr to common struc
+     UINT        uLineNum)          // Function line # (0 = header)
+
+{
+    LPUDFO_PARAMS  lpUDFO_Params;   // Ptr to common struc
+    LPDFN_HEADER   lpMemDfnHdr;     // Ptr to user-defined function/operator header global memory
+    HGLOBAL        hGlbTxtLine;     // Text global memory handle
+    LPMEMTXT_UNION lpMemTxtLine;    // Ptr to text line
+    LPWCHAR        p;               // Temp
+    UBOOL          bRet;            // TRUE iff the result is TRUE
+
+    // Save local params
+    lpUDFO_Params = lpSF_Fcns->LclParams;
+
+    // Lock the memory to get a ptr to it
+    lpMemDfnHdr = MyGlobalLockDfn (lpUDFO_Params->hGlbDfnHdr);
+
+    // Get the UDFO text line global memory handle
+    hGlbTxtLine = SF_GlbTxtUDFO (lpMemDfnHdr, uLineNum);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpUDFO_Params->hGlbDfnHdr); lpMemDfnHdr = NULL;
+
+    // Lock the memory to get a ptr to it
+    lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
+
+    // Find the trailing CR
+    p = strchrW (&lpMemTxtLine->C, L'\r');
+    bRet = (p NE NULL && p[1] EQ L'\r' && p[2] EQ L'\n');
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
+
+    // Return the result
+    return bRet;
+} // End SF_IsLineContUDFO
 
 
 //***************************************************************************
@@ -638,6 +777,51 @@ UINT SF_LineLenAA
     // Return the line length
     return lstrlenW (lpw);
 } // End SF_LineLenAA
+
+
+//***************************************************************************
+//  $SF_LineLenUDFO
+//
+//  Return the length of a text header/line
+//    when copying a UDFO
+//***************************************************************************
+
+UINT SF_LineLenUDFO
+    (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
+     LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
+     UINT      uLineNum)            // Function line # (0 = header)
+
+{
+    LPUDFO_PARAMS  lpUDFO_Params;   // Ptr to common struc
+    LPDFN_HEADER   lpMemDfnHdr;     // Ptr to user-defined function/operator header global memory
+    HGLOBAL        hGlbTxtLine;     // Text global memory handle
+    LPMEMTXT_UNION lpMemTxtLine;    // Ptr to text line
+    UINT           uLen;            // Line length
+
+    // Save local params
+    lpUDFO_Params = lpSF_Fcns->LclParams;
+
+    // Lock the memory to get a ptr to it
+    lpMemDfnHdr = MyGlobalLockDfn (lpUDFO_Params->hGlbDfnHdr);
+
+    // Get the UDFO text line global memory handle
+    hGlbTxtLine = SF_GlbTxtUDFO (lpMemDfnHdr, uLineNum);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpUDFO_Params->hGlbDfnHdr); lpMemDfnHdr = NULL;
+
+    // Lock the memory to get a ptr to it
+    lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
+
+    // Get the line length
+    uLen = (UINT) lstrlenW (&lpMemTxtLine->C);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
+
+    // Return the line length
+    return uLen;
+} // End SF_LineLenUDFO
 
 
 //***************************************************************************
@@ -1058,6 +1242,49 @@ void SF_ReadLineAA
 
 
 //***************************************************************************
+//  $SF_ReadLineUDFO
+//
+//  Read in a header/function line
+//    when copying a UDFO
+//***************************************************************************
+
+void SF_ReadLineUDFO
+    (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
+     LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
+     UINT      uLineNum,            // Function line # (0 = header)
+     LPAPLCHAR lpMemLine)           // Ptr to header/line global memory
+
+{
+    LPUDFO_PARAMS  lpUDFO_Params;   // Ptr to common struc
+    LPDFN_HEADER   lpMemDfnHdr;     // Ptr to user-defined function/operator header global memory
+    HGLOBAL        hGlbTxtLine;     // Text global memory handle
+    LPMEMTXT_UNION lpMemTxtLine;    // Ptr to text line
+
+    // Save local params
+    lpUDFO_Params = lpSF_Fcns->LclParams;
+
+    // Lock the memory to get a ptr to it
+    lpMemDfnHdr = MyGlobalLockDfn (lpUDFO_Params->hGlbDfnHdr);
+
+    // Get the UDFO text line global memory handle
+    hGlbTxtLine = SF_GlbTxtUDFO (lpMemDfnHdr, uLineNum);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpUDFO_Params->hGlbDfnHdr); lpMemDfnHdr = NULL;
+
+    // Lock the memory to get a ptr to it
+    lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
+
+    // Copy the line to global memory
+    CopyMemoryW (lpMemLine,
+                &lpMemTxtLine->C,
+                 lstrlenW (&lpMemTxtLine->C));
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
+} // End SF_ReadLineUDFO
+
+
+//***************************************************************************
 //  $SF_NumLinesCom
 //
 //  Return the # lines in the function (excluding the header line)
@@ -1253,6 +1480,76 @@ UINT SF_NumPhyLinesSV
 
 
 //***************************************************************************
+//  $SF_NumPhyLinesUDFO
+//
+//  Return the # physical lines in the function (excluding the header line)
+//    when copying a UDFO
+//***************************************************************************
+
+UINT SF_NumPhyLinesUDFO
+    (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
+     LPSF_FCNS lpSF_Fcns)           // Ptr to common struc
+
+{
+    LPUDFO_PARAMS  lpUDFO_Params;   // Ptr to common struc
+    LPDFN_HEADER   lpMemDfnHdr;     // Ptr to user-defined function/operator header global memory
+    UINT           uLogLine,        // # logical lines
+                   uPhyLine,        // # physical lines
+                   uCnt;            // Loop counter
+    HGLOBAL        hGlbTxtLine;     // Text global memory handle
+    LPMEMTXT_UNION lpMemTxtLine;    // Ptr to text line
+    LPWCHAR        lpwTxtLine;      // ...
+
+    // Save local params
+    lpUDFO_Params = lpSF_Fcns->LclParams;
+
+    // Lock the memory to get a ptr to it
+    lpMemDfnHdr = MyGlobalLockDfn (lpUDFO_Params->hGlbDfnHdr);
+
+    // Get the # logical lines
+    uPhyLine =
+    uLogLine = lpMemDfnHdr->numFcnLines;
+
+    // Loop through the logical lines
+    for (uCnt = 0; uCnt < uLogLine; uCnt++)
+    {
+        // Get the UDFO text line global memory handle
+        hGlbTxtLine = SF_GlbTxtUDFO (lpMemDfnHdr, uCnt + 1);
+
+        // Lock the memory to get a ptr to it
+        lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
+
+        // Point to the text part
+        lpwTxtLine = &lpMemTxtLine->C;
+
+        while (TRUE)
+        {
+            // Find the trailing CR
+            lpwTxtLine = strchrW (lpwTxtLine, L'\r');
+
+            if (lpwTxtLine NE NULL && lpwTxtLine[1] EQ L'\r' && lpwTxtLine[2] EQ L'\n')
+            {
+                // Count in another physical line
+                uPhyLine++;
+
+                // Skip over the CR/CR/LF to the start of the next line
+                lpwTxtLine += strcountof (WS_CRCRLF);
+            } else
+                break;
+        } // End WHILE
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
+    } // End FOR
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpUDFO_Params->hGlbDfnHdr); lpMemDfnHdr = NULL;
+
+    return uPhyLine;
+} // End SF_NumPhyLinesUDFO
+
+
+//***************************************************************************
 //  $SF_NumLogLinesSV
 //
 //  Return the # logical lines in the function (excluding the header line)
@@ -1277,6 +1574,38 @@ UINT SF_NumLogLinesSV
         // The # logical function lines
         return (UINT) lpFX_Params->aplRowsRht - 1;
 } // End SF_NumLogLinesSV
+
+
+//***************************************************************************
+//  $SF_NumLogLinesUDFO
+//
+//  Return the # logical lines in the function (excluding the header line)
+//    when copying a UDFO
+//***************************************************************************
+
+UINT SF_NumLogLinesUDFO
+    (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
+     LPSF_FCNS lpSF_Fcns)           // Ptr to common struc
+
+{
+    LPUDFO_PARAMS lpUDFO_Params;    // Ptr to common struc
+    LPDFN_HEADER  lpMemDfnHdr;      // Ptr to user-defined function/operator header global memory
+    UINT          uCnt;             // # logical lines
+
+    // Save local params
+    lpUDFO_Params = lpSF_Fcns->LclParams;
+
+    // Lock the memory to get a ptr to it
+    lpMemDfnHdr = MyGlobalLockDfn (lpUDFO_Params->hGlbDfnHdr);
+
+    // Get the # logical lines
+    uCnt = lpMemDfnHdr->numFcnLines;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpUDFO_Params->hGlbDfnHdr); lpMemDfnHdr = NULL;
+
+    return uCnt;
+} // End SF_NumLogLinesUDFO
 
 
 //***************************************************************************
@@ -1396,7 +1725,6 @@ HGLOBAL SF_UndoBufferCom
         lpMemDfnHdr = MyGlobalLockDfn (lpSF_Fcns->hGlbDfnHdr);
 
         Assert (lpMemDfnHdr->Sig.nature EQ DFN_HEADER_SIGNATURE);
-
 
         // We no longer need this ptr
         MyGlobalUnlock (lpSF_Fcns->hGlbDfnHdr); lpMemDfnHdr = NULL;
@@ -1683,6 +2011,42 @@ HGLOBAL SF_UndoBufferLW
     return hGlbUndoBuff;
 } // End SF_UndoBufferLW
 #undef  APPEND_NAME
+
+
+//***************************************************************************
+//  $SF_UndoBufferUDFO
+//
+//  Return a ptr to the Undo buffer
+//    when copying a UDFO
+//***************************************************************************
+
+HGLOBAL SF_UndoBufferUDFO
+    (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
+     LPSF_FCNS lpSF_Fcns)           // Ptr to common struc
+
+{
+    LPUDFO_PARAMS lpUDFO_Params;    // Ptr to common struc
+    LPDFN_HEADER  lpMemDfnHdr;      // Ptr to user-defined function/operator header global memory
+    HGLOBAL       hGlbUndoBuff;     // Undo Buffer global memory handle
+
+    // Save local params
+    lpUDFO_Params = lpSF_Fcns->LclParams;
+
+    // Lock the memory to get a ptr to it
+    lpMemDfnHdr = MyGlobalLockDfn (lpUDFO_Params->hGlbDfnHdr);
+
+    // Get the Undo buffer global memory handle
+    hGlbUndoBuff = lpMemDfnHdr->hGlbUndoBuff;
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpUDFO_Params->hGlbDfnHdr); lpMemDfnHdr = NULL;
+
+    // Copy the Undo Buffer
+    hGlbUndoBuff = CopyGlbMemory (hGlbUndoBuff, TRUE);
+
+    // Return the result
+    return hGlbUndoBuff;
+} // End SF_UndoBufferUDFO
 
 
 //***************************************************************************
@@ -2009,6 +2373,108 @@ UBOOL SaveFunctionCom
             goto ERROR_EXIT;
         } // End IF
 
+        // If we're called from CopyUDFO, ...
+        if (lpSF_Fcns->sfTypes EQ SFTYPES_UDFO)
+        {
+            LPTOKEN_HEADER lpMemTknHdr;
+            LPTOKEN        lptkStart;
+            size_t         uOldLen,
+                           uNewLen,
+                           uLineLen;
+            HGLOBAL        hGlbNewName,
+                           hGlbTxtHdrNew;
+            LPWCHAR        lpMemNewName,
+                           p;
+            LPMEMTXT_UNION lpMemTxtLineNew;
+
+            // Lock the memory to get a ptr to it
+            lpMemTknHdr = MyGlobalLockTkn (hGlbTknHdr);
+
+            // Skip over TOKEN_HEADER
+            lptkStart = TokenBaseToStart (lpMemTknHdr);
+
+            // Replace the old SYMENTRY with the new one
+            fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym =
+            lptkStart[fhLocalVars.offFcnName].tkData.tkSym =
+            ((LPUDFO_PARAMS) lpSF_Fcns->LclParams)->lpSymEntry;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbTknHdr); lpMemTknHdr = NULL;
+
+            // Lock the memory to get a ptr to it
+            lpMemTxtLine = MyGlobalLockTxt (hGlbTxtHdr);
+
+            // Calculate the length of the old name (list all possible terminators)
+            uOldLen = strcspnW (&(&lpMemTxtLine->C)[fhLocalVars.offFcnText], L" [();" WS_UTF16_LAMP);
+
+            // Get the new name's global memory handle
+            hGlbNewName = ((LPUDFO_PARAMS) lpSF_Fcns->LclParams)->lpSymEntry->stHshEntry->htGlbName;
+
+            // Lock the memory to get a ptr to it
+            lpMemNewName = MyGlobalLockWsz (hGlbNewName);
+
+            // Calculate the length of the new name
+            uNewLen = lstrlenW (lpMemNewName);
+
+            // Calculate the new header line length
+            uLineLen = lpMemTxtLine->U + uNewLen - uOldLen;
+
+            // Allocate global memory to hold this text
+            // The "sizeof (lpMemTxtLine->U) + " is for the leading length
+            //   and the "+ 1" is for the terminating zero
+            //   as well as to handle GlobalLock's aversion to locking
+            //   zero-length arrays
+            hGlbTxtHdrNew =
+              DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1) * sizeof (APLCHAR));
+
+            // Check for error
+            if (hGlbTxtHdrNew EQ NULL)
+            {
+
+
+
+
+                goto WSFULL_EXIT;
+            } // End IF
+
+            // Lock the memory to get a ptr to it
+            lpMemTxtLineNew = MyGlobalLock (hGlbTxtHdrNew);
+
+            // Save the new line length
+            lpMemTxtLineNew->U = (UINT) uLineLen;
+
+            // Replace the old function name with the new one
+
+            p = &lpMemTxtLineNew->C;
+
+            // Copy the leading common text
+            strcpynW (p, &lpMemTxtLine->C, fhLocalVars.offFcnText + 1);
+
+            // Skip over the leading text
+            p += fhLocalVars.offFcnText;
+
+            // Copy the new name
+            strcpynW (p, lpMemNewName, uNewLen + 1);
+
+            // Skip over the new name
+            p += uNewLen;
+
+            // Copy the trailing text
+            lstrcpyW (p, &(&lpMemTxtLine->C)[(p - &lpMemTxtLineNew->C) + uOldLen - uNewLen]);
+
+            // We no longer need these ptrs
+            MyGlobalUnlock (hGlbTxtHdrNew); lpMemTxtLineNew = NULL;
+            MyGlobalUnlock (hGlbNewName  ); lpMemNewName    = NULL;
+            MyGlobalUnlock (hGlbTxtHdr   ); lpMemTxtLine    = NULL;
+
+            // Free the old text header global memory handle
+            MyGlobalFree (hGlbTxtHdr); hGlbTxtHdr = NULL;
+
+            // Save new text header global memory handle
+            hGlbTxtHdr    = hGlbTxtHdrNew;
+            hGlbTxtHdrNew = NULL;
+        } // End IF
+
         // Only from FE (handles localization already), ...
         if (lpSF_Fcns->sfTypes EQ SFTYPES_FE)
             // Find the next )SI in which this name is localized
@@ -2078,7 +2544,7 @@ UBOOL SaveFunctionCom
                 goto ERROR_EXIT;
             } // End FOR/IF
 
-            // If it's a UDFO, ...
+            // If we're called from CopyUDFO, ...
             if (IsGlbTypeDfnDir_PTB (MakePtrTypeGlb (hGlbOldDfn)))
             {
                 // Lock the memory to get a ptr to it
@@ -2179,7 +2645,6 @@ UBOOL SaveFunctionCom
         } // End IF
 
         // Allocate global memory for the function header
-        lpSF_Fcns->hGlbDfnHdr =
         hGlbDfnHdr =
           DbgGlobalAlloc (GHND, sizeof (DFN_HEADER)
                               + sizeof (LPSYMENTRY) * (numResultSTE
@@ -2237,7 +2702,6 @@ UBOOL SaveFunctionCom
         lpMemDfnHdr->steLftOpr    = fhLocalVars.lpYYLftOpr
                                   ? fhLocalVars.lpYYLftOpr ->tkToken.tkData.tkSym
                                   : NULL;
-        lpMemDfnHdr->steFcnName   = fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym;
         lpMemDfnHdr->steAxisOpr   = fhLocalVars.lpYYAxisOpr
                                   ? fhLocalVars.lpYYAxisOpr->tkToken.tkData.tkSym
                                   : NULL;
@@ -2247,6 +2711,18 @@ UBOOL SaveFunctionCom
         lpMemDfnHdr->hGlbTxtHdr   = hGlbTxtHdr;
         lpMemDfnHdr->hGlbTknHdr   = hGlbTknHdr;
 ////////lpMemDfnHdr->hGlbMonInfo  = NULL;           // Already zero from GHND
+
+        // If we're called from CopyUDFO, ...
+        if (lpSF_Fcns->sfTypes EQ SFTYPES_UDFO)
+        {
+            Assert (((LPUDFO_PARAMS) lpSF_Fcns->LclParams)->lpSymEntry NE NULL);
+            Assert (((LPUDFO_PARAMS) lpSF_Fcns->LclParams)->lpSymEntry->Sig.nature EQ SYM_HEADER_SIGNATURE);
+
+            // Save as the correct SYMENTRY
+            lpMemDfnHdr->steFcnName = ((LPUDFO_PARAMS) lpSF_Fcns->LclParams)->lpSymEntry;
+        } else
+            // Save as the correct SYMENTRY
+            lpMemDfnHdr->steFcnName = fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym;
 
         // Save creation time
         lpMemDfnHdr->ftCreation = ftCreation;
@@ -2571,8 +3047,22 @@ UBOOL SaveFunctionCom
         // We no longer need this ptr
         MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
-        lpSF_Fcns->bRet = TRUE;
-        lpSF_Fcns->lpSymName = lpSymName;
+        lpSF_Fcns->lpSymName  = lpSymName;
+        lpSF_Fcns->hGlbDfnHdr = MakePtrTypeGlb (hGlbDfnHdr);
+        lpSF_Fcns->bRet       = TRUE;
+
+        // If we're called from CopyUDFO, ...
+        if (lpSF_Fcns->sfTypes EQ SFTYPES_UDFO)
+        {
+            // Lock the memory to get a ptr to it
+            lpMemDfnHdr = MyGlobalLockDfn (((LPUDFO_PARAMS) lpSF_Fcns->LclParams)->hGlbDfnHdr);
+
+            // Tell the free-er to save the function name STE flags
+            lpMemDfnHdr->SaveSTEFlags = TRUE;
+
+            // We no longer need this ptr
+            MyGlobalUnlock (((LPUDFO_PARAMS) lpSF_Fcns->LclParams)->hGlbDfnHdr); lpMemDfnHdr = NULL;
+        } // End IF
 
         goto NORMAL_EXIT;
     } else

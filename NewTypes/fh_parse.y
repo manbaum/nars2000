@@ -288,6 +288,7 @@ NoResHdr:                       // N.B. that this production does not need to re
 
                                  lpfhLocalVars->lpYYFcnName = $1.lpYYStrandBase;
                                  lpfhLocalVars->offFcnName  = $1.lpYYStrandBase->offTknIndex;
+                                 lpfhLocalVars->offFcnText  = $1.lpYYStrandBase->tkToken.tkCharIndex;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN0;         // Mark as a niladic function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_NIL;       // Mark as niladic
@@ -300,6 +301,7 @@ NoResHdr:                       // N.B. that this production does not need to re
 
                                  lpfhLocalVars->lpYYFcnName = $1.lpYYStrandBase;
                                  lpfhLocalVars->offFcnName  = $1.lpYYStrandBase->offTknIndex;
+                                 lpfhLocalVars->offFcnText  = $1.lpYYStrandBase->tkToken.tkCharIndex;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN0;         // Mark as a niladic function
                                  lpfhLocalVars->FcnValence  = FCNVALENCE_NIL;       // Mark as niladic
@@ -318,6 +320,7 @@ NoResHdr:                       // N.B. that this production does not need to re
 
                                  lpfhLocalVars->lpYYFcnName = $1.lpYYStrandBase;
                                  lpfhLocalVars->offFcnName  = $1.lpYYStrandBase->offTknIndex;
+                                 lpfhLocalVars->offFcnText  = $1.lpYYStrandBase->tkToken.tkCharIndex;
                                  lpfhLocalVars->lpYYRhtArg  = $2.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
@@ -331,6 +334,7 @@ NoResHdr:                       // N.B. that this production does not need to re
 
                                  lpfhLocalVars->lpYYFcnName = $1.lpYYStrandBase;
                                  lpfhLocalVars->offFcnName  = $1.lpYYStrandBase->offTknIndex;
+                                 lpfhLocalVars->offFcnText  = $1.lpYYStrandBase->tkToken.tkCharIndex;
                                  lpfhLocalVars->lpYYRhtArg  = $2.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
@@ -349,6 +353,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
                                  lpfhLocalVars->offFcnName  = $2.lpYYStrandBase->offTknIndex;
+                                 lpfhLocalVars->offFcnText  = $2.lpYYStrandBase->tkToken.tkCharIndex;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
@@ -366,6 +371,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
                                  lpfhLocalVars->offFcnName  = $2.lpYYStrandBase->offTknIndex;
+                                 lpfhLocalVars->offFcnText  = $2.lpYYStrandBase->tkToken.tkCharIndex;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
@@ -379,6 +385,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
                                  lpfhLocalVars->offFcnName  = $2.lpYYStrandBase->offTknIndex;
+                                 lpfhLocalVars->offFcnText  = $2.lpYYStrandBase->tkToken.tkCharIndex;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
@@ -393,6 +400,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
                                  lpfhLocalVars->offFcnName  = $2.lpYYStrandBase->offTknIndex;
+                                 lpfhLocalVars->offFcnText  = $2.lpYYStrandBase->tkToken.tkCharIndex;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
@@ -407,6 +415,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
                                  lpfhLocalVars->offFcnName  = $2.lpYYStrandBase->offTknIndex;
+                                 lpfhLocalVars->offFcnText  = $2.lpYYStrandBase->tkToken.tkCharIndex;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function
@@ -421,6 +430,7 @@ NoResHdr:                       // N.B. that this production does not need to re
                                  lpfhLocalVars->lpYYLftArg  = $1.lpYYStrandBase;
                                  lpfhLocalVars->lpYYFcnName = $2.lpYYStrandBase;
                                  lpfhLocalVars->offFcnName  = $2.lpYYStrandBase->offTknIndex;
+                                 lpfhLocalVars->offFcnText  = $2.lpYYStrandBase->tkToken.tkCharIndex;
                                  lpfhLocalVars->lpYYRhtArg  = $3.lpYYStrandBase;
                                  lpfhLocalVars->DfnType     = DFNTYPE_FCN;          // Mark as a function
                                  lpfhLocalVars->fhNameType  = NAMETYPE_FN12;        // Mark as a monadic/dyadic function

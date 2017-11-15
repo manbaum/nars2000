@@ -994,10 +994,10 @@ int MySprintfW
 int strncmpWA
     (LPWCHAR lpwLft,        // Left arg as WCHAR
      LPCHAR  lpRht,         // Right arg as CHAR
-     int     iLenLft)       // Length of left arg in WCHARs
+     size_t  iLenLft)       // Length of left arg in WCHARs
 
 {
-    int i;
+    size_t i;
 
     // Loop through all of the WCHARs
     for (i = 0; i < iLenLft; i++)
@@ -1018,13 +1018,13 @@ int strncmpWA
 void WriteFileWA
     (HANDLE  hFile,             // File handle
      LPWCHAR lpwChar,           // Ptr to string to write out
-     int     iLen,              // # WCHARs in the above string
+     DWORD   iLen,              // # WCHARs in the above string
      LPDWORD lpdwBytesOut,
      LPVOID  lpVoid)
 
 {
     WCHAR wszTemp[1024];
-    int   iChunkLen,            // Chunk length in WCHARs
+    DWORD iChunkLen,            // Chunk length in WCHARs
           i;
     DWORD dwBytesOut = 0;
 
@@ -1102,7 +1102,7 @@ void strcatW
 void strcpyn
     (LPSTR       lpDst,         // Ptr to destination
      const char *lpSrc,         // Ptr to source
-     int         iMaxLength)    // Length in bytes including terminating EOS
+     size_t      iMaxLength)    // Length in bytes including terminating EOS
 
 {
     // Copy source to destination
@@ -1124,7 +1124,7 @@ void strcpyn
 void strcpynW
     (LPWSTR       lpwDst,       // Ptr to destination
      const WCHAR *lpwSrc,       // Ptr to source
-     int          iMaxLength)   // Length in WCHARs including terminating EOS
+     size_t       iMaxLength)   // Length in WCHARs including terminating EOS
 
 {
     // Copy source to destination

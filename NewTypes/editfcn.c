@@ -6180,6 +6180,7 @@ HWND _MySetFocus
      UINT   uLine)          // Line #
 {
     HWND hWndRet = SetFocus (hWnd);
+    DWORD dwRet = GetLastError ();
 
     Assert (hWndRet NE NULL);
 

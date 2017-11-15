@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -181,8 +181,9 @@ typedef struct tagFHLOCALVARS           // Function Header Local Vars
                    lptkStop;            // 18:  Stopping token
     UINT           tkErrorCharIndex,    // 1C:  Error char index
                    offTknBase,          // 20:  Offset in hGlbTknHdr of the current token
-                   offFcnName;          // 24:  Offset in hGlbTknHdr of the function name token
-    UINT           DfnType:4,           // 28:  0000000F:  User-defined function/operator type (see DFN_TYPES)
+                   offFcnName,          // 24:  Offset in hGlbTknHdr of the function name token
+                   offFcnText;          // 28:  Offset in hGlbTxtLine of the function name
+    UINT           DfnType:4,           // 2C:  0000000F:  User-defined function/operator type (see DFN_TYPES)
                    FcnValence:3,        //      00000070:  User-defined function/operator valence (see FCN_VALENCES)
                    DfnAxis:1,           //      00000080:  User-defined function/operator accepts axis value
                    DisplayErr:1,        //      00000100:  TRUE iff we should display error messages
@@ -195,19 +196,19 @@ typedef struct tagFHLOCALVARS           // Function Header Local Vars
                    bAFO:1,              //      00040000:  TRUE iff we're parsing an AFO
                    bLclRL:1,            //      00080000:  TRUE iff []RL is localized in this function
                    :12;                 //      FFF00000:  Available bits
-    LPFH_YYSTYPE   lpYYStrandStart,     // 2C:  Strand stack start (static)
-                   lpYYStrandBase,      // 30:  ...          base (dynamic)
-                   lpYYStrandNext,      // 34:  ...          next token (dynamic)
-                   lpYYResult,          // 38:  Ptr to result name or list
-                   lpYYLftArg,          // 3C:  ...    left arg name or list
-                   lpYYLftOpr,          // 40:  ...    left operand name
-                   lpYYFcnName,         // 44:  ...    function/operator name
-                   lpYYAxisOpr,         // 48:  ...    axis operator name
-                   lpYYRhtOpr,          // 4C:  ...    right operand name
-                   lpYYRhtArg,          // 50:  ...    right arg name or list
-                   lpYYLocals;          // 54:  ...    locals name or list
-    WCHAR          wszErrMsg[256];      // 58:  Save area for error message
-                                        //258:  Length
+    LPFH_YYSTYPE   lpYYStrandStart,     // 30:  Strand stack start (static)
+                   lpYYStrandBase,      // 34:  ...          base (dynamic)
+                   lpYYStrandNext,      // 38:  ...          next token (dynamic)
+                   lpYYResult,          // 3C:  Ptr to result name or list
+                   lpYYLftArg,          // 40:  ...    left arg name or list
+                   lpYYLftOpr,          // 44:  ...    left operand name
+                   lpYYFcnName,         // 48:  ...    function/operator name
+                   lpYYAxisOpr,         // 4C:  ...    axis operator name
+                   lpYYRhtOpr,          // 50:  ...    right operand name
+                   lpYYRhtArg,          // 54:  ...    right arg name or list
+                   lpYYLocals;          // 58:  ...    locals name or list
+    WCHAR          wszErrMsg[256];      // 5C:  Save area for error message
+                                        //25C:  Length
 } FHLOCALVARS, *LPFHLOCALVARS;
 
 

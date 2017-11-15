@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -152,6 +152,7 @@ BOOL GetOprName_EM
             lpfhLocalVars->fhNameType  = NAMETYPE_FN12;
             lpfhLocalVars->lpYYFcnName = &lpYYArg->lpYYStrandBase[0];
             lpfhLocalVars->offFcnName  =  lpYYArg->lpYYStrandBase[0].offTknIndex;
+            lpfhLocalVars->offFcnText  =  lpYYArg->lpYYStrandBase[0].tkToken.tkCharIndex;
 
             return TRUE;
 
@@ -161,6 +162,7 @@ BOOL GetOprName_EM
             lpfhLocalVars->lpYYLftOpr  = &lpYYArg->lpYYStrandBase[0];
             lpfhLocalVars->lpYYFcnName = &lpYYArg->lpYYStrandBase[1];
             lpfhLocalVars->offFcnName  =  lpYYArg->lpYYStrandBase[1].offTknIndex;
+            lpfhLocalVars->offFcnText  =  lpYYArg->lpYYStrandBase[1].tkToken.tkCharIndex;
 
             return TRUE;
 
@@ -170,6 +172,7 @@ BOOL GetOprName_EM
             lpfhLocalVars->lpYYLftOpr  = &lpYYArg->lpYYStrandBase[0];
             lpfhLocalVars->lpYYFcnName = &lpYYArg->lpYYStrandBase[1];
             lpfhLocalVars->offFcnName  =  lpYYArg->lpYYStrandBase[1].offTknIndex;
+            lpfhLocalVars->offFcnText  =  lpYYArg->lpYYStrandBase[1].tkToken.tkCharIndex;
             lpfhLocalVars->lpYYRhtOpr  = &lpYYArg->lpYYStrandBase[2];
 
             return TRUE;

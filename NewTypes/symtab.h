@@ -340,7 +340,11 @@ typedef enum tagOBJ_NAMES
                             // 07-07:  Available entries (3 bits)
 } OBJ_NAMES, *LPOBJ_NAMES;
 
-#define OBJNAME_WSTRPTR     {L"None", L"USR", L"SYS", L"MFO", L"LOD", L"NoV"}
+// N.B.:  Whenever changing the above struct (OBJ_NAMES),
+//   be sure to make a corresponding change to
+//   <OBJNAME_WSTRPTR> in <symtab.h>.
+
+#define OBJNAME_WSTRPTR     {L"None", L"USR", L"SYS", L"MFO", L"LOD", L"NoVU", L"NoVS"}
 
 // Symbol table flags
 typedef struct tagSTFLAGS

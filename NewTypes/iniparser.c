@@ -63,8 +63,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 int MySprintfW (LPWCHAR lpwBuffer, size_t iCount, LPWCHAR lpwszFmt, ...);
 int MySprintf  (char *  lpBuffer , size_t iCount, char *  lpszFmt , ...);
-int strncmpWA  (LPWCHAR lpwLft, char *  lpRht, int iLenLft);
-void WriteFileWA (HANDLE  hFile, LPWCHAR lpwChar, int iLen, LPDWORD lpdwBytesOut, LPVOID lpVoid);
+int strncmpWA  (LPWCHAR lpwLft, char *  lpRht, size_t iLenLft);
+void WriteFileWA (HANDLE  hFile, LPWCHAR lpwChar, DWORD iLen, LPDWORD lpdwBytesOut, LPVOID lpVoid);
 
 /*---------------------------- Defines -------------------------------------*/
 #define ASCIILINESZ         (1024)

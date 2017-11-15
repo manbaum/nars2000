@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ typedef enum tagSF_TYPES
     SFTYPES_AA      ,               // 04:  ...         )INASCII
     SFTYPES_LOAD    ,               // 05:  ...         )LOAD/...
     SFTYPES_FE      ,               // 06:  ...         Function Editor
+    SFTYPES_UDFO    ,               // 07:  ...         Copying a UDFO
 } SF_TYPES, *LPSF_TYPES;
 
 typedef struct tagSF_FCNS
@@ -160,6 +161,13 @@ typedef struct tagAA_PARAMS
     UINT    NumLines;               // 00:  # lines in the function
     LPWCHAR lpwStart;               // 04:  Ptr to start of function
 } AA_PARAMS, *LPAA_PARAMS;
+
+
+typedef struct tagUDFO_PARAMS
+{
+    HGLOBAL    hGlbDfnHdr;          // 00:  # Function global memory handle
+    LPSYMENTRY lpSymEntry;          // 04:  Ptr to target SYMENTRY
+} UDFO_PARAMS, *LPUDFO_PARAMS;
 
 
 //***************************************************************************

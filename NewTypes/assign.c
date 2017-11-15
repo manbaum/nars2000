@@ -144,9 +144,17 @@ UBOOL AssignName_EM
             lptkNam->tkData.tkSym->stFlags.DfnAxis     = lpMemDfnHdr->DfnAxis;
 ////////////lptkNam->tkData.tkSym->stFlags.FcnDir      = FALSE;     // Already zero from ZeroMemory
 
+            // If the name being assigned to is not an MFO, ...
+            if (!lpMemDfnHdr->bMFO)
+                // Copy the UDFO (e.g., "f{is}g" where "g" may be any
+                //   UDFO (not an AFO) other than a niladic function
+                //   which instead is executed by the parser before
+                //   it gets to this point.
+                hGlbSrc = CopyUDFO (hGlbSrc, lptkNam->tkData.tkSym);
+
             // Copy the source global memory handle
             //   and save it as the new global memory ptr
-            lptkNam->tkData.tkSym->stData.stGlbData    = lpMemDfnHdr->bMFO ? hGlbSrc : CopySymGlbDir_PTB (hGlbSrc);
+            lptkNam->tkData.tkSym->stData.stGlbData    = hGlbSrc;
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbSrc); lpMemDfnHdr = NULL;

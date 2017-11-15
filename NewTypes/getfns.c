@@ -87,6 +87,24 @@ HGLOBAL GetGlbDataToken
 
 
 //***************************************************************************
+//  $SetGlbDataToken
+//
+//  Return the xxGlbData value from a token
+//    taking into account whether or the token is named
+//***************************************************************************
+
+UBOOL SetGlbDataToken
+    (LPTOKEN lptkToken,                 // Ptr to the token
+     HGLOBAL hGlbSrc)                   // Source global memory handle
+
+{
+    *GetPtrGlbDataToken (lptkToken) = MakePtrTypeGlb (hGlbSrc);
+
+    return TRUE;
+} // End SetGlbDataToken
+
+
+//***************************************************************************
 //  $ValidateFirstItemToken
 //
 //  Get and validate the first item from the token as an integer
@@ -2893,6 +2911,26 @@ HGLOBAL GetGlbHandle
     else
         return GetGlbDataToken (lpToken);
 } // End GetGlbHandle
+
+
+//***************************************************************************
+//  $SetGlbHandle
+//
+//  Save a new HGLOBAL into a token if it's an HGLOBAL
+//    NULL otherwise.
+//***************************************************************************
+
+UBOOL SetGlbHandle
+    (LPTOKEN lpToken,           // Ptr to token
+     HGLOBAL hGlbSrc)           // Source global memory handle
+
+{
+    // If it's an immediate object, ...
+    if (IsTknImmed (lpToken))
+        return FALSE;
+    else
+        return SetGlbDataToken (lpToken, hGlbSrc);
+} // End SetGlbHandle
 
 
 //***************************************************************************

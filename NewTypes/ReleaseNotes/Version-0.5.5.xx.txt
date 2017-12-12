@@ -1,6 +1,31 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1817 -- Version 0.5.5.xx
+--------------------------------
+
+* Support FLT32 In []NFNS
+
+Directory branches/bsmith/NewTypes:
+
+MACROS.H:
+  Define <GetNextFlt32> macro.
+
+QF_DR.C:
+QF_DR.H:
+  Rename <DR_FLOAT> to <DR_FLT64> and define <DR_FLT32> as 4-byte float.
+
+QF_NFNS.C:
+  Support FLT32 in []NFNS when reading in from FLT32 or writing out to FLT32.
+  Rename <DR_FLOAT> to <DR_FLT64> and define <DR_FLT32> as 4-byte float.
+
+SYMTAB.H:
+  Fix typo in comment.
+
+TYPES.H:
+  Define APLFLT[32|64] and related names.
+
+
 Build #1816 -- Version 0.5.5.xx
 --------------------------------
 

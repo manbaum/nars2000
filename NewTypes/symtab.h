@@ -131,7 +131,7 @@ typedef struct tagHTFLAGS
 {
     UINT Inuse:1,           // 00000001:  Inuse entry
          PrinHash:1,        // 00000002:  Entry with principal hash
-         CharIsValid:1,     // 00000004:  htChar is valid (and lpCharName is a
+         CharIsValid:1,     // 00000004:  htChar is valid (and lpwCharName is a
                             //            ptr to the name)
 #ifdef DEBUG
          Temp:1,            // 00000008:  Temporary flag used for debugging

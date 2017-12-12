@@ -37,7 +37,11 @@ typedef DWORD (WINAPI *GETFPN) (HANDLE hFile,
 #define CHAR8           BYTE
 #define CHAR16          WORD
 #define CHAR32          DWORD
+#define FLT32           float
 #define FLT64           double
+
+#define FLT32_MIN       FLT_MIN
+#define FLT32_MAX       FLT_MAX
 
 #define FLT64_MIN       DBL_MIN
 #define FLT64_MAX       DBL_MAX
@@ -51,6 +55,7 @@ typedef union tagNFNS_BUFFER
     CHAR32   Tchar32[2 * BUFLEN];   // ...
     INT32    Tint32 [2 * BUFLEN];   // ...
     INT64    Tint64 [1 * BUFLEN];   // ...
+    float    Tflt32 [2 * BUFLEN];   // ...
     APLFLOAT Tflt64 [1 * BUFLEN];   // ...
 } NFNS_BUFFER, *LPNFNS_BUFFER;
 
@@ -3111,12 +3116,13 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
 
         case DR_CHAR32:
         case DR_INT32:
+        case DR_FLT32:
             aplNELMRes = ((aplFileSize - aplFileOff) + (4 - 1)) / 4;
 
             break;
 
         case DR_INT64:
-        case DR_FLOAT:
+        case DR_FLT64:
             aplNELMRes = ((aplFileSize - aplFileOff) + (8 - 1)) / 8;
 
             break;
@@ -3235,7 +3241,7 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
                                                                                                 \
                         /* Remove from NELM */                                                  \
                         aplNELMRes -= uMin;                                                     \
-                     /* aplOff     += uMin; */                                                  \
+                        /* aplOff     += uMin; */                                               \
                                                                                                 \
                         /* Increment the offset in overLapped for next read */                  \
                         aplFileOff += dwRead;                                                   \
@@ -3514,7 +3520,15 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
                        INT64)           // ...    type
                     break;
 
-                case DR_FLOAT:          // Read -- Dest = BOOL, Src = FLOAT
+                case DR_FLT32:          // Read -- Dest = BOOL, Src = FLT32
+                    READ_IN_DEMOTE_TO_BOOL
+                      (Tflt32,          // Destination type (NfnsBuff.DstType)
+                       GetNextFlt32,    // Source GetNext routine
+                       0,               // ...    array type (ignored in this case)
+                       FLT32)           // ...    type
+                    break;
+
+                case DR_FLT64:          // Read -- Dest = BOOL, Src = FLT64
                     READ_IN_DEMOTE_TO_BOOL
                       (Tflt64,          // Destination type (NfnsBuff.DstType)
                        GetNextFlt64,    // Source GetNext routine
@@ -3643,7 +3657,17 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
                                                                  for I/O completion         */
                     break;
 
-                case DR_FLOAT:          // Read -- Dest = INT, Src = FLOAT
+                case DR_FLT32:          // Read -- Dest = INT, Src = FLT32
+                    LIMIT_READ_IN (APLINT,          // Destination Cast
+                                   Tflt32,          // Source buffer (NfnsBuff.DstType)
+                                   FLT32_MIN,       // ...    minimum
+                                   FLT32_MAX,       // ...    maximum
+                                   FLT32,           // ...    type
+                                   GetNextFlt32,    // ...    GetNext routine
+                                   0)               // ...    array type (ignored in this case)
+                    break;
+
+                case DR_FLT64:          // Read -- Dest = INT, Src = FLT64
                     LIMIT_READ_IN (APLINT,          // Destination Cast
                                    Tflt64,          // Source buffer (NfnsBuff.DstType)
                                    FLT64_MIN,       // ...    minimum
@@ -3765,7 +3789,17 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
                                    0)               // ...    array type (ignored in this case)
                     break;
 
-                case DR_FLOAT:          // Read -- Dest = CHAR, Src = FLOAT
+                case DR_FLT32:          // Read -- Dest = CHAR, Src = FLT32
+                    LIMIT_READ_IN (APLCHAR,         // Destination Cast
+                                   Tflt32,          // Source buffer (NfnsBuff.DstType)
+                                   FLT32_MIN,       // ...    minimum
+                                   FLT32_MAX,       // ...    maximum
+                                   FLT32,           // ...    type
+                                   GetNextFlt32,    // ...    GetNext routine
+                                   0)               // ...    array type (ignored in this case)
+                    break;
+
+                case DR_FLT64:          // Read -- Dest = CHAR, Src = FLT64
                     LIMIT_READ_IN (APLCHAR,         // Destination Cast
                                    Tflt64,          // Source buffer (NfnsBuff.DstType)
                                    FLT64_MIN,       // ...    minimum
@@ -3781,16 +3815,16 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
 
             break;
 
-        case ARRAY_FLOAT:               // Read -- Dest = FLOAT
+        case ARRAY_FLOAT:               // Read -- Dest = FLT64
             // Split cases based upon the source storage value
             switch (DiskConv)
             {
-                case DR_BOOL:           // Read -- Dest = FLOAT, Src = BOOL
+                case DR_BOOL:           // Read -- Dest = FLT64, Src = BOOL
                     READ_IN_PROMOTE_FROM_BOOL (FLT64)       // Destination Cast
 
                     break;
 
-                case DR_CHAR8:          // Read -- Dest = FLOAT, Src = CHAR8
+                case DR_CHAR8:          // Read -- Dest = FLT64, Src = CHAR8
                     goto RIGHT_DOMAIN_EXIT;
 
 ////////////////////LIMIT_READ_IN (FLT64,           // Destination Cast
@@ -3802,7 +3836,7 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
 ////////////////////               0)               // ...    array type (ignored in this case)
                     break;
 
-                case DR_CHAR16:         // Read -- Dest = FLOAT, Src = CHAR16
+                case DR_CHAR16:         // Read -- Dest = FLT64, Src = CHAR16
                     goto RIGHT_DOMAIN_EXIT;
 
 ////////////////////LIMIT_READ_IN (FLT64,           // Destination Cast
@@ -3814,7 +3848,7 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
 ////////////////////               0)               // ...    array type (ignored in this case)
                     break;
 
-                case DR_CHAR32:         // Read -- Dest = FLOAT, Src = CHAR32
+                case DR_CHAR32:         // Read -- Dest = FLT64, Src = CHAR32
                     goto RIGHT_DOMAIN_EXIT;
 
 ////////////////////LIMIT_READ_IN (FLT64,           // Destination Cast
@@ -3826,7 +3860,7 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
 ////////////////////               0)               // ...    array type (ignored in this case)
                     break;
 
-                case DR_INT8:           // Read -- Dest = FLOAT, Src = INT8
+                case DR_INT8:           // Read -- Dest = FLT64, Src = INT8
                     goto RIGHT_DOMAIN_EXIT;
 
 ////////////////////LIMIT_READ_IN (FLT64,           // Destination Cast
@@ -3838,7 +3872,7 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
 ////////////////////               0)               // ...    array type (ignored in this case)
                     break;
 
-                case DR_INT16:          // Read -- Dest = FLOAT, Src = INT16
+                case DR_INT16:          // Read -- Dest = FLT64, Src = INT16
                     goto RIGHT_DOMAIN_EXIT;
 
 ////////////////////LIMIT_READ_IN (FLT64,           // Destination Cast
@@ -3850,7 +3884,7 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
 ////////////////////               0)               // ...    array type (ignored in this case)
                     break;
 
-                case DR_INT32:          // Read -- Dest = FLOAT, Src = INT32
+                case DR_INT32:          // Read -- Dest = FLT64, Src = INT32
                     goto RIGHT_DOMAIN_EXIT;
 
 ////////////////////LIMIT_READ_IN (FLT64,           // Destination Cast
@@ -3862,10 +3896,20 @@ LPPL_YYSTYPE SysFnMonNREAD_EM_YY
 ////////////////////               0)               // ...    array type (ignored in this case)
                     break;
 
-                case DR_INT64:          // Read -- Dest = FLOAT, Src = INT64
+                case DR_INT64:          // Read -- Dest = FLT64, Src = INT64
                     goto RIGHT_DOMAIN_EXIT;
 
-                case DR_FLOAT:          // Read -- Dest = FLOAT, Src = FLOAT
+                case DR_FLT32:          // Read -- Dest = FLT64, Src = FLT32
+                    LIMIT_READ_IN (APLFLOAT,        // Destination Cast
+                                   Tflt32,          // Source buffer (NfnsBuff.DstType)
+                                   FLT32_MIN,       // ...    minimum
+                                   FLT32_MAX,       // ...    maximum
+                                   FLT32,           // ...    type
+                                   GetNextFlt32,    // ...    GetNext routine
+                                   0)               // ...    array type (ignored in this case)
+                    break;
+
+                case DR_FLT64:          // Read -- Dest = FLT64, Src = FLT64
                     // Calculate the # bytes to read
                     dwRead = (DWORD) (aplNELMRes * sizeof (FLT64));
 
@@ -5634,7 +5678,8 @@ UBOOL NfnsArgConv
         case DR_INT16:
         case DR_INT32:
         case DR_INT64:
-        case DR_FLOAT:
+        case DR_FLT32:
+        case DR_FLT64:
             break;
 
         default:
@@ -5662,7 +5707,7 @@ UBOOL NfnsArgConv
 
             break;
 
-        case DR_FLOAT:
+        case DR_FLT64:
             *lpaplTypeWs = ARRAY_FLOAT;
 
             break;
@@ -5708,8 +5753,10 @@ typedef struct tagCONV_CODES
      {L"int16"  , DR_INT16  },
      {L"int32"  , DR_INT32  },
      {L"int64"  , DR_INT64  },
-     {L"flt64"  , DR_FLOAT  },
-     {L"double" , DR_FLOAT  },
+     {L"flt32"  , DR_FLT32  },
+     {L"float"  , DR_FLT32  },
+     {L"flt64"  , DR_FLT64  },
+     {L"double" , DR_FLT64  },
     };
 
     // Lock the memory to get a ptr to it
@@ -6651,7 +6698,7 @@ UBOOL NfnsWriteData_EM
 
                     break;
 
-#define PROMOTE_FROM_BOOL_WRITE_OUT(a)                                                              \
+#define PROMOTE_FROM_BOOL_WRITE_OUT(a,cast)                                                         \
                     /* Loop through the chunks of the arg */                                        \
                     while (aplNELM)                                                                 \
                     {                                                                               \
@@ -6661,8 +6708,9 @@ UBOOL NfnsWriteData_EM
                         /* Loop through the arg */                                                  \
                         for (uCnt = 0; uCnt < uMin; uCnt++)                                         \
                         {                                                                           \
-                            NfnsBuff.a[uCnt] = (uBitMask & *(LPAPLBOOL) lpMem) ? TRUE : FALSE;      \
-                                                                                                    \
+                            NfnsBuff.a[uCnt] =                                                      \
+                              (cast) ((uBitMask & *(LPAPLBOOL) lpMem) ? TRUE                        \
+                                                                      : FALSE);                     \
                             /* Shift over the bit mask */                                           \
                             uBitMask <<= 1;                                                         \
                                                                                                     \
@@ -6676,7 +6724,7 @@ UBOOL NfnsWriteData_EM
                                                                                                     \
                         /* Remove from NELM */                                                      \
                         aplNELM -= uMin;                                                            \
-                     /* aplOff  += uMin; */                                                         \
+                        /* aplOff  += uMin; */                                                      \
                                                                                                     \
                         /* Calculate the # bytes to write out */                                    \
                         dwWritten = (DWORD) (uMin * sizeof (NfnsBuff.a[0]));                        \
@@ -6735,42 +6783,47 @@ UBOOL NfnsWriteData_EM
                     } /* End WHILE */
 
                 case DR_CHAR8:          // Write -- Src = BOOL, Dest = CHAR8
-                    PROMOTE_FROM_BOOL_WRITE_OUT (Tchar8)
+                    PROMOTE_FROM_BOOL_WRITE_OUT (Tchar8  , byte)
 
                     break;
 
                 case DR_CHAR16:         // Write -- Src = BOOL, Dest = CHAR16
-                    PROMOTE_FROM_BOOL_WRITE_OUT (Tchar16)
+                    PROMOTE_FROM_BOOL_WRITE_OUT (Tchar16 , WCHAR)
 
                     break;
 
                 case DR_CHAR32:         // Write -- Src = BOOL, Dest = CHAR32
-                    PROMOTE_FROM_BOOL_WRITE_OUT (Tchar32)
+                    PROMOTE_FROM_BOOL_WRITE_OUT (Tchar32 , int)
 
                     break;
 
                 case DR_INT8:           // Write -- Src = BOOL, Dest = INT8
-                    PROMOTE_FROM_BOOL_WRITE_OUT (Tint8)
+                    PROMOTE_FROM_BOOL_WRITE_OUT (Tint8   , byte)
 
                     break;
 
                 case DR_INT16:          // Write -- Src = BOOL, Dest = INT16
-                    PROMOTE_FROM_BOOL_WRITE_OUT (Tint16)
+                    PROMOTE_FROM_BOOL_WRITE_OUT (Tint16  , short)
 
                     break;
 
                 case DR_INT32:          // Write -- Src = BOOL, Dest = INT32
-                    PROMOTE_FROM_BOOL_WRITE_OUT (Tint32)
+                    PROMOTE_FROM_BOOL_WRITE_OUT (Tint32  , int)
 
                     break;
 
                 case DR_INT64:          // Write -- Src = BOOL, Dest = INT64
-                    PROMOTE_FROM_BOOL_WRITE_OUT (Tint64)
+                    PROMOTE_FROM_BOOL_WRITE_OUT (Tint64  , _int64)
 
                     break;
 
-                case DR_FLOAT:          // Write -- Src = BOOL, Dest = FLOAT
-                    PROMOTE_FROM_BOOL_WRITE_OUT (Tflt64)
+                case DR_FLT32:          // Write -- Src = BOOL, Dest = FLT32
+                    PROMOTE_FROM_BOOL_WRITE_OUT (Tflt32  , float)
+
+                    break;
+
+                case DR_FLT64:          // Write -- Src = BOOL, Dest = FLT64
+                    PROMOTE_FROM_BOOL_WRITE_OUT (Tflt64  , double)
 
                     break;
 
@@ -7073,7 +7126,16 @@ UBOOL NfnsWriteData_EM
 
                     break;
 
-                case DR_FLOAT:          // Write -- Src = INT/APA, Dest = FLOAT
+                case DR_FLT32:          // Write -- Src = INT/APA, Dest = FLT32
+                    LIMIT_WRITE_OUT (Tflt32,            // Destination type (NfnsBuff.DstType)
+                                     FLT32,             // ...         cast
+                                     FLT32_MIN,         // ...         minimum
+                                     FLT32_MAX,         // ...         maximum
+                                     GetNextInteger,    // Source GetNext routine
+                                     APLINT)            // ...    type
+                    break;
+
+                case DR_FLT64:          // Write -- Src = INT/APA, Dest = FLT64
                     LIMIT_WRITE_OUT (Tflt64,            // Destination type (NfnsBuff.DstType)
                                      FLT64,             // ...         cast
                                      FLT64_MIN,         // ...         minimum
@@ -7200,7 +7262,16 @@ UBOOL NfnsWriteData_EM
                                      APLCHAR)           // ...    type
                     break;
 
-                case DR_FLOAT:          // Write -- Src = CHAR, Dest = FLOAT
+                case DR_FLT32:          // Write -- Src = CHAR, Dest = FLT32
+                    LIMIT_WRITE_OUT (Tflt32,            // Destination type (NfnsBuff.DstType)
+                                     FLT32,             // ...         cast
+                                     FLT32_MIN,         // ...         minimum
+                                     FLT32_MAX,         // ...         maximum
+                                     GetNextChar16,     // Source GetNext routine
+                                     APLCHAR)           // ...    type
+                    break;
+
+                case DR_FLT64:          // Write -- Src = CHAR, Dest = FLT64
                     LIMIT_WRITE_OUT (Tflt64,            // Destination type (NfnsBuff.DstType)
                                      FLT64,             // ...         cast
                                      FLT64_MIN,         // ...         minimum
@@ -7215,18 +7286,18 @@ UBOOL NfnsWriteData_EM
 
             break;
 
-        case ARRAY_FLOAT:               // Write -- Src = FLOAT
+        case ARRAY_FLOAT:               // Write -- Src = FLT64
             // Split cases based upon the DiskConv value
             switch (DiskConv)
             {
-                case DR_BOOL:           // Write -- Src = FLOAT, Dest = BOOL
+                case DR_BOOL:           // Write -- Src = FLT64, Dest = BOOL
                     goto DOMAIN_EXIT;
 
 ////////////////////DEMOTE_TO_BOOL_WRITE_OUT (GetNextFloat,   FLT64)
 
                     break;
 
-                case DR_CHAR8:          // Write -- Src = FLOAT, Dest = CHAR8
+                case DR_CHAR8:          // Write -- Src = FLT64, Dest = CHAR8
                     goto DOMAIN_EXIT;
 
 ////////////////////LIMIT_WRITE_OUT (Tchar8,            // Destination type (NfnsBuff.DstType)
@@ -7237,7 +7308,7 @@ UBOOL NfnsWriteData_EM
 ////////////////////                 FLT64)             // ...    type
                     break;
 
-                case DR_CHAR16:         // Write -- Src = FLOAT, Dest = CHAR16
+                case DR_CHAR16:         // Write -- Src = FLT64, Dest = CHAR16
                     goto DOMAIN_EXIT;
 
 ////////////////////LIMIT_WRITE_OUT (Tchar16,           // Destination type (NfnsBuff.DstType)
@@ -7248,7 +7319,7 @@ UBOOL NfnsWriteData_EM
 ////////////////////                 FLT64)             // ...    type
                     break;
 
-                case DR_CHAR32:         // Write -- Src = FLOAT, Dest = CHAR32
+                case DR_CHAR32:         // Write -- Src = FLT64, Dest = CHAR32
                     goto DOMAIN_EXIT;
 
 ////////////////////LIMIT_WRITE_OUT (Tchar32,           // Destination type (NfnsBuff.DstType)
@@ -7259,7 +7330,7 @@ UBOOL NfnsWriteData_EM
 ////////////////////                 FLT64)             // ...    type
                     break;
 
-                case DR_INT8:           // Write -- Src = FLOAT, Dest = INT8
+                case DR_INT8:           // Write -- Src = FLT64, Dest = INT8
                     goto DOMAIN_EXIT;
 
 ////////////////////LIMIT_WRITE_OUT (Tint8,             // Destination type (NfnsBuff.DstType)
@@ -7270,7 +7341,7 @@ UBOOL NfnsWriteData_EM
 ////////////////////                 FLT64)             // ...    type
                     break;
 
-                case DR_INT16:          // Write -- Src = FLOAT, Dest = INT16
+                case DR_INT16:          // Write -- Src = FLT64, Dest = INT16
                     goto DOMAIN_EXIT;
 
 ////////////////////LIMIT_WRITE_OUT (Tint16,            // Destination type (NfnsBuff.DstType)
@@ -7281,7 +7352,7 @@ UBOOL NfnsWriteData_EM
 ////////////////////                 FLT64)             // ...    type
                     break;
 
-                case DR_INT32:          // Write -- Src = FLOAT, Dest = INT32
+                case DR_INT32:          // Write -- Src = FLT64, Dest = INT32
                     goto DOMAIN_EXIT;
 
 ////////////////////LIMIT_WRITE_OUT (Tint32,            // Destination type (NfnsBuff.DstType)
@@ -7292,7 +7363,7 @@ UBOOL NfnsWriteData_EM
 ////////////////////                 FLT64)             // ...    type
                     break;
 
-                case DR_INT64:          // Write -- Src = FLOAT, Dest = INT64
+                case DR_INT64:          // Write -- Src = FLT64, Dest = INT64
                     goto DOMAIN_EXIT;
 
 ////////////////////LIMIT_WRITE_OUT (Tint64,            // Destination type (NfnsBuff.DstType)
@@ -7303,7 +7374,16 @@ UBOOL NfnsWriteData_EM
 ////////////////////                 FLT64)             // ...    type
                     break;
 
-                case DR_FLOAT:          // Write -- Src = FLOAT, Dest = FLOAT
+                case DR_FLT32:          // Write -- Src = FLT64, Dest = FLT32
+                    LIMIT_WRITE_OUT (Tflt32,            // Destination type (NfnsBuff.DstType)
+                                     FLT32,             // ...         cast
+                                     FLT32_MIN,         // ...         minimum
+                                     FLT32_MAX,         // ...         maximum
+                                     GetNextFlt64,      // Source GetNext routine
+                                     FLT64)             // ...    type
+                    break;
+
+                case DR_FLT64:          // Write -- Src = FLT64, Dest = FLT64
                     // Calculate the # bytes to write out
                     dwWritten = (DWORD) aplNELM * sizeof (FLT64);
 

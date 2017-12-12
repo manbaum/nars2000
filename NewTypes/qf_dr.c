@@ -117,7 +117,7 @@ LPPL_YYSTYPE SysFnMonDR_EM_YY
             break;
 
         case ARRAY_FLOAT:
-            lpYYRes->tkToken.tkData.tkInteger = DR_FLOAT;
+            lpYYRes->tkToken.tkData.tkInteger = DR_FLT64;
 
             break;
 
@@ -310,7 +310,7 @@ LPPL_YYSTYPE SysFnDydDR_EM_YY
         case DR_INT64:
             return SysFnDR_Convert_EM_YY (ARRAY_INT,   lptkRhtArg, lptkFunc);
 
-        case DR_FLOAT:
+        case DR_FLT64:
             return SysFnDR_Convert_EM_YY (ARRAY_FLOAT, lptkRhtArg, lptkFunc);
 
         case DR_APA:
@@ -1078,7 +1078,7 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
             MySprintfW (wszTemp,
                         sizeof (wszTemp),
                        L"Floating Point (%d):  64 bits per element",
-                        DR_FLOAT);
+                        DR_FLT64);
             break;
 
         case ARRAY_CHAR:

@@ -544,7 +544,8 @@
 #define GetNextInt16(a,t,c)         ((LPINT16   ) a)[c]
 #define GetNextInt32(a,t,c)         ((LPINT32   ) a)[c]
 #define GetNextInt64(a,t,c)         ((LPINT64   ) a)[c]
-#define GetNextFlt64(a,t,c)         ((LPAPLFLOAT) a)[c]
+#define GetNextFlt32(a,t,c)         ((LPAPLFLT32) a)[c]
+#define GetNextFlt64(a,t,c)         ((LPAPLFLT64) a)[c]
 
 // Macro to determine if the System Name is one of []A and friends
 #define IsQuadA(a)                  (strchrW (L"aA‚¬‰ƒ·¡‡¿„√", (a)) NE NULL)

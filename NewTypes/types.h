@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -64,6 +64,8 @@ typedef UCHAR       APLBOOL;            // ...         an element in a Boolean a
 typedef  LONGLONG   APLINT;             // ...         ...           an integer array
 typedef ULONGLONG   APLUINT;            // ...         ...           an integer array (unsigned)
 typedef WCHAR       APLCHAR;            // ...         ...           a character array
+typedef float       APLFLT32;           // ...         ...           a Floating Point array
+typedef double      APLFLT64;           // ...         ...           a Floating Point array
 typedef double      APLFLOAT;           // ...         ...           a Floating Point array
 typedef HGLOBAL     APLNESTED;          // ...         ...           a nested array
 typedef struct tagSYMENTRY *APLHETERO;  // ...         ...           a HETERO array
@@ -148,6 +150,8 @@ typedef APLCHAR   * LPAPLCHAR;
 typedef APLNESTED * LPAPLNESTED;
 typedef APLLIST   * LPAPLLIST;
 typedef APLFLOAT  * LPAPLFLOAT;
+typedef APLFLT32  * LPAPLFLT32;
+typedef APLFLT64  * LPAPLFLT64;
 typedef APLHETERO * LPAPLHETERO;
 typedef APLMPI    * LPAPLMPI;
 typedef APLRAT    * LPAPLRAT;

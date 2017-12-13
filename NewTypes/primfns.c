@@ -265,7 +265,7 @@ char TokenTypeFV
 
         case TKT_DELDEL:    // Del Del -- either a monadic or dyadic function
             // Search up the SIS chain to see what this is
-            lpSISCur = SrchSISForDfn (GetMemPTD ());
+            lpSISCur = SrchSISForDfn (GetMemPTD (), FALSE);
 
             // If the ptr is valid, ...
             if (lpSISCur NE NULL)

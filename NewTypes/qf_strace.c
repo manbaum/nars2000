@@ -220,6 +220,11 @@ LPPL_YYSTYPE SysFnMonSTRACE_EM_YY
      || stFlags.stNameType EQ NAMETYPE_VAR)
         goto DOMAIN_EXIT;
 
+    // If the SYMENTRY is {del}, ...
+    if (IsSymDel (lpSymEntry))
+        // Return the SYMENTRY of the suspended/pendent function
+        lpSymEntry = GetSymDel (lpSymEntry);
+
     // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLockDfn (lpSymEntry->stData.stGlbData);
 
@@ -493,6 +498,11 @@ LPPL_YYSTYPE SysFnDydSTRACE_EM_YY
       && stFlags.ObjName NE OBJNAME_MFO)
      || stFlags.stNameType EQ NAMETYPE_VAR)
         goto RIGHT_DOMAIN_EXIT;
+
+    // If the SYMENTRY is {del}, ...
+    if (IsSymDel (lpSymEntry))
+        // Return the SYMENTRY of the suspended/pendent function
+        lpSymEntry = GetSymDel (lpSymEntry);
 
     // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLockDfn (lpSymEntry->stData.stGlbData);

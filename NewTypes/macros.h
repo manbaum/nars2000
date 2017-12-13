@@ -39,7 +39,7 @@
                               && (IsSymNoValue ((a)->tkData.tkSym)))
 #define IsMFOName(a)            ((a)[0] EQ L'#')
 #define IsSysName(a)            ((a)[0] EQ UTF16_QUAD  || (a)[0] EQ UTF16_QUAD2 || (a)[0] EQ UTF16_QUOTEQUAD)
-#define IsDirectName(a)         ((a)    EQ UTF16_ALPHA || (a)    EQ UTF16_OMEGA)
+#define IsDirectName(a)         ((a)    EQ UTF16_ALPHA || (a)    EQ UTF16_OMEGA || (a)    EQ UTF16_DEL)
 
 #define ByteAddr(a,b)           (&(((LPBYTE) (a))[b]))
 #define ByteDiff(a,b)           (((LPBYTE) (a)) - (LPBYTE) (b))

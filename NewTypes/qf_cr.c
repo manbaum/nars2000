@@ -193,11 +193,12 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
 
     // If not found,
     //   or it's a System Name,
-    //   or without a value,
+    //   or (without a value and not {del}),
     //   return empty vector or 0 x 0 char matrix
     if (lpSymEntry EQ NULL
      ||  lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS
-     || !lpSymEntry->stFlags.Value)
+     || (!lpSymEntry->stFlags.Value
+      && !IsSymDel (lpSymEntry)))
         // Not the signature of anything we know
         // Return an empty nested char vector or a 0 x 0 char matrix
         hGlbRes = SysFnMonCR_ALLOC_EM (0, aplRankRes, NULL, lptkFunc);
@@ -218,8 +219,29 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
             hGlbRes = SysFnMonCR_ALLOC_EM (aplNELMRes, aplRankRes, lpwszTemp, lptkFunc);
         } else
         {
-            // Get the global memory ptr
-            hGlbFcn = lpSymEntry->stData.stGlbData;
+            // If the SYMENTRY is {del}, ...
+            if (IsSymDel (lpSymEntry))
+            {
+                LPSIS_HEADER lpSISCur;
+
+                // Search up the SIS chain to see what this is
+                lpSISCur = SrchSISForDfn (lpMemPTD, TRUE);
+
+                // If the ptr is valid, ...
+                if (lpSISCur NE NULL)
+                    // Get the suspended/pendent global memory handle
+                    hGlbFcn = lpSISCur->hGlbDfnHdr;
+                else
+                {
+                    // Not the signature of anything we know
+                    // Return an empty nested char vector or a 0 x 0 char matrix
+                    hGlbRes = SysFnMonCR_ALLOC_EM (0, aplRankRes, NULL, lptkFunc);
+
+                    goto YYALLOC_EXIT;
+                } // End IF/ELSE
+            } else
+                // Get the global memory ptr
+                hGlbFcn = lpSymEntry->stData.stGlbData;
 
             // Lock the memory to get a ptr to it
             lpMemHdrFcn = MyGlobalLock (hGlbFcn);
@@ -444,7 +466,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
             MyGlobalUnlock (hGlbFcn); lpMemHdrFcn = NULL;
         } // End IF/ELSE
     } // End IF/ELSE
-
+YYALLOC_EXIT:
     if (hGlbRes EQ NULL)
         goto ERROR_EXIT;
 

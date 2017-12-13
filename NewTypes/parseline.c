@@ -6464,7 +6464,7 @@ PL_YYLEX_FCNNAMED:
 
         case TKT_DEL:               // Del -- always a function
             // Search up the SIS chain to see what this is
-            lpSISCur = SrchSISForDfn (lpMemPTD);
+            lpSISCur = SrchSISForDfn (lpMemPTD, FALSE);
 
             // If the ptr is valid, ...
             if (lpSISCur NE NULL)
@@ -6495,7 +6495,7 @@ PL_YYLEX_FCNNAMED:
 
         case TKT_DELDEL:            // Del Del -- either a monadic or dyadic operator
             // Search up the SIS chain to see what this is
-            lpSISCur = SrchSISForDfn (lpMemPTD);
+            lpSISCur = SrchSISForDfn (lpMemPTD, FALSE);
 
             // If the ptr is valid, ...
             if (lpSISCur NE NULL)
@@ -6940,7 +6940,7 @@ LPWCHAR LSTACK
             LPSIS_HEADER lpSISCur;          // Ptr to current SIS layer
 
             // Search up the SIS chain to see what this is
-            lpSISCur = SrchSISForDfn (lpMemPTD);
+            lpSISCur = SrchSISForDfn (lpMemPTD, FALSE);
 
             // If the ptr is valid, ...
             if (lpSISCur NE NULL)

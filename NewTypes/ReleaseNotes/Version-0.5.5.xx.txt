@@ -1,6 +1,38 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1819 -- Version 0.5.5.xx
+--------------------------------
+
+* Allow {del} As Argument []AT, []CR, []STOP, []TRACE, []VR
+
+Directory branches/bsmith/NewTypes:
+
+MACROS.H:
+  Include <UTF16_DEL> in <IsDirectName> macro.
+
+PARSELINE.C:
+PRIMFNS.C:
+  Pass additional parameter to <SrchSISForDfn> to indicate whether or not to skip over Magic Functions.
+
+PL_PROC.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  Pass additional parameter to <SrchSISForDfn> to indicate whether or not to skip over Magic Functions.
+
+QF_AT.C:
+  In <AttributeCommon>, if the SYMENTRY is {del}, substitute the actual LPSYMENTRY of the suspended/pendent function.
+
+QF_CR.C:
+QF_STRACE.C:
+  Allow {del} as argument to []AT, []CR, []STOP, []TRACE, []VR
+
+QF_NC.C:
+  Allow {del} as argument to []AT, []CR, []STOP, []TRACE, []VR
+  Define <IsSymDel> to detect if a SYMENTRY is the character scalar <UTF16_DEL>.
+  Define <GetSymDel> to return the actual LPSYMENTRY of the suspended/pendent function.
+  In <CalcNameClass>, check for <UTF16_DEL> first and return name class <UsrFcn>.
+
+
 Build #1818 -- Version 0.5.5.xx
 --------------------------------
 

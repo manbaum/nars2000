@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -346,7 +346,7 @@ NORMAL_EXIT:
 //
 //   first:  QUAD | QUOTEQUAD | ALPHABETIC | UNDERBAR;
 //   second: ALPHABETIC | NUMERIC | UNDERBAR | OVERBAR;
-//   name:   ALPHA | OMEGA | first second;
+//   name:   ALPHA | OMEGA | DEL | first second;
 //
 //***************************************************************************
 
@@ -418,6 +418,74 @@ UBOOL IsValid2ndCharInName
 
 
 //***************************************************************************
+//  $IsSymDel
+//
+//  Return TRUE iff the SYMENTRY is {del}
+//***************************************************************************
+
+UBOOL IsSymDel
+    (LPSYMENTRY lpSymEntry)
+
+{
+    HGLOBAL htGlbName;
+    LPWCHAR lpMemName;
+    UBOOL   bRet;
+
+    // Get the name's global memory handle
+    htGlbName = lpSymEntry->stHshEntry->htGlbName;
+
+    // Lock the memory to get a ptr to it
+    lpMemName = MyGlobalLockInt (htGlbName);
+
+    // If the name is {del}, ...
+    bRet = (lstrcmpW (lpMemName, WS_UTF16_DEL) EQ 0);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (htGlbName); lpMemName = NULL;
+
+    return bRet;
+} // End IsSymDel
+
+
+//***************************************************************************
+//  $GetSymDel
+//
+//  Return a ptr to the SYMENTRY of the suspended/pendent function
+//***************************************************************************
+
+LPSYMENTRY GetSymDel
+    (LPSYMENTRY lpSymEntry)
+
+{
+    LPSIS_HEADER lpSISCur;                  // Ptr to current SIS layer
+
+    // Search up the SIS chain to see what this is
+    lpSISCur = SrchSISForDfn (GetMemPTD (), TRUE);
+
+    // If the ptr is valid, ...
+    if (lpSISCur NE NULL)
+    {
+        HGLOBAL      hGlbFcn;               // Function global memory handle
+        LPDFN_HEADER lpMemDfnHdr = NULL;    // Ptr to function header
+
+        // Get the suspended/pendent global memory handle
+        hGlbFcn = lpSISCur->hGlbDfnHdr;
+
+        // Lock the memory to get a ptr to it
+        lpMemDfnHdr = MyGlobalLockDfn (hGlbFcn);
+
+        // Get a ptr to the corresponding SYMENTRY
+        lpSymEntry = lpMemDfnHdr->steFcnName;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbFcn); lpMemDfnHdr = NULL;
+    } // End IF
+
+    return lpSymEntry;
+} // End GetSymDel
+
+
+//***************************************************************************
 //  $CalcNameClass
 //
 //  Calculate the name class of each element
@@ -446,6 +514,11 @@ APLINT CalcNameClass
     (LPSYMENTRY lpSymEntry)
 
 {
+    // If the SYMENTRY is {del}, ...
+    if (IsSymDel (lpSymEntry))
+        // Call it a UDFO
+        return NAMECLASS_USRFCN;
+
     // Split cases based upon the Name Type
     switch (lpSymEntry->stFlags.stNameType)
     {

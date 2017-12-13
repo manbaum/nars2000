@@ -92,7 +92,7 @@ LPPL_YYSTYPE WaitForInput
     UnlocalizeSTEs (NULL);
 
     // If we're resetting, ...
-    if (lpMemPTD->lpSISCur
+    if (lpMemPTD->lpSISCur NE NULL
      && lpMemPTD->lpSISCur->ResetFlag NE RESETFLAG_NONE)
         lpYYRes = NULL;
     else
@@ -179,8 +179,11 @@ void ArrExprCheckCaller
     {
         HGLOBAL hGlbDfnHdr;
 
+        // Get the global memory handle
+        hGlbDfnHdr = SISAfo (lpMemPTD);
+
         // If we're parsing an AFO, ...
-        if (hGlbDfnHdr = SISAfo (lpMemPTD))
+        if (hGlbDfnHdr NE NULL)
             lpplLocalVars->bStopExec =
             lpplLocalVars->bRet =
               AfoDisplay_EM (&lpMemPTD->YYResExec.tkToken, bNoDisplay, lpplLocalVars, hGlbDfnHdr);
@@ -271,7 +274,7 @@ void ArrExprCheckCaller
 ///                   PrimFnMonRho_EM_YY (&lpplLocalVars->tkSelSpec,
 ///                                       &lpplLocalVars->tkSelSpec,
 ///                                        NULL);
-///                 if (lpYYRes2)
+///                 if (lpYYRes2 NE NULL)
 ///                 {
 ///                     lpYYRes =
 ///                       PrimFnMonIotaVector_EM_YY (&lpplLocalVars->tkSelSpec, // Ptr to function token
@@ -279,7 +282,7 @@ void ArrExprCheckCaller
 ///                                                   NULL);                    // Ptr to axis token (may be NULL)
 ///                     FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
 ///
-///                     if (lpYYRes)
+///                     if (lpYYRes NE NULL)
 ///                     {
 ///                         LPVARARRAY_HEADER lpMemData;
 ///
@@ -440,14 +443,15 @@ UBOOL IsLastStmt
 //***************************************************************************
 
 LPSIS_HEADER SrchSISForDfn
-    (LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
+    (LPPERTABDATA lpMemPTD,         // Ptr to PerTabData global memory
+     UBOOL        bSkipMFO)         // TRUE iff we're to skip over MFOs
 
 {
     LPSIS_HEADER lpSISCur;          // Ptr to current SIS layer
 
     // Search up the SIS chain to see what this is
     for (lpSISCur = lpMemPTD->lpSISCur;
-         lpSISCur;
+         lpSISCur NE NULL;
          lpSISCur = lpSISCur->lpSISPrv)
     // Split case based upon the function type
     switch (lpSISCur->DfnType)
@@ -455,6 +459,10 @@ LPSIS_HEADER SrchSISForDfn
         case DFNTYPE_FCN:
         case DFNTYPE_OP1:
         case DFNTYPE_OP2:
+            if (bSkipMFO
+             && lpSISCur->bMFO)
+                break;
+
             return lpSISCur;
 
         case DFNTYPE_IMM:

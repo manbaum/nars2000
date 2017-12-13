@@ -459,6 +459,11 @@ LPAPLUINT AttributeCommon
      APLLONGEST aplLongestLft)              // Function type
 
 {
+    // If the SYMENTRY is {del}, ...
+    if (IsSymDel (lpSymEntry))
+        // Return the SYMENTRY of the suspended/pendent function
+        lpSymEntry = GetSymDel (lpSymEntry);
+
     // Split cases based upon the left arg value
     switch (aplLongestLft)
     {

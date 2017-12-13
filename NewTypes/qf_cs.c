@@ -82,16 +82,21 @@ AXIS_SYNTAX_EXIT:
 //  Create the global memory value for []CS
 //***************************************************************************
 
+#define D1      10      // Length of dimension #1
+#define D2       6      // ...                  2
+#define D3       2      // ...                  3
+#define D4      27      // ...                  4
+
 void MakeQuadCS
     (void)
 
 {
     LPVARARRAY_HEADER lpHeader;                     // Ptr to array header
-    APLCHAR           (*lpMemRes)[10][6][2][28];    // Ptr to result global memory
+    APLCHAR           (*lpMemRes)[D1][D2][D3][D4];  // Ptr to result global memory
     APLUINT           ByteRes;                      // # bytes in the result
     UINT              uRes;                         // Loop counter
 
-#define QUADCS_LEN      10 * 6 * 2 * 28
+#define QUADCS_LEN      D1 * D2 * D3 * D4
 
     // Calculate # bytes in the result
     ByteRes = CalcArraySize (ARRAY_CHAR, QUADCS_LEN, 4);
@@ -122,10 +127,10 @@ void MakeQuadCS
     lpHeader->Rank       = 4;
 
     // Fill in the dimensions
-    (VarArrayBaseToDim (lpHeader))[0] = 10;
-    (VarArrayBaseToDim (lpHeader))[1] =  6;
-    (VarArrayBaseToDim (lpHeader))[2] =  2;
-    (VarArrayBaseToDim (lpHeader))[3] = 28;
+    (VarArrayBaseToDim (lpHeader))[0] = D1;
+    (VarArrayBaseToDim (lpHeader))[1] = D2;
+    (VarArrayBaseToDim (lpHeader))[2] = D3;
+    (VarArrayBaseToDim (lpHeader))[3] = D4;
 
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayDataFmBase (lpHeader);
@@ -148,8 +153,8 @@ void MakeQuadCS
     MakeQuadCSRow (&(*lpMemRes)[0][5][1][1], hGlbQuad√);
 
     // Fill in the digits
-    for (uRes = 0; uRes < 10; uRes++)
-      (*lpMemRes)[uRes][0][0][27] = L"0123456789"[uRes];
+    for (uRes = 0; uRes < D1; uRes++)
+      (*lpMemRes)[uRes][0][1][0] = L"0123456789"[uRes];
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbQuadCS); lpMemRes = NULL;

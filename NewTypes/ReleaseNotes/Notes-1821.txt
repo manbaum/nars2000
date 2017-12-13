@@ -1,0 +1,11 @@
+Build #1821 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In UDFO When The Function Name Is Localized
+
+Directory branches/bsmith/NewTypes:
+
+QF_EX.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  In <IsizSusPendent>, if the name is localized, mark as not suspended/pendent.
+  Define function <IsLocalized> to detect if a name is localized at a given level.

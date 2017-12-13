@@ -204,7 +204,7 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
                                                     &stFlags);
                 // If found, attempt to expunge the name
                 // If not found, return a one if it's a valid name, zero otherwise
-                if (lpSymEntry)
+                if (lpSymEntry NE NULL)
                     *lpMemDataRes |= (ExpungeName (lpSymEntry, FALSE)) << uBitIndex;
                 else
                     *lpMemDataRes |= (IsValidName ((LPAPLCHAR) &aplLongestRht,
@@ -250,7 +250,7 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
                                                             &stFlags);
                         // If found, attempt to expunge the name
                         // If not found, return a one if it's a valid name, zero otherwise
-                        if (lpSymEntry)
+                        if (lpSymEntry NE NULL)
                             *lpMemDataRes |= (ExpungeName (lpSymEntry, FALSE)) << uBitIndex;
                         else
                             *lpMemDataRes |= (IsValidName (lpMemDataStart, uLen)) << uBitIndex;
@@ -299,7 +299,7 @@ LPPL_YYSTYPE SysFnMonEX_EM_YY
                                                          &stFlags);
                     // If found, attempt to expunge the name
                     // If not found, return a one if it's a valid name, zero otherwise
-                    if (lpSymEntry)
+                    if (lpSymEntry NE NULL)
                         *lpMemDataRes |= (ExpungeName (lpSymEntry, FALSE)) << uBitIndex;
                     else
                         *lpMemDataRes |= (IsValidName (lpMemDataStart, uLen)) << uBitIndex;
@@ -602,7 +602,7 @@ APLBOOL EraseableName
 //***************************************************************************
 //  $IzitSusPendent
 //
-//  Return a one if the name is that of a suspended or
+//  Return TRUE iff the name is that of a suspended or
 //    pendent defined function/operator
 //***************************************************************************
 
@@ -611,7 +611,8 @@ APLBOOL IzitSusPendent
 
 {
     LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
-    APLBOOL      bRet = FALSE;  // TRUE iff name is suspended or pendent
+    APLBOOL      bRet = FALSE,  // TRUE iff name is suspended or pendent
+                 bDone = FALSE; // ...      we're done looking
     LPSIS_HEADER lpSISCur;      // Ptr to current SIS layer
     HGLOBAL      htGlbName;     // Name global memory handle
     LPAPLCHAR    lpMemName,     // Ptr to name global memory
@@ -629,7 +630,7 @@ APLBOOL IzitSusPendent
     // Lock the memory to get a ptr to it
     lpMemName = MyGlobalLockWsz (htGlbName);
 
-    while (lpSISCur && !bRet)
+    while (lpSISCur NE NULL && !bRet && !bDone)
     {
         // Split cases based upon the function type
         switch (lpSISCur->DfnType)
@@ -643,14 +644,21 @@ APLBOOL IzitSusPendent
             case DFNTYPE_OP1:
             case DFNTYPE_OP2:
             case DFNTYPE_FCN:
-                // Lock the memory to get a ptr to it
-                lpFcnName = MyGlobalLockWsz (lpSISCur->hGlbFcnName);
+                // If the name is localized, ...
+                if (IsLocalized (lpSISCur, lpMemName))
+                    // Mark as not suspended/pendent
+                    bDone = TRUE;
+                else
+                {
+                    // Lock the memory to get a ptr to it
+                    lpFcnName = MyGlobalLockWsz (lpSISCur->hGlbFcnName);
 
-                // Compare the names
-                bRet = (lstrcmpW (lpMemName, lpFcnName) EQ 0);
+                    // Compare the names
+                    bRet = (lstrcmpW (lpMemName, lpFcnName) EQ 0);
 
-                // We no longer need this ptr
-                MyGlobalUnlock (lpSISCur->hGlbFcnName); lpFcnName = NULL;
+                    // We no longer need this ptr
+                    MyGlobalUnlock (lpSISCur->hGlbFcnName); lpFcnName = NULL;
+                } // End IF/ELSE
 
                 break;
 
@@ -669,6 +677,54 @@ APLBOOL IzitSusPendent
 
     return bRet;
 } // End IzitSusPendent
+
+
+//***************************************************************************
+//  $IsLocalized
+//
+//  Return TRUE iff the name is localized at a given level
+//***************************************************************************
+
+APLBOOL IsLocalized
+    (LPSIS_HEADER lpSISCur,     // Ptr to current SIS layer
+     LPAPLCHAR    lpMemName)    // Ptr to name global memory
+
+{
+    UINT       numSymEntries,   // # LPSYMENTRYs localized
+               numSym;          // Loop counter
+    LPSYMENTRY lpSymEntryNxt;   // Ptr to next localized LPSYMENTRY on the SIS
+    HGLOBAL    htLclName;       // Localized name handle
+    LPAPLCHAR  lpLclName;       // Ptr to localized name
+    APLBOOL    bRet = FALSE;    // TRUE iff name is suspended or pendent
+
+    // Get # LPSYMENTRYs on the stack
+    numSymEntries = lpSISCur->numSymEntries;
+
+    // Point to the start of the localized LPSYMENTRYs
+    lpSymEntryNxt = (LPSYMENTRY) ByteAddr (lpSISCur, sizeof (SIS_HEADER));
+
+    // Point to the end of the localize LPSYMENTRYs
+    lpSymEntryNxt = &lpSymEntryNxt[numSymEntries - 1];
+
+    // Loop through the LPSYMENTRYs on the stack
+    for (numSym = 0; !bRet && numSym < numSymEntries; numSym++, lpSymEntryNxt--)
+    if (lpSymEntryNxt->stFlags.ObjName NE OBJNAME_LOD)
+    {
+        // Get the localized name handle
+        htLclName = lpSymEntryNxt->stHshEntry->htGlbName;
+
+        // Lock the memory to get a ptr to it
+        lpLclName = MyGlobalLockWsz (htLclName);
+
+        // Compare the names
+        bRet = (lstrcmpW (lpMemName, lpLclName) EQ 0);
+
+        // We no longer need this ptr
+        MyGlobalUnlock (htLclName); lpLclName = NULL;
+    } // End FOR/IF
+
+    return bRet;
+} // End IsLocalized
 
 
 //***************************************************************************

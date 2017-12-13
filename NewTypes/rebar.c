@@ -2842,13 +2842,17 @@ typedef struct tagLANGCHARS
         {WS_UTF16_DOUBLESHRIEK      , {0}, L"DoubleShriek",
                                            L"Combinatorial Operator:  LO" $DS L"R\n"
                                            L"  where LO is a non-negative numeric scalar\n"
-                                           L"  or one- or two-element vector\n"
-                                           L"  with (FS CG)" $IS L"2" $TAKE L"LO\n"
-                                           L"  FS is the Function Selector\n"
-                                           L"  CG" $EPS L"0 1 is the Count/Generate flag\n\n"
+                                           L"    or one- or two-element numeric vector\n"
+                                           L"  With (FS CG)" $IS L"2" $TAKE L"LO\n"
+                                           L"    FS is the Function Selector\n"
+                                           L"    CG" $EPS L"0 1 2 3 is the Count/Generate flag\n"
+                                           L"      where CG=0 means Count the number of answers\n"
+                                           L"               1   \"   Generate the answers in Unspecified Order\n"
+                                           L"               2   \"       \"     \"     \"       Lexicographic Order\n"
+                                           L"               3   \"       \"     \"     \"       Gray Code Order\n\n"
                                            L"  R is a non-negative numeric scalar\n"
-                                           L"  or one- or two-element vector\n"
-                                           L"  with (M N)" $IS L"2" $RHO L"R\n"
+                                           L"    or one- or two-element numeric vector\n"
+                                           L"  With (M N)" $IS L"2" $RHO L"R\n"
                                            L"FS  CG        Combinatorial Function\n"
                                            H H H H H H H H H H H H
                                            H H H H H H H H H H H H
@@ -2856,19 +2860,19 @@ typedef struct tagLANGCHARS
                                            H H H H H H H H H H H H
                                            H H H H H
                                            L"\n"
-                                           L"000 CG" $DS L"M M:   M Pigeons into N holes\n"
-                                           L"001 CG" $DS L"M M:   Partitions of M into " $LE L"N parts\n"
-                                           L"002 CG" $DS L"M M:   Partitions of M into N parts\n"
-                                           L"010 CG" $DS L"M M:   M Combinations of N items\n"
-                                           L"011 CG" $DS L"M M:   M Multisets of N items\n"
-                                           L"011 CG" $DS L"M M:   Compositions of M into N parts\n"
-                                           L"       a.k.a. Partitions of M into N ordered parts\n"
-                                           L"100 CG" $DS L"M M:   M Pigeons into N holes\n"
-                                           L"101 CG" $DS L"M M:   Partitions of {" $IOTA L"M} into " $LE L"N parts\n"
-                                           L"102 CG" $DS L"M M:   Partitions of {" $IOTA L"M} into N parts\n"
-                                           L"110 CG" $DS L"M M:   M Permutations of N items\n"
-                                           L"111 CG" $DS L"M M:   M Tuples of N items\n"
-                                           L"112 CG" $DS L"M M:   Partitions of {" $IOTA L"M} into N ordered parts\n\n"
+                                           L"000 CG" $DS L"M N:   M Pigeons into N holes\n"
+                                           L"001 CG" $DS L"M N:   Partitions of M into " $LE L"N parts\n"
+                                           L"002 CG" $DS L"M N:   Partitions of M into N parts\n"
+                                           L"010 CG" $DS L"M N:   M Combinations of N items\n"
+                                           L"011 CG" $DS L"M N:   M Multisets of N items\n"
+                                           L"011 CG" $DS L"M N:   Compositions of M into N parts, a.k.a.\n"
+                                           L"              Partitions of M into N ordered parts\n"
+                                           L"100 CG" $DS L"M N:   M Pigeons into N holes\n"
+                                           L"101 CG" $DS L"M N:   Partitions of {" $IOTA L"M} into " $LE L"N parts\n"
+                                           L"102 CG" $DS L"M N:   Partitions of {" $IOTA L"M} into N parts\n"
+                                           L"110 CG" $DS L"M N:   M Permutations of N items\n"
+                                           L"111 CG" $DS L"M N:   M Tuples of N items\n"
+                                           L"112 CG" $DS L"M N:   Partitions of {" $IOTA L"M} into N ordered parts\n\n"
                                            L"Keyboard:  Alt-'k'\n\n"
                                            L"Unicode:  0x203C or 8252"},
         {WS_UTF16_QUADJOT           , {0}, L"QuadJot",
@@ -3160,7 +3164,7 @@ typedef struct tagLANGCHARS
                     // If there's a last outlined char, ...
                     if (uLastCnt NE NOLASTCHAR)
                     {
-                        static WCHAR wszText[2048];
+                        static WCHAR wszText[3*1024];
                                UINT  uLen;
 
                         // Create the tooltip title

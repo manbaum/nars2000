@@ -1,6 +1,18 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1820 -- Version 0.5.5.xx
+--------------------------------
+
+* Document Extended Generate Flag In Language Bar For Combinatorial Operator
+
+Directory branches/bsmith/NewTypes:
+
+REBAR.C:
+  Document extended Generate Flag in Language Bar for the Combinatorial Operator.
+  Increase size of static text var which holds the Language Bar Tooltips.
+
+
 Build #1819 -- Version 0.5.5.xx
 --------------------------------
 

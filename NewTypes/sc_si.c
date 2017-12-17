@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -232,6 +232,16 @@ UBOOL CmdSiSinlCom_EM
                                       wszSILevel,       // Ptr to the key name
                                      L"{quad}",         // Ptr to the key value
                                       lpDict);          // Ptr to the dictionary
+                break;
+
+            case DFNTYPE_ERRCTRL:
+#ifdef DEBUG
+                // If it's not CmdSave_EM, ...
+                if (lpDict EQ NULL)
+                {
+                    AppendLine (WS_UTF16_QUAD L"EC/EA", FALSE, TRUE);
+                } // End IF
+#endif
                 break;
 
             case DFNTYPE_UNK:

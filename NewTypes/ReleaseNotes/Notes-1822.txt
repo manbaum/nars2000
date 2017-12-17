@@ -1,0 +1,22 @@
+Build #1822 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In []EA/[]EC '[]'
+
+Directory branches/bsmith/NewTypes:
+
+ERRMSG.C:
+  Catch timing problem when []DM has already been erased.
+
+QF_EC.C:
+QF_EC.H:
+  Handle the case of )RESET in []EC '[]'.
+
+SC_SI.C:
+  Handle the case of )SI in []EC '[]'.
+
+SYMTAB.C:
+  Fix typo in comment.
+
+TRANSLATE.C:
+  Handle the case of )SI or )RESET in []EC '[]'.

@@ -1717,7 +1717,7 @@ LPSYMENTRY SymTabHTSLookupChar
     MyLeaveCriticalSection (&CSOHshTab);
 
     return lpSymEntry;
-} // End SymTabLookupCharHTS
+} // End SymTabHTSLookupChar
 
 
 //***************************************************************************

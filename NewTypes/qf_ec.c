@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -341,6 +341,7 @@ VALUE_EXIT:
 
             case EC_RETCODE_NOVALUE:
             case EC_RETCODE_RESET_ONE:
+            case EC_RETCODE_RESET_ALL:
                 // Save hGlbGoto (0 0{rho}0)
                 lpMemRes[2] =
                   CopySymGlbDirAsGlb (hGlbQuadEC2_DEF);

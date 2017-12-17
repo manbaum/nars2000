@@ -1183,8 +1183,10 @@ UINT TranslateExitTypeToReturnCode
         case EXITTYPE_RESET_ONE:
             return EC_RETCODE_RESET_ONE;
 
-        case EXITTYPE_NONE:
         case EXITTYPE_RESET_ALL:
+            return EC_RETCODE_RESET_ALL;
+
+        case EXITTYPE_NONE:
         case EXITTYPE_QUADERROR_EXEC:
         case EXITTYPE_STOP:
         defstop

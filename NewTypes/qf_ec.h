@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2017 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ typedef enum tagE_RETCODES          // []EC[0] return codes
     EC_RETCODE_NOVALUE      ,       // 03:  No result
     EC_RETCODE_GOTO_LINE    ,       // 04:  {goto} line #
     EC_RETCODE_RESET_ONE    ,       // 05:  {goto}
+    EC_RETCODE_RESET_ALL    ,       // 06:  )RESET
     EC_RETCODE_UNK = -1             // -1:  Unknow error code
 } EC_RETCODES, *LPEC_RETCODES;
 

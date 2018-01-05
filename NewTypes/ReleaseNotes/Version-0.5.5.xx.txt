@@ -1,6 +1,34 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1824 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug When Passing A Function Array Including Monadic Operators To An Operator
+
+Directory branches/bsmith:
+
+EXECDFN.C:
+  In <InitFcnSTEs> when localizing an unnamed UDFO, increment the RefCnt on the UDFO.
+  In <InitFcnSTEs> when localizing a    named UDFO, copy the UDFO to a different named UDFO using <CopyUDFO>.
+
+FH_PARSE.H:
+  Define a new bit flag to indicate that the UDFO has been run through <CopyUDFO>.
+
+PARSELINE.C:
+  Append a new parameter to <ConvertNamedFopToUnnamed>.
+  In <ConvertNamedFopToUnnamed>, pass new parameter to access the current PTD struc.
+  In <ConvertNamedFopToUnnamed> when converting a UDFO, if it's not a MFO, copy the UDFO using <CopyUDFO>.
+
+SAVEFCN.C:
+  Define an additional <hGlbRCn> variable for debugging.
+  In <CopyUDFO>, skip the copy if the object is a MFO or has already been run through <CopyUDFO>.
+  In <SaveFunctionCom> at the end, mark as run through <CopyUDFO> if appropriate.
+
+YYFNS.C:
+  In <ConvertNamedFopToUnnamed>, pass new parameter to access the current PTD struc.
+
+
 Build #1823 -- Version 0.5.5.xx
 --------------------------------
 

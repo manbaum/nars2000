@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -6076,7 +6076,7 @@ PL_YYLEX_FCNNAMED:
                     // If we should not restore the token stack ptr,
                     if (!bRestoreStk)
                         // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
-                        ConvertNamedFopToUnnamed (lpplYYLval, soF, TKT_FCNIMMED, TKT_FCNAFO, TKT_FCNDFN);
+                        ConvertNamedFopToUnnamed (lpplYYLval, soF, TKT_FCNIMMED, TKT_FCNAFO, TKT_FCNDFN, lpMemPTD);
                 } else
                     lpplYYLval->tkToken.tkSynObj = soNAM;
             } // End IF
@@ -6602,7 +6602,7 @@ PL_YYLEX_OP1NAMED:
                 // If we should not restore the token stack ptr,
                 if (!bRestoreStk)
                     // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
-                    ConvertNamedFopToUnnamed (lpplYYLval, soMOP, TKT_OP1IMMED, TKT_OP1AFO, TKT_OP1DFN);
+                    ConvertNamedFopToUnnamed (lpplYYLval, soMOP, TKT_OP1IMMED, TKT_OP1AFO, TKT_OP1DFN, lpMemPTD);
             } else
                 lpplYYLval->tkToken.tkSynObj = soNAM;
 
@@ -6616,7 +6616,7 @@ PL_YYLEX_OP2NAMED:
                 // If we should not restore the token stack ptr,
                 if (!bRestoreStk)
                     // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
-                    ConvertNamedFopToUnnamed (lpplYYLval, soDOP, TKT_OP2IMMED, TKT_OP2AFO, TKT_OP2DFN);
+                    ConvertNamedFopToUnnamed (lpplYYLval, soDOP, TKT_OP2IMMED, TKT_OP2AFO, TKT_OP2DFN, lpMemPTD);
             } else
                 lpplYYLval->tkToken.tkSynObj = soNAM;
 
@@ -7508,11 +7508,13 @@ void ConvertNamedFopToUnnamed
      SO_ENUM      soTKN_IMMED,      // Syntax Object for immediates
      TOKEN_TYPES  tktImmed,         // TKT_OPxIMMED of TKT_FCNIMMED
      TOKEN_TYPES  tktAFO,           // TKT_OPxAFO or TKT_FCNAFO
-     TOKEN_TYPES  tktDFN)           // TKT_OPxDFN or TKT_FCNDFN
+     TOKEN_TYPES  tktDFN,           // TKT_OPxDFN or TKT_FCNDFN
+     LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
 
 {
     HGLOBAL      hGlbFcn;           // Global Fcn/Opr handle
     LPDFN_HEADER lpMemDfnHdr;       // Ptr to UDFO/AFO header
+    LPSYMENTRY   lpDfnTypeSym;      // Ptr to DFNTYPE_xxx SYMENTRY
 
     // If it's an immediate, ...
     if (lpplYYLval->tkToken.tkData.tkSym->stFlags.Imm)
@@ -7554,9 +7556,34 @@ void ConvertNamedFopToUnnamed
                 // Lock the memory to get a ptr to it
                 lpMemDfnHdr = MyGlobalLockDfn (hGlbFcn);
 
+                // Get ptr to DFNTYPE_xxx string
+                switch (lpMemDfnHdr->DfnType)
+                {
+                    case DFNTYPE_OP1:
+                    case DFNTYPE_OP2:
+                        // Point to {del}{del}
+                        lpDfnTypeSym = lpMemPTD->lphtsPTD->steDelDel;
+
+                        break;
+
+                    case DFNTYPE_FCN:
+                        // Point to {del}
+                        lpDfnTypeSym = lpMemPTD->lphtsPTD->steDel;
+
+                        break;
+
+                    defstop
+                        // Point to NULL
+                        lpDfnTypeSym = NULL;
+
+                        break;
+                } // End SWITCH
+
                 // Convert this to an unnamed global Fcn/Opx array
                 lpplYYLval->tkToken.tkFlags.TknType   = lpMemDfnHdr->bAFO ? tktAFO : tktDFN;
-                lpplYYLval->tkToken.tkData .tkGlbData = lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData;
+                lpplYYLval->tkToken.tkData .tkGlbData =
+                  lpMemDfnHdr->bMFO ? CopySymGlbDir_PTB (lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData)
+                                    : CopyUDFO (lpplYYLval->tkToken.tkData.tkSym->stData.stGlbData, lpDfnTypeSym);
 ////////////////lpplYYLval->tkToken.tkSynObj          = ????        // See below
 
                 // Set the tkSynObj value from the UDFO header
@@ -7564,9 +7591,6 @@ void ConvertNamedFopToUnnamed
 
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbFcn); lpMemDfnHdr = NULL;
-
-                // Increment the refcnt
-                DbgIncrRefCntTkn (&lpplYYLval->tkToken);    // EXAMPLE:  any unassigned named non-UDFO
 
                 break;
 

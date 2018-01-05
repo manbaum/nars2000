@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -720,8 +720,9 @@ LPPL_YYSTYPE YYCopyFcnTrn
      LPINT         lpTknCount)          // Ptr to resulting token count
 
 {
-    int          TknCount = 0;          // # tokens added for this element of the function strand
-    LPPL_YYSTYPE lpYYMem0;              // Ptr to temporary YYSTYPE
+    int          TknCount = 0;              // # tokens added for this element of the function strand
+    LPPL_YYSTYPE lpYYMem0;                  // Ptr to temporary YYSTYPE
+    LPPERTABDATA lpMemPTD = GetMemPTD ();   // Ptr to PerTabData global memory
 
     // We need to modify the function count in the first token,
     //   so save its address in the array.
@@ -737,7 +738,7 @@ LPPL_YYSTYPE YYCopyFcnTrn
                 YYCopyToMem (lpYYMem, lpYYArg);
 
                 // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
-                ConvertNamedFopToUnnamed (lpYYMem, soF, TKT_FCNIMMED, TKT_FCNAFO, TKT_FCNDFN);
+                ConvertNamedFopToUnnamed (lpYYMem, soF, TKT_FCNIMMED, TKT_FCNAFO, TKT_FCNDFN, lpMemPTD);
 
                 // Skip to the next save area element
                 lpYYMem++;
@@ -749,7 +750,7 @@ LPPL_YYSTYPE YYCopyFcnTrn
                 YYCopyToMem (lpYYMem, lpYYArg);
 
                 // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
-                ConvertNamedFopToUnnamed (lpYYMem, soMOP, TKT_OP1IMMED, TKT_OP1AFO, TKT_OP1DFN);
+                ConvertNamedFopToUnnamed (lpYYMem, soMOP, TKT_OP1IMMED, TKT_OP1AFO, TKT_OP1DFN, lpMemPTD);
 
                 // Skip to the next save area element
                 lpYYMem++;
@@ -761,7 +762,7 @@ LPPL_YYSTYPE YYCopyFcnTrn
                 YYCopyToMem (lpYYMem, lpYYArg);
 
                 // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
-                ConvertNamedFopToUnnamed (lpYYMem, soDOP, TKT_OP2IMMED, TKT_OP2AFO, TKT_OP2DFN);
+                ConvertNamedFopToUnnamed (lpYYMem, soDOP, TKT_OP2IMMED, TKT_OP2AFO, TKT_OP2DFN, lpMemPTD);
 
                 // Skip to the next save area element
                 lpYYMem++;
@@ -773,7 +774,7 @@ LPPL_YYSTYPE YYCopyFcnTrn
                 YYCopyToMem (lpYYMem, lpYYArg);
 
                 // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
-                ConvertNamedFopToUnnamed (lpYYMem, soMOP, TKT_OP3IMMED, TKT_OP1AFO, TKT_OP1DFN);
+                ConvertNamedFopToUnnamed (lpYYMem, soMOP, TKT_OP3IMMED, TKT_OP1AFO, TKT_OP1DFN, lpMemPTD);
 
                 // Skip to the next save area element
                 lpYYMem++;

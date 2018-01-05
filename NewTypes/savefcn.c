@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,7 +29,8 @@
 
 #ifdef DEBUG
 HGLOBAL hGlbRC1,
-        hGlbRC2;
+        hGlbRC2,
+        hGlbRC3;
 #endif
 
 // The following <lpw...> vars must be in the same order as the <FCN_VALENCES> enum
@@ -153,21 +154,21 @@ HGLOBAL CopyUDFO
     SF_FCNS      SF_Fcns = {0};     // SaveFunction local vars
     LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header global memory
     UDFO_PARAMS  UDFO_Params = {0}; // Local  ...
-    UBOOL        bAFO;              // TRUE iff this function is an AFO
+    UBOOL        bNoCopy;           // TRUE iff this function should not be CopyUDFO'ed
 
     Assert (hGlbDfnHdr NE NULL);
 
     // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
-    // Get the AFO flag
-    bAFO = lpMemDfnHdr->bAFO;
+    // Get the NoCopy flags
+    bNoCopy = lpMemDfnHdr->bAFO || lpMemDfnHdr->bCopyUDFO;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
 
-    // If this function is an AFO, ...
-    if (bAFO)
+    // If this function is not to CopyUDFO'ed, ...
+    if (bNoCopy)
         // Handle the old way
         return CopySymGlbDir_PTB (hGlbDfnHdr);
 
@@ -3059,6 +3060,9 @@ UBOOL SaveFunctionCom
 
             // Tell the free-er to save the function name STE flags
             lpMemDfnHdr->SaveSTEFlags = TRUE;
+
+            // Mark as from CopyUDFO
+            lpMemDfnHdr->bCopyUDFO = TRUE;
 
             // We no longer need this ptr
             MyGlobalUnlock (((LPUDFO_PARAMS) lpSF_Fcns->LclParams)->hGlbDfnHdr); lpMemDfnHdr = NULL;

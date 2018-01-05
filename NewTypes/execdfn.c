@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2449,8 +2449,16 @@ UBOOL InitFcnSTEs
                     (*lplpSymEntry)->stFlags.UsrDfn     = (GetSignatureGlb_PTB (hGlbDfnHdr) EQ DFN_HEADER_SIGNATURE);
                     (*lplpSymEntry)->stFlags.DfnAxis    = (*lplpSymEntry)->stFlags.UsrDfn ? lpMemDfnHdr->DfnAxis : FALSE;
 ////////////////////(*lplpSymEntry)->stFlags.FcnDir     = FALSE;            // Already zero from above
-                    // Copy the UDFO (e.g., "f {each}" where "f" is a UDFO, not an AFO which is handled differently)
-                    (*lplpSymEntry)->stData.stGlbData   = CopyUDFO (hGlbDfnHdr, *lplpSymEntry);
+
+
+                    if (lpYYArg->tkToken.tkFlags.TknType EQ TKT_FCNDFN
+                     || lpYYArg->tkToken.tkFlags.TknType EQ TKT_OP1DFN
+                     || lpYYArg->tkToken.tkFlags.TknType EQ TKT_OP2DFN)
+                        // Copy the HGLOBAL
+                        (*lplpSymEntry)->stData.stGlbData   = CopySymGlbDir_PTB (hGlbDfnHdr);
+                    else
+                        // Copy the UDFO (e.g., "f {each}" where "f" is a UDFO, not an AFO which is handled differently)
+                        (*lplpSymEntry)->stData.stGlbData   = CopyUDFO (hGlbDfnHdr, *lplpSymEntry);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;

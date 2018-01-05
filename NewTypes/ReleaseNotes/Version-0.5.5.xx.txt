@@ -1,6 +1,18 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1825 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In []NL When Checking Functions Such As {Del} And {DelDel}
+
+Directory branches/bsmith:
+
+QF_NL.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  In <SysFnDydNL_EM_YY> when checking a SYMENTRY, ensure that the ObjName is valid and that it has a Value.
+
+
 Build #1824 -- Version 0.5.5.xx
 --------------------------------
 

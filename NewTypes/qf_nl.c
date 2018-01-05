@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -143,34 +143,37 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeLft,        // Right arg storage type
-                 aplTypeRht;        // Right arg storage type
-    APLNELM      aplNELMLft,        // Right arg NELM
-                 aplNELMRht;        // Right arg NELM
-    APLRANK      aplRankLft,        // Right arg rank
-                 aplRankRht;        // Right arg rank
-    HGLOBAL      hGlbLft = NULL,    // Left arg global memory handle
-                 hGlbRht = NULL,    // Right ...
-                 hGlbRes = NULL;    // Result    ...
-    LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
-    LPAPLCHAR    lpMemLft = NULL,   // Ptr to left   ...
-                 lpMemRes = NULL;   // Ptr to result    ...
-    APLUINT      uLft,              // Loop counter
-                 uRht,              // Loop counter
-                 ByteRes;           // # bytes in the result
-    APLLONGEST   aplLongestLft,     // Left arg immediate value
-                 aplLongestRht;     // Right ...
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-    APLNELM      uNameLen;          // Length of the current name
-    APLUINT      nameClasses = 0;   // Bit flags for each nameclass 1 through (NAMECLASS_LENp1 - 1)
-    UINT         uMaxNameLen = 0,   // Length of longest name
-                 uSymCnt,           // Count of # matching STEs
-                 uSymNum;           // Loop counter
-    UBOOL        bRet;              // TRUE iff result is valid
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    LPSYMENTRY   lpSymEntry;        // Ptr to current SYMENTRY
-    LPAPLCHAR    lpMemName;         // Ptr to name global memory
-    LPSYMENTRY  *lpSymSort;         // Ptr to LPSYMENTRYs for sorting
+    APLSTYPE          aplTypeLft,           // Right arg storage type
+                      aplTypeRht;           // Right arg storage type
+    APLNELM           aplNELMLft,           // Right arg NELM
+                      aplNELMRht;           // Right arg NELM
+    APLRANK           aplRankLft,           // Right arg rank
+                      aplRankRht;           // Right arg rank
+    HGLOBAL           hGlbLft = NULL,       // Left arg global memory handle
+                      hGlbRht = NULL,       // Right ...
+                      hGlbRes = NULL;       // Result    ...
+    LPVOID            lpMemRht = NULL;      // Ptr to right arg global memory
+    LPVARARRAY_HEADER lpMemHdrLft = NULL,   // Ptr to left arg header
+                      lpMemHdrRht = NULL,   // ...    right ...
+                      lpMemHdrRes = NULL;   // ...    result   ...
+    LPAPLCHAR         lpMemLft,             // Ptr to left   ...
+                      lpMemRes;             // Ptr to result    ...
+    APLUINT           uLft,                 // Loop counter
+                      uRht,                 // Loop counter
+                      ByteRes;              // # bytes in the result
+    APLLONGEST        aplLongestLft,        // Left arg immediate value
+                      aplLongestRht;        // Right ...
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
+    APLNELM           uNameLen;             // Length of the current name
+    APLUINT           nameClasses = 0;      // Bit flags for each nameclass 1 through (NAMECLASS_LENp1 - 1)
+    UINT              uMaxNameLen = 0,      // Length of longest name
+                      uSymCnt,              // Count of # matching STEs
+                      uSymNum;              // Loop counter
+    UBOOL             bRet;                 // TRUE iff result is valid
+    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
+    LPSYMENTRY        lpSymEntry;           // Ptr to current SYMENTRY
+    LPAPLCHAR         lpMemName;            // Ptr to name global memory
+    LPSYMENTRY       *lpSymSort;            // Ptr to LPSYMENTRYs for sorting
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -180,7 +183,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // If there's a left arg, ...
-    if (lptkLftArg)
+    if (lptkLftArg NE NULL)
     {
         // Get the attributes (Type, NELM, and Rank)
         //   of the left arg
@@ -195,14 +198,14 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
             goto LEFT_DOMAIN_EXIT;
 
         // Get left arg global ptr
-        aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemLft);
+        aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
 
         // If the left arg is immediate, point to its one char
         if (hGlbLft EQ NULL)
             lpMemLft = &(APLCHAR) aplLongestLft;
         else
             // Skip over the header and dimensions to the data
-            lpMemLft = VarArrayDataFmBase (lpMemLft);
+            lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
 
 ////////// Validate the chars in the left arg
 ////////for (uLft = 0; uLft < aplNELMLft; uLft++)
@@ -219,16 +222,16 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
         goto RIGHT_DOMAIN_EXIT;
 
     // Get right arg global ptr
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // If the right arg is an HGLOBAL, ...
-    if (hGlbRht)
+    if (hGlbRht NE NULL)
     {
         // Set the ptr type bits
         hGlbRht = MakePtrTypeGlb (hGlbRht);
 
         // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayDataFmBase (lpMemRht);
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
     } else
         lpMemRht = &aplLongestRht;
 
@@ -321,6 +324,8 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
          lpSymEntry < lpMemPTD->lphtsPTD->lpSymTabNext;
          lpSymEntry++)
     if (lpSymEntry->stFlags.Inuse                                       // It's in use
+     && lpSymEntry->stFlags.ObjName NE OBJNAME_NONE                     // It has an object name
+     && lpSymEntry->stFlags.Value                                       // It has a value
      && nameClasses & (APLINT) (BIT0 << CalcNameClass (lpSymEntry)))    // It's in one of the specified name classes
     {
         // Lock the memory to get a ptr to it
@@ -328,7 +333,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
 
         // If there's a left arg, ensure the first char of the name
         //   is in the left arg
-        if (lptkLftArg)
+        if (lptkLftArg NE NULL)
         {
             for (uLft = 0; uLft < aplNELMLft; uLft++)
             if (lpMemName[0] EQ lpMemLft[uLft])
@@ -373,9 +378,9 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemRes = MyGlobalLock000 (hGlbRes);
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader        lpMemHdrRes
     // Fill in the header
     lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
     lpHeader->ArrType    = ARRAY_CHAR;
@@ -387,11 +392,11 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
 #undef  lpHeader
 
     // Fill in the result's dimensions
-    (VarArrayBaseToDim (lpMemRes))[0] = uSymCnt;
-    (VarArrayBaseToDim (lpMemRes))[1] = uMaxNameLen;
+    (VarArrayBaseToDim (lpMemHdrRes))[0] = uSymCnt;
+    (VarArrayBaseToDim (lpMemHdrRes))[1] = uMaxNameLen;
 
     // Skip over the header and dimensions to the data
-    lpMemRes = VarArrayDataFmBase (lpMemRes);
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // Loop through the sorted STEs copying the names to the result
     for (uSymNum = 0; uSymNum < uSymCnt; uSymNum++)
@@ -443,34 +448,34 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this storage
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbLft && lpMemLft)
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
     return lpYYRes;

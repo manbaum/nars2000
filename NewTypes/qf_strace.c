@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -494,9 +494,10 @@ LPPL_YYSTYPE SysFnDydSTRACE_EM_YY
         goto RIGHT_DOMAIN_EXIT;
 
     // If it's not a user-defined function or MFO, ...
-    if ((stFlags.ObjName NE OBJNAME_USR
-      && stFlags.ObjName NE OBJNAME_MFO)
-     || stFlags.stNameType EQ NAMETYPE_VAR)
+    if ((lpSymEntry->stFlags.ObjName NE OBJNAME_USR
+      && lpSymEntry->stFlags.ObjName NE OBJNAME_MFO)
+     || lpSymEntry->stFlags.Value      EQ FALSE
+     || lpSymEntry->stFlags.stNameType EQ NAMETYPE_VAR)
         goto RIGHT_DOMAIN_EXIT;
 
     // If the SYMENTRY is {del}, ...

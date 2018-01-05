@@ -1,0 +1,9 @@
+Build #1826 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In []TRACE/[]STOP When Checking Functions Such As {Del} And {DelDel}
+
+Directory branches/bsmith/NewTypes:
+
+QF_STRACE.C:
+  In <SysFnDydSTRACE_EM_YY> when checking a SYMENTRY, ensure that the ObjName is valid and that it has a Value.

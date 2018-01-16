@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1388,14 +1388,6 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
                          || hGlbEvec EQ NULL)
                             goto WSFULL_EXIT;
 
-                        // Save the global memory handles in the result
-                        ((LPAPLNESTED) lpMemRes)[0] = MakePtrTypeGlb (hGlbEval);
-                        ((LPAPLNESTED) lpMemRes)[1] = MakePtrTypeGlb (hGlbEvec);
-
-                        // If we're also calculating Schur vectors, ...
-                        if (aplIntegerRhtOpr EQ 4)
-                            ((LPAPLNESTED) lpMemRes)[2] = MakePtrTypeGlb (hGlbSchur);
-
                         // If there are any cols, ...
                         if (!IsZeroDim (aplColsRht))
                         {
@@ -1446,9 +1438,34 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 
                                 // Convert tiny FLTs to zero
                                 ConvertTinyFlt2Zero (hGlbSchur);
+
+                                // Unlock the result global memory in case TypeDemote actually demotes
+                                MyGlobalUnlock (hGlbSchur); lpMemHdrSchur = NULL;
+
+                                // See if it fits into a lower (but not necessarily smaller) datatype
+                                //   especially as there are likely to be Complex numbers with zero imaginary parts
+                                //   from the Eigen value/vector calculations
+                                hGlbSchur = TypeDemoteGlb (hGlbSchur, TRUE);
                             } // End IF
+
+                            // Unlock the result global memory in case TypeDemote actually demotes
+                            MyGlobalUnlock (hGlbEval); lpMemHdrEval = NULL;
+                            MyGlobalUnlock (hGlbEvec); lpMemHdrEvec = NULL;
+
+                            // See if it fits into a lower (but not necessarily smaller) datatype
+                            //   especially as there are likely to be Complex numbers with zero imaginary parts
+                            //   from the Eigen value/vector calculations
+                            hGlbEval = TypeDemoteGlb (hGlbEval, TRUE);
+                            hGlbEvec = TypeDemoteGlb (hGlbEvec, TRUE);
                         } // End IF
 
+                        // Save the global memory handles in the result
+                        ((LPAPLNESTED) lpMemRes)[0] = MakePtrTypeGlb (hGlbEval);
+                        ((LPAPLNESTED) lpMemRes)[1] = MakePtrTypeGlb (hGlbEvec);
+
+                        // If we're also calculating Schur vectors, ...
+                        if (aplIntegerRhtOpr EQ 4)
+                            ((LPAPLNESTED) lpMemRes)[2] = MakePtrTypeGlb (hGlbSchur);
                         break;
 
                     case 5:
@@ -1462,9 +1479,6 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
                         if (hGlbQ EQ NULL
                          || hGlbR EQ NULL)
                             goto WSFULL_EXIT;
-                        // Save the global memory handles in the result
-                        ((LPAPLNESTED) lpMemRes)[0] = MakePtrTypeGlb (hGlbQ);
-                        ((LPAPLNESTED) lpMemRes)[1] = MakePtrTypeGlb (hGlbR);
 
                         // If there are any cols, ...
                         if (!IsZeroDim (aplColsRht))
@@ -1500,7 +1514,21 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 
                             // Convert tiny FLTs to zero
                             ConvertTinyFlt2Zero (hGlbR);
+
+                            // Unlock the result global memory in case TypeDemote actually demotes
+                            MyGlobalUnlock (hGlbQ); lpMemHdrQ = NULL;
+                            MyGlobalUnlock (hGlbR); lpMemHdrR = NULL;
+
+                            // See if it fits into a lower (but not necessarily smaller) datatype
+                            //   especially as there are likely to be Complex numbers with zero imaginary parts
+                            //   from the Eigen value/vector calculations
+                            hGlbQ =TypeDemoteGlb (hGlbQ, TRUE);
+                            hGlbR =TypeDemoteGlb (hGlbR, TRUE);
                         } // End IF
+
+                        // Save the global memory handles in the result
+                        ((LPAPLNESTED) lpMemRes)[0] = MakePtrTypeGlb (hGlbQ);
+                        ((LPAPLNESTED) lpMemRes)[1] = MakePtrTypeGlb (hGlbR);
 
                         break;
 

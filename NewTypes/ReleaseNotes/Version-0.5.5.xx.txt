@@ -1,6 +1,18 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1829 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In Unified Indexing
+
+Directory branches/bsmith/NewTypes:
+
+PO_VARIANT.C:
+  When calculating Eigenvalues, Eigenvectors, and Schur vectors, attempt to demote an array of Complex numbers
+    all of whose imaginary parts are zero to a Real array.
+
+
 Build #1828 -- Version 0.5.5.xx
 --------------------------------
 

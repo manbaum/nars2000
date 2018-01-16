@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,6 +55,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
     APLRANK           aplRankNam,               // Name arg rank
                       aplRankLst,               // List ...
                       aplRankSub;               // List arg item ...
+    LPAPLDIM          lpMemDimSub;              // Ptr to the item's dimensions
     HGLOBAL           hGlbNam = NULL,           // Name arg global memory handle
                       hGlbLst = NULL,           // List ...
                       hGlbSub = NULL,           // List arg item ...
@@ -67,12 +68,12 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
     LPVOID            lpMemNam,                 // Ptr to name arg global memory
                       lpMemSub,                 // Ptr to list item ...
                       lpMemRes;                 // Ptr to result     ...
-    APLUINT           ByteRes,                  // # bytes in the result
-                      uSub;                     // Loop counter
+    APLUINT           uSub;                     // Loop counter
     UBOOL             bRet = TRUE,              // TRUE iff result is valid
+//////////////////////bReach,                   // TRUE iff we're doing Reach Indexing
                       bQuadIO;                  // []IO
     LPPL_YYSTYPE      lpYYRes = NULL,           // Ptr to the result
-                      lpYYItm;                  // Ptr to temporary result
+                      lpYYItm = NULL;           // Ptr to temporary result
     LPTOKEN           lptkFunc = lptkLstArg;    // Ptr to function token
     APLLONGEST        aplLongestNam,            // Name arg immediate value
                       aplLongestSub,            // List arg item ...
@@ -159,6 +160,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             aplRankSub    = 0;
             aplLongestSub = *GetPtrTknLongest (lptkLstArg);
             lpMemSub      = &aplLongestSub;
+            lpMemDimSub   = NULL;
         } else
         {
             Assert (lptkLstArg->tkFlags.TknType EQ TKT_LSTARRAY
@@ -190,6 +192,12 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                 defstop
                     break;
             } // End SWITCH
+
+            // Skip over the header to the dimensions
+            lpMemDimSub = VarArrayBaseToDim  (lpMemHdrSub);
+
+            // Skip over the header and dimensions to the data
+            lpMemSub    = VarArrayDataFmBase (lpMemHdrSub);
         } // End IF/ELSE
 
         // Handle obvious DOMAIN ERRORs
@@ -276,45 +284,81 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             //   first element of each of the list arg sub items.
             //***************************************************************
 
-            // Calculate space needed for the result
-            ByteRes = CalcArraySize (aplTypeRes, aplNELMSub, aplRankSub);
+#ifdef DEBUG
+////        // If the list is a global numeric array, ...
+////        if (IsGlbNum (aplTypeSub))
+////            DbgBrk ();
+#endif
+            // If the list is NOT a global numeric array, ...
+            if (!IsGlbNum (aplTypeSub))
+            {
+                Assert (lpMemSub NE NULL);
 
-            // Check for overflow
-            if (ByteRes NE (APLU3264) ByteRes)
-                goto WSFULL_EXIT;
+////////////////// Mark as not Reach InNdexing
+////////////////bReach = FALSE;
+////////////////
+                // Loop through the list arg items to see if there's any reach indexing
+                //   in which case the result may be NESTED.
+////////////////for (uSub = 0; (!bReach) && uSub < aplNELMSub; uSub++)
+                for (uSub = 0;              uSub < aplNELMSub; uSub++)
+                // Split cases based upon the list arg item ptr type
+                switch (GetPtrTypeDir (((LPAPLNESTED) lpMemSub)[uSub]))
+                {
+                    case PTRTYPE_STCONST:       // Immediates are NELM 1, Rank 0
+                        // Check for RANK ERROR
+                        if (!IsVector (aplRankNam)) // Check Name rank vs. list item NELM
+                            goto RANK_EXIT;
+                        break;
 
-            // Allocate space for the result
-            hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-            if (hGlbRes EQ NULL)
-                goto WSFULL_EXIT;
+                    case PTRTYPE_HGLOBAL:
+                        // Get the item global memory handle
+                        hGlbItm = ((LPAPLNESTED) lpMemSub)[uSub];
 
-            // Lock the memory to get a ptr to it
-            lpMemHdrRes = MyGlobalLock000 (hGlbRes);
+                        // Get the attributes (Type, NELM, and Rank) of the list arg item
+                        AttrsOfGlb (hGlbItm, &aplTypeItm, &aplNELMItm, &aplRankItm, NULL);
 
-#define lpHeader        lpMemHdrRes
-            // Fill in the header
-            lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-            lpHeader->ArrType    = aplTypeRes;
-////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
-            lpHeader->RefCnt     = 1;
-            lpHeader->NELM       = aplNELMSub;
-            lpHeader->Rank       = aplRankSub;
-#undef  lpHeader
+                        // Check for RANK ERROR
+                        if (IsMultiRank (aplRankItm))
+                            goto RANK_EXIT;
+
+                        // If it's simple numeric and the name arg rank
+                        //   matches the list arg subitem NELM,
+                        //   use Scatter Index Reference; otherwise,
+                        //   use Reach Index Reference
+                        if (!(IsNumeric (aplTypeItm)
+                           && aplRankNam EQ aplNELMItm))
+                        {
+                            // Mark as a nested result
+                            aplTypeRes = ARRAY_NESTED;
+////////////////////////////
+////////////////////////////// Mark as Reach indexing
+////////////////////////////bReach = TRUE;
+                        } // End IF
+
+                        break;
+
+                    defstop
+                        break;
+                } // End FOR/SWITCH
+            } // End IF
 
             Assert (lptkLstArg->tkFlags.TknType EQ TKT_VARARRAY
                  || lptkLstArg->tkFlags.TknType EQ TKT_AXISARRAY);
 
-            // Skip over the header to the dimensions
-            lpMemRes = VarArrayBaseToDim (lpMemHdrRes);
-            lpMemSub = VarArrayBaseToDim (lpMemHdrSub);
+            // Allocate space for the result
+            hGlbRes =
+              AllocateGlobalArray (aplTypeRes, aplNELMSub, aplRankSub, lpMemDimSub);
 
-            // Fill in the result dimensions
-            CopyMemory (lpMemRes, lpMemSub, (APLU3264) aplRankSub * sizeof (APLDIM));
+            // Check for errors
+            if (hGlbRes EQ NULL)
+                goto WSFULL_EXIT;
+
+            // Lock the memory to get a ptr to it
+            lpMemHdrRes = MyGlobalLockVar (hGlbRes);
 
             // Skip over the dimensions to the data
             lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
-            lpMemSub = VarArrayDataFmBase (lpMemHdrSub);
+////////////lpMemSub = VarArrayDataFmBase (lpMemHdrSub);    // Already set from above
             lpMemNam = VarArrayDataFmBase (lpMemHdrNam);
 
             // Validate each element of the list arg items as either reach (pick)
@@ -336,6 +380,8 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
             // If the list is a global numeric array, ...
             if (IsGlbNum (aplTypeSub))
             {
+                Assert (!IsNested (aplTypeRes));
+
                 // Loop through the elements of the list arg
                 for (uSub = 0; uSub < aplNELMSub; uSub++)
                 {
@@ -351,7 +397,8 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                         aplLongestItm += aplNELMNam;
 
                     // Check for INDEX ERROR
-                    if (aplLongestItm >= aplNELMNam)
+                    if (!bRet
+                     || aplLongestItm >= aplNELMNam)
                         goto INDEX_EXIT;
 
                     // Extract the <aplLongestItm> from the (vector) name arg
@@ -511,27 +558,25 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                     if (IsMultiRank (aplRankItm))
                         goto RANK_EXIT;
 
-                    // If the item is simple,
-                    //   and empty, ...
+                     // If the item is simple,
+                     //   and empty,
+                     //   and the result and name are nested, ...
                     if (IsSimple (aplTypeItm)
-                     && IsEmpty (aplNELMItm))
+                     && IsEmpty (aplNELMItm)
+                     && IsNested (aplTypeNam)
+                     && IsNested (aplTypeRes))
                     {
-                        // If the list arg is not a singleton, ...
-                        if (!IsSingleton (aplNELMNestSub))
-                            goto INDEX_EXIT;
+                        HGLOBAL hGlbLcl;
 
-                        // Unlock and free (and set to NULL) a global name and ptr
-                        UnlFreeGlbName (hGlbRes, lpMemHdrRes);
+                        Assert (aplNELMNam <= 1);
 
-                        Assert (hGlbNam NE NULL);
+                        // Get the single item (possibly the name's prototype)
+                        hGlbLcl = *(LPAPLNESTED) lpMemNam;
 
-                        // The result is the name arg
-                        hGlbRes = hGlbNam;
+                        Assert (GetPtrTypeDir (hGlbLcl) EQ PTRTYPE_HGLOBAL);
 
-                        // Increment the refcnt
-                        DbgIncrRefCntDir_PTB (hGlbNam); // EXAMPLE:  A[{enclose}{zilde}]
-
-                        goto YYALLOC_EXIT;
+                        // Save a duplicate copy of the single item (possibly prototype) of hGlbNam for this item
+                        *((LPAPLNESTED) lpMemRes)++ = CopySymGlbDir_PTB (hGlbLcl);
                     } else
                     // If it's simple numeric and the name arg rank
                     //   matches the list arg subitem NELM,
@@ -607,7 +652,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                                 AttrsOfToken (&lpYYItm->tkToken, &aplTypeItm, NULL, &aplRankItm, NULL);
 
                                 // If the item is a scalar global numeric, don't disclose as that can increment the
-                                //   refcnt on a global numerc
+                                //   refcnt on a global numeric
                                 if (!IsScalar (aplRankItm)
                                  || !IsGlbNum (aplTypeItm))
                                 {
@@ -621,6 +666,10 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                                     } // End IF
                                 } // End IF
                             } // End IF
+
+                            // Check for errors
+                            if (lpYYItm EQ NULL)
+                                goto ERROR_EXIT;
                         } // End IF/ELSE
                     } else
                     {
@@ -635,11 +684,20 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                                                           0,            // Set arg immediate value
                                                           lpMemPTD);    // Ptr to PerTabData global memory
                         Assert (!IsPtrSuccess (lpYYItm));
+
+                        // Check for errors
+                        if (lpYYItm EQ NULL)
+                            goto ERROR_EXIT;
                     } // End IF/ELSE
 
                     if (lpYYItm NE NULL)
                     {
                         LPVARARRAY_HEADER lpSymHdrTmp = NULL;
+                        APLSTYPE          aplTypeItm;
+                        APLRANK           aplRankItm;
+
+                        // Get the attributes (Type, NELM, and Rank) of the item
+                        AttrsOfToken (&lpYYItm->tkToken, &aplTypeItm, NULL, &aplRankItm, NULL);
 
                         // Split cases based upon the result storage type
                         switch (aplTypeRes)
@@ -788,8 +846,8 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
                         } // End SWITCH
 
                         YYFree (lpYYItm); lpYYItm = NULL;
-                    } else
-                        goto ERROR_EXIT;
+                    } // End IF
+
                     break;
 
                 defstop
@@ -1659,9 +1717,7 @@ LPPL_YYSTYPE ArrayIndexRefNamImmed_EM_YY
 {
     LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
     APLNELM           aplNELMRes;           // Result NELM
-    LPAPLDIM          lpMemDimSub,          // Ptr to item arg dimensions
-                      lpMemDimRes;          // ...    result   ...
-    APLUINT           ByteRes;              // # bytes in the result
+    LPAPLDIM          lpMemDimSub;          // Ptr to item arg dimensions
     HGLOBAL           hGlbRes = NULL;       // Result global memory handle
     LPVARARRAY_HEADER lpMemHdrRes;          // Ptr to result global memory header
     LPVOID            lpMemRes,             // Ptr to result global memory
@@ -1685,37 +1741,16 @@ LPPL_YYSTYPE ArrayIndexRefNamImmed_EM_YY
     // Skip over the header and dimensions to the data
     lpMemSub = VarArrayDataFmBase (lpMemHdrSub);
 
-    // Calculate space needed for the result
-    ByteRes = CalcArraySize (aplTypeNam, aplNELMRes, aplRankSub);
-
-    // Check for overflow
-    if (ByteRes NE (APLU3264) ByteRes)
-        goto WSFULL_EXIT;
-
     // Allocate space for the result
-    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+    hGlbRes =
+      AllocateGlobalArray (aplTypeNam, aplNELMRes, aplRankSub, lpMemDimSub);
+
+    // Check for errors
     if (hGlbRes EQ NULL)
         goto WSFULL_EXIT;
 
     // Lock the memory to get a ptr to it
-    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
-
-#define lpHeader        lpMemHdrRes
-    // Fill in the header
-    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = aplTypeNam;
-////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
-////lpHeader->SysVar     = FALSE;           // Already zero from GHND
-    lpHeader->RefCnt     = 1;
-    lpHeader->NELM       = aplNELMRes;
-    lpHeader->Rank       = aplRankSub;
-#undef  lpHeader
-
-    // Skip over the header to the dimensions
-    lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
-
-    // Copy the item arg dimensions to the result
-    CopyMemory (lpMemDimRes, lpMemDimSub, (APLU3264) aplRankSub * sizeof (APLDIM));
+    lpMemHdrRes = MyGlobalLockVar (hGlbRes);
 
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
@@ -3645,10 +3680,27 @@ UBOOL ArrayIndexSetSingLst_EM
                         // If the list is a singleton, ...
                         if (IsSingleton (aplNELMSubLst))
                         {
-                            // Assign the right arg to the name
+                            LPPL_YYSTYPE lpYYRes;               // Ptr to the result
+
+                            // We're assigning the right arg to {enclose} Name which translates into
+                            // Assign the Disclose of the right arg to the Name
+                            Assert (IsScalar (aplRankRht));
+
+                            // Disclose the right arg
+                            lpYYRes =
+                              PrimFnMonRightShoeGlb_EM_YY (hGlbRht,         // Right arg global memory handle
+                                                           NULL,            // Ptr to axis token (may be NULL)
+                                                           lptkFunc);       // Ptr to function token
+                            if (lpYYRes EQ NULL)
+                                goto ERROR_EXIT;
+
                             // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
-                            if (AssignName_EM (lptkNamArg,
-                                               lptkRhtArg))
+                            bRet = AssignName_EM (lptkNamArg,
+                                                 &lpYYRes->tkToken);
+                            // We no longer need these resources
+                            FreeResultTkn (&lpYYRes->tkToken); YYFree (lpYYRes); lpYYRes = NULL;
+
+                            if (bRet)
                                 goto NORMAL_EXIT;
                             else
                                 goto ERROR_EXIT;

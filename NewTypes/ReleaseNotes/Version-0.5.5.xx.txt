@@ -1,6 +1,25 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1828 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In Unified Indexing
+
+Directory branches/bsmith/NewTypes:
+
+MF_SQUAD.H:
+  Redefine the Magic Function for Squad to handle indexing of scalars.
+
+PF_INDEX.C:
+  In <ArrayIndexRef_EM_YY> when indexing a global array, loop through the list argument
+    checking for Reach indexing in which case the result starts out as nested.  If the list
+    argument is nested, loop through the list arg splitting out Scatter from Reach indexing.
+  In <ArrayIndexRefNamImmed_EM_YY>, use <AllocateGlobalArray> instead of writing out the same code.
+  In <ArrayIndexSetSingLst_EM>, if the name arg is a HGLOBAL and the list subitem is an empty
+    vector, set the value in the name arg as the Disclose of the right arg.
+
+
 Build #1827 -- Version 0.5.5.xx
 --------------------------------
 

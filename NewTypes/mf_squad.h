@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 //
 //  Dyadic Squad -- index with or without axis
 //
-//  Return R[⊃∘.,/L]
+//  Return R[⊃∘.,/L]  or  R[⊃∘.,/1/¨¨L]
 //***************************************************************************
 
 static LPAPLCHAR DydBody[] =
@@ -48,18 +48,17 @@ static LPAPLCHAR DydBody[] =
  L"  A←L",
  L":end",
  
- L":if 0=⍴⍴R", 		// Because of R≡(⍳¨⍴R)⌷R
- L":andif L≡0⍴⊂⍬ ⋄ Z←R ⋄ →0 ⋄ :end",
-
- L":if 1≥⍴⍴A",		// Scalar or vector
- L":andif 1=1⌈≢A",	// of length 0 or 1
- L"  f←↑",
+ L"⎕ERROR((⍴1/A)≢⍴⍴R)/'RANK ERROR'",
+ 
+ // If ∘.,/A would fail, ...
+ L":if 0=≡↑↑A",
+ L"  fn←{⊃∘.,/1/¨¨⍵}",
  L":else",
- L"  f←⊃∘(∘.,/)",
+ L"  fn←{⊃∘.,/⍵}",
  L":end",
 
- L":if Pro ⋄ Z←(⍴f A)⍴R",
- L":else   ⋄ Z←R[f A]",
+ L":if Pro ⋄ Z←(⍴fn A)⍴R",
+ L":else   ⋄ Z←R[fn A]",
  L":end    ⋄ →0",
  
  L"⎕PRO:Pro←1",
@@ -67,7 +66,7 @@ static LPAPLCHAR DydBody[] =
 };
 
 MAGIC_FCNOPR MFO_DydSquad =
-{L"Z←L " MFON_DydSquad L"[X] R;A B f Pro",
+{L"Z←L " MFON_DydSquad L"[X] R;A B Pro fn",
  DydBody,
  countof (DydBody),
 };

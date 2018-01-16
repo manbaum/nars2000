@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -228,7 +228,7 @@ void _SaveObj
 
     if (bCSO)
         LeaveCriticalSection (&CSORsrc);
-} // _SaveObj
+} // End _SaveObj
 
 
 //***************************************************************************
@@ -292,7 +292,7 @@ void _DeleObj
 
     if (bCSO)
         LeaveCriticalSection (&CSORsrc);
-} // _DeleObj
+} // End _DeleObj
 
 
 //***************************************************************************
@@ -408,7 +408,7 @@ UBOOL _MyCloseSemaphore
         _DeleObj (OBJ_SEMAPHORE, hSemaphore);
 
     return bRet;
-} // _MyCloseSemaphore
+} // End _MyCloseSemaphore
 
 
 //***************************************************************************
@@ -445,7 +445,7 @@ HBITMAP _MyCreateCompatibleBitmap
         _SaveObj (OBJ_BITMAP,   hBitmap, NULL,       uLine);
 
     return hBitmap;
-} // _MyCreateCompatibleBitmap
+} // End _MyCreateCompatibleBitmap
 
 
 //***************************************************************************
@@ -480,7 +480,7 @@ HDC _MyCreateCompatibleDC
         _SaveObj (OBJ_MEMDC,    hMEMDC,  NULL,       uLine);
 
     return hMEMDC;
-} // _MyCreateCompatibleDC
+} // End _MyCreateCompatibleDC
 
 
 //***************************************************************************
@@ -517,7 +517,7 @@ HPEN _MyCreatePen
         _SaveObj (OBJ_PEN,      hPen,    NULL,       uLine);
 
     return hPen;
-} // _MyCreatePen
+} // End _MyCreatePen
 
 
 //***************************************************************************
@@ -552,7 +552,7 @@ HFONT _MyCreateFontIndirect
         _SaveObj (OBJ_FONT,     hFont,   NULL,       uLine);
 
     return hFont;
-} // _MyCreateFontIndirect
+} // End _MyCreateFontIndirect
 
 
 //***************************************************************************
@@ -587,7 +587,7 @@ HFONT _MyCreateFontIndirectW
         _SaveObj (OBJ_FONT,     hFont,   NULL,       uLine);
 
     return hFont;
-} // _MyCreateFontIndirectW
+} // End _MyCreateFontIndirectW
 
 
 //***************************************************************************
@@ -624,7 +624,7 @@ HRGN _MyCreatePolygonRgn
         _SaveObj (OBJ_REGION,   hRgn,    NULL,       uLine);
 
     return hRgn;
-} // _MyCreatePolygonRgn
+} // End_MyCreatePolygonRgn
 
 
 //***************************************************************************
@@ -659,7 +659,7 @@ HRGN _MyCreateRectRgnIndirect
         _SaveObj (OBJ_REGION,   hRgn,    NULL,       uLine);
 
     return hRgn;
-} // _MyCreateRectRgnIndirect
+} // End _MyCreateRectRgnIndirect
 
 
 //***************************************************************************
@@ -704,7 +704,7 @@ HANDLE _MyCreateSemaphoreW
         _SaveObj (OBJ_SEMAPHORE, hSemaphore, lpFileName, uLine);
 
     return hSemaphore;
-} // _MyCreateSemaphoreW
+} // End _MyCreateSemaphoreW
 
 
 //***************************************************************************
@@ -739,7 +739,7 @@ HBRUSH _MyCreateSolidBrush
         _SaveObj (OBJ_BRUSH,    hBrush,  NULL,       uLine);
 
     return hBrush;
-} // _MyCreateSolidBrush
+} // End _MyCreateSolidBrush
 
 
 //***************************************************************************
@@ -774,7 +774,7 @@ UBOOL _MyDeleteDC
         _DeleObj (OBJ_MEMDC, hMEMDC);
 
     return bRet;
-} // _MyDeleteDC
+} // End _MyDeleteDC
 
 
 //***************************************************************************
@@ -819,7 +819,7 @@ UBOOL _MyDeleteObject
         _DeleObj (dwType, hObject);
 
     return bRet;
-} // _MyDeleteObject
+} // End _MyDeleteObject
 
 
 //***************************************************************************
@@ -854,7 +854,7 @@ HDC _MyGetDC
         _SaveObj (OBJ_DC,       hDC,     NULL,       uLine);
 
     return hDC;
-} // _MyGetDC
+} // End _MyGetDC
 
 
 //***************************************************************************
@@ -889,7 +889,7 @@ HDC _MyGetWindowDC
         _SaveObj (OBJ_DC,       hDC,     NULL,       uLine);
 
     return hDC;
-} // _MyGetWindowDC
+} // End _MyGetWindowDC
 
 
 //***************************************************************************
@@ -925,7 +925,7 @@ HBITMAP _MyLoadBitmap
         _SaveObj (OBJ_BITMAP,   hBitmap, NULL,       uLine);
 
     return hBitmap;
-} // _MyLoadBitmap
+} // End _MyLoadBitmap
 
 
 //***************************************************************************
@@ -965,7 +965,7 @@ HANDLE _MyLoadImage
         _SaveObj (OBJ_BITMAP,   hBitmap, NULL,       uLine);
 
     return hBitmap;
-} // _MyLoadImage
+} // End _MyLoadImage
 
 
 //***************************************************************************
@@ -1001,7 +1001,7 @@ UBOOL _MyReleaseDC
         _DeleObj (OBJ_DC, hDC);
 
     return bRet;
-} // _MyReleaseDC
+} // End _MyReleaseDC
 
 
 //***************************************************************************
@@ -1042,7 +1042,7 @@ UBOOL _MyReleaseSemaphore
     } // End IF
 
     return bRet;
-} // _MyReleaseSemaphore
+} // End _MyReleaseSemaphore
 
 
 //***************************************************************************
@@ -1422,7 +1422,7 @@ HGLOBAL _MyGlobalFree
         CheckMemStat ();
 
     return GlobalFree (hMem);
-} // _MyGlobalFree
+} // End _MyGlobalFree
 
 
 //***************************************************************************
@@ -1576,7 +1576,7 @@ UBOOL _MyHeapFree
     dlfree (lpMem);
 
     return TRUE;
-} // _MyHeapFree
+} // End _MyHeapFree
 
 
 //***************************************************************************
@@ -1746,7 +1746,7 @@ DWORD _MyWaitForSemaphore
 #endif
 
     return dwWaitRes;
-} // _MyWaitForSemaphore
+} // End _MyWaitForSemaphore
 
 
 //***************************************************************************
@@ -1814,7 +1814,7 @@ DWORD _MyWaitForThread
 #endif
 
     return dwWaitRes;
-} // _MyWaitForThread
+} // End _MyWaitForThread
 
 
 #ifdef DEBUG

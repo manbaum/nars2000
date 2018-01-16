@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 #include "headers.h"
 #include "debug.h"              // For xxx_TEMP_OPEN macros
 
-#ifdef RESDEBUG
+#if RESDEBUG
 // Resource debugging variables
 extern HANDLE ahGLBALLOC [MAXOBJ];
 extern HANDLE ahSEMAPHORE[MAXOBJ];

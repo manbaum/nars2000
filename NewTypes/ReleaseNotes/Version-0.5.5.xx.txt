@@ -1,6 +1,30 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1831 -- Version 0.5.5.xx
+--------------------------------
+
+* Miscellaneous Changes
+
+Directory branches/bsmith/NewTypes:
+
+DEFINES.H:
+PF_PLUS.C:
+ Delete DBGENTER and DBGLEAVE macros as they are no longer used.
+
+DISPDBG.C:
+  Change #ifdef RESDEBUG to #if RESDEBUG as that var is defined as 0 or 1.
+
+EDITFCN.C:
+  In <_MySetFocus>, comment out DEBUG stmts as they are no longer of interest.
+
+RESDEBUG.C:
+  Use proper format for ending comment to a function.
+
+SC_FNOV.C
+  In <CmdFNOV_EM>, include new system commands )FOP and )FOPS in the header documentation.
+
+
 Build #1830 -- Version 0.5.5.xx
 --------------------------------
 

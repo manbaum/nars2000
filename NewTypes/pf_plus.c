@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1358,8 +1358,6 @@ UBOOL PrimFnMonPlusAPA_EM
      LPPRIMSPEC   lpPrimSpec)       // Ptr to local PRIMSPEC
 
 {
-    DBGENTER;
-
     // Axis may be anything
 
     // Copy the HGLOBAL to the result
@@ -1373,8 +1371,6 @@ UBOOL PrimFnMonPlusAPA_EM
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = hGlbRht;
     } // End IF
-
-    DBGLEAVE;
 
     return TRUE;
 } // End PrimFnMonPlusAPA_EM
@@ -2814,8 +2810,6 @@ UBOOL PrimFnDydPlusAPA_EM
     LPVOID  lpMemRes;               // Ptr to result global memory
     UBOOL   bRet = FALSE;           // TRUE iff the result is valid
 
-    DBGENTER;
-
     //***************************************************************
     // The result is an APA, one of the args is a simple singleton,
     //   the other an APA
@@ -2876,8 +2870,6 @@ UBOOL PrimFnDydPlusAPA_EM
     // Mark as successful
     bRet = TRUE;
 ERROR_EXIT:
-    DBGLEAVE;
-
     return bRet;
 } // End PrimFnDydPlusAPA_EM
 #undef  APPEND_NAME

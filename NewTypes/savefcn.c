@@ -2512,11 +2512,12 @@ UBOOL SaveFunctionCom
         {
             LPSIS_HEADER lpSISCur;
 
-            // Get a ptr to the current SI stack
-            lpSISCur = lpMemPTD->lpSISCur;
-
+            // If we're NOT called from CopyUDFO,
+            //   we're not replacing the function so it doesn't
+            //   matter if it is suspended/pendent, ...
+            if (lpSF_Fcns->sfTypes NE SFTYPES_UDFO)
             // Check for already on the SI stack
-            for (;
+            for (lpSISCur = lpMemPTD->lpSISCur;
                  lpSISCur NE NULL;
                  lpSISCur = lpSISCur->lpSISPrv)
             if (lpSISCur->hGlbDfnHdr NE NULL
@@ -2543,9 +2544,9 @@ UBOOL SaveFunctionCom
                 } // End IF/ELSE
 
                 goto ERROR_EXIT;
-            } // End FOR/IF
+            } // End IF/FOR/IF
 
-            // If we're called from CopyUDFO, ...
+            // If the function is a UDFO, ...
             if (IsGlbTypeDfnDir_PTB (MakePtrTypeGlb (hGlbOldDfn)))
             {
                 // Lock the memory to get a ptr to it

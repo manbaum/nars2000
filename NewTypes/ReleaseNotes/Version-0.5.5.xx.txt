@@ -1,10 +1,21 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1830 -- Version 0.5.5.xx
+--------------------------------
+
+* Finish Build #1824
+
+Directory branches/bsmith/NewTypes:
+
+REFCNT.C:
+  In both <ChangeRefCntDir_PTB> and <ChangeRefCntFcnArray>, handle the third debug RefCnt variable.
+
+
 Build #1829 -- Version 0.5.5.xx
 --------------------------------
 
-* Fix Bug In Unified Indexing
+* Demote Complex Arrays Of Eigenvalues, EigenVectors, And Schur Vectors
 
 Directory branches/bsmith/NewTypes:
 

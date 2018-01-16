@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,10 @@
 
 #ifdef DEBUG
 extern HGLOBAL hGlbRC1,
-               hGlbRC2;
+               hGlbRC2,
+               hGlbRC3;
+#define HGLBRC(hGlb,N)  if (hGlb && hGlbRC##N && ClrPtrTypeDir (hGlb) EQ ClrPtrTypeDir (hGlbRC##N)) \
+                            DbgBrk ();      // #ifdef DEBUG
 #endif
 
 
@@ -63,11 +66,9 @@ int ChangeRefCntDir_PTB
 
         case PTRTYPE_HGLOBAL:
 #ifdef DEBUG
-            if (hGlb && hGlbRC1 && ClrPtrTypeDir (hGlb) EQ ClrPtrTypeDir (hGlbRC1))
-                DbgBrk ();      // #ifdef DEBUG
-
-            if (hGlb && hGlbRC2 && ClrPtrTypeDir (hGlb) EQ ClrPtrTypeDir (hGlbRC2))
-                DbgBrk ();      // #ifdef DEBUG
+            HGLBRC (hGlb, 1)
+            HGLBRC (hGlb, 2)
+            HGLBRC (hGlb, 3)
 #endif
             // Lock the memory to get a ptr to it
 #ifdef DEBUG
@@ -411,11 +412,9 @@ int ChangeRefCntFcnArray
     Assert (IsGlbTypeFcnDir_PTB (hGlbFcn));
 
 #ifdef DEBUG
-    if (hGlbFcn && hGlbRC1 && ClrPtrTypeDir (hGlbFcn) EQ ClrPtrTypeDir (hGlbRC1))
-        DbgBrk ();      // #ifdef DEBUG
-
-    if (hGlbFcn && hGlbRC2 && ClrPtrTypeDir (hGlbFcn) EQ ClrPtrTypeDir (hGlbRC2))
-        DbgBrk ();      // #ifdef DEBUG
+            HGLBRC (hGlbFcn, 1)
+            HGLBRC (hGlbFcn, 2)
+            HGLBRC (hGlbFcn, 3)
 #endif
     // Lock the memory to get a ptr to it
     lpMemHdr = MyGlobalLockFcn (hGlbFcn);

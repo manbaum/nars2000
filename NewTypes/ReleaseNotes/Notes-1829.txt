@@ -1,7 +1,7 @@
 Build #1829 -- Version 0.5.5.xx
 --------------------------------
 
-* Fix Bug In Unified Indexing
+* Demote Complex Arrays Of Eigenvalues, EigenVectors, And Schur Vectors
 
 Directory branches/bsmith/NewTypes:
 

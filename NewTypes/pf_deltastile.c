@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -370,8 +370,17 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
         // Skip over the header and dimensions to the data
         lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
     } else
+    {
+        // Set the Array Property bits
+        gradeData.PV0 =
+        gradeData.PV1 = FALSE;
+#ifdef DEBUG
+        // Set the ptr to the dimensions
+        lpMemDimRht = NULL;
+#endif
         // Point to the data
         lpMemRht = &aplLongestRht;
+    } // End IF/ELSE
 
     // If we're ravelling the right arg, ...
     if (bRavelArg)

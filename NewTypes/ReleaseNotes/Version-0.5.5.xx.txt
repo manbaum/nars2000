@@ -1,6 +1,36 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1834 -- Version 0.5.5.xx
+--------------------------------
+
+* Commit To Counter Mistaken Update To A Revision
+
+Directory branches/bsmith/NewTypes:
+
+MAIN.C:
+MF_SQUAD.H:
+REFCNT.C:
+  Commit to counter a mistaken update.
+
+NARSARRAYEDITOR.H:
+  Delete mistakenly added file.
+
+
+Build #1833 -- Version 0.5.5.xx
+--------------------------------
+
+* Mistaken Update To A Revision
+
+Directory branches/bsmith/NewTypes:
+
+MAIN.C:
+MF_SQUAD.H:
+NARSARRAYEDITOR.H:
+REFCNT.C:
+  Mistaken update.
+
+
 Build #1832 -- Version 0.5.5.xx
 --------------------------------
 

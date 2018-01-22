@@ -35,22 +35,6 @@ extern HGLOBAL hGlbRC1,
 
 
 //***************************************************************************
-//  $ChangeRefCntDirGlb
-//
-//  Increment or decrement the reference count
-//    of a direct reference to an HGLOBAL
-//***************************************************************************
-
-int ChangeRefCntDirGlb
-    (HGLOBAL hGlb,              // Global memory handle
-     int     iIncr)             // Increment/decrement amount
-
-{
-    return ChangeRefCntDir_PTB (MakePtrTypeGlb (hGlb), iIncr);
-} // End ChangeRefCntDirGlb
-
-
-//***************************************************************************
 //  $ChangeRefCntDir_PTB
 //
 //  Increment or decrement the reference count

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@
 #include "headers.h"
 #include "typemote.h"
 #include "keyboards_bi.h"
+#include "NarsArrayEditor.h"
 #undef  MPIFNS
 #undef  DEFINE_ENUMS
 #undef  DEFINE_VALUES
@@ -119,6 +120,34 @@ UBOOL bMainDestroy = FALSE;     // TRUE iff we're destroying the Main window
 
 extern
 WNDPROC lpfnOldStatusBarWndProc;            // Save area for old StatusBar Window procedure
+
+
+//***************************************************************************
+//  $MyCheckCtrlBreak
+//
+//  Return TRUE iff Ctrl-Break is signalled.
+//***************************************************************************
+
+int MyCheckCtrlBreak
+    (void)
+
+{
+    LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    Assert (lpplLocalVars NE NULL);
+
+    if (lpplLocalVars EQ NULL)
+        return 0;
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
+
+    return CheckCtrlBreak (lpbCtrlBreak);
+} // End MyCheckCtrlBreak
 
 
 //***************************************************************************

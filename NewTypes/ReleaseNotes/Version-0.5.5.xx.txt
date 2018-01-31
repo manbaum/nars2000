@@ -1,6 +1,29 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1838 -- Version 0.5.5.xx
+--------------------------------
+
+* Handle NoDisplay Result From An Identity Function
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+  Redefine <GLBSYM> as a struct from a union.
+  Append a new <UBOOL> to <GLBSYM> to hold the NoDisplay state.
+
+IDENTFNS.C:
+  In <GetIdentityElement_EM>, return the NoDisplay state of the identity element.
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  In <FillIdentityElement_EM>, return in a parameter the NoDisplay state of the identity element.
+
+PO_DOT.C:
+  In <PrimOpDydDotCommon_EM_YY>, capture the NoDisplay state of the identity element and save it in the result token.
+
+PO_SLASH.C:
+  In <PrimOpMonSlashCommon_EM_YY> and <PrimOpDydSlashCommon_EM_YY>, capture the NoDisplay state of the identity element and save it in the result token.
+
+
 Build #1837 -- Version 0.5.5.xx
 --------------------------------
 

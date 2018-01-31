@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2615,6 +2615,7 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
                       lpPrimFlagsRht;           // ...    right ...
     LPPRIMIDENT       lpPrimIdentLft;           // Ptr to left operand PrimIdent entry
     UBOOL             bRet = TRUE,              // TRUE iff result is valid
+                      bNoDisplay = FALSE,       // TRUE iff the result should be marked as NoDisplay
                       bNrmIdent = FALSE,        // TRUE iff reducing an empty array with a primitive scalar dyadic function
                       bPrimIdent = FALSE,       // TRUE iff reducing an empty array with a primitive or
                                                 //   user-defined function/operator
@@ -3277,7 +3278,8 @@ RESTART_INNERPROD_RES:
                                      lpYYFcnStrLft,         // Ptr to left operand function strand
                                      lptkLftArg,            // Ptr to left arg token
                                      lpYYFcnStrRht,         // Ptr to right operand function strand (may be NULL if Scan)
-                                     lptkRhtArg))           // Ptr to right arg token
+                                     lptkRhtArg,            // Ptr to right arg token
+                                    &bNoDisplay))           // Ptr to TRUE iff the result should be marked as NoDisplay
             goto ERROR_EXIT;
     } else
     // If this is primitive scalar dyadic function identity element, ...
@@ -4044,7 +4046,7 @@ YYALLOC_EXIT:
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkFlags.NoDisplay = bNoDisplay;
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 

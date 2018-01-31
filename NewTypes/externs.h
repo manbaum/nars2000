@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -629,10 +629,12 @@ FASTBOOLTRANS fbtFirst[2]
 // Union for either
 //  APLNESTED (HGLOBAL)     (of type PTRTYPE_HGLOBAL)
 //  APLHETERO (LPSYMENTRY)  (of type PTRTYPE_STCONST)
-typedef union tagGLBSYM
+//  along with a separate UBOOL
+typedef struct tagGLBSYM
 {
-    HGLOBAL    hGlb;        // Result is APLNESTED
-    LPSYMENTRY lpSym;       // Result is APLHETERO
+    union   {HGLOBAL    hGlb;       // Result is APLNESTED
+             LPSYMENTRY lpSym;};    // Result is APLHETERO
+    UBOOL   bNoDisplay;  // TRUE iff the result should be marked as NoDisplay
 } GLBSYM, *LPGLBSYM;
 
 EXTERN

@@ -168,6 +168,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     HGLOBAL           hGlbPro = NULL;       // Prototype global memory handle
     APLFLOAT          aplFloatIdent;        // Identity element
     UBOOL             bRet = TRUE,          // TRUE iff result is valid
+                      bNoDisplay = FALSE,   // TRUE iff the result should be marked as NoDisplay
                       bPrimDydScal = FALSE, // TRUE iff the left operand is a Primitive Dyadic Scalar function
                       bNrmIdent = FALSE,    // TRUE iff reducing an empty array with a primitive scalar dyadic function
                       bPrimIdent = FALSE,   // TRUE iff reducing an empty array with a primitive function/operator
@@ -565,7 +566,8 @@ RESTART_ALLOC:
                                      lpYYFcnStrLft,         // Ptr to left operand function strand
                                      NULL,                  // Ptr to left arg token
                                      NULL,                  // Ptr to right operand function strand (may be NULL if Scan)
-                                     lptkRhtArg))           // Ptr to right arg token
+                                     lptkRhtArg,            // Ptr to right arg token
+                                    &bNoDisplay))           // Ptr to TRUE iff the result should be marked as NoDisplay
             goto ERROR_EXIT;
     } else
     // If this is primitive scalar dyadic function identity element, ...
@@ -1415,7 +1417,7 @@ RESTART_EXCEPTION:
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkFlags.NoDisplay = bNoDisplay;
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 
@@ -1681,6 +1683,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     LPAPLDIM          lpMemDimRht;          // Ptr to right arg dimensions
     APLLONGEST        aplLongestLft;        // Left arg if immediate
     UBOOL             bRet = TRUE,          // TRUE iff result is valid
+                      bNoDisplay = FALSE,   // TRUE iff the result should be marked as NoDisplay
                       bNstIdent = FALSE,    // TRUE iff reducing an empty nested array with a primitive scalar dyadic fcn
                       bPrimIdent = FALSE,   // TRUE iff reducing an empty array with a primitive
                                             //   or user-defined function/operator
@@ -1988,7 +1991,8 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
                                          lpYYFcnStrLft,         // Ptr to left operand function strand
                                          lptkLftArg,            // Ptr to left arg token
                                          NULL,                  // Ptr to right operand function strand (may be NULL if Scan)
-                                         lptkRhtArg))           // Ptr to right arg token
+                                         lptkRhtArg,            // Ptr to right arg token
+                                        &bNoDisplay))           // Ptr to TRUE iff the result should be marked as NoDisplay
                 goto ERROR_EXIT;
         } else
         // If the right arg is nested, ...
@@ -2615,7 +2619,7 @@ RESTART_EXCEPTION:
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkFlags.NoDisplay = bNoDisplay;
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 

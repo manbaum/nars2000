@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ GLBSYM GetIdentityElement_EM
                  lpYYResL2 = NULL,  // Ptr to secondary left result
                  lpYYResR = NULL,   // Ptr to right result
                  lpYYResR2 = NULL;  // Ptr to secondary right result
-    GLBSYM       hGlbSym = {NULL};  // Result
+    GLBSYM       hGlbSym = {NULL, 0};   // Result
     LPPRIMFLAGS  lpPrimFlagsLft;    // Ptr to Left operand primitive flags
     LPTOKEN      lptkAxisLft,       // Ptr to left operand axis token
                  lptkAxisRht;       // ...    right ...
@@ -196,6 +196,9 @@ GLBSYM GetIdentityElement_EM
     if (lpYYRes EQ NULL)
         goto ERROR_EXIT;
 
+    // Return the NoDisplay flag
+    hGlbSym.bNoDisplay = lpYYRes->tkToken.tkFlags.NoDisplay;
+
     // Is the token immediate?
     if (IsTknImmed (&lpYYRes->tkToken))
     {
@@ -225,32 +228,32 @@ RIGHT_NONCE_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    if (lpYYRes)
+    if (lpYYRes NE NULL)
     {
         FreeResult (lpYYRes);  YYFree (lpYYRes);  lpYYRes  = NULL;
     } // End IF
 
-    if (lpYYRes2)
+    if (lpYYRes2 NE NULL)
     {
         FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
     } // End IF
 
-    if (lpYYResL)
+    if (lpYYResL NE NULL)
     {
         FreeResult (lpYYResL); YYFree (lpYYResL); lpYYResL = NULL;
     } // End IF
 
-    if (lpYYResL2)
+    if (lpYYResL2 NE NULL)
     {
         FreeResult (lpYYResL2); YYFree (lpYYResL2); lpYYResL2 = NULL;
     } // End IF
 
-    if (lpYYResR)
+    if (lpYYResR NE NULL)
     {
         FreeResult (lpYYResR); YYFree (lpYYResR); lpYYResR = NULL;
     } // End IF
 
-    if (lpYYResR2)
+    if (lpYYResR2 NE NULL)
     {
         FreeResult (lpYYResR2); YYFree (lpYYResR2); lpYYResR2 = NULL;
     } // End IF
@@ -279,7 +282,8 @@ UBOOL FillIdentityElement_EM
      LPPL_YYSTYPE lpYYFcnStrLft,                // Ptr to left operand function strand
      LPTOKEN      lptkLftArg,                   // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStrRht,                // Ptr to right operand function strand (may be NULL if Scan)
-     LPTOKEN      lptkRhtArg)                   // Ptr to right arg token
+     LPTOKEN      lptkRhtArg,                   // Ptr to right arg token
+     LPUBOOL      lpbNoDisplay)                 // Ptr to TRUE iff the result should be marked as NoDisplay
 
 {
     GLBSYM  hGlbSym;                            // Result
@@ -294,6 +298,9 @@ UBOOL FillIdentityElement_EM
     // Check for errors
     if (hGlbSym.hGlb EQ NULL)
         return FALSE;
+
+    // Return the NoDisplay flag
+    *lpbNoDisplay = hGlbSym.bNoDisplay;
 
     // Split cases based upon the ptr type bits
     switch (GetPtrTypeDir (hGlbSym.hGlb))
@@ -313,27 +320,27 @@ UBOOL FillIdentityElement_EM
                     {
                         case IMMTYPE_BOOL:
                             // If it's a Boolean != 0, save in the result
-                            if (hGlbSym.lpSym->stData.stBoolean)
+                            if (hGlbSym.lpSym->stData.stBoolean NE 0)
                                 // Fill the result with all 1s
                                 FillMemory (lpMemRes, (APLU3264) RoundUpBitsToBytes (aplNELMRes), 0xFF);
                             break;
 
                         case IMMTYPE_INT:
                             // If it's an integer != 0, save in the result
-                            if (hGlbSym.lpSym->stData.stInteger)
-                            while (aplNELMRes--)
+                            if (hGlbSym.lpSym->stData.stInteger NE 0)
+                            while (aplNELMRes-- NE 0)
                                 *((LPAPLINT) lpMemRes)++ = hGlbSym.lpSym->stData.stInteger;
                             break;
 
                         case IMMTYPE_FLOAT:
                             // If it's a float != 0, save in the result
-                            if (hGlbSym.lpSym->stData.stFloat)
-                            while (aplNELMRes--)
+                            if (hGlbSym.lpSym->stData.stFloat   NE 0.0)
+                            while (aplNELMRes-- NE 0)
                                 *((LPAPLFLOAT) lpMemRes)++ = hGlbSym.lpSym->stData.stFloat;
                             break;
 
                         case IMMTYPE_CHAR:
-                            while (aplNELMRes--)
+                            while (aplNELMRes-- NE 0)
                                 *((LPAPLCHAR) lpMemRes)++ = hGlbSym.lpSym->stData.stChar;
                             break;
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1684,6 +1684,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
                       bNstIdent = FALSE,    // TRUE iff reducing an empty nested array with a primitive scalar dyadic fcn
                       bPrimIdent = FALSE,   // TRUE iff reducing an empty array with a primitive
                                             //   or user-defined function/operator
+                      bEqualNotEqual,       // TRUE iff the left operand is Equal or NotEqual
                       bDimDemote = FALSE;   // TRUE iff dimension demotion allowed
     LPPL_YYSTYPE      lpYYRes = NULL,       // Ptr to the result
                       lpYYRes2,             // Ptr to secondary result
@@ -2241,6 +2242,11 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     } else
     {
         // Otherwise, we're out of special cases
+
+        // Check for Equal/NotEqual function
+        bEqualNotEqual = (lpYYFcnStrLft->tkToken.tkFlags.ImmType EQ IMMTYPE_PRIMFCN)
+                      && (lpYYFcnStrLft->tkToken.tkData.tkChar   EQ UTF16_EQUAL
+                       || lpYYFcnStrLft->tkToken.tkData.tkChar   EQ UTF16_NOTEQUAL);
 RESTART_ALLOC:
         // Allocate storage for the result
         if (!PrimOpDydSlashAllocate_EM
@@ -2319,6 +2325,7 @@ RESTART_EXCEPTION:
                                              &tkRhtArg);        // Ptr to token in which to place the value
                     // In case we blew up, check to see if we must blow up tkRhtArg
                     if (aplTypeRes NE aplTypeRht
+                     && !bEqualNotEqual
                      && !IsNested (aplTypeRes))
                         (*aTypeTknPromote[aplTypeRht][aplTypeRes]) (&tkRhtArg);
 

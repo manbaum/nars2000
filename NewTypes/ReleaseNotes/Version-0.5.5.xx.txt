@@ -1,6 +1,26 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1836 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In =/'abc'
+
+Directory branches/bsmith/NewTypes:
+
+PO_SLASH.C:
+  A test for whether or not to promote an argument to the result fails in the above case as the temp result is Boolean and the argument is character.
+    No promotion is necessary if the function is immediate and is either Equal of NotEqual.
+
+
+Build #1835 -- Version 0.5.5.xx
+--------------------------------
+
+* Empty Commit To Counter Mistaken Update To A Revision
+
+Directory branches/bsmith/NewTypes:
+
+
 Build #1834 -- Version 0.5.5.xx
 --------------------------------
 

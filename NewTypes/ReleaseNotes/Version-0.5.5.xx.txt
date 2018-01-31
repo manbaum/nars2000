@@ -1,6 +1,18 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1837 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug When Handling Inline System Labels In An AFO
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+  After <PARSELINE_DONE:> if we're not at EOL and the leftmost token is an AFO NOP, skip back over the NOP to the EOS/EOL.
+  After <PARSELINE_DONE:> if we're not at EOL, skip over the next stmt if it's a System Label.
+
+
 Build #1836 -- Version 0.5.5.xx
 --------------------------------
 

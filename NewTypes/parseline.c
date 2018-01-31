@@ -5349,7 +5349,11 @@ PARSELINE_DONE:
                 // If we're not at the end of the line, ...
                 if (!bEOL && !plLocalVars.bAfoValue)
                 {
-                    // Skip to the previous token (EOS/EOL)
+                    //***************************************************************
+                    // We're now at the leftmost token of the just-executed stmt
+                    //***************************************************************
+
+                    // Skip to the previous token (EOS/EOL/LBL)
                     plLocalVars.lptkNext--;
 
                     Assert (plLocalVars.lptkNext->tkFlags.TknType EQ TKT_EOS
@@ -5360,18 +5364,53 @@ PARSELINE_DONE:
                     {
                         Assert (plLocalVars.lptkNext[-1].tkFlags.TknType EQ TKT_VARNAMED);
 
-                        // Skip to the EOS/EOL token
+                        // Skip to the EOS/EOL/NOP token
                         plLocalVars.lptkNext -= 2;
+
+                        // If the current token is an AFO NOP, ...
+                        if (plLocalVars.lptkNext->tkFlags.TknType EQ TKT_NOP)
+                            // Skip over it
+                            plLocalVars.lptkNext--;
 
                         Assert (plLocalVars.lptkNext->tkFlags.TknType EQ TKT_EOS
                              || plLocalVars.lptkNext->tkFlags.TknType EQ TKT_EOL);
                     } // End IF
 
+                    //***************************************************************
+                    // We're now at the leftmost token of the current stmt
+                    //***************************************************************
+
                     // Skip to end of the current stmt
                     plLocalVars.lptkNext = &plLocalVars.lptkNext[plLocalVars.lptkNext->tkData.tkIndex];
 
+                    // If we're done, ...
+                    if (plLocalVars.lptkNext EQ plLocalVars.lptkEnd)
+                        goto PARSELINE_END;
+
                     Assert (plLocalVars.lptkNext->tkFlags.TknType EQ TKT_EOS
                          || plLocalVars.lptkNext->tkFlags.TknType EQ TKT_EOL);
+
+                    // As we're in the middle of a line and have encountered a label separator,
+                    //   this is where we skip over a System Label.
+                    // Check for System Label
+                    if ((plLocalVars.lptkEnd - plLocalVars.lptkNext) > 3
+                     && (plLocalVars.lptkNext[0].tkFlags.TknType EQ TKT_EOS
+                      || plLocalVars.lptkNext[0].tkFlags.TknType EQ TKT_EOL)
+                      && plLocalVars.lptkNext[1].tkFlags.TknType EQ TKT_NOP
+                      && plLocalVars.lptkNext[2].tkFlags.TknType EQ TKT_VARNAMED
+                      && plLocalVars.lptkNext[2].tkFlags.bSysLbl
+                      && plLocalVars.lptkNext[3].tkFlags.TknType EQ TKT_LABELSEP)
+                    {
+                        // Skip to end of the current stmt
+                        plLocalVars.lptkNext = &plLocalVars.lptkNext[plLocalVars.lptkNext->tkData.tkIndex];
+
+                        Assert (plLocalVars.lptkNext->tkFlags.TknType EQ TKT_EOS
+                             || plLocalVars.lptkNext->tkFlags.TknType EQ TKT_EOL);
+                    } // End IF
+
+                    // If we're done, ...
+                    if (plLocalVars.lptkNext EQ plLocalVars.lptkEnd)
+                        goto PARSELINE_END;
 
                     // Save a ptr to the EOS/EOL token
                     plLocalVars.lptkEOS =   plLocalVars.lptkNext;

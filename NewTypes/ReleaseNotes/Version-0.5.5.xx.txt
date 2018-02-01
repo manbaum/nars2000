@@ -1,6 +1,28 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1839 -- Version 0.5.5.xx
+--------------------------------
+
+* Include New Chars In <aplchars> Thunderbird Extensions
+
+
+Directory branches/bsmith/NewTypes/Extensions/aplchars:
+
+INSTALL.RDF:
+UPDATE.RDF:
+  Increment version #.
+
+
+Directory branches/bsmith/NewTypes/Extensions/aplchars/chrome/content/aplchars:
+
+ABOUT.XUL:
+  Increment version #.
+
+EDITOROVERLAY.JS:
+  Include Del-Tilde and Matrix Operator characters for Alt-K and Alt-F.
+
+
 Build #1838 -- Version 0.5.5.xx
 --------------------------------
 

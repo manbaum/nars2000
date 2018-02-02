@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -317,8 +317,8 @@ BEGIN
                                IDC_CLEARWS_FC_LEN      ,200,124, 80, 13
 
     LTEXT           "FEATURE" ,IDC_STATIC              ,  5,142, 40, 13
-    COMBOBOX                   IDC_CLEARWS_FEATURE_CB1 , 45,138,170, 250,WS_BORDER | CBS_DROPDOWNLIST
-    COMBOBOX                   IDC_CLEARWS_FEATURE_CB2 ,220,138, 50, 250,WS_BORDER | CBS_DROPDOWNLIST
+    COMBOBOX                   IDC_CLEARWS_FEATURE_CB1 , 45,138,200, 250,WS_BORDER | CBS_DROPDOWNLIST
+    COMBOBOX                   IDC_CLEARWS_FEATURE_CB2 ,250,138, 45, 250,WS_BORDER | CBS_DROPDOWNLIST
 
     LTEXT           "FPC"     ,IDC_STATIC              ,  5,160, 40, 13
     CONTROL         ""        ,IDC_CLEARWS_FPC_EC      ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER,45,156, 90, 16

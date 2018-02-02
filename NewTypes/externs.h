@@ -168,7 +168,7 @@ typedef enum tagFEATURE_INDICES
 {
     FEATURENDX_NEGINDICES   ,           // 00:  Allow negative indices
     FEATURENDX_NEG0         ,           // 01:  Allow -0
-    FEATURENDX_HURWITZ      ,           // 02:  Use Hurwitz's Floor instead of McDonnell's
+    FEATURENDX_HURWITZ      ,           // 02:  Use Hurwitz's Floor v. McDonnell
     FEATURENDX_NAN          ,           // 03:  Allow NaNs
     FEATURENDX_LENGTH                   // 04:  # entries in this enum
 } FEATURE_INDICES, *LPFEATURE_INDICES;
@@ -193,7 +193,7 @@ APLINT aplDefaultFEATURE[FEATURENDX_LENGTH]  // []FEATURE default values
 #ifdef DEFINE_VALUES
  = {DEF_FEATURE_NEGINDICES  ,           // 00:  Allow negative indices
     DEF_FEATURE_NEG0        ,           // 01:  Allow -0
-    DEF_FEATURE_HURWITZ     ,           // 02:  Use Hurwitz's Floor instead of McDonnell's
+    DEF_FEATURE_HURWITZ     ,           // 02:  Use Hurwitz's Floor v. McDonnell
     DEF_FEATURE_NAN         ,           // 03:  Allow NaNs
    }
 #endif
@@ -202,10 +202,10 @@ APLINT aplDefaultFEATURE[FEATURENDX_LENGTH]  // []FEATURE default values
 EXTERN
 FEATURE_NAMES featNames[FEATURENDX_LENGTH]
 #ifdef DEFINE_VALUES
- = {{FEATURENDX_NEGINDICES  , L"Allow Negative Indices"                     },
-    {FEATURENDX_NEG0        , L"Allow " WS_UTF16_OVERBAR L"0"               },
-    {FEATURENDX_HURWITZ     , L"Use Hurwitz's Floor instead of McDonnell's" },
-    {FEATURENDX_NAN         , L"Allow NaNs"                                 },
+ = {{FEATURENDX_NEGINDICES  , L"Allow Negative Indices"           },
+    {FEATURENDX_NEG0        , L"Allow " WS_UTF16_OVERBAR L"0"     },
+    {FEATURENDX_HURWITZ     , L"Use Hurwitz's Floor v. McDonnell" },
+    {FEATURENDX_NAN         , L"Allow NaNs"                       },
    }
 #endif
 ;

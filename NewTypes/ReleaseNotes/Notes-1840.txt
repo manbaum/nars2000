@@ -1,0 +1,11 @@
+Build #1840 -- Version 0.5.5.xx
+--------------------------------
+
+* Implement Short Left Argument To Dyadic Squad, UpArrow, and DownArrow
+
+Directory branches/bsmith/NewTypes:
+
+MF_SQUAD.H:
+PF_DARROW.C:
+PF_UARROW.C:
+  Implement short left arg to dyadic Squad, UpArrow, and DownArrow.

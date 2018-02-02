@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -126,7 +126,7 @@ LPPL_YYSTYPE PrimIdentFnDownArrow_EM_YY
     Assert (lptkRhtArg  NE NULL);
 
     // If there's an axis operator, ...
-    if (lptkAxis)
+    if (lptkAxis NE NULL)
     {
         APLRANK aplRankRht;         // Right arg rank
 
@@ -345,38 +345,51 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
         // No axis is the same as all axes
         aplNELMAxis = aplRankRes;
 
-    // Check for RANK error
+    // Check for LEFT RANK error
     if (IsMultiRank (aplRankLft))
-        goto RANK_EXIT;
+        goto LEFT_RANK_EXIT;
 
-    // Check for LENGTH error
-    if (aplNELMLft NE aplNELMAxis)
-        goto LENGTH_EXIT;
+    // Check for LEFT LENGTH error
+    //   allowing for short left args
+    if (aplNELMLft > aplNELMAxis)
+        goto LEFT_LENGTH_EXIT;
 
-    // Check for DOMAIN error
+    // Check for LEFT DOMAIN error
     if (!IsNumeric (aplTypeLft)
      && !IsEmpty (aplNELMLft))
-        goto DOMAIN_EXIT;
+        goto LEFT_DOMAIN_EXIT;
 
     // Get left & right arg's global ptrs
     aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
-    // Split off case of {zilde}{drop} SimpleScalar
-    //               and      ''{drop} SimpleScalar
+    // Split off case of {zilde}{drop} Scalar
+    //               and      ''{drop} Scalar
     if (IsSimple (aplTypeLft)
-     && IsEmpty (aplNELMLft)
-     && IsSimple (aplTypeRht))
+     && IsEmpty  (aplNELMLft)
+     && IsScalar (aplRankRht))
     {
         // Allocate a new YYRes;
         lpYYRes = YYAlloc ();
 
-        // Fill in the result token
-        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
-        lpYYRes->tkToken.tkFlags.ImmType   = TranslateArrayTypeToImmType (aplTypeRht);
-////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkLongest  = aplLongestRht;
-        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+        // If the result is simple, ...
+        if (IsSimple (aplTypeRht))
+        {
+            // Fill in the result token
+            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+            lpYYRes->tkToken.tkFlags.ImmType   = TranslateArrayTypeToImmType (aplTypeRht);
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+            lpYYRes->tkToken.tkData.tkLongest  = aplLongestRht;
+            lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+        } else
+        {
+            // Fill in the result token
+            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+            lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (hGlbRht);
+            lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+        } // End IF/ELSE
 
         goto NORMAL_EXIT;
     } // End IF
@@ -402,6 +415,8 @@ LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     //   calculating the result NELM as x/aplNELMLft, and
     //   saving the resulting normalized left arg in global
     //   memory as signed integers.
+    // Also, we allow for short left args as per Dyalog's design
+    //   and implementation.
     hGlbTmpLft =
       PrimFnDydUpDownArrowLftGlbValid_EM (NULL,             // Ptr to common NELM
                                          &aplNELMRes,       // Ptr to result NELM
@@ -773,19 +788,19 @@ YYALLOC_EXIT:
 
     goto NORMAL_EXIT;
 
-RANK_EXIT:
+LEFT_RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                               lptkFunc);
+                               lptkLftArg);
     goto ERROR_EXIT;
 
-LENGTH_EXIT:
+LEFT_LENGTH_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                               lptkFunc);
+                               lptkLftArg);
     goto ERROR_EXIT;
 
-DOMAIN_EXIT:
+LEFT_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkFunc);
+                               lptkLftArg);
     goto ERROR_EXIT;
 
 WSFULL_EXIT:
@@ -961,11 +976,10 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
         lpMemTmpHiRes = &lpMemTmpLoRes[aplRankRes];
     } // End IF
 
-    // If there's an axis operator, and
-    //   the right arg is not scalar, and
+    // If the right arg is not scalar, and
     //   it's UpArrow
-    if (lpMemAxisTail NE NULL
-     && !IsScalar (aplRankRht)
+    // This is how UpArrow handles short left args
+    if (!IsScalar (aplRankRht)
      && !bDownArrow)
         // Copy the right arg dimensions to the normalized left arg
         //   some of which will be overwritten by the actual left arg,
@@ -1131,7 +1145,7 @@ HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
     {
         // Initialize with identity element for multiply
         *lpaplNELMRes = 1;
-        if (lpaplNELMCom)
+        if (lpaplNELMCom NE NULL)
             *lpaplNELMCom = 1;
 
         // Loop through the normalized left arg

@@ -38,10 +38,16 @@
 static LPAPLCHAR DydBody[] =
 {// Emulate L⌷[X] R or L⌷R
  L"Pro←0",
- L"L1::if 0≠⎕NC 'X'",
+ L"L1:"
+ L"⎕ERROR (1<⍴⍴L)/'RANK ERROR'",
+ L":if 0=⎕NC 'X'",
+ L":andif (≢L)<⍴⍴R",        // This feature was designed and implemented by Dyalog
+ L"  X←⍳≢L",
+ L":end",
+ L":if 0≠⎕NC 'X'",
  L"  ⎕ERROR (~∧/X∊⍳⍴⍴R)/'AXIS ERROR'",
  L"  ⎕ERROR ((≢X)≢≢∪X)/'AXIS ERROR'",
- L"  A←((⍳⍴⍴R)∊X)\\L", // Double the \ to avoid it being confused with a character escape sequence
+ L"  A←((⍳⍴⍴R)∊X)\\L[⍋X]",  // Double the \ to avoid it being confused with a character escape sequence
  L"  B←(⍳⍴⍴R)~X",
  L"  A[B]←⍳¨(⍴1/R)[B]",
  L":else",

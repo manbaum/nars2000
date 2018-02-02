@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -130,7 +130,7 @@ LPPL_YYSTYPE PrimIdentFnUpArrow_EM_YY
                            lptkRhtArg,  // Ptr to right arg token
                            NULL);       // Ptr to axis token (may be NULL)
     // If there's an axis operator, ...
-    if (lptkAxis)
+    if (lptkAxis NE NULL)
     {
         APLRANK aplRankRht;         // Right arg rank
 
@@ -223,7 +223,7 @@ LPPL_YYSTYPE PrimFnMonUpArrow_EM_YY
     lpYYRes = YYAlloc ();
 
     // If the first value is an array, ...
-    if (lpSymGlb)
+    if (lpSymGlb NE NULL)
     {
         // Fill in the result token
         lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
@@ -386,7 +386,8 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
         goto LEFT_RANK_EXIT;
 
     // Check for LEFT LENGTH error
-    if (aplNELMLft NE aplNELMAxis)
+    //   allowing for short left args
+    if (aplNELMLft > aplNELMAxis)
         goto LEFT_LENGTH_EXIT;
 
     // Check for LEFT DOMAIN error
@@ -398,21 +399,33 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
-    // Split off case of {zilde}{take} SimpleScalar
-    //               and      ''{take} SimpleScalar
+    // Split off case of {zilde}{take} Scalar
+    //               and      ''{take} Scalar
     if (IsSimple (aplTypeLft)
-     && IsEmpty (aplNELMLft)
-     && IsSimple (aplTypeRht))
+     && IsEmpty  (aplNELMLft)
+     && IsScalar (aplRankRht))
     {
         // Allocate a new YYRes;
         lpYYRes = YYAlloc ();
 
-        // Fill in the result token
-        lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
-        lpYYRes->tkToken.tkFlags.ImmType   = TranslateArrayTypeToImmType (aplTypeRht);
-////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE; // Already zero from YYAlloc
-        lpYYRes->tkToken.tkData.tkLongest  = aplLongestRht;
-        lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+        // If the result is simple, ...
+        if (IsSimple (aplTypeRht))
+        {
+            // Fill in the result token
+            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+            lpYYRes->tkToken.tkFlags.ImmType   = TranslateArrayTypeToImmType (aplTypeRht);
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+            lpYYRes->tkToken.tkData.tkLongest  = aplLongestRht;
+            lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+        } else
+        {
+            // Fill in the result token
+            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+            lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDir_PTB (hGlbRht);
+            lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+        } // End IF/ELSE
 
         goto NORMAL_EXIT;
     } // End IF
@@ -438,6 +451,8 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     //   calculating the result NELM as x/aplNELMLft, and
     //   saving the resulting normalized left arg in global
     //   memory as signed integers.
+    // Also, we allow for short left args as per Dyalog's design
+    //   and implementation.
     hGlbTmpLft =
       PrimFnDydUpDownArrowLftGlbValid_EM (&aplNELMCom,      // Ptr to common NELM
                                           &aplNELMRes,      // Ptr to result NELM
@@ -1094,17 +1109,17 @@ YYALLOC_EXIT:
 
 LEFT_RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                               lptkFunc);
+                               lptkLftArg);
     goto ERROR_EXIT;
 
 LEFT_LENGTH_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                               lptkFunc);
+                               lptkLftArg);
     goto ERROR_EXIT;
 
 LEFT_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkFunc);
+                               lptkLftArg);
     goto ERROR_EXIT;
 
 WSFULL_EXIT:

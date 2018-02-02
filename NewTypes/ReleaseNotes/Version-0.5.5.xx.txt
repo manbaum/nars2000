@@ -1,11 +1,23 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1840 -- Version 0.5.5.xx
+--------------------------------
+
+* Implement Short Left Argument To Dyadic Squad, UpArrow, and DownArrow
+
+Directory branches/bsmith/NewTypes:
+
+MF_SQUAD.H:
+PF_DARROW.C:
+PF_UARROW.C:
+  Implement short left arg to dyadic Squad, UpArrow, and DownArrow.
+
+
 Build #1839 -- Version 0.5.5.xx
 --------------------------------
 
 * Include New Chars In <aplchars> Thunderbird Extensions
-
 
 Directory branches/bsmith/NewTypes/Extensions/aplchars:
 

@@ -3,7 +3,6 @@ Build #1839 -- Version 0.5.5.xx
 
 * Include New Chars In <aplchars> Thunderbird Extensions
 
-
 Directory branches/bsmith/NewTypes/Extensions/aplchars:
 
 INSTALL.RDF:

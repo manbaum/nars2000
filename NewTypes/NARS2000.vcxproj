@@ -121,7 +121,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     </ProjectReference>
     <Link>
       <AdditionalOptions>/ignore:4099,4204 comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib MSImg32.lib dbghelp.lib Shlwapi.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>mpir32d.lib;mpfr32d.lib;flint32d.lib;mpc32d.lib;vcompd.lib;ecm32d.lib;libgsl32d-double.lib;qdebug32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mpir32d.lib;mpfr32d.lib;flint32d.lib;mpc32d.lib;vcompd.lib;ecm32d.lib;libgsl32d-double.lib;synchronization.lib;qdebug32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(MPIR_DIR)lib;$(MPFR_DIR)lib;$(FLINT_DIR)lib;$(MPC_DIR)lib;$(ECM_DIR)lib;$(CS_DIR)lib;$(GSL_DIR)lib;$(NARSROOT)qdebug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>NARS2000.exe.manifest32;%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
@@ -175,7 +175,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     </ProjectReference>
     <Link>
       <AdditionalOptions>/ignore:4099,4204 comctl32.lib Wininet.lib version.lib libcmtd.lib oldnames.lib MSImg32.lib dbghelp.lib Shlwapi.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>mpir64d.lib;mpfr64d.lib;flint64d.lib;mpc64d.lib;ecm64d.lib;vcompd.lib;libgsl64d-double.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mpir64d.lib;mpfr64d.lib;flint64d.lib;mpc64d.lib;ecm64d.lib;vcompd.lib;libgsl64d-double.lib;synchronization.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(MPIR_DIR)lib;$(MPFR_DIR)lib;$(FLINT_DIR)lib;$(MPC_DIR)lib;$(ECM_DIR)lib;$(CS_DIR)lib;$(GSL_DIR)lib;$(NARSROOT)qdebug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>NARS2000.exe.manifest64;%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
@@ -229,7 +229,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     </ProjectReference>
     <Link>
       <AdditionalOptions>/ignore:4099,4204 comctl32.lib Wininet.lib version.lib libcmt.lib oldnames.lib MSImg32.lib dbghelp.lib Shlwapi.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>mpir32.lib;mpfr32.lib;flint32.lib;mpc32.lib;ecm32.lib;vcomp.lib;libgsl32-double.lib;qdebug32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>mpir32.lib;mpfr32.lib;flint32.lib;mpc32.lib;ecm32.lib;vcomp.lib;libgsl32-double.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(MPIR_DIR)lib;$(MPFR_DIR)lib;$(FLINT_DIR)lib;$(MPC_DIR)lib;$(ECM_DIR)lib;$(CS_DIR)lib;$(GSL_DIR)lib;$(NARSROOT)qdebug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>NARS2000.exe.manifest32;%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>

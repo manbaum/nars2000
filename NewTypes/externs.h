@@ -1097,6 +1097,13 @@ HWND hWndTC,                            // Global Tab Control window handle
      hWndLW_RB;                         // ...    Lang window in Rebar Ctrl
 
 EXTERN
+HWND hNULL                              // Global NULL window
+#ifdef DEFINE_VALUES
+ = NULL
+#endif
+ ;
+
+EXTERN
 HGLOBAL hGlbQuada,                      // []a
         hGlbQuadA,                      // []A
         hGlbQuadâ,                      // []â

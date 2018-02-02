@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2357,11 +2357,7 @@ NORMAL_EXIT:
 
             // Free global storage
             FreeGlobalStorage (lpMemPTD);
-#ifdef DEBUG
-            // If the debugger is still active, close it
-            if (hWndDB NE NULL)
-                DestroyWindow (hWndDB);
-#endif
+
 ////////////// *************** lptkStackBase ***************************
 ////////////if (lpMemPTD->lptkStackBase NE NULL)
 ////////////{

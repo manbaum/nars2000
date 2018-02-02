@@ -1,0 +1,25 @@
+Build #1843 -- Version 0.5.5.xx
+--------------------------------
+
+* Miscellaneous DEBUG Changes
+
+Directory branches/bsmith/NewTypes:
+
+DEBUG.C:
+  Insert commented out code in an unsuccessful attempt to wait until the DEBUG window is ready to receive messages.  That goal is still elusive.
+  In <DBWndProc/MYWM_INIT_DB> ensure the DEBUG window is up-to-date with its messages.
+  In <DBWndProc/WM_NCDESTROY>, invalidate the DEBUG window handle.
+  In both <DbgMsg> and <DbgMsgW>, if the DEBUG window isn't up as yet, send the message to the System Output Debugger.
+
+EXTERNS.H:
+  Define EXTERN of hNULL to use in a call to <WaitOnAddress>.
+
+MAIN.C:
+  In <MFWndProc/WM_NCDESTROY>, if the DEBUG window was created, WM_CLOSE it.
+
+MAKEFILE.INC:
+NARS2000.VCXPROJ:
+  For DEBUG builds, include the library <synchronization.lib> which contains <WaitOnAddress> and friends.
+
+SESSMAN.C:
+  In <SMWndProc/WM_DESTROY>, delete the code that destroys the DEBUG window if it was created as that task is done elsewhere.

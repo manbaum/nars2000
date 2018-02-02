@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -101,6 +101,17 @@ void CreateDebuggerWindow
                  &cdbThread,                    // Param to thread func
                   0,                            // Creation flag
                  &cdbThread.dwThreadId);        // Returns thread id
+#ifdef DEBUG
+//  // If the debugger isn't up as yet, ...
+//  if (hWndDB EQ NULL)
+//  {
+//      // Wait for the address to change
+//      WaitOnAddress (&hWndDB,
+//                     &hNULL,
+//                      sizeof (hWndDB),
+//                      INFINITE);
+//  } // End IF
+#endif
 } // End CreateDebuggerWindow
 #endif
 
@@ -125,7 +136,9 @@ UBOOL WINAPI CreateDebuggerInThread
 
         // Create the debugger window
         hWndDB =
-          CreateWindowExW (0L,                      // Extended styles
+          CreateWindowExW (0L                       // Extended styles
+/////////////////////////| WS_EX_NOPARENTNOTIFY
+                           ,
                            LDBWNDCLASS,             // Class name
                            wszDBTitle,              // Window title
                            0
@@ -141,6 +154,17 @@ UBOOL WINAPI CreateDebuggerInThread
                            NULL,                    // Menu
                            _hInstance,              // Instance
                            NULL);                   // No extra data
+        // If it is valid, ...
+        if (hWndDB NE NULL)
+        {
+            // Show and paint the window
+            ShowWindow (hWndDB, SW_SHOWNORMAL);
+            UpdateWindow (hWndDB);
+        } // End IF
+
+        // Tell 'em we're up
+        WakeByAddressSingle (&hWndDB);
+
         // If it didn't succeed, ...
         if (hWndDB EQ NULL)
             MB (pszNoCreateDBWnd);
@@ -154,15 +178,17 @@ UBOOL WINAPI CreateDebuggerInThread
             while (GetMessageW (&Msg, NULL, 0, 0))
             {
                 // Handle accelerators
-                if (!hAccel || !TranslateAcceleratorW (hWndMF, hAccel, &Msg))
+                if (!hAccel || !(hWndMF NE NULL && TranslateAcceleratorW (hWndMF, hAccel, &Msg)))
                 {
                     TranslateMessage (&Msg);
                     DispatchMessageW (&Msg);
                 } // End IF
             } // End WHILE
 
+            //***************************************************************
             // GetMessageW returned FALSE for a Quit message
-        } // End IF
+            //***************************************************************
+        } // End IF/ELSE
     } __except (CheckException (GetExceptionInformation (), L"CreateDebuggerInThread"))
     {
         // Display message for unhandled exception
@@ -245,27 +271,30 @@ LRESULT APIENTRY DBWndProc
 
             // Create a listbox to fit inside this window
             hWndLB =
-              CreateWindowW (WC_LISTBOXW,           // Class name
-                             L"Debugger Listbox",   // For debugging only
-                             0
-                           | WS_CHILD
-                           | WS_VSCROLL
-                           | WS_HSCROLL
-                           | WS_CLIPCHILDREN
-                           | LBS_NOINTEGRALHEIGHT
-                           | LBS_EXTENDEDSEL
-                           | LBS_MULTIPLESEL
-                           | LBS_OWNERDRAWVARIABLE
-                           | LBS_HASSTRINGS
-                             ,                      // Styles
-                             0,                     // X-position
-                             0,                     // Y-...
-                             CW_USEDEFAULT,         // Width
-                             CW_USEDEFAULT,         // Height
-                             hWnd,                  // Parent window
-                             (HMENU) IDWC_DB_LB,    // ID
-                             _hInstance,            // Instance
-                             0);                    // lParam
+              CreateWindowExW (0L                       // Extended styles
+/////////////////////////////| WS_EX_NOPARENTNOTIFY
+                               ,
+                               WC_LISTBOXW,             // Class name
+                               L"Debugger Listbox",     // For debugging only
+                               0
+                             | WS_CHILD
+                             | WS_VSCROLL
+                             | WS_HSCROLL
+                             | WS_CLIPCHILDREN
+                             | LBS_NOINTEGRALHEIGHT
+                             | LBS_EXTENDEDSEL
+                             | LBS_MULTIPLESEL
+                             | LBS_OWNERDRAWVARIABLE
+                             | LBS_HASSTRINGS
+                               ,                        // Styles
+                               0,                       // X-position
+                               0,                       // Y-...
+                               CW_USEDEFAULT,           // Width
+                               CW_USEDEFAULT,           // Height
+                               hWnd,                    // Parent window
+                               (HMENU) IDWC_DB_LB,      // ID
+                               _hInstance,              // Instance
+                               0);                      // lParam
             // Save for later use
             SetWindowLongPtrW (hWnd, GWLDB_HWNDLB, (APLU3264) (LONG_PTR) hWndLB);
 
@@ -292,6 +321,10 @@ LRESULT APIENTRY DBWndProc
         case MYWM_INIT_DB:
             // Tell the Listbox Control about its font
             SendMessageW (hWndLB, WM_SETFONT, (WPARAM) hFontSM, MAKELPARAM (TRUE, 0));
+
+            // Ensure that all messages to this window have been processed
+            UpdateWindow (hWndLB);
+            UpdateWindow (hWnd);
 
             return FALSE;           // We handled the msg
 
@@ -619,6 +652,9 @@ LRESULT APIENTRY DBWndProc
             // Tell the thread to quit, too
             PostQuitMessage (0);
 
+            // Invalidate the global handle
+            hWndDB = NULL;
+
             break;                  // Continue with next handler
     } // End SWITCH
 
@@ -929,7 +965,8 @@ void DbgMsg
         A2W (wszTemp, szTemp, sizeof (wszTemp) - 1);
 
         DbgMsgW (wszTemp);
-    } // End IF
+    } else
+        OutputDebugString (szTemp);
 } // End DbgMsg
 #endif
 
@@ -947,6 +984,8 @@ void DbgMsgW
 {
     if (hWndDB NE NULL)
         SendMessageW (hWndDB, MYWM_DBGMSGW, 0, (LPARAM) wszTemp);
+    else
+        OutputDebugStringW (wszTemp);
 } // End DbgMsgW
 #endif
 

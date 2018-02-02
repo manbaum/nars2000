@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -385,7 +385,7 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
     } // End IF/ELSE
 
     // Get the result type
-    aplTypeRes = IsMultiRank (aplRankRht) ? ARRAY_NESTED : ARRAY_INT;
+    aplTypeRes = IsVector (aplRankRht) ? ARRAY_INT : ARRAY_NESTED;
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, 1);
@@ -420,8 +420,8 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
     lpMemNestRes = (LPAPLNESTED)
     lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
-    // If the right arg is multirank, ...
-    if (IsMultiRank (aplRankRht))
+    // If the result is nested, ...
+    if (IsNested (aplTypeRes))
     {
         // Calculate space needed for the result
         ByteRes = aplRankRht * sizeof (APLUINT);
@@ -439,7 +439,7 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemOdoRht = MyGlobalLock000 (hGlbOdoRht);
+        lpMemOdoRht = MyGlobalLockInt (hGlbOdoRht);
 
         // If the result is empty, ...
         if (IsEmpty (aplNELMRes))
@@ -518,7 +518,7 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
             } // End SWITCH
 
             // If it's non-zero (actually positive, but negative numbers have been ruled out above), ...
-            if (uLen
+            if (uLen NE 0
                 // and not in error
              && !PrimFnMonIotaUnderbarNest_EM (&lpMemNestRes,   // Ptr to ptr to nested result
                                                 aplRankRht,     // Rank of right arg
@@ -694,52 +694,58 @@ UBOOL PrimFnMonIotaUnderbarNest_EM
     APLUINT           uTmp;                 // Loop counter
 
     Assert (aplRep NE 0);
-    Assert (aplRankRht NE 0);
 
-    // Calculate space needed for the result
-    //   a vector of aplRankRht integers
-    ByteRes = CalcArraySize (ARRAY_INT, aplRankRht, 1);
+    // If it's a special case, ...
+    if (IsScalar (aplRankRht))
+        // Use hGlbZilde
+        hGlbTmp = hGlbZilde;
+    else
+    {
+        // Calculate space needed for the result
+        //   a vector of aplRankRht integers
+        ByteRes = CalcArraySize (ARRAY_INT, aplRankRht, 1);
 
-    // Check for overflow
-    if (ByteRes NE (APLU3264) ByteRes)
-        return FALSE;
+        // Check for overflow
+        if (ByteRes NE (APLU3264) ByteRes)
+            return FALSE;
 
-    //***************************************************************
-    // Allocate space for the next nested vector from the odometer
-    //***************************************************************
-    hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-    if (hGlbTmp EQ NULL)
-        return FALSE;
+        //***************************************************************
+        // Allocate space for the next nested vector from the odometer
+        //***************************************************************
+        hGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+        if (hGlbTmp EQ NULL)
+            return FALSE;
 
-    // Lock the memory to get a ptr to it
-    lpMemHdrTmp = MyGlobalLock000 (hGlbTmp);
+        // Lock the memory to get a ptr to it
+        lpMemHdrTmp = MyGlobalLock000 (hGlbTmp);
 
 #define lpHeader    lpMemHdrTmp
-    // Fill in the header values
-    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
-    lpHeader->ArrType    = ARRAY_INT;
-////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
-////lpHeader->SysVar     = FALSE;       // Already zero from GHND
-    lpHeader->RefCnt     = 1;
-    lpHeader->NELM       = aplRankRht;
-    lpHeader->Rank       = 1;
+        // Fill in the header values
+        lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+        lpHeader->ArrType    = ARRAY_INT;
+////////lpHeader->PermNdx    = PERMNDX_NONE;// Already zero from GHND
+////////lpHeader->SysVar     = FALSE;       // Already zero from GHND
+        lpHeader->RefCnt     = 1;
+        lpHeader->NELM       = aplRankRht;
+        lpHeader->Rank       = 1;
 #undef  lpHeader
-    // Fill in the axis dimension
-    *VarArrayBaseToDim (lpMemHdrTmp) = aplRankRht;
+        // Fill in the axis dimension
+        *VarArrayBaseToDim (lpMemHdrTmp) = aplRankRht;
 
-    // Skip over the header and dimensions to the data
-    lpMemTmp = VarArrayDataFmBase (lpMemHdrTmp);
+        // Skip over the header and dimensions to the data
+        lpMemTmp = VarArrayDataFmBase (lpMemHdrTmp);
 
-    // Copy the current odometer value
-    CopyMemory (lpMemTmp, lpMemOdoRht, (APLU3264) aplRankRht * sizeof (APLUINT));
+        // Copy the current odometer value
+        CopyMemory (lpMemTmp, lpMemOdoRht, (APLU3264) aplRankRht * sizeof (APLUINT));
 
-    // Add in the index origin, if needed
-    if (bQuadIO)
-    for (uTmp = 0; uTmp < aplRankRht; uTmp++)
-        *lpMemTmp++ += bQuadIO;
+        // Add in the index origin, if needed
+        if (bQuadIO)
+        for (uTmp = 0; uTmp < aplRankRht; uTmp++)
+            *lpMemTmp++ += bQuadIO;
 
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbTmp); lpMemHdrTmp = NULL;
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbTmp); lpMemHdrTmp = NULL;
+    } // End IF/ELSE
 
     // Make it into a global handle
     hGlbTmp = MakePtrTypeGlb (hGlbTmp);

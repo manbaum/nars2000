@@ -1,0 +1,9 @@
+Build #1842 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In Monadic IotaUnderbar On Scalars
+
+Directory branches/bsmith/NewTypes:
+
+PF_IOTAUND.C:
+  Fix bug in monadic IotaUnderbar on S a scalar where it should produce a result of S{rho}{enclose}{zilde}.

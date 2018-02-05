@@ -1,0 +1,16 @@
+Build #1844 -- Version 0.5.5.xx
+--------------------------------
+
+* Define CSO For LinkMVS/UnlinkMVS
+
+Directory branches/bsmith/NewTypes:
+
+EXCEPT.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  Use <CSOLinkMVS> around the code in <LinkMVS> and <UnlinkMVS> so as to serialize them.
+
+EXTERNS.H:
+  Define <CSOLinkMVS> to serialize <LinkMVS> and <UnlinkMVS>.
+
+MAIN.C:
+  Initialize and delete <CSOLinkMVS>.

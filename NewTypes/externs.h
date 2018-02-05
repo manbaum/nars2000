@@ -418,6 +418,7 @@ CRITICAL_SECTION CSO0,                  // Critical Section Object #0
 #endif
                  CSOPL,                 // ...                     for ParseLine
                  CSOHshTab,             // ...                     for HshTab access
+                 CSOLinkMVS,            // ...                     for LinkMVS/UnlinkMVS
                  CSOCombPNI,            // ...                     for Partition Numbers as INTs
                  CSOCombPNJ,            // ...                     ...                      INTs accumulating as per FS001
                  CSOCombPNR,            // ...                     ...                      RATs

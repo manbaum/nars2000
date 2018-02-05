@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -326,7 +326,7 @@ int CheckPTDVirtStr
     lpLstMVS = lpMemPTD->lpLstMVS;
 
     // Check for global VirtualAlloc memory that needs to be expanded
-    while (lpLstMVS)
+    while (lpLstMVS NE NULL)
     {
         // Get the initial address
         lpIniAddr = lpLstMVS->IniAddr;
@@ -928,7 +928,7 @@ void DisplayException
   #error Need code for this architecture.
 #endif
 
-    while (lpLstMVS)
+    while (lpLstMVS NE NULL)
     {
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
@@ -1302,6 +1302,8 @@ void LinkMVS
 {
     LPPERTABDATA    lpMemPTD;       // Ptr to PerTabData global memory
 
+    EnterCriticalSection (&CSOLinkMVS);
+
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
@@ -1312,12 +1314,14 @@ void LinkMVS
     lpCurMVS->lpPrvMVS = lpMemPTD->lpLstMVS;
 
     // If there's a previous entry, ...
-    if (lpCurMVS->lpPrvMVS)
+    if (lpCurMVS->lpPrvMVS NE NULL)
         // Its next entry is us
         lpCurMVS->lpPrvMVS->lpNxtMVS = lpCurMVS;
 
     // We are the new last entry
     lpMemPTD->lpLstMVS = lpCurMVS;
+
+    LeaveCriticalSection (&CSOLinkMVS);
 } // End LinkMVS
 
 
@@ -1333,16 +1337,18 @@ void UnlinkMVS
 {
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
+    EnterCriticalSection (&CSOLinkMVS);
+
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
     // If there's a previous entry, ...
-    if (lpCurMVS->lpPrvMVS)
+    if (lpCurMVS->lpPrvMVS NE NULL)
         // Unlink us from it
         lpCurMVS->lpPrvMVS->lpNxtMVS = lpCurMVS->lpNxtMVS;
 
     // If there's a next entry, ...
-    if (lpCurMVS->lpNxtMVS)
+    if (lpCurMVS->lpNxtMVS NE NULL)
         // Unlink us from it
         lpCurMVS->lpNxtMVS->lpPrvMVS = lpCurMVS->lpPrvMVS;
 
@@ -1350,6 +1356,8 @@ void UnlinkMVS
     if (lpMemPTD->lpLstMVS EQ lpCurMVS)
         // Set the new last entry as our previous entry
         lpMemPTD->lpLstMVS = lpCurMVS->lpPrvMVS;
+
+    LeaveCriticalSection (&CSOLinkMVS);
 } // End UnlinkMVS
 
 

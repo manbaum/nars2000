@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -80,7 +80,8 @@ typedef struct tagPERTABDATA
                  bInTF:1,                   // 00000008:  TRUE if we're fixing a function via []TF
                  bTempOpen:1,               // 00000010:  TRUE if lpwszTemp is open and open-ended
                  eHCMul:2,                  // 00000060:  Hypercomplex Arithmetic Multiplication choice (see tagENUM_HCMUL)
-                 :25;                       // FFFFFF80:  Available bits
+                 bResetInProgress:1,        // 00000080:  TRUE if )RESET is in progress via CreateResetThread
+                 :24;                       // FFFFFF00:  Available bits
     HGLOBAL      hGlbCurLine;               // Current line global memory handle
 #ifdef DEBUG
     LPWCHAR      lpwszTempName,             // Ptr to current name with lpwszTemp open

@@ -1,0 +1,16 @@
+Build #1845 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Timing Problem When Closing A Tab
+
+Directory branches/bsmith/NewTypes:
+
+PERTAB.H:
+  Define a bit flag to indicate whether or not )RESET is in progress via <CreateResetThread>.
+
+TABCTRL.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  In <LclTabCtrlWndProc/TCM_DELETEITEM>, if there are any outstanding SIS layers, execute )RESET
+    and repeat the message until it finishes.
+  In <FreeGlobalStorage>, we no longer need to test for suspensions as that's
+    handled by the <TCM_DELETEITEM> message.

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -91,8 +91,8 @@ UBOOL CALLBACK EnumCallbackShowHide
     // icon and the icon title.  The parent of the icon title window is set to
     // the MDI client window, which confines the icon title to the MDI client
     // area.  The owner of the icon title is set to the MDI child window.
-    if (GetWindow (hWnd, GW_OWNER))     // If it's an icon title window, ...
-        return TRUE;                    // skip it, and continue enumerating
+    if (GetWindow (hWnd, GW_OWNER) NE NULL) // If it's an icon title window, ...
+        return TRUE;                        // skip it, and continue enumerating
 
     // Show or hide the window
     ShowWindow (hWnd, *(LPUINT) &lParam);
@@ -112,7 +112,7 @@ void ShowHideChildWindows
      UBOOL bShow)       // TRUE iff showing the window, FALSE if hiding it
 
 {
-    if (!hWndMC)
+    if (hWndMC EQ NULL)
         return;
 
     // If we're showing, ...
@@ -135,7 +135,7 @@ void ShowHideChildWindows
                           SW_SHOWNORMAL);
         // Set the focus to the active window
         hWndAct = (HWND) SendMessageW (hWndMC, WM_MDIGETACTIVE, 0, 0);
-        if (hWndAct)
+        if (hWndAct NE NULL)
         {
             MySetFocus (hWndAct);
             SendMessageW ((HWND) GetWindowLongPtrW (hWndAct, GWLSF_HWNDEC), WM_SETCURSOR, 0, 0);
@@ -224,7 +224,7 @@ UBOOL CreateNewTab
     // Save the thread handle
     cntThread.hThread = hThread;
 
-    if (hThread)
+    if (hThread NE NULL)
         ResumeThread (hThread);
 
     return (hThread NE NULL);
@@ -471,6 +471,7 @@ UBOOL WINAPI CreateNewTabInThread
         // Display message for unhandled exception
         DisplayException ();
     } // End __try/__except
+
     // GetMessageW returned FALSE for a Quit message
 
     // Mark as successful
@@ -785,8 +786,10 @@ LRESULT WINAPI LclTabCtrlWndProc
             if (!IsValidPtr (lpMemPTD, sizeof (lpMemPTD)))
                 break;
 
-            // If this tab is still executing, ...
-            if (lpMemPTD->bExecuting)
+            // If this tab is still executing,
+            //   and )RESET is not in progress, ...
+            if (lpMemPTD->bExecuting
+             && !lpMemPTD->bResetInProgress)
             {
                 MBW (L"Can't close tab -- still executing.  First, use Ctrl-Break to stop execution.");
 
@@ -804,6 +807,29 @@ LRESULT WINAPI LclTabCtrlWndProc
 
                 Assert (hWndFENxt NE lpMemPTD->hWndFENxt);
             } // End WHILE
+
+            // If there are any outstanding SIS layers, ...
+            if (lpMemPTD->lpSISCur NE NULL)
+            {
+                // If we haven't already started this command, ...
+                if (!lpMemPTD->bResetInProgress)
+                {
+                    // Create a new thread
+                    CreateResetThread (lpMemPTD);
+
+                    // Mark as in progress
+                    lpMemPTD->bResetInProgress = TRUE;
+                } // End IF
+
+                // While there are outstanding SIS layers, ...
+                if (lpMemPTD->lpSISCur NE NULL)
+                {
+                    // Go around again
+                    PostMessageW (hWnd, message, wParam, lParam);
+
+                    return FALSE;
+                } // End IF
+            } // End IF
 
             // If gOverTabIndex is this tab or to the right of it, ...
             if (gOverTabIndex && gOverTabIndex >= iDelTabIndex)
@@ -888,13 +914,13 @@ void FreeGlobalStorage
     LPHSHENTRY  lpHshEntry;             // ...
 
     // If there's a pending wait event, ...
-    if (lpMemPTD->hWaitEvent)
+    if (lpMemPTD->hWaitEvent NE NULL)
     {
         SetEvent (lpMemPTD->hWaitEvent); lpMemPTD->hWaitEvent = NULL;
     } // End IF
 
     // Free global storage for Native File functions
-    if (lpMemPTD->hGlbNfns)
+    if (lpMemPTD->hGlbNfns NE NULL)
     {
         LPNFNSHDR    lpNfnsHdr;         // Ptr to NFNSHDR global memory
         LPNFNSDATA   lpNfnsMem;         // Ptr to aNfnsData
@@ -924,14 +950,9 @@ void FreeGlobalStorage
     } // End IF
 
     // Free global storage if the SymTab is valid
-    if (lpMemPTD->lphtsPTD
+    if (lpMemPTD->lphtsPTD NE NULL
      && lpMemPTD->lphtsPTD->lpSymTab)
     {
-        // If there's something suspended, ...
-        if (lpMemPTD->lpSISCur)
-            // Create a new thread
-            CreateResetThread (lpMemPTD);
-
         // Get a ptr to the HTS
         lphtsPTD = lpMemPTD->lphtsPTD;
 
@@ -954,7 +975,7 @@ void FreeGlobalStorage
                 LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator struc
 
                 // If the handle is valid, ...
-                if (hGlbData)
+                if (hGlbData NE NULL)
                 {
                     // Lock the memory to get a ptr to it
                     lpMemDfnHdr = MyGlobalLockDfn (hGlbData);
@@ -989,7 +1010,7 @@ void FreeGlobalStorage
     } // End IF
 
     // If it's valid, ...
-    if (lpMemPTD->hGlbQuadEM)
+    if (lpMemPTD->hGlbQuadEM NE NULL)
     {
         // Free the old value of []EM
         FreeResultGlobalVar (lpMemPTD->hGlbQuadEM); lpMemPTD->hGlbQuadEM = NULL;
@@ -1019,7 +1040,7 @@ void CreateResetThread
     // Save the thread struc values
     crThread.lpMemPTD = lpMemPTD;
 
-    if (crThread.hThread)
+    if (crThread.hThread NE NULL)
         ResumeThread (crThread.hThread);
 } // End CreateResetThread
 
@@ -1549,9 +1570,9 @@ LPAPLCHAR PointToWsName
     strcpyW (lpwszGlbTemp, L"  CLEAR WS");
 
     // If the []WSID STE has been setup, ...
-    if (lpMemPTD->lphtsPTD
-     && lpMemPTD->lphtsPTD->lpSymQuad
-     && lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID])
+    if (lpMemPTD->lphtsPTD                         NE NULL
+     && lpMemPTD->lphtsPTD->lpSymQuad              NE NULL
+     && lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID] NE NULL)
     {
         APLNELM aplNELMWSID;    // []WSID NELM
         APLRANK aplRankWSID;    // []WSID rank
@@ -1560,7 +1581,7 @@ LPAPLCHAR PointToWsName
         hGlbWSID = lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_WSID]->stData.stGlbData;
 
         // If the []WSID STE has been setup, ...
-        if (hGlbWSID)
+        if (hGlbWSID NE NULL)
         {
             // Lock the memory to get a ptr to it
             lpMemWSID = MyGlobalLockVar (hGlbWSID);
@@ -1572,7 +1593,7 @@ LPAPLCHAR PointToWsName
 #undef  lpHeader
 
             // If []WSID is non-empty, ...
-            if (aplNELMWSID)
+            if (aplNELMWSID NE 0)
             {
                 LPAPLCHAR p, q;             // Temporary ptrs
 
@@ -1595,7 +1616,7 @@ LPAPLCHAR PointToWsName
         // Mark as invalid
         hGlbWSID = NULL;
 
-    if (hGlbWSID)
+    if (hGlbWSID NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbWSID); lpMemWSID = NULL;
@@ -1647,7 +1668,7 @@ void NewTabName
     iCurTabIndex = TranslateTabIDToIndex (lpMemPTD->CurTabID);
 
     // If the arg is a WSID, ...
-    if (lpMemWSID)
+    if (lpMemWSID NE NULL)
     {
         LPAPLCHAR p;            // Temp ptr
 

@@ -1,6 +1,21 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1846 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Incorrect SYNTAX ERRORs
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+PARSELINE.H:
+  Fix SYNTAX bug with "LO {DOP} RO A" where the Binding Strength (BS) between
+    "}" and "F" was lower than the BS between "F" and "A", and so "F A" was evaluated first.
+  Fix SYNTAX bug with "(LO {DOP} RO) A" where the Reduction of "DOP" and "FR" to "MR" was missing.
+  Fix memory leak in <plRedNF_A> where after an error from evaluating "NF", "A" was not freed.
+
+
 Build #1845 -- Version 0.5.5.xx
 --------------------------------
 

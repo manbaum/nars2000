@@ -106,6 +106,8 @@
 #define plRedDOPN_J     plRedDOP_RhtOper
 #define plRedDOP_A      plRedDOP_RhtOper
 #define plRedDOP_F      plRedDOP_RhtOper
+#define plRedDOP_FR     plRedDOP_RhtOper
+#define plRedDOPN_FR    plRedDOP_RhtOper
 #define plRedDOP_MF     plRedDOP_RhtOper
 #define plRedDOPN_NF    plRedDOP_RhtOper
 #define plRedDOP_NF     plRedDOP_RhtOper
@@ -2994,8 +2996,8 @@ LPPL_YYSTYPE plRedNF_A
     // Call common code
     return plRedA_A (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
 ERROR_EXIT:
-    // YYFree the last right object
-    YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
+    // Free and YYFree the last right arg
+    FreeResult (lpplYYLstRht); YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
     return NULL;
 } // End plRedNF_A

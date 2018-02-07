@@ -1320,6 +1320,20 @@ UINT uMemVirtCnt
 EXTERN
 HSHTABSTR htsGLB;                       // Global HshTab struc
 
+// Define the number and order of the local HTS structs for MFOs
+typedef enum tagHTS_MFO
+{
+    HTS_MONVR       = 0,            // 00:  MonVR
+    HTS_DYDSQUAD,                   // 01:  DydSquad
+    HTS_LENGTH                      // 02:  # entries
+} HTSMFO, *LPHTSMFO;
+
+EXTERN
+HSHTABSTR ahtsMFO[HTS_LENGTH];      // Ptr to struct of local HTS structs for MFOs
+
+// N.B.:  Don't forget to include a ptr to the appropriate ahtsMFO[] struct
+//        in the call to ExecuteMagicFunction/Operator.
+
 EXTERN
 HIMAGELIST hImageListTC,                // Handle to the common image list for TC
            hImageListWS,                // ...                                 WS

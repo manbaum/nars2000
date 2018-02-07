@@ -1174,7 +1174,8 @@ UBOOL CreateChildWindows
                        ,                    // Styles
                        CW_USEDEFAULT, CW_USEDEFAULT,    // X- and Y-coord
                        CW_USEDEFAULT, CW_USEDEFAULT,    // X- and Y-size
-                       hWndParent,          // Parent window
+///////////////////////hWndParent,          // Parent window
+                       NULL,                // Parent window
                        NULL,                // Menu
                        _hInstance,          // Instance
                        NULL);               // No extra data
@@ -2918,11 +2919,12 @@ LRESULT APIENTRY MFWndProc
 ////            // Tell the debugger windows to unhook its hooks
 ////            EnumChildWindows (hWnd, EnumCallbackUnhookDebugger, 0);
 #endif
-                // Delete all the tabs
-                TabCtrl_DeleteAllItems (hWndTC);
-
-                // This also tells the child windows to close
-                DestroyWindow (hWnd);
+                // If we deleted all the tabs, ...
+                if (TabCtrl_DeleteAllItems (hWndTC))
+                    // This also tells the child windows to close
+                    DestroyWindow (hWnd);
+                else
+                    return FALSE;       // Not OK to terminate/we handled the msg
 
                 if (message EQ WM_QUERYENDSESSION)
                     return TRUE;        // OK to terminate
@@ -3026,6 +3028,11 @@ LRESULT APIENTRY MFWndProc
             } // End IF
 
             DeleteImageBitmaps ();
+
+            // Loop through all local HTS structs
+            for (uCnt = 0; uCnt < HTS_LENGTH; uCnt++)
+                // Delete all system vars in this local HTS struct
+                DeleSysVars (&ahtsMFO[uCnt]);
 
             break;                  // Continue with default handler
 
@@ -4370,6 +4377,7 @@ int PASCAL WinMain
 #endif
 
     // GetMessageW returned FALSE for a Quit message
+
 EXIT5:
     // Uninitialize Combinatorial cache
     UninitCombCache ();

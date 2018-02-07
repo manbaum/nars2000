@@ -2160,7 +2160,6 @@ UBOOL SaveFunctionCom
             goto WSFULL_EXIT;
 
         if (!AllocSymTab (NULL,                     // Ptr to this entry in MemVirtStr (may be NULL if global allocation)
-                          lpMemPTD,                 // Ptr to PerTabData global memory
                          &lpSF_Fcns->htsDFN,        // Ptr to HshTab Struc
                           DEF_AFO_SYMTAB_INITNELM,  // Initial # STEs in SymTab
                           DEF_AFO_SYMTAB_INCRNELM,  // # STEs by which to resize when low
@@ -3039,6 +3038,9 @@ UBOOL SaveFunctionCom
         // If the caller is the Function Editor, ...
         if (hWndFE NE NULL)
         {
+            // Save as new previous function
+            SetWindowLongPtrW (hWndFE, GWLSF_HGLBDFNHDR, (HANDLE_PTR) hGlbDfnHdr);
+
             // Mark as unchanged since the last save
             SetWindowLongW (hWndFE, GWLSF_CHANGED, FALSE);
 

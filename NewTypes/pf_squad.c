@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -410,7 +410,7 @@ LPPL_YYSTYPE PrimFnDydSquadCommon_EM_YY
      UBOOL   bPrototyping)          // TRUE iff prototyping
 
 {
-    HGLOBAL hGlbMFO;                // Magic function/operator global memory handle
+    HGLOBAL      hGlbMFO;           // Magic function/operator global memory handle
 
     // Get the magic function/operator global memory handle
     hGlbMFO = GetMemPTD ()->hGlbMFO[MFOE_DydSquad];
@@ -423,7 +423,7 @@ LPPL_YYSTYPE PrimFnDydSquadCommon_EM_YY
                                   lptkRhtArg,   // Ptr to right arg token
                                   lptkAxis,     // Ptr to axis token
                                   hGlbMFO,      // Magic function/operator global memory handle
-                                  NULL,         // Ptr to HSHTAB struc (may be NULL)
+                                 &ahtsMFO[HTS_DYDSQUAD],    // Ptr to HSHTAB struc (may be NULL)
                    bPrototyping ? LINENUM_PRO   // Starting line # type (see LINE_NUMS)
                                 : LINENUM_ONE); // Starting line # type (see LINE_NUMS)
 } // End PrimFnDydSquadCommon_EM_YY

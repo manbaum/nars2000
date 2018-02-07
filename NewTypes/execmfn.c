@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -278,7 +278,6 @@ HGLOBAL Init1MagicFunction
 #endif
             // Allocate virtual memory for the symbol table
             if (!AllocSymTab (&lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart++],   // Ptr to this PTDMEMVIRT entry
-                               lpMemPTD,                                                    // PerTabData global memory handle
                                lpInitMFO->lphtsMFO,                                         // Ptr to this HSHTABSTR
                                DEF_MFO_SYMTAB_INITNELM,                                     // Initial # STEs in SymTab
                                DEF_MFO_SYMTAB_INCRNELM,                                     // # STEs by which to resize when low
@@ -753,7 +752,7 @@ UBOOL InitMagicFunctions
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydRank          ]  = Init1MagicFunction (MFON_DydRank          , &MFO_DydRank          , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonFMT           ]  = Init1MagicFunction (MFON_MonFMT           , &MFO_MonFMT           , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_BoxFMT           ]  = Init1MagicFunction (MFON_BoxFMT           , &MFO_BoxFMT           , lpMemPTD, hWndEC, NULL));
-    initMFO.lphtsMFO = &lpMemPTD->htsMFO_MonVR;     // Set local HTS so []VR can use ##. to look up a name in the parent Sym & Hash Tables
+    initMFO.lphtsMFO = &ahtsMFO[HTS_MONVR];     // Set local HTS so []VR can use ##. to look up a name in the parent Sym & Hash Tables
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonVR            ]  = Init1MagicFunction (MFON_MonVR            , &MFO_MonVR            , lpMemPTD, hWndEC, &initMFO));
 ////initMFO.lphtsMFO = NULL;
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_IdnDot           ]  = Init1MagicFunction (MFON_IdnDot           , &MFO_IdnDot           , lpMemPTD, hWndEC, NULL));
@@ -797,7 +796,9 @@ UBOOL InitMagicFunctions
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DetSing          ]  = Init1MagicFunction (MFON_DetSing          , &MFO_DetSing          , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydVOFact        ]  = Init1MagicFunction (MFON_DydVOFact        , &MFO_DydVOFact        , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonExecute       ]  = Init1MagicFunction (MFON_MonExecute       , &MFO_MonExecute       , lpMemPTD, hWndEC, NULL));
-    bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydSquad         ]  = Init1MagicFunction (MFON_DydSquad         , &MFO_DydSquad         , lpMemPTD, hWndEC, NULL));
+    initMFO.lphtsMFO = &ahtsMFO[HTS_DYDSQUAD];  // Set local HTS so Squad can store the hGlbDfnHdr for its local AFOs.
+    bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydSquad         ]  = Init1MagicFunction (MFON_DydSquad         , &MFO_DydSquad         , lpMemPTD, hWndEC, &initMFO));
+////initMFO.lphtsMFO = NULL;
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydSlope         ]  = Init1MagicFunction (MFON_DydSlope         , &MFO_DydSlope         , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonShriek        ]  = Init1MagicFunction (MFON_MonShriek        , &MFO_MonShriek        , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MatOpr           ]  = Init1MagicFunction (MFON_MatOpr           , &MFO_MatOpr           , lpMemPTD, hWndEC, NULL));

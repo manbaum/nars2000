@@ -767,6 +767,14 @@ LRESULT WINAPI LclTabCtrlWndProc
 
             break;
 
+        case TCM_DELETEALLITEMS:
+            // Loop through all open tabs
+            while (gCurTabID NE -1)
+                // Delete this tab
+                if (!SendMessageW (hWnd, TCM_DELETEITEM, TranslateTabIDToIndex (gCurTabID), 0))
+                    return FALSE;
+            break;
+
         case TCM_DELETEITEM:                    // itemID = (int) wParam;
                                                 // 0 = lParam;
         {
@@ -879,7 +887,7 @@ LRESULT WINAPI LclTabCtrlWndProc
             } // End IF
 
             // Tell the thread to quit
-            PostThreadMessageW (dwThreadId, WM_QUIT, 0, 0);
+            PostQuitMessage (0);
 
             return lResult;
         } // End TCM_DELETEITEM

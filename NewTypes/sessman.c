@@ -1226,7 +1226,6 @@ WM_NCCREATE_FAIL:
 
             // Allocate virtual memory for the symbol table
             bRet = AllocSymTab (&lpLclMemVirtStr[PTDMEMVIRT_SYMTAB],    // Ptr to this entry in MemVirtStr
-                                 lpMemPTD,                              // Ptr to PerTabData global memory
                                  lpMemPTD->lphtsPTD,                    // Ptr to this HSHTABSTR
                                  DEF_SYMTAB_INITNELM,                   // Initial # STEs in SymTab
                                  DEF_SYMTAB_INCRNELM,                   // # STEs by which to resize when low
@@ -2353,7 +2352,6 @@ NORMAL_EXIT:
         case WM_DESTROY:
             // Delete all system vars
             DeleSysVars (lpMemPTD->lphtsPTD);
-            DeleSysVars (&lpMemPTD->htsMFO_MonVR);
 
             // Free global storage
             FreeGlobalStorage (lpMemPTD);

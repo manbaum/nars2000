@@ -56,26 +56,25 @@ typedef enum tagMFO
     MFOE_MonDotInit      ,      // 1E:  Initialization for #MonDot
     MFOE_MonDotAll       ,      // 1F:  Subroutine to ...
     MFOE_MonDotPerm      ,      // 20:  ...
-    MFOE_MonDotMf        ,      // 21:  ...
-    MFOE_MonDotCr        ,      // 22:  ...
-    MFOE_DydEpsUnderbar  ,      // 23:  Dyadic Epsilon Underbar on empty args
-    MFOE_DydConv         ,      // 24:  Dyadic derived function from Convolution
-    MFOE_IdnConv         ,      // 25:  Identity function for Convolution
-    MFOE_DydScan         ,      // 26:  Dyadic Scan
-    MFOE_DydScan1        ,      // 27:  Dyadic Scan, first dimension
-    MFOE_RoS1L           ,      // 28:  Reduction of Singletons, type #1, left identity element
-    MFOE_RoS1R           ,      // 29:  ...                           #1, right ...
-    MFOE_RoS2            ,      // 2A:  ...                           #2
-    MFOE_RoS3            ,      // 2B:  ...                           #3
-    MFOE_MDIU            ,      // 2C:  Multiset dyadic iota underbar
-    MFOE_DetSing         ,      // 2D:  Determinant of a singleton
-    MFOE_DydVOFact       ,      // 2E:  Pochhammer symbol:  rising/falling factorial
-    MFOE_MonExecute      ,      // 2F:  Monadic Execute with []FPC localized
-    MFOE_DydSquad        ,      // 30:  Dyadic Squad
-    MFOE_DydSlope        ,      // 31:  Dyadic Slope
-    MFOE_MonShriek       ,      // 32:  Monadic Shriek
-    MFOE_MatOpr          ,      // 33:  Matrix Operator
-    MFOE_LENGTH                 // 34:  # entries in this enum
+    MFOE_MonDotCr        ,      // 21:  ...
+    MFOE_DydEpsUnderbar  ,      // 22:  Dyadic Epsilon Underbar on empty args
+    MFOE_DydConv         ,      // 23:  Dyadic derived function from Convolution
+    MFOE_IdnConv         ,      // 24:  Identity function for Convolution
+    MFOE_DydScan         ,      // 25:  Dyadic Scan
+    MFOE_DydScan1        ,      // 26:  Dyadic Scan, first dimension
+    MFOE_RoS1L           ,      // 27:  Reduction of Singletons, type #1, left identity element
+    MFOE_RoS1R           ,      // 28:  ...                           #1, right ...
+    MFOE_RoS2            ,      // 29:  ...                           #2
+    MFOE_RoS3            ,      // 2A:  ...                           #3
+    MFOE_MDIU            ,      // 2B:  Multiset dyadic iota underbar
+    MFOE_DetSing         ,      // 2C:  Determinant of a singleton
+    MFOE_DydVOFact       ,      // 2D:  Pochhammer symbol:  rising/falling factorial
+    MFOE_MonExecute      ,      // 2E:  Monadic Execute with []FPC localized
+    MFOE_DydSquad        ,      // 2F:  Dyadic Squad
+    MFOE_DydSlope        ,      // 30:  Dyadic Slope
+    MFOE_MonShriek       ,      // 31:  Monadic Shriek
+    MFOE_MatOpr          ,      // 32:  Matrix Operator
+    MFOE_LENGTH                 // 33:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
@@ -111,7 +110,6 @@ typedef enum tagMFO
 #define MFON_MonDotInit         L"#MonDotInit"
 #define MFON_MonDotAll          L"#MonDotAll"
 #define MFON_MonDotPerm         L"#MonDotPerm"
-#define MFON_MonDotMf           L"#MonDotMf"
 #define MFON_MonDotCr           L"#MonDotCr"
 #define MFON_DydEpsUnderbar     L"#DydEpsUnderbar"
 #define MFON_DydConv            L"#DydConv"

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,18 +32,12 @@
 //    inner product operator
 //***************************************************************************
 
-static APLCHAR IdnHeader[] =
-  L"Z←" MFON_IdnDot L" R";
-
-static APLCHAR IdnLine1[] = 
-  L"⎕ID:Z←∘.=⍨⍳¯1↑1,⍴R";
-
 static LPAPLCHAR IdnBody[] =
-{IdnLine1,
+{L"⎕ID:Z←∘.=⍨⍳¯1↑1,⍴R",
 };
 
 MAGIC_FCNOPR MFO_IdnDot =
-{IdnHeader,
+{L"Z←" MFON_IdnDot L" R",
  IdnBody,
  countof (IdnBody),
 };
@@ -58,35 +52,19 @@ MAGIC_FCNOPR MFO_IdnDot =
 //	  with minor changes.
 //***************************************************************************
 
-static APLCHAR IniHeader[] =
-  MFON_MonDotInit;
-
-static APLCHAR IniLine1[] = 
-  MFON_MonDotAll L"←{⎕IO←1 ⋄ y←" MFON_MonDotPerm L"⍴⍵ ⋄ k←⍴⍴y ⋄ ((⍳k),k)⍉⍵[y;]}";
-
-static APLCHAR IniLine2[] = 
-  MFON_MonDotPerm L"←{s←(⌊/⍵)↑⌽⍳1↑⍵ ⋄ (s,⍴s)⍴⍉" MFON_MonDotMf L" 1+s⊤¯1+⍳×/s}";
-
-static APLCHAR IniLine3[] = 
-  MFON_MonDotMf L"←{0=1↑⍴⍵:⍵ ⋄ x←∇ 1 0↓⍵ ⋄ ⍵[1;]⍪x+⍵[(1↑⍴x)⍴1;]≤x}";
-
 // The call to ⎕EC traps errors which occur when reducing an empty or singleton column
 //   if the left operand has no identity element.  For example, if ⍺⍺ is an AFO
 //   such as {⍺-⍵} and the last coordinate of ⍵ is 0 or 1, then ⍺⍺/⍵ signals an
 //   error, because ⍺⍺ has no identity element.  Instead, we need the ability to  
 //   specify an identity element for this AFO such as {⍺-⍵ ⋄ ⎕ID:0}.
-static APLCHAR IniLine4[] = 
-  MFON_MonDotCr L"←{0=⍴⍴⍵:⍵ ⋄ 0=1⍴⎕EC '⍺⍺/⍵':∇(¯1↓⍴⍵)⍴⍵ ⋄ ∇ ⍺⍺/⍵}";
-
 static LPAPLCHAR IniBody[] =
-{IniLine1,
- IniLine2,
- IniLine3,
- IniLine4,
+{MFON_MonDotAll L"←{⎕IO←1 ⋄ y←" MFON_MonDotPerm L"⍴⍵ ⋄ k←⍴⍴y ⋄ ((⍳k),k)⍉⍵[y;]}",
+ MFON_MonDotPerm L"←{s←(⌊/⍵)↑⌽⍳1↑⍵ ⋄ (s,⍴s)⍴110 1‼⍴s}",
+ MFON_MonDotCr L"←{0=⍴⍴⍵:⍵ ⋄ 0=1⍴⎕EC '⍺⍺/⍵':∇(¯1↓⍴⍵)⍴⍵ ⋄ ∇ ⍺⍺/⍵}",
 };
 
 MAGIC_FCNOPR MFO_MonDotInit =
-{IniHeader,
+{MFON_MonDotInit,
  IniBody,
  countof (IniBody),
 };
@@ -101,24 +79,15 @@ MAGIC_FCNOPR MFO_MonDotInit =
 //	  with minor changes.
 //***************************************************************************
 
-static APLCHAR MonHeader[] =
-  L"Z←(LO " MFON_MonDot L" RO) R";
-
 //L"⍝ Generalized determinant operator";
 
-static APLCHAR MonLine1[] =
-  L"Z←⊃LO " MFON_MonDotCr L" RO/" MFON_MonDotAll L"⍪R ⋄ →0";
-
-static APLCHAR MonLine2[] = 
-  L"⎕PRO:Z←⊃LO/⍬";
-
 static LPAPLCHAR MonBody[] =
-{MonLine1,
- MonLine2,
+{L"Z←⊃LO " MFON_MonDotCr L" RO/" MFON_MonDotAll L"⍪R ⋄ →0",
+ L"⎕PRO:Z←⊃LO/⍬",
 };
 
 MAGIC_FCNOPR MFO_MonDot =
-{MonHeader,
+{L"Z←(LO " MFON_MonDot L" RO) R",
  MonBody,
  countof (MonBody),
 };
@@ -132,18 +101,12 @@ MAGIC_FCNOPR MFO_MonDot =
 //    operator on a singleton scalar/vector/matrix.
 //***************************************************************************
 
-static APLCHAR DetSingHeader[] =
-  L"Z←(LO " MFON_DetSing L" RO) R";
-
-static APLCHAR DetSingLine1[] =
-  L"Z←⊃LO/⊃RO/R";
-
 static LPAPLCHAR DetSingBody[] =
-{DetSingLine1,
+{L"Z←⊃LO/⊃RO/R",
 };
 
 MAGIC_FCNOPR MFO_DetSing =
-{DetSingHeader,
+{L"Z←(LO " MFON_DetSing L" RO) R",
  DetSingBody,
  countof (DetSingBody),
 };
@@ -166,8 +129,8 @@ static LPAPLCHAR DetPermBody[] =
  L"  B←(n⍴2)⊤(¯1+2*n)..0",
  L"  S←n-+⌿B",
  L"  SS←(n+1)⍴0 ⋄ SS[S]+←×/¨+/¨(⊂[0] B)/¨⊂R",
- L"  I←0..m-1 ⋄ J←I!I+n-m",
- L"  Z←-/J×SS[(n-m)..n-1]",
+ L"  I←⍳m ⋄ J←I!I+n-m",
+ L"  Z←-/J×SS[(n-m)+⍳m]",
  L":endif",
 };
 

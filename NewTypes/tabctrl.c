@@ -486,6 +486,11 @@ ERROR_EXIT:
     // If there's a current tab index, ...
     if (iCurTabIndex NE -1)
     {
+        // If there's no gOverTabIndex, ...
+        if (gOverTabIndex EQ -1)
+            // Set it to the current tab (the one we're deleting)
+            gOverTabIndex = iCurTabIndex;
+
         // Delete the failed tab ctrl
         TabCtrl_DeleteItem (hWndTC, iCurTabIndex);
 
@@ -840,7 +845,7 @@ LRESULT WINAPI LclTabCtrlWndProc
             } // End IF
 
             // If gOverTabIndex is this tab or to the right of it, ...
-            if (gOverTabIndex && gOverTabIndex >= iDelTabIndex)
+            if (gOverTabIndex NE 0 && gOverTabIndex >= iDelTabIndex)
                 // Decrement it
                 gOverTabIndex--;
 
@@ -884,10 +889,12 @@ LRESULT WINAPI LclTabCtrlWndProc
 
                 // Give the new tab the focus
                 PostMessageW (lpMemPTD->hWndSM, MYWM_SETFOCUS, 0, 0);
-            } // End IF
 
-            // Tell the thread to quit
-            PostQuitMessage (0);
+                // Tell the thread to quit
+                PostThreadMessageW (dwThreadId, WM_QUIT, 0, 0);
+            } else
+                // Tell the thread to quit
+                PostQuitMessage (0);
 
             return lResult;
         } // End TCM_DELETEITEM

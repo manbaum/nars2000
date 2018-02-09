@@ -1,0 +1,11 @@
+Build #1850 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In TabCtrl When )LOAD Fails With Error In Workspace File
+
+Directory branches/bsmith/NewTypes:
+
+TABCTRL.C:
+  In <CreateNewTabInThread>, if a )LOAD fails due to an error in the workspace file and <gOverTabIndex> has not been set as yet, set it to the index of the current tab before deleting the tab that failed.
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  In <LclTabCtrlWndProc/TCMDELETEITEM>, if there are still tabs, use <PostThreadMessageW> on the outgoing tan thread id.  Otherwise, use <PostQuitMessage> to terminate the last TabCtrl thread.

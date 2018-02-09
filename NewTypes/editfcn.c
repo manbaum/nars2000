@@ -545,6 +545,8 @@ LRESULT APIENTRY FEWndProc
 
                     // Lock the memory to get a ptr to it
                     lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
+
+                    // The above var is used below assuming that hGlbDfnHdr NE NULL
                 } // End IF/ELSE
             } // End IF
 
@@ -1112,6 +1114,9 @@ LRESULT APIENTRY FEWndProc
                 SetWindowLongPtrW (hWnd, GWLSF_LPMVS, (APLU3264) (LONG_PTR) NULL);
             } // End IF
 
+            // Ensure the following section is serialized
+            EnterCriticalSection (&CSOLinkMVS);
+
             // Unlink this window from the doubly-linked chain of FE windows
             hWndNxt = (HWND) GetWindowLongPtrW (hWnd, GWLFE_HWNDNXT);
             hWndPrv = (HWND) GetWindowLongPtrW (hWnd, GWLFE_HWNDPRV);
@@ -1131,6 +1136,9 @@ LRESULT APIENTRY FEWndProc
 
                 lpMemPTD->hWndFENxt = hWndNxt;
             } // End IF
+
+            // We're done with serializing
+            LeaveCriticalSection (&CSOLinkMVS);
 
             // Uninitialize window-specific resources
             FE_Delete (hWnd);

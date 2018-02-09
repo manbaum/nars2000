@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2882,8 +2882,10 @@ typedef struct tagLANGCHARS
                                            L"  where LO is a function.\n\n"
                                            L"  For S a Hypercomplex scalar and V a simple or nested vector\n\n"
                                            L"  " $JOT $QJ L"S " $ARROWS L" a matrix representation of the Hypercomplex number S\n"
+                                           L"           of shape 2" $RHO L"=S\n"
                                            L"  " $JOT $QJ L"V " $ARROWS L" a diagonal matrix with the elements of V (simple\n"
-                                           L"         numeric Scalars, Vectors, or Matrices) in the diagonal\n\n"
+                                           L"           numeric Scalars, Vectors, or Matrices) in the diagonal\n"
+                                           L"           of shape 2" $RHO $MISMATCH L"V\n\n"
                                            L"Keyboard:  Alt-'F'\n\n"
                                            L"Unicode:  0x233B or 9019"},
         LANGCHARS_SEPARATOR

@@ -1,0 +1,9 @@
+Build #1851 -- Version 0.5.5.xx
+--------------------------------
+
+* Improve Documentation In The Language Bar For The Matrix Operator
+
+Directory branches/bsmith/NewTypes:
+
+REBAR.C:
+  Improve documentation in the language bar for the matrix operator.

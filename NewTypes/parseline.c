@@ -6117,7 +6117,8 @@ PL_YYLEX_FCNNAMED:
                     // If we should not restore the token stack ptr,
                     if (!bRestoreStk)
                         // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
-                        ConvertNamedFopToUnnamed (lpplYYLval, soF, TKT_FCNIMMED, TKT_FCNAFO, TKT_FCNDFN);
+                        //   INCREMENT THE RefCnt
+                        ConvertNamedFopToUnnamed (lpplYYLval, soF, TKT_FCNIMMED, TKT_FCNAFO, TKT_FCNDFN, TRUE);
                 } else
                     lpplYYLval->tkToken.tkSynObj = soNAM;
             } // End IF
@@ -6643,7 +6644,8 @@ PL_YYLEX_OP1NAMED:
                 // If we should not restore the token stack ptr,
                 if (!bRestoreStk)
                     // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
-                    ConvertNamedFopToUnnamed (lpplYYLval, soMOP, TKT_OP1IMMED, TKT_OP1AFO, TKT_OP1DFN);
+                    //   INCREMENT THE RefCnt
+                    ConvertNamedFopToUnnamed (lpplYYLval, soMOP, TKT_OP1IMMED, TKT_OP1AFO, TKT_OP1DFN, TRUE);
             } else
                 lpplYYLval->tkToken.tkSynObj = soNAM;
 
@@ -6657,7 +6659,8 @@ PL_YYLEX_OP2NAMED:
                 // If we should not restore the token stack ptr,
                 if (!bRestoreStk)
                     // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
-                    ConvertNamedFopToUnnamed (lpplYYLval, soDOP, TKT_OP2IMMED, TKT_OP2AFO, TKT_OP2DFN);
+                    //   INCREMENT THE RefCnt
+                    ConvertNamedFopToUnnamed (lpplYYLval, soDOP, TKT_OP2IMMED, TKT_OP2AFO, TKT_OP2DFN, TRUE);
             } else
                 lpplYYLval->tkToken.tkSynObj = soNAM;
 
@@ -7550,7 +7553,11 @@ void ConvertNamedFopToUnnamed
      SO_ENUM      soTKN_IMMED,      // Syntax Object for immediates
      TOKEN_TYPES  tktImmed,         // TKT_OPxIMMED of TKT_FCNIMMED
      TOKEN_TYPES  tktAFO,           // TKT_OPxAFO or TKT_FCNAFO
-     TOKEN_TYPES  tktDFN)           // TKT_OPxDFN or TKT_FCNDFN
+     TOKEN_TYPES  tktDFN,           // TKT_OPxDFN or TKT_FCNDFN
+     UBOOL        bIncrRefCnt)      // TRUE iff we may increment the RefCnt
+                                    // This var is FALSE for Trains as their RefCnt is
+                                    //   incremented individual function by function in
+                                    //   pl_yylexCOM
 
 {
     HGLOBAL      hGlbFcn;           // Global Fcn/Opr handle
@@ -7584,7 +7591,13 @@ void ConvertNamedFopToUnnamed
             case FCNARRAY_HEADER_SIGNATURE:
                 // Convert this to an unnamed global Fcn/Opx array
                 lpplYYLval->tkToken.tkFlags.TknType   = TKT_FCNARRAY;
-                lpplYYLval->tkToken.tkData .tkGlbData = CopySymGlbDir_PTB (hGlbFcn);
+
+                // If we may increment the RefCnt, ...
+                if (bIncrRefCnt)
+                    // Increment the refcnt
+                    lpplYYLval->tkToken.tkData .tkGlbData = CopySymGlbDir_PTB (hGlbFcn);
+                else
+                    lpplYYLval->tkToken.tkData .tkGlbData =                    hGlbFcn ;
                 lpplYYLval->tkToken.tkSynObj          = soTKN_IMMED;
 
                 break;
@@ -7601,8 +7614,10 @@ void ConvertNamedFopToUnnamed
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbFcn); lpMemDfnHdr = NULL;
 
-                // Increment the refcnt
-                DbgIncrRefCntDir_PTB (hGlbFcn);     // EXAMPLE:  any unassigned named non-UDFO
+                // If we may increment the RefCnt, ...
+                if (bIncrRefCnt)
+                    // Increment the refcnt
+                    DbgIncrRefCntDir_PTB (hGlbFcn);     // EXAMPLE:  any unassigned named non-UDFO
 
                 break;
 

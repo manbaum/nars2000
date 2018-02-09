@@ -738,7 +738,8 @@ LPPL_YYSTYPE YYCopyFcnTrn
                 YYCopyToMem (lpYYMem, lpYYArg);
 
                 // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
-                ConvertNamedFopToUnnamed (lpYYMem, soF, TKT_FCNIMMED, TKT_FCNAFO, TKT_FCNDFN);
+                //   DO NOT INCREMENT THE RefCnt
+                ConvertNamedFopToUnnamed (lpYYMem, soF, TKT_FCNIMMED, TKT_FCNAFO, TKT_FCNDFN, FALSE);
 
                 // Skip to the next save area element
                 lpYYMem++;
@@ -750,7 +751,8 @@ LPPL_YYSTYPE YYCopyFcnTrn
                 YYCopyToMem (lpYYMem, lpYYArg);
 
                 // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
-                ConvertNamedFopToUnnamed (lpYYMem, soMOP, TKT_OP1IMMED, TKT_OP1AFO, TKT_OP1DFN);
+                //   DO NOT INCREMENT THE RefCnt
+                ConvertNamedFopToUnnamed (lpYYMem, soMOP, TKT_OP1IMMED, TKT_OP1AFO, TKT_OP1DFN, FALSE);
 
                 // Skip to the next save area element
                 lpYYMem++;
@@ -762,7 +764,8 @@ LPPL_YYSTYPE YYCopyFcnTrn
                 YYCopyToMem (lpYYMem, lpYYArg);
 
                 // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
-                ConvertNamedFopToUnnamed (lpYYMem, soDOP, TKT_OP2IMMED, TKT_OP2AFO, TKT_OP2DFN);
+                //   DO NOT INCREMENT THE RefCnt
+                ConvertNamedFopToUnnamed (lpYYMem, soDOP, TKT_OP2IMMED, TKT_OP2AFO, TKT_OP2DFN, FALSE);
 
                 // Skip to the next save area element
                 lpYYMem++;
@@ -774,7 +777,8 @@ LPPL_YYSTYPE YYCopyFcnTrn
                 YYCopyToMem (lpYYMem, lpYYArg);
 
                 // Convert the named Fcn/Op1/Op2/Op3 to an unnamed form
-                ConvertNamedFopToUnnamed (lpYYMem, soMOP, TKT_OP3IMMED, TKT_OP1AFO, TKT_OP1DFN);
+                //   DO NOT INCREMENT THE RefCnt
+                ConvertNamedFopToUnnamed (lpYYMem, soMOP, TKT_OP3IMMED, TKT_OP1AFO, TKT_OP1DFN, FALSE);
 
                 // Skip to the next save area element
                 lpYYMem++;

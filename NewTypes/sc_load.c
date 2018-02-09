@@ -1028,12 +1028,16 @@ UBOOL ParseSavedWsFcn_EM
 
     if (*lpwSrc EQ FMTCHR_LEAD)
     {
-        LPSYMENTRY lpSymEntry;          // Ptr to STE for HGLOBAL
-        HGLOBAL    hGlbObj,             // Object global memory handle
-                   hGlbOld;             // Old    ...
-        LPWCHAR    lpwCharEnd,          // Temporary ptr
-                   lpwDataEnd;          // ...
-        STFLAGS    stFlags = {0};       // SymTab flags
+        LPSYMENTRY        lpSymEntry;           // Ptr to STE for HGLOBAL
+        HGLOBAL           hGlbObj,              // Object global memory handle
+                          hGlbOld;              // Old    ...
+        LPWCHAR           lpwCharEnd,           // Temporary ptr
+                          lpwDataEnd;           // ...
+        STFLAGS           stFlags = {0};        // SymTab flags
+        LPDFN_HEADER      lpMemDfnHdr;          // Ptr to DFN_HEADER global memory
+        LPFCNARRAY_HEADER lpMemHdrFcn = NULL;   // Ptr to FCNARRAY_HEADER global memory
+        UBOOL             bExists = FALSE;      // TRUE iff the object already exists,
+                                                //   that is, it was not loaded by LoadWsGlbVarConv
 
         // Tell 'em we're looking for )LOAD objects
         stFlags.Inuse   = TRUE;
@@ -1046,7 +1050,8 @@ UBOOL ParseSavedWsFcn_EM
         if (hGlbOld NE NULL)
             // Increment its reference count to keep it around
             //   in case it gets freed by LoadWorkspaceGlobal_EM
-            DbgIncrRefCntDir_PTB (hGlbOld); // EXAMPLE:  )copy tests\64bit lx
+            // EXAMPLE:  )copy tests\64bit lx
+            DbgIncrRefCntDir_PTB (hGlbOld); // MATCH:  FreeResultGlobalDFLV below
 
         // Find the trailing L' '
         lpwCharEnd = SkipToCharW (lpwSrc, L' ');
@@ -1072,7 +1077,13 @@ UBOOL ParseSavedWsFcn_EM
                                       lpDict,           // Ptr to workspace dictionary
                                       lplpwErrMsg);     // Ptr to ptr to (constant) error message text
         else
+        {
+            // Save the global memory handle
             hGlbObj = lpSymEntry->stData.stGlbData;
+
+            // Mark as loading an existing object
+            bExists = TRUE;
+        } // End IF
 
         if (hGlbObj EQ NULL)
             goto CORRUPTWS_EXIT;
@@ -1083,16 +1094,16 @@ UBOOL ParseSavedWsFcn_EM
         // Save in the result
         lpSymObj->stData.stGlbData = hGlbObj;
 
-        // Increment the reference count
-        DbgIncrRefCntDir_PTB (hGlbObj);
+        // If the object didn't already exist, ...
+        if (!bExists)
+            // Increment the reference count
+            DbgIncrRefCntDir_PTB (hGlbObj); // MATCH:  DeleteGlobalLinks
 
         // Transfer the STE values to the new STE
 
         // Split cases based upon the signature
         switch (GetSignatureGlb_PTB (hGlbObj))
         {
-            LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header
-
             case DFN_HEADER_SIGNATURE:
                 // Lock the memory to get a ptr to it
                 lpMemDfnHdr = MyGlobalLockDfn (hGlbObj);
@@ -1121,21 +1132,33 @@ UBOOL ParseSavedWsFcn_EM
 
         // If there's an old value, ...
         if (hGlbOld NE NULL)
+        // Split cases based upon the signature
+        switch (GetSignatureGlb_PTB (hGlbOld))
         {
-            LPDFN_HEADER lpMemDfnHdr;   // Ptr to DFN_HEADER global memory
+            case DFN_HEADER_SIGNATURE:
+                // Lock the memory to get a ptr to it
+                lpMemDfnHdr = MyGlobalLockDfn (hGlbOld);
 
-            // Lock the memory to get a ptr to it
-            lpMemDfnHdr = MyGlobalLockDfn (hGlbOld);
+                // Save the STE flags as the STE is still active
+                lpMemDfnHdr->SaveSTEFlags = TRUE;
 
-            // Save the STE flags as the STE is still active
-            lpMemDfnHdr->SaveSTEFlags = TRUE;
+                // We no longer need this ptr
+                MyGlobalUnlock (hGlbOld); lpMemDfnHdr = NULL;
 
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbOld); lpMemDfnHdr = NULL;
+                // Free the old value
+                FreeResultGlobalDFLV (hGlbOld); hGlbOld = NULL;
 
-            // Free the old value
-            FreeResultGlobalDFLV (hGlbOld); hGlbOld = NULL;
-        } // End IF
+                break;
+
+            case FCNARRAY_HEADER_SIGNATURE:
+                // Free the old value
+                FreeResultGlobalDFLV (hGlbOld); hGlbOld = NULL;
+
+                break;
+
+            defstop
+                break;
+        } // End IF/SWITCH
     } else
     {
         // Convert the single {name} or other char to UTF16_xxx
@@ -2680,8 +2703,9 @@ UBOOL CompareMemory
 //***************************************************************************
 
 HGLOBAL LoadWsGlbVarConv
-    (UINT               uGlbCnt,
-     LPLOADWSGLBVARPARM lpLoadWsGlbVarParm)
+    (UINT               uGlbCnt,            // Global counter for :nn (FMTSTR_GLBCNT)
+     LPLOADWSGLBVARPARM lpLoadWsGlbVarParm, // Ptr to parameters
+     LPUBOOL            lpbExists)          // TRUE iff the SYMENTRY already exists
 
 {
     WCHAR      wszGlbCnt[8 + 1];        // Save area for formatted uGlbCnt
@@ -2715,7 +2739,13 @@ HGLOBAL LoadWsGlbVarConv
                                   lpLoadWsGlbVarParm->lpDict,       // Ptr to workspace dictionary
                                   lpLoadWsGlbVarParm->lplpwErrMsg); // Ptr to ptr to (constant) error message text
     else
+    {
+        // Mark as loading an existing object
+        *lpbExists = TRUE;
+
+        // Return the existing global memory handle
         return lpSymEntry->stData.stGlbData;
+    } // End IF/ELSE
 } // End LoadWsGlbVarConv
 
 

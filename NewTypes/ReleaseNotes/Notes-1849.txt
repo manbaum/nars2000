@@ -1,0 +1,25 @@
+Build #1849 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Various RefCnt Bugs
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+  Pass new flag to <ConvertNamedFopToUnnamed> to mark whether or not the RefCnt of the named Fop should be incremented.
+  In <ConvertNamedFopToUnnamed>, act on new flag.
+
+SC_LOAD.C:
+  In <ParseSavedWsFcn_EM>, do not increment the RefCnt if the object loaded already exists in the workspace.
+  In <ParseSavedWsFcn_EM>, handle the case where the outgoing object is a Function Array.
+  In <LoadWsGlbVarConv>, accept new flag which marks whether or not the object loaded already exists in the workspace.
+
+TOKENIZE.C:
+  In <CheckConstantCopyLoad>, note whether or not the object loaded by <lpLoadWsGlbVarConv> already exists in the workspace.
+  If it does, don't increment the RefCnt that matches the decrement RefCnt in <DeleteGlobalLinks>
+
+WORKSPACE.H:
+  Update the typedef for <LPLOADWSGLBVARCONV> to include the above-mentioned new flag.
+
+YYFNS.C:
+  In <YYCopyFcnTrn>, pass a flag to <ConvertNamedFopToUnnamed> indicate not to increment the RefCnt for the named functions in a Train.

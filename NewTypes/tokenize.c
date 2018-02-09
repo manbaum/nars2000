@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2702,14 +2702,17 @@ UBOOL CheckConstantCopyLoad
     // Check for :CONSTANT during )COPY/)LOAD
     if (lptkLocalVars->lpHeader->TokenCnt > 0
      && lptkPrv->tkFlags.TknType EQ TKT_COLON
-     && lptkLocalVars->lpMemPTD->lpLoadWsGlbVarConv)
+     && lptkLocalVars->lpMemPTD->lpLoadWsGlbVarConv NE NULL)
     {
-        HGLOBAL      hGlbObj;           // Object global memory handle
+        HGLOBAL hGlbObj;                // Object global memory handle
+        UBOOL   bExists = FALSE;        // TRUE iff the object already exists,
+                                        //   that is, it was not loaded by LoadWsGlbVarConv
 
         // Convert the :CONSTANT to an HGLOBAL
         hGlbObj =
           (*lptkLocalVars->lpMemPTD->lpLoadWsGlbVarConv) ((UINT) lppnLocalVars->at.aplInteger,
-                                                          lptkLocalVars->lpMemPTD->lpLoadWsGlbVarParm);
+                                                          lptkLocalVars->lpMemPTD->lpLoadWsGlbVarParm,
+                                                         &bExists);
         // Split cases based upon the global memory signature
         switch (GetSignatureGlb (hGlbObj))
         {
@@ -2728,7 +2731,7 @@ UBOOL CheckConstantCopyLoad
                 // This DEBUG stmt probably never is triggered because
                 //    UnFcnStrand converts all named or unnamed function array items to inline items
 #ifdef DEBUG
-                DbgBrk ();          // ***Probably never executed***
+                DbgBrk ();          // ***Probably never executed as FcnArrays are copied by content, not referencing the name***
 #endif
                 // Fill in the result token
                 lptkPrv->tkFlags.TknType   = TKT_FCNARRAY;
@@ -2792,9 +2795,13 @@ UBOOL CheckConstantCopyLoad
                 break;
         } // End SWITCH
 
-        // Count in two more references to this object
-        DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbObj));    // Matched by Untokenize
-        DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbObj));    // Matched by DeleteGlolbalLinks
+        // If the object didn't already exist, ...
+        if (!bExists)
+            // Count in another reference to this object
+            DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbObj));    // MATCH:  DeleteGlolbalLinks
+
+        // Count in another reference to this object
+        DbgIncrRefCntDir_PTB (MakePtrTypeGlb (hGlbObj));    // MATCH:  Untokenize
 
         return TRUE;
     } else

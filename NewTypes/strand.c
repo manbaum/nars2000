@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1729,18 +1729,60 @@ ERROR_EXIT:
 
 
 //***************************************************************************
+//  $MakeHdrEntry_EM
+//
+//  Make an HGLOBAL with a given type and value
+//***************************************************************************
+
+HGLOBAL MakeHdrEntry_EM
+    (ARRAY_TYPES       aplTypeRes,      // Array Type to use (see ARRAY_TYPES)
+     LPVARARRAY_HEADER lpMemHdrRes,     // Ptr to header of the value to use
+     UBOOL             bInit,           // TRUE iff we should initialize the target first
+     LPTOKEN           lptkFunc)        // Ptr to token to use in case of error (may be NULL)
+
+{
+    return
+      MakeComEntry_EM (aplTypeRes,                          // Array Type to use (see ARRAY_TYPES)
+                       VarArrayDataFmBase (lpMemHdrRes),    // Ptr to value to use
+                       bInit,                               // TRUE iff we should initialize the target first
+                       lptkFunc);                           // Ptr to token to use in case of error (may be NULL)
+} // End MakeHdrEntry_EM
+
+
+//***************************************************************************
 //  $MakeGlbEntry_EM
 //
 //  Make an HGLOBAL with a given type and value
 //***************************************************************************
 
+HGLOBAL MakeGlbEntry_EM
+    (ARRAY_TYPES  aplTypeRes,       // Array Type to use (see ARRAY_TYPES)
+     LPVOID       lpVal,            // Ptr to value to use
+     UBOOL        bInit,            // TRUE iff we should initialize the target first
+     LPTOKEN      lptkFunc)         // Ptr to token to use in case of error (may be NULL)
+
+{
+    return
+      MakeComEntry_EM (aplTypeRes,  // Array Type to use (see ARRAY_TYPES)
+                       lpVal,       // Ptr to value to use
+                       bInit,       // TRUE iff we should initialize the target first
+                       lptkFunc);   // Ptr to token to use in case of error (may be NULL)
+} // End MakeGlbEntry_EM
+
+
+//***************************************************************************
+//  $MakeComEntry_EM
+//
+//  Make an HGLOBAL with a given type and value
+//***************************************************************************
+
 #ifdef DEBUG
-#define APPEND_NAME     L" -- MakeGlbEntry_EM"
+#define APPEND_NAME     L" -- MakeComEntry_EM"
 #else
 #define APPEND_NAME
 #endif
 
-HGLOBAL MakeGlbEntry_EM
+HGLOBAL MakeComEntry_EM
     (ARRAY_TYPES  aplTypeRes,       // Array Type to use (see ARRAY_TYPES)
      LPVOID       lpVal,            // Ptr to value to use
      UBOOL        bInit,            // TRUE iff we should initialize the target first
@@ -1863,7 +1905,7 @@ WSFULL_EXIT:
         ErrorMessageSetToken (lptkFunc);
 NORMAL_EXIT:
     return hGlbRes;
-} // End MakeGlbEntry_EM
+} // End MakeComEntry_EM
 #undef  APPEND_NAME
 
 

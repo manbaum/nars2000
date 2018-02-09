@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -99,7 +99,7 @@ VOID CALLBACK WaitForImmExecStmt
     Assert (dwRet EQ 0 || dwRet EQ ERROR_IO_PENDING);
 
     // If there's a next level up, ...
-    if (lpMemWFSO->hSigaphore)
+    if (lpMemWFSO->hSigaphore NE NULL)
         // Signal the next level
         MyReleaseSemaphore (lpMemWFSO->hSigaphore, 1, NULL);
     else
@@ -371,7 +371,7 @@ void ImmExecLine
               ExecSysCmd (lpwszLine, hWndEC);
 
             // If it's Quad input, and we're not resetting, ...
-            if (lpMemPTD->lpSISCur
+            if (lpMemPTD->lpSISCur NE NULL
              && lpMemPTD->lpSISCur->ResetFlag EQ RESETFLAG_NONE
              && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
                 // Tell the SM to display the Quad Input Prompt
@@ -386,7 +386,7 @@ void ImmExecLine
             AppendLine (ERRMSG_NONCE_ERROR, FALSE, TRUE);
 
             // If it's Quad input, ...
-            if (lpMemPTD->lpSISCur
+            if (lpMemPTD->lpSISCur NE NULL
              && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
                 // Tell the SM to display the Quad Input Prompt
                 PostMessageW (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 101);
@@ -400,7 +400,7 @@ void ImmExecLine
 
         case WC_EOS:        // Empty line
             // If it's Quad input, ...
-            if (lpMemPTD->lpSISCur
+            if (lpMemPTD->lpSISCur NE NULL
              && lpMemPTD->lpSISCur->DfnType EQ DFNTYPE_QUAD)
                 // Tell the SM to display the Quad Input Prompt
                 PostMessageW (lpMemPTD->hWndSM, MYWM_QUOTEQUAD, FALSE, 102);
@@ -707,7 +707,7 @@ DWORD WINAPI ImmExecStmtInThread
         lpSISPrv = lpMemPTD->lpSISCur->lpSISPrv;
 
         // Skip over SI levels of ImmExec
-        while (lpSISPrv
+        while (lpSISPrv NE NULL
             && lpSISPrv->DfnType EQ DFNTYPE_IMM)
             lpSISPrv = lpSISPrv->lpSISPrv;
 
@@ -773,7 +773,7 @@ DWORD WINAPI ImmExecStmtInThread
                 // If the previous layer in the SI stack is a
                 //   User-Defined Function/Operator or Quad Input,
                 //   signal it to handle this action
-                if (lpSISPrv
+                if (lpSISPrv NE NULL
                  && (lpSISPrv->DfnType EQ DFNTYPE_OP1
                   || lpSISPrv->DfnType EQ DFNTYPE_OP2
                   || lpSISPrv->DfnType EQ DFNTYPE_FCN
@@ -823,11 +823,11 @@ DWORD WINAPI ImmExecStmtInThread
             case EXITTYPE_DISPLAY:      // ...
             case EXITTYPE_NOVALUE:      // ...
                 // If the previous layer in the SI stack is Quad input, ...
-                if (lpSISPrv
+                if (lpSISPrv NE NULL
                  && lpSISPrv->DfnType EQ DFNTYPE_QUAD)
                 {
                     // If there's no return value, ...
-                    if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType EQ 0
+                    if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType EQ TKT_UNUSED
                      || (lpMemPTD->YYResExec.tkToken.tkFlags.TknType EQ TKT_VARNAMED
                       && lpMemPTD->YYResExec.tkToken.tkData.tkSym->stFlags.Value EQ FALSE))
                         // Tell SM to display the Quad Prompt
@@ -879,7 +879,7 @@ DWORD WINAPI ImmExecStmtInThread
                 // If the previous layer in the SI stack is a
                 //   User-Defined Function/Operator or Quad Input,
                 //   signal it to handle this action
-                if (lpSISPrv
+                if (lpSISPrv NE NULL
                  && (lpSISPrv->DfnType EQ DFNTYPE_OP1
                   || lpSISPrv->DfnType EQ DFNTYPE_OP2
                   || lpSISPrv->DfnType EQ DFNTYPE_FCN
@@ -931,7 +931,7 @@ ERROR_EXIT:
         } // End IF
 
         // If there's an hExitphore pending from a )RESET, release it
-        if (bResetAll && lpMemPTD->hExitphore)
+        if (bResetAll && lpMemPTD->hExitphore NE NULL)
             // Start executing at the Tab Delete code
             MyReleaseSemaphore (lpMemPTD->hExitphore, 1, NULL);
 

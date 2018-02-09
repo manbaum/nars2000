@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -97,7 +97,7 @@ LPPL_YYSTYPE WaitForInput
         lpYYRes = NULL;
     else
     // If there's no result from the expression, ...
-    if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType EQ 0)
+    if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType EQ TKT_UNUSED)
         // Make a PL_YYSTYPE NoValue entry
         lpYYRes = MakeNoValue_YY (lptkFunc);
     else

@@ -2558,13 +2558,14 @@ UBOOL fnPointDone
             // If the value is a scalar, ...
             if (IsScalar (aplRankRes))
             {
+                LPVARARRAY_HEADER lpMemHdrRes = NULL;
                 LPVOID lpMemRes;
 
                 // Lock the memory to get a ptr to it
-                lpMemRes = MyGlobalLockVar (pnLocalVars.hGlbRes);
+                lpMemHdrRes = MyGlobalLockVar (pnLocalVars.hGlbRes);
 
                 // Skip over the header and dimensions
-                lpMemRes = VarArrayDataFmBase (lpMemRes);
+                lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
                 // Split cases based upon the result type
                 switch (aplTypeRes)
@@ -2614,8 +2615,8 @@ UBOOL fnPointDone
                     case ARRAY_HC8R:
                     case ARRAY_HC8V:
                         hGlbData =
-                          MakeGlbEntry_EM (aplTypeRes,              // Entry type
-                                           lpMemRes,                // Ptr to the value
+                          MakeHdrEntry_EM (aplTypeRes,              // Entry type
+                                           lpMemHdrRes,             // Ptr to the header
                                            FALSE,                   // TRUE iff we should initialize the target first
                                            NULL);                   // Ptr to function token
                         // If the allocate failed, ...
@@ -2633,7 +2634,7 @@ UBOOL fnPointDone
                 } // End SWITCH
 
                 // We no longer need this ptr
-                MyGlobalUnlock (pnLocalVars.hGlbRes); lpMemRes = NULL;
+                MyGlobalUnlock (pnLocalVars.hGlbRes); lpMemHdrRes = NULL;
 
                 // We no longer need this storage
                 DbgGlobalFree (pnLocalVars.hGlbRes); pnLocalVars.hGlbRes = NULL;
@@ -5278,9 +5279,7 @@ ERROR_EXIT:
         if (tkLocalVars.lpHeader NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (tkLocalVars.hGlbToken);
-
-            tkLocalVars.lpHeader    = NULL;
+            MyGlobalUnlock (tkLocalVars.hGlbToken); tkLocalVars.lpHeader = NULL;
             tkLocalVars.lptkStart   =
             tkLocalVars.lptkNext    =
             tkLocalVars.lptkLastEOS = NULL;
@@ -5323,7 +5322,7 @@ FREED_EXIT:
     if (tkLocalVars.hGlbToken NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (tkLocalVars.hGlbToken);
+        MyGlobalUnlock (tkLocalVars.hGlbToken); tkLocalVars.lpHeader = NULL;
         tkLocalVars.lpHeader    = NULL;
         tkLocalVars.lptkStart   =
         tkLocalVars.lptkNext    =
@@ -5719,8 +5718,7 @@ UBOOL AppendNewToken_EM
         uDiff = (lptkLocalVars->lptkLastEOS - lptkLocalVars->lptkStart);
 
         // Unlock the global handle so we can resize it
-        MyGlobalUnlock (lptkLocalVars->hGlbToken);
-        lptkLocalVars->lpHeader    = NULL;
+        MyGlobalUnlock (lptkLocalVars->hGlbToken); lptkLocalVars->lpHeader = NULL;
         lptkLocalVars->lptkStart   =
         lptkLocalVars->lptkNext    =
         lptkLocalVars->lptkLastEOS = NULL;
@@ -5737,9 +5735,6 @@ UBOOL AppendNewToken_EM
                            GMEM_ZEROINIT);
         if (hGlbToken EQ NULL)
         {
-            LPVOID lpMemOld,        // Temp ptrs
-                   lpMemNew;        // ...
-
             // Increase the size by DEF_TOKEN_RESIZE
             hGlbToken = DbgGlobalAlloc (GHND, uOldSize + DEF_TOKEN_RESIZE);
 
@@ -5751,17 +5746,6 @@ UBOOL AppendNewToken_EM
 
                 return FALSE;
             } // End IF
-
-            // Lock the memory to get a ptr to it
-            lpMemOld = MyGlobalLockTkn (lptkLocalVars->hGlbToken);
-            lpMemNew = MyGlobalLock000 (hGlbToken);
-
-            // Copy the old data to the new location
-            CopyMemory (lpMemNew, lpMemOld, uOldSize);
-
-            // We no longer need these ptrs
-            MyGlobalUnlock (hGlbToken); lpMemNew = NULL;
-            MyGlobalUnlock (lptkLocalVars->hGlbToken); lpMemOld = NULL;
         } // End IF
 
         lptkLocalVars->hGlbToken = hGlbToken;

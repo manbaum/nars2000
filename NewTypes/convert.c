@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1790,7 +1790,7 @@ APLU3264 ConvertWideToNameLength
         // Get the next char
         wc = *lpwszInp++;
 
-        if (32 < wc && wc <= 0x7E
+        if (32 <= wc && wc <= 0x7E
          && wc NE WC_SQ         // Used to surround 'a'
          && wc NE L'#'
          && wc NE L'{'          // Used to surround {symbols}

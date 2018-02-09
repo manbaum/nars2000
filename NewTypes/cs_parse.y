@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2702,7 +2702,7 @@ void cs_yyerror                         // Called for Bison syntax error
 #endif
 
     // If the error token is not already set, ...
-    if (lpcsLocalVars->tkCSErr.tkFlags.TknType EQ 0)
+    if (lpcsLocalVars->tkCSErr.tkFlags.TknType EQ TKT_UNUSED)
         lpcsLocalVars->tkCSErr = lpcsLocalVars->lptkCSNxt[-1];
 
     // Get and save the character index position

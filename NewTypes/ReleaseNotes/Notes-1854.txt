@@ -1,0 +1,45 @@
+Build #1854 -- Version 0.5.6.xx
+--------------------------------
+
+* Miscellaneous Changes
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+  Don't convert ' ' to {space} when saving text in a workspace.
+
+CS_PARSE.Y:
+IMMEXEC.C:
+PL_PROC.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+
+REBAR.C:
+  Improve documentation in the language bar for the matrix operator.
+
+SC_FNOV.C:
+  Include )FOP and )FOPS in the header.
+
+STRAND.C:
+  Define <MakeHdrEntry_EM> which takes a <LPVARARRAY_HEADER> argument.
+  Split <MakeGlbEntry_EM> into common <MakeComEntry_EM> and <MakeGlbEntry_EM>.
+
+TOKENIZE.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  Include "Hdr" in name of result of <MyGlobalLock>.
+  In <fnPointDone>, use <MakeHdrEntry_EM> instead of <MakeGlbEntry_EM>.
+  In <AppendNewToken_EM>, delete code to copy old to new as that's already done by <MyGlobalReAlloc>.
+
+VER.RC:
+  Increment version # to 0.5.6.xx.
+
+
+Directory branches/bsmith/NewTypes/Extensions/aplchars:
+
+UPD.BAT:
+  Change %NMAKE% to nmake in case wcustomize.bat hasn't been run as yet.
+
+
+Directory branches/bsmith/NewTypes/MediaWiki/extensions:
+
+APL.CSS:
+  Change <ttf.gif> to <ttf.png> as that's the correct name.

@@ -1,6 +1,20 @@
 Version 0.5.5.xx consists of the following Builds:
 
 
+Build #1853 -- Version 0.5.5.xx
+--------------------------------
+
+* Miscellanous DEBUG Changes
+
+Directory branches/bsmith/NewTypes:
+
+CRASH.C:
+  When displaying the Crash Window MessageBox, use the same window handle as the parent so we might avoid keyboard lock within the MessageBox.
+
+EXECFNS.C:
+  Whenever we are about to signal a LIMIT ERROR due to an unrecognized error in a more deeply nested function, within <#ifdef DEBUG/#endif> statements, trigger a Debug Break and display info about the exception.
+
+
 Build #1852 -- Version 0.5.5.xx
 --------------------------------
 

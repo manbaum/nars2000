@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -153,9 +153,7 @@ LRESULT APIENTRY CCWndProc
 
         case MYWM_DISPMB:
 ////////////MBPW (L"1.  Copy the data;  2.  When you press OK, the program will terminate.", MB_SYSTEMMODAL);
-            // Avoid using an owning window handle as that prevents
-            //   the user from copying data from the session.
-            MessageBoxW (NULL,
+            MessageBoxW (hWnd,
                         L"1.  Copy the data;  2.  When you press OK, the program will terminate.",
                          WS_APPNAME,
                          MB_OK | MB_SYSTEMMODAL);

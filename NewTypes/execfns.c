@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -178,6 +178,10 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                                lptkAxis);                       // Ptr to axis token (may be NULL)
             } __except (CheckException (GetExceptionInformation (), L"ExecFunc_EM_YY #1"))
             {
+#ifdef DEBUG
+                DbgBrk ();
+                DisplayException ();
+#endif
                 // Set the error message text
                 ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
                                           &lpYYFcnStr->tkToken);
@@ -246,6 +250,10 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                                         lptkAxis);              // Ptr to axis token (may be NULL)
                     } __except (CheckException (GetExceptionInformation (), L"ExecFunc_EM_YY #2"))
                     {
+#ifdef DEBUG
+                        DbgBrk ();
+                        DisplayException ();
+#endif
                         // Set the error message text
                         ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
                                                   &lpYYFcnStr->tkToken);
@@ -293,6 +301,10 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                                             lptkAxis);      // Ptr to axis token (may be NULL)
                 } __except (CheckException (GetExceptionInformation (), L"ExecFunc_EM_YY #3"))
                 {
+#ifdef DEBUG
+                    DbgBrk ();
+                    DisplayException ();
+#endif
                     // Set the error message text
                     ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
                                               &lpYYFcnStr->tkToken);
@@ -332,6 +344,10 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                                        lptkAxis);       // Ptr to axis token (may be NULL)
                     } __except (CheckException (GetExceptionInformation (), L"ExecFunc_EM_YY #4"))
                     {
+#ifdef DEBUG
+                        DbgBrk ();
+                        DisplayException ();
+#endif
                         // Set the error message text
                         ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
                                                   &lpYYFcnStr->tkToken);
@@ -389,6 +405,10 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                 } // End SWITCH
             } __except (CheckException (GetExceptionInformation (), L"ExecFunc_EM_YY #5"))
             {
+#ifdef DEBUG
+                DbgBrk ();
+                DisplayException ();
+#endif
                 // Set the error message text
                 ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
                                           &lpYYFcnStr->tkToken);
@@ -424,6 +444,10 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                                        LINENUM_ONE);    // Starting line # (see LINE_NUMS)
             } __except (CheckException (GetExceptionInformation (), L"ExecFunc_EM_YY #6"))
             {
+#ifdef DEBUG
+                DbgBrk ();
+                DisplayException ();
+#endif
                 // Set the error message text
                 ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
                                           &lpYYFcnStr->tkToken);

@@ -111,6 +111,9 @@ LPPL_YYSTYPE ExecuteMagicFunction_EM_YY
 
         // Put the HshTab and SymTab into effect
         lpMemPTD->lphtsPTD = lphtsPTD;
+
+        // Make a copy of the current system vars so we have up-to-date values
+        CopySysVars (lpMemPTD->lphtsPTD, lphtsOld);
     } // End IF
 
     lpYYRes =
@@ -178,6 +181,9 @@ LPPL_YYSTYPE ExecuteMagicOperator_EM_YY
 
         // Put the HshTab and SymTab into effect
         lpMemPTD->lphtsPTD = lphtsPTD;
+
+        // Make a copy of the current system vars so we have up-to-date values
+        CopySysVars (lpMemPTD->lphtsPTD, lphtsOld);
     } // End IF
 
     lpYYRes =
@@ -752,7 +758,7 @@ UBOOL InitMagicFunctions
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydRank          ]  = Init1MagicFunction (MFON_DydRank          , &MFO_DydRank          , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonFMT           ]  = Init1MagicFunction (MFON_MonFMT           , &MFO_MonFMT           , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_BoxFMT           ]  = Init1MagicFunction (MFON_BoxFMT           , &MFO_BoxFMT           , lpMemPTD, hWndEC, NULL));
-    initMFO.lphtsMFO = &ahtsMFO[HTS_MONVR];     // Set local HTS so []VR can use ##. to look up a name in the parent Sym & Hash Tables
+    initMFO.lphtsMFO = &lpMemPTD->ahtsMFO[HTS_MONVR];       // Set local HTS so []VR can use ##. to look up a name in the parent Sym & Hash Tables
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonVR            ]  = Init1MagicFunction (MFON_MonVR            , &MFO_MonVR            , lpMemPTD, hWndEC, &initMFO));
 ////initMFO.lphtsMFO = NULL;
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_IdnDot           ]  = Init1MagicFunction (MFON_IdnDot           , &MFO_IdnDot           , lpMemPTD, hWndEC, NULL));
@@ -796,7 +802,7 @@ UBOOL InitMagicFunctions
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DetSing          ]  = Init1MagicFunction (MFON_DetSing          , &MFO_DetSing          , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydVOFact        ]  = Init1MagicFunction (MFON_DydVOFact        , &MFO_DydVOFact        , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonExecute       ]  = Init1MagicFunction (MFON_MonExecute       , &MFO_MonExecute       , lpMemPTD, hWndEC, NULL));
-    initMFO.lphtsMFO = &ahtsMFO[HTS_DYDSQUAD];  // Set local HTS so Squad can store the hGlbDfnHdr for its local AFOs.
+    initMFO.lphtsMFO = &lpMemPTD->ahtsMFO[HTS_DYDSQUAD];    // Set local HTS so Squad can store the hGlbDfnHdr for its local AFOs.
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydSquad         ]  = Init1MagicFunction (MFON_DydSquad         , &MFO_DydSquad         , lpMemPTD, hWndEC, &initMFO));
 ////initMFO.lphtsMFO = NULL;
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydSlope         ]  = Init1MagicFunction (MFON_DydSlope         , &MFO_DydSlope         , lpMemPTD, hWndEC, NULL));

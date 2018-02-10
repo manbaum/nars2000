@@ -411,21 +411,25 @@ LPPL_YYSTYPE PrimFnDydSquadCommon_EM_YY
 
 {
     HGLOBAL      hGlbMFO;           // Magic function/operator global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     // Get the magic function/operator global memory handle
-    hGlbMFO = GetMemPTD ()->hGlbMFO[MFOE_DydSquad];
+    hGlbMFO = lpMemPTD->hGlbMFO[MFOE_DydSquad];
 
     //  Use an internal magic function/operator.
     return
-      ExecuteMagicFunction_EM_YY (lptkLftArg,   // Ptr to left arg token
-                                  lptkFunc,     // Ptr to function token
-                                  NULL,         // Ptr to function strand
-                                  lptkRhtArg,   // Ptr to right arg token
-                                  lptkAxis,     // Ptr to axis token
-                                  hGlbMFO,      // Magic function/operator global memory handle
-                                 &ahtsMFO[HTS_DYDSQUAD],    // Ptr to HSHTAB struc (may be NULL)
-                   bPrototyping ? LINENUM_PRO   // Starting line # type (see LINE_NUMS)
-                                : LINENUM_ONE); // Starting line # type (see LINE_NUMS)
+      ExecuteMagicFunction_EM_YY (lptkLftArg,               // Ptr to left arg token
+                                  lptkFunc,                 // Ptr to function token
+                                  NULL,                     // Ptr to function strand
+                                  lptkRhtArg,               // Ptr to right arg token
+                                  lptkAxis,                 // Ptr to axis token
+                                  hGlbMFO,                  // Magic function/operator global memory handle
+                       &lpMemPTD->ahtsMFO[HTS_DYDSQUAD],    // Ptr to HSHTAB struc (may be NULL)
+                   bPrototyping ? LINENUM_PRO               // Starting line # type (see LINE_NUMS)
+                                : LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
 } // End PrimFnDydSquadCommon_EM_YY
 #undef  APPEND_NAME
 

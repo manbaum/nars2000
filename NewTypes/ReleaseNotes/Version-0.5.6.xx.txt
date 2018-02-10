@@ -1,6 +1,35 @@
 Version 0.5.6.xx consists of the following Builds:
 
 
+Build #1856 -- Version 0.5.6.xx
+--------------------------------
+
+* Fix Bug In MFOs Not Initializing System Vars With Current Values
+
+Directory branches/bsmith/NewTypes:
+
+EXECMFN.C:
+  In <ExecuteMagicFunction_EM_YY> and <ExecuteMagicOperator_EM_YY>, if there's a local HTS, copy current values of system vars to it.
+  Move global <ahtsMFO> to local PerTabData struc.
+
+EXTERNS.H:
+  Move global <ahtsMFO> to local PerTabData struc.
+
+MAIN.C:
+  Move code to delete local HTS system vars to <SMWndProc/WM_DESTROY>.
+
+PERTAB.H:
+PF_SQUAD.C:
+QF_VR.C:
+  Move global <ahtsMFO> to local PerTabData struc.
+
+SESSMAN.C:
+  Move code to delete local HTS system vars to <SMWndProc/WM_DESTROY>.
+
+SYSVARS.C:
+  Define function to delete MFO system vars from their local HTSs.
+
+
 Build #1855 -- Version 0.5.6.xx
 --------------------------------
 

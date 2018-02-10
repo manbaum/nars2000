@@ -4391,7 +4391,7 @@ void CopySysVars
 ////lphtsDst->lpSymQuad[SYSVAR_LX      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_LX      ]->stData.stGlbData);    // Not used in {}
 ////lphtsDst->lpSymQuad[SYSVAR_PR      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_PR      ]->stData.stGlbData);    // Not used in {}
 ////lphtsDst->lpSymQuad[SYSVAR_SA      ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_SA      ]->stData.stGlbData);    // Not used in {}
-    lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData);    // Use by TabCtrl
+    lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_WSID    ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_WSID    ]->stFlags.Value = TRUE;  // Use by TabCtrl
 ////lphtsDst->lpSymQuad[SYSVAR_Z       ]->stData.stGlbData = CopySymGlbDir_PTB (lphtsSrc->lpSymQuad[SYSVAR_Z       ]->stData.stGlbData);    // Local to {}
 } // End CopySysVars
 
@@ -4423,6 +4423,25 @@ void DeleSysVars
 ////////FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_Z       ]->stData.stGlbData);   // Not used in {}
     } // End IF
 } // End DeleSysVars
+
+
+//***************************************************************************
+//  $DeleMfoSysVars
+//
+//  Delete local HTS system vars in the MFOs with a local HTS
+//***************************************************************************
+
+void DeleMfoSysVars
+    (LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
+
+{
+    UINT uCnt;                          // Loop counter
+
+    // Loop through all local HTS structs
+    for (uCnt = 0; uCnt < HTS_LENGTH; uCnt++)
+        // Delete all system vars in this local HTS struct
+        DeleSysVars (&lpMemPTD->ahtsMFO[uCnt]);
+} // End DeleMfoSysVars
 
 
 //***************************************************************************

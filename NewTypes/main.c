@@ -3029,11 +3029,6 @@ LRESULT APIENTRY MFWndProc
 
             DeleteImageBitmaps ();
 
-            // Loop through all local HTS structs
-            for (uCnt = 0; uCnt < HTS_LENGTH; uCnt++)
-                // Delete all system vars in this local HTS struct
-                DeleSysVars (&ahtsMFO[uCnt]);
-
             break;                  // Continue with default handler
 
         case WM_NCDESTROY:

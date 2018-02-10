@@ -81,11 +81,15 @@ LPPL_YYSTYPE SysFnMonVR_EM_YY
 
 {
     HGLOBAL      hGlbMFO;           // Magic function/operator global memory handle
+    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     Assert (lptkAxis EQ NULL);
 
     // Get the magic function/operator global memory handle
-    hGlbMFO = GetMemPTD ()->hGlbMFO[MFOE_MonVR];
+    hGlbMFO = lpMemPTD->hGlbMFO[MFOE_MonVR];
 
     //  Use an internal magic function/operator.
     return
@@ -95,7 +99,7 @@ LPPL_YYSTYPE SysFnMonVR_EM_YY
                                   lptkRhtArg,               // Ptr to right arg token
                                   lptkAxis,                 // Ptr to axis token
                                   hGlbMFO,                  // Magic function/operator global memory handle
-                                 &ahtsMFO[HTS_MONVR],       // Ptr to HSHTAB struc (may be NULL)
+                       &lpMemPTD->ahtsMFO[HTS_MONVR],       // Ptr to HSHTAB struc (may be NULL)
                                   LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
 } // End SysFnMonVR_EM_YY
 

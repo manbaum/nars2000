@@ -59,6 +59,16 @@
     Myf_clear (&lpMemPTD->mpfrE);                   \
     gsl_rng_free (lpMemPTD->gslRNG);                \
 
+// Define the number and order of the local HTS structs for MFOs
+typedef enum tagHTS_MFO
+{
+    HTS_MONVR       = 0,            // 00:  MonVR
+    HTS_DYDSQUAD,                   // 01:  DydSquad
+    HTS_LENGTH                      // 02:  # entries
+} HTSMFO, *LPHTSMFO;
+// N.B.:  Don't forget to include a ptr to the appropriate ahtsMFO[] struct
+//        in the call to ExecuteMagicFunction/Operator.
+
 // Structure for Per Tab Control Data
 typedef struct tagPERTABDATA
 {
@@ -69,6 +79,7 @@ typedef struct tagPERTABDATA
     // Symbol & hash table variables
     LPHSHTABSTR  lphtsPTD,                  // Ptr to current HTS
                  lphtsGLB;                  // ...    global  ...
+    HSHTABSTR    ahtsMFO[HTS_LENGTH];       // Ptr to struct of local HTS structs for MFOs
     UINT         tkErrorCharIndex;          // Char index for lpwszQuadErrorMsg if ImmExec
 
     HWND         hWndMC,                    // MDI Client window handle

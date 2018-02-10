@@ -2460,6 +2460,9 @@ NORMAL_EXIT:
             // Delete all system vars
             DeleSysVars (lpMemPTD->lphtsPTD);
 
+            // Delete MFO sysvars
+            DeleMfoSysVars (lpMemPTD);
+
             // Free global storage
             FreeGlobalStorage (lpMemPTD);
 

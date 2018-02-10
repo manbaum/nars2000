@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,15 +33,16 @@
 typedef int PAINTHOOK (HWND, HDC, int, int, LPWSTR, int, int, long, int, int, UBOOL);
 typedef PAINTHOOK *LPPAINTHOOK;
 
-#define MYWM_REDO           (WM_APP + 101)
-#define MYWM_SELECTALL      (WM_APP + 102)
-#define MYWM_KEYDOWN        (WM_APP + 103)
-#define MYWM_PASTE_APL      (WM_APP + 104)
-#define MYWM_COPY_APL       (WM_APP + 105)
-#define MYWM_LOCALIZE       (WM_APP + 106)
-#define MYWM_UNLOCALIZE     (WM_APP + 107)
-#define MYWM_LINE_HEIGHT    (WM_APP + 108)
-#define MYEM_ISLINECONT     (WM_APP + 109)
+#define MYWM_REDO                   (WM_APP + 101)
+#define MYWM_SELECTALL              (WM_APP + 102)
+#define MYWM_KEYDOWN                (WM_APP + 103)
+#define MYWM_PASTE_APL              (WM_APP + 104)
+#define MYWM_COPY_APL               (WM_APP + 105)
+#define MYWM_LOCALIZE               (WM_APP + 106)
+#define MYWM_UNLOCALIZE             (WM_APP + 107)
+#define MYEM_LINE_HEIGHT            (WM_APP + 108)
+#define MYEM_LINES_PER_PAGE         (WM_APP + 109)
+#define MYEM_ISLINECONT             (WM_APP + 110)
 
 #define FCN_INDENT  6       // # WCHARs for function line numbers
 

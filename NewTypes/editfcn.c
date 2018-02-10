@@ -2724,6 +2724,10 @@ LRESULT WINAPI LclEditCtrlWndProc
 #endif
                 case VK_UP:
                 case VK_DOWN:
+                case VK_PRIOR:
+                case VK_NEXT:
+                case VK_HOME:
+                case VK_END:
                     // If our parent is MF, ...
                     if (lpMemPTD EQ NULL)
                         break;
@@ -5688,7 +5692,7 @@ void DrawLineNumsFE
     uLineTop = (UINT) SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
 
     // Get the line height
-    line_height = (UINT) SendMessageW (hWndEC, MYWM_LINE_HEIGHT, 0, 0);
+    line_height = (UINT) SendMessageW (hWndEC, MYEM_LINE_HEIGHT, 0, 0);
 
     // Less the top index
     uLineCnt -= uLineTop;

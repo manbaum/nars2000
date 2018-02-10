@@ -1,6 +1,33 @@
 Version 0.5.6.xx consists of the following Builds:
 
 
+Build #1855 -- Version 0.5.6.xx
+--------------------------------
+
+* Change (Ctrl-)PgUp/PgDn/Home/End To Adhere To CUA Better
+
+Directory branches/bsmith/NewTypes:
+
+EDITCTRL.H:
+  Rename <MYWM_LINE_HEIGHT> to <MYEM_LINE_HEIGHT>.
+  Define new message <MYEM_LINES_PER_PAGE>.
+
+EDITFCN.C:
+  Pass PgUp, PgDn, Home, and End to the Session Manager.
+  Rename <MYWM_LINE_HEIGHT> to <MYEM_LINE_HEIGHT>.
+
+SESSMAN.C:
+  In <SMWndProc/MYWM_KEYDOWN>, handle (Ctrl-)PgUp/PgDn/Home/End so that we keep track of what the EditCtrl is doing.
+
+
+Directory branches/bsmith/NewTypes/WineHQ:
+
+EDITCTRL.C:
+  Change the behavior of (Ctrl-)PgUp/PgDn/Home/End to adhere to CUA better.
+  Rename <MYWM_LINE_HEIGHT> to <MYEM_LINE_HEIGHT>.
+  Implement <MYEM_LINES_PER_PAGE> to return the # lines per page.
+
+
 Build #1854 -- Version 0.5.6.xx
 --------------------------------
 
@@ -15,6 +42,9 @@ CS_PARSE.Y:
 IMMEXEC.C:
 PL_PROC.C:
   In IF/WHILE stmts always compare ptr against NULL and value against 0.
+
+REBAR.C:
+  Improve documentation in the language bar for the matrix operator.
 
 SC_FNOV.C:
   Include )FOP and )FOPS in the header.

@@ -1932,6 +1932,9 @@ NORMAL_EXIT:
                                     // lKeyData = lParam;           // Key data
         {
             UINT uLineLen,
+                 uLineTop,
+                 uLineCur,
+                 uLinesPerPage,
                  uLineCnt;
             UBOOL bRet,
                   ksCtrl,
@@ -2132,6 +2135,110 @@ NORMAL_EXIT:
 
                     // Set (new) current line
                     MoveToLine (++uLineNum, lpMemPTD, hWndEC);
+
+                    break;
+
+                case VK_PRIOR:          // PgUp
+                    // If it's Ctrl-PgUp, ...
+                    if (ksCtrl)
+                    {
+                        // Move the cursor to the top-of-page
+
+                        // Get the # of the topmost visible line
+                        uLineTop = (UINT) SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
+
+                        // Set (new) current line
+                        MoveToLine (uLineTop, lpMemPTD, hWndEC);
+                    } else
+                    // If it's PgUp, ...
+                    if (!(ksCtrl || ksShift))
+                    {
+                        // Calculate the # lines per page
+                        uLinesPerPage = (UINT) SendMessageW (hWndEC, MYEM_LINES_PER_PAGE, 0, 0);
+
+                        // Get the current line #
+                        uLineCur = (UINT) SendMessageW (hWndEC, EM_LINEFROMCHAR, -1, 0);
+
+                        // Ensure we stay within bounds
+                        if (uLineCur >= uLinesPerPage)
+                            uLineCur -= uLinesPerPage;
+                        else
+                            uLineCur = 0;
+
+                        // Set (new) current line
+                        MoveToLine (uLineCur, lpMemPTD, hWndEC);
+                    } // End IF/ELSE
+
+                    break;
+
+                case VK_NEXT:           // PgDn
+                    // If it's Ctrl-PgDn, ...
+                    if (ksCtrl)
+                    {
+                        // Move the cursor to the bottom-of-page
+
+                        // Get the # of the topmost visible line
+                        uLineTop = (UINT) SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
+
+                        // Calculate the # lines per page
+                        uLinesPerPage = (UINT) SendMessageW (hWndEC, MYEM_LINES_PER_PAGE, 0, 0);
+
+                        // Plus the # lines-per-page minus 1
+                        uLineCur = uLineTop + uLinesPerPage - 1;
+
+                        // Set (new) current line
+                        MoveToLine (uLineCur, lpMemPTD, hWndEC);
+                    } else
+                    // If it's PgDn, ...
+                    if (!(ksCtrl || ksShift))
+                    {
+                        // Calculate the # lines per page
+                        uLinesPerPage = (UINT) SendMessageW (hWndEC, MYEM_LINES_PER_PAGE, 0, 0);
+
+                        // Get the current line #
+                        uLineCur = (UINT) SendMessageW (hWndEC, EM_LINEFROMCHAR, -1, 0);
+
+                        // Add to get the new line #
+                        uLineCur += uLinesPerPage;
+
+                        // Get the # lines in the Edit Ctrl
+                        uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
+
+                        // Ensure we stay within bounds
+                        if (uLineCur >= uLineCnt)
+                            uLineCur = uLineCnt - 1;
+
+                        // Set (new) current line
+                        MoveToLine (uLineCur, lpMemPTD, hWndEC);
+                    } // End IF/ELSE
+
+                    break;
+
+                case VK_HOME:
+                    // If it's Ctrl-Home, ...
+                    if (ksCtrl)
+                    {
+                        // Move the cursor to the top-of-buffer
+                        uLineCur = 0;
+
+                        // Set (new) current line
+                        MoveToLine (uLineCur, lpMemPTD, hWndEC);
+                    } // End IF
+
+                    break;
+
+                case VK_END:
+                    // If it's Ctrl-End, ...
+                    if (ksCtrl)
+                    {
+                        // Move the cursor to the bottom-of-buffer
+
+                        // Get the # lines in the text
+                        uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
+
+                        // Set (new) current line
+                        MoveToLine (uLineCnt - 1, lpMemPTD, hWndEC);
+                    } // End IF
 
                     break;
 #ifdef DEBUG

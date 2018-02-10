@@ -2026,7 +2026,7 @@ static void EDIT_MoveHome(EDITSTATE *es, BOOL extend, BOOL ctrl)
  *  x coordinate on the screen (might be a different column).
  *
  */
-static void EDIT_MovePageDown_ML(EDITSTATE *es, BOOL extend)
+static void EDIT_MovePageDown_ML(EDITSTATE *es, BOOL extend, BOOL same_page)
 {
     INT s = es->selection_start;
     INT e = es->selection_end;
@@ -2035,13 +2035,24 @@ static void EDIT_MovePageDown_ML(EDITSTATE *es, BOOL extend)
     INT x = (short)LOWORD(pos);
     INT y = (short)HIWORD(pos);
 
-    e = EDIT_CharFromPos(es, x,
-        y + (es->format_rect.bottom - es->format_rect.top),
-        &after_wrap);
+    if (same_page)
+        y = es->format_rect.bottom;
+    else
+        y += (es->format_rect.bottom - es->format_rect.top);
+
+    e = EDIT_CharFromPos(es, x, y, &after_wrap);
     if (!extend)
         s = e;
-    EDIT_EM_SetSel(es, s, e, after_wrap);
-    EDIT_EM_ScrollCaret(es);
+    if (same_page)
+    {
+        EDIT_EM_SetSel(es, s, e, after_wrap);
+        EDIT_SetCaretPos(es, e, after_wrap);
+    } else
+    {
+        EDIT_EM_Scroll (es, SB_PAGEDOWN);
+        EDIT_EM_SetSel(es, s, e, after_wrap);
+        EDIT_EM_ScrollCaret(es);
+    } // End IF/ELSE
 } // End EDIT_MovePageDown_ML
 
 
@@ -2054,7 +2065,7 @@ static void EDIT_MovePageDown_ML(EDITSTATE *es, BOOL extend)
  *  x coordinate on the screen (might be a different column).
  *
  */
-static void EDIT_MovePageUp_ML(EDITSTATE *es, BOOL extend)
+static void EDIT_MovePageUp_ML(EDITSTATE *es, BOOL extend, BOOL same_page)
 {
     INT s = es->selection_start;
     INT e = es->selection_end;
@@ -2063,13 +2074,23 @@ static void EDIT_MovePageUp_ML(EDITSTATE *es, BOOL extend)
     INT x = (short)LOWORD(pos);
     INT y = (short)HIWORD(pos);
 
-    e = EDIT_CharFromPos(es, x,
-        y - (es->format_rect.bottom - es->format_rect.top),
-        &after_wrap);
+    if (same_page)
+        y = es->format_rect.top;
+    else
+        y -= (es->format_rect.bottom - es->format_rect.top);
+    e = EDIT_CharFromPos(es, x, y, &after_wrap);
     if (!extend)
         s = e;
-    EDIT_EM_SetSel(es, s, e, after_wrap);
-    EDIT_EM_ScrollCaret(es);
+    if (same_page)
+    {
+        EDIT_EM_SetSel(es, s, e, after_wrap);
+        EDIT_SetCaretPos(es, e, after_wrap);
+    } else
+    {
+        EDIT_EM_Scroll (es, SB_PAGEUP);
+        EDIT_EM_SetSel(es, s, e, after_wrap);
+        EDIT_EM_ScrollCaret(es);
+    } // End IF/ELSE
 } // End EDIT_MovePageUp_ML
 
 
@@ -3690,13 +3711,13 @@ static LRESULT EDIT_WM_KeyDown(EDITSTATE *es, INT key)
         break;
     case VK_PRIOR:
         if (es->style & ES_MULTILINE)
-            EDIT_MovePageUp_ML(es, shift);
+            EDIT_MovePageUp_ML(es, shift, control);
         else
             EDIT_CheckCombo(es, WM_KEYDOWN, key);
         break;
     case VK_NEXT:
         if (es->style & ES_MULTILINE)
-            EDIT_MovePageDown_ML(es, shift);
+            EDIT_MovePageDown_ML(es, shift, control);
         else
             EDIT_CheckCombo(es, WM_KEYDOWN, key);
         break;
@@ -5290,8 +5311,12 @@ static LRESULT EditWndProc_common( HWND hwnd, UINT msg,
         result = EDIT_EM_GetSel(es, (PUINT)wParam, (PUINT)lParam);
         break;
 
-    case MYWM_LINE_HEIGHT:
+    case MYEM_LINE_HEIGHT:
         result = es->line_height;
+        break;
+
+    case MYEM_LINES_PER_PAGE:
+        result = get_vertical_line_count(es);
         break;
 
     case MYEM_ISLINECONT:

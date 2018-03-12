@@ -1312,12 +1312,6 @@ void MF_Delete
 //  Message processing routine for the Master Frame window
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MFWndProc"
-#else
-#define APPEND_NAME
-#endif
-
 LRESULT APIENTRY MFWndProc
     (HWND   hWnd,       // Window handle
      UINT   message,    // Type of message
@@ -3078,7 +3072,6 @@ LRESULT APIENTRY MFWndProc
 ////LCLODSAPI ("MFZ:", hWnd, message, wParam, lParam);
     return DefFrameProcW (hWnd, hWndMC, message, wParam, lParam);
 } // End MFWndProc
-#undef  APPEND_NAME
 
 
 //***************************************************************************

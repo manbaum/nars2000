@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -179,12 +179,6 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecQuery};
 //  Primitive function for monadic and dyadic Query ("roll" and "deal")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnQuery_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnQuery_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -201,7 +195,6 @@ LPPL_YYSTYPE PrimFnQuery_EM_YY
     else
         return PrimFnDydQuery_EM_YY           (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnQuery_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -209,12 +202,6 @@ LPPL_YYSTYPE PrimFnQuery_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Query
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnQuery_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnQuery_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -244,7 +231,6 @@ LPPL_YYSTYPE PrimProtoFnQuery_EM_YY
                                         lptkRhtArg,         // Ptr to right arg token
                                         lptkAxis);          // Ptr to axis token (may be NULL)
 } // End PrimProtoFnQuery_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -680,12 +666,6 @@ void PrimFnMonQueryVisV
 //    "APLGOL, an Experimental Structured Programming Language" by R. A. Kelley,
 //    IBM Journal of Research and Development, January 1973, pp. 69-73.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydQuery_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token

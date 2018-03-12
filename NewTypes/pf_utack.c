@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,12 +30,6 @@
 //
 //  Primitive function for monadic and dyadic UpTack (ERROR and "decode/base value")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnUpTack_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnUpTack_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -69,7 +63,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimFnUpTack_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -77,12 +70,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Generate a prototype for the primitive functions monadic & dyadic UpTack
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnUpTack_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnUpTack_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -102,7 +89,6 @@ LPPL_YYSTYPE PrimProtoFnUpTack_EM_YY
                                     lptkRhtArg,             // Ptr to right arg token
                                     lptkAxis);              // Ptr to axis token (may be NULL)
 } // End PrimProtoFnUpTack_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -110,12 +96,6 @@ LPPL_YYSTYPE PrimProtoFnUpTack_EM_YY
 //
 //  Primitive function for monadic UpTack (ERROR)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonUpTack_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonUpTack_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -125,7 +105,6 @@ LPPL_YYSTYPE PrimFnMonUpTack_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End PrimFnMonUpTack_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -133,12 +112,6 @@ LPPL_YYSTYPE PrimFnMonUpTack_EM_YY
 //
 //  Primitive function for dyadic UpTack ("decode/base value")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydUpTack_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydUpTack_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -1107,7 +1080,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDydUpTack_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

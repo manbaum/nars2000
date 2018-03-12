@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,12 +34,6 @@
 //
 //  Display a message from Ctrl-Break
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- BreakMessage"
-#else
-#define APPEND_NAME
-#endif
 
 void BreakMessage
     (HWND         hWndSM,                   // SM window handle
@@ -159,7 +153,6 @@ WSFULL_EXIT:
                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);
     return;
 } // End BreakMessage
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -268,12 +261,6 @@ NORMAL_EXIT:
 //
 //  Signal an error message, directly
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ErrorMessageDirect"
-#else
-#define APPEND_NAME
-#endif
 
 void ErrorMessageDirect
     (LPWCHAR lpwszMsg,          // Ptr to error message text
@@ -653,7 +640,6 @@ NORMAL_EXIT:
     return;
 } // End ErrorMessageDirect
 #undef  ERROR_CARET
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,12 +30,6 @@
 //
 //  System function:  []DL -- Delay
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDL_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDL_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -65,7 +59,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnDL_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -73,12 +66,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []DL -- Delay
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonDL_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonDL_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -196,7 +183,6 @@ DOMAIN_EXIT:
                                lptkFunc);
     return NULL;
 } // End SysFnMonDL_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -204,12 +190,6 @@ DOMAIN_EXIT:
 //
 //  Dyadic []DL -- ERROR
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydDL_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydDL_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -220,7 +200,6 @@ LPPL_YYSTYPE SysFnDydDL_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnDydDL_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

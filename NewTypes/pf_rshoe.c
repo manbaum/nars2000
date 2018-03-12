@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //  Primitive function for monadic and dyadic RightShoe ("disclose" and "pick")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnRightShoe_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnRightShoe_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -57,7 +51,6 @@ LPPL_YYSTYPE PrimFnRightShoe_EM_YY
     else
         return PrimFnDydRightShoe_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnRightShoe_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -65,12 +58,6 @@ LPPL_YYSTYPE PrimFnRightShoe_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic RightShoe
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnRightShoe_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnRightShoe_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -90,7 +77,6 @@ LPPL_YYSTYPE PrimProtoFnRightShoe_EM_YY
                                     lptkRhtArg,             // Ptr to right arg token
                                     lptkAxis);              // Ptr to axis token (may be NULL)
 } // End PrimProtoFnRightShoe_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -98,12 +84,6 @@ LPPL_YYSTYPE PrimProtoFnRightShoe_EM_YY
 //
 //  Generate an identity element for the primitive function dyadic RightShoe
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentFnRightShoe_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimIdentFnRightShoe_EM_YY
     (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
@@ -149,7 +129,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimIdentFnRightShoe_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -157,12 +136,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Primitive function for monadic RightShoe ("disclose")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonRightShoe_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonRightShoe_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -213,7 +186,6 @@ LPPL_YYSTYPE PrimFnMonRightShoe_EM_YY
             return NULL;
     } // End SWITCH
 } // End PrimFnMonRightShoe_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -221,12 +193,6 @@ LPPL_YYSTYPE PrimFnMonRightShoe_EM_YY
 //
 //  Monadic RightShoe ("disclose") on an immediate value.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonRightShoeCon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonRightShoeCon_EM_YY
     (IMM_TYPES  immType,            // The immediate type (see IMM_TYPES)
@@ -267,7 +233,6 @@ LPPL_YYSTYPE PrimFnMonRightShoeCon_EM_YY
 
     return lpYYRes;
 } // End PrimFnMonRightShoeCon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -275,12 +240,6 @@ LPPL_YYSTYPE PrimFnMonRightShoeCon_EM_YY
 //
 //  Monadic RightShoe ("disclose") on a global memory object
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonRightShoeGlb_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     (HGLOBAL hGlbRht,                       // Right arg global memory handle
@@ -2585,7 +2544,6 @@ TAIL_EXIT:
     else
         return NULL;
 } // End PrimFnMonRightShoeGlb_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2593,12 +2551,6 @@ TAIL_EXIT:
 //
 //  Primitive function for dyadic RightShoe ("pick")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydRightShoe_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydRightShoe_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -2661,7 +2613,6 @@ AXIS_SYNTAX_EXIT:
                                lptkFunc);
     return NULL;
 } // End PrimFnDydRightShoe_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2669,12 +2620,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Dyadic RightShoe ("pick") on an immediate right arg
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydRightShoeImm_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydRightShoeImm_EM_YY
     (IMM_TYPES  immTypeRht,         // The immediate type (see IMM_TYPES)
@@ -2764,7 +2709,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDydRightShoeImm_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2773,12 +2717,6 @@ NORMAL_EXIT:
 //  Dyadic RightShoe ("pick") on a left arg global memory handle
 //    and right arg immediate
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydRightShoeGlbImm_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydRightShoeGlbImm_EM
     (APLNELM    aplNELMLft,     // Left arg NELM
@@ -2848,7 +2786,6 @@ DOMAIN_EXIT:
                                lptkFunc);
     return FALSE;
 } // End PrimFnDydRightShoeGlbImm_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2856,12 +2793,6 @@ DOMAIN_EXIT:
 //
 //  Dyadic RightShoe ("pick") on a right arg global memory handle
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydRightShoeGlb_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -3031,7 +2962,6 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlb_EM_YY
 ERROR_EXIT:
     return lpYYRes;
 } // End PrimFnDydRightShoeGlb_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3040,12 +2970,6 @@ ERROR_EXIT:
 //  Dyadic RightShoe ("pick") on a left arg immediate
 //    and right arg global memory handle
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydRightShoeImmGlb_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
     (IMM_TYPES    immTypeLft,           // Left arg immediate type (see IMM_TYPES)
@@ -3191,7 +3115,6 @@ INDEX_EXIT:
                                lptkFunc);
     return NULL;
 } // End PrimFnDydRightShoeImmGlb_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3200,12 +3123,6 @@ INDEX_EXIT:
 //  Dyadic RightShoe ("pick") on a left arg global memory handle
 //    and right arg global memory handle
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydRightShoeGlbGlb_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
     (HGLOBAL      hGlbLft,              // Left  arg global memory handle
@@ -3942,7 +3859,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDydRightShoeGlbGlb_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

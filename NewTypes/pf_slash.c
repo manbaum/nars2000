@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //  Primitive function for monadic and dyadic Slash (ERROR and "replicate")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnSlash_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnSlash_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -58,7 +52,6 @@ LPPL_YYSTYPE PrimFnSlash_EM_YY
     else
         return PrimFnDydSlash_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnSlash_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -66,12 +59,6 @@ LPPL_YYSTYPE PrimFnSlash_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Slash
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnSlash_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnSlash_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -91,7 +78,6 @@ LPPL_YYSTYPE PrimProtoFnSlash_EM_YY
                                     lptkRhtArg,         // Ptr to right arg token
                                     lptkAxis);          // Ptr to axis token (may be NULL)
 } // End PrimProtoFnSlash_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -99,12 +85,6 @@ LPPL_YYSTYPE PrimProtoFnSlash_EM_YY
 //
 //  Primitive function for monadic Slash (ERROR)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonSlash_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonSlash_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -114,7 +94,6 @@ LPPL_YYSTYPE PrimFnMonSlash_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End PrimFnMonSlash_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -122,12 +101,6 @@ LPPL_YYSTYPE PrimFnMonSlash_EM_YY
 //
 //  Primitive function for dyadic Slash ("replicate")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydSlash_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydSlash_EM_YY
     (LPTOKEN lptkLftArg,                // Ptr to left arg token
@@ -1363,7 +1336,7 @@ WSFULL_EXIT:
 ERROR_EXIT:
     if (hGlbRes NE NULL)
     {
-        if (lpMemHdrRes)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
@@ -1466,7 +1439,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDydSlash_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -227,12 +227,6 @@ void AfoReturn
 //  Test an AFO guard stmt
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- AfoGuard"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL AfoGuard
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to LocalVars
      LPTOKEN       lptkRhtArg)          // Ptr to right argument token
@@ -311,7 +305,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return bRet;
 } // End AfoGuard
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -319,12 +312,6 @@ NORMAL_EXIT:
 //
 //  Make an AFO
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MakeAfo_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 void MakeAfo_EM_YY
     (LPPL_YYSTYPE  lpYYRht,             // Ptr to right brace token
@@ -412,7 +399,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return;
 } // End MakeAfo_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,12 +32,6 @@
 //  System function:  []SI -- State Indicator
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnSI_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE SysFnSI_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -51,7 +45,6 @@ LPPL_YYSTYPE SysFnSI_EM_YY
                              lptkAxis,      // Ptr to axis token (may be NULL)
                              FALSE);        // TRUE iff this is []SINL
 } // End SysFnSI_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -59,12 +52,6 @@ LPPL_YYSTYPE SysFnSI_EM_YY
 //
 //  System function:  []SINL -- State Indicator with Namelist
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnSINL_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnSINL_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
@@ -79,7 +66,6 @@ LPPL_YYSTYPE SysFnSINL_EM_YY
                              lptkAxis,      // Ptr to axis token (may be NULL)
                              TRUE);         // TRUE iff this is []SINL
 } // End SysFnSINL_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -87,12 +73,6 @@ LPPL_YYSTYPE SysFnSINL_EM_YY
 //
 //  System function:  Common routine for []SI/[]SINL -- State Indicator
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnSICom_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnSICom_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
@@ -318,7 +298,6 @@ WSFULL_EXIT:
                                lptkFunc);
     return NULL;
 } // End SysFnSICom_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

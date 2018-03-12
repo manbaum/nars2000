@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,12 +49,6 @@ LPTOKEN CheckAxisOper
 //
 //  Subroutine to CheckAxis_EM for immediate values
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CheckAxisImm"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL CheckAxisImm
     (IMM_TYPES    immType,          // Type of the immediate value
@@ -206,7 +200,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return bRet;
 } // End CheckAxisImm
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -214,12 +207,6 @@ NORMAL_EXIT:
 //
 //  Subroutine to CheckAxis_EM for global values
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CheckAxisGlb"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL CheckAxisGlb
     (HGLOBAL      hGlbData,             // The global handle to check
@@ -529,7 +516,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End CheckAxisGlb
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -537,12 +523,6 @@ NORMAL_EXIT:
 //
 //  Check an axis value against a given rank
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CheckAxis_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL CheckAxis_EM
     (LPTOKEN    lptkAxis,           // The Axis values
@@ -807,7 +787,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return bRet;
 } // End CheckAxis_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

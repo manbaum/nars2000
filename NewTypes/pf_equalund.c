@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //  Primitive function for monadic and dyadic EqualUnderbar ("depth" and "match")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnEqualUnderbar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnEqualUnderbar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -57,7 +51,6 @@ LPPL_YYSTYPE PrimFnEqualUnderbar_EM_YY
     else
         return PrimFnDydEqualUnderbar_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnEqualUnderbar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -65,12 +58,6 @@ LPPL_YYSTYPE PrimFnEqualUnderbar_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic EqualUnderbar
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnEqualUnderbar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnEqualUnderbar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -90,7 +77,6 @@ LPPL_YYSTYPE PrimProtoFnEqualUnderbar_EM_YY
                                     lptkRhtArg,                 // Ptr to right arg token
                                     lptkAxis);                  // Ptr to axis token (may be NULL)
 } // End PrimProtoFnEqualUnderbar_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -98,12 +84,6 @@ LPPL_YYSTYPE PrimProtoFnEqualUnderbar_EM_YY
 //
 //  Primitive function for monadic EqualUnderbar ("depth")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonEqualUnderbar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonEqualUnderbar_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -198,7 +178,6 @@ AXIS_SYNTAX_EXIT:
 ERROR_EXIT:
     return NULL;
 } // End PrimFnMonEqualUnderbar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -331,12 +310,6 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbar_EM_YY
 //  Common routine for dyadic EqualUnderbar ("match")
 //    and NotEqualUnderbar ("mismatch")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydEqualUnderbarCom_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydEqualUnderbarCom_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -566,7 +539,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDydEqualUnderbarCom_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1119,12 +1091,6 @@ ERROR_EXIT:
 //  Primitive function for monadic and dyadic NotEqualUnderbar (ERROR and "mismatch")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnNotEqualUnderbar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnNotEqualUnderbar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -1145,7 +1111,6 @@ LPPL_YYSTYPE PrimFnNotEqualUnderbar_EM_YY
     else
         return PrimFnDydNotEqualUnderbar_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnNotEqualUnderbar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1153,12 +1118,6 @@ LPPL_YYSTYPE PrimFnNotEqualUnderbar_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic NotEqualUnderbar
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnNotEqualUnderbar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnNotEqualUnderbar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -1178,7 +1137,6 @@ LPPL_YYSTYPE PrimProtoFnNotEqualUnderbar_EM_YY
                                     lptkRhtArg,                     // Ptr to right arg token
                                     lptkAxis);                      // Ptr to axis token (may be NULL)
 } // End PrimProtoFnNotEqualUnderbar_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1186,12 +1144,6 @@ LPPL_YYSTYPE PrimProtoFnNotEqualUnderbar_EM_YY
 //
 //  Primitive function for monadic NotEqualUnderbar ("tally")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonNotEqualUnderbar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonNotEqualUnderbar_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -1259,7 +1211,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnMonNotEqualUnderbar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

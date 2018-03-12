@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,12 +30,6 @@
 //
 //  System function:  []ES -- Event Simulate
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnES_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnES_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -65,7 +59,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnES_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -73,12 +66,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []ES -- Event Simulate w/ Message or Type
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonES_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonES_EM_YY
     (LPTOKEN lptkFunc,                      // Ptr to function token
@@ -91,7 +78,6 @@ LPPL_YYSTYPE SysFnMonES_EM_YY
                              lptkRhtArg,    // Ptr to right arg token
                              lptkAxis);     // Ptr to axis token (may be NULL)
 } // End SysFnMonES_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -99,12 +85,6 @@ LPPL_YYSTYPE SysFnMonES_EM_YY
 //
 //  Dyadic []ES -- Event Simulate w/ Message and Type
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydES_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydES_EM_YY
     (LPTOKEN lptkLftArg,                // Ptr to left arg token (may be NULL if called monadically)
@@ -461,7 +441,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnDydES_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

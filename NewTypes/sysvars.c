@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -190,12 +190,6 @@ HGLOBAL CreateQuadA
 //
 //  Make various permanent variables
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MakePermVars"
-#else
-#define APPEND_NAME
-#endif
 
 void MakePermVars
     (void)
@@ -390,7 +384,6 @@ void MakePermVars
     // Create []CS
     MakeQuadCS ();
 } // End MakePermVars
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -480,12 +473,6 @@ HGLOBAL MakePermIntVector
 //  Make a permanent vector
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MakePermVectorCom"
-#else
-#define APPEND_NAME
-#endif
-
 HGLOBAL MakePermVectorCom
     (LPVOID   lpwc,                 // Ptr to common vector
      PERM_NDX permNdx,              // PERM_NDX value
@@ -531,7 +518,6 @@ HGLOBAL MakePermVectorCom
 
     return hGlbRes;
 } // End MakePermVectorCom
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -790,12 +776,6 @@ void AssignCharScalarCWS
 //  The order of error checking is RANK, LENGTH, DOMAIN.
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ValidateCharScalar_EM"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL ValidateCharScalar_EM
     (LPTOKEN  lptkNamArg,           // Ptr to name token (may be NULL if retValue is not)
      LPTOKEN  lptkExpr,             // Ptr to value token
@@ -998,7 +978,6 @@ UNLOCK_EXIT:
 
     return bRet;
 } // End ValidateCharScalar_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1011,12 +990,6 @@ UNLOCK_EXIT:
 //
 //  The order of error checking is RANK, LENGTH, DOMAIN.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ValidateInteger_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL ValidateInteger_EM
     (LPTOKEN  lptkNamArg,           // Ptr to name token
@@ -1308,7 +1281,6 @@ UNLOCK_EXIT:
 
     return bRet;
 } // End ValidateInteger_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1352,12 +1324,6 @@ UBOOL ValidateIntegerTest
 //
 //  The order of error checking is RANK, LENGTH, DOMAIN.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ValidateFloat_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL ValidateFloat_EM
     (LPTOKEN  lptkNamArg,           // Ptr to name token
@@ -1622,7 +1588,6 @@ UNLOCK_EXIT:
 
     return bRet;
 } // End ValidateFloat_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1665,12 +1630,6 @@ UBOOL ValidateFloatTest
 //
 //  The order of error checking is RANK, LENGTH, DOMAIN.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ValidateCharVector_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL ValidateCharVector_EM
     (LPTOKEN  lptkNamArg,           // Ptr to name token
@@ -1969,7 +1928,6 @@ UNLOCK_EXIT:
 
     return bRet;
 } // End ValidateCharVector_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1981,12 +1939,6 @@ UNLOCK_EXIT:
 //
 //  The order of error checking is RANK, LENGTH, DOMAIN.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ValidateIntegerVector_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL ValidateIntegerVector_EM
     (LPTOKEN  lptkNamArg,           // Ptr to name token
@@ -2467,7 +2419,6 @@ UNLOCK_EXIT:
 
     return bRet;
 } // End ValidateIntegerVector_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2690,12 +2641,6 @@ UBOOL ValidNdxCT
 //  We don't allow assignment into []DM.
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ValidSetDM_EM"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL ValidSetDM_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
@@ -2705,7 +2650,6 @@ UBOOL ValidSetDM_EM
                                lptkRhtArg);
     return FALSE;
 } // End ValidSetDM_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2715,12 +2659,6 @@ UBOOL ValidSetDM_EM
 //
 //  We don't allow indexed assignment into []DM.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ValidNdxDM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL ValidNdxDM
     (APLINT       aplIntegerLst,            // The origin-0 index value (in case the position is important)
@@ -2735,7 +2673,6 @@ UBOOL ValidNdxDM
                                lptkFunc);
     return FALSE;
 } // End ValidNdxDM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3612,12 +3549,6 @@ UBOOL ValidNdxPP
 //  Validate a value before assigning it to []PR
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ValidSetPR_EM"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL ValidSetPR_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
@@ -3786,7 +3717,6 @@ UNLOCK_EXIT:
 
     return bRet;
 } // End ValidSetPR_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3983,12 +3913,6 @@ UBOOL ValidNdxRL
 //  Validate a value before assigning it to []SA
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ValidSetSA_EM"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL ValidSetSA_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
      LPTOKEN lptkRhtArg)            // Ptr to right arg token
@@ -4172,7 +4096,6 @@ UNLOCK_EXIT:
 
     return bRet;
 } // End ValidSetSA_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

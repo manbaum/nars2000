@@ -31,12 +31,6 @@
 //  Execute a user-defined function/operator in a prototype context
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ExecDfnGlbProto_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE ExecDfnGlbProto_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFcnStr,            // Ptr to function strand
@@ -88,7 +82,6 @@ VALUE_EXIT:
                                lptkFcnStr);
     return lpYYRes2;
 } // End ExecDfnGlbProto_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -96,12 +89,6 @@ VALUE_EXIT:
 //
 //  Execute a user-defined function/operator in a identity context
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ExecDfnGlbIdent_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE ExecDfnGlbIdent_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -145,7 +132,6 @@ VALUE_EXIT:
                                lptkFcnStr);
     return lpYYRes;
 } // End ExecDfnGlbIdent_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -153,12 +139,6 @@ VALUE_EXIT:
 //
 //  Execute a user-defined function/operator
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ExecDfnGlb_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE ExecDfnGlb_EM_YY
     (HGLOBAL      hGlbDfnHdr,       // User-defined function/operator global memory handle
@@ -248,7 +228,6 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
 
     return lpYYRes;
 } // End ExecDfnGlb_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -256,12 +235,6 @@ LPPL_YYSTYPE ExecDfnGlb_EM_YY
 //
 //  Execute a user-defined function/operator
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ExecDfnOprGlb_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     (HGLOBAL      hGlbDfnHdr,       // User-defined function/operator global memory handle
@@ -689,7 +662,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End ExecDfnOprGlb_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -870,12 +842,6 @@ void _CheckSymEntries
 //
 //  Execute a function, line by line
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ExecuteFunction_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE ExecuteFunction_EM_YY
     (UINT         uLineNum,         // Starting line # (origin-1)
@@ -1425,7 +1391,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End ExecuteFunction_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1433,12 +1398,6 @@ NORMAL_EXIT:
 //
 //  Check on user-defined function/operator error on exit
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CheckDfnExitError_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL CheckDfnExitError_EM
     (LPPERTABDATA lpMemPTD)         // Ptr to PerTabData global memory
@@ -1622,7 +1581,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End CheckDfnExitError_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1929,12 +1887,6 @@ LPSYMENTRY LocalizeLabels
 //
 //  Initialize variable arg STEs
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- InitVarSTEs"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL InitVarSTEs
     (LPTOKEN      lptkArg,      // Ptr to variable token
@@ -2346,7 +2298,6 @@ UBOOL InitVarSTEs
 WSFULL_EXIT:
     return FALSE;
 } // End InitVarSTEs
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2354,12 +2305,6 @@ WSFULL_EXIT:
 //
 //  Initialize function operand STEs
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- InitFcnSTEs"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL InitFcnSTEs
     (LPPL_YYSTYPE lpYYArg,      // Ptr to arg PL_YYSTYPE
@@ -2602,7 +2547,6 @@ WSFULL_EXIT:
                               &lpYYArg->tkToken);
     return FALSE;
 } // End InitFcnSTEs
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2610,12 +2554,6 @@ WSFULL_EXIT:
 //
 //  Localize LPSYMENTRYs
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- LocalizeSymEntries"
-#else
-#define APPEND_NAME
-#endif
 
 LPSYMENTRY LocalizeSymEntries
     (LPSYMENTRY   lpSymEntryNxt,        // Ptr to next SYMENTRY save area
@@ -2658,7 +2596,6 @@ LPSYMENTRY LocalizeSymEntries
 
     return lpSymEntryNxt;
 } // End LocalizeSymEntries
-#undef  APPEND_NAME
 
 
 //***************************************************************************

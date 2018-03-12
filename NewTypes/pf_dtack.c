@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //
 //  Primitive function for monadic and dyadic DownTack ("type" and "encode/representation")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDownTack_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDownTack_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -69,7 +63,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimFnDownTack_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -77,12 +70,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Generate a prototype for the primitive functions monadic & dyadic DownTack
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnDownTack_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnDownTack_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -102,7 +89,6 @@ LPPL_YYSTYPE PrimProtoFnDownTack_EM_YY
                                     lptkRhtArg,             // Ptr to right arg token
                                     lptkAxis);              // Ptr to axis token (may be NULL)
 } // End PrimProtoFnDownTack_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -110,12 +96,6 @@ LPPL_YYSTYPE PrimProtoFnDownTack_EM_YY
 //
 //  Generate an identity element for the primitive function dyadic DownTack
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentFnDownTack_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimIdentFnDownTack_EM_YY
     (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
@@ -162,7 +142,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimIdentFnDownTack_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -173,12 +152,6 @@ AXIS_SYNTAX_EXIT:
 //  This idea was taken from the APL2 IUP as shown in Brown/Jenkins
 //    "APL Identity Crisis".
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonDownTack_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonDownTack_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -322,7 +295,6 @@ LPPL_YYSTYPE PrimFnMonDownTack_EM_YY
 
     return lpYYRes;
 } // End PrimFnMonDownTack_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -330,12 +302,6 @@ LPPL_YYSTYPE PrimFnMonDownTack_EM_YY
 //
 //  Primitive function for dyadic DownTack ("encode/representation")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydDownTack_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
     (LPTOKEN lptkLftArg,                        // Ptr to left arg token
@@ -890,7 +856,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDydDownTack_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

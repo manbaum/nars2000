@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,12 +41,6 @@
 //  Primitive function for monadic and dyadic Domino ("matrix inverse" and "matrix divide")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDomino_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnDomino_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -78,7 +72,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimFnDomino_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -86,12 +79,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Domino
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnDomino_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnDomino_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -111,7 +98,6 @@ LPPL_YYSTYPE PrimProtoFnDomino_EM_YY
                                     lptkRhtArg,         // Ptr to right arg token
                                     lptkAxis);          // Ptr to axis token (may be NULL)
 } // End PrimProtoFnDomino_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -119,12 +105,6 @@ LPPL_YYSTYPE PrimProtoFnDomino_EM_YY
 //
 //  Generate an identity element for the primitive function dyadic Domino
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentFnDomino_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimIdentFnDomino_EM_YY
     (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
@@ -352,7 +332,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimIdentFnDomino_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -360,12 +339,6 @@ NORMAL_EXIT:
 //
 //  Primitive function for monadic Domino ("matrix inverse")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonDomino_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     (LPTOKEN lptkFunc,                  // Ptr to function token
@@ -1391,7 +1364,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnMonDomino_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1735,12 +1707,6 @@ void FreeRatMat
 //
 //  Primitive function for dyadic Domino ("matrix divide")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydDomino_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     (LPTOKEN lptkLftArg,                // Ptr to left arg token
@@ -2558,7 +2524,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDydDomino_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

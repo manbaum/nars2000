@@ -23,6 +23,7 @@
 #define STRICT
 #include <windows.h>
 #include <windowsx.h>
+#include <math.h>
 #include "headers.h"
 #include "unitranstab.h"
 #include "scancodes.h"
@@ -91,12 +92,6 @@ typedef enum tagFCNMEMVIRTENUM
 //
 //  Create a function window
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CreateFcnWindow"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL CreateFcnWindow
     (LPWCHAR lpwszLine)             // Ptr to text after {del}
@@ -207,7 +202,6 @@ UBOOL CreateFcnWindow
 
     return TRUE;
 } // End CreateFcnWindow
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -445,12 +439,6 @@ void FE_Delete
 //
 //  Message processing routine for the Function Editor window
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FEWndProc"
-#else
-#define APPEND_NAME
-#endif
 
 LRESULT APIENTRY FEWndProc
     (HWND   hWnd,                   // Window handle
@@ -1149,7 +1137,6 @@ LRESULT APIENTRY FEWndProc
 ////LCLODSAPI ("FEZ:", hWnd, message, wParam, lParam);
     return DefMDIChildProcW (hWnd, message, wParam, lParam);
 } // End FEWndProc
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1281,12 +1268,6 @@ UBOOL SetFETitle
 //
 //  Syntax color a line of text
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SyntaxColor"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL SyntaxColor
     (LPAPLCHAR lpwszLine,           // Ptr to line of text
@@ -1489,7 +1470,6 @@ CRIT_EXIT:
 
     return bRet;
 } // End SyntaxColor
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1497,12 +1477,6 @@ CRIT_EXIT:
 //
 //  Local Edit Ctrl paint hook
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- LclECPaintHook"
-#else
-#define APPEND_NAME
-#endif
 
 int LclECPaintHook
     (HWND    hWndEC,                        // Window handle of Edit Ctrl
@@ -1857,7 +1831,6 @@ int LclECPaintHook
     // Calculate the result
     return MAKELONG (rcScr.right - rcScr.left, rcScr.bottom - rcScr.top);
 } // End LclECPaintHook
-#undef  APPEND_NAME
 
 
 #ifndef UNISCRIBE
@@ -4382,12 +4355,6 @@ void ForceSendCursorMsg
 //  Copy global memory from one handle to another
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CopyGlbMemory"
-#else
-#define APPEND_NAME
-#endif
-
 HGLOBAL CopyGlbMemory
     (HGLOBAL hGlbSrc,       // Global memory handle to copy
      UBOOL   bMyFns)        // TRUE iff we're to MyXxx functions
@@ -4449,7 +4416,6 @@ HGLOBAL CopyGlbMemory
 
     return hGlbDst;
 } // End CopyGlbMemory
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4670,12 +4636,6 @@ NORMAL_EXIT:
 //
 //  Paste APL chars from another APL system
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PasteAPLChars_EM"
-#else
-#define APPEND_NAME
-#endif
 
 void PasteAPLChars_EM
     (HWND      hWndEC,              // Window handle of the Edit Ctrl
@@ -4942,7 +4902,6 @@ NORMAL_EXIT:
         UnlFreeGlbName (hGlbFmts, lpMemFmts);
     } // End IF
 } // End PasteAPLChars_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5848,12 +5807,6 @@ void ErrorHandler
 //    of the function name (if any)
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ParseFunctionName"
-#else
-#define APPEND_NAME
-#endif
-
 LPSYMENTRY ParseFunctionName
     (HWND      hWndFE,                  // Window handle to Function Editor
      LPAPLCHAR lpaplChar)               // Ptr to header text
@@ -5953,7 +5906,6 @@ NORMAL_EXIT:
 
     return lpSymName;
 } // End ParseFunctionName
-#undef  APPEND_NAME
 
 
 //// //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,12 +32,6 @@
 //    monadic operator CircleMiddleDot ("null op" and "null op")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpCircleMiddleDot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimOpCircleMiddleDot_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -57,7 +51,6 @@ LPPL_YYSTYPE PrimOpCircleMiddleDot_EM_YY
                                           lpYYFcnStrOpr,    // Ptr to operator function strand
                                           lptkRhtArg);      // Ptr to right arg token
 } // End PrimOpCircleMiddleDot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -120,12 +113,6 @@ LPPL_YYSTYPE PrimOpMonCircleMiddleDot_EM_YY
 //
 //  Primitive operator for monadic derived function from CircleMiddleDot ("null op")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpMonCircleMiddleDotCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpMonCircleMiddleDotCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -195,7 +182,6 @@ LEFT_OPERAND_NONCE_EXIT:
                               &lpYYFcnStrOpr->tkToken);
     return NULL;
 } // End PrimOpMonCircleMiddleDotCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -223,12 +209,6 @@ LPPL_YYSTYPE PrimOpDydCircleMiddleDot_EM_YY
 //
 //  Primitive operator for dyadic derived function from CircleMiddleDot ("null op")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDydCircleMiddleDotCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpDydCircleMiddleDotCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
@@ -286,7 +266,6 @@ LEFT_OPERAND_NONCE_EXIT:
                               &lpYYFcnStrOpr->tkToken);
     return NULL;
 } // End PrimOpDydCircleMiddleDotCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

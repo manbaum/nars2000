@@ -71,12 +71,6 @@ LPWCHAR lpwOp2ValHdr[FCNVALENCE_LENGTH] =
 //  Attempt to save a function to the WS
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SaveFunction"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL SaveFunction
     (HWND hWndFE)                   // Function Editor window handle
 
@@ -137,7 +131,6 @@ UBOOL SaveFunction
     return SaveFunctionCom (hWndFE,                 // Function Edit window handle (not-[]FX only)
                            &SF_Fcns);               // Ptr to common values
 } // End SaveFunction
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1744,12 +1737,6 @@ HGLOBAL SF_UndoBufferCom
 //    when called from function editor
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SF_UndoBufferFE"
-#else
-#define APPEND_NAME
-#endif
-
 HGLOBAL SF_UndoBufferFE
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns)           // Ptr to common struc
@@ -1803,7 +1790,6 @@ HGLOBAL SF_UndoBufferFE
 
     return hGlbUndoBuff;
 } // End SF_UndoBufferFE
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1812,12 +1798,6 @@ HGLOBAL SF_UndoBufferFE
 //  Return a ptr to the Undo buffer
 //    when called from LoadWorkspace
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SF_UndoBufferLW"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL SF_UndoBufferLW
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
@@ -2011,7 +1991,6 @@ HGLOBAL SF_UndoBufferLW
 
     return hGlbUndoBuff;
 } // End SF_UndoBufferLW
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2098,12 +2077,6 @@ LPWCHAR ConstructFcnHdr
 //  Attempt to save a function to the WS.
 //  Subroutine to SaveFunction; also called directly from []FX.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SaveFunctionCom"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL SaveFunctionCom
     (HWND      hWndFE,                      // Function Editor window handle (FE only, NULL otherwise)
@@ -3142,7 +3115,6 @@ NORMAL_EXIT:
 
     return lpSF_Fcns->bRet;
 } // End SaveFunctionCom
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3151,12 +3123,6 @@ NORMAL_EXIT:
 //  Save one function line or
 //    size one function line
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SaveFunctionLine"
-#else
-#define APPEND_NAME
-#endif
 
 UINT SaveFunctionLine
     (LPSF_FCNS      lpSF_Fcns,              // Ptr to common struc (may be NULL if unused)
@@ -3387,7 +3353,6 @@ WSFULL_EXIT:
 ERROR_EXIT:
     return -1;
 } // End SaveFunctionLine
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3605,12 +3570,6 @@ UBOOL IsLineEmpty
 //
 //  Calculate the line #s of the line labels
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- GetLabelNums"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL GetLabelNums
     (LPDFN_HEADER  lpMemDfnHdr,         // Ptr to user-defined function/operator header
@@ -3879,7 +3838,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End GetLabelNums
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,12 +30,6 @@
 //
 //  Assign a token value to a token name
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- AssignName_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL AssignName_EM
     (LPTOKEN lptkNam,               // Ptr to name token
@@ -464,7 +458,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return bRet;
 } // End AssignName_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -624,12 +617,6 @@ NAME_TYPES GetNameType
 //  Assign either a variable or function array
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- AssignArrayCommon_EM"
-#else
-#define APPEND_NAME
-#endif
-
 void AssignArrayCommon
     (LPTOKEN     lptkNam,           // Ptr to name token
      LPTOKEN     lptkSrc,           // Ptr to source token
@@ -653,7 +640,6 @@ void AssignArrayCommon
     // Copy the HGLOBAL
     lptkNam->tkData.tkSym->stData.stGlbData = CopySymGlbDir_PTB (lptkSrc->tkData.tkGlbData);
 } // End AssignArrayCommon
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -661,12 +647,6 @@ void AssignArrayCommon
 //
 //  Assign values to a name strand
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- AssignNamedVars_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL AssignNamedVars_EM
     (LPPL_YYSTYPE lpYYStr,      // Ptr to named strand
@@ -1074,7 +1054,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End AssignNamedVars_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1082,12 +1061,6 @@ NORMAL_EXIT:
 //
 //  Assign modified values to a name strand
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ModifyAssignNamedVars_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL ModifyAssignNamedVars_EM
     (LPPL_YYSTYPE  lpYYStrN,        // Ptr to name strand token
@@ -1614,7 +1587,6 @@ ERROR_EXIT:
 
     return bRet;
 } // End ModifyAssignNamedVars_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

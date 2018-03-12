@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1027,12 +1027,6 @@ VectorRes:
 //  Thanks to the designers of J for these clever ideas.
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ParsePointNotation"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL ParsePointNotation
     (LPPNLOCALVARS lppnLocalVars)           // Ptr to PN Local vars
 
@@ -1130,7 +1124,6 @@ UBOOL ParsePointNotation
 #endif
     return bRet;
 } // End ParsePointNotation
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1370,12 +1363,6 @@ int pn_yylex
 //  Error callback from Bison
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- pn_yyerror"
-#else
-#define APPEND_NAME
-#endif
-
 void pn_yyerror                     // Called for Bison syntax error
     (LPPNLOCALVARS lppnLocalVars,   // Ptr to local pnLocalVars
      const char   *s)               // Ptr to error msg
@@ -1446,7 +1433,6 @@ void pn_yyerror                     // Called for Bison syntax error
         DbgGlobalFree (lppnLocalVars->hGlbRes); lppnLocalVars->hGlbRes = NULL;
     } // End IF
 } // End pn_yyerror
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,12 +34,6 @@
 //
 //  Execute the system command:  )IN filename[.ext]
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CmdIn_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL CmdIn_EM
     (LPWCHAR lpwszTail)                     // Ptr to command line tail
@@ -298,7 +292,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End CmdIn_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -306,12 +299,6 @@ NORMAL_EXIT:
 //
 //  Transfer form inverse of a Type-2 array
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- TransferInverseArr2_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL TransferInverseArr2_EM
     (LPWCHAR    lpwName,                    // Ptr to incoming data
@@ -499,7 +486,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End TransInverseArr2_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -507,12 +493,6 @@ NORMAL_EXIT:
 //
 //  Transfer form inverse of a Type-2 function
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- TransferInverseFcn2_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL TransferInverseFcn2_EM
     (LPWCHAR    lpwName,                    // Ptr to incoming data
@@ -676,7 +656,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End TransferInverseFcn2_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -684,12 +663,6 @@ NORMAL_EXIT:
 //
 //  Transfer form inverse of a Type-1 character array
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- TransferInverseChr1_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL TransferInverseChr1_EM
     (LPWCHAR lpwszTemp,                     // Ptr to incoming data
@@ -923,7 +896,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End TransferInverseChr1_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -931,12 +903,6 @@ NORMAL_EXIT:
 //
 //  Transfer form inverse of a Type-1 numeric array
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- TransferInverseNum1_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL TransferInverseNum1_EM
     (LPWCHAR lpwszTemp,                     // Ptr to incoming data
@@ -1169,7 +1135,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End TransferInverseNum1_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

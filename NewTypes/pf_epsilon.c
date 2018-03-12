@@ -38,12 +38,6 @@
 //  Primitive function for monadic and dyadic Epsilon ("enlist" and "member of")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnEpsilon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnEpsilon_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -64,7 +58,6 @@ LPPL_YYSTYPE PrimFnEpsilon_EM_YY
     else
         return PrimFnDydEpsilon_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnEpsilon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -72,12 +65,6 @@ LPPL_YYSTYPE PrimFnEpsilon_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Epsilon
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnEpsilon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnEpsilon_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -97,7 +84,6 @@ LPPL_YYSTYPE PrimProtoFnEpsilon_EM_YY
                                     lptkRhtArg,         // Ptr to right arg token
                                     lptkAxis);          // Ptr to axis token (may be NULL)
 } // End PrimProtoFnEpsilon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -105,12 +91,6 @@ LPPL_YYSTYPE PrimProtoFnEpsilon_EM_YY
 //
 //  Primitive function for monadic Epsilon ("enlist")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonEpsilon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonEpsilon_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -174,7 +154,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimFnMonEpsilon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -182,12 +161,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic Epsilon on an immediate value
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonEpsilonImm_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonEpsilonImm_EM_YY
     (ARRAY_TYPES aplTypeRes,    // Right arg storage type
@@ -284,7 +257,6 @@ WSFULL_EXIT:
                                lptkFunc);
     return NULL;
 } // End PrimFnMonEpsilonImm_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -295,12 +267,6 @@ WSFULL_EXIT:
 //     Allocate storage
 //     Copy the data to the result
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonEpsilonGlb_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonEpsilonGlb_EM_YY
     (HGLOBAL hGlbRht,                       // Right arg global memory handle
@@ -415,7 +381,6 @@ ERROR_EXIT:
 
     return NULL;
 } // End PrimFnMonEpsilonGlb_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -540,12 +505,6 @@ void PrimFnMonEpsilonGlbCount
 //
 //  Copy the data from the right arg to the result
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonEpsilonGlbCopy_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnMonEpsilonGlbCopy_EM
     (APLSTYPE aplTypeRes,           // Result type
@@ -1208,7 +1167,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End PrimFnMonEpsilonGlbCopy_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1216,12 +1174,6 @@ NORMAL_EXIT:
 //
 //  Primitive function for dyadic Epsilon ("member of")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydEpsilon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydEpsilon_EM_YY
     (LPTOKEN lptkLftArg,                    // Ptr to left arg token
@@ -1504,7 +1456,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDydEpsilon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1963,12 +1914,6 @@ ERROR_EXIT:
 //  Dyadic epsilon of APLCHAR vs. APLCHAR
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydEpsilonCvC_EM"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL PrimFnDydEpsilonCvC_EM
     (LPAPLBOOL lpMemRes,            // Ptr to result global memory data
      APLNELM   aplNELMLft,          // Left arg (and result) NELM
@@ -2049,7 +1994,6 @@ WSFULL_EXIT:
 ERROR_EXIT:
     return FALSE;
 } // End PrimFnDydEpsilonCvC_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2330,12 +2274,6 @@ ERROR_EXIT:
 //
 //  Dyadic epsilon between all other arg combinations
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydEpsilonOther_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydEpsilonOther_EM
     (LPAPLBOOL lpMemRes,                    // Ptr to result global memory data
@@ -2703,7 +2641,6 @@ WSFULL_EXIT:
 ERROR_EXIT:
     return FALSE;
 } // End PrimFnDydEpsilonOther_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

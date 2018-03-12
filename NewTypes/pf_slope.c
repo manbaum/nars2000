@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //  Primitive function for monadic and dyadic Slope (ERROR and "expand")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnSlope_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnSlope_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -58,7 +52,6 @@ LPPL_YYSTYPE PrimFnSlope_EM_YY
     else
         return PrimFnDydSlope_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnSlope_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -66,12 +59,6 @@ LPPL_YYSTYPE PrimFnSlope_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Slope
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnSlope_EM"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnSlope_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -91,7 +78,6 @@ LPPL_YYSTYPE PrimProtoFnSlope_EM_YY
                                     lptkRhtArg,         // Ptr to right arg token
                                     lptkAxis);          // Ptr to axis token (may be NULL)
 } // End PrimProtoFnSlope_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -99,12 +85,6 @@ LPPL_YYSTYPE PrimProtoFnSlope_EM_YY
 //
 //  Primitive function for monadic Slope (ERROR)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonSlope_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonSlope_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -114,7 +94,6 @@ LPPL_YYSTYPE PrimFnMonSlope_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End PrimFnMonSlope_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -122,12 +101,6 @@ LPPL_YYSTYPE PrimFnMonSlope_EM_YY
 //
 //  Primitive function for dyadic Slope ("expand")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydSlope_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydSlope_EM_YY
     (LPTOKEN lptkLftArg,                // Ptr to left arg token
@@ -837,9 +810,9 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -861,19 +834,19 @@ NORMAL_EXIT:
     // Unlock and free (and set to NULL) a global name and ptr
     UnlFreeGlbName (hGlbRep, lpMemRep);
 
-    if (hGlbLft && lpMemLft)
+    if (hGlbLft NE NULL && lpMemLft NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemRht NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -881,7 +854,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDydSlope_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -364,12 +364,6 @@ UBOOL bThemeLibLoaded = FALSE,      // TRUE iff the theme library successfully l
 //
 //  Modeless dialog box to allow the user to customize the program
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CustomizeDlgProc"
-#else
-#define APPEND_NAME
-#endif
 
 INT_PTR CALLBACK CustomizeDlgProc
     (HWND   hWnd,       // Window handle
@@ -5401,7 +5395,6 @@ INT_PTR CALLBACK CustomizeDlgProc
     // Return dialog result
     DlgMsgPass (hDlg);      // We didn't handle the msg
 } // End CustomizeDlgProc
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -6381,12 +6374,6 @@ void GetClearWsChrValue
 //  Common routine to get a CLEARWS value
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- GetClearWsComValue"
-#else
-#define APPEND_NAME
-#endif
-
 void GetClearWsComValue
     (APLSTYPE aplTypeCom,               // Common storage type
      UINT     uLen,                     // Common length
@@ -6447,7 +6434,6 @@ void GetClearWsComValue
 #endif
     } // End IF/ELSE
 } // End GetClearWsComValue
-#undef  APPEND_NAME
 
 
 //***************************************************************************

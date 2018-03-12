@@ -693,12 +693,6 @@ void InitAccumVars
 //  See if we need to resize the Numeric global var
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CheckResizeNum_EM"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL CheckResizeNum_EM
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
@@ -744,7 +738,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return bRet;
 } // End CheckResizeNum_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -752,12 +745,6 @@ NORMAL_EXIT:
 //
 //  See if we need to resize the String global var
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CheckResizeStr_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL CheckResizeStr_EM
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
@@ -802,7 +789,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return bRet;
 } // End CheckResizeStr_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -932,12 +918,6 @@ UBOOL IsLocalName
 //  Start of system namespace
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- fnSysNSInit"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL fnSysNSInit
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
@@ -960,7 +940,6 @@ UBOOL fnSysNSInit
                              &tkData,
                               0);
 } // End fnSysNSInit
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -997,12 +976,6 @@ UBOOL scSysNSInit
 //  Next level of system namespace
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- fnSysNSIncr"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL fnSysNSIncr
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
@@ -1030,7 +1003,6 @@ UBOOL fnSysNSIncr
     // Mark as successful
     return TRUE;
 } // End fnSysNSIncr
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1353,12 +1325,6 @@ ERROR_EXIT:
 //  End of name
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- fnAlpDone"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL fnAlpDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
@@ -1526,7 +1492,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End fnAlpDone
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2107,12 +2072,6 @@ UBOOL scClnDone
 //  Done with this Control Structure
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- fnCtrlDone"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL fnCtrlDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
@@ -2270,7 +2229,6 @@ UBOOL fnCtrlDone
     // Mark as successful
     return TRUE;
 } // End fnCtrlDone
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2463,12 +2421,6 @@ UBOOL scPointAcc
 //  A Point Notation symbol subroutine
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- fnPointSub"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL fnPointSub
     (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
      WCHAR         wchCur)              // The char to accumulate
@@ -2491,7 +2443,6 @@ UBOOL fnPointSub
 
     return bRet;
 } // End fnPointSub
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2499,12 +2450,6 @@ UBOOL fnPointSub
 //
 //  A Point Notation symbol done
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- fnPointDone"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL fnPointDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
@@ -2681,7 +2626,6 @@ ERROR_EXIT:
 
     return bRet;
 } // End fnPointDone
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3622,12 +3566,6 @@ UBOOL scQuo2Accum
 //  Start of or next char in a string
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- fnQuoAccumSub"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL fnQuoAccumSub
     (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
      SCTYPE        scType,              // Syntax Color type (see SCTYPE)
@@ -3656,7 +3594,6 @@ UBOOL fnQuoAccumSub
 
     return bRet;
 } // End fnQuoAccumSub
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3804,12 +3741,6 @@ UBOOL scQuo2Exit
 //  End or exit of a char or char vector
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- fnQuoDoneSub"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL fnQuoDoneSub
     (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
      UBOOL         bNormal,             // TRUE iff normal completion (as opposed to unmatched at EOL)
@@ -3950,7 +3881,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End fnQuoDoneSub
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4251,12 +4181,6 @@ UBOOL scBrcDone
 //  Group (Right paren/bracket) common ending
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- fnGroupDoneSub"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL fnGroupDoneSub
     (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
      TOKEN_TYPES   tknTypeCurr,         // Token type of current grouping symbol
@@ -4302,7 +4226,6 @@ UBOOL fnGroupDoneSub
 
     return bRet;
 } // End fnGroupDoneSub
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4947,12 +4870,6 @@ EOS NOP xxx SOS   ...   EOL NOP xxx SOS
 
 */
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- Tokenize_EM"
-#else
-#define APPEND_NAME
-#endif
-
 HGLOBAL Tokenize_EM
     (LPAPLCHAR   lpwszLine,         // The line to tokenize (not necessarily zero-terminated)
      APLNELM     aplNELM,           // NELM of lpwszLine
@@ -5357,7 +5274,6 @@ FREED_EXIT:
 #endif
     return tkLocalVars.hGlbToken;
 } // End Tokenize_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5382,12 +5298,6 @@ void CheckGroupSymbols_EM
 //
 //  Free allocated memory and other such resources in a tokenized line
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- Untokenize"
-#else
-#define APPEND_NAME
-#endif
 
 void Untokenize
     (LPTOKEN_HEADER lptkHdr)    // Ptr to token header global memory
@@ -5558,7 +5468,6 @@ void Untokenize
             break;
     } // End FOR/SWITCH
 } // End Untokenize
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5640,12 +5549,6 @@ UBOOL AppendEOSToken_EM
 //  The suffix _EM means that this function generates its own error message
 //    so the caller doesn't need to.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- AppendNewToken_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL AppendNewToken_EM
     (LPTKLOCALVARS lptkLocalVars,       // Ptr to Tokenize_EM local vars
@@ -5911,7 +5814,6 @@ UBOOL AppendNewToken_EM
 
     return TRUE;
 } // End AppendNewToken_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

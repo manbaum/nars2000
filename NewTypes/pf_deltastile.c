@@ -35,12 +35,6 @@
 //    ("grade up numeric" and "grade up character")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDeltaStile_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnDeltaStile_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -72,7 +66,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimFnDeltaStile_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -81,12 +74,6 @@ AXIS_SYNTAX_EXIT:
 //  Primitive function for monadic and dyadic DelStile
 //    ("grade down numeric" and "grade down character")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDelStile_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDelStile_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -119,7 +106,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimFnDelStile_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -128,12 +114,6 @@ AXIS_SYNTAX_EXIT:
 //  Generate a prototype for the primitive functions
 //    monadic & dyadic DeltaStile
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnDeltaStile_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnDeltaStile_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -153,7 +133,6 @@ LPPL_YYSTYPE PrimProtoFnDeltaStile_EM_YY
                                     lptkRhtArg,             // Ptr to right arg token
                                     lptkAxis);              // Ptr to axis token (may be NULL)
 } // End PrimProtoFnDeltaStile_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -162,12 +141,6 @@ LPPL_YYSTYPE PrimProtoFnDeltaStile_EM_YY
 //  Generate a prototype for the primitive functions
 //    monadic & dyadic DelStile
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnDelStile_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnDelStile_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -187,7 +160,6 @@ LPPL_YYSTYPE PrimProtoFnDelStile_EM_YY
                                     lptkRhtArg,             // Ptr to right arg token
                                     lptkAxis);              // Ptr to axis token (may be NULL)
 } // End PrimProtoFnDelStile_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -196,12 +168,6 @@ LPPL_YYSTYPE PrimProtoFnDelStile_EM_YY
 //  Primitive function for monadic DelStile and DeltaStile
 //    ("grade up/down numeric")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonGradeCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -581,7 +547,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnMonGradeCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -589,12 +554,6 @@ NORMAL_EXIT:
 //
 //  Return an HGLOBAL with {enclose}{zilde}
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MakeEncloseZilde"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL MakeEncloseZilde
     (void)
@@ -644,7 +603,6 @@ HGLOBAL MakeEncloseZilde
 
     return hGlbRes;
 } // End MakeEncloseZilde
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -901,12 +859,6 @@ ERROR_EXIT:
 //  Primitive function for dyadic DelStile and DeltaStile
 //    ("grade up/down character")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydGradeCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydGradeCommon_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -1262,7 +1214,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDydGradeCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

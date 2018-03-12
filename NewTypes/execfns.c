@@ -95,12 +95,6 @@ LPPL_YYSTYPE ExecuteFn0
 //  Execute a user-defined, system, or primitive function
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ExecFunc_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE ExecFunc_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStr,           // Ptr to function strand
@@ -512,7 +506,6 @@ VALUE_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End ExecFunc_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -775,12 +768,6 @@ void GetOperands
 //  Execute a function in global memory
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ExecFcnGlb_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE ExecFcnGlb_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      HGLOBAL hGlbFcn,               // Handle to function strand
@@ -854,7 +841,6 @@ AXIS_SYNTAX_EXIT:
                               &lpYYFcnStr->tkToken);
     return NULL;
 } // End ExecFcnGlb_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -862,12 +848,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Execute a Train
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ExecTrain_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE ExecTrain_EM_YY
     (LPTOKEN      lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
@@ -1207,7 +1187,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End ExecTrain_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1215,12 +1194,6 @@ NORMAL_EXIT:
 //
 //  Execute a function strand
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ExecFuncStr_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE ExecFuncStr_EM_YY
     (LPTOKEN      lptkLftArg,       // Ptr to left arg token (may be NULL if monadic)
@@ -1236,7 +1209,6 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
                              lptkAxis,      // Ptr to axis token (may be NULL)
                              LINENUM_ONE);  // Starting line # type (see LINE_NUMS)
 } // End ExecFuncStr_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1244,12 +1216,6 @@ LPPL_YYSTYPE ExecFuncStr_EM_YY
 //
 //  Execute a function strand at a given line # type
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ExecFuncStrLine_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE ExecFuncStrLine_EM_YY
     (LPTOKEN      lptkLftArg,       // Ptr to left arg token (may be NULL if niladic/monadic)
@@ -1454,7 +1420,6 @@ SYNTAX_EXIT:
 ERROR_EXIT:
     return NULL;
 } // End ExecFuncStrLine_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1462,12 +1427,6 @@ ERROR_EXIT:
 //
 //  Execute an immediate monadic operator
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ExecOp1_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE ExecOp1_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
@@ -1539,7 +1498,6 @@ LPPL_YYSTYPE ExecOp1_EM_YY
             return NULL;
     } // End SWITCH
 } // End ExecOp1_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1547,12 +1505,6 @@ LPPL_YYSTYPE ExecOp1_EM_YY
 //
 //  Execute an immediate dyadic operator
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ExecOp2_EM"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE ExecOp2_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
@@ -1637,7 +1589,6 @@ LPPL_YYSTYPE ExecOp2_EM_YY
             return NULL;
     } // End SWITCH
 } // End ExecOp2_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

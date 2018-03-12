@@ -31,12 +31,6 @@
 //  Primitive function for monadic and dyadic DownArrow (ERROR and "drop")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDownArrow_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnDownArrow_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -57,7 +51,6 @@ LPPL_YYSTYPE PrimFnDownArrow_EM_YY
     else
         return PrimFnDydDownArrow_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnDownArrow_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -65,12 +58,6 @@ LPPL_YYSTYPE PrimFnDownArrow_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic DownArrow
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnDownArrow_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnDownArrow_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -90,7 +77,6 @@ LPPL_YYSTYPE PrimProtoFnDownArrow_EM_YY
                                     lptkRhtArg,             // Ptr to right arg token
                                     lptkAxis);              // Ptr to axis token (may be NULL)
 } // End PrimProtoFnDownArrow_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -98,12 +84,6 @@ LPPL_YYSTYPE PrimProtoFnDownArrow_EM_YY
 //
 //  Generate an identity element for the primitive function dyadic DownArrow
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentDownArrow_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimIdentFnDownArrow_EM_YY
     (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
@@ -212,7 +192,6 @@ WSFULL_EXIT:
 ERROR_EXIT:
     return NULL;
 } // End PrimIdentFnDownArrow_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -220,12 +199,6 @@ ERROR_EXIT:
 //
 //  Primitive function for monadic DownArrow (ERROR)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonDownArrow_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonDownArrow_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -235,7 +208,6 @@ LPPL_YYSTYPE PrimFnMonDownArrow_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End PrimFnMonDownArrow_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -243,12 +215,6 @@ LPPL_YYSTYPE PrimFnMonDownArrow_EM_YY
 //
 //  Primitive function for dyadic DownArrow ("drop")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydDownArrow_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydDownArrow_EM_YY
     (LPTOKEN lptkLftArg,                // Ptr to left arg token
@@ -821,19 +787,19 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbLft NE NULL && lpMemHdrLft)
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
     } // End IF
 
-    if (hGlbRht NE NULL && lpMemHdrRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbRes NE NULL && lpMemHdrRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
@@ -853,7 +819,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDownArrow_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -895,12 +860,6 @@ void IncrLoHiOdometer
 //
 //  Dyadic Up/DownArrow left argument validation on a global memory object
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydUpDownArrowLftGlbValid_EM"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL PrimFnDydUpDownArrowLftGlbValid_EM
     (LPAPLNELM         lpaplNELMCom,    // Ptr to common NELM (may be NULL if DownArrow)
@@ -1254,7 +1213,6 @@ DOMAIN_EXIT:
                                lptkFunc);
     return NULL;
 } // End PrimFnDydUpDownArrowLftGlbValid_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

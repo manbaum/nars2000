@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -557,12 +557,6 @@ INT_PTR CALLBACK UpdatesDlgProc
 //  Download and run the setup program
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- DownloadRun"
-#else
-#define APPEND_NAME
-#endif
-
 void DownloadRun
     (LPWCHAR     lpWebVer,                      // Ptr to web version string
      LPDNLTHRSTR lpDnlThrStr)                   // Ptr to DownloadInThread parameter
@@ -792,7 +786,6 @@ NORMAL_EXIT:
 
     return;
 } // End DownloadRun
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1196,12 +1189,6 @@ void FormatSystemErrorMessage
 //  Free and close internat resources and handles
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FreeAndClose"
-#else
-#define APPEND_NAME
-#endif
-
 void FreeAndClose
     (LPDNLTHRSTR lpDnlThrStr,           // Ptr to DNLTHRSTR
      UBOOL       bDeleteFile)           // TRUE iff we should delete the temp file
@@ -1252,7 +1239,6 @@ void FreeAndClose
 
 ////oprintfW (L"%3d:  FreeAndClose end\n", guCnt++);
 } // End FreeAndClose
-#undef  APPEND_NAME
 
 
 //***************************************************************************

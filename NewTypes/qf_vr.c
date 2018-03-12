@@ -31,12 +31,6 @@
 //  System function:  []VR -- Visual Representation
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnVR_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE SysFnVR_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -65,7 +59,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnVR_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -121,12 +114,6 @@ LPPL_YYSTYPE SysFnMonVR_EM_YY
 //  Dyadic []VR -- ERROR
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydVR_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE SysFnDydVR_EM_YY
     (LPTOKEN lptkLftArg,                    // Ptr to left arg token
      LPTOKEN lptkFunc,                      // Ptr to function token
@@ -136,7 +123,6 @@ LPPL_YYSTYPE SysFnDydVR_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnDydVR_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

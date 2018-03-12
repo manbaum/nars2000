@@ -1,6 +1,3 @@
-Version 0.5.7.xx consists of the following Builds:
-
-
 Build #1858 -- Version 0.5.7.xx
 --------------------------------
 
@@ -167,28 +164,3 @@ TYPEMOTE.C:
 UPDATES.C:
 YYFNS.C:
   Redefine APPEND_NAME so it need not be separately defined for each C function.
-
-
-Build #1857 -- Version 0.5.7.xx
---------------------------------
-
-* Define Alias For Epsilon
-
-Directory branches/bsmith/NewTypes:
-
-INITDATA.C:
-MACROS.H:
-PF_EPSILON.C:
-SYMBOLNAMES.H:
-TOKENIZE.C:
-TRANSLATE.C:
-UNICODE.H:
-UNITRANSTAB.H:
-  Define Epsilon2 (U+2208) as an alias for Epsilon (U+220A).
-
-PO_DOT.C:
-PO_VARIANT.C:
-  Use macro to test for UTF16_BAR and UTF16_BAR2.
-
-VER.RC:
-  Increment version # to 0.5.7.xx.

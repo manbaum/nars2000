@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,12 +32,6 @@
 //    monadic operator Slope ("scan" and "scan")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpSlope_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimOpSlope_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -62,7 +56,6 @@ LPPL_YYSTYPE PrimOpSlope_EM_YY
                                      lpYYFcnStrOpr, // Ptr to operator function strand
                                      lptkRhtArg);   // Ptr to right arg token
 } // End PrimOpSlope_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -122,12 +115,6 @@ LPPL_YYSTYPE PrimOpMonSlope_EM_YY
 //
 //  Primitive operator for monadic derived function from Slope ("scan")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpMonSlopeCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,            // Ptr to operator function strand
@@ -1614,7 +1601,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimOpMonSlopeCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1641,12 +1627,6 @@ LPPL_YYSTYPE PrimOpDydSlope_EM_YY
 //
 //  Primitive operator for dyadic derived function from Slope ("scan")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDydSlopeCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpDydSlopeCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
@@ -1697,7 +1677,6 @@ LEFT_SYNTAX_EXIT:
                               &lpYYFcnStrLft->tkToken);
     return NULL;
 } // End PrimOpDydSlopeCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

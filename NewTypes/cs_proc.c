@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -324,12 +324,6 @@ void CS_SetTokenCLIndex
 //  Process ASSERT stmt (pl_yyparse)
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CS_ASSERT_Stmt_EM"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL CS_ASSERT_Stmt_EM
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
      LPPL_YYSTYPE  lpYYRhtArg)          // Ptr to right arg
@@ -387,7 +381,6 @@ DOMAIN_EXIT:
 ERROR_EXIT:
     return FALSE;
 } // End CS_ASSERT_Stmt_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -395,12 +388,6 @@ ERROR_EXIT:
 //
 //  Process CASE/CASELIST stmt (pl_yyparse)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CS_CASE_Stmt"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL CS_CASE_Stmt
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
@@ -422,7 +409,6 @@ UBOOL CS_CASE_Stmt
 
     return TRUE;
 } // End CS_CASE_Stmt
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -460,12 +446,6 @@ UBOOL CS_CONTINUE_Stmt
 //
 //  Process CONTINUEIF stmt (pl_yyparse)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CS_CONTINUEIF_Stmt_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL CS_CONTINUEIF_Stmt_EM
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
@@ -525,7 +505,6 @@ DOMAIN_EXIT:
 ERROR_EXIT:
     return FALSE;
 } // End CS_CONTINUEIF_Stmt_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -608,12 +587,6 @@ LPFORSTMT FindMatchingForStmt
 //  Process ENDFOR/ENDFORLCL stmt (pl_yyparse)
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CS_ENDFOR_Stmt_EM"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL CS_ENDFOR_Stmt_EM
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
      LPTOKEN       lptkEndForArg,       // Ptr to ENDFOR arg
@@ -660,7 +633,6 @@ UBOOL CS_ENDFOR_Stmt_EM
 UNINIT_EXIT:
     return TRUE;
 } // End CS_ENDFOR_Stmt_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -762,12 +734,6 @@ UBOOL CS_ENDWHILE_Stmt
 //  Process FOR/FORLCL stmt (pl_yyparse)
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CS_FOR_Stmt_EM"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL CS_FOR_Stmt_EM
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
      LPPL_YYSTYPE  lpYYForArg,          // Ptr to FOR arg
@@ -837,7 +803,6 @@ UBOOL CS_FOR_Stmt_EM
 
     return TRUE;
 } // End CS_FOR_Stmt_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -845,12 +810,6 @@ UBOOL CS_FOR_Stmt_EM
 //
 //  Process IF/ELSEIF/ANDIF/ORIF/UNTIL/WHILE stmt (pl_yyparse)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CS_IF_Stmt"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL CS_IF_Stmt_EM
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
@@ -1254,7 +1213,6 @@ DOMAIN_EXIT:
 ERROR_EXIT:
     return FALSE;
 } // End CS_IF_Stmt_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1302,12 +1260,6 @@ UBOOL CS_LEAVE_Stmt
 //
 //  Process LEAVEIF stmt (pl_yyparse)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CS_LEAVEIF_Stmt_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL CS_LEAVEIF_Stmt_EM
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
@@ -1367,7 +1319,6 @@ DOMAIN_EXIT:
 ERROR_EXIT:
     return FALSE;
 } // End CS_LEAVEIF_Stmt
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1375,12 +1326,6 @@ ERROR_EXIT:
 //
 //  Process SELECT stmt (pl_yyparse)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CS_SELECT_Stmt_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL CS_SELECT_Stmt_EM
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to PL local vars
@@ -1574,7 +1519,6 @@ UBOOL CS_SELECT_Stmt_EM
 
     return FALSE;
 } // End CS_SELECT_Stmt_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

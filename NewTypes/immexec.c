@@ -47,12 +47,6 @@ typedef struct tagWFSO          // Struct for WaitForSingleObject
 //  Wait callback for ImmExecStmt
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- WaitForImmExecStmt"
-#else
-#define APPEND_NAME
-#endif
-
 VOID CALLBACK WaitForImmExecStmt
     (LPVOID  lpParameter,           // Thread data
      BOOLEAN TimerOrWaitFired)      // Reason
@@ -116,7 +110,6 @@ VOID CALLBACK WaitForImmExecStmt
     UnlFreeGlbName (hGlbWFSO, lpMemWFSO);
 #undef  hGlbWFSO
 } // End WaitForImmExecStmt
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -307,12 +300,6 @@ UINT CopyBlockLines
 //    in immediate execution mode
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ImmExecLine"
-#else
-#define APPEND_NAME
-#endif
-
 void ImmExecLine
     (HWND hWndEC,                           // Handle of Edit Ctrl window
      UINT uLineNum)                         // Line #
@@ -427,7 +414,6 @@ void ImmExecLine
     // Free the virtual memory for the complete line
     MyVirtualFree (lpwszCompLine, 0, MEM_RELEASE); lpwszCompLine = NULL;
 } // End ImmExecLine
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -435,12 +421,6 @@ void ImmExecLine
 //
 //  Execute a statement
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ImmExecStmt"
-#else
-#define APPEND_NAME
-#endif
 
 EXIT_TYPES ImmExecStmt
     (LPWCHAR lpwszCompLine,     // Ptr to line to execute
@@ -526,7 +506,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return exitType;
 } // End ImmExecStmt
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -553,12 +532,6 @@ void InitPerThreadVars
 //  Execute a line (sys/user command, fn defn, etc.)
 //    in immediate execution mode
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ImmExecStmtInThread"
-#else
-#define APPEND_NAME
-#endif
 
 DWORD WINAPI ImmExecStmtInThread
     (LPIE_THREAD lpieThread)            // Ptr to IE_THREAD struc
@@ -944,7 +917,6 @@ ERROR_EXIT:
         return EXITTYPE_ERROR;      // To keep the compiler happy
     } // End __try/__except
 } // End ImmExecStmtInThread
-#undef  APPEND_NAME
 
 
 //***************************************************************************

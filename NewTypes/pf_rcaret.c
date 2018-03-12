@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -176,12 +176,6 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecRightCaret};
 //  Primitive function for monadic and dyadic RightCaret (ERROR and "less than")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnRightCaret_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnRightCaret_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -198,7 +192,6 @@ LPPL_YYSTYPE PrimFnRightCaret_EM_YY
     else
         return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
 } // End PrimFnRightCaret_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -210,12 +203,6 @@ LPPL_YYSTYPE PrimFnRightCaret_EM_YY
 //    coefficients as a new (column) dimension.
 //  For all other arrays, signal an error.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonRightCaret_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonRightCaret_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -276,7 +263,6 @@ RIGHT_DOMAIN_EXIT:
 ERROR_EXIT:
     return NULL;
 } // End PrimFnMonRightCaret_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

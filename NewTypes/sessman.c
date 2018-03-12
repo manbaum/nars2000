@@ -166,12 +166,6 @@ void AppendLine
 //  Replace the current line in the history buffer
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ReplaceLine"
-#else
-#define APPEND_NAME
-#endif
-
 void ReplaceLine
     (HWND    hWndEC,            // Edit Ctrl window handle
      LPWCHAR lpwszLine,         // Ptr to incoming line text
@@ -195,7 +189,6 @@ void ReplaceLine
     // Replace the selection with the given line
     SendMessageW (hWndEC, EM_REPLACESEL, FALSE, (LPARAM) lpwszLine);
 } // End ReplaceLine
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -204,12 +197,6 @@ void ReplaceLine
 //  Replace the last line in the history buffer
 //    and move the text caret to the next line
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ReplacelastLineCR"
-#else
-#define APPEND_NAME
-#endif
 
 void ReplaceLastLineCR
     (LPWCHAR lpwszLine)         // Ptr to incoming line text
@@ -231,7 +218,6 @@ void ReplaceLastLineCR
     // Move the text caret to the next line
     AppendLine (L"", FALSE, TRUE);
 } // End ReplacelastLineCR
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -781,12 +767,6 @@ UINT GetLineLength
 //  Format QQ input and save in global memory
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FormatQQuadInput"
-#else
-#define APPEND_NAME
-#endif
-
 void FormatQQuadInput
     (UINT         uLineNum,     // Line #
      HWND         hWndEC,       // Handle of Edit Ctrl window
@@ -900,7 +880,6 @@ NORMAL_EXIT:
     // Release our time slice so the released thread can act
     Sleep (0);
 } // End FormatQQuadInput
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -934,12 +913,6 @@ void SM_Delete
 //
 //  Message processing routine for the Session Manager window
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SMWndProc"
-#else
-#define APPEND_NAME
-#endif
 
 LRESULT APIENTRY SMWndProc
     (HWND   hWnd,       // Window handle
@@ -2539,7 +2512,6 @@ NORMAL_EXIT:
 ////LCLODSAPI ("SMZ:", hWnd, message, wParam, lParam);
     return DefMDIChildProcW (hWnd, message, wParam, lParam);
 } // End SMWndProc
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2547,12 +2519,6 @@ NORMAL_EXIT:
 //
 //  Common routine when moving the text cursor to a new line
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MoveToLine"
-#else
-#define APPEND_NAME
-#endif
 
 void MoveToLine
     (APLU3264     uLineNum,             // The given line #
@@ -2600,7 +2566,6 @@ void MoveToLine
     // Reset the changed line flag
     SetWindowLongW (lpMemPTD->hWndSM, GWLSF_CHANGED, FALSE);
 } // End MoveToLine
-#undef  APPEND_NAME
 
 
 //***************************************************************************

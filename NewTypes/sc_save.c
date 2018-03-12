@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,12 +33,6 @@
 //
 //  Execute the system command:  )SAVE [wsid]
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CmdSave_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL CmdSave_EM
     (LPWCHAR lpwszTail)                     // Ptr to command line tail
@@ -684,7 +678,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End CmdSave_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

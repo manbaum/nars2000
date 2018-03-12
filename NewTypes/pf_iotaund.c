@@ -31,12 +31,6 @@
 //  Primitive function for monadic and dyadic IotaUnderbar ("indices" and "arraylookup")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnIotaUnderbar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnIotaUnderbar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -57,7 +51,6 @@ LPPL_YYSTYPE PrimFnIotaUnderbar_EM_YY
     else
         return PrimFnDydIotaUnderbar_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnIotaUnderbar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -65,12 +58,6 @@ LPPL_YYSTYPE PrimFnIotaUnderbar_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic IotaUnderbar
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnIotaUnderbar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnIotaUnderbar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -91,7 +78,6 @@ LPPL_YYSTYPE PrimProtoFnIotaUnderbar_EM_YY
                                lptkRhtArg,              // Ptr to right arg token
                                lptkAxis);               // Ptr to axis token (may be NULL)
 } // End PrimProtoFnIotaUnderbar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -101,12 +87,6 @@ LPPL_YYSTYPE PrimProtoFnIotaUnderbar_EM_YY
 //
 //  This monadic function implements (,R)/,{iota}{rho}1/R
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonIotaUnderbar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
     (LPTOKEN lptkFunc,                  // Ptr to function token
@@ -664,7 +644,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnMonIotaUnderbar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -672,12 +651,6 @@ NORMAL_EXIT:
 //
 //  Subroutine to IotaUnderbar to handle nested results
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonIotaUnderbarNest"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnMonIotaUnderbarNest_EM
     (LPAPLNESTED *lplpMemNestRes,       // Ptr to ptr to nested result
@@ -760,7 +733,6 @@ UBOOL PrimFnMonIotaUnderbarNest_EM
 
     return TRUE;
 } // End PrimFnMonIotaUnderbarNest_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -768,12 +740,6 @@ UBOOL PrimFnMonIotaUnderbarNest_EM
 //
 //  Primitive function for dyadic IotaUnderbar ("arraylookup")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydIotaUnderbar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydIotaUnderbar_EM_YY
     (LPTOKEN lptkLftArg,                    // Ptr to left arg token
@@ -800,7 +766,6 @@ LPPL_YYSTYPE PrimFnDydIotaUnderbar_EM_YY
                                   NULL,         // Ptr to HSHTAB struc (may be NULL)
                                   LINENUM_ONE); // Starting line # type (see LINE_NUMS)
 } // End PrimFnDydIotaUnderbar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -183,12 +183,6 @@ IC_INDICES icndxLog[2][2] =
 //     ("natural logarithm" and "logarithm")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnCircleStar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnCircleStar_EM_YY
     (LPTOKEN       lptkLftArg,      // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN       lptkFunc,        // Ptr to function token
@@ -205,7 +199,6 @@ LPPL_YYSTYPE PrimFnCircleStar_EM_YY
     else
         return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
 } // End PrimFnCircleStar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

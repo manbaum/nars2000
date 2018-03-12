@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //  Free named result
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FreeResultName"
-#else
-#define APPEND_NAME
-#endif
-
 void FreeResultName
     (LPTOKEN lptkRes)
 
@@ -49,7 +43,6 @@ void FreeResultName
 ////ZeroMemory (&lptkRes->tkData.tkSym->stFlags,
 ////     sizeof (lptkRes->tkData.tkSym->stFlags));
 } // End FreeResultName
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -90,12 +83,6 @@ void FreeTopResult
 //
 //  Free the HGLOBALs and LPSYMENTRYs in a result
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FreeResult"
-#else
-#define APPEND_NAME
-#endif
 
 void FreeResult
     (LPPL_YYSTYPE lpYYRes)              // Ptr to YYSTYPE to free
@@ -151,7 +138,6 @@ void FreeResult
             Assert (YYCheckInuse (lpYYRes));
     } // End IF
 } // End FreeResult
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -160,19 +146,12 @@ void FreeResult
 //  Free the HGLOBALs and LPSYMENTRYs in a result
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FreeResultTkn"
-#else
-#define APPEND_NAME
-#endif
-
 void FreeResultTkn
     (LPTOKEN lptkRes)
 
 {
     FreeResultSub (lptkRes, FALSE, FALSE);
 } // End FreeResultTkn
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -180,12 +159,6 @@ void FreeResultTkn
 //
 //  Free the HGLOBALs and LPSYMENTRYs in a result
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FreeResultSub"
-#else
-#define APPEND_NAME
-#endif
 
 void FreeResultSub
     (LPTOKEN lptkRes,
@@ -379,7 +352,6 @@ void FreeResultSub
             return;
     } // End SWITCH
 } // End FreeResultSub
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -418,12 +390,6 @@ UBOOL FreeResultGlobalDFLV
 //
 //  Free a global list, recursively
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FreeResultGlobalLst"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL FreeResultGlobalLst
     (HGLOBAL hGlbData)
@@ -476,7 +442,6 @@ UBOOL FreeResultGlobalLst
 
     return TRUE;
 } // End FreeResultGlobalLst
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -512,12 +477,6 @@ UBOOL FreeResultGlobalIncompleteVar
 //
 //  Subroutine to FreeResultGlobalVar/FreeResultGlobalIncompleteVar
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FreeResultGlobalVarSub"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL FreeResultGlobalVarSub
     (HGLOBAL hGlbData,          // Global memory handle to free
@@ -723,7 +682,6 @@ UBOOL FreeResultGlobalVarSub
 
     return bRet;
 } // End FreeResultGlobalVarSub
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -731,12 +689,6 @@ UBOOL FreeResultGlobalVarSub
 //
 //  Free a global function
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FreeResultGlobalFcn"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL FreeResultGlobalFcn
     (HGLOBAL hGlbData)
@@ -951,7 +903,6 @@ UBOOL FreeResultGlobalFcn
 
     return bRet;
 } // End FreeResultGlobalFcn
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -959,12 +910,6 @@ UBOOL FreeResultGlobalFcn
 //
 //  Free a global user-defined function/operator
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FreeResultGlobalDfn"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL FreeResultGlobalDfn
     (HGLOBAL hGlbData)              // Incoming global memory handle
@@ -1024,7 +969,6 @@ UBOOL FreeResultGlobalDfn
 
     return bRet;
 } // End FreeResultGlobalDfn
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1032,12 +976,6 @@ UBOOL FreeResultGlobalDfn
 //
 //  Free the globals in the DFN_HEADER struc
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FreeResultGlobalDfnStruc"
-#else
-#define APPEND_NAME
-#endif
 
 void FreeResultGlobalDfnStruc
     (LPDFN_HEADER lpMemDfnHdr,      // Ptr to DFN_HEADER struc
@@ -1115,7 +1053,6 @@ void FreeResultGlobalDfnStruc
         lpFcnLines++;
     } // End WHILE
 } // End FreeResultGlobalDfnStruc
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1158,12 +1095,6 @@ UBOOL IzitQuadDM
 //  Free temporary (unnamed) result
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FreeTempResult"
-#else
-#define APPEND_NAME
-#endif
-
 void FreeTempResult
     (LPPL_YYSTYPE lpYYRes)
 
@@ -1178,7 +1109,6 @@ void FreeTempResult
         nop ();
 #endif
 } // End FreeTempResult
-#undef  APPEND_NAME
 
 
 //***************************************************************************

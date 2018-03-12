@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,12 +35,6 @@
 //    monadic operator QuadJot ("matrix op" and "matrix op")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpQuadJot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimOpQuadJot_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -55,7 +49,6 @@ LPPL_YYSTYPE PrimOpQuadJot_EM_YY
                                  lptkRhtArg,            // Ptr to right arg token (may be NULL if niladic)
                                  FALSE);                // TRUE iff prototyping
 } // End PrimOpQuadJot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -87,12 +80,6 @@ LPPL_YYSTYPE PrimProtoOpQuadJot_EM_YY
 //
 //  Primitive operator for monadic/dyadic derived function from QuadJot ("matrix op")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpQuadJotCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
@@ -1163,7 +1150,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimOpQuadJotCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

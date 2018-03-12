@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -572,12 +572,6 @@ CR_RETCODES mpq_init_set_str2
 //    -12.345E-56/78.90E-123
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- mpq_set_str2"
-#else
-#define APPEND_NAME
-#endif
-
 CR_RETCODES mpq_set_str2
     (mpq_t  mpqRes,                         // Ptr to result
      LPCHAR lpszLine,                       // Ptr to incoming line
@@ -671,7 +665,6 @@ NORMAL_EXIT:
 #endif
     return crLocalVars.crRetCode;
 } // End mpq_set_str2
-#undef  APPEND_NAME
 
 
 //***************************************************************************

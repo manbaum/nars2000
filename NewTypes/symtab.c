@@ -452,12 +452,6 @@ void HshTabLink
 //  Resize the hash table
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- HshTabResize_EM"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL HshTabResize_EM
     (LPHSHTABSTR lpHTS)                 // Ptr to HshTab struc
 
@@ -615,7 +609,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return bRet;
 } // End HshTabResize_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -623,12 +616,6 @@ NORMAL_EXIT:
 //
 //  Resize the symbol table
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SymTabResize_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL SymTabResize_EM
     (LPHSHTABSTR lpHTS)                 // Ptr to HshTab struc
@@ -719,7 +706,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return bRet;
 } // End SymTabResize_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -976,12 +962,6 @@ NORMAL_EXIT:
 //    the block.
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FindNextFreeUsingHash_SPLIT_EM"
-#else
-#define APPEND_NAME
-#endif
-
 LPHSHENTRY FindNextFreeUsingHash_SPLIT_EM
     (UINT        uHash,                     // The hash value to find
      UBOOL       bSplitNext,                // TRUE iff we should split if not found
@@ -1100,7 +1080,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpHshEntry;
 } // End FindNextFreeUsingHash_SPLIT_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1112,12 +1091,6 @@ NORMAL_EXIT:
 //    the block, except for the principal hash (first) entry in
 //    the block.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FindNextFreeUsingHTE_EM"
-#else
-#define APPEND_NAME
-#endif
 
 LPHSHENTRY FindNextFreeUsingHTE_EM
     (LPHSHENTRY  lpHshEntryHash,            // Ptr to HshTabEntry
@@ -1235,7 +1208,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpHshEntry;
 } // End FindNextFreeUsingHTE_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2726,12 +2698,6 @@ LPSYMENTRY SymTabAppendName_EM
 //    using a specific HTS
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SymTabHTSAppendName_EM"
-#else
-#define APPEND_NAME
-#endif
-
 LPSYMENTRY SymTabHTSAppendName_EM
     (LPWCHAR     lpwszString,           // Ptr to name
      LPSTFLAGS   lpstFlags,             // Ptr to incoming stFlags (may be NULL)
@@ -2785,7 +2751,6 @@ NORMAL_EXIT:
 
     return lpSymEntry;
 } // End SymTabHTSAppendName_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2813,12 +2778,6 @@ LPSYMENTRY SymTabAppendNewName_EM
 //    (no need to look it up as we know it isn't there)
 //    using a specific HTS
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SymTabHTSAppendNewName_EM"
-#else
-#define APPEND_NAME
-#endif
 
 LPSYMENTRY SymTabHTSAppendNewName_EM
     (LPWCHAR     lpwszString,           // Ptr to name
@@ -2942,7 +2901,6 @@ NORMAL_EXIT:
 
     return lpSymEntryDest;
 } // End SymTabHTSAppendNewName_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2950,12 +2908,6 @@ NORMAL_EXIT:
 //
 //  Allocate global or virtual memory for the HshTab
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- AllocHshTab"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL AllocHshTab
     (LPMEMVIRTSTR lpLclMemVirtStr,  // Ptr to this entry in MemVirtStr (may be NULL if global allocation)
@@ -3047,7 +2999,6 @@ UBOOL AllocHshTab
 
     return TRUE;
 } // End AllocHshTab
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3055,12 +3006,6 @@ UBOOL AllocHshTab
 //
 //  Allocate global or virtual memory for the SymTab
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- AllocSymTab"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL AllocSymTab
     (LPMEMVIRTSTR lpLclMemVirtStr,  // Ptr to this entry in MemVirtStr (may be NULL if global allocation)
@@ -3185,7 +3130,6 @@ UBOOL AllocSymTab
         return TRUE;
     } // End IF
 } // End AllocSymTab
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3193,12 +3137,6 @@ UBOOL AllocSymTab
 //
 //  Free the storage associated with a HshTab and its associated SymTab
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FreeHshSymTabs"
-#else
-#define APPEND_NAME
-#endif
 
 void FreeHshSymTabs
     (LPHSHTABSTR lpHTS,                 // Ptr to HshTab struc
@@ -3286,7 +3224,6 @@ void FreeHshSymTabs
 
     MyLeaveCriticalSection (&CSOHshTab);
 } // End FreeHshSymTabs
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -33,12 +33,6 @@
 //    whereas the form A[L1;...;Ln] can use Rectangular index reference only.
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ArrayIndexRef_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE ArrayIndexRef_EM_YY
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
      LPTOKEN lptkLstArg)            // Ptr to list arg token
@@ -958,7 +952,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End ArrayIndexRef_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -966,12 +959,6 @@ NORMAL_EXIT:
 //
 //  Array index reference for immediate list arg
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ArrayIndexRefLstImm_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
     (HGLOBAL      hGlbNam,          // Name arg global memory handle
@@ -1321,7 +1308,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End ArrayIndexRefLstImm_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1329,12 +1315,6 @@ NORMAL_EXIT:
 //
 //  Array index reference for simple global list arg
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ArrayIndexRefLstSimpGlb_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
     (HGLOBAL      hGlbNam,                  // Name arg global memory handle
@@ -1687,7 +1667,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End ArrayIndexRefLstSimpGlb_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1695,12 +1674,6 @@ NORMAL_EXIT:
 //
 //  Array index reference for immediate name arg
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ArrayIndexRefNamImmed_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE ArrayIndexRefNamImmed_EM_YY
     (HGLOBAL           hGlbNam,             // Name arg global memory handle
@@ -1859,7 +1832,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End ArrayIndexRefNamImmed_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1867,12 +1839,6 @@ NORMAL_EXIT:
 //
 //  Loop through the index arg looking for simple empty vectors
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ArrayIndexValidZilde_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL ArrayIndexValidZilde_EM
     (LPVOID    lpMemLst,                    // Ptr to index list global memory
@@ -1992,7 +1958,6 @@ ERROR_EXIT:
 
     return FALSE;
 } // End ArrayIndexValidZilde_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2000,12 +1965,6 @@ ERROR_EXIT:
 //
 //  Array index reference for multiple list elements (rectangular indexing)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ArrayIndexRefRect_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE ArrayIndexRefRect_EM_YY
     (LPTOKEN           lptkLstArg,          // Ptr to list arg token
@@ -2057,7 +2016,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End ArrayIndexRefRect_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2066,12 +2024,6 @@ NORMAL_EXIT:
 //  Array index assignment, e.g., A[L]{is}R
 //                            or  A[L1;...;Ln]{is}R
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ArrayIndexSet_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL ArrayIndexSet_EM
     (LPTOKEN lptkNamArg,            // Ptr to name arg token
@@ -2227,7 +2179,6 @@ NORMAL_EXIT:
     return bRet;
 } // End ArrayIndexSet_EM
 #undef  lptkFunc
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2235,12 +2186,6 @@ NORMAL_EXIT:
 //
 //  Array index assignment where the name arg is an immediate
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ArrayIndexSetNamImmed_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL ArrayIndexSetNamImmed_EM
     (LPTOKEN    lptkNamArg,         // Ptr to name arg token
@@ -2780,7 +2725,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End ArrayIndexSetNamImmed_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2789,12 +2733,6 @@ NORMAL_EXIT:
 //  Array assignment with an empty list arg
 //  The name arg scalar case has already been taken care of
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ArrayIndexSetNoLst_EM"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL ArrayIndexSetNoLst_EM
     (LPTOKEN    lptkNamArg,         // Ptr to name arg token
@@ -3016,7 +2954,6 @@ NORMAL_EXIT:
 
     return hGlbRes;
 } // End ArrayIndexSetNoLst_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3024,12 +2961,6 @@ NORMAL_EXIT:
 //
 //  Array assignment with a singleton list arg
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ArrayIndexSetSingLst_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL ArrayIndexSetSingLst_EM
     (LPTOKEN      lptkNamArg,                   // Ptr to name arg token
@@ -3832,7 +3763,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End ArrayIndexSetSingLst_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3840,12 +3770,6 @@ NORMAL_EXIT:
 //
 //  Array assignment into a vector
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ArrayIndexSetVector_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL ArrayIndexSetVector_EM
     (APLNELM          aplNELMNam,       // Name arg NELM
@@ -4289,7 +4213,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return bRet;
 } // End ArrayIndexSetVector_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4297,12 +4220,6 @@ NORMAL_EXIT:
 //
 //  Array assignment with a multiple list arg
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ArrayIndexSetRect_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL ArrayIndexSetRect_EM
     (LPTOKEN    lptkNamArg,                     // Ptr to name arg token
@@ -4404,7 +4321,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End ArrayIndexSetRect_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4621,12 +4537,6 @@ ERROR_EXIT:
 //  Modified index assignment of an array, e.g., A[L]fcn{is}R
 //                                           or  A[L1;...;Ln]fcn{is}R
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ArrayIndexFcnSet_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL ArrayIndexFcnSet_EM
     (LPTOKEN      lptkNamArg,           // Ptr to name arg token
@@ -4869,7 +4779,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End ArrayIndexFcnSet_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

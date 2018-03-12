@@ -33,12 +33,6 @@
 //    monadic operator Slash ("reduction" and "N-wise reduction")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpSlash_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimOpSlash_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -59,7 +53,6 @@ LPPL_YYSTYPE PrimOpSlash_EM_YY
                                      lpYYFcnStrOpr, // Ptr to operator function strand
                                      lptkRhtArg);   // Ptr to right arg token
 } // End PrimOpSlash_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -119,12 +112,6 @@ LPPL_YYSTYPE PrimOpMonSlash_EM_YY
 //
 //  Primitive operator for monadic derived function from Slash ("reduction")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpMonSlashCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,            // Ptr to operator function strand
@@ -1515,7 +1502,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimOpMonSlashCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1523,12 +1509,6 @@ NORMAL_EXIT:
 //
 //  Handle reduction of a singleton
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpRedOfSing_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpRedOfSing_EM_YY
     (LPTOKEN      lptkRhtArg,           // Ptr to right arg token
@@ -1606,7 +1586,6 @@ LPPL_YYSTYPE PrimOpRedOfSing_EM_YY
                                 ? LINENUM_PRO
                                 : LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
 } // End PrimOpRedOfSing_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1633,12 +1612,6 @@ LPPL_YYSTYPE PrimOpDydSlash_EM_YY
 //
 //  Primitive operator for dyadic derived function from Slash ("N-wise reduction")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDydSlashCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     (LPTOKEN      lptkLftArg,               // Ptr to left arg token (may be NULL if monadic)
@@ -2706,7 +2679,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimOpDydSlashCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2714,12 +2686,6 @@ NORMAL_EXIT:
 //
 //  Insert a unit dimension into a result
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDydSlashInsertDim_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimOpDydSlashInsertDim_EM
     (LPPL_YYSTYPE lpYYRes,          // Ptr to the result
@@ -2892,7 +2858,6 @@ WSFULL_EXIT:
                               &lpYYFcnStrOpr->tkToken);
     return FALSE;
 } // End PrimOpDydSlashInsertDim_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2900,12 +2865,6 @@ WSFULL_EXIT:
 //
 //  Allocate storage for the result
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDydSlashAllocate_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimOpDydSlashAllocate_EM
     (APLRANK           aplTypeRht,          // Right arg storage type
@@ -2987,7 +2946,6 @@ WSFULL_EXIT:
                               &lpYYFcnStrOpr->tkToken);
     return FALSE;
 } // End PrimOpDydSlashAllocate_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

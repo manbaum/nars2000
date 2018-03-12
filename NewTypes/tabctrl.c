@@ -168,12 +168,6 @@ void ShowHideChildWindows
 //  Create a new tab
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CreateNewTab"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL CreateNewTab
     (HWND    hWndParent,        // Window handle of the parent
      LPWCHAR lpwsz,             // Drive, Path, Filename, Ext of the workspace
@@ -229,7 +223,6 @@ UBOOL CreateNewTab
 
     return (hThread NE NULL);
 } // End CreateNewTab
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -260,12 +253,6 @@ void CalcClientRectMC
 //
 //  Create a new tab within a thread
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CreateNewTabInThread"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL WINAPI CreateNewTabInThread
     (LPCNT_THREAD lpcntThread)
@@ -539,7 +526,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End CreateNewTabInThread
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -914,12 +900,6 @@ LRESULT WINAPI LclTabCtrlWndProc
 //  Free the global storage in the symbol table for a given PerTabData struc
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FreeGlobalStorage"
-#else
-#define APPEND_NAME
-#endif
-
 void FreeGlobalStorage
     (LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
 
@@ -1031,7 +1011,6 @@ void FreeGlobalStorage
         FreeResultGlobalVar (lpMemPTD->hGlbQuadEM); lpMemPTD->hGlbQuadEM = NULL;
     } // End IF
 } // End FreeGlobalStorage
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1065,12 +1044,6 @@ void CreateResetThread
 //
 //  Create a )RESET within a thread
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CreateResetInThread"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL WINAPI CreateResetInThread
     (LPCR_THREAD lpcrThread)
@@ -1107,7 +1080,6 @@ UBOOL WINAPI CreateResetInThread
 
     return TRUE;
 } // End CreateResetInThread
-#undef  APPEND_NAME
 
 
 //***************************************************************************

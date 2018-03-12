@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //  Primitive function for monadic and dyadic Comma ("ravel/table" and "catenate/laminate")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnComma_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnComma_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -58,7 +52,6 @@ LPPL_YYSTYPE PrimFnComma_EM_YY
     else
         return PrimFnDydComma_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnComma_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -66,12 +59,6 @@ LPPL_YYSTYPE PrimFnComma_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Comma
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnComma_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnComma_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -91,7 +78,6 @@ LPPL_YYSTYPE PrimProtoFnComma_EM_YY
                                     lptkRhtArg,         // Ptr to right arg token
                                     lptkAxis);          // Ptr to axis token (may be NULL)
 } // End PrimProtoFnComma_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -99,12 +85,6 @@ LPPL_YYSTYPE PrimProtoFnComma_EM_YY
 //
 //  Generate an identity element for the primitive function dyadic Comma
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentFnComma_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimIdentFnComma_EM_YY
     (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
@@ -189,7 +169,6 @@ DOMAIN_EXIT:
 ERROR_EXIT:
     return NULL;
 } // End PrimIdentFnComma_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -197,12 +176,6 @@ ERROR_EXIT:
 //
 //  Primitive function for monadic Comma ("ravel/table")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonComma_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonComma_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -293,7 +266,6 @@ AXIS_SYNTAX_EXIT:
                                lptkFunc);
     return NULL;
 } // End PrimFnMonComma_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -301,12 +273,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic Comma ("ravel/table") on a scalar value.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonCommaScalar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonCommaScalar_EM_YY
     (ARRAY_TYPES   aplTypeRht,      // Right arg storage type (see ARRAY_TYPES)
@@ -541,7 +507,6 @@ WSFULL_EXIT:
                                lptkFunc);
     return NULL;
 } // End PrimFnMonCommaScalar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -549,12 +514,6 @@ WSFULL_EXIT:
 //
 //  Monadic Comma ("ravel/table") on a global memory object
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonCommaGlb_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
     (HGLOBAL       hGlbRht,             // Handle to right arg
@@ -1320,7 +1279,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnMonCommaGlb_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1328,12 +1286,6 @@ NORMAL_EXIT:
 //
 //  Primitive function for dyadic Comma ("catenate/laminate")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydComma_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydComma_EM_YY
     (LPTOKEN       lptkLftArg,      // Ptr to left arg token
@@ -2715,7 +2667,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDydComma_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

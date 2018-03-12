@@ -1431,12 +1431,6 @@ HGLOBAL _MyGlobalFree
 //  Allocate a heap variable
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MyHeapAlloc"
-#else
-#define APPEND_NAME
-#endif
-
 LPVOID _MyHeapAlloc
     (HANDLE hHeap,          // Handle to the heap
      DWORD  dwFlags,        // Heap allocation options
@@ -1483,7 +1477,6 @@ LPVOID _MyHeapAlloc
     return dlmalloc (dwBytes);
 #endif
 } // End _MyHeapAlloc
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1491,12 +1484,6 @@ LPVOID _MyHeapAlloc
 //
 //  Resize a heap variable
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MyHeapReAlloc"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL _MyHeapReAlloc
     (HANDLE hHeap,          // Handle to the heap
@@ -1548,7 +1535,6 @@ HGLOBAL _MyHeapReAlloc
     return dlrealloc (lpMem, dwBytes);
 #endif
 } // End _MyHeapReAlloc
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -341,12 +341,6 @@ LPPL_YYSTYPE DbgMakeVarStrand_EM_YY
 //      RefCnt++ at the top level.
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MakeVarStrand_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE MakeVarStrand_EM_YY
     (LPPL_YYSTYPE lpYYArg)              // Ptr to incoming token
 
@@ -1725,7 +1719,6 @@ ERROR_EXIT:
 
     YYFree (lpYYRes); lpYYRes = NULL; return NULL;
 } // End MakeVarStrand_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1775,12 +1768,6 @@ HGLOBAL MakeGlbEntry_EM
 //
 //  Make an HGLOBAL with a given type and value
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MakeComEntry_EM"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL MakeComEntry_EM
     (ARRAY_TYPES  aplTypeRes,       // Array Type to use (see ARRAY_TYPES)
@@ -1906,7 +1893,6 @@ WSFULL_EXIT:
 NORMAL_EXIT:
     return hGlbRes;
 } // End MakeComEntry_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1914,12 +1900,6 @@ NORMAL_EXIT:
 //
 //  Unstrand a function into a function array or train
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- UnFcnStrand_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL UnFcnStrand_EM
     (LPPL_YYSTYPE *lp2YYArg,        // Ptr to ptr to incoming token
@@ -2086,7 +2066,6 @@ ERROR_EXIT:
 
     return FALSE;
 } // End UnFcnStrand_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2094,12 +2073,6 @@ ERROR_EXIT:
 //
 //  Make a function text line
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MakeTxtLine"
-#else
-#define APPEND_NAME
-#endif
 
 void MakeTxtLine
     (LPFCNARRAY_HEADER lpHeader)    // Ptr to function array header
@@ -2157,7 +2130,6 @@ void MakeTxtLine
 
     EXIT_TEMP_OPEN
 } // End MakeTxtLine
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2165,12 +2137,6 @@ void MakeTxtLine
 //
 //  Copy a numeric or character string
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CopyString_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE CopyString_EM_YY
     (LPPL_YYSTYPE lpYYStr)
@@ -2194,7 +2160,6 @@ LPPL_YYSTYPE CopyString_EM_YY
 
     return lpYYRes;
 } // End CopyString_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2205,12 +2170,6 @@ LPPL_YYSTYPE CopyString_EM_YY
 //  On exit:
 //      No change in RefCnt.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MakeAxis_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE MakeAxis_YY
     (LPPL_YYSTYPE lpYYAxis)     // Ptr to axis value
@@ -2283,7 +2242,6 @@ LPPL_YYSTYPE MakeAxis_YY
 
     return lpYYRes;
 } // End MakeAxis_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2294,12 +2252,6 @@ LPPL_YYSTYPE MakeAxis_YY
 //  On exit:
 //      No change in RefCnt.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MakeTrainOp_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE MakeTrainOp_YY
     (LPPL_YYSTYPE lpYYArg1)
@@ -2342,7 +2294,6 @@ LPPL_YYSTYPE MakeTrainOp_YY
 
     return lpYYRes2;
 } // End MakeTrainOp_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2353,12 +2304,6 @@ LPPL_YYSTYPE MakeTrainOp_YY
 //  On exit:
 //      No change in RefCnt.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MakePrimOp123_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE MakePrimOp123_YY
     (LPPL_YYSTYPE lpYYOp123,
@@ -2378,7 +2323,6 @@ LPPL_YYSTYPE MakePrimOp123_YY
 #endif
     return lpYYRes;
 } // End MakePrimOp123_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2463,12 +2407,6 @@ LPPL_YYSTYPE PushNameStrand_YY
 //  On exit:
 //      No change in RefCnt.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MakeNameStrand_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE MakeNameStrand_EM_YY
     (LPPL_YYSTYPE lpYYArg)          // Ptr to incoming token
@@ -2556,7 +2494,6 @@ ERROR_EXIT:
 
     YYFree (lpYYRes); lpYYRes = NULL; return NULL;
 } // End MakeNameStrand_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2781,12 +2718,6 @@ LPPL_YYSTYPE PopList_YY
 //  Make the list into a global memory array.
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MakeList_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE MakeList_EM_YY
     (LPPL_YYSTYPE lpYYArg,                  // Ptr to incoming token
      UBOOL        bBrackets)                // TRUE iff surrounding brackets (otherwise parens)
@@ -3003,7 +2934,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End MakeList_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3057,12 +2987,6 @@ LPSYMENTRY CopyImmToken_EM
 //  On exit:
 //      RefCnt++ if not changing.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CopyToken_EM"
-#else
-#define APPEND_NAME
-#endif
 
 LPTOKEN CopyToken_EM
     (LPTOKEN lpToken,
@@ -3201,7 +3125,6 @@ LPTOKEN CopyToken_EM
 
     return lpToken;
 } // End CopyToken_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3212,12 +3135,6 @@ LPTOKEN CopyToken_EM
 //  On exit:
 //      RefCnt++ if not changing.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CopyPL_YYSTYPE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE CopyPL_YYSTYPE_EM_YY
     (LPPL_YYSTYPE lpYYArg,
@@ -3239,7 +3156,6 @@ LPPL_YYSTYPE CopyPL_YYSTYPE_EM_YY
 
     return lpYYRes;
 } // End CopyPL_YYSTYPE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3250,12 +3166,6 @@ LPPL_YYSTYPE CopyPL_YYSTYPE_EM_YY
 //  On exit:
 //      No change in RefCnt.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CopyPL_YYSTYPE_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE CopyPL_YYSTYPE_YY
     (LPPL_YYSTYPE lpYYArg)
@@ -3271,7 +3181,6 @@ LPPL_YYSTYPE CopyPL_YYSTYPE_YY
 
     return lpYYRes;
 } // End CopyPL_YYSTYPE_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

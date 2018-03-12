@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2011 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,12 +30,6 @@
 //
 //  Primitive function for monadic and dyadic RightTack ("right" and "right")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnRightTack_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnRightTack_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -68,7 +62,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimFnRightTack_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -76,12 +69,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Generate a prototype for the primitive functions monadic & dyadic RightTack
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnRightTack_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnRightTack_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -101,7 +88,6 @@ LPPL_YYSTYPE PrimProtoFnRightTack_EM_YY
                                     lptkRhtArg,             // Ptr to right arg token
                                     lptkAxis);              // Ptr to axis token (may be NULL)
 } // End PrimProtoFnRightTack_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -109,12 +95,6 @@ LPPL_YYSTYPE PrimProtoFnRightTack_EM_YY
 //
 //  Primitive function for monadic RightTack ("right")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonRightTack_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonRightTack_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -124,7 +104,6 @@ LPPL_YYSTYPE PrimFnMonRightTack_EM_YY
 {
     return PrimFnDydTackCommon_YY (lptkRhtArg, lptkFunc);
 } // End PrimFnMonRightTack_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -132,12 +111,6 @@ LPPL_YYSTYPE PrimFnMonRightTack_EM_YY
 //
 //  Primitive function for dyadic RightTack ("right")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydRightTack_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydRightTack_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -148,7 +121,6 @@ LPPL_YYSTYPE PrimFnDydRightTack_EM_YY
 {
     return PrimFnDydTackCommon_YY (lptkRhtArg, lptkFunc);
 } // End PrimFnRightTack_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

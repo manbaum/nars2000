@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,12 +37,6 @@ typedef union tagLPEXTMONINFO_UNION
 //  System function:  []MF -- Monitor Function
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMF_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE SysFnMF_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -71,7 +65,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnMF_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -79,12 +72,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []MF -- Monitor Function -- Return current values
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonMF_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonMF_EM_YY
     (LPTOKEN lptkFunc,                          // Ptr to function token
@@ -406,7 +393,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnMonMF_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -414,12 +400,6 @@ NORMAL_EXIT:
 //
 //  Subroutine to SysFnMonMF_EM to handle numeric singleton args
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonMF_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonMF_Numeric_EM
     (APLINT  aplIntegerRht,                 // Right arg numeric value
@@ -517,7 +497,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End SysFnMonMF_Numeric_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -525,12 +504,6 @@ NORMAL_EXIT:
 //
 //  Dyadic []MF -- Monitor Function -- Toggle setting
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydMF_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydMF_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -872,7 +845,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnDydMF_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -880,12 +852,6 @@ NORMAL_EXIT:
 //
 //  Toggle (ON/OFF) the function line monitoring state of a function
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ToggleMonInfo"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL ToggleMonInfo
     (LPSYMENTRY lpSymEntry,             // Ptr to STE of the function
@@ -960,7 +926,6 @@ ERROR_EXIT:
 
     return bRet;
 } // End ToggleMonInfo
-#undef  APPEND_NAME
 
 
 //***************************************************************************

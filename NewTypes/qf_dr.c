@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,12 +30,6 @@
 //
 //  System function:  []DR -- Data Representation
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDR_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDR_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -64,7 +58,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnDR_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -72,12 +65,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []DR -- Display the Data Representation
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonDR_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonDR_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -217,7 +204,6 @@ LPPL_YYSTYPE SysFnMonDR_EM_YY
 
     return lpYYRes;
 } // End SysFnMonDR_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -225,12 +211,6 @@ LPPL_YYSTYPE SysFnMonDR_EM_YY
 //
 //  Dyadic []DR -- Convert To and From Data Representation
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydDR_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydDR_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -401,7 +381,6 @@ LEFT_DOMAIN_EXIT:
                                lptkLftArg);
     return NULL;
 } // End SysFnDydDR_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -409,12 +388,6 @@ LEFT_DOMAIN_EXIT:
 //
 //  Return the lowest precision in the right arg
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDR_GetPrec_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDR_GetPrec_EM_YY
     (LPTOKEN  lptkRhtArg,           // Ptr to right arg token
@@ -677,7 +650,6 @@ LPPL_YYSTYPE SysFnDR_GetPrec_EM_YY
 
     return lpYYRes;
 } // End SysFnDR_GetPrec_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -685,12 +657,6 @@ LPPL_YYSTYPE SysFnDR_GetPrec_EM_YY
 //
 //  Return the <aplTypeRes> representation of the right arg
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDR_Convert_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDR_Convert_EM_YY
     (APLSTYPE aplTypeRes,           // Result storage type
@@ -954,7 +920,6 @@ WSFULL_EXIT:
                                lptkFunc);
     return NULL;
 } // End SysFnDR_Convert_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -978,12 +943,6 @@ UINT SysFnDR_BPE
 //
 //  Return the # result cols for a given right arg storage type & cols
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDR_GetCols_EM"
-#else
-#define APPEND_NAME
-#endif
 
 APLNELM SysFnDR_GetCols_EM
     (APLSTYPE aplTypeRes,               // Result storage type
@@ -1018,7 +977,6 @@ RIGHT_DOMAIN_EXIT:
                                lptkFunc);
     return NEG1U;
 } // End SysFnDR_GetCols_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1026,12 +984,6 @@ RIGHT_DOMAIN_EXIT:
 //
 //  Return a character representation of the storage type
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDR_Show_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDR_Show_EM_YY
     (LPTOKEN  lptkRhtArg,
@@ -1359,7 +1311,6 @@ WSFULL_EXIT:
                                lptkFunc);
     return NULL;
 } // End SysFnDR_Show_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1465,12 +1416,6 @@ void SysFnDR_ConvertIntToChar
 //
 //  Convert an integer/float to its 16-digit hexadecimal character representation
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDR_IntFloatToChar_EM"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL SysFnDR_IntFloatToChar_EM
     (LPTOKEN         lptkRhtArg,        // Ptr to right argtoken
@@ -1609,7 +1554,6 @@ NORMAL_EXIT:
 
     return hGlbRes;
 } // End SysFnDR_IntFloatToChar_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1656,12 +1600,6 @@ HGLOBAL SysFnDR_CharToInt_EM
 //  Convert a 16-digit hexadecimal character representation of
 //    an integer/float to a integer/float
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDR_CharToIntFloat_EM"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL SysFnDR_CharToIntFloat_EM
     (LPTOKEN  lptkRhtArg,                   // Ptr to right arg token
@@ -1831,9 +1769,9 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -1843,13 +1781,13 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemRht NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
@@ -1857,7 +1795,6 @@ NORMAL_EXIT:
 
     return hGlbRes;
 } // End SysFnDR_CharToIntFloat_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

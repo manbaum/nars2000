@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //
 //  Primitive function for monadic and dyadic DotDot (ERROR and "sequence")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDotDot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDotDot_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -69,7 +63,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimFnDotDot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -77,12 +70,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Generate a prototype for the primitive functions monadic & dyadic DotDot
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnDotDot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnDotDot_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -102,7 +89,6 @@ LPPL_YYSTYPE PrimProtoFnDotDot_EM_YY
                                     lptkRhtArg,             // Ptr to right arg token
                                     lptkAxis);              // Ptr to axis token (may be NULL)
 } // End PrimProtoFnDotDot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -110,12 +96,6 @@ LPPL_YYSTYPE PrimProtoFnDotDot_EM_YY
 //
 //  Primitive function for monadic DotDot (ERROR)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonDotDot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonDotDot_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -125,7 +105,6 @@ LPPL_YYSTYPE PrimFnMonDotDot_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End PrimFnMonDotDot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -133,12 +112,6 @@ LPPL_YYSTYPE PrimFnMonDotDot_EM_YY
 //
 //  Primitive function for dyadic DotDot ("sequence")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydDotDot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -661,7 +634,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDydDotDot_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -669,12 +641,6 @@ NORMAL_EXIT:
 //
 //  Dyadic DotDot extended to nested arrays
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydDotDotNested_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydDotDotNested_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -701,7 +667,6 @@ LPPL_YYSTYPE PrimFnDydDotDotNested_EM_YY
                                   NULL,         // Ptr to HSHTAB struc (may be NULL)
                                   LINENUM_ONE); // Starting line # type (see LINE_NUMS)
 } // End PrimFnDydDotDotNested_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

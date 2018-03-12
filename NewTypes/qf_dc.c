@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //
 //  System function:  []DC -- Data Conversion
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDC_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDC_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -66,7 +60,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnDC_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -81,12 +74,6 @@ AXIS_SYNTAX_EXIT:
 //    coefficients as a new (column) dimension.
 //  For all other arrays, signal an error.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonDC_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonDC_EM_YY
     (LPTOKEN lptkFunc,                  // Ptr to function token
@@ -151,7 +138,6 @@ RIGHT_DOMAIN_EXIT:
 ERROR_EXIT:
     return NULL;
 } // End SysFnMonDC_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -161,12 +147,6 @@ ERROR_EXIT:
 //    the # cols is either 1, 2, 4, or 8, so convert it to the corresponding
 //    HyperComplex number.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonDC_ToHC_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonDC_ToHC_EM_YY
     (LPTOKEN  lptkRhtArg,           // Ptr to right arg token
@@ -410,7 +390,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnMonDC_ToHC_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -421,12 +400,6 @@ NORMAL_EXIT:
 //    with a new column dimension of 2, 4, or 8 as per the Dimension of
 //    the right arg.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonDC_ToSimp_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonDC_ToSimp_EM_YY
     (LPTOKEN  lptkRhtArg,           // Ptr to right arg token
@@ -584,7 +557,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnMonDC_ToSimp_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -596,12 +568,6 @@ NORMAL_EXIT:
 //    of the result with the same HC Dimension as the right arg.
 //  The right arg is converted to the above storage type.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydDC_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydDC_EM_YY
     (LPTOKEN lptkLftArg,                    // Ptr to left arg token
@@ -887,7 +853,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnDydDC_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

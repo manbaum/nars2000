@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,12 +30,6 @@
 //
 //  System function:  []TC -- Terminal Control
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnTC_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnTC_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
@@ -122,7 +116,6 @@ WSFULL_EXIT:
                                lptkFunc);
     return NULL;
 } // End SysFnTC_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -130,12 +123,6 @@ WSFULL_EXIT:
 //
 //  System function:  []TCxxx -- Terminal Control, Common Routine
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnTCCOM_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnTCCom_EM_YY
     (WCHAR   wc,                    // Char to return
@@ -169,7 +156,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnTCCom_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

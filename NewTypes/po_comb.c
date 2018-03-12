@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -82,12 +82,6 @@ APLINT  gCurLenPNI,             // Current length of PN global memory for INTs
 //    dyadic operator Combinatorial
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpCombinatorial_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimOpCombinatorial_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if niladic/monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -109,7 +103,6 @@ LPPL_YYSTYPE PrimOpCombinatorial_EM_YY
                                         lptkRhtArg,     // Ptr to right arg token
                                         FALSE);         // TRUE iff prototyping
 } // End PrimOpCombinatorial_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -117,12 +110,6 @@ LPPL_YYSTYPE PrimOpCombinatorial_EM_YY
 //
 //  Generate a prototype for the derived functions from Combinatorial
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoOpCombinatorial_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoOpCombinatorial_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if niladic/monadic)
@@ -165,7 +152,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxisOpr);
     return NULL;
 } // End PrimProtoOpCombinatorial_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -173,12 +159,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Primitive operator for monadic derived function from Combinatorial
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpMonCombinatorial_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpMonCombinatorial_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,            // Ptr to operator function strand
@@ -606,7 +586,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimOpMonCombinatorial_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -614,12 +593,6 @@ NORMAL_EXIT:
 //
 //  Count L Pigeons into R Holes
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS000C_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS000C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
@@ -657,7 +630,6 @@ LPPL_YYSTYPE FS000C_EM_YY
 
     return lpYYRes;
 } // End FS000C_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -665,12 +637,6 @@ LPPL_YYSTYPE FS000C_EM_YY
 //
 //  Generate L Pigeons into R Holes
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS000G_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS000G_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
@@ -769,7 +735,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End FS000G_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -778,12 +743,6 @@ NORMAL_EXIT:
 //  Count Partition Numbers of L into exactly L parts as INTs
 //    using Euler's Pentagonal Number Theorem
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PNPentInt_RE"
-#else
-#define APPEND_NAME
-#endif
 
 APLINT PNPentInt_RE
     (APLINT  aplIntLft,             // Common arg
@@ -973,7 +932,6 @@ NORMAL_EXIT:
 
     return aplIntRes;
 } // End PNPentInt_RE
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -981,12 +939,6 @@ NORMAL_EXIT:
 //
 //  Count Partition Numbers of L into exactly R parts as INTs
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PNSubInt_RE"
-#else
-#define APPEND_NAME
-#endif
 
 APLINT PNSubInt_RE
     (APLINT  aplIntLft,             // Left arg (# Balls)
@@ -1151,7 +1103,6 @@ NORMAL_EXIT:
 
     return aplIntRes;
 } // End PNSubInt_RE
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1160,12 +1111,6 @@ NORMAL_EXIT:
 //  Count Partition Numbers of L into exactly L parts as MPIs
 //    using Euler's Pentagonal Number Theorem
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PNPentMpi_RE"
-#else
-#define APPEND_NAME
-#endif
 
 APLMPI PNPentMpi_RE
     (APLINT  aplIntLft,             // Common arg
@@ -1354,7 +1299,6 @@ NORMAL_EXIT:
 
     return aplMpiRes;
 } // End PNPentMpi_RE
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1596,12 +1540,6 @@ NORMAL_EXIT:
 //  Count Sterling Numbers of the Second Kind as INTs
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SN2SubInt_RE"
-#else
-#define APPEND_NAME
-#endif
-
 APLINT SN2SubInt_RE
     (APLINT  aplIntLft,             // Left arg (# Balls)
      APLINT  aplIntRht,             // Right arg (# Boxes)
@@ -1784,7 +1722,6 @@ NORMAL_EXIT:
 
     return aplIntRes;
 } // End SN2SubInt_RE
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2070,12 +2007,6 @@ APLRAT FS001C_rat
 //  Count Partitions of L into at most R Parts
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS001C_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE FS001C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
 
@@ -2306,7 +2237,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End FS001C_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2438,12 +2368,6 @@ ERROR_EXIT:
 //
 //  Generate Partitions of L into at most R Parts
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS001G_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS001G_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
@@ -2629,7 +2553,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End FS001G_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2637,12 +2560,6 @@ NORMAL_EXIT:
 //
 //  Count Partitions of L into R Parts
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS002C_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS002C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
@@ -2782,7 +2699,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End FS002C_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2889,12 +2805,6 @@ ERROR_EXIT:
 //
 //  Generate Partitions of L into R Parts
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS002G_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS002G_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
@@ -3073,7 +2983,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End FS002G_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3081,12 +2990,6 @@ NORMAL_EXIT:
 //
 //  Count L Combinations of R Items
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS010C_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS010C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
@@ -3189,7 +3092,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End FS010C_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3475,12 +3377,6 @@ ERROR_EXIT:
 //  Generate L Combinations of R Items
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS010G_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE FS010G_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
 
@@ -3646,7 +3542,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End FS010G_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3654,12 +3549,6 @@ NORMAL_EXIT:
 //
 //  Count L-MultiCombinations of R Items
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS011C_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS011C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
@@ -3784,7 +3673,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End FS011C_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3792,12 +3680,6 @@ NORMAL_EXIT:
 //
 //  Generate L-MultiCombinations of R Items
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS011G_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS011G_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
@@ -3970,7 +3852,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End FS011G_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3978,12 +3859,6 @@ NORMAL_EXIT:
 //
 //  Count Compositions of L into R Parts
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS012C_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS012C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
@@ -4109,7 +3984,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End FS012C_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4117,12 +3991,6 @@ NORMAL_EXIT:
 //
 //  Generate Compositions of L into R Parts
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS012G_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS012G_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
@@ -4329,7 +4197,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End FS012G_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4337,12 +4204,6 @@ NORMAL_EXIT:
 //
 //  Count Partitions of the set {{iota}L} into at most R Parts
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS101C_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS101C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
@@ -4518,7 +4379,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End FS101C_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4529,12 +4389,6 @@ NORMAL_EXIT:
 //  This algorithm was taken from Knuth, TAoCP, Vol 4A, p. 416, Algorithm H.
 //  The above algorithm was written in origin-1 for n >= 2.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS101S1"
-#else
-#define APPEND_NAME
-#endif
 
 void FS101S1
     (APLINT      n,                 // L
@@ -4641,7 +4495,6 @@ ERROR_EXIT:
 #undef  In
 #undef  Ij
 } // End FS101S1
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4649,12 +4502,6 @@ ERROR_EXIT:
 //
 //  Generate Partitions of the set {{iota}L} into at most R Parts
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS101G_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS101G_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
@@ -4828,7 +4675,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End FS101G_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4836,12 +4682,6 @@ NORMAL_EXIT:
 //
 //  Count Partitions of the set {{iota}L} into R Parts
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS102C_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS102C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
@@ -4960,7 +4800,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End FS102C_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5192,12 +5031,6 @@ WSFULL_EXIT:
 //  The above algorithm was written in origin-1 for n >= 2.
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS102S1"
-#else
-#define APPEND_NAME
-#endif
-
 void FS102S1
     (APLINT      n,                 // L
      APLINT      t,                 // R
@@ -5305,7 +5138,6 @@ ERROR_EXIT:
 #undef  In
 #undef  Ij
 } // End FS102S1
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5313,12 +5145,6 @@ ERROR_EXIT:
 //
 //  Generate Partitions of the set {{iota}L} into R Parts
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS102G_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS102G_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
@@ -5487,7 +5313,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End FS102G_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5495,12 +5320,6 @@ NORMAL_EXIT:
 //
 //  Count L Permutations of R Items
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS110C_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS110C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
@@ -5654,7 +5473,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End FS110C_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5664,12 +5482,6 @@ NORMAL_EXIT:
 //  This algorithm was taken from Knuth, TAoCP, Vol 4A, p. 322, Algorithm P.
 //  The above algorithm was written in origin-1 for n >= 1.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS110S_G"
-#else
-#define APPEND_NAME
-#endif
 
 void FS110S_G
     (APLINT    sm,              // Stride for m
@@ -5747,7 +5559,6 @@ ERROR_EXIT:
     return;
 #undef  Ij
 } // End FS110S_G
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5757,12 +5568,6 @@ ERROR_EXIT:
 //  This algorithm was taken from Knuth, TAoCP, Vol 4A, p. 319, Algorithm L.
 //  The above algorithm was written in origin-1 for n >= 1.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS110S_L"
-#else
-#define APPEND_NAME
-#endif
 
 void FS110S_L
     (APLINT    sm,              // Stride for m
@@ -5836,7 +5641,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return;
 } // End FS110S_L
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5844,12 +5648,6 @@ NORMAL_EXIT:
 //
 //  Generate L Permutations of R Items
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS110G_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS110G_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
@@ -6202,7 +6000,6 @@ NORMAL_EXIT:
     } // End IF
     return lpYYRes;
 } // End FS110G_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -6210,12 +6007,6 @@ NORMAL_EXIT:
 //
 //  Count L Tuples of R Items
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS111C_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS111C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
@@ -6340,7 +6131,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End FS111C_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -6348,12 +6138,6 @@ NORMAL_EXIT:
 //
 //  Generate L Tuples of R Items Lexicographically2
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS111L_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS111L_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
@@ -6493,7 +6277,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End FS111L_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -6501,12 +6284,6 @@ NORMAL_EXIT:
 //
 //  Count Partitions of the set {{iota}L} into R Ordered Parts
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS112C_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS112C_EM_YY
     (LPCOMBARGS lpCombArgs)             // Ptr to Combinatorial args
@@ -6651,7 +6428,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End FS112C_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -6659,12 +6435,6 @@ NORMAL_EXIT:
 //
 //  Generate Partitions of the set {{iota}L} into R Ordered Parts
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FS112G_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE FS112G_EM_YY
     (LPCOMBARGS lpCombArgs)                 // Ptr to Combinatorial args
@@ -7015,7 +6785,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End FS112G_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -7023,12 +6792,6 @@ NORMAL_EXIT:
 //
 //  Primitive operator for dyadic derived function from Combinatorial (ERROR)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDydCombinatorial_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpDydCombinatorial_EM_YY
     (LPTOKEN      lptkLftArg,               // Ptr to left arg token
@@ -7040,7 +6803,6 @@ LPPL_YYSTYPE PrimOpDydCombinatorial_EM_YY
     return
       PrimFnValenceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 } // End PrimOpDydCombinatorial_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -7731,12 +7493,6 @@ void UninitCombCache
 //  Clear the Combinatorial caches
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ClearCombCache_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE ClearCombCache_EM_YY
     (LPTOKEN lptkRhtArg,                    // Ptr to right arg token
      LPTOKEN lptkFunc)                      // Ptr to function token
@@ -7866,7 +7622,6 @@ WSFULL_EXIT:
 ERROR_EXIT:
     return NULL;
 } // End ClearCombCache_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

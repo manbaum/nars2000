@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //  Primitive function for monadic and dyadic CircleSlope ("reverse axes" and "transpose")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnCircleSlope_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnCircleSlope_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -57,7 +51,6 @@ LPPL_YYSTYPE PrimFnCircleSlope_EM_YY
     else
         return PrimFnDydCircleSlope_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnCircleSlope_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -65,12 +58,6 @@ LPPL_YYSTYPE PrimFnCircleSlope_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic CircleSlope
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnCircleSlope_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnCircleSlope_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -90,7 +77,6 @@ LPPL_YYSTYPE PrimProtoFnCircleSlope_EM_YY
                                     lptkRhtArg,             // Ptr to right arg token
                                     lptkAxis);              // Ptr to axis token (may be NULL)
 } // End PrimProtoFnCircleSlope_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -98,12 +84,6 @@ LPPL_YYSTYPE PrimProtoFnCircleSlope_EM_YY
 //
 //  Generate an identity element for the primitive function dyadic CircleSlope
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentFnCircleSlope_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimIdentFnCircleSlope_EM_YY
     (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
@@ -160,7 +140,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimIdentFnCircleSlope_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -168,12 +147,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Primitive function for monadic CircleSlope ("reverse axes")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonCircleSlope_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonCircleSlope_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -276,7 +249,6 @@ WSFULL_EXIT:
                                lptkFunc);
     return NULL;
 } // End PrimFnMonCircleSlope_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -284,12 +256,6 @@ WSFULL_EXIT:
 //
 //  Primitive function for dyadic CircleSlope ("transpose")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydCircleSlope_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydCircleSlope_EM_YY
     (LPTOKEN lptkLftArg,                // Ptr to left arg token
@@ -923,7 +889,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDydCircleSlope_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

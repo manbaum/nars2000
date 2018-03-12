@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //  System function:  []EA -- Execute Alternate
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnEA_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE SysFnEA_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -61,7 +55,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnEA_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -69,12 +62,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []EA -- error
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonEA_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonEA_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -84,7 +71,6 @@ LPPL_YYSTYPE SysFnMonEA_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnMonEA_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -92,12 +78,6 @@ LPPL_YYSTYPE SysFnMonEA_EM_YY
 //
 //  Dyadic []EA -- Execute Alternate
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydEA_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydEA_EM_YY
     (LPTOKEN lptkLftArg,                    // Ptr to left arg token
@@ -243,7 +223,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnDydEA_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,12 +32,6 @@
 //    monadic operator JotDot (ERROR and "outer product")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpJotDot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimOpJotDot_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -59,7 +53,6 @@ LPPL_YYSTYPE PrimOpJotDot_EM_YY
                                       lpYYFcnStrOpr,    // Ptr to operator function strand
                                       lptkRhtArg);      // Ptr to right arg token
 } // End PrimOpJotDot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -102,12 +95,6 @@ LPPL_YYSTYPE PrimProtoOpJotDot_EM_YY
 //
 //  Generate an identity element for the primitive operator dyadic JotDot
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentOpJotDot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimIdentOpJotDot_EM_YY
     (LPTOKEN      lptkRhtOrig,      // Ptr to original right arg token
@@ -174,7 +161,6 @@ RIGHT_OPERAND_SYNTAX_EXIT:
                               &lpYYFcnStrRht->tkToken);
     return NULL;
 } // End PrimIdentOpJotDot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -209,12 +195,6 @@ LPPL_YYSTYPE PrimOpMonJotDot_EM_YY
 //  Primitive operator for monadic derived function from JotDot (ERROR)
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpMonJotDotCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimOpMonJotDotCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
@@ -223,7 +203,6 @@ LPPL_YYSTYPE PrimOpMonJotDotCommon_EM_YY
 {
     return PrimFnValenceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 } // End PrimOpJotDotCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -250,12 +229,6 @@ LPPL_YYSTYPE PrimOpDydJotDot_EM_YY
 //
 //  Primitive operator for dyadic derived function from JotDot ("outer product")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDydJotDotCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
@@ -940,7 +913,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimOpDydJotDotCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

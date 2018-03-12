@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1358,12 +1358,6 @@ FORMAT_EXIT:
 //  Mark as in error
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- fnError"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL fnError
     (LPFSLOCALVARS lpfsLocalVars)           // Ptr to FmtSpecStr local vars
 
@@ -1376,7 +1370,6 @@ UBOOL fnError
                                lpfsLocalVars->lptkFunc);
     return FALSE;
 } // End fnError
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -61,12 +61,6 @@ UBOOL bNameClassValid [NAMECLASS_LENp1] =
 //  System function:  []NL -- Name List
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnNL_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE SysFnNL_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -95,7 +89,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnNL_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -103,12 +96,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []NL -- Name List (by Class)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonNL_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonNL_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -121,7 +108,6 @@ LPPL_YYSTYPE SysFnMonNL_EM_YY
                              lptkRhtArg,    // Ptr to right arg token
                              lptkAxis);     // Ptr to axis token (may be NULL)
 } // End SysFnMonNL_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -129,12 +115,6 @@ LPPL_YYSTYPE SysFnMonNL_EM_YY
 //
 //  Dyadic []NL -- Name List (by Alphabet and Class)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydNL_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydNL_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -480,7 +460,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnDydNL_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //  Primitive function for monadic and dyadic LeftShoeUnderbar (ERROR and "subset of")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnLeftShoeUnderbar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnLeftShoeUnderbar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -57,7 +51,6 @@ LPPL_YYSTYPE PrimFnLeftShoeUnderbar_EM_YY
     else
         return PrimFnDydLeftShoeUnderbar_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnLeftShoeUnderbar_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -65,12 +58,6 @@ LPPL_YYSTYPE PrimFnLeftShoeUnderbar_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic LeftShoeUnderbar
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnLeftShoeUnderbar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnLeftShoeUnderbar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -91,7 +78,6 @@ LPPL_YYSTYPE PrimProtoFnLeftShoeUnderbar_EM_YY
                                lptkRhtArg,                      // Ptr to right arg token
                                lptkAxis);                       // Ptr to axis token (may be NULL)
 } // End PrimProtoFnLeftShoeUnderbar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -99,12 +85,6 @@ LPPL_YYSTYPE PrimProtoFnLeftShoeUnderbar_EM_YY
 //
 //  Primitive function for monadic LeftShoeUnderbar (ERROR)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonLeftShoeUnderbar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonLeftShoeUnderbar_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -114,7 +94,6 @@ LPPL_YYSTYPE PrimFnMonLeftShoeUnderbar_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End PrimFnMonLeftShoeUnderbar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -122,12 +101,6 @@ LPPL_YYSTYPE PrimFnMonLeftShoeUnderbar_EM_YY
 //
 //  Primitive function for dyadic LeftShoeUnderbar ("subset of")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydLeftShoeUnderbar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydLeftShoeUnderbar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -202,7 +175,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End PrimFnDydLeftShoeUnderbar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

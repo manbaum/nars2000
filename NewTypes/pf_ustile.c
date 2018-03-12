@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -177,12 +177,6 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecUpStile};
 //  Primitive function for monadic and dyadic UpStile ("ceiling" and "maximum")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnUpStile_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnUpStile_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -199,7 +193,6 @@ LPPL_YYSTYPE PrimFnUpStile_EM_YY
     else
         return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
 } // End PrimFnUpStile_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -881,12 +874,6 @@ void PrimFnMonUpStileHC4VisHC4V
 //  Monadic UpStile, result is APA
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonUpStileAPA_EM"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL PrimFnMonUpStileAPA_EM
     (LPPL_YYSTYPE lpYYRes,          // Ptr to result token (may be NULL)
 
@@ -916,7 +903,6 @@ UBOOL PrimFnMonUpStileAPA_EM
 
     return TRUE;
 } // End PrimFnMonUpStileAPA_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

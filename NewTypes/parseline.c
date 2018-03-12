@@ -349,12 +349,6 @@ int _BIND
 //  Reduce various pseudo-reductions
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- plRedPseudo"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE plRedPseudo
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
      LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
@@ -374,7 +368,6 @@ LPPL_YYSTYPE plRedPseudo
                               &lpplYYLstRht->tkToken);
     return NULL;
 } // End plRedPseudo
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -382,12 +375,6 @@ LPPL_YYSTYPE plRedPseudo
 //
 //  Reduce to a SYNTAX ERROR
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- plRedSYNR"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE plRedSYNR
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
@@ -400,7 +387,6 @@ LPPL_YYSTYPE plRedSYNR
                               &lpplYYCurObj->tkToken);
     return NULL;
 } // End plRedSYNR
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1004,12 +990,6 @@ ERROR_EXIT:
 //  Reduce "A A"
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- plRedA_A"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE plRedA_A
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
      LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
@@ -1066,7 +1046,6 @@ ERROR_EXIT:
 
     return NULL;
 } // End plRedA_A
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1074,12 +1053,6 @@ ERROR_EXIT:
 //
 //  Reduce "SA A"
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- plRedSA_A"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE plRedSA_A
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
@@ -1126,7 +1099,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End plRedSA_A
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1521,12 +1493,6 @@ LPPL_YYSTYPE plRedJ_HY
 //  Reduce "GO A"  &  "GO SA"
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- plRedGO_A"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE plRedGO_A
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
      LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
@@ -1642,7 +1608,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End plRedGO_A
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1744,12 +1709,6 @@ ERROR_EXIT:
 //  Reduce "CSI A"  &  "CSI SA"
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- plRedCSI_A"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE plRedCSI_A
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
      LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
@@ -1806,7 +1765,6 @@ NORMAL_EXIT:
 
     return lpplYYLstRht;
 } // End plRedCSI_A
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1849,12 +1807,6 @@ LPPL_YYSTYPE plRedCSF_NAM
 //
 //  Reduce "CSFN CSIA"
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- plRedCSFN_CSIA"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE plRedCSFN_CSIA
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
@@ -1905,7 +1857,6 @@ SYNTAX_EXIT:
                                lpplLocalVars->lptkNext);
     return NULL;
 } // End plRedCSFN_CSIA
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2253,12 +2204,6 @@ ERROR_EXIT:
 //  Reduce "CS1 A"
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- plRedCS1_A"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE plRedCS1_A
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
      LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
@@ -2469,7 +2414,6 @@ SYNTAX_EXIT:
 ERROR_EXIT:
     return NULL;
 } // End plRedCS1_A
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3485,12 +3429,6 @@ LPPL_YYSTYPE plRedF_SPA
 //  Reduce "IDX IDX"
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- plRedIDX_IDX"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE plRedIDX_IDX
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
      LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
@@ -3516,7 +3454,6 @@ LPPL_YYSTYPE plRedIDX_IDX
 
     return lpplYYCurObj;
 } // End plRedIDX_IDX
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3524,12 +3461,6 @@ LPPL_YYSTYPE plRedIDX_IDX
 //
 //  Reduce "IDX SPA"
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- plRedIDX_SPA"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE plRedIDX_SPA
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
@@ -3550,7 +3481,6 @@ LPPL_YYSTYPE plRedIDX_SPA
 
     return lpplYYLstRht;
 } // End plRedIDX_SPA
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3558,12 +3488,6 @@ LPPL_YYSTYPE plRedIDX_SPA
 //
 //  Reduce "A SPA"
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- plRedA_SPA"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE plRedA_SPA
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
@@ -3591,7 +3515,6 @@ LPPL_YYSTYPE plRedA_SPA
                                lpplLocalVars->lptkNext);
     return NULL;
 } // End plRedA_SPA
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3599,12 +3522,6 @@ LPPL_YYSTYPE plRedA_SPA
 //
 //  Reduce "NAM ISPA"
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- plRedNAM_ISPA"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE plRedNAM_ISPA
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
@@ -3666,7 +3583,6 @@ NONCE_EXIT:
 
     return NULL;
 } // End plRedNAM_ISPA
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3835,12 +3751,6 @@ LPPL_YYSTYPE plRedLP_Com
 //  Reduce "AFOG A"  &  "AFOG SA"
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- plRedAFOG_A"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE plRedAFOG_A
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
      LPPL_YYSTYPE  lpplYYCurObj,        // Ptr to current PL_YYSTYPE
@@ -3911,7 +3821,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End plRedAFOG_A
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3919,12 +3828,6 @@ NORMAL_EXIT:
 //
 //  Reduce "AFOR A"  &  "AFOR SA"
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- plRedAFOR_A"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE plRedAFOR_A
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to plLocalVars
@@ -3994,7 +3897,6 @@ NORMAL_EXIT:
 
     return NULL;
 } // End plRedAFOR_A
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4005,12 +3907,6 @@ NORMAL_EXIT:
 //    as well as in lpMemPTD->YYResExec if there is a value (EXITTYPE_DISPLAY
 //    or EXITTYPE_NODISPLAY).
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ParseLine"
-#else
-#define APPEND_NAME
-#endif
 
 EXIT_TYPES ParseLine
     (HWND           hWndSM,                 // Session Manager window handle
@@ -5936,7 +5832,6 @@ NORMAL_EXIT:
 
     return plLocalVars.ExitType;
 } // End ParseLine
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -6043,12 +5938,6 @@ TOKEN GetLftToken
 //  Lexical analyzer for Bison
 //  Common routine to <pl_yylex> and <GetLftSynObj>.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- pl_yylexCOM"
-#else
-#define APPEND_NAME
-#endif
 
 void pl_yylexCOM
     (LPPLLOCALVARS lpplLocalVars,   // Ptr to local plLocalVars
@@ -6867,7 +6756,6 @@ PL_YYLEX_OP3NAMED:
 
     Assert (IsValidSO (lpplYYLval->tkToken.tkSynObj));
 } // End pl_yylexCOM
-#undef  APPEND_NAME
 
 
 #ifdef DEBUG
@@ -7244,12 +7132,6 @@ NAME_TYPES plSetDfn
 //  Execute a CS0
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ExecuteCS0"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE ExecuteCS0
     (LPPLLOCALVARS lpplLocalVars,       // Ptr to local plLocalVars
      LPPL_YYSTYPE  lpplYYCurObj)        // Ptr to current PL_YYSTYPE
@@ -7502,7 +7384,6 @@ SYNTAX_EXIT:
                                lpplLocalVars->lptkNext);
     return NULL;
 } // End ExecuteCS0
-#undef  APPEND_NAME
 
 
 //***************************************************************************

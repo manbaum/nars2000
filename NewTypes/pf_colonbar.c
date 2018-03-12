@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -176,12 +176,6 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecColonBar};
 //  Primitive function for monadic and dyadic ColonBar ("reciprocal" and "division")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnColonBar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnColonBar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -198,7 +192,6 @@ LPPL_YYSTYPE PrimFnColonBar_EM_YY
     else
         return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
 } // End PrimFnColonBar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1806,12 +1799,6 @@ void PrimFnDydColonBarVisVvV
 //  $DivHC2I_RE
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- DivHC2I_RE"
-#else
-#define APPEND_NAME
-#endif
-
 APLHC2I DivHC2I_RE
     (APLHC2I aplLft,                    // Left arg
      APLHC2I aplRht)                    // Right ...
@@ -1851,7 +1838,6 @@ APLHC2I DivHC2I_RE
 
     return aplRes;
 } // End DivHC2I_RE
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1859,12 +1845,6 @@ APLHC2I DivHC2I_RE
 //
 //  Primitive scalar function dyadic ColonBar:  HC2I {is} HC2I fn HC2I
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydColonBarHC2IisHC2IvHC2I"
-#else
-#define APPEND_NAME
-#endif
 
 void PrimFnDydColonBarHC2IisHC2IvHC2I
     (LPAPLHC2I  lpMemRes,           // Ptr to the result
@@ -1893,7 +1873,6 @@ void PrimFnDydColonBarHC2IisHC2IvHC2I
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC2F);
 } // End PrimFnDydColonBarHC2IisHC2IvHC2I
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2018,12 +1997,6 @@ APLHC2F DivHC2F_RE
 //  Primitive scalar function dyadic ColonBar:  HC2F {is} HC2F fn HC2F
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydColonBarHC2FisHC2FvHC2F"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydColonBarHC2FisHC2FvHC2F
     (LPAPLHC2F lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -2051,7 +2024,6 @@ void PrimFnDydColonBarHC2FisHC2FvHC2F
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydColonBarHC2FisHC2FvHC2F
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2169,12 +2141,6 @@ APLHC2R DivHC2R_RE
 //  Primitive scalar function dyadic ColonBar:  HC2R {is} HC2R fn HC2R
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydColonBarHC2RisHC2RvHC2R"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydColonBarHC2RisHC2RvHC2R
     (LPAPLHC2R  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -2202,7 +2168,6 @@ void PrimFnDydColonBarHC2RisHC2RvHC2R
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC2V);
 } // End PrimFnDydColonBarHC2RisHC2RvHC2R
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2349,12 +2314,6 @@ void PrimFnDydColonBarHC2VisHC2RvHC2R
 //  Primitive scalar function dyadic ColonBar:  HC2V {is} HC2V fn HC2V
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydColonBarHC2VisHC2VvHC2V"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydColonBarHC2VisHC2VvHC2V
     (LPAPLHC2V  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -2382,18 +2341,11 @@ void PrimFnDydColonBarHC2VisHC2VvHC2V
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydColonBarHC2VisHC2VvHC2V
-#undef  APPEND_NAME
 
 
 //***************************************************************************
 //  $DivHC4I_RE
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- DivHC4I_RE"
-#else
-#define APPEND_NAME
-#endif
 
 APLHC4I DivHC4I_RE
     (APLHC4I aplLft,                    // Left arg
@@ -2439,7 +2391,6 @@ APLHC4I DivHC4I_RE
 
     return aplRes;
 } // End DivHC4I_RE
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2447,12 +2398,6 @@ APLHC4I DivHC4I_RE
 //
 //  Primitive scalar function dyadic ColonBar:  HC4I {is} HC4I fn HC4I
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydColonBarHC4IisHC4IvHC4I"
-#else
-#define APPEND_NAME
-#endif
 
 void PrimFnDydColonBarHC4IisHC4IvHC4I
     (LPAPLHC4I  lpMemRes,           // Ptr to the result
@@ -2481,7 +2426,6 @@ void PrimFnDydColonBarHC4IisHC4IvHC4I
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC4F);
 } // End PrimFnDydColonBarHC4IisHC4IvHC4I
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2617,12 +2561,6 @@ APLHC4F DivHC4F_RE
 //  Primitive scalar function dyadic ColonBar:  HC4F {is} HC4F fn HC4F
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydColonBarHC4FisHC4FvHC4F"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydColonBarHC4FisHC4FvHC4F
     (LPAPLHC4F lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -2650,7 +2588,6 @@ void PrimFnDydColonBarHC4FisHC4FvHC4F
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydColonBarHC4FisHC4FvHC4F
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2776,12 +2713,6 @@ APLHC4R DivHC4R_RE
 //  Primitive scalar function dyadic ColonBar:  HC4R {is} HC4R fn HC4R
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydColonBarHC4RisHC4RvHC4R"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydColonBarHC4RisHC4RvHC4R
     (LPAPLHC4R  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -2809,7 +2740,6 @@ void PrimFnDydColonBarHC4RisHC4RvHC4R
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC4V);
 } // End PrimFnDydColonBarHC4RisHC4RvHC4R
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2967,12 +2897,6 @@ void PrimFnDydColonBarHC4VisHC4RvHC4R
 //  Primitive scalar function dyadic ColonBar:  HC4V {is} HC4V fn HC4V
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydColonBarHC4VisHC4VvHC4V"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydColonBarHC4VisHC4VvHC4V
     (LPAPLHC4V  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -3000,18 +2924,11 @@ void PrimFnDydColonBarHC4VisHC4VvHC4V
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydColonBarHC4VisHC4VvHC4V
-#undef  APPEND_NAME
 
 
 //***************************************************************************
 //  $DivHC8I_RE
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- DivHC8I_RE"
-#else
-#define APPEND_NAME
-#endif
 
 APLHC8I DivHC8I_RE
     (APLHC8I aplLft,                    // Left arg
@@ -3057,7 +2974,6 @@ APLHC8I DivHC8I_RE
 
     return aplRes;
 } // End DivHC8I_RE
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3065,12 +2981,6 @@ APLHC8I DivHC8I_RE
 //
 //  Primitive scalar function dyadic ColonBar:  HC8I {is} HC8I fn HC8I
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydColonBarHC8IisHC8IvHC8I"
-#else
-#define APPEND_NAME
-#endif
 
 void PrimFnDydColonBarHC8IisHC8IvHC8I
     (LPAPLHC8I  lpMemRes,           // Ptr to the result
@@ -3099,7 +3009,6 @@ void PrimFnDydColonBarHC8IisHC8IvHC8I
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC8F);
 } // End PrimFnDydColonBarHC8IisHC8IvHC8I
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3235,12 +3144,6 @@ APLHC8F DivHC8F_RE
 //  Primitive scalar function dyadic ColonBar:  HC8F {is} HC8F fn HC8F
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydColonBarHC8FisHC8FvHC8F"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydColonBarHC8FisHC8FvHC8F
     (LPAPLHC8F lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -3268,7 +3171,6 @@ void PrimFnDydColonBarHC8FisHC8FvHC8F
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydColonBarHC8FisHC8FvHC8F
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3394,12 +3296,6 @@ APLHC8R DivHC8R_RE
 //  Primitive scalar function dyadic ColonBar:  HC8R {is} HC8R fn HC8R
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydColonBarHC8RisHC8RvHC8R"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydColonBarHC8RisHC8RvHC8R
     (LPAPLHC8R  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -3427,7 +3323,6 @@ void PrimFnDydColonBarHC8RisHC8RvHC8R
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC8V);
 } // End PrimFnDydColonBarHC8RisHC8RvHC8R
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3585,12 +3480,6 @@ void PrimFnDydColonBarHC8VisHC8RvHC8R
 //  Primitive scalar function dyadic ColonBar:  HC8V {is} HC8V fn HC8V
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydColonBarHC8VisHC8VvHC8V"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydColonBarHC8VisHC8VvHC8V
     (LPAPLHC8V  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -3618,7 +3507,6 @@ void PrimFnDydColonBarHC8VisHC8VvHC8V
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydColonBarHC8VisHC8VvHC8V
-#undef  APPEND_NAME
 
 
 //***************************************************************************

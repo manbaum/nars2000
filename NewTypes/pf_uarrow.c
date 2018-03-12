@@ -31,12 +31,6 @@
 //  Primitive function for monadic and dyadic UpArrow ("first" and "take")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnUpArrow_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnUpArrow_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -57,7 +51,6 @@ LPPL_YYSTYPE PrimFnUpArrow_EM_YY
     else
         return PrimFnDydUpArrow_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnUpArrow_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -65,12 +58,6 @@ LPPL_YYSTYPE PrimFnUpArrow_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic UpArrow
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnUpArrow_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnUpArrow_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -90,7 +77,6 @@ LPPL_YYSTYPE PrimProtoFnUpArrow_EM_YY
                                     lptkRhtArg,         // Ptr to right arg token
                                     lptkAxis);          // Ptr to axis token (may be NULL)
 } // End PrimProtoFnUpArrow_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -181,12 +167,6 @@ ERROR_EXIT:
 //  Primitive function for monadic UpArrow ("first")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonUpArrow_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnMonUpArrow_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -258,7 +238,6 @@ AXIS_SYNTAX_EXIT:
 ERROR_EXIT:
     return NULL;
 } // End PrimFnMonUpArrow_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -266,12 +245,6 @@ ERROR_EXIT:
 //
 //  Primitive function for dyadic UpArrow ("take")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydUpArrow_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -1178,7 +1151,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnUpArrow_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

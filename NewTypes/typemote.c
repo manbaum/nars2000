@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -69,12 +69,6 @@
 //  can be stored more simply.  Note that more simply does not
 //  mean in fewer bytes as 32-bit ptrs are four bytes while integers are eight.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- TypeDemote"
-#else
-#define APPEND_NAME
-#endif
 
 void TypeDemote
     (LPTOKEN lptkRhtArg,                    // Ptr to token to demote
@@ -1129,7 +1123,6 @@ IMMED_EXIT:
         MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 } // End TypeDemote
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2443,12 +2436,6 @@ UBOOL TypePromote_EM
 //  Promote the type of the global memory handle to a given storage type
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- TypePromoteGlb_EM"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL TypePromoteGlb_EM
     (HGLOBAL *lphGlbArg,            // Ptr to global memory handle
      APLSTYPE aplTypeRes,           // The result storage type
@@ -2941,7 +2928,6 @@ ERROR_EXIT:
 
     return bRet;
 } // End TypePromoteGlb_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

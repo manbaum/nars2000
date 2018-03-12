@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -176,12 +176,6 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecRoot};
 //  Primitive function for monadic and dyadic Root ("Square Root" and "Nth Root")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnRoot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnRoot_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -198,7 +192,6 @@ LPPL_YYSTYPE PrimFnRoot_EM_YY
     else
         return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
 } // End PrimFnRoot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -704,12 +697,6 @@ void PrimFnMonRootHC2VisHC2R
 //  $SqrtHCxV_RE
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SqrtHCxV_RE"
-#else
-#define APPEND_NAME
-#endif
-
 APLHC8V SqrtHCxV_RE
     (APLHC8V aplRht,                // Right arg
      int     iHCDimRes)             // HC Dimension (1, 2, 4, 8)
@@ -903,7 +890,6 @@ ERROR_EXIT:
 
     return aplRes;
 } // End SqrtHCxV_RE
-#undef  APPEND_NAME
 
 
 //***************************************************************************

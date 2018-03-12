@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -179,12 +179,6 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecStar};
 //  Primitive function for monadic and dyadic Star ("exponential" and "power")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnStar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnStar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -201,7 +195,6 @@ LPPL_YYSTYPE PrimFnStar_EM_YY
     else
         return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
 } // End PrimFnStar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -446,12 +439,6 @@ void PrimFnMonStarVisR
 //  See "http://www.jsoftware.com/jwiki/Essays/Extended%20Precision%20Functions"
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonStarVisV"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnMonStarVisV
     (LPAPLVFP   lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -478,7 +465,6 @@ void PrimFnMonStarVisV
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnMonStarVisV
-#undef APPEND_NAME
 
 
 #ifdef OWN_EXPLOG
@@ -1859,12 +1845,6 @@ void PrimFnDydStarVisVvV
 //  $PowHC2I_RE
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PowHC2I_RE"
-#else
-#define APPEND_NAME
-#endif
-
 APLHC2I PowHC2I_RE
     (APLHC2I aplLft,                // Left arg
      APLHC2I aplRht)                // Right ...
@@ -1939,7 +1919,6 @@ APLHC2I PowHC2I_RE
 
     return aplRes;
 } // End PowHC2I_RE
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2642,12 +2621,6 @@ void PrimFnDydStarHC2VisHC2VvHC2V
 //  $PowHC4I_RE
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PowHC4I_RE"
-#else
-#define APPEND_NAME
-#endif
-
 APLHC4I PowHC4I_RE
     (APLHC4I aplLft,
      APLHC4I aplRht)
@@ -2717,7 +2690,6 @@ APLHC4I PowHC4I_RE
 
     return aplRes;
 } // End PowHC4I_RE
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3422,12 +3394,6 @@ void PrimFnDydStarHC4VisHC4VvHC4V
 //  $PowHC8I_RE
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PowHC8I_RE"
-#else
-#define APPEND_NAME
-#endif
-
 APLHC8I PowHC8I_RE
     (APLHC8I aplLft,                // Left arg
      APLHC8I aplRht)                // Right ...
@@ -3497,7 +3463,6 @@ APLHC8I PowHC8I_RE
 
     return aplRes;
 } // End PowHC8I_RE
-#undef  APPEND_NAME
 
 
 //***************************************************************************

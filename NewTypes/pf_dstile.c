@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -171,12 +171,6 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecDownStile};
 //  Primitive function for monadic and dyadic DownStile ("floor" and "minimum")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDownStile_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnDownStile_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -193,7 +187,6 @@ LPPL_YYSTYPE PrimFnDownStile_EM_YY
     else
         return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
 } // End PrimFnDownStile_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1721,12 +1714,6 @@ void PrimFnMonDownStileHC4VisHC4V
 //  Monadic downstile, result is APA
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonDownStileAPA_EM"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL PrimFnMonDownStileAPA_EM
     (LPPL_YYSTYPE lpYYRes,          // Ptr to the result (may be NULL)
      LPTOKEN      lptkFunc,         // Ptr to function token
@@ -1752,7 +1739,6 @@ UBOOL PrimFnMonDownStileAPA_EM
 
     return TRUE;
 } // End PrimFnMonDownStileAPA_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

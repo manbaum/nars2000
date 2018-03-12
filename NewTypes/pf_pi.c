@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,12 +63,6 @@ B1B2TABLE dB1B2Table[] =            // Optimal values for B1, B2, and N for ECM 
 //  Primitive function for monadic and dyadic Pi ("Prime Factors" and "Number Theoretic")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnPi_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnPi_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -85,7 +79,6 @@ LPPL_YYSTYPE PrimFnPi_EM_YY
     else
         return PrimFnDydPi_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnPi_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -93,12 +86,6 @@ LPPL_YYSTYPE PrimFnPi_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Pi
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnPi_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnPi_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -130,7 +117,6 @@ LPPL_YYSTYPE PrimProtoFnPi_EM_YY
                                    lptkRhtArg,      // Ptr to right arg token
                                    lptkAxis);       // Ptr to axis token (may be NULL)
 } // End PrimProtoFnPi_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -138,12 +124,6 @@ LPPL_YYSTYPE PrimProtoFnPi_EM_YY
 //
 //  Primitive function for monadic Pi ("Prime Factors")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonPi_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonPi_EM_YY
     (LPTOKEN lptkFunc,                      // Ptr to function token
@@ -406,7 +386,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnMonPi_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -414,12 +393,6 @@ NORMAL_EXIT:
 //
 //  Primitive function for dyadic Pi ("Number Theoretic")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydPi_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydPi_EM_YY
     (LPTOKEN lptkLftArg,                // Ptr to left arg token
@@ -887,7 +860,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDydPi_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -958,12 +930,6 @@ UBOOL PrimFnPiIntegerTolerance
 //
 //  Common primitive function for monadic/dyadic Pi ("Prime Factors")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnPiCommon"
-#else
-#define APPEND_NAME
-#endif
 
 APLMPI PrimFnPiCommon
     (LPMEMTMP     lpMemTmp,         // Ptr to factor struc (may be NULL)
@@ -1164,7 +1130,6 @@ NORMAL_EXIT:
 
     return aplPrime;
 } // End PrimFnPiCommon
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1172,12 +1137,6 @@ NORMAL_EXIT:
 //
 //  Resize the factor memory struc if needed
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ResizeFactorStruc"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL ResizeFactorStruc
     (LPMEMTMP lpMemTmp)
@@ -1248,7 +1207,6 @@ UBOOL ResizeFactorStruc
 
     return TRUE;
 } // End ResizeFactorStruc
-#undef  APPEND_NAME
 
 
 //***************************************************************************

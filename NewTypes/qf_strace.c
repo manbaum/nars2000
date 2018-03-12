@@ -32,12 +32,6 @@
 //  System function:  []STOP -- Manage Stop Points
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnSTOP_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE SysFnSTOP_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -62,7 +56,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnSTOP_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -70,12 +63,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  System function:  []TRACE -- Manage trace points
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnTRACE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnTRACE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -101,7 +88,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnTRACE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -147,12 +133,6 @@ LPPL_YYSTYPE SysFnMonTRACE_EM_YY
 //
 //  Monadic []STOP/[]TRACE -- Return Stop/Trace Points
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonSTRACE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonSTRACE_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -349,7 +329,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnMonSTRACE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -399,12 +378,6 @@ LPPL_YYSTYPE SysFnDydTRACE_EM_YY
 //
 //  Dyadic []STOP/[]TRACE -- Set Stop/Trace Points
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydSTRACE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydSTRACE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -615,7 +588,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnDydSTRACE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -221,12 +221,6 @@ LPPL_YYSTYPE ExecuteMagicOperator_EM_YY
 //  Initialize a single magic function/operator
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- Init1MagicFunction"
-#else
-#define APPEND_NAME
-#endif
-
 HGLOBAL Init1MagicFunction
     (LPWCHAR          lpwszName,            // Ptr to the external name
      LPMAGIC_FCNOPR   lpMagicFcnOpr,        // Ptr to magic function/operator struc
@@ -724,7 +718,6 @@ NORMAL_EXIT:
 
     return hGlbDfnHdr;
 } // End Init1MagicFunction
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -820,12 +813,6 @@ UBOOL InitMagicFunctions
 //  Execute and erase a niladic MFO (MFON_MonDotInit)
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ExecNilMFO"
-#else
-#define APPEND_NAME
-#endif
-
 void ExecNilMFO
     (LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
      HWND         hWndEC)               // Session Manager window handle
@@ -897,7 +884,6 @@ void ExecNilMFO
     // Erase the Symbol Table Entry
     EraseSTE (lpSymEntry, FALSE); lpSymEntry = NULL;
 } // End ExecNilMFO
-#undef  APPEND_NAME
 
 
 //***************************************************************************

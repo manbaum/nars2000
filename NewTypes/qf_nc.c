@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //
 //  System function:  []NC -- Name Class
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnNC_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnNC_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -67,7 +61,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnNC_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -75,12 +68,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []NC -- Name Class
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonNC_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonNC_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -334,7 +321,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnMonNC_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -572,12 +558,6 @@ APLINT CalcNameClass
 //  Dyadic []NC -- ERROR
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydNC_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE SysFnDydNC_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -587,7 +567,6 @@ LPPL_YYSTYPE SysFnDydNC_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnDydNC_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

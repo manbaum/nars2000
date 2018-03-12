@@ -357,12 +357,6 @@ void InitVfpPrecision
 //  Initialize the primitive function jump table
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- InitPrimFns"
-#else
-#define APPEND_NAME
-#endif
-
 void InitPrimFns
     (void)
 
@@ -489,7 +483,6 @@ void InitPrimFns
 ////                                                                            //         - dot (inner product)
 ////                                                                            //         - jotdot (outer product)
 } // End InitPrimFns
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -517,12 +510,6 @@ void InitPrimFn
 //    primitive function/operator
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFn_EM"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFn_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -534,7 +521,7 @@ LPPL_YYSTYPE PrimFn_EM
                                lptkFunc);
     return NULL;
 } // End PrimFn_EM
-#undef  APPEND_NAME
+
 
 // Monadic operators TO DO
 #define PrimProtoOpStileTilde_EM_YY             PrimProtoOp_EM
@@ -583,12 +570,6 @@ LPPL_YYSTYPE PrimFn_EM
 //
 //  Initialize the primitive function and operator prototype jump table
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- InitPrimProtoFns"
-#else
-#define APPEND_NAME
-#endif
 
 void InitPrimProtoFns
     (void)
@@ -721,7 +702,6 @@ void InitPrimProtoFns
     InitPrimProtoOp (UTF16_DOT                 , &PrimProtoOpDot_EM_YY                );    //         - dot (inner product)
     InitPrimProtoOp (INDEX_JOTDOT              , &PrimProtoOpJotDot_EM_YY             );    //         - jotdot (outer product)
 } // End InitPrimProtoFns
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -767,12 +747,6 @@ void InitPrimProtoOp
 //    primitive function/operator prototype
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFn_EM"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimProtoFn_EM
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -782,7 +756,6 @@ LPPL_YYSTYPE PrimProtoFn_EM
 {
     return PrimFnNonceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End PrimProtoFn_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -791,12 +764,6 @@ LPPL_YYSTYPE PrimProtoFn_EM
 //  Default function for symbols for which there is no corresponding
 //    primitive operator prototype
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoOp_EM"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoOp_EM
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
@@ -809,7 +776,6 @@ LPPL_YYSTYPE PrimProtoOp_EM
                               &lpYYFcnStrOpr->tkToken);
     return NULL;
 } // End PrimProtoOp_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

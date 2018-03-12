@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //  Primitive function for monadic and dyadic Section (ERROR and "Symmetric Difference")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnSection_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnSection_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -53,7 +47,6 @@ LPPL_YYSTYPE PrimFnSection_EM_YY
     else
         return PrimFnDydSection_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnSection_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -61,12 +54,6 @@ LPPL_YYSTYPE PrimFnSection_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Section
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnSection_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnSection_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -86,7 +73,6 @@ LPPL_YYSTYPE PrimProtoFnSection_EM_YY
                                     lptkRhtArg,             // Ptr to right arg token
                                     lptkAxis);              // Ptr to axis token (may be NULL)
 } // End PrimProtoFnSection_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -94,12 +80,6 @@ LPPL_YYSTYPE PrimProtoFnSection_EM_YY
 //
 //  Generate an identity element for the primitive function dyadic Section
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentFnSection_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimIdentFnSection_EM_YY
     (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
@@ -158,7 +138,6 @@ DOMAIN_EXIT:
                                lptkFunc);
     return NULL;
 } // End PrimIdentFnSection_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -166,12 +145,6 @@ DOMAIN_EXIT:
 //
 //  Primitive function for monadic Section (ERROR)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonSection_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonSection_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -181,7 +154,6 @@ LPPL_YYSTYPE PrimFnMonSection_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End PrimFnMonSection_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -189,12 +161,6 @@ LPPL_YYSTYPE PrimFnMonSection_EM_YY
 //
 //  Primitive function for dyadic Section ("Symmetric Difference")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydSection_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydSection_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,12 +32,6 @@
 //    monadic operator DieresisTilde ("duplicate" and "commute")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDieresisTilde_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimOpDieresisTilde_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if niladic/monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -57,7 +51,6 @@ LPPL_YYSTYPE PrimOpDieresisTilde_EM_YY
                                         lpYYFcnStrOpr,  // Ptr to operator function strand
                                         lptkRhtArg);    // Ptr to right arg token
 } // End PrimOpDieresisTilde_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -107,12 +100,6 @@ LPPL_YYSTYPE PrimProtoOpDieresisTilde_EM_YY
 //
 //  Generate an identity element for the primitive operator monadic DieresisTilde
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentOpDieresisTilde_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimIdentOpDieresisTilde_EM_YY
     (LPTOKEN      lptkRhtOrig,          // Ptr to original right arg token
@@ -187,7 +174,6 @@ LEFT_OPERAND_DOMAIN_EXIT:
 ERROR_EXIT:
     return NULL;
 } // End PrimIdentOpDieresisTilde_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -214,12 +200,6 @@ LPPL_YYSTYPE PrimOpMonDieresisTilde_EM_YY
 //  Common subroutine for primitive operator for monadic derived function
 //    from DieresisTilde ("duplicate")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpMonDieresisTildeCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpMonDieresisTildeCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -288,7 +268,6 @@ LEFT_OPERAND_NONCE_EXIT:
                               &lpYYFcnStrOpr->tkToken);
     return NULL;
 } // End PrimOpMonDieresisTildeCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -316,12 +295,6 @@ LPPL_YYSTYPE PrimOpDydDieresisTilde_EM_YY
 //  Common subroutine for primitive operator for dyadic derived function
 //    from DieresisTilde ("commute")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDydDieresisTildeCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpDydDieresisTildeCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
@@ -392,7 +365,6 @@ LEFT_OPERAND_NONCE_EXIT:
                               &lpYYFcnStrLft->tkToken);
     return NULL;
 } // End PrimOpDydDieresisTildeCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

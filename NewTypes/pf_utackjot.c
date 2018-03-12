@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //
 //  Primitive function for monadic and dyadic UpTackJot ("execute" and ERROR)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnUpTackJot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnUpTackJot_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -70,7 +64,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimFnUpTackJot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -78,12 +71,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Generate a prototype for the primitive functions monadic & dyadic UpTackJot
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnUpTackJot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnUpTackJot_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -103,7 +90,6 @@ LPPL_YYSTYPE PrimProtoFnUpTackJot_EM_YY
                                     lptkRhtArg,             // Ptr to right arg token
                                     lptkAxis);              // Ptr to axis token (may be NULL)
 } // End PrimProtoFnUpTackJot_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -111,12 +97,6 @@ LPPL_YYSTYPE PrimProtoFnUpTackJot_EM_YY
 //
 //  Primitive function for monadic UpTackJot ("execute")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonUpTackJot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonUpTackJot_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -201,7 +181,6 @@ DOMAIN_EXIT:
                                lptkFunc);
     return NULL;
 } // End PrimFnMonUpTackJot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -209,12 +188,6 @@ DOMAIN_EXIT:
 //
 //  Monadic UpTackJot ("execute") on an immediate value
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonUpTackJotImm_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonUpTackJotImm_EM_YY
     (APLLONGEST    aplLongest,      // Ptr to right arg value
@@ -250,7 +223,6 @@ WSFULL_EXIT:
                                lptkFunc);
     return NULL;                // Mark as failed
 } // End PrimFnMonUpTackJotImm_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -258,12 +230,6 @@ WSFULL_EXIT:
 //
 //  Monadic UpTackJot ("execute") on a global memory object
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonUpTackJotGlb_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonUpTackJotGlb_EM_YY
     (HGLOBAL hGlbRht,               // Handle to right arg
@@ -324,7 +290,6 @@ WSFULL_EXIT:
                                lptkFunc);
     return NULL;                // Mark as failed
 } // End PrimFnMonUpTackJotGlb_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -445,12 +410,6 @@ LPPL_YYSTYPE PrimFnMonUpTackJotCommon_EM_YY
 //  Monadic UpTackJot ("execute") CS & PL parser
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonUpTackJotCSPLParse"
-#else
-#define APPEND_NAME
-#endif
-
 EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
     (HWND         hWndEC,               // Edit Ctrl window handle
      LPPERTABDATA lpMemPTD,             // Ptr to PerTabData global memory
@@ -558,7 +517,6 @@ ERROR_EXIT:
 
     return exitType;
 } // End PrimFnMonUpTackJotCSPLParse
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -668,12 +626,6 @@ EXIT_TYPES PrimFnMonUpTackJotPLParse
 //  Primitive function for dyadic UpTackJot (ERROR)
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydUpTackJot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnDydUpTackJot_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -683,7 +635,6 @@ LPPL_YYSTYPE PrimFnDydUpTackJot_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End PrimFnDydUpTackJot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -176,12 +176,6 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecPlus};
 //  Primitive function for monadic and dyadic Plus ("conjugate" and "addition")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnPlus_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnPlus_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -198,7 +192,6 @@ LPPL_YYSTYPE PrimFnPlus_EM_YY
     else
         return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
 } // End PrimFnPlus_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -387,12 +380,6 @@ APLHC2I ConjHC2I_RE
 //  Primitive scalar function monadic Plus:  HC2I {is} fn HC2I
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonPlusHC2IisHC2I"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnMonPlusHC2IisHC2I
     (LPAPLHC2I  lpMemRes,               // Ptr to the result
      APLUINT    uRes,                   // Index into the result
@@ -419,7 +406,6 @@ void PrimFnMonPlusHC2IisHC2I
     // Check on exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC2F);
 } // End PrimFnMonPlusHC2IisHC2I
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -559,12 +545,6 @@ APLHC2R ConjHC2R_RE
 //  Primitive scalar function monadic Plus:  HC2R {is} fn HC2R
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonPlusHC2RisHC2R"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnMonPlusHC2RisHC2R
     (LPAPLHC2R  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -591,7 +571,6 @@ void PrimFnMonPlusHC2RisHC2R
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC2V);
 } // End PrimFnMonPlusHC2RisHC2R
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -721,12 +700,6 @@ APLHC4I ConjHC4I_RE
 //  Primitive scalar function monadic Plus:  HC4I {is} fn HC4I
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonPlusHC2IisHC2I"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnMonPlusHC4IisHC4I
     (LPAPLHC4I  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -753,7 +726,6 @@ void PrimFnMonPlusHC4IisHC4I
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC4F);
 } // End PrimFnMonPlusHC4IisHC4I
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -893,12 +865,6 @@ APLHC4R ConjHC4R_RE
 //  Primitive scalar function monadic Plus:  HC4R {is} fn HC4R
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonHC4RisHC4R"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnMonPlusHC4RisHC4R
     (LPAPLHC4R  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -925,7 +891,6 @@ void PrimFnMonPlusHC4RisHC4R
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC4V);
 } // End PrimFnMonPlusHC4RisHC4R
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1055,12 +1020,6 @@ APLHC8I ConjHC8I_RE
 //  Primitive scalar function monadic Plus:  HC8I {is} fn HC8I
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonPlusHC8IisHC8I"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnMonPlusHC8IisHC8I
     (LPAPLHC8I  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -1087,7 +1046,6 @@ void PrimFnMonPlusHC8IisHC8I
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC8F);
 } // End PrimFnMonPlusHC8IisHC8I
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1227,12 +1185,6 @@ APLHC8R ConjHC8R_RE
 //  Primitive scalar function monadic Plus:  HC8R {is} fn HC8R
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonPlusHC8RisHC8R"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnMonPlusHC8RisHC8R
     (LPAPLHC8R  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -1259,7 +1211,6 @@ void PrimFnMonPlusHC8RisHC8R
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC8V);
 } // End PrimFnMonPlusHC8RisHC8R
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1343,12 +1294,6 @@ void PrimFnMonPlusHC8VisHC8V
 //  Monadic plus, result is APA
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonPlusAPA_EM"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL PrimFnMonPlusAPA_EM
     (LPPL_YYSTYPE lpYYRes,          // The result token (may be NULL)
      LPTOKEN      lptkFunc,         // Ptr to function token
@@ -1374,7 +1319,6 @@ UBOOL PrimFnMonPlusAPA_EM
 
     return TRUE;
 } // End PrimFnMonPlusAPA_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1440,12 +1384,6 @@ APLINT AddHC1I_RE
 //  Primitive scalar function dyadic Plus:  I {is} I fn I
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydPlusIisIvI"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydPlusIisIvI
     (LPAPLINT   lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -1473,7 +1411,6 @@ void PrimFnDydPlusIisIvI
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_FLOAT);
 } // End PrimFnDydPlusIisIvI
-#undef APPEND_NAME
 
 
 //***************************************************************************
@@ -1541,12 +1478,6 @@ APLFLOAT AddHC1F_RE
 //  Primitive scalar function dyadic Plus:  F {is} F fn F
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydPlusFisFvF"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydPlusFisFvF
     (LPAPLFLOAT lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -1574,7 +1505,6 @@ void PrimFnDydPlusFisFvF
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydPlusFisFvF
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1632,12 +1562,6 @@ APLRAT AddHC1R_RE
 //  Primitive scalar function dyadic Plus:  R {is} R fn R
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydPlusRisRvR"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydPlusRisRvR
     (LPAPLRAT   lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -1665,7 +1589,6 @@ void PrimFnDydPlusRisRvR
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_VFP);
 } // End PrimFnDydPlusRisRvR
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1751,12 +1674,6 @@ void PrimFnDydPlusVisRvR
 //  Primitive scalar function dyadic Plus:  V {is} V fn V
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydPlusVisVvV"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydPlusVisVvV
     (LPAPLVFP   lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -1784,7 +1701,6 @@ void PrimFnDydPlusVisVvV
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydPlusVisVvV
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1814,12 +1730,6 @@ APLHC2I AddHC2I_RE
 //  Primitive scalar function dyadic Plus:  HC2I {is} HC2I fn HC2I
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydPlusHC2IisHC2IvHC2I"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydPlusHC2IisHC2IvHC2I
     (LPAPLHC2I  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -1847,7 +1757,6 @@ void PrimFnDydPlusHC2IisHC2IvHC2I
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC2F);
 } // End PrimFnDydPlusHC2IisHC2IvHC2I
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1966,12 +1875,6 @@ APLHC2R AddHC2R_RE
 //  Primitive scalar function dyadic Plus:  HC2R {is} HC2R fn HC2R
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydPlusHC2RisHC2RvHC2R"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydPlusHC2RisHC2RvHC2R
     (LPAPLHC2R  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -1999,7 +1902,6 @@ void PrimFnDydPlusHC2RisHC2RvHC2R
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC2V);
 } // End PrimFnDydPlusHC2RisHC2RvHC2R
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2079,12 +1981,6 @@ void PrimFnDydPlusHC2VisHC2RvHC2R
 //  Primitive scalar function dyadic Plus:  HC2V {is} HC2V fn HC2V
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydPlusHC2VisHC2VvHC2V"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydPlusHC2VisHC2VvHC2V
     (LPAPLHC2V  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -2112,7 +2008,6 @@ void PrimFnDydPlusHC2VisHC2VvHC2V
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydPlusHC2VisHC2VvHC2V
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2142,12 +2037,6 @@ APLHC4I AddHC4I_RE
 //  Primitive scalar function dyadic Plus:  HC4I {is} HC4I fn HC4I
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydPlusHC4IisHC4IvHC4I"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydPlusHC4IisHC4IvHC4I
     (LPAPLHC4I  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -2175,7 +2064,6 @@ void PrimFnDydPlusHC4IisHC4IvHC4I
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC4F);
 } // End PrimFnDydPlusHC4IisHC4IvHC4I
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2296,12 +2184,6 @@ APLHC4R AddHC4R_RE
 //  Primitive scalar function dyadic Plus:  HC4R {is} HC4R fn HC4R
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydPlusHC4RisHC4RvHC4R"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydPlusHC4RisHC4RvHC4R
     (LPAPLHC4R  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -2329,7 +2211,6 @@ void PrimFnDydPlusHC4RisHC4RvHC4R
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC4V);
 } // End PrimFnDydPlusHC4RisHC4RvHC4R
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2409,12 +2290,6 @@ void PrimFnDydPlusHC4VisHC4RvHC4R
 //  Primitive scalar function dyadic Plus:  HC4V {is} HC4V fn HC4V
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydPlusHC4VisHC4VvHC4V"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydPlusHC4VisHC4VvHC4V
     (LPAPLHC4V  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -2442,7 +2317,6 @@ void PrimFnDydPlusHC4VisHC4VvHC4V
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydPlusHC4VisHC4VvHC4V
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2472,12 +2346,6 @@ APLHC8I AddHC8I_RE
 //  Primitive scalar function dyadic Plus:  HC8I {is} HC8I fn HC8I
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydPlusHC8IisHC8IvHC8I"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydPlusHC8IisHC8IvHC8I
     (LPAPLHC8I  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -2505,7 +2373,6 @@ void PrimFnDydPlusHC8IisHC8IvHC8I
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC8F);
 } // End PrimFnDydPlusHC8IisHC8IvHC8I
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2626,12 +2493,6 @@ APLHC8R AddHC8R_RE
 //  Primitive scalar function dyadic Plus:  HC8R {is} HC8R fn HC8R
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydPlusHC8RisHC8RvHC8R"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydPlusHC8RisHC8RvHC8R
     (LPAPLHC8R  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -2659,7 +2520,6 @@ void PrimFnDydPlusHC8RisHC8RvHC8R
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC8V);
 } // End PrimFnDydPlusHC8RisHC8RvHC8R
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2739,12 +2599,6 @@ void PrimFnDydPlusHC8VisHC8RvHC8R
 //  Primitive scalar function dyadic Plus:  HC8V {is} HC8V fn HC8V
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydPlusHC8VisHC8VvHC8V"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydPlusHC8VisHC8VvHC8V
     (LPAPLHC8V  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -2772,7 +2626,6 @@ void PrimFnDydPlusHC8VisHC8VvHC8V
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydPlusHC8VisHC8VvHC8V
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2780,12 +2633,6 @@ void PrimFnDydPlusHC8VisHC8VvHC8V
 //
 //  Dyadic plus, result is APA
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydPlusAPA_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydPlusAPA_EM
     (LPPL_YYSTYPE lpYYRes,          // The result token (may be NULL)
@@ -2872,7 +2719,6 @@ UBOOL PrimFnDydPlusAPA_EM
 ERROR_EXIT:
     return bRet;
 } // End PrimFnDydPlusAPA_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //
 //  System function:  []UCS -- Universal Character Set
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnUCS_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnUCS_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
@@ -66,7 +60,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnUCS_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -74,12 +67,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []UCS -- Universal Character Set
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonUCS_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonUCS_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -563,9 +550,9 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -576,20 +563,19 @@ ERROR_EXIT:
     } // End IF
 NORMAL_EXIT:
     // We no longer need this ptr
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemRes NE NULL)
     {
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
 
     // We no longer need this ptr
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemRht NE NULL)
     {
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
     return lpYYRes;
 } // End SysnMonUCS_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -597,12 +583,6 @@ NORMAL_EXIT:
 //
 //  Dyadic []UCS -- ERROR
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydUCS_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydUCS_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -613,7 +593,6 @@ LPPL_YYSTYPE SysFnDydUCS_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnDydUCS_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

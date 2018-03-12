@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,12 +46,6 @@ typedef struct tagWID_PRC
 //    ("default format" and "format by example")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDownTackJot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnDownTackJot_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -83,7 +77,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimFnDownTackJot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -91,12 +84,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Generate a prototype for the primitive functions monadic & dyadic DownTackJot
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnDownTackJot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnDownTackJot_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -116,7 +103,6 @@ LPPL_YYSTYPE PrimProtoFnDownTackJot_EM_YY
                                     lptkRhtArg,             // Ptr to right arg token
                                     lptkAxis);              // Ptr to axis token (may be NULL)
 } // End PrimProtoFnDownTackJot_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -146,12 +132,6 @@ LPPL_YYSTYPE PrimProtoFnDownTackJot_EM_YY
 //     right-justified; otherwise they are left-justified.
 //
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonDownTackJot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonDownTackJot_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -692,9 +672,9 @@ LIMIT_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -704,13 +684,13 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 QUICK_EXIT:
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemRht NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
@@ -721,7 +701,6 @@ QUICK_EXIT:
 
     return lpYYRes;
 } // End PrimFnMonDownTackJot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3866,12 +3845,6 @@ LPAPLCHAR FormatArrNestedGlb
 //     ("format by specification"/"format by example")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydDownTackJot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnDydDownTackJot_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -4937,9 +4910,9 @@ LIMIT_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -4952,19 +4925,19 @@ NORMAL_EXIT:
     // Unlock and free (and set to NULL) a global name and ptr
     UnlFreeGlbName (hGlbWidPrc, lpMemWidPrc);
 
-    if (hGlbLft && lpMemLft)
+    if (hGlbLft NE NULL && lpMemLft NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemRht NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -4972,7 +4945,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDydDownTackJot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4980,12 +4952,6 @@ NORMAL_EXIT:
 //
 //  Primitive function for dyadic DownTackJot ("format by example")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydDownTackJotFBE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydDownTackJotFBE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -5004,7 +4970,6 @@ LPPL_YYSTYPE PrimFnDydDownTackJotFBE_EM_YY
 
 
 } // End PrimFnDydDownTackJotFBE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

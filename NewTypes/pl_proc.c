@@ -215,12 +215,6 @@ void ArrExprCheckCaller
 /// //  Check on Selective Specification of the first (and only) name
 /// //***************************************************************************
 ///
-/// #ifdef DEBUG
-/// #define APPEND_NAME     L" -- CheckSelSpec_EM"
-/// #else
-/// #define APPEND_NAME
-/// #endif
-///
 /// UBOOL CheckSelSpec_EM
 ///     (LPPLLOCALVARS lpplLocalVars,       // Ptr to local vars
 ///      LPTOKEN       lptkNameVars)        // Ptr to NameVars token
@@ -334,7 +328,6 @@ void ArrExprCheckCaller
 ///
 ///     return FALSE;
 /// } // End CheckSelSpec_EM
-/// #undef  APPEND_NAME
 ///
 ///
 /// //***************************************************************************

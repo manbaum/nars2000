@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,12 +32,6 @@
 //  System function:  []EC -- Execute Controlled
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnEC_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE SysFnEC_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -62,7 +56,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnEC_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -70,12 +63,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []EC -- Execute Controlled
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonEC_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonEC_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -420,7 +407,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnMonEC_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -428,12 +414,6 @@ NORMAL_EXIT:
 //
 //  Allocate space for []ET
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- AllocateET_EM"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL AllocateET_EM
     (LPPERTABDATA lpMemPTD,                 // Ptr to PerTabData global memory
@@ -491,7 +471,6 @@ WSFULL_EXIT:
                                lptkFunc);
     return NULL;
 } // End AllocateET_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -499,12 +478,6 @@ WSFULL_EXIT:
 //
 //  Dyadic []EC -- ERROR
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydEC_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydEC_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -515,7 +488,6 @@ LPPL_YYSTYPE SysFnDydEC_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnDydEC_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

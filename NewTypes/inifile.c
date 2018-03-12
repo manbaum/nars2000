@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -485,12 +485,6 @@ void WriteAplFontNames
 //
 //  Read in global-specific .ini file settings
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ReadIniFileGlb"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL ReadIniFileGlb
     (void)
@@ -1477,7 +1471,6 @@ UBOOL ReadIniFileGlb
 
     return TRUE;
 } // End ReadIniFileGlb
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1690,12 +1683,6 @@ HGLOBAL GetPrivateProfileGlbIntW
 //  Read in a global integer or char vector from a .ini file
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- GetPrivateProfileGlbComW"
-#else
-#define APPEND_NAME
-#endif
-
 HGLOBAL GetPrivateProfileGlbComW
     (LPWCHAR  lpwSectName,                          // Ptr to the section name
      LPWCHAR  lpwKeyName,                           // Ptr to the key name
@@ -1821,7 +1808,6 @@ HGLOBAL GetPrivateProfileGlbComW
 
     return hGlbRes;
 } // End GetPrivateProfileGlbComW
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3454,12 +3440,6 @@ LPDICTIONARY ProfileInit_EM
 //  Load a .ini profile
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ProfileLoad_EM"
-#else
-#define APPEND_NAME
-#endif
-
 LPDICTIONARY ProfileLoad_EM
     (LPWSTR       lpwszDPFE,        // Ptr to workspace DPFE
      LPWCHAR     *lplpwErrMsg)      // Ptr to ptr to error message text
@@ -3533,7 +3513,6 @@ LPDICTIONARY ProfileLoad_EM
 
     return lpDict;
 } // End ProfileLoad_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,12 +35,6 @@
 //                               )COPY :nnn [obj1 [obj2 ...]]
 //    where wsid is a workspace identifier and :nnn is a tab identifier.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CmdCopy_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL CmdCopy_EM
     (LPWCHAR lpwszTail)                     // Ptr to command line tail
@@ -370,7 +364,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End CmdCopy_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

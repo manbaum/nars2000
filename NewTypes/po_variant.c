@@ -34,12 +34,6 @@
 //    dyadic operator Variant ("variant" and "variant")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpVariant_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimOpVariant_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -59,7 +53,6 @@ LPPL_YYSTYPE PrimOpVariant_EM_YY
                                   lpYYFcnStrOpr,        // Ptr to operator function strand
                                   lptkRhtArg);          // Ptr to right arg token
 } // End PrimOpVariant_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -68,12 +61,6 @@ LPPL_YYSTYPE PrimOpVariant_EM_YY
 //  Generate a prototype for the derived functions from
 //    dyadic operator Variant ("variant" and "variant")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoOpVariant_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoOpVariant_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
@@ -116,7 +103,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimProtoOpVariant_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -124,12 +110,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Generate an identity element for the primitive operator dyadic Variant
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentOpVariant_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimIdentOpVariant_EM_YY
     (LPTOKEN      lptkRhtOrig,      // Ptr to original right arg token
@@ -211,7 +191,6 @@ LEFT_OPERAND_DOMAIN_EXIT:
 ERROR_EXIT:
     return NULL;
 } // End PrimIdentOpVariant_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -268,12 +247,6 @@ LPPL_YYSTYPE PrimOpMonVariantCommon_EM_YY
 //  Primitive operator for monadic & dyadic derived function
 //    from Variant ("variant")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpVariantCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
     (LPTOKEN      lptkLftArg,               // Ptr to left arg token (may be NULL if monadic derived function)
@@ -1870,7 +1843,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimOpVariantCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2099,12 +2071,6 @@ LPPL_YYSTYPE PrimOpDydVariantCommon_EM_YY
 //
 //  Primitve operator variant using keyword right arg
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpVariantKeyword_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpVariantKeyword_EM_YY
     (LPTOKEN      lptkLftArg,                           // Ptr to left arg token (may be NULL if monadic derived function)
@@ -2353,7 +2319,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimOpVariantKeyword_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2364,12 +2329,6 @@ NORMAL_EXIT:
 // or an element of
 //      ('IO' n) ('CT' n) ...
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpVariantValidate_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimOpVariantValidateGlb_EM
     (HGLOBAL         hGlbRhtOpr,        // Right operand global memory handle
@@ -2603,7 +2562,6 @@ ERROR_EXIT:
 
     return bRet;
 } // End PrimOpVariantValidateGlb_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

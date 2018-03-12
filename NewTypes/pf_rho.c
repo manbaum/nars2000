@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //
 //  Primitive function for monadic and dyadic Rho ("shape" and "reshape")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnRho_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnRho_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -69,7 +63,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimFnRho_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -77,12 +70,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Rho
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnRho_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnRho_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -102,7 +89,6 @@ LPPL_YYSTYPE PrimProtoFnRho_EM_YY
                                     lptkRhtArg,         // Ptr to right arg token
                                     lptkAxis);          // Ptr to axis token (may be NULL)
 } // End PrimProtoFnRho_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -110,12 +96,6 @@ LPPL_YYSTYPE PrimProtoFnRho_EM_YY
 //
 //  Generate an identity element for the primitive function dyadic Rho
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentFnRho_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimIdentFnRho_EM_YY
     (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
@@ -150,7 +130,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimIdentFnRho_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -158,12 +137,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Primitive function for monadic Rho ("shape")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonRho_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonRho_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -219,7 +192,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimFnMonRho_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -255,12 +227,6 @@ LPPL_YYSTYPE PrimFnMonRhoCon_EM_YY
 //
 //  Monadic Rho on a global memory object
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonRhoGlb_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonRhoGlb_EM_YY
     (HGLOBAL hGlbRht,                   // Right arg handle
@@ -363,7 +329,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnMonRhoGlb_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -371,12 +336,6 @@ NORMAL_EXIT:
 //
 //  Primitive function for dydadic Rho ("reshape")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydRho_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydRho_EM_YY
     (LPTOKEN lptkLftArg,                    // Ptr to left arg token
@@ -685,7 +644,6 @@ ERROR_EXIT:
 
     return NULL;
 } // End PrimFnDydRho_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1099,12 +1057,6 @@ void PrimFnDydRhoCopyDim
 //    of the result.
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydRhoLftValid_EM"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL PrimFnDydRhoLftValid_EM
     (LPTOKEN   lptkLftArg,          // Ptr to left arg token
      LPAPLRANK lpaplRankRes,        // Ptr to result rank
@@ -1259,7 +1211,6 @@ DOMAIN_EXIT:
                                lptkFunc);
     return FALSE;
 } // End PrimFnDydRhoLftValid_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1367,12 +1318,6 @@ DOMAIN_EXIT:
 //
 //  Dyadic Rho left argument validation on a global memory object
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydRhoLftGlbValid_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydRhoLftGlbValid_EM
     (HGLOBAL   hGlbLft,                 // Left arg handle
@@ -1728,7 +1673,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End PrimFnDydRhoLftGlbValid_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

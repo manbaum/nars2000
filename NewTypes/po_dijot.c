@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,12 +32,6 @@
 //    dyadic operator DieresisJot ("rank" and "rank")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDieresisJot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimOpDieresisJot_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -55,7 +49,6 @@ LPPL_YYSTYPE PrimOpDieresisJot_EM_YY
                                            lpYYFcnStrOpr,   // Ptr to operator function strand
                                            lptkRhtArg);     // Ptr to right arg token
 } // End PrimOpDieresisJot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -64,12 +57,6 @@ LPPL_YYSTYPE PrimOpDieresisJot_EM_YY
 //  Generate a prototype for the derived functions from
 //    dyadic operator DieresisJot ("rank" and "rank")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoOpDieresisJot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoOpDieresisJot_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
@@ -110,7 +97,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxisOpr);
     return NULL;
 } // End PrimProtoOpDieresisJot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -170,12 +156,6 @@ LPPL_YYSTYPE PrimOpMonDieresisJotCommon_EM_YY
 //  Primitive operator for monadic & dyadic derived function
 //    from DieresisJot ("rank")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDieresisJotCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic derived function)
@@ -299,7 +279,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End PrimOpDieresisJotCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

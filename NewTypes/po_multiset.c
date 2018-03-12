@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,12 +38,6 @@
 //    monadic operator DownShoeStile ("multiset" and "multiset")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDownShoeStile_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimOpDownShoeStile_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -58,7 +52,6 @@ LPPL_YYSTYPE PrimOpDownShoeStile_EM_YY
                                        lptkRhtArg,      // Ptr to right arg token (may be NULL if niladic)
                                        FALSE);          // TRUE iff prototyping
 } // End PrimOpDownShoeStile_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -95,12 +88,6 @@ LPPL_YYSTYPE PrimProtoOpDownShoeStile_EM_YY
 //  Common subroutine for primitive operator for monadic/dyadic derived functions
 //    from Multiset ("multiset")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDownShoeStileCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpDownShoeStileCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
@@ -417,7 +404,6 @@ NONCE_EXIT:
                               &lpYYFcnStrLft->tkToken);
     return NULL;
 } // End PrimOpDownShoeStileCommon_EM_YY
-#undef  APPEND_NAME
 
 
 
@@ -426,12 +412,6 @@ NONCE_EXIT:
 //
 //  Execute Multiset Element Of between simple non-heteros
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydMEO_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydMEO_EM_YY
     (LPTOKEN  lptkLftArg,               // Ptr to left arg token
@@ -764,7 +744,6 @@ NORMAL_EXIT:
     return lpYYRes;
 
 } // End PrimFnDydMEO_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1101,12 +1080,6 @@ void PrimFnDydMEO_CvC
 //
 //  Execute Multiset Index Of between simple non-heteros
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydMIO_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydMIO_EM_YY
     (LPTOKEN  lptkLftArg,               // Ptr to left arg token
@@ -1452,7 +1425,6 @@ NORMAL_EXIT:
 #endif
     return lpYYRes;
 } // End PrimFnDydMIO_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

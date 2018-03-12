@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -176,12 +176,6 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecTilde};
 //  Primitive function for monadic and dyadic Tilde ("not" and "without")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnTilde_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnTilde_EM_YY
     (LPTOKEN lptkLftArg,             // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -198,7 +192,6 @@ LPPL_YYSTYPE PrimFnTilde_EM_YY
     else
         return PrimFnDydTilde_EM_YY           (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnTilde_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -206,12 +199,6 @@ LPPL_YYSTYPE PrimFnTilde_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Tilde
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnTilde_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnTilde_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -244,7 +231,6 @@ LPPL_YYSTYPE PrimProtoFnTilde_EM_YY
                                         lptkAxis);          // Ptr to axis token (may be NULL)
     } // End IF/ELSE
 } // End PrimProtoFnTilde_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -252,12 +238,6 @@ LPPL_YYSTYPE PrimProtoFnTilde_EM_YY
 //
 //  Generate an identity element for the primitive function dyadic Tilde
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentFnTilde_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimIdentFnTilde_EM_YY
     (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
@@ -316,7 +296,6 @@ RANK_EXIT:
                                lptkFunc);
     return NULL;
 } // End PrimIdentFnTilde_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -596,12 +575,6 @@ APLB08 PrimFnMonTildeB08isB08
 //
 //  Primitive function for dyadic Tilde ("without")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTilde_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydTilde_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token

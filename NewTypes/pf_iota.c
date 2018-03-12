@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,12 +37,6 @@
 //  Primitive function for monadic and dyadic iota ("index generator" and "index of")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnIota_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnIota_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -74,7 +68,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimFnIota_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -82,12 +75,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Generate a prototype for the primitive functions monadic & dyadic Iota
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnIota_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnIota_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -107,7 +94,6 @@ LPPL_YYSTYPE PrimProtoFnIota_EM_YY
                                     lptkRhtArg,         // Ptr to right arg token
                                     lptkAxis);          // Ptr to axis token (may be NULL)
 } // End PrimProtoFnIota_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -115,12 +101,6 @@ LPPL_YYSTYPE PrimProtoFnIota_EM_YY
 //
 //  Primitive function for monadic iota ("index generator")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonIota_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonIota_EM_YY
     (LPTOKEN lptkFunc,                      // Ptr to function token
@@ -363,7 +343,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End PrimFnMonIota_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -371,12 +350,6 @@ NORMAL_EXIT:
 //
 //  Monadic iota extended to length != 1 numeric arguments
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonIotaVector_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonIotaVector_EM_YY
     (LPTOKEN lptkFunc,                      // Ptr to function token
@@ -483,7 +456,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End PrimFnMonIotaVector_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -514,12 +486,6 @@ NORMAL_EXIT:
 //
 //  Primitive function for dyadic iota ("index of")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydIota_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydIota_EM_YY
     (LPTOKEN lptkLftArg,                    // Ptr to left arg token
@@ -885,7 +851,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDydIota_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -893,12 +858,6 @@ NORMAL_EXIT:
 //
 //  Dyadic iota of APLBOOL vs. APLBOOL
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydIotaBvB_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydIotaBvB_EM
     (LPAPLUINT lpMemRes,            // Ptr to result global memory data
@@ -1022,7 +981,6 @@ DOMAIN_EXIT:
 ERROR_EXIT:
     return FALSE;
 } // End PrimFnDydIotaBvB_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1030,12 +988,6 @@ ERROR_EXIT:
 //
 //  Dyadic iota of APLBOOL vs. APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP/HCxy
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydIotaBvN_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydIotaBvN_EM
     (LPAPLUINT lpMemRes,            // Ptr to result global memory data
@@ -1200,7 +1152,6 @@ DOMAIN_EXIT:
 ERROR_EXIT:
     return FALSE;
 } // End PrimFnDydIotaBvN_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1208,12 +1159,6 @@ ERROR_EXIT:
 //
 //  Dyadic iota of APLAPA vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP/HCxy
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydIotaAvN_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydIotaAvN_EM
     (LPAPLUINT lpMemRes,                // Ptr to result global memory data
@@ -1309,7 +1254,6 @@ DOMAIN_EXIT:
 ERROR_EXIT:
     return FALSE;
 } // End PrimFnDydIotaAvN_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1317,12 +1261,6 @@ ERROR_EXIT:
 //
 //  Dyadic iota of PV vs. APLBOOL/APLINT/APLAPA/APLFLOAT/APLRAT/APLVFP/HCxy
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydIotaPvN_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydIotaPvN_EM
     (LPAPLUINT         lpMemRes,        // Ptr to result global memory data
@@ -1435,7 +1373,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End PrimFnDydIotaPvN_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1443,12 +1380,6 @@ NORMAL_EXIT:
 //
 //  Dyadic iota of APLCHAR vs. APLCHAR
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydIotaCvC_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydIotaCvC_EM
     (LPAPLUINT lpMemRes,            // Ptr to result global memory data
@@ -1523,7 +1454,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End PrimFnDydIotaCvC_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1531,12 +1461,6 @@ NORMAL_EXIT:
 //
 //  Dyadic iota between Numeric vs. Numeric
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydIotaNvN_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydIotaNvN_EM
     (LPAPLUINT lpMemRes,            // Ptr to result global memory data
@@ -1834,7 +1758,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End PrimFnDydIotaNvN_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1842,12 +1765,6 @@ NORMAL_EXIT:
 //
 //  Dyadic iota between HETERO/NESTED common args
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydIotaHeNe_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydIotaHeNe_EM
     (LPAPLUINT lpMemRes,            // Ptr to result global memory data
@@ -2126,7 +2043,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End PrimFnDydIotaHeNe_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2134,12 +2050,6 @@ NORMAL_EXIT:
 //
 //  Dyadic iota between all other arg combinations
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydIotaOther_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydIotaOther_EM
     (LPAPLUINT lpMemRes,            // Ptr to result global memory data
@@ -2366,7 +2276,6 @@ DOMAIN_EXIT:
 ERROR_EXIT:
     return FALSE;
 } // End PrimFnDydIotaOther_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -736,12 +736,6 @@ UBOOL IncrOdometer
 //  Allocate space for result of a primitive scalar dyadic function
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimScalarFnDydAllocate_EM"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL PrimScalarFnDydAllocate_EM
     (LPTOKEN           lptkFunc,        // Ptr to function token
 
@@ -895,7 +889,6 @@ WSFULL_EXIT:
                                lptkFunc);
     return FALSE;
 } // End PrimScalarFnDydAllocate_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -905,12 +898,6 @@ WSFULL_EXIT:
 //    whose value is sensitive to Ptr Type Bits.
 //  The result might be a LPSYMENTRY or HGLOBAL
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MakeMonPrototype_EM_PTB"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL MakeMonPrototype_EM_PTB
     (HGLOBAL    hGlbArr,            // Incoming array handle (may be NULL)
@@ -1385,7 +1372,6 @@ NORMAL_EXIT:
     else
         return hGlbArr;
 } // End MakeMonPrototype_EM_PTB
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1406,12 +1392,6 @@ NORMAL_EXIT:
 //  Also, adding empty vectors whose prototypes are
 //    (0 0) and (0 0 0) should produce a LENGTH ERROR.
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MakeDydPrototype_EM_PTB"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL MakeDydPrototype_EM_PTB
     (HGLOBAL   hGlbLft,                 // Left arg global memory handle (may be NULL if immediate)
@@ -1925,7 +1905,6 @@ NORMAL_EXIT:
 
     return hGlbRes;
 } // End MakeDydPrototype_EM_PTB
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2006,12 +1985,6 @@ UBOOL IsFirstSimpleGlb
 //  Copy a direct LPSYMENTRY or HGLOBAL incrementing the reference count
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CopySymGlbDir_PTB"
-#else
-#define APPEND_NAME
-#endif
-
 HGLOBAL CopySymGlbDir_PTB
     (LPSYMENTRY lpSymGlb)
 
@@ -2045,7 +2018,6 @@ HGLOBAL CopySymGlbDir_PTB
             return NULL;
     } // End SWITCH
 } // End CopySymGlbDir_PTB
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2054,12 +2026,6 @@ HGLOBAL CopySymGlbDir_PTB
 //  Copy a direct LPSYMENTRY or HGLOBAL or Global Numeric
 //    incrementing the reference count or making a copy of the global numeric
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CopySymGlbNumDir_PTB"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL CopySymGlbNumDir_PTB
     (LPSYMENTRY lpSymGlb,               // Ptr to LPSYMENTRY, HGLOBAL, or Global Numeric value
@@ -2107,7 +2073,6 @@ HGLOBAL CopySymGlbNumDir_PTB
             return NULL;
     } // End SWITCH
 } // End CopySymGlbNumDir_PTB
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2116,12 +2081,6 @@ HGLOBAL CopySymGlbNumDir_PTB
 //  Make a copy of a global memory ptr array
 //  The result is PTB-sensitive
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CopyArray_EM_PTB"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL CopyArray_EM_PTB
     (HGLOBAL hGlbSrc,                       // Source handle
@@ -2551,7 +2510,6 @@ HGLOBAL CopyArray_EM_PTB
                                    lptkFunc);
     return (hGlbDst EQ NULL) ? hGlbDst : MakePtrTypeGlb (hGlbDst);
 } // End CopyArray_EM_PTB
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2560,12 +2518,6 @@ HGLOBAL CopyArray_EM_PTB
 //  Copy a simple global as a given (simple and possibly wider
 //    but never narrower) storage type
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CopyGlbAsType_EM"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL CopyGlbAsType_EM
     (HGLOBAL  hGlbArg,                      // Arg global memory handle
@@ -2902,7 +2854,6 @@ NORMAL_EXIT:
 
     return hGlbRes;
 } // End CopyGlbAsType_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3039,12 +2990,6 @@ UBOOL IsGlbFcnArray
 //
 //  Check a dyadic scalar function for RANK and LENGTH ERRORs
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CheckRankLengthError_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL CheckRankLengthError_EM
     (APLRANK           aplRankRes,      // Result rank
@@ -3183,7 +3128,6 @@ LENGTH_EXIT:
                                lptkFunc);
     return FALSE;
 } // End CheckRankLengthError_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

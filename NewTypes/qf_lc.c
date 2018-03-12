@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,12 +30,6 @@
 //
 //  System function:  []LC -- Line Counter
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnLC_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnLC_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
@@ -142,7 +136,6 @@ WSFULL_EXIT:
                                lptkFunc);
     return NULL;
 } // End SysFnLC_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

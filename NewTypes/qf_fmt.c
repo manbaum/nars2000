@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //
 //  System function:  []FMT -- Format
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnFMT_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnFMT_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -66,7 +60,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnFMT_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -74,12 +67,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []FMT -- Boxed display
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonFMT_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonFMT_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -112,7 +99,6 @@ LPPL_YYSTYPE SysFnMonFMT_EM_YY
                                   LINENUM_ONE); // Starting line # type (see LINE_NUMS)
     return lpYYRes;
 } // End SysFnMonFMT_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -139,12 +125,6 @@ LPPL_YYSTYPE SysFnMonFMT_EM_YY
 //
 //  Dyadic []FMT -- Format by specification
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydFMT_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydFMT_EM_YY
     (LPTOKEN lptkLftArg,                    // Ptr to left arg token
@@ -743,9 +723,9 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -755,19 +735,19 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
     } // End IF
 
-    if (hGlbLft && lpMemLft)
+    if (hGlbLft NE NULL && lpMemLft NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemRht NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;

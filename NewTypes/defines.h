@@ -391,6 +391,7 @@ default:        \
   #define LCLODSSIZE    ODSSIZE
   #define LCLODSAPI     ODSAPI
 
+  #define APPEND_NAME L" -- " WIDEN(__FUNCTION__)
   #define APPEND_NAME_ARG , APPEND_NAME
 #else
   #define LCLODS
@@ -399,6 +400,7 @@ default:        \
   #define LCLODSSIZE
   #define LCLODSAPI
 
+  #define APPEND_NAME
   #define APPEND_NAME_ARG
   #define oprintfW
 #endif

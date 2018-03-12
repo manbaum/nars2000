@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //  Primitive function for monadic and dyadic CircleStile ("reverse" and "rotate")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnCircleStile_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnCircleStile_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -58,7 +52,6 @@ LPPL_YYSTYPE PrimFnCircleStile_EM_YY
     else
         return PrimFnDydCircleStile_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnCircleStile_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -92,12 +85,6 @@ LPPL_YYSTYPE PrimProtoFnCircleStile_EM_YY
 //
 //  Generate an identity element for the primitive function dyadic CircleStile
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentFnCircleStile_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimIdentFnCircleStile_EM_YY
     (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
@@ -275,7 +262,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimIdentFnCircleStile_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -283,12 +269,6 @@ NORMAL_EXIT:
 //
 //  Primitive function for monadic CircleStile ("reverse")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonCircleStile_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -704,7 +684,6 @@ IMMED_EXIT:
 
     return lpYYRes;
 } // End PrimFnMonCircleStile_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -712,12 +691,6 @@ IMMED_EXIT:
 //
 //  Primitive function for dyadic CircleStile ("rotate")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydCircleStile_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -1272,9 +1245,9 @@ ERROR_EXIT:
     // Mark as in error
     bRet = FALSE;
 
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -1287,19 +1260,19 @@ NORMAL_EXIT:
     // Unlock and free (and set to NULL) a global name and ptr
     UnlFreeGlbName (hGlbRot, lpMemRot);
 
-    if (hGlbLft && lpMemLft)
+    if (hGlbLft NE NULL && lpMemLft NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemRht NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
     } // End IF
 
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
@@ -1310,7 +1283,6 @@ NORMAL_EXIT:
     else
         return NULL;
 } // End PrimFnDydCircleStile_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

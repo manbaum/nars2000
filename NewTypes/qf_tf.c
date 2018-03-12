@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,12 +32,6 @@
 //  System function:  []TF -- Transfer Form
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnTF_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE SysFnTF_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -62,7 +56,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnTF_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -70,12 +63,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []TF -- error
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonTF_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonTF_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -85,7 +72,6 @@ LPPL_YYSTYPE SysFnMonTF_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnMonTF_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -93,12 +79,6 @@ LPPL_YYSTYPE SysFnMonTF_EM_YY
 //
 //  Dyadic []TF -- Transfer Form
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydTF_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydTF_EM_YY
     (LPTOKEN lptkLftArg,                // Ptr to left arg token
@@ -283,7 +263,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnDydTF_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -292,12 +271,6 @@ NORMAL_EXIT:
 //  Return the migration transfer form (Type 1) of a given argument, or
 //    return the name of a successful inverse migration transfer
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydTF1_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydTF1_EM_YY
     (LPTOKEN lptkFunc,                          // Ptr to function token
@@ -856,7 +829,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnDydTF1_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -865,12 +837,6 @@ NORMAL_EXIT:
 //  Return the extended transfer form (Type 2) of a given argument, or
 //    return the name of a successful inverse extended transfer
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydTF2_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydTF2_EM_YY
     (LPTOKEN lptkFunc,                      // Ptr to function token
@@ -1166,7 +1132,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnDydTF2_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1174,12 +1139,6 @@ NORMAL_EXIT:
 //
 //  Transfer form inverse of a Type-1 function
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- TransferInverseFcn1_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL TransferInverseFcn1_EM
     (LPWCHAR lpwszTemp,                     // Ptr to incoming data

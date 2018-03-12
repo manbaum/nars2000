@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1985,12 +1985,6 @@ void PN_NumAcc
 //  Calculate the value of a number
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PN_NumCalc"
-#else
-#define APPEND_NAME
-#endif
-
 void PN_NumCalc
     (LPPNLOCALVARS lppnLocalVars,       // Ptr to local pnLocalVars
      LPPN_YYSTYPE  lpYYArg,             // Ptr to incoming YYSTYPE
@@ -2282,7 +2276,6 @@ void PN_NumCalc
         // Save the sign
         lpYYArg->bSigned = bSigned;
 } // End PN_NumCalc
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2322,12 +2315,6 @@ void PN_ChrAccDec
 //
 //  Merge the numerator and denominator to form a number
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PN_MakeRatPoint"
-#else
-#define APPEND_NAME
-#endif
 
 LPPN_YYSTYPE PN_MakeRatPoint
     (LPPN_YYSTYPE  lpYYNum,             // Ptr to The numerator part
@@ -2417,7 +2404,6 @@ LPPN_YYSTYPE PN_MakeRatPoint
 
     return lpYYNum;
 } // End PN_MakeRatPoint
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2425,12 +2411,6 @@ LPPN_YYSTYPE PN_MakeRatPoint
 //
 //  Merge the base and alphaint part to form a number
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PN_MakeBasePoint"
-#else
-#define APPEND_NAME
-#endif
 
 LPPN_YYSTYPE PN_MakeBasePoint
     (LPPN_YYSTYPE  lpYYBase,            // Ptr to the base part
@@ -2677,7 +2657,6 @@ NORMAL_EXIT:
 
     return lpYYBase;
 } // End PN_MakeBasePoint
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2685,12 +2664,6 @@ NORMAL_EXIT:
 //
 //  Merge the base and AlphaInt part to form a number
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PN_MakeBasePointSub"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PN_MakeBasePointSub
     (LPPN_YYSTYPE  lpYYBase,            // Ptr to the base part
@@ -3362,7 +3335,6 @@ ERROR_EXIT2:
 
     return (lpYYBase NE NULL);
 } // End PN_MakeBasePointSub
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5626,12 +5598,6 @@ PN_YYSTYPE PN_MakeHc8Point
 //  Accumulate the current value into the vector
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PN_VectorAcc"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL PN_VectorAcc
     (LPPN_YYSTYPE  lpYYArg,             // Number to accumulate
      LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
@@ -5765,7 +5731,6 @@ WSFULL_EXIT:
 
     return FALSE;
 } // End PN_VectorAcc
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5773,12 +5738,6 @@ WSFULL_EXIT:
 //
 //  Create the scalar or vector result
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PN_VectorRes"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PN_VectorRes
     (LPPNLOCALVARS lppnLocalVars)           // Ptr to local pnLocalVars
@@ -6077,7 +6036,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End PN_VectorRes
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -34,12 +34,6 @@
 //    "APL Identity Crisis"
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- GetIdentityElement_EM"
-#else
-#define APPEND_NAME
-#endif
-
 GLBSYM GetIdentityElement_EM
     (LPPL_YYSTYPE lpYYFcnStrLft,    // Ptr to left operand function strand
      LPTOKEN      lptkLftArg,       // Ptr to left arg token
@@ -260,7 +254,6 @@ NORMAL_EXIT:
 
     return hGlbSym;
 } // End GetIdentityElement_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -268,12 +261,6 @@ NORMAL_EXIT:
 //
 //  Fill in the result with the identity element for a given function and array
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- FillIdentityElement_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL FillIdentityElement_EM
     (LPVOID       lpMemRes,                     // Ptr to result global memory
@@ -424,7 +411,6 @@ UBOOL FillIdentityElement_EM
 
     return TRUE;
 } // End FillIdentityElement_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

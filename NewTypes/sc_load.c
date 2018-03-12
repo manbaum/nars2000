@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -82,12 +82,6 @@ UBOOL CmdXload_EM
 //
 //  Execute the system command:  )LOAD or )XLOAD wsid
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- CmdLoadCom_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL CmdLoadCom_EM
     (LPWCHAR lpwszTail,                     // Ptr to command line tail
@@ -184,7 +178,6 @@ WSNOTFOUND_EXIT:
 
     return FALSE;
 } // End CmdLoadCom_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -227,12 +220,6 @@ UBOOL CmdLoadProcess
 //
 //  Load a workspace
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- LoadWorkspace_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL LoadWorkspace_EM
     (HGLOBAL hGlbDPFE,                  // Workspace DPFE global memory handle (NULL = CLEAR WS)
@@ -967,7 +954,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End LoadWorkspace_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1002,12 +988,6 @@ UBOOL IsSymSysName
 //
 //  Parse a value of the form FMTSTR_GLBCNT or {name}...
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ParseSavedWsFcn_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL ParseSavedWsFcn_EM
     (LPWCHAR       lpwSrc,              // Ptr to input buffer
@@ -1190,7 +1170,6 @@ CORRUPTWS_EXIT:
 
     return FALSE;
 } // End ParseSavedWsFcn_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1198,12 +1177,6 @@ CORRUPTWS_EXIT:
 //
 //  Parse a value of the form FMTSTR_GLBCNT or T N R S V
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ParseSavedWsVar_EM"
-#else
-#define APPEND_NAME
-#endif
 
 LPWCHAR ParseSavedWsVar_EM
     (LPWCHAR       lpwSrc,              // Ptr to input buffer
@@ -1464,7 +1437,6 @@ CORRUPTWS_EXIT:
 ERROR_EXIT:
     return NULL;
 } // End ParseSavedWsVar_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1473,12 +1445,6 @@ ERROR_EXIT:
 //  Return the global memory handle corresponding
 //    to an entry in the [Globals] section
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- LoadWorkspaceGlobal_EM"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL LoadWorkspaceGlobal_EM
     (LPWCHAR      lpwGlbName,               // Ptr to keyname (FMTSTR_GLBCNT)
@@ -2530,7 +2496,6 @@ NORMAL_EXIT:
 
     return hGlbObj;
 } // End LoadWorkspaceGlobal_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

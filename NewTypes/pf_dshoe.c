@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,12 +30,6 @@
 //
 //  Primitive function for monadic and dyadic DownShoe ("unique" and "union")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDownShoe_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDownShoe_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -68,7 +62,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimFnDownShoe_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -76,12 +69,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Generate a prototype for the primitive functions monadic & dyadic DownShoe
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnDownShoe_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnDownShoe_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -101,7 +88,6 @@ LPPL_YYSTYPE PrimProtoFnDownShoe_EM_YY
                                     lptkRhtArg,             // Ptr to right arg token
                                     lptkAxis);              // Ptr to axis token (may be NULL)
 } // End PrimProtoFnDownShoe_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -109,12 +95,6 @@ LPPL_YYSTYPE PrimProtoFnDownShoe_EM_YY
 //
 //  Generate an identity element for the primitive function dyadic DownShoe
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentFnDownShoe_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimIdentFnDownShoe_EM_YY
     (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
@@ -173,7 +153,6 @@ DOMAIN_EXIT:
                                lptkFunc);
     return NULL;
 } // End PrimIdentFnDownShoe_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -181,12 +160,6 @@ DOMAIN_EXIT:
 //
 //  Primitive function for monadic DownShoe ("unique")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonDownShoe_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
     (LPTOKEN lptkFunc,                  // Ptr to function token
@@ -949,7 +922,7 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
         if (lpMemHdrRes NE NULL)
         {
@@ -961,7 +934,7 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    if (hGlbTmp)
+    if (hGlbTmp NE NULL)
     {
         if (lpMemTmp NE NULL)
         {
@@ -973,7 +946,7 @@ NORMAL_EXIT:
         FreeResultGlobalVar (hGlbTmp); hGlbTmp = NULL;
     } // End IF
 
-    if (hGlbGup)
+    if (hGlbGup NE NULL)
     {
         if (lpMemHdrGup NE NULL)
         {
@@ -985,7 +958,7 @@ NORMAL_EXIT:
         FreeResultGlobalVar (hGlbGup); hGlbGup = NULL;
     } // End IF
 
-    if (hGlbRes NE NULL && lpMemHdrRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
@@ -999,7 +972,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnMonDownShoe_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1026,12 +998,6 @@ NORMAL_EXIT:
 //
 //  Primitive function for dyadic DownShoe (Union)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydDownShoe_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydDownShoe_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -1106,7 +1072,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End PrimFnDydDownShoe_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -41,12 +41,6 @@ extern HGLOBAL hGlbRC1,
 //    of a direct reference to an LPSYMENTRY or an HGLOBAL
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ChangeRefCntDir_PTB"
-#else
-#define APPEND_NAME
-#endif
-
 int ChangeRefCntDir_PTB
     (HGLOBAL hGlb,              // Global memory handle
      int     iIncr)             // Increment/decrement amount
@@ -180,7 +174,6 @@ int ChangeRefCntDir_PTB
             return -1;
     } // End SWITCH
 } // End ChangeRefCntDir_PTB
-#undef  APPEND_NAME
 
 
 //***************************************************************************

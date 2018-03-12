@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,12 +32,6 @@
 //    dyadic operator DieresisCircle (ERROR and "composition")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDieresisCircle_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimOpDieresisCircle_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if niladic/monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -59,7 +53,6 @@ LPPL_YYSTYPE PrimOpDieresisCircle_EM_YY
                                          lptkRhtArg,    // Ptr to right arg token
                                          FALSE);        // TRUE iff prototyping
 } // End PrimOpDieresisCircle_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -67,12 +60,6 @@ LPPL_YYSTYPE PrimOpDieresisCircle_EM_YY
 //
 //  Generate a prototype for the derived functions from DieresisCircle ("composition")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoOpDieresisCircle_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoOpDieresisCircle_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if niladic/monadic)
@@ -115,7 +102,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxisOpr);
     return NULL;
 } // End PrimProtoOpDieresisCircle_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -123,12 +109,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Primitive operator for monadic derived function from DieresisCircle (ERROR)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpMonDieresisCircle_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpMonDieresisCircle_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -139,7 +119,6 @@ LPPL_YYSTYPE PrimOpMonDieresisCircle_EM_YY
     return
       PrimFnValenceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 } // End PrimOpMonDieresisCircle_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -147,12 +126,6 @@ LPPL_YYSTYPE PrimOpMonDieresisCircle_EM_YY
 //
 //  Primitive operator for dyadic derived function from DieresisCircle ("composition")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDydDieresisCircle_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpDydDieresisCircle_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if niladic/monadic)
@@ -322,7 +295,6 @@ LEFT_ERROR_EXIT:
 RIGHT_ERROR_EXIT:
     return NULL;
 } // End PrimOpDydDieresisCircle_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,12 +32,6 @@
 //    dyadic operator DieresisDownTack (ERROR and "Convolution")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDieresisDownTack_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimOpDieresisDownTack_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -57,7 +51,6 @@ LPPL_YYSTYPE PrimOpDieresisDownTack_EM_YY
                                            lpYYFcnStrOpr,   // Ptr to operator function strand
                                            lptkRhtArg);     // Ptr to right arg token
 } // End PrimOpDieresisDownTack_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -66,12 +59,6 @@ LPPL_YYSTYPE PrimOpDieresisDownTack_EM_YY
 //  Generate a prototype for the derived functions from
 //    dyadic operator DieresisDownTack (ERROR and "Convolution")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoOpDieresisDownTack_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoOpDieresisDownTack_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
@@ -113,7 +100,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End PrimProtoOpDieresisDownTack_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -121,12 +107,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Generate an identity element for the primitive operator dyadic DieresisDownTack
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentOpDieresisDownTack_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimIdentOpDieresisDownTack_EM_YY
     (LPTOKEN      lptkRhtOrig,      // Ptr to original right arg token
@@ -204,7 +184,6 @@ RIGHT_OPERAND_DOMAIN_EXIT:
 ERROR_EXIT:
     return NULL;
 } // End PrimIdentOpDieresisDownTack_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -212,12 +191,6 @@ ERROR_EXIT:
 //
 //  Primitive operator for monadic derived function from DieresisDownTack (ERROR)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpMonDieresisDownTack_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpMonDieresisDownTack_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -234,7 +207,6 @@ LPPL_YYSTYPE PrimOpMonDieresisDownTack_EM_YY
         return
           PrimFnValenceError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
 } // End PrimOpMonDieresisDownTack_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -243,12 +215,6 @@ LPPL_YYSTYPE PrimOpMonDieresisDownTack_EM_YY
 //  Primitive operator for monadic & dyadic derived function
 //    from DieresisDownTack ("Convolution")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDieresisDownTackCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpDieresisDownTackCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if niladic/monadic derived function)
@@ -325,7 +291,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End PrimOpDieresisDownTackCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

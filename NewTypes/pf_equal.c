@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -175,12 +175,6 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecEqual};
 //  Primitive function for monadic and dyadic Equal (ERROR and "equal")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnEqual_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnEqual_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -197,7 +191,6 @@ LPPL_YYSTYPE PrimFnEqual_EM_YY
     else
         return (*lpPrimSpec->PrimFnDyd_EM_YY) (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis, lpPrimSpec);
 } // End PrimFnEqual_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -205,12 +198,6 @@ LPPL_YYSTYPE PrimFnEqual_EM_YY
 //
 //  Primitive function for monadic Equal ("dimension")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonEqual_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonEqual_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -249,7 +236,6 @@ DOMAIN_EXIT:
                                lptkFunc);
     return NULL;
 } // End PrimFnMonEqual_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

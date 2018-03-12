@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -101,12 +101,6 @@ LPFH_YYSTYPE PushHdrStrand_YY
 //  Make a header strand
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- MakeHdrStrand_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPFH_YYSTYPE MakeHdrStrand_YY
     (LPFH_YYSTYPE lpYYArg)              // Ptr to incoming token
 
@@ -126,7 +120,6 @@ LPFH_YYSTYPE MakeHdrStrand_YY
     // Return the base of the current strand
     return lpYYArg->lpYYStrandBase;
 } // End MakeHdrStrand_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

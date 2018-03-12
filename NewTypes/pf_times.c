@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -365,12 +365,6 @@ APLHC2I DirHC2I_RE
 //  Primitive scalar function monadic Times:  HC2I {is} fn HC2I
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonTimesHC2IisHC2I"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnMonTimesHC2IisHC2I
     (LPAPLHC2I  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -397,7 +391,6 @@ void PrimFnMonTimesHC2IisHC2I
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC2F);
 } // End PrimFnMonTimesHC2IisHC2I
-#undef APPEND_NAME
 
 
 //***************************************************************************
@@ -516,12 +509,6 @@ APLHC2R DirHC2R_RE
 //  Primitive scalar function monadic Times:  HC2R {is} fn HC2R
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonTimesHC2RisHC2R"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnMonTimesHC2RisHC2R
     (LPAPLHC2R  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -548,7 +535,6 @@ void PrimFnMonTimesHC2RisHC2R
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC2V);
 } // End PrimFnMonTimesHC2RisHC2R
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -658,12 +644,6 @@ APLHC4I DirHC4I_RE
 //  Primitive scalar function monadic Times:  HC4I {is} fn HC4I
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonTimesHC4IisHC4I"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnMonTimesHC4IisHC4I
     (LPAPLHC4I  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -690,7 +670,6 @@ void PrimFnMonTimesHC4IisHC4I
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC4F);
 } // End PrimFnMonTimesHC4IisHC4I
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -810,12 +789,6 @@ APLHC4R DirHC4R_RE
 //  Primitive scalar function monadic Times:  HC4R {is} fn HC4R
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonTimesHC4RisHC4R"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnMonTimesHC4RisHC4R
     (LPAPLHC4R  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -842,7 +815,6 @@ void PrimFnMonTimesHC4RisHC4R
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC4V);
 } // End PrimFnMonTimesHC4RisHC4R
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -951,12 +923,6 @@ APLHC8I DirHC8I_RE
 //  Primitive scalar function monadic Times:  HC8I {is} fn HC8I
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonTimesHC8IisHC8I"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnMonTimesHC8IisHC8I
     (LPAPLHC8I  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -983,7 +949,6 @@ void PrimFnMonTimesHC8IisHC8I
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC8F);
 } // End PrimFnMonTimesHC8IisHC8I
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1102,12 +1067,6 @@ APLHC8R DirHC8R_RE
 //  Primitive scalar function monadic Times:  HC8R {is} fn HC8R
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonTimesHC8RisHC8R"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnMonTimesHC8RisHC8R
     (LPAPLHC8R  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -1134,7 +1093,6 @@ void PrimFnMonTimesHC8RisHC8R
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC8V);
 } // End PrimFnMonTimesHC8RisHC8R
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1285,12 +1243,6 @@ APLINT MulHC1I_RE
 //  Primitive scalar function dyadic Times:  I {is} I fn I
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesIisIvI"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydTimesIisIvI
     (LPAPLINT   lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -1318,7 +1270,6 @@ void PrimFnDydTimesIisIvI
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_FLOAT);
 } // End PrimFnDydTimesIisIvI
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1428,12 +1379,6 @@ APLFLOAT MulHC1F_RE
 //  Primitive scalar function dyadic Times:  F {is} F fn F
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesFisFvF"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydTimesFisFvF
     (LPAPLFLOAT lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -1461,7 +1406,6 @@ void PrimFnDydTimesFisFvF
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydTimesFisFvF
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1543,12 +1487,6 @@ APLRAT MulHC1R_RE
 //  Primitive scalar function dyadic Times:  R {is} R fn R
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesRisRvR"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydTimesRisRvR
     (LPAPLRAT   lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -1576,7 +1514,6 @@ void PrimFnDydTimesRisRvR
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_VFP);
 } // End PrimFnDydTimesRisRvR
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1687,12 +1624,6 @@ void PrimFnDydTimesVisRvR
 //  Primitive scalar function dyadic Times:  V {is} V fn V
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesVisVvV"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydTimesVisVvV
     (LPAPLVFP   lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -1720,7 +1651,6 @@ void PrimFnDydTimesVisVvV
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydTimesVisVvV
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1760,12 +1690,6 @@ APLHC2I MulHC2I_RE
 //  Primitive scalar function dyadic Times:  HC2I {is} HC2I fn HC2I
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesHC2IisHC2IvHC2I"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydTimesHC2IisHC2IvHC2I
     (LPAPLHC2I  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -1793,7 +1717,6 @@ void PrimFnDydTimesHC2IisHC2IvHC2I
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC2F);
 } // End PrimFnDydTimesHC2IisHC2IvHC2I
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1801,12 +1724,6 @@ void PrimFnDydTimesHC2IisHC2IvHC2I
 //
 //  Primitive scalar function dyadic Times:  HC2F {is} HC2I fn HC2I
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesHC2IisHC2IvHC2I"
-#else
-#define APPEND_NAME
-#endif
 
 void PrimFnDydTimesHC2FisHC2IvHC2I
     (LPAPLHC2F  lpMemRes,           // Ptr to the result
@@ -1841,7 +1758,6 @@ void PrimFnDydTimesHC2FisHC2IvHC2I
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydTimesHC2FisHC2IvHC2I
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1909,12 +1825,6 @@ APLHC2F MulHC2F_RE
 //  Primitive scalar function dyadic Times:  HC2F {is} HC2F fn HC2F
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesHC2FisHC2FvHC2F"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydTimesHC2FisHC2FvHC2F
     (LPAPLHC2F  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -1942,7 +1852,6 @@ void PrimFnDydTimesHC2FisHC2FvHC2F
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydTimesHC2FisHC2FvHC2F
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2061,12 +1970,6 @@ APLHC2R MulHC2R_RE
 //  Primitive scalar function dyadic Times:  HC2R {is} HC2R fn HC2R
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesHC2RisHC2RvHC2R"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydTimesHC2RisHC2RvHC2R
     (LPAPLHC2R  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -2094,7 +1997,6 @@ void PrimFnDydTimesHC2RisHC2RvHC2R
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC2V);
 } // End PrimFnDydTimesHC2RisHC2RvHC2R
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2246,12 +2148,6 @@ void PrimFnDydTimesHC2VisHC2RvHC2R
 //  Primitive scalar function dyadic Times:  HC2V {is} HC2V fn HC2V
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesHC2VisHC2VvHC2V"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydTimesHC2VisHC2VvHC2V
     (LPAPLHC2V  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -2279,7 +2175,6 @@ void PrimFnDydTimesHC2VisHC2VvHC2V
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydTimesHC2VisHC2VvHC2V
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2387,12 +2282,6 @@ APLHC4I MulHC4I_RE
 //  Primitive scalar function dyadic Times:  HC4I {is} HC4I fn HC4I
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesHC4IisHC4IvHC4I"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydTimesHC4IisHC4IvHC4I
     (LPAPLHC4I  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -2437,7 +2326,6 @@ void PrimFnDydTimesHC4IisHC4IvHC4I
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC4F);
 } // End PrimFnDydTimesHC4IisHC4IvHC4I
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2445,12 +2333,6 @@ void PrimFnDydTimesHC4IisHC4IvHC4I
 //
 //  Primitive scalar function dyadic Times:  HC4F {is} HC4I fn HC4I
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesHC4FisHC4IvHC4I"
-#else
-#define APPEND_NAME
-#endif
 
 void PrimFnDydTimesHC4FisHC4IvHC4I
     (LPAPLHC4F  lpMemRes,           // Ptr to the result
@@ -2502,7 +2384,6 @@ void PrimFnDydTimesHC4FisHC4IvHC4I
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydTimesHC4FisHC4IvHC4I
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2641,12 +2522,6 @@ APLHC4F MulHC4F_RE
 //  Primitive scalar function dyadic Times:  HC4F {is} HC4F fn HC4F
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesHC4FisHC4FvHC4F"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydTimesHC4FisHC4FvHC4F
     (LPAPLHC4F  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -2691,7 +2566,6 @@ void PrimFnDydTimesHC4FisHC4FvHC4F
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydTimesHC4FisHC4FvHC4F
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2871,12 +2745,6 @@ APLHC4R MulHC4R_RE
 //  Primitive scalar function dyadic Times:  HC4R {is} HC4R fn HC4R
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesHC4RisHC4RvHC4R"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydTimesHC4RisHC4RvHC4R
     (LPAPLHC4R  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -2921,7 +2789,6 @@ void PrimFnDydTimesHC4RisHC4RvHC4R
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC4V);
 } // End PrimFnDydTimesHC4RisHC4RvHC4R
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3136,12 +3003,6 @@ void PrimFnDydTimesHC4VisHC4RvHC4R
 //  Primitive scalar function dyadic Times:  HC4V {is} HC4V fn HC4V
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesHC4VisHC4VvHC4V"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydTimesHC4VisHC4VvHC4V
     (LPAPLHC4V  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -3186,7 +3047,6 @@ void PrimFnDydTimesHC4VisHC4VvHC4V
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydTimesHC4VisHC4VvHC4V
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3294,12 +3154,6 @@ APLHC8I MulHC8I_RE
 //  Primitive scalar function dyadic Times:  HC8I {is} HC8I fn HC8I
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesHC8IisHC8IvHC8I"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydTimesHC8IisHC8IvHC8I
     (LPAPLHC8I  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -3344,7 +3198,6 @@ void PrimFnDydTimesHC8IisHC8IvHC8I
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC8F);
 } // End PrimFnDydTimesHC8IisHC8IvHC8I
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3352,12 +3205,6 @@ void PrimFnDydTimesHC8IisHC8IvHC8I
 //
 //  Primitive scalar function dyadic Times:  HC8F {is} HC8I fn HC8I
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesHC8FisHC8IvHC8I"
-#else
-#define APPEND_NAME
-#endif
 
 void PrimFnDydTimesHC8FisHC8IvHC8I
     (LPAPLHC8F  lpMemRes,           // Ptr to the result
@@ -3409,7 +3256,6 @@ void PrimFnDydTimesHC8FisHC8IvHC8I
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydTimesHC8FisHC8IvHC8I
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3554,12 +3400,6 @@ APLHC8F MulHC8F_RE
 //  Primitive scalar function dyadic Times:  HC8F {is} HC8F fn HC8F
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesHC8FisHC8FvHC8F"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydTimesHC8FisHC8FvHC8F
     (LPAPLHC8F  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -3604,7 +3444,6 @@ void PrimFnDydTimesHC8FisHC8FvHC8F
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydTimesHC8FisHC8FvHC8F
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3784,12 +3623,6 @@ APLHC8R MulHC8R_RE
 //  Primitive scalar function dyadic Times:  HC8R {is} HC8R fn HC8R
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesHC8RisHC8RvHC8R"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydTimesHC8RisHC8RvHC8R
     (LPAPLHC8R  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -3834,7 +3667,6 @@ void PrimFnDydTimesHC8RisHC8RvHC8R
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_RESULT_HC8V);
 } // End PrimFnDydTimesHC8RisHC8RvHC8R
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4044,12 +3876,6 @@ void PrimFnDydTimesHC8VisHC8RvHC8R
 //  Primitive scalar function dyadic Times:  HC8V {is} HC8V fn HC8V
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesHC8VisHC8VvHC8V"
-#else
-#define APPEND_NAME
-#endif
-
 void PrimFnDydTimesHC8VisHC8VvHC8V
     (LPAPLHC8V  lpMemRes,           // Ptr to the result
      APLUINT    uRes,               // Index into the result
@@ -4094,7 +3920,6 @@ void PrimFnDydTimesHC8VisHC8VvHC8V
     // Check the exception code in a main function
     CheckExCodeMain_RE (&exCode, EXCEPTION_DOMAIN_ERROR);
 } // End PrimFnDydTimesHC8VisHC8VvHC8V
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4102,12 +3927,6 @@ void PrimFnDydTimesHC8VisHC8VvHC8V
 //
 //  Dyadic Times, result is APA
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydTimesAPA_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydTimesAPA_EM
     (LPPL_YYSTYPE lpYYRes,          // Ptr to result token (may be NULL)
@@ -4217,7 +4036,6 @@ ERROR_EXIT:
 
     return bRet;
 } // End PrimFnDydTimesAPA_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

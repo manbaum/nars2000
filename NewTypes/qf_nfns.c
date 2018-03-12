@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -79,12 +79,6 @@ ARRAY_TYPES propArrType[NPROP_LENGTH]
 //  System function:  []NAPPEND -- Append data to an open native file
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnNAPPEND_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE SysFnNAPPEND_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -109,7 +103,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnNAPPEND_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -117,12 +110,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []NAPPEND -- ERROR
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonNAPPEND_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonNAPPEND_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -132,7 +119,6 @@ LPPL_YYSTYPE SysFnMonNAPPEND_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnMonNAPPEND_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -142,12 +128,6 @@ LPPL_YYSTYPE SysFnMonNAPPEND_EM_YY
 //
 //  Data []NAPPEND tn [DiskConv]
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydNAPPEND_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydNAPPEND_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -364,7 +344,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnDydNAPPEND_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -372,12 +351,6 @@ NORMAL_EXIT:
 //
 //  System function:  []NCREATE -- Create and open a native file
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnNCREATE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnNCREATE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -403,7 +376,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnNCREATE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -411,12 +383,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []NCREATE -- ERROR
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonNCREATE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonNCREATE_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -426,7 +392,6 @@ LPPL_YYSTYPE SysFnMonNCREATE_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnMonNCREATE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -436,12 +401,6 @@ LPPL_YYSTYPE SysFnMonNCREATE_EM_YY
 //
 //  FileName []NCREATE tn [Mode [DiskConv | (DiskConv WsConv)]]
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydNCREATE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydNCREATE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -453,7 +412,6 @@ LPPL_YYSTYPE SysFnDydNCREATE_EM_YY
     // Call common code
     return SysFnCreateTie_EM_YY (TRUE, lptkLftArg, FALSE, lptkFunc, lptkRhtArg, lptkAxis);
 } // End SysFnDydNCREATE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -464,12 +422,6 @@ LPPL_YYSTYPE SysFnDydNCREATE_EM_YY
 //  FileName []NCREATE tn [Mode [DiskConv | (DiskConv WSConv)]]
 //  FileName []NTIE    tn [Mode [DiskConv | (DiskConv WSConv)]]
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnCreateTie_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnCreateTie_EM_YY
     (UBOOL   bCreate,               // TRUE iff []NCREATE
@@ -685,7 +637,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnCreateTie_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -693,12 +644,6 @@ NORMAL_EXIT:
 //
 //  System function:  []NERASE -- Erase an open native file
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnNERASE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnNERASE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -724,7 +669,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnNERASE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -732,12 +676,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []NERASE -- ERROR
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonNERASE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonNERASE_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -747,7 +685,6 @@ LPPL_YYSTYPE SysFnMonNERASE_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnMonNERASE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -757,12 +694,6 @@ LPPL_YYSTYPE SysFnMonNERASE_EM_YY
 //
 //  FileName []NERASE tn
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydNERASE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydNERASE_EM_YY
     (LPTOKEN lptkLftArg,                    // Ptr to left arg token
@@ -779,7 +710,6 @@ LPPL_YYSTYPE SysFnDydNERASE_EM_YY
                                 COM_NERASE,
                                 NfnsErase);
 } // End SysFnDydNERASE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -787,12 +717,6 @@ LPPL_YYSTYPE SysFnDydNERASE_EM_YY
 //
 //  System function:  []NINFO -- Return file information
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnNINFO_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnNINFO_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -1955,7 +1879,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnNINFO_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2142,12 +2065,6 @@ UBOOL NPropCheckResize
 //  System function:  []NLOCK -- Lock/Unlock an open native file
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnNLOCK_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE SysFnNLOCK_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -2172,7 +2089,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnNLOCK_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2180,12 +2096,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []NLOCK -- ERROR
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonNLOCK_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonNLOCK_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -2195,7 +2105,6 @@ LPPL_YYSTYPE SysFnMonNLOCK_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnMonNLOCK_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2205,12 +2114,6 @@ LPPL_YYSTYPE SysFnMonNLOCK_EM_YY
 //
 //  Type [Timeout] []NLOCK tn [Offset [Length]]
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydNLOCK_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydNLOCK_EM_YY
     (LPTOKEN lptkLftArg,                // Ptr to left arg token
@@ -2561,7 +2464,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnDydNLOCK_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2569,12 +2471,6 @@ NORMAL_EXIT:
 //
 //  System function:  []NNAMES -- Get the names of open native files
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnNNAMES_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnNNAMES_EM_YY
     (LPTOKEN lptkLftArg,                // Ptr to left arg token (may be NULL if monadic)
@@ -2734,7 +2630,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnNNAMES_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2742,12 +2637,6 @@ NORMAL_EXIT:
 //
 //  System function:  []NNUMS -- Get the tie numbers of open native files
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnNNUMS_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnNNUMS_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -2869,7 +2758,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnNNUMS_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2877,12 +2765,6 @@ NORMAL_EXIT:
 //
 //  System function:  []NREAD -- Read data from an open native file
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnNREAD_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnNREAD_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -2908,7 +2790,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnNREAD_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2919,12 +2800,6 @@ AXIS_SYNTAX_EXIT:
 //  []NREAD tn [DiskConv          [NELM [FileOffset]]]
 //  []NREAD tn [(DiskConv WsConv) [NELM [FileOffset]]]
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonNREAD_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonNREAD_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -4047,7 +3922,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnMonNREAD_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4055,12 +3929,6 @@ NORMAL_EXIT:
 //
 //  Dyadic []NREAD -- ERROR
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydNREAD_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydNREAD_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -4071,7 +3939,6 @@ LPPL_YYSTYPE SysFnDydNREAD_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnDydNREAD_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4079,12 +3946,6 @@ LPPL_YYSTYPE SysFnDydNREAD_EM_YY
 //
 //  System function:  []NRENAME -- Rename an open native file
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnNRENAME_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnNRENAME_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -4110,7 +3971,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnNRENAME_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4118,12 +3978,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []NRENAME -- ERROR
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonNRENAME_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonNRENAME_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -4133,7 +3987,6 @@ LPPL_YYSTYPE SysFnMonNRENAME_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnMonNRENAME_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4143,12 +3996,6 @@ LPPL_YYSTYPE SysFnMonNRENAME_EM_YY
 //
 //  FileName []NRENAME tn
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydNRENAME_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydNRENAME_EM_YY
     (LPTOKEN lptkLftArg,                    // Ptr to left arg token
@@ -4165,7 +4012,6 @@ LPPL_YYSTYPE SysFnDydNRENAME_EM_YY
                                 COM_NRENAME,
                                 NfnsRename);
 } // End SysFnDydNRENAME_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4173,12 +4019,6 @@ LPPL_YYSTYPE SysFnDydNRENAME_EM_YY
 //
 //  System function:  []NREPLACE -- Replace data in an open native file
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnNREPLACE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnNREPLACE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -4204,7 +4044,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnNREPLACE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4212,12 +4051,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []NREPLACE -- ERROR
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonNREPLACE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonNREPLACE_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -4227,7 +4060,6 @@ LPPL_YYSTYPE SysFnMonNREPLACE_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnMonNREPLACE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4237,12 +4069,6 @@ LPPL_YYSTYPE SysFnMonNREPLACE_EM_YY
 //
 //  Data []NREPLACE tn [DiskConv [Start]]
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydNREPLACE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydNREPLACE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -4492,7 +4318,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnDydNREPLACE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4500,12 +4325,6 @@ NORMAL_EXIT:
 //
 //  System function:  []NRESIZE -- Resize an open native file
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnNRESIZE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnNRESIZE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -4531,7 +4350,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnNRESIZE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4539,12 +4357,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []NRESIZE -- ERROR
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonNRESIZE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonNRESIZE_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -4554,7 +4366,6 @@ LPPL_YYSTYPE SysFnMonNRESIZE_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnMonNRESIZE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4564,12 +4375,6 @@ LPPL_YYSTYPE SysFnMonNRESIZE_EM_YY
 //
 //  NewSize  []NRESIZE tn
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydNRESIZE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydNRESIZE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -4586,7 +4391,6 @@ LPPL_YYSTYPE SysFnDydNRESIZE_EM_YY
                                 COM_NRESIZE,
                                 NfnsResize);
 } // End SysFnDydNRESIZE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4594,12 +4398,6 @@ LPPL_YYSTYPE SysFnDydNRESIZE_EM_YY
 //
 //  System function:  []NSIZE -- Get the size of an open native file
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnNSIZE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnNSIZE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -4625,7 +4423,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnNSIZE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4635,12 +4432,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  []NSIZE tn
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonNSIZE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonNSIZE_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -4776,7 +4567,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnMonNSIZE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4784,12 +4574,6 @@ NORMAL_EXIT:
 //
 //  Dyadic []NSIZE -- ERROR
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydNSIZE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydNSIZE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -4800,7 +4584,6 @@ LPPL_YYSTYPE SysFnDydNSIZE_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnDydNSIZE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4808,12 +4591,6 @@ LPPL_YYSTYPE SysFnDydNSIZE_EM_YY
 //
 //  System function:  []NTIE -- Open a native file
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnNTIE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnNTIE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -4839,7 +4616,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnNTIE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4847,12 +4623,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  Monadic []NTIE -- ERROR
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonNTIE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonNTIE_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -4862,7 +4632,6 @@ LPPL_YYSTYPE SysFnMonNTIE_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnMonNTIE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4872,12 +4641,6 @@ LPPL_YYSTYPE SysFnMonNTIE_EM_YY
 //
 //  FileName []NTIE    tn [Mode [DiskConv | (DiskConv WsConv)]]
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydNTIE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydNTIE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -4889,7 +4652,6 @@ LPPL_YYSTYPE SysFnDydNTIE_EM_YY
     // Call common code
     return SysFnCreateTie_EM_YY (FALSE, lptkLftArg, FALSE, lptkFunc, lptkRhtArg, lptkAxis);
 } // End SysFnDydNTIE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4897,12 +4659,6 @@ LPPL_YYSTYPE SysFnDydNTIE_EM_YY
 //
 //  System function:  []NUNTIE -- Close one or more open native files
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnNUNTIE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnNUNTIE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -4928,7 +4684,6 @@ AXIS_SYNTAX_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnNUNTIE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4938,12 +4693,6 @@ AXIS_SYNTAX_EXIT:
 //
 //  []NUNTIE tn [tn ...]
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonNUNTIE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonNUNTIE_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -5127,7 +4876,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnMonNUNTIE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5135,12 +4883,6 @@ NORMAL_EXIT:
 //
 //  Dyadic []NUNTIE -- ERROR
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydNUNTIE_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydNUNTIE_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -5151,7 +4893,6 @@ LPPL_YYSTYPE SysFnDydNUNTIE_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End SysFnDydNUNTIE_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5814,12 +5555,6 @@ NORMAL_EXIT:
 //  Get the next available native file tie number
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- GetNextTieNum_EM"
-#else
-#define APPEND_NAME
-#endif
-
 APLINT GetNextTieNum_EM
     (LPTOKEN      lptkFunc,             // Ptr to function token
      LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
@@ -5883,7 +5618,6 @@ APLINT GetNextTieNum_EM
 
     return TieNum;
 } // End GetNextTieNum_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5959,12 +5693,6 @@ UBOOL IsDuplicateTieNum_EM
 //  Initialize the lpMemPTD->hGlbNfns struc
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- InitGlbNfns_EM"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL InitGlbNfns_EM
     (LPTOKEN      lptkFunc,             // Ptr to function token
      LPPERTABDATA lpMemPTD)             // Ptr to PerTabData global memory
@@ -6017,7 +5745,6 @@ UBOOL InitGlbNfns_EM
         return FALSE;
     } // End IF/ELSE
 } // End InitGlbNfns_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -6095,12 +5822,6 @@ UBOOL IncrGlbNfns
 //  Save data for a newly created/opened native file
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- NfnsSaveData_EM"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL NfnsSaveData_EM
     (HANDLE       hFile,            // File handle
      HGLOBAL      hGlbFileName,     // Filename global memory handle
@@ -6173,7 +5894,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End NfnsSaveData_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -6181,12 +5901,6 @@ NORMAL_EXIT:
 //
 //  Format a system error message
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysErrMsg_EM"
-#else
-#define APPEND_NAME
-#endif
 
 void SysErrMsg_EM
     (DWORD   dwLastError,           // GetLastError ()
@@ -6242,7 +5956,6 @@ void SysErrMsg_EM
             break;
     } // End SWITCH
 } // End SysErrMsg_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -6257,12 +5970,6 @@ void SysErrMsg_EM
 //  When called for []NERASE/[]NRENAME, the left arg is a char scalar/vector, the right arg is a tie #.
 //  ...             []NRESIZE         , ...               numeric singleton , ...
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- NfnsEraseRenameResize_EM"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE NfnsEraseRenameResize_EM
     (LPTOKEN   lptkLftArg,
@@ -6486,7 +6193,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End NfnsEraseRenameResize_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -6574,12 +6280,6 @@ UBOOL NfnsResize
 //
 //  Translate and write out data
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- NfnsWriteData_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL NfnsWriteData_EM
     (HANDLE       hFile,                // File handle
@@ -7465,7 +7165,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return bRet;
 } // End NfnsWriteData_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

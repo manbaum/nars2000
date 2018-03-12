@@ -31,12 +31,6 @@
 //  Primitive function for monadic and dyadic Squad (ERROR and "rectangular indexing")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnSquad_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnSquad_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -57,7 +51,6 @@ LPPL_YYSTYPE PrimFnSquad_EM_YY
     else
         return PrimFnDydSquad_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnSquad_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -92,12 +85,6 @@ LPPL_YYSTYPE PrimProtoFnSquad_EM_YY
 //
 //  Generate an identity element for the primitive function dyadic Squad
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentFnSquad_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimIdentFnSquad_EM_YY
     (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
@@ -333,7 +320,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimIdentFnSquad_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -341,12 +327,6 @@ NORMAL_EXIT:
 //
 //  Primitive function for monadic Squad (ERROR)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonSquad_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonSquad_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -356,7 +336,6 @@ LPPL_YYSTYPE PrimFnMonSquad_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End PrimFnMonSquad_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -396,12 +375,6 @@ LPPL_YYSTYPE PrimFnDydSquad_EM_YY
 //  Primitive function for dyadic Squad ("rectangular indexing")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydSquadCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnDydSquadCommon_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -431,7 +404,6 @@ LPPL_YYSTYPE PrimFnDydSquadCommon_EM_YY
                    bPrototyping ? LINENUM_PRO               // Starting line # type (see LINE_NUMS)
                                 : LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
 } // End PrimFnDydSquadCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -439,12 +411,6 @@ LPPL_YYSTYPE PrimFnDydSquadCommon_EM_YY
 //
 //  Dyadic Squad ("rectangular indexing") on a right arg global memory object
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydSquadGlb_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
     (LPTOKEN    lptkLftArg,             // Ptr to left arg token
@@ -1593,7 +1559,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDydSquadGlb_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

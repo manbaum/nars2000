@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -57,12 +57,6 @@ typedef struct tagROWPTRS
 //
 //  Display an array
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- AssignDisplay_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL ArrayDisplay_EM
     (LPTOKEN lptkRes,               // Ptr to value token
@@ -225,7 +219,6 @@ SYNTAX_EXIT:
                                lptkRes);
     return FALSE;
 } // End ArrayDisplay_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -233,12 +226,6 @@ SYNTAX_EXIT:
 //
 //  Display a global array
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- DisplayGlbArr_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL DisplayGlbArr_EM
     (HGLOBAL hGlbArr,               // Global memory handle to display
@@ -959,7 +946,6 @@ ERROR_EXIT:
 
     return bRet;
 } // End DisplayGlbArr_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

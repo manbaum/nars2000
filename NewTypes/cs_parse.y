@@ -2682,12 +2682,6 @@ CS_YYLEX_START:
 //  Error callback from Bison
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- cs_yyerror"
-#else
-#define APPEND_NAME
-#endif
-
 void cs_yyerror                         // Called for Bison syntax error
     (LPCSLOCALVARS lpcsLocalVars,       // Ptr to Ctrl Struc Local vars
      const char   *s)                   // Ptr to error msg
@@ -2789,7 +2783,6 @@ DISPLAY:
                 lpszAppName,
                 MB_OK | MB_ICONWARNING | MB_APPLMODAL);
 } // End cs_yyerror
-#undef  APPEND_NAME
 
 
 //***************************************************************************

@@ -8,7 +8,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -854,12 +854,6 @@ FH_YYLEX_START:
 //  Error callback from Bison
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- fh_yyerror"
-#else
-#define APPEND_NAME
-#endif
-
 void fh_yyerror                         // Called for Bison syntax error
     (LPFHLOCALVARS lpfhLocalVars,       // Ptr to Function Header local vars
      const char   *s)                   // Ptr to error msg
@@ -974,7 +968,6 @@ DISPLAY:
                  lpwszAppName,
                  MB_OK | MB_ICONWARNING | MB_APPLMODAL);
 } // End fh_yyerror
-#undef  APPEND_NAME
 
 
 //***************************************************************************

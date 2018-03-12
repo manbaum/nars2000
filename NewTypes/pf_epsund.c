@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //  Primitive function for monadic and dyadic EpsilonUnderbar (ERROR and "find")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnEpsilonUnderbar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnEpsilonUnderbar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
@@ -57,7 +51,6 @@ LPPL_YYSTYPE PrimFnEpsilonUnderbar_EM_YY
     else
         return PrimFnDydEpsilonUnderbar_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End PrimFnEpsilonUnderbar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -65,12 +58,6 @@ LPPL_YYSTYPE PrimFnEpsilonUnderbar_EM_YY
 //
 //  Generate a prototype for the primitive functions monadic & dyadic EpsilonUnderbar
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnEpsilonUnderbar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnEpsilonUnderbar_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -90,7 +77,6 @@ LPPL_YYSTYPE PrimProtoFnEpsilonUnderbar_EM_YY
                                     lptkRhtArg,         // Ptr to right arg token
                                     lptkAxis);          // Ptr to axis token (may be NULL)
 } // End PrimProtoFnEpsilonUnderbar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -98,12 +84,6 @@ LPPL_YYSTYPE PrimProtoFnEpsilonUnderbar_EM_YY
 //
 //  Primitive function for monadic EpsilonUnderbar (ERROR)
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonEpsilonUnderbar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMonEpsilonUnderbar_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -113,7 +93,6 @@ LPPL_YYSTYPE PrimFnMonEpsilonUnderbar_EM_YY
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End PrimFnMonEpsilonUnderbar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -121,12 +100,6 @@ LPPL_YYSTYPE PrimFnMonEpsilonUnderbar_EM_YY
 //
 //  Primitive function for dyadic EpsilonUnderbar ("find")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydEpsilonUnderbar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
     (LPTOKEN lptkLftArg,                    // Ptr to left arg token
@@ -833,7 +806,7 @@ WSFULL_EXIT:
 ERROR_EXIT:
     if (hGlbRes NE NULL)
     {
-        if (lpMemHdrRes)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
             MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
@@ -881,7 +854,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDydEpsilonUnderbar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1159,12 +1131,6 @@ APLLONGEST GetNextSN
 //  Dyadic EpsilonUnderbar of APLBOOL vs. APLBOOL
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydEpsilonUnderbarBvB"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL PrimFnDydEpsilonUnderbarBvB
     (LPAPLBOOL lpMemRes,                // Ptr to result global memory data
      LPAPLUINT lpMemDimDiff,            // ...    dimension difference vector
@@ -1193,7 +1159,6 @@ UBOOL PrimFnDydEpsilonUnderbarBvB
 {
     FINDMAC (preKmpB, ARRAY_BOOL, ARRAY_BOOL , BvB)
 } // End PrimFnDydEpsilonUnderbarBvB
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1201,12 +1166,6 @@ UBOOL PrimFnDydEpsilonUnderbarBvB
 //
 //  Dyadic EpsilonUnderbar of APLBOOL vs. APLFLOAT
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydEpsilonUnderbarBvF"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydEpsilonUnderbarBvF
     (LPAPLBOOL lpMemRes,                // Ptr to result global memory data
@@ -1236,7 +1195,6 @@ UBOOL PrimFnDydEpsilonUnderbarBvF
 {
     FINDMAC (preKmpB, ARRAY_BOOL, ARRAY_FLOAT, BvF)
 } // End PrimFnDydEpsilonUnderbarBvF
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1244,12 +1202,6 @@ UBOOL PrimFnDydEpsilonUnderbarBvF
 //
 //  Dyadic EpsilonUnderbar of APLAPA vs. APLFLOAT
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydEpsilonUnderbarAvF"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydEpsilonUnderbarAvF
     (LPAPLBOOL lpMemRes,                // Ptr to result global memory data
@@ -1279,7 +1231,6 @@ UBOOL PrimFnDydEpsilonUnderbarAvF
 {
     FINDMAC (preKmpA, ARRAY_APA , ARRAY_FLOAT, AvF)
 } // End PrimFnDydEpsilonUnderbarAvF
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1287,12 +1238,6 @@ UBOOL PrimFnDydEpsilonUnderbarAvF
 //
 //  Dyadic EpsilonUnderbar of APLINT/APLAPA vs. APLBOOL/APLINT/APLAPA
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydEpsilonUnderbarIvI"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydEpsilonUnderbarIvI
     (LPAPLBOOL lpMemRes,                // Ptr to result global memory data
@@ -1324,7 +1269,6 @@ UBOOL PrimFnDydEpsilonUnderbarIvI
 {
     FINDMAC (preKmpI, aplTypeLft, aplTypeRht , IvI)
 } // End PrimFnDydEpsilonUnderbarIvI
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1333,12 +1277,6 @@ UBOOL PrimFnDydEpsilonUnderbarIvI
 //  Dyadic EpsilonUnderbar of APLBOOL/APLINT/APLAPA/APLFLOAT vs. APLFLOAT and
 //                            APLFLOAT vs. APLINT
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydEpsilonUnderbarNvN"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydEpsilonUnderbarNvN
     (LPAPLBOOL lpMemRes,                // Ptr to result global memory data
@@ -1370,7 +1308,6 @@ UBOOL PrimFnDydEpsilonUnderbarNvN
 {
     FINDMAC (preKmpO, aplTypeLft, aplTypeRht , NvN)
 } // End PrimFnDydEpsilonUnderbarNvN
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1378,12 +1315,6 @@ UBOOL PrimFnDydEpsilonUnderbarNvN
 //
 //  Dyadic EpsilonUnderbar of APLCHAR vs. APLCHAR
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydEpsilonUnderbarCvC"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydEpsilonUnderbarCvC
     (LPAPLBOOL lpMemRes,                // Ptr to result global memory data
@@ -1413,7 +1344,6 @@ UBOOL PrimFnDydEpsilonUnderbarCvC
 {
     FINDMAC (preKmpC, ARRAY_CHAR, ARRAY_CHAR , CvC)
 } // End PrimFnDydEpsilonUnderbarCvC
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2353,12 +2283,6 @@ UBOOL CompareSNvVFP
 //          anything            vs. APLHETERO/APLNESTED
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydEpsilonUnderbarOvO"
-#else
-#define APPEND_NAME
-#endif
-
 UBOOL PrimFnDydEpsilonUnderbarOvO
     (LPAPLBOOL   lpMemRes,              // Ptr to result global memory data
      LPAPLUINT   lpMemDimDiff,          // ...    dimension difference vector
@@ -2459,7 +2383,6 @@ UBOOL PrimFnDydEpsilonUnderbarOvO
             return FALSE;
     } // End SWITCH
 } // End PrimFnDydEpsilonUnderbarOvO
-#undef  APPEND_NAME
 
 
 //***************************************************************************

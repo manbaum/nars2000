@@ -87,12 +87,6 @@ LPPL_YYSTYPE YYAllocImm
 //  Allocate a new YYRes entry
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- _YYAlloc"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE _YYAlloc
 #ifdef DEBUG
     (LPCHAR lpFileName,         // Ptr to filename where allocated
@@ -165,7 +159,6 @@ NORMAL_EXIT:
 #endif
     return lpYYRes;
 } // End _YYAlloc
-#undef  APPEND_NAME
 
 
 //***************************************************************************

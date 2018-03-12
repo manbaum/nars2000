@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,12 +32,6 @@
 //    monadic operator Dieresis ("each" and "each")
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDieresis_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimOpDieresis_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token (may be NULL if niladic/monadic)
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -57,7 +51,6 @@ LPPL_YYSTYPE PrimOpDieresis_EM_YY
                                    lpYYFcnStrOpr,   // Ptr to operator function strand
                                    lptkRhtArg);     // Ptr to right arg token
 } // End PrimOpDieresis_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -102,12 +95,6 @@ LPPL_YYSTYPE PrimProtoOpDieresis_EM_YY
 //
 //  Generate an identity element for the primitive operator dyadic Dieresis
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentOpDieresis_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimIdentOpDieresis_EM_YY
     (LPTOKEN      lptkRhtOrig,      // Ptr to original right arg token
@@ -324,7 +311,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimIdentOpDieresis_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -350,12 +336,6 @@ LPPL_YYSTYPE PrimOpMonDieresis_EM_YY
 //
 //  Primitive operator for monadic derived function from Dieresis ("each")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpMonDieresisCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     (LPPL_YYSTYPE     lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -1052,7 +1032,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimOpMonDieresisCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1061,12 +1040,6 @@ NORMAL_EXIT:
 //  Execute a monadic or dyadic derived function strand
 //    on a token or between tokens
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- ExecFuncOnToken_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL ExecFuncOnToken_EM
     (LPVOID      *lplpMemRes,           // Ptr to ptr to result memory
@@ -1154,7 +1127,6 @@ ERROR_EXIT:
 
     return FALSE;
 } // End ExecFuncOnToken_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1181,12 +1153,6 @@ LPPL_YYSTYPE PrimOpDydDieresis_EM_YY
 //
 //  Primitive operator for dyadic derived function from Dieresis ("each")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDydDieresisCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
@@ -1695,7 +1661,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimOpDydDieresis_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

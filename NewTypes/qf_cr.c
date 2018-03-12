@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,12 +31,6 @@
 //
 //  System function:  []CR -- Canonical Representation
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnCR_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnCR_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
@@ -68,7 +62,6 @@ AXIS_EXIT:
                                lptkAxis);
     return NULL;
 } // End SysFnCR_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -76,12 +69,6 @@ AXIS_EXIT:
 //
 //  Monadic []CR -- Canonical Representation
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonCR_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnMonCR_EM_YY
     (LPTOKEN lptkFunc,              // Ptr to function token
@@ -94,7 +81,6 @@ LPPL_YYSTYPE SysFnMonCR_EM_YY
                                  lptkRhtArg,            // Ptr to right arg token
                                  lptkAxis);             // Ptr to axis token (may be NULL)
 } // End SysFnMon_CR_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -102,12 +88,6 @@ LPPL_YYSTYPE SysFnMonCR_EM_YY
 //
 //  Monadic []CR -- Canonical Representation, for vector and matrix results
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnCR_Common_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnCR_Common_EM_YY
     (APLRANK aplRankRes,                // Result rank
@@ -532,7 +512,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End SysFnCR_Common_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -540,12 +519,6 @@ NORMAL_EXIT:
 //
 //  Subroutine to SysFnCR_Common_EM for copying a line to the result
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnCR_Copy_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPVOID SysFnCR_Copy_EM
     (APLRANK aplRankRes,                    // Result rank
@@ -643,7 +616,6 @@ NORMAL_EXIT:
 
     return lpMemRes;
 } // End SysFnCR_Copy_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -651,12 +623,6 @@ NORMAL_EXIT:
 //
 //  Subroutine to SysFnCR_Common_EM for allocating and copying to the result
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnMonCR_ALLOC_EM"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL SysFnMonCR_ALLOC_EM
     (APLNELM   aplNELMRes,      // Result NELM
@@ -742,7 +708,6 @@ WSFULL_EXIT:
                                lptkFunc);
     return NULL;
 } // End SysFnMonCR_ALLOC_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -838,12 +803,6 @@ LPAPLCHAR ConvSteName
 //                 1 = return as vector
 //                 2 = return as matrix
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- SysFnDydCR_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE SysFnDydCR_EM_YY
     (LPTOKEN lptkLftArg,            // Ptr to left arg token
@@ -941,7 +900,6 @@ LEFT_DOMAIN_EXIT:
                                lptkLftArg);
     return NULL;
 } // End SysFnDydCR_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

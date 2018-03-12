@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,11 +38,12 @@
 //***************************************************************************
 
 LPPL_YYSTYPE PrimFnSyntaxError_EM
-    (LPTOKEN lptkFunc
 #ifdef DEBUG
-, LPWCHAR APPEND_NAME
+    (LPTOKEN lptkFunc,
+     LPWCHAR FCN_NAME)
+#else
+    (LPTOKEN lptkFunc)
 #endif
-    )
 
 {
 #ifdef DEBUG
@@ -52,7 +53,7 @@ LPPL_YYSTYPE PrimFnSyntaxError_EM
     MyStrcpyW (wszTemp, sizeof (wszTemp), ERRMSG_SYNTAX_ERROR);
 
     // Append the suffix to the temp
-    MyStrcatW (wszTemp, sizeof (wszTemp), APPEND_NAME);
+    MyStrcatW (wszTemp, sizeof (wszTemp), FCN_NAME);
 
     ErrorMessageIndirectToken (wszTemp, lptkFunc);
 #else
@@ -70,11 +71,12 @@ LPPL_YYSTYPE PrimFnSyntaxError_EM
 //***************************************************************************
 
 LPPL_YYSTYPE PrimFnValenceError_EM
-    (LPTOKEN lptkFunc
 #ifdef DEBUG
-, LPWCHAR APPEND_NAME
+    (LPTOKEN lptkFunc,
+     LPWCHAR FCN_NAME)
+#else
+    (LPTOKEN lptkFunc)
 #endif
-    )
 
 {
 #ifdef DEBUG
@@ -84,7 +86,7 @@ LPPL_YYSTYPE PrimFnValenceError_EM
     MyStrcpyW (wszTemp, sizeof (wszTemp), ERRMSG_VALENCE_ERROR);
 
     // Append the suffix to the temp
-    MyStrcatW (wszTemp, sizeof (wszTemp), APPEND_NAME);
+    MyStrcatW (wszTemp, sizeof (wszTemp), FCN_NAME);
 
     ErrorMessageIndirectToken (wszTemp, lptkFunc);
 #else
@@ -102,11 +104,12 @@ LPPL_YYSTYPE PrimFnValenceError_EM
 //***************************************************************************
 
 LPPL_YYSTYPE PrimFnNonceError_EM
-    (LPTOKEN lptkFunc
 #ifdef DEBUG
-, LPWCHAR APPEND_NAME
+    (LPTOKEN lptkFunc,
+     LPWCHAR FCN_NAME)
+#else
+    (LPTOKEN lptkFunc)
 #endif
-    )
 
 {
 #ifdef DEBUG
@@ -116,7 +119,7 @@ LPPL_YYSTYPE PrimFnNonceError_EM
     MyStrcpyW (wszTemp, sizeof (wszTemp), ERRMSG_NONCE_ERROR);
 
     // Append the suffix to the temp
-    MyStrcatW (wszTemp, sizeof (wszTemp), APPEND_NAME);
+    MyStrcatW (wszTemp, sizeof (wszTemp), FCN_NAME);
 
     ErrorMessageIndirectToken (wszTemp, lptkFunc);
 #else
@@ -169,11 +172,12 @@ void PrimFnDydNonceError_RE
 //***************************************************************************
 
 LPPL_YYSTYPE PrimFnDomainError_EM
-    (LPTOKEN lptkFunc
 #ifdef DEBUG
-, LPWCHAR APPEND_NAME
+    (LPTOKEN lptkFunc,
+     LPWCHAR FCN_NAME)
+#else
+    (LPTOKEN lptkFunc)
 #endif
-    )
 
 {
 #ifdef DEBUG
@@ -183,7 +187,7 @@ LPPL_YYSTYPE PrimFnDomainError_EM
     MyStrcpyW (wszTemp, sizeof (wszTemp), ERRMSG_DOMAIN_ERROR);
 
     // Append the suffix to the temp
-    MyStrcatW (wszTemp, sizeof (wszTemp), APPEND_NAME);
+    MyStrcatW (wszTemp, sizeof (wszTemp), FCN_NAME);
 
     ErrorMessageIndirectToken (wszTemp, lptkFunc);
 #else
@@ -201,11 +205,12 @@ LPPL_YYSTYPE PrimFnDomainError_EM
 //***************************************************************************
 
 LPPL_YYSTYPE PrimFnValueError_EM
-    (LPTOKEN lptkFunc
 #ifdef DEBUG
-, LPWCHAR APPEND_NAME
+    (LPTOKEN lptkFunc,
+     LPWCHAR FCN_NAME)
+#else
+    (LPTOKEN lptkFunc)
 #endif
-    )
 
 {
 #ifdef DEBUG
@@ -215,7 +220,7 @@ LPPL_YYSTYPE PrimFnValueError_EM
     MyStrcpyW (wszTemp, sizeof (wszTemp), ERRMSG_VALUE_ERROR);
 
     // Append the suffix to the temp
-    MyStrcatW (wszTemp, sizeof (wszTemp), APPEND_NAME);
+    MyStrcatW (wszTemp, sizeof (wszTemp), FCN_NAME);
 
     // If there's a name attached to this error, ...
     if ((IsTknNamed   (lptkFunc)
@@ -248,12 +253,6 @@ LPPL_YYSTYPE PrimFnValueError_EM
 //  Primitive scalar monadic function VALENCE ERROR
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonValenceError_EM"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimFnMonValenceError_EM
     (LPTOKEN    lptkFunc,           // Ptr to function token
      LPTOKEN    lptkRhtArg,         // Ptr to right arg token
@@ -263,7 +262,6 @@ LPPL_YYSTYPE PrimFnMonValenceError_EM
 {
     return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
 } // End PrimFnMonValenceError_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -336,7 +334,6 @@ LPPL_YYSTYPE PrimProtoFnMixed_EM_YY
 
     return lpYYRes;
 } // End PrimProtoFnMixed_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -344,12 +341,6 @@ LPPL_YYSTYPE PrimProtoFnMixed_EM_YY
 //
 //  Generate a prototype result for the monadic & dyadic primitive scalar functions
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimProtoFnScalar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimProtoFnScalar_EM_YY
     (LPTOKEN    lptkLftArg,         // Ptr to left arg token
@@ -457,7 +448,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return lpYYRes;
 } // End PrimProtoFnScalar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -465,12 +455,6 @@ NORMAL_EXIT:
 //
 //  Generate an identity element for a primitive scalar dyadic function
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentFnScalar_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
     (LPTOKEN lptkRhtOrig,               // Ptr to original right arg token
@@ -841,7 +825,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimIdentFnScalar_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -849,12 +832,6 @@ NORMAL_EXIT:
 //
 //  Common (recursive) routine to PrimIdentScalar_EM_YY
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentFnScalarCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimIdentFnScalarCommon_EM
     (LPAPLHETERO lpMemRht,                  // Ptr to right arg global memory data
@@ -1133,7 +1110,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End PrimIdentFnScalarCommon_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1141,12 +1117,6 @@ NORMAL_EXIT:
 //
 //  Primitive scalar monadic function
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnMon_EM_YY
     (LPTOKEN    lptkFunc,           // Ptr to function token
@@ -1499,7 +1469,6 @@ ERRMSG_ALREADY_SET_EXIT:
 
     return NULL;
 } // End PrimFnMon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -1508,12 +1477,6 @@ ERRMSG_ALREADY_SET_EXIT:
 //  Primitive scalar monadic function on a global memory object
 //  Returning an HGLOBAL with the ptr type bits significant
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnMonGlb_EM"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL PrimFnMonGlb_EM
     (HGLOBAL    hGlbRht,                    // Right arg handle
@@ -2379,7 +2342,6 @@ NORMAL_EXIT:
 
     return hGlbRes;
 } // End PrimFnMonGlb_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2387,12 +2349,6 @@ NORMAL_EXIT:
 //
 //  Primitive scalar function for dyadic fns
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDyd_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimFnDyd_EM_YY
     (LPTOKEN    lptkLftArg,         // Ptr to left arg token (may be NULL if monadic)
@@ -2834,7 +2790,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimFnDyd_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2842,12 +2797,6 @@ NORMAL_EXIT:
 //
 //  Dyadic primitive scalar function, left simple or global numeric, right nested/hetero
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydSimpNest_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydSimpNest_EM
     (LPPL_YYSTYPE      lpYYRes,         // Ptr to the result
@@ -3286,7 +3235,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End PrimFnDydSimpNest_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3294,12 +3242,6 @@ NORMAL_EXIT:
 //
 //  Dyadic primitive scalar function, left nested/hetero, right simple or global numeric
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydNestSimp_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydNestSimp_EM
     (LPPL_YYSTYPE  lpYYRes,             // Ptr to the result
@@ -3740,7 +3682,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End PrimFnDydNestSimp_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -3749,12 +3690,6 @@ NORMAL_EXIT:
 //  Subroutine to PrimFnDydNestSimp_EM to handle right arg simple scalars or
 //    global numeric scalars, left arg nested/hetero/global numeric
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydNestSiSc_EM"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL PrimFnDydNestSiSc_EM
     (LPTOKEN    lptkFunc,           // Ptr to function token
@@ -4398,7 +4333,6 @@ NORMAL_EXIT:
     else
         return NULL;
 } // End PrimFnDydNestSiSc_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4445,12 +4379,6 @@ void FillToken_PTB
 //
 //  Dyadic primitive scalar function, left nested/hetero, right nested/hetero
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydNestNest_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydNestNest_EM
     (LPPL_YYSTYPE      lpYYRes,         // Ptr to the result
@@ -4592,7 +4520,6 @@ UBOOL PrimFnDydNestNest_EM
 ERROR_EXIT:
     return bRet;
 } // End PrimFnDydNestNest_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -4601,12 +4528,6 @@ ERROR_EXIT:
 //  Subroutine to PrimFnDydSimpNest_EM to handle left arg simple or
 //    global numeric scalars, right arg nested/hetero/global numeric
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydSiScNest_EM"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL PrimFnDydSiScNest_EM
     (LPTOKEN    lptkFunc,           // Ptr to function token
@@ -5250,7 +5171,6 @@ NORMAL_EXIT:
     else
         return NULL;
 } // End PrimFnDydSiScNest_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5258,12 +5178,6 @@ NORMAL_EXIT:
 //
 //  Dyadic primitive scalar function, left simple scalar, right simple scalar
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydSiScSiSc_EM"
-#else
-#define APPEND_NAME
-#endif
 
 HGLOBAL PrimFnDydSiScSiSc_EM
     (LPTOKEN    lptkFunc,           // Ptr to function token
@@ -5324,7 +5238,6 @@ DOMAIN_EXIT:
                                lptkFunc);
     return NULL;
 } // End PrimFnDydSiScSiSc_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5332,12 +5245,6 @@ DOMAIN_EXIT:
 //
 //  Subroutine to PrimFnDydSiScSiSc_EM
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydSiScSiScSub_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydSiScSiScSub_EM
     (LPTOKEN    lptkRes,            // Ptr to result token
@@ -5607,7 +5514,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End PrimFnDydSiScSiScSub_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -5616,12 +5522,6 @@ NORMAL_EXIT:
 //  Dyadic primitive scalar function,
 //    left simple or global numeric, right simple or global numeric
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimFnDydSimpSimp_EM"
-#else
-#define APPEND_NAME
-#endif
 
 UBOOL PrimFnDydSimpSimp_EM
     (LPPL_YYSTYPE      lpYYRes,             // Ptr to the result
@@ -6451,7 +6351,6 @@ NORMAL_EXIT:
 
     return bRet;
 } // End PrimFnDydSimpSimp_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

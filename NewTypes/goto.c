@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,12 +35,6 @@
 //         EXITTYPE_GOTO_LINE  if we're going to a valid line num
 //         EXITTYPE_ERROR if error
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- GotoLine_EM"
-#else
-#define APPEND_NAME
-#endif
 
 EXIT_TYPES GotoLine_EM
     (LPTOKEN lptkRhtArg,            // Ptr to right arg token
@@ -411,7 +405,6 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return exitType;
 } // End GotoLine_EM
-#undef  APPEND_NAME
 
 
 //***************************************************************************

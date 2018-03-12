@@ -99,12 +99,6 @@ LPPL_YYSTYPE PrimProtoOpDot_EM_YY
 //  Generate an identity element for the primitive operator dyadic Dot
 //***************************************************************************
 
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimIdentOpDot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
-
 LPPL_YYSTYPE PrimIdentOpDot_EM_YY
     (LPTOKEN      lptkRhtOrig,          // Ptr to original right arg token
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
@@ -292,7 +286,6 @@ NONCE_EXIT:
 ERROR_EXIT:
     return NULL;
 } // End PrimIdentOpDot_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -326,12 +319,6 @@ LPPL_YYSTYPE PrimOpMonDot_EM_YY
 //
 //  Primitive operator for monadic derived function from Dot ("determinant")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpMonDotCommon_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,            // Ptr to operator function strand
@@ -1562,7 +1549,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimOpMonDotCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************
@@ -2533,12 +2519,6 @@ LPPL_YYSTYPE PrimOpDydDot_EM_YY
 //
 //  Primitive operator for dyadic derived function from Dot ("inner product")
 //***************************************************************************
-
-#ifdef DEBUG
-#define APPEND_NAME     L" -- PrimOpDydDot_EM_YY"
-#else
-#define APPEND_NAME
-#endif
 
 LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     (LPTOKEN      lptkLftArg,               // Ptr to left arg token (may be NULL if niladic/monadic)
@@ -4137,7 +4117,6 @@ NORMAL_EXIT:
 
     return lpYYRes;
 } // End PrimOpDydDotCommon_EM_YY
-#undef  APPEND_NAME
 
 
 //***************************************************************************

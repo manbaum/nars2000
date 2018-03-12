@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1138,6 +1138,10 @@ void TranslateNARSToAPL2
         // If the char is Bar2, ...
         if (*lpMemRht EQ UTF16_BAR2)
             *lpMemRht++ = L'-';
+        else
+        // If the char is Epsilon2, ...
+        if (*lpMemRht EQ UTF16_EPSILON2)
+            *lpMemRht++ = UTF16_EPSILON;
         else
         // If the char is Quad2, ...
         if (*lpMemRht EQ UTF16_QUAD2)

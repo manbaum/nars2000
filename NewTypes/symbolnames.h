@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -297,14 +297,15 @@ SYMBOLNAMES aSymbolNames[]
   {UTF16_LEFTBRACE            , L"{leftbrace}"          },  // 007B:  Left brace
   {UTF16_STILE                , L"{stile}"              },  // 2223:  Modulus
   {UTF16_STILE                , L"{mod}"                },  // ...    Stile
-  {UTF16_STILE2               , L"{stile2}"             },  // 007C:  Stile (a.k.a. 0x2223)
+  {UTF16_STILE2               , L"{stile2}"             },  // 007C:  Stile    (a.k.a. 0x2223)
   {UTF16_RIGHTBRACE           , L"{rightbrace}"         },  // 007D:  Right brace
-  {UTF16_TILDE2               , L"{tilde2}"             },  // 007E:  Tilde (a.k.a. 0x223C)
+  {UTF16_TILDE2               , L"{tilde2}"             },  // 007E:  Tilde    (a.k.a. 0x223C)
   {UTF16_ALPHA2               , L"{alpha2}"             },  // 03B1:  Alpha2
   {UTF16_OMEGA2               , L"{omega2}"             },  // 03C9:  Omega2
-  {UTF16_BAR2                 , L"{bar2}"               },  // 2212:  Bar   (a.k.a. 0x002D)
-  {UTF16_STAR2                , L"{star2}"              },  // 22C6:  Star  (a.k.a. 0x002A)
-  {UTF16_QUAD2                , L"{quad2}"              },  // 25AF:  Quad  (a.k.a. 0x2395)
+  {UTF16_EPSILON2             , L"{epsilon2}"           },  // 2208:  Epsilon  (a.k.a. 0x220A)
+  {UTF16_BAR2                 , L"{bar2}"               },  // 2212:  Bar      (a.k.a. 0x002D)
+  {UTF16_STAR2                , L"{star2}"              },  // 22C6:  Star     (a.k.a. 0x002A)
+  {UTF16_QUAD2                , L"{quad2}"              },  // 25AF:  Quad     (a.k.a. 0x2395)
   {UTF16_JOT2                 , L"{jot2}"               },  // 25E6:  Jot2
   {UTF16_CIRCLE2              , L"{circle2}"            },  // 26AA:  Circle2  (a.k.a. 0x25CB)
   {UTF16_LEFTCARETUNDERBAR2   , L"{notmore2}"           },  // 2A7D:  Notmore2 (a.k.a. 0x2264)

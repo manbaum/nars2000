@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -377,6 +377,7 @@ void InitPrimFns
     InitPrimFn (UTF16_UPSHOE              , &PrimFnUpShoe_EM_YY             );  // Alt-'c' - up shoe
     InitPrimFn (UTF16_DOWNSTILE           , &PrimFnDownStile_EM_YY          );  // Alt-'d' - down stile
     InitPrimFn (UTF16_EPSILON             , &PrimFnEpsilon_EM_YY            );  // Alt-'e' - epsilon
+    InitPrimFn (UTF16_EPSILON2            , &PrimFnEpsilon_EM_YY            );  //         - epsilon2
 ////                                                                            // Alt-'f' - infinity
 ////                                                                            // Alt-'g' - del
 ////                                                                            // Alt-'h' - delta
@@ -602,6 +603,7 @@ void InitPrimProtoFns
     InitPrimProtoFn (UTF16_UPSHOE              , &PrimProtoFnUpShoe_EM_YY             );    // Alt-'c' - up shoe
     InitPrimProtoFn (UTF16_DOWNSTILE           , &PrimProtoFnDownStile_EM_YY          );    // Alt-'d' - down stile
     InitPrimProtoFn (UTF16_EPSILON             , &PrimProtoFnEpsilon_EM_YY            );    // Alt-'e' - epsilon
+    InitPrimProtoFn (UTF16_EPSILON2            , &PrimProtoFnEpsilon_EM_YY            );    //         - epsilon2
 ////                                                                                        // Alt-'f' - infinity
 ////                                                                                        // Alt-'g' - del
 ////                                                                                        // Alt-'h' - delta

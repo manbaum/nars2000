@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -62,6 +62,7 @@ WCHAR uniTransTab[][UNITRANS_LENGTH] =
     {0x0152, 0x00B2, 0x2395, 0x2395, 0x00B0,   NA  , UTF16_QUAD                },   // Quad     (0x2395)      the translation from APL2/Dyalog to NARS
     {0x002A, 0x002A, 0x002A, 0x002A, 0x002A,   NA  , UTF16_STAR                },   // Star     (0x002A)      is correct.
     {0x002D, 0x002D, 0x002D, 0x002D, 0x002D,   NA  , UTF16_BAR2                },   // Bar2     (0x2212)
+    {0x2208, 0x2208, 0x2208, 0x2208, 0x2208,   NA  , UTF16_EPSILON2            },   // Epsilon2 (0x2208)
     {0x0152, 0x00B2, 0x2395, 0x2395, 0x00B0,   NA  , UTF16_QUAD2               },   // Quad2    (0x25AF)
     {0x002A, 0x002A, 0x002A, 0x002A, 0x002A,   NA  , UTF16_STAR2               },   // Star2    (0x22C6)
     {0x00B1, 0x00B4,  SAME ,  SAME , 0x00B8,   NA  , UTF16_CIRCLE              },   // Circle   (0x25CB)

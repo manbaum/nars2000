@@ -664,8 +664,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
 
     // If the left operand is NOT the immediate function (-), ...
     if (!IsTknImmed (&lpYYFcnStrLft->tkToken)
-     || (lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_BAR
-      && lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_BAR2))
+     || !IsAPLCharBar (lpYYFcnStrLft->tkToken.tkData.tkChar))
         // Handle as a generalized determinant
         goto GENERAL_DET;
 

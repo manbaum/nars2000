@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -265,9 +265,9 @@
 #define UTF16_BACKTICK            0x0060        // Backtick
 #define UTF16_GRAVE               0x0060        // Grave accent
 #define UTF16_LEFTBRACE           0x007B        // Left brace
-#define UTF16_STILE2              0x007C        // Stile (a.k.a. 0x2223)
+#define UTF16_STILE2              0x007C        // Stile      (a.k.a. 0x2223)
 #define UTF16_RIGHTBRACE          0x007D        // Right brace
-#define UTF16_TILDE2              0x007E        // Tilde (a.k.a. 0x223C)
+#define UTF16_TILDE2              0x007E        // Tilde      (a.k.a. 0x223C)
 #define UTF16_POUND               0x00A3        // Pound
 #define UTF16_CURRENCY            0x00A4        // Currency
 #define UTF16_COPYRIGHT           0x00A9        // Copyright
@@ -284,17 +284,18 @@
 #define UTF16_LOW_O_STROKE        0x00F8        // Lower   o w/stroke
 #define UTF16_ALPHA2              0x03B1        // Greek small letter alpha
 #define UTF16_OMEGA2              0x03C9        // ...                omega
-#define UTF16_BAR2                0x2212        // Bar (a.k.a. 0x002D)
+#define UTF16_EPSILON2            0x2208        // Epsilon    (a.k.a. 0x220A)
+#define UTF16_BAR2                0x2212        // Bar        (a.k.a. 0x002D)
 #define UTF16_STILE               0x2223        // Stile
-#define UTF16_STAR2               0x22C6        // Star (a.k.a. 0x002A)
-#define UTF16_QUAD2               0x25AF        // Quad (a.k.a. 0x2395)
-#define UTF16_JOT2                0x25E6        // Jot (a.k.a. 0x2218)
-#define UTF16_CIRCLE2             0x26AA        // Circle (a.k.a. 0x25CB)
-#define UTF16_LEFTCARETUNDERBAR2  0x2A7D        // Not more2 (a.k.a. 0x2264)
-#define UTF16_RIGHTCARETUNDERBAR2 0x2A7E        // Not less2 (a.k.a. 0x2265)
-#define UTF16_DIAMOND2            0x25C7        // Diamond2 (a.k.a. 0x22C4)
-#define UTF16_DIAMOND3            0x25CA        // Diamond3 (a.k.a. 0x22C4)
-#define UTF16_DIAMOND4            0x2B26        // Diamond4 (a.k.a. 0x22C4)
+#define UTF16_STAR2               0x22C6        // Star       (a.k.a. 0x002A)
+#define UTF16_QUAD2               0x25AF        // Quad       (a.k.a. 0x2395)
+#define UTF16_JOT2                0x25E6        // Jot        (a.k.a. 0x2218)
+#define UTF16_CIRCLE2             0x26AA        // Circle     (a.k.a. 0x25CB)
+#define UTF16_LEFTCARETUNDERBAR2  0x2A7D        // Not more2  (a.k.a. 0x2264)
+#define UTF16_RIGHTCARETUNDERBAR2 0x2A7E        // Not less2  (a.k.a. 0x2265)
+#define UTF16_DIAMOND2            0x25C7        // Diamond2   (a.k.a. 0x22C4)
+#define UTF16_DIAMOND3            0x25CA        // Diamond3   (a.k.a. 0x22C4)
+#define UTF16_DIAMOND4            0x2B26        // Diamond4   (a.k.a. 0x22C4)
 
 #define UTF16_A_                  0xE036        // A underbar
 #define UTF16_B_                  0xE037        // B underbar
@@ -571,17 +572,18 @@
 #define WS_UTF16_LOW_O_STROKE        L"\x00F8"  // Lower   o w/stroke
 #define WS_UTF16_ALPHA2              L"\x03B1"  // Greek small letter alpha
 #define WS_UTF16_OMEGA2              L"\x03C9"  // ...                omega
-#define WS_UTF16_BAR2                L"\x2212"  // Bar (a.k.a. 0x002D)
+#define WS_UTF16_EPSILON2            L"\x2208"  // Epsilon    (a.k.a. 0x220A)
+#define WS_UTF16_BAR2                L"\x2212"  // Bar        (a.k.a. 0x002D)
 #define WS_UTF16_STILE               L"\x2223"  // Stile
-#define WS_UTF16_STAR2               L"\x22C6"  // Star (a.k.a. 002A)
-#define WS_UTF16_QUAD2               L"\x25AF"  // Quad (a.k.a. 0x2395)
-#define WS_UTF16_JOT2                L"\x25E6"  // Jot (a.k.a. 0x2218)
-#define WS_UTF16_CIRCLE2             L"\x26AA"  // Circle (a.k.a. 0x25CB)
-#define WS_UTF16_LEFTCARETUNDERBAR2  L"\x2A7D"  // Not more2 (a.k.a. 0x2264)
-#define WS_UTF16_RIGHTCARETUNDERBAR2 L"\x2A7E"  // Not less2 (a.k.a. 0x2265)
-#define WS_UTF16_DIAMOND2            L"\x25C7"  // Diamond2 (a.k.a. 0x22C4)
-#define WS_UTF16_DIAMOND3            L"\x25CA"  // Diamond3 (a.k.a. 0x22C4)
-#define WS_UTF16_DIAMOND4            L"\x2B26"  // Diamond4 (a.k.a. 0x22C4)
+#define WS_UTF16_STAR2               L"\x22C6"  // Star       (a.k.a. 002A)
+#define WS_UTF16_QUAD2               L"\x25AF"  // Quad       (a.k.a. 0x2395)
+#define WS_UTF16_JOT2                L"\x25E6"  // Jot        (a.k.a. 0x2218)
+#define WS_UTF16_CIRCLE2             L"\x26AA"  // Circle     (a.k.a. 0x25CB)
+#define WS_UTF16_LEFTCARETUNDERBAR2  L"\x2A7D"  // Not more2  (a.k.a. 0x2264)
+#define WS_UTF16_RIGHTCARETUNDERBAR2 L"\x2A7E"  // Not less2  (a.k.a. 0x2265)
+#define WS_UTF16_DIAMOND2            L"\x25C7"  // Diamond2   (a.k.a. 0x22C4)
+#define WS_UTF16_DIAMOND3            L"\x25CA"  // Diamond3   (a.k.a. 0x22C4)
+#define WS_UTF16_DIAMOND4            L"\x2B26"  // Diamond4   (a.k.a. 0x22C4)
 
 #define WS_UTF16_A_                  L"\xE036"  // A underbar
 #define WS_UTF16_B_                  L"\xE037"  // B underbar

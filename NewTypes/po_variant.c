@@ -1603,8 +1603,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
 ////////case UTF16_BAR2:                    // Monadic or dyadic
 ////////case UTF16_TIMES:                   // Dyadic only
 ////////    // Ensure there's a left arg
-////////    if (lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_BAR
-////////     && lpYYFcnStrLft->tkToken.tkData.tkChar NE UTF16_BAR2
+////////    if (!IsAPLCharBar (lpYYFcnStrLft->tkToken.tkData.tkChar)
 ////////     && lptkLftArg EQ NULL)
 ////////        goto LEFT_VALENCE_EXIT;
 ////////
@@ -2340,7 +2339,7 @@ RIGHT_OPERAND_DOMAIN_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    if (hGlbRhtOpr && lpMemRhtOpr)
+    if (hGlbRhtOpr NE NULL && lpMemRhtOpr NE NULL)
     {
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRhtOpr); lpMemRhtOpr = NULL;

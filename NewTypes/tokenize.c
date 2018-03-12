@@ -6287,6 +6287,7 @@ TKCOLINDICES CharTransTK
         case UTF16_UPSHOE:              // Alt-'c' - up shoe
         case UTF16_DOWNSTILE:           // Alt-'d' - down stile
         case UTF16_EPSILON:             // Alt-'e' - epsilon
+        case UTF16_EPSILON2:            //         - epsilon2
 ////////case UTF16_INFINITY:            // Alt-'f' - infinity (TKCOL_INFINITY)
 ////////case UTF16_DEL:                 // Alt-'g' - del (TKCOL_DEL)
 ////////case UTF16_DELTA:               // Alt-'h' - delta (TKCOL_ALPHA)

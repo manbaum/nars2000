@@ -1575,7 +1575,7 @@ WM_NCCREATE_FAIL:
             // *************** Magic Functions/Operators ***************
 
             // Initialize all magic functions/operators
-            if (!InitMagicFunctions (lpMemPTD, hWndEC, lpLclMemVirtStr, PTDMEMVIRT_MFO1, PTDMEMVIRT_LENGTH))
+            if (!InitMagicFunctions (lpMemPTD, hWndEC, lpLclMemVirtStr, PTDMEMVIRT_MFO1A, PTDMEMVIRT_LENGTH))
             {
                 MBW (L"WM_CREATE:  InitMagicFunctions failed");
 

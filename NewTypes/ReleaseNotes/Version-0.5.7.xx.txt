@@ -1,5 +1,27 @@
 Version 0.5.7.xx consists of the following Builds:
 
+\
+Build #1860 -- Version 0.5.7.xx
+--------------------------------
+
+* Fix Bug In Initialization Of MFOs
+
+Directory branches/bsmith/NewTypes:
+
+ENUMS.H:
+  Define enough entries for <MemVirtStr>s to handle the number of MFOs with local HSHTAB & SYMTABs.
+  Document the problem for the next time.
+
+EXECMFN.C:
+  When initializing a MFO, increment a counter to check against the maximum number of <MemVirtStr> entries.
+  Document the problem for the next time.
+
+EXECMFN.H:
+  Define a new struc member to allow counting of <MemVirtStr> entries.
+
+SESSMAN.C:
+  Call <InitMagicFunctions> with new entry point for <MemVirtStr>s.
+
 
 Build #1859 -- Version 0.5.7.xx
 --------------------------------

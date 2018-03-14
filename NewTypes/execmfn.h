@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -253,8 +253,9 @@ typedef struct tagINIT_MFO
     struct tagMEMVIRTSTR
                 *lpLclMemVirtStr;   // 04:  Ptr to local MemVirtStr
     UINT         uPtdMemVirtStart,  // 08:  Starting offset into lpLclMemVirtStr
-                 uPtdMemVirtEnd;    // 0C:  Ending   ...
-                                    // 10:  Length
+                 uPtdMemVirtEnd,    // 0C:  Ending   ...
+                 uCount;            // 10:  Count of MFOs with local SYMTAB
+                                    // 14:  Length
 } INIT_MFO, *LPINIT_MFO;
 
 

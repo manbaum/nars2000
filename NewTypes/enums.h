@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -308,13 +308,21 @@ typedef enum tagPTDMEMVIRTENUM
     PTDMEMVIRT_WSZFORMAT,               // 0C:  Temporary formatting
     PTDMEMVIRT_WSZTEMP,                 // 0D:  Temporary save area
     PTDMEMVIRT_FORSTMT,                 // 0E:  FOR ... IN stmts
-    PTDMEMVIRT_MFO1,                    // 0F:  Magic functions/operators
-    PTDMEMVIRT_MFO2,                    // 10:  ...
-    PTDMEMVIRT_LFTSTK,                  // 11:  2by2 left stack
-    PTDMEMVIRT_RHTSTK,                  // 12:  ...  right ...
-    PTDMEMVIRT_LENGTH                   // 13:  # entries
+    PTDMEMVIRT_MFO1A,                   // 0F:  #MonVR's    HSHTAB
+    PTDMEMVIRT_MFO1B,                   // 10:  ...         SYMTAB
+    PTDMEMVIRT_MFO2A,                   // 11:  #DydSquad's HSHTAB
+    PTDMEMVIRT_MFO2B,                   // 12:  ...         SYMTAB
+    PTDMEMVIRT_LFTSTK,                  // 13:  2by2 left stack
+    PTDMEMVIRT_RHTSTK,                  // 14:  ...  right ...
+    PTDMEMVIRT_LENGTH                   // 15:  # entries
 } PTDMEMVIRTENUM;
 
+// N.B.: Whenever changing the above enum (PTDMEMVIRTENUM), and you
+//   create an additional entry for a MFO with local SYMTAB & HSHTABs
+//   be sure to make a corresponding change to
+//   <numMFOsWithLocalSYMTAB> in <enums.h>.
+
+#define numEntriesWithLocalSYMorHSH     4
 
 enum tagMP_ENUM         // Multi-precision mpX_invalid arguments
 {

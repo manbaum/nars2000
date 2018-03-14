@@ -246,6 +246,13 @@ HGLOBAL Init1MagicFunction
         // If the HshTab has not been allocated as yet, ...
         if (lpInitMFO->lphtsMFO->lpHshTab EQ NULL)
         {
+            // Count in another entry
+            lpInitMFO->uCount++;
+
+            // Ensure we have room in PTDMEMVIRTENUM
+            if (lpInitMFO->uCount > numEntriesWithLocalSYMorHSH)
+                DbgStop ();     // You forgot to define an additional entry in PTDMEMVIRTENUM
+
             // Check on Start < End
             Assert (lpInitMFO->uPtdMemVirtStart < lpInitMFO->uPtdMemVirtEnd);
 
@@ -267,6 +274,13 @@ HGLOBAL Init1MagicFunction
         // If the SymTab has not been allocated as yet, ...
         if (lpInitMFO->lphtsMFO->lpSymTab EQ NULL)
         {
+            // Count in another entry
+            lpInitMFO->uCount++;
+
+            // Ensure we have room in PTDMEMVIRTENUM
+            if (lpInitMFO->uCount > numEntriesWithLocalSYMorHSH)
+                DbgStop ();     // You forgot to define an additional entry in PTDMEMVIRTENUM
+
             // Check on Start < End
             Assert (lpInitMFO->uPtdMemVirtStart < lpInitMFO->uPtdMemVirtEnd);
 
@@ -742,6 +756,7 @@ UBOOL InitMagicFunctions
     initMFO.lpLclMemVirtStr  = lpLclMemVirtStr;
     initMFO.uPtdMemVirtStart = uPtdMemVirtStart;
     initMFO.uPtdMemVirtEnd   = uPtdMemVirtEnd;
+    initMFO.uCount           = 0;
 
     // Define the magic functions/operators
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonIota          ]  = Init1MagicFunction (MFON_MonIota          , &MFO_MonIota          , lpMemPTD, hWndEC, NULL));
@@ -802,6 +817,12 @@ UBOOL InitMagicFunctions
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonShriek        ]  = Init1MagicFunction (MFON_MonShriek        , &MFO_MonShriek        , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MatOpr           ]  = Init1MagicFunction (MFON_MatOpr           , &MFO_MatOpr           , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DetPerm          ]  = Init1MagicFunction (MFON_DetPerm          , &MFO_DetPerm          , lpMemPTD, hWndEC, NULL));
+
+    //***************************************************************
+    //  N.B.:  If you define an additional MFO with a local
+    //    HSHTAB & SYMTAB, you *MUST* define a corresponding entry
+    //    in the enum <PTDMEMVIRTENUM>.
+    //***************************************************************
 
     return bRet;
 } // InitMagicFunctions

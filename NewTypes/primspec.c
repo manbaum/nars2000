@@ -5884,6 +5884,10 @@ UBOOL PrimFnDydSimpSimp_EM
         bHetLft = IsSimpleHet (aplTypeLft);
         bHetRht = IsSimpleHet (aplTypeRht);
 RESTART_EXCEPTION:
+        // If the axis is significant, ...
+        if (lpMemAxisHead NE NULL)
+            // Reset lpMemOdo to all zeros
+            ZeroMemory (lpMemOdo,  (APLU3264) (aplRankRes * sizeof (APLUINT)));
         __try
         {
             APLSTYPE aplTypeComLft,

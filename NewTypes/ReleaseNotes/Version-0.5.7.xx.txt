@@ -1,6 +1,17 @@
 Version 0.5.7.xx consists of the following Builds:
 
 
+Build #1859 -- Version 0.5.7.xx
+--------------------------------
+
+* Fix Bug In Scalar Functions With Axis On Non-nested Args Where The Result Datatype Changes Mid calculation
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC.C:
+  Fix bug in scalar functions with axis on non-nested args where the result datatype changes mid calculation.
+
+
 Build #1858 -- Version 0.5.7.xx
 --------------------------------
 

@@ -34,11 +34,6 @@
 //
 //***************************************************************************
 
-#ifdef DEBUG
-//#define DEBUG_TRACE
-//#define DEBUG_START
-#endif
-
 //***************************************************************************
 // Aliases
 //***************************************************************************
@@ -290,7 +285,10 @@
 #define RSTACKLEN2                  (lpplLocalVars->lpMemPTD->lpplRhtStk - lpplLocalVars->lpMemPTD->lpplOrgRhtStk)
 #define IsTknTypeNamedVar(a)        ((a) EQ TKT_VARNAMED)
 
-#ifdef DEBUG_TRACE
+#ifdef DEBUG
+UBOOL bDebugPLTrace = FALSE,
+      bDebugPLStart = FALSE;
+
   #define TRACE(a,EVENT,soType,rhtSynObj)                         \
               dprintfWL0 (L"%s %s %3d %-4s %3d %s %s (#%d)",      \
                           (a),                                    \
@@ -313,11 +311,6 @@
                           __LINE__);
   #define PushVarStrand_YY(a)               DbgPushVarStrand_YY    (a, FNLN)
   #define MakeVarStrand_EM_YY(a)            DbgMakeVarStrand_EM_YY (a, FNLN)
-#else
-  #define TRACE(a,EVENT,soType,rhtSynObj)
-  #define TRACE2(a,EVENT,soType,rhtSynObj)
-//#define PushVarStrand_YY(a)               PushVarStrand_YY    (a)
-//#define MakeVarStrand_EM_YY(a)            MakeVarStrand_EM_YY (a)
 #endif
 
 
@@ -3688,11 +3681,12 @@ LPPL_YYSTYPE plRedNAM_SPCom
     // Note that <AssignName_EM> sets the <NoDisplay> flag in the source token
     if (!AssignName_EM (&lpplYYCurObj->tkToken, &lpplYYLstRht->tkToken))
         goto ERROR_EXIT;
-#ifdef DEBUG_TRACE
-    dprintfWL0 (L"AssignName_EM %s = %p (#%d)",
-                lpplYYCurObj->tkToken.tkData.tkSym->stHshEntry->lpwCharName,
-                lpplYYCurObj->tkToken.tkData.tkSym->stData.stGlbData,
-                __LINE__);
+#ifdef DEBUG
+    if (bDebugPLTrace)
+        dprintfWL0 (L"AssignName_EM %s = %p (#%d)",
+                    lpplYYCurObj->tkToken.tkData.tkSym->stHshEntry->lpwCharName,
+                    lpplYYCurObj->tkToken.tkData.tkSym->stData.stGlbData,
+                    __LINE__);
 #endif
     // Change the tkSynObj
     lpplYYLstRht->tkToken.tkSynObj = soType;
@@ -4175,7 +4169,8 @@ EXIT_TYPES ParseLine
 PARSELINE_START:
             // Get the current object
             lpplYYCurObj = POPLEFT; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
-#ifdef DEBUG_START
+#ifdef DEBUG
+            if (bDebugPLStart)
             {
                 LPMEMTXT_UNION lpMemTxtLine;    // Ptr to header/line text global memory
 
@@ -4196,7 +4191,7 @@ PARSELINE_START:
                 {
                     MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
                 } // End IF
-            }
+            } // End IF
 #endif
             // If this is an EOS, ...
             if (CURSYNOBJ EQ soEOS)
@@ -4235,8 +4230,10 @@ PARSELINE_START:
 
 PARSELINE_SHIFT:
             PUSHRIGHT (lpplYYCurObj); lpplYYCurObj = POPLEFT; // curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
-
-            TRACE (L"Shifted: ", L"", CURSYNOBJ, RHTSYNOBJ);
+#ifdef DEBUG
+            if (bDebugPLTrace)
+                TRACE (L"Shifted: ", L"", CURSYNOBJ, RHTSYNOBJ);
+#endif
 PARSELINE_SCAN:
             // Get the left, current, and right SynObj values
             lftSynObj = LFTSYNOBJ; Assert (IsValidSO (lftSynObj));
@@ -4257,13 +4254,19 @@ PARSELINE_SCAN:
                 curSynObj = CURSYNOBJ;
             } // End IF
 
-            TRACE (L"Scanning:", L"", CURSYNOBJ, RHTSYNOBJ);
+#ifdef DEBUG
+            if (bDebugPLTrace)
+                TRACE (L"Scanning:", L"", CURSYNOBJ, RHTSYNOBJ);
+#endif
 PARSELINE_SCAN1:
             // Get the left & right binding strengths
             lftBndStr = LBIND (lftSynObj, curSynObj);   // Ensure that lftSynObj & curSynObj are set
             rhtBndStr = RBIND (curSynObj, rhtSynObj);   // ...         rhtSynObj & ...
 
-            TRACE (L"Binding: ", L"", CURSYNOBJ, RHTSYNOBJ);
+#ifdef DEBUG
+            if (bDebugPLTrace)
+                TRACE (L"Binding: ", L"", CURSYNOBJ, RHTSYNOBJ);
+#endif
 
             // If lftSynObj is soNAM and
             //    curSynObj is soIDX and
@@ -4346,7 +4349,10 @@ PARSELINE_MP_PAREN:
             // Remove the parens/brackets from the left & right stacks
             YYFree (POPRIGHT); YYFree (POPLEFT);
 
-            TRACE (L"MatchPair", L"", CURSYNOBJ, RHTSYNOBJ);
+#ifdef DEBUG
+            if (bDebugPLTrace)
+                TRACE (L"MatchPair", L"", CURSYNOBJ, RHTSYNOBJ);
+#endif
 
             // If the current object is a Niladic Function, ...
             if (curSynObj EQ soNF)
@@ -4440,7 +4446,10 @@ PARSELINE_MP_PAREN:
                     rhtSynObj = RHTSYNOBJ; Assert (IsValidSO (rhtSynObj));
                     rh2SynObj = RH2SYNOBJ;      // Assert (IsValidSO (rh2SynObj)); // This item might be invalid
 
-                    TRACE (L"MatchPair", L"- LftShift", CURSYNOBJ, rhtSynObj);
+#ifdef DEBUG
+                    if (bDebugPLTrace)
+                        TRACE (L"MatchPair", L"- LftShift", CURSYNOBJ, rhtSynObj);
+#endif
                 } else
                     break;
             } // End IF
@@ -4453,10 +4462,11 @@ PARSELINE_MP_PAREN:
             goto PARSELINE_SCAN1;
 
 PARSELINE_MP_DONE:
-#ifdef DEBUG_TRACE
-            dprintfWL0 (L"MatchPair Done:  curSynObj (%s) (#%d)",
-                         soNames[curSynObj],
-                         __LINE__);
+#ifdef DEBUG
+            if (bDebugPLTrace)
+                dprintfWL0 (L"MatchPair Done:  curSynObj (%s) (#%d)",
+                             soNames[curSynObj],
+                             __LINE__);
 #endif
             // If the current object is a Niladic Function, ...
             if (curSynObj EQ soNF
@@ -4581,7 +4591,10 @@ PARSELINE_REDUCE:
             {
                 PUSHRIGHT (lpplYYCurObj); lpplYYCurObj = POPLEFT; curSynObj = CURSYNOBJ; Assert (IsValidSO (curSynObj));
 
-                TRACE (L"Recursing", L"", CURSYNOBJ, RHTSYNOBJ);
+#ifdef DEBUG
+                if (bDebugPLTrace)
+                    TRACE (L"Recursing", L"", CURSYNOBJ, RHTSYNOBJ);
+#endif
             } else
             {
                 RESET_FLAGS  resetFlag;             // The current Reset Flag
@@ -4701,7 +4714,8 @@ PARSELINE_REDUCE:
                                 soNames[curSynObj],
                                 soNames[lstSynObj],
                                 soNames[lpplCurStr->soType]);
-                    TRACE2 (L"Reducing:", EVENT, lpplCurStr->soType, lstSynObj);
+                    if (bDebugPLTrace)
+                        TRACE2 (L"Reducing:", EVENT, lpplCurStr->soType, lstSynObj);
                 }
 
                 // I know about these cases, so don't bother me with them
@@ -4857,7 +4871,10 @@ LEFTSHIFT:
                         rhtSynObj = RHTSYNOBJ; Assert (IsValidSO (rhtSynObj));
                         rh2SynObj = RH2SYNOBJ;  // Assert (IsValidSO (rh2SynObj));  // This item might be invalid
 
-                        TRACE (L"PostRed: ", L"- LftShift", CURSYNOBJ, rhtSynObj);
+#ifdef DEBUG
+                        if (bDebugPLTrace)
+                            TRACE (L"PostRed: ", L"- LftShift", CURSYNOBJ, rhtSynObj);
+#endif
                     } else
                         break;
                 } // End IF
@@ -5040,11 +5057,12 @@ PARSELINE_DONE:
             Assert (lpplOrgRhtStk EQ &lpMemPTD->lpplRhtStk[-1]);
 
             // N.B.:  DO NOT RELOAD lstSynObj as we are relying on the old value
-#ifdef DEBUG_TRACE
-            dprintfWL0 (L"Stmt Done:  curSynObj (%s), oldLstSynObj (%s) (#%d)",
-                         soNames[curSynObj],
-                         soNames[oldLstSynObj],
-                         __LINE__);
+#ifdef DEBUG
+            if (bDebugPLTrace)
+                dprintfWL0 (L"Stmt Done:  curSynObj (%s), oldLstSynObj (%s) (#%d)",
+                             soNames[curSynObj],
+                             soNames[oldLstSynObj],
+                             __LINE__);
 #endif
             // If we're restarting, ...
             if (plLocalVars.bRestart)

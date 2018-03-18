@@ -100,28 +100,29 @@ typedef enum tagSYSCMDS_ENUM    // System Commands
     SYSCMD_CLOSE    ,           // 02:  )CLOSE
     SYSCMD_COPY     ,           // 03:  )COPY
     SYSCMD_DROP     ,           // 04:  )DROP
-    SYSCMD_EDIT     ,           // 05:  )EDIT
-    SYSCMD_ERASE    ,           // 06:  )ERASE
-    SYSCMD_EXIT     ,           // 07:  )EXIT
-    SYSCMD_FNS      ,           // 08:  )FNS
-    SYSCMD_FOPS     ,           // 09:  )FOPS
-    SYSCMD_IN       ,           // 0A:  )IN
-    SYSCMD_INASCII  ,           // 0B:  )INASCII
-    SYSCMD_LIB      ,           // 0C:  )LIB
-    SYSCMD_LOAD     ,           // 0D:  )LOAD
-    SYSCMD_NEWTAB   ,           // 0E:  )NEWTAB
-    SYSCMD_NMS      ,           // 0F:  )NMS
-    SYSCMD_OPS      ,           // 10:  )OPS
-    SYSCMD_OUT      ,           // 11:  )OUT
-    SYSCMD_RESET    ,           // 12:  )RESET
-    SYSCMD_SAVE     ,           // 13:  )SAVE
-    SYSCMD_SI       ,           // 14:  )SI
-    SYSCMD_SINL     ,           // 15:  )SINL
-    SYSCMD_ULIB     ,           // 16:  )ULIB
-    SYSCMD_SYMB     ,           // 17:  )SYMB
-    SYSCMD_VARS     ,           // 18:  )VARS
-    SYSCMD_XLOAD    ,           // 19:  )XLOAD
-    SYSCMD_WSID     ,           // 1A:  )WSID
+    SYSCMD_DEBUG    ,           // 05:  )DEBUG
+    SYSCMD_EDIT     ,           // 06:  )EDIT
+    SYSCMD_ERASE    ,           // 07:  )ERASE
+    SYSCMD_EXIT     ,           // 08:  )EXIT
+    SYSCMD_FNS      ,           // 09:  )FNS
+    SYSCMD_FOPS     ,           // 0A:  )FOPS
+    SYSCMD_IN       ,           // 0B:  )IN
+    SYSCMD_INASCII  ,           // 0C:  )INASCII
+    SYSCMD_LIB      ,           // 0D:  )LIB
+    SYSCMD_LOAD     ,           // 0E:  )LOAD
+    SYSCMD_NEWTAB   ,           // 0F:  )NEWTAB
+    SYSCMD_NMS      ,           // 10:  )NMS
+    SYSCMD_OPS      ,           // 11:  )OPS
+    SYSCMD_OUT      ,           // 12:  )OUT
+    SYSCMD_RESET    ,           // 13:  )RESET
+    SYSCMD_SAVE     ,           // 14:  )SAVE
+    SYSCMD_SI       ,           // 15:  )SI
+    SYSCMD_SINL     ,           // 16:  )SINL
+    SYSCMD_ULIB     ,           // 17:  )ULIB
+    SYSCMD_SYMB     ,           // 18:  )SYMB
+    SYSCMD_VARS     ,           // 19:  )VARS
+    SYSCMD_XLOAD    ,           // 1A:  )XLOAD
+    SYSCMD_WSID     ,           // 1B:  )WSID
 } SYSCMDS_ENUM, *LPSYSCMDS_ENUM;
 
 

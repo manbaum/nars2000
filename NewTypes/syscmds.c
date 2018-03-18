@@ -42,6 +42,9 @@ SYSCMDSTAB SysCmdsTab[]
     {L"clear"     ,     &CmdClear_EM    , SYSCMD_CLEAR   },
     {L"close"     ,     &CmdClose_EM    , SYSCMD_CLOSE   },
     {L"copy"      ,     &CmdCopy_EM     , SYSCMD_COPY    },
+#ifdef DEBUG
+    {L"debug"     ,     &CmdDebug_EM    , SYSCMD_DEBUG   },
+#endif
     {L"drop"      ,     &CmdDrop_EM     , SYSCMD_DROP    },
     {L"edit"      ,     &CmdEdit_EM     , SYSCMD_EDIT    },
     {L"erase"     ,     &CmdErase_EM    , SYSCMD_ERASE   },

@@ -1,6 +1,31 @@
 Version 0.5.7.xx consists of the following Builds:
 
-\
+
+Build #1861 -- Version 0.5.7.xx
+-------------------------------
+
+* Implement System Command )DEBUG
+
+Directory branches/bsmith/NewTypes:
+
+COMPRO.H:
+  Include prototype file in list of all such files.
+
+ENUMS.H:
+MAKEFILE.INC:
+MAKEFILE.SRC:
+NARS2000.VCXPROJ:
+NARS2000.FILTERS:
+SYSCMDS.C:
+  Include new file name in more lists.
+
+PARSELINE.C:
+  Replace compile options (DEBUG_TRACE and DEBUG_START) with )DEBUG options.
+
+SC_DEBUG.C:
+  Implement System Command )DEBUG.
+
+
 Build #1860 -- Version 0.5.7.xx
 --------------------------------
 

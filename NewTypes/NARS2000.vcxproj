@@ -559,6 +559,9 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     <ClCompile Include="savefcn.c" />
     <ClCompile Include="sc_common.c" />
     <ClCompile Include="sc_copy.c" />
+    <ClCompile Include="sc_debug.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release32|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="sc_drop.c" />
     <ClCompile Include="sc_erase.c" />
     <ClCompile Include="sc_fnov.c" />

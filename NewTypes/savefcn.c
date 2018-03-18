@@ -154,8 +154,8 @@ HGLOBAL CopyUDFO
     // Lock the memory to get a ptr to it
     lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
 
-    // Get the NoCopy flags
-    bNoCopy = lpMemDfnHdr->bAFO || lpMemDfnHdr->bCopyUDFO;
+    // Get the NoCopy flag(s)
+    bNoCopy = lpMemDfnHdr->bAFO;
 
     // We no longer need this ptr
     MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
@@ -2536,7 +2536,7 @@ UBOOL SaveFunctionCom
                 LPFCNARRAY_HEADER lpMemHdrFcn;  // Ptr to FCNARRAY header
 
                 // Lock the memory to get a ptr to it
-                lpMemHdrFcn = MyGlobalLockDfn (hGlbOldDfn);
+                lpMemHdrFcn = MyGlobalLockFcn (hGlbOldDfn);
 
                 // Get the creation time
                 ftCreation = lpMemHdrFcn->ftCreation;
@@ -3036,9 +3036,6 @@ UBOOL SaveFunctionCom
 
             // Tell the free-er to save the function name STE flags
             lpMemDfnHdr->SaveSTEFlags = TRUE;
-
-            // Mark as from CopyUDFO
-            lpMemDfnHdr->bCopyUDFO = TRUE;
 
             // We no longer need this ptr
             MyGlobalUnlock (((LPUDFO_PARAMS) lpSF_Fcns->LclParams)->hGlbDfnHdr); lpMemDfnHdr = NULL;

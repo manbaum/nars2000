@@ -178,12 +178,15 @@ void FreeResultSub
 
             // Check for internal functions,
             //   or no value
-            if (lptkRes->tkData.tkSym->stFlags.FcnDir
+            if ((lptkRes->tkData.tkSym->stFlags.FcnDir
+              && lptkRes->tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS)
              || !lptkRes->tkData.tkSym->stFlags.Value)
                 break;
 
-            // If the LPSYMENTRY is not immediate, it must be an HGLOBAL
-            if (!lptkRes->tkData.tkSym->stFlags.Imm)
+            // If it's not an an interal function, and
+            //   if the LPSYMENTRY is not immediate, it must be an HGLOBAL
+            if (!lptkRes->tkData.tkSym->stFlags.FcnDir
+             && !lptkRes->tkData.tkSym->stFlags.Imm)
             {
                 // Get the global memory handle
                 lphGlbData = &lptkRes->tkData.tkSym->stData.stGlbData;

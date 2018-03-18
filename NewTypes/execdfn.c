@@ -1730,10 +1730,13 @@ void UnlocalizeSTEs
                     case NAMETYPE_OP2:
                     case NAMETYPE_OP3:
                     case NAMETYPE_TRN:
+                        // If it's a UDFO, ...
                         if (lpSymEntryCur->stFlags.UsrDfn)
                             // Free the global user-defined function/operator
                             FreeResultGlobalDfn (hGlbData);
                         else
+                        // If it's not an internal direct function, ...
+                        if (!lpSymEntryCur->stFlags.FcnDir)
                             // Free the global function array
                             FreeResultGlobalFcn (hGlbData);
                         break;

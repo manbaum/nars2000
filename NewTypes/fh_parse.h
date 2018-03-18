@@ -110,8 +110,7 @@ typedef struct tagDFN_HEADER            // Function header structure
                      bStopHdr:1,        //      00040000:  TRUE iff we're stopping on exit
                      bTraceHdr:1,       //      00080000:  TRUE iff we're tracing on exit
                      bLclRL:1,          //      00100000:  TRUE iff []RL is localized in this function
-                     bCopyUDFO:1,       //      00200000:  TRUE iff this is a CopyUDFO function
-                     :10;               //      FFC00000:  Available bits
+                     :11;               //      FFE00000:  Available bits
     UINT             RefCnt,            // 0C:  Reference count
                      numResultSTE,      // 10:  # result STEs (may be zero if no result)
                      offResultSTE,      // 14:  Offset to result STEs (ignored if numResultSTE is zero)

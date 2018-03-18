@@ -88,7 +88,8 @@ UBOOL AssignName_EM
     // If the target is a user-defined function/operator label,
     //   or it's an internal function, ...
     if (lptkNam->tkData.tkSym->stFlags.DfnLabel
-     || lptkNam->tkData.tkSym->stFlags.FcnDir)
+     || (lptkNam->tkData.tkSym->stFlags.FcnDir
+      && lptkNam->tkData.tkSym->stFlags.ObjName EQ OBJNAME_SYS))
         // Signal a SYNTAX ERROR
         goto SYNTAX_EXIT;
 
@@ -237,7 +238,8 @@ UBOOL AssignName_EM
                 {
                     // Copy the source global memory handle
                     //   and save it as the new global memory ptr
-                    lptkNam->tkData.tkSym->stData.stGlbData = CopySymGlbDir_PTB (hGlbSrc);
+////////////////////lptkNam->tkData.tkSym->stData.stGlbData = CopySymGlbDir_PTB (hGlbSrc);
+                    lptkNam->tkData.tkSym->stData.stGlbData = CopyUDFO          (hGlbSrc, lptkNam->tkData.tkSym);
 
                     // Transfer user-defined function/operator flag
                     lptkNam->tkData.tkSym->stFlags.UsrDfn =

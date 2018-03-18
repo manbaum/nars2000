@@ -191,6 +191,11 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
                                     // [2] = Data only
             break;
 
+        case 10:                    // Function type
+            aplColsRes = 1;         // [1] = Function type
+
+            break;
+
         default:
             goto LEFT_DOMAIN_EXIT;
     } // End SWITCH
@@ -216,7 +221,7 @@ LPPL_YYSTYPE SysFnDydAT_EM_YY
 
     // Calculate the result NELM and rank
     aplNELMRes = aplRowsRes * aplColsRes;
-    aplRankRes = 1 + (aplRowsRes > 1);
+    aplRankRes = 1 + ((aplRowsRes > 1) && (aplColsRes > 1));
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, aplRankRes);
@@ -465,6 +470,11 @@ LPAPLUINT AttributeCommon
             // Save the object size
             return
               AttributeObjSize  (lpMemDataRes,      // Ptr to result global memory
+                                 lpSymEntry);       // Ptr to object SYMENTRY
+        case 10:
+            // Save the function type
+            return
+              AttributeObjType  (lpMemDataRes,      // Ptr to result global memory
                                  lpSymEntry);       // Ptr to object SYMENTRY
         defstop
             return NULL;
@@ -1288,6 +1298,92 @@ APLUINT CalcGlbFcnSize
 
     return aplSize;
 } // End CalcGlbFcnSize
+
+
+//***************************************************************************
+//  $AttributeObjType
+//
+//  Save the object's type
+//***************************************************************************
+
+LPAPLUINT AttributeObjType
+    (LPAPLUINT  lpMemDataRes,               // Ptr to result global memory
+     LPSYMENTRY lpSymEntry)                 // Ptr to object SYMENTRY
+
+{
+    // Split cases based upon the name type
+    switch (lpSymEntry->stFlags.stNameType)
+    {
+        case NAMETYPE_UNK:
+        case NAMETYPE_VAR:
+            *lpMemDataRes++ = FCNTYPE_UNK;  // [1] = Not a function/operator
+
+            break;
+
+        case NAMETYPE_FN0:
+        case NAMETYPE_FN12:
+        case NAMETYPE_OP1:
+        case NAMETYPE_OP2:
+        case NAMETYPE_OP3:
+            // If the object is immediate, ...
+            if (lpSymEntry->stFlags.Imm)
+            {
+                // Split cases based upon the name type
+                switch (lpSymEntry->stFlags.stNameType)
+                {
+                    case NAMETYPE_FN12:
+                    case NAMETYPE_OP1:
+                    case NAMETYPE_OP2:
+                    case NAMETYPE_OP3:
+                        *lpMemDataRes++ = FCNTYPE_PFO;  // [1] = Primitive function/operator
+
+                        break;
+
+                    case NAMETYPE_FN0:
+                    defstop
+                        break;
+                } // End SWITCH
+            } else
+            // If it's a user-defined function/operator
+            if (lpSymEntry->stFlags.UsrDfn)
+            {
+                LPDFN_HEADER lpMemDfnHdr;
+
+                // Lock the memory to get a ptr to it
+                lpMemDfnHdr = MyGlobalLockDfn (lpSymEntry->stData.stGlbData);
+
+                // If it's an AFO, ...
+                if (lpMemDfnHdr->bAFO)
+                    *lpMemDataRes++ = FCNTYPE_AFO;  // [1] = Anonymous function/operator
+                else
+                    *lpMemDataRes++ = FCNTYPE_UFO;  // [1] = User-defined function/operator
+
+                // We no longer need this ptr
+                MyGlobalUnlock (lpSymEntry->stData.stGlbData); lpMemDfnHdr = NULL;
+            } else
+            // If it's a direct function, ...
+            if (lpSymEntry->stFlags.FcnDir)
+                *lpMemDataRes++ = FCNTYPE_SYS;  // [1] = System function/operator
+            else
+                // It's a function array
+                *lpMemDataRes++ = FCNTYPE_DFO;  // [1] = Derived function/operator
+
+            break;
+
+        case NAMETYPE_TRN:
+            *lpMemDataRes++ = FCNTYPE_TRAIN;    // [1] = Train
+
+            break;
+
+        case NAMETYPE_LST:
+        case NAMETYPE_FILL1:
+        case NAMETYPE_FILL2:
+        defstop
+            break;
+    } // End SWITCH
+
+    return lpMemDataRes;
+} // End AttributeObjType
 
 
 //***************************************************************************

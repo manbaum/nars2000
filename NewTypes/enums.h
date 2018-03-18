@@ -292,6 +292,19 @@ typedef enum tagDFN_TYPES               // User-Defined Function/Operator Types
 #endif
 
 
+typedef enum tagFCN_TYPES
+{
+    FCNTYPE_UNK     = 0,                // 00 = Not a function/operator
+    FCNTYPE_PFO        ,                // 01 = Primtive function/operator
+    FCNTYPE_DFO        ,                // 02 = Derived function/operator
+    FCNTYPE_UFO        ,                // 03 = User-defined function/operator
+    FCNTYPE_SYS        ,                // 04 = System function/operator
+    FCNTYPE_AFO        ,                // 05 = Anonymous function/operator
+    FCNTYPE_TRAIN      ,                // 06 = Train
+
+} FCN_TYPES, *LPFCN_TYPES;
+
+
 typedef enum tagPTDMEMVIRTENUM
 {
     PTDMEMVIRT_QUADERROR = 0,           // 00:  lpszQuadErrorMsg

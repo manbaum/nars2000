@@ -20,7 +20,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
-
 #define STRICT
 #include <windows.h>
 #include "headers.h"
@@ -41,6 +40,7 @@ UBOOL CmdDebug_EM
 {
     LPWCHAR p = lpwszTail;
     WCHAR   wszTemp[1024];
+    int     i;
 
     // Skip over leading white space
     p = SkipWhiteW (p);
@@ -50,94 +50,104 @@ UBOOL CmdDebug_EM
     {
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
-                   L"Is PLTrace = %d  PLStart = %d",
+                   L"Is PLTrace = %d  PLStart = %d\r\n"
+                   L"   DbgLvl = %d  FcnLvl = %d  VfpLvl = %d",
                     bDebugPLTrace,
-                    bDebugPLStart);
+                    bDebugPLStart,
+                    gDbgLvl,
+                    gFcnLvl,
+                    gVfpLvl);
         // Tell the user about it
         AppendLine (wszTemp, FALSE, TRUE);
+
+        return TRUE;
     } // End IF
 
-    // Check for alloff
-#define OPT     L"alloff"
+    // Check for allPL=[0|1]
+#define OPT     L"allPL="
     if (strncmpiW (p, OPT, strcountof (OPT)) EQ 0)
     {
         // Skip over the prefix
         p += strcountof (OPT);
 
-        MySprintfW (wszTemp,
-                    sizeof (wszTemp),
-                   L"Was PLTrace = %d  PLStart = %d",
-                    bDebugPLTrace,
-                    bDebugPLStart);
-        // Tell the user about it
-        AppendLine (wszTemp, FALSE, TRUE);
+        // Get the value
+        i = _wtoi (p);
 
-        bDebugPLTrace =
-        bDebugPLStart = FALSE;
+        // Skip over the number
+        p = SkipBlackW (p);
+
+        // Validate it
+        if (IsBooleanValue (i))
+        {
+            // Format the "Was" message
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"Was PLTrace = %d  PLStart = %d",
+                        bDebugPLTrace,
+                        bDebugPLStart);
+            // Tell the user about it
+            AppendLine (wszTemp, FALSE, TRUE);
+
+            // Save the new value
+            bDebugPLTrace =
+            bDebugPLStart = i;
+        } else
+        {
+            // Tell the user about it
+            IncorrectCommand ();
+
+            return FALSE;
+        } // End IF/ELSE
     } // End IF
 #undef  OPT
 
-    // Check for allon
-#define OPT     L"allon"
-    if (strncmpiW (p, OPT, strcountof (OPT)) EQ 0)
-    {
-        // Skip over the prefix
-        p += strcountof (OPT);
+#define DEBUG_MAC(TXT1,TXT2,NAM,TEST)                   \
+    /* Skip over leading white space                  */\
+    p = SkipWhiteW (p);                                 \
+                                                        \
+    /* Check for next option                          */\
+    if (strncmpiW (p, TXT1, strcountof (TXT1)) EQ 0)    \
+    {                                                   \
+        /* Skip over the prefix                       */\
+        p += strcountof (TXT1);                         \
+                                                        \
+        /* Get the value                              */\
+        i = _wtoi (p);                                  \
+                                                        \
+        /* Skip over the number                       */\
+        p = SkipBlackW (p);                             \
+                                                        \
+        /* Validate it                                */\
+        if (TEST (i))                                   \
+        {                                               \
+            /* Format the "Was" message               */\
+            MySprintfW (wszTemp,                        \
+                        sizeof (wszTemp),               \
+                        TXT2,                           \
+                        NAM);                           \
+            /* Tell the user about it                 */\
+            AppendLine (wszTemp, FALSE, TRUE);          \
+                                                        \
+            /* Save the new value                     */\
+            NAM = i;                                    \
+        } else                                          \
+        {                                               \
+            /* Tell the user about it                 */\
+            IncorrectCommand ();                        \
+                                                        \
+            return FALSE;                               \
+        } /* End IF/ELSE                              */\
+    } /* End IF                                       */
 
-        MySprintfW (wszTemp,
-                    sizeof (wszTemp),
-                   L"Was PLTrace = %d  PLStart = %d",
-                    bDebugPLTrace,
-                    bDebugPLStart);
-        // Tell the user about it
-        AppendLine (wszTemp, FALSE, TRUE);
+#define IsUCHAR(a)      (0 <= (a) && (a) < 256)
 
-        bDebugPLTrace =
-        bDebugPLStart = TRUE;
-    } // End IF
-#undef  OPT
+    DEBUG_MAC (L"PLTrace=", L"Was PLTrace = %d", bDebugPLTrace, IsBooleanValue)
+    DEBUG_MAC (L"PLStart=", L"Was PLStart = %d", bDebugPLStart, IsBooleanValue)
+    DEBUG_MAC (L"DbgLvl=" , L"Was DbgLvl = %d" , gDbgLvl      , IsUCHAR  )
+    DEBUG_MAC (L"FcnLvl=" , L"Was FcnLvl = %d" , gFcnLvl      , IsUCHAR  )
+    DEBUG_MAC (L"VfpLvl=" , L"Was VfpLvl = %d" , gVfpLvl      , IsUCHAR  )
 
-    // Check for PLTrace=[0|1]
-#define OPT     L"PLTrace="
-    if (strncmpiW (p, OPT, strcountof (OPT)) EQ 0)
-    {
-        // Skip over the prefix
-        p += strcountof (OPT);
 
-        MySprintfW (wszTemp,
-                    sizeof (wszTemp),
-                   L"Was PLTrace = %d",
-                    bDebugPLTrace);
-        // Tell the user about it
-        AppendLine (wszTemp, FALSE, TRUE);
-
-        bDebugPLTrace = *p++ EQ L'1';
-    } // End IF
-#undef  OPT
-
-    // Skip over leading white space
-    p = SkipWhiteW (p);
-
-    // Check for PLStart=[0|1]
-#define OPT     L"PLStart="
-    if (strncmpiW (p, OPT, strcountof (OPT)) EQ 0)
-    {
-        // Skip over the prefix
-        p += strcountof (OPT);
-
-        MySprintfW (wszTemp,
-                    sizeof (wszTemp),
-                   L"Was PLStart = %d",
-                    bDebugPLStart);
-        // Tell the user about it
-        AppendLine (wszTemp, FALSE, TRUE);
-
-        bDebugPLStart = *p++ EQ L'1';
-    } // End IF
-#undef  OPT
-
-    // Skip over leading white space
-    p = SkipWhiteW (p);
 
 
 

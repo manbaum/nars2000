@@ -1,0 +1,13 @@
+Build #1864 -- Version 0.5.7.xx
+-------------------------------
+
+* Extend )DEBUG Command
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+  Include two other macros to be covered by )DEBUG
+
+SC_DEBUG.C:
+  Extend )DEBUG to more debug contexts.
+  Use a macro to extend control of this command to additional debug vars.

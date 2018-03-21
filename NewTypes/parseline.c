@@ -309,8 +309,8 @@ UBOOL bDebugPLTrace = FALSE,
                           RSTACK (&plLocalVars, lpplOrgRhtStk),   \
                           EVENT,                                  \
                           __LINE__);
-  #define PushVarStrand_YY(a)               DbgPushVarStrand_YY    (a, FNLN)
-  #define MakeVarStrand_EM_YY(a)            DbgMakeVarStrand_EM_YY (a, FNLN)
+  #define PushVarStrand_YY(a)               (bDebugPLTrace ? DbgPushVarStrand_YY   (a, FNLN) : PushVarStrand_YY    (a))
+  #define MakeVarStrand_EM_YY(a)            (bDebugPLTrace ? DbgMakeVarStrand_EM_YY(a, FNLN) : MakeVarStrand_EM_YY (a))
 #endif
 
 

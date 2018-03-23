@@ -317,15 +317,14 @@ RESET_VARS bResetVars
 //  Debug values
 //***************************************************************************
 
+#ifdef DEBUG
 EXTERN
-UCHAR gDbgLvl       // Debug level 0 = none
+UCHAR gDbgLvl       // Debug level 0 = none, >= gXXXLvl activates gXXXLvl
 #ifdef DEFINE_VALUES
  = 0
 #endif
-;
-
-#ifdef DEBUG
-UINT gVarLvl        // Debug level for display of variable-related info
+,
+      gVarLvl       // Debug level for display of variable-related info
 #ifdef DEFINE_VALUES
 = 3
 #endif
@@ -355,7 +354,7 @@ UINT gVarLvl        // Debug level for display of variable-related info
 = 3
 #endif
 ;
-#endif
+#endif  // #ifdef DEBUG
 
 
 //***************************************************************************

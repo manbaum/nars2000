@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,7 +37,8 @@ extern HICON hIconAbout;
 const char * ecm_version (void);
 extern WCHAR crsh_dll[];
 extern WCHAR crsh_version[];
-extern char *gsl_version;
+extern char gsl_version[],
+            flint_version[];
 
 
 //***************************************************************************

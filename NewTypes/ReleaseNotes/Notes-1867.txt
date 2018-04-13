@@ -1,0 +1,18 @@
+Build #1867 -- Version 0.5.7.xx
+-------------------------------
+
+* Implement Axis Operator For Condense and Dilate
+
+Directory branches/bsmith/NewTypes:
+
+PF_LCARET.C:
+PF_RCARET.C:
+  Pass the axis operator instead of the # cols to the corresponding function in []DC.
+
+QF_DC.C:
+  Allow monadic []DC to be sensitive to the axis operator.
+
+REBAR.C:
+  In the Language Bar, note that the dyadic Root function accepts the axis operator.
+  In the Language bar, reorder the comparison functions and note that the Condense and Dilate functions
+    accept the axis operator.

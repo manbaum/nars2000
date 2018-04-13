@@ -2521,7 +2521,7 @@ typedef struct tagLANGCHARS
                                            L"Unicode:  0x003F or 63"},
         {WS_UTF16_ROOT              , {0}, L"Root",
                                            L"Square Root:  " WS_UTF16_ROOT L"R\n"
-                                           L"Nth Root:    L" WS_UTF16_ROOT L"R\n\n"
+                                           L"Nth Root:    L" WS_UTF16_ROOT L"R  or  L" WS_UTF16_ROOT L"[X] R\n\n"
                                            L"Keyboard:  Alt-'R' or Alt-Shift-'r'\n\n"
                                            L"Unicode:  0x221A or 8730"},
         LANGCHARS_SEPARATOR
@@ -2560,34 +2560,6 @@ typedef struct tagLANGCHARS
                                            L"Keyboard:  Alt-'\\'\n\n"
                                            L"Unicode:  0x22A2 or 8866"},
         LANGCHARS_SEPARATOR
-        {WS_UTF16_EQUAL             , {0}, L"Equal",
-                                           L"Dimension:   =R " WS_UTF16_LEFTRIGHTARROWS L" Hypercomplex dimension (1, 2, 4, 8)\n\n"
-                                           L"Equal To:   L=R  or  L=[X] R\n\n"
-                                           L"Keyboard:  '='\n\n"
-                                           L"Unicode:  0x003D or 61"},
-        {WS_UTF16_NOTEQUAL          , {0}, L"NotEqual",
-                                           L"Norm:   " WS_UTF16_NOTEQUAL L"R " WS_UTF16_LEFTRIGHTARROWS L" Hypercomplex Norm (R" WS_UTF16_TIMES L"+R)\n\n"
-                                           L"Not Equal To:  L" WS_UTF16_NOTEQUAL L"R  or  L" WS_UTF16_NOTEQUAL L"[X] R\n\n"
-                                           L"Keyboard:  Alt-'8'\n\n"
-                                           L"Unicode:  0x2260 or 8800"},
-        {WS_UTF16_LEFTCARETUNDERBAR , {0}, L"LeftCaretUnderbar",
-                                           L"Less Than or Equal To:  L" WS_UTF16_LEFTCARETUNDERBAR L"R  or  L" WS_UTF16_LEFTCARETUNDERBAR L"[X] R\n\n"
-                                           L"Keyboard:  Alt-'4'\n\n"
-                                           L"Unicode:  0x2264 or 8804"},
-        {WS_UTF16_LEFTCARET         , {0}, L"LeftCaret",
-                                           L"Condense:  <R\n\n"
-                                           L"Less Than:  L" WS_UTF16_LEFTCARET L"R  or  L" WS_UTF16_LEFTCARET L"[X] R\n\n"
-                                           L"Keyboard:  '<' or Shift-',' or Alt-'6'\n\n"
-                                           L"Unicode:  0x003C or 60"},
-        {WS_UTF16_RIGHTCARET        , {0}, L"RightCaret",
-                                           L"Dilate:  >R\n\n"
-                                           L"Greater Than:  L" WS_UTF16_RIGHTCARET L"R  or  L" WS_UTF16_RIGHTCARET L"[X] R\n\n"
-                                           L"Keyboard:  '>' or Shift-'.' or Alt-'7'\n\n"
-                                           L"Unicode:  0x003E or 62"},
-        {WS_UTF16_RIGHTCARETUNDERBAR, {0}, L"RightCaretUnderbar",
-                                           L"Greater Than or Equal To:  L" WS_UTF16_RIGHTCARETUNDERBAR L"R  or  L" WS_UTF16_RIGHTCARETUNDERBAR L"[X] R\n\n"
-                                           L"Keyboard:  Alt-'6'\n\n"
-                                           L"Unicode:  0x2265 or 8805"},
         {WS_UTF16_EQUALUNDERBAR     , {0}, L"EqualUnderbar",
                                            L"Depth:                   " WS_UTF16_EQUALUNDERBAR L"R\n"
                                            L"Match:                  L" WS_UTF16_EQUALUNDERBAR L"R\n"
@@ -2600,6 +2572,34 @@ typedef struct tagLANGCHARS
                                            L"Multiset (Not Identical):   L" WS_UTF16_NOTEQUALUNDERBAR WS_UTF16_DOWNSHOESTILE L"R\n\n"
                                            L"Keyboard:  Alt-'@'  or  Alt-Shift-'2'\n\n"
                                            L"Unicode:  0x2262 or 8802"},
+        {WS_UTF16_LEFTCARET         , {0}, L"LeftCaret",
+                                           L"Condense:    <R  or   <[X] R\n\n"
+                                           L"Less Than:  L<R  or  L<[X] R\n\n"
+                                           L"Keyboard:  '<' or Shift-','\n\n"
+                                           L"Unicode:  0x003C or 60"},
+        {WS_UTF16_LEFTCARETUNDERBAR , {0}, L"LeftCaretUnderbar",
+                                           L"Less Than or Equal To:  L" WS_UTF16_LEFTCARETUNDERBAR L"R  or  L" WS_UTF16_LEFTCARETUNDERBAR L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'4'\n\n"
+                                           L"Unicode:  0x2264 or 8804"},
+        {WS_UTF16_EQUAL             , {0}, L"Equal",
+                                           L"Dimension:   =R " WS_UTF16_LEFTRIGHTARROWS L" Hypercomplex dimension (1, 2, 4, 8)\n\n"
+                                           L"Equal To:   L=R  or  L=[X] R\n\n"
+                                           L"Keyboard:  '='\n\n"
+                                           L"Unicode:  0x003D or 61"},
+        {WS_UTF16_RIGHTCARETUNDERBAR, {0}, L"RightCaretUnderbar",
+                                           L"Greater Than or Equal To:  L" WS_UTF16_RIGHTCARETUNDERBAR L"R  or  L" WS_UTF16_RIGHTCARETUNDERBAR L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'6'\n\n"
+                                           L"Unicode:  0x2265 or 8805"},
+        {WS_UTF16_RIGHTCARET        , {0}, L"RightCaret",
+                                           L"Dilate:         >R  or   >[X] R\n\n"
+                                           L"Greater Than:  L>R  or  L>[X] R\n\n"
+                                           L"Keyboard:  '>' or Shift-'.'\n\n"
+                                           L"Unicode:  0x003E or 62"},
+        {WS_UTF16_NOTEQUAL          , {0}, L"NotEqual",
+                                           L"Norm:   " WS_UTF16_NOTEQUAL L"R " WS_UTF16_LEFTRIGHTARROWS L" Hypercomplex Norm (R" WS_UTF16_TIMES L"+R)\n\n"
+                                           L"Not Equal To:  L" WS_UTF16_NOTEQUAL L"R  or  L" WS_UTF16_NOTEQUAL L"[X] R\n\n"
+                                           L"Keyboard:  Alt-'8'\n\n"
+                                           L"Unicode:  0x2260 or 8800"},
         LANGCHARS_SEPARATOR
         {WS_UTF16_DOWNCARET         , {0}, L"DownCaret",
                                            L"Or (Booleans):  L" WS_UTF16_DOWNCARET L"R  or  L" WS_UTF16_DOWNCARET L"[X] R\n"

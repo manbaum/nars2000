@@ -214,11 +214,10 @@ LPPL_YYSTYPE PrimFnMonLeftCaret_EM_YY
     APLSTYPE aplTypeRht;            // Right arg storage type
     APLNELM  aplNELMRht;            // ...       NELM
     APLRANK  aplRankRht;            // ...       rank
-    APLDIM   aplColsRht;            // ...       # cols
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, &aplColsRht);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -234,8 +233,8 @@ LPPL_YYSTYPE PrimFnMonLeftCaret_EM_YY
                                           aplTypeRht,       // Right arg storage type
                                           aplNELMRht,       // ...       NELM
                                           aplRankRht,       // ...       rank
-                                          aplColsRht,       //           # cols
-                                          lptkFunc);        // Ptr to function token
+                                          lptkFunc,         // Ptr to function token
+                                          lptkAxis);        // Ptr to axis token (may be NULL)
 ////////case ARRAY_HC2I:
 ////////case ARRAY_HC2F:
 ////////case ARRAY_HC2R:

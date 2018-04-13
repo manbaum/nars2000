@@ -39,26 +39,11 @@ LPPL_YYSTYPE SysFnDC_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
-
-    //***************************************************************
-    // This function is not sensitive to the axis operator,
-    //   so signal a syntax error if present
-    //***************************************************************
-    if (lptkAxis NE NULL)
-        goto AXIS_SYNTAX_EXIT;
-
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
-        return SysFnMonDC_EM_YY (            lptkFunc, lptkRhtArg);
+        return SysFnMonDC_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
     else
-        return SysFnDydDC_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg);
-AXIS_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                               lptkAxis);
-    return NULL;
+        return SysFnDydDC_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
 } // End SysFnDC_EM_YY
 
 
@@ -77,17 +62,16 @@ AXIS_SYNTAX_EXIT:
 
 LPPL_YYSTYPE SysFnMonDC_EM_YY
     (LPTOKEN lptkFunc,                  // Ptr to function token
-     LPTOKEN lptkRhtArg)                // Ptr to right arg token
-
+     LPTOKEN lptkRhtArg,                // Ptr to right arg token
+     LPTOKEN lptkAxis)                  // Ptr to axis token (may be NULL)
 {
     APLSTYPE aplTypeRht;                // Right arg storage type
     APLNELM  aplNELMRht;                // ...       NELM
     APLRANK  aplRankRht;                // ...       rank
-    APLDIM   aplColsRht;                // ...       # cols
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
-    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, &aplColsRht);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -102,8 +86,8 @@ LPPL_YYSTYPE SysFnMonDC_EM_YY
                                           aplTypeRht,       // Right arg storage type
                                           aplNELMRht,       // ...       NELM
                                           aplRankRht,       // ...       rank
-                                          aplColsRht,       //           # cols
-                                          lptkFunc);        // Ptr to function token
+                                          lptkFunc,         // Ptr to function token
+                                          lptkAxis);        // Ptr to axis token (may be NULL)
         case ARRAY_HC2I:
         case ARRAY_HC2F:
         case ARRAY_HC2R:
@@ -120,8 +104,8 @@ LPPL_YYSTYPE SysFnMonDC_EM_YY
                                             aplTypeRht,     // Right arg storage type
                                             aplNELMRht,     // ...       NELM
                                             aplRankRht,     // ...       rank
-                                            aplColsRht,     //           # cols
-                                            lptkFunc);      // Ptr to function token
+                                            lptkFunc,       // Ptr to function token
+                                            lptkAxis);      // Ptr to axis token (may be NULL)
         case ARRAY_CHAR  :
         case ARRAY_HETERO:
         case ARRAY_NESTED:
@@ -153,17 +137,29 @@ LPPL_YYSTYPE SysFnMonDC_ToHC_EM_YY
      APLSTYPE aplTypeRht,           // Right arg storage type
      APLNELM  aplNELMRht,           // ...       NELM
      APLRANK  aplRankRht,           // ...       rank
-     APLDIM   aplColsRht,           //           # cols
-     LPTOKEN  lptkFunc)             // Ptr to function token
+     LPTOKEN  lptkFunc,             // Ptr to function token
+     LPTOKEN  lptkAxis)             // Ptr to axis token (may be NULL)
 
 {
     APLSTYPE          aplTypeRes;           // Result storage type
     APLNELM           aplNELMRes;           // Result NELM
     APLRANK           aplRankRes;           // Result rank.
-    APLUINT           ByteRes;              // # bytes in the result
-    UINT              uRht,                 // Loop counter
-                      uHCDimIndex,          // HC Dimension index (0, 1, 2, 3) for (1, 2, 4, 8)
-                      uBitIndex;            // Bit index when marching through Booleans
+    APLUINT           ByteRes,              // # bytes in the result
+                      aplAxis,              // The (one and only) axis value
+                      uDim,                 // Loop counter
+                      uLo,                  // ...
+                      uDimLo,               // ...
+                      uAx,                  // ...
+                      uDimAx,               // ...
+                      uHi,                  // ...
+                      uDimHi,               // ...
+                      uRes,                 // ...
+                      uRht;                 // ...
+    UINT              uHCDimIndex,          // HC Dimension index (0, 1, 2, 3) for (1, 2, 4, 8)
+                      uBitMask;             // Bit mask when looping through Booleans
+    LPAPLDIM          lpMemDimRes,          // Ptr to result    dimensions
+                      lpMemDimRht;          // ...    right arg ...
+    APLLONGEST        aplLongestRht;        // Ptr to right arg immediate data
     LPVARARRAY_HEADER lpMemHdrRes = NULL,   // Ptr to result header
                       lpMemHdrRht = NULL;   // ...    right arg ...
     HGLOBAL           hGlbRht,              // Right arg global memory handle
@@ -171,20 +167,84 @@ LPPL_YYSTYPE SysFnMonDC_ToHC_EM_YY
     LPVOID            lpMemRht,             // Ptr to left arg global memory
                       lpMemRes;             // Ptr to result    ...
     LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
-    APLINT            apaOffRht,            // Right arg APA offset
-                      apaMulRht;            // ...           multiplier
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
 
-    // If <aplColsRht> is out of range, ...
-    if (aplColsRht >= countof (iHCDimLog2))
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
+
+    // Check for axis present
+    if (lptkAxis NE NULL)
+    {
+        // Rotate allows a single integer axis value only
+        if (!CheckAxis_EM (lptkAxis,        // The axis token
+                           aplRankRht,      // All values less than this
+                           TRUE,            // TRUE iff scalar or one-element vector only
+                           FALSE,           // TRUE iff want sorted axes
+                           FALSE,           // TRUE iff axes must be contiguous
+                           FALSE,           // TRUE iff duplicate axes are allowed
+                           NULL,            // Return TRUE iff fractional values present
+                          &aplAxis,         // Return last axis value
+                           NULL,            // Return # elements in axis vector
+                           NULL))           // Return HGLOBAL with APLINT axis values
+            goto ERROR_EXIT;
+    } else
+    {
+        // No axis specified:  use last dimension
+        aplAxis = aplRankRht - 1;
+    } // End IF/ELSE
+
+    // Get right arg's global ptrs
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
+
+    // Skip over the header to the dimensions
+    lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
+
+    // If the right arg is a scalar, ...
+    if (IsScalar (aplRankRht))
+    {
+        // Calculate the product of the axes below and above the axis dimension
+        uDimLo = uDimAx = uDimHi = 1;
+
+        // Point to the data
+        lpMemRht = &aplLongestRht;
+    } else
+    {
+        // Loop through the axes below the axis dimension
+        for (uDim = 0, uDimLo = 1; uDim < aplAxis; uDim++)
+            // Calculate the product of the dimensions below the axis dimension
+            uDimLo *= lpMemDimRht[uDim];
+
+        // Get the length of the axis dimension
+        uDimAx = lpMemDimRht[uDim++];
+
+        // Loop through the axes above the axis dimension
+        for (uDimHi = 1; uDim < aplRankRht; uDim++)
+            // Calculate the product of the dimensions above the axis dimension
+            uDimHi *= lpMemDimRht[uDim];
+
+        // Skip over the header and dimensions to the data
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+    } // End IF/ELSE
+
+    // If <uDimAx> is out of range, ...
+    if (uDimAx >= countof (iHCDimLog2))
         goto RIGHT_LENGTH_EXIT;
 
     // Get the HC Dimension index of the result (0, 1, 2, 3) for (1, 2, 4, 8)
-    //   where 0 is not used as the result is always HC
-    uHCDimIndex = iHCDimLog2[aplColsRht];
+    uHCDimIndex = iHCDimLog2[uDimAx];
 
     // Check for error
     if (uHCDimIndex EQ -1)
         goto RIGHT_LENGTH_EXIT;
+
+    Assert (uDimAx EQ 1
+         || uDimAx EQ 2
+         || uDimAx EQ 4
+         || uDimAx EQ 8);
 
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
@@ -220,7 +280,7 @@ LPPL_YYSTYPE SysFnMonDC_ToHC_EM_YY
     } // End SWITCH
 
     // Calculate the result NELM
-    aplNELMRes = aplNELMRht / aplColsRht;
+    aplNELMRes = aplNELMRht / uDimAx;
 
     // Calculate the result rank
     if (IsScalar (aplRankRht))
@@ -252,25 +312,16 @@ LPPL_YYSTYPE SysFnMonDC_ToHC_EM_YY
     lpMemHdrRes->NELM       = aplNELMRes;
     lpMemHdrRes->Rank       = aplRankRes;
 
-    // Get the right arg global memory handle
-    hGlbRht = GetGlbHandle (lptkRhtArg);
+    // Skip over the header to the dimensions
+    lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
 
-    // If the arg is not immediate, ...
-    if (hGlbRht NE NULL)
+    // If the result is not a scalar, ...
+    if (!IsScalar (aplRankRes))
     {
-        // Lock the memory to get a ptr to it
-        lpMemHdrRht = MyGlobalLockVar (hGlbRht);
-
-        // Fill in the dimensions
-        if (aplRankRes)
-            CopyMemory (VarArrayBaseToDim (lpMemHdrRes),
-                        VarArrayBaseToDim (lpMemHdrRht),
-                        (APLU3264) (aplRankRes * sizeof (APLDIM)));
-        // Skip over the header and dimensions to the data
-        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
-    } else
-        // Point to the data
-        lpMemRht = GetPtrTknLongest (lptkRhtArg);
+        // Copy the dimension to the result
+        CopyMemory ( lpMemDimRes         ,  lpMemDimRht             , (APLU3264) (              aplAxis      * sizeof (lpMemDimRht[0])));
+        CopyMemory (&lpMemDimRes[aplAxis], &lpMemDimRht[aplAxis + 1], (APLU3264) ((aplRankRht - aplAxis - 1) * sizeof (lpMemDimRht[0])));
+    } // End IF
 
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
@@ -279,58 +330,121 @@ LPPL_YYSTYPE SysFnMonDC_ToHC_EM_YY
     switch (aplTypeRht)
     {
         case ARRAY_BOOL:
-            // Initialize the bit index
-            uBitIndex = 0;
-
-            // Loop through the right arg NELM
-            for (uRht = 0; uRht < aplNELMRht; uRht++)
+            // Loop through the right arg copying the data to the result
+            for (uRes = uLo = 0; uLo < uDimLo; uLo++)
+            for (       uHi = 0; uHi < uDimHi; uHi++)
             {
-                // Save the INT
-                *((LPAPLINT) lpMemRes)++ = (APLBOOL) (BIT0 & ((*(LPAPLBOOL) lpMemRht) >> uBitIndex));
-
-                // Check for end-of-byte
-                if (++uBitIndex EQ NBIB)
+                uDim = uLo * uDimHi * uDimAx + uHi;
+                for (uAx = 0; uAx < uDimAx; uAx++)
                 {
-                    uBitIndex = 0;              // Start over
-                    ((LPAPLBOOL) lpMemRht)++;   // Skip to next byte
-                } // End IF
-            } // End IF
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (lpbCtrlBreak))
+                        goto ERROR_EXIT;
 
-            break;
+                    // Calculate the indices into the right arg
+                    uRht = uDim + uAx * uDimHi;
+                    uBitMask  = BIT0 << (UINT) (uRht % NBIB);
 
-        case ARRAY_APA:
-            // Get the APA offset & multiplier
-            apaOffRht = ((LPAPLAPA) lpMemRht)->Off;
-            apaMulRht = ((LPAPLAPA) lpMemRht)->Mul;
+                    // Save the INT in the result
+                    ((LPAPLINT) lpMemRes)[uRes++] =
+                      ((uBitMask & ((LPAPLBOOL) lpMemRht)[uRht >> LOG2NBIB]) ? TRUE : FALSE);
+                } // End FOR
+            } // End FOR/FOR
 
-            // Loop through the result NELM
-            for (uRht = 0; uRht < aplNELMRht; uRht++)
-                // Save the INT
-                *((LPAPLINT) lpMemRes)++ = apaOffRht + apaMulRht * uRht;
             break;
 
         case ARRAY_INT:
+        case ARRAY_APA:
+            // Loop through the right arg copying the data to the result
+            for (uRes = uLo = 0; uLo < uDimLo; uLo++)
+            for (       uHi = 0; uHi < uDimHi; uHi++)
+            {
+                uDim = uLo * uDimHi * uDimAx + uHi;
+                for (uAx = 0; uAx < uDimAx; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    // Calculate the indices into the right arg
+                    uRht = uDim + uAx * uDimHi;
+
+                    // Save the INT in the result
+                    ((LPAPLINT  ) lpMemRes)[uRes++] =
+                      GetNextInteger (lpMemRht, aplTypeRht, uRht);
+                } // End FOR
+            } // End FOR/FOR
+
+            break;
+
         case ARRAY_FLOAT:
-            // Copy the data to the result
-            CopyMemory (lpMemRes, lpMemRht, (APLU3264) (aplNELMRes * TranslateArrayTypeToSizeof (aplTypeRes)));
+            // Loop through the right arg copying the data to the result
+            for (uRes = uLo = 0; uLo < uDimLo; uLo++)
+            for (       uHi = 0; uHi < uDimHi; uHi++)
+            {
+                uDim = uLo * uDimHi * uDimAx + uHi;
+                for (uAx = 0; uAx < uDimAx; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    // Calculate the indices into the right arg
+                    uRht = uDim + uAx * uDimHi;
+
+                    // Save the FLT in the result
+                    ((LPAPLFLOAT) lpMemRes)[uRes++] =
+                    ((LPAPLFLOAT) lpMemRht)[uRht];
+                } // End FOR
+            } // End FOR/FOR
 
             break;
 
         case ARRAY_RAT:
-            // Loop through the right arg NELM
-            for (uRht = 0; uRht < aplNELMRht; uRht++)
-                // Save the RAT
-                mpq_init_set (((LPAPLRAT) lpMemRes)++,
-                              ((LPAPLRAT) lpMemRht)++);
+            // Loop through the right arg copying the data to the result
+            for (uRes = uLo = 0; uLo < uDimLo; uLo++)
+            for (       uHi = 0; uHi < uDimHi; uHi++)
+            {
+                uDim = uLo * uDimHi * uDimAx + uHi;
+                for (uAx = 0; uAx < uDimAx; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    // Calculate the indices into the right arg
+                    uRht = uDim + uAx * uDimHi;
+
+                    // Save the RAT in the result
+                    mpq_init_set (&((LPAPLRAT  ) lpMemRes)[uRes++],
+                                  &((LPAPLRAT  ) lpMemRht)[uRht]);
+                } // End FOR
+            } // End FOR/FOR
+
             break;
 
         case ARRAY_VFP:
-            // Loop through the right arg NELM
-            for (uRht = 0; uRht < aplNELMRht; uRht++)
-                // Save the VFP
-                mpfr_init_set (((LPAPLVFP) lpMemRes)++,
-                               ((LPAPLVFP) lpMemRht)++,
-                               MPFR_RNDN);
+            // Loop through the right arg copying the data to the result
+            for (uRes = uLo = 0; uLo < uDimLo; uLo++)
+            for (       uHi = 0; uHi < uDimHi; uHi++)
+            {
+                uDim = uLo * uDimHi * uDimAx + uHi;
+                for (uAx = 0; uAx < uDimAx; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    // Calculate the indices into the right arg
+                    uRht = uDim + uAx * uDimHi;
+
+                    // Save the VFP in the result
+                    mpfr_init_set (&((LPAPLVFP  ) lpMemRes)[uRes++],
+                                   &((LPAPLVFP  ) lpMemRht)[uRht],
+                                    MPFR_RNDN);
+                } // End FOR
+            } // End FOR/FOR
+
             break;
 
         defstop
@@ -406,30 +520,53 @@ LPPL_YYSTYPE SysFnMonDC_ToSimp_EM_YY
      APLSTYPE aplTypeRht,           // Right arg storage type
      APLNELM  aplNELMRht,           // ...       NELM
      APLRANK  aplRankRht,           // ...       rank
-     APLDIM   aplColsRht,           //           # cols
-     LPTOKEN  lptkFunc)             // Ptr to function token
+     LPTOKEN  lptkFunc,             // Ptr to function token
+     LPTOKEN  lptkAxis)             // Ptr to axis token (may be NULL)
 
 {
     APLSTYPE          aplTypeRes;           // Result storage type
-    APLNELM           aplNELMRes,           // Result NELM
-                      aplColsRes;           // Result ...
+    APLNELM           aplNELMRes;           // Result NELM
     APLRANK           aplRankRes;           // Result rank.
-    APLUINT           ByteRes;              // # bytes in the result
-    UINT              uRht;                 // Loop counter
+    APLUINT           ByteRes,              // # bytes in the result
+                      aplAxis,              // The (one and only) axis value
+                      uDim,                 // Loop counter
+                      uLo,                  // ...
+                      uDimLo,               // ...
+                      uAx,                  // ...
+                      uDimAx,               // ...
+                      uHi,                  // ...
+                      uDimHi,               // ...
+                      uRes,                 // ...
+                      uRht;                 // ...
     LPVARARRAY_HEADER lpMemHdrRes = NULL,   // Ptr to result header
                       lpMemHdrRht = NULL;   // ...    right arg ...
     HGLOBAL           hGlbRht,              // Right arg global memory handle
                       hGlbRes = NULL;       // Result    ...
     LPVOID            lpMemRht,             // Ptr to left arg global memory
                       lpMemRes;             // Ptr to result    ...
+    LPAPLDIM          lpMemDimRes,          // Ptr to result    dimensions
+                      lpMemDimRht;          // ...    right arg ...
     APLLONGEST        aplLongestRht;        // Data if right arg is immediate
     LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+
+    // Get the thread's ptr to local vars
+    lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
+
+    // Get the ptr to the Ctrl-Break flag
+    lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Get the right arg global memory handle
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
-    // Calculate the result # cols (= right arg HC Dimension)
-    aplColsRes = TranslateArrayTypeToHCDim (aplTypeRht);
+    // Calculate the result axis length (= right arg HC Dimension)
+    uDimAx = TranslateArrayTypeToHCDim (aplTypeRht);
+
+    Assert (uDimAx EQ 1
+         || uDimAx EQ 2
+         || uDimAx EQ 4
+         || uDimAx EQ 8);
 
     // Calculate the result storage type
     if (IsSimpleAPA (aplTypeRht))
@@ -438,7 +575,7 @@ LPPL_YYSTYPE SysFnMonDC_ToSimp_EM_YY
         aplTypeRes = aToSimple[aplTypeRht];
 
     // Calculate the result NELM
-    aplNELMRes = aplNELMRht * aplColsRes;
+    aplNELMRes = aplNELMRht * uDimAx;
 
     // Calculate the result rank
     aplRankRes = aplRankRht + 1;
@@ -467,13 +604,43 @@ LPPL_YYSTYPE SysFnMonDC_ToSimp_EM_YY
     lpMemHdrRes->NELM       = aplNELMRes;
     lpMemHdrRes->Rank       = aplRankRes;
 
-    // Fill in the dimensions
+    // Skip over the header to the dimensions
+    lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
+
+    // Check for axis present
+    if (lptkAxis NE NULL)
+    {
+        // Check the axis values, fill in # elements in axis
+        if (!CheckAxis_EM (lptkAxis,        // The axis token
+                           aplRankRes,      // All values less than this
+                           TRUE,            // TRUE iff scalar or one-element vector only
+                           FALSE,           // TRUE iff want sorted axes
+                           FALSE,           // TRUE iff axes must be contiguous
+                           FALSE,           // TRUE iff duplicate axes are allowed
+                           NULL,            // TRUE iff fractional values allowed
+                          &aplAxis,         // Return last axis value
+                           NULL,            // Return # elements in axis vector
+                           NULL))           // Return HGLOBAL with APLINT axis values
+            goto ERROR_EXIT;
+    } else
+    {
+        // No axis specified:  use last dimension
+        aplAxis = aplRankRes - 1;
+    } // End IF/ELSE
+
+    // If the result is not a scalar, ...
     if (!IsScalar (aplRankRht))
-        CopyMemory (VarArrayBaseToDim (lpMemHdrRes),
-                    VarArrayBaseToDim (lpMemHdrRht),
-                    (APLU3264) (aplRankRht * sizeof (APLDIM)));
-    // Fill in the last dimension
-    (VarArrayBaseToDim (lpMemHdrRes))[aplRankRht] = aplColsRes;
+    {
+        // Skip over the header to the dimensions
+        lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
+
+        // Copy the dimension to the result
+        CopyMemory ( lpMemDimRes             ,  lpMemDimRht         , (APLU3264) ((             aplAxis)    * sizeof (lpMemDimRht[0])));
+        CopyMemory (&lpMemDimRes[aplAxis + 1], &lpMemDimRht[aplAxis], (APLU3264) ((aplRankRht - aplAxis)   * sizeof (lpMemDimRht[0])));
+    } // End IF
+
+    // Fill in the axis dimension
+    lpMemDimRes[aplAxis] = uDimAx;
 
     // If the right arg is not an immediate, ...
     if (hGlbRht NE NULL)
@@ -486,38 +653,117 @@ LPPL_YYSTYPE SysFnMonDC_ToSimp_EM_YY
     // Skip over the header and dimensions to the data
     lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
+    // If the right arg is a scalar, ...
+    if (IsScalar (aplRankRht))
+        // Calculate the product of the axes below and above the axis dimension
+        uDimLo = uDimHi = 1;
+    else
+    {
+        // Loop through the axes below the axis dimension
+        for (uDim = 0, uDimLo = 1; uDim < aplAxis; uDim++)
+            // Calculate the product of the dimensions below the axis dimension
+            uDimLo *= lpMemDimRht[uDim];
+
+        // Loop through the axes above the axis dimension
+        for (uDimHi = 1; uDim < aplRankRht; uDim++)
+            // Calculate the product of the dimensions above the axis dimension
+            uDimHi *= lpMemDimRht[uDim];
+    } // End IF/ELSE
+
     // Split cases based upon the result storage type
     switch (aplTypeRes)
     {
         case ARRAY_INT:
-        case ARRAY_FLOAT:
-            // Copy the data to the result
-            CopyMemory (lpMemRes, lpMemRht, (APLU3264) (aplNELMRht * TranslateArrayTypeToSizeof (aplTypeRht)));
+            // Loop through the right arg copying the data to the result
+            for (uRht = uLo = 0; uLo < uDimLo; uLo++)
+            for (       uHi = 0; uHi < uDimHi; uHi++)
+            {
+                uDim = uLo * uDimHi * uDimAx + uHi;
+                for (uAx = 0; uAx < uDimAx; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    // Calculate the indices into the result
+                    uRes = uDim + uAx * uDimHi;
+
+                    // Save the INT in the result
+                    ((LPAPLINT  ) lpMemRes)[uRes] =
+                    ((LPAPLINT  ) lpMemRht)[uRht++];
+                } // End FOR
+            } // End FOR/FOR
 
             break;
 
-        case ARRAY_APA:
-            // Copy the data to the result
-            ((LPAPLAPA) lpMemRes)->Off = ((LPAPLAPA) lpMemRht)->Off;
-            ((LPAPLAPA) lpMemRes)->Mul = ((LPAPLAPA) lpMemRht)->Mul;
+        case ARRAY_FLOAT:
+            // Loop through the right arg copying the data to the result
+            for (uRht = uLo = 0; uLo < uDimLo; uLo++)
+            for (       uHi = 0; uHi < uDimHi; uHi++)
+            {
+                uDim = uLo * uDimHi * uDimAx + uHi;
+                for (uAx = 0; uAx < uDimAx; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    // Calculate the indices into the result
+                    uRes = uDim + uAx * uDimHi;
+
+                    // Save the FLT in the result
+                    ((LPAPLFLOAT) lpMemRes)[uRes] =
+                    ((LPAPLFLOAT) lpMemRht)[uRht++];
+                } // End FOR
+            } // End FOR/FOR
 
             break;
 
         case ARRAY_RAT:
-            // Loop through the result NELM
-            for (uRht = 0; uRht < aplNELMRes; uRht++)
-                // Save the RAT
-                mpq_init_set (((LPAPLRAT) lpMemRes)++,
-                              ((LPAPLRAT) lpMemRht)++);
+            // Loop through the right arg copying the data to the result
+            for (uRht = uLo = 0; uLo < uDimLo; uLo++)
+            for (       uHi = 0; uHi < uDimHi; uHi++)
+            {
+                uDim = uLo * uDimHi * uDimAx + uHi;
+                for (uAx = 0; uAx < uDimAx; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    // Calculate the indices into the result
+                    uRes = uDim + uAx * uDimHi;
+
+                    // Save the RAT in the result
+                    mpq_init_set (&((LPAPLRAT  ) lpMemRes)[uRes],
+                                  &((LPAPLRAT  ) lpMemRht)[uRht++]);
+                } // End FOR
+            } // End FOR/FOR
+
             break;
 
         case ARRAY_VFP:
-            // Loop through the result NELM
-            for (uRht = 0; uRht < aplNELMRes; uRht++)
-                // Save the VFP
-                mpfr_init_set (((LPAPLVFP) lpMemRes)++,
-                               ((LPAPLVFP) lpMemRht)++,
-                               MPFR_RNDN);
+            // Loop through the right arg copying the data to the result
+            for (uRht = uLo = 0; uLo < uDimLo; uLo++)
+            for (       uHi = 0; uHi < uDimHi; uHi++)
+            {
+                uDim = uLo * uDimHi * uDimAx + uHi;
+                for (uAx = 0; uAx < uDimAx; uAx++)
+                {
+                    // Check for Ctrl-Break
+                    if (CheckCtrlBreak (lpbCtrlBreak))
+                        goto ERROR_EXIT;
+
+                    // Calculate the indices into the result
+                    uRes = uDim + uAx * uDimHi;
+
+                    // Save the VFP in the result
+                    mpfr_init_set (&((LPAPLVFP  ) lpMemRes)[uRes],
+                                   &((LPAPLVFP  ) lpMemRht)[uRht++],
+                                    MPFR_RNDN);
+                } // End FOR
+            } // End FOR/FOR
+
             break;
 
         defstop
@@ -572,7 +818,8 @@ NORMAL_EXIT:
 LPPL_YYSTYPE SysFnDydDC_EM_YY
     (LPTOKEN lptkLftArg,                    // Ptr to left arg token
      LPTOKEN lptkFunc,                      // Ptr to function token
-     LPTOKEN lptkRhtArg)                    // Ptr to right arg token
+     LPTOKEN lptkRhtArg,                    // Ptr to right arg token
+     LPTOKEN lptkAxis)                      // Ptr to axis token (may be NULL)
 
 {
     APLSTYPE          aplTypeLft,           // Left arg storage type
@@ -600,6 +847,13 @@ LPPL_YYSTYPE SysFnDydDC_EM_YY
     APLUINT           uLen,                 // # coefficients in the right arg
                       uRht;                 // Loop counter
     ALLTYPES          atRht = {0};          // Right arg as ALLTYPES
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+        goto AXIS_SYNTAX_EXIT;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the left & right args
@@ -824,6 +1078,11 @@ RIGHT_DOMAIN_EXIT:
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
+    goto ERROR_EXIT;
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
     goto ERROR_EXIT;
 
 ERROR_EXIT:

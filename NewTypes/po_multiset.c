@@ -1261,7 +1261,7 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
         // Skip over the header to the dimensions
         lpMemRht = VarArrayBaseToDim (lpMemHdrRht);
 
-        // Copy the left arg dimensions to the result
+        // Copy the right arg dimensions to the result
         CopyMemory (lpMemRes, lpMemRht, (APLU3264) aplRankRht * sizeof (APLDIM));
 
         // Skip over the dimensions to the data
@@ -1569,6 +1569,9 @@ void PrimFnDydMIO_NvN
     APLFLOAT aplFloatLft,       // Left arg float
              aplFloatRht;       // Right ...
     APLINT   iLft,              // Loop counter
+             iCnt,              // ...
+             iLow,              // Lowest index of a match
+             iUsed,             // Used index of a match
              iMin,              // Minimum index
              iMax;              // Maximum ...
     UBOOL    bComp;             // TRUE iff the left and right floats are equal within []CT
@@ -1617,30 +1620,59 @@ void PrimFnDydMIO_NvN
                     iMin = iLft + 1;
                 else
                 {
+                    // Save the index of the match
+                    iLow = lpMemGupLft[iLft].Index;
+                    iUsed = iLft;
+
                     // We found a match -- check earlier indices for a match
                     //   so we always return the lowest index match.
-                    for (iLft = iLft - 1;
-                         iLft >= 0 && !lpMemGupLft[iLft].Used;
-                         iLft--)
+                    for (iCnt = iLft - 1; iCnt >= 0; iCnt--)
+                    if (!lpMemGupLft[iCnt].Used)
                     {
                         // Get the next float from the left arg
                         aplFloatLft =
                           GetNextFloat (lpMemLft,                   // Ptr to global memory
                                         aplTypeLft,                 // Storage type
-                                        lpMemGupLft[iLft].Index);   // Index
+                                        lpMemGupLft[iCnt].Index);   // Index
                         if (CmpCT_F (aplFloatLft, aplFloatRht, fQuadCT, NE))
                             break;
-                    } // End FOR
+                        else
+                        if (iLow > (APLINT) lpMemGupLft[iCnt].Index)
+                        {
+                            iLow  = lpMemGupLft[iCnt].Index;
+                            iUsed = iCnt;
+                        } // End IF/ELSE
+                    } // End FOR/IF
+
+                    // Check for later but smaller indices for a match
+                    //   so we always return the lowest index match.
+                    for (iCnt = iLft + 1; iCnt < (APLINT) aplNELMLft; iCnt++)
+                    if (!lpMemGupLft[iCnt].Used)
+                    {
+                        // Get the next float from the left arg
+                        aplFloatLft =
+                          GetNextFloat (lpMemLft,                   // Ptr to global memory
+                                        aplTypeLft,                 // Storage type
+                                        lpMemGupLft[iCnt].Index);   // Index
+                        if (CmpCT_F (aplFloatLft, aplFloatRht, fQuadCT, NE))
+                            break;
+                        else
+                        if (iLow > (APLINT) lpMemGupLft[iCnt].Index)
+                        {
+                            iLow  = lpMemGupLft[iCnt].Index;
+                            iUsed = iCnt;
+                        } // End IF/ELSE
+                    } // End FOR/IF
 #ifdef GRADE2ND
                     // Save in the result
                     lpMemRes[iRes] =
-                      uLastVal     = bQuadIO + lpMemGupLft[iLft + 1].Index;
+                      uLastVal     = bQuadIO + iLow;
 #else
                     // Save in the result
-                    lpMemRes[iRht] = bQuadIO + lpMemGupLft[iLft + 1].Index;
+                    lpMemRes[iRht] = bQuadIO + iLow;
 #endif
                     // Mark as used
-                    lpMemGupLft[iLft + 1].Used = TRUE;
+                    lpMemGupLft[iUsed].Used = TRUE;
 
                     break;
                 } // End IF/ELSE

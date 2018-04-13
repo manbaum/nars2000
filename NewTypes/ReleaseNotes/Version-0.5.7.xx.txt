@@ -1,6 +1,18 @@
 Version 0.5.7.xx consists of the following Builds:
 
 
+Build #1868 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bug In Multiset Operator With Dyadic Iota And Certain Floating Point Numbers
+
+Directory branches/bsmith/NewTypes:
+
+PO_MULTISET.C:
+  When using Dyadic Iota Multiset on certain floating point numbers, the result is incorrect.  In particular, with
+    L{is}1+[]CT{times}0.3 0.1 0.2, then the result of L{iota}{multiset}L incorrectly gives 2 3 1 instead of 1 2 3.
+
+
 Build #1867 -- Version 0.5.7.xx
 -------------------------------
 

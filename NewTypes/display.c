@@ -2723,7 +2723,8 @@ LPAPLCHAR FormatAplHC2IFC
                               lpaplHC2I->parts[0],  // The value to format
                               aplCharOverbar);      // Char to use as overbar
             // If the imaginary part of the number is NOT all zero, ...
-            if (IzitImaginary (uHCxI[aHCDimToIndex[iHCDimVar]], lpaplHC2I))
+            if (OptionFlags.bDisp0Imag
+             || IzitImaginary (uHCxI[aHCDimToIndex[iHCDimVar]], lpaplHC2I))
                 // Append the real part separator
                 //  overwriting the trailing blank
                 lpaplChar[-1] = L's';
@@ -2737,7 +2738,8 @@ LPAPLCHAR FormatAplHC2IFC
     // Loop through the imaginary parts
     for (i = 1; i < iHCDimVar; i++)
     // If the imaginary part is non-zero, ...
-    if (lpaplHC2I->parts[i] || OptionFlags.bDisp0Imag)
+    if (OptionFlags.bDisp0Imag
+     || lpaplHC2I->parts[i] NE 0)
     {
         // If we are displaying HC in infix form, ...
         if (OptionFlags.bDispInfix)
@@ -2837,7 +2839,8 @@ LPAPLCHAR FormatAplHCxIFC
                               lpaplHC8I->parts[0],  // The value to format
                               aplCharOverbar);      // Char to use as overbar
             // If the imaginary part of the number is NOT all zero, ...
-            if (IzitImaginary (uHCxI[aHCDimToIndex[iHCDimVar]], lpaplHC8I))
+            if (OptionFlags.bDisp0Imag
+             || IzitImaginary (uHCxI[aHCDimToIndex[iHCDimVar]], lpaplHC8I))
                 // Append the real part separator
                 //  overwriting the trailing blank
                 lpaplChar[-1] = L's';
@@ -2851,7 +2854,8 @@ LPAPLCHAR FormatAplHCxIFC
     // Loop through the imaginary parts
     for (i = 1; i < iHCDimVar; i++)
     // If the next imaginary part is non-zero, ...
-    if (lpaplHC8I->parts[i] || OptionFlags.bDisp0Imag)
+    if (OptionFlags.bDisp0Imag
+     || lpaplHC8I->parts[i] NE 0)
     {
         // If we are displaying HC in infix form, ...
         if (OptionFlags.bDispInfix)
@@ -2964,7 +2968,8 @@ LPAPLCHAR FormatAplHC2FFC
                               fltDispFmt,           // Float display format (see FLTDISPFMT)
                               bSubstInf);           // TRUE iff we're to substitute text for infinity
             // If the imaginary part of the number is NOT all zero, ...
-            if (IzitImaginary (uHCxF[aHCDimToIndex[iHCDimVar]], lpaplHC2F))
+            if (OptionFlags.bDisp0Imag
+             || IzitImaginary (uHCxF[aHCDimToIndex[iHCDimVar]], lpaplHC2F))
                 // Append the real part separator
                 //  overwriting the trailing blank
                 lpaplChar[-1] = L's';
@@ -2978,7 +2983,8 @@ LPAPLCHAR FormatAplHC2FFC
     // Loop through the imaginary parts
     for (i = 1; i < iHCDimVar; i++)
     // If the imaginary part is non-zero, ...
-    if (lpaplHC2F->parts[i] || OptionFlags.bDisp0Imag)
+    if (OptionFlags.bDisp0Imag
+     || lpaplHC2F->parts[i] NE 0.0)
     {
         // If we are displaying HC in infix form, ...
         if (OptionFlags.bDispInfix)
@@ -3110,7 +3116,8 @@ LPAPLCHAR FormatAplHCxFFC
                               fltDispFmt,           // Float display format (see FLTDISPFMT)
                               bSubstInf);           // TRUE iff we're to substitute text for infinity
             // If the imaginary part of the number is NOT all zero, ...
-            if (IzitImaginary (uHCxF[aHCDimToIndex[iHCDimVar]], lpaplHC8F))
+            if (OptionFlags.bDisp0Imag
+             || IzitImaginary (uHCxF[aHCDimToIndex[iHCDimVar]], lpaplHC8F))
                 // Append the real part separator
                 //  overwriting the trailing blank
                 lpaplChar[-1] = L's';
@@ -3124,7 +3131,8 @@ LPAPLCHAR FormatAplHCxFFC
     // Loop through the imaginary parts
     for (i = 1; i < iHCDimVar; i++)
     // If the next imaginary part is non-zero, ...
-    if (lpaplHC8F->parts[i] || OptionFlags.bDisp0Imag)
+    if (OptionFlags.bDisp0Imag
+     || lpaplHC8F->parts[i] NE 0.0)
     {
         // If we are displaying HC in infix form, ...
         if (OptionFlags.bDispInfix)
@@ -3243,7 +3251,8 @@ LPAPLCHAR FormatAplHC2RFC
                               bSubstInf,            // TRUE iff we're to substitute text for infinity
                              !bScan0[0]);           // TRUE iff this RAT is inside a larger syntax
             // If the imaginary part of the number is NOT all zero, ...
-            if (IzitImaginary (uHCxR[aHCDimToIndex[iHCDimVar]], lpaplHC2R))
+            if (OptionFlags.bDisp0Imag
+             || IzitImaginary (uHCxR[aHCDimToIndex[iHCDimVar]], lpaplHC2R))
                 // Append the real part separator
                 //  overwriting the trailing blank
                 lpaplChar[-1] = L's';
@@ -3257,7 +3266,8 @@ LPAPLCHAR FormatAplHC2RFC
     // Loop through the imaginary parts
     for (i = 1; i < iHCDimVar; i++)
     // If the imaginary part is non-zero, ...
-    if (!bImag0[i] || OptionFlags.bDisp0Imag)
+    if (OptionFlags.bDisp0Imag
+     || !bImag0[i])
     {
         // If we are displaying HC in infix form, ...
         if (OptionFlags.bDispInfix)
@@ -3384,7 +3394,8 @@ LPAPLCHAR FormatAplHCxRFC
                               bSubstInf,            // TRUE iff we're to substitute text for infinity
                              !bScan0[0]);           // TRUE iff this RAT is inside a larger syntax
             // If the imaginary part of the number is NOT all zero, ...
-            if (IzitImaginary (uHCxR[aHCDimToIndex[iHCDimVar]], lpaplHC8R))
+            if (OptionFlags.bDisp0Imag
+             || IzitImaginary (uHCxR[aHCDimToIndex[iHCDimVar]], lpaplHC8R))
                 // Append the real part separator
                 //  overwriting the trailing blank
                 lpaplChar[-1] = L's';
@@ -3398,7 +3409,8 @@ LPAPLCHAR FormatAplHCxRFC
     // Loop through the imaginary parts
     for (i = 1; i < iHCDimVar; i++)
     // If the next imaginary part is non-zero, ...
-    if (!bImag0[i] || OptionFlags.bDisp0Imag)
+    if (OptionFlags.bDisp0Imag
+     || !bImag0[i])
     {
         // If we are displaying HC in infix form, ...
         if (OptionFlags.bDispInfix)
@@ -3527,7 +3539,8 @@ LPAPLCHAR FormatAplHC2VFC
                               bSubstInf,            // TRUE iff we're to substitute text for infinity
                               bPrecFPC);            // TRUE iff we're to precede the display with (FPCnnn)
             // If the imaginary part of the number is NOT all zero, ...
-            if (IzitImaginary (uHCxV[aHCDimToIndex[iHCDimVar]], lpaplHC2V))
+            if (OptionFlags.bDisp0Imag
+             || IzitImaginary (uHCxV[aHCDimToIndex[iHCDimVar]], lpaplHC2V))
                 // Append the real part separator
                 //  overwriting the trailing blank
                 lpaplChar[-1] = L's';
@@ -3541,7 +3554,8 @@ LPAPLCHAR FormatAplHC2VFC
     // Loop through the imaginary parts
     for (i = 1; i < iHCDimVar; i++)
     // If the imaginary part is non-zero, ...
-    if (!IsMpf0 (&lpaplHC2V->parts[i]) || OptionFlags.bDisp0Imag)
+    if (OptionFlags.bDisp0Imag
+     || !IsMpf0 (&lpaplHC2V->parts[i]))
     {
         // If we are displaying HC in infix form, ...
         if (OptionFlags.bDispInfix)
@@ -3690,7 +3704,8 @@ LPAPLCHAR FormatAplHCxVFC
                               bSubstInf,            // TRUE iff we're to substitute text for infinity
                               bPrecFPC);            // TRUE iff we're to precede the display with (FPCnnn)
             // If the imaginary part of the number is NOT all zero, ...
-            if (IzitImaginary (uHCxV[aHCDimToIndex[iHCDimVar]], lpaplHC8V))
+            if (OptionFlags.bDisp0Imag
+             || IzitImaginary (uHCxV[aHCDimToIndex[iHCDimVar]], lpaplHC8V))
                 // Append the real part separator
                 //  overwriting the trailing blank
                 lpaplChar[-1] = L's';
@@ -3703,8 +3718,9 @@ LPAPLCHAR FormatAplHCxVFC
 
     // Loop through the imaginary parts
     for (i = 1; i < iHCDimVar; i++)
-    // If the nexst imaginary part is non-zero, ...
-    if (!IsMpf0 (&lpaplHC8V->parts[i]) || OptionFlags.bDisp0Imag)
+    // If the next imaginary part is non-zero, ...
+    if (OptionFlags.bDisp0Imag
+     || !IsMpf0 (&lpaplHC8V->parts[i]))
     {
         // If we are displaying HC in infix form, ...
         if (OptionFlags.bDispInfix)

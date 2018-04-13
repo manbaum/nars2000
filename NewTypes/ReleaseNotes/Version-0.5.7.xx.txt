@@ -1,6 +1,18 @@
 Version 0.5.7.xx consists of the following Builds:
 
 
+Build #1866 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Display Bug When Using Postfix Notation And Display All Imaginary Parts
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  When formatting a CHO number in Postfix notation and displaying all imaginary parts even if zero,
+    the code mistakenly displays '1i0' as '10s' instead of the correct form of '1s0'.
+
+
 Build #1865 -- Version 0.5.7.xx
 -------------------------------
 

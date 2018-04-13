@@ -387,7 +387,7 @@ UBOOL LoadWorkspace_EM
                 UINT         uLineNum;              // Function line #
                 UBOOL        bSuspended;            // TRUE iff the function is suspended
                 LPSYMENTRY   lpSymEntry;            // Ptr to function SYMENTRY
-                HGLOBAL      hGlbDfnHdr;            // Defined function global memory handle
+                HGLOBAL      hGlbHdr;               // Defined user- or Java-function global memory handle
                 LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator header
 
                 // If there are more SI levels and the previous level was suspended,
@@ -458,43 +458,54 @@ UBOOL LoadWorkspace_EM
 ////////////////////if (lpSymEntry EQ NULL)            // ***FIXME***
 
                     // Get a ptr to the function header
-                    hGlbDfnHdr = lpSymEntry->stData.stGlbData;
+                    hGlbHdr = lpSymEntry->stData.stGlbData;
 
-                    // Lock the memory to get a ptr to it
-                    lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
+                    // Split cases based upon the UDFO signature
+                    switch (GetSignatureGlb (hGlbHdr))
+                    {
+                        case DFN_HEADER_SIGNATURE:
+                            // Lock the memory to get a ptr to it
+                            lpMemDfnHdr = MyGlobalLockDfn (hGlbHdr);
 
-                    // Get suspended state
-                    bSuspended = strchrW (lpwFcnLine, L'*') NE NULL;
+                            // Get suspended state
+                            bSuspended = strchrW (lpwFcnLine, L'*') NE NULL;
 
-                    // Fill in the SIS header for a User-Defined Function/Operator
-                    FillSISNxt (lpMemPTD,                   // Ptr to PerTabData global memory
-                                NULL,                       // Semaphore handle (Filled in by ExecuteFunction_EM_YY)
-                                lpMemDfnHdr->DfnType,       // DfnType
-                                lpMemDfnHdr->FcnValence,    // FcnValence
-                                bSuspended,                 // TRUE iff suspended
-                                FALSE,                      // Restartable
-                                FALSE);                     // LinkIntoChain
-                    // Fill in the non-default SIS header entries
-                    lpMemPTD->lpSISNxt->hGlbDfnHdr   = hGlbDfnHdr;
-                    lpMemPTD->lpSISNxt->hGlbFcnName  = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
-                    lpMemPTD->lpSISNxt->DfnAxis      = lpMemDfnHdr->DfnAxis;
-                    lpMemPTD->lpSISNxt->bAFO         = lpMemDfnHdr->bAFO;
-                    lpMemPTD->lpSISNxt->bMFO         = lpMemDfnHdr->bMFO;
-                    lpMemPTD->lpSISNxt->CurLineNum   = uLineNum;
-                    lpMemPTD->lpSISNxt->NxtLineNum   = uLineNum + 1;
-                    lpMemPTD->lpSISNxt->numLabels    = lpMemDfnHdr->numLblLines;
-                    lpMemPTD->lpSISNxt->numFcnLines  = lpMemDfnHdr->numFcnLines;
-////////////////////lpMemPTD->lpSISNxt->lpSISNxt     =              // Filled in by LocalizeAll
+                            // Fill in the SIS header for a User-Defined Function/Operator
+                            FillSISNxt (lpMemPTD,                   // Ptr to PerTabData global memory
+                                        NULL,                       // Semaphore handle (Filled in by ExecuteFunction_EM_YY)
+                                        lpMemDfnHdr->DfnType,       // DfnType
+                                        lpMemDfnHdr->FcnValence,    // FcnValence
+                                        bSuspended,                 // TRUE iff suspended
+                                        FALSE,                      // Restartable
+                                        FALSE);                     // LinkIntoChain
+                            // Fill in the non-default SIS header entries
+                            lpMemPTD->lpSISNxt->hGlbDfnHdr   = hGlbHdr;
+                            lpMemPTD->lpSISNxt->hGlbFcnName  = lpMemDfnHdr->steFcnName->stHshEntry->htGlbName;
+                            lpMemPTD->lpSISNxt->DfnAxis      = lpMemDfnHdr->DfnAxis;
+                            lpMemPTD->lpSISNxt->bAFO         = lpMemDfnHdr->bAFO;
+                            lpMemPTD->lpSISNxt->bMFO         = lpMemDfnHdr->bMFO;
+                            lpMemPTD->lpSISNxt->CurLineNum   = uLineNum;
+                            lpMemPTD->lpSISNxt->NxtLineNum   = uLineNum + 1;
+                            lpMemPTD->lpSISNxt->numLabels    = lpMemDfnHdr->numLblLines;
+                            lpMemPTD->lpSISNxt->numFcnLines  = lpMemDfnHdr->numFcnLines;
+////////////////////////////lpMemPTD->lpSISNxt->lpSISNxt     =              // Filled in by LocalizeAll
 
-                    dprintfWL9 (L"~~Localize:    %p (%s)", lpMemPTD->lpSISNxt, L"LoadWorkspace_EM");
+                            dprintfWL9 (L"~~Localize:    %p (%s)", lpMemPTD->lpSISNxt, L"LoadWorkspace_EM");
 
-                    lpMemPTD->lpSISCur               = lpMemPTD->lpSISNxt;
+                            lpMemPTD->lpSISCur               = lpMemPTD->lpSISNxt;
 
-                    // Localize all arguments, results, and locals
-                    LocalizeAll (lpMemPTD, lpMemDfnHdr);
+                            // Localize all arguments, results, and locals
+                            LocalizeAll (lpMemPTD, lpMemDfnHdr);
 
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+                            // We no longer need this ptr
+                            MyGlobalUnlock (hGlbHdr); lpMemDfnHdr = NULL;
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
+
                 } // End IF
             } // End IF
 
@@ -1065,7 +1076,8 @@ UBOOL ParseSavedWsFcn_EM
             bExists = TRUE;
         } // End IF
 
-        if (hGlbObj EQ NULL)
+        if (hGlbObj EQ NULL
+         || hGlbObj EQ HGLOBAL_DELETED)
             goto CORRUPTWS_EXIT;
 
         // Restore the original value
@@ -1463,7 +1475,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
     APLRANK           aplRankObj;           // Object rank
     LPAPLDIM          lpMemDimObj;          // Ptr to object dimensions
     HGLOBAL           hGlbObj,              // Object global memory handle
-                      hGlbDfnHdr,           // AFO global memory handle
+                      hGlbDfnHdr,           // UDFO/AFO-defined global memory handle
                       hGlbChk;              // Result from CheckGlobals
     APLUINT           ByteObj,              // # bytes needed for the object
                       uObj;                 // Loop counter
@@ -1476,15 +1488,12 @@ HGLOBAL LoadWorkspaceGlobal_EM
                       lpwSectName,          // Ptr to section name
                       lpwSrcStart;          // Ptr to starting point
     UINT              uBitIndex,            // Bit index for looping through Boolean result
-                      uLineCnt,             // # lines in the current function including the header
-                      uCnt,                 // Loop counter
-                      Count;                // Temporary count for monitor info
+                      uLineCnt;             // # lines in the current function including the header
     mp_prec_t         uCommPrec = 0;        // Common precision for array of VFP numbers
     FILETIME          ftCreation,           // Function creation time
                       ftLastMod;            // ...      last modification time
     SYSTEMTIME        systemTime;           // Current system (UTC) time
     UBOOL             bUserDefined = FALSE, // TRUE iff the current function is User-Defined
-                      bPermNdx     = FALSE, // ...          var is a permanent
                       bAFO         = FALSE, // TRUE iff the current function is an AFO
                       bQuadFEATURE,         // TRUE iff the symbol is []FEATURE
                       bDispMPSuf,           // Save area for OptionFlags value
@@ -2099,9 +2108,6 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 // Lock the memory to get a ptr to it
                 lpMemHdrChk = MyGlobalLockVar (hGlbChk);
 
-                // Mark if this is a PERMNDX_xxx value
-                bPermNdx = (lpMemHdrChk->PermNdx NE PERMNDX_NONE);
-
                 // We no longer need this ptr
                 MyGlobalUnlock (hGlbChk); lpMemHdrChk = NULL;
             } // End IF
@@ -2139,14 +2145,6 @@ HGLOBAL LoadWorkspaceGlobal_EM
             // Skip past the converted function name and its terminating zero
             lpwSrc = &lpwSrc[lstrlenW (lpwSrc) + 1];
 
-            // Get the count for the section name
-            uLineCnt =
-              ProfileGetInt (lpwSectName,   // Ptr to the section name
-                             KEYNAME_COUNT, // Ptr to the key name
-                             0,             // Default value if not found
-                             lpDict);       // Ptr to workspace dictionary
-            Assert (uLineCnt > 0);
-
             // Get the UserDefined flag
             bUserDefined =
               ProfileGetBoolean (lpwSectName,           // Ptr to the section name
@@ -2159,6 +2157,18 @@ HGLOBAL LoadWorkspaceGlobal_EM
                                  KEYNAME_AFO,           // Ptr to the key name
                                  0,                     // Default value if not found
                                  lpDict);               // Ptr to workspace dictionary
+            // Get the count for the section name
+            uLineCnt =
+              ProfileGetInt (lpwSectName,   // Ptr to the section name
+                             KEYNAME_COUNT, // Ptr to the key name
+                             0,             // Default value if not found
+                             lpDict);       // Ptr to workspace dictionary
+            // If it's user-defined (not Java-defined), ...
+            if (bUserDefined)
+            {
+                Assert (uLineCnt > 0);
+            } // End IF
+
             // Get the current system (UTC) time
             GetSystemTime (&systemTime);
 
@@ -2259,7 +2269,6 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 if (lpwszProf[0] NE WC_EOS)
                 {
                     LPDFN_HEADER lpMemDfnHdr;           // Ptr to user-defined function/operator header
-                    LPINTMONINFO lpMemMonInfo;          // Ptr to function line monitoring info
 
                     // Lock the memory to get a ptr to it
                     lpMemDfnHdr = MyGlobalLockDfn (SF_Fcns.hGlbDfnHdr);
@@ -2267,30 +2276,12 @@ HGLOBAL LoadWorkspaceGlobal_EM
                     // Allocate space for the monitor info
                     lpMemDfnHdr->hGlbMonInfo =
                       DbgGlobalAlloc (GHND, (lpMemDfnHdr->numFcnLines + 1) * sizeof (INTMONINFO));
-                    if (lpMemDfnHdr->hGlbMonInfo)
+                    if (lpMemDfnHdr->hGlbMonInfo NE NULL)
                     {
-                        // Lock the memory to get a ptr to it
-                        lpMemMonInfo = MyGlobalLock000 (lpMemDfnHdr->hGlbMonInfo);
-
-                        // Loop through the function header & lines
-                        for (uCnt = 0; uCnt < uLineCnt; uCnt++, lpMemMonInfo++)
-                        {
-                            // Scan in the first field
-                            sscanfW (lpwszProf,
-                                     L"%I64u %I64u %u",
-                                    &lpMemMonInfo->IncSubFns,
-                                    &lpMemMonInfo->ExcSubFns,
-                                    &Count);
-                            // Save the count
-                            lpMemMonInfo->Count = Count;
-
-                            // Increment past the input fields
-                            lpwszProf = SkipPastCharW (lpwszProf, L',');
-                        } // End FOR
-
-                        // We no longer need this ptr
-                        MyGlobalUnlock (lpMemDfnHdr->hGlbMonInfo); lpMemMonInfo = NULL;
-
+                        // Read it in
+                        ReadMonInfo (lpMemDfnHdr->hGlbMonInfo,
+                                     uLineCnt,
+                                    &lpwszProf);
                         // Mark as monitor info present
                         lpMemDfnHdr->MonOn = TRUE;
                     } // End IF
@@ -2426,9 +2417,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
 
     // Link this SYMENTRY into the chain
     //   unless it's already linked
-    //   or is a Permanent var
-    if (!bPermNdx
-     && lpSymEntry->stSymLink EQ NULL)
+    if (lpSymEntry->stSymLink EQ NULL)
     {
         lpSymLink             = *lplpSymLink;
        *lplpSymLink           =  lpSymEntry;
@@ -2470,8 +2459,9 @@ CORRUPTWS_EXIT_FMT:
     goto CORRUPTWS_EXIT_DELETE;
 
 CORRUPTWS_EXIT_DELETE:
-    // Delete the name from the workspace
-    EraseSTE (lpSymEntrySrc, FALSE);
+    if (lpSymEntrySrc NE NULL)
+        // Delete the name from the workspace
+        EraseSTE (lpSymEntrySrc, FALSE);
 
     // Mark as deleted
     hGlbObj = HGLOBAL_DELETED;
@@ -2496,6 +2486,46 @@ NORMAL_EXIT:
 
     return hGlbObj;
 } // End LoadWorkspaceGlobal_EM
+
+
+//***************************************************************************
+//  $ReadMonInfo
+//
+//  Read in the Monitor Info
+//***************************************************************************
+
+void ReadMonInfo
+    (HGLOBAL  hGlbMonInfo,              // Monitor Info global memory handle
+     UINT     uLineCnt,                 // # function lines
+     LPWCHAR *lplpwszProf)              // Ptr to ptr to input stream
+
+ {
+     LPINTMONINFO lpMemMonInfo;         // Ptr to function line monitoring info
+     UINT         uCnt,                 // Loop counter
+                  Count;                // Temporary count for monitor info
+
+     // Lock the memory to get a ptr to it
+     lpMemMonInfo = MyGlobalLock000 (hGlbMonInfo);
+
+     // Loop through the function header & lines
+     for (uCnt = 0; uCnt < uLineCnt; uCnt++, lpMemMonInfo++)
+     {
+         // Scan in the first field
+         sscanfW (*lplpwszProf,
+                   L"%I64u %I64u %u",
+                  &lpMemMonInfo->IncSubFns,
+                  &lpMemMonInfo->ExcSubFns,
+                  &Count);
+         // Save the count
+         lpMemMonInfo->Count = Count;
+
+         // Increment past the input fields
+         *lplpwszProf = SkipPastCharW (*lplpwszProf, L',');
+     } // End FOR
+
+     // We no longer need this ptr
+     MyGlobalUnlock (hGlbMonInfo); lpMemMonInfo = NULL;
+} // End ReadMonInfo
 
 
 //***************************************************************************

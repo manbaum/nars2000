@@ -213,20 +213,12 @@ UBOOL AssignName_EM
                 // Get the source global memory handle
                 hGlbSrc = lptkSrc->tkData.tkSym->stData.stGlbData;
 
-                // Free the old value for this name
-                FreeResultName (lptkNam);
-
-                // Clear the immediate flag
-                lptkNam->tkData.tkSym->stFlags.Imm     = FALSE;
-                lptkNam->tkData.tkSym->stFlags.ImmType = IMMTYPE_ERROR;
-
-                // Copy the "Accepts Axis Operator" flag
-                lptkNam->tkData.tkSym->stFlags.DfnAxis =
-                lptkSrc->tkData.tkSym->stFlags.DfnAxis;
-
                 // Check for internal functions
                 if (lptkSrc->tkData.tkSym->stFlags.FcnDir)
                 {
+                    // Free the old value for this name
+                    FreeResultName (lptkNam);
+
                     // Copy the SYMENTRY's data
                     lptkNam->tkData.tkSym->stData =
                     lptkSrc->tkData.tkSym->stData;
@@ -236,15 +228,45 @@ UBOOL AssignName_EM
                     lptkSrc->tkData.tkSym->stFlags.FcnDir;
                 } else
                 {
+                    HGLOBAL hGlbNam;            // Target's global memory handle
+                    STFLAGS stFlags;            // Target's flags after <CopyUDFO>
+
                     // Copy the source global memory handle
                     //   and save it as the new global memory ptr
 ////////////////////lptkNam->tkData.tkSym->stData.stGlbData = CopySymGlbDir_PTB (hGlbSrc);
-                    lptkNam->tkData.tkSym->stData.stGlbData = CopyUDFO          (hGlbSrc, lptkNam->tkData.tkSym);
+
+                    // Note that we can't free the target name before this call as we
+                    //   need its characteristics in <CopyUDFO> as <lpSymName>
+                    hGlbNam = CopyUDFO (hGlbSrc, lptkNam->tkData.tkSym);
+
+                    // Make a copy of the target as we're about to free it
+                    hGlbNam = CopySymGlbDir_PTB (hGlbNam);
+
+                    // Save the target's flags to restore after <FreeResultName>
+                    //   which clears the flags
+                    stFlags = lptkNam->tkData.tkSym->stFlags;
+
+                    // Free the old value for this name
+                    FreeResultName (lptkNam);
+
+                    // Restore the target's flags as set by <CopyUDFO>
+                    lptkNam->tkData.tkSym->stFlags = stFlags;
+
+                    // Save back into the name
+                    lptkNam->tkData.tkSym->stData.stGlbData = hGlbNam;;
 
                     // Transfer user-defined function/operator flag
                     lptkNam->tkData.tkSym->stFlags.UsrDfn =
                     lptkSrc->tkData.tkSym->stFlags.UsrDfn;
                 } // End IF/ELSE
+
+                // Clear the immediate flag
+                lptkNam->tkData.tkSym->stFlags.Imm     = FALSE;
+                lptkNam->tkData.tkSym->stFlags.ImmType = IMMTYPE_ERROR;
+
+                // Copy the "Accepts Axis Operator" flag
+                lptkNam->tkData.tkSym->stFlags.DfnAxis =
+                lptkSrc->tkData.tkSym->stFlags.DfnAxis;
             } // End IF/ELSE
 
             break;

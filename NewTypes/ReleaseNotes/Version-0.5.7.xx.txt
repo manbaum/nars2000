@@ -1,6 +1,22 @@
 Version 0.5.7.xx consists of the following Builds:
 
 
+Build #1870 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bug In Assignment Of A Function/Operator To An Immediate Function/Operator
+
+Directory branches/bsmith/NewTypes:
+
+ASSIGN.C:
+  When assigning a function/operator to an immediate function/operator,
+    be careful of the order in which flags and HGLOBALs are set and freed.
+
+SAVEFCN.C:
+  When saving a UDFO on top of an immediate function/operator, do not set
+    the old UDFO name to the immediate function/operator value!
+
+
 Build #1869 -- Version 0.5.7.xx
 -------------------------------
 

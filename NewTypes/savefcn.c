@@ -2471,10 +2471,15 @@ UBOOL SaveFunctionCom
             fhLocalVars.lpYYFcnName->tkToken.tkData.tkSym = lpSymName;
         } // End IF/ELSE
 
-        // If this is not an AFO, ...
-        //    or it is and we're called from <SaveFunction> to save an AFO
-        //    or it is and we're called from <SysFnMonFX_EM> to save an AFO
-        if (!fhLocalVars.bAFO || lpSF_Fcns->bMakeAFE || lpSF_Fcns->bMakeAFX)
+        // If this is
+        //    not an immediate function/operator,
+        //    and this is not an AFO, ...
+        //      or it is and we're called from <SaveFunction> to save an AFO
+        //      or it is and we're called from <SysFnMonFX_EM> to save an AFO
+        if (!lpSymName->stFlags.Imm
+         && (!fhLocalVars.bAFO
+          || lpSF_Fcns->bMakeAFE
+          || lpSF_Fcns->bMakeAFX))
             // Get the old Dfn global memory handle
             hGlbOldDfn = lpSymName->stData.stGlbData;
 

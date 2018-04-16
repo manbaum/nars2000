@@ -1,0 +1,23 @@
+Build #1873 -- Version 0.5.7.xx
+-------------------------------
+
+* Miscellaneous Changes
+
+Directory branches/bsmith/NewTypes:
+
+MAIN.RC:
+  Fix typos in comments.
+
+NARS2000.VCXPROJ:
+  Use the WinXP toolchain so as to continue to support that OS.
+
+PF_CSTILE.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+
+TABCTRL.C:
+  In <FreeGlobalStorage>, when freeing a name whose value is a system function, don't free it!
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+INDEX-BODY.AHTML:
+  In the Platform section, note that we support Mac OS through Wine.

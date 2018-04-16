@@ -42,10 +42,6 @@ LPPL_YYSTYPE PrimFnCircleStile_EM_YY
     Assert (lptkFunc->tkData.tkChar EQ UTF16_CIRCLESTILE
          || lptkFunc->tkData.tkChar EQ UTF16_CIRCLEBAR);
 
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
-
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonCircleStile_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
@@ -93,13 +89,14 @@ LPPL_YYSTYPE PrimIdentFnCircleStile_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
-    APLNELM      aplNELMRht;        // Right arg NELM
-    APLRANK      aplRankRht;        // Right arg rank
-    APLUINT      aplAxis;           // The (one and only) axis value
-    HGLOBAL      hGlbRht = NULL;    // Right arg global memory handle
-    LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
-    LPAPLDIM     lpMemDimRht;       // Ptr to right arg dimensions
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to result
+    APLNELM           aplNELMRht;           // Right arg NELM
+    APLRANK           aplRankRht;           // Right arg rank
+    APLUINT           aplAxis;              // The (one and only) axis value
+    HGLOBAL           hGlbRht = NULL;       // Right arg global memory handle
+    LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
+                      lpMemHdrRes = NULL;   // Ptr to result ...
+    LPAPLDIM          lpMemDimRht;          // Ptr to right arg dimensions
 
     // The right arg is the prototype item from
     //   the original empty arg.
@@ -173,7 +170,6 @@ LPPL_YYSTYPE PrimIdentFnCircleStile_EM_YY
         APLNELM  aplNELMRes;            // Result NELM
         APLUINT  ByteRes;               // # bytes in the result
         HGLOBAL  hGlbRes = NULL;        // Result global memory handle
-        LPVOID   lpMemRes = NULL;       // Ptr to result global memory
         LPAPLDIM lpMemDimRes;           // Ptr to result dimensions
         APLUINT  uRht;                  // Loop counter
 
@@ -183,10 +179,10 @@ LPPL_YYSTYPE PrimIdentFnCircleStile_EM_YY
         hGlbRht = lptkRhtArg->tkData.tkGlbData;
 
         // Lock the memory to get a ptr to it
-        lpMemRht = MyGlobalLockVar (hGlbRht);
+        lpMemHdrRht = MyGlobalLockVar (hGlbRht);
 
         // Skip over the header to the dimensions
-        lpMemDimRht = VarArrayBaseToDim (lpMemRht);
+        lpMemDimRht = VarArrayBaseToDim (lpMemHdrRht);
 
         // The aplNELMRes is aplNELMRht / lpMemDimRht[aplAxis]
         for (uRht = 0, aplNELMRes = 1; uRht < aplRankRht; uRht++)
@@ -206,9 +202,9 @@ LPPL_YYSTYPE PrimIdentFnCircleStile_EM_YY
             goto WSFULL_EXIT;
 
         // Lock the memory to get a ptr to it
-        lpMemRes = MyGlobalLock000 (hGlbRes);
+        lpMemHdrRes = MyGlobalLock000 (hGlbRes);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMemRes)
+#define lpHeader    lpMemHdrRes
         // Fill in the header values
         lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
         lpHeader->ArrType    = ARRAY_BOOL;
@@ -220,7 +216,7 @@ LPPL_YYSTYPE PrimIdentFnCircleStile_EM_YY
 #undef  lpHeader
 
         // Skip over the header to the dimensions
-        lpMemDimRes = VarArrayBaseToDim (lpMemRes);
+        lpMemDimRes = VarArrayBaseToDim (lpMemHdrRes);
 
         // Copy the dimensions from the right arg
         //   omitting the aplAxis dimension
@@ -229,7 +225,7 @@ LPPL_YYSTYPE PrimIdentFnCircleStile_EM_YY
             *lpMemDimRes++ = lpMemDimRht[uRht];
 
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
         // Allocate a new YYRes
         lpYYRes = YYAlloc ();
@@ -251,12 +247,12 @@ WSFULL_EXIT:
 
 ERROR_EXIT:
 NORMAL_EXIT:
-    if (hGlbRht)
+    if (hGlbRht NE NULL)
     {
-        if (lpMemRht)
+        if (lpMemHdrRht NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+            MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
         } // End IF
     } // End IF
 
@@ -276,37 +272,37 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE          aplTypeRht,       // Right arg storage type
-                      aplTypeRes;       // Result    ...
-    APLNELM           aplNELMRht;       // Right arg NELM
-    APLRANK           aplRankRht;       // Right arg rank
-    HGLOBAL           hGlbRht = NULL,   // Right arg global memory handle
-                      hGlbRes = NULL;   // Result    ...
-    LPVOID            lpMemRht = NULL,  // Ptr to right arg global memory
-                      lpMemRes = NULL;  // Ptr to result    ...
-    LPAPLDIM          lpMemDimRht;      // Ptr to right arg dimensions
-    LPVARARRAY_HEADER lpMemHdrRht,      // Ptr to right arg header
-                      lpMemHdrRes;      // Ptr to result ...
-    APLUINT           aplAxis,          // The (one and only) axis value
-                      uDim,             // Loop counter
-                      uLo,              // ...
-                      uDimLo,           // ...
-                      uAx,              // ...
-                      uDimAx,           // ...
-                      uHi,              // ...
-                      uDimHi,           // ...
-                      uRes,             // ...
-                      uRht;             // ...
-    APLINT            apaOffRht,        // Right arg APA offset
-                      apaMulRht;        // Right arg APA multiplier
-    LPPL_YYSTYPE      lpYYRes = NULL;   // Ptr to the result
-    APLUINT           ByteRes;          // # bytes in the result
-    UINT              uBitMask,         // Bit mask when looping through Booleans
-                      uBitIndex;        // Bit index ...
-    LPPLLOCALVARS     lpplLocalVars;    // Ptr to re-entrant vars
-    LPUBOOL           lpbCtrlBreak;     // Ptr to Ctrl-Break flag
-    int               iHCDimRht,        // HC Dimension (1, 2, 4, 8)
-                      i;                // Loop counter
+    APLSTYPE          aplTypeRht,           // Right arg storage type
+                      aplTypeRes;           // Result    ...
+    APLNELM           aplNELMRht;           // Right arg NELM
+    APLRANK           aplRankRht;           // Right arg rank
+    HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
+                      hGlbRes = NULL;       // Result    ...
+    LPVOID            lpMemRht,             // Ptr to right arg global memory
+                      lpMemRes;             // Ptr to result    ...
+    LPAPLDIM          lpMemDimRht;          // Ptr to right arg dimensions
+    LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
+                      lpMemHdrRes = NULL;   // Ptr to result ...
+    APLUINT           aplAxis,              // The (one and only) axis value
+                      uDim,                 // Loop counter
+                      uLo,                  // ...
+                      uDimLo,               // ...
+                      uAx,                  // ...
+                      uDimAx,               // ...
+                      uHi,                  // ...
+                      uDimHi,               // ...
+                      uRes,                 // ...
+                      uRht;                 // ...
+    APLINT            apaOffRht,            // Right arg APA offset
+                      apaMulRht;            // Right arg APA multiplier
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
+    APLUINT           ByteRes;              // # bytes in the result
+    UINT              uBitMask,             // Bit mask when looping through Booleans
+                      uBitIndex;            // Bit index ...
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    int               iHCDimRht,            // HC Dimension (1, 2, 4, 8)
+                      i;                    // Loop counter
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -434,7 +430,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
         // Get the length of the axis dimension
         uDimAx = lpMemDimRht[uDim++];
 
-        // Calculate the product of the dimensions below the axis dimension
+        // Calculate the product of the dimensions above the axis dimension
         for (uDimHi = 1; uDim < aplRankRht; uDim++)
             uDimHi *= lpMemDimRht[uDim];
     } // End IF/ELSE
@@ -658,28 +654,28 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (hGlbRes)
+    if (hGlbRes NE NULL)
     {
-        if (lpMemRes)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this storage
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 IMMED_EXIT:
-    if (hGlbRes && lpMemRes)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
     return lpYYRes;
@@ -699,50 +695,50 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE          aplTypeLft,       // Left arg storage type
-                      aplTypeRht,       // Right ...
-                      aplTypeRes;       // Result   ...
-    APLNELM           aplNELMLft,       // Left arg NELM
-                      aplNELMRht;       // Right ...
-    APLRANK           aplRankLft,       // Left arg rank
-                      aplRankRht;       // Right ...
-    HGLOBAL           hGlbLft = NULL,   // Left arg global memory handle
-                      hGlbRht = NULL,   // Right ...
-                      hGlbRes = NULL,   // Result   ...
-                      hGlbRot = NULL;   // Normalized left arg ...
-    LPAPLDIM          lpMemDimLft,      // Ptr to left arg dimensions
-                      lpMemDimRht;      // Ptr to right ...
-    LPVOID            lpMemLft = NULL,  // Ptr to left arg global memory
-                      lpMemRht = NULL,  // Ptr to right ...
-                      lpMemRes = NULL;  // Ptr to result   ...
-    LPVARARRAY_HEADER lpMemHdrLft,      // Ptr to left arg header
-                      lpMemHdrRht,      // ...    right ...
-                      lpMemHdrRes;      // ...    result    ...
-    LPAPLINT          lpMemRot = NULL;  // Ptr to normalized left arg ...
-    UBOOL             bRet = TRUE;      // TRUE iff result is valid
-    APLUINT           aplAxis,          // The (one and only) axis value
-                      ByteRes,          // # bytes in the result
-                      uLo,              // Loop counter
-                      uDimLo,           // ...
-                      uAx,              // ...
-                      uDimAx,           // ...
-                      uHi,              // ...
-                      uDimHi,           // ...
-                      uDim,             // ...
-                      uRes,             // ...
-                      uRht;             // ...
-    APLINT            aplIntegerLft,    // Temporary left arg integer
-                      apaOffRht,        // Right arg APA offset
-                      apaMulRht,        // Right arg APA multiplier
-                      aplRot;           //
-    APLLONGEST        aplLongestLft;    // Left arg immediate value
-    LPPL_YYSTYPE      lpYYRes = NULL;   // Ptr to the result
-    UINT              uBitMask,         // Bit mask when looping through Booleans
-                      uBitIndex;        // Bit index ...
-    LPPLLOCALVARS     lpplLocalVars;    // Ptr to re-entrant vars
-    LPUBOOL           lpbCtrlBreak;     // Ptr to Ctrl-Break flag
-    int               iHCDimRht,        // HC Dimension (1, 2, 4, 8)
-                      i;                // Loop counter
+    APLSTYPE          aplTypeLft,           // Left arg storage type
+                      aplTypeRht,           // Right ...
+                      aplTypeRes;           // Result   ...
+    APLNELM           aplNELMLft,           // Left arg NELM
+                      aplNELMRht;           // Right ...
+    APLRANK           aplRankLft,           // Left arg rank
+                      aplRankRht;           // Right ...
+    HGLOBAL           hGlbLft = NULL,       // Left arg global memory handle
+                      hGlbRht = NULL,       // Right ...
+                      hGlbRes = NULL,       // Result   ...
+                      hGlbRot = NULL;       // Normalized left arg ...
+    LPAPLDIM          lpMemDimLft,          // Ptr to left arg dimensions
+                      lpMemDimRht;          // Ptr to right ...
+    LPVOID            lpMemLft,             // Ptr to left arg global memory
+                      lpMemRht,             // Ptr to right ...
+                      lpMemRes;             // Ptr to result   ...
+    LPVARARRAY_HEADER lpMemHdrLft = NULL,   // Ptr to left arg header
+                      lpMemHdrRht = NULL,   // ...    right ...
+                      lpMemHdrRes = NULL;   // ...    result    ...
+    LPAPLINT          lpMemRot = NULL;      // Ptr to normalized left arg ...
+    UBOOL             bRet = TRUE;          // TRUE iff result is valid
+    APLUINT           aplAxis,              // The (one and only) axis value
+                      ByteRes,              // # bytes in the result
+                      uLo,                  // Loop counter
+                      uDimLo,               // ...
+                      uAx,                  // ...
+                      uDimAx,               // ...
+                      uHi,                  // ...
+                      uDimHi,               // ...
+                      uDim,                 // ...
+                      uRes,                 // ...
+                      uRht;                 // ...
+    APLINT            aplIntegerLft,        // Temporary left arg integer
+                      apaOffRht,            // Right arg APA offset
+                      apaMulRht,            // Right arg APA multiplier
+                      aplRot;               //
+    APLLONGEST        aplLongestLft;        // Left arg immediate value
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
+    UINT              uBitMask,             // Bit mask when looping through Booleans
+                      uBitIndex;            // Bit index ...
+    LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
+    LPUBOOL           lpbCtrlBreak;         // Ptr to Ctrl-Break flag
+    int               iHCDimRht,            // HC Dimension (1, 2, 4, 8)
+                      i;                    // Loop counter
 
     // Get the thread's ptr to local vars
     lpplLocalVars = TlsGetValue (dwTlsPlLocalVars);
@@ -845,7 +841,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
             goto WSFULL_EXIT;
 
         // If the left arg is non-empty, ...
-        if (ByteRes)
+        if (ByteRes NE 0)
             // Lock the memory to get a ptr to it
             lpMemRot = lpMemRotIni = MyGlobalLock000 (hGlbRot);
         else
@@ -867,7 +863,7 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
         lpMemRot = lpMemRotIni;
 
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
     } // End IF
 
     // Map APA right arg to INT result
@@ -1247,10 +1243,10 @@ ERROR_EXIT:
 
     if (hGlbRes NE NULL)
     {
-        if (lpMemRes NE NULL)
+        if (lpMemHdrRes NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
         } // End IF
 
         // We no longer need this storage
@@ -1260,22 +1256,22 @@ NORMAL_EXIT:
     // Unlock and free (and set to NULL) a global name and ptr
     UnlFreeGlbName (hGlbRot, lpMemRot);
 
-    if (hGlbLft NE NULL && lpMemLft NE NULL)
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
     } // End IF
 
-    if (hGlbRht NE NULL && lpMemRht NE NULL)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
-    if (hGlbRes NE NULL && lpMemRes NE NULL)
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
     {
         // We no longer need this ptr
-        MyGlobalUnlock (hGlbRes); lpMemRes = NULL;
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
     } // End IF
 
     if (bRet)

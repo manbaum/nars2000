@@ -678,14 +678,14 @@ BEGIN
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR4 ,160, 50, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS4 ,215, 50,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT5       ,  5, 60, 90,  9    // "Primitve Monadic Operator"
+    LTEXT           ""                          , IDC_SYNTCLR_LT5       ,  5, 60, 90,  9    // "Primitive Monadic Operator"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK5 , 97, 60,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR5 ,105, 60, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK5 ,152, 60,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_BGCLR5 ,160, 60, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     AUTOCHECKBOX    ""                          , IDC_SYNTCLR_XB_TRANS5 ,215, 60,  8, 10
 
-    LTEXT           ""                          , IDC_SYNTCLR_LT6       ,  5, 70, 90,  9    // "Primitve Dyadic Operator"
+    LTEXT           ""                          , IDC_SYNTCLR_LT6       ,  5, 70, 90,  9    // "Primitive Dyadic Operator"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK6 , 97, 70,  8,  8, SS_BITMAP
     PUSHBUTTON      ""                          , IDC_SYNTCLR_BN_FGCLR6 ,105, 70, 25,  8, BS_PUSHBUTTON | BS_OWNERDRAW | WS_TABSTOP
     LTEXT           ""                          , IDC_SYNTCLR_LT_BGMRK6 ,152, 70,  8,  8, SS_BITMAP

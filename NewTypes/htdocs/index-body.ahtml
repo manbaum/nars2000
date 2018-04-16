@@ -420,7 +420,7 @@ Welcome to NARS2000</h1>
     <p>However, thanks to a translation layer program such as
       <a class="linkleft" href="http://www.winehq.org">Wine</a>,
       NARS2000 can run on any operating system that can run Wine (which
-      includes virtually every Linux-based system, among others).  Note that
+      includes virtually every Linux-based system and MAC OS, among others).  Note that
       Wine is not an emulator, but a layer between the Windows executable
       and the non-Windows operating system.  In fact, the name <b>Wine</b> is a
       <a class="linkleft" href="http://en.wikipedia.org/wiki/Recursive_acronym">recursive acronym</a>

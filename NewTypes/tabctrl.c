@@ -957,6 +957,7 @@ void FreeGlobalStorage
              lpSymEntry++)
         if (lpSymEntry->stFlags.Inuse
          && lpSymEntry->stFlags.Value
+         && lpSymEntry->stFlags.FcnDir EQ FALSE
          && lpSymEntry->stFlags.Imm EQ FALSE)
         {
             HGLOBAL hGlbData;               // User-defined function/operator global memory handle

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,7 +48,9 @@ static LPAPLCHAR MonBody[] =
   L":case 3",
   L"  ⎕EX 'Z'",
   L":else",
-  L"  Z←⊃(2+⎕IO)⊃Z",
+  L"  Z←(2+⎕IO)⊃Z",
+  L"  :if 0=⎕NC 'X' ⋄ Z←⊃Z",
+  L"  :else         ⋄ Z←⊃[X] Z ⋄ :end",
   L":end",
   L"→0 ",
   
@@ -62,13 +64,15 @@ static LPAPLCHAR MonBody[] =
   L":case 3",
   L"  ⎕EX 'Z'",
   L":else",
-  L"  Z←⊃⊃(2+⎕IO)⊃Z",
+  L"  Z←⊃(2+⎕IO)⊃Z",
+  L"  :if 0=⎕NC 'X' ⋄ Z←⊃Z",
+  L"  :else         ⋄ Z←⊃[X] Z ⋄ :end",
   L":end",
 };
 
 MAGIC_FCNOPR MFO_MonRank =
 {
-  L"Z←(LO " MFON_MonRank L" Y) R;YR",
+  L"Z←(LO " MFON_MonRank L"[X] Y) R;YR",
   MonBody,
   countof (MonBody),
 };
@@ -96,7 +100,9 @@ static LPAPLCHAR DydBody[] =
   L":case 3",
   L"  ⎕EX 'Z'",
   L":else",
-  L"  Z←⊃(2+⎕IO)⊃Z",
+  L"  Z←(2+⎕IO)⊃Z",
+  L"  :if 0=⎕NC 'X' ⋄ Z←⊃Z",
+  L"  :else         ⋄ Z←⊃[X] Z ⋄ :end",
   L":end",
   L"→0 ",
 
@@ -111,13 +117,15 @@ static LPAPLCHAR DydBody[] =
   L":case 3",
   L"  ⎕EX 'Z'",
   L":else",
-  L"  Z←⊃⊃(2+⎕IO)⊃Z",
+  L"  Z←⊃(2+⎕IO)⊃Z",
+  L"  :if 0=⎕NC 'X' ⋄ Z←⊃Z",
+  L"  :else         ⋄ Z←⊃[X] Z ⋄ :end",
   L":end",
 };  
 
 MAGIC_FCNOPR MFO_DydRank =
 {
-  L"Z←L (LO " MFON_DydRank L" Y) R;YL;YR",
+  L"Z←L (LO " MFON_DydRank L"[X] Y) R;YL;YR",
   DydBody,
   countof (DydBody),
 };

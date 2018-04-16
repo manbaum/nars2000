@@ -62,19 +62,12 @@ LPPL_YYSTYPE PrimProtoOpDieresisJot_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
-     LPTOKEN      lptkAxisOpr)          // Ptr to axis token always NULL)
+     LPTOKEN      lptkAxisOpr)          // Ptr to axis operator token always NULL)
 
 {
     if (lptkAxisOpr EQ NULL)
         // Check for axis operator
         lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
-
-    //***************************************************************
-    // The derived functions from this operator are not sensitive
-    //   to the axis operator, so signal a syntax error if present
-    //***************************************************************
-    if (lptkAxisOpr NE NULL)
-        goto AXIS_SYNTAX_EXIT;
 
     // If left arg is not present, ...
     if (lptkLftArg EQ NULL)
@@ -83,6 +76,7 @@ LPPL_YYSTYPE PrimProtoOpDieresisJot_EM_YY
         //***************************************************************
         return PrimOpMonDieresisJotCommon_EM_YY (lpYYFcnStrOpr,     // Ptr to operator function strand
                                                  lptkRhtArg,        // Ptr to right arg token (may be NULL if niladic)
+                                                 lptkAxisOpr,       // Ptr to axis operator token (may be NULL)
                                                  TRUE);             // TRUE iff prototyping
     else
         //***************************************************************
@@ -91,11 +85,8 @@ LPPL_YYSTYPE PrimProtoOpDieresisJot_EM_YY
         return PrimOpDydDieresisJotCommon_EM_YY (lptkLftArg,        // Ptr to left arg token
                                                  lpYYFcnStrOpr,     // Ptr to operator function strand
                                                  lptkRhtArg,        // Ptr to right arg token
+                                                 lptkAxisOpr,       // Ptr to axis operator token (may be NULL)
                                                  TRUE);             // TRUE iff prototyping
-AXIS_SYNTAX_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                               lptkAxisOpr);
-    return NULL;
 } // End PrimProtoOpDieresisJot_EM_YY
 
 
@@ -110,9 +101,10 @@ LPPL_YYSTYPE PrimOpMonDieresisJot_EM_YY
      LPTOKEN      lptkRhtArg)           // Ptr to right arg token (may be NULL if niladic)
 
 {
-    return PrimOpMonDieresisJotCommon_EM_YY (lpYYFcnStrOpr,     // Ptr to operator function strand
-                                             lptkRhtArg,        // Ptr to right arg token (may be NULLif niladic)
-                                             FALSE);            // TRUE iff prototyping
+    return PrimOpMonDieresisJotCommon_EM_YY (lpYYFcnStrOpr,                 // Ptr to operator function strand
+                                             lptkRhtArg,                    // Ptr to right arg token (may be NULLif niladic)
+                                             CheckAxisOper (lpYYFcnStrOpr), // Ptr to axis oeprator (may be NULL)
+                                             FALSE);                        // TRUE iff prototyping
 } // End PrimOpMonDieresisJot_EM_YY
 
 
@@ -125,15 +117,12 @@ LPPL_YYSTYPE PrimOpMonDieresisJot_EM_YY
 LPPL_YYSTYPE PrimOpMonDieresisJotCommon_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token (may be NULL if niladic)
+     LPTOKEN      lptkAxisOpr,          // Ptr to operator axis operator token
      UBOOL        bPrototyping)         // TRUE iff protoyping
 
 {
     LPPL_YYSTYPE lpYYFcnStrLft,         // Ptr to left operand function strand
                  lpYYFcnStrRht;         // Ptr to right ...
-    LPTOKEN      lptkAxisOpr;           // Ptr to operator axis token
-
-    // Check for operator axis token
-    lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
@@ -146,6 +135,7 @@ LPPL_YYSTYPE PrimOpMonDieresisJotCommon_EM_YY
                                      lpYYFcnStrOpr,     // Ptr to operator function strand
                                      lpYYFcnStrRht,     // Ptr to right operand function strand
                                      lptkRhtArg,        // Ptr to right arg token (may be NULL if niladic)
+                                     lptkAxisOpr,       // Ptr to axis operator token (may be NULL)
                                      bPrototyping);     // TRUE iff protoyping
 } // End PrimOpMonDieresisJotCommon_EM_YY
 
@@ -163,6 +153,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPPL_YYSTYPE lpYYFcnStrRht,        // Ptr to right operand function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token (may be NULL if niladic)
+     LPTOKEN      lptkAxisOpr,          // Ptr to axis operator token (may be NULL)
      UBOOL        bPrototyping)         // TRUE iff protoyping
 
 {
@@ -170,7 +161,6 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
                   hGlbOprRht;           // Right operand global memory handle
     LPPERTABDATA  lpMemPTD;             // Ptr to PerTabData global memory
     LPPL_YYSTYPE  lpYYRes = NULL;       // Ptr to result
-    LPTOKEN       lptkAxisOpr;          // Ptr to axis token
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
 
@@ -179,9 +169,6 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
 
     // Get the ptr to the Ctrl-Break flag
     lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
-
-    // Check for axis operator
-    lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
 
     // Ensure the left operand is a function
     if (!IsTknFcnOpr (&lpYYFcnStrLft->tkToken)
@@ -237,7 +224,7 @@ LPPL_YYSTYPE PrimOpDieresisJotCommon_EM_YY
                                   lpYYFcnStrOpr,            // Ptr to function strand
                                   lpYYFcnStrRht,            // Ptr to right operand function strand (may be NULL)
                                   lptkRhtArg,               // Ptr to right arg token (may be NULL if niladic)
-                                  NULL,                     // Ptr to axis token
+                                  lptkAxisOpr,              // Ptr to axis operator token (may be NULL)
                                   hGlbMFO1,                 // Magic function/operator global memory handle
                                   NULL,                     // Ptr to HSHTAB struc (may be NULL)
                                   bPrototyping
@@ -315,10 +302,11 @@ LPPL_YYSTYPE PrimOpDydDieresisJot_EM_YY
      LPTOKEN      lptkRhtArg)           // Ptr to right arg token
 
 {
-    return PrimOpDydDieresisJotCommon_EM_YY (lptkLftArg,    // Ptr to left arg token
-                                             lpYYFcnStrOpr, // Ptr to operator function strand
-                                             lptkRhtArg,    // Ptr to right arg token
-                                             FALSE);        // TRUE iff prototyping
+    return PrimOpDydDieresisJotCommon_EM_YY (lptkLftArg,                    // Ptr to left arg token
+                                             lpYYFcnStrOpr,                 // Ptr to operator function strand
+                                             lptkRhtArg,                    // Ptr to right arg token
+                                             CheckAxisOper (lpYYFcnStrOpr), // Ptr to axis operator (may be NULL)
+                                             FALSE);                        // TRUE iff prototyping
 } // End PrimOpDydDieresisJot_EM_YY
 
 
@@ -332,15 +320,12 @@ LPPL_YYSTYPE PrimOpDydDieresisJotCommon_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
+     LPTOKEN      lptkAxisOpr,          // Ptr to axis operator token (may be NULL)
      UBOOL        bPrototyping)         // TRUE iff protoyping
 
 {
     LPPL_YYSTYPE lpYYFcnStrLft,         // Ptr to left operand function strand
                  lpYYFcnStrRht;         // Ptr to right ...
-    LPTOKEN      lptkAxisOpr;           // Ptr to operator axis token
-
-    // Check for operator axis token
-    lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
 
     // Set ptr to left & right operands,
     //   skipping over the operator and axis token (if present)
@@ -353,6 +338,7 @@ LPPL_YYSTYPE PrimOpDydDieresisJotCommon_EM_YY
                                      lpYYFcnStrOpr,     // Ptr to operator function strand
                                      lpYYFcnStrRht,     // Ptr to right operand function strand
                                      lptkRhtArg,        // Ptr to right arg token
+                                     lptkAxisOpr,       // Ptr to axis operator token (may be NULL)
                                      bPrototyping);     // TRUE iff protoyping
 } // End PrimOpDydDieresisJotCommon_EM_YY
 

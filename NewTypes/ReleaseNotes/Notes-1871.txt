@@ -1,0 +1,12 @@
+Build #1871 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bug In Rank Operator Should Be Sensitive To Axis Operator
+
+Directory branches/bsmith/NewTypes:
+
+MF_DIJOT.H:
+  Make the monadic and dyadic Magic Operator for the Rank operator sensitive to the axis operator.
+
+PO_DIJOT.C:
+  Make the Rank operator sensitive to the axis operator by passing that value from the top to the bottom of the chain, and eventually to the Magic Operator.

@@ -44,10 +44,6 @@ LPPL_YYSTYPE SysFnMF_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
-
     //***************************************************************
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
@@ -85,7 +81,7 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
     APLRANK            aplRankRht;              // Right arg rank
     APLLONGEST         aplLongestRht;           // Right arg as immediate
     HGLOBAL            hGlbRht = NULL,          // Right arg global memory handle
-                       hGlbDfnHdr = NULL,       // Function  ...
+                       hGlbHdr = NULL,          // Function  ...
                        hGlbMonInfo = NULL,      // MonInfo   ...
                        hGlbRes = NULL,          // Result    ...
                        lpSymGlbRht;             // Ptr to global immediate
@@ -93,7 +89,7 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
                        lpMemHdrResUnion = NULL; // ...    result union ...
     LPAPLCHAR          lpMemRht;                // Ptr to right arg global memory
     LPEXTMONINFO_UNION lpMemResUnion;           // Ptr to result    ...           as integers
-    LPDFN_HEADER       lpMemDfnHdr = NULL;      // Ptr to function header global memory
+    LPDFN_HEADER       lpMemDfnHdr = NULL;      // Ptr to user-defined function header
     LPINTMONINFO       lpMemMonInfo;            // Ptr to function line monitoring info
     STFLAGS            stFlags = {0};           // Symbol Table Flags used to limit the lookup
     LPSYMENTRY         lpSymEntry;              // Ptr to SYMENTRY if found
@@ -207,35 +203,52 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
       SymTabLookupNameLength (lpMemRht,
                    (APLU3264) aplNELMRht,
                              &stFlags);
-    if (lpSymEntry)
+    if (lpSymEntry NE NULL)
     {
         // Check for user-defined function/operator
         if (lpSymEntry->stFlags.ObjName NE OBJNAME_USR          // User-defined function/operator
          || !IsNameTypeFnOp (lpSymEntry->stFlags.stNameType)    // ...
          || IzitSusPendent (lpSymEntry))                        // Suspended or pendent
+            // Mark the result as empty
             aplRowsRes = 0;
         else
         {
             // Get the global memory handle
-            hGlbDfnHdr = lpSymEntry->stData.stGlbData;
+            hGlbHdr = lpSymEntry->stData.stGlbData;
 
-            Assert (IsGlbTypeDfnDir_PTB (hGlbDfnHdr));
+            // Split cases based upon the signature
+            switch (GetSignatureGlb (hGlbHdr))
+            {
+                case DFN_HEADER_SIGNATURE:
+                    Assert (IsGlbTypeDfnDir_PTB (hGlbHdr));
 
-            // Lock the memory to get a ptr to it
-            lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
+                    // Lock the memory to get a ptr to it
+                    lpMemDfnHdr = MyGlobalLockDfn (hGlbHdr);
 
-            // Get the MonInfo global memory handle
-            hGlbMonInfo = lpMemDfnHdr->hGlbMonInfo;
+                    // Get the MonInfo global memory handle
+                    hGlbMonInfo = lpMemDfnHdr->hGlbMonInfo;
 
-            // Get the # rows in the result
-            if (hGlbMonInfo NE NULL)
-                aplRowsRes = lpMemDfnHdr->numFcnLines + 1;
-            else
-                aplRowsRes = 0;
-            // We no longer need this ptr
-            MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+                    // Get the # rows in the result
+                    if (hGlbMonInfo NE NULL)
+                        aplRowsRes = lpMemDfnHdr->numFcnLines + 1;
+                    else
+                        // Mark the result as empty
+                        aplRowsRes = 0;
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbHdr); lpMemDfnHdr = NULL;
+
+                    break;
+
+                case FCNARRAY_HEADER_SIGNATURE:
+                default:
+                    // Mark the result as empty
+                    aplRowsRes = 0;
+
+                    break;
+            } // End SWITCH
         } // End IF/ELSE
     } else
+        // Mark the result as empty
         aplRowsRes = 0;
 
     // If the result is empty, ...
@@ -536,7 +549,8 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
                       uCol;                 // Loop counter
     LPSYMENTRY        lpSymEntry;           // Ptr to SYMENTRY
     STFLAGS           stFlags;              // STE flags
-    UBOOL             bRet = TRUE;          // TRUE iff the result is valid
+    UBOOL             bRet = TRUE,          // TRUE iff the result is valid
+                      bValid = TRUE;        // TRUE iff there are no zeros in the result
     UINT              uBitIndex;            // Bit index for looping through Booleans
     LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
 
@@ -671,10 +685,10 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
                                                  1,
                                                 &stFlags);
             // If found and a valid name, ...
-            if (lpSymEntry
+            if (lpSymEntry NE NULL
              && (!IsSysName ((LPAPLCHAR) &aplLongestRht))
              && IsValidName ((LPAPLCHAR) &aplLongestRht, 1))
-                *lpMemRes |= ToggleMonInfo (lpSymEntry, (UBOOL) aplLongestLft) << uBitIndex;
+                *lpMemRes |= ToggleMonInfo (lpSymEntry, (UBOOL) aplLongestLft, &bValid) << uBitIndex;
 
 ////////////// Check for end-of-byte
 ////////////if (++uBitIndex EQ NBIB)
@@ -712,10 +726,10 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
                                               (APLU3264) (&lpMemRht[uRht] - lpMemDataStart),
                                                         &stFlags);
                     // If found and a valid name, ...
-                    if (lpSymEntry
+                    if (lpSymEntry NE NULL
                      && (!IsSysName (lpMemDataStart))
                      && IsValidName (lpMemDataStart, (APLU3264) (&lpMemRht[uRht] - lpMemDataStart)))
-                        *lpMemRes |= ToggleMonInfo (lpSymEntry, (UBOOL) aplLongestLft) << uBitIndex;
+                        *lpMemRes |= ToggleMonInfo (lpSymEntry, (UBOOL) aplLongestLft, &bValid) << uBitIndex;
 
                     // Check for end-of-byte
                     if (++uBitIndex EQ NBIB)
@@ -751,10 +765,10 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
                                           (APLU3264) (aplNELMCol - uCol),
                                                      &stFlags);
                 // If found and a valid name, ...
-                if (lpSymEntry
+                if (lpSymEntry NE NULL
                  && (!IsSysName (&lpMemDataStart[uCol]))
                  && IsValidName (&lpMemDataStart[uCol], (APLU3264) (aplNELMCol - uCol)))
-                    *lpMemRes |= ToggleMonInfo (lpSymEntry, (UBOOL) aplLongestLft) << uBitIndex;
+                    *lpMemRes |= ToggleMonInfo (lpSymEntry, (UBOOL) aplLongestLft, &bValid) << uBitIndex;
 
                 // Check for end-of-byte
                 if (++uBitIndex EQ NBIB)
@@ -776,7 +790,7 @@ LPPL_YYSTYPE SysFnDydMF_EM_YY
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-    lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
+    lpYYRes->tkToken.tkFlags.NoDisplay = bValid;
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
@@ -855,12 +869,13 @@ NORMAL_EXIT:
 
 UBOOL ToggleMonInfo
     (LPSYMENTRY lpSymEntry,             // Ptr to STE of the function
-     UBOOL      bMonOn)                 // New MonInfo bit setting
+     UBOOL      bMonOn,                 // New MonInfo bit setting
+     LPUBOOL    lpbValid)               // Ptr to TRUE iff there are no zeros in the result
 
 {
-    HGLOBAL      hGlbDfnHdr,            // Function global memory handle
-                 hGlbMonInfo;           // MonInfo  ...
-    LPDFN_HEADER lpMemDfnHdr;           // Ptr to function header global memory
+    HGLOBAL      hGlbHdr = NULL,        // Function global memory handle
+                *lphGlbMonInfo;         // Ptr to MonInfo  ...
+    LPDFN_HEADER lpMemDfnHdr = NULL;    // Ptr to user-defined function header global memory
     LPINTMONINFO lpMemMonInfo;          // Ptr to function line monitoring info
     UBOOL        bRet = FALSE;          // TRUE iff the result is valid
     UINT         uLineCnt;              // # function lines including the header
@@ -868,61 +883,84 @@ UBOOL ToggleMonInfo
     // Check for user-defined function/operator
     if ((lpSymEntry->stFlags.ObjName NE OBJNAME_USR
       && lpSymEntry->stFlags.ObjName NE OBJNAME_MFO)
+     || lpSymEntry->stFlags.Imm
+     || lpSymEntry->stFlags.FcnDir
      || !IsNameTypeFnOp (lpSymEntry->stFlags.stNameType))
-        return FALSE;
+        goto ERROR_EXIT;
 
     // Get the global memory handle
-    hGlbDfnHdr = lpSymEntry->stData.stGlbData;
+    hGlbHdr = lpSymEntry->stData.stGlbData;
 
-    Assert (IsGlbTypeDfnDir_PTB (hGlbDfnHdr));
+    // Split cases based upon the function signature
+    switch (GetSignatureGlb (hGlbHdr))
+    {
+        case DFN_HEADER_SIGNATURE:
+            Assert (IsGlbTypeDfnDir_PTB (hGlbHdr));
 
-    // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
+            // Lock the memory to get a ptr to it
+            lpMemDfnHdr = MyGlobalLockDfn (hGlbHdr);
 
-    // Get # lines including the header
-    uLineCnt = lpMemDfnHdr->numFcnLines + 1;
+            // Get # lines including the header
+            uLineCnt = lpMemDfnHdr->numFcnLines + 1;
 
-    // Set/reset the bit
-    lpMemDfnHdr->MonOn = bMonOn;
+            // Set/reset the bit
+            lpMemDfnHdr->MonOn = bMonOn;
 
-    // Get the MonInfo global memory handle
-    hGlbMonInfo = lpMemDfnHdr->hGlbMonInfo;
+            // Get the MonInfo global memory handle
+            lphGlbMonInfo = &lpMemDfnHdr->hGlbMonInfo;
+
+            break;
+
+        case FCNARRAY_HEADER_SIGNATURE:
+        default:
+            goto ERROR_EXIT;
+    } // End SWITCH
 
     // If we're enabling monitoring, zero the info (if already allocated),
     //   or allocate new memory (if not already allocated)
     if (bMonOn)
     {
-        if (hGlbMonInfo NE NULL)
+        if (*lphGlbMonInfo NE NULL)
         {
             // Lock the memory to get a ptr to it
-            lpMemMonInfo = MyGlobalLock (hGlbMonInfo);
+            lpMemMonInfo = MyGlobalLock (*lphGlbMonInfo);
 
             // Zap the memory
-            ZeroMemory (lpMemMonInfo, uLineCnt * sizeof lpMemMonInfo[0]);
+            ZeroMemory (lpMemMonInfo, uLineCnt * sizeof (lpMemMonInfo[0]));
 
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbMonInfo); lpMemMonInfo = NULL;
+            MyGlobalUnlock (*lphGlbMonInfo); lpMemMonInfo = NULL;
         } else
         {
+            HGLOBAL hGlbMonInfo;            // Temp global memory handle
+
             // Allocate new memory
-            hGlbMonInfo = DbgGlobalAlloc (GHND, uLineCnt * sizeof lpMemMonInfo[0]);
-            if (hGlbMonInfo NE NULL)
-                lpMemDfnHdr->hGlbMonInfo = hGlbMonInfo;
-            else
+            hGlbMonInfo = DbgGlobalAlloc (GHND, uLineCnt * sizeof (lpMemMonInfo[0]));
+            if (hGlbMonInfo EQ NULL)
                 goto ERROR_EXIT;
+
+            // Save in global ptr
+            *lphGlbMonInfo = hGlbMonInfo;
         } // End IF/ELSE
     } else
     // If we're disabling monitoring, free the global memory handle
-    if (hGlbMonInfo NE NULL)
+    if (*lphGlbMonInfo NE NULL)
     {
-        DbgGlobalFree (hGlbMonInfo); lpMemDfnHdr->hGlbMonInfo = hGlbMonInfo = NULL;
+        DbgGlobalFree (*lphGlbMonInfo); *lphGlbMonInfo = NULL;
     } // End IF/ELSE/...
 
     // Mark as successful
     bRet = TRUE;
 ERROR_EXIT:
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+    if (hGlbHdr NE NULL
+     && lpMemDfnHdr NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbHdr); lpMemDfnHdr = NULL;
+    } // End IF
+
+    // Pass on the result
+    *lpbValid &= bRet;
 
     return bRet;
 } // End ToggleMonInfo
@@ -935,17 +973,28 @@ ERROR_EXIT:
 //***************************************************************************
 
 void StartStopMonInfo
-    (LPDFN_HEADER lpMemDfnHdr,          // Ptr to user-defined function/operator header
-     UINT         uLineNum,             // Function line # (origin-1)
-     UBOOL        bStartMon)            // TRUE iff we're starting
+    (LPVOID lpMemHdr,                   // Ptr to user-defined function/operator header
+     UINT   uLineNum,                   // Function line # (origin-1)
+     UBOOL  bStartMon)                  // TRUE iff we're starting
 
 {
     HGLOBAL       hGlbMonInfo;          // MonInfo global memory handle
     LPINTMONINFO  lpMemMonInfo;         // Ptr to function line monitoring info
     LARGE_INTEGER aplTickCnt;           // Current tick count
 
-    // Get the MonInfo global memory handle
-    hGlbMonInfo = lpMemDfnHdr->hGlbMonInfo;
+    // Split cases based upobn the signature
+    switch (GetSignatureMem (lpMemHdr))
+    {
+        case DFN_HEADER_SIGNATURE:
+            // Get the MonInfo global memory handle
+            hGlbMonInfo = ((LPDFN_HEADER) lpMemHdr)->hGlbMonInfo;
+
+            break;
+
+        case FCNARRAY_HEADER_SIGNATURE:
+        defstop
+            break;
+    } // End SWITCH
 
     // Lock the memory to get a ptr to it
     lpMemMonInfo = MyGlobalLock (hGlbMonInfo);

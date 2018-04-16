@@ -1,6 +1,21 @@
 Version 0.5.7.xx consists of the following Builds:
 
 
+Build #1872 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bugs In []MF
+
+Directory branches/bsmith/NewTypes:
+
+QF_MF.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  Prepare for Java-defined functions by splitting cases based upon the function signature.
+  Improve comments.
+  Fix bug where we didn't handle a named immediate function or a function array.
+  Set the <NoDisplay> flags for the result of dyadic []MF is the result is all 1s.
+
+
 Build #1871 -- Version 0.5.7.xx
 -------------------------------
 

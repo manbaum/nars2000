@@ -92,6 +92,7 @@ void InitPrimTabs
     InitPrimFlags ();           // ...        table of primitive fcn/opr flags
     InitIdentityElements ();    // ...        identity elements
     InitPrimeTabs ();           // ...        prime # tables
+    InitVarOprTab ();             // ...        Variant operator tables
 } // End InitPrimTabs
 
 
@@ -367,131 +368,131 @@ void InitPrimFns
     //    ExecOp1_EM_YY and ExecOp2_EM_YY.
     //***************************************************************
                                                                                 // Alt-'a' - alpha
-    InitPrimFn (UTF16_UPTACK              , &PrimFnUpTack_EM_YY             );  // Alt-'b' - up tack
-    InitPrimFn (UTF16_UPSHOE              , &PrimFnUpShoe_EM_YY             );  // Alt-'c' - up shoe
-    InitPrimFn (UTF16_DOWNSTILE           , &PrimFnDownStile_EM_YY          );  // Alt-'d' - down stile
-    InitPrimFn (UTF16_EPSILON             , &PrimFnEpsilon_EM_YY            );  // Alt-'e' - epsilon
-    InitPrimFn (UTF16_EPSILON2            , &PrimFnEpsilon_EM_YY            );  //         - epsilon2
+    Init1PrimFn (UTF16_UPTACK              , &PrimFnUpTack_EM_YY             );  // Alt-'b' - up tack
+    Init1PrimFn (UTF16_UPSHOE              , &PrimFnUpShoe_EM_YY             );  // Alt-'c' - up shoe
+    Init1PrimFn (UTF16_DOWNSTILE           , &PrimFnDownStile_EM_YY          );  // Alt-'d' - down stile
+    Init1PrimFn (UTF16_EPSILON             , &PrimFnEpsilon_EM_YY            );  // Alt-'e' - epsilon
+    Init1PrimFn (UTF16_EPSILON2            , &PrimFnEpsilon_EM_YY            );  //         - epsilon2
 ////                                                                            // Alt-'f' - infinity
 ////                                                                            // Alt-'g' - del
 ////                                                                            // Alt-'h' - delta
-    InitPrimFn (UTF16_IOTA                , &PrimFnIota_EM_YY               );  // Alt-'i' - iota
+    Init1PrimFn (UTF16_IOTA                , &PrimFnIota_EM_YY               );  // Alt-'i' - iota
 ////                                                                            // Alt-'j' - jot (compose)
 ////                                                                            // Alt-'k' - single quote
 ////                                                                            // Alt-'l' - quad
 ////                                                                            // Alt-'m' - down-shoe-stile
-    InitPrimFn (UTF16_DOWNTACK            , &PrimFnDownTack_EM_YY           );  // Alt-'n' - down tack
-    InitPrimFn (UTF16_CIRCLE              , &PrimFnCircle_EM_YY             );  // Alt-'o' - circle
-    InitPrimFn (UTF16_CIRCLE2             , &PrimFnCircle_EM_YY             );  // Circle2
-    InitPrimFn (UTF16_PI                  , &PrimFnPi_EM_YY                 );  // Alt-'p' - pi
-    InitPrimFn (UTF16_QUERY               , &PrimFnQuery_EM_YY              );  // Alt-'q' - question mark
-    InitPrimFn (UTF16_RHO                 , &PrimFnRho_EM_YY                );  // Alt-'r' - rho
-    InitPrimFn (UTF16_UPSTILE             , &PrimFnUpStile_EM_YY            );  // Alt-'s' - up stile
-    InitPrimFn (UTF16_TILDE               , &PrimFnTilde_EM_YY              );  // Alt-'t' - tilde
-    InitPrimFn (UTF16_TILDE2              , &PrimFnTilde_EM_YY              );  // Tilde2'
-    InitPrimFn (UTF16_DOWNARROW           , &PrimFnDownArrow_EM_YY          );  // Alt-'u' - down arrow
-    InitPrimFn (UTF16_DOWNSHOE            , &PrimFnDownShoe_EM_YY           );  // Alt-'v' - down shoe
+    Init1PrimFn (UTF16_DOWNTACK            , &PrimFnDownTack_EM_YY           );  // Alt-'n' - down tack
+    Init1PrimFn (UTF16_CIRCLE              , &PrimFnCircle_EM_YY             );  // Alt-'o' - circle
+    Init1PrimFn (UTF16_CIRCLE2             , &PrimFnCircle_EM_YY             );  // Circle2
+    Init1PrimFn (UTF16_PI                  , &PrimFnPi_EM_YY                 );  // Alt-'p' - pi
+    Init1PrimFn (UTF16_QUERY               , &PrimFnQuery_EM_YY              );  // Alt-'q' - question mark
+    Init1PrimFn (UTF16_RHO                 , &PrimFnRho_EM_YY                );  // Alt-'r' - rho
+    Init1PrimFn (UTF16_UPSTILE             , &PrimFnUpStile_EM_YY            );  // Alt-'s' - up stile
+    Init1PrimFn (UTF16_TILDE               , &PrimFnTilde_EM_YY              );  // Alt-'t' - tilde
+    Init1PrimFn (UTF16_TILDE2              , &PrimFnTilde_EM_YY              );  // Tilde2'
+    Init1PrimFn (UTF16_DOWNARROW           , &PrimFnDownArrow_EM_YY          );  // Alt-'u' - down arrow
+    Init1PrimFn (UTF16_DOWNSHOE            , &PrimFnDownShoe_EM_YY           );  // Alt-'v' - down shoe
                                                                                 // Alt-'w' - omega
-    InitPrimFn (UTF16_RIGHTSHOE           , &PrimFnRightShoe_EM_YY          );  // Alt-'x' - right shoe
-    InitPrimFn (UTF16_UPARROW             , &PrimFnUpArrow_EM_YY            );  // Alt-'y' - up arrow
-    InitPrimFn (UTF16_LEFTSHOE            , &PrimFnLeftShoe_EM_YY           );  // Alt-'z' - left shoe
-    InitPrimFn (UTF16_EQUALUNDERBAR       , &PrimFnEqualUnderbar_EM_YY      );  // Alt-'!' - match
+    Init1PrimFn (UTF16_RIGHTSHOE           , &PrimFnRightShoe_EM_YY          );  // Alt-'x' - right shoe
+    Init1PrimFn (UTF16_UPARROW             , &PrimFnUpArrow_EM_YY            );  // Alt-'y' - up arrow
+    Init1PrimFn (UTF16_LEFTSHOE            , &PrimFnLeftShoe_EM_YY           );  // Alt-'z' - left shoe
+    Init1PrimFn (UTF16_EQUALUNDERBAR       , &PrimFnEqualUnderbar_EM_YY      );  // Alt-'!' - match
 ////                                                                            // Alt-'"' - (none)
-    InitPrimFn (UTF16_DELSTILE            , &PrimFnDelStile_EM_YY           );  // Alt-'#' - grade-down
-    InitPrimFn (UTF16_DELTASTILE          , &PrimFnDeltaStile_EM_YY         );  // Alt-'$' - grade-up
-    InitPrimFn (UTF16_CIRCLESTILE         , &PrimFnCircleStile_EM_YY        );  // Alt-'%' - rotate
-    InitPrimFn (UTF16_CIRCLESLOPE         , &PrimFnCircleSlope_EM_YY        );  // Alt-'^' - transpose
-    InitPrimFn (UTF16_CIRCLEBAR           , &PrimFnCircleBar_EM_YY          );  // Alt-'&' - circle-bar
-    InitPrimFn (UTF16_UPTACKJOT           , &PrimFnUpTackJot_EM_YY          );  // Alt-'\''- execute
-    InitPrimFn (UTF16_DOWNCARETTILDE      , &PrimFnDownCaretTilde_EM_YY     );  // Alt-'(' - nor
-    InitPrimFn (UTF16_NOR                 , &PrimFnDownCaretTilde_EM_YY     );  // Alt-'(' - nor
-    InitPrimFn (UTF16_UPCARETTILDE        , &PrimFnUpCaretTilde_EM_YY       );  // Alt-')' - nand
-    InitPrimFn (UTF16_NAND                , &PrimFnUpCaretTilde_EM_YY       );  // Alt-')' - nand
-    InitPrimFn (UTF16_CIRCLESTAR          , &PrimFnCircleStar_EM_YY         );  // Alt-'*' - log
-    InitPrimFn (UTF16_DOMINO              , &PrimFnDomino_EM_YY             );  // Alt-'+' - domino
+    Init1PrimFn (UTF16_DELSTILE            , &PrimFnDelStile_EM_YY           );  // Alt-'#' - grade-down
+    Init1PrimFn (UTF16_DELTASTILE          , &PrimFnDeltaStile_EM_YY         );  // Alt-'$' - grade-up
+    Init1PrimFn (UTF16_CIRCLESTILE         , &PrimFnCircleStile_EM_YY        );  // Alt-'%' - rotate
+    Init1PrimFn (UTF16_CIRCLESLOPE         , &PrimFnCircleSlope_EM_YY        );  // Alt-'^' - transpose
+    Init1PrimFn (UTF16_CIRCLEBAR           , &PrimFnCircleBar_EM_YY          );  // Alt-'&' - circle-bar
+    Init1PrimFn (UTF16_UPTACKJOT           , &PrimFnUpTackJot_EM_YY          );  // Alt-'\''- execute
+    Init1PrimFn (UTF16_DOWNCARETTILDE      , &PrimFnDownCaretTilde_EM_YY     );  // Alt-'(' - nor
+    Init1PrimFn (UTF16_NOR                 , &PrimFnDownCaretTilde_EM_YY     );  // Alt-'(' - nor
+    Init1PrimFn (UTF16_UPCARETTILDE        , &PrimFnUpCaretTilde_EM_YY       );  // Alt-')' - nand
+    Init1PrimFn (UTF16_NAND                , &PrimFnUpCaretTilde_EM_YY       );  // Alt-')' - nand
+    Init1PrimFn (UTF16_CIRCLESTAR          , &PrimFnCircleStar_EM_YY         );  // Alt-'*' - log
+    Init1PrimFn (UTF16_DOMINO              , &PrimFnDomino_EM_YY             );  // Alt-'+' - domino
 ////                                                                            // Alt-',' - lamp
-    InitPrimFn (UTF16_TIMES               , &PrimFnTimes_EM_YY              );  // Alt-'-' - times
-    InitPrimFn (UTF16_SLOPEBAR            , &PrimFnSlopeBar_EM_YY           );  // Alt-'.' - slope-bar
-    InitPrimFn (UTF16_SLASHBAR            , &PrimFnSlashBar_EM_YY           );  // Alt-'/' - slash-bar
-    InitPrimFn (UTF16_UPCARET             , &PrimFnUpCaret_EM_YY            );  // Alt-'0' - and (94??)
-    InitPrimFn (UTF16_CIRCUMFLEX          , &PrimFnUpCaret_EM_YY            );  // '^'
+    Init1PrimFn (UTF16_TIMES               , &PrimFnTimes_EM_YY              );  // Alt-'-' - times
+    Init1PrimFn (UTF16_SLOPEBAR            , &PrimFnSlopeBar_EM_YY           );  // Alt-'.' - slope-bar
+    Init1PrimFn (UTF16_SLASHBAR            , &PrimFnSlashBar_EM_YY           );  // Alt-'/' - slash-bar
+    Init1PrimFn (UTF16_UPCARET             , &PrimFnUpCaret_EM_YY            );  // Alt-'0' - and (94??)
+    Init1PrimFn (UTF16_CIRCUMFLEX          , &PrimFnUpCaret_EM_YY            );  // '^'
 ////                                                                            // Alt-'1' - dieresis
 ////                                                                            // Alt-'2' - overbar
-    InitPrimFn (UTF16_LEFTCARET           , &PrimFnLeftCaret_EM_YY          );  // Alt-'3' - less
-    InitPrimFn (UTF16_LEFTCARETUNDERBAR   , &PrimFnLeftCaretUnderbar_EM_YY  );  // Alt-'4' - not more
-    InitPrimFn (UTF16_LEFTCARETUNDERBAR2  , &PrimFnLeftCaretUnderbar_EM_YY  );  // Not more2
-    InitPrimFn (UTF16_EQUAL               , &PrimFnEqual_EM_YY              );  // Alt-'5' - equal
-    InitPrimFn (UTF16_RIGHTCARETUNDERBAR  , &PrimFnRightCaretUnderbar_EM_YY );  // Alt-'6' - not less
-    InitPrimFn (UTF16_RIGHTCARETUNDERBAR2 , &PrimFnRightCaretUnderbar_EM_YY );  // Not less2
-    InitPrimFn (UTF16_RIGHTCARET          , &PrimFnRightCaret_EM_YY         );  // Alt-'7' - more
-    InitPrimFn (UTF16_NOTEQUAL            , &PrimFnNotEqual_EM_YY           );  // Alt-'8' - not equal
-    InitPrimFn (UTF16_DOWNCARET           , &PrimFnDownCaret_EM_YY          );  // Alt-'9' - or
+    Init1PrimFn (UTF16_LEFTCARET           , &PrimFnLeftCaret_EM_YY          );  // Alt-'3' - less
+    Init1PrimFn (UTF16_LEFTCARETUNDERBAR   , &PrimFnLeftCaretUnderbar_EM_YY  );  // Alt-'4' - not more
+    Init1PrimFn (UTF16_LEFTCARETUNDERBAR2  , &PrimFnLeftCaretUnderbar_EM_YY  );  // Not more2
+    Init1PrimFn (UTF16_EQUAL               , &PrimFnEqual_EM_YY              );  // Alt-'5' - equal
+    Init1PrimFn (UTF16_RIGHTCARETUNDERBAR  , &PrimFnRightCaretUnderbar_EM_YY );  // Alt-'6' - not less
+    Init1PrimFn (UTF16_RIGHTCARETUNDERBAR2 , &PrimFnRightCaretUnderbar_EM_YY );  // Not less2
+    Init1PrimFn (UTF16_RIGHTCARET          , &PrimFnRightCaret_EM_YY         );  // Alt-'7' - more
+    Init1PrimFn (UTF16_NOTEQUAL            , &PrimFnNotEqual_EM_YY           );  // Alt-'8' - not equal
+    Init1PrimFn (UTF16_DOWNCARET           , &PrimFnDownCaret_EM_YY          );  // Alt-'9' - or
 ////                                                                            // Alt-':' - (none)
-    InitPrimFn (UTF16_DOWNTACKJOT         , &PrimFnDownTackJot_EM_YY        );  // Alt-';' - format
+    Init1PrimFn (UTF16_DOWNTACKJOT         , &PrimFnDownTackJot_EM_YY        );  // Alt-';' - format
 ////                                                                            // Alt-'<' - (none)
-    InitPrimFn (UTF16_COLONBAR            , &PrimFnColonBar_EM_YY           );  // Alt-'=' - divide
+    Init1PrimFn (UTF16_COLONBAR            , &PrimFnColonBar_EM_YY           );  // Alt-'=' - divide
 ////                                                                            // Alt-'>' - (none)
 ////                                                                            // Alt-'?' - circle-middle-dot
-    InitPrimFn (UTF16_NOTEQUALUNDERBAR    , &PrimFnNotEqualUnderbar_EM_YY   );  // Alt-'@' - mismatch
+    Init1PrimFn (UTF16_NOTEQUALUNDERBAR    , &PrimFnNotEqualUnderbar_EM_YY   );  // Alt-'@' - mismatch
 ////                                                                            // Alt-'A' - (none)
 ////                                                                            // Alt-'B' - (none)
 ////                                                                            // Alt-'C' - (none)
 ////                                                                            // Alt-'D' - (none)
-    InitPrimFn (UTF16_EPSILONUNDERBAR     , &PrimFnEpsilonUnderbar_EM_YY    );  // Alt-'E' - epsilon-underbar
+    Init1PrimFn (UTF16_EPSILONUNDERBAR     , &PrimFnEpsilonUnderbar_EM_YY    );  // Alt-'E' - epsilon-underbar
 ////                                                                            // Alt-'F' - quad-jot
 ////                                                                            // Alt-'G' - dieresis-del (dual)
 ////                                                                            // Alt-'H' - delta-underbar
-    InitPrimFn (UTF16_IOTAUNDERBAR        , &PrimFnIotaUnderbar_EM_YY       );  // Alt-'I' - iota-underbar
+    Init1PrimFn (UTF16_IOTAUNDERBAR        , &PrimFnIotaUnderbar_EM_YY       );  // Alt-'I' - iota-underbar
 ////                                                                            // Alt-'J' - dieresis-jot (rank)
 ////                                                                            // Alt-'K' - (none)
-    InitPrimFn (UTF16_SQUAD               , &PrimFnSquad_EM_YY              );  // Alt-'L' - squad
+    Init1PrimFn (UTF16_SQUAD               , &PrimFnSquad_EM_YY              );  // Alt-'L' - squad
 ////                                                                            // Alt-'M' - stile-tilde (partition)
 ////                                                                            // Alt-'N' - dieresis-downtack (convolution)
 ////                                                                            // Alt-'O' - dieresis-circle (composition)
 ////                                                                            // Alt-'P' - dieresis-star (power)
 ////                                                                            // Alt-'Q' - (none)
-    InitPrimFn (UTF16_ROOT                , &PrimFnRoot_EM_YY               );  // Alt-'R' - root
-    InitPrimFn (UTF16_SECTION             , &PrimFnSection_EM_YY            );  // Alt-'S' - section (symmetric difference)
+    Init1PrimFn (UTF16_ROOT                , &PrimFnRoot_EM_YY               );  // Alt-'R' - root
+    Init1PrimFn (UTF16_SECTION             , &PrimFnSection_EM_YY            );  // Alt-'S' - section (symmetric difference)
 ////                                                                            // Alt-'T' - dieresis-tilde (commute/duplicate)
 ////                                                                            // Alt-'U' - (none)
 ////                                                                            // Alt-'V' - (none)
 ////                                                                            // Alt-'W' - (none)
-    InitPrimFn (UTF16_RIGHTSHOEUNDERBAR   , &PrimFnRightShoeUnderbar_EM_YY  );  // Alt-'X' - right shoe
+    Init1PrimFn (UTF16_RIGHTSHOEUNDERBAR   , &PrimFnRightShoeUnderbar_EM_YY  );  // Alt-'X' - right shoe
 ////                                                                            // Alt-'Y' - (none)
-    InitPrimFn (UTF16_LEFTSHOEUNDERBAR    , &PrimFnLeftShoeUnderbar_EM_YY   );  // Alt-'Z' - left shoe underbar
+    Init1PrimFn (UTF16_LEFTSHOEUNDERBAR    , &PrimFnLeftShoeUnderbar_EM_YY   );  // Alt-'Z' - left shoe underbar
 ////                                                                            // Alt-'[' - left arrow
-    InitPrimFn (UTF16_LEFTTACK            , &PrimFnLeftTack_EM_YY           );  // Alt-'\' - left tack
+    Init1PrimFn (UTF16_LEFTTACK            , &PrimFnLeftTack_EM_YY           );  // Alt-'\' - left tack
 ////                                                                            // Alt-']' - right arrow
 ////                                                                            // Alt-'_' - variant
 ////                                                                            // Alt-'`' - diamond
 ////                                                                            // Alt-'{' - quote-quad
-    InitPrimFn (UTF16_RIGHTTACK           , &PrimFnRightTack_EM_YY          );  // Alt-'|' - right tack
+    Init1PrimFn (UTF16_RIGHTTACK           , &PrimFnRightTack_EM_YY          );  // Alt-'|' - right tack
 ////                                                                            // Alt-'}' - zilde
-    InitPrimFn (UTF16_COMMABAR            , &PrimFnCommaBar_EM_YY           );  // Alt-'~' - comma-bar
-    InitPrimFn (UTF16_BAR                 , &PrimFnBar_EM_YY                );  //     '-'
-    InitPrimFn (UTF16_BAR2                , &PrimFnBar_EM_YY                );  //     '-'
-    InitPrimFn (UTF16_DOT                 , &PrimFnDotDot_EM_YY             );  //     '.'
-    InitPrimFn (UTF16_PLUS                , &PrimFnPlus_EM_YY               );  //     '+'
-    InitPrimFn (UTF16_STILE               , &PrimFnStile_EM_YY              );  //     '|'
-    InitPrimFn (UTF16_STILE2              , &PrimFnStile_EM_YY              );  //     '|'
-    InitPrimFn (UTF16_COMMA               , &PrimFnComma_EM_YY              );  //     ','
-    InitPrimFn (UTF16_QUOTEDOT            , &PrimFnQuoteDot_EM_YY           );  //     '!'
-    InitPrimFn (UTF16_SLASH               , &PrimFnSlash_EM_YY              );  //     '/'
-    InitPrimFn (UTF16_SLOPE               , &PrimFnSlope_EM_YY              );  //     '\'
-    InitPrimFn (UTF16_STAR                , &PrimFnStar_EM_YY               );  //     '*'
-    InitPrimFn (UTF16_STAR2               , &PrimFnStar_EM_YY               );  //     '*'
+    Init1PrimFn (UTF16_COMMABAR            , &PrimFnCommaBar_EM_YY           );  // Alt-'~' - comma-bar
+    Init1PrimFn (UTF16_BAR                 , &PrimFnBar_EM_YY                );  //     '-'
+    Init1PrimFn (UTF16_BAR2                , &PrimFnBar_EM_YY                );  //     '-'
+    Init1PrimFn (UTF16_DOT                 , &PrimFnDotDot_EM_YY             );  //     '.'
+    Init1PrimFn (UTF16_PLUS                , &PrimFnPlus_EM_YY               );  //     '+'
+    Init1PrimFn (UTF16_STILE               , &PrimFnStile_EM_YY              );  //     '|'
+    Init1PrimFn (UTF16_STILE2              , &PrimFnStile_EM_YY              );  //     '|'
+    Init1PrimFn (UTF16_COMMA               , &PrimFnComma_EM_YY              );  //     ','
+    Init1PrimFn (UTF16_QUOTEDOT            , &PrimFnQuoteDot_EM_YY           );  //     '!'
+    Init1PrimFn (UTF16_SLASH               , &PrimFnSlash_EM_YY              );  //     '/'
+    Init1PrimFn (UTF16_SLOPE               , &PrimFnSlope_EM_YY              );  //     '\'
+    Init1PrimFn (UTF16_STAR                , &PrimFnStar_EM_YY               );  //     '*'
+    Init1PrimFn (UTF16_STAR2               , &PrimFnStar_EM_YY               );  //     '*'
 ////                                                                            //         - dot (inner product)
 ////                                                                            //         - jotdot (outer product)
 } // End InitPrimFns
 
 
 //***************************************************************************
-//  $InitPrimFn
+//  $Init1PrimFn
 //
 //  Initialize a single primitive function/operator
 //***************************************************************************
 
-void InitPrimFn
+void Init1PrimFn
     (WCHAR     wchFn,
      LPPRIMFNS lpPrimFn)
 
@@ -500,7 +501,7 @@ void InitPrimFn
         DbgStop ();         // We should never get here
     else
         PrimFnsTab[FcnTrans (wchFn)] = lpPrimFn;
-} // End InitPrimFn
+} // End Init1PrimFn
 
 
 //***************************************************************************

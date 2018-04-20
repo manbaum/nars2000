@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3235,6 +3235,34 @@ void SetQuadCT
 {
     GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_CT]->stData.stFloat = fQuadCT;
 } // End SetQuadCT
+
+
+//***************************************************************************
+//  $GetQuadFPC
+//
+//  Get the current value of []FPC
+//***************************************************************************
+
+APLUINT GetQuadFPC
+    (void)
+
+{
+    return GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_FPC]->stData.stInteger;
+} // End GetQuadFPC
+
+
+//***************************************************************************
+//  $SetQuadFPC
+//
+//  Set the current value of []FPC
+//***************************************************************************
+
+void SetQuadFPC
+    (APLUINT uQuadFPC)
+
+{
+    GetMemPTD ()->lphtsPTD->lpSymQuad[SYSVAR_FPC]->stData.stInteger = uQuadFPC;
+} // End SetQuadFPC
 
 
 //***************************************************************************

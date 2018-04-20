@@ -780,8 +780,8 @@ UBOOL ValidateCharScalar_EM
     (LPTOKEN  lptkNamArg,           // Ptr to name token (may be NULL if retValue is not)
      LPTOKEN  lptkExpr,             // Ptr to value token
      APLCHAR  cDefault,             // Default value
-     LPWCHAR  defAllow,             // Ptr to vector of allowed values
-     LPWCHAR  retValue)             // Ptr to return value (may be NULL if lptkNamArg is not)
+     LPWCHAR  lpDefAllow,           // Ptr to vector of allowed values
+     LPWCHAR  lpRetValue)           // Ptr to return value (may be NULL if lptkNamArg is not)
 
 {
     APLSTYPE          aplTypeRht;           // Right arg storage type
@@ -826,7 +826,7 @@ UBOOL ValidateCharScalar_EM
                     aplChar = tolower (lptkExpr->tkData.tkSym->stData.stChar);
 
                     // Test the value
-                    bRet = (strchrW (defAllow, aplChar) NE NULL);
+                    bRet = (strchrW (lpDefAllow, aplChar) NE NULL);
 
                     break;
             } // End SWITCH
@@ -850,7 +850,7 @@ UBOOL ValidateCharScalar_EM
                     aplChar = tolower (lptkExpr->tkData.tkChar);
 
                     // Test the value
-                    bRet = (strchrW (defAllow, aplChar) NE NULL);
+                    bRet = (strchrW (lpDefAllow, aplChar) NE NULL);
 
                     break;
             } // End SWITCH
@@ -925,7 +925,7 @@ UBOOL ValidateCharScalar_EM
             aplChar = tolower (*(LPAPLCHAR) lpMemRht);
 
             // Test the value
-            bRet = (strchrW (defAllow, aplChar) NE NULL);
+            bRet = (strchrW (lpDefAllow, aplChar) NE NULL);
 
             break;
 
@@ -942,8 +942,8 @@ NORMAL_EXIT:
         lptkNamArg->tkData.tkSym->stData.stChar = aplChar;
         lptkNamArg->tkFlags.NoDisplay = TRUE;
     } else
-    if (retValue NE NULL)
-        retValue[0] = aplChar;
+    if (lpRetValue NE NULL)
+        lpRetValue[0] = aplChar;
     else
         DbgStop ();         // We should never get here
     goto UNLOCK_EXIT;
@@ -1281,6 +1281,33 @@ UNLOCK_EXIT:
 
     return bRet;
 } // End ValidateInteger_EM
+
+
+//***************************************************************************
+//  $ValidateCharTest
+//
+//  Validate a character within allowable values
+//***************************************************************************
+
+UBOOL ValidateCharTest
+    (LPAPLCHAR lpaplChar,           // Ptr to the character to test
+     APLCHAR   cDefault,            // Default value
+     LPWCHAR   lpDefAllow,          // Ptr to vector of allowed values
+     LPWCHAR   lpRetValue)          // Ptr to return value (may be NULL if <aplChar> is not WC_EOS)
+
+{
+    // If the value is empty or WC_EOS, ...
+    if (lpaplChar    EQ NULL
+     || lpaplChar[0] EQ WC_EOS)
+    {
+        // Return the default value
+        lpRetValue[0] = cDefault;
+
+        return TRUE;
+    } else
+        return
+          strchrW (lpDefAllow, lpaplChar[0]) NE NULL;
+} // End ValidateCharTest
 
 
 //***************************************************************************
@@ -2770,7 +2797,7 @@ UBOOL ValidSetLR_EM
 {
     // Ensure the argument is either a real scalar or
     //   one-element vector (demoted to a scalar)
-    return ValidateCharScalar_EM (lptkNamArg,           // Ptr to name arg token (may be NULL if retValue is not)
+    return ValidateCharScalar_EM (lptkNamArg,           // Ptr to name arg token (may be NULL if lpRetValue is not)
                                   lptkRhtArg,           // Ptr to right arg token
                   bResetVars.LR ? DEF_QUADLR_CWS[0]
                                 : cQuadLR_CWS,          // Default ...
@@ -2792,7 +2819,7 @@ UBOOL ValidSetDT_EM
 {
     // Ensure the argument is either a real scalar or
     //   one-element vector (demoted to a scalar)
-    return ValidateCharScalar_EM (lptkNamArg,           // Ptr to name arg token (may be NULL if retValue is not)
+    return ValidateCharScalar_EM (lptkNamArg,           // Ptr to name arg token (may be NULL if lpRetValue is not)
                                   lptkRhtArg,           // Ptr to right arg token
                   bResetVars.DT ? DEF_QUADDT_CWS[0]
                                 : cQuadDT_CWS,          // Default ...

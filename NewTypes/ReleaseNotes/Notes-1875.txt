@@ -1,0 +1,34 @@
+Build #1875 -- Version 0.5.7.xx
+-------------------------------
+
+* Rewrite The Variant Operator To Be Data-Driven
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+  Move Variant operator enums, structs, etc. to <po_variant.h>.
+
+GETFNS.C:
+  Define <Get/SetQuadFPC> routines to use with Variant operator.
+
+HEADERS.H:
+  Include <po_variant.h> in the global headers file.
+
+INITDATA.C:
+  Initialize the <varOprTab> table at startup.
+  Rename <InitPrimFn> to <Init1PrimFn> to distinguish it better from <InitPrimFns>.
+
+PO_VARIANT.C:
+  Rewrite the Variant operator code to be data-driven.
+
+PO_VARIANT.H:
+  Move Variant operator enums, structs, etc. to <po_variant.h>.
+  Define more Variant operator enums, structs, and tables so that the Variant operator can be data-driven.
+
+SYSVARS.C:
+  Rename ptr vars to use <lp> prefix.
+  Define <ValidateCharTest> to test for a character in an allowable set for use with the Variant operator.
+
+SYSVARS.H:
+  Define pseudo-#defines for use with the Variant operator and Interior/Exterior multiplication.
+  Define min/max range for Eigenvalue/vector/etc. Variant operator right operands for {domino}.

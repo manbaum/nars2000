@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,8 @@
 #define DEF_QUADxCT_CWS     0x3CEB05876E5B0120      // 3E-15 in hex
 #define DEF_QUADLR_CWS      L"r"
 #define DEF_QUADLR_ALLOW    L"lr"
+#define DEF_QUADIE_CWS      L"i"
+#define DEF_QUADIE_ALLOW    L"ie"
 #define DEF_QUADLR_NAMES    L"Left", L"Right"
 #define DEF_QUADDT_CWS      L"r"
 #define DEF_QUADDT_ALLOW    L"rgp"
@@ -84,6 +86,9 @@
 
 #define DEF_MIN_QUADRL      1                   // Minimum value for []RL
 #define DEF_MAX_QUADRL      (QUADRL_MODULUS - 1)// Maximum ...
+
+#define DEF_MIN_QUADEIG     1                   // Minimum value for {domino}{variant} N
+#define DEF_MAX_QUADEIG     5                   // Maximum ...
 
 
 // System Comparison Tolerance

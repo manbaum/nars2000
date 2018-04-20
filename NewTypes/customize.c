@@ -1481,6 +1481,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         // Check the boxes of Range Limited system vars
                         CheckDlgButton (hWndProp, IDC_RANGE_XB_CT      , bRangeLimit.CT      );
                         CheckDlgButton (hWndProp, IDC_RANGE_XB_FEATURE , bRangeLimit.FEATURE );
+                        CheckDlgButton (hWndProp, IDC_RANGE_XB_FPC     , bRangeLimit.FPC     );
                         CheckDlgButton (hWndProp, IDC_RANGE_XB_IC      , bRangeLimit.IC      );
                         CheckDlgButton (hWndProp, IDC_RANGE_XB_IO      , bRangeLimit.IO      );
                         CheckDlgButton (hWndProp, IDC_RANGE_XB_PP      , bRangeLimit.PP      );
@@ -3230,6 +3231,7 @@ INT_PTR CALLBACK CustomizeDlgProc
 
                         bRangeLimit.CT      = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_CT      );
                         bRangeLimit.FEATURE = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_FEATURE );
+                        bRangeLimit.FPC     = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_FPC     );
                         bRangeLimit.IC      = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_IC      );
                         bRangeLimit.IO      = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_IO      );
                         bRangeLimit.PP      = IsDlgButtonChecked (hWndProp, IDC_RANGE_XB_PP      );
@@ -4040,6 +4042,8 @@ INT_PTR CALLBACK CustomizeDlgProc
                 //***************************************************************
 
                 case IDC_RANGE_XB_CT:
+                case IDC_RANGE_XB_FEATURE:
+                case IDC_RANGE_XB_FPC:
                 case IDC_RANGE_XB_IO:
                 case IDC_RANGE_XB_IC:
                 case IDC_RANGE_XB_PP:

@@ -1,0 +1,16 @@
+Build #1876 -- Version 0.5.7.xx
+-------------------------------
+
+* Miscellaneous Changes
+
+Directory branches/bsmith/NewTypes:
+
+CUSTOMIZE.C:
+  Include missing CheckBox code for []FPC and []FEATURE.
+
+DEFINES.H:
+  Keep copyright years up-to-date and mark for the next time.
+
+MAIN.RC:
+  Keep copyright years up-to-date and mark for the next time.
+  In <CLEARWS_VALUES> and <SYSTEM_VAR_RESET>, re-alphabetize the entries to reflect the name change of []DQ to []LR.

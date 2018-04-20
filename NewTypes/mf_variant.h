@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ MAGIC_FCNOPR MFO_DydVOFact =
 static LPAPLCHAR MonExecuteBody[] =
 {L"⎕PRO:",
  L"⎕FPC←L",
- L"Z←⍎R",
+ L"Z←##.⍎R",
 };
 
 MAGIC_FCNOPR MFO_MonExecute =

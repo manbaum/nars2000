@@ -961,7 +961,7 @@ LRESULT APIENTRY SMWndProc
             INIT_PERTABVARS
 
             // Allocate room for PTDMEMVIRT_LENGTH MemVirtStrs
-            //  (see PTDMEMVIRTENUM)
+            //  (see PTDMEMVIRT_ENUM)
             lpLclMemVirtStr =
               MyVirtualAlloc (NULL,                 // Any address (FIXED SIZE)
                               PTDMEMVIRT_LENGTH * sizeof (MEMVIRTSTR),
@@ -2451,7 +2451,7 @@ NORMAL_EXIT:
                 DbgGlobalFree (lpMemPTD->hGlbCurLine); lpMemPTD->hGlbCurLine = NULL;
             } // End IF
 
-            // *************** PTDMEMVIRTENUM Entries ******************
+            // *************** PTDMEMVIRT_ENUM Entries *****************
             // Get the MemVirtStr ptr
             (HANDLE_PTR) lpLclMemVirtStr = GetWindowLongPtrW (hWnd, GWLSF_LPMVS);
             if (lpLclMemVirtStr NE NULL)

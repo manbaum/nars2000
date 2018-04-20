@@ -3233,7 +3233,7 @@ void FreeHshSymTabs
 //***************************************************************************
 
 void FreeVirtUnlink
-    (PTDMEMVIRTENUM uCnt,               // Index
+    (PTDMEMVIRT_ENUM uCnt,              // Index
      LPMEMVIRTSTR   lpLclMemVirtStr)    // Ptr to local MemVirtStr (may be NULL)
 
 {

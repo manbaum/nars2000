@@ -1,6 +1,32 @@
 Version 0.5.7.xx consists of the following Builds:
 
 
+Build #1874 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bug In #MonExecute With Name Conflict
+
+Directory branches/bsmith/NewTypes:
+
+ENUMS.H:
+  In <PTDMEMVIRT_ENUM>, Define entries for another SYMTAB & HSHTAB for <#MonExecute>.
+  Rename <PTHMEMVIRTENUM> to <PTDMEMVIRT_ENUM> so as to conform to naming convention for enums.
+
+EXECMFN.C:
+  Rename <PTHMEMVIRTENUM> to <PTDMEMVIRT_ENUM> so as to conform to naming convention for enums.
+  Set local HTS for <#MonExecute>.
+
+MF_VARIANT.H:
+  In <#MonExecute>, set the System Namespace Level to back up to the caller's HTS.
+
+PERTAB.H:
+  In <HTS_MFO>, define an entry for <#MonExecute>.
+
+SESSMAN.C:
+SYMTAB.C:
+  Rename <PTHMEMVIRTENUM> to <PTDMEMVIRT_ENUM> so as to conform to naming convention for enums.
+
+
 Build #1873 -- Version 0.5.7.xx
 -------------------------------
 

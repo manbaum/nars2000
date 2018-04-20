@@ -63,8 +63,9 @@
 typedef enum tagHTS_MFO
 {
     HTS_MONVR       = 0,            // 00:  MonVR
-    HTS_DYDSQUAD,                   // 01:  DydSquad
-    HTS_LENGTH                      // 02:  # entries
+    HTS_MONEXECUTE     ,            // 01:  MonExecute
+    HTS_DYDSQUAD       ,            // 02:  DydSquad
+    HTS_LENGTH                      // 03:  # entries
 } HTSMFO, *LPHTSMFO;
 // N.B.:  Don't forget to include a ptr to the appropriate ahtsMFO[] struct
 //        in the call to ExecuteMagicFunction/Operator.

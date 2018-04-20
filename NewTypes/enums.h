@@ -305,7 +305,7 @@ typedef enum tagFCN_TYPES
 } FCN_TYPES, *LPFCN_TYPES;
 
 
-typedef enum tagPTDMEMVIRTENUM
+typedef enum tagPTDMEMVIRT_ENUM
 {
     PTDMEMVIRT_QUADERROR = 0,           // 00:  lpszQuadErrorMsg
     PTDMEMVIRT_UNDOBEG,                 // 01:  lpUndoBeg
@@ -322,21 +322,23 @@ typedef enum tagPTDMEMVIRTENUM
     PTDMEMVIRT_WSZFORMAT,               // 0C:  Temporary formatting
     PTDMEMVIRT_WSZTEMP,                 // 0D:  Temporary save area
     PTDMEMVIRT_FORSTMT,                 // 0E:  FOR ... IN stmts
-    PTDMEMVIRT_MFO1A,                   // 0F:  #MonVR's    HSHTAB
-    PTDMEMVIRT_MFO1B,                   // 10:  ...         SYMTAB
-    PTDMEMVIRT_MFO2A,                   // 11:  #DydSquad's HSHTAB
-    PTDMEMVIRT_MFO2B,                   // 12:  ...         SYMTAB
-    PTDMEMVIRT_LFTSTK,                  // 13:  2by2 left stack
-    PTDMEMVIRT_RHTSTK,                  // 14:  ...  right ...
-    PTDMEMVIRT_LENGTH                   // 15:  # entries
-} PTDMEMVIRTENUM;
+    PTDMEMVIRT_MFO1A,                   // 0F:  #MonVR's      HSHTAB
+    PTDMEMVIRT_MFO1B,                   // 10:  ...           SYMTAB
+    PTDMEMVIRT_MFO2A,                   // 11:  #MonExecute's HSHTAB
+    PTDMEMVIRT_MFO2B,                   // 12:  ...           SYMTAB
+    PTDMEMVIRT_MFO3A,                   // 13:  #DydSquad's   HSHTAB
+    PTDMEMVIRT_MFO3B,                   // 14:  ...           SYMTAB
+    PTDMEMVIRT_LFTSTK,                  // 15:  2by2 left stack
+    PTDMEMVIRT_RHTSTK,                  // 16:  ...  right ...
+    PTDMEMVIRT_LENGTH                   // 17:  # entries
+} PTDMEMVIRT_ENUM, *LPPTDMEMVIRT_ENUM;
 
-// N.B.: Whenever changing the above enum (PTDMEMVIRTENUM), and you
+// N.B.: Whenever changing the above enum (PTDMEMVIRT_ENUM), and you
 //   create an additional entry for a MFO with local SYMTAB & HSHTABs
 //   be sure to make a corresponding change to
-//   <numMFOsWithLocalSYMTAB> in <enums.h>.
+//   <numEntriesWithLocalSYMorHSH> in <enums.h>.
 
-#define numEntriesWithLocalSYMorHSH     4
+#define numEntriesWithLocalSYMorHSH     (2*3)
 
 enum tagMP_ENUM         // Multi-precision mpX_invalid arguments
 {

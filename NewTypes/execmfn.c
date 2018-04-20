@@ -249,9 +249,9 @@ HGLOBAL Init1MagicFunction
             // Count in another entry
             lpInitMFO->uCount++;
 
-            // Ensure we have room in PTDMEMVIRTENUM
+            // Ensure we have room in PTDMEMVIRT_ENUM
             if (lpInitMFO->uCount > numEntriesWithLocalSYMorHSH)
-                DbgStop ();     // You forgot to define an additional entry in PTDMEMVIRTENUM
+                DbgStop ();     // You forgot to define an additional entry in PTDMEMVIRT_ENUM
 
             // Check on Start < End
             Assert (lpInitMFO->uPtdMemVirtStart < lpInitMFO->uPtdMemVirtEnd);
@@ -277,9 +277,9 @@ HGLOBAL Init1MagicFunction
             // Count in another entry
             lpInitMFO->uCount++;
 
-            // Ensure we have room in PTDMEMVIRTENUM
+            // Ensure we have room in PTDMEMVIRT_ENUM
             if (lpInitMFO->uCount > numEntriesWithLocalSYMorHSH)
-                DbgStop ();     // You forgot to define an additional entry in PTDMEMVIRTENUM
+                DbgStop ();     // You forgot to define an additional entry in PTDMEMVIRT_ENUM
 
             // Check on Start < End
             Assert (lpInitMFO->uPtdMemVirtStart < lpInitMFO->uPtdMemVirtEnd);
@@ -809,7 +809,8 @@ UBOOL InitMagicFunctions
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MDIU             ]  = Init1MagicFunction (MFON_MDIU             , &MFO_MDIU             , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DetSing          ]  = Init1MagicFunction (MFON_DetSing          , &MFO_DetSing          , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydVOFact        ]  = Init1MagicFunction (MFON_DydVOFact        , &MFO_DydVOFact        , lpMemPTD, hWndEC, NULL));
-    bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonExecute       ]  = Init1MagicFunction (MFON_MonExecute       , &MFO_MonExecute       , lpMemPTD, hWndEC, NULL));
+    initMFO.lphtsMFO = &lpMemPTD->ahtsMFO[HTS_MONEXECUTE];  // Set local HTS to execute the expression using the outer HTS
+    bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonExecute       ]  = Init1MagicFunction (MFON_MonExecute       , &MFO_MonExecute       , lpMemPTD, hWndEC, &initMFO));
     initMFO.lphtsMFO = &lpMemPTD->ahtsMFO[HTS_DYDSQUAD];    // Set local HTS so Squad can store the hGlbDfnHdr for its local AFOs.
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydSquad         ]  = Init1MagicFunction (MFON_DydSquad         , &MFO_DydSquad         , lpMemPTD, hWndEC, &initMFO));
 ////initMFO.lphtsMFO = NULL;
@@ -821,7 +822,7 @@ UBOOL InitMagicFunctions
     //***************************************************************
     //  N.B.:  If you define an additional MFO with a local
     //    HSHTAB & SYMTAB, you *MUST* define a corresponding entry
-    //    in the enum <PTDMEMVIRTENUM>.
+    //    in the enum <PTDMEMVIRT_ENUM>.
     //***************************************************************
 
     return bRet;

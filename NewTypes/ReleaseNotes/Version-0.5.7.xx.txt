@@ -1,6 +1,17 @@
 Version 0.5.7.xx consists of the following Builds:
 
 
+Build #1878 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bug In JotDot If Error Or Interrupt Occurs With UDFO Right Operand
+
+Directory branches/bsmith/NewTypes:
+
+PO_JOTDOT.C:
+  In <PrimOpDydJotDotCommon_EM_YY>, fix bug if an error or interrupt occurs with a UDFO right operand.
+
+
 Build #1877 -- Version 0.5.7.xx
 -------------------------------
 

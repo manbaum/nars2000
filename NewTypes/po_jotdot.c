@@ -240,7 +240,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     APLSTYPE          aplTypeLft,           // Left arg storage type
                       aplTypeRht,           // Right ...
                       aplTypeNew,           // New result   ...
-                      aplTypeCom,           // Common ...
+                      aplTypeCom = ARRAY_ERROR, // Common ...
                       aplTypeRes;           // Result   ...
     APLNELM           aplNELMLft,           // Left arg NELM
                       aplNELMRht,           // Right ...
@@ -877,9 +877,13 @@ VALUE_EXIT:
     return NULL;
 
 ERROR_EXIT:
-    // Free the old atLft and atRht
-    (*aTypeFree[aplTypeCom]) (&atLft, 0);
-    (*aTypeFree[aplTypeCom]) (&atRht, 0);
+    // Is it valid?
+    if (!IsErrorType (aplTypeCom))
+    {
+        // Free the old atLft and atRht
+        (*aTypeFree[aplTypeCom]) (&atLft, 0);
+        (*aTypeFree[aplTypeCom]) (&atRht, 0);
+    } // End IF
 
     if (hGlbRes NE NULL)
     {

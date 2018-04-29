@@ -418,15 +418,22 @@ typedef enum tagENUM_CT
 
 
 //***************************************************************************
-//  Hypercomplex Arithmetic Multiplication Choice
+//  Hypercomplex Multiplication Variants
 //***************************************************************************
 
 typedef enum tagENUM_HCMUL
 {
     ENUMHCM_NONE = 0,       // 00:  Normal multiplication
-    ENUMHCM_INT  = 1,       // 01:  Interior product
-    ENUMHCM_EXT  = 2,       // 02:  Exterior ...
+    ENUMHCM_INT     ,       // 01:  Interior product
+    ENUMHCM_EXT     ,       // 02:  Exterior ...
+    ENUMHCM_X       ,       // 03:  Cross    ...
+    ENUMHCM_D       ,       // 04:  Dot      ...
+    ENUMHCM_C       ,       // 05:  Conjugation ...
 } ENUM_HCMUL, *LPENUM_HCMUL;
+
+// N.B.: Whenever changing the above enum (ENUM_HCMUL),
+//   be sure to make a corresponding change to
+//   <PERTABDATA:eHCMul:3> and <PRIMSPEC:eHCMul:3>
 
 
 //***************************************************************************

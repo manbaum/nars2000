@@ -1,6 +1,41 @@
 Version 0.5.7.xx consists of the following Builds:
 
 
+Build #1877 -- Version 0.5.7.xx
+-------------------------------
+
+* Implement Additional Hypercomplex Multiplication Variants
+
+Directory branches/bsmith/NewTypes:
+
+ENUMS.H:
+  Define additional ENUMs for Hypercomplex Multiplication Variant.
+
+PERTAB.H:
+  Widen the size of Hypercomplex Multiplication Variant bit field to accommodate additional choices.
+
+PF_TIMES.C:
+  Implement additional Hypercomplex Multiplication Variants.
+
+PO_VARIANT.C:
+  Rename xxx_INEX (for Interior/Exterior) to xxx_HCM (for Hypercomplex Multiplication) to reflect the wider set of variants.
+  Implement additional Hypercomplex Multiplication Variants.
+
+PO_VARIANT.H:
+  Rename xxx_INEX (for Interior/Exterior) to xxx_HCM (for Hypercomplex Multiplication) to reflect the wider set of variants.
+
+PRIMSPEC.C:
+  Allow an individual function to mark its result as Dimension Demotable.
+
+PRIMSPEC.H:
+  Allow an individual function to mark its result as Dimension Demotable.
+  Widen the size of Hypercomplex Multiplication Variant bit field to accommodate additional choices.
+
+SYSVARS.H:
+  Rename xxx_QUADIE (for Interior/Exterior) to xxx_QUADHCM (for Hypercomplex Multiplication) to reflect the wider set of variants.
+  Include the additi9onal set of choices in Hypercomplex Multiplication Variants.
+
+
 Build #1876 -- Version 0.5.7.xx
 -------------------------------
 

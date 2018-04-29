@@ -74,7 +74,7 @@ typedef enum tagENUM_VARIANT
     ENUM_VARIANT_LR        ,        // 06:  []LR
     ENUM_VARIANT_PP        ,        // 07:  []PP
     ENUM_VARIANT_POCH      ,        // 08:  {shriek} Pochhammer k-symbol
-    ENUM_VARIANT_INEX      ,        // 09:  {times} Interior/Exterior product
+    ENUM_VARIANT_HCM       ,        // 09:  {times} Interior/Exterior/Cross/Dot/Conjugation product
     ENUM_VARIANT_LENGTH             // 0A:  # enums
 } ENUM_VARIANT, *LPENUM_VARIANT;
 
@@ -113,18 +113,19 @@ typedef struct tagVARIANT_STR
 typedef struct tagALLSYSVARS
 {
     // Old values
-    APLBOOL  bQuadIO;           // 00:  []IO
-    APLUINT  uQuadPP,           // 01:  []PP
-             uEigenOld,         // 02:  Eigen
-             uQuadFPC,          // 03:  []FPC
-             uPochOld;          // 04:  Pochhammer
-    APLFLOAT fQuadCT;           // 05:  []CT
-    APLCHAR  cQuadDT,           // 06:  []DT
-             cQuadLR;           // 07:  []LR
+    APLBOOL    bQuadIO;         // 00:  []IO
+    APLUINT    uQuadPP,         // 01:  []PP
+               uEigenOld,       // 02:  Eigen
+               uQuadFPC,        // 03:  []FPC
+               uPochOld;        // 04:  Pochhammer
+    APLFLOAT   fQuadCT;         // 05:  []CT
+    APLCHAR    cQuadDT,         // 06:  []DT
+               cQuadLR;         // 07:  []LR
+    ENUM_HCMUL eHCMul;          // 08:  HCM value saved in <lpMemPTD->eHCMul>
+
     // New values
     APLUINT    uEigenNew,       //
                uPochNew;        //
-    ENUM_HCMUL eHCMul;          // Old value saved in <lpMemPTD->eHCMul>
 } ALLSYSVARS_STR, *LPALLSYSVARS_STR;
 
 

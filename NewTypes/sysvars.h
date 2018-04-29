@@ -26,8 +26,8 @@
 #define DEF_QUADxCT_CWS     0x3CEB05876E5B0120      // 3E-15 in hex
 #define DEF_QUADLR_CWS      L"r"
 #define DEF_QUADLR_ALLOW    L"lr"
-#define DEF_QUADIE_CWS      L"i"
-#define DEF_QUADIE_ALLOW    L"ie"
+#define DEF_QUADHCM_CWS     L"i"
+#define DEF_QUADHCM_ALLOW   L"iexdc"
 #define DEF_QUADLR_NAMES    L"Left", L"Right"
 #define DEF_QUADDT_CWS      L"r"
 #define DEF_QUADDT_ALLOW    L"rgp"

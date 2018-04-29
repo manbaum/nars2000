@@ -91,9 +91,9 @@ typedef struct tagPERTABDATA
                  bExecuting:1,              // 00000004:  TRUE iff we're waiting for an execution to complete
                  bInTF:1,                   // 00000008:  TRUE if we're fixing a function via []TF
                  bTempOpen:1,               // 00000010:  TRUE if lpwszTemp is open and open-ended
-                 eHCMul:2,                  // 00000060:  Hypercomplex Arithmetic Multiplication choice (see tagENUM_HCMUL)
-                 bResetInProgress:1,        // 00000080:  TRUE if )RESET is in progress via CreateResetThread
-                 :24;                       // FFFFFF00:  Available bits
+                 eHCMul:3,                  // 000000E0:  Hypercomplex Multiplication Variant (see tagENUM_HCMUL)
+                 bResetInProgress:1,        // 00000100:  TRUE if )RESET is in progress via CreateResetThread
+                 :23;                       // FFFFFE00:  Available bits
     HGLOBAL      hGlbCurLine;               // Current line global memory handle
 #ifdef DEBUG
     LPWCHAR      lpwszTempName,             // Ptr to current name with lpwszTemp open

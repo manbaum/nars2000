@@ -773,7 +773,11 @@ LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    TypeDemote (&lpYYRes->tkToken, lpPrimSpec->bDydDimDemote);
+    TypeDemote (&lpYYRes->tkToken,
+                 lpPrimSpec->bDydDimDemote
+              || lpPrimSpec->bLclDimDemote);
+    // Reset for the next time
+    lpPrimSpec->bLclDimDemote = FALSE;
 
     goto NORMAL_EXIT;
 
@@ -6285,7 +6289,11 @@ RESTART_EXCEPTION:
     } // End IF
 
     // See if it fits into a lower (but not necessarily smaller) datatype
-    TypeDemote (&lpYYRes->tkToken, lpPrimSpec->bDydDimDemote);
+    TypeDemote (&lpYYRes->tkToken,
+                 lpPrimSpec->bDydDimDemote
+              || lpPrimSpec->bLclDimDemote);
+    // Reset for the next time
+    lpPrimSpec->bLclDimDemote = FALSE;
 
     goto NORMAL_EXIT;
 

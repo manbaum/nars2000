@@ -55,7 +55,7 @@ VAROPR varOprValTab[ENUM_VARIANT_LENGTH] =
     varOprLR    ,                   // 06:  []LR
     varOprPP    ,                   // 07:  []PP
     varOprPOCH  ,                   // 08:  {shriek} Pochhammer k-symbol
-    varOprINEX  ,                   // 09:  {times} Interior/Exterior product
+    varOprHCM   ,                   // 09:  {times} Interior/Exterior/Cross/Dot/Conjugation product
 };
 
 
@@ -70,7 +70,7 @@ APLSTYPE varOprType[ENUM_VARIANT_LENGTH] =
     ARRAY_CHAR  ,                   // 06:  []LR
     ARRAY_INT   ,                   // 07:  []PP
     ARRAY_INT   ,                   // 08:  {shriek} Pochhammer k-symbol
-    ARRAY_CHAR  ,                   // 09:  {times} Interior/Exterior product
+    ARRAY_CHAR  ,                   // 09:  {times} Interior/Exterior/Cross/Dot/Conjugation product
 };
 
 LPVARIANT_STR varOprTab[PRIMTAB_LEN];   // The jump table for all Variant operator possibilities
@@ -117,7 +117,7 @@ VARIANT_STR varOprStr[] =
    VAR_MAC (STILE2              , UNK , UNK , UNK, UNK, CT  , CT  , LR   , LR  ),   // 24:  STILE2
    VAR_MAC (TILDE               , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 25:  TILDE
    VAR_MAC (TILDE2              , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 26:  TILDE2
-   VAR_MAC (TIMES               , UNK , UNK , UNK, UNK, UNK , UNK , INEX , UNK ),   // 27:  TIMES
+   VAR_MAC (TIMES               , UNK , UNK , UNK, UNK, UNK , UNK , HCM  , UNK ),   // 27:  TIMES
    VAR_MAC (UPCARET             , UNK , UNK , UNK, UNK, UNK , UNK , LR   , UNK ),   // 28:  UPCARET
    VAR_MAC (UPSHOE              , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 29:  UPSHOE
    VAR_MAC (UPSTILE             , CT  , UNK , UNK, UNK, UNK , UNK , UNK  , UNK ),   // 2A:  UPSTILE
@@ -2080,7 +2080,7 @@ void SetAllSysVars
             lpAllSysVars->cQuadDT = GetQuadDT ();
 
             // Set the new value
-            SetQuadDT (*(LPAPLCHAR ) &aplLngRhtOpr);
+            SetQuadDT (aplChrRhtOpr);
 
             break;
 
@@ -2107,7 +2107,7 @@ void SetAllSysVars
             lpAllSysVars->cQuadLR = GetQuadLR ();
 
             // Set the new value
-            SetQuadLR (*(LPAPLCHAR ) &aplLngRhtOpr);
+            SetQuadLR (aplChrRhtOpr);
 
             break;
 
@@ -2128,12 +2128,12 @@ void SetAllSysVars
 
             break;
 
-        case ENUM_VARIANT_INEX:
+        case ENUM_VARIANT_HCM:
             // Save the old value of eHCMul
             lpAllSysVars->eHCMul = lpMemPTD->eHCMul;
 
             // Split cases based upon the incoming character
-            switch (*(LPAPLCHAR   ) &aplLngRhtOpr)
+            switch (aplChrRhtOpr)
             {
                 case L'i':
                     // Set the new value
@@ -2144,6 +2144,24 @@ void SetAllSysVars
                 case L'e':
                     // Set the new value
                     lpMemPTD->eHCMul = ENUMHCM_EXT;
+
+                    break;
+
+                case L'x':
+                    // Set the new value
+                    lpMemPTD->eHCMul = ENUMHCM_X;
+
+                    break;
+
+                case L'd':
+                    // Set the new value
+                    lpMemPTD->eHCMul = ENUMHCM_D;
+
+                    break;
+
+                case L'c':
+                    // Set the new value
+                    lpMemPTD->eHCMul = ENUMHCM_C;
 
                     break;
 
@@ -2220,7 +2238,7 @@ void RestAllSysVars
 
             break;
 
-        case ENUM_VARIANT_INEX:
+        case ENUM_VARIANT_HCM:
             // Restore the old value
             lpMemPTD->eHCMul = lpAllSysVars->eHCMul;
 
@@ -2399,21 +2417,21 @@ UBOOL varOprPOCH
 
 
 //***************************************************************************
-//  $varOprINEX
+//  $varOprHCM
 //
-//  Variant operator []INEX value validation routine
+//  Variant operator []HCM value validation routine
 //***************************************************************************
 
-UBOOL varOprINEX
+UBOOL varOprHCM
     (LPAPLCHAR  lpValue)
 
 {
     return
       ValidateCharTest (lpValue               ,     // Ptr to the value to validate
-                        DEF_QUADIE_CWS[0]     ,     // Default value
-                        DEF_QUADIE_ALLOW      ,     // Ptr to vector of allowed values
+                        DEF_QUADHCM_CWS[0]    ,     // Default value
+                        DEF_QUADHCM_ALLOW     ,     // Ptr to vector of allowed values
                         lpValue               );    // Ptr to the return value if <lpValue[0] EQ WC_EOS>
-} // End varOprINEX
+} // End varOprHCM
 
 
 //***************************************************************************

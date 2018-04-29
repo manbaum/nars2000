@@ -93,7 +93,7 @@ PRIMSPEC PrimSpecTimes =
     &PrimFnDydTimesAPA_EM,
 
     // Dyadic Boolean result functions
-    &PrimFnDydUpCaretBisBvB,
+    &PrimFnDydTimesBisBvB,
     NULL,   // &PrimFnDydTimesBisIvI, -- Can't happen w/Times
     NULL,   // &PrimFnDydTimesBisFvF, -- Can't happen w/Times
     NULL,   // &PrimFnDydTimesBisCvC, -- Can't happen w/Times
@@ -156,10 +156,10 @@ PRIMSPEC PrimSpecTimes =
     NULL,   // &PrimFnMonTimesB08isB08, -- Can't happen w/Times
 
     // Dyadic Boolean chunk functions
-    &PrimFnDydUpCaretB64isB64vB64,
-    &PrimFnDydUpCaretB32isB32vB32,
-    &PrimFnDydUpCaretB16isB16vB16,
-    &PrimFnDydUpCaretB08isB08vB08,
+    &PrimFnDydTimesB64isB64vB64,
+    &PrimFnDydTimesB32isB32vB32,
+    &PrimFnDydTimesB16isB16vB16,
+    &PrimFnDydTimesB08isB08vB08,
 
     // Miscellaneous
     0,      // []RL for atomicity
@@ -186,7 +186,7 @@ LPPL_YYSTYPE PrimFnTimes_EM_YY
 {
     PRIMSPEC primSpec = *lpPrimSpec;
 
-    // Set the Hypercomplex Arithmetic Multiplication choice
+    // Set the Hypercomplex Multiplication Variant
     primSpec.eHCMul = GetMemPTD ()->eHCMul;
 
     // Ensure not an overflow function
@@ -244,7 +244,7 @@ APLSTYPE PrimSpecTimesStorageTypeMon
 
 APLBOOL PrimFnMonTimesBisB
     (APLBOOL    aplBooleanRht,
-     LPPRIMSPEC lpPrimSpec)
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
     return aplBooleanRht;
@@ -499,6 +499,7 @@ APLHC2R DirHC2R_RE
         mphc2r_init (&aplRes);
     else
         RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
+
     return aplRes;
 } // End DirHC2R_RE
 
@@ -1057,6 +1058,7 @@ APLHC8R DirHC8R_RE
         mphc8r_init (&aplRes);
     else
         RaiseException (EXCEPTION_RESULT_HC8V, 0, 0, NULL);
+
     return aplRes;
 } // End DirHC8R_RE
 
@@ -1215,6 +1217,56 @@ APLSTYPE PrimSpecTimesStorageTypeDyd
 
 
 //***************************************************************************
+//  $PrimFnDydTimesBisBvB
+//
+//  Primitive scalar function dyadic Times:  B {is} B fn B
+//***************************************************************************
+
+void PrimFnDydTimesBisBvB
+    (LPAPLBOOL  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg ALLTYPES
+     LPALLTYPES lpatRht,            // ...    right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Split cases based upon the Hypercomplex Multiplication Variant
+    switch (lpPrimSpec->eHCMul)
+    {
+        case ENUMHCM_NONE:      // L x R
+        case ENUMHCM_INT:       // ((L x R + R x L) / 2 == L x R
+        case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            // Call subfunction
+            PrimFnDydUpCaretBisBvB (lpMemRes,
+                                    uRes,
+                                    lpatLft,
+                                    lpatRht,
+                                    lpPrimSpec);
+            break;
+
+        case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
+        case ENUMHCM_X:         // Cross Product
+            // The result is zero (and already zero)
+////////////lpMemRes[uRes >> LOG2NBIB] |=
+////////////  0 << (MASKLOG2NBIB & (UINT) uRes);
+
+            break;
+
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
+            // The result is R
+            lpMemRes[uRes >> LOG2NBIB] |=
+              lpatRht->aplBoolean
+              << (MASKLOG2NBIB & (UINT) uRes);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+} // End PrimFnDydTimesBisBvB
+
+
+//***************************************************************************
 //  $MulHC1I_RE
 //***************************************************************************
 
@@ -1255,8 +1307,33 @@ void PrimFnDydTimesIisIvI
 
     __try
     {
-        // Call subfunction
-        lpMemRes[uRes] = MulHC1I_RE (lpatLft->aplInteger, lpatRht->aplInteger);
+        // Split cases based upon the Hypercomplex Multiplication Variant
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:      // L x R
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2 == L x R
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+                // Call subfunction
+                lpMemRes[uRes] = MulHC1I_RE (lpatLft->aplInteger, lpatRht->aplInteger);
+
+                break;
+
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
+            case ENUMHCM_X:         // Cross Product
+                // The result is zero
+                lpMemRes[uRes] = 0;
+
+                break;
+
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
+                // The result is R
+                lpMemRes[uRes] = lpatRht->aplInteger;
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
         exCode = MyGetExceptionCode ();  // The exception code
@@ -1302,11 +1379,37 @@ void PrimFnDydTimesFisIvI
         UBOOL  bRet;
         APLINT aplRes;
 
-        aplRes = imul64 (lpatLft->aplInteger, lpatRht->aplInteger, &bRet, EXCEPTION_RESULT_FLOAT);
-        if (bRet)
-            lpMemRes[uRes] = (APLFLOAT) aplRes;
-        else
-            lpMemRes[uRes] = (APLFLOAT) lpatLft->aplInteger * (APLFLOAT) lpatRht->aplInteger;
+        // Split cases based upon the Hypercomplex Multiplication Variant
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:      // L x R
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2 == L x R
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+                // Call subfunction
+                aplRes = imul64 (lpatLft->aplInteger, lpatRht->aplInteger, &bRet, EXCEPTION_RESULT_FLOAT);
+                if (bRet)
+                    lpMemRes[uRes] = (APLFLOAT) aplRes;
+                else
+                    lpMemRes[uRes] = (APLFLOAT) lpatLft->aplInteger * (APLFLOAT) lpatRht->aplInteger;
+
+                break;
+
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
+            case ENUMHCM_X:         // Cross Product
+                // The result is zero
+                lpMemRes[uRes] = 0;
+
+                break;
+
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
+                // The result is R
+                lpMemRes[uRes] = (APLFLOAT) lpatRht->aplInteger;
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
     } // End IF/ELSE
 } // End PrimFnDydTimesFisIvI
 
@@ -1391,8 +1494,33 @@ void PrimFnDydTimesFisFvF
 
     __try
     {
-        // Call subfunction
-        lpMemRes[uRes] = MulHC1F_RE (lpatLft->aplFloat, lpatRht->aplFloat);
+        // Split cases based upon the Hypercomplex Multiplication Variant
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:      // L x R
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2 == L x R
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+                // Call subfunction
+                lpMemRes[uRes] = MulHC1F_RE (lpatLft->aplFloat, lpatRht->aplFloat);
+
+                break;
+
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
+            case ENUMHCM_X:         // Cross Product
+                // The result is zero
+                lpMemRes[uRes] = 0;
+
+                break;
+
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
+                // The result is R
+                lpMemRes[uRes] = lpatRht->aplFloat;
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
         exCode = MyGetExceptionCode ();  // The exception code
@@ -1499,8 +1627,33 @@ void PrimFnDydTimesRisRvR
 
     __try
     {
-        // Call subfunction
-        lpMemRes[uRes] = MulHC1R_RE (lpatLft->aplRat, lpatRht->aplRat);
+        // Split cases based upon the Hypercomplex Multiplication Variant
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:      // L x R
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2 == L x R
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+                // Call subfunction
+                lpMemRes[uRes] = MulHC1R_RE (lpatLft->aplRat, lpatRht->aplRat);
+
+                break;
+
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
+            case ENUMHCM_X:         // Cross Product
+                // The result is zero
+                mpq_init (&lpMemRes[uRes]);
+
+                break;
+
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
+                // The result is R
+                mpq_init_set (&lpMemRes[uRes], &lpatRht->aplRat);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
         exCode = MyGetExceptionCode ();  // The exception code
@@ -1636,8 +1789,33 @@ void PrimFnDydTimesVisVvV
 
     __try
     {
-        // Call subfunction
-        lpMemRes[uRes] = MulHC1V_RE (lpatLft->aplVfp, lpatRht->aplVfp);
+        // Split cases based upon the Hypercomplex Multiplication Variant
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:      // L x R
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2 == L x R
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+                // Call subfunction
+                lpMemRes[uRes] = MulHC1V_RE (lpatLft->aplVfp, lpatRht->aplVfp);
+
+                break;
+
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
+            case ENUMHCM_X:         // Cross Product
+                // The result is zero
+                mpfr_init0 (&lpMemRes[uRes]);
+
+                break;
+
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
+                // The result is R
+                mpfr_init_set (&lpMemRes[uRes], &lpatRht->aplVfp, MPFR_RNDN);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
         exCode = MyGetExceptionCode ();  // The exception code
@@ -1685,6 +1863,67 @@ APLHC2I MulHC2I_RE
 
 
 //***************************************************************************
+//  $MulHC2I_RE_HC
+//***************************************************************************
+
+APLHC2I MulHC2I_RE_HC
+    (APLHC2I    aplLft,             // Left arg
+     APLHC2I    aplRht,             // Right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+#define D   2
+    APLHC2I aplRes;                 // The result
+    int     i;                      // Loop counter
+
+    // Split cases based upon the Hypercomplex Multiplication Variant
+    switch (lpPrimSpec->eHCMul)
+    {
+        case ENUMHCM_NONE:
+        case ENUMHCM_INT:       // ((L x R + R x L) / 2 == L x R
+            // Call subfunction
+            aplRes = MulHC2I_RE (aplLft, aplRht);
+
+            break;
+
+        case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
+        case ENUMHCM_X:         // Cross Product
+            // The result is zero
+            ZeroMemory (&aplRes, sizeof (aplRes));
+
+            break;
+
+        case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            // Set the Real part to the identity element for addition
+            //   and zero the rest of the number
+            ZeroMemory (&aplRes, sizeof (aplRes));
+
+            // Loop through all of the parts
+            for (i = 0; i < D; i++)
+                // Calculate the Dot Product
+                aplRes.parts[0] += aplLft.parts[i] * aplRht.parts[i];
+
+            // Tell the caller to demote the dimension
+            lpPrimSpec->bLclDimDemote = TRUE;
+
+            break;
+
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
+            // The result is R
+            aplRes = aplRht;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    return aplRes;
+#undef  D
+} // End MulHC2I_RE_HC
+
+
+//***************************************************************************
 //  $PrimFnDydTimesHC2IisHC2IvHC2I
 //
 //  Primitive scalar function dyadic Times:  HC2I {is} HC2I fn HC2I
@@ -1702,8 +1941,28 @@ void PrimFnDydTimesHC2IisHC2IvHC2I
 
     __try
     {
-        // Call subfunction
-        lpMemRes[uRes] = MulHC2I_RE (lpatLft->aplHC2I, lpatRht->aplHC2I);
+        // Split cases based upon the Hypercomplex Multiplication Variant
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:
+                // Call subfunction
+                lpMemRes[uRes] = MulHC2I_RE (lpatLft->aplHC2I, lpatRht->aplHC2I);
+
+                break;
+
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2
+            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L
+                // Call subbfunction
+                lpMemRes[uRes] = MulHC2I_RE_HC (lpatLft->aplHC2I, lpatRht->aplHC2I, lpPrimSpec);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
         exCode = MyGetExceptionCode ();  // The exception code
@@ -1743,8 +2002,28 @@ void PrimFnDydTimesHC2FisHC2IvHC2I
 
     __try
     {
-        // Call subfunction
-        lpMemRes[uRes] = MulHC2F_RE (atLft.aplHC2F, atRht.aplHC2F);
+        // Split cases based upon the Hypercomplex Multiplication Variant
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:
+                // Call subfunction
+                lpMemRes[uRes] = MulHC2F_RE (atLft.aplHC2F, atRht.aplHC2F);
+
+                break;
+
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2
+            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L
+                // Call subbfunction
+                lpMemRes[uRes] = MulHC2F_RE_HC (atLft.aplHC2F, atRht.aplHC2F, lpPrimSpec);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
         exCode = MyGetExceptionCode ();  // The exception code
@@ -1820,6 +2099,67 @@ APLHC2F MulHC2F_RE
 
 
 //***************************************************************************
+//  $MulHC2F_RE_HC
+//***************************************************************************
+
+APLHC2F MulHC2F_RE_HC
+    (APLHC2F    aplLft,             // Left arg
+     APLHC2F    aplRht,             // Right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+#define D   2
+    APLHC2F aplRes;
+    int     i;                          // Loop counter
+
+    // Split cases based upon the Hypercomplex Multiplication Variant
+    switch (lpPrimSpec->eHCMul)
+    {
+        case ENUMHCM_NONE:
+        case ENUMHCM_INT:       // ((L x R + R x L) / 2 == L x R
+            // Call subfunction
+            aplRes = MulHC2F_RE (aplLft, aplRht);
+
+            break;
+
+        case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
+        case ENUMHCM_X:         // Cross Product
+            // The result is zero
+            ZeroMemory (&aplRes, sizeof (aplRes));
+
+            break;
+
+        case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            // Set the Real part to the identity element for addition
+            //   and zero the rest of the number
+            ZeroMemory (&aplRes, sizeof (aplRes));
+
+            // Loop through all of the parts
+            for (i = 0; i < D; i++)
+                // Calculate the Dot Product
+                aplRes.parts[0] += aplLft.parts[i] * aplRht.parts[i];
+
+            // Tell the caller to demote the dimension
+            lpPrimSpec->bLclDimDemote = TRUE;
+
+            break;
+
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L
+            // The result is R
+            aplRes = aplRht;
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    return aplRes;
+#undef  D
+} // End MulHC2F_RE_HC
+
+
+//***************************************************************************
 //  $PrimFnDydTimesHC2FisHC2FvHC2F
 //
 //  Primitive scalar function dyadic Times:  HC2F {is} HC2F fn HC2F
@@ -1837,8 +2177,28 @@ void PrimFnDydTimesHC2FisHC2FvHC2F
 
     __try
     {
-        // Call subfunction
-        lpMemRes[uRes] = MulHC2F_RE (lpatLft->aplHC2F, lpatRht->aplHC2F);
+        // Split cases based upon the Hypercomplex Multiplication Variant
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:
+                // Call subfunction
+                lpMemRes[uRes] = MulHC2F_RE (lpatLft->aplHC2F, lpatRht->aplHC2F);
+
+                break;
+
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2
+            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L
+                // Call subbfunction
+                lpMemRes[uRes] = MulHC2F_RE_HC (lpatLft->aplHC2F, lpatRht->aplHC2F, lpPrimSpec);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
         exCode = MyGetExceptionCode ();  // The exception code
@@ -1863,6 +2223,7 @@ APLHC2R MulHC2R_RE
      APLHC2R aplRht)                    // Right ...
 
 {
+#define D   2
     int     i;
     APLHC2R aplRes = {0};
     APLRAT  aplTmp1,
@@ -1935,7 +2296,7 @@ APLHC2R MulHC2R_RE
     Myq_clear (&aplTmp1);
 
     // Loop through all of the parts
-    for (i = 0; i < 2; i++)
+    for (i = 0; i < D; i++)
     // Check for indeterminates:  0 {times} _  or  _ {times} 0
     if ((IsMpq0 (&aplLft.parts[i])
       && IsMpqPosInfinity (&aplRht.parts[i]))
@@ -1961,7 +2322,79 @@ APLHC2R MulHC2R_RE
                                                                                : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
 
     return aplRes;
+#undef  D
 } // End MulHC2R_RE
+
+
+//***************************************************************************
+//  $MulHC2R_RE_HC
+//***************************************************************************
+
+APLHC2R MulHC2R_RE_HC
+    (APLHC2R    aplLft,             // Left arg
+     APLHC2R    aplRht,             // Right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+#define D   2
+    APLHC2R aplRes = {0};           // The result
+    int     i;                      // Loop counter
+
+    // Split cases based upon the Hypercomplex Multiplication Variant
+    switch (lpPrimSpec->eHCMul)
+    {
+        case ENUMHCM_NONE:
+        case ENUMHCM_INT:       // ((L x R + R x L) / 2 == L x R
+            // Call subfunction
+            aplRes = MulHC2R_RE (aplLft, aplRht);
+
+            break;
+
+        case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
+        case ENUMHCM_X:         // Cross Product
+            // The result is zero
+            mphc2r_init (&aplRes);
+
+            break;
+
+        case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+        {
+            APLHC1R aplTmp;
+
+            // Set the Real part to the identity element for addition
+            //   and zero the rest of the number
+            mphc2r_init (&aplRes);
+
+            // Loop through all of the parts
+            for (i = 0; i < D; i++)
+            {
+                // Calculate the Dot Product
+                aplTmp = MulHC1R_RE (aplLft.parts[i], aplRht.parts[i]);
+                mpq_add (&aplRes.parts[0], &aplRes.parts[0], &aplTmp);
+
+                // We no longer need this storage
+                Myhc1r_clear (&aplTmp);
+            } // End FOR
+
+            // Tell the caller to demote the dimension
+            lpPrimSpec->bLclDimDemote = TRUE;
+
+            break;
+        } // End ENUMHCM_D
+
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L
+            // The result is R
+            mphc2r_init_set (&aplRes, &aplRht);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    return aplRes;
+#undef  D
+} // End MulHC2R_RE_HC
 
 
 //***************************************************************************
@@ -1982,8 +2415,28 @@ void PrimFnDydTimesHC2RisHC2RvHC2R
 
     __try
     {
-        // Call subfunction
-        lpMemRes[uRes] = MulHC2R_RE (lpatLft->aplHC2R, lpatRht->aplHC2R);
+        // Split cases based upon the Hypercomplex Multiplication Variant
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:
+                // Call subfunction
+                lpMemRes[uRes] = MulHC2R_RE (lpatLft->aplHC2R, lpatRht->aplHC2R);
+
+                break;
+
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2
+            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L
+                // Call subbfunction
+                lpMemRes[uRes] = MulHC2R_RE_HC (lpatLft->aplHC2R, lpatRht->aplHC2R, lpPrimSpec);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
         exCode = MyGetExceptionCode ();  // The exception code
@@ -2008,6 +2461,7 @@ APLHC2V MulHC2V_RE
      APLHC2V aplRht)
 
 {
+#define D   2
     int     i;
     APLHC2V aplRes = {0};
     APLVFP  aplTmp1 = {0},
@@ -2083,7 +2537,7 @@ APLHC2V MulHC2V_RE
 ////strcpyW (wszTemp, L"Res (Mul):  "); *FormatAplHC2V (&wszTemp[lstrlenW (wszTemp)], &aplRes, 0) = WC_EOS; DbgMsgW (wszTemp);
 
     // Loop through all of the parts
-    for (i = 0; i < 2; i++)
+    for (i = 0; i < D; i++)
     // Check for indeterminates:  0 {times} _  or  _ {times} 0
     if ((IsMpf0 (&aplLft.parts[i])
       && IsMpfPosInfinity (&aplRht.parts[i]))
@@ -2111,7 +2565,79 @@ APLHC2V MulHC2V_RE
                                     MPFR_RNDN);
 
     return aplRes;
+#undef D
 } // End MulHC2V_RE
+
+
+//***************************************************************************
+//  $MulHC2V_RE_HC
+//***************************************************************************
+
+APLHC2V MulHC2V_RE_HC
+    (APLHC2V    aplLft,             // Left arg
+     APLHC2V    aplRht,             // Right ...
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+#define D   2
+    APLHC2V aplRes = {0};
+    int     i;                          // Loop counter
+
+    // Split cases based upon the Hypercomplex Multiplication Variant
+    switch (lpPrimSpec->eHCMul)
+    {
+        case ENUMHCM_NONE:
+        case ENUMHCM_INT:       // ((L x R + R x L) / 2 == L x R
+            // Call subfunction
+            aplRes = MulHC2V_RE (aplLft, aplRht);
+
+            break;
+
+        case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
+        case ENUMHCM_X:         // Cross Product
+            // The result is zero
+            mphc2v_init0 (&aplRes);
+
+            break;
+
+        case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+        {
+            APLHC1V aplTmp;
+
+            // Set the Real part to the identity element for addition
+            //   and zero the rest of the number
+            mphc2v_init0 (&aplRes);
+
+            // Loop through all of the parts
+            for (i = 0; i < D; i++)
+            {
+                // Calculate the Dot Product
+                aplTmp = MulHC1V_RE (aplLft.parts[i], aplRht.parts[i]);
+                mpfr_add (&aplRes.parts[0], &aplRes.parts[0], &aplTmp, MPFR_RNDN);
+
+                // We no longer need this storage
+                Myhc1v_clear (&aplTmp);
+            } // End FOR
+
+            // Tell the caller to demote the dimension
+            lpPrimSpec->bLclDimDemote = TRUE;
+
+            break;
+        } // End ENUMHCM_D
+
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L
+            // The result is R
+            mphc2v_init_set (&aplRes, &aplRht);
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    return aplRes;
+#undef  D
+} // End MulHC2V_RE_HC
 
 
 //***************************************************************************
@@ -2160,8 +2686,28 @@ void PrimFnDydTimesHC2VisHC2VvHC2V
 
     __try
     {
-        // Call subfunction
-        lpMemRes[uRes] = MulHC2V_RE (lpatLft->aplHC2V, lpatRht->aplHC2V);
+        // Split cases based upon the Hypercomplex Multiplication Variant
+        switch (lpPrimSpec->eHCMul)
+        {
+            case ENUMHCM_NONE:
+                // Call subfunction
+                lpMemRes[uRes] = MulHC2V_RE (lpatLft->aplHC2V, lpatRht->aplHC2V);
+
+                break;
+
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2
+            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L
+                // Call subbfunction
+                lpMemRes[uRes] = MulHC2V_RE_HC (lpatLft->aplHC2V, lpatRht->aplHC2V, lpPrimSpec);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
     } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
     {
         exCode = MyGetExceptionCode ();  // The exception code
@@ -2184,13 +2730,15 @@ void PrimFnDydTimesHC2VisHC2VvHC2V
 APLHC4I MulHC4I_RE_HC
     (APLHC4I    aplLft,             // Left arg
      APLHC4I    aplRht,             // Right ...
-     ENUM_HCMUL eHCMul)             // Multiplication choice (see tagENUM_HCMUL)
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
+#define D   4
     APLHC4I aplRes,                 // The result
             aplLxR,                 // Temp var
             aplRxL;                 // ...
     int     i;                      // Loop counter
+    WCHAR   cQuadLR;                // Save area for old value of []LR
 
     // Calculate L x R
     aplLxR = MulHC4I_RE (aplLft, aplRht);
@@ -2198,12 +2746,12 @@ APLHC4I MulHC4I_RE_HC
     // Calculate R x L
     aplRxL = MulHC4I_RE (aplRht, aplLft);
 
-    // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
-    switch (eHCMul)
+    // Split cases based upon the Hypercomplex Multiplication Variant
+    switch (lpPrimSpec->eHCMul)
     {
-        case ENUMHCM_EXT:
+        case ENUMHCM_EXT:       // ((L x R - R x L) / 2
             // Loop through all of the parts
-            for (i = 0; i < 4; i++)
+            for (i = 0; i < D; i++)
             {
                 // Calculate the difference
                 aplRes.parts[i] = aplLxR.parts[i] - aplRxL.parts[i];
@@ -2214,9 +2762,9 @@ APLHC4I MulHC4I_RE_HC
 
             break;
 
-        case ENUMHCM_INT:
+        case ENUMHCM_INT:       // ((L x R + R x L) / 2
             // Loop through all of the parts
-            for (i = 0; i < 4; i++)
+            for (i = 0; i < D; i++)
             {
                 // Calculate the sum
                 aplRes.parts[i] = aplLxR.parts[i] + aplRxL.parts[i];
@@ -2227,12 +2775,70 @@ APLHC4I MulHC4I_RE_HC
 
             break;
 
+        case ENUMHCM_X:         // Cross Product
+            // Set the Real part to zero
+            aplRes.parts[0] = 0;
+
+            // Loop through the imaginary parts
+            for (i = 1; i < D; i++)
+            {
+                int i1 = (i + 1) % D,
+                    i2 = (i + 2) % D;
+                // Skip over the Scalar part
+                i1 = max (i1, 1);
+                i2 = max (i2, 1);
+
+                // Calculate the Cross Product
+                aplRes.parts[i] = aplLft.parts[i1] * aplRht.parts[i2]
+                                - aplLft.parts[i2] * aplRht.parts[i1];
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            // Set the Real part to the identity element for addition
+            //   and zero the rest of the number
+            ZeroMemory (&aplRes, sizeof (aplRes));
+
+            // Loop through all of the parts
+            for (i = 0; i < D; i++)
+                // Calculate the Dot Product
+                aplRes.parts[0] += aplLft.parts[i] * aplRht.parts[i];
+
+            // Tell the caller to demote the dimension
+            lpPrimSpec->bLclDimDemote = TRUE;
+
+            break;
+
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L
+            // Check for Divide By Zero
+            if (IsZeroHCxI (&aplLft, D))
+                // The result is R
+                aplRes = aplRht;
+            else
+            {
+                // Save the current value of []LR
+                cQuadLR = GetQuadLR ();
+
+                // Set the current value of []LR to 'r'
+                SetQuadLR (L'r');
+
+                // Calculate L x R / L
+                aplRes = MulHC4I_RE (aplLft, DivHC4I_RE (aplRht, aplLft));
+
+                // Restore the old value of []LR
+                SetQuadLR (cQuadLR);
+            } // End IF/ELSE
+
+            break;
+
         case ENUMHCM_NONE:          // Can't happen
         defstop
             break;
     } // End SWITCH
 
     return aplRes;
+#undef  D
 } // End MulHC4I_RE_HC
 
 
@@ -2294,7 +2900,7 @@ void PrimFnDydTimesHC4IisHC4IvHC4I
 
     __try
     {
-        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        // Split cases based upon the Hypercomplex Multiplication Variant
         switch (lpPrimSpec->eHCMul)
         {
             case ENUMHCM_NONE:
@@ -2303,10 +2909,13 @@ void PrimFnDydTimesHC4IisHC4IvHC4I
 
                 break;
 
-            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
-            case ENUMHCM_INT:       // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2
+            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L
                 // Call subbfunction
-                lpMemRes[uRes] = MulHC4I_RE_HC (lpatLft->aplHC4I, lpatRht->aplHC4I, lpPrimSpec->eHCMul);
+                lpMemRes[uRes] = MulHC4I_RE_HC (lpatLft->aplHC4I, lpatRht->aplHC4I, lpPrimSpec);
 
                 break;
 
@@ -2352,7 +2961,7 @@ void PrimFnDydTimesHC4FisHC4IvHC4I
 
     __try
     {
-        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        // Split cases based upon the Hypercomplex Multiplication Variant
         switch (lpPrimSpec->eHCMul)
         {
             case ENUMHCM_NONE:
@@ -2361,10 +2970,13 @@ void PrimFnDydTimesHC4FisHC4IvHC4I
 
                 break;
 
-            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
-            case ENUMHCM_INT:       // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2
+            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L
                 // Call subbfunction
-                lpMemRes[uRes] = MulHC4F_RE_HC (atLft.aplHC4F, atRht.aplHC4F, lpPrimSpec->eHCMul);
+                lpMemRes[uRes] = MulHC4F_RE_HC (atLft.aplHC4F, atRht.aplHC4F, lpPrimSpec);
 
                 break;
 
@@ -2393,13 +3005,15 @@ void PrimFnDydTimesHC4FisHC4IvHC4I
 APLHC4F MulHC4F_RE_HC
     (APLHC4F    aplLft,             // Left arg
      APLHC4F    aplRht,             // Right ...
-     ENUM_HCMUL eHCMul)             // Multiplication choice (see tagENUM_HCMUL)
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
+#define D   4
     APLHC4F aplRes,                 // The result
             aplLxR,                 // Temp var
             aplRxL;                 // ...
     int     i;                      // Loop counter
+    WCHAR   cQuadLR;                // Save area for old value of []LR
 
     // Calculate L x R
     aplLxR = MulHC4F_RE (aplLft, aplRht);
@@ -2407,12 +3021,12 @@ APLHC4F MulHC4F_RE_HC
     // Calculate R x L
     aplRxL = MulHC4F_RE (aplRht, aplLft);
 
-    // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
-    switch (eHCMul)
+    // Split cases based upon the Hypercomplex Multiplication Variant
+    switch (lpPrimSpec->eHCMul)
     {
-        case ENUMHCM_EXT:
+        case ENUMHCM_EXT:       // ((L x R - R x L) / 2
             // Loop through all of the parts
-            for (i = 0; i < 4; i++)
+            for (i = 0; i < D; i++)
             {
                 // Calculate the difference
                 aplRes.parts[i] = aplLxR.parts[i] - aplRxL.parts[i];
@@ -2423,9 +3037,9 @@ APLHC4F MulHC4F_RE_HC
 
             break;
 
-        case ENUMHCM_INT:
+        case ENUMHCM_INT:       // ((L x R + R x L) / 2
             // Loop through all of the parts
-            for (i = 0; i < 4; i++)
+            for (i = 0; i < D; i++)
             {
                 // Calculate the sum
                 aplRes.parts[i] = aplLxR.parts[i] + aplRxL.parts[i];
@@ -2436,12 +3050,70 @@ APLHC4F MulHC4F_RE_HC
 
             break;
 
+        case ENUMHCM_X:         // Cross Product
+            // Set the Real part to zero
+            aplRes.parts[0] = 0;
+
+            // Loop through the imaginary parts
+            for (i = 1; i < D; i++)
+            {
+                int i1 = (i + 1) % D,
+                    i2 = (i + 2) % D;
+                // Skip over the Scalar part
+                i1 = max (i1, 1);
+                i2 = max (i2, 1);
+
+                // Calculate the Cross Product
+                aplRes.parts[i] = aplLft.parts[i1] * aplRht.parts[i2]
+                                - aplLft.parts[i2] * aplRht.parts[i1];
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            // Set the Real part to the identity element for addition
+            //   and zero the rest of the number
+            ZeroMemory (&aplRes, sizeof (aplRes));
+
+            // Loop through all of the parts
+            for (i = 0; i < D; i++)
+                // Calculate the Dot Product
+                aplRes.parts[0] += aplLft.parts[i] * aplRht.parts[i];
+
+            // Tell the caller to demote the dimension
+            lpPrimSpec->bLclDimDemote = TRUE;
+
+            break;
+
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L
+            // Check for Divide By Zero
+            if (IsZeroHCxF (&aplLft, D))
+                // The result is R
+                aplRes = aplRht;
+            else
+            {
+                // Save the current value of []LR
+                cQuadLR = GetQuadLR ();
+
+                // Set the current value of []LR to 'r'
+                SetQuadLR (L'r');
+
+                // Calculate L x R / L
+                aplRes = MulHC4F_RE (aplLft, DivHC4F_RE (aplRht, aplLft));
+
+                // Restore the old value of []LR
+                SetQuadLR (cQuadLR);
+            } // End IF/ELSE
+
+            break;
+
         case ENUMHCM_NONE:          // Can't happen
         defstop
             break;
     } // End SWITCH
 
     return aplRes;
+#undef  D
 } // End MulHC4F_RE_HC
 
 
@@ -2454,6 +3126,7 @@ APLHC4F MulHC4F_RE
      APLHC4F aplRht)                // Right ...
 
 {
+#define D   4
     APLHC4F aplRes;
     APLHC2F dP, cP;
 
@@ -2475,26 +3148,26 @@ APLHC4F MulHC4F_RE
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
     // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
-    if (IsZeroHCxF (&b, 2) && IsZeroHCxF (&d, 2))
+    if (IsZeroHCxF (&b, D/2) && IsZeroHCxF (&d, D/2))
     {
         aplRes.partsLo[0] = MulHC2F_RE (a, c);
         aplRes.partsHi[0].partsLo =
         aplRes.partsHi[0].partsHi = 0.0;
     } else
     // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
-    if (IsZeroHCxF (&b, 2))
+    if (IsZeroHCxF (&b, D/2))
     {
         aplRes.partsLo[0] = MulHC2F_RE (a, c );
         aplRes.partsHi[0] = MulHC2F_RE (d, a );
     } else
     // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
-    if (IsZeroHCxF (&d, 2))
+    if (IsZeroHCxF (&d, D/2))
     {
         aplRes.partsLo[0] = MulHC2F_RE (a, c );
         aplRes.partsHi[0] = MulHC2F_RE (b, cP);
     } else
     // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
-    if (IsZeroHCxF (&a, 2) && IsZeroHCxF (&c, 2))
+    if (IsZeroHCxF (&a, D/2) && IsZeroHCxF (&c, D/2))
     {
         aplRes.partsLo[0] = NegHC2F_RE (MulHC2F_RE (dP, b));
         aplRes.partsHi[0].partsLo =
@@ -2513,6 +3186,7 @@ APLHC4F MulHC4F_RE
 #undef  a
 
     return aplRes;
+#undef  D
 } // End MulHC4F_RE
 
 
@@ -2534,7 +3208,7 @@ void PrimFnDydTimesHC4FisHC4FvHC4F
 
     __try
     {
-        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        // Split cases based upon the Hypercomplex Multiplication Variant
         switch (lpPrimSpec->eHCMul)
         {
             case ENUMHCM_NONE:
@@ -2543,10 +3217,13 @@ void PrimFnDydTimesHC4FisHC4FvHC4F
 
                 break;
 
-            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
-            case ENUMHCM_INT:       // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2
+            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L
                 // Call subbfunction
-                lpMemRes[uRes] = MulHC4F_RE_HC (lpatLft->aplHC4F, lpatRht->aplHC4F, lpPrimSpec->eHCMul);
+                lpMemRes[uRes] = MulHC4F_RE_HC (lpatLft->aplHC4F, lpatRht->aplHC4F, lpPrimSpec);
 
                 break;
 
@@ -2575,13 +3252,15 @@ void PrimFnDydTimesHC4FisHC4FvHC4F
 APLHC4R MulHC4R_RE_HC
     (APLHC4R    aplLft,             // Left arg
      APLHC4R    aplRht,             // Right ...
-     ENUM_HCMUL eHCMul)             // Multiplication choice (see tagENUM_HCMUL)
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLHC4R aplRes,                 // The result
+#define D   4
+    APLHC4R aplRes = {0},           // The result
             aplLxR,                 // Temp var
             aplRxL;                 // ...
     int     i;                      // Loop counter
+    WCHAR   cQuadLR;                // Save area for old value of []LR
 
     // Calculate L x R
     aplLxR = MulHC4R_RE (aplLft, aplRht);
@@ -2589,12 +3268,12 @@ APLHC4R MulHC4R_RE_HC
     // Calculate R x L
     aplRxL = MulHC4R_RE (aplRht, aplLft);
 
-    // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
-    switch (eHCMul)
+    // Split cases based upon the Hypercomplex Multiplication Variant
+    switch (lpPrimSpec->eHCMul)
     {
-        case ENUMHCM_EXT:
+        case ENUMHCM_EXT:       // ((L x R - R x L) / 2
             // Loop through all of the parts
-            for (i = 0; i < 4; i++)
+            for (i = 0; i < D; i++)
             {
                 // Calculate the difference
                 aplRes.parts[i] = SubHC1R_RE (aplLxR.parts[i], aplRxL.parts[i]);
@@ -2605,9 +3284,9 @@ APLHC4R MulHC4R_RE_HC
 
             break;
 
-        case ENUMHCM_INT:
+        case ENUMHCM_INT:       // ((L x R + R x L) / 2
             // Loop through all of the parts
-            for (i = 0; i < 4; i++)
+            for (i = 0; i < D; i++)
             {
                 // Calculate the sum
                 aplRes.parts[i] = AddHC1R_RE (aplLxR.parts[i], aplRxL.parts[i]);
@@ -2615,6 +3294,91 @@ APLHC4R MulHC4R_RE_HC
                 // Divide the sum by 2
                 mpq_div_2exp (&aplRes.parts[i], &aplRes.parts[i], 1);
             } // End FOR
+
+            break;
+
+        case ENUMHCM_X:         // Cross Product
+        {
+            APLHC1R aplTmp1,
+                    aplTmp2;
+
+            // Set the Real part to 0/1
+            mpq_init (&aplRes.parts[0]);
+
+            // Loop through the imaginary parts
+            for (i = 1; i < D; i++)
+            {
+                int i1 = (i + 1) % D,
+                    i2 = (i + 2) % D;
+                // Skip over the Scalar part
+                i1 = max (i1, 1);
+                i2 = max (i2, 1);
+
+                // Calculate the Cross Product
+////////////////aplRes.parts[i] = aplLft.parts[i1] * aplRht.parts[i2]
+////////////////                - aplLft.parts[i2] * aplRht.parts[i1];
+                aplTmp1         = MulHC1R_RE (aplLft.parts[i1], aplRht.parts[i2]);
+                aplTmp2         = MulHC1R_RE (aplLft.parts[i2], aplRht.parts[i1]);
+                aplRes.parts[i] = SubHC1R_RE (aplTmp1         , aplTmp2         );
+
+                // We no longer need this storage
+                Myhc1r_clear (&aplTmp2);
+                Myhc1r_clear (&aplTmp1);
+            } // End FOR
+
+            break;
+        } // End ENUMHCM_X
+
+        case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+        {
+            APLHC1R aplTmp;
+
+            // Set the Real part to the identity element for addition
+            //   and zero the rest of the number
+            mphc4r_init (&aplRes);
+
+            // Loop through all of the parts
+            for (i = 0; i < D; i++)
+            {
+                // Calculate the Dot Product
+                aplTmp = MulHC1R_RE (aplLft.parts[i], aplRht.parts[i]);
+                mpq_add (&aplRes.parts[0], &aplRes.parts[0], &aplTmp);
+
+                // We no longer need this storage
+                Myhc1r_clear (&aplTmp);
+            } // End FOR
+
+            // Tell the caller to demote the dimension
+            lpPrimSpec->bLclDimDemote = TRUE;
+
+            break;
+        } // End ENUMHCM_D
+
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L
+            // Check for Divide By Zero
+            if (IsZeroHCxR (&aplLft, D))
+                // The result is R
+                mphc4r_init_set (&aplRes, &aplRht);
+            else
+            {
+                APLHC4R aplTmp;
+
+                // Save the current value of []LR
+                cQuadLR = GetQuadLR ();
+
+                // Set the current value of []LR to 'r'
+                SetQuadLR (L'r');
+
+                // Calculate L x R / L
+                aplTmp = DivHC4R_RE (aplRht, aplLft);
+                aplRes = MulHC4R_RE (aplLft, aplTmp);
+
+                // We no longer need this storage
+                Myhc4r_clear (&aplTmp);
+
+                // Restore the old value of []LR
+                SetQuadLR (cQuadLR);
+            } // End IF/ELSE
 
             break;
 
@@ -2628,6 +3392,7 @@ APLHC4R MulHC4R_RE_HC
     Myhc4r_clear (&aplRxL);
 
     return aplRes;
+#undef  D
 } // End MulHC4R_RE_HC
 
 
@@ -2640,6 +3405,7 @@ APLHC4R MulHC4R_RE
      APLHC4R aplRht)                    // Right ...
 
 {
+#define D   4
     int     i;
     APLHC4R aplRes = {0};
     APLHC2R dP, cP;
@@ -2662,7 +3428,7 @@ APLHC4R MulHC4R_RE
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
     // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
-    if (IsZeroHCxR (&b, 2) && IsZeroHCxR (&d, 2))
+    if (IsZeroHCxR (&b, D/2) && IsZeroHCxR (&d, D/2))
     {
         aplRes.partsLo = MulHC2R_RE (a, c );
 
@@ -2670,19 +3436,19 @@ APLHC4R MulHC4R_RE
         mphc2r_init (&aplRes.partsHi);
     } else
     // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
-    if (IsZeroHCxR (&b, 2))
+    if (IsZeroHCxR (&b, D/2))
     {
         aplRes.partsLo = MulHC2R_RE (a, c );
         aplRes.partsHi = MulHC2R_RE (d, a );
     } else
     // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
-    if (IsZeroHCxR (&d, 2))
+    if (IsZeroHCxR (&d, D/2))
     {
         aplRes.partsLo = MulHC2R_RE (a, c );
         aplRes.partsHi = MulHC2R_RE (b, cP);
     } else
     // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
-    if (IsZeroHCxR (&a, 2) && IsZeroHCxR (&c, 2))
+    if (IsZeroHCxR (&a, D/2) && IsZeroHCxR (&c, D/2))
     {
         APLHC2R aplTmp;
 
@@ -2710,7 +3476,7 @@ APLHC4R MulHC4R_RE
     Myhc2r_clear (&dP);
 
     // Loop through all of the parts
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < D; i++)
     // Check for indeterminates:  0 {times} _  or  _ {times} 0
     if ((IsMpq0 (&aplLft.parts[i])
       && IsMpqPosInfinity (&aplRht.parts[i]))
@@ -2736,6 +3502,7 @@ APLHC4R MulHC4R_RE
                                                                                    : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
 
     return aplRes;
+#undef  D
 } // End MulHC4R_RE
 
 
@@ -2757,7 +3524,7 @@ void PrimFnDydTimesHC4RisHC4RvHC4R
 
     __try
     {
-        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        // Split cases based upon the Hypercomplex Multiplication Variant
         switch (lpPrimSpec->eHCMul)
         {
             case ENUMHCM_NONE:
@@ -2766,10 +3533,13 @@ void PrimFnDydTimesHC4RisHC4RvHC4R
 
                 break;
 
-            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
-            case ENUMHCM_INT:       // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2
+            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L
                 // Call subbfunction
-                lpMemRes[uRes] = MulHC4R_RE_HC (lpatLft->aplHC4R, lpatRht->aplHC4R, lpPrimSpec->eHCMul);
+                lpMemRes[uRes] = MulHC4R_RE_HC (lpatLft->aplHC4R, lpatRht->aplHC4R, lpPrimSpec);
 
                 break;
 
@@ -2798,13 +3568,15 @@ void PrimFnDydTimesHC4RisHC4RvHC4R
 APLHC4V MulHC4V_RE_HC
     (APLHC4V    aplLft,             // Left arg
      APLHC4V    aplRht,             // Right ...
-     ENUM_HCMUL eHCMul)             // Multiplication choice (see tagENUM_HCMUL)
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
+#define D   4
     APLHC4V aplRes,                 // The result
             aplLxR,                 // Temp var
             aplRxL;                 // ...
     int     i;                      // Loop counter
+    WCHAR   cQuadLR;                // Save area for old value of []LR
 
     // Calculate L x R
     aplLxR = MulHC4V_RE (aplLft, aplRht);
@@ -2812,12 +3584,12 @@ APLHC4V MulHC4V_RE_HC
     // Calculate R x L
     aplRxL = MulHC4V_RE (aplRht, aplLft);
 
-    // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
-    switch (eHCMul)
+    // Split cases based upon the Hypercomplex Multiplication Variant
+    switch (lpPrimSpec->eHCMul)
     {
-        case ENUMHCM_EXT:
+        case ENUMHCM_EXT:       // ((L x R - R x L) / 2
             // Loop through all of the parts
-            for (i = 0; i < 4; i++)
+            for (i = 0; i < D; i++)
             {
                 // Calculate the difference
                 aplRes.parts[i] = SubHC1V_RE (aplLxR.parts[i], aplRxL.parts[i]);
@@ -2828,9 +3600,9 @@ APLHC4V MulHC4V_RE_HC
 
             break;
 
-        case ENUMHCM_INT:
+        case ENUMHCM_INT:       // ((L x R + R x L) / 2
             // Loop through all of the parts
-            for (i = 0; i < 4; i++)
+            for (i = 0; i < D; i++)
             {
                 // Calculate the sum
                 aplRes.parts[i] = AddHC1V_RE (aplLxR.parts[i], aplRxL.parts[i]);
@@ -2838,6 +3610,91 @@ APLHC4V MulHC4V_RE_HC
                 // Divide the sum by 2
                 mpfr_div_2exp (&aplRes.parts[i], &aplRes.parts[i], 1, MPFR_RNDN);
             } // End FOR
+
+            break;
+
+        case ENUMHCM_X:         // Cross Product
+        {
+            APLHC1V aplTmp1,
+                    aplTmp2;
+
+            // Set the Real part to 0
+            mpfr_init0 (&aplRes.parts[0]);
+
+            // Loop through the imaginary parts
+            for (i = 1; i < D; i++)
+            {
+                int i1 = (i + 1) % D,
+                    i2 = (i + 2) % D;
+                // Skip over the Scalar part
+                i1 = max (i1, 1);
+                i2 = max (i2, 1);
+
+                // Calculate the Cross Product
+////////////////aplRes.parts[i] = aplLft.parts[i1] * aplRht.parts[i2]
+////////////////                - aplLft.parts[i2] * aplRht.parts[i1];
+                aplTmp1         = MulHC1V_RE (aplLft.parts[i1], aplRht.parts[i2]);
+                aplTmp2         = MulHC1V_RE (aplLft.parts[i2], aplRht.parts[i1]);
+                aplRes.parts[i] = SubHC1V_RE (aplTmp1         , aplTmp2         );
+
+                // We no longer need this storage
+                Myhc1v_clear (&aplTmp2);
+                Myhc1v_clear (&aplTmp1);
+            } // End FOR
+
+            break;
+        } // End ENUMHCM_X
+
+        case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+        {
+            APLHC1V aplTmp;
+
+            // Set the Real part to the identity element for addition
+            //   and zero the rest of the number
+            mphc4v_init0 (&aplRes);
+
+            // Loop through all of the parts
+            for (i = 0; i < D; i++)
+            {
+                // Calculate the Dot Product
+                aplTmp = MulHC1V_RE (aplLft.parts[i], aplRht.parts[i]);
+                mpfr_add (&aplRes.parts[0], &aplRes.parts[0], &aplTmp, MPFR_RNDN);
+
+                // We no longer need this storage
+                Myhc1v_clear (&aplTmp);
+            } // End FOR
+
+            // Tell the caller to demote the dimension
+            lpPrimSpec->bLclDimDemote = TRUE;
+
+            break;
+        } // End ENUMHCM_D
+
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L
+            // Check for Divide By Zero
+            if (IsZeroHCxV (&aplLft, D))
+                // The result is R
+                mphc4v_init_set (&aplRes, &aplRht);
+            else
+            {
+                APLHC4V aplTmp;
+
+                // Save the current value of []LR
+                cQuadLR = GetQuadLR ();
+
+                // Set the current value of []LR to 'r'
+                SetQuadLR (L'r');
+
+                // Calculate L x R / L
+                aplTmp = DivHC4V_RE (aplRht, aplLft);
+                aplRes = MulHC4V_RE (aplLft, aplTmp);
+
+                // We no longer need this storage
+                Myhc4v_clear (&aplTmp);
+
+                // Restore the old value of []LR
+                SetQuadLR (cQuadLR);
+            } // End IF/ELSE
 
             break;
 
@@ -2851,6 +3708,7 @@ APLHC4V MulHC4V_RE_HC
     Myhc4v_clear (&aplRxL);
 
     return aplRes;
+#undef  D
 } // End MulHC4V_RE_HC
 
 
@@ -2863,6 +3721,7 @@ APLHC4V MulHC4V_RE
      APLHC4V aplRht)
 
 {
+#define D   4
     int     i;
     APLHC4V aplRes = {0};
     APLHC2V dP,cP;
@@ -2890,7 +3749,7 @@ APLHC4V MulHC4V_RE
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
     // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
-    if (IsZeroHCxV (&b, 2) && IsZeroHCxV (&d, 2))
+    if (IsZeroHCxV (&b, D/2) && IsZeroHCxV (&d, D/2))
     {
         aplRes.partsLo = MulHC2V_RE (a, c );
 
@@ -2898,19 +3757,19 @@ APLHC4V MulHC4V_RE
         mphc2v_init0 (&aplRes.partsHi);
     } else
     // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
-    if (IsZeroHCxV (&b, 2))
+    if (IsZeroHCxV (&b, D/2))
     {
         aplRes.partsLo = MulHC2V_RE (a, c );
         aplRes.partsHi = MulHC2V_RE (d, a );
     } else
     // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
-    if (IsZeroHCxV (&d, 2))
+    if (IsZeroHCxV (&d, D/2))
     {
         aplRes.partsLo = MulHC2V_RE (a, c );
         aplRes.partsHi = MulHC2V_RE (b, cP);
     } else
     // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
-    if (IsZeroHCxV (&a, 2) && IsZeroHCxV (&c, 2))
+    if (IsZeroHCxV (&a, D/2) && IsZeroHCxV (&c, D/2))
     {
         APLHC2V aplTmp;
 
@@ -2938,7 +3797,7 @@ APLHC4V MulHC4V_RE
     Myhc2v_clear (&dP);
 
     // Loop through all of the parts
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < D; i++)
     // Check for indeterminates:  0 {times} _  or  _ {times} 0
     if ((IsMpf0 (&aplLft.parts[i])
       && IsMpfPosInfinity (&aplRht.parts[i]))
@@ -2966,6 +3825,7 @@ APLHC4V MulHC4V_RE
                                     MPFR_RNDN);
 
     return aplRes;
+#undef  D
 } // End MulHC4V_RE
 
 
@@ -3015,7 +3875,7 @@ void PrimFnDydTimesHC4VisHC4VvHC4V
 
     __try
     {
-        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        // Split cases based upon the Hypercomplex Multiplication Variant
         switch (lpPrimSpec->eHCMul)
         {
             case ENUMHCM_NONE:
@@ -3024,10 +3884,13 @@ void PrimFnDydTimesHC4VisHC4VvHC4V
 
                 break;
 
-            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
-            case ENUMHCM_INT:       // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2
+            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L
                 // Call subbfunction
-                lpMemRes[uRes] = MulHC4V_RE_HC (lpatLft->aplHC4V, lpatRht->aplHC4V, lpPrimSpec->eHCMul);
+                lpMemRes[uRes] = MulHC4V_RE_HC (lpatLft->aplHC4V, lpatRht->aplHC4V, lpPrimSpec);
 
                 break;
 
@@ -3056,13 +3919,15 @@ void PrimFnDydTimesHC4VisHC4VvHC4V
 APLHC8I MulHC8I_RE_HC
     (APLHC8I    aplLft,             // Left arg
      APLHC8I    aplRht,             // Right ...
-     ENUM_HCMUL eHCMul)             // Multiplication choice (see tagENUM_HCMUL)
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
+#define D   8
     APLHC8I aplRes,                 // The result
             aplLxR,                 // Temp var
             aplRxL;                 // ...
     int     i;                      // Loop counter
+    WCHAR   cQuadLR;                // Save area for old value of []LR
 
     // Calculate L x R
     aplLxR = MulHC8I_RE (aplLft, aplRht);
@@ -3070,12 +3935,12 @@ APLHC8I MulHC8I_RE_HC
     // Calculate R x L
     aplRxL = MulHC8I_RE (aplRht, aplLft);
 
-    // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
-    switch (eHCMul)
+    // Split cases based upon the Hypercomplex Multiplication Variant
+    switch (lpPrimSpec->eHCMul)
     {
-        case ENUMHCM_EXT:
+        case ENUMHCM_EXT:       // ((L x R - R x L) / 2
             // Loop through all of the parts
-            for (i = 0; i < 8; i++)
+            for (i = 0; i < D; i++)
             {
                 // Calculate the difference
                 aplRes.parts[i] = aplLxR.parts[i] - aplRxL.parts[i];
@@ -3086,9 +3951,9 @@ APLHC8I MulHC8I_RE_HC
 
             break;
 
-        case ENUMHCM_INT:
+        case ENUMHCM_INT:       // ((L x R + R x L) / 2
             // Loop through all of the parts
-            for (i = 0; i < 8; i++)
+            for (i = 0; i < D; i++)
             {
                 // Calculate the sum
                 aplRes.parts[i] = aplLxR.parts[i] + aplRxL.parts[i];
@@ -3099,12 +3964,71 @@ APLHC8I MulHC8I_RE_HC
 
             break;
 
+        case ENUMHCM_X:         // Cross Product
+            // Set the Real part to zero
+            //   and zero the rest of the number
+            ZeroMemory (&aplRes, sizeof (aplRes));
+
+            // Loop through the imaginary parts
+            for (i = 1; i < D; i++)
+            {
+                int i1 = (i + 1) % D,
+                    i2 = (i + 2) % D;
+                // Skip over the Scalar part
+                i1 = max (i1, 1);
+                i2 = max (i2, 1);
+
+                // Calculate the Cross Product
+                aplRes.parts[i] = aplLft.parts[i1] * aplRht.parts[i2]
+                                - aplLft.parts[i2] * aplRht.parts[i1];
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            // Set the Real part to the identity element for addition
+            //   and zero the rest of the number
+            ZeroMemory (&aplRes, sizeof (aplRes));
+
+            // Loop through all of the parts
+            for (i = 0; i < D; i++)
+                // Calculate the Dot Product
+                aplRes.parts[0] += aplLft.parts[i] * aplRht.parts[i];
+
+            // Tell the caller to demote the dimension
+            lpPrimSpec->bLclDimDemote = TRUE;
+
+            break;
+
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L
+            // Check for Divide By Zero
+            if (IsZeroHCxI (&aplLft, D))
+                // The result is R
+                aplRes = aplRht;
+            else
+            {
+                // Save the current value of []LR
+                cQuadLR = GetQuadLR ();
+
+                // Set the current value of []LR to 'r'
+                SetQuadLR (L'r');
+
+                // Calculate L x R / L
+                aplRes = MulHC8I_RE (aplLft, DivHC8I_RE (aplRht, aplLft));
+
+                // Restore the old value of []LR
+                SetQuadLR (cQuadLR);
+            } // End IF/ELSE
+
+            break;
+
         case ENUMHCM_NONE:          // Can't happen
         defstop
             break;
     } // End SWITCH
 
     return aplRes;
+#undef  D
 } // End MulHC8I_RE_HC
 
 
@@ -3166,7 +4090,7 @@ void PrimFnDydTimesHC8IisHC8IvHC8I
 
     __try
     {
-        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        // Split cases based upon the Hypercomplex Multiplication Variant
         switch (lpPrimSpec->eHCMul)
         {
             case ENUMHCM_NONE:
@@ -3175,10 +4099,13 @@ void PrimFnDydTimesHC8IisHC8IvHC8I
 
                 break;
 
-            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
-            case ENUMHCM_INT:       // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2
+            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L
                 // Call subbfunction
-                lpMemRes[uRes] = MulHC8I_RE_HC (lpatLft->aplHC8I, lpatRht->aplHC8I, lpPrimSpec->eHCMul);
+                lpMemRes[uRes] = MulHC8I_RE_HC (lpatLft->aplHC8I, lpatRht->aplHC8I, lpPrimSpec);
 
                 break;
 
@@ -3224,7 +4151,7 @@ void PrimFnDydTimesHC8FisHC8IvHC8I
 
     __try
     {
-        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        // Split cases based upon the Hypercomplex Multiplication Variant
         switch (lpPrimSpec->eHCMul)
         {
             case ENUMHCM_NONE:
@@ -3233,10 +4160,13 @@ void PrimFnDydTimesHC8FisHC8IvHC8I
 
                 break;
 
-            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
-            case ENUMHCM_INT:       // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2
+            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L
                 // Call subbfunction
-                lpMemRes[uRes] = MulHC8F_RE_HC (atLft.aplHC8F, atRht.aplHC8F, lpPrimSpec->eHCMul);
+                lpMemRes[uRes] = MulHC8F_RE_HC (atLft.aplHC8F, atRht.aplHC8F, lpPrimSpec);
 
                 break;
 
@@ -3265,13 +4195,15 @@ void PrimFnDydTimesHC8FisHC8IvHC8I
 APLHC8F MulHC8F_RE_HC
     (APLHC8F    aplLft,             // Left arg
      APLHC8F    aplRht,             // Right ...
-     ENUM_HCMUL eHCMul)             // Multiplication choice (see tagENUM_HCMUL)
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
+#define D   8
     APLHC8F aplRes,                 // The result
             aplLxR,                 // Temp var
             aplRxL;                 // ...
     int     i;                      // Loop counter
+    WCHAR   cQuadLR;                // Save area for old value of []LR
 
     // Calculate L x R
     aplLxR = MulHC8F_RE (aplLft, aplRht);
@@ -3279,12 +4211,12 @@ APLHC8F MulHC8F_RE_HC
     // Calculate R x L
     aplRxL = MulHC8F_RE (aplRht, aplLft);
 
-    // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
-    switch (eHCMul)
+    // Split cases based upon the Hypercomplex Multiplication Variant
+    switch (lpPrimSpec->eHCMul)
     {
-        case ENUMHCM_EXT:
+        case ENUMHCM_EXT:       // ((L x R - R x L) / 2
             // Loop through all of the parts
-            for (i = 0; i < 8; i++)
+            for (i = 0; i < D; i++)
             {
                 // Calculate the difference
                 aplRes.parts[i] = aplLxR.parts[i] - aplRxL.parts[i];
@@ -3295,9 +4227,9 @@ APLHC8F MulHC8F_RE_HC
 
             break;
 
-        case ENUMHCM_INT:
+        case ENUMHCM_INT:       // ((L x R + R x L) / 2
             // Loop through all of the parts
-            for (i = 0; i < 8; i++)
+            for (i = 0; i < D; i++)
             {
                 // Calculate the sum
                 aplRes.parts[i] = aplLxR.parts[i] + aplRxL.parts[i];
@@ -3308,12 +4240,70 @@ APLHC8F MulHC8F_RE_HC
 
             break;
 
+        case ENUMHCM_X:         // Cross Product
+            // Set the Real part to zero
+            aplRes.parts[0] = 0.0;
+
+            // Loop through the imaginary parts
+            for (i = 1; i < D; i++)
+            {
+                int i1 = (i + 1) % D,
+                    i2 = (i + 2) % D;
+                // Skip over the Scalar part
+                i1 = max (i1, 1);
+                i2 = max (i2, 1);
+
+                // Calculate the Cross Product
+                aplRes.parts[i] = aplLft.parts[i1] * aplRht.parts[i2]
+                                - aplLft.parts[i2] * aplRht.parts[i1];
+            } // End FOR
+
+            break;
+
+        case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            // Set the Real part to the identity element for addition
+            //   and zero the rest of the number
+            ZeroMemory (&aplRes, sizeof (aplRes));
+
+            // Loop through all of the parts
+            for (i = 0; i < D; i++)
+                // Calculate the Dot Product
+                aplRes.parts[0] += aplLft.parts[i] * aplRht.parts[i];
+
+            // Tell the caller to demote the dimension
+            lpPrimSpec->bLclDimDemote = TRUE;
+
+            break;
+
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L
+            // Check for Divide By Zero
+            if (IsZeroHCxF (&aplLft, D))
+                // The result is R
+                aplRes = aplRht;
+            else
+            {
+                // Save the current value of []LR
+                cQuadLR = GetQuadLR ();
+
+                // Set the current value of []LR to 'r'
+                SetQuadLR (L'r');
+
+                // Calculate L x R / L
+                aplRes = MulHC8F_RE (aplLft, DivHC8F_RE (aplRht, aplLft));
+
+                // Restore the old value of []LR
+                SetQuadLR (cQuadLR);
+            } // End IF/ELSE
+
+            break;
+
         case ENUMHCM_NONE:          // Can't happen
         defstop
             break;
     } // End SWITCH
 
     return aplRes;
+#undef  D
 } // End MulHC8F_RE_HC
 
 
@@ -3326,6 +4316,7 @@ APLHC8F MulHC8F_RE
      APLHC8F aplRht)
 
 {
+#define D   8
     APLHC8F aplRes;
     APLHC4F dP, cP;
 
@@ -3347,7 +4338,7 @@ APLHC8F MulHC8F_RE
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
     // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
-    if (IsZeroHCxF (&b, 4) && IsZeroHCxF (&d, 4))
+    if (IsZeroHCxF (&b, D/2) && IsZeroHCxF (&d, D/2))
     {
         aplRes.partsLo[0] = MulHC4F_RE (a, c );
 
@@ -3358,19 +4349,19 @@ APLHC8F MulHC8F_RE
         aplRes.partsHi[0].partsHi[0].partsHi = 0.0;
     } else
     // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
-    if (IsZeroHCxF (&b, 4))
+    if (IsZeroHCxF (&b, D/2))
     {
         aplRes.partsLo[0] = MulHC4F_RE (a, c );
         aplRes.partsHi[0] = MulHC4F_RE (d, a );
     } else
     // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
-    if (IsZeroHCxF (&d, 4))
+    if (IsZeroHCxF (&d, D/2))
     {
         aplRes.partsLo[0] = MulHC4F_RE (a, c );
         aplRes.partsHi[0] = MulHC4F_RE (b, cP);
     } else
     // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
-    if (IsZeroHCxF (&a, 4) && IsZeroHCxF (&c, 4))
+    if (IsZeroHCxF (&a, D/2) && IsZeroHCxF (&c, D/2))
     {
         aplRes.partsLo[0] = NegHC4F_RE (MulHC4F_RE (dP, b));
         aplRes.partsHi[0].partsLo[0].partsLo =
@@ -3391,6 +4382,7 @@ APLHC8F MulHC8F_RE
 #undef  a
 
     return aplRes;
+#undef  D
 } // End MulHC8F_RE
 
 
@@ -3412,7 +4404,7 @@ void PrimFnDydTimesHC8FisHC8FvHC8F
 
     __try
     {
-        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        // Split cases based upon the Hypercomplex Multiplication Variant
         switch (lpPrimSpec->eHCMul)
         {
             case ENUMHCM_NONE:
@@ -3421,10 +4413,13 @@ void PrimFnDydTimesHC8FisHC8FvHC8F
 
                 break;
 
-            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
-            case ENUMHCM_INT:       // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2
+            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L
                 // Call subbfunction
-                lpMemRes[uRes] = MulHC8F_RE_HC (lpatLft->aplHC8F, lpatRht->aplHC8F, lpPrimSpec->eHCMul);
+                lpMemRes[uRes] = MulHC8F_RE_HC (lpatLft->aplHC8F, lpatRht->aplHC8F, lpPrimSpec);
 
                 break;
 
@@ -3453,13 +4448,15 @@ void PrimFnDydTimesHC8FisHC8FvHC8F
 APLHC8R MulHC8R_RE_HC
     (APLHC8R    aplLft,             // Left arg
      APLHC8R    aplRht,             // Right ...
-     ENUM_HCMUL eHCMul)             // Multiplication choice (see tagENUM_HCMUL)
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    APLHC8R aplRes,                 // The result
+#define D   8
+    APLHC8R aplRes = {0},           // The result
             aplLxR,                 // Temp var
             aplRxL;                 // ...
     int     i;                      // Loop counter
+    WCHAR   cQuadLR;                // Save area for old value of []LR
 
     // Calculate L x R
     aplLxR = MulHC8R_RE (aplLft, aplRht);
@@ -3467,12 +4464,12 @@ APLHC8R MulHC8R_RE_HC
     // Calculate R x L
     aplRxL = MulHC8R_RE (aplRht, aplLft);
 
-    // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
-    switch (eHCMul)
+    // Split cases based upon the Hypercomplex Multiplication Variant
+    switch (lpPrimSpec->eHCMul)
     {
-        case ENUMHCM_EXT:
+        case ENUMHCM_EXT:       // ((L x R - R x L) / 2
             // Loop through all of the parts
-            for (i = 0; i < 8; i++)
+            for (i = 0; i < D; i++)
             {
                 // Calculate the difference
                 aplRes.parts[i] = SubHC1R_RE (aplLxR.parts[i], aplRxL.parts[i]);
@@ -3483,9 +4480,9 @@ APLHC8R MulHC8R_RE_HC
 
             break;
 
-        case ENUMHCM_INT:
+        case ENUMHCM_INT:       // ((L x R + R x L) / 2
             // Loop through all of the parts
-            for (i = 0; i < 8; i++)
+            for (i = 0; i < D; i++)
             {
                 // Calculate the sum
                 aplRes.parts[i] = AddHC1R_RE (aplLxR.parts[i], aplRxL.parts[i]);
@@ -3493,6 +4490,91 @@ APLHC8R MulHC8R_RE_HC
                 // Divide the sum by 2
                 mpq_div_2exp (&aplRes.parts[i], &aplRes.parts[i], 1);
             } // End FOR
+
+            break;
+
+        case ENUMHCM_X:         // Cross Product
+        {
+            APLHC1R aplTmp1,
+                    aplTmp2;
+
+            // Set the Real part to 0/1
+            mpq_init (&aplRes.parts[0]);
+
+            // Loop through the imaginary parts
+            for (i = 1; i < D; i++)
+            {
+                int i1 = (i + 1) % D,
+                    i2 = (i + 2) % D;
+                // Skip over the Scalar part
+                i1 = max (i1, 1);
+                i2 = max (i2, 1);
+
+                // Calculate the Cross Product
+////////////////aplRes.parts[i] = aplLft.parts[i1] * aplRht.parts[i2]
+////////////////                - aplLft.parts[i2] * aplRht.parts[i1];
+                aplTmp1         = MulHC1R_RE (aplLft.parts[i1], aplRht.parts[i2]);
+                aplTmp2         = MulHC1R_RE (aplLft.parts[i2], aplRht.parts[i1]);
+                aplRes.parts[i] = SubHC1R_RE (aplTmp1         , aplTmp2         );
+
+                // We no longer need this storage
+                Myhc1r_clear (&aplTmp2);
+                Myhc1r_clear (&aplTmp1);
+            } // End FOR
+
+            break;
+        } // End ENUMHCM_X
+
+        case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+        {
+            APLHC1R aplTmp;
+
+            // Set the Real part to the identity element for addition
+            //   and zero the rest of the number
+            mphc8r_init (&aplRes);
+
+            // Loop through all of the parts
+            for (i = 0; i < D; i++)
+            {
+                // Calculate the Dot Product
+                aplTmp = MulHC1R_RE (aplLft.parts[i], aplRht.parts[i]);
+                mpq_add (&aplRes.parts[0], &aplRes.parts[0], &aplTmp);
+
+                // We no longer need this storage
+                Myhc1r_clear (&aplTmp);
+            } // End FOR
+
+            // Tell the caller to demote the dimension
+            lpPrimSpec->bLclDimDemote = TRUE;
+
+            break;
+        } // End ENUMHCM_D
+
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L
+            // Check for Divide By Zero
+            if (IsZeroHCxR (&aplLft, D))
+                // The result is R
+                mphc8r_init_set (&aplRes, &aplRht);
+            else
+            {
+                APLHC8R aplTmp;
+
+                // Save the current value of []LR
+                cQuadLR = GetQuadLR ();
+
+                // Set the current value of []LR to 'r'
+                SetQuadLR (L'r');
+
+                // Calculate L x R / L
+                aplTmp = DivHC8R_RE (aplRht, aplLft);
+                aplRes = MulHC8R_RE (aplLft, aplTmp);
+
+                // We no longer need this storage
+                Myhc8r_clear (&aplTmp);
+
+                // Restore the old value of []LR
+                SetQuadLR (cQuadLR);
+            } // End IF/ELSE
 
             break;
 
@@ -3506,6 +4588,7 @@ APLHC8R MulHC8R_RE_HC
     Myhc8r_clear (&aplRxL);
 
     return aplRes;
+#undef  D
 } // End MulHC8R_RE_HC
 
 
@@ -3518,6 +4601,7 @@ APLHC8R MulHC8R_RE
      APLHC8R aplRht)                    // Right ...
 
 {
+#define D   8
     int     i;
     APLHC8R aplRes = {0};
     APLHC4R dP, cP;
@@ -3540,7 +4624,7 @@ APLHC8R MulHC8R_RE
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
     // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
-    if (IsZeroHCxR (&b, 4) && IsZeroHCxR (&d, 4))
+    if (IsZeroHCxR (&b, D/2) && IsZeroHCxR (&d, D/2))
     {
         aplRes.partsLo = MulHC4R_RE (a, c );
 
@@ -3548,19 +4632,19 @@ APLHC8R MulHC8R_RE
         mphc4r_init (&aplRes.partsHi);
     } else
     // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
-    if (IsZeroHCxR (&b, 4))
+    if (IsZeroHCxR (&b, D/2))
     {
         aplRes.partsLo = MulHC4R_RE (a, c );
         aplRes.partsHi = MulHC4R_RE (d, a );
     } else
     // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
-    if (IsZeroHCxR (&d, 4))
+    if (IsZeroHCxR (&d, D/2))
     {
         aplRes.partsLo = MulHC4R_RE (a, c );
         aplRes.partsHi = MulHC4R_RE (b, cP);
     } else
     // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
-    if (IsZeroHCxR (&a, 4) && IsZeroHCxR (&c, 4))
+    if (IsZeroHCxR (&a, D/2) && IsZeroHCxR (&c, D/2))
     {
         APLHC4R aplTmp;
 
@@ -3588,7 +4672,7 @@ APLHC8R MulHC8R_RE
     Myhc4r_clear (&dP);
 
     // Loop through all of the parts
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < D; i++)
     // Check for indeterminates:  0 {times} _  or  _ {times} 0
     if ((IsMpq0 (&aplLft.parts[i])
       && IsMpqPosInfinity (&aplRht.parts[i]))
@@ -3614,6 +4698,7 @@ APLHC8R MulHC8R_RE
                                                                                : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
 
     return aplRes;
+#undef  D
 } // End MulHC8R_RE
 
 
@@ -3635,7 +4720,7 @@ void PrimFnDydTimesHC8RisHC8RvHC8R
 
     __try
     {
-        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        // Split cases based upon the Hypercomplex Multiplication Variant
         switch (lpPrimSpec->eHCMul)
         {
             case ENUMHCM_NONE:
@@ -3644,10 +4729,13 @@ void PrimFnDydTimesHC8RisHC8RvHC8R
 
                 break;
 
-            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
-            case ENUMHCM_INT:       // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2
+            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L
                 // Call subbfunction
-                lpMemRes[uRes] = MulHC8R_RE_HC (lpatLft->aplHC8R, lpatRht->aplHC8R, lpPrimSpec->eHCMul);
+                lpMemRes[uRes] = MulHC8R_RE_HC (lpatLft->aplHC8R, lpatRht->aplHC8R, lpPrimSpec);
 
                 break;
 
@@ -3676,13 +4764,15 @@ void PrimFnDydTimesHC8RisHC8RvHC8R
 APLHC8V MulHC8V_RE_HC
     (APLHC8V    aplLft,             // Left arg
      APLHC8V    aplRht,             // Right ...
-     ENUM_HCMUL eHCMul)             // Multiplication choice (see tagENUM_HCMUL)
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
+#define D   8
     APLHC8V aplRes,                 // The result
             aplLxR,                 // Temp var
             aplRxL;                 // ...
     int     i;                      // Loop counter
+    WCHAR   cQuadLR;                // Save area for old value of []LR
 
     // Calculate L x R
     aplLxR = MulHC8V_RE (aplLft, aplRht);
@@ -3690,12 +4780,12 @@ APLHC8V MulHC8V_RE_HC
     // Calculate R x L
     aplRxL = MulHC8V_RE (aplRht, aplLft);
 
-    // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
-    switch (eHCMul)
+    // Split cases based upon the Hypercomplex Multiplication Variant
+    switch (lpPrimSpec->eHCMul)
     {
-        case ENUMHCM_EXT:
+        case ENUMHCM_EXT:       // ((L x R - R x L) / 2
             // Loop through all of the parts
-            for (i = 0; i < 8; i++)
+            for (i = 0; i < D; i++)
             {
                 // Calculate the difference
                 aplRes.parts[i] = SubHC1V_RE (aplLxR.parts[i], aplRxL.parts[i]);
@@ -3706,9 +4796,9 @@ APLHC8V MulHC8V_RE_HC
 
             break;
 
-        case ENUMHCM_INT:
+        case ENUMHCM_INT:       // ((L x R + R x L) / 2
             // Loop through all of the parts
-            for (i = 0; i < 8; i++)
+            for (i = 0; i < D; i++)
             {
                 // Calculate the sum
                 aplRes.parts[i] = AddHC1V_RE (aplLxR.parts[i], aplRxL.parts[i]);
@@ -3716,6 +4806,91 @@ APLHC8V MulHC8V_RE_HC
                 // Divide the sum by 2
                 mpfr_div_2exp (&aplRes.parts[i], &aplRes.parts[i], 1, MPFR_RNDN);
             } // End FOR
+
+            break;
+
+        case ENUMHCM_X:         // Cross Product
+        {
+            APLHC1V aplTmp1,
+                    aplTmp2;
+
+            // Set the Real part to 0
+            mpfr_init0 (&aplRes.parts[0]);
+
+            // Loop through the imaginary parts
+            for (i = 1; i < D; i++)
+            {
+                int i1 = (i + 1) % D,
+                    i2 = (i + 2) % D;
+                // Skip over the Scalar part
+                i1 = max (i1, 1);
+                i2 = max (i2, 1);
+
+                // Calculate the Cross Product
+////////////////aplRes.parts[i] = aplLft.parts[i1] * aplRht.parts[i2]
+////////////////                - aplLft.parts[i2] * aplRht.parts[i1];
+                aplTmp1         = MulHC1V_RE (aplLft.parts[i1], aplRht.parts[i2]);
+                aplTmp2         = MulHC1V_RE (aplLft.parts[i2], aplRht.parts[i1]);
+                aplRes.parts[i] = SubHC1V_RE (aplTmp1         , aplTmp2         );
+
+                // We no longer need this storage
+                Myhc1v_clear (&aplTmp2);
+                Myhc1v_clear (&aplTmp1);
+            } // End FOR
+
+            break;
+        } // End ENUMHCM_X
+
+        case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+        {
+            APLHC1V aplTmp;
+
+            // Set the Real part to the identity element for addition
+            //   and zero the rest of the number
+            mphc8v_init0 (&aplRes);
+
+            // Loop through all of the parts
+            for (i = 0; i < D; i++)
+            {
+                // Calculate the Dot Product
+                aplTmp = MulHC1V_RE (aplLft.parts[i], aplRht.parts[i]);
+                mpfr_add (&aplRes.parts[0], &aplRes.parts[0], &aplTmp, MPFR_RNDN);
+
+                // We no longer need this storage
+                Myhc1v_clear (&aplTmp);
+            } // End FOR
+
+            // Tell the caller to demote the dimension
+            lpPrimSpec->bLclDimDemote = TRUE;
+
+            break;
+        } // End ENUMHCM_D
+
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L
+            // Check for Divide By Zero
+            if (IsZeroHCxV (&aplLft, D))
+                // The result is R
+                mphc8v_init_set (&aplRes, &aplRht);
+            else
+            {
+                APLHC8V aplTmp;
+
+                // Save the current value of []LR
+                cQuadLR = GetQuadLR ();
+
+                // Set the current value of []LR to 'r'
+                SetQuadLR (L'r');
+
+                // Calculate L x R / L
+                aplTmp = DivHC8V_RE (aplRht, aplLft);
+                aplRes = MulHC8V_RE (aplLft, aplTmp);
+
+                // We no longer need this storage
+                Myhc8v_clear (&aplTmp);
+
+                // Restore the old value of []LR
+                SetQuadLR (cQuadLR);
+            } // End IF/ELSE
 
             break;
 
@@ -3729,6 +4904,7 @@ APLHC8V MulHC8V_RE_HC
     Myhc8v_clear (&aplRxL);
 
     return aplRes;
+#undef  D
 } // End MulHC8V_RE_HC
 
 
@@ -3741,6 +4917,7 @@ APLHC8V MulHC8V_RE
      APLHC8V aplRht)
 
 {
+#define D   8
     int     i;
     APLHC8V aplRes;
     APLHC4V dP,cP;
@@ -3763,7 +4940,7 @@ APLHC8V MulHC8V_RE
     // ***FIXME*** -- Use __try/__except to catch blowup due to -0
 
     // Special case b EQ 0 && d EQ 0 so as to avoid an error if a or c is {Inf}
-    if (IsZeroHCxV (&b, 4) && IsZeroHCxV (&d, 4))
+    if (IsZeroHCxV (&b, D/2) && IsZeroHCxV (&d, D/2))
     {
         aplRes.partsLo = MulHC4V_RE (a, c );
 
@@ -3771,19 +4948,19 @@ APLHC8V MulHC8V_RE
         mphc4v_init0 (&aplRes.partsHi);
     } else
     // Special case b EQ 0 so as to avoid an error if c or d is {Inf}
-    if (IsZeroHCxV (&b, 4))
+    if (IsZeroHCxV (&b, D/2))
     {
         aplRes.partsLo = MulHC4V_RE (a, c );
         aplRes.partsHi = MulHC4V_RE (d, a );
     } else
     // Special case d EQ 0 so as to avoid an error if a or b is {Inf}
-    if (IsZeroHCxV (&d, 4))
+    if (IsZeroHCxV (&d, D/2))
     {
         aplRes.partsLo = MulHC4V_RE (a, c );
         aplRes.partsHi = MulHC4V_RE (b, cP);
     } else
     // Special case a EQ 0 && c EQ 0 so as to avoid an error if b or d is {Inf}
-    if (IsZeroHCxV (&a, 4) && IsZeroHCxV (&c, 4))
+    if (IsZeroHCxV (&a, D/2) && IsZeroHCxV (&c, D/2))
     {
         APLHC4V aplTmp;
 
@@ -3811,7 +4988,7 @@ APLHC8V MulHC8V_RE
     Myhc4v_clear (&dP);
 
     // Loop through all of the parts
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < D; i++)
     // Check for indeterminates:  0 {times} _  or  _ {times} 0
     if ((IsMpf0 (&aplLft.parts[i])
       && IsMpfPosInfinity (&aplRht.parts[i]))
@@ -3839,6 +5016,7 @@ APLHC8V MulHC8V_RE
                                     MPFR_RNDN);
 
     return aplRes;
+#undef  D
 } // End MulHC8V_RE
 
 
@@ -3849,11 +5027,11 @@ APLHC8V MulHC8V_RE
 //***************************************************************************
 
 void PrimFnDydTimesHC8VisHC8RvHC8R
-    (LPAPLHC8V  lpMemRes,           // ptr to the result
-     APLUINT    uRes,               // index into the result
-     LPALLTYPES lpatLft,            // ptr to left arg alltypes
+    (LPAPLHC8V  lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatLft,            // Ptr to left arg alltypes
      LPALLTYPES lpatRht,            // ...    right ...
-     LPPRIMSPEC lpPrimSpec)         // ptr to local primspec
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local primspec
 
 {
     ALLTYPES atLft = {0},
@@ -3888,7 +5066,7 @@ void PrimFnDydTimesHC8VisHC8VvHC8V
 
     __try
     {
-        // Split cases based upon the Hypercomplex Arithmetic Multiplication choice
+        // Split cases based upon the Hypercomplex Multiplication Variant
         switch (lpPrimSpec->eHCMul)
         {
             case ENUMHCM_NONE:
@@ -3897,10 +5075,13 @@ void PrimFnDydTimesHC8VisHC8VvHC8V
 
                 break;
 
-            case ENUMHCM_EXT:       // ((a x b - b x a) / 2
-            case ENUMHCM_INT:       // ((a x b + b x a) / 2
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2
+            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L
                 // Call subbfunction
-                lpMemRes[uRes] = MulHC8V_RE_HC (lpatLft->aplHC8V, lpatRht->aplHC8V, lpPrimSpec->eHCMul);
+                lpMemRes[uRes] = MulHC8V_RE_HC (lpatLft->aplHC8V, lpatRht->aplHC8V, lpPrimSpec);
 
                 break;
 
@@ -4036,6 +5217,150 @@ ERROR_EXIT:
 
     return bRet;
 } // End PrimFnDydTimesAPA_EM
+
+
+//***************************************************************************
+//  $PrimFnDydTimesB64isB64vB64
+//
+//  Primitive scalar function dyadic Times:  B64 {is} B64 fn B64
+//***************************************************************************
+
+APLB64 PrimFnDydTimesB64isB64vB64
+    (APLB64     aplBooleanLft,
+     APLB64     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Split cases based upon the Hypercomplex Multiplication Variant
+    switch (lpPrimSpec->eHCMul)
+    {
+        case ENUMHCM_NONE:      // L x R
+        case ENUMHCM_INT:       // ((L x R + R x L) / 2 == L x R
+        case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            // Call subfunction
+            return
+              PrimFnDydUpCaretB64isB64vB64 (aplBooleanLft,
+                                            aplBooleanRht,
+                                            lpPrimSpec);
+        case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
+        case ENUMHCM_X:         // Cross Product
+            return 0;
+
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
+            return aplBooleanRht;
+
+        defstop
+            return 0;
+    } // End SWITCH
+} // End PrimFnDydTimesB64isB64vB64
+
+
+//***************************************************************************
+//  $PrimFnDydTimesB32isB32vB32
+//
+//  Primitive scalar function dyadic Times:  B32 {is} B32 fn B32
+//***************************************************************************
+
+APLB32 PrimFnDydTimesB32isB32vB32
+    (APLB32     aplBooleanLft,
+     APLB32     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Split cases based upon the Hypercomplex Multiplication Variant
+    switch (lpPrimSpec->eHCMul)
+    {
+        case ENUMHCM_NONE:      // L x R
+        case ENUMHCM_INT:       // ((L x R + R x L) / 2 == L x R
+        case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            // Call subfunction
+            return
+              PrimFnDydUpCaretB32isB32vB32 (aplBooleanLft,
+                                            aplBooleanRht,
+                                            lpPrimSpec);
+        case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
+        case ENUMHCM_X:         // Cross Product
+            return 0;
+
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
+            return aplBooleanRht;
+
+        defstop
+            return 0;
+    } // End SWITCH
+} // End PrimFnDydTimesB32isB32vB32
+
+
+//***************************************************************************
+//  $PrimFnDydTimesB16isB16vB16
+//
+//  Primitive scalar function dyadic Times:  B16 {is} B16 fn B16
+//***************************************************************************
+
+APLB16 PrimFnDydTimesB16isB16vB16
+    (APLB16     aplBooleanLft,
+     APLB16     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Split cases based upon the Hypercomplex Multiplication Variant
+    switch (lpPrimSpec->eHCMul)
+    {
+        case ENUMHCM_NONE:      // L x R
+        case ENUMHCM_INT:       // ((L x R + R x L) / 2 == L x R
+        case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            // Call subfunction
+            return
+              PrimFnDydUpCaretB16isB16vB16 (aplBooleanLft,
+                                            aplBooleanRht,
+                                            lpPrimSpec);
+        case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
+        case ENUMHCM_X:         // Cross Product
+            return 0;
+
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
+            return aplBooleanRht;
+
+        defstop
+            return 0;
+    } // End SWITCH
+} // End PrimFnDydTimesB16isB16vB16
+
+
+//***************************************************************************
+//  $PrimFnDydTimesB08isB08vB08
+//
+//  Primitive scalar function dyadic Times:  B08 {is} B08 fn B08
+//***************************************************************************
+
+APLB08 PrimFnDydTimesB08isB08vB08
+    (APLB08     aplBooleanLft,
+     APLB08     aplBooleanRht,
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    // Split cases based upon the Hypercomplex Multiplication Variant
+    switch (lpPrimSpec->eHCMul)
+    {
+        case ENUMHCM_NONE:      // L x R
+        case ENUMHCM_INT:       // ((L x R + R x L) / 2 == L x R
+        case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
+            // Call subfunction
+            return
+              PrimFnDydUpCaretB08isB08vB08 (aplBooleanLft,
+                                            aplBooleanRht,
+                                            lpPrimSpec);
+        case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
+        case ENUMHCM_X:         // Cross Product
+            return 0;
+
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
+            return aplBooleanRht;
+
+        defstop
+            return 0;
+    } // End SWITCH
+} // End PrimFnDydTimesB08isB08vB08
 
 
 //***************************************************************************

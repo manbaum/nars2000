@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -290,8 +290,9 @@ typedef struct tagPRIMSPEC
     APLUINT             uQuadRL;            // []RL for atomicity
     UINT                bMonDimDemote:1,    // 00000001:  Allow dimension demotion for monadic scalar function
                         bDydDimDemote:1,    // 00000002:  ...                          dyadic  ...
-                        eHCMul:2,           // 0000000C:  Hypercomplex multiplication choice (see tagENUM_HCMUL)
-                        :28;                // FFFFFFF0:  Available bits
+                        bLclDimDemote:1,    // 00000004:  ...                          local   ...
+                        eHCMul:3,           // 00000038:  Hypercomplex Multiplication Variant (see tagENUM_HCMUL)
+                        :26;                // FFFFFFC0:  Available bits
 } PRIMSPEC, *LPPRIMSPEC;
 
 #define HC1IisHC1I          IisI

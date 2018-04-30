@@ -1029,7 +1029,7 @@ INT_PTR CALLBACK CustomizeDlgProc
                         SendMessageW (hWndProp1, CB_ADDSTRING, 0, (LPARAM) L"High Resolution Timer, scaled to ms");
 
                         // Set the current selection to the CLEAR WS value
-                        SendMessageW (hWndProp1, CB_SETCURSEL, (APLU3264) uQuadMF_CWS - 1, 0);
+                        SendMessageW (hWndProp1, CB_SETCURSEL, (APLU3264) uQuadMF_CWS - TIMER_SOURCE_BASE, 0);
 
                         //***************************************************************
                         // []PP -- CLEAR WS Values
@@ -2937,17 +2937,6 @@ INT_PTR CALLBACK CustomizeDlgProc
                         fQuadCT_CWS = MyStrtod (szTemp, NULL);
 
                         //***************************************************************
-                        // []LR
-                        //***************************************************************
-
-                        // Get the index of the currently selected []LR name
-                        uCnt = (UINT)
-                          SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_LR_CB), CB_GETCURSEL, 0, 0);
-
-                        // Save in global
-                        cQuadLR_CWS = wszQuadLRAllow[uCnt];
-
-                        //***************************************************************
                         // []DT
                         //***************************************************************
 
@@ -2999,6 +2988,17 @@ INT_PTR CALLBACK CustomizeDlgProc
                           GetDlgItemInt (hWndProp, IDC_CLEARWS_IO_EC, NULL, FALSE);
 
                         //***************************************************************
+                        // []LR
+                        //***************************************************************
+
+                        // Get the index of the currently selected []LR name
+                        uCnt = (UINT)
+                          SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_LR_CB), CB_GETCURSEL, 0, 0);
+
+                        // Save in global
+                        cQuadLR_CWS = wszQuadLRAllow[uCnt];
+
+                        //***************************************************************
                         // []LX
                         //***************************************************************
 
@@ -3009,7 +3009,8 @@ INT_PTR CALLBACK CustomizeDlgProc
                         // []MF
                         //***************************************************************
                         uQuadMF_CWS =
-                          1 + SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_MF_CB), CB_GETCURSEL, 0, 0);
+                          TIMER_SOURCE_BASE
+                        + SendMessageW (GetDlgItem (hWndProp, IDC_CLEARWS_MF_CB), CB_GETCURSEL, 0, 0);
 
                         //***************************************************************
                         // []PP

@@ -1,6 +1,18 @@
 Version 0.5.7.xx consists of the following Builds:
 
 
+Build #1880 -- Version 0.5.7.xx
+-------------------------------
+
+* Define And Use An Equate For Timer Source base
+
+Directory branches/bsmith/NewTypes:
+
+CUSTOMIZE.C:
+ENUMS.H:
+  Define and use an equate for the Timer Source Base
+
+
 Build #1879 -- Version 0.5.7.xx
 -------------------------------
 

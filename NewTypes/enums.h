@@ -224,12 +224,14 @@ typedef enum tagFLT_DISP_FMT    // Floating Point Display Formats
 //   be sure to make a corresponding change to
 //   <gDTOA_Mode> in <display.c>.
 
+#define TIMER_SOURCE_BASE   1
 
 typedef enum tagTIMER_SOURCE
 {
-    TIMERSOURCE_MS = 1,         // 01:  Milliseconds
-    TIMERSOURCE_PC    ,         // 02:  Performance Counters
-    TIMERSOURCE_PC2MS ,         // 03:  Performance Counters scaled to Milliseconds
+    TIMERSOURCE_MS =
+      TIMER_SOURCE_BASE ,       // 1:  Milliseconds
+    TIMERSOURCE_PC      ,       // 2:  Performance Counters
+    TIMERSOURCE_PC2MS   ,       // 3:  Performance Counters scaled to Milliseconds
 } TIMER_SOURCE, *LPTIMER_SOURCE;
 
 

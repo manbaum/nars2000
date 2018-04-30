@@ -1,6 +1,35 @@
 Version 0.5.7.xx consists of the following Builds:
 
 
+Build #1879 -- Version 0.5.7.xx
+-------------------------------
+
+* Rename Exception Check Functions
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+DEFINES.H:
+EXCEPT.C:
+PF_BAR.C:
+PF_CIRCLE.C:
+PF_CIRCLE.MAC:
+PF_COLONBAR.C:
+PF_DELTASTILE.C:
+PF_DSHOE.C:
+PF_EPSUND.C:
+PF_EQUAL.C:
+PF_EQUALUND.C:
+PF_NEQUAL.C:
+PF_PLUS.C:
+PF_ROOT.C:
+PF_STAR.C:
+PF_TIMES.C:
+PO_COMB.C:
+SYMTAB.C:
+  Rename <CheckExceptionS> to <CheckException>, <__FUNCTION__> to <WFCN>, etc., and delete <CheckExceptionS>.
+
+
 Build #1878 -- Version 0.5.7.xx
 -------------------------------
 

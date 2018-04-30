@@ -491,27 +491,6 @@ long CheckHCDim
 
 
 //***************************************************************************
-//  $CheckExceptionS
-//
-//  Check on a structured exception
-//***************************************************************************
-
-long CheckExceptionS
-    (LPEXCEPTION_POINTERS lpExcept,         // Ptr to exception information
-     LPCHAR               lpText)           // Ptr to text of exception handler
-
-{
-    WCHAR lpwText[128];
-
-    MySprintfW (lpwText,
-                sizeof (lpwText),
-                L"%S",
-                lpText);
-    return CheckException (lpExcept, lpwText);
-} // End CheckExceptionS
-
-
-//***************************************************************************
 //  $CheckException
 //
 //  Check on a structured exception

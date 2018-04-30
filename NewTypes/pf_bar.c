@@ -270,7 +270,7 @@ void PrimFnMonBarIisI
     {
         // Call subfunction
         lpMemRes[uRes] = NegHC1I_RE (lpatRht->aplInteger);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -351,7 +351,7 @@ APLRAT NegHC1R_RE1
     __try
     {
         return NegHC1R_RE (aplRht);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
 
@@ -421,7 +421,7 @@ void PrimFnMonBarRisR
     {
         // Call subfunction
         lpMemRes[uRes] = NegHC1R_RE (lpatRht->aplRat);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -547,7 +547,7 @@ void PrimFnMonBarHC2IisHC2I
     {
         // Call subfunction
         lpMemRes[uRes] = NegHC2I_RE (lpatRht->aplHC2I);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -639,7 +639,7 @@ APLHC2R NegHC2R_RE1
     __try
     {
         return NegHC2R_RE (aplRht);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
 
@@ -714,7 +714,7 @@ void PrimFnMonBarHC2RisHC2R
     {
         // Call subfunction
         lpMemRes[uRes] = NegHC2R_RE (lpatRht->aplHC2R);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -840,7 +840,7 @@ void PrimFnMonBarHC4IisHC4I
     {
         // Call subfunction
         lpMemRes[uRes] = NegHC4I_RE (lpatRht->aplHC4I);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -932,7 +932,7 @@ APLHC4R NegHC4R_RE1
     __try
     {
         return NegHC4R_RE (aplRht);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
 
@@ -1007,7 +1007,7 @@ void PrimFnMonBarHC4RisHC4R
     {
         // Call subfunction
         lpMemRes[uRes] = NegHC4R_RE (lpatRht->aplHC4R);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -1133,7 +1133,7 @@ void PrimFnMonBarHC8IisHC8I
     {
         // Call subfunction
         lpMemRes[uRes] = NegHC8I_RE (lpatRht->aplHC8I);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -1263,7 +1263,7 @@ void PrimFnMonBarHC8RisHC8R
     {
         // Call subfunction
         lpMemRes[uRes] = NegHC8R_RE (lpatRht->aplHC8R);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -1583,7 +1583,7 @@ void PrimFnDydBarFisFvF
     {
         // Call subfunction
         lpMemRes[uRes] = SubHC1F_RE (lpatLft->aplFloat, lpatRht->aplFloat);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -1668,7 +1668,7 @@ void PrimFnDydBarRisRvR
     {
         // Call subfunction
         lpMemRes[uRes] = SubHC1R_RE (lpatLft->aplRat, lpatRht->aplRat);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -1782,7 +1782,7 @@ void PrimFnDydBarVisVvV
     {
         // Call subfunction
         lpMemRes[uRes] = SubHC1V_RE (lpatLft->aplVfp, lpatRht->aplVfp);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -1838,7 +1838,7 @@ void PrimFnDydBarHC2IisHC2IvHC2I
     {
         // Subtract the two integers and signal overflow exception in <isub64_RE>
         lpMemRes[uRes] = SubHC2I_RE (lpatLft->aplHC2I, lpatRht->aplHC2I);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -1984,7 +1984,7 @@ void PrimFnDydBarHC2RisHC2RvHC2R
         for (i = 0; i < 2; i++)
             // Call subfunction
             lpMemRes[uRes] = SubHC2R_RE (lpatLft->aplHC2R, lpatRht->aplHC2R);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2089,7 +2089,7 @@ void PrimFnDydBarHC2VisHC2VvHC2V
     {
         // Call subfunction
         lpMemRes[uRes] = SubHC2V_RE (lpatLft->aplHC2V, lpatRht->aplHC2V);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2145,7 +2145,7 @@ void PrimFnDydBarHC4IisHC4IvHC4I
     {
         // Call subfunction
         lpMemRes[uRes] = SubHC4I_RE (lpatLft->aplHC4I, lpatRht->aplHC4I);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2293,7 +2293,7 @@ void PrimFnDydBarHC4RisHC4RvHC4R
         for (i = 0; i < 4; i++)
             // Call subfunction
             lpMemRes[uRes] = SubHC4R_RE (lpatLft->aplHC4R, lpatRht->aplHC4R);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2398,7 +2398,7 @@ void PrimFnDydBarHC4VisHC4VvHC4V
     {
         // Call subfunction
         lpMemRes[uRes] = SubHC4V_RE (lpatLft->aplHC4V, lpatRht->aplHC4V);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2454,7 +2454,7 @@ void PrimFnDydBarHC8IisHC8IvHC8I
     {
         // Call subfunction
         lpMemRes[uRes] = SubHC8I_RE (lpatLft->aplHC8I, lpatRht->aplHC8I);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2602,7 +2602,7 @@ void PrimFnDydBarHC8RisHC8RvHC8R
         for (i = 0; i < 8; i++)
             // Call subfunction
             lpMemRes[uRes] = SubHC8R_RE (lpatLft->aplHC8R, lpatRht->aplHC8R);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2707,7 +2707,7 @@ void PrimFnDydBarHC8VisHC8VvHC8V
     {
         // Call subfunction
         lpMemRes[uRes] = SubHC8V_RE (lpatLft->aplHC8V, lpatRht->aplHC8V);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 

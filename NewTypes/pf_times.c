@@ -378,7 +378,7 @@ void PrimFnMonTimesHC2IisHC2I
     {
         // Call subfunction
         lpMemRes[uRes] = DirHC2I_RE (lpatRht->aplHC2I);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -523,7 +523,7 @@ void PrimFnMonTimesHC2RisHC2R
     {
         // Call subfunction
         lpMemRes[uRes] = DirHC2R_RE (lpatRht->aplHC2R);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -658,7 +658,7 @@ void PrimFnMonTimesHC4IisHC4I
     {
         // Call subfunction
         lpMemRes[uRes] = DirHC4I_RE (lpatRht->aplHC4I);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -803,7 +803,7 @@ void PrimFnMonTimesHC4RisHC4R
     {
         // Call subfunction
         lpMemRes[uRes] = DirHC4R_RE (lpatRht->aplHC4R);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -937,7 +937,7 @@ void PrimFnMonTimesHC8IisHC8I
     {
         // Call subfunction
         lpMemRes[uRes] = DirHC8I_RE (lpatRht->aplHC8I);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -1082,7 +1082,7 @@ void PrimFnMonTimesHC8RisHC8R
     {
         // Call subfunction
         lpMemRes[uRes] = DirHC8R_RE (lpatRht->aplHC8R);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -1334,7 +1334,7 @@ void PrimFnDydTimesIisIvI
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -1521,7 +1521,7 @@ void PrimFnDydTimesFisFvF
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -1654,7 +1654,7 @@ void PrimFnDydTimesRisRvR
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -1816,7 +1816,7 @@ void PrimFnDydTimesVisVvV
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -1963,7 +1963,7 @@ void PrimFnDydTimesHC2IisHC2IvHC2I
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2024,7 +2024,7 @@ void PrimFnDydTimesHC2FisHC2IvHC2I
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2199,7 +2199,7 @@ void PrimFnDydTimesHC2FisHC2FvHC2F
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2437,7 +2437,7 @@ void PrimFnDydTimesHC2RisHC2RvHC2R
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2708,7 +2708,7 @@ void PrimFnDydTimesHC2VisHC2VvHC2V
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2922,7 +2922,7 @@ void PrimFnDydTimesHC4IisHC4IvHC4I
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2983,7 +2983,7 @@ void PrimFnDydTimesHC4FisHC4IvHC4I
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -3230,7 +3230,7 @@ void PrimFnDydTimesHC4FisHC4FvHC4F
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -3546,7 +3546,7 @@ void PrimFnDydTimesHC4RisHC4RvHC4R
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -3897,7 +3897,7 @@ void PrimFnDydTimesHC4VisHC4VvHC4V
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -4112,7 +4112,7 @@ void PrimFnDydTimesHC8IisHC8IvHC8I
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -4173,7 +4173,7 @@ void PrimFnDydTimesHC8FisHC8IvHC8I
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -4426,7 +4426,7 @@ void PrimFnDydTimesHC8FisHC8FvHC8F
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -4742,7 +4742,7 @@ void PrimFnDydTimesHC8RisHC8RvHC8R
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -5088,7 +5088,7 @@ void PrimFnDydTimesHC8VisHC8VvHC8V
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 

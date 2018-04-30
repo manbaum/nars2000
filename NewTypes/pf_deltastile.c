@@ -458,7 +458,7 @@ LPPL_YYSTYPE PrimFnMonGradeCommon_EM_YY
                                 gradeData.lpbCtrlBreak, // Ptr to Ctrl-Break flag
                                &gradeData))             // Ptr to extra grade data
                 goto ERROR_EXIT;
-        } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+        } __except (CheckException (GetExceptionInformation (), WFCN))
         {
             exCode = MyGetExceptionCode ();  // The exception code
 

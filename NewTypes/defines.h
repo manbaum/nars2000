@@ -28,18 +28,6 @@
 
 #endif      // _WIN32_WINNT < 0x0600
 
-// Wide char __FILE__ and __LINE__ macros
-#define WFILE       WIDEN(__FILE__)
-#define WIDEN(x)    SMASH(L,x)
-#define SMASH(x,y)  x##y
-
-#define WLINE       TOWL1 (__LINE__)
-#define TOWL1(p)    TOWL2(p)
-#define TOWL2(p)    L#p
-
-#define WFNLN       WFILE L" " WLINE
-
-
 #ifdef DEBUG
   ////#define DEBUG_REFCNT
   #define    UTF16_REFCNT_NE1      UTF16_REPLACEMENTCHAR
@@ -373,15 +361,28 @@
 //  Debugging
 //***************************************************************************
 
+// Wide char __FILE__, __LINE__, and __FUNCTION __ macros
+#define SMASH(x,y)  x##y
+#define WIDEN(x)    SMASH (L,x)
+#define WFILE       WIDEN (__FILE__)
+
+#define TOWL2(p)    L#p
+#define TOWL1(p)    TOWL2 (p)
+#define WLINE       TOWL1 (__LINE__)
+
+#define WFNLN       WFILE,__LINE__
+#define WFCN        WIDEN (__FUNCTION__)
+
+#define FNLN        FileNameOnly (__FILE__), __LINE__
+#define FNLNFCN     FNLN,__FUNCTION__
+#define WFNLNFCN    WFNLN,WFCN
+
 #define DbgBrk          __debugbreak
 #define DbgStop         __debugbreak
 
 #define defstop \
 default:        \
     DbgStop();
-
-#define FNLN    FileNameOnly (__FILE__), __LINE__
-#define FNLNFCN FNLN,__FUNCTION__
 
 #ifdef DEBUG
   #include "WineHQ\WineCom.h"

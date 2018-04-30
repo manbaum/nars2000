@@ -866,7 +866,7 @@ UBOOL EqualAny
      LPALLTYPES lpatRht,
      int        iHCDimX,
      APLFLOAT   fQuadCT,
-     LPCHAR     lpszMsg)
+     LPWCHAR    lpwszMsg)
 
 {
     // Split cases based upon the common type
@@ -879,25 +879,25 @@ UBOOL EqualAny
         case ARRAY_HC2I:
         case ARRAY_HC4I:
         case ARRAY_HC8I:
-            return EqualHCxIvHCxI (lpatLft, lpatRht, iHCDimX, fQuadCT, lpszMsg);
+            return EqualHCxIvHCxI (lpatLft, lpatRht, iHCDimX, fQuadCT, lpwszMsg);
 
         case ARRAY_FLOAT:
         case ARRAY_HC2F:
         case ARRAY_HC4F:
         case ARRAY_HC8F:
-            return EqualHCxFvHCxF (lpatLft, lpatRht, iHCDimX, fQuadCT, lpszMsg);
+            return EqualHCxFvHCxF (lpatLft, lpatRht, iHCDimX, fQuadCT, lpwszMsg);
 
         case ARRAY_RAT:
         case ARRAY_HC2R:
         case ARRAY_HC4R:
         case ARRAY_HC8R:
-            return EqualHCxRvHCxR (lpatLft, lpatRht, iHCDimX, fQuadCT, lpszMsg);
+            return EqualHCxRvHCxR (lpatLft, lpatRht, iHCDimX, fQuadCT, lpwszMsg);
 
         case ARRAY_VFP:
         case ARRAY_HC2V:
         case ARRAY_HC4V:
         case ARRAY_HC8V:
-            return EqualHCxVvHCxV (lpatLft, lpatRht, iHCDimX, fQuadCT, lpszMsg);
+            return EqualHCxVvHCxV (lpatLft, lpatRht, iHCDimX, fQuadCT, lpwszMsg);
 
         case ARRAY_NESTED:
         case ARRAY_HETERO:
@@ -987,7 +987,7 @@ UBOOL EqualAny
                      EqualAny (aplTypeCom,                                                              \
                               &atLft,                                                                   \
                               &atRht,                                                                   \
-                               iHCDimX, fQuadCT, __FUNCTION__);                                         \
+                               iHCDimX, fQuadCT, WFCN);                                                 \
                 /* Free the old atLft and atRht */                                                      \
                 (*aTypeFree[aplTypeCom]) (&atLft, 0);                                                   \
                 (*aTypeFree[aplTypeCom]) (&atRht, 0);                                                   \
@@ -1037,7 +1037,7 @@ UBOOL EqualAny
                              EqualAny (aplTypeCom,                                                      \
                                       &atLft,                                                           \
                                       &atRht,                                                           \
-                                      iHCDimX, fQuadCT, __FUNCTION__);                                  \
+                                      iHCDimX, fQuadCT, WFCN);                                          \
                         /* Free the old atLft and atRht */                                              \
                         (*aTypeFree[aplTypeCom]) (&atLft, 0);                                           \
                         (*aTypeFree[aplTypeCom]) (&atRht, 0);                                           \
@@ -1484,7 +1484,7 @@ void preKmpF
         // Convert the left arg item to ALLTYPES
         (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, i, &atLft);
 
-        while (j > -1 && !EqualHCxFvHCxF (&atLft, &atRht, iHCDimX, fQuadCT, __FUNCTION__))
+        while (j > -1 && !EqualHCxFvHCxF (&atLft, &atRht, iHCDimX, fQuadCT, WFCN))
         {
             j = kmpNext[j];
 
@@ -1499,7 +1499,7 @@ void preKmpF
         (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, i, &atLft);
         (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, j, &atRht);
 
-        if ((i < m) && EqualHCxFvHCxF (&atLft, &atRht, iHCDimX, fQuadCT, __FUNCTION__))
+        if ((i < m) && EqualHCxFvHCxF (&atLft, &atRht, iHCDimX, fQuadCT, WFCN))
             kmpNext[i] = kmpNext[j];
         else
             kmpNext[i] = j;
@@ -1535,7 +1535,7 @@ void preKmpI
         // Convert the left arg item to ALLTYPES
         (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, i, &atLft);
 
-        while (j > -1 && !EqualHCxIvHCxI (&atLft, &atRht, iHCDimX, fQuadCT, __FUNCTION__))
+        while (j > -1 && !EqualHCxIvHCxI (&atLft, &atRht, iHCDimX, fQuadCT, WFCN))
         {
             j = kmpNext[j];
 
@@ -1550,7 +1550,7 @@ void preKmpI
         (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, i, &atLft);
         (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, j, &atRht);
 
-        if ((i < m) && EqualHCxIvHCxI (&atLft, &atRht, iHCDimX, fQuadCT, __FUNCTION__))
+        if ((i < m) && EqualHCxIvHCxI (&atLft, &atRht, iHCDimX, fQuadCT, WFCN))
             kmpNext[i] = kmpNext[j];
         else
             kmpNext[i] = j;
@@ -1585,7 +1585,7 @@ void preKmpR
     {
         oldj = j;
 
-        while (j > -1 && !EqualHCxRvHCxR (&atLft, &atRht, iHCDimX, fQuadCT, __FUNCTION__))
+        while (j > -1 && !EqualHCxRvHCxR (&atLft, &atRht, iHCDimX, fQuadCT, WFCN))
         {
             j = kmpNext[j];
 
@@ -1616,7 +1616,7 @@ void preKmpR
             (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, j, &atRht);
         } // End IF
 
-        if ((i < m) && EqualHCxRvHCxR (&atLft, &atRht, iHCDimX, fQuadCT, __FUNCTION__))
+        if ((i < m) && EqualHCxRvHCxR (&atLft, &atRht, iHCDimX, fQuadCT, WFCN))
             kmpNext[i] = kmpNext[j];
         else
             kmpNext[i] = j;
@@ -1651,7 +1651,7 @@ void preKmpV
     {
         oldj = j;
 
-        while (j > -1 && !EqualHCxVvHCxV (&atLft, &atRht, iHCDimX, fQuadCT, __FUNCTION__))
+        while (j > -1 && !EqualHCxVvHCxV (&atLft, &atRht, iHCDimX, fQuadCT, WFCN))
         {
             j = kmpNext[j];
 
@@ -1682,7 +1682,7 @@ void preKmpV
             (*aTypeActPromote[aplTypeLft][aplTypeCom]) (x, j, &atRht);
         } // End IF
 
-        if ((i < m) && EqualHCxVvHCxV (&atLft, &atRht, iHCDimX, fQuadCT, __FUNCTION__))
+        if ((i < m) && EqualHCxVvHCxV (&atLft, &atRht, iHCDimX, fQuadCT, WFCN))
             kmpNext[i] = kmpNext[j];
         else
             kmpNext[i] = j;

@@ -859,7 +859,7 @@ APLHC8V SqrtHCxV_RE
                 for (i = 1; i < iHCDimRes; i++)
                     // Multiply each of the imaginary parts by the arctan2
                     aplRes.parts[i] = MulHC1V_RE (aplRht.parts[i], aplTmp);
-            } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+            } __except (CheckException (GetExceptionInformation (), WFCN))
             {
                 exCode = MyGetExceptionCode ();  // The exception code
 

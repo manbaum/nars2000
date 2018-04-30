@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -278,7 +278,7 @@
                   (LPALLTYPES) &conmpof_N1##suf,                                                                    \
                                 N,                                                                                  \
                                 GetQuadCT (),                                                                       \
-                                __FUNCTION__))                                                                      \
+                                WFCN))                                                                              \
                 /* Initialize the result to 0                                                                     */\
                 mp##cho##f_init0 (&lpMemRes[uRes]);                                                                 \
             else                                                                                                    \
@@ -620,7 +620,7 @@
                   (LPALLTYPES) &confpof_N1##suf,                                                                    \
                                 N,                                                                                  \
                                 GetQuadCT (),                                                                       \
-                                __FUNCTION__))                                                                      \
+                                WFCN))                                                                              \
                 return;                                                                                             \
                                                                                                                     \
             /* If the imaginary parts are zero, ...                                                               */\

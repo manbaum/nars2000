@@ -506,7 +506,7 @@ UBOOL EqualHCxIvHCxI
      LPALLTYPES lpatRht,                // Right ...
      int        iHCDim,                 // Dimension (1, 2, 4, 8)
      APLFLOAT   fQuadCT,                // []CT (0 = exact comparison)
-     LPCHAR     lpszMsg)                // Ptr to CheckExceptionS msg
+     LPWCHAR    lpwszMsg)               // Ptr to CheckException msg
 {
 ////APLFLOAT aplMagLft,                 // Magnitude of left arg
 ////         aplMagRht,                 // ...          right ...
@@ -557,7 +557,7 @@ UBOOL EqualHCxIvHCxI
 ////        defstop
 ////            break;
 ////    } // End SWITCH
-////} __except (CheckExceptionS (GetExceptionInformation (), lpszMsg))
+////} __except (CheckException (GetExceptionInformation (), lpwszMsg))
 ////{
 ////    EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
 ////
@@ -581,10 +581,10 @@ void EqualBisHCxIvHCxI
      LPALLTYPES lpatRht,                // Right ...
      int        iHCDim,                 // Dimension (1, 2, 4, 8)
      UBOOL      bIsEqual,               // TRUE iff the calling function is Equal (FALSE if NotEqual)
-     LPCHAR     lpszMsg)                // Ptr to CheckExceptionS msg
+     LPWCHAR    lpwszMsg)                // Ptr to CheckException msg
 {
     // The two numbers are equal iff all parts are equal
-    if (bIsEqual EQ EqualHCxIvHCxI (lpatLft, lpatRht, iHCDim, GetQuadCT (), lpszMsg))
+    if (bIsEqual EQ EqualHCxIvHCxI (lpatLft, lpatRht, iHCDim, GetQuadCT (), lpwszMsg))
         lpMemRes[uRes >> LOG2NBIB] |=
           BIT0
           << (MASKLOG2NBIB & (UINT) uRes);
@@ -611,7 +611,7 @@ void PrimFnDydEqualBisHC2IvHC2I
                        lpatRht,         // Right ...
                        2,               // Dimension (1, 2, 4, 8)
                        TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);   // Ptr to CheckException msg
 } // End PrimFnDydEqualBisHC2IvHC2I
 
 
@@ -635,7 +635,7 @@ void PrimFnDydEqualBisHC4IvHC4I
                        lpatRht,         // Right ...
                        4,               // Dimension (1, 2, 4, 8)
                        TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);   // Ptr to CheckException msg
 } // End PrimFnDydEqualBisHC4IvHC4I
 
 
@@ -659,7 +659,7 @@ void PrimFnDydEqualBisHC8IvHC8I
                        lpatRht,         // Right ...
                        8,               // Dimension (1, 2, 4, 8)
                        TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);   // Ptr to CheckException msg
 } // End PrimFnDydEqualBisHC8IvHC8I
 
 
@@ -672,7 +672,7 @@ UBOOL EqualHCxFvHCxF
      LPALLTYPES lpatRht,                // Right ...
      int        iHCDim,                 // Dimension (1, 2, 4, 8)
      APLFLOAT   fQuadCT,                // []CT (0 = exact comparison)
-     LPCHAR     lpszMsg)                // Ptr to CheckExceptionS msg
+     LPWCHAR    lpwszMsg)               // Ptr to CheckException msg
 {
     APLFLOAT aplMagLft,                 // Magnitude of left arg
              aplMagRht,                 // ...          right ...
@@ -719,7 +719,7 @@ UBOOL EqualHCxFvHCxF
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckExceptionS (GetExceptionInformation (), lpszMsg))
+    } __except (CheckException (GetExceptionInformation (), lpwszMsg))
     {
         EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
 
@@ -776,10 +776,10 @@ void EqualBisHCxFvHCxF
      LPALLTYPES lpatRht,                // Right ...
      int        iHCDim,                 // Dimension (1, 2, 4, 8)
      UBOOL      bIsEqual,               // TRUE iff the calling function is Equal (FALSE if NotEqual)
-     LPCHAR     lpszMsg)                // Ptr to CheckExceptionS msg
+     LPWCHAR    lpwszMsg)               // Ptr to CheckException msg
 {
     // The two numbers are equal iff the Dist is <= []CT * max (aplMagLft, aplMagRht)
-    if (bIsEqual EQ EqualHCxFvHCxF (lpatLft, lpatRht, iHCDim, GetQuadCT (), lpszMsg))
+    if (bIsEqual EQ EqualHCxFvHCxF (lpatLft, lpatRht, iHCDim, GetQuadCT (), lpwszMsg))
         lpMemRes[uRes >> LOG2NBIB] |=
           BIT0
           << (MASKLOG2NBIB & (UINT) uRes);
@@ -806,7 +806,7 @@ void PrimFnDydEqualBisHC2FvHC2F
                        lpatRht,         // Right ...
                        2,               // Dimension (1, 2, 4, 8)
                        TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);   // Ptr to CheckException msg
 } // End PrimFnDydEqualBisHC2FvHC2F
 
 
@@ -830,7 +830,7 @@ void PrimFnDydEqualBisHC4FvHC4F
                        lpatRht,         // Right ...
                        4,               // Dimension (1, 2, 4, 8)
                        TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);   // Ptr to CheckException msg
 } // End PrimFnDydEqualBisHC4FvHC4F
 
 
@@ -854,7 +854,7 @@ void PrimFnDydEqualBisHC8FvHC8F
                        lpatRht,         // Right ...
                        8,               // Dimension (1, 2, 4, 8)
                        TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);   // Ptr to CheckException msg
 } // End PrimFnDydEqualBisHC8FvHC8F
 
 
@@ -867,7 +867,7 @@ UBOOL EqualHCxRvHCxR
      LPALLTYPES lpatRht,                // Right ...
      int        iHCDim,                 // Dimension (1, 2, 4, 8)
      APLFLOAT   fQuadCT,                // []CT (0 = exact comparison)
-     LPCHAR     lpszMsg)                // Ptr to GetExceptionInformation msg
+     LPWCHAR    lpwszMsg)               // Ptr to GetExceptionInformation msg
 {
     APLVFP aplMagLft,                   // Magnitude of left arg
            aplMagRht,                   // ...          right ...
@@ -932,7 +932,7 @@ UBOOL EqualHCxRvHCxR
 
         // Multiply it by []CT
         mpfr_mul_d (&aplMagMax, &aplMagMax, fQuadCT, MPFR_RNDN);
-    } __except (CheckExceptionS (GetExceptionInformation (), lpszMsg))
+    } __except (CheckException (GetExceptionInformation (), lpwszMsg))
     {
         EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
 
@@ -980,10 +980,10 @@ void EqualBisHCxRvHCxR
      LPALLTYPES lpatRht,                // Right ...
      int        iHCDim,                 // Dimension (1, 2, 4, 8)
      UBOOL      bIsEqual,               // TRUE iff the calling function is Equal (FALSE if NotEqual)
-     LPCHAR     lpszMsg)                // Ptr to GetExceptionInformation msg
+     LPWCHAR    lpwszMsg)               // Ptr to GetExceptionInformation msg
 {
     // The two numbers are equal iff the Dist is <= []CT * max (aplMagLft, aplMagRht)
-    if (bIsEqual EQ EqualHCxRvHCxR (lpatLft, lpatRht, iHCDim, GetQuadCT (), lpszMsg))
+    if (bIsEqual EQ EqualHCxRvHCxR (lpatLft, lpatRht, iHCDim, GetQuadCT (), lpwszMsg))
         lpMemRes[uRes >> LOG2NBIB] |=
           BIT0
           << (MASKLOG2NBIB & (UINT) uRes);
@@ -1010,7 +1010,7 @@ void PrimFnDydEqualBisHC2RvHC2R
                        lpatRht,         // Right ...
                        2,               // Dimension (1, 2, 4, 8)
                        TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);   // Ptr to CheckException msg
 } // End PrimFnDydEqualBisHC2RvHC2R
 
 
@@ -1034,7 +1034,7 @@ void PrimFnDydEqualBisHC4RvHC4R
                        lpatRht,         // Right ...
                        4,               // Dimension (1, 2, 4, 8)
                        TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);   // Ptr to CheckException msg
 } // End PrimFnDydEqualBisHC4RvHC4R
 
 
@@ -1058,7 +1058,7 @@ void PrimFnDydEqualBisHC8RvHC8R
                        lpatRht,         // Right ...
                        8,               // Dimension (1, 2, 4, 8)
                        TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);   // Ptr to CheckException msg
 } // End PrimFnDydEqualBisHC8RvHC8R
 
 
@@ -1071,7 +1071,7 @@ UBOOL EqualHCxVvHCxV
      LPALLTYPES lpatRht,                // Right ...
      int        iHCDim,                 // Dimension (1, 2, 4, 8)
      APLFLOAT   fQuadCT,                // []CT (0 = exact comparison)
-     LPCHAR     lpszMsg)                // Ptr to GetExceptionInformation msg
+     LPWCHAR    lpwszMsg)               // Ptr to GetExceptionInformation msg
 {
     APLVFP aplMagLft,                   // Magnitude of left arg
            aplMagRht,                   // ...          right ...
@@ -1136,7 +1136,7 @@ UBOOL EqualHCxVvHCxV
 
         // Multiply it by []CT
         mpfr_mul_d (&aplMagMax, &aplMagMax, fQuadCT, MPFR_RNDN);
-    } __except (CheckExceptionS (GetExceptionInformation (), lpszMsg))
+    } __except (CheckException (GetExceptionInformation (), lpwszMsg))
     {
         EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
 
@@ -1185,10 +1185,10 @@ void EqualBisHCxVvHCxV
      LPALLTYPES lpatRht,                // Right ...
      int        iHCDim,                   // Dimension (1, 2, 4, 8)
      UBOOL      bIsEqual,               // TRUE iff the calling function is Equal (FALSE if NotEqual)
-     LPCHAR     lpszMsg)                // Ptr to GetExceptionInformation msg
+     LPWCHAR    lpwszMsg)               // Ptr to GetExceptionInformation msg
 {
     // The two numbers are equal iff the Dist is <= []CT * max (aplMagLft, aplMagRht)
-    if (bIsEqual EQ EqualHCxVvHCxV (lpatLft, lpatRht, iHCDim, GetQuadCT (), lpszMsg))
+    if (bIsEqual EQ EqualHCxVvHCxV (lpatLft, lpatRht, iHCDim, GetQuadCT (), lpwszMsg))
         lpMemRes[uRes >> LOG2NBIB] |=
           BIT0
           << (MASKLOG2NBIB & (UINT) uRes);
@@ -1215,7 +1215,7 @@ void PrimFnDydEqualBisHC2VvHC2V
                        lpatRht,         // Right ...
                        2,               // Dimension (1, 2, 4, 8)
                        TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);   // Ptr to CheckException msg
 } // End PrimFnDydEqualBisHC2VvHC2V
 
 
@@ -1239,7 +1239,7 @@ void PrimFnDydEqualBisHC4VvHC4V
                        lpatRht,         // Right ...
                        4,               // Dimension (1, 2, 4, 8)
                        TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);   // Ptr to CheckException msg
 } // End PrimFnDydEqualBisHC4VvHC4V
 
 
@@ -1263,7 +1263,7 @@ void PrimFnDydEqualBisHC8VvHC8V
                        lpatRht,         // Right ...
                        8,               // Dimension (1, 2, 4, 8)
                        TRUE,            // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);   // Ptr to CheckException msg
 } // End PrimFnDydEqualBisHC8VvHC8V
 
 

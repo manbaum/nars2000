@@ -793,7 +793,7 @@ void PrimFnDydNotEqualBisHC2IvHC2I
                        lpatRht,         // Right ...
                        2,               // Dimension (1, 2, 4, 8)
                        FALSE,           // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);           // Ptr to CheckException msg
 } // End PrimFnDydNotEqualBisHC2IvHC2I
 
 
@@ -817,7 +817,7 @@ void PrimFnDydNotEqualBisHC4IvHC4I
                        lpatRht,         // Right ...
                        4,               // Dimension (1, 2, 4, 8)
                        FALSE,           // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);           // Ptr to CheckException msg
 } // End PrimFnDydNotEqualBisHC4IvHC4I
 
 
@@ -841,7 +841,7 @@ void PrimFnDydNotEqualBisHC8IvHC8I
                        lpatRht,         // Right ...
                        8,               // Dimension (1, 2, 4, 8)
                        FALSE,           // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);           // Ptr to CheckException msg
 } // End PrimFnDydNotEqualBisHC8IvHC8I
 
 
@@ -865,7 +865,7 @@ void PrimFnDydNotEqualBisHC2FvHC2F
                        lpatRht,         // Right ...
                        2,               // Dimension (1, 2, 4, 8)
                        FALSE,           // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);           // Ptr to CheckException msg
 } // End PrimFnDydNotEqualBisHC2FvHC2F
 
 
@@ -889,7 +889,7 @@ void PrimFnDydNotEqualBisHC4FvHC4F
                        lpatRht,         // Right ...
                        4,               // Dimension (1, 2, 4, 8)
                        FALSE,           // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);           // Ptr to CheckException msg
 } // End PrimFnDydNotEqualBisHC4FvHC4F
 
 
@@ -913,7 +913,7 @@ void PrimFnDydNotEqualBisHC8FvHC8F
                        lpatRht,         // Right ...
                        8,               // Dimension (1, 2, 4, 8)
                        FALSE,           // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);           // Ptr to CheckException msg
 } // End PrimFnDydNotEqualBisHC8FvHC8F
 
 
@@ -937,7 +937,7 @@ void PrimFnDydNotEqualBisHC2RvHC2R
                        lpatRht,         // Right ...
                        2,               // Dimension (1, 2, 4, 8)
                        FALSE,           // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);           // Ptr to CheckException msg
 } // End PrimFnDydNotEqualBisHC2RvHC2R
 
 
@@ -961,7 +961,7 @@ void PrimFnDydNotEqualBisHC4RvHC4R
                        lpatRht,         // Right ...
                        4,               // Dimension (1, 2, 4, 8)
                        FALSE,           // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);           // Ptr to CheckException msg
 } // End PrimFnDydNotEqualBisHC4RvHC4R
 
 
@@ -985,7 +985,7 @@ void PrimFnDydNotEqualBisHC8RvHC8R
                        lpatRht,         // Right ...
                        8,               // Dimension (1, 2, 4, 8)
                        FALSE,           // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);           // Ptr to CheckException msg
 } // End PrimFnDydNotEqualBisHC8RvHC8R
 
 
@@ -1009,7 +1009,7 @@ void PrimFnDydNotEqualBisHC2VvHC2V
                        lpatRht,         // Right ...
                        2,               // Dimension (1, 2, 4, 8)
                        FALSE,           // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);           // Ptr to CheckException msg
 } // End PrimFnDydNotEqualBisHC2VvHC2V
 
 
@@ -1033,7 +1033,7 @@ void PrimFnDydNotEqualBisHC4VvHC4V
                        lpatRht,         // Right ...
                        4,               // Dimension (1, 2, 4, 8)
                        FALSE,           // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);           // Ptr to CheckException msg
 } // End PrimFnDydNotEqualBisHC4VvHC4V
 
 
@@ -1057,7 +1057,7 @@ void PrimFnDydNotEqualBisHC8VvHC8V
                        lpatRht,         // Right ...
                        8,               // Dimension (1, 2, 4, 8)
                        FALSE,           // TRUE iff the calling function is Equal (FALSE if NotEqual)
-                       __FUNCTION__);   // Ptr to CheckExceptionS msg
+                       WFCN);           // Ptr to CheckException msg
 } // End PrimFnDydNotEqualBisHC8VvHC8V
 
 

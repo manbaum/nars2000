@@ -452,7 +452,7 @@ void PrimFnMonStarVisV
     {
         // Call subfunction
         lpMemRes[uRes] = ExpVfp_RE (lpatRht->aplVfp);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -1906,7 +1906,7 @@ APLHC2I PowHC2I_RE
         {
             while (aplExp--)
                 aplRes = MulHC2I_RE (aplRes, aplLft);
-        } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+        } __except (CheckException (GetExceptionInformation (), WFCN))
         {
             EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2677,7 +2677,7 @@ APLHC4I PowHC4I_RE
         {
             while (aplExp--)
                 aplRes = MulHC4I_RE (aplRes, aplLft);
-        } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+        } __except (CheckException (GetExceptionInformation (), WFCN))
         {
             EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
 
@@ -3450,7 +3450,7 @@ APLHC8I PowHC8I_RE
         {
             while (aplExp--)
                 aplRes = MulHC8I_RE (aplRes, aplLft);
-        } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+        } __except (CheckException (GetExceptionInformation (), WFCN))
         {
             EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
 

@@ -878,7 +878,7 @@ APLINT PNPentInt_RE
                 LeaveCriticalSection (&CSOCombPNJ); bCSO = bInit = FALSE;
             } // End IF
         } // End __try/__finally
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -1043,7 +1043,7 @@ APLINT PNSubInt_RE
                 LeaveCriticalSection (&CSOCombPNI); bCSO = bInit = FALSE;
             } // End IF
         } // End __try/__finally
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -1245,7 +1245,7 @@ APLMPI PNPentMpi_RE
                 LeaveCriticalSection (&CSOCombPNZ); bCSO = bInit = FALSE;
             } // End IF
         } // End __try/__finally
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -1653,7 +1653,7 @@ APLINT SN2SubInt_RE
                 LeaveCriticalSection (&CSOCombSN2I); bCSO = bInit = FALSE;
             } // End IF
         } // End __try/__finally
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2060,7 +2060,7 @@ LPPL_YYSTYPE FS001C_EM_YY
 
         } else
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2113,7 +2113,7 @@ LPPL_YYSTYPE FS001C_EM_YY
                             Myq_clear (&aplRatTmp);
                         } // End FOR
                     } // End IF/ELSE
-                } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+                } __except (CheckException (GetExceptionInformation (), WFCN))
                 {
                     exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2422,7 +2422,7 @@ LPPL_YYSTYPE FS001G_EM_YY
             } // End IF
         } else
             goto WSFULL_EXIT;
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__ "FS001G"))
+    } __except (CheckException (GetExceptionInformation (), WFCN L"FS001G"))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2484,7 +2484,7 @@ LPPL_YYSTYPE FS001G_EM_YY
             // Check for Ctrl-Break
             if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
-        } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__ "FS001S1"))
+        } __except (CheckException (GetExceptionInformation (), WFCN L"FS001S1"))
         {
             exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2603,7 +2603,7 @@ LPPL_YYSTYPE FS002C_EM_YY
                 aplIntRes = PNSubInt_RE (aplIntLft, aplIntRht, TRUE, lpbCtrlBreak);
         } else
             goto DOMAIN_EXIT;
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -2859,7 +2859,7 @@ LPPL_YYSTYPE FS002G_EM_YY
                 aplIntRes = PNSubInt_RE (aplIntLft, aplIntRht, TRUE, lpbCtrlBreak);
         } else
             goto WSFULL_EXIT;
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -3011,7 +3011,7 @@ LPPL_YYSTYPE FS010C_EM_YY
             PrimFnDydQuoteDotIisIvI (&aplIntRes, 0, (LPALLTYPES) &lpCombArgs->aplIntBalls, (LPALLTYPES) &lpCombArgs->aplIntBoxes, NULL);
         else
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -3416,7 +3416,7 @@ LPPL_YYSTYPE FS010G_EM_YY
             PrimFnDydQuoteDotIisIvI (&aplIntRes, 0, (LPALLTYPES) &lpCombArgs->aplIntBalls, (LPALLTYPES) &lpCombArgs->aplIntBoxes, NULL);
         else
             goto WSFULL_EXIT;
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -3578,7 +3578,7 @@ LPPL_YYSTYPE FS011C_EM_YY
             PrimFnDydQuoteDotIisIvI (&aplIntRes, 0, (LPALLTYPES) &aplIntLft, (LPALLTYPES) &aplIntRht, NULL);
         else
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -3730,7 +3730,7 @@ LPPL_YYSTYPE FS011G_EM_YY
             PrimFnDydQuoteDotIisIvI (&aplIntRes, 0, (LPALLTYPES) &aplIntLft, (LPALLTYPES) &aplIntRht, NULL);
         else
             goto WSFULL_EXIT;
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -3888,7 +3888,7 @@ LPPL_YYSTYPE FS012C_EM_YY
             PrimFnDydQuoteDotIisIvI (&aplIntRes, 0, (LPALLTYPES) &aplIntLft, (LPALLTYPES) &aplIntRht, NULL);
         else
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -4043,7 +4043,7 @@ LPPL_YYSTYPE FS012G_EM_YY
             PrimFnDydQuoteDotIisIvI (&aplIntRes, 0, (LPALLTYPES) &aplIntRht, (LPALLTYPES) &aplIntLft, NULL);
         else
             goto WSFULL_EXIT;
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -4252,7 +4252,7 @@ LPPL_YYSTYPE FS101C_EM_YY
             } // End FOR
         } else
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -4280,7 +4280,7 @@ LPPL_YYSTYPE FS101C_EM_YY
                         // We no longer need this storage
                         Myq_clear (&aplRatTmp);
                     } // End FOR
-                } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+                } __except (CheckException (GetExceptionInformation (), WFCN))
                 {
                     exCode = MyGetExceptionCode ();  // The exception code
 
@@ -4557,7 +4557,7 @@ LPPL_YYSTYPE FS101G_EM_YY
             } // End FOR
         } else
             goto WSFULL_EXIT;
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -4718,7 +4718,7 @@ LPPL_YYSTYPE FS102C_EM_YY
             aplIntRes = SN2SubInt_RE (aplIntLft, aplIntRht, TRUE, lpbCtrlBreak);
         else
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -5191,7 +5191,7 @@ LPPL_YYSTYPE FS102G_EM_YY
             aplIntRes = SN2SubInt_RE (aplIntLft, aplIntRht, TRUE, lpbCtrlBreak);
         else
             goto WSFULL_EXIT;
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -5366,7 +5366,7 @@ LPPL_YYSTYPE FS110C_EM_YY
                 } // End FOR
             } else
                 RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
-        } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+        } __except (CheckException (GetExceptionInformation (), WFCN))
         {
             exCode = MyGetExceptionCode ();  // The exception code
 
@@ -5732,7 +5732,7 @@ LPPL_YYSTYPE FS110G_EM_YY
                 PrimFnDydQuoteDotIisIvI (&aplIntCmb, 0, (LPALLTYPES) &aplIntLft, (LPALLTYPES) &aplIntRht, NULL);
             } else
                 goto WSFULL_EXIT;
-        } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+        } __except (CheckException (GetExceptionInformation (), WFCN))
         {
             exCode = MyGetExceptionCode ();  // The exception code
 
@@ -6037,7 +6037,7 @@ LPPL_YYSTYPE FS111C_EM_YY
             PrimFnDydStarIisIvI (&aplIntRes, 0, (LPALLTYPES) &aplIntLft, (LPALLTYPES) &aplIntRht, NULL);
         else
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -6184,7 +6184,7 @@ LPPL_YYSTYPE FS111L_EM_YY
                 PrimFnDydStarIisIvI (&aplIntRes, 0, (LPALLTYPES) &aplIntRht, (LPALLTYPES) &aplIntLft, NULL);
         } else
             goto WSFULL_EXIT;
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -6329,7 +6329,7 @@ LPPL_YYSTYPE FS112C_EM_YY
                 RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
         } else
             RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 
@@ -6500,7 +6500,7 @@ LPPL_YYSTYPE FS112G_EM_YY
                 goto WSFULL_EXIT;
         } else
             goto WSFULL_EXIT;
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         exCode = MyGetExceptionCode ();  // The exception code
 

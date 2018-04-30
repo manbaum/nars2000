@@ -670,7 +670,7 @@ UBOOL PrimFnDydEqualUnderbarSimpleOrd
             case ARRAY_HC4I:
             case ARRAY_HC8I:
                 // Use the Equal function
-                bRet = EqualHCxIvHCxI (&atLft, &atRht, iHCDim, fQuadCT, __FUNCTION__);
+                bRet = EqualHCxIvHCxI (&atLft, &atRht, iHCDim, fQuadCT, WFCN);
 
                 break;
 
@@ -678,7 +678,7 @@ UBOOL PrimFnDydEqualUnderbarSimpleOrd
             case ARRAY_HC4F:
             case ARRAY_HC8F:
                 // Use the Equal function
-                bRet = EqualHCxFvHCxF (&atLft, &atRht, iHCDim, fQuadCT, __FUNCTION__);
+                bRet = EqualHCxFvHCxF (&atLft, &atRht, iHCDim, fQuadCT, WFCN);
 
                 break;
 
@@ -686,7 +686,7 @@ UBOOL PrimFnDydEqualUnderbarSimpleOrd
             case ARRAY_HC4R:
             case ARRAY_HC8R:
                 // Use the Equal function
-                bRet = EqualHCxRvHCxR (&atLft, &atRht, iHCDim, fQuadCT, __FUNCTION__);
+                bRet = EqualHCxRvHCxR (&atLft, &atRht, iHCDim, fQuadCT, WFCN);
 
                 break;
 
@@ -694,7 +694,7 @@ UBOOL PrimFnDydEqualUnderbarSimpleOrd
             case ARRAY_HC4V:
             case ARRAY_HC8V:
                 // Use the Equal function
-                bRet = EqualHCxVvHCxV (&atLft, &atRht, iHCDim, fQuadCT, __FUNCTION__);
+                bRet = EqualHCxVvHCxV (&atLft, &atRht, iHCDim, fQuadCT, WFCN);
 
                 break;
 

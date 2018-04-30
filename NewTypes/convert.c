@@ -1244,7 +1244,7 @@ int hc2f_cmp
     for (i = 0; i < 2; i++)
         // If this comparison is inexact, ...
         if (fQuadCT NE 0.0
-         && EqualHCxFvHCxF ((LPALLTYPES) &aplHC2FLft, (LPALLTYPES) &aplHC2FRht, 2, fQuadCT, __FUNCTION__))
+         && EqualHCxFvHCxF ((LPALLTYPES) &aplHC2FLft, (LPALLTYPES) &aplHC2FRht, 2, fQuadCT, WFCN))
             continue;
         else
         // Split cases based upon the signum of the difference
@@ -1290,7 +1290,7 @@ int hc4f_cmp
     for (i = 0; i < 4; i++)
         // If this comparison is inexact, ...
         if (fQuadCT NE 0.0
-         && EqualHCxFvHCxF ((LPALLTYPES) &aplHC4FLft, (LPALLTYPES) &aplHC4FRht, 2, fQuadCT, __FUNCTION__))
+         && EqualHCxFvHCxF ((LPALLTYPES) &aplHC4FLft, (LPALLTYPES) &aplHC4FRht, 2, fQuadCT, WFCN))
             continue;
         else
         // Split cases based upon the signum of the difference
@@ -1336,7 +1336,7 @@ int hc8f_cmp
     for (i = 0; i < 8; i++)
         // If this comparison is inexact, ...
         if (fQuadCT NE 0.0
-         && EqualHCxFvHCxF ((LPALLTYPES) &aplHC8FLft, (LPALLTYPES) &aplHC8FRht, 2, fQuadCT, __FUNCTION__))
+         && EqualHCxFvHCxF ((LPALLTYPES) &aplHC8FLft, (LPALLTYPES) &aplHC8FRht, 2, fQuadCT, WFCN))
             continue;
         else
         // Split cases based upon the signum of the difference
@@ -1382,7 +1382,7 @@ int hc2r_cmp
     for (i = 0; i < 2; i++)
         // If this comparison is inexact, ...
         if (fQuadCT NE 0.0
-         && EqualHCxRvHCxR ((LPALLTYPES) &aplHC2RLft, (LPALLTYPES) &aplHC2RRht, 2, fQuadCT, __FUNCTION__))
+         && EqualHCxRvHCxR ((LPALLTYPES) &aplHC2RLft, (LPALLTYPES) &aplHC2RRht, 2, fQuadCT, WFCN))
             continue;
         else
         // Split cases based upon the signum of the difference
@@ -1428,7 +1428,7 @@ int hc4r_cmp
     for (i = 0; i < 4; i++)
         // If this comparison is inexact, ...
         if (fQuadCT NE 0.0
-         && EqualHCxRvHCxR ((LPALLTYPES) &aplHC4RLft, (LPALLTYPES) &aplHC4RRht, 4, fQuadCT, __FUNCTION__))
+         && EqualHCxRvHCxR ((LPALLTYPES) &aplHC4RLft, (LPALLTYPES) &aplHC4RRht, 4, fQuadCT, WFCN))
             continue;
         else
         // Split cases based upon the signum of the difference
@@ -1474,7 +1474,7 @@ int hc8r_cmp
     for (i = 0; i < 8; i++)
         // If this comparison is inexact, ...
         if (fQuadCT NE 0.0
-         && EqualHCxRvHCxR ((LPALLTYPES) &aplHC8RLft, (LPALLTYPES) &aplHC8RRht, 8, fQuadCT, __FUNCTION__))
+         && EqualHCxRvHCxR ((LPALLTYPES) &aplHC8RLft, (LPALLTYPES) &aplHC8RRht, 8, fQuadCT, WFCN))
             continue;
         else
         // Split cases based upon the signum of the difference
@@ -1520,7 +1520,7 @@ int hc2v_cmp
     for (i = 0; i < 2; i++)
         // If this comparison is inexact, ...
         if (fQuadCT NE 0.0
-         && EqualHCxVvHCxV ((LPALLTYPES) &aplHC2VLft, (LPALLTYPES) &aplHC2VRht, 2, fQuadCT, __FUNCTION__))
+         && EqualHCxVvHCxV ((LPALLTYPES) &aplHC2VLft, (LPALLTYPES) &aplHC2VRht, 2, fQuadCT, WFCN))
             continue;
         else
         // Split cases based upon the signum of the difference
@@ -1568,7 +1568,7 @@ int hc4v_cmp
     for (i = 0; i < 4; i++)
         // If this comparison is inexact, ...
         if (fQuadCT NE 0.0
-         && EqualHCxVvHCxV ((LPALLTYPES) &aplHC4VLft, (LPALLTYPES) &aplHC4VRht, 4, fQuadCT, __FUNCTION__))
+         && EqualHCxVvHCxV ((LPALLTYPES) &aplHC4VLft, (LPALLTYPES) &aplHC4VRht, 4, fQuadCT, WFCN))
             continue;
         else
         // Split cases based upon the signum of the difference
@@ -1614,7 +1614,7 @@ int hc8v_cmp
     for (i = 0; i < 8; i++)
         // If this comparison is inexact, ...
         if (fQuadCT NE 0.0
-         && EqualHCxVvHCxV ((LPALLTYPES) &aplHC8VLft, (LPALLTYPES) &aplHC8VRht, 8, fQuadCT, __FUNCTION__))
+         && EqualHCxVvHCxV ((LPALLTYPES) &aplHC8VLft, (LPALLTYPES) &aplHC8VRht, 8, fQuadCT, WFCN))
             continue;
         else
         // Split cases based upon the signum of the difference

@@ -2395,7 +2395,7 @@ void PrimFnDydCircleHC2FisHC2FvHC2F
                   (LPALLTYPES) &confpof_N1.partsLo[0].partsLo[0],
                                 2,
                                 GetQuadCT (),
-                                __FUNCTION__))
+                                WFCN))
                 return;
 
             // If the imaginary parts are zero, ...

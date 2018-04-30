@@ -1071,7 +1071,7 @@ LPHSHENTRY FindNextFreeUsingHash_SPLIT_EM
             else
                 break;
         } // End WHILE
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {} // End __try/__except
 HASH_FULL_EXIT:
     ErrorMessageIndirect (ERRMSG_HASH_TABLE_FULL APPEND_NAME);
@@ -1199,7 +1199,7 @@ LPHSHENTRY FindNextFreeUsingHTE_EM
             else
                 break;
         } // End WHILE
-    } __except (CheckExceptionS (GetExceptionInformation (), __FUNCTION__))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {} // End __try/__except
 HASH_FULL_EXIT:
     ErrorMessageIndirect (ERRMSG_HASH_TABLE_FULL APPEND_NAME);

@@ -509,7 +509,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                         (*aTypeActPromote[aplTypeRht][aplTypeRht]) (lpMemRht, lpMemGup[uRht], &atRht);
 
                         // Check for a different (and thus unique) value
-                        if (!EqualHCxIvHCxI (&atLst, &atRht, iHCDimRht, fQuadCT, __FUNCTION__))
+                        if (!EqualHCxIvHCxI (&atLst, &atRht, iHCDimRht, fQuadCT, WFCN))
                         {
                             // Save as the next unique value's index
                             lpMemGup[aplNELMRes++] = lpMemGup[uRht];
@@ -549,7 +549,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                         (*aTypeActPromote[aplTypeRht][aplTypeRht]) (lpMemRht, lpMemGup[uRht], &atRht);
 
                         // Check for a different (and thus unique) value
-                        if (!EqualHCxFvHCxF (&atLst, &atRht, iHCDimRht, fQuadCT, __FUNCTION__))
+                        if (!EqualHCxFvHCxF (&atLst, &atRht, iHCDimRht, fQuadCT, WFCN))
                         {
                             // Save as the next unique value's index
                             lpMemGup[aplNELMRes++] = lpMemGup[uRht];
@@ -611,7 +611,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                         (*aTypeActPromote[aplTypeRht][aplTypeRht]) (lpMemRht, lpMemGup[uRht], &atRht);
 
                         // Check for a different (and thus unique) value
-                        if (!EqualHCxRvHCxR (&atLst, &atRht, iHCDimRht, fQuadCT, __FUNCTION__))
+                        if (!EqualHCxRvHCxR (&atLst, &atRht, iHCDimRht, fQuadCT, WFCN))
                         {
                             // Save as the next unique value's index
                             lpMemGup[aplNELMRes++] = lpMemGup[uRht];
@@ -651,7 +651,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                         (*aTypeActPromote[aplTypeRht][aplTypeRht]) (lpMemRht, lpMemGup[uRht], &atRht);
 
                         // Check for a different (and thus unique) value
-                        if (!EqualHCxVvHCxV (&atLst, &atRht, iHCDimRht, fQuadCT, __FUNCTION__))
+                        if (!EqualHCxVvHCxV (&atLst, &atRht, iHCDimRht, fQuadCT, WFCN))
                         {
                             // Save as the next unique value's index
                             lpMemGup[aplNELMRes++] = lpMemGup[uRht];

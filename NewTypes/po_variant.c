@@ -77,13 +77,14 @@ LPVARIANT_STR varOprTab[PRIMTAB_LEN];   // The jump table for all Variant operat
 
 VARIANT_STR varOprStr[] =
 //                                ======Monadic========|=======Dyadic=========
-  {
+  {                         //    N1    N2    C1   C2   N1    N2    C1     C2
    VAR_MAC (CIRCLE              , UNK , UNK , UNK, UNK, UNK , UNK , LR   , UNK ),   // 00:  CIRCLE
    VAR_MAC (CIRCLESLOPE         , UNK , UNK , UNK, UNK, IO  , UNK , UNK  , UNK ),   // 01:  CIRCLESLOPE
    VAR_MAC (COLONBAR            , UNK , UNK , UNK, UNK, UNK , UNK , LR   , UNK ),   // 02:  COLONBAR
    VAR_MAC (DELSTILE            , IO  , UNK , UNK, UNK, IO  , UNK , UNK  , UNK ),   // 03:  DELSTILE
    VAR_MAC (DELTASTILE          , IO  , UNK , UNK, UNK, IO  , UNK , UNK  , UNK ),   // 04:  DELTASTILE
    VAR_MAC (DOMINO              , EIG , UNK , UNK, UNK, UNK , UNK , UNK  , UNK ),   // 05:  DOMINO
+   VAR_MAC (DOT                 , UNK , UNK , UNK, UNK, UNK , UNK , LR   , UNK ),   // ??:  DOT
    VAR_MAC (DOUBLESHRIEK        , IO  , UNK , UNK, UNK, UNK , UNK , UNK  , UNK ),   // 06:  DOUBLESHRIEK
    VAR_MAC (DOWNCARET           , UNK , UNK , UNK, UNK, UNK , UNK , LR   , UNK ),   // 07:  DOWNCARET
    VAR_MAC (DOWNSHOE            , CT  , UNK , UNK, UNK, UNK , UNK , UNK  , UNK ),   // 08:  DOWNSHOE
@@ -219,7 +220,6 @@ LPPL_YYSTYPE PrimIdentOpVariant_EM_YY
     LPPL_YYSTYPE lpYYFcnStrLft,     // Ptr to left operand function strand
                  lpYYFcnStrRht;     // Ptr to right ...
     LPPRIMFLAGS  lpPrimFlagsLft;    // Ptr to left operand primitive flags
-    LPTOKEN      lptkAxisLft;       // Ptr to axis operator token (if any)
 
     // The right arg is the prototype item from
     //   the original empty arg.
@@ -254,9 +254,6 @@ LPPL_YYSTYPE PrimIdentOpVariant_EM_YY
      || IsTknFillJot (&lpYYFcnStrRht->tkToken))
         goto RIGHT_OPERAND_DOMAIN_EXIT;
 
-    // Check for left operand axis operator
-    lptkAxisLft = CheckAxisOper (lpYYFcnStrLft);
-
     // Get the appropriate primitive flags ptr
     lpPrimFlagsLft = GetPrimFlagsPtr (&lpYYFcnStrLft->tkToken);
 
@@ -266,11 +263,15 @@ LPPL_YYSTYPE PrimIdentOpVariant_EM_YY
 
     // Execute the left operand identity function on the right arg
     return
-      (*lpPrimFlagsLft->lpPrimOps)
-                        (lptkRhtOrig,           // Ptr to original right arg token
-                         lpYYFcnStrLft,         // Ptr to function strand
-                         lptkRhtArg,            // Ptr to right arg token
-                         lptkAxisLft);          // Ptr to axis token (may be NULL)
+      PrimOpVariantCommon_EM_YY (lptkRhtOrig,           // Ptr to left arg token (may be NULL if monadic derived function)
+                                                        //   If this is an identity function call (lpPrimFlagsLft NE NULL),
+                                                        //     then this value is the original right arg
+                                 lpYYFcnStrLft,         // Ptr to left operand function strand
+                                 lpPrimFlagsLft,        // Ptr to left operand primitive flags (may be NULL)
+                                 lpYYFcnStrOpr,         // Ptr to operator function strand
+                                 lpYYFcnStrRht,         // Ptr to right operand function strand
+                                 lptkRhtArg,            // Ptr to right arg token
+                                 FALSE);                // TRUE iff protoyping
 AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxisOpr);
@@ -331,7 +332,10 @@ LPPL_YYSTYPE PrimOpMonVariantCommon_EM_YY
 
     return
       PrimOpVariantCommon_EM_YY (NULL,                  // Ptr to left arg token (may be NULL if monadic derived function)
+                                                        //   If this is an identity function call (lpPrimFlagsLft NE NULL),
+                                                        //     then this value is the original right arg
                                  lpYYFcnStrLft,         // Ptr to left operand function strand
+                                 NULL,                  // Ptr to left operand primitive flags (may be NULL)
                                  lpYYFcnStrOpr,         // Ptr to operator function strand
                                  lpYYFcnStrRht,         // Ptr to right operand function strand
                                  lptkRhtArg,            // Ptr to right arg token
@@ -348,7 +352,10 @@ LPPL_YYSTYPE PrimOpMonVariantCommon_EM_YY
 
 LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
     (LPTOKEN      lptkLftArg,               // Ptr to left arg token (may be NULL if monadic derived function)
+                                            //   If this is an identity function call (lpPrimFlagsLft NE NULL),
+                                            //     then this value is the original right arg
      LPPL_YYSTYPE lpYYFcnStrLft,            // Ptr to left operand function strand
+     LPPRIMFLAGS  lpPrimFlagsLft,           // Ptr to left operand primitive flags
      LPPL_YYSTYPE lpYYFcnStrOpr,            // Ptr to operator function strand
      LPPL_YYSTYPE lpYYFcnStrRht,            // Ptr to right operand function strand
      LPTOKEN      lptkRhtArg,               // Ptr to right arg token (may be NULL if niladic derived function)
@@ -420,7 +427,10 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
       || IsNested (aplTypeRhtOpr))
         return
           PrimOpVariantKeyword_EM_YY (lptkLftArg,               // Ptr to left arg token (may be NULL if monadic derived function)
+                                                                //   If this is an identity function call (lpPrimFlagsLft NE NULL),
+                                                                //     then this value is the original right arg
                                       lpYYFcnStrLft,            // Ptr to left operand function strand
+                                      lpPrimFlagsLft,           // Ptr to left operand primitive flags (may be NULL)
                                       lpYYFcnStrRht,            // Ptr to right operand function strand
                                       lptkRhtArg,               // Ptr to right arg token
                                       aplTypeRhtOpr,            // Right operand storage type
@@ -688,11 +698,22 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
             // Fall through to common code
 
         default:
-            // Execute the function
-            lpYYRes =
-              ExecFunc_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
-                              lpYYFcnStrLft,        // Ptr to function strand
-                              lptkRhtArg);          // Ptr to right arg token
+            // If this is Inner Product identity function, ...
+            if (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_DOT
+             && lpPrimFlagsLft NE NULL)
+                // Execute the left operand identity function on the right arg
+                lpYYRes =
+                  (*lpPrimFlagsLft->lpPrimOps)
+                                    (lptkLftArg,            // Ptr to original right arg token
+                                     lpYYFcnStrLft,         // Ptr to function strand
+                                     lptkRhtArg,            // Ptr to right arg token
+                                     NULL);                 // Ptr to axis token (may be NULL)
+            else
+                // Execute the function
+                lpYYRes =
+                  ExecFunc_EM_YY (lptkLftArg,           // Ptr to left arg token (may be NULL if monadic)
+                                  lpYYFcnStrLft,        // Ptr to function strand
+                                  lptkRhtArg);          // Ptr to right arg token
             break;
     } // End SWITCH
 
@@ -1643,7 +1664,10 @@ LPPL_YYSTYPE PrimOpDydVariantCommon_EM_YY
 
     return
       PrimOpVariantCommon_EM_YY (lptkLftArg,            // Ptr to left arg token (may be NULL if monadic derived function)
+                                                        //   If this is an identity function call (lpPrimFlagsLft NE NULL),
+                                                        //     then this value is the original right arg
                                  lpYYFcnStrLft,         // Ptr to left operand function strand
+                                 NULL,                  // Ptr to left operand primitive flags (may be NULL)
                                  lpYYFcnStrOpr,         // Ptr to operator function strand
                                  lpYYFcnStrRht,         // Ptr to right operand function strand
                                  lptkRhtArg,            // Ptr to right arg token
@@ -1659,7 +1683,10 @@ LPPL_YYSTYPE PrimOpDydVariantCommon_EM_YY
 
 LPPL_YYSTYPE PrimOpVariantKeyword_EM_YY
     (LPTOKEN      lptkLftArg,                           // Ptr to left arg token (may be NULL if monadic derived function)
+                                                        //   If this is an identity function call (lpPrimFlagsLft NE NULL),
+                                                        //     then this value is the original right arg
      LPPL_YYSTYPE lpYYFcnStrLft,                        // Ptr to left operand function strand
+     LPPRIMFLAGS  lpPrimFlagsLft,                       // Ptr to left operand primitive flags (may be NULL)
      LPPL_YYSTYPE lpYYFcnStrRht,                        // Ptr to right operand function strand
      LPTOKEN      lptkRhtArg,                           // Ptr to right arg token (may be null if niladic derived function)
      APLSTYPE     aplTypeRhtOpr,                        // Right operand storage type
@@ -1741,12 +1768,22 @@ LPPL_YYSTYPE PrimOpVariantKeyword_EM_YY
     // At this point, we've localised all of the system vars
     //   and changed their current values to what the user specified
 
-    // Execute the function
-    lpYYRes =
-      ExecFuncStr_EM_YY (lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
-                         lpYYFcnStrLft,         // Ptr to function strand
-                         lptkRhtArg,            // Ptr to right arg token (may be NULL if niladic)
-                         NULL);                 // Ptr to axis token (may be NULL)
+    // If we're called as an identity function, ...
+    if (lpPrimFlagsLft NE NULL)
+        // Execute the left operand identity function on the right arg
+        lpYYRes =
+          (*lpPrimFlagsLft->lpPrimOps)
+                            (lptkLftArg,            // Ptr to original right arg token
+                             lpYYFcnStrLft,         // Ptr to function strand
+                             lptkRhtArg,            // Ptr to right arg token
+                             NULL);                 // Ptr to axis token (may be NULL)
+    else
+        // Execute the function
+        lpYYRes =
+          ExecFuncStr_EM_YY (lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+                             lpYYFcnStrLft,         // Ptr to function strand
+                             lptkRhtArg,            // Ptr to right arg token (may be NULL if niladic)
+                             NULL);                 // Ptr to axis token (may be NULL)
     goto NORMAL_EXIT;
 
 RIGHT_OPERAND_RANK_EXIT:

@@ -1799,6 +1799,11 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     if (IsRank3P (aplRankLft) || IsRank3P (aplRankRht))
         goto RANK_EXIT;
 
+    // Check for DOMAIN ERROR
+    if (!IsNumeric (aplTypeLft)
+     || !IsNumeric (aplTypeRht))
+        goto DOMAIN_EXIT;
+
     // If the left arg is immediate, ...
     if (lpMemHdrLft EQ NULL)
         // Point to the data
@@ -1873,11 +1878,6 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
     if (uNumRowsRht <  uNumColsRht
      || uNumRowsLft NE uNumRowsRht)
         goto LENGTH_EXIT;
-
-    // Check for DOMAIN ERROR
-    if (!IsNumeric (aplTypeLft)
-     || !IsNumeric (aplTypeRht))
-        goto DOMAIN_EXIT;
 
     // Save the # rows & cols in the result
     uNumRowsRes = uNumColsRht;

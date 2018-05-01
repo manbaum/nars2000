@@ -1,0 +1,9 @@
+Build #1882 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bug In Dyadic Domino With Nested Arrays
+
+Directory branches/bsmith/NewTypes:
+
+PF_DOMINO.C:
+  In dyadic Domino, test for DOMAIN ERROR before attempting to access the items of the left argument.

@@ -153,12 +153,9 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
                 lpMemRht = VarArrayDataFmBase (lpMemRht);
 
                 // Copy the error message to temporary storage
-                CopyMemoryW (lpMemPTD->lpwszQuadErrorMsg, lpMemRht, (APLU3264) aplNELMRht);
+                CopyErrorMessageLen (lpMemPTD, lpMemRht, (APLU3264) aplNELMRht);
             } else
-                lpMemPTD->lpwszQuadErrorMsg[0] = (APLCHAR) aplLongestRht1;
-
-            // Ensure properly terminated
-            lpMemPTD->lpwszQuadErrorMsg[aplNELMRht] = WC_EOS;
+                CopyErrorMessageLen (lpMemPTD, (LPAPLCHAR) &aplLongestRht1, 1);
         } else
         {
             UBOOL bRet;                     // TRUE iff result is valid
@@ -256,15 +253,13 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
                     lpMemLft = VarArrayDataFmBase (lpMemLft);
 
                     // Copy the error message to temporary storage
-                    CopyMemoryW (lpMemPTD->lpwszQuadErrorMsg, lpMemLft, (APLU3264) aplNELMLft);
+                    CopyErrorMessageLen (lpMemPTD, lpMemLft, (APLU3264) aplNELMLft);
 
                     // We no longer need this ptr
                     MyGlobalUnlock (hGlbLft); lpMemLft = NULL;
                 } else
-                    lpMemPTD->lpwszQuadErrorMsg[0] = (APLCHAR) aplLongestLft;
-
-                // Ensure properly terminated
-                lpMemPTD->lpwszQuadErrorMsg[aplNELMLft] = WC_EOS;
+                    // Copy the error message to temporary storage
+                    CopyErrorMessageLen (lpMemPTD, (LPAPLCHAR) &aplLongestLft, 1);
             } else
             {
                 LPAPLCHAR lpwErrMsg;
@@ -357,7 +352,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
                 } // End SWITCH
 
                 // Copy the error message to temporary storage
-                CopyMemoryW (lpMemPTD->lpwszQuadErrorMsg, lpwErrMsg, lstrlenW (lpwErrMsg) + 1);
+                CopyErrorMessageLen (lpMemPTD, lpwErrMsg, lstrlenW (lpwErrMsg) + 1);
 
                 bEventClear = (EventType EQ EVENTTYPE_NOERROR);
             } // End IF/ELSE
@@ -404,7 +399,7 @@ LPPL_YYSTYPE SysFnDydES_EM_YY
             //   function token passed here isn't used unless this is
             //   immediate execution mode; normally, the tkCharIndex of the
             //   caller's is used.
-            ErrorMessageIndirectToken (lpMemPTD->lpwszQuadErrorMsg, lptkFunc);
+            ErrorMessageIndirectToken (lpMemPTD->lpwszErrorMessage, lptkFunc);
             lpMemPTD->tkErrorCharIndex = lptkFunc->tkCharIndex;
 
             // Set the reset flag

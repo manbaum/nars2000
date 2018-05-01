@@ -89,12 +89,12 @@ void BreakMessage
             MyGlobalUnlock (lpSISCur->hGlbFcnName); lpMemName = NULL;
 
             // Save the ptr
-            lpMemPTD->lpwszErrorMessage = lpMemPTD->lpwszTemp;
+            CopyErrorMessage (lpMemPTD, lpMemPTD->lpwszTemp);
         } // End IF
     } else
     {
         // Prepend a message
-        lpMemPTD->lpwszErrorMessage = ERRMSG_INTERRUPT;
+        CopyErrorMessage (lpMemPTD, ERRMSG_INTERRUPT);
 
         // Calculate length of error message text
         aplNELMRes = lstrlenW (lpMemPTD->lpwszErrorMessage);
@@ -636,8 +636,6 @@ NORMAL_EXIT:
         // We no longer need this ptr
         MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
     } // End IF
-
-    return;
 } // End ErrorMessageDirect
 #undef  ERROR_CARET
 
@@ -689,7 +687,7 @@ void ErrorMessageIndirect
 
 {
     // Save in global for later reference
-    GetMemPTD ()->lpwszErrorMessage = lpwszMsg;
+    CopyErrorMessage (GetMemPTD (), lpwszMsg);
 } // End ErrorMessageIndirect
 
 

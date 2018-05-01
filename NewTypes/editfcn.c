@@ -5795,7 +5795,7 @@ void ErrorHandler
     lpMemPTD = GetMemPTD ();
 
     // Save in global for later reference
-    lpMemPTD->lpwszErrorMessage = lpwszMsg;
+    CopyErrorMessage (lpMemPTD, lpwszMsg);
     lpMemPTD->uCaret = uCaret;
 } // End ErrorHandler
 

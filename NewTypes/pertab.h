@@ -81,7 +81,7 @@ typedef struct tagPERTABDATA
     LPHSHTABSTR  lphtsPTD,                  // Ptr to current HTS
                  lphtsGLB;                  // ...    global  ...
     HSHTABSTR    ahtsMFO[HTS_LENGTH];       // Ptr to struct of local HTS structs for MFOs
-    UINT         tkErrorCharIndex;          // Char index for lpwszQuadErrorMsg if ImmExec
+    UINT         tkErrorCharIndex;          // Char index for lpwszErrorMessage if ImmExec
 
     HWND         hWndMC,                    // MDI Client window handle
                  hWndSM,                    // Session Manager ...
@@ -100,11 +100,10 @@ typedef struct tagPERTABDATA
                  lpwszFILE,                 // Ptr to current __FILE__ for lpwszTemp open
                  lpwszLINE;                 // Ptr to current __LINE__ for lpwszTemp open
 #endif
-    LPWCHAR      lpwszErrorMessage,         // Ptr to error message to signal
-                 lpwszQuadErrorMsg;         // Used for []ERROR/[]ES messages
+    LPWCHAR      lpwszErrorMessage;         // Used for []ERROR/[]ES messages
     UINT         uCaret;                    // Position of the caret in the current line on error
     int          crIndex;                   // Tab's color index
-    APLINT       uQuadMF;                   // []MF timer value (8 bytes)
+    TIMER_SOURCE uQuadMF;                   // []MF timer source (1, 2, 3)
     struct tagSIS_HEADER
                 *lpSISBeg,                  // Ptr to State Indicator Stack beginning
                 *lpSISCur,                  // ...                          current (may be NULL if SI is empty)

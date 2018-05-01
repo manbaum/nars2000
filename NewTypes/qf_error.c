@@ -73,14 +73,15 @@ LPPL_YYSTYPE SysFnMonERROR_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    APLSTYPE     aplTypeRht;        // Right arg storage type
-    APLNELM      aplNELMRht;        // Right arg NELM
-    APLRANK      aplRankRht;        // Right arg Rank
-    APLLONGEST   aplLongestRht;     // Right arg longest if immediate
-    HGLOBAL      hGlbRht = NULL;    // Right arg global memory handle
-    LPVOID       lpMemRht = NULL;   // Ptr to right arg global memory
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to result
+    APLSTYPE          aplTypeRht;           // Right arg storage type
+    APLNELM           aplNELMRht;           // Right arg NELM
+    APLRANK           aplRankRht;           // Right arg Rank
+    APLLONGEST        aplLongestRht;        // Right arg longest if immediate
+    HGLOBAL           hGlbRht = NULL;       // Right arg global memory handle
+    LPVARARRAY_HEADER lpMemHdrRht = NULL;   // Ptr to right arg header
+    LPVOID            lpMemRht;             // Ptr to right arg global memory
+    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to result
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg
@@ -105,27 +106,24 @@ LPPL_YYSTYPE SysFnMonERROR_EM_YY
         lpMemPTD = GetMemPTD ();
 
         // Get right arg's global ptrs
-        aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemRht);
+        aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
         // If the message is a global, ...
-        if (hGlbRht)
+        if (hGlbRht NE NULL)
         {
             // Skip over the header and dimensions to the data
-            lpMemRht = VarArrayDataFmBase (lpMemRht);
+            lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
             // Copy the error message to temporary storage
-            CopyMemoryW (lpMemPTD->lpwszQuadErrorMsg, lpMemRht, (APLU3264) aplNELMRht);
+            CopyErrorMessageLen (lpMemPTD, lpMemRht, (APLU3264) aplNELMRht);
         } else
-            lpMemPTD->lpwszQuadErrorMsg[0] = (APLCHAR) aplLongestRht;
-
-        // Ensure properly terminated
-        lpMemPTD->lpwszQuadErrorMsg[aplNELMRht] = WC_EOS;
+            CopyErrorMessageLen (lpMemPTD, (LPAPLCHAR) &aplLongestRht, 1);
 
         // Save in PTD -- note that the tkCharIndex in the
         //   function token passed here isn't used unless this is
         //   immediate execution mode; normally, the tkCharIndex of the
         //   caller's is used.
-        ErrorMessageIndirectToken (lpMemPTD->lpwszQuadErrorMsg, lptkFunc);
+        ErrorMessageIndirectToken (lpMemPTD->lpwszErrorMessage, lptkFunc);
         lpMemPTD->tkErrorCharIndex = lptkFunc->tkCharIndex;
 
         // Set the reset flag
@@ -147,9 +145,9 @@ DOMAIN_EXIT:
 ERROR_EXIT:
 NORMAL_EXIT:
     // We no longer need this ptr
-    if (hGlbRht && lpMemRht)
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
     {
-        MyGlobalUnlock (hGlbRht); lpMemRht = NULL;
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
 
     return lpYYRes;

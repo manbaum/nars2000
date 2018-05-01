@@ -1,0 +1,28 @@
+Build #1881 -- Version 0.5.7.xx
+-------------------------------
+
+* Use A Single Virtual Memory Variable For Error Messages
+
+Directory branches/bsmith/NewTypes:
+
+COMMON.C:
+  In <W2A> and <A2W>, ensure the result is properly terminated if empty.
+  Define new functions to handle copying text to the error message virtual memory.
+
+EDITFCN.C:
+ERRMSG.C:
+  Use new functions to handle copying text to the error message virtual memory.
+
+PERTAB.H:
+  Define a single variable to hold the error message text in virtual memory.
+  Use proper declaration for Timer Source variable.
+
+QF_ERROR.C:
+QF_ES.C:
+  Include "Hdr" In Name Of Result Of <MyGlobalLock>.
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  Use new functions to handle copying text to the error message virtual memory.
+  Use a single virtual memory variable for error messages.
+
+SESSMAN.C:
+  Use a single virtual memory variable for error messages.

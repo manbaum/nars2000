@@ -1071,11 +1071,11 @@ WM_NCCREATE_FAIL:
             // *************** []ERROR/[]ES ****************************
 
             // Allocate virtual memory for the []ERROR/[]ES buffer
-            lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].lpText   = "lpMemPTD->lpwszQuadErrorMsg in <SMWndProc>";
-            lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IncrSize = DEF_QUADERROR_INCRNELM * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]);
-            lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].MaxSize  = DEF_QUADERROR_MAXNELM  * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]);
+            lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].lpText   = "lpMemPTD->lpwszErrorMessage in <SMWndProc>";
+            lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IncrSize = DEF_QUADERROR_INCRNELM * sizeof (lpMemPTD->lpwszErrorMessage[0]);
+            lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].MaxSize  = DEF_QUADERROR_MAXNELM  * sizeof (lpMemPTD->lpwszErrorMessage[0]);
             lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IniAddr  = (LPVOID)
-            lpMemPTD->lpwszQuadErrorMsg =
+            lpMemPTD->lpwszErrorMessage =
               GuardAlloc (NULL,             // Any address
                           lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].MaxSize,
                           MEM_RESERVE,
@@ -1083,7 +1083,7 @@ WM_NCCREATE_FAIL:
             if (lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IniAddr EQ NULL)
             {
                 // ***FIXME*** -- WS FULL before we got started???
-                MBW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpwszQuadErrorMsg> failed");
+                MBW (L"SMWndProc/WM_CREATE:  GuardAlloc for <lpwszErrorMessage> failed");
 
                 goto WM_CREATE_FAIL;    // Mark as failed
             } // End IF
@@ -1093,7 +1093,7 @@ WM_NCCREATE_FAIL:
 
             // Commit the intial size
             MyVirtualAlloc (lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].IniAddr,
-                            DEF_QUADERROR_INITNELM * sizeof (lpMemPTD->lpwszQuadErrorMsg[0]),
+                            DEF_QUADERROR_INITNELM * sizeof (lpMemPTD->lpwszErrorMessage[0]),
                             MEM_COMMIT,
                             PAGE_READWRITE);
             // *************** Undo Buffer *****************************
@@ -2466,7 +2466,7 @@ NORMAL_EXIT:
                 } // End IF
 
                 // Zap the ptrs in lpMemPTD
-                lpMemPTD->lpwszQuadErrorMsg    = NULL;
+                lpMemPTD->lpwszErrorMessage    = NULL;
 ////////////////lpUndoBeg                      = NULL;
 ////////////////lpMemPTD->lphtsPTD->lpHshTab   = NULL;      // Zero'ed in FreeHshSymTabs
 ////////////////lpMemPTD->lphtsPTD->lpSymTab   = NULL;      // ...

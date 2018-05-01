@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -530,6 +530,9 @@ void W2A
 {
     int iLen;
 
+    // Ensure empty in case the source is
+    lpDest[0] = AC_EOS;
+
     iLen = 1 + lstrlenW (lpSrc);    // Get source length
     WideCharToMultiByte (CP_ACP,    // ANSI code page
                          0,         // No flags
@@ -555,6 +558,9 @@ void A2W
 
 {
     int iLen;
+
+    // Ensure empty in case the source is
+    lpDest[0] = WC_EOS;
 
     iLen = 1 + lstrlenA (lpSrc);    // Get source length
     MultiByteToWideChar (CP_ACP,    // ANSI code page
@@ -1387,6 +1393,62 @@ UBOOL IsArgNaN
 
     return FALSE;
 } // End IsArgNaN
+
+
+//***************************************************************************
+//  $CopyErrorMessage
+//
+//  Copy the given error message text to virtual memory
+//***************************************************************************
+
+void CopyErrorMessage
+    (LPPERTABDATA lpMemPTD,     // Ptr to PerTabData global memory
+     LPWCHAR      lpwszErr)     // Ptr to error message text
+
+{
+    // If the ptrs are valid, ...
+    if (lpMemPTD NE NULL
+     && lpMemPTD->lpwszErrorMessage NE NULL)
+        // Call common code
+        CopyErrorMessageLen (lpMemPTD, lpwszErr, lstrlenW (lpwszErr));
+} // End CopyErrorMessage
+
+
+//***************************************************************************
+//  $CopyErrorMessageLen
+//
+//  Copy the given error message text to virtual memory
+//***************************************************************************
+
+void CopyErrorMessageLen
+    (LPPERTABDATA lpMemPTD,     // Ptr to PerTabData global memory
+     LPWCHAR      lpwszErr,     // Ptr to error message text
+     size_t       uLen)         // Optional size (-1 = calculate it)
+
+{
+    // If the ptrs are valid, ...
+    if (lpMemPTD NE NULL
+     && lpMemPTD->lpwszErrorMessage NE NULL)
+    {
+        // If the size is omitted, ...
+        if (uLen EQ -1)
+            // Calculate it
+            uLen = lstrlenW (lpwszErr);
+#ifdef DEBUG
+        LPMEMVIRTSTR lpLclMemVirtStr;   // Ptr to local MemVirtStr
+
+        // Get the ptr to the local virtual memory struc
+        (HANDLE_PTR) lpLclMemVirtStr = GetWindowLongPtrW (lpMemPTD->hWndSM, GWLSF_LPMVS);
+
+        Assert (uLen < lpLclMemVirtStr[PTDMEMVIRT_QUADERROR].MaxSize);
+#endif
+        // Copy the error message text to virtual memory
+        CopyMemoryW (lpMemPTD->lpwszErrorMessage, lpwszErr, uLen);
+
+        // Ensure properly terminated
+        lpMemPTD->lpwszErrorMessage[uLen] = WC_EOS;
+    } // End IF
+} // End CopyErrorMessageLen
 
 
 //***************************************************************************

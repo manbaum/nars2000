@@ -1938,40 +1938,15 @@ uint32_t hashlittleConv
      uint32_t    initval)       // Initial value for hash
 
 {
-////LPWCHAR  lpwConv,           // Ptr to global memory for the converted key
-////         lpwTmp;            // Ptr to output name
     uint32_t uhash;             // The result
-////size_t   uCnt;              // Loop counter
     WCHAR    wszTemp[1024];
 
-////// Allocate virtual memory to hold the converted name
-////lpwConv =
-////  MyVirtualAlloc (NULL,                 // Any address (FIXED SIZE)
-////                  (DWORD) length * sizeof (WCHAR),
-////                  MEM_COMMIT | MEM_TOP_DOWN,
-////                  PAGE_READWRITE);
-////if (lpwConv EQ NULL)        // ***FIXME*** -- Better error handling needed
-////    return 0;
-////
-////// Loop through the name converting _alphabet_ to lowercase
-////for (uCnt = 0,
-////      lpwTmp = lpwConv;
-////    uCnt < length;
-////    uCnt++)
-////if (UTF16_A_ <= *lpwName
-//// &&             *lpwName <= UTF16_Z_)
-////    *lpwTmp++ = L'a' + (*lpwName++ - UTF16_A_);
-////else
-////    *lpwTmp++ = *lpwName++;
     // Copy the name to a local var
     if (FAILED (StringCchCopyNW (wszTemp, countof (wszTemp), lpwName, length)))
         DbgStop ();
 
     // Hash the converted name
     uhash = hashlittle (strlwrW (wszTemp), length * sizeof (WCHAR), initval);
-
-////// We no longer need this storage
-////MyVirtualFree (lpwConv, 0, MEM_RELEASE); lpwConv = NULL;
 
     return uhash;
 } // End hashlittleConv
@@ -2107,11 +2082,9 @@ LPSYMENTRY SymTabHTSLookupNameLength
                 // Lock the memory to get a ptr to it
                 lpwGlbName = MyGlobalLockWsz (lpHshEntry->htGlbName);
 
-#define ToLowerUnd(wch)     ((UTF16_A_ <= wch && wch <= UTF16_Z_) ? L'a' + (wch - UTF16_A_) : wch)
-
                 // Compare sensitive to case
                 for (iCnt = iCmp = 0; iCnt < iLen; iCnt++)
-                if (ToLowerUnd (lpwGlbName[iCnt]) NE ToLowerUnd (lpwName[iCnt]))
+                if (lpwGlbName[iCnt] NE lpwName[iCnt])
                 {
                     iCmp = 1;
 

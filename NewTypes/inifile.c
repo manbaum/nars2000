@@ -96,7 +96,6 @@
 #define KEYNAME_LOGFONTTC               L"LogFontTC"
 
 #define KEYNAME_ADJUSTPW                L"AdjustPW"
-#define KEYNAME_UNDERBARTOLOWERCASE     L"UnderbarToLowercase"
 #define KEYNAME_NEWTABONCLEAR           L"NewTabOnClear"
 #define KEYNAME_NEWTABONLOAD            L"NewTabOnload"
 #define KEYNAME_USELOCALTIME            L"UseLocalTime"
@@ -601,12 +600,6 @@ UBOOL ReadIniFileGlb
       GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
                              KEYNAME_ADJUSTPW,      // Ptr to the key name
                              DEF_ADJUSTPW,          // Default value if not found
-                             lpwszIniFile);         // Ptr to the file name
-    // Read in bUnderbarToLowercase
-    OptionFlags.bUnderbarToLowercase =
-      GetPrivateProfileIntW (SECTNAME_OPTIONS,      // Ptr to the section name
-                             KEYNAME_UNDERBARTOLOWERCASE,// Ptr to the key name
-                             DEF_UNDERBARTOLOWERCASE,// Default value if not found
                              lpwszIniFile);         // Ptr to the file name
     // Read in bNewTabOnClear
     OptionFlags.bNewTabOnClear =
@@ -2290,16 +2283,6 @@ void SaveIniFile
     // Write out bAdjustPw
     WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
                                 KEYNAME_ADJUSTPW,           // Ptr to the key name
-                                wszTemp,                    // Ptr to the key value
-                                lpwszIniFile);              // Ptr to the file name
-    //******************* bUnderbarToLowercase ****************
-    // Format bUnderbarToLowercase
-    wszTemp[0] = L'0' + OptionFlags.bUnderbarToLowercase;
-    wszTemp[1] = WC_EOS;
-
-    // Write out bUnderbarToLowercase
-    WritePrivateProfileStringW (SECTNAME_OPTIONS,           // Ptr to the section name
-                                KEYNAME_UNDERBARTOLOWERCASE,// Ptr to the key name
                                 wszTemp,                    // Ptr to the key value
                                 lpwszIniFile);              // Ptr to the file name
     //******************* bNewTabOnClear **********************

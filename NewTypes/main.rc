@@ -911,10 +911,10 @@ IDD_PROPPAGE_USER_PREFS DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
 STYLE WS_CHILD | DS_SHELLFONT
 FONT 8, "MS Shell Dlg"
 BEGIN
+////AUTOCHECKBOX    "Underbar alphabet converted to lowercase",
+////                IDC_USER_PREFS_XB_UNDERBARTOLOWERCASE, 10, 26,260, 10
     AUTOCHECKBOX    L"Adjust \x2395PW on window resize",
-                    IDC_USER_PREFS_XB_ADJUSTPW           , 10, 26,260, 10
-    AUTOCHECKBOX    "Underbar alphabet converted to lowercase",
-                    IDC_USER_PREFS_XB_UNDERBARTOLOWERCASE, 10, 39,260, 10
+                    IDC_USER_PREFS_XB_ADJUSTPW           , 10, 39,260, 10
     AUTOCHECKBOX    "New tab on )CLEAR",
                     IDC_USER_PREFS_XB_NEWTABONCLEAR      , 10, 52,260, 10
     AUTOCHECKBOX    "New tab on )LOAD",
@@ -931,7 +931,7 @@ BEGIN
                     IDC_USER_PREFS_XB_CHECKGROUP         , 10,130,260, 10
     AUTOCHECKBOX    "Insert key ON at startup",
                     IDC_USER_PREFS_XB_INSSTATE           , 10,143,260, 10
-    AUTOCHECKBOX    "Reverse double-click:  left=edit, right=select",
+    AUTOCHECKBOX    "Reverse double-click so that left=edit, right=select",
                     IDC_USER_PREFS_XB_REVDBLCLK          , 10,156,260, 10
     AUTOCHECKBOX    "Default is to display function line numbers",
                     IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS , 10,169,260, 10

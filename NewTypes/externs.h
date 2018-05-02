@@ -235,7 +235,7 @@ EXTERN
 APLBOOL  bQuadIO_CWS         ;          // []IO
 
 EXTERN
-APLINT   uQuadMF_CWS         ;          // []MF
+TIMER_SOURCE uQuadMF_CWS     ;          // []MF
 
 EXTERN
 APLUINT  uQuadFPC_CWS        ,          // []FPC
@@ -1684,30 +1684,29 @@ WCHAR APL2_ASCIItoNARS[257]
 typedef struct tagOPTIONFLAGS
 {
     UINT bAdjustPW           :1,    // 00000001:  TRUE iff WM_SIZE changes []PW
-         bUnderbarToLowercase:1,    // 00000002:  ...      Paste of underbar letters translates to lowercase
-         bNewTabOnClear      :1,    // 00000004:  ...      )CLEAR creates a new tab
-         bNewTabOnLoad       :1,    // 00000008:  ...      )LOAD  ...
-         bUseLocalTime       :1,    // 00000010:  ...      LocalTime is used instead of SystemTime (UTC)
-         bBackupOnLoad       :1,    // 00000020:  ...      Make a backup copy on all )LOADs
-         bBackupOnSave       :1,    // 00000040:  ...      Make a backup copy on all )SAVEs
-         bNoCopyrightMsg     :1,    // 00000080:  ...      Suppress the copright msg at startup
-         uDefaultPaste       :4,    // 00000F00:  Index of default Paste translation (see UNI_TRANS)
-         uDefaultCopy        :4,    // 0000F000:  Index of default Paste translation (see UNI_TRANS)
-         bSyntClrFcns        :1,    // 00010000:  TRUE iff Syntax Coloring of functions is enabled (managed in IDD_PROPPAGE_SYNTAX_COLORING)
-         bSyntClrSess        :1,    // 00020000:  ...                         sessions  ...
-         bSyntClrPrnt        :1,    // 00040000:  ...                         sessions  (when printing) ...
-         bCheckGroup         :1,    // 00080000:  ...      Check for improperly matched or nested grouping symbols
-         bInsState           :1,    // 00100000:  ...      Initial state of Ins key in each WS is ON
-         bRevDblClk:1,       :1,    // 00200000:  ...      Reverse double-click:  left=edit, right=select
-         bViewStatusBar      :1,    // 00400000:  ...      Status Bar is displayed
-         bDefDispFcnLineNums :1,    // 00800000:  ...      Display function line #s
-         bDispMPSuf:1,       :1,    // 01000000:  ...      Display multi-precision numbers with suffix 'x' or 'v'
-         bOutputDebug:1,     :1,    // 02000000:  ...      Output Debugging is enabled
-         bJ4i                :1,    // 04000000:  ...      Use 'J' instead of 'i' as Complex # separator on output
-         bDisp0Imag          :1,    // 08000000:  ...      Display all imaginary parts
-         bDispInfix          :1,    // 10000000:  ...      Display CHO numbers using infix notation
-         bDispOctoDig        :1,    // 20000000:  ...      Display Octonions using Digraphs
-                             :2;    // C0000000:  Available bits
+         bNewTabOnClear      :1,    // 00000002:  ...      )CLEAR creates a new tab
+         bNewTabOnLoad       :1,    // 00000004:  ...      )LOAD  ...
+         bUseLocalTime       :1,    // 00000008:  ...      LocalTime is used instead of SystemTime (UTC)
+         bBackupOnLoad       :1,    // 00000010:  ...      Make a backup copy on all )LOADs
+         bBackupOnSave       :1,    // 00000020:  ...      Make a backup copy on all )SAVEs
+         bNoCopyrightMsg     :1,    // 00000040:  ...      Suppress the copright msg at startup
+         uDefaultPaste       :4,    // 00000780:  Index of default Paste translation (see UNI_TRANS)
+         uDefaultCopy        :4,    // 00007800:  Index of default Paste translation (see UNI_TRANS)
+         bSyntClrFcns        :1,    // 00008000:  TRUE iff Syntax Coloring of functions is enabled (managed in IDD_PROPPAGE_SYNTAX_COLORING)
+         bSyntClrSess        :1,    // 00010000:  ...                         sessions  ...
+         bSyntClrPrnt        :1,    // 00020000:  ...                         sessions  (when printing) ...
+         bCheckGroup         :1,    // 00030000:  ...      Check for improperly matched or nested grouping symbols
+         bInsState           :1,    // 00080000:  ...      Initial state of Ins key in each WS is ON
+         bRevDblClk:1,       :1,    // 00100000:  ...      Reverse double-click:  left=edit, right=select
+         bViewStatusBar      :1,    // 00200000:  ...      Status Bar is displayed
+         bDefDispFcnLineNums :1,    // 00400000:  ...      Display function line #s
+         bDispMPSuf:1,       :1,    // 00800000:  ...      Display multi-precision numbers with suffix 'x' or 'v'
+         bOutputDebug:1,     :1,    // 01000000:  ...      Output Debugging is enabled
+         bJ4i                :1,    // 02000000:  ...      Use 'J' instead of 'i' as Complex # separator on output
+         bDisp0Imag          :1,    // 04000000:  ...      Display all imaginary parts
+         bDispInfix          :1,    // 08000000:  ...      Display CHO numbers using infix notation
+         bDispOctoDig        :1,    // 10000000:  ...      Display Octonions using Digraphs
+                             :3;    // E0000000:  Available bits
 } OPTIONFLAGS, *LPOPTIONFLAGS;
 
 // N.B.:  Whenever changing the above struct (OPTIONFLAGS),
@@ -1718,7 +1717,6 @@ EXTERN
 OPTIONFLAGS OptionFlags
 #ifdef DEFINE_VALUES
  = {DEF_ADJUSTPW,
-    DEF_UNDERBARTOLOWERCASE,
     DEF_NEWTABONCLEAR,
     DEF_NEWTABONLOAD,
     DEF_USELOCALTIME,

@@ -1924,10 +1924,8 @@ HRESULT DrawTextFLsub
 
             return S_OK;
         } else
-        // If the char is {infinity} or A-Z underbar, ...
-        if (**lplpsz EQ UTF16_INFINITY
-         || (UTF16_A_ <= **lplpsz
-          &&             **lplpsz <= UTF16_Z_))
+        // If the char is {infinity}, ...
+        if (**lplpsz EQ UTF16_INFINITY)
             // Use the alternate font
             SelectObject (hdc, hFontAlt);
 
@@ -4579,17 +4577,7 @@ void CopyAPLChars_EM
 
                 // If the translated char is not the same as the original, ...
                 if (wcTmp NE SAME)
-                {
-                    // If the translation is not from NARS and
-                    //   the char is UTF16_A_ through UTF16_Z_,
-                    //   optionally translate it to 'a-z'
-                    if (OptionFlags.bUnderbarToLowercase
-                     && uTran NE UNITRANS_NORMAL
-                     && UTF16_A_ <= wcTmp
-                     &&             wcTmp <= UTF16_Z_)
-                        wcTmp = L'a' + (wcTmp - UTF16_A_);
                     *lpMemText = wcTmp;
-                } // End IF
 
                 break;      // out of the innermost FOR loop
             } // End FOR/IF/...
@@ -4802,20 +4790,8 @@ void PasteAPLChars_EM
                 for (uTran = 0; uTran < UNITRANS_NROWS; uTran++)
                 if (*lpMemText EQ uniTransTab[uTran][uIndex])
                 {
-                    WCHAR wcTmp;
-
                     // Translate the external char to NARS
-                    wcTmp = uniTransTab[uTran][UNITRANS_NARS];
-
-                    // If the translation is not from NARS and
-                    //   the char is UTF16_A_ through UTF16_Z_,
-                    //   optionally translate it to 'a-z'
-                    if (OptionFlags.bUnderbarToLowercase
-                     && uTran NE UNITRANS_NORMAL
-                     && UTF16_A_ <= wcTmp
-                     &&             wcTmp <= UTF16_Z_)
-                        wcTmp = L'a' + (wcTmp - UTF16_A_);
-                    *lpMemText = wcTmp;
+                    *lpMemText = uniTransTab[uTran][UNITRANS_NARS];
 
                     break;      // out of the innermost FOR loop
                 } // End FOR/IF/...

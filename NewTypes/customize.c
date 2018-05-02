@@ -1609,7 +1609,6 @@ INT_PTR CALLBACK CustomizeDlgProc
                     case IDD_PROPPAGE_USER_PREFS:                       // MYWM_INITDIALOG
                         // Check the boxes of User Preferences
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_ADJUSTPW           , OptionFlags.bAdjustPW           );
-                        CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_UNDERBARTOLOWERCASE, OptionFlags.bUnderbarToLowercase);
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_NEWTABONCLEAR      , OptionFlags.bNewTabOnClear      );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_NEWTABONLOAD       , OptionFlags.bNewTabOnLoad       );
                         CheckDlgButton (hWndProp, IDC_USER_PREFS_XB_USELOCALTIME       , OptionFlags.bUseLocalTime       );
@@ -3351,7 +3350,6 @@ INT_PTR CALLBACK CustomizeDlgProc
                           SendMessageW (hWndListBox, LB_GETITEMDATA, uCnt, 0);
 
                         OptionFlags.bAdjustPW            = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_ADJUSTPW           );
-                        OptionFlags.bUnderbarToLowercase = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_UNDERBARTOLOWERCASE);
                         OptionFlags.bNewTabOnClear       = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_NEWTABONCLEAR      );
                         OptionFlags.bNewTabOnLoad        = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_NEWTABONLOAD       );
                         OptionFlags.bUseLocalTime        = IsDlgButtonChecked (hWndProp, IDC_USER_PREFS_XB_USELOCALTIME       );
@@ -5195,7 +5193,6 @@ INT_PTR CALLBACK CustomizeDlgProc
                 //***************************************************************
 
                 case IDC_USER_PREFS_XB_ADJUSTPW:
-                case IDC_USER_PREFS_XB_UNDERBARTOLOWERCASE:
                 case IDC_USER_PREFS_XB_NEWTABONCLEAR:
                 case IDC_USER_PREFS_XB_NEWTABONLOAD:
                 case IDC_USER_PREFS_XB_USELOCALTIME:

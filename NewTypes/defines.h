@@ -175,7 +175,6 @@
 
 // Global Options for User Preferences
 #define DEF_ADJUSTPW                TRUE
-#define DEF_UNDERBARTOLOWERCASE     FALSE
 #define DEF_NEWTABONCLEAR           TRUE
 #define DEF_NEWTABONLOAD            TRUE
 #define DEF_USELOCALTIME            TRUE

@@ -29,32 +29,6 @@
 WCHAR uniTransTab[][UNITRANS_LENGTH] =
 {// APL+Win    ISO     APL2  Dyalog  PC3270  Normal  NARS
     {0x0000, 0x0000, 0x0000, 0x0000, 0x0000,   NA  , UTF16_REPLACEMENT0000     },   // 0xFFFF               Missing from ISO charset
-    {  NA  , 0x00C3,   NA  ,   NA  , 0x00A0,   NA  , UTF16_A_                  },   // A underbar
-    {  NA  , 0x00C4,   NA  ,   NA  , 0x00E2,   NA  , UTF16_B_                  },   // B underbar
-    {  NA  , 0x00C5,   NA  ,   NA  , 0x00E4,   NA  , UTF16_C_                  },   // C underbar
-    {  NA  , 0x00C6,   NA  ,   NA  , 0x00E0,   NA  , UTF16_D_                  },   // D underbar
-    {  NA  , 0x00C7,   NA  ,   NA  , 0x00E1,   NA  , UTF16_E_                  },   // E underbar
-    {  NA  , 0x00C8,   NA  ,   NA  , 0x00E3,   NA  , UTF16_F_                  },   // F underbar
-    {  NA  , 0x00C9,   NA  ,   NA  , 0x00E5,   NA  , UTF16_G_                  },   // G underbar
-    {  NA  , 0x00CA,   NA  ,   NA  , 0x00E7,   NA  , UTF16_H_                  },   // H underbar
-    {  NA  , 0x00CB,   NA  ,   NA  , 0x00F1,   NA  , UTF16_I_                  },   // I underbar
-    {  NA  , 0x00CC,   NA  ,   NA  , 0x00E9,   NA  , UTF16_J_                  },   // J underbar
-    {  NA  , 0x00CD,   NA  ,   NA  , 0x00EA,   NA  , UTF16_K_                  },   // K underbar
-    {  NA  , 0x00CE,   NA  ,   NA  , 0x00EB,   NA  , UTF16_L_                  },   // L underbar
-    {  NA  , 0x00CF,   NA  ,   NA  , 0x00E8,   NA  , UTF16_M_                  },   // M underbar
-    {  NA  , 0x00D0,   NA  ,   NA  , 0x00ED,   NA  , UTF16_N_                  },   // N underbar
-    {  NA  , 0x00D1,   NA  ,   NA  , 0x00EE,   NA  , UTF16_O_                  },   // O underbar
-    {  NA  , 0x00D2,   NA  ,   NA  , 0x00EF,   NA  , UTF16_P_                  },   // P underbar
-    {  NA  , 0x00D3,   NA  ,   NA  , 0x00EC,   NA  , UTF16_Q_                  },   // Q underbar
-    {  NA  , 0x00D4,   NA  ,   NA  , 0x00DF,   NA  , UTF16_R_                  },   // R underbar
-    {  NA  , 0x00D5,   NA  ,   NA  , 0x00C2,   NA  , UTF16_S_                  },   // S underbar
-    {  NA  , 0x00D6,   NA  ,   NA  , 0x00C4,   NA  , UTF16_T_                  },   // T underbar
-    {  NA  , 0x00D7,   NA  ,   NA  , 0x00C0,   NA  , UTF16_U_                  },   // U underbar
-    {  NA  , 0x00D8,   NA  ,   NA  , 0x00C1,   NA  , UTF16_V_                  },   // V underbar
-    {  NA  , 0x00D9,   NA  ,   NA  , 0x00C3,   NA  , UTF16_W_                  },   // W underbar
-    {  NA  , 0x00DA,   NA  ,   NA  , 0x00C5,   NA  , UTF16_X_                  },   // X underbar
-    {  NA  , 0x00DB,   NA  ,   NA  , 0x00C7,   NA  , UTF16_Y_                  },   // Y underbar
-    {  NA  , 0x00DC,   NA  ,   NA  , 0x00D1,   NA  , UTF16_Z_                  },   // Z underbar
 //  APL+Win    ISO     APL2  Dyalog  PC3270  Normal  NARS
     {0x00B8, 0x00A9,  SAME ,  SAME , 0x005E,   NA  , UTF16_ALPHA               },   // Alpha    (0x237A)
     {0x00B8, 0x00A9, 0x237A, 0x237A, 0x005E,   NA  , UTF16_ALPHA2              },   // Alpha2   (0x03B1)

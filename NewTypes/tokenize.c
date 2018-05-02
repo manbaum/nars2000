@@ -5976,33 +5976,6 @@ TKCOLINDICES CharTransTK
         case L'Y':
         case L'Z':
 
-        case UTF16_A_:                  // Alphabet underbar
-        case UTF16_B_:
-        case UTF16_C_:
-        case UTF16_D_:
-        case UTF16_E_:
-        case UTF16_F_:
-        case UTF16_G_:
-        case UTF16_H_:
-        case UTF16_I_:
-        case UTF16_J_:
-        case UTF16_K_:
-        case UTF16_L_:
-        case UTF16_M_:
-        case UTF16_N_:
-        case UTF16_O_:
-        case UTF16_P_:
-        case UTF16_Q_:
-        case UTF16_R_:
-        case UTF16_S_:
-        case UTF16_T_:
-        case UTF16_U_:
-        case UTF16_V_:
-        case UTF16_W_:
-        case UTF16_X_:
-        case UTF16_Y_:
-        case UTF16_Z_:
-
         case L'_':
         case UTF16_DELTA:               // Alt-'h' - delta
         case UTF16_DELTAUNDERBAR:       // Alt-'H' - delta-underbar

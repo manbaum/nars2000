@@ -1,6 +1,29 @@
 Version 0.5.7.xx consists of the following Builds:
 
 
+Build #1884 -- Version 0.5.7.xx
+-------------------------------
+
+* Remove Support For The Underbar Latin Alphabet
+
+Directory branches/bsmith/NewTypes:
+
+AFOFNS.C:
+CUSTOMIZE.C:
+DEFINES.H:
+EDITFCN.C:
+EXTERNS.H:
+INIFILE.C:
+MAIN.RC:
+RESOURCE.H:
+SYMBOLNAMES.H:
+SYMTAB.C:
+TOKENIZE.C:
+UNICODE.H:
+UNITRANSTAB.H:
+  Remove support for the underbar Latin alphabet.
+
+
 Build #1883 -- Version 0.5.7.xx
 -------------------------------
 

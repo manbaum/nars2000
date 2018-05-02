@@ -1,6 +1,22 @@
 Version 0.5.7.xx consists of the following Builds:
 
 
+Build #1885 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bug Not Displaying YYResExec Before Freeing
+
+Directory branches/bsmith/NewTypes:
+
+IMMEXEC.C:
+MACROS.H:
+PARSELINE.C:
+PL_PROC.C:
+SC_IN.C:
+  Fix bug of not displaying YYResExec before freeing.
+  Use macro to determine if a token is valid which consolidates different techniques.
+
+
 Build #1884 -- Version 0.5.7.xx
 -------------------------------
 

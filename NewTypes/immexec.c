@@ -706,21 +706,19 @@ DWORD WINAPI ImmExecStmtInThread
                     if (bActOnErrors)
                     {
                         HWND hWndEC;
+                        UBOOL bCtrlBreak = FALSE;               // Pseudo Ctrl-Break
 
                         // Get the Edit Ctrl window handle
                         hWndEC = (HWND) (HANDLE_PTR) GetWindowLongPtrW (hWndSM, GWLSF_HWNDEC);
 
                         // If it's STOP, ...
                         if (exitType EQ EXITTYPE_STOP)
-                        {
-                            UBOOL bCtrlBreak = FALSE;               // Pseudo Ctrl-Break
-
                             // Display []DM
                             DisplayGlbArr_EM (lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_DM]->stData.stGlbData,   // Global memory handle to display
                                               TRUE,                                                         // TRUE iff last line has CR
                                              &bCtrlBreak,                                                   // Ptr to Ctrl-Break flag
                                               NULL);                                                        // Ptr to function token
-                        } else
+                        else
                         {
                             // Execute []ELX
                             exitType =
@@ -732,6 +730,10 @@ DWORD WINAPI ImmExecStmtInThread
                                                            FALSE,               // TRUE iff we're to skip the depth check
                                                            DFNTYPE_EXEC,        // DfnType for FillSISNxt
                                                            NULL);               // Ptr to function token
+                            if (exitType EQ EXITTYPE_DISPLAY
+                             && IsTknValid (lpMemPTD->YYResExec.tkToken))
+                                // Display and free it
+                                DisplayYYResExec (lpMemPTD, NULL);
                         } // End IF/ELSE
                     } // End IF
 
@@ -800,9 +802,7 @@ DWORD WINAPI ImmExecStmtInThread
                  && lpSISPrv->DfnType EQ DFNTYPE_QUAD)
                 {
                     // If there's no return value, ...
-                    if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType EQ TKT_UNUSED
-                     || (lpMemPTD->YYResExec.tkToken.tkFlags.TknType EQ TKT_VARNAMED
-                      && lpMemPTD->YYResExec.tkToken.tkData.tkSym->stFlags.Value EQ FALSE))
+                    if (!IsTknValid (lpMemPTD->YYResExec.tkToken))
                         // Tell SM to display the Quad Prompt
                         PostMessageW (hWndSM, MYWM_QUOTEQUAD, FALSE, 104);
                     else
@@ -819,7 +819,11 @@ DWORD WINAPI ImmExecStmtInThread
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbWFSO); lpMemWFSO = NULL;
                     } // End IF/ELSE
-                } // End IF
+                } else
+                // If there's an undisplayed return value, ...
+                if (IsTknValid (lpMemPTD->YYResExec.tkToken))
+                    // Display and free it
+                    DisplayYYResExec (lpMemPTD, NULL);
 
                 break;
 
@@ -908,15 +912,51 @@ ERROR_EXIT:
             // Start executing at the Tab Delete code
             MyReleaseSemaphore (lpMemPTD->hExitphore, 1, NULL);
 
-        return exitType;
+        goto NORMAL_EXIT;
     } __except (CheckException (GetExceptionInformation (), L"ImmExecStmtInThread"))
     {
         // Display message for unhandled exception
         DisplayException ();
 
-        return EXITTYPE_ERROR;      // To keep the compiler happy
+        exitType = EXITTYPE_ERROR;
     } // End __try/__except
+NORMAL_EXIT:
+    return exitType;
 } // End ImmExecStmtInThread
+
+
+//***************************************************************************
+//  $DisplayYYResExec
+//
+//  Display and free YYResExec
+//***************************************************************************
+
+UBOOL DisplayYYResExec
+    (LPPERTABDATA  lpMemPTD,            // Ptr to PerTabData global memory
+     LPPLLOCALVARS lpplLocalVars)       // Ptr to ParseLine local vars (may be NULL)
+
+{
+    UBOOL   bRet,
+            bFALSE = FALSE;
+    LPUBOOL lpbCtrlBreak;
+
+    // If the LPPLLOCALVARS is valid, ...
+    if (lpplLocalVars NE NULL)
+        lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
+    else
+        lpbCtrlBreak = &bFALSE;
+
+    // Display the result
+    bRet = ArrayDisplay_EM (&lpMemPTD->YYResExec.tkToken, TRUE, lpbCtrlBreak);
+
+    // Free it
+    FreeResult (&lpMemPTD->YYResExec);
+
+    // Zap the token type
+    lpMemPTD->YYResExec.tkToken.tkFlags.TknType = 0;
+
+    return bRet;
+} // End DisplayYYResExec
 
 
 //***************************************************************************
@@ -931,7 +971,6 @@ EXIT_TYPES ActOnError
 
 {
     EXIT_TYPES exitType;                // Exit type
-    UBOOL      bFALSE = FALSE;
 
     // Execute []ELX
     exitType =
@@ -956,17 +995,9 @@ EXIT_TYPES ActOnError
         case EXITTYPE_NODISPLAY:        // Display the result (if any)
         case EXITTYPE_DISPLAY:          // ...
             // If the Execute/Quad result is present, display it
-            if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType NE TKT_UNUSED)
-            {
-                // Display the result
-                ArrayDisplay_EM (&lpMemPTD->YYResExec.tkToken, TRUE, &bFALSE);
-
-                // Free it
-                FreeResult (&lpMemPTD->YYResExec);
-
-                // Zap the token type
-                lpMemPTD->YYResExec.tkToken.tkFlags.TknType = 0;
-            } // End IF
+            if (IsTknValid (lpMemPTD->YYResExec.tkToken))
+                // Display and free it
+                DisplayYYResExec (lpMemPTD, NULL);
 
             // Fall through to common code
 

@@ -97,7 +97,7 @@ LPPL_YYSTYPE WaitForInput
         lpYYRes = NULL;
     else
     // If there's no result from the expression, ...
-    if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType EQ TKT_UNUSED)
+    if (!IsTknValid (lpMemPTD->YYResExec.tkToken))
         // Make a PL_YYSTYPE NoValue entry
         lpYYRes = MakeNoValue_YY (lptkFunc);
     else
@@ -171,11 +171,8 @@ void ArrExprCheckCaller
     // Set/clear the NoDisplay flag
     lpYYRes->tkToken.tkFlags.NoDisplay = bNoDisplay;
 
-    // If the Execute/Quad result is present,
-    //   and the token is not named or it has a value, ...
-    if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType NE TKT_UNUSED
-     && (!IsTknNamed (&lpMemPTD->YYResExec.tkToken)
-      || !IsSymNoValue (lpMemPTD->YYResExec.tkToken.tkData.tkSym)))
+    // If the Execute/Quad result is present, ...
+    if (IsTknValid (lpMemPTD->YYResExec.tkToken))
     {
         HGLOBAL hGlbDfnHdr;
 
@@ -189,7 +186,8 @@ void ArrExprCheckCaller
               AfoDisplay_EM (&lpMemPTD->YYResExec.tkToken, bNoDisplay, lpplLocalVars, hGlbDfnHdr);
         else
             lpplLocalVars->bRet =
-              ArrayDisplay_EM (&lpMemPTD->YYResExec.tkToken, TRUE, &lpplLocalVars->bCtrlBreak);
+              // Display and free it
+              DisplayYYResExec (lpMemPTD, lpplLocalVars);
     } // End IF
 
     // Save the Execute/Quad result

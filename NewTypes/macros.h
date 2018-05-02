@@ -597,6 +597,12 @@
 #define GetDydLftOper(lpYYFcnStrOpr,lptkAxisOpr,lpYYFcnStrRht)  ((lpYYFcnStrOpr->TknCount <= (UINT) (1 + (lptkAxisOpr NE NULL) + lpYYFcnStrRht->TknCount)) ? NULL : (&lpYYFcnStrOpr[1 + (lptkAxisOpr NE NULL) + lpYYFcnStrRht->TknCount]))
 #define GetDydRhtOper(lpYYFcnStrOpr,lptkAxisOpr)                GetMonLftOper (lpYYFcnStrOpr, lptkAxisOpr)
 
+// Define macro to determine if a token is a valid result
+#define IsTknValid(a)                               \
+    ((a).tkFlags.TknType NE TKT_UNUSED              \
+     && ((a).tkFlags.TknType NE TKT_VARNAMED        \
+      || (a).tkData.tkSym->stFlags.Value EQ TRUE))
+
 // Define macro to free and YYFree a result, and set to NULL
 #define FreeYYRes(lpYYRes)                          \
     if ((lpYYRes) NE NULL)                          \

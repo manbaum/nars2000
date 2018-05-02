@@ -3918,7 +3918,7 @@ EXIT_TYPES ParseLine
      UBOOL          bNoDepthCheck)          // TRUE iff we're to skip the depth check
 
 {
-    PLLOCALVARS   plLocalVars = {0};        // SyntaxAnalyze local vars
+    PLLOCALVARS   plLocalVars = {0};        // ParseLine local vars
     LPPLLOCALVARS oldTlsPlLocalVars;        // Ptr to previous value of dwTlsPlLocalVars
     UINT          oldTlsType,               // Previous value of dwTlsType
                   uRet;                     // The result from pl_yyparse
@@ -3984,7 +3984,7 @@ EXIT_TYPES ParseLine
     // Save the previous value of dwTlsPlLocalVars
     oldTlsPlLocalVars = TlsGetValue (dwTlsPlLocalVars);
 
-    // Save ptr to SyntaxAnalyze local vars
+    // Save ptr to ParseLine local vars
     TlsSetValue (dwTlsPlLocalVars, (LPVOID) &plLocalVars);
 
     // Save ptr to PerTabData global memory
@@ -4795,9 +4795,10 @@ PARSELINE_REDUCE:
                     goto PARSELINE_ERROR;
 
 #ifdef DEBUG
-                // In case the result is from a lower SI level (such as Execute)
-                //   reset the SI level
-                lpYYRes->SILevel = lpMemPTD->SILevel;
+                if (!IsTokenNoValue (&lpYYRes->tkToken))
+                    // In case the result is from a lower SI level (such as Execute)
+                    //   reset the SI level
+                    lpYYRes->SILevel = lpMemPTD->SILevel;
 #endif
 
                 // Check for ResetFlag
@@ -5050,8 +5051,13 @@ PARSELINE_DONE:
             // If the current object is NoValue and EOS, ...
             if (IsTokenNoValue (&lpplYYCurObj->tkToken)
              && curSynObj EQ soEOS)
+            {
                 // YYFree the current object
                 YYFree (lpplYYCurObj);
+
+                // DO NOT clear lpplYYCurObj and curSynObj as they
+                //   are both used subsequently
+            } // End IF
 
             Assert (lpplOrgLftStk EQ &lpMemPTD->lpplLftStk[-1]);
             Assert (lpplOrgRhtStk EQ &lpMemPTD->lpplRhtStk[-1]);
@@ -5732,7 +5738,7 @@ NORMAL_EXIT:
                     lpMemPTD->lpSISCur->ResetFlag = RESETFLAG_STOP;
 
                     // If the Execute/Quad result is present, clear it
-                    if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType NE TKT_UNUSED)
+                    if (IsTknValid (lpMemPTD->YYResExec.tkToken))
                     {
                         // Free the result
                         FreeResult (&lpMemPTD->YYResExec);
@@ -5768,17 +5774,9 @@ NORMAL_EXIT:
             case EXITTYPE_NODISPLAY:    // Display the result (if any)
             case EXITTYPE_DISPLAY:      // ...
                 // If the Execute/Quad result is present, display it
-                if (lpMemPTD->YYResExec.tkToken.tkFlags.TknType NE TKT_UNUSED)
-                {
-                    // Display the array
-                    ArrayDisplay_EM (&lpMemPTD->YYResExec.tkToken, TRUE, &plLocalVars.bCtrlBreak);
-
-                    // Free the result
-                    FreeResult (&lpMemPTD->YYResExec);
-
-                    // We no longer need these values
-                    ZeroMemory (&lpMemPTD->YYResExec, sizeof (lpMemPTD->YYResExec));
-                } // End IF
+                if (IsTknValid (lpMemPTD->YYResExec.tkToken))
+                    // Display and free it
+                    DisplayYYResExec (lpMemPTD, &plLocalVars);
 
                 // Fall through to common code
 

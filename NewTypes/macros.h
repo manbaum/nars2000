@@ -643,6 +643,12 @@
 // Define macro for detecting a character in the range for Output Debugging
 #define IsOutDbg(a)             ((L' ' > (unsigned) a) || (a) EQ UTF16_REPLACEMENT0000)
 
+// Define macro to get a ptr to the global memory
+#define GetGlbMem(lpMemHdr,lpaplLongest)                \
+    /* If the right arg is a global, ...              */\
+    (lpMemHdr NE NULL) ? VarArrayDataFmBase (lpMemHdr)  \
+                       : lpaplLongest;
+
 
 //***************************************************************************
 //  End of File: macros.h

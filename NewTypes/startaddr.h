@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -348,6 +348,7 @@ typedef struct tagSTART_ADDRESSES
     "GetGlbHandle"              , (LPUCHAR) &GetGlbHandle               ,
     "GetGlbPtrs"                , (LPUCHAR) &GetGlbPtrs                 ,
     "GetGlbPtrs_LOCK"           , (LPUCHAR) &GetGlbPtrs_LOCK            ,
+    "GetGlbMem_LOCK"            , (LPUCHAR) &GetGlbMem_LOCK             ,
     "GetSteZero"                , (LPUCHAR) &GetSteZero                 ,
     "GetSteOne"                 , (LPUCHAR) &GetSteOne                  ,
     "GetSteBlank"               , (LPUCHAR) &GetSteBlank                ,
@@ -519,10 +520,15 @@ typedef struct tagSTART_ADDRESSES
     "IsMpzNULL"                 , (LPUCHAR) &IsMpzNULL                  ,
 
     // parseline.c
-    "ParseLine"                 , (LPUCHAR) &ParseLine                  ,
-    "pl_yylex"                  , (LPUCHAR) &pl_yylex                   ,
+    "ConvertHY2PFO"             , (LPUCHAR) &ConvertHY2PFO              ,
+    "ConvertNamedFopToUnnamed"  , (LPUCHAR) &ConvertNamedFopToUnnamed   ,
+    "ExecuteCS0"                , (LPUCHAR) &ExecuteCS0                 ,
+    "FreeStackTemps"            , (LPUCHAR) &FreeStackTemps             ,
     "GetLftSynObj"              , (LPUCHAR) &GetLftSynObj               ,
-////"GetLftToken"               , (LPUCHAR) &GetLftToken                ,
+    "ParseLine"                 , (LPUCHAR) &ParseLine                  ,
+    "plExecuteFn0"              , (LPUCHAR) &plExecuteFn0               ,
+    "plSetDfn"                  , (LPUCHAR) &plSetDfn                   ,
+    "pl_yylex"                  , (LPUCHAR) &pl_yylex                   ,
     "pl_yylexCOM"               , (LPUCHAR) &pl_yylexCOM                ,
 #ifdef DEBUG
     "PadMemoryW"                , (LPUCHAR) &PadMemoryW                 ,
@@ -826,6 +832,38 @@ typedef struct tagSTART_ADDRESSES
 
     // po_slope.c
     "PrimOpSlope_EM_YY"         , (LPUCHAR) &PrimOpSlope_EM_YY          ,
+
+    // po_variant.c
+    "PrimOpVariant_EM_YY"        , (LPUCHAR) &PrimOpVariant_EM_YY        ,
+    "PrimProtoOpVariant_EM_YY"   , (LPUCHAR) &PrimProtoOpVariant_EM_YY   ,
+    "PrimIdentOpVariant_EM_YY"   , (LPUCHAR) &PrimIdentOpVariant_EM_YY   ,
+    "PrimOpMonVariant_EM_YY"     , (LPUCHAR) &PrimOpMonVariant_EM_YY     ,
+    "PrimOpMonVariantCom_EM_YY"  , (LPUCHAR) &PrimOpMonVariantCom_EM_YY  ,
+    "PrimOpVariantCon_EM_YY"     , (LPUCHAR) &PrimOpVariantCom_EM_YY     ,
+    "PrimOpVariantSubseq_EM_YY"  , (LPUCHAR) &PrimOpVariantSubseq_EM_YY  ,
+    "PrimOpVariantDomino_EM_YY"  , (LPUCHAR) &PrimOpVariantDomino_EM_YY  ,
+    "PrimOpVariantCheckSimple_EM", (LPUCHAR) &PrimOpVariantCheckSimple_EM,
+    "PrimOpVariantCheckHetero_EM", (LPUCHAR) &PrimOpVariantCheckHetero_EM,
+    "PrimOpDydVariant_EM_YY"     , (LPUCHAR) &PrimOpDydVariant_EM_YY     ,
+    "PrimOpDydVariantCom_EM_YY"  , (LPUCHAR) &PrimOpDydVariantCom_EM_YY  ,
+    "PrimOpVariantKeyword_EM_YY" , (LPUCHAR) &PrimOpVariantKeyword_EM_YY ,
+    "PrimOpVariantValidateGlb_EM", (LPUCHAR) &PrimOpVariantValidateGlb_EM,
+    "PrimOpVariantValidPair_EM"  , (LPUCHAR) &PrimOpVariantValidPair_EM  ,
+    "VariantValidateSymVal_EM"   , (LPUCHAR) &VariantValidateSymVal_EM   ,
+    "PrimOpVariantValKeyGlb"     , (LPUCHAR) &PrimOpVariantValKeyGlb     ,
+    "SetAllSysVars"              , (LPUCHAR) &SetAllSysVars              ,
+    "RestAllSysVars"             , (LPUCHAR) &RestAllSysVars             ,
+    "InitVarOprTab"              , (LPUCHAR) &InitVarOprTab              ,
+    "varOprCT"                   , (LPUCHAR) &varOprCT                   ,
+    "varOprEIG"                  , (LPUCHAR) &varOprEIG                  ,
+    "varOprDT"                   , (LPUCHAR) &varOprDT                   ,
+    "varOprFPC"                  , (LPUCHAR) &varOprFPC                  ,
+    "varOprIO"                   , (LPUCHAR) &varOprIO                   ,
+    "varOprLR"                   , (LPUCHAR) &varOprLR                   ,
+    "varOprPP"                   , (LPUCHAR) &varOprPP                   ,
+    "varOprPOCH"                 , (LPUCHAR) &varOprPOCH                 ,
+    "varOprHCM"                  , (LPUCHAR) &varOprHCM                  ,
+    "varOprSUB"                  , (LPUCHAR) &varOprSUB                  ,
 
     // primfns.c
     "IsTknFcnOpr"               , (LPUCHAR) &IsTknFcnOpr                ,

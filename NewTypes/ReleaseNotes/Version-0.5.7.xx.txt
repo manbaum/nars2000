@@ -1,6 +1,33 @@
 Version 0.5.7.xx consists of the following Builds:
 
 
+Build #1886 -- Version 0.5.7.xx
+-------------------------------
+
+* Generalize The Variant Operator Code
+* Implement Ascending/Descending Subsequences
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+  Include the cases of Hetero and Nested in <hcXY_cmp> for use in Ascending/Descending Subsequences.
+
+GETFNS.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  Define utility function <GetGlbMem_LOCK> to combine <GetGlbPtrs_LOCK> with common follow-on code.
+
+MACROS.H:
+  Define macro to get a ptr to global memory.
+
+PO_VARIANT.C:
+PO_VARIANT.H:
+  Generalize the Variant operator to allow items in the right operand in any order.
+  Implement Ascending/Descending Subsequences as a Variant of Dyadic Iota.
+
+SYSVARS.H:
+  Implement Ascending/Descending Subsequences as a Variant of Dyadic Iota.
+
+
 Build #1885 -- Version 0.5.7.xx
 -------------------------------
 

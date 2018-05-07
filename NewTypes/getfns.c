@@ -554,7 +554,7 @@ void GetFirstItemToken
     HGLOBAL hGlbData;               // Global memory handle of TKT_VARNAMED or TKT_VARARRAY
 
     // Fill in default values
-    if (lpSymGlb)
+    if (lpSymGlb NE NULL)
         *lpSymGlb = NULL;
 
     // Split cases based upon the token type
@@ -979,7 +979,7 @@ void GetNextValueToken
     IMM_TYPES  immType;
 
     // Fill in default values
-    if (lpSymGlb)
+    if (lpSymGlb NE NULL)
         *lpSymGlb = NULL;
 
     // Split cases based upon the token type
@@ -1049,23 +1049,23 @@ void GetNextValueToken
                     &aplLongest,    // Ptr to result immediate value (may be NULL)
                     &immType);      // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
     // Fill in various result values
-    if (lpaplLongest)
+    if (lpaplLongest NE NULL)
        *lpaplLongest = aplLongest;
-    if (lpSymGlb)
+    if (lpSymGlb NE NULL)
        *lpSymGlb     = hGlbSub;
-    if (lpImmType)
+    if (lpImmType NE NULL)
        *lpImmType    = immType;
-    if (lpArrType)
+    if (lpArrType NE NULL)
        *lpArrType    = TranslateImmTypeToArrayType (immType);;
 
     // If the return value is immediate, ...
     if (hGlbSub EQ NULL)
     {
-        if (lpaplInteger)
+        if (lpaplInteger NE NULL)
            *lpaplInteger = (APLINT) aplLongest;
-        if (lpaplFloat)
+        if (lpaplFloat NE NULL)
            *lpaplFloat   = *(LPAPLFLOAT) &aplLongest;
-        if (lpaplChar)
+        if (lpaplChar NE NULL)
            *lpaplChar    = (APLCHAR) aplLongest;
     } // End IF
 } // End GetNextValueToken
@@ -1095,7 +1095,7 @@ void GetFirstValueToken
     HGLOBAL hGlbData;
 
     // Fill in default values
-    if (lpSymGlb)
+    if (lpSymGlb NE NULL)
         *lpSymGlb = NULL;
 
     // Split cases based upon the token type
@@ -1180,49 +1180,49 @@ void GetFirstValueImm
      LPIMM_TYPES  lpImmType,    // ...        immediate type (see IMM_TYPES) (may be NULL)
      LPAPLSTYPE   lpArrType)    // ...        array type:  ARRAY_TYPES (may be NULL)
 {
-    if (lpImmType)
+    if (lpImmType NE NULL)
         *lpImmType    = immType;
-    if (lpArrType)
+    if (lpArrType NE NULL)
         *lpArrType    = TranslateImmTypeToArrayType (immType);
-    if (lpaplLongest)
+    if (lpaplLongest NE NULL)
         *lpaplLongest = aplLongest;
 
     // Split cases based upon the immediate type
     switch (immType)
     {
         case IMMTYPE_BOOL:
-            if (lpaplInteger)
+            if (lpaplInteger NE NULL)
                 *lpaplInteger = (APLBOOL) aplLongest;
-            if (lpaplFloat)
+            if (lpaplFloat NE NULL)
                 *lpaplFloat   = (APLFLOAT) (APLBOOL) aplLongest;
-            if (lpaplChar)
+            if (lpaplChar NE NULL)
                 *lpaplChar    = WC_EOS;
             break;
 
         case IMMTYPE_INT:
-            if (lpaplInteger)
+            if (lpaplInteger NE NULL)
                 *lpaplInteger = (APLINT) aplLongest;
-            if (lpaplFloat)
+            if (lpaplFloat NE NULL)
                 *lpaplFloat   = (APLFLOAT) (APLINT) aplLongest;
-            if (lpaplChar)
+            if (lpaplChar NE NULL)
                 *lpaplChar    = WC_EOS;
             break;
 
         case IMMTYPE_FLOAT:
-            if (lpaplFloat)
+            if (lpaplFloat NE NULL)
                 *lpaplFloat   = *(LPAPLFLOAT) &aplLongest;
-            if (lpaplInteger)
+            if (lpaplInteger NE NULL)
                 *lpaplInteger = (APLINT) *(LPAPLFLOAT) &aplLongest;
-            if (lpaplChar)
+            if (lpaplChar NE NULL)
                 *lpaplChar    = WC_EOS;
             break;
 
         case IMMTYPE_CHAR:
-            if (lpaplInteger)
+            if (lpaplInteger NE NULL)
                 *lpaplInteger = 0;
-            if (lpaplFloat)
+            if (lpaplFloat NE NULL)
                 *lpaplFloat   = 0;
-            if (lpaplChar)
+            if (lpaplChar NE NULL)
                 *lpaplChar    = (APLCHAR) aplLongest;
             break;
 
@@ -1295,9 +1295,9 @@ void GetFirstValueGlb
         defstop
     } // End SWITCH
 
-    if (lpImmType)
+    if (lpImmType NE NULL)
         *lpImmType = TranslateArrayTypeToImmType (aplType);
-    if (lpArrType)
+    if (lpArrType NE NULL)
         *lpArrType = aplType;
 
     // Split cases based upon the storage type
@@ -1307,30 +1307,30 @@ void GetFirstValueGlb
             // If the array is empty and numeric, the value must be Boolean or APA
             aplInteger = aplNELM ? (BIT0 & *(LPAPLBOOL) lpMem) : 0;
 
-            if (lpaplInteger)
+            if (lpaplInteger NE NULL)
                 *lpaplInteger = aplInteger;
-            if (lpaplFloat)
+            if (lpaplFloat NE NULL)
                 *lpaplFloat   = (APLFLOAT) aplInteger;
-            if (lpaplChar)
+            if (lpaplChar NE NULL)
                 *lpaplChar    = WC_EOS;
-            if (lpaplLongest)
+            if (lpaplLongest NE NULL)
                 *lpaplLongest = aplInteger;
-            if (lpSymGlb)
+            if (lpSymGlb NE NULL)
                 *lpSymGlb     = NULL;
             break;
 
         case ARRAY_INT:
             aplInteger = aplNELM ? *(LPAPLINT) lpMem : 0;
 
-            if (lpaplInteger)
+            if (lpaplInteger NE NULL)
                 *lpaplInteger = aplInteger;
-            if (lpaplFloat)
+            if (lpaplFloat NE NULL)
                 *lpaplFloat   = (APLFLOAT) aplInteger;
-            if (lpaplChar)
+            if (lpaplChar NE NULL)
                 *lpaplChar    = WC_EOS;
-            if (lpaplLongest)
+            if (lpaplLongest NE NULL)
                 *lpaplLongest = aplInteger;
-            if (lpSymGlb)
+            if (lpSymGlb NE NULL)
                 *lpSymGlb     = NULL;
             break;
 
@@ -1339,30 +1339,30 @@ void GetFirstValueGlb
             // If the array is empty and numeric, the value must be Boolean or APA
             aplInteger = aplNELM ? lpAPA->Off : 0;
 #undef  lpAPA
-            if (lpaplInteger)
+            if (lpaplInteger NE NULL)
                 *lpaplInteger = aplInteger;
-            if (lpaplFloat)
+            if (lpaplFloat NE NULL)
                 *lpaplFloat   = (APLFLOAT) aplInteger;
-            if (lpaplChar)
+            if (lpaplChar NE NULL)
                 *lpaplChar    = WC_EOS;
-            if (lpaplLongest)
+            if (lpaplLongest NE NULL)
                 *lpaplLongest = aplInteger;
-            if (lpSymGlb)
+            if (lpSymGlb NE NULL)
                 *lpSymGlb     = NULL;
             break;
 
         case ARRAY_FLOAT:
             aplFloat = aplNELM ? *(LPAPLFLOAT) lpMem : 0;
 
-            if (lpaplFloat)
+            if (lpaplFloat NE NULL)
                 *lpaplFloat   = aplFloat;
-            if (lpaplInteger)
+            if (lpaplInteger NE NULL)
                 *lpaplInteger = (APLINT) aplFloat;
-            if (lpaplChar)
+            if (lpaplChar NE NULL)
                 *lpaplChar    = WC_EOS;
-            if (lpaplLongest)
+            if (lpaplLongest NE NULL)
                 *lpaplLongest = *(LPAPLLONGEST) &aplFloat;
-            if (lpSymGlb)
+            if (lpSymGlb NE NULL)
                 *lpSymGlb     = NULL;
             break;
 
@@ -1370,15 +1370,15 @@ void GetFirstValueGlb
             // If the array is empty and char, the value must be blank
             aplChar = aplNELM ? (*(LPAPLCHAR) lpMem) : L' ';
 
-            if (lpaplInteger)
+            if (lpaplInteger NE NULL)
                 *lpaplInteger = 0;
-            if (lpaplFloat)
+            if (lpaplFloat NE NULL)
                 *lpaplFloat   = 0;
-            if (lpaplChar)
+            if (lpaplChar NE NULL)
                 *lpaplChar    = aplChar;
-            if (lpaplLongest)
+            if (lpaplLongest NE NULL)
                 *lpaplLongest = aplChar;
-            if (lpSymGlb)
+            if (lpSymGlb NE NULL)
                 *lpSymGlb     = NULL;
             break;
 
@@ -1389,7 +1389,7 @@ void GetFirstValueGlb
             {
                 case TKT_VARIMMED:
                     // Fill in default values
-                    if (lpSymGlb)
+                    if (lpSymGlb NE NULL)
                         *lpSymGlb = NULL;
 
                     // Handle the immediate case
@@ -1417,15 +1417,15 @@ void GetFirstValueGlb
                     break;
 
                 case TKT_LISTSEP:
-                    if (lpaplInteger)
+                    if (lpaplInteger NE NULL)
                         *lpaplInteger = 0;
-                    if (lpaplFloat)
+                    if (lpaplFloat NE NULL)
                         *lpaplFloat   = 0;
-                    if (lpaplChar)
+                    if (lpaplChar NE NULL)
                         *lpaplChar    = WC_EOS;
-                    if (lpaplLongest)
+                    if (lpaplLongest NE NULL)
                         *lpaplLongest = WC_EOS;
-                    if (lpSymGlb)
+                    if (lpSymGlb NE NULL)
                         *lpSymGlb     = NULL;
                     break;
 
@@ -1457,7 +1457,7 @@ void GetFirstValueGlb
                     Assert (IsNested (aplType) || !IsEmpty (aplNELM));
 
                     // Fill in default values
-                    if (lpSymGlb)
+                    if (lpSymGlb NE NULL)
                         *lpSymGlb = NULL;
 
                     // Handle the immediate case
@@ -1472,17 +1472,17 @@ void GetFirstValueGlb
                     break;
 
                 case PTRTYPE_HGLOBAL:
-                    if (lpaplInteger)
+                    if (lpaplInteger NE NULL)
                         *lpaplInteger = 0;
-                    if (lpaplFloat)
+                    if (lpaplFloat NE NULL)
                         *lpaplFloat   = 0;
-                    if (lpaplChar)
+                    if (lpaplChar NE NULL)
                         *lpaplChar    = WC_EOS;
-                    if (lpaplLongest)
+                    if (lpaplLongest NE NULL)
                         *lpaplLongest = 0;
-                    if (lpSymGlb)
+                    if (lpSymGlb NE NULL)
                         *lpSymGlb     = *(LPAPLNESTED) lpMem;
-                    if (lpImmType)
+                    if (lpImmType NE NULL)
                     {
                         AttrsOfGlb (*(LPAPLNESTED) lpMem, &aplType, NULL, NULL, NULL);
                         *lpImmType    = TranslateArrayTypeToImmType (aplType);
@@ -1510,18 +1510,18 @@ void GetFirstValueGlb
         case ARRAY_HC8F:
         case ARRAY_HC8R:
         case ARRAY_HC8V:
-            if (lpaplInteger)
+            if (lpaplInteger NE NULL)
                 *lpaplInteger = 0;
-            if (lpaplFloat)
+            if (lpaplFloat NE NULL)
                 *lpaplFloat   = 0;
-            if (lpaplChar)
+            if (lpaplChar NE NULL)
                 *lpaplChar    = WC_EOS;
-            if (lpaplLongest)
+            if (lpaplLongest NE NULL)
                 *lpaplLongest = 0;
             // If the array is empty, ...
             if (IsEmpty (aplNELM))
             {
-                if (lpSymGlb)
+                if (lpSymGlb NE NULL)
                 // Split cases based upon the storage type
                 switch (aplType)
                 {
@@ -1539,7 +1539,7 @@ void GetFirstValueGlb
                         break;
                 } // End IF/SWITCH
             } else
-                if (lpSymGlb)
+                if (lpSymGlb NE NULL)
                     *lpSymGlb  = lpMem;
             break;
 
@@ -2531,11 +2531,11 @@ void GetNextSimple
                         lplpSymGlb,         // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                        &aplLongest,         // Ptr to result immediate value (may be NULL)
                         NULL);              // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-    if (lpaplInteger)
+    if (lpaplInteger NE NULL)
        *lpaplInteger = aplLongest;
-    if (lpaplFloat)
+    if (lpaplFloat NE NULL)
        *lpaplFloat   = *(LPAPLFLOAT) &aplLongest;
-    if (lpaplChar)
+    if (lpaplChar NE NULL)
        *lpaplChar    = (APLCHAR) aplLongest;
 } // End GetNextSimple
 
@@ -2564,7 +2564,7 @@ void GetNextValueMemSub
     LPAPLLIST lptkList;                 // Item as APLLIST
 
     // Assume the result is an immediate
-    if (lphGlbRes)
+    if (lphGlbRes NE NULL)
         *lphGlbRes = NULL;
 
     // If the item is empty,
@@ -2591,16 +2591,16 @@ void GetNextValueMemSub
             case ARRAY_HC8F:
             case ARRAY_APA:
             case ARRAY_LIST:
-                if (lpaplLongestRes)
+                if (lpaplLongestRes NE NULL)
                     *lpaplLongestRes = 0;
-                if (lpimmTypeRes)
+                if (lpimmTypeRes NE NULL)
                     *lpimmTypeRes    = IMMTYPE_BOOL;
                 break;
 
             case ARRAY_CHAR:
-                if (lpaplLongestRes)
+                if (lpaplLongestRes NE NULL)
                     *lpaplLongestRes = L' ';
-                if (lpimmTypeRes)
+                if (lpimmTypeRes NE NULL)
                     *lpimmTypeRes    = IMMTYPE_CHAR;
                 break;
 
@@ -2608,7 +2608,7 @@ void GetNextValueMemSub
                 // Initialize to 0/1
                 mpq_init (&aplRat);
 
-                if (lphGlbRes)
+                if (lphGlbRes NE NULL)
                 {
                     *lphGlbRes       =
                       MakeGlbEntry_EM (aplTypeSub,                      // Entry type
@@ -2619,7 +2619,7 @@ void GetNextValueMemSub
                         goto ERROR_EXIT;
                 } // End IF
 
-                if (lpimmTypeRes)
+                if (lpimmTypeRes NE NULL)
                     *lpimmTypeRes    = IMMTYPE_RAT;
                 break;
 
@@ -2627,7 +2627,7 @@ void GetNextValueMemSub
                 // Initialize to 0
                 mpfr_init0 (&aplVfp);
 
-                if (lphGlbRes)
+                if (lphGlbRes NE NULL)
                 {
                     *lphGlbRes       =
                       MakeGlbEntry_EM (aplTypeSub,                      // Entry type
@@ -2638,7 +2638,7 @@ void GetNextValueMemSub
                         goto ERROR_EXIT;
                 } // End IF
 
-                if (lpimmTypeRes)
+                if (lpimmTypeRes NE NULL)
                     *lpimmTypeRes    = IMMTYPE_VFP;
                 break;
 
@@ -2650,38 +2650,38 @@ void GetNextValueMemSub
     switch (aplTypeSub)
     {
         case ARRAY_BOOL:
-            if (lpaplLongestRes)
+            if (lpaplLongestRes NE NULL)
                 *lpaplLongestRes = BIT0 & (((LPAPLBOOL) lpMemSub)[uSub >> LOG2NBIB] >> (MASKLOG2NBIB & uSub));
-            if (lpimmTypeRes)
+            if (lpimmTypeRes NE NULL)
                 *lpimmTypeRes    = IMMTYPE_BOOL;
             break;
 
         case ARRAY_INT:
-            if (lpaplLongestRes)
+            if (lpaplLongestRes NE NULL)
                 *lpaplLongestRes = ((LPAPLINT) lpMemSub)[uSub];
-            if (lpimmTypeRes)
+            if (lpimmTypeRes NE NULL)
                 *lpimmTypeRes    = IMMTYPE_INT;
             break;
 
         case ARRAY_FLOAT:
-            if (lpaplLongestRes)
+            if (lpaplLongestRes NE NULL)
                 *lpaplLongestRes = *(LPAPLLONGEST) &((LPAPLFLOAT) lpMemSub)[uSub];
-            if (lpimmTypeRes)
+            if (lpimmTypeRes NE NULL)
                 *lpimmTypeRes    = IMMTYPE_FLOAT;
             break;
 
         case ARRAY_CHAR:
-            if (lpaplLongestRes)
+            if (lpaplLongestRes NE NULL)
                 *lpaplLongestRes = ((LPAPLCHAR) lpMemSub)[uSub];
-            if (lpimmTypeRes)
+            if (lpimmTypeRes NE NULL)
                 *lpimmTypeRes    = IMMTYPE_CHAR;
             break;
 
         case ARRAY_APA:
 #define lpAPA       ((LPAPLAPA) lpMemSub)
-            if (lpaplLongestRes)
+            if (lpaplLongestRes NE NULL)
                 *lpaplLongestRes = lpAPA->Off + lpAPA->Mul * uSub;
-            if (lpimmTypeRes)
+            if (lpimmTypeRes NE NULL)
                 *lpimmTypeRes    = IMMTYPE_INT;
 #undef  lpAPA
             break;
@@ -2694,16 +2694,16 @@ void GetNextValueMemSub
             {
                 case TKT_VARIMMED:
                     // Extract the immediate type & value
-                    if (lpaplLongestRes)
+                    if (lpaplLongestRes NE NULL)
                         *lpaplLongestRes = *GetPtrTknLongest (lptkList);
-                    if (lpimmTypeRes)
+                    if (lpimmTypeRes NE NULL)
                         *lpimmTypeRes    = lptkList->tkFlags.ImmType;
                     break;
 
                 case TKT_VARARRAY:
-                    if (lpaplLongestRes)
+                    if (lpaplLongestRes NE NULL)
                         *lpaplLongestRes = 0;
-                    if (lpimmTypeRes)
+                    if (lpimmTypeRes NE NULL)
                     {
                         APLSTYPE aplTypeSub;
 
@@ -2713,7 +2713,7 @@ void GetNextValueMemSub
                         *lpimmTypeRes    = TranslateArrayTypeToImmType (aplTypeSub);;
                     } // End IF
 
-                    if (lphGlbRes)
+                    if (lphGlbRes NE NULL)
                         *lphGlbRes       = lptkList->tkData.tkGlbData;
                     break;
 
@@ -2733,16 +2733,16 @@ void GetNextValueMemSub
             {
                 case PTRTYPE_STCONST:
                     // Extract the immediate type & value
-                    if (lpaplLongestRes)
+                    if (lpaplLongestRes NE NULL)
                         *lpaplLongestRes = lpSymSub->stData.stLongest;
-                    if (lpimmTypeRes)
+                    if (lpimmTypeRes NE NULL)
                         *lpimmTypeRes    = lpSymSub->stFlags.ImmType;
                     break;
 
                 case PTRTYPE_HGLOBAL:
-                    if (lphGlbRes)
+                    if (lphGlbRes NE NULL)
                         *lphGlbRes       = lpSymSub;
-                    if (lpimmTypeRes)
+                    if (lpimmTypeRes NE NULL)
                         *lpimmTypeRes    = GetImmTypeGlb (lpSymSub);
                     break;
 
@@ -2753,128 +2753,128 @@ void GetNextValueMemSub
             break;
 
         case ARRAY_RAT:
-            if (lpaplLongestRes)
+            if (lpaplLongestRes NE NULL)
                 *lpaplLongestRes = 0;
-            if (lpimmTypeRes)
+            if (lpimmTypeRes NE NULL)
                 *lpimmTypeRes    = IMMTYPE_RAT;
-            if (lphGlbRes)
+            if (lphGlbRes NE NULL)
                 *lphGlbRes       = &((LPAPLRAT) lpMemSub)[uSub];
             break;
 
         case ARRAY_VFP:
-            if (lpaplLongestRes)
+            if (lpaplLongestRes NE NULL)
                 *lpaplLongestRes = 0;
-            if (lpimmTypeRes)
+            if (lpimmTypeRes NE NULL)
                 *lpimmTypeRes    = IMMTYPE_VFP;
-            if (lphGlbRes)
+            if (lphGlbRes NE NULL)
                 *lphGlbRes       = &((LPAPLVFP) lpMemSub)[uSub];
             break;
 
         case ARRAY_HC2I:
-            if (lpaplLongestRes)
+            if (lpaplLongestRes NE NULL)
                 *lpaplLongestRes = 0;
-            if (lpimmTypeRes)
+            if (lpimmTypeRes NE NULL)
                 *lpimmTypeRes    = IMMTYPE_HC2I;
-            if (lphGlbRes)
+            if (lphGlbRes NE NULL)
                 *lphGlbRes       = &((LPAPLHC2I) lpMemSub)[uSub];
             break;
 
         case ARRAY_HC2F:
-            if (lpaplLongestRes)
+            if (lpaplLongestRes NE NULL)
                 *lpaplLongestRes = *(LPAPLLONGEST) &((LPAPLHC2F) lpMemSub)[uSub];
-            if (lpimmTypeRes)
+            if (lpimmTypeRes NE NULL)
                 *lpimmTypeRes    = IMMTYPE_HC2F;
-            if (lphGlbRes)
+            if (lphGlbRes NE NULL)
                 *lphGlbRes       = &((LPAPLHC2F) lpMemSub)[uSub];
             break;
 
         case ARRAY_HC2R:
-            if (lpaplLongestRes)
+            if (lpaplLongestRes NE NULL)
                 *lpaplLongestRes = 0;
-            if (lpimmTypeRes)
+            if (lpimmTypeRes NE NULL)
                 *lpimmTypeRes    = IMMTYPE_HC2R;
-            if (lphGlbRes)
+            if (lphGlbRes NE NULL)
                 *lphGlbRes       = &((LPAPLHC2R) lpMemSub)[uSub];
             break;
 
         case ARRAY_HC2V:
-            if (lpaplLongestRes)
+            if (lpaplLongestRes NE NULL)
                 *lpaplLongestRes = 0;
-            if (lpimmTypeRes)
+            if (lpimmTypeRes NE NULL)
                 *lpimmTypeRes    = IMMTYPE_HC2V;
-            if (lphGlbRes)
+            if (lphGlbRes NE NULL)
                 *lphGlbRes       = &((LPAPLHC2V) lpMemSub)[uSub];
             break;
 
         case ARRAY_HC4I:
-            if (lpaplLongestRes)
+            if (lpaplLongestRes NE NULL)
                 *lpaplLongestRes = 0;
-            if (lpimmTypeRes)
+            if (lpimmTypeRes NE NULL)
                 *lpimmTypeRes    = IMMTYPE_HC4I;
-            if (lphGlbRes)
+            if (lphGlbRes NE NULL)
                 *lphGlbRes       = &((LPAPLHC4I) lpMemSub)[uSub];
             break;
 
         case ARRAY_HC4F:
-            if (lpaplLongestRes)
+            if (lpaplLongestRes NE NULL)
                 *lpaplLongestRes = *(LPAPLLONGEST) &((LPAPLHC4F) lpMemSub)[uSub];
-            if (lpimmTypeRes)
+            if (lpimmTypeRes NE NULL)
                 *lpimmTypeRes    = IMMTYPE_HC4F;
-            if (lphGlbRes)
+            if (lphGlbRes NE NULL)
                 *lphGlbRes       = &((LPAPLHC4F) lpMemSub)[uSub];
             break;
 
         case ARRAY_HC4R:
-            if (lpaplLongestRes)
+            if (lpaplLongestRes NE NULL)
                 *lpaplLongestRes = 0;
-            if (lpimmTypeRes)
+            if (lpimmTypeRes NE NULL)
                 *lpimmTypeRes    = IMMTYPE_HC4R;
-            if (lphGlbRes)
+            if (lphGlbRes NE NULL)
                 *lphGlbRes       = &((LPAPLHC4R) lpMemSub)[uSub];
             break;
 
         case ARRAY_HC4V:
-            if (lpaplLongestRes)
+            if (lpaplLongestRes NE NULL)
                 *lpaplLongestRes = 0;
-            if (lpimmTypeRes)
+            if (lpimmTypeRes NE NULL)
                 *lpimmTypeRes    = IMMTYPE_HC4V;
-            if (lphGlbRes)
+            if (lphGlbRes NE NULL)
                 *lphGlbRes       = &((LPAPLHC4V) lpMemSub)[uSub];
             break;
 
         case ARRAY_HC8I:
-            if (lpaplLongestRes)
+            if (lpaplLongestRes NE NULL)
                 *lpaplLongestRes = 0;
-            if (lpimmTypeRes)
+            if (lpimmTypeRes NE NULL)
                 *lpimmTypeRes    = IMMTYPE_HC8I;
-            if (lphGlbRes)
+            if (lphGlbRes NE NULL)
                 *lphGlbRes       = &((LPAPLHC8I) lpMemSub)[uSub];
             break;
 
         case ARRAY_HC8F:
-            if (lpaplLongestRes)
+            if (lpaplLongestRes NE NULL)
                 *lpaplLongestRes = *(LPAPLLONGEST) &((LPAPLHC8F) lpMemSub)[uSub];
-            if (lpimmTypeRes)
+            if (lpimmTypeRes NE NULL)
                 *lpimmTypeRes    = IMMTYPE_HC8F;
-            if (lphGlbRes)
+            if (lphGlbRes NE NULL)
                 *lphGlbRes       = &((LPAPLHC8F) lpMemSub)[uSub];
             break;
 
         case ARRAY_HC8R:
-            if (lpaplLongestRes)
+            if (lpaplLongestRes NE NULL)
                 *lpaplLongestRes = 0;
-            if (lpimmTypeRes)
+            if (lpimmTypeRes NE NULL)
                 *lpimmTypeRes    = IMMTYPE_HC8R;
-            if (lphGlbRes)
+            if (lphGlbRes NE NULL)
                 *lphGlbRes       = &((LPAPLHC8R) lpMemSub)[uSub];
             break;
 
         case ARRAY_HC8V:
-            if (lpaplLongestRes)
+            if (lpaplLongestRes NE NULL)
                 *lpaplLongestRes = 0;
-            if (lpimmTypeRes)
+            if (lpimmTypeRes NE NULL)
                 *lpimmTypeRes    = IMMTYPE_HC8V;
-            if (lphGlbRes)
+            if (lphGlbRes NE NULL)
                 *lphGlbRes       = &((LPAPLHC8V) lpMemSub)[uSub];
             break;
 
@@ -2885,11 +2885,11 @@ void GetNextValueMemSub
     return;
 
 ERROR_EXIT:
-    if (lpaplLongestRes)
+    if (lpaplLongestRes NE NULL)
         *lpaplLongestRes = 0;
-    if (lpimmTypeRes)
+    if (lpimmTypeRes NE NULL)
         *lpimmTypeRes    = IMMTYPE_ERROR;
-    if (lphGlbRes)
+    if (lphGlbRes NE NULL)
         *lphGlbRes       = NULL;
 } // End GetNextValueMemSub
 
@@ -2965,13 +2965,42 @@ APLLONGEST GetGlbPtrs
 APLLONGEST GetGlbPtrs_LOCK
     (LPTOKEN  lpToken,          // Ptr to token
      HGLOBAL *lphGlb,           // Ptr to ptr to HGLOBAL
-     LPVOID  *lplpMem)          // Ptr to ptr to memory (may be NULL)
+     LPVOID  *lplpMemHdr)       // Ptr to ptr to header (may be NULL)
 
 {
-    LPVOID     lpMem;           // Ptr to locked memory header
-    APLLONGEST aplLongest;      // First value in the data (unless empty)
+    APLLONGEST aplLongest;          // Value if immediate
+
+    // Get and lock the global ptrs
+    GetGlbMem_LOCK (lpToken,        // Ptr to token
+                    lphGlb,         // ...    ptr to HGLOBAL
+                    lplpMemHdr,     // ...           header (may be NULL)
+                   &aplLongest);    // ...    aplLongest (may be NULL)
+    return aplLongest;
+} // End GetGlbPtrs_LOCK
+
+
+//***************************************************************************
+//  $GetGlbMem_LOCK
+//
+//  Return the HGLOBAL and LPVOID from a token if it's an HGLOBAL,
+//    NULL otherwise.
+//  If the arg is immediate, return the APLLONGEST value.
+//
+//  The "_LOCK" suffix is a reminder that this function locks
+//    a global memory handle and the caller must unlock it.
+//***************************************************************************
+
+LPVOID GetGlbMem_LOCK
+    (LPTOKEN      lpToken,      // Ptr to token
+     HGLOBAL     *lphGlb,       // ...    ptr to HGLOBAL
+     LPVOID      *lplpMemHdr,   // ...           header (may be NULL)
+     LPAPLLONGEST lpaplLongest) // ...    aplLongest (may be NULL)
+
+{
+    LPVOID     lpMemHdr = NULL; // Ptr to locked memory header
     APLSTYPE   aplTypeMem;      // Memory storage type
     APLNELM    aplNELMMem;      // Memory NELM
+    APLLONGEST aplLongest = 0;  // Value if immediate
 
     // Split cases based upon the token type
     switch (lpToken->tkFlags.TknType)
@@ -2983,15 +3012,16 @@ APLLONGEST GetGlbPtrs_LOCK
             // If it's not immediate, we must traverse the array
             if (!lpToken->tkData.tkSym->stFlags.Imm)
             {
+                // Return the global memory handle
                 *lphGlb = lpToken->tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL variable array
                 Assert (IsGlbTypeVarDir_PTB (*lphGlb));
 
                 // Lock the memory to get a ptr to it
-                lpMem = MyGlobalLockVar (*lphGlb);
+                lpMemHdr = MyGlobalLockVar (*lphGlb);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMem)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemHdr)
                 // Get the type & NELM
                 aplTypeMem = lpHeader->ArrType;
                 aplNELMMem = lpHeader->NELM;
@@ -3002,10 +3032,14 @@ APLLONGEST GetGlbPtrs_LOCK
             // Handle the immediate case
             *lphGlb  = NULL;
 
-            if (lplpMem)
-                *lplpMem = NULL;
+            // If the caller wants the locked memory ptr, ...
+            if (lplpMemHdr NE NULL)
+                *lplpMemHdr = NULL;
 
-            return lpToken->tkData.tkSym->stData.stLongest;
+            // Save the value of the longest
+            aplLongest = lpToken->tkData.tkSym->stData.stLongest;
+
+            break;
 
         case TKT_FCNNAMED:
         case TKT_OP1NAMED:
@@ -3017,6 +3051,7 @@ APLLONGEST GetGlbPtrs_LOCK
             // If it's not immediate, we must traverse the array
             if (!lpToken->tkData.tkSym->stFlags.Imm)
             {
+                // Return the global memory handle
                 *lphGlb = lpToken->tkData.tkSym->stData.stGlbData;
 
                 // stData is a valid HGLOBAL function array
@@ -3025,11 +3060,11 @@ APLLONGEST GetGlbPtrs_LOCK
                 // Split cases based upon the type
                 if (IsGlbTypeFcnDir_PTB (*lphGlb))
                     // Lock the memory to get a ptr to it
-                    lpMem = MyGlobalLockFcn (*lphGlb);
+                    lpMemHdr = MyGlobalLockFcn (*lphGlb);
                 else
                 if (IsGlbTypeDfnDir_PTB (*lphGlb))
                     // Lock the memory to get a ptr to it
-                    lpMem = MyGlobalLockDfn (*lphGlb);
+                    lpMemHdr = MyGlobalLockDfn (*lphGlb);
 #ifdef DEBUG
                 else
                     DbgBrk ();
@@ -3045,10 +3080,14 @@ APLLONGEST GetGlbPtrs_LOCK
             // Handle the immediate case
             *lphGlb  = NULL;
 
-            if (lplpMem)
-                *lplpMem = NULL;
+            // If the caller wants the locked memory ptr, ...
+            if (lplpMemHdr NE NULL)
+                *lplpMemHdr = NULL;
 
-            return lpToken->tkData.tkSym->stData.stLongest;
+            // Save the value of the longest
+            aplLongest = lpToken->tkData.tkSym->stData.stLongest;
+
+            break;
 
         case TKT_FCNAFO:
         case TKT_DELAFO:
@@ -3058,13 +3097,14 @@ APLLONGEST GetGlbPtrs_LOCK
         case TKT_FCNDFN:
         case TKT_OP1DFN:
         case TKT_OP2DFN:
+            // Return the global memory handle
             *lphGlb = lpToken->tkData.tkGlbData;
 
             // stData is a valid HGLOBAL function array
             Assert (IsGlbTypeDfnDir_PTB (*lphGlb));
 
             // Lock the memory to get a ptr to it
-            lpMem = MyGlobalLockDfn (*lphGlb);
+            lpMemHdr = MyGlobalLockDfn (*lphGlb);
 
             // Get the pseudo-type & NELM
             aplTypeMem = ARRAY_LIST;
@@ -3076,18 +3116,24 @@ APLLONGEST GetGlbPtrs_LOCK
         case TKT_AXISIMMED:
         case TKT_LSTIMMED:
         case TKT_FCNIMMED:
+            // Handle the immediate case
             *lphGlb  = NULL;
 
-            if (lplpMem)
-                *lplpMem = NULL;
+            // If the caller wants the locked memory ptr, ...
+            if (lplpMemHdr NE NULL)
+                *lplpMemHdr = NULL;
 
-            return *GetPtrTknLongest (lpToken);
+            // Save the value of the longest
+            aplLongest = *GetPtrTknLongest (lpToken);
+
+            break;
 
         case TKT_FCNARRAY:
+            // Return the global memory handle
             *lphGlb = lpToken->tkData.tkGlbData;
 
             // Lock the memory to get a ptr to it
-            lpMem = MyGlobalLockFcn (*lphGlb);
+            lpMemHdr = MyGlobalLockFcn (*lphGlb);
 
             // Get the pseudo-type & NELM
             aplTypeMem = ARRAY_LIST;
@@ -3101,15 +3147,16 @@ APLLONGEST GetGlbPtrs_LOCK
         case TKT_VARARRAY:
         case TKT_AXISARRAY:
         case TKT_LSTARRAY:
+            // Return the global memory handle
             *lphGlb = lpToken->tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL variable array
             Assert (IsGlbTypeVarDir_PTB (*lphGlb));
 
             // Lock the memory to get a ptr to it
-            lpMem = MyGlobalLockVar (*lphGlb);
+            lpMemHdr = MyGlobalLockVar (*lphGlb);
 
-#define lpHeader        ((LPVARARRAY_HEADER) lpMem)
+#define lpHeader        ((LPVARARRAY_HEADER) lpMemHdr)
             // Get the type & NELM
             aplTypeMem = lpHeader->ArrType;
             aplNELMMem = lpHeader->NELM;
@@ -3117,15 +3164,16 @@ APLLONGEST GetGlbPtrs_LOCK
             break;      // Continue with common HGLOBAL code
 
         case TKT_LSTMULT:
+            // Return the global memory handle
             *lphGlb = lpToken->tkData.tkGlbData;
 
             // tkData is a valid HGLOBAL list array
             Assert (IsGlbTypeLstDir_PTB (*lphGlb));
 
             // Lock the memory to get a ptr to it
-            lpMem = MyGlobalLockLst (*lphGlb);
+            lpMemHdr = MyGlobalLockLst (*lphGlb);
 
-#define lpHeader        ((LPLSTARRAY_HEADER) lpMem)
+#define lpHeader        ((LPLSTARRAY_HEADER) lpMemHdr)
             // Get the type & NELM
             aplTypeMem = ARRAY_LIST;
             aplNELMMem = lpHeader->NELM;
@@ -3138,30 +3186,43 @@ APLLONGEST GetGlbPtrs_LOCK
 
     // If the arg is non-empty & not a list, ...
     if (!IsEmpty (aplNELMMem)
-     && !IsList (aplTypeMem))
+     && !IsList (aplTypeMem)
+     && *lphGlb NE NULL)
         GetFirstValueGlb (*lphGlb,          // The global memory handle
-                          NULL,             // Ptr to integer (or Boolean) (may be NULL)
-                          NULL,             // ...    float (may be NULL)
-                          NULL,             // ...    char (may be NULL)
-                         &aplLongest,       // ...    longest (may be NULL)
-                          NULL,             // ...    LPSYMENTRY or HGLOBAL (may be NULL)
-                          NULL,             // ...    immediate type (see IMM_TYPES) (may be NULL)
-                          NULL,             // ...    array type -- ARRAY_TYPES (may be NULL)
-                          TRUE);            // TRUE iff we should expand LPSYMENTRY into immediate value
-    else
-        aplLongest = 0;
+                           NULL,            // Ptr to integer (or Boolean) (may be NULL)
+                           NULL,            // ...    float (may be NULL)
+                           NULL,            // ...    char (may be NULL)
+                          &aplLongest,      // ...    longest (may be NULL)
+                           NULL,            // ...    LPSYMENTRY or HGLOBAL (may be NULL)
+                           NULL,            // ...    immediate type (see IMM_TYPES) (may be NULL)
+                           NULL,            // ...    array type -- ARRAY_TYPES (may be NULL)
+                           TRUE);           // TRUE iff we should expand LPSYMENTRY into immediate value
+    // If the caller wants the longest, ...
+    if (lpaplLongest NE NULL)
+        *lpaplLongest = aplLongest;
 
     // If the caller wants the locked memory ptr, ...
-    if (lplpMem)
-        // Lock the memory to get a ptr to it
-        *lplpMem = lpMem;
-    else
+    if (lplpMemHdr NE NULL
+     &&   lpMemHdr NE NULL)
     {
-        MyGlobalUnlock (*lphGlb); lpMem = NULL;
-    } // End IF/ELSE
+        // The memory is already locked
+        *lplpMemHdr = lpMemHdr;
 
-    return aplLongest;
-} // End GetGlbPtrs_LOCK
+        // Return a ptr to the global memory data
+        return VarArrayDataFmBase (*lplpMemHdr);
+    } else
+    {
+        if (*lphGlb NE NULL
+         && lpMemHdr NE NULL)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (*lphGlb); lpMemHdr = NULL;
+        } // End IF
+
+        // Return a ptr to the global memory data
+        return lpaplLongest;
+    } // End IF/ELSE
+} // End GetGlbMem_LOCK
 
 
 //***************************************************************************

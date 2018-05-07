@@ -28,18 +28,20 @@
 
 
 VARIANTKEYSTR aVariantKeyStr[VARIANT_KEY_LENGTH]
- = {{L"ALX"     , SYSVAR_ALX     , ValidSetALX_EM     },
-    {L"CT"      , SYSVAR_CT      , ValidSetCT_EM      },
-    {L"DT"      , SYSVAR_DT      , ValidSetDT_EM      },
-    {L"ELX"     , SYSVAR_ELX     , ValidSetELX_EM     },
-    {L"FC"      , SYSVAR_FC      , ValidSetFC_EM      },
-    {L"FEATURE" , SYSVAR_FEATURE , ValidSetFEATURE_EM },
-    {L"FPC"     , SYSVAR_FPC     , ValidSetFPC_EM     },
-    {L"IO"      , SYSVAR_IO      , ValidSetIO_EM      },
-    {L"LR"      , SYSVAR_LR      , ValidSetLR_EM      },
-    {L"PP"      , SYSVAR_PP      , ValidSetPP_EM      },
-    {L"RL"      , SYSVAR_RL      , ValidSetRL_EM      },
+ = {
+    {L"CT"      , SYSVAR_CT      , ValidSetCT_EM      },    // 00:  []CT
+    {L"DT"      , SYSVAR_DT      , ValidSetDT_EM      },    // 01:  []DT
+    {L"FPC"     , SYSVAR_FPC     , ValidSetFPC_EM     },    // 02:  []FPC
+    {L"IO"      , SYSVAR_IO      , ValidSetIO_EM      },    // 03:  []IO
+    {L"LR"      , SYSVAR_LR      , ValidSetLR_EM      },    // 04:  []LR
+    {L"PP"      , SYSVAR_PP      , ValidSetPP_EM      },    // 05:  []PP
+    {L"RL"      , SYSVAR_RL      , ValidSetRL_EM      },    // 06:  []RL
   };
+
+// N.B.:  Whenever changing the above struct (aVariantKeyStr)
+//   be sure to make a corresponding change to
+//   <VARIANTKEYS> in <po_variant.h>.
+
 
 typedef UBOOL (*VAROPR) (LPVOID);
 
@@ -48,82 +50,102 @@ VAROPR varOprValTab[ENUM_VARIANT_LENGTH] =
 {
     NULL        ,                   // 00:  No value
     varOprCT    ,                   // 01:  []CT
-    varOprEIG   ,                   // 02:  {domino} Eigenvalues, vectors, and Schur vectors
-    varOprDT    ,                   // 03:  []DT
-    varOprFPC   ,                   // 04:  []FPC
-    varOprIO    ,                   // 05:  []IO
-    varOprLR    ,                   // 06:  []LR
-    varOprPP    ,                   // 07:  []PP
-    varOprPOCH  ,                   // 08:  {shriek} Pochhammer k-symbol
-    varOprHCM   ,                   // 09:  {times} Interior/Exterior/Cross/Dot/Conjugation product
+    varOprDT    ,                   // 02:  []DT
+    varOprFPC   ,                   // 03:  []FPC
+    varOprIO    ,                   // 04:  []IO
+    varOprLR    ,                   // 05:  []LR
+    varOprPP    ,                   // 06:  []PP
+    varOprRL    ,                   // 07:  []RL
+    varOprEIG   ,                   // 08:  {domino} Eigenvalues, vectors, and Schur vectors
+    varOprPOCH  ,                   // 09:  {shriek} Pochhammer k-symbol
+    varOprHCM   ,                   // 0A:  {times}  Interior/Exterior/Cross/Dot/Conjugation product
+    varOprSUB   ,                   // 0B:  {iota}   Ascending/Descending subsequence
 };
+
+// N.B.:  Whenever changing the above struct (varOprValTab)
+//   be sure to make a corresponding change to
+//   <varOprType> in <po_variant.c> and
+//   <ENUM_VARIANT> in <po_variant.h>.
+
 
 
 APLSTYPE varOprType[ENUM_VARIANT_LENGTH] =
 {
     ARRAY_ERROR ,                   // 00:  No value
     ARRAY_FLOAT ,                   // 01:  []CT
-    ARRAY_INT   ,                   // 02:  {domino} Eigenvalues, vectors, and Schur vectors
-    ARRAY_CHAR  ,                   // 03:  []DT
-    ARRAY_INT   ,                   // 04:  []FPC
-    ARRAY_BOOL  ,                   // 05:  []IO
-    ARRAY_CHAR  ,                   // 06:  []LR
-    ARRAY_INT   ,                   // 07:  []PP
-    ARRAY_INT   ,                   // 08:  {shriek} Pochhammer k-symbol
-    ARRAY_CHAR  ,                   // 09:  {times} Interior/Exterior/Cross/Dot/Conjugation product
+    ARRAY_CHAR  ,                   // 02:  []DT
+    ARRAY_INT   ,                   // 03:  []FPC
+    ARRAY_BOOL  ,                   // 04:  []IO
+    ARRAY_CHAR  ,                   // 05:  []LR
+    ARRAY_INT   ,                   // 06:  []PP
+    ARRAY_INT   ,                   // 07:  []RL
+    ARRAY_INT   ,                   // 08:  {domino} Eigenvalues, vectors, and Schur vectors
+    ARRAY_INT   ,                   // 09:  {shriek} Pochhammer k-symbol
+    ARRAY_CHAR  ,                   // 0A:  {times}  Interior/Exterior/Cross/Dot/Conjugation product
+    ARRAY_CHAR  ,                   // 0B:  {iota}   Ascending/Descending subsequence
 };
+
+// N.B.:  Whenever changing the above struct (varOprValType)
+//   be sure to make a corresponding change to
+//   <varOprValTab> in <po_variant.c> and
+//   <ENUM_VARIANT> in <po_variant.h>.
+
 
 LPVARIANT_STR varOprTab[PRIMTAB_LEN];   // The jump table for all Variant operator possibilities
 
 VARIANT_STR varOprStr[] =
-//                                ======Monadic========|=======Dyadic=========
-  {                         //    N1    N2    C1   C2   N1    N2    C1     C2
-   VAR_MAC (CIRCLE              , UNK , UNK , UNK, UNK, UNK , UNK , LR   , UNK ),   // 00:  CIRCLE
-   VAR_MAC (CIRCLESLOPE         , UNK , UNK , UNK, UNK, IO  , UNK , UNK  , UNK ),   // 01:  CIRCLESLOPE
-   VAR_MAC (COLONBAR            , UNK , UNK , UNK, UNK, UNK , UNK , LR   , UNK ),   // 02:  COLONBAR
-   VAR_MAC (DELSTILE            , IO  , UNK , UNK, UNK, IO  , UNK , UNK  , UNK ),   // 03:  DELSTILE
-   VAR_MAC (DELTASTILE          , IO  , UNK , UNK, UNK, IO  , UNK , UNK  , UNK ),   // 04:  DELTASTILE
-   VAR_MAC (DOMINO              , EIG , UNK , UNK, UNK, UNK , UNK , UNK  , UNK ),   // 05:  DOMINO
-   VAR_MAC (DOT                 , UNK , UNK , UNK, UNK, UNK , UNK , LR   , UNK ),   // ??:  DOT
-   VAR_MAC (DOUBLESHRIEK        , IO  , UNK , UNK, UNK, UNK , UNK , UNK  , UNK ),   // 06:  DOUBLESHRIEK
-   VAR_MAC (DOWNCARET           , UNK , UNK , UNK, UNK, UNK , UNK , LR   , UNK ),   // 07:  DOWNCARET
-   VAR_MAC (DOWNSHOE            , CT  , UNK , UNK, UNK, UNK , UNK , UNK  , UNK ),   // 08:  DOWNSHOE
-   VAR_MAC (DOWNSTILE           , CT  , UNK , UNK, UNK, UNK , UNK , UNK  , UNK ),   // 09:  DOWNSTILE
-   VAR_MAC (DOWNTACK            , UNK , UNK , UNK, UNK, UNK , UNK , LR   , UNK ),   // 0A:  DOWNTACK
-   VAR_MAC (DOWNTACKJOT         , PP  , UNK , UNK, UNK, PP  , UNK , UNK  , UNK ),   // 0B:  DOWNTACKJOT
-   VAR_MAC (EPSILON             , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 0C:  EPSILON
-   VAR_MAC (EPSILONUNDERBAR     , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 0D:  EPSILONUNDERBAR
-   VAR_MAC (EQUAL               , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 0E:  EQUAL
-   VAR_MAC (EQUALUNDERBAR       , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 0F:  EQUALUNDERBAR
-   VAR_MAC (IOTA                , IO  , UNK , UNK, UNK, IO  , CT  , UNK  , UNK ),   // 10:  IOTA
-   VAR_MAC (IOTAUNDERBAR        , IO  , UNK , UNK, UNK, IO  , CT  , UNK  , UNK ),   // 11:  IOTAUNDERBAR
-   VAR_MAC (LEFTCARET           , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 12:  LEFTCARET
-   VAR_MAC (LEFTCARETUNDERBAR   , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 13:  LEFTCARETUNDERBAR
-   VAR_MAC (LEFTCARETUNDERBAR2  , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 14:  LEFTCARETUNDERBAR2
-   VAR_MAC (LEFTSHOE            , UNK , UNK , UNK, UNK, IO  , UNK , UNK  , UNK ),   // 15:  LEFTSHOE
-   VAR_MAC (LEFTSHOEUNDERBAR    , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 16:  LEFTSHOEUNDERBAR
-   VAR_MAC (NOTEQUAL            , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 17:  NOTEQUAL
-   VAR_MAC (NOTEQUALUNDERBAR    , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 18:  NOTEQUALUNDERBAR
-   VAR_MAC (PI                  , UNK , UNK , UNK, UNK, IO  , UNK , UNK  , UNK ),   // 19:  PI
-   VAR_MAC (QUADJOT             , CT  , CT  , LR , LR , CT  , CT  , LR   , LR  ),   // 1A:  QUADJOT
-   VAR_MAC (QUERY               , IO  , IO  , DT , DT , IO  , IO  , DT   , DT  ),   // 1B:  QUERY
-   VAR_MAC (QUOTEDOT            , POCH, UNK , UNK, UNK, UNK , UNK , UNK  , UNK ),   // 1C:  QUOTEDOT
-   VAR_MAC (RIGHTCARET          , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 1D:  RIGHTCARET
-   VAR_MAC (RIGHTCARETUNDERBAR  , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 1E:  RIGHTCARETUNDERBAR
-   VAR_MAC (RIGHTCARETUNDERBAR2 , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 1F:  RIGHTCARETUNDERBAR
-   VAR_MAC (RIGHTSHOEUNDERBAR   , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 20:  RIGHTSHOEUNDERBAR
-   VAR_MAC (SECTION             , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 21:  SECTION
-   VAR_MAC (SQUAD               , UNK , UNK , UNK, UNK, IO  , UNK , UNK  , UNK ),   // 22:  SQUAD
-   VAR_MAC (STILE               , UNK , UNK , UNK, UNK, CT  , CT  , LR   , LR  ),   // 23:  STILE
-   VAR_MAC (STILE2              , UNK , UNK , UNK, UNK, CT  , CT  , LR   , LR  ),   // 24:  STILE2
-   VAR_MAC (TILDE               , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 25:  TILDE
-   VAR_MAC (TILDE2              , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 26:  TILDE2
-   VAR_MAC (TIMES               , UNK , UNK , UNK, UNK, UNK , UNK , HCM  , UNK ),   // 27:  TIMES
-   VAR_MAC (UPCARET             , UNK , UNK , UNK, UNK, UNK , UNK , LR   , UNK ),   // 28:  UPCARET
-   VAR_MAC (UPSHOE              , UNK , UNK , UNK, UNK, CT  , UNK , UNK  , UNK ),   // 29:  UPSHOE
-   VAR_MAC (UPSTILE             , CT  , UNK , UNK, UNK, UNK , UNK , UNK  , UNK ),   // 2A:  UPSTILE
-   VAR_MAC (UPTACKJOT           , FPC , UNK , UNK, UNK, UNK , UNK , UNK  , UNK ),   // 2B:  UPTACKJOT
+//                                ========Monadic=======|========Dyadic=========
+  {                         //    N1    N2    C1    C2    N1    N2    C1     C2
+   VAR_MAC (CIRCLE              , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK ), // CIRCLE
+   VAR_MAC (CIRCLESLOPE         , UNK , UNK , UNK , UNK , IO  , UNK , UNK  , UNK ), // CIRCLESLOPE
+   VAR_MAC (COLONBAR            , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK ), // COLONBAR
+   VAR_MAC (DELSTILE            , IO  , UNK , UNK , UNK , IO  , UNK , UNK  , UNK ), // DELSTILE
+   VAR_MAC (DELTASTILE          , IO  , UNK , UNK , UNK , IO  , UNK , UNK  , UNK ), // DELTASTILE
+   VAR_MAC (DOMINO              , EIG , UNK , UNK , UNK , UNK , UNK , UNK  , UNK ), // DOMINO
+   VAR_MAC (DOT                 , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK ), // DOT
+   VAR_MAC (DOUBLESHRIEK        , IO  , UNK , UNK , UNK , UNK , UNK , UNK  , UNK ), // DOUBLESHRIEK
+   VAR_MAC (DOWNCARET           , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK ), // DOWNCARET
+   VAR_MAC (DOWNSHOE            , CT  , UNK , UNK , UNK , UNK , UNK , UNK  , UNK ), // DOWNSHOE
+   VAR_MAC (DOWNSTILE           , CT  , UNK , UNK , UNK , UNK , UNK , UNK  , UNK ), // DOWNSTILE
+   VAR_MAC (DOWNTACK            , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK ), // DOWNTACK
+   VAR_MAC (DOWNTACKJOT         , PP  , UNK , UNK , UNK , PP  , UNK , UNK  , UNK ), // DOWNTACKJOT
+   VAR_MAC (EPSILON             , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // EPSILON
+   VAR_MAC (EPSILONUNDERBAR     , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // EPSILONUNDERBAR
+   VAR_MAC (EQUAL               , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // EQUAL
+   VAR_MAC (EQUALUNDERBAR       , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // EQUALUNDERBAR
+   VAR_MAC (IOTA                , IO  , UNK , UNK , UNK , IO  , CT  , SUB  , UNK ), // IOTA
+   VAR_MAC (IOTAUNDERBAR        , IO  , UNK , UNK , UNK , IO  , CT  , UNK  , UNK ), // IOTAUNDERBAR
+   VAR_MAC (LEFTCARET           , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // LEFTCARET
+   VAR_MAC (LEFTCARETUNDERBAR   , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // LEFTCARETUNDERBAR
+   VAR_MAC (LEFTCARETUNDERBAR2  , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // LEFTCARETUNDERBAR2
+   VAR_MAC (LEFTSHOE            , UNK , UNK , UNK , UNK , IO  , UNK , UNK  , UNK ), // LEFTSHOE
+   VAR_MAC (LEFTSHOEUNDERBAR    , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // LEFTSHOEUNDERBAR
+   VAR_MAC (NOTEQUAL            , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // NOTEQUAL
+   VAR_MAC (NOTEQUALUNDERBAR    , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // NOTEQUALUNDERBAR
+   VAR_MAC (PI                  , UNK , UNK , UNK , UNK , IO  , UNK , UNK  , UNK ), // PI
+   VAR_MAC (QUADJOT             , CT  , UNK , LR  , UNK , CT  , UNK , LR   , UNK ), // QUADJOT
+   VAR_MAC (QUERY               , IO  , RL  , DT  , UNK , IO  , RL  , DT   , UNK ), // QUERY
+   VAR_MAC (QUOTEDOT            , POCH, UNK , UNK , UNK , UNK , UNK , UNK  , UNK ), // QUOTEDOT
+   VAR_MAC (RIGHTCARET          , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // RIGHTCARET
+   VAR_MAC (RIGHTCARETUNDERBAR  , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // RIGHTCARETUNDERBAR
+   VAR_MAC (RIGHTCARETUNDERBAR2 , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // RIGHTCARETUNDERBAR
+   VAR_MAC (RIGHTSHOEUNDERBAR   , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // RIGHTSHOEUNDERBAR
+   VAR_MAC (SECTION             , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // SECTION
+   VAR_MAC (SQUAD               , UNK , UNK , UNK , UNK , IO  , UNK , UNK  , UNK ), // SQUAD
+   VAR_MAC (STILE               , UNK , UNK , UNK , UNK , CT  , UNK , LR   , UNK ), // STILE
+   VAR_MAC (STILE2              , UNK , UNK , UNK , UNK , CT  , UNK , LR   , UNK ), // STILE2
+   VAR_MAC (TILDE               , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // TILDE
+   VAR_MAC (TILDE2              , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // TILDE2
+   VAR_MAC (TIMES               , UNK , UNK , UNK , UNK , UNK , UNK , HCM  , UNK ), // TIMES
+   VAR_MAC (UPCARET             , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK ), // UPCARET
+   VAR_MAC (UPSHOE              , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // UPSHOE
+   VAR_MAC (UPSTILE             , CT  , UNK , UNK , UNK , UNK , UNK , UNK  , UNK ), // UPSTILE
+   VAR_MAC (UPTACKJOT           , FPC , UNK , UNK , UNK , UNK , UNK , UNK  , UNK ), // UPTACKJOT
   };
+
+#define MAX_VAR_NUMLEN  2                                   // Maximum # numerics allowed in the right operand
+#define MAX_VAR_CHRLEN  2                                   // ...       chars    ...
+#define MAX_VAR_LEN     (MAX_VAR_NUMLEN + MAX_VAR_CHRLEN)   // Maximum # items allowed in the right operand
 
 
 //***************************************************************************
@@ -185,18 +207,18 @@ LPPL_YYSTYPE PrimProtoOpVariant_EM_YY
         // Called monadically
         //***************************************************************
         return
-          PrimOpMonVariantCommon_EM_YY (lpYYFcnStrOpr,          // Ptr to operator function strand
-                                        lptkRhtArg,             // Ptr to right arg token
-                                        TRUE);                  // TRUE iff prototyping
+          PrimOpMonVariantCom_EM_YY (lpYYFcnStrOpr,     // Ptr to operator function strand
+                                     lptkRhtArg,        // Ptr to right arg token
+                                     TRUE);             // TRUE iff prototyping
     else
         //***************************************************************
         // Called dyadically
         //***************************************************************
         return
-          PrimOpDydVariantCommon_EM_YY (lptkLftArg,             // Ptr to left arg token
-                                        lpYYFcnStrOpr,          // Ptr to operator function strand
-                                        lptkRhtArg,             // Ptr to right arg token
-                                        TRUE);                  // TRUE iff prototyping
+          PrimOpDydVariantCom_EM_YY (lptkLftArg,        // Ptr to left arg token
+                                     lpYYFcnStrOpr,     // Ptr to operator function strand
+                                     lptkRhtArg,        // Ptr to right arg token
+                                     TRUE);             // TRUE iff prototyping
 AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxis);
@@ -263,15 +285,15 @@ LPPL_YYSTYPE PrimIdentOpVariant_EM_YY
 
     // Execute the left operand identity function on the right arg
     return
-      PrimOpVariantCommon_EM_YY (lptkRhtOrig,           // Ptr to left arg token (may be NULL if monadic derived function)
+      PrimOpVariantCom_EM_YY (lptkRhtOrig,              // Ptr to left arg token (may be NULL if monadic derived function)
                                                         //   If this is an identity function call (lpPrimFlagsLft NE NULL),
                                                         //     then this value is the original right arg
-                                 lpYYFcnStrLft,         // Ptr to left operand function strand
-                                 lpPrimFlagsLft,        // Ptr to left operand primitive flags (may be NULL)
-                                 lpYYFcnStrOpr,         // Ptr to operator function strand
-                                 lpYYFcnStrRht,         // Ptr to right operand function strand
-                                 lptkRhtArg,            // Ptr to right arg token
-                                 FALSE);                // TRUE iff protoyping
+                              lpYYFcnStrLft,            // Ptr to left operand function strand
+                              lpPrimFlagsLft,           // Ptr to left operand primitive flags (may be NULL)
+                              lpYYFcnStrOpr,            // Ptr to operator function strand
+                              lpYYFcnStrRht,            // Ptr to right operand function strand
+                              lptkRhtArg,               // Ptr to right arg token
+                              FALSE);                   // TRUE iff protoyping
 AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkAxisOpr);
@@ -304,19 +326,19 @@ LPPL_YYSTYPE PrimOpMonVariant_EM_YY
 
 {
     return
-      PrimOpMonVariantCommon_EM_YY (lpYYFcnStrOpr,      // Ptr to operator function strand
-                                    lptkRhtArg,         // Ptr to right arg token
-                                    FALSE);             // TRUE iff prototyping
+      PrimOpMonVariantCom_EM_YY (lpYYFcnStrOpr,     // Ptr to operator function strand
+                                 lptkRhtArg,        // Ptr to right arg token
+                                 FALSE);            // TRUE iff prototyping
 } // End PrimOpMonVariant_EM_YY
 
 
 //***************************************************************************
-//  $PrimOpMonVariantCommon_EM_YY
+//  $PrimOpMonVariantCom_EM_YY
 //
 //  Primitive operator for monadic derived function from Variant ("variant")
 //***************************************************************************
 
-LPPL_YYSTYPE PrimOpMonVariantCommon_EM_YY
+LPPL_YYSTYPE PrimOpMonVariantCom_EM_YY
     (LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
      UBOOL        bPrototyping)         // TRUE iff protoyping
@@ -331,26 +353,26 @@ LPPL_YYSTYPE PrimOpMonVariantCommon_EM_YY
     lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrOpr, CheckAxisOper (lpYYFcnStrOpr), lpYYFcnStrRht); Assert (lpYYFcnStrLft NE NULL);
 
     return
-      PrimOpVariantCommon_EM_YY (NULL,                  // Ptr to left arg token (may be NULL if monadic derived function)
+      PrimOpVariantCom_EM_YY (NULL,                     // Ptr to left arg token (may be NULL if monadic derived function)
                                                         //   If this is an identity function call (lpPrimFlagsLft NE NULL),
                                                         //     then this value is the original right arg
-                                 lpYYFcnStrLft,         // Ptr to left operand function strand
-                                 NULL,                  // Ptr to left operand primitive flags (may be NULL)
-                                 lpYYFcnStrOpr,         // Ptr to operator function strand
-                                 lpYYFcnStrRht,         // Ptr to right operand function strand
-                                 lptkRhtArg,            // Ptr to right arg token
-                                 bPrototyping);         // TRUE iff protoyping
-} // End PrimOpMonVariantCommon_EM_YY
+                              lpYYFcnStrLft,            // Ptr to left operand function strand
+                              NULL,                     // Ptr to left operand primitive flags (may be NULL)
+                              lpYYFcnStrOpr,            // Ptr to operator function strand
+                              lpYYFcnStrRht,            // Ptr to right operand function strand
+                              lptkRhtArg,               // Ptr to right arg token
+                              bPrototyping);            // TRUE iff protoyping
+} // End PrimOpMonVariantCom_EM_YY
 
 
 //***************************************************************************
-//  $PrimOpVariantCommon_EM_YY
+//  $PrimOpVariantCom_EM_YY
 //
 //  Primitive operator for monadic & dyadic derived function
 //    from Variant ("variant")
 //***************************************************************************
 
-LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
+LPPL_YYSTYPE PrimOpVariantCom_EM_YY
     (LPTOKEN      lptkLftArg,               // Ptr to left arg token (may be NULL if monadic derived function)
                                             //   If this is an identity function call (lpPrimFlagsLft NE NULL),
                                             //     then this value is the original right arg
@@ -365,25 +387,26 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
     LPPL_YYSTYPE        lpYYRes = NULL;                 // Ptr to the result
     LPTOKEN             lptkAxisLft,                    // Ptr to axis token on the left operand
                         lptkAxisOpr;                    // Ptr to axis token on the operator
-    APLSTYPE            aplTypeRhtOpr,                  // Right operand storage type
-                        aplType1RhtOpr,                 // ...                        1st numeric
-                        aplType2RhtOpr,                 // ...                        2nd ...
+    APLSTYPE            aplTypeLft,                     // Left arg storage type
+                        aplTypeRhtOpr,                  // Right operand storage type
                         aplTypeRht;                     // Right arg     ...
-    APLNELM             aplNELMRhtOpr,                  // Right operand NELM
+    APLNELM             aplNELMLft,                     // Right arg NELM
+                        aplNELMRhtOpr,                  // Right operand NELM
+                        uMaxLen,                        // Maximum length of the right operand
                         aplNELMRht;                     // Right arg     ...
-    APLRANK             aplRankRhtOpr,                  // Right operand rank
+    APLUINT             uRhtOpr,                        // Loop counter
+                        uCnt,                           // ...
+                        uNum,                           // ...
+                        uChr;                           // ...
+    APLRANK             aplRankLft,                     // Lftt arg rank
+                        aplRankRhtOpr,                  // Right operand rank
                         aplRankRht;                     // Right arg     ...
     APLDIM              aplColsRht;                     // Right arg # cols
-    APLCHAR             aplChr1RhtOpr,                  // Right operand character value 1st item
-                        aplChr2RhtOpr;                  // ...                           2nd ...
-    APLLONGEST          aplLongestRhtOpr,               // Right operand numeric value
-                        aplLng1RhtOpr,                  // ...                         1st item
-                        aplLng2RhtOpr;                  // ...                         2nd ...
+    APLLONGEST          aplLongestRhtOpr,               // Right operand value as an immediate
+                        aplRhtOprItm[MAX_VAR_LEN];      // ...           item array
     UBOOL               bRet = TRUE,                    // TRUE iff the result is valid
-                        bNum1Found = FALSE,             // 1st numerc found
-                        bNum2Found = FALSE,             // 2nd ...
-                        bChr1Found = FALSE,             // 1st Character found
-                        bChr2Found = FALSE;             // 2nd ...
+                        bInitEnumVars = TRUE;           // TRUE iff the <lpEnumVarXX>s have neen initialized
+    ENUM_NCF            eFound[MAX_VAR_LEN] = {ENUM_NCF_UNK};   // Array found state:  see ENUM_NCF
     HGLOBAL             hGlbRhtOpr = NULL;              // Right operand global memory handle
     LPVARARRAY_HEADER   lpMemHdrRhtOpr = NULL;          // ...    right operand ...
     LPVOID              lpMemRhtOpr;                    // Ptr to right operand memory
@@ -391,10 +414,8 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
     LPPERTABDATA        lpMemPTD;                       // Ptr to PerTabData global memory
     LPVARIANT_STR       lpVarOprStr;                    // Ptr to Variant operator struc
     ALLSYSVARS_STR      allSysVarsStr = {0};            // Save area for all System Vars
-    ENUM_VARIANT        enumVarN1 = ENUM_VARIANT_UNK,   // ENUM_VARIANT_xxx for 1st Num
-                        enumVarN2 = ENUM_VARIANT_UNK,   // ...                  2nd ...
-                        enumVarC1 = ENUM_VARIANT_UNK,   // ...                  1st Chr
-                        enumVarC2 = ENUM_VARIANT_UNK;   // ...                  2nd ...
+    LPENUM_VARIANT      lpEnumVarN1,                    // Ptr to ENUM_VARIANT entries
+                        lpEnumVarC1;                    // ...
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -417,6 +438,13 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
     //    and right arg
     //***************************************************************
     AttrsOfToken (&lpYYFcnStrRht->tkToken, &aplTypeRhtOpr, &aplNELMRhtOpr, &aplRankRhtOpr, NULL);
+
+    // Check for errors
+    if (aplNELMRhtOpr > MAX_VAR_LEN)
+        goto LIMIT_EXIT;
+
+    if (lptkLftArg NE NULL)
+        AttrsOfToken (lptkLftArg             , &aplTypeLft   , &aplNELMLft   , &aplRankLft   , NULL);
     if (lptkRhtArg NE NULL)
         AttrsOfToken (lptkRhtArg             , &aplTypeRht   , &aplNELMRht   , &aplRankRht   , &aplColsRht);
 
@@ -437,7 +465,7 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
                                       aplNELMRhtOpr,            // ...           NELM
                                       aplRankRhtOpr,            // ...           rank
                                       lpMemPTD,                 // Ptr to PerTabData global memory
-                                     &lpYYFcnStrOpr->tkToken);  // Ptr to operator token
+                                     &lpYYFcnStrOpr->tkToken);  // Ptr to operator oken
     // If the left operand is not immediate and not a function array, ...
     if (!IsTknImmed    (&lpYYFcnStrLft->tkToken)
      && !IsTknFcnArray (&lpYYFcnStrLft->tkToken))
@@ -448,182 +476,134 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
     if (lpVarOprStr EQ NULL)
         goto LEFT_OPERAND_DOMAIN_EXIT;
 
+    // Set enumVars ptrs early as they are used at the end
+    lpEnumVarN1 = ((lptkLftArg EQ NULL) ? &lpVarOprStr->enumVarMonN1
+                                        : &lpVarOprStr->enumVarDydN1);
+    lpEnumVarC1 = ((lptkLftArg EQ NULL) ? &lpVarOprStr->enumVarMonC1
+                                        : &lpVarOprStr->enumVarDydC1);
+    //***************************************************************
+    // Ensure that the old value of all sys vars has been saved
+    //***************************************************************
+    ZeroMemory (&allSysVarsStr, sizeof (allSysVarsStr));
+    SaveAllSysVars (&allSysVarsStr ,
+                     lpMemPTD      );
+
+    // Mark as initialized
+    bInitEnumVars = TRUE;
+
+    // Initialize the maximum length of the right operand
+    uMaxLen = 0;
+
+    // Calculate the allowed maximum length of the right operand
+    if (lptkLftArg NE NULL)
+    {
+        // Dyadic case
+        // Loop through the numeric ENUMs in lpVarOprStr
+        for (uCnt = 0; uCnt < MAX_VAR_NUMLEN; uCnt++)
+            // Accumulate the number of valid Variant choices
+            uMaxLen += ((&lpVarOprStr->enumVarDydN1)[uCnt] NE ENUM_VARIANT_UNK);
+
+        // Loop through the char ENUMs in lpVarOprStr
+        for (uCnt = 0; uCnt < MAX_VAR_CHRLEN; uCnt++)
+            // Accumulate the number of valid Variant choices
+            uMaxLen += ((&lpVarOprStr->enumVarDydC1)[uCnt] NE ENUM_VARIANT_UNK);
+    } else
+    {
+        // Monadic case
+        // Loop through the numeric ENUMs in lpVarOprStr
+        for (uCnt = 0; uCnt < MAX_VAR_NUMLEN; uCnt++)
+            // Accumulate the number of valid Variant choices
+            uMaxLen += ((&lpVarOprStr->enumVarMonN1)[uCnt] NE ENUM_VARIANT_UNK);
+
+        // Loop through the char ENUMs in lpVarOprStr
+        for (uCnt = 0; uCnt < MAX_VAR_CHRLEN; uCnt++)
+            // Accumulate the number of valid Variant choices
+            uMaxLen += ((&lpVarOprStr->enumVarMonC1)[uCnt] NE ENUM_VARIANT_UNK);
+    } // End IF/ELSE
+
     // Validate the right operand as
     //   a simple numeric/character scalar or one- or two-element vector
     if (IsMultiRank (aplRankRhtOpr))
         goto RIGHT_OPERAND_RANK_EXIT;
-    if (aplNELMRhtOpr NE 1
-     && aplNELMRhtOpr NE 2)
+    if (1 > aplNELMRhtOpr
+     ||     aplNELMRhtOpr > uMaxLen)
         goto RIGHT_OPERAND_LENGTH_EXIT;
     if (!IsNumeric   (aplTypeRhtOpr)
      && !IsSimpleChar(aplTypeRhtOpr)
      && !IsSimpleHet (aplTypeRhtOpr))
         goto RIGHT_OPERAND_DOMAIN_EXIT;
 
-    // Set the target numeric type for the 1st & 2nd entry if numeric
-    aplType1RhtOpr = (lptkLftArg EQ NULL) ? varOprType[lpVarOprStr->enumVarMonN1]
-                                          : varOprType[lpVarOprStr->enumVarDydN1];
-    aplType2RhtOpr = (lptkLftArg EQ NULL) ? varOprType[lpVarOprStr->enumVarMonN2]
-                                          : varOprType[lpVarOprStr->enumVarDydN2];
     // Get right operand's global ptrs
-    aplLongestRhtOpr = GetGlbPtrs_LOCK (&lpYYFcnStrRht->tkToken, &hGlbRhtOpr, (LPVOID *) &lpMemHdrRhtOpr);
+    lpMemRhtOpr = GetGlbMem_LOCK (&lpYYFcnStrRht->tkToken, &hGlbRhtOpr, (LPVOID *) &lpMemHdrRhtOpr, &aplLongestRhtOpr);
 
-    // If the right operand is a global, ...
-    if (lpMemHdrRhtOpr NE NULL)
-        // Point to the data
-        lpMemRhtOpr = VarArrayDataFmBase (lpMemHdrRhtOpr);
-    else
-        // Point to the data
-        lpMemRhtOpr = &aplLongestRhtOpr;
-
-    // Set enumVars
-    enumVarN1 = ((lptkLftArg EQ NULL) ? lpVarOprStr->enumVarMonN1
-                                      : lpVarOprStr->enumVarDydN1);
-    enumVarC1 = ((lptkLftArg EQ NULL) ? lpVarOprStr->enumVarMonC1
-                                      : lpVarOprStr->enumVarDydC1);
-    enumVarN2 = ((lptkLftArg EQ NULL) ? lpVarOprStr->enumVarMonN2
-                                      : lpVarOprStr->enumVarDydN2);
-    enumVarC2 = ((lptkLftArg EQ NULL) ? lpVarOprStr->enumVarMonC2
-                                      : lpVarOprStr->enumVarDydC2);
-    // If the right operand is a singleton, ...
-    if (IsSingleton (aplNELMRhtOpr))
+    // If it's heterogeneous, ...
+    if (IsSimpleHet (aplTypeRhtOpr))
     {
-        // Check the first entry
-        if (!PrimOpVariantCheckSimple_EM (lpMemRhtOpr,              // Ptr to right operand global memory data
-                                          aplTypeRhtOpr,            // Right operand storage type
-                                          0,                        // Index into lpMemRhtOpr to use
-                                         &bNum1Found,               // Ptr to bNumFound
-                                         &bChr1Found,               // ...    bChrFound
-                                         &aplLng1RhtOpr,            // ...    Num result
-                                         &aplChr1RhtOpr,            // ...    Chr ...
-                                          aplType1RhtOpr,           // Convert to this datatype if numeric
+        // Loop through the right operand
+        for (uNum = uChr = uRhtOpr = 0; uRhtOpr < aplNELMRhtOpr; uRhtOpr++)
+        // Check the next entry
+        if (!PrimOpVariantCheckHetero_EM (lpMemRhtOpr,              // Ptr to right operand global memory data
+                                          uRhtOpr,                  // Index into lpMemRhtOpr to use
+                                         &eFound[uRhtOpr],          // Ptr to eFound array
+                                         &uNum,                     // ...    Numeric count so far
+                                         &uChr,                     // ...    Char    ...
+                                         &aplRhtOprItm[uRhtOpr],    // ...    result  array
+                                          varOprType[lpEnumVarN1[uNum]], // Convert to this datatype if numeric
                                          &lpYYFcnStrOpr->tkToken,   // Ptr to operator token
                                          &lpYYFcnStrRht->tkToken))  // Ptr to right operand token
             goto ERROR_EXIT;
     } else
-    // It's a two-element vector:  simple or heterogeneous
     {
-        // If it's simple, ...
-        if (IsSimple (aplTypeRhtOpr))
-        {
-            // Check the first entry
-            if (!PrimOpVariantCheckSimple_EM (lpMemRhtOpr,              // Ptr to right operand global memory data
-                                              aplTypeRhtOpr,            // Right operand storage type
-                                              0,                        // Index into lpMemRhtOpr to use
-                                             &bNum1Found,               // Ptr to bNumFound
-                                             &bChr1Found,               // ...    bChrFound
-                                             &aplLng1RhtOpr,            // ...    Num result
-                                             &aplChr1RhtOpr,            // ...    Chr ...
-                                              aplType1RhtOpr,           // Convert to this datatype if numeric
-                                             &lpYYFcnStrOpr->tkToken,   // Ptr to operator token
-                                             &lpYYFcnStrRht->tkToken))  // Ptr to right operand token
-                goto ERROR_EXIT;
-
-            // Check the second entry
-            if (!PrimOpVariantCheckSimple_EM (lpMemRhtOpr,              // Ptr to right operand global memory data
-                                              aplTypeRhtOpr,            // Right operand storage type
-                                              1,                        // Index into lpMemRhtOpr to use
-                                             &bNum2Found,               // Ptr to bNumFound
-                                             &bChr2Found,               // ...    bChrFound
-                                             &aplLng2RhtOpr,            // ...    Num result
-                                             &aplChr2RhtOpr,            // ...    Chr ...
-                                              aplType2RhtOpr,           // Convert to this datatype if numeric
-                                             &lpYYFcnStrOpr->tkToken,   // Ptr to operator token
-                                             &lpYYFcnStrRht->tkToken))  // Ptr to right operand token
-                goto ERROR_EXIT;
-        } else
-        {
-            // Check the first entry
-            if (!PrimOpVariantCheckHetero_EM (lpMemRhtOpr,              // Ptr to right operand global memory data
-                                              0,                        // Index into lpMemRhtOpr to use
-                                             &bNum1Found,               // Ptr to bNumFound
-                                             &bChr1Found,               // ...    bChrFound
-                                             &aplLng1RhtOpr,            // ...    Num result
-                                             &aplChr1RhtOpr,            // ...    Chr ...
-                                              aplType1RhtOpr,           // Convert to this datatype if numeric
-                                             &lpYYFcnStrOpr->tkToken,   // Ptr to operator token
-                                             &lpYYFcnStrRht->tkToken))  // Ptr to right operand token
-                goto ERROR_EXIT;
-
-            // Check the second entry
-            if (!PrimOpVariantCheckHetero_EM (lpMemRhtOpr,              // Ptr to right operand global memory data
-                                              1,                        // Index into lpMemRhtOpr to use
-                                             &bNum2Found,               // Ptr to bNumFound
-                                             &bChr2Found,               // ...    bChrFound
-                                             &aplLng2RhtOpr,            // ...    Num result
-                                             &aplChr2RhtOpr,            // ...    Chr ...
-                                              aplType2RhtOpr,           // Convert to this datatype if numeric
-                                             &lpYYFcnStrOpr->tkToken,   // Ptr to operator token
-                                             &lpYYFcnStrRht->tkToken))  // Ptr to right operand token
-                goto ERROR_EXIT;
-        } // End IF/ELSE
-
-        // Ensure the 1st and 2nd items enums are different
-        if (bNum1Found
-         && bNum2Found
-         && (enumVarN1 EQ enumVarN2))
-                goto RIGHT_OPERAND_DOMAIN_EXIT;
-        else
-        if (bChr1Found
-         && bChr2Found
-         && (enumVarC1 EQ enumVarC2))
-                goto RIGHT_OPERAND_DOMAIN_EXIT;
-        // If we found a Num as the 2nd item, ...
-        if (bNum2Found)
-        {
-            if (enumVarN2 EQ ENUM_VARIANT_UNK)
-                goto RIGHT_OPERAND_DOMAIN_EXIT;
-
-            // Save and set all sys vars to the appropriate value
-            SetAllSysVars (enumVarN2     ,
-                           aplLng2RhtOpr ,
-                           aplChr2RhtOpr ,
-                          &allSysVarsStr ,
-                           lpMemPTD      );
-        } else
-        // If we found a Chr as the 2nd item, ...
-        if (bChr2Found)
-        {
-            if (enumVarC2 EQ ENUM_VARIANT_UNK)
-                goto RIGHT_OPERAND_DOMAIN_EXIT;
-
-            // Save and set all sys vars to the appropriate value
-            SetAllSysVars (enumVarC2     ,
-                           aplLng2RhtOpr ,
-                           aplChr2RhtOpr ,
-                          &allSysVarsStr ,
-                           lpMemPTD      );
-        } else
-            goto RIGHT_OPERAND_DOMAIN_EXIT;
+        // Loop through the right operand
+        for (uNum = uChr = uRhtOpr = 0; uRhtOpr < aplNELMRhtOpr; uRhtOpr++)
+        // Check the next entry
+        if (!PrimOpVariantCheckSimple_EM (lpMemRhtOpr,              // Ptr to right operand global memory data
+                                          aplTypeRhtOpr,            // Right operand storage type
+                                          uRhtOpr,                  // Index into lpMemRhtOpr to use
+                                         &eFound[uRhtOpr],          // Ptr to eFound array
+                                         &uNum,                     // ...    Numeric count so far
+                                         &uChr,                     // ...    Char    ...
+                                         &aplRhtOprItm[uRhtOpr],    // ...    result array
+                                          varOprType[lpEnumVarN1[uNum]], // Convert to this datatype if numeric
+                                         &lpYYFcnStrOpr->tkToken,   // Ptr to operator token
+                                         &lpYYFcnStrRht->tkToken))  // Ptr to right operand token
+            goto ERROR_EXIT;
     } // End IF/ELSE
 
-    // If we found a Num as the 1st item, ...
-    if (bNum1Found)
-    {
-        if (enumVarN1 EQ ENUM_VARIANT_UNK)
-            goto RIGHT_OPERAND_DOMAIN_EXIT;
+    //***************************************************************
+    //  Set the new values of all sys vars
+    //***************************************************************
 
-        // Save and set all sys vars to the appropriate value
-        SetAllSysVars (enumVarN1     ,
-                       aplLng1RhtOpr ,
-                       aplChr1RhtOpr ,
-                      &allSysVarsStr ,
-                       lpMemPTD      );
-    }else
-    // If we found a Chr as the 1st item, ...
-    if (bChr1Found)
+    // Loop through the found items
+    for (uNum = uChr = uCnt = 0; uCnt < aplNELMRhtOpr; uCnt++)
+    // Split cases based upon the eFound state
+    switch (eFound[uCnt])
     {
-        if (enumVarC1 EQ ENUM_VARIANT_UNK)
-            goto RIGHT_OPERAND_DOMAIN_EXIT;
+        case ENUM_NCF_NUM:
+            if (lpEnumVarN1[uNum] EQ ENUM_VARIANT_UNK)
+                goto RIGHT_OPERAND_DOMAIN_EXIT;
 
-        // Save and set all sys vars to the appropriate value
-        SetAllSysVars (enumVarC1     ,
-                       aplLng1RhtOpr ,
-                       aplChr1RhtOpr ,
-                      &allSysVarsStr ,
-                       lpMemPTD      );
-    } else
-        goto RIGHT_OPERAND_DOMAIN_EXIT;
+            // Set all sys vars to the appropriate value
+            SetAllSysVars (lpEnumVarN1[uNum++] ,
+                           aplRhtOprItm[uCnt]  ,
+                          &allSysVarsStr       ,
+                           lpMemPTD            );
+            break;
+
+        case ENUM_NCF_CHR:
+            if (lpEnumVarC1[uChr] EQ ENUM_VARIANT_UNK)
+                goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+            // Set all sys vars to the appropriate value
+            SetAllSysVars (lpEnumVarC1[uChr++] ,
+                           aplRhtOprItm[uCnt]  ,
+                          &allSysVarsStr       ,
+                           lpMemPTD            );
+            break;
+
+        defstop
+            break;
+    } // End FOR/SWITCH
 
     // ***TESTME*** -- Handle axis operator on a PSDF
 
@@ -678,36 +658,59 @@ LPPL_YYSTYPE PrimOpVariantCommon_EM_YY
                                         : LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
             break;
 
-        // Eigenvalues/Eigenvectors/Schur Vectors
-        case UTF16_DOMINO:
-            // If we're calculating Eigen stuff, ...
-            if (bNum1Found)
+        // Ascending/Descending subsequence
+        case UTF16_IOTA:
+            // If we're calculating Ascending/Descending Subsequence stuff, ...
+            if (lptkLftArg NE NULL
+             && allSysVarsStr.cSubNew NE L'\0')
             {
-                // Calculate Eigen stuff
                 lpYYRes =
-                  PrimOpVariantDomino_EM (lptkRhtArg,       // Ptr to right arg token
-                                          aplLng1RhtOpr,    // Right operand numeric value 1st item
-                                          aplTypeRht,       // Right arg storage type
-                                          aplRankRht,       // Right arg rank
-                                          aplColsRht,       // Right arg # cols
-                                          aplNELMRht,       // Right arg NELM
-                                          lpYYFcnStrOpr);   // Ptr to operator function strand
+                  PrimOpVariantSubseq_EM_YY (lptkLftArg,                    // Ptr to left arg token
+                                                  aplTypeLft,                // Left arg storage type
+                                                  aplRankLft,                // ...      rank
+                                                  aplNELMLft,                // ...      NELM
+                                                  lptkRhtArg,                // Ptr to right arg token
+                                                  aplTypeRht,                // Right arg storage type
+                                                  aplRankRht,                // ...       rank
+                                                  aplNELMRht,                // ...       NELM
+                                                  allSysVarsStr.cSubNew,     // Right operand char value
+                                                  lpYYFcnStrOpr);            // Ptr to operator function strand
                 break;
             } // End IF
 
-            // Fall through to common code
+            goto DEFAULT;
+
+        // Eigenvalues/Eigenvectors/Schur Vectors
+        case UTF16_DOMINO:
+            // If we're calculating Eigen stuff, ...
+            if (allSysVarsStr.uEigenNew NE 0)
+            {
+                // Calculate Eigen stuff
+                lpYYRes =
+                  PrimOpVariantDomino_EM_YY (lptkRhtArg,                // Ptr to right arg token
+                                             allSysVarsStr.uEigenNew,   // Right operand numeric value
+                                             aplTypeRht,                // Right arg storage type
+                                             aplRankRht,                // Right arg rank
+                                             aplColsRht,                // Right arg # cols
+                                             aplNELMRht,                // Right arg NELM
+                                             lpYYFcnStrOpr);            // Ptr to operator function strand
+                break;
+            } // End IF
+
+            goto DEFAULT;
 
         default:
+        DEFAULT:
             // If this is Inner Product identity function, ...
             if (lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_DOT
              && lpPrimFlagsLft NE NULL)
                 // Execute the left operand identity function on the right arg
                 lpYYRes =
                   (*lpPrimFlagsLft->lpPrimOps)
-                                    (lptkLftArg,            // Ptr to original right arg token
-                                     lpYYFcnStrLft,         // Ptr to function strand
-                                     lptkRhtArg,            // Ptr to right arg token
-                                     NULL);                 // Ptr to axis token (may be NULL)
+                                    (lptkLftArg,        // Ptr to original right arg token
+                                     lpYYFcnStrLft,     // Ptr to function strand
+                                     lptkRhtArg,        // Ptr to right arg token
+                                     NULL);             // Ptr to axis token (may be NULL)
             else
                 // Execute the function
                 lpYYRes =
@@ -735,6 +738,11 @@ VALENCE_EXIT:
                               &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 
+LIMIT_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
+                              &lpYYFcnStrRht->tkToken);
+    goto ERROR_EXIT;
+
 RIGHT_OPERAND_RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
@@ -757,33 +765,30 @@ ERROR_EXIT:
         FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
     } // End IF
 NORMAL_EXIT:
-    // If we found a Num as the 1st item, ...
-    if (bNum1Found)
-        // Restore all sys vars
-        RestAllSysVars (enumVarN1     ,
-                       &allSysVarsStr ,
-                        lpMemPTD      );
-    else
-    // If we found a Chr as the 1st item, ...
-    if (bChr1Found)
-        // Restore all sys vars
-        RestAllSysVars (enumVarC1     ,
-                       &allSysVarsStr ,
-                        lpMemPTD      );
+    // If the <lpEnumVarXX>s have been initialized, ...
+    if (bInitEnumVars)
+    // Loop through the found items
+    for (uNum = uChr = uCnt = 0; uCnt < aplNELMRhtOpr; uCnt++)
+    // Split cases based upon the eFound state
+    switch (eFound[uCnt])
+    {
+        case ENUM_NCF_NUM:
+            // Restore all sys vars
+            RestAllSysVars (lpEnumVarN1[uNum++] ,
+                           &allSysVarsStr       ,
+                            lpMemPTD            );
+            break;
 
-    // If we found a Num as the 2nd item, ...
-    if (bNum2Found)
-        // Restore all sys vars
-        RestAllSysVars (enumVarN2     ,
-                       &allSysVarsStr ,
-                        lpMemPTD      );
-    else
-    // If we found a Chr as the 2nd item, ...
-    if (bChr2Found)
-        // Restore all sys vars
-        RestAllSysVars (enumVarC2     ,
-                       &allSysVarsStr ,
-                        lpMemPTD      );
+        case ENUM_NCF_CHR:
+            // Restore all sys vars
+            RestAllSysVars (lpEnumVarC1[uChr++] ,
+                           &allSysVarsStr       ,
+                            lpMemPTD            );
+            break;
+
+////////default:
+    } // End IF/FOR/SWITCH
+
     if (hGlbRhtOpr NE NULL
      && lpMemHdrRhtOpr NE NULL)
     {
@@ -792,7 +797,7 @@ NORMAL_EXIT:
     } // End IF
 
     return lpYYRes;
-} // End PrimOpVariantCommon_EM_YY
+} // End PrimOpVariantCom_EM_YY
 
 
 //***************************************************************************
@@ -823,14 +828,275 @@ NORMAL_EXIT:
 
 
 //***************************************************************************
-//  $PrimOpVariantDomino_EM
+//  $PrimOpVariantSubseq_EM_YY
+//
+//  Variant applied to iota to find Ascending/Descending subsequences.
+//***************************************************************************
+
+LPPL_YYSTYPE PrimOpVariantSubseq_EM_YY
+    (LPTOKEN           lptkLftArg,                      // Ptr to left arg token
+     APLSTYPE          aplTypeLft,                      // Left arg storage type
+     APLRANK           aplRankLft,                      // ...      rank
+     APLNELM           aplNELMLft,                      // ...      NELM
+     LPTOKEN           lptkRhtArg,                      // Ptr to right arg token
+     APLSTYPE          aplTypeRht,                      // Right arg storage type
+     APLRANK           aplRankRht,                      // ...       rank
+     APLNELM           aplNELMRht,                      // ...       NELM
+     APLCHAR           aplChrRhtOpr,                    // Right operand char value
+     LPPL_YYSTYPE      lpYYFcnStrOpr)                   // Ptr to operator function strand
+
+{
+    LPPL_YYSTYPE        lpYYRes = NULL;                 // Ptr to the result
+    APLSTYPE            aplTypeCom;                     // Common storage type
+    HGLOBAL             hGlbLft = NULL,                 // Left arg global memory handle
+                        hGlbRht = NULL,                 // Right ...
+                        hGlbRes = NULL;                 // Result   ...
+    LPVARARRAY_HEADER   lpMemHdrLft = NULL,             // Ptr to left arg global memory header
+                        lpMemHdrRht = NULL,             // ...    right  ...
+                        lpMemHdrRes = NULL;             // ...    result ...
+    APLLONGEST          aplLongestLft,                  // Left arg if immediate
+                        aplLongestRht;                  // Right ...
+    LPVOID              lpMemLft,                       // Ptr to left arg global memory
+                        lpMemRht,                       // ...    right ...
+                        lpMemRes;                       // ...    result ...
+    UBOOL               bQuadIO = GetQuadIO (),         // []IO
+                        bRet;                           // TRUE iff the result of hcXY_cmp is equal
+    APLFLOAT            fQuadCT = GetQuadCT ();         // []CT
+    APLINT              iLft,                           // Loop counter
+                        iRht,                           // ...
+                        iOff,                           // Offset
+                        iNotFound,                      // Not Found value
+                        iHighInL;                       // Highest index into L
+    ALLTYPES            atLft = {0},                    // Left arg as ALLTYPES
+                        atRht = {0};                    // Right ...
+
+    // Get left & right arg's global ptrs
+    lpMemLft = GetGlbMem_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft, &aplLongestLft);
+    lpMemRht = GetGlbMem_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht, &aplLongestRht);
+
+    // Check for RANK ERRORs
+    if (!IsVector (aplRankLft))
+        goto LEFT_RANK_EXIT;
+
+    // Check for RANK ERRORs
+    if (!IsVector (aplRankRht))
+        goto RIGHT_RANK_EXIT;
+
+    // Allocate a global array for the result
+    hGlbRes = AllocateGlobalArray (ARRAY_INT, aplNELMRht, 1, &aplNELMRht);
+    if (hGlbRes EQ NULL)
+        goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemHdrRes = MyGlobalLockVar (hGlbRes);
+
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+
+    // Calculate the common storage type
+    aplTypeCom = aTypePromote[aplTypeLft][aplTypeRht];
+
+    // Check for errors
+    if (IsErrorType (aplTypeCom))
+        goto DOMAIN_EXIT;
+
+    // Split cases based upon the Ascending/Descending flag
+    switch (aplChrRhtOpr)
+    {
+        case L'a':
+            // Initialize vars
+            iOff      = 0;
+            iNotFound = aplNELMLft + bQuadIO;
+
+            // Loop through the right arg
+            for (iRht = 0; iRht < (APLINT) aplNELMRht; iRht++)
+            {
+                // Promote the next item from the right arg to the common type
+                (*aTypeActPromote[aplTypeRht][aplTypeCom]) (lpMemRht, iRht, &atRht);
+
+                // Loop through the left arg
+                for (iLft = iOff; iLft < (APLINT) aplNELMLft; iLft++)
+                {
+                    // Promote the next item from the left arg to the common type
+                    (*aTypeActPromote[aplTypeLft][aplTypeCom]) (lpMemLft, iLft, &atLft);
+
+                    // Compare the two items
+                    bRet =
+                      hcXY_cmp (aplTypeCom,
+                               &atLft,
+                               &atRht,
+                                TRUE,
+                                fQuadCT) EQ 0;
+                    // Free the old atLft (if any)
+                    (*aTypeFree[aplTypeCom]) (&atLft, 0);
+
+                    // If they are equal, ...
+                    if (bRet)
+                    {
+                        // Start in the left arg at the next item
+                        iOff = iLft + 1;
+
+                        // Save this index in the result
+                        ((LPAPLINT) lpMemRes)[iRht] = iLft + bQuadIO;
+
+                        break;
+                    } // End IF
+                } // End FOR
+
+                // If we reached the end of the left arg, ...
+                if (iLft EQ aplNELMLft)
+                {
+                    // Save the NotFound value in the result
+                    ((LPAPLINT) lpMemRes)[iRht] = iNotFound;
+
+                    // Set the next offset
+                    iOff = aplNELMLft;
+                } // End IF
+
+                // Free the old atRht (if any)
+                (*aTypeFree[aplTypeCom]) (&atRht, 0);
+            } // End FOR
+
+            break;
+
+        case L'd':
+            // Initialize vars
+            iOff        = 0;
+            iNotFound   = ((APLINT) bQuadIO) - 1;   // Need cast because bQuadIO returns an unsigned value
+            iHighInL    = aplNELMLft - 1;
+
+            // Loop through the right arg
+            for (iRht = 0; iRht < (APLINT) aplNELMRht; iRht++)
+            {
+                // Promote the next item from the right arg to the common type
+                (*aTypeActPromote[aplTypeRht][aplTypeCom]) (lpMemRht, iRht, &atRht);
+
+                // Loop through the left arg
+                for (iLft = iHighInL - iOff; iLft >= 0; iLft--)
+                {
+                    // Promote the next item from the left arg to the common type
+                    (*aTypeActPromote[aplTypeLft][aplTypeCom]) (lpMemLft, iLft, &atLft);
+
+                    // Compare the two items
+                    bRet =
+                      hcXY_cmp (aplTypeCom,
+                               &atLft,
+                               &atRht,
+                                TRUE,
+                                fQuadCT) EQ 0;
+
+                    // Free the old atLft (if any)
+                    (*aTypeFree[aplTypeCom]) (&atLft, 0);
+
+                    // If they are equal, ...
+                    if (bRet)
+                    {
+                        // Start in the left arg at the next item
+                        iOff = iHighInL - iLft;
+
+                        // Save this index in the result
+                        ((LPAPLINT) lpMemRes)[iRht] = iLft + bQuadIO;
+
+                        break;
+                    } // End IF
+                } // End FOR
+
+                // If we reached the end of the left arg, ...
+                if (iLft < 0)
+                {
+                    // Save the NotFound value in the result
+                    ((LPAPLINT) lpMemRes)[iRht] = iNotFound;
+
+                    // Set the next offset
+                    iOff = aplNELMLft;
+                } // End IF
+
+                // Free the old atRht (if any)
+                (*aTypeFree[aplTypeCom]) (&atRht, 0);
+            } // End FOR
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+LEFT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                              &lpYYFcnStrOpr->tkToken);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    if (hGlbRes NE NULL)
+    {
+        if (lpMemHdrRes NE NULL)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        MyGlobalFree (hGlbRes); hGlbRes = NULL;
+    } // End IF
+NORMAL_EXIT:
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (lpMemHdrLft); lpMemHdrLft = NULL;
+    } // End IF
+
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (lpMemHdrRht); lpMemHdrRht = NULL;
+    } // End IF
+
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (lpMemHdrRes); lpMemHdrRes = NULL;
+    } // End IF
+
+    return lpYYRes;
+} // End PrimOpVariantSubseq_EM_YY
+
+
+//***************************************************************************
+//  $PrimOpVariantDomino_EM_YY
 //
 //  Variant applied to domino to produce Eigenvalues, Eigenvectors, etc.
 //***************************************************************************
 
-LPPL_YYSTYPE PrimOpVariantDomino_EM
+LPPL_YYSTYPE PrimOpVariantDomino_EM_YY
     (LPTOKEN           lptkRhtArg,                      // Ptr to right arg token
-     APLLONGEST        aplLng1RhtOpr,                   // Right operand numeric value 1st item
+     APLLONGEST        aplLngRhtOpr,                    // Right operand numeric value
      APLSTYPE          aplTypeRht,                      // Right arg storage type
      APLRANK           aplRankRht,                      // Right arg rank
      APLNELM           aplColsRht,                      // Right arg # cols
@@ -879,7 +1145,7 @@ LPPL_YYSTYPE PrimOpVariantDomino_EM
     gsl_eigen_nonsymmv_workspace *lpGslEigenWs = NULL;  // Ptr to the GSL workspace
 
     // Get right arg's global ptrs
-    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
+    lpMemRht = GetGlbMem_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht, &aplLongestRht);
 
     // Validate the right arg as a square matrix
     if (!IsMatrix (aplRankRht))
@@ -897,14 +1163,6 @@ LPPL_YYSTYPE PrimOpVariantDomino_EM
     // Save as the two dimensions of the matrix
     NxN[0] =
     NxN[1] = aplColsRht;
-
-    // If the right arg is a global, ...
-    if (lpMemHdrRht NE NULL)
-        // Point to the data
-        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
-    else
-        // Point to the data
-        lpMemRht = &aplLongestRht;
 
     // Check for DOMAIN ERROR or type demotion
     if (!(IsSimpleInt (aplTypeRht)
@@ -953,7 +1211,7 @@ LPPL_YYSTYPE PrimOpVariantDomino_EM
     if (!IsZeroDim (aplColsRht))
     {
         // If we're calculating the QR matrices, ...
-        if (aplLng1RhtOpr EQ 5)
+        if (aplLngRhtOpr EQ 5)
         {
             // Allocate GSL arrays for case 5
             lpGslMatrixA   = gsl_matrix_alloc ((int) aplRowsRht, (int) aplColsRht);     // N x N
@@ -993,7 +1251,7 @@ LPPL_YYSTYPE PrimOpVariantDomino_EM
             lpGslMatrixA->data[i] = GetNextFloat (lpMemRht, aplTypeRht, i);
 
         // If we're calculating the QR matrices, ...
-        if (aplLng1RhtOpr EQ 5)
+        if (aplLngRhtOpr EQ 5)
         {
             ErrCode =
               gsl_linalg_QR_decomp (lpGslMatrixA,
@@ -1009,7 +1267,7 @@ LPPL_YYSTYPE PrimOpVariantDomino_EM
                                     lpGslMatrixR);
         } else
         // If we're calculating Eigenvalues, Eigenvectors, and Schur vectors, ...
-        if (aplLng1RhtOpr EQ 4)
+        if (aplLngRhtOpr EQ 4)
             // Calculate the Eigenvalues, Eigenvectors, and Schur vectors
             ErrCode =
               gsl_eigen_nonsymmv_Z (lpGslMatrixA,
@@ -1030,7 +1288,7 @@ LPPL_YYSTYPE PrimOpVariantDomino_EM
     } // End IF
 
     // Split cases based upon the right operand value
-    switch (aplLng1RhtOpr)
+    switch (aplLngRhtOpr)
     {
         case 1:     // DEF_MIN_QUADEIG
             // Allocate a global array for the result
@@ -1077,7 +1335,7 @@ LPPL_YYSTYPE PrimOpVariantDomino_EM
     lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
     // Split cases based upon the right operand value
-    switch (aplLng1RhtOpr)
+    switch (aplLngRhtOpr)
     {
         case 1:     // DEF_MIN_QUADEIG
             // Copy the Eigenvalues to the result
@@ -1103,7 +1361,7 @@ LPPL_YYSTYPE PrimOpVariantDomino_EM
             hGlbEvec  = AllocateGlobalArray (ARRAY_HC2F, aplNELMRht, 2, &NxN[0]);
 
             // If we're also calculating Schur vectors, ...
-            if (aplLng1RhtOpr EQ 4)
+            if (aplLngRhtOpr EQ 4)
             {
                 // Allocate a global array for a matrix of Real Schur vectors
                 hGlbSchur = AllocateGlobalArray (ARRAY_HC1F, aplNELMRht, 2, &NxN[0]);
@@ -1151,7 +1409,7 @@ LPPL_YYSTYPE PrimOpVariantDomino_EM
                 ConvertTinyFlt2Zero (hGlbEvec);
 
                 // If we're also calculating Schur vectors, ...
-                if (aplLng1RhtOpr EQ 4)
+                if (aplLngRhtOpr EQ 4)
                 {
                     //***************************************************************
                     //  Copy Schur vectors to an item in the result
@@ -1194,7 +1452,7 @@ LPPL_YYSTYPE PrimOpVariantDomino_EM
             ((LPAPLNESTED) lpMemRes)[1] = MakePtrTypeGlb (hGlbEvec);
 
             // If we're also calculating Schur vectors, ...
-            if (aplLng1RhtOpr EQ 4)
+            if (aplLngRhtOpr EQ 4)
                 ((LPAPLNESTED) lpMemRes)[2] = MakePtrTypeGlb (hGlbSchur);
             break;
 
@@ -1445,7 +1703,7 @@ NORMAL_EXIT:
     } // End IF
 
     return lpYYRes;
-} // End PrimOpVariantDomino_EM
+} // End PrimOpVariantDomino_EM_YY
 
 
 //***************************************************************************
@@ -1458,10 +1716,10 @@ UBOOL PrimOpVariantCheckSimple_EM
     (LPVOID       lpMemRhtOpr,          // Ptr to right operand global memory data
      APLSTYPE     aplTypeRhtOpr,        // Right operand storage type
      APLINT       uIndex,               // Index into lpMemRhtOpr to use
-     LPUBOOL      lpbNumFound,          // Ptr to bNumFound (Numeric found)
-     LPUBOOL      lpbChrFound,          // ...    bChrFound (Char found)
-     LPAPLLONGEST lpaplLongest,         // ...    Num
-     LPAPLCHAR    lpaplChar,            // ...    Chr
+     LPENUM_NCF   lpeFound,             // Ptr to eFound
+     LPAPLUINT    lpuNum,               // ...    Numeric count so far
+     LPAPLUINT    lpuChr,               // ...    Char    ...
+     LPAPLLONGEST lpaplLongest,         // ...    Num/Chr
      APLSTYPE     aplTypeNum,           // Convert to this datatype if numeric
      LPTOKEN      lptkOpr,              // Ptr to operator token
      LPTOKEN      lptkRhtOpr)           // Ptr to right operand token
@@ -1478,23 +1736,31 @@ UBOOL PrimOpVariantCheckSimple_EM
         if (IsErrorType (aplTypeNum))
             goto VALENCE_EXIT;
 
+        // Check for too many
+        if ((*lpuNum)++ EQ MAX_VAR_NUMLEN)
+            goto LIMIT_EXIT;
+
         // Convert the item's numeric type to the target's numeric type
-        (*aTypeActConvert[aplTypeRhtOpr][aplTypeNum]) (lpMemRhtOpr, 0, &atArg, &bRet);
+        (*aTypeActConvert[aplTypeRhtOpr][aplTypeNum]) (lpMemRhtOpr, uIndex, &atArg, &bRet);
 
         // Check for error
         if (!bRet)
             goto RIGHT_OPERAND_DOMAIN_EXIT;
 
         // Set the flag
-        *lpbNumFound  = TRUE;
+        *lpeFound     = ENUM_NCF_NUM;
         *lpaplLongest = atArg.aplLongest;
     } else
     {
         Assert (IsSimpleChar (aplTypeRhtOpr));
 
+        // Check for too many
+        if ((*lpuChr)++ EQ MAX_VAR_CHRLEN)
+            goto LIMIT_EXIT;
+
         // Set the flag
-        *lpbChrFound  = TRUE;
-        *lpaplChar    = *(LPAPLCHAR) lpMemRhtOpr;
+        *lpeFound     = ENUM_NCF_CHR;
+        *lpaplLongest = ((LPAPLCHAR) lpMemRhtOpr)[uIndex];
     } // End IF/ELSE
 
     return TRUE;
@@ -1506,6 +1772,11 @@ VALENCE_EXIT:
 
 RIGHT_OPERAND_DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtOpr);
+    goto ERROR_EXIT;
+
+LIMIT_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_LIMIT_ERROR APPEND_NAME,
                                lptkRhtOpr);
     goto ERROR_EXIT;
 
@@ -1523,10 +1794,10 @@ ERROR_EXIT:
 UBOOL PrimOpVariantCheckHetero_EM
     (LPAPLNESTED  lpMemRhtOpr,          // Ptr to right operand global memory data
      APLINT       uIndex,               // Index into lpMemRhtOpr to use
-     LPUBOOL      lpbNumFound,          // Ptr to bNumFound (Numeric found)
-     LPUBOOL      lpbChrFound,          // ...    bChrFound (Char found)
-     LPAPLLONGEST lpaplLongest,         // ...    numeric value
-     LPAPLCHAR    lpaplChar,            // ...    character value
+     LPENUM_NCF   lpeFound,             // Ptr to eFound
+     LPAPLUINT    lpuNum,               // ...    Numeric count so far
+     LPAPLUINT    lpuChr,               // ...    Char    ...
+     LPAPLLONGEST lpaplLongest,         // ...    Num/Chr
      APLSTYPE     aplTypeNum,           // Convert to this datatype if numeric
      LPTOKEN      lptkOpr,              // Ptr to operator token
      LPTOKEN      lptkRhtOpr)           // Ptr to right operand token
@@ -1569,34 +1840,18 @@ UBOOL PrimOpVariantCheckHetero_EM
             break;
     } // End SWITCH
 
-    // If the type is numeric, ...
-    if (IsNumeric (aplTypeItm))
-    {
-        ALLTYPES atArg = {0};
-
-        // If it's an error type, ...
-        if (IsErrorType (aplTypeNum))
-            goto VALENCE_EXIT;
-
-        // Convert the item's numeric type to the target's numeric type
-        (*aTypeActConvert[aplTypeItm][aplTypeNum]) (lpSymGlbItm, 0, &atArg, &bRet);
-
-        // Check for error
-        if (!bRet)
-            goto RIGHT_OPERAND_DOMAIN_EXIT;
-
-        // Set the flag
-        *lpbNumFound  = TRUE;
-        *lpaplLongest = atArg.aplLongest;
-    } else
-    {
-        Assert (IsSimpleChar (aplTypeItm));
-
-        // Set the flag
-        *lpbChrFound  = TRUE;
-        *lpaplChar    = *(LPAPLCHAR) lpSymGlbItm;
-    } // End IF/ELSE
-
+    // Call CheckSimple function
+    bRet =
+      PrimOpVariantCheckSimple_EM (lpSymGlbItm,         // Ptr to right operand global memory data
+                                   aplTypeItm,          // Right operand storage type
+                                   0,                   // Index into lpMemRhtOpr to use
+                                   lpeFound,            // Ptr to eFound
+                                   lpuNum,              // ...    Numeric count so far
+                                   lpuChr,              // ...    Char    ...
+                                   lpaplLongest,        // ...    Num/Chr
+                                   aplTypeNum,          // Convert to this datatype if numeric
+                                   lptkOpr,             // Ptr to operator token
+                                   lptkRhtOpr);         // Ptr to right operand token
     // If we locked global memory, ...
     if (lpMemHdrItm NE NULL)
     {
@@ -1604,20 +1859,7 @@ UBOOL PrimOpVariantCheckHetero_EM
         MyGlobalUnlock (hGlbItm); lpMemHdrItm = NULL;
     } // End IF
 
-    return TRUE;
-
-VALENCE_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_VALENCE_ERROR APPEND_NAME,
-                               lptkOpr);
-    goto ERROR_EXIT;
-
-RIGHT_OPERAND_DOMAIN_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkRhtOpr);
-    goto ERROR_EXIT;
-
-ERROR_EXIT:
-    return FALSE;
+    return bRet;
 } // End PrimOpVariantCheckHetero_EM
 
 
@@ -1634,20 +1876,20 @@ LPPL_YYSTYPE PrimOpDydVariant_EM_YY
 
 {
     return
-      PrimOpDydVariantCommon_EM_YY (lptkLftArg,         // Ptr to left arg token
-                                    lpYYFcnStrOpr,      // Ptr to operator function strand
-                                    lptkRhtArg,         // Ptr to right arg token
-                                    FALSE);             // TRUE iff prototyping
+      PrimOpDydVariantCom_EM_YY (lptkLftArg,        // Ptr to left arg token
+                                 lpYYFcnStrOpr,     // Ptr to operator function strand
+                                 lptkRhtArg,        // Ptr to right arg token
+                                 FALSE);            // TRUE iff prototyping
 } // End PrimOpDydVariant_EM_YY
 
 
 //***************************************************************************
-//  $PrimOpDydVariantCommon_EM_YY
+//  $PrimOpDydVariantCom_EM_YY
 //
 //  Primitive operator for dyadic derived function from Variant ("variant")
 //***************************************************************************
 
-LPPL_YYSTYPE PrimOpDydVariantCommon_EM_YY
+LPPL_YYSTYPE PrimOpDydVariantCom_EM_YY
     (LPTOKEN      lptkLftArg,           // Ptr to left arg token
      LPPL_YYSTYPE lpYYFcnStrOpr,        // Ptr to operator function strand
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
@@ -1663,16 +1905,16 @@ LPPL_YYSTYPE PrimOpDydVariantCommon_EM_YY
     lpYYFcnStrLft = GetDydLftOper (lpYYFcnStrOpr, CheckAxisOper (lpYYFcnStrOpr), lpYYFcnStrRht); Assert (lpYYFcnStrLft NE NULL);
 
     return
-      PrimOpVariantCommon_EM_YY (lptkLftArg,            // Ptr to left arg token (may be NULL if monadic derived function)
+      PrimOpVariantCom_EM_YY (lptkLftArg,               // Ptr to left arg token (may be NULL if monadic derived function)
                                                         //   If this is an identity function call (lpPrimFlagsLft NE NULL),
                                                         //     then this value is the original right arg
-                                 lpYYFcnStrLft,         // Ptr to left operand function strand
-                                 NULL,                  // Ptr to left operand primitive flags (may be NULL)
-                                 lpYYFcnStrOpr,         // Ptr to operator function strand
-                                 lpYYFcnStrRht,         // Ptr to right operand function strand
-                                 lptkRhtArg,            // Ptr to right arg token
-                                 bPrototyping);         // TRUE iff protoyping
-} // End PrimOpDydVariantCommon_EM_YY
+                              lpYYFcnStrLft,            // Ptr to left operand function strand
+                              NULL,                     // Ptr to left operand primitive flags (may be NULL)
+                              lpYYFcnStrOpr,            // Ptr to operator function strand
+                              lpYYFcnStrRht,            // Ptr to right operand function strand
+                              lptkRhtArg,               // Ptr to right arg token
+                              bPrototyping);            // TRUE iff protoyping
+} // End PrimOpDydVariantCom_EM_YY
 
 
 //***************************************************************************
@@ -1746,8 +1988,8 @@ LPPL_YYSTYPE PrimOpVariantKeyword_EM_YY
                                             lpMemPTD,       // Ptr to PerTabData global memory
                                             lptkOpr))       // Ptr to operator token
                 goto ERROR_EXIT;
-            else
-                break;
+
+            break;
 
         case 3:
             // Loop through the items backwards
@@ -2037,7 +2279,7 @@ UBOOL VariantValidateSymVal_EM
 
     // Validate the value
     return VariantValidateCom_EM (immTypeItm,                               // Immediate type
-                                  hGlbItm,                                  //
+                                  hGlbItm,                                  // Global memory handle
                                  &aplLongestItm,                            // Ptr to immediate value (ignored if bReset)
                                   bReset,                                   // TRUE iff assignment value is empty (we're resetting to CLEAR WS/System)
                                   aVariantKeyStr[varKey].aSysVarValidSet,   // Ptr to validate set function
@@ -2079,15 +2321,68 @@ VARIANTKEYS PrimOpVariantValKeyGlb
 
 
 //***************************************************************************
+//  $SaveAllSysVars
+//
+//  Save the old value of all System Vars
+//***************************************************************************
+
+void SaveAllSysVars
+    (LPALLSYSVARS_STR lpAllSysVars,     // Ptr to ALLSYSVARS_STR struc
+     LPPERTABDATA     lpMemPTD)         // Ptr to PerTabData global memory
+
+{
+    // ENUM_VARIANT_CT  :
+    // Save the old value
+    lpAllSysVars->fQuadCT  = GetQuadCT ();
+
+    // ENUM_VARIANT_DT  :
+    // Save the old value
+    lpAllSysVars->cQuadDT  = GetQuadDT ();
+
+    // ENUM_VARIANT_FPC :
+    // Save the old value
+    lpAllSysVars->uQuadFPC = GetQuadFPC ();
+
+    // ENUM_VARIANT_IO  :
+    // Save the old value
+    lpAllSysVars->bQuadIO  = GetQuadIO ();
+
+    // ENUM_VARIANT_LR  :
+    // Save the old value
+    lpAllSysVars->cQuadLR  = GetQuadLR ();
+
+    // ENUM_VARIANT_PP  :
+    // Save the old value
+    lpAllSysVars->uQuadPP  = GetQuadPP ();
+
+    // ENUM_VARIANT_RL  :
+    // Save the old value
+    lpAllSysVars->uQuadRL  = GetQuadRL ();
+
+    // ENUM_VARIANT_EIG :
+    // No old value to save
+
+    // ENUM_VARIANT_POCH:
+    // No old value to save
+
+    // ENUM_VARIANT_HCM:
+    // Save the old value of eHCMul
+    lpAllSysVars->eHCMul   = lpMemPTD->eHCMul;
+
+    // ENUM_VARIANT_SUB:
+    // No old value to save
+} // End SaveAllSysVars
+
+
+//***************************************************************************
 //  $SetAllSysVars
 //
-//  Save the old and set the new value of all System Vars
+//  Set the new value of all System Vars
 //***************************************************************************
 
 void SetAllSysVars
     (ENUM_VARIANT     enumVarOpr,       // Enum of the target
-     APLLONGEST       aplLngRhtOpr,     // Immediate Num
-     APLCHAR          aplChrRhtOpr,     // ...       Chr
+     APLLONGEST       aplRhtOprItm,     // Immediate Num/Chr
      LPALLSYSVARS_STR lpAllSysVars,     // Ptr to ALLSYSVARS_STR struc
      LPPERTABDATA     lpMemPTD)         // Ptr to PerTabData global memory
 
@@ -2096,81 +2391,62 @@ void SetAllSysVars
     switch (enumVarOpr)
     {
         case ENUM_VARIANT_CT  :
-            // Save the old value
-            lpAllSysVars->fQuadCT = GetQuadCT ();
-
             // Set the new value
-            SetQuadCT (*(LPAPLFLOAT) &aplLngRhtOpr);
-
-            break;
-
-        case ENUM_VARIANT_EIG :
-            // No old value to save
-
-            // Set the new value
-            lpAllSysVars->uEigenNew = *(LPAPLUINT   ) &aplLngRhtOpr;
+            SetQuadCT  (*(LPAPLFLOAT) &aplRhtOprItm);
 
             break;
 
         case ENUM_VARIANT_DT  :
-            // Save the old value
-            lpAllSysVars->cQuadDT = GetQuadDT ();
-
             // Set the new value
-            SetQuadDT (aplChrRhtOpr);
+            SetQuadDT  (*(LPAPLCHAR ) &aplRhtOprItm);
 
             break;
 
         case ENUM_VARIANT_FPC :
-            // Save the old value
-            lpAllSysVars->uQuadFPC = GetQuadFPC ();
-
             // Set the new value
-            SetQuadFPC (*(LPAPLUINT ) &aplLngRhtOpr);
+            SetQuadFPC (*(LPAPLUINT ) &aplRhtOprItm);
 
             break;
 
         case ENUM_VARIANT_IO  :
-            // Save the old value
-            lpAllSysVars->bQuadIO = GetQuadIO ();
-
             // Set the new value
-            SetQuadIO (*(LPAPLBOOL ) &aplLngRhtOpr);
+            SetQuadIO  (*(LPAPLBOOL ) &aplRhtOprItm);
 
             break;
 
         case ENUM_VARIANT_LR  :
-            // Save the old value
-            lpAllSysVars->cQuadLR = GetQuadLR ();
-
             // Set the new value
-            SetQuadLR (aplChrRhtOpr);
+            SetQuadLR  (*(LPAPLCHAR ) &aplRhtOprItm);
 
             break;
 
         case ENUM_VARIANT_PP  :
-            // Save the old value
-            lpAllSysVars->uQuadPP = GetQuadPP ();
-
             // Set the new value
-            SetQuadPPV (*(LPAPLINT  ) &aplLngRhtOpr);
+            SetQuadPPV (*(LPAPLINT  ) &aplRhtOprItm);
+
+            break;
+
+        case ENUM_VARIANT_RL  :
+            // Set the new value
+            SetQuadRL  (*(LPAPLINT  ) &aplRhtOprItm);
+
+            break;
+
+        case ENUM_VARIANT_EIG :
+            // Set the new value
+            lpAllSysVars->uEigenNew = *(LPAPLUINT   ) &aplRhtOprItm;
 
             break;
 
         case ENUM_VARIANT_POCH:
-            // No old value to save
-
             // Set the new value
-            lpAllSysVars->uPochNew = *(LPAPLUINT   ) &aplLngRhtOpr;
+            lpAllSysVars->uPochNew  = *(LPAPLUINT   ) &aplRhtOprItm;
 
             break;
 
         case ENUM_VARIANT_HCM:
-            // Save the old value of eHCMul
-            lpAllSysVars->eHCMul = lpMemPTD->eHCMul;
-
             // Split cases based upon the incoming character
-            switch (aplChrRhtOpr)
+            switch (*(LPAPLCHAR) &aplRhtOprItm)
             {
                 case L'i':
                     // Set the new value
@@ -2208,6 +2484,12 @@ void SetAllSysVars
 
             break;
 
+        case ENUM_VARIANT_SUB:
+            // Set the new value
+            lpAllSysVars->cSubNew   = *(LPAPLCHAR) &aplRhtOprItm;
+
+            break;
+
         defstop
             break;
     } // End SWITCH
@@ -2232,11 +2514,6 @@ void RestAllSysVars
         case ENUM_VARIANT_CT  :
             // Restore the old value
             SetQuadCT (lpAllSysVars->fQuadCT);
-
-            break;
-
-        case ENUM_VARIANT_EIG :
-            // No old value to restore
 
             break;
 
@@ -2270,6 +2547,17 @@ void RestAllSysVars
 
             break;
 
+        case ENUM_VARIANT_RL  :
+            // Restore the old value
+            SetQuadRL  (lpAllSysVars->uQuadRL);
+
+            break;
+
+        case ENUM_VARIANT_EIG :
+            // No old value to restore
+
+            break;
+
         case ENUM_VARIANT_POCH:
             // No old value to restore
 
@@ -2278,6 +2566,11 @@ void RestAllSysVars
         case ENUM_VARIANT_HCM:
             // Restore the old value
             lpMemPTD->eHCMul = lpAllSysVars->eHCMul;
+
+            break;
+
+        case ENUM_VARIANT_SUB:
+            // No old value to restore
 
             break;
 
@@ -2440,6 +2733,24 @@ UBOOL varOprPP
 
 
 //***************************************************************************
+//  $varOprRL
+//
+//  Variant operator []RL value validation routine
+//***************************************************************************
+
+UBOOL varOprRL
+    (LPAPLINT   lpValue)
+
+{
+    return
+      ValidateIntegerTest (lpValue            ,     // Ptr to the value to validate
+                           DEF_MIN_QUADRL     ,     // Minimum value
+                           DEF_MAX_QUADRL     ,     // Maximum ...
+                           bRangeLimit.RL     );    // TRUE iff range limiting
+} // End varOprRL
+
+
+//***************************************************************************
 //  $varOprPOCH
 //
 //  Variant operator []POCH value validation routine
@@ -2469,6 +2780,24 @@ UBOOL varOprHCM
                         DEF_QUADHCM_ALLOW     ,     // Ptr to vector of allowed values
                         lpValue               );    // Ptr to the return value if <lpValue[0] EQ WC_EOS>
 } // End varOprHCM
+
+
+//***************************************************************************
+//  $varOprSUB
+//
+//  Variant operator []SUB value validation routine
+//***************************************************************************
+
+UBOOL varOprSUB
+    (LPAPLCHAR  lpValue)
+
+{
+    return
+      ValidateCharTest (lpValue               ,     // Ptr to the value to validate
+                        DEF_QUADSUB_CWS[0]    ,     // Default value
+                        DEF_QUADSUB_ALLOW     ,     // Ptr to vector of allowed values
+                        lpValue               );    // Ptr to the return value if <lpValue[0] EQ WC_EOS>
+} // End varOprSUB
 
 
 //***************************************************************************

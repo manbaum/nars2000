@@ -28,6 +28,8 @@
 #define DEF_QUADLR_ALLOW    L"lr"
 #define DEF_QUADHCM_CWS     L"i"
 #define DEF_QUADHCM_ALLOW   L"iexdc"
+#define DEF_QUADSUB_CWS     L"a"
+#define DEF_QUADSUB_ALLOW   L"ad"
 #define DEF_QUADLR_NAMES    L"Left", L"Right"
 #define DEF_QUADDT_CWS      L"r"
 #define DEF_QUADDT_ALLOW    L"rgp"

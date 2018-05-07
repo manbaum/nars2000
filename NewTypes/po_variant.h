@@ -27,25 +27,21 @@
 
 typedef enum tagVARIANT_KEYS
 {
-    VARIANT_KEY_ALX = 0 ,   // 00:  []ALX
-    VARIANT_KEY_CT      ,   // 01:  []CT
-    VARIANT_KEY_LR      ,   // 02:  []LR
-    VARIANT_KEY_DT      ,   // 03:  []DT
-    VARIANT_KEY_ELX     ,   // 04:  []ALX
-    VARIANT_KEY_FC      ,   // 05:  []FC
-    VARIANT_KEY_FEATURE ,   // 06:  []FEATURE
-    VARIANT_KEY_FPC     ,   // 07:  []FPC
-    VARIANT_KEY_IO      ,   // 08:  []IO
-    VARIANT_KEY_PP      ,   // 09:  []PP
-    VARIANT_KEY_RL      ,   // 0A:  []PP
-    VARIANT_KEY_LENGTH  ,   // 0B:  # entries
+    VARIANT_KEY_CT  = 0 ,   // 00:  []CT
+    VARIANT_KEY_DT      ,   // 01:  []DT
+    VARIANT_KEY_FPC     ,   // 02:  []FPC
+    VARIANT_KEY_IO      ,   // 03:  []IO
+    VARIANT_KEY_LR      ,   // 04:  []LR
+    VARIANT_KEY_PP      ,   // 05:  []PP
+    VARIANT_KEY_RL      ,   // 06:  []RL
+    VARIANT_KEY_LENGTH  ,   // 07:  # entries
 } VARIANTKEYS, *LPVARIANTKEYS;
 
 #define VARIANT_KEY_ERROR   VARIANT_KEY_LENGTH
 
 // N.B.:  Whenever changing the above enum (VARIANT_KEYS)
 //   be sure to make a corresponding change to
-//   <aVariantKeyStr> below.
+//   <aVariantKeyStr> in <po_variant.c>.
 
 typedef struct tagVARIANT_KEY_STR
 {
@@ -67,32 +63,34 @@ typedef enum tagENUM_VARIANT
 {
     ENUM_VARIANT_UNK    = 0,        // 00:  No value
     ENUM_VARIANT_CT        ,        // 01:  []CT
-    ENUM_VARIANT_EIG       ,        // 02:  {domino} Eigenvalues, vectors, and Schur vectors
-    ENUM_VARIANT_DT        ,        // 03:  []DT
-    ENUM_VARIANT_FPC       ,        // 04:  []FPC
-    ENUM_VARIANT_IO        ,        // 05:  []IO
-    ENUM_VARIANT_LR        ,        // 06:  []LR
-    ENUM_VARIANT_PP        ,        // 07:  []PP
-    ENUM_VARIANT_POCH      ,        // 08:  {shriek} Pochhammer k-symbol
-    ENUM_VARIANT_HCM       ,        // 09:  {times} Interior/Exterior/Cross/Dot/Conjugation product
-    ENUM_VARIANT_LENGTH             // 0A:  # enums
+    ENUM_VARIANT_DT        ,        // 02:  []DT
+    ENUM_VARIANT_FPC       ,        // 03:  []FPC
+    ENUM_VARIANT_IO        ,        // 04:  []IO
+    ENUM_VARIANT_LR        ,        // 05:  []LR
+    ENUM_VARIANT_PP        ,        // 06:  []PP
+    ENUM_VARIANT_RL        ,        // 07:  []RL
+    ENUM_VARIANT_EIG       ,        // 08:  {domino} Eigenvalues, vectors, and Schur vectors
+    ENUM_VARIANT_POCH      ,        // 09:  {shriek} Pochhammer k-symbol
+    ENUM_VARIANT_HCM       ,        // 0A:  {times} Interior/Exterior/Cross/Dot/Conjugation product
+    ENUM_VARIANT_SUB       ,        // 0B:  Ascending/descending subsequence
+    ENUM_VARIANT_LENGTH             // 0C:  # enums
 } ENUM_VARIANT, *LPENUM_VARIANT;
 
 // N.B.:  Whenever changing the above enum (ENUM_VARIANT)
 //   be sure to make a corresponding change to
-//   <varOprType> in <po_variant.c>.
+//   <varOprType> and <varOprValTab> in <po_variant.c>.
 
 
-#define VAR_MAC(a,N1,N2,C1,C2,N3,N4,C3,C4)  \
-    {UTF16_##a,                             \
-     ENUM_VARIANT_##N1,                     \
-     ENUM_VARIANT_##N2,                     \
-     ENUM_VARIANT_##C1,                     \
-     ENUM_VARIANT_##C2,                     \
-     ENUM_VARIANT_##N3,                     \
-     ENUM_VARIANT_##N4,                     \
-     ENUM_VARIANT_##C3,                     \
-     ENUM_VARIANT_##C4,                     \
+#define VAR_MAC(a,N1,N2,C1,C2,N3,N4,C3,C4)          \
+    {UTF16_##a,                                     \
+     ENUM_VARIANT_##N1,                             \
+     ENUM_VARIANT_##N2,                             \
+     ENUM_VARIANT_##C1,                             \
+     ENUM_VARIANT_##C2,                             \
+     ENUM_VARIANT_##N3,                             \
+     ENUM_VARIANT_##N4,                             \
+     ENUM_VARIANT_##C3,                             \
+     ENUM_VARIANT_##C4,                             \
     }
 
 typedef struct tagVARIANT_STR
@@ -115,18 +113,26 @@ typedef struct tagALLSYSVARS
     // Old values
     APLBOOL    bQuadIO;         // 00:  []IO
     APLUINT    uQuadPP,         // 01:  []PP
-               uEigenOld,       // 02:  Eigen
-               uQuadFPC,        // 03:  []FPC
-               uPochOld;        // 04:  Pochhammer
-    APLFLOAT   fQuadCT;         // 05:  []CT
-    APLCHAR    cQuadDT,         // 06:  []DT
-               cQuadLR;         // 07:  []LR
-    ENUM_HCMUL eHCMul;          // 08:  HCM value saved in <lpMemPTD->eHCMul>
+               uQuadRL,         // 02:  []RL
+               uQuadFPC;        // 03:  []FPC
+    APLFLOAT   fQuadCT;         // 04:  []CT
+    APLCHAR    cQuadDT,         // 05:  []DT
+               cQuadLR;         // 06:  []LR
+    ENUM_HCMUL eHCMul;          // 07:  New HCM value saved in <lpMemPTD->eHCMul>
 
     // New values
-    APLUINT    uEigenNew,       //
-               uPochNew;        //
+    APLCHAR    cSubNew;         //      Ascending/descending subsequence
+    APLUINT    uEigenNew,       //      Eigenvalues & -vectors, etc.
+               uPochNew;        //      Pochhammer k-symbol
 } ALLSYSVARS_STR, *LPALLSYSVARS_STR;
+
+
+typedef enum tagENUMNCF     // Num/Chr Found state
+{
+    ENUM_NCF_UNK = 0    ,   // 00:  Unknown value
+    ENUM_NCF_NUM        ,   // 01:  Num found
+    ENUM_NCF_CHR        ,   // 02:  Chr ...
+} ENUM_NCF, *LPENUM_NCF;
 
 
 //***************************************************************************

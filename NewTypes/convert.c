@@ -657,7 +657,7 @@ int hcXY_cmp
 
         case ARRAY_RAT:
             if (fQuadCT EQ 0.0)
-            return signumint (mpq_cmp (&lpatLft->aplRat, &lpatRht->aplRat));
+                return signumint (mpq_cmp (&lpatLft->aplRat, &lpatRht->aplRat));
             else
                 return signumint (CmpCT_R ( lpatLft->aplRat,  lpatRht->aplRat, fQuadCT, -));
 
@@ -703,6 +703,12 @@ int hcXY_cmp
         case ARRAY_HC8V:
             return hc8v_cmp  (lpatLft->aplHC8V    , lpatRht->aplHC8V   , fQuadCT);
 
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
+            return HeNe_cmp (lpatLft->aplHetero,
+                             lpatRht->aplHetero,
+                             bGradeAll,
+                             fQuadCT);
         defstop
             return 0;
     } // End SWITCH

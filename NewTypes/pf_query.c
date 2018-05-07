@@ -44,8 +44,8 @@ PRIMSPEC PrimSpecQuery =
     // Monadic non-Boolean result functions (indexable)
     &PrimFnMonQueryIisI,
     &PrimFnMonQueryIisF,
-    NULL,   // &PrimFnMonQueryFisI, -- Can't happen w/Query
-    NULL,   // &PrimFnMonQueryFisF, -- can't happen w/Query
+    &PrimFnMonQueryFisI,
+    &PrimFnMonQueryFisF,
     &PrimFnMonQueryRisR,
     &PrimFnMonQueryVisR,
     &PrimFnMonQueryVisV,
@@ -290,6 +290,10 @@ void PrimFnMonQueryIisI
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
 
+    // Check for special value
+    if (lpatRht->aplInteger EQ 0)
+        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+    else
     // Check for DOMAIN ERROR
     if (lpatRht->aplInteger < bQuadIO)
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
@@ -329,6 +333,10 @@ void PrimFnMonQueryIisF
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
+    // Check for special value
+    if (lpatRht->aplInteger EQ 0)
+        RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+    else
     // Check for DOMAIN ERROR
     if (lpatRht->aplFloat NE floor (lpatRht->aplFloat))
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
@@ -338,6 +346,65 @@ void PrimFnMonQueryIisF
         PrimFnMonQueryIisI (lpMemRes, uRes, lpatRht, lpPrimSpec);
     } // End IF/ELSE
 } // End PrimFnMonQueryIisF
+
+
+//***************************************************************************
+//  $PrimFnMonQueryFisI
+//
+//  Primitive scalar function monadic Query:  F {is} fn I
+//***************************************************************************
+
+void PrimFnMonQueryFisI
+    (LPAPLFLOAT lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    Assert (lpatRht->aplInteger EQ 0);
+
+    PrimFnMonQueryFisF (lpMemRes,       // Ptr to the result
+                        uRes,           // Index into the result
+                        lpatRht,        // Ptr to right arg ALLTYPES
+                        lpPrimSpec);    // Ptr to local PRIMSPEC
+} // End PrimFnMonQueryFisI
+
+
+//***************************************************************************
+//  $PrimFnMonQueryFisF
+//
+//  Primitive scalar function monadic Query:  F {is} fn F
+//***************************************************************************
+
+void PrimFnMonQueryFisF
+    (LPAPLFLOAT lpMemRes,           // Ptr to the result
+     APLUINT    uRes,               // Index into the result
+     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
+     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
+
+{
+    APLBOOL bQuadIO;                    // []IO
+    APLINT  aplRes = QUADRL_MODULUS;    // The argument and result
+
+    // Get the current value of []IO
+    bQuadIO = GetQuadIO ();
+
+    // and set it to zero
+    SetQuadIO (0);
+
+    Assert (lpatRht->aplFloat EQ 0.0);
+
+    // Generate the random number
+    PrimFnMonQueryIisI (&aplRes,        // Ptr to the result
+                         0,             // Index into the result
+           (LPALLTYPES) &aplRes,        // Ptr to right arg ALLTYPES
+                         lpPrimSpec);   // Ptr to local PRIMSPEC
+    // Save in the result
+    lpMemRes[uRes] = ((APLFLOAT) aplRes) / (APLFLOAT) QUADRL_MODULUS;
+
+    // Restore []IO
+    SetQuadIO (bQuadIO);
+} // End PrimFnMonQueryFisF
 
 
 //***************************************************************************
@@ -510,6 +577,10 @@ void PrimFnMonQueryRisR
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
 
+    // Check for special value
+    if (mpq_cmp_ui (&lpatRht->aplRat, 0, 1) EQ 0)
+        RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
+    else
     // Check for DOMAIN ERROR
     if (mpq_cmp_ui (&lpatRht->aplRat, bQuadIO, 1) < 0)
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
@@ -602,10 +673,19 @@ void PrimFnMonQueryVisV
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
 
+    // Check for special value
+    if (mpfr_cmp_ui (&lpatRht->aplVfp, 0) EQ 0)
+    {
+        // Initialize the result to 0
+        mpfr_init0 (&lpMemRes[uRes]);
+
+        // Generate the random number
+        mpfr_urandomb (&lpMemRes[uRes], GetMemPTD ()->randState);
+    } else
     // Check for DOMAIN ERROR
     if (mpfr_cmp_ui (&lpatRht->aplVfp, bQuadIO) < 0)
         RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-
+    else
     // If the VFP is an integer,  ...
     if (mpfr_integer_p (&lpatRht->aplVfp))
     {

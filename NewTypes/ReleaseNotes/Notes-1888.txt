@@ -1,0 +1,9 @@
+Build #1888 -- Version 0.5.7.xx
+-------------------------------
+
+* Implement ?0 To Return A Random Number In [0, 1)
+
+Directory branches/bsmith/NewTypes:
+
+PF_QUERY.C:
+  Implement ?0 to return a random number in [0, 1)

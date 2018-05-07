@@ -699,82 +699,11 @@ UBOOL PrimFnDydEqualUnderbarSimpleOrd
                 break;
 
             case ARRAY_HETERO:
-            {
-                IMM_TYPES immTypeLft,       // Left arg immediate type
-                          immTypeRht;       // Right ...
-
-                // Get the two immediate types
-                immTypeLft = atLft.aplHetero->stFlags.ImmType;
-                immTypeRht = atRht.aplHetero->stFlags.ImmType;
-
-                // If the immediate types are incompatible, ...
-                if (IsImmChr (immTypeLft) NE IsImmChr (immTypeRht))
-                    bRet = FALSE;
-                else
-                if (IsImmChr (immTypeLft))
-                    // Compare 'em
-                    bRet = atLft.aplHetero->stData.stChar EQ atRht.aplHetero->stData.stChar;
-                else
-                {
-                    APLSTYPE  aplTypeLft2,      // Left item storage type
-                              aplTypeRht2,      // Right ...
-                              aplTypeCom2;      // Common ...
-                    ALLTYPES  atSubLft = {0},   // Left arg item as ALLTYPES
-                              atSubRht = {0};   // Right ...
-
-                    // Translate them to array type
-                    aplTypeLft2 = TranslateImmTypeToArrayType (immTypeLft);
-                    aplTypeRht2 = TranslateImmTypeToArrayType (immTypeRht);
-
-                    // Calculate the common storage type
-                    aplTypeCom2 = aTypePromote[aplTypeLft2][aplTypeRht2];
-
-                    // Convert the left arg to the common type
-                    (*aTypeActPromote[aplTypeLft2][aplTypeCom]) (&atLft, 0, &atSubLft);
-                    (*aTypeActPromote[aplTypeRht2][aplTypeCom]) (&atRht, 0, &atSubRht);
-
-                    // Split cases based upon the immediate type
-                    switch (aplTypeCom2)
-                    {
-                        case ARRAY_BOOL:
-                            // Compare 'em
-                            bRet = atSubLft.aplBoolean EQ atSubRht.aplBoolean;
-
-                            break;
-
-                        case ARRAY_INT:
-                            // Compare 'em
-                            bRet = atSubLft.aplInteger EQ atSubRht.aplInteger;
-
-                            break;
-
-                        case ARRAY_FLOAT:
-                            // Compare 'em
-                            bRet = atSubLft.aplFloat   EQ atSubRht.aplFloat  ;
-
-                            break;
-
-                        case ARRAY_HC2I:
-                        case ARRAY_HC4I:
-                        case ARRAY_HC8I:
-                        case ARRAY_HC2F:
-                        case ARRAY_HC4F:
-                        case ARRAY_HC8F:
-                        case ARRAY_RAT:
-                        case ARRAY_HC2R:
-                        case ARRAY_HC4R:
-                        case ARRAY_HC8R:
-                        case ARRAY_VFP:
-                        case ARRAY_HC2V:
-                        case ARRAY_HC4V:
-                        case ARRAY_HC8V:
-                        defstop
-                            break;
-                    } // End SWITCH
-                } // End IF/ELSE
+                // Use common function
+                bRet =
+                  PrimFnDydEqualUnderbarHetero (aplTypeCom, &atLft, &atRht);
 
                 break;
-            } // End ARRAY_HETERO
 
             case ARRAY_CHAR:
                 bRet = (atLft.aplChar EQ atRht.aplChar);
@@ -797,6 +726,96 @@ ERROR_EXIT:
 NORMAL_EXIT:
     return bRet;
 } // End PrimFnDydEqualUnderbarSimpleOrd
+
+
+//***************************************************************************
+//  $PrimFnDydEqualUnderbarHetero
+//
+//  Subroutine to compare two hetero values
+//***************************************************************************
+
+int PrimFnDydEqualUnderbarHetero
+    (APLSTYPE   aplTypeCom,     // The common storage type
+     LPALLTYPES lpatLft,        // Ptr to Left arg as ALLTYPES
+     LPALLTYPES lpatRht)        // ...    Right ...
+
+{
+    IMM_TYPES immTypeLft,       // Left arg immediate type
+              immTypeRht;       // Right ...
+    UBOOL     bRet;             // The result
+
+    // Get the two immediate types
+    immTypeLft = lpatLft->aplHetero->stFlags.ImmType;
+    immTypeRht = lpatRht->aplHetero->stFlags.ImmType;
+
+    // If the immediate types are incompatible, ...
+    if (IsImmChr (immTypeLft) NE IsImmChr (immTypeRht))
+        bRet = FALSE;
+    else
+    if (IsImmChr (immTypeLft))
+        // Compare 'em
+        bRet = lpatLft->aplHetero->stData.stChar EQ lpatRht->aplHetero->stData.stChar;
+    else
+    {
+        APLSTYPE  aplTypeLft2,      // Left item storage type
+                  aplTypeRht2,      // Right ...
+                  aplTypeCom2;      // Common ...
+        ALLTYPES  atSubLft = {0},   // Left arg item as ALLTYPES
+                  atSubRht = {0};   // Right ...
+
+        // Translate them to array type
+        aplTypeLft2 = TranslateImmTypeToArrayType (immTypeLft);
+        aplTypeRht2 = TranslateImmTypeToArrayType (immTypeRht);
+
+        // Calculate the common storage type
+        aplTypeCom2 = aTypePromote[aplTypeLft2][aplTypeRht2];
+
+        // Convert the left and right args to the common type
+        (*aTypeActPromote[aplTypeLft2][aplTypeCom]) (lpatLft, 0, &atSubLft);
+        (*aTypeActPromote[aplTypeRht2][aplTypeCom]) (lpatRht, 0, &atSubRht);
+
+        // Split cases based upon the immediate type
+        switch (aplTypeCom2)
+        {
+            case ARRAY_BOOL:
+                // Compare 'em
+                bRet = atSubLft.aplBoolean EQ atSubRht.aplBoolean;
+
+                break;
+
+            case ARRAY_INT:
+                // Compare 'em
+                bRet = atSubLft.aplInteger EQ atSubRht.aplInteger;
+
+                break;
+
+            case ARRAY_FLOAT:
+                // Compare 'em
+                bRet = atSubLft.aplFloat   EQ atSubRht.aplFloat  ;
+
+                break;
+
+            case ARRAY_HC2I:
+            case ARRAY_HC4I:
+            case ARRAY_HC8I:
+            case ARRAY_HC2F:
+            case ARRAY_HC4F:
+            case ARRAY_HC8F:
+            case ARRAY_RAT:
+            case ARRAY_HC2R:
+            case ARRAY_HC4R:
+            case ARRAY_HC8R:
+            case ARRAY_VFP:
+            case ARRAY_HC2V:
+            case ARRAY_HC4V:
+            case ARRAY_HC8V:
+            defstop
+                break;
+        } // End SWITCH
+    } // End IF/ELSE
+
+    return bRet;
+} // End PrimFnDydEqualUnderbarHetero
 
 
 //***************************************************************************

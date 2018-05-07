@@ -4913,73 +4913,13 @@ PARSELINE_ERROR:
 
             // Loop through the left stack freeing temps
             while (LSTACKLEN > 1)
-            {
-                LPPL_YYSTYPE lpYYRes;
-
-                // Get the next item from the left stack
-                lpYYRes = POPLEFT;
-
-                // If it's a function/operator, ...
-                if (IsTknFcnOpr (&lpYYRes->tkToken))
-                {
-                    // Unstrand the function if appropriate
-                    UnFcnStrand_EM (&lpYYRes, NAMETYPE_FN12, FALSE);
-
-                    // Free the function (including YYFree)
-                    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
-                } else
-                // If it's a var, ...
-                if (IsTknTypeVar (lpYYRes->tkToken.tkFlags.TknType))
-                {
-                    // Unstrand the temp if necessary
-                    UnVarStrand (lpYYRes);
-
-                    // Free & YYFree the temp
-                    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
-                } else
-                // If it's not an EOS or SOS, ...
-                if (lpYYRes->tkToken.tkSynObj NE soSOS
-                 && lpYYRes->tkToken.tkSynObj NE soEOS)
-                {
-                    // YYFree the temp
-                    YYFree (lpYYRes); lpYYRes = NULL;
-                } // End IF/ELSE/...
-            } // End WHILE
+                // Free the left stack temps
+                FreeStackTemps (POPLEFT);
 
             // Loop through the right stack freeing temps
             while (RSTACKLEN > 1)
-            {
-                LPPL_YYSTYPE lpYYRes;
-
-                // Get the next item from the right stack
-                lpYYRes = POPRIGHT;
-
-                // If it's a function/operator, ...
-                if (IsTknFcnOpr (&lpYYRes->tkToken))
-                {
-                    // Unstrand the function if appropriate
-                    UnFcnStrand_EM (&lpYYRes, NAMETYPE_FN12, FALSE);
-
-                    // Free the function (including YYFree)
-                    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
-                } else
-                // If it's a var, ...
-                if (IsTknTypeVar (lpYYRes->tkToken.tkFlags.TknType))
-                {
-                    // Unstrand the temp if necessary
-                    UnVarStrand (lpYYRes);
-
-                    // Free & YYFree the temp
-                    FreeResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
-                } else
-                // If it's not an EOS or SOS, ...
-                if (lpYYRes->tkToken.tkSynObj NE soSOS
-                 && lpYYRes->tkToken.tkSynObj NE soEOS)
-                {
-                    // YYFree the temp
-                    YYFree (lpYYRes); lpYYRes = NULL;
-                } // End IF/ELSE/...
-            } // End WHILE
+                // Free the right stack temps
+                FreeStackTemps (POPRIGHT);
 
             // If it's valid, ...
             if (lpplYYCurObj NE NULL)
@@ -5019,6 +4959,7 @@ PARSELINE_ERROR:
                     // Free the object and its curries
                     FreeResult (lpplYYLstRht); YYFree (lpplYYLstRht); lpplYYLstRht = NULL; lstSynObj = soNONE;
                 } else
+                if (IsTknValid (lpplYYLstRht->tkToken))
                     Assert (YYCheckInuse (lpplYYLstRht));
             } // End IF
 
@@ -5848,6 +5789,63 @@ NORMAL_EXIT:
 
     return plLocalVars.ExitType;
 } // End ParseLine
+
+
+//***************************************************************************
+//  $FreeStackTemps
+//
+//  Free the left/right stack temps
+//***************************************************************************
+
+void FreeStackTemps
+    (LPPL_YYSTYPE lpYYRes)
+
+{
+    UBOOL bYYFree = FALSE;
+
+    // If it's a function/operator, ...
+    if (IsTknFcnOpr (&lpYYRes->tkToken))
+    {
+        // Unstrand the function if appropriate
+        UnFcnStrand_EM (&lpYYRes, NAMETYPE_FN12, FALSE);
+
+        if (IsTknValid (lpYYRes->tkToken))
+        {
+            // Free the function
+            FreeResult (lpYYRes);
+
+            // Mark as to be YYFree'd
+            bYYFree = TRUE;
+        } // End IF
+    } else
+    // If it's a var, ...
+    if (IsTknTypeVar (lpYYRes->tkToken.tkFlags.TknType))
+    {
+        // Unstrand the temp if necessary
+        UnVarStrand (lpYYRes);
+
+        if (IsTknValid (lpYYRes->tkToken))
+        {
+            // Free the temp
+            FreeResult (lpYYRes);
+
+            // Mark as to be YYFree'd
+            bYYFree = TRUE;
+        } // End IF
+    } else
+    // If it's not an EOS or SOS, ...
+    if (lpYYRes->tkToken.tkSynObj NE soSOS
+     && lpYYRes->tkToken.tkSynObj NE soEOS)
+        // Mark as to be YYFree'd
+        bYYFree = TRUE;
+
+    // If we're to YYFree this item, ...
+    if (bYYFree && IsTknValid (lpYYRes->tkToken))
+    {
+        // YYFree the temp
+        YYFree (lpYYRes); lpYYRes = NULL;
+    } // End IF
+} // End FreeStackTemps
 
 
 //***************************************************************************

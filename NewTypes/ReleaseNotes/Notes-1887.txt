@@ -1,0 +1,12 @@
+Build #1887 -- Version 0.5.7.xx
+-------------------------------
+
+* Collect Common Code into One Function
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+  Collect the code to free left and right stack temps into one function.
+
+PF_EQUALUND.C:
+  Move the code to compare hetero values into a common function.

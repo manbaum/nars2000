@@ -1,6 +1,22 @@
 Version 0.5.7.xx consists of the following Builds:
 
 
+Build #1889 -- Version 0.5.7.xx
+-------------------------------
+
+* Miscellaneous Build Changes
+
+Directory branches/bsmith/NewTypes:
+
+MAKEFILE.INC:
+  Move up system requirement from 5.01 (WinXP/SP3) to 6.0 (Vista).
+
+NARS2000.VCXPROJ:
+  Move up system requirement from 5.01 (WinXP/SP3) to 6.0 (Vista).
+  Move away from WinXP toolset.
+  Exclude <sc_debug.c> from Release64 builds (as it was already excluded from Release32 builds).
+
+
 Build #1888 -- Version 0.5.7.xx
 -------------------------------
 

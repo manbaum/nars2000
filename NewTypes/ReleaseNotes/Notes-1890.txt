@@ -1,0 +1,9 @@
+Build #1890 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bug In Descending Subsequence With Repeated Values
+
+Directory branches/bsmith/NewTypes:
+
+PO_VARIANT.C:
+  Fix bug in Descending Subsequence with repeated elements in both the source and target.

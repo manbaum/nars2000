@@ -992,7 +992,7 @@ LPPL_YYSTYPE PrimOpVariantSubseq_EM_YY
                     if (bRet)
                     {
                         // Start in the left arg at the next item
-                        iOff = iHighInL - iLft;
+                        iOff = aplNELMLft - iLft;
 
                         // Save this index in the result
                         ((LPAPLINT) lpMemRes)[iRht] = iLft + bQuadIO;

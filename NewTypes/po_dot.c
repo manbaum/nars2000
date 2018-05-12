@@ -221,7 +221,7 @@ IDENT1:
     hGlbMFO = lpMemPTD->hGlbMFO[MFOE_IdnDot];
 
     lpYYRes =
-      ExecuteMagicFunction_EM_YY (NULL,                     // Ptr to left arg token
+      ExecuteMagicFunction_EM_YY (NULL,                     // Ptr to left arg token (may be NULL)
                                  &lpYYFcnStrOpr->tkToken,   // Ptr to function token
                                   lpYYFcnStrOpr,            // Ptr to function strand
                                   lptkRhtArg,               // Ptr to right arg token
@@ -473,7 +473,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
         hGlbMFO = GetMemPTD ()->hGlbMFO[MFOE_DetPerm];
 
         lpYYRes =
-          ExecuteMagicFunction_EM_YY (NULL,                     // Ptr to left arg token
+          ExecuteMagicFunction_EM_YY (NULL,                     // Ptr to left arg token (may be NULL)
                                      &lpYYFcnStrOpr->tkToken,   // Ptr to function token
                                       lpYYFcnStrOpr,            // Ptr to function strand
                                       lptkRhtArg,               // Ptr to right arg token
@@ -529,7 +529,7 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
 
         // Calculate LO/RO/,R
         lpYYRes =
-          ExecuteMagicOperator_EM_YY (NULL,                     // Ptr to left arg token
+          ExecuteMagicOperator_EM_YY (NULL,                     // Ptr to left arg token (may be NULL)
                                      &lpYYFcnStrOpr->tkToken,   // Ptr to function token
                                       lpYYFcnStrLft,            // Ptr to left operand function strand
                                       lpYYFcnStrOpr,            // Ptr to function strand
@@ -2637,6 +2637,33 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     if (!IsTknFcnOpr (&lpYYFcnStrRht->tkToken)
      || IsTknFillJot (&lpYYFcnStrRht->tkToken))
         goto RIGHT_OPERAND_DOMAIN_EXIT;
+
+    // If we're using APL2's defn of Inner Product, ...
+    if (gUseAPL2IP)
+    {
+        HGLOBAL   hGlbMFO;
+
+        // Get the magic function/operator global memory handle
+        hGlbMFO = GetMemPTD ()->hGlbMFO[MFOE_DydDot2];
+
+        // Use APL2's defn of Inner Product
+        lpYYRes =
+          ExecuteMagicOperator_EM_YY (lptkLftArg,               // Ptr to left arg token (may be NULL)
+                                     &lpYYFcnStrOpr->tkToken,   // Ptr to function token
+                                      lpYYFcnStrLft,            // Ptr to left operand function strand
+                                      lpYYFcnStrOpr,            // Ptr to function strand
+                                      lpYYFcnStrRht,            // Ptr to right operand function strand (may be NULL)
+                                      lptkRhtArg,               // Ptr to right arg token
+                                      NULL,                     // Ptr to axis token (may be NULL)
+                                      hGlbMFO,                  // Magic function/operator global memory handle
+                                      NULL,                     // Ptr to HSHTAB struc (may be NULL)
+                                      LINENUM_ONE);             // Starting line # type (see LINE_NUMS)
+        // Check for error
+        if (lpYYRes EQ NULL)
+            goto ERROR_EXIT;
+        else
+            goto NORMAL_EXIT;
+    } // End IF
 
     // Check for left operand axis operator
     lptkAxisLft = CheckAxisOper (lpYYFcnStrLft);

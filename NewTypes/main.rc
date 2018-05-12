@@ -264,10 +264,10 @@ BEGIN
     PUSHBUTTON      "Cancel"  , IDCANCEL       ,150, 90, 50, 14, WS_DISABLED
 END
 
-#define CD_CX       394
+#define CD_CX       404
 #define CD_CY       363
 
-#define PP_CX       300
+#define PP_CX       310
 #define PP_CY       328
 
 IDD_CUSTOMIZE DIALOGEX DISCARDABLE  0, 0, CD_CX, CD_CY
@@ -314,8 +314,8 @@ BEGIN
                                IDC_CLEARWS_FC_LEN      ,200,106, 80, 13
 
     LTEXT           "FEATURE" ,IDC_STATIC              ,  5,124, 40, 13
-    COMBOBOX                   IDC_CLEARWS_FEATURE_CB1 , 45,120,200, 250,WS_BORDER | CBS_DROPDOWNLIST
-    COMBOBOX                   IDC_CLEARWS_FEATURE_CB2 ,250,120, 45, 250,WS_BORDER | CBS_DROPDOWNLIST
+    COMBOBOX                   IDC_CLEARWS_FEATURE_CB1 , 45,120,210, 250,WS_BORDER | CBS_DROPDOWNLIST
+    COMBOBOX                   IDC_CLEARWS_FEATURE_CB2 ,260,120, 45, 250,WS_BORDER | CBS_DROPDOWNLIST
 
     LTEXT           "FPC"     ,IDC_STATIC              ,  5,142, 40, 13
     CONTROL         ""        ,IDC_CLEARWS_FPC_EC      ,ECWNDCLASS,WS_BORDER | ES_AUTOHSCROLL | ES_NUMBER,45,138, 90, 16

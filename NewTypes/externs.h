@@ -170,8 +170,15 @@ typedef enum tagFEATURE_INDICES
     FEATURENDX_NEG0         ,           // 01:  Allow -0
     FEATURENDX_HURWITZ      ,           // 02:  Use Hurwitz's Floor v. McDonnell
     FEATURENDX_NAN          ,           // 03:  Allow NaNs
-    FEATURENDX_LENGTH                   // 04:  # entries in this enum
+    FEATURENDX_IP2          ,           // 04:  Use APL2's definition of Inner Product
+    FEATURENDX_LENGTH                   // 05:  # entries in this enum
 } FEATURE_INDICES, *LPFEATURE_INDICES;
+
+// N.B.:  Whenever changing the above enum (FEATURE_INDICES),
+//   be sure to make a corresponding change to
+//   <DEF_FEATURE_xxx>, <aplDefaultFEATURE>, and <featNames>
+//   all in <externs.h>
+
 
 // Define the minimum/maximum allowable values for []FEATURE
 #define FEATUREVAL_MINVAL       FALSE
@@ -181,6 +188,7 @@ typedef enum tagFEATURE_INDICES
 #define DEF_FEATURE_NEG0        FALSE
 #define DEF_FEATURE_HURWITZ     FALSE
 #define DEF_FEATURE_NAN         FALSE
+#define DEF_FEATURE_IP2         FALSE
 
 typedef struct tagFEATURE_NAMES
 {
@@ -195,6 +203,7 @@ APLINT aplDefaultFEATURE[FEATURENDX_LENGTH]  // []FEATURE default values
     DEF_FEATURE_NEG0        ,           // 01:  Allow -0
     DEF_FEATURE_HURWITZ     ,           // 02:  Use Hurwitz's Floor v. McDonnell
     DEF_FEATURE_NAN         ,           // 03:  Allow NaNs
+    DEF_FEATURE_IP2         ,           // 04:  Use APL2's definition of Inner Product
    }
 #endif
 ;
@@ -206,6 +215,7 @@ FEATURE_NAMES featNames[FEATURENDX_LENGTH]
     {FEATURENDX_NEG0        , L"Allow " WS_UTF16_OVERBAR L"0"     },
     {FEATURENDX_HURWITZ     , L"Use Hurwitz's Floor v. McDonnell" },
     {FEATURENDX_NAN         , L"Allow NaNs"                       },
+    {FEATURENDX_IP2         , L"Use APL2's defn of Inner Product" },
    }
 #endif
 ;

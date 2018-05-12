@@ -826,8 +826,33 @@ UBOOL FreeResultGlobalFcn
 
                     break;
 
-                case TKT_VARARRAY:      // Free the var array (strand arg to dyadic op)
                 case TKT_AXISARRAY:     // Free the axis array
+                    // Get the global handle
+                    lphGlbLcl = &lpYYToken->tkToken.tkData.tkGlbData;
+
+                    Assert (*lphGlbLcl NE NULL);
+
+                    // If tkData is a valid HGLOBAL list array
+                    if (IsGlbTypeLstDir_PTB (*lphGlbLcl))
+                    {
+                        // Free the global list
+                        if (FreeResultGlobalLst (*lphGlbLcl))
+                        {
+#ifdef DEBUG_ZAP
+                            dprintfWL9 (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
+                                         hGlbData,
+                                        *lphGlbLcl,
+                                         FNLN);
+#endif
+                            *lphGlbLcl = NULL;
+                        } // End IF
+
+                        break;
+                    } // End IF/ELSE
+
+                    // Fall through to common code
+
+                case TKT_VARARRAY:      // Free the var array (strand arg to dyadic op)
                 case TKT_CHRSTRAND:     // Free the character strand
                 case TKT_NUMSTRAND:     // Free the numeric strand
                 case TKT_NUMSCALAR:     // Free the numeric scalar

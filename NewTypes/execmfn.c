@@ -73,6 +73,7 @@ extern MAGIC_FCNOPR MFO_DydSlope;
 extern MAGIC_FCNOPR MFO_MonShriek;
 extern MAGIC_FCNOPR MFO_MatOpr;
 extern MAGIC_FCNOPR MFO_DetPerm;
+extern MAGIC_FCNOPR MFO_DydDot2;
 
 
 //***************************************************************************
@@ -818,6 +819,7 @@ UBOOL InitMagicFunctions
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonShriek        ]  = Init1MagicFunction (MFON_MonShriek        , &MFO_MonShriek        , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MatOpr           ]  = Init1MagicFunction (MFON_MatOpr           , &MFO_MatOpr           , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DetPerm          ]  = Init1MagicFunction (MFON_DetPerm          , &MFO_DetPerm          , lpMemPTD, hWndEC, NULL));
+    bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydDot2          ]  = Init1MagicFunction (MFON_DydDot2          , &MFO_DydDot2          , lpMemPTD, hWndEC, NULL));
 
     //***************************************************************
     //  N.B.:  If you define an additional MFO with a local

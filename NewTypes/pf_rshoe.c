@@ -3062,7 +3062,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeImmGlb_EM_YY
 
     // Check for negative indices [-aplNELMRht, -1]
     if (SIGN_APLLONGEST (aplLongestLft)
-     && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+     && gbAllowNegIndices)
         aplLongestLft += aplNELMRht;
 
     // Ensure that the index is within range
@@ -3288,7 +3288,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
 
                         // Check for negative indices [-lpMemDimRht[iDim], -1]
                         if (SIGN_APLLONGEST (aplTmpSubLft)
-                         && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+                         && gbAllowNegIndices)
                             aplTmpSubLft += lpMemDimRht[iDim];
 
                         // Ensure the indices are within range
@@ -3322,7 +3322,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
 
                         // Check for negative indices [-lpMemDimRht[iDim], -1]
                         if (SIGN_APLLONGEST (aplTmpSubLft)
-                         && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+                         && gbAllowNegIndices)
                             aplTmpSubLft += lpMemDimRht[iDim];
 
                         // Ensure the indices are within range
@@ -3356,7 +3356,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
 
                         // Check for negative indices [-lpMemDimRht[iDim], -1]
                         if (SIGN_APLLONGEST (aplTmpSubLft)
-                         && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+                         && gbAllowNegIndices)
                             aplTmpSubLft += lpMemDimRht[iDim];
 
                         // Ensure the indices are within range
@@ -3395,7 +3395,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
 
                         // Check for negative indices [-lpMemDimRht[iDim], -1]
                         if (SIGN_APLLONGEST (aplTmpSubLft)
-                         && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+                         && gbAllowNegIndices)
                             aplTmpSubLft += lpMemDimRht[iDim];
 
                         // Ensure the indices are within range
@@ -3454,7 +3454,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
 
                         // Check for negative indices [-lpMemDimRht[iDim], -1]
                         if (SIGN_APLLONGEST (aplTmpSubLft)
-                         && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+                         && gbAllowNegIndices)
                             aplTmpSubLft += lpMemDimRht[iDim];
 
                         // Ensure the indices are within range
@@ -3552,7 +3552,7 @@ LPPL_YYSTYPE PrimFnDydRightShoeGlbGlb_EM_YY
 
             // Check for negative indices [-aplNELMRht, -1]
             if (SIGN_APLLONGEST (aplLongestSubLft)
-             && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+             && gbAllowNegIndices)
                 aplLongestSubLft += aplNELMRht;
 
             // Ensure that the index is within range

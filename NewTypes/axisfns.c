@@ -129,7 +129,7 @@ UBOOL CheckAxisImm
 
             // Check for negative indices [-aplRankCmp, -1]
             if (SIGN_APLRANK (aplRank)
-             && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+             && gbAllowNegIndices)
                 aplRank += aplRankCmp;
 
             // Ensure it's within range
@@ -147,7 +147,7 @@ UBOOL CheckAxisImm
 
             // Check for negative indices [-aplRankCmp, -1]
             if (SIGN_APLRANK (aplRank)
-             && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+             && gbAllowNegIndices)
                 aplRank += aplRankCmp;
 
             // If fractional values are allowed,
@@ -237,6 +237,7 @@ UBOOL CheckAxisGlb
 {
     UBOOL             bRet = TRUE;      // TRUE iff the result is valid
     LPVARARRAY_HEADER lpMemHdrData;     // Ptr to data header
+    LPLSTARRAY_HEADER lpMemHdrLst;      // Ptr to list header
     LPVOID            lpMemData;        // Ptr to incoming data global memory
     LPAPLBOOL         lpMemDup = NULL;  // Ptr to duplciate axes global memory
     HGLOBAL           hGlbDup = NULL;   // Duplicate axes global memory handle
@@ -252,18 +253,35 @@ UBOOL CheckAxisGlb
     // Get the current value of []IO
     bQuadIO = GetQuadIO ();
 
+    // If the data is a list, ....
+    if (IsGlbTypeLstDir_PTB (hGlbData))
+    {
+        // Lock the memory to get a ptr to it
+        lpMemHdrLst = MyGlobalLockLst (hGlbData);
+
+        // Get the NELM
+       *lpaplNELM  = lpMemHdrLst->NELM;
+
+        // Return the # elements
+        if (lpaplNELMAxis NE NULL)
+            *lpaplNELMAxis = *lpaplNELM;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbData); lpMemHdrLst = NULL;
+
+        return (*lpaplNELM EQ 0);
+    } // End IF
+
     // st/tkData is a valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir_PTB (hGlbData));
 
     // Lock the memory to get a ptr to it
     lpMemHdrData = MyGlobalLockVar (hGlbData);
 
-#define lpHeader    lpMemHdrData
     // Get the Array Type, NELM, and Rank
-    aplTypeLcl = lpHeader->ArrType;
-   *lpaplNELM  = lpHeader->NELM;
-    aplRankLcl = lpHeader->Rank;
-#undef  lpHeader
+    aplTypeLcl = lpMemHdrData->ArrType;
+   *lpaplNELM  = lpMemHdrData->NELM;
+    aplRankLcl = lpMemHdrData->Rank;
 
     // Check the axis rank and the NELM (if singletons only)
     if (IsMultiRank (aplRankLcl)
@@ -346,7 +364,7 @@ UBOOL CheckAxisGlb
 
         // Check for negative indices [-aplRankCmp, -1]
         if (SIGN_APLRANK (aplRankLcl)
-         && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+         && gbAllowNegIndices)
             aplRankLcl += aplRankCmp;
 
         // If fractional values are allowed,

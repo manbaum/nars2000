@@ -1,0 +1,42 @@
+Version 0.5.8.xx consists of the following Builds:
+
+
+Build #1891 -- Version 0.5.8.xx
+-------------------------------
+
+* Implement APL2's Definition Of Inner Product
+
+Directory branches/bsmith/NewTypes:
+
+AXISFNS.C:
+PF_INDEX.C:
+PF_IOTA.C:
+PF_RSHOE.C:
+PF_SQUAD.C:
+  Use macro to reference FEATURENDX_NEGINDICES.
+
+EXECMFN.C:
+EXECMFN.H:
+  Initialize new Magic Operator for APL2's definition of Inner Product.
+
+EXTERNS.H:
+  Define new []FEATURE value to control use of APL2's definition of Inner Product.
+
+FREE.C:
+STRAND.C:
+  Fix bug of not handling empty axis operator as in {enclose}[].
+
+MACROS.H:
+  Define macro to reference FEATURENDX_NEGINDICES.
+
+MAIN.RC:
+  Widen Customize dialog to accommodate wider strings.
+
+MF_DOT.H:
+  Define new Magic Operator for APL2's definition of Inner Product.
+
+PO_DOT.C:
+  Implement APL2's definition of Inner Product.
+
+VER.RC:
+  Increment version # to 0.5.8.xx.

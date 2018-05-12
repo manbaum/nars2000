@@ -42,6 +42,24 @@ MAGIC_FCNOPR MFO_IdnDot =
  countof (IdnBody),
 };
 
+
+//***************************************************************************
+//  Magic function/operator for APL2 definition of inner product.
+//***************************************************************************
+
+static LPAPLCHAR DydBody[] =
+{L"Z←LO/¨(⊂[(0≠⍴⍴L)/(⎕IO-1)+⍴⍴L] L)∘.RO ⊂[(0≠⍴⍴R)/⎕IO] R",
+};
+
+MAGIC_FCNOPR MFO_DydDot2 =
+{L"Z←L (LO " MFON_DydDot2 L" RO) R",
+ DydBody,
+ countof (DydBody),
+};
+
+
+
+
 //***************************************************************************
 //  Magic function/operator for initialization of the determinant operator's
 //    subroutines.

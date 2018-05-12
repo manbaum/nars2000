@@ -195,7 +195,7 @@ LPPL_YYSTYPE PrimFnMonIota_EM_YY
         goto DOMAIN_EXIT;
 
     // If negative indices are not allowed, ...
-    if (lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES] EQ 0
+    if (gbAllowNegIndices EQ 0
      && SIGN_APLLONGEST (aplLongestRht))                    // If the value is negative, ...
         goto DOMAIN_EXIT;
 

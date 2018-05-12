@@ -2225,6 +2225,7 @@ LPPL_YYSTYPE MakeAxis_YY
             break;
 
         case TKT_VARARRAY:
+        case TKT_LSTMULT:
             // Free the result as CopyPL_YYSTYPE_YY
             //   will allocate a result
             YYFree (lpYYRes); lpYYRes = NULL;

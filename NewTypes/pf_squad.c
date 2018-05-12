@@ -1267,7 +1267,7 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
 
                     // Check for negative indices [-lpMemDimRht[iAxisNxt], -1]
                     if (SIGN_APLLONGEST (aplLongestNxt)
-                     && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+                     && gbAllowNegIndices)
                         aplLongestNxt += lpMemDimRht[iAxisNxt];
 
                     // Ensure that the value is within range

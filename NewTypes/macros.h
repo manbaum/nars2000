@@ -210,12 +210,16 @@
 #define isub64_RE(a,b,c)    isub64 ((a), (b), NULL, EXCEPTION_RESULT_##c)
 
 // []FEATURE values
-#define gAllowNeg0          GetMemPTD()->aplCurrentFEATURE[FEATURENDX_NEG0    ]
-#define gUseHurwitz         GetMemPTD()->aplCurrentFEATURE[FEATURENDX_HURWITZ ]
-#define gAllowNaN           GetMemPTD()->aplCurrentFEATURE[FEATURENDX_NAN     ]
-#define gbAllowNeg0          lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_NEG0    ]     // Use these if lpMemPTD is already assigned
-#define gbUseHurwitz         lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_HURWITZ ]     // ...
-#define gbAllowNaN           lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_NAN     ]     // ...
+#define gAllowNegIndices    GetMemPTD()->aplCurrentFEATURE[FEATURENDX_NEGINDICES ]
+#define gAllowNeg0          GetMemPTD()->aplCurrentFEATURE[FEATURENDX_NEG0       ]
+#define gUseHurwitz         GetMemPTD()->aplCurrentFEATURE[FEATURENDX_HURWITZ    ]
+#define gAllowNaN           GetMemPTD()->aplCurrentFEATURE[FEATURENDX_NAN        ]
+#define gUseAPL2IP          GetMemPTD()->aplCurrentFEATURE[FEATURENDX_IP2        ]
+#define gbAllowNegIndices    lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_NEGINDICES ]  // Use these if lpMemPTD is already assigned
+#define gbAllowNeg0          lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_NEG0       ]  // ...
+#define gbUseHurwitz         lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_HURWITZ    ]  // ...
+#define gbAllowNaN           lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_NAN        ]  // ...
+#define gbUseAPL2IP          lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_IP2        ]  // ...
 
 ////ine signumint(a)        (   (((APLINT) (a)) < 0) ? -1 : (((APLINT) (a)) > 0))
 ////ine signumflt(a)        (SIGN_APLFLOAT (a)       ? -1 : (          (a)  > 0))

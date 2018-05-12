@@ -387,7 +387,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
 
                     // Check for negative indices [-aplNELMNam, -1]
                     if (SIGN_APLLONGEST (aplLongestItm)
-                     && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+                     && gbAllowNegIndices)
                         aplLongestItm += aplNELMNam;
 
                     // Check for INDEX ERROR
@@ -480,7 +480,7 @@ LPPL_YYSTYPE ArrayIndexRef_EM_YY
 
                     // Check for negative indices [-aplNELMNam, -1]
                     if (SIGN_APLLONGEST (aplLongestItm)
-                     && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+                     && gbAllowNegIndices)
                         aplLongestItm += aplNELMNam;
 
                     // Check for INDEX ERROR
@@ -1040,7 +1040,7 @@ LPPL_YYSTYPE ArrayIndexRefLstImm_EM_YY
 
     // Check for negative indices [-aplNELMNam, -1]
     if (SIGN_APLLONGEST (aplLongestLst)
-     && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+     && gbAllowNegIndices)
         aplLongestLst += aplNELMNam;
 
     // Check for within range
@@ -1503,7 +1503,7 @@ LPPL_YYSTYPE ArrayIndexRefLstSimpGlb_EM_YY
 
         // Check for negative indices [-aplNELMNam, -1]
         if (SIGN_APLLONGEST (aplLongestLst)
-         && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+         && gbAllowNegIndices)
             aplLongestLst += aplNELMNam;
 
         // Check for INDEX ERROR
@@ -3200,7 +3200,7 @@ UBOOL ArrayIndexSetSingLst_EM
 
         // Check for negative indices [-*lpMemDimNam, -1]
         if (SIGN_APLLONGEST (aplLongestSubLst)
-         && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+         && gbAllowNegIndices)
             aplLongestSubLst += *lpMemDimNam;
 
         // Check for INDEX ERROR (skipping over the single dimension)
@@ -4028,7 +4028,7 @@ UBOOL ArrayIndexSetVector_EM
 
     // Check for negative indices [-aplNELMNam, -1]
     if (SIGN_APLLONGEST (aplLongestSubLst)
-     && lpMemPTD->aplCurrentFEATURE[FEATURENDX_NEGINDICES])
+     && gbAllowNegIndices)
         aplLongestSubLst += aplNELMNam;
 
     // Check for INDEX ERROR

@@ -44,10 +44,6 @@ LPPL_YYSTYPE PrimFnLeftShoe_EM_YY
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UTF16_LEFTSHOE);
 
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
-
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonLeftShoe_EM_YY             (lptkFunc, lptkRhtArg, lptkAxis);
@@ -592,10 +588,15 @@ UBOOL LftShoeGlbCom_EM
         if (CheckCtrlBreak (lpComVars->lpbCtrlBreak))
             goto ERROR_EXIT;
 
+        // Initialize the right arg index
+        uRht = 0;
+
+        // If the subitem is non-empty, ...
+        if (!IsEmpty (lpComVars->aplNELMSub))
         // Use the index in lpMemOdo to calculate the
         //   corresponding index in lpMemRes where the
         //   next value from lpMemRht goes.
-        for (uRht = uOdo = 0; uOdo < lpComVars->aplRankRht; uOdo++)
+        for (uOdo = 0; uOdo < lpComVars->aplRankRht; uOdo++)
             uRht += lpComVars->lpMemOdo[lpComVars->lpMemAxisTail[uOdo]] * lpComVars->lpMemWVec[uOdo];
 
         // Increment the odometer in lpMemOdo subject to
@@ -690,27 +691,8 @@ LPPL_YYSTYPE PrimFnMonLeftShoeGlb_EM_YY
                           &hGlbAxis))       // Return HGLOBAL with APLINT axis values
             goto ERROR_EXIT;
 
-        // Optimize {enclose}[{zilde}] R
-
-        // If the axis is empty, this is an identity function.
-        //   We could go through all of the work below and end
-        //   up with the same result, but why bother??
-        if (IsEmpty (aplNELMAxis))
-        {
-            // Allocate a new YYRes
-            lpYYRes = YYAlloc ();
-
-            // Fill in the result token
-            lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
-////////////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
-            lpYYRes->tkToken.tkData.tkGlbData  = CopySymGlbDirAsGlb (hGlbRht);
-            lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
-
-            goto QUICK_EXIT;
-        } // End IF
     } else
-        // No axis means enclose all dimensions
+        // No axis is the same as all axes
         aplNELMAxis = aplRankRht;
 
     //***************************************************************
@@ -1319,7 +1301,7 @@ UNLOCK_EXIT:
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht);  lpMemHdrRht  = NULL;
     } // End IF
-QUICK_EXIT:
+
     // Unlock and free (and set to NULL) a global name and ptr
     UnlFreeGlbName (hGlbWVec, lpMemWVec);
 
@@ -1622,7 +1604,7 @@ LPPL_YYSTYPE PrimFnDydLeftShoeGlb_EM
                            NULL))           // Return HGLOBAL with APLINT axis values
             return NULL;
     } else
-        // No axis means partition on the last dimension
+        // No axis means partition on the last axis
         aplAxis = max (0, (APLINT) aplRankRht - 1);
 
     // Check for LEFT RANK ERROR

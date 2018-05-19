@@ -161,6 +161,31 @@ int ChangeRefCntDir_PTB
 #undef  lpHeader
                     break;
 
+                case LSTARRAY_HEADER_SIGNATURE:
+#ifdef DEBUG
+  #define lpHeader      vfoHdrPtrs.lpMemLst
+#else
+  #define lpHeader      ((LPLSTARRAY_HEADER) lpSig)
+#endif
+                    // Change the reference count
+#ifdef DEBUG_REFCNT
+                    if (iIncr EQ 1)
+                        dprintfWL0 (L"  RefCnt++ in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
+                    else
+                    if (iIncr EQ -1)
+                        dprintfWL0 (L"  RefCnt-- in " APPEND_NAME L":     %p(res=%d) (%S#%d)", hGlb, lpHeader->RefCnt + iIncr, FNLN);
+                    else
+                        DbgStop ();
+#endif
+                    Assert (iIncr NE -1 || lpHeader->RefCnt NE 0);
+
+                    // Change the reference count
+                    lpHeader->RefCnt += iIncr;
+
+                    RefCnt = lpHeader->RefCnt;
+#undef  lpHeader
+                    break;
+
                 defstop
                     return -1;
             } // End SWITCH

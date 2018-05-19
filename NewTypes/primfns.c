@@ -445,7 +445,6 @@ void AttrsOfToken
         case TKT_NUMSCALAR:
         case TKT_VARARRAY:
         case TKT_LISTPAR:
-        case TKT_LSTARRAY:
         case TKT_AXISARRAY:
             // Get the global handle
             hGlbData = lpToken->tkData.tkGlbData;
@@ -455,6 +454,7 @@ void AttrsOfToken
 
             break;      // Continue with HGLOBAL case
 
+        case TKT_LSTARRAY:
         case TKT_LSTMULT:
             // Get the global handle
             hGlbData = lpToken->tkData.tkGlbData;
@@ -3747,6 +3747,7 @@ UBOOL IsTknTypeAxis
     {
         case TKT_AXISIMMED:
         case TKT_AXISARRAY:
+        case TKT_LSTMULT:       // From +/[]...
             return TRUE;
 
         default:

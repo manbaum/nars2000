@@ -48,7 +48,9 @@ MAGIC_FCNOPR MFO_IdnDot =
 //***************************************************************************
 
 static LPAPLCHAR DydBody[] =
-{L"Z←LO/¨(⊂[(0≠⍴⍴L)/(⎕IO-1)+⍴⍴L] L)∘.RO ⊂[(0≠⍴⍴R)/⎕IO] R",
+{L":if 0=⍴⍴L ⋄ L←⊂L ⋄ :else ⋄ L←⊂[(⎕IO-1)+⍴⍴L] L ⋄ :end",
+ L":if 0=⍴⍴R ⋄ R←⊂R ⋄ :else ⋄ R←⊂[ ⎕IO       ] R ⋄ :end",
+ L"Z←LO/¨L∘.RO R",
 };
 
 MAGIC_FCNOPR MFO_DydDot2 =

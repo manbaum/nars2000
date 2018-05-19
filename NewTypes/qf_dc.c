@@ -193,7 +193,7 @@ LPPL_YYSTYPE SysFnMonDC_ToHC_EM_YY
             goto ERROR_EXIT;
     } else
     {
-        // No axis specified:  use last dimension
+        // No axis specified:  use last axis
         aplAxis = aplRankRht - 1;
     } // End IF/ELSE
 
@@ -624,7 +624,7 @@ LPPL_YYSTYPE SysFnMonDC_ToSimp_EM_YY
             goto ERROR_EXIT;
     } else
     {
-        // No axis specified:  use last dimension
+        // No axis specified:  use last axis
         aplAxis = aplRankRes - 1;
     } // End IF/ELSE
 

@@ -42,10 +42,6 @@ LPPL_YYSTYPE PrimFnComma_EM_YY
     Assert (lptkFunc->tkData.tkChar EQ UTF16_COMMA
          || lptkFunc->tkData.tkChar EQ UTF16_COMMABAR);
 
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
-
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonComma_EM_YY             (lptkFunc, lptkRhtArg, lptkAxis);
@@ -605,7 +601,7 @@ LPPL_YYSTYPE PrimFnMonCommaGlb_EM_YY
         } // End WHILE
     } else
     {
-        // No axis means ravel all dimensions or table all but the first
+        // No axis is the same as all axes, or table all but the first
         aplNELMAxis = aplRankRht;
         aplLastAxis = aplRankRht - 1;
     } // End IF/ELSE
@@ -1465,14 +1461,15 @@ LPPL_YYSTYPE PrimFnDydComma_EM_YY
     } else
     {
         // No axis specified:
-        //   if comma, use last dimension
+        //   if Comma   , use last axis
+        //   if CommaBar, use first axis
         if (lptkFunc->tkData.tkChar EQ UTF16_COMMA)
             aplAxis = max (0, (APLRANKSIGN) aplRankRes - 1);
         else
         {
             Assert (lptkFunc->tkData.tkChar EQ UTF16_COMMABAR);
 
-            // Otherwise, it's CommaBar on the first dimension
+            // Otherwise, it's CommaBar on the first axis
             aplAxis = 0;
         } // End IF/ELSE
     } // End IF/ELSE

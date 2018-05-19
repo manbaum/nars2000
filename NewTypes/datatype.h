@@ -354,8 +354,9 @@ typedef struct tagVARARRAY_HEADER
 typedef struct tagLSTARRAY_HEADER
 {
     HEADER_SIGNATURE Sig;               // 00:  Array header signature
-    APLNELM          NELM;              // 04:  # elements in the array (8 bytes)
-                                        // 0C:  Length
+    UINT             RefCnt;            // 04:  Reference count
+    APLNELM          NELM;              // 08:  # elements in the array (8 bytes)
+                                        // 10:  Length
 } LSTARRAY_HEADER, *LPLSTARRAY_HEADER;
 
 // Function array header signature

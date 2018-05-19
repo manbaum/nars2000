@@ -41,10 +41,6 @@ LPPL_YYSTYPE PrimFnDownArrow_EM_YY
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UTF16_DOWNARROW);
 
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
-
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonDownArrow_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
@@ -131,7 +127,7 @@ LPPL_YYSTYPE PrimIdentFnDownArrow_EM_YY
         //   ({rho} X){rho} 0.
 
         // Get the attributes (Type, NELM, and Rank)
-        //   of the right arg
+        //   of the axis token
         AttrsOfToken (lptkAxis, NULL, &aplNELMRes, NULL, NULL);
     } else
         // The (left) identity function for dyadic DownArrow

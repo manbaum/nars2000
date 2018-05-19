@@ -43,10 +43,6 @@ LPPL_YYSTYPE PrimOpSlope_EM_YY
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPE         // For when we come in via TKT_OP3NAMED
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPEBAR);    // ...
 
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
-
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
         return PrimOpMonSlope_EM_YY (lpYYFcnStrOpr, // Ptr to operator function strand
@@ -219,7 +215,8 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     } else
     {
         // No axis specified:
-        // if Slope, use last dimension
+        //    if Slope   , use last  axis
+        //    if SlopeBar, use first axis
         if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLOPE
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPE)
             aplAxis = aplRankRht - 1;
@@ -228,7 +225,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
             Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLOPEBAR
                  || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPEBAR);
 
-            // Otherwise, it's SlopeBar on the first dimension
+            // Otherwise, it's SlopeBar on the first axis
             aplAxis = 0;
         } // End IF/ELSE
     } // End IF/ELSE
@@ -1643,7 +1640,7 @@ LPPL_YYSTYPE PrimOpDydSlopeCommon_EM_YY
     lptkAxisOpr = CheckAxisOper (lpYYFcnStrOpr);
 
     // If no axis specified,
-    //   and SlopeBar, use first dimension
+    //   and SlopeBar, use first axis
     if (lptkAxisOpr EQ NULL
      && (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLOPEBAR
       || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLOPEBAR))

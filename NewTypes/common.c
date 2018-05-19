@@ -1303,6 +1303,9 @@ HGLOBAL AllocateGlobalArray
                     (APLU3264) (aplRankRes * sizeof (lpaplDimRes[0])));
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+
+    // Set the ptr type bits
+    hGlbRes = MakePtrTypeGlb (hGlbRes);
 WSFULL_EXIT:
     return hGlbRes;
 } // End AllocateGlobalArray

@@ -42,10 +42,6 @@ LPPL_YYSTYPE PrimFnSlash_EM_YY
     Assert (lptkFunc->tkData.tkChar EQ UTF16_SLASH
          || lptkFunc->tkData.tkChar EQ UTF16_SLASHBAR);
 
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
-
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonSlash_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
@@ -197,14 +193,15 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
     } else
     {
         // No axis specified:
-        //   if Slash, use last dimension
+        //   if Slash   , use last  axis
+        //   if SlashBar, use first axis
         if (lptkFunc->tkData.tkChar EQ UTF16_SLASH)
             aplAxis = aplRankRes - 1;
         else
         {
             Assert (lptkFunc->tkData.tkChar EQ UTF16_SLASHBAR);
 
-            // Otherwise, it's SlashBar on the first dimension
+            // Otherwise, it's SlashBar on the first axis
             aplAxis = 0;
         } // End IF/ELSE
     } // End IF/ELSE

@@ -41,10 +41,6 @@ LPPL_YYSTYPE PrimFnRightShoe_EM_YY
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UTF16_RIGHTSHOE);
 
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
-
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonRightShoe_EM_YY             (lptkFunc, lptkRhtArg, lptkAxis);
@@ -388,7 +384,7 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
                           &hGlbAxis))       // Return HGLOBAL with APLINT axis values
             goto ERROR_EXIT;
     } else
-        // No axis means disclose all dimensions
+        // No axis is the same as all axes
         aplNELMAxis = aplRankCom;
 
     // If the common item rank isn't the same as the # elements in the axis, ..

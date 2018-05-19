@@ -2465,10 +2465,11 @@ LPPL_YYSTYPE plRedF_IDX
         Assert (lpplYYLstRht->lpplYYIdxCurry EQ NULL);
 
     // Make it into an axis operand
-    lpYYVar = MakeAxis_YY (lpplYYLstRht);
+    lpYYVar = MakeAxis_EM_YY (lpplYYLstRht);
 
-    // YYFree the last right object
-    YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
+    // Check for errors
+    if (lpYYVar EQ NULL)
+        goto ERROR_EXIT;
 
     // Link it into the result
     Assert (lpYYRes->lpplYYIdxCurry EQ NULL);
@@ -2476,7 +2477,19 @@ LPPL_YYSTYPE plRedF_IDX
 
     // Change the tkSynObj
     lpYYRes->tkToken.tkSynObj = soType;
+
+    goto NORMAL_EXIT;
+
 ERROR_EXIT:
+    // YYFree the current object
+    YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+
+    // Mark as in error
+    lpYYRes = NULL;
+NORMAL_EXIT:
+    // YYFree the last right object
+    YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
+
     return lpYYRes;
 } // End plRedF_IDX
 
@@ -3107,7 +3120,8 @@ LPPL_YYSTYPE plRedMOP_IDX
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    LPPL_YYSTYPE lpYYVar;               // Ptr to a temp
+    LPPL_YYSTYPE lpYYRes = NULL,        // Ptr to the result
+                 lpYYVar;               // Ptr to a temp
 
     // If the last right object is in the process of stranding, ...
     if (lpplYYLstRht->YYStranding)
@@ -3130,18 +3144,25 @@ LPPL_YYSTYPE plRedMOP_IDX
         UnVarStrand (lpplYYLstRht);
 
     // Make it into an axis operand
-    lpYYVar = MakeAxis_YY (lpplYYLstRht);
+    lpYYVar = MakeAxis_EM_YY (lpplYYLstRht);
 
-    // YYFree the last right object
-    YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
+    // Check for errors
+    if (lpYYVar EQ NULL)
+        goto ERROR_EXIT;
 
     // Call common code
-    return plRedLftOper_MOP (lpplLocalVars, lpYYVar, lpplYYCurObj, soType);
+    lpYYRes = plRedLftOper_MOP (lpplLocalVars, lpYYVar, lpplYYCurObj, soType);
+
+    goto NORMAL_EXIT;
+
 ERROR_EXIT:
     // YYFree the current object
     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+NORMAL_EXIT:
+    // YYFree the last right object
+    YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
 
-    return NULL;
+    return lpYYRes;
 } // End plRedMOP_IDX
 
 

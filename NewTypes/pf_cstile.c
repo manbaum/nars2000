@@ -126,14 +126,15 @@ LPPL_YYSTYPE PrimIdentFnCircleStile_EM_YY
     } else
     {
         // No axis specified:
-        //   if CircleStile, use last dimension
+        //   if CircleStile, use last  axis
+        //   if CircleBar  , use first axis
         if (lptkFunc->tkData.tkChar EQ UTF16_CIRCLESTILE)
             aplAxis = aplRankRht - 1;
         else
         {
             Assert (lptkFunc->tkData.tkChar EQ UTF16_CIRCLEBAR);
 
-            // Otherwise, it's CircleBar on the first dimension
+            // Otherwise, it's CircleBar on the first axis
             aplAxis = 0;
         } // End IF/ELSE
     } // End IF/ELSE
@@ -331,14 +332,15 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
     } else
     {
         // No axis specified:
-        //   if CircleStile, use last dimension
+        //   if CircleStile, use last  axis
+        //   if CircleBar  , use first axis
         if (lptkFunc->tkData.tkChar EQ UTF16_CIRCLESTILE)
             aplAxis = aplRankRht - 1;
         else
         {
             Assert (lptkFunc->tkData.tkChar EQ UTF16_CIRCLEBAR);
 
-            // Otherwise, it's CircleBar on the first dimension
+            // Otherwise, it's CircleBar on the first axis
             aplAxis = 0;
         } // End IF/ELSE
     } // End IF/ELSE
@@ -350,7 +352,7 @@ LPPL_YYSTYPE PrimFnMonCircleStile_EM_YY
         lpYYRes = YYAlloc ();
 
         // Copy the right arg token
-        lpYYRes->tkToken = *CopyToken_EM (lptkRhtArg, FALSE);
+        lpYYRes->tkToken = *CopyToken (lptkRhtArg, FALSE);
 
         goto IMMED_EXIT;
     } // End IF
@@ -768,14 +770,15 @@ LPPL_YYSTYPE PrimFnDydCircleStile_EM_YY
     } else
     {
         // No axis specified:
-        //   if CircleStile, use last dimension
+        //   if CircleStile, use last  axis
+        //   if CircleBar  , use first axis
         if (lptkFunc->tkData.tkChar EQ UTF16_CIRCLESTILE)
             aplAxis = aplRankRht - 1;
         else
         {
             Assert (lptkFunc->tkData.tkChar EQ UTF16_CIRCLEBAR);
 
-            // Otherwise, it's CircleBar on the first dimension
+            // Otherwise, it's CircleBar on the first axis
             aplAxis = 0;
         } // End IF/ELSE
     } // End IF/ELSE

@@ -772,7 +772,7 @@ UBOOL CS_FOR_Stmt_EM
     // Save initial values on the FORSTMT/FORLCLSTMT stack
     lpForStmtNext->uIndex     = 0;
     lpForStmtNext->tkForI     = lpYYNameArg->tkToken;
-    lpForStmtNext->tkForArr   = *CopyToken_EM (&lpYYRhtArg->tkToken, FALSE);
+    lpForStmtNext->tkForArr   = *CopyToken (&lpYYRhtArg->tkToken, FALSE);
     lpForStmtNext->uForStmtID = lpYYForArg->tkToken.tkData.uCLIndex;
 
     if (bFORLCL)

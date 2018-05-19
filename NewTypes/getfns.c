@@ -3146,7 +3146,6 @@ LPVOID GetGlbMem_LOCK
         case TKT_NUMSCALAR:
         case TKT_VARARRAY:
         case TKT_AXISARRAY:
-        case TKT_LSTARRAY:
             // Return the global memory handle
             *lphGlb = lpToken->tkData.tkGlbData;
 
@@ -3163,6 +3162,7 @@ LPVOID GetGlbMem_LOCK
 #undef  lpHeader
             break;      // Continue with common HGLOBAL code
 
+        case TKT_LSTARRAY:
         case TKT_LSTMULT:
             // Return the global memory handle
             *lphGlb = lpToken->tkData.tkGlbData;

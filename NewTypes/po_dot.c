@@ -3590,7 +3590,7 @@ RESTART_INNERPROD_RES:
                         FreeResultTkn (&tkRes);
 
                         // Copy the result to local storage
-                        CopyAll (&tkRes, CopyToken_EM (&lpYYRes2->tkToken, FALSE));
+                        CopyAll (&tkRes, CopyToken (&lpYYRes2->tkToken, FALSE));
 
                         // Free the result item
                         FreeResult (lpYYRes2); YYFree (lpYYRes2); lpYYRes2 = NULL;
@@ -3951,7 +3951,7 @@ RESTART_INNERPROD_RES:
                                  || lpYYRes2->tkToken.tkFlags.TknType EQ TKT_VARARRAY);
 
                             // Copy the result to the accumulated reduction token
-                            CopyAll (&tkItmRed, CopyToken_EM (&lpYYRes2->tkToken, FALSE));
+                            CopyAll (&tkItmRed, CopyToken (&lpYYRes2->tkToken, FALSE));
 
                             // Free the result item (but not the storage)
                             YYFree (lpYYRes2); lpYYRes2 = NULL;

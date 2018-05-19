@@ -54,6 +54,11 @@ typedef struct tagSTART_ADDRESSES
 
     // axisfns.c
     "CheckAxisOper"             , (LPUCHAR) &CheckAxisOper              ,
+    "CheckAxisImm"              , (LPUCHAR) &CheckAxisImm               ,
+    "CheckAxisGlb_EM"           , (LPUCHAR) &CheckAxisGlb_EM            ,
+    "AllocateAllAxes"           , (LPUCHAR) &AllocateAllAxes            ,
+    "CheckAxis_EM"              , (LPUCHAR) &CheckAxis_EM               ,
+    "TestDupAxis"               , (LPUCHAR) &TestDupAxis                ,
 
     // bjhash.c
     "hashlittle"                , (LPUCHAR) &hashlittle                 ,
@@ -1219,7 +1224,7 @@ typedef struct tagSTART_ADDRESSES
     "UnFcnStrand_EM"            , (LPUCHAR) &UnFcnStrand_EM             ,
     "MakeTxtLine"               , (LPUCHAR) &MakeTxtLine                ,
     "CopyString_EM_YY"          , (LPUCHAR) &CopyString_EM_YY           ,
-    "MakeAxis_YY"               , (LPUCHAR) &MakeAxis_YY                ,
+    "MakeAxis_EM_YY"            , (LPUCHAR) &MakeAxis_EM_YY             ,
     "MakeTrainOp_YY"            , (LPUCHAR) &MakeTrainOp_YY             ,
     "MakePrimOp123_YY"          , (LPUCHAR) &MakePrimOp123_YY           ,
     "InitNameStrand"            , (LPUCHAR) &InitNameStrand             ,
@@ -1230,7 +1235,7 @@ typedef struct tagSTART_ADDRESSES
     "PushList_YY"               , (LPUCHAR) &PushList_YY                ,
     "MakeList_EM_YY"            , (LPUCHAR) &MakeList_EM_YY             ,
     "CopyImmToken_EM"           , (LPUCHAR) &CopyImmToken_EM            ,
-    "CopyToken_EM"              , (LPUCHAR) &CopyToken_EM               ,
+    "CopyToken"                 , (LPUCHAR) &CopyToken                  ,
     "CopyPL_YYSTYPE_EM_YY"      , (LPUCHAR) &CopyPL_YYSTYPE_EM_YY       ,
     "CopyPL_YYSTYPE_YY"         , (LPUCHAR) &CopyPL_YYSTYPE_YY          ,
 

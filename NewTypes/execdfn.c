@@ -1976,6 +1976,9 @@ UBOOL InitVarSTEs
                 break;
         } // End SWITCH
 
+        if (IsGlbTypeLstDir_PTB (hGlbArg))
+            goto SYNTAX_EXIT;
+
         // st/tkData is a valid HGLOBAL variable array
         Assert (IsGlbTypeVarDir_PTB (hGlbArg));
 
@@ -2299,6 +2302,7 @@ UBOOL InitVarSTEs
     return TRUE;
 
 WSFULL_EXIT:
+SYNTAX_EXIT:
     return FALSE;
 } // End InitVarSTEs
 

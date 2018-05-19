@@ -42,10 +42,6 @@ LPPL_YYSTYPE PrimFnSlope_EM_YY
     Assert (lptkFunc->tkData.tkChar EQ UTF16_SLOPE
          || lptkFunc->tkData.tkChar EQ UTF16_SLOPEBAR);
 
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
-
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonSlope_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
@@ -198,14 +194,15 @@ LPPL_YYSTYPE PrimFnDydSlope_EM_YY
     } else
     {
         // No axis specified:
-        //   if Slope, use last dimension
+        //   if Slope   , use last  axis
+        //   if SlopeBar, use first axis
         if (lptkFunc->tkData.tkChar EQ UTF16_SLOPE)
             aplAxis = aplRankRes - 1;
         else
         {
             Assert (lptkFunc->tkData.tkChar EQ UTF16_SLOPEBAR);
 
-            // Otherwise, it's SlopeBar on the first dimension
+            // Otherwise, it's SlopeBar on the first axis
             aplAxis = 0;
         } // End IF/ELSE
     } // End IF/ELSE

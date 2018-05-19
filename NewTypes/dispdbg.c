@@ -3404,6 +3404,8 @@ HGLOBAL _ValidObj
             break;
 
         default:            // All other signatures
+            Assert (IsValidPtr (lpMem, sizeof (lpMem))
+                && !IsPtrNullDir (lpMem));
             Assert (((LPHEADER_SIGNATURE) lpMem)->nature EQ uSig
                  || ((LPHEADER_SIGNATURE) lpMem)->nature EQ 0);
 

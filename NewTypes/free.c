@@ -398,50 +398,64 @@ UBOOL FreeResultGlobalLst
     (HGLOBAL hGlbData)
 
 {
-    LPAPLLIST lpMemLst;         // Ptr to list global memory
-    APLNELM   aplNELM,          // List NELM
-              uLst;             // Loop counter
+    LPLSTARRAY_HEADER lpMemHdrLst = NULL;   // Ptr to list global memory header
+    LPAPLLIST         lpMemLst;             // ...                       data
+    APLNELM           aplNELM,              // List NELM
+                      uLst,                 // Loop counter
+                      RefCnt;               // The array reference count
 
     // Data is an valid HGLOBAL variable array
     Assert (IsGlbTypeLstDir_PTB (MakePtrTypeGlb (hGlbData)));
 
     // Lock the memory to get a ptr to it
-    lpMemLst = MyGlobalLockLst (hGlbData);
+    lpMemHdrLst = MyGlobalLockLst (hGlbData);
 
-#define lpHeader    ((LPLSTARRAY_HEADER) lpMemLst)
-    // Get the NELM
+#define lpHeader    lpMemHdrLst
+    // Get the RefCnt and NELM
+    RefCnt  = lpHeader->RefCnt;
     aplNELM = lpHeader->NELM;
 #undef  lpHeader
 
-    // Skip opver the header to the data
-    lpMemLst = LstArrayBaseToData (lpMemLst);
+    // Ensure non-zero
+    Assert (RefCnt > 0);
 
-    // Loop through the array of LISTs
-    for (uLst = 0; uLst < aplNELM; uLst++, lpMemLst++)
+    // Decrement
+    RefCnt =
+      DbgDecrRefCntDir_PTB (MakePtrTypeGlb (hGlbData));
+
+    // If the RefCnt is zero, free the globals
+    if (RefCnt EQ 0)
     {
-        Assert (lpMemLst->tkFlags.TknType EQ TKT_VARIMMED
-             || lpMemLst->tkFlags.TknType EQ TKT_VARARRAY
-             || lpMemLst->tkFlags.TknType EQ TKT_LISTSEP);
+        // Skip opver the header to the data
+        lpMemLst = LstArrayBaseToData (lpMemHdrLst);
 
-        // If it's a global var, ...
-        if (lpMemLst->tkFlags.TknType EQ TKT_VARARRAY)
+        // Loop through the array of LISTs
+        for (uLst = 0; uLst < aplNELM; uLst++, lpMemLst++)
         {
-            if (FreeResultGlobalVar (lpMemLst->tkData.tkGlbData))
-            {
-#ifdef DEBUG_ZAP
-                dprintfWL9 (L"**Zapping in FreeResultGlobalLst: Global=%p, Value=%p (%S#%d)",
-                             hGlbData,
-                             ClrPtrTypeDir (lpMemLst->tkData.tkGlbData),
-                             FNLN);
-#endif
-                // Zap the APLLIST
-                ZeroMemory (lpMemLst, sizeof (lpMemLst[0]));
-            } // End IF
-        } // End IF
-    } // End FOR
+            Assert (lpMemLst->tkFlags.TknType EQ TKT_VARIMMED
+                 || lpMemLst->tkFlags.TknType EQ TKT_VARARRAY
+                 || lpMemLst->tkFlags.TknType EQ TKT_LISTSEP);
 
-    // Unlock and free (and set to NULL) a global name and ptr
-    UnlFreeGlbName (hGlbData, lpMemLst);
+            // If it's a global var, ...
+            if (lpMemLst->tkFlags.TknType EQ TKT_VARARRAY)
+            {
+                if (FreeResultGlobalVar (lpMemLst->tkData.tkGlbData))
+                {
+#ifdef DEBUG_ZAP
+                    dprintfWL9 (L"**Zapping in FreeResultGlobalLst: Global=%p, Value=%p (%S#%d)",
+                                 hGlbData,
+                                 ClrPtrTypeDir (lpMemLst->tkData.tkGlbData),
+                                 FNLN);
+#endif
+                    // Zap the APLLIST
+                    ZeroMemory (lpMemLst, sizeof (lpMemLst[0]));
+                } // End IF
+            } // End IF
+        } // End FOR
+
+        // Unlock and free (and set to NULL) a global name and ptr
+        UnlFreeGlbName (hGlbData, lpMemHdrLst);
+    } // Ends IF
 
     return TRUE;
 } // End FreeResultGlobalLst
@@ -486,21 +500,22 @@ UBOOL FreeResultGlobalVarSub
      UBOOL   bReqComplete)      // TRUE iff we require a complete var
 
 {
-    LPVOID    lpMem;            // Ptr to the array global memory
-    APLRANK   aplRank;          // The array rank
-    APLSTYPE  aplType;          // The array storage type (see ARRAY_TYPES)
-    APLNELM   aplNELM;          // The array NELM
-    UINT      u,                // Loop counter
-              RefCnt;           // The array reference count
-    UBOOL     bRet;             // TRUE iff the result is valid
+    LPVARARRAY_HEADER lpMemHdrVar = NULL;   // Ptr to the array global memory header
+    LPVOID            lpMem;                // ...                            data
+    APLRANK           aplRank;              // The array rank
+    APLSTYPE          aplType;              // The array storage type (see ARRAY_TYPES)
+    APLNELM           aplNELM;              // The array NELM
+    UINT              u,                    // Loop counter
+                      RefCnt;               // The array reference count
+    UBOOL             bRet;                 // TRUE iff the result is valid
 
     // Data is an valid HGLOBAL variable array
     Assert (IsGlbTypeVarDir_PTB (MakePtrTypeGlb (hGlbData)));
 
     // Lock the memory to get a ptr to it
-    lpMem = MyGlobalLockVar (hGlbData);
+    lpMemHdrVar = MyGlobalLockVar (hGlbData);
 
-#define lpHeader    ((LPVARARRAY_HEADER) lpMem)
+#define lpHeader    lpMemHdrVar
     // If the var is not permanent, ...
     if (lpHeader->PermNdx EQ PERMNDX_NONE)
     {
@@ -544,7 +559,7 @@ UBOOL FreeResultGlobalVarSub
 
             case ARRAY_HETERO:  // Free the LPSYMENTRYs and/or HGLOBALs
                 // Point to the array data (LPSYMENTRYs and/or HGLOBALs)
-                lpMem = VarArrayDataFmBase (lpMem);
+                lpMem = VarArrayDataFmBase (lpMemHdrVar);
 
                 // Loop through the LPSYMENTRYs and/or HGLOBALs
                 for (u = 0; u < aplNELM; u++, ((LPAPLNESTED) lpMem)++)
@@ -581,7 +596,7 @@ UBOOL FreeResultGlobalVarSub
 
             case ARRAY_RAT:
                 // Point to the array data (APLRATs)
-                lpMem = VarArrayDataFmBase (lpMem);
+                lpMem = VarArrayDataFmBase (lpMemHdrVar);
 
                 // Loop through the APLRATs
                 for (u = 0; u < aplNELM; u++, ((LPAPLRAT) lpMem)++)
@@ -591,7 +606,7 @@ UBOOL FreeResultGlobalVarSub
 
             case ARRAY_VFP:
                 // Point to the array data (APLVFPs)
-                lpMem = VarArrayDataFmBase (lpMem);
+                lpMem = VarArrayDataFmBase (lpMemHdrVar);
 
                 // Loop through the APLVFPs
                 for (u = 0; u < aplNELM; u++, ((LPAPLVFP) lpMem)++)
@@ -601,7 +616,7 @@ UBOOL FreeResultGlobalVarSub
 
             case ARRAY_HC2R:
                 // Point to the array data (APLHC2Rs)
-                lpMem = VarArrayDataFmBase (lpMem);
+                lpMem = VarArrayDataFmBase (lpMemHdrVar);
 
                 // Loop through the APLHC2Rs
                 for (u = 0; u < aplNELM; u++, ((LPAPLHC2R) lpMem)++)
@@ -612,7 +627,7 @@ UBOOL FreeResultGlobalVarSub
 
             case ARRAY_HC2V:
                 // Point to the array data (APLHC2Vs)
-                lpMem = VarArrayDataFmBase (lpMem);
+                lpMem = VarArrayDataFmBase (lpMemHdrVar);
 
                 // Loop through the APLHC2Vs
                 for (u = 0; u < aplNELM; u++, ((LPAPLHC2V) lpMem)++)
@@ -623,7 +638,7 @@ UBOOL FreeResultGlobalVarSub
 
             case ARRAY_HC4R:
                 // Point to the array data (APLHC4Rs)
-                lpMem = VarArrayDataFmBase (lpMem);
+                lpMem = VarArrayDataFmBase (lpMemHdrVar);
 
                 // Loop through the APLHC4Rs
                 for (u = 0; u < aplNELM; u++, ((LPAPLHC4R) lpMem)++)
@@ -634,7 +649,7 @@ UBOOL FreeResultGlobalVarSub
 
             case ARRAY_HC4V:
                 // Point to the array data (APLHC4Vs)
-                lpMem = VarArrayDataFmBase (lpMem);
+                lpMem = VarArrayDataFmBase (lpMemHdrVar);
 
                 // Loop through the APLHC4Vs
                 for (u = 0; u < aplNELM; u++, ((LPAPLHC4V) lpMem)++)
@@ -645,7 +660,7 @@ UBOOL FreeResultGlobalVarSub
 
             case ARRAY_HC8R:
                 // Point to the array data (APLHC8Rs)
-                lpMem = VarArrayDataFmBase (lpMem);
+                lpMem = VarArrayDataFmBase (lpMemHdrVar);
 
                 // Loop through the APLHC8Rs
                 for (u = 0; u < aplNELM; u++, ((LPAPLHC8R) lpMem)++)
@@ -656,7 +671,7 @@ UBOOL FreeResultGlobalVarSub
 
             case ARRAY_HC8V:
                 // Point to the array data (APLHC8Vs)
-                lpMem = VarArrayDataFmBase (lpMem);
+                lpMem = VarArrayDataFmBase (lpMemHdrVar);
 
                 // Loop through the APLHC8Vs
                 for (u = 0; u < aplNELM; u++, ((LPAPLHC8V) lpMem)++)
@@ -672,7 +687,7 @@ UBOOL FreeResultGlobalVarSub
         RefCnt = 1;     // Any non-zero value to prevent erasure
 
     // We no longer need this ptr
-    MyGlobalUnlock (hGlbData); lpMem = NULL;
+    MyGlobalUnlock (hGlbData); lpMemHdrVar = NULL;
 
     // If the RefCnt is zero, free the global
     bRet = (RefCnt EQ 0);
@@ -680,7 +695,7 @@ UBOOL FreeResultGlobalVarSub
     if (bRet)
     {
         // Unlock and free (and set to NULL) a global name and ptr
-        UnlFreeGlbName (hGlbData, lpMem);
+        UnlFreeGlbName (hGlbData, lpMemHdrVar);
     } // End IF
 
     return bRet;
@@ -826,32 +841,30 @@ UBOOL FreeResultGlobalFcn
 
                     break;
 
-                case TKT_AXISARRAY:     // Free the axis array
+                case TKT_LSTMULT:       // Free the axis array
                     // Get the global handle
                     lphGlbLcl = &lpYYToken->tkToken.tkData.tkGlbData;
 
                     Assert (*lphGlbLcl NE NULL);
 
-                    // If tkData is a valid HGLOBAL list array
-                    if (IsGlbTypeLstDir_PTB (*lphGlbLcl))
+                    // tkData is a valid HGLOBAL list array
+                    Assert (IsGlbTypeLstDir_PTB (*lphGlbLcl));
+
+                    // Free the global list
+                    if (FreeResultGlobalLst (*lphGlbLcl))
                     {
-                        // Free the global list
-                        if (FreeResultGlobalLst (*lphGlbLcl))
-                        {
 #ifdef DEBUG_ZAP
-                            dprintfWL9 (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
-                                         hGlbData,
-                                        *lphGlbLcl,
-                                         FNLN);
+                        dprintfWL9 (L"**Zapping in FreeResultGlobalFcn: Global=%p, Value=%p (%S#%d)",
+                                     hGlbData,
+                                    *lphGlbLcl,
+                                     FNLN);
 #endif
-                            *lphGlbLcl = NULL;
-                        } // End IF
+                        *lphGlbLcl = NULL;
+                    } // End IF
 
-                        break;
-                    } // End IF/ELSE
+                    break;
 
-                    // Fall through to common code
-
+                case TKT_AXISARRAY:     // Free the axis array
                 case TKT_VARARRAY:      // Free the var array (strand arg to dyadic op)
                 case TKT_CHRSTRAND:     // Free the character strand
                 case TKT_NUMSTRAND:     // Free the numeric strand

@@ -230,7 +230,8 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     } else
     {
         // No axis specified:
-        // if Slash, use last dimension
+        //    if Slash   , use last  axis
+        //    if SlashBar, use first axis
         if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASH
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASH)
             aplAxis = max (aplRankRht, 1) - 1;
@@ -239,7 +240,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
             Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASHBAR
                  || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASHBAR);
 
-            // Otherwise, it's SlashBar on the first dimension
+            // Otherwise, it's SlashBar on the first axis
             aplAxis = 0;
         } // End IF/ELSE
     } // End IF/ELSE
@@ -1773,7 +1774,8 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     } else
     {
         // No axis specified:
-        // if Slash, use last dimension
+        //    if Slash   , use last  axis
+        //    if SlashBar, use first axis
         if (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASH
          || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASH)
             aplAxis = max (aplRankRht, 1) - 1;
@@ -1782,7 +1784,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
             Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_OPSLASHBAR
                  || lpYYFcnStrOpr->tkToken.tkData.tkChar EQ UTF16_SLASHBAR);
 
-            // Otherwise, it's SlashBar on the first dimension
+            // Otherwise, it's SlashBar on the first axis
             aplAxis = 0;
         } // End IF/ELSE
     } // End IF/ELSE

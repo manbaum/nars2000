@@ -1,6 +1,17 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1893 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In 3 []DR On Floating Point Numbers
+
+Directory branches/bsmith/NewTypes:
+
+QF_DR.C:
+  Fix bug when returning the # bits of precision for floating point numbers -- should be 53 not 64.  Duh!
+
+
 Build #1892 -- Version 0.5.8.xx
 -------------------------------
 
@@ -8,7 +19,6 @@ Build #1892 -- Version 0.5.8.xx
 * Fix Bug In Magic Function For Dyadic Squad Not Catching LENGTH/AXIS ERROR.
 * Fix Bug In Various Functions Using The Wrong Character Index
 * Fix Bug In {enclose} When Enclosing An Empty Which Returns A Non-empty
-* Change Definition Of {enclose}[{zilde}] R From Identity Function To Enclose All Axes
 
 Directory branches/bsmith/NewTypes:
 
@@ -71,7 +81,6 @@ QF_DC.C:
 
 PF_LSHOE.C:
   Fix bug in <LftShoeGlbCom_EM> when enclosing an empty which returns a non-empty.
-  In <PrimFnMonLeftShoeGlb_EM_YY>, change definition of {enclose}[{zilde}] R from identity function to Enclose all axes.
   Improve comments.
 
 PRIMFNS.C:

@@ -437,15 +437,21 @@ LPPL_YYSTYPE SysFnDR_GetPrec_EM_YY
 
         case ARRAY_INT:
         case ARRAY_APA:
-        case ARRAY_FLOAT:
         case ARRAY_HC2I:
         case ARRAY_HC4I:
         case ARRAY_HC8I:
+            // Return the numeric precision
+            aplIntegerRes = 64;
+            immTypeRes    = IMMTYPE_INT;
+
+            break;
+
+        case ARRAY_FLOAT:
         case ARRAY_HC2F:
         case ARRAY_HC4F:
         case ARRAY_HC8F:
             // Return the numeric precision
-            aplIntegerRes = 64;
+            aplIntegerRes = 53;
             immTypeRes    = IMMTYPE_INT;
 
             break;

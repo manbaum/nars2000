@@ -25,7 +25,8 @@
 #include "headers.h"
 
 extern UBOOL bDebugPLTrace,
-             bDebugPLStart;
+             bDebugPLStart,
+             gYYAlloc;
 
 
 //***************************************************************************
@@ -38,7 +39,8 @@ UBOOL CmdDebug_EM
     (LPWCHAR lpwszTail)         // Ptr to command line tail
 
 {
-    LPWCHAR p = lpwszTail;
+    LPWCHAR p = lpwszTail,
+            q;
     WCHAR   wszTemp[1024];
     int     i;
 
@@ -50,13 +52,15 @@ UBOOL CmdDebug_EM
     {
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
-                   L"Is PLTrace = %d  PLStart = %d\r\n"
-                   L"   DbgLvl = %d  FcnLvl = %d  VfpLvl = %d",
+                   L"Is PLTrace = %d  PLStart = %d  YYAlloc = 0x%X\r\n"
+                   L"   DbgLvl = %d  FcnLvl = %d  VfpLvl = %d  ResizeLvl = %d",
                     bDebugPLTrace,
                     bDebugPLStart,
+                    gYYAlloc,
                     gDbgLvl,
                     gFcnLvl,
-                    gVfpLvl);
+                    gVfpLvl,
+                    gResizeLvl);
         // Tell the user about it
         AppendLine (wszTemp, FALSE, TRUE);
 
@@ -64,33 +68,48 @@ UBOOL CmdDebug_EM
     } // End IF
 
     // Check for allPL=[0|1]
-#define OPT     L"allPL="
+#define OPT     L"allPL"
     if (strncmpiW (p, OPT, strcountof (OPT)) EQ 0)
     {
         // Skip over the prefix
-        p += strcountof (OPT);
+        q = SkipWhiteW (p + strcountof (OPT));
 
-        // Get the value
-        i = _wtoi (p);
-
-        // Skip over the number
-        p = SkipBlackW (p);
-
-        // Validate it
-        if (IsBooleanValue (i))
+        if (q[0] EQ L'=')
         {
-            // Format the "Was" message
-            MySprintfW (wszTemp,
-                        sizeof (wszTemp),
-                       L"Was PLTrace = %d  PLStart = %d",
-                        bDebugPLTrace,
-                        bDebugPLStart);
-            // Tell the user about it
-            AppendLine (wszTemp, FALSE, TRUE);
+            // Skip over the separator
+            p = SkipWhiteW (q + 1);
 
-            // Save the new value
-            bDebugPLTrace =
-            bDebugPLStart = i;
+            // Get the value
+            sscanfW (p, L"%i", &i);
+
+////////////// Get the value
+////////////i = _wtoi (p);
+
+            // Skip over the number
+            p = SkipBlackW (p);
+
+            // Validate it
+            if (IsBooleanValue (i))
+            {
+                // Format the "Was" message
+                MySprintfW (wszTemp,
+                            sizeof (wszTemp),
+                           L"Was PLTrace = %d  PLStart = %d",
+                            bDebugPLTrace,
+                            bDebugPLStart);
+                // Tell the user about it
+                AppendLine (wszTemp, FALSE, TRUE);
+
+                // Save the new value
+                bDebugPLTrace =
+                bDebugPLStart = i;
+            } else
+            {
+                // Tell the user about it
+                IncorrectCommand ();
+
+                return FALSE;
+            } // End IF/ELSE
         } else
         {
             // Tell the user about it
@@ -101,35 +120,47 @@ UBOOL CmdDebug_EM
     } // End IF
 #undef  OPT
 
-#define DEBUG_MAC(TXT1,TXT2,NAM,TEST)                   \
+#define DEBUG_MAC(OPT,TXT,NAM,TEST)                     \
     /* Skip over leading white space                  */\
     p = SkipWhiteW (p);                                 \
                                                         \
     /* Check for next option                          */\
-    if (strncmpiW (p, TXT1, strcountof (TXT1)) EQ 0)    \
+    if (strncmpiW (p, OPT, strcountof (OPT)) EQ 0)      \
     {                                                   \
         /* Skip over the prefix                       */\
-        p += strcountof (TXT1);                         \
+        q = SkipWhiteW (p + strcountof (OPT));          \
                                                         \
-        /* Get the value                              */\
-        i = _wtoi (p);                                  \
-                                                        \
-        /* Skip over the number                       */\
-        p = SkipBlackW (p);                             \
-                                                        \
-        /* Validate it                                */\
-        if (TEST (i))                                   \
+        if (q[0] EQ L'=')                               \
         {                                               \
-            /* Format the "Was" message               */\
-            MySprintfW (wszTemp,                        \
-                        sizeof (wszTemp),               \
-                        TXT2,                           \
-                        NAM);                           \
-            /* Tell the user about it                 */\
-            AppendLine (wszTemp, FALSE, TRUE);          \
+            /* Skip over the separator                */\
+            p = SkipWhiteW (q + 1);                     \
                                                         \
-            /* Save the new value                     */\
-            NAM = i;                                    \
+            /* Get the value                          */\
+            sscanfW (p, L"%i", &i);                     \
+                                                        \
+            /* Skip over the number                   */\
+            p = SkipBlackW (p);                         \
+                                                        \
+            /* Validate it                            */\
+            if (TEST (i))                               \
+            {                                           \
+                /* Format the "Was" message           */\
+                MySprintfW (wszTemp,                    \
+                            sizeof (wszTemp),           \
+                            TXT,                        \
+                            NAM);                       \
+                /* Tell the user about it             */\
+                AppendLine (wszTemp, FALSE, TRUE);      \
+                                                        \
+                /* Save the new value                 */\
+                NAM = i;                                \
+            } else                                      \
+            {                                           \
+                /* Tell the user about it             */\
+                IncorrectCommand ();                    \
+                                                        \
+                return FALSE;                           \
+            } /* End IF/ELSE                          */\
         } else                                          \
         {                                               \
             /* Tell the user about it                 */\
@@ -140,17 +171,15 @@ UBOOL CmdDebug_EM
     } /* End IF                                       */
 
 #define IsUCHAR(a)      (0 <= (a) && (a) < 256)
+#define IsWORD(a)       (0 <= (a) && (a) < 65536)
 
-    DEBUG_MAC (L"PLTrace=", L"Was PLTrace = %d", bDebugPLTrace, IsBooleanValue)
-    DEBUG_MAC (L"PLStart=", L"Was PLStart = %d", bDebugPLStart, IsBooleanValue)
-    DEBUG_MAC (L"DbgLvl=" , L"Was DbgLvl = %d" , gDbgLvl      , IsUCHAR  )
-    DEBUG_MAC (L"FcnLvl=" , L"Was FcnLvl = %d" , gFcnLvl      , IsUCHAR  )
-    DEBUG_MAC (L"VfpLvl=" , L"Was VfpLvl = %d" , gVfpLvl      , IsUCHAR  )
-
-
-
-
-
+    DEBUG_MAC (L"PLTrace"    , L"Was PLTrace = %d"   , bDebugPLTrace, IsBooleanValue)
+    DEBUG_MAC (L"PLStart"    , L"Was PLStart = %d"   , bDebugPLStart, IsBooleanValue)
+    DEBUG_MAC (L"YYAlloc"    , L"Was YYAlloc = 0x%X" , gYYAlloc     , IsWORD        )
+    DEBUG_MAC (L"DbgLvl"     , L"Was DbgLvl = %d"    , gDbgLvl      , IsUCHAR       )
+    DEBUG_MAC (L"FcnLvl"     , L"Was FcnLvl = %d"    , gFcnLvl      , IsUCHAR       )
+    DEBUG_MAC (L"VfpLvl"     , L"Was VfpLvl = %d"    , gVfpLvl      , IsUCHAR       )
+    DEBUG_MAC (L"ResizeLvl"  , L"Was ResizeLvl = %d" , gResizeLvl   , IsUCHAR       )
 
     return TRUE;
 } // End CmdDebug_EM

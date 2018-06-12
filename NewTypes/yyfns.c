@@ -24,11 +24,14 @@
 #include <windows.h>
 #include "headers.h"
 
-// When debugging a <YYResIsEmpty> memory leak, uncomment
-//   the following line and substitute the leaking
-//   <YYIndex> number for XXXX in order to trap the <YYAlloc>/<YYFree>
+#ifdef DEBUG
+// When debugging a <YYResIsEmpty> memory leak,
+//   set gYYAlloc to XXXX via )DEBUG YYAlloc=XXXX
+//   so as to save the leaking <YYIndex> number
+//   in <gYYAlloc> so as to trap the <YYAlloc>/<YYFree>
 //   of the allocation leak.
-//#define YYCHECKINDEX    0x0004
+UINT gYYAlloc  = 0x0000;
+#endif
 
 
 //***************************************************************************
@@ -153,9 +156,8 @@ NORMAL_EXIT:
     // Save unique number for debugging/tracking purposes
     lpYYRes->YYIndex = ++YYIndex;
 
-  #ifdef YYCHECKINDEX
-    Assert (lpYYRes->YYIndex NE YYCHECKINDEX);
-  #endif
+    if (gYYAlloc NE 0)
+        Assert (lpYYRes->YYIndex NE gYYAlloc);
 #endif
     return lpYYRes;
 } // End _YYAlloc
@@ -329,9 +331,10 @@ void _YYFree
 
         DbgBrk ();      // #ifdef DEBUG
     } // End IF/ELSE
-#ifdef YYCHECKINDEX
-    Assert (lpYYRes->YYIndex NE YYCHECKINDEX);
-#endif
+
+    if (gYYAlloc NE 0)
+        Assert (lpYYRes->YYIndex NE gYYAlloc);
+
     // Save the old value
     YYIndex  = lpYYRes->YYIndex;
 #endif

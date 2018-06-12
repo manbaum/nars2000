@@ -1,6 +1,20 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1894 -- Version 0.5.8.xx
+-------------------------------
+
+* Extend )DEBUG to Other Debug Contexts
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+SC_DEBUG.C:
+SYMTAB.C:
+YYFNS.C:
+  Define more DEBUG levels.
+
+
 Build #1893 -- Version 0.5.8.xx
 -------------------------------
 

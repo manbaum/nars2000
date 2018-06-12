@@ -363,6 +363,11 @@ UCHAR gDbgLvl       // Debug level 0 = none, >= gXXXLvl activates gXXXLvl
 #ifdef DEFINE_VALUES
 = 3
 #endif
+,
+     gResizeLvl     // ..                         SYMHSH-resizing related ...
+#ifdef DEFINE_VALUES
+= 3
+#endif
 ;
 #endif  // #ifdef DEBUG
 

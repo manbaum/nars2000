@@ -469,7 +469,8 @@ UBOOL HshTabResize_EM
     Assert (HshTabFrisk (lpHTS));
 
 #ifdef DEBUG
-    if (TlsGetValue (dwTlsPerTabData))
+    if (TlsGetValue (dwTlsPerTabData)
+     && gResizeLvl < gDbgLvl)
         dprintfWL0 (L"||| Resizing the %s hash   table from %u to %u (%S#%d)",
                      (lpHTS->bAFO ? L"AFO" : lpHTS->bMFO ? L"MFO" : L"LCL"),
                      lpHTS->iHshTabTotalNelm,
@@ -634,7 +635,8 @@ UBOOL SymTabResize_EM
     Assert (HshTabFrisk (lpHTS));
 
 #ifdef DEBUG
-    if (TlsGetValue (dwTlsPerTabData))
+    if (TlsGetValue (dwTlsPerTabData)
+     && gResizeLvl < gDbgLvl)
         dprintfWL0 (L"||| Resizing the %s symbol table from %u to %u (%S#%d)",
                      (lpHTS->bAFO ? L"AFO" : lpHTS->bMFO ? L"MFO" : L"LCL"),
                      lpHTS->iSymTabTotalNelm,

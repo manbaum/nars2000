@@ -1,6 +1,26 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1895 -- Version 0.5.8.xx
+-------------------------------
+
+* Extend Index Coalescing To Indexed Assignment And Modified Indexed Assignment
+
+Directory branches/bsmith/NewTypes:
+
+FREE.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  In <FreeTempResult>, call <FreeResult> as the subfunction instead of
+    <FreeResultSub> so as to free curried items as well.
+
+PARSELINE.C:
+  Coalesce repeated indices for Indexed Assignment and Modified Indexed
+    Assignment.
+
+PF_INDEX.C:
+  Fix bug in <ArrayIndexFcnSet>, so as to allow indexing into non-singleton set arguments.
+
+
 Build #1894 -- Version 0.5.8.xx
 -------------------------------
 

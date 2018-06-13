@@ -1889,77 +1889,16 @@ LPPL_YYSTYPE plRedA_IDX
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    LPPL_YYSTYPE lpYYRes,               // Ptr to the result
-                 lpYYVar,               // Ptr to a temp
-                 lpYYRes2,              // ...
-                 lpYYVar2 = NULL;       // ...
+    LPPL_YYSTYPE lpYYRes;               // Ptr to the result
 
-    // Copy to temp vars
-    lpYYRes = lpplYYCurObj;
-    lpYYVar = lpplYYLstRht;
-
-    // Loop until no more curried indices
-    while (lpYYVar NE NULL)
-    {
-        // If the current object is in the process of stranding, ...
-        if (lpYYRes->YYStranding)
-        {
-            // Turn this strand into a var
-            lpYYVar2 =
-              MakeVarStrand_EM_YY (lpYYRes);
-            // YYFree the result object
-            YYFree (lpYYRes); lpYYRes = NULL;
-
-            // If not defined, ...
-            if (lpYYVar2 EQ NULL)
-                goto ERROR_EXIT;
-
-            // Copy to the current object
-            lpYYRes = lpYYVar2;
-            lpYYVar2 = NULL;
-        } else
-            // Unstrand the result object if necessary
-            UnVarStrand (lpYYRes);
-
-        if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
-            lpYYRes2 = NULL;
-        else
-            lpYYRes2 = ArrayIndexRef_EM_YY (&lpYYRes->tkToken, &lpYYVar->tkToken);
-
-        // Save the next curried index (if any)
-        lpYYVar2 = lpYYVar->lpplYYIdxCurry;
-
-        // Free (unnamed) and YYFree the objects
-        FreeTempResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
-        FreeTempResult (lpYYVar); YYFree (lpYYVar); lpYYVar = NULL;
-
-        // Copy back and repeat
-        lpYYRes = lpYYRes2;
-        lpYYVar = lpYYVar2;
-
-        // Check for errors
-        if (lpYYRes EQ NULL)
-            break;
-    } // End WHILE
-
-    // While the curried index is valid, ...
-    while (lpYYVar NE NULL)
-    {
-        // Save the next curried index (if any)
-        lpYYVar2 = lpYYVar->lpplYYIdxCurry;
-
-        // Free (unnamed) and YYFree the curried index
-        FreeTempResult (lpYYVar); YYFree (lpYYVar); lpYYVar = NULL;
-
-        // Copy back and repeat
-        lpYYVar = lpYYVar2;
-    } // End WHILE
+    // Loop through the repeated indices
+    lpYYRes = CoalesceIdx_EM (lpplYYCurObj, lpplYYLstRht, lpplLocalVars);
 
     // If it succeeded, ...
     if (lpYYRes NE NULL)
         // Change the tkSynObj
         lpYYRes->tkToken.tkSynObj = soType;
-ERROR_EXIT:
+
     return lpYYRes;
 } // End plRedA_IDX
 
@@ -3544,14 +3483,63 @@ LPPL_YYSTYPE plRedNAM_ISPA
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    UBOOL bRet;                         // TRUE iff the result is valid
+    UBOOL        bRet;                  // TRUE iff the result is valid
+    LPPL_YYSTYPE lpYYIdx;
 
     Assert (lpplYYLstRht->lpplYYIdxCurry NE NULL);
-    Assert (IsTknNamed (&lpplYYCurObj->tkToken));
 
-    // If the IDX is repeated, ...
+    if (!IsTknNamed (&lpplYYCurObj->tkToken))
+        goto SYNTAX_EXIT;
+
+    // If there are repeated indices, ...
     if (lpplYYLstRht->lpplYYIdxCurry->lpplYYIdxCurry NE NULL)
-        goto NONCE_EXIT;
+    {
+        TOKEN        tkFunc = {0};
+        LPPL_YYSTYPE lpYYTmp,
+                     lpYYRes;
+
+        // Fill in the function token
+        tkFunc.tkFlags.TknType   = TKT_FCNIMMED;
+        tkFunc.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
+////////tkFunc.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+        tkFunc.tkData.tkChar     = UTF16_RHO;
+        tkFunc.tkCharIndex       = lpplYYCurObj->tkToken.tkCharIndex;
+
+        // Create an array of indices as in {iota}{rho}R
+        lpYYTmp =
+          PrimFnMonRho_EM_YY (&tkFunc,
+                              &lpplYYCurObj->tkToken,
+                               NULL);
+        // Check for errors
+        if (lpYYTmp EQ NULL)
+            goto ERROR_EXIT;
+
+        // Fill in the function token
+        tkFunc.tkFlags.TknType   = TKT_FCNIMMED;
+        tkFunc.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
+////////tkFunc.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+        tkFunc.tkData.tkChar     = UTF16_IOTA;
+        tkFunc.tkCharIndex       = lpplYYCurObj->tkToken.tkCharIndex;
+
+        lpYYRes =
+          PrimFnMonIota_EM_YY (&tkFunc,
+                               &lpYYTmp->tkToken,
+                                NULL);
+        // Free the temp result
+        FreeTempResult (lpYYTmp); YYFree (lpYYTmp); lpYYTmp = NULL;
+
+        // Check for errors
+        if (lpYYRes EQ NULL)
+            goto ERROR_EXIT;
+
+        // Coalesce the repeated indices into one
+        lpYYIdx = CoalesceIdx_EM (lpYYRes, lpplYYLstRht->lpplYYIdxCurry, lpplLocalVars);
+
+        // Check for errors
+        if (lpYYIdx EQ NULL)
+            goto ERROR_EXIT;
+    } else
+        lpYYIdx = lpplYYLstRht->lpplYYIdxCurry;
 
     if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
         bRet = FALSE;
@@ -3561,18 +3549,17 @@ LPPL_YYSTYPE plRedNAM_ISPA
         // Assign the value to the indexed name via the modify function
         bRet =
           ArrayIndexFcnSet_EM (&lpplYYCurObj->tkToken,
-                               &lpplYYLstRht->lpplYYIdxCurry->tkToken,
+                               &lpYYIdx->tkToken,
                                 lpplYYLstRht->lpplYYFcnCurry,
                                &lpplYYLstRht->tkToken);
     else
         // Assign the value to the indexed name
         bRet =
           ArrayIndexSet_EM    (&lpplYYCurObj->tkToken,
-                               &lpplYYLstRht->lpplYYIdxCurry->tkToken,
+                               &lpYYIdx->tkToken,
                                &lpplYYLstRht->tkToken);
-    // YYFree the current & curried objects
-                                               YYFree (lpplYYCurObj);                 lpplYYCurObj = NULL; // curSynObj = soNONE;
-    FreeResult (lpplYYLstRht->lpplYYIdxCurry); YYFree (lpplYYLstRht->lpplYYIdxCurry); lpplYYLstRht->lpplYYIdxCurry = NULL;
+    // YYFree the current object
+    YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
 
     if (!bRet)
     {
@@ -3588,15 +3575,102 @@ LPPL_YYSTYPE plRedNAM_ISPA
 
     return lpplYYLstRht;
 
-NONCE_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
-                              &lpplYYCurObj->tkToken);
-    // We'll free this object because of the NULL return,
-    //   so we increment the RefCnt as this is a named object
-    DbgIncrRefCntTkn (&lpplYYCurObj->tkToken);
+SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lpplLocalVars->lptkNext);
+    goto ERROR_EXIT;
 
+ERROR_EXIT:
     return NULL;
 } // End plRedNAM_ISPA
+
+
+//***************************************************************************
+//  $CoalesceIdx_EM
+//
+//  Coalesce repeated indices into one
+//***************************************************************************
+
+LPPL_YYSTYPE CoalesceIdx_EM
+    (LPPL_YYSTYPE  lpYYRes,             // The base array to index
+     LPPL_YYSTYPE  lpYYVar,             // The indices
+     LPPLLOCALVARS lpplLocalVars)       // Ptr to plLocalVars
+
+{
+    LPPL_YYSTYPE lpYYRes2,
+                 lpYYVar2;
+
+    // Loop until no more curried indices
+    while (lpYYVar NE NULL)
+    {
+        // If the current object is in the process of stranding, ...
+        if (lpYYRes->YYStranding)
+        {
+            // Turn this strand into a var
+            lpYYVar2 =
+              MakeVarStrand_EM_YY (lpYYRes);
+            // YYFree the result object
+            YYFree (lpYYRes); lpYYRes = NULL;
+
+            // If not defined, ...
+            if (lpYYVar2 EQ NULL)
+                goto ERROR_EXIT;
+
+            // Copy to the current object
+            lpYYRes = lpYYVar2;
+            lpYYVar2 = NULL;
+        } else
+            // Unstrand the result object if necessary
+            UnVarStrand (lpYYRes);
+
+        if (CheckCtrlBreak (&lpplLocalVars->bCtrlBreak) || lpplLocalVars->bYYERROR)
+            lpYYRes2 = NULL;
+        else
+            lpYYRes2 = ArrayIndexRef_EM_YY (&lpYYRes->tkToken, &lpYYVar->tkToken);
+
+        // Save the next curried index (if any)
+        lpYYVar2 = lpYYVar->lpplYYIdxCurry;
+
+        // Zap the curried index so we don't free it in <FreeTempResult>
+        lpYYVar->lpplYYIdxCurry = NULL;
+
+        // If it's valid, ...
+        if (lpYYRes2 NE NULL)
+        {
+            // Free (unnamed) and YYFree the objects
+            FreeTempResult (lpYYRes); YYFree (lpYYRes); lpYYRes = NULL;
+        } // End IF
+
+        // Free (unnamed) and YYFree the objects
+        FreeTempResult (lpYYVar); YYFree (lpYYVar); lpYYVar = NULL;
+
+        // Copy back and repeat
+        lpYYRes = lpYYRes2;
+        lpYYVar = lpYYVar2;
+
+        // Check for errors
+        if (lpYYRes EQ NULL)
+            break;
+    } // End WHILE
+
+    // While the curried index is valid, ...
+    while (lpYYVar NE NULL)
+    {
+        // Save the next curried index (if any)
+        lpYYVar2 = lpYYVar->lpplYYIdxCurry;
+
+        // Free (unnamed) and YYFree the curried index
+        FreeTempResult (lpYYVar); YYFree (lpYYVar); lpYYVar = NULL;
+
+        // Copy back and repeat
+        lpYYVar = lpYYVar2;
+    } // End WHILE
+
+    return lpYYRes;
+
+ERROR_EXIT:
+    return NULL;
+} // End CoalesceIdx_EM
 
 
 //***************************************************************************
@@ -4958,8 +5032,8 @@ PARSELINE_ERROR:
                     // If the current object is a Fcn or Var, ...
                     if (IsTknTypeFcnOpr (lpplYYCurObj->tkToken.tkFlags.TknType)
                      || IsTknTypeVar    (lpplYYCurObj->tkToken.tkFlags.TknType))
-                        // Free the object and its curries
-                        FreeResult (lpplYYCurObj);
+                        // Free the object and its curries only if not named
+                        FreeTempResult (lpplYYCurObj);
                     // YYFree the current object
                     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;
                 } else
@@ -5041,7 +5115,7 @@ PARSELINE_DONE:
             } // End IF
 
             // Set flag for assigned name
-            bAssignName = 0
+            bAssignName = FALSE
              || (curSynObj EQ soA    && oldLstSynObj EQ soSPA )
              || (curSynObj EQ soSA   && oldLstSynObj EQ soSPA )
              || (curSynObj EQ soF    && oldLstSynObj EQ soSPF )
@@ -6064,7 +6138,8 @@ PL_YYLEX_FCNNAMED:
                         // Mark it as an Array so it can't be re-assigned.
                         lpplYYLval->tkToken.tkSynObj = soA;
                     else
-                    if (lpplLocalVars->lptkNext->tkFlags.bAssignName)
+                    if (lpplLocalVars->lptkNext->tkFlags.bAssignName
+                     && lpplLocalVars->lptkNext[1].tkFlags.TknType NE TKT_LEFTBRACKET)
                         // Mark it as named as it'll be re-assigned shortly
                         lpplYYLval->tkToken.tkSynObj = soNAM;
                     else
@@ -6354,9 +6429,10 @@ PL_YYLEX_FCNNAMED:
                     break;
             } // End SWITCH
 
-            // If the name is assigned into, or
+            // If the name is assigned into and it's not a VALUE ERROR, or
             //   the next token is TKT_CS_IN, ...
-            if (lpplLocalVars->lptkNext->tkFlags.bAssignName
+            if ((lpplLocalVars->lptkNext->tkFlags.bAssignName
+              && lpplYYLval->tkToken.tkSynObj NE soVALR)
              || lpplLocalVars->lptkNext[1].tkFlags.TknType EQ TKT_CS_IN)
                 // Make it a NAME
                 lpplYYLval->tkToken.tkSynObj = soNAM;

@@ -4552,13 +4552,19 @@ UBOOL ArrayIndexFcnSet_EM
                  lpYYResR = NULL,       // ...
                  lpYYResInd = NULL,     // ...                      for Ind
                  lpYYResSub = NULL;     // ...                      for Ind[I]
+    APLSTYPE     aplTypeRht;            // Right arg storage type
+    HGLOBAL      hGlbRht;               // ...       global memory handle
     UBOOL        bRet = TRUE;           // TRUE iff result is valid
     TOKEN        tkFunc = {0},          // Temporary token for a function
                  tkList = {0};          // ...                   list
     APLNELM      aplNELMInd,            // The NELM of the indices
-                 aplNELMArg,            // ...             right arg
+                 aplNELMRht,            // ...             right arg
                  uInd;                  // Loop counter
     APLBOOL      bQuadIO;               // []IO
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
 
     // Get []IO
     bQuadIO = GetQuadIO ();
@@ -4632,8 +4638,11 @@ UBOOL ArrayIndexFcnSet_EM
         goto ERROR_EXIT;
 
     // Get the NELM of the indices & right arg
-    AttrsOfToken (&lpYYResInd->tkToken, NULL, &aplNELMInd, NULL, NULL);
-    AttrsOfToken ( lptkRhtArg         , NULL, &aplNELMArg, NULL, NULL);
+    AttrsOfToken (&lpYYResInd->tkToken, NULL       , &aplNELMInd, NULL, NULL);
+    AttrsOfToken ( lptkRhtArg         , &aplTypeRht, &aplNELMRht, NULL, NULL);
+
+    // Get the right arg global memory handle (if any)
+    hGlbRht = GetGlbHandle (lptkRhtArg);
 
     // Loop through the values in Ind
     for (uInd = 0; bRet && uInd < aplNELMInd; uInd++)
@@ -4657,12 +4666,24 @@ UBOOL ArrayIndexFcnSet_EM
         if (lpYYResSub EQ NULL)
             goto ERROR_EXIT;
         // If the right arg is not a singleton, ...
-        if (!IsSingleton (aplNELMArg))
+        if (!IsSingleton (aplNELMRht))
         {
+            // Note that the right arg need not be a vector,
+            //   and so the immediate value indexing might
+            //   signal a RANK ERROR.  Instead, we use a
+            //   different function.
+
             // Compute R[I]
             lpYYRes1 =
-              ArrayIndexRef_EM_YY (lptkRhtArg,
-                                  &tkList);
+              ArrayIndexRefLstImm_EM_YY (hGlbRht,               // Name arg global memory handle
+                                         aplTypeRht,            // Name arg storage type
+                                         aplNELMRht,            // Name arg NELM
+                                         1,                     // Name arg rank (a harmless but necessary lie)
+                                         ARRAY_INT,             // List arg storage type
+                                         uInd + bQuadIO,        // List arg immediate value
+                                         aplTypeRht,            // Result storage type
+                                         lpMemPTD,              // Ptr to PerTabData global memory
+                                        &lpYYFcnStr->tkToken);  // Ptr to function token
             // Check for error
             if (lpYYRes1 EQ NULL)
                 goto ERROR_EXIT;
@@ -4688,7 +4709,7 @@ UBOOL ArrayIndexFcnSet_EM
                                   &lpYYRes1->tkToken,   // Ptr to right arg token
                                    NULL);               // Ptr to axis token (may be NULL)
         // If the right arg is not a singleton, ...
-        if (!IsSingleton (aplNELMArg))
+        if (!IsSingleton (aplNELMRht))
             FreeResult (lpYYRes1);
         // Clear it
         YYFree (lpYYRes1); lpYYRes1 = NULL;

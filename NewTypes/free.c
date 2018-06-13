@@ -88,24 +88,24 @@ void FreeResult
     (LPPL_YYSTYPE lpYYRes)              // Ptr to YYSTYPE to free
 
 {
-    if (lpYYRes)
+    if (lpYYRes NE NULL)
     {
         // If there is a curried index, ...
-        if (lpYYRes->lpplYYIdxCurry)
+        if (lpYYRes->lpplYYIdxCurry NE NULL)
         {
             // YYFree and Free it recursively
             FreeResult (lpYYRes->lpplYYIdxCurry); YYFree (lpYYRes->lpplYYIdxCurry); lpYYRes->lpplYYIdxCurry = NULL;
         } // End IF
 
         // If there is a curried arg, ...
-        if (lpYYRes->lpplYYArgCurry)
+        if (lpYYRes->lpplYYArgCurry NE NULL)
         {
             // YYFree and Free it recursively
             FreeResult (lpYYRes->lpplYYArgCurry); YYFree (lpYYRes->lpplYYArgCurry); lpYYRes->lpplYYArgCurry = NULL;
         } // End IF
 
         // If there is a curried fcn, ...
-        if (lpYYRes->lpplYYFcnCurry)
+        if (lpYYRes->lpplYYFcnCurry NE NULL)
         {
             // If the curried function is not an AFO, ...
             if (!IsTknAFO (&lpYYRes->lpplYYFcnCurry->tkToken))
@@ -117,7 +117,7 @@ void FreeResult
         } // End IF
 
         // If there is a curried right operand, ...
-        if (lpYYRes->lpplYYOpRCurry)
+        if (lpYYRes->lpplYYOpRCurry NE NULL)
         {
             // If the curried right operand is not an AFO, ...
             if (!IsTknAFO (&lpYYRes->lpplYYOpRCurry->tkToken))
@@ -313,7 +313,7 @@ void FreeResultSub
             lphGlbData = GetPtrGlbDataToken (lptkRes);
 
             // Check for valid handle
-            if (lphGlbData && *lphGlbData)
+            if (lphGlbData NE NULL && *lphGlbData NE NULL)
             {
                 // tkData is a valid HGLOBAL variable or function array or list
                 Assert (IsGlbTypeVarDir_PTB (*lphGlbData)
@@ -565,7 +565,7 @@ UBOOL FreeResultGlobalVarSub
                 for (u = 0; u < aplNELM; u++, ((LPAPLNESTED) lpMem)++)
                 {
                     // Check for invalid ptrs
-                    if (lpMem)
+                    if (lpMem NE NULL)
                     // Check for required complete vars
                     if (bReqComplete || *(LPAPLNESTED) lpMem)
                     switch (GetPtrTypeInd (lpMem))
@@ -743,7 +743,7 @@ UBOOL FreeResultGlobalFcn
           ChangeRefCntDir_PTB (MakePtrTypeGlb (hGlbData), -1);
 
         // Free the line text
-        if (hGlbTxtLine)
+        if (hGlbTxtLine NE NULL)
         {
             DbgGlobalFree (hGlbTxtLine); hGlbTxtLine = NULL;
         } // End IF
@@ -1044,25 +1044,25 @@ void FreeResultGlobalDfnStruc
     } // End IF
 
     // Check the static HGLOBALs
-    if (lpMemDfnHdr->hGlbTxtHdr)
+    if (lpMemDfnHdr->hGlbTxtHdr NE NULL)
     {
         // We no longer need this storage
         DbgGlobalFree (lpMemDfnHdr->hGlbTxtHdr); lpMemDfnHdr->hGlbTxtHdr = NULL;
     } // End IF
 
-    if (lpMemDfnHdr->hGlbTknHdr)
+    if (lpMemDfnHdr->hGlbTknHdr NE NULL)
     {
         // We no longer need this storage
         DbgGlobalFree (lpMemDfnHdr->hGlbTknHdr); lpMemDfnHdr->hGlbTknHdr = NULL;
     } // End IF
 
-    if (lpMemDfnHdr->hGlbUndoBuff)
+    if (lpMemDfnHdr->hGlbUndoBuff NE NULL)
     {
         // We no longer need this storage
         DbgGlobalFree (lpMemDfnHdr->hGlbUndoBuff); lpMemDfnHdr->hGlbUndoBuff = NULL;
     } // End IF
 
-    if (lpMemDfnHdr->hGlbMonInfo)
+    if (lpMemDfnHdr->hGlbMonInfo NE NULL)
     {
         // We no longer need this storage
         DbgGlobalFree (lpMemDfnHdr->hGlbMonInfo); lpMemDfnHdr->hGlbMonInfo = NULL;
@@ -1075,7 +1075,7 @@ void FreeResultGlobalDfnStruc
     lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
     // Loop through the lines
-    while (numFcnLines--)
+    while (numFcnLines-- NE 0)
     {
         if (bUntokenize
          && lpFcnLines->offTknLine)
@@ -1084,7 +1084,7 @@ void FreeResultGlobalDfnStruc
             Untokenize ((LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines->offTknLine)); lpFcnLines->offTknLine = 0;
         } //End IF
 
-        if (lpFcnLines->hGlbTxtLine)
+        if (lpFcnLines->hGlbTxtLine NE NULL)
         {
             // We no longer need this storage
             DbgGlobalFree (lpFcnLines->hGlbTxtLine); lpFcnLines->hGlbTxtLine = NULL;
@@ -1144,7 +1144,7 @@ void FreeTempResult
 
     // If it's not named, ...
     if (!IsTknNamed (&lpYYRes->tkToken))
-        FreeResultSub (&lpYYRes->tkToken, FALSE, FALSE);
+        FreeResult (lpYYRes);
 #ifdef DEBUG
     else
         nop ();

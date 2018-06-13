@@ -1411,20 +1411,31 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
             } else
             // We are assigning
             {
+                IMM_TYPES immTypeHet;
+                APLSTYPE  aplTypeHet;
+
                 // Get the next item from the set arg
                 if (!IsSingleton (aplNELMSet))
-                    GetNextItemMem (lpMemSet,               // Ptr to item global memory data
-                                    aplTypeSet,             // Item storage type
-                                    aplNELMSet,             // Item NELM
-                                    aplIndexSet++,          // Index into item
-                                   &hGlbSubSet,             // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
-                                   &aplLongestSet);         // Ptr to result immediate value (may be NULL)
+                    GetNextValueMemSub (lpMemSet,           // Ptr to item global memory data
+                                        aplTypeSet,         // Item storage type
+                                        aplNELMSet,         // Item NELM
+                                        aplIndexSet++,      // Index into item
+                                       &hGlbSubSet,         // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
+                                       &aplLongestSet,      // Ptr to result immediate value (may be NULL)
+                                       &immTypeHet);        // Ptr to result immediate type (may be NULL)
+                // If the Set item is immediate, ...
+                if (hGlbSubSet EQ NULL)
+                    // Set the array type
+                    aplTypeHet = TranslateImmTypeToArrayType (immTypeHet);
+                else
+                    aplTypeHet = aplTypeSet;
+
                 // Replace the <aplIntAcc> element in hGlbRht
                 //   with <aplLongestSet> or <hGlbSubSet> depending upon <aplTypeRht>
                 if (!ArrayIndexReplace_EM (aplTypeRht,      // Right arg storage type
                                            lpMemRht,        // Ptr to right arg global memory
                                            aplIntAcc,       // Index into right arg
-                                           aplTypeSet,      // Set arg storage type
+                                           aplTypeHet,      // Set arg storage type
                                            aplLongestSet,   // Set arg immediate value
                                            hGlbSubSet,      // Set arg global memory handle
                                            lptkFunc))       // Ptr to function token

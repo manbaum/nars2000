@@ -1,6 +1,17 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1896 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug When Assigning Into An Array Which Forces Promotion To Hetero
+
+Directory branches/bsmith/NewTypes:
+
+PF_SQUAD.C:
+  In <PrimFnDydSquadGlb_EM_YY>, handle the case when assigning into a simple non-hetero array which forces promotion to hetero.
+
+
 Build #1895 -- Version 0.5.8.xx
 -------------------------------
 

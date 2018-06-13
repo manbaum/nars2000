@@ -1,0 +1,9 @@
+Build #1897 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In Last Build
+
+Directory branches/bsmith/NewTypes:
+
+PF_SQUAD.C:
+  In <PrimFnDydSquadGlb_EM_YY>, handle the case when the Set argument is a singleton.

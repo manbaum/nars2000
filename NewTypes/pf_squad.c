@@ -1423,6 +1423,10 @@ LPPL_YYSTYPE PrimFnDydSquadGlb_EM_YY
                                        &hGlbSubSet,         // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                        &aplLongestSet,      // Ptr to result immediate value (may be NULL)
                                        &immTypeHet);        // Ptr to result immediate type (may be NULL)
+                else
+                    // Set immTypeHet
+                    immTypeHet = TranslateArrayTypeToImmType (aplTypeSet);
+
                 // If the Set item is immediate, ...
                 if (hGlbSubSet EQ NULL)
                     // Set the array type

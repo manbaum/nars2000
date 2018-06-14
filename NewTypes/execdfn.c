@@ -240,7 +240,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     (HGLOBAL      hGlbDfnHdr,       // User-defined function/operator global memory handle
      LPTOKEN      lptkLftArg,       // Ptr to left arg token (may be NULL if niladic/monadic)
      LPPL_YYSTYPE lpYYFcnStrLft,    // Ptr to left operand function strand (may be NULL if not an operator and no axis)
-     LPPL_YYSTYPE lpYYFcnStr,       // Ptr to function strand (may be NULL if not an operator and no axis)
+     LPPL_YYSTYPE lpYYFcnStrOpr,    // Ptr to function strand (may be NULL if not an operator and no axis)
      LPPL_YYSTYPE lpYYFcnStrRht,    // Ptr to right operand function strand (may be NULL if not an operator and no axis)
      LPTOKEN      lptkAxis,         // Ptr to axis token (may be NULL -- used only if function strand is NULL)
      LPTOKEN      lptkRhtArg,       // Ptr to right arg token (may be NULL if niladic)
@@ -561,7 +561,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
     {
         // Execute the user-defined function/operator
         lpYYRes =
-          ExecuteFunction_EM_YY (startLineNum, startTknNum, &lpYYFcnStr->tkToken);
+          ExecuteFunction_EM_YY (startLineNum, startTknNum, &lpYYFcnStrOpr->tkToken);
     } __except (CheckException (GetExceptionInformation (), L"ExecDfnOprGlb_EM_YY"))
     {
         // Unlocalize the STEs on the innermost level
@@ -589,32 +589,32 @@ UNLOCALIZE_EXIT:
 //   its interaction with this user-defined function/operator.
 LEFT_RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                              &lpYYFcnStr->tkToken);
+                              &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 
 RIGHT_RANK_EXIT:
     ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
-                              &lpYYFcnStr->tkToken);
+                              &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 
 LEFT_LENGTH_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                              &lpYYFcnStr->tkToken);
+                              &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 
 RIGHT_LENGTH_EXIT:
     ErrorMessageIndirectToken (ERRMSG_LENGTH_ERROR APPEND_NAME,
-                              &lpYYFcnStr->tkToken);
+                              &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                              &lpYYFcnStr->tkToken);
+                              &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 
 VALENCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_VALENCE_ERROR APPEND_NAME,
-                              &lpYYFcnStr->tkToken);
+                              &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 
 AXIS_SYNTAX_EXIT:
@@ -624,7 +624,7 @@ AXIS_SYNTAX_EXIT:
 
 RIGHT_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
-                              &lpYYFcnStr->tkToken);
+                              &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 
 WSFULL_UNLOCALIZE_EXIT:
@@ -633,7 +633,7 @@ WSFULL_UNLOCALIZE_EXIT:
     UnlocalizeSTEs (hGlbDfnHdr);
 
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
-                              &lpYYFcnStr->tkToken);
+                              &lpYYFcnStrOpr->tkToken);
     goto ERROR_EXIT;
 
 ERROR_EXIT:

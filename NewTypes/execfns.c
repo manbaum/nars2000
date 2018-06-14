@@ -26,19 +26,20 @@
 
 
 //***************************************************************************
-//  $ExecuteFn0
+//  $ExecuteFn0Glb
 //
 //  Execute a niladic function
 //***************************************************************************
 
-LPPL_YYSTYPE ExecuteFn0
-    (LPPL_YYSTYPE lpYYFcn0)     // Ptr to function PL_YYSTYPE
+LPPL_YYSTYPE ExecuteFn0Glb
+    (LPPL_YYSTYPE lpYYFcn0,     // Ptr to function PL_YYSTYPE
+     HGLOBAL      hGlbFcn)      // Function global memory handle
 
 {
     LPPRIMFNS lpNameFcn;
 
     // Split cases based upon the ptr type bits
-    switch (GetPtrTypeDir (lpYYFcn0->tkToken.tkData.tkVoid))
+    switch (GetPtrTypeDir (hGlbFcn))
     {
         case PTRTYPE_STCONST:
             // tkData is an LPSYMENTRY
@@ -54,7 +55,7 @@ LPPL_YYSTYPE ExecuteFn0
 
         case PTRTYPE_HGLOBAL:
             // tkData is an HGLOBAL
-            lpNameFcn = lpYYFcn0->tkToken.tkData.tkGlbData;
+            lpNameFcn = hGlbFcn;
 
             break;
 
@@ -86,7 +87,7 @@ LPPL_YYSTYPE ExecuteFn0
         defstop
             return NULL;
     } // End SWITCH
-} // End ExecuteFn0
+} // End ExecuteFn0Glb
 
 
 //***************************************************************************

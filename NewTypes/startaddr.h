@@ -287,7 +287,7 @@ typedef struct tagSTART_ADDRESSES
     "LocalizeSymEntries"        , (LPUCHAR) &LocalizeSymEntries         ,
 
     // execfns.c
-    "ExecuteFn0"                , (LPUCHAR) &ExecuteFn0                 ,
+    "ExecuteFn0Glb"             , (LPUCHAR) &ExecuteFn0Glb              ,
     "ExecFunc_EM_YY"            , (LPUCHAR) &ExecFunc_EM_YY             ,
     "ExecFcnGlb_EM_YY"          , (LPUCHAR) &ExecFcnGlb_EM_YY           ,
     "ExecFuncStr_EM_YY"         , (LPUCHAR) &ExecFuncStr_EM_YY          ,
@@ -532,6 +532,7 @@ typedef struct tagSTART_ADDRESSES
     "GetLftSynObj"              , (LPUCHAR) &GetLftSynObj               ,
     "ParseLine"                 , (LPUCHAR) &ParseLine                  ,
     "plExecuteFn0"              , (LPUCHAR) &plExecuteFn0               ,
+    "plExecuteFn0Glb"           , (LPUCHAR) &plExecuteFn0Glb            ,
     "plSetDfn"                  , (LPUCHAR) &plSetDfn                   ,
     "pl_yylex"                  , (LPUCHAR) &pl_yylex                   ,
     "pl_yylexCOM"               , (LPUCHAR) &pl_yylexCOM                ,

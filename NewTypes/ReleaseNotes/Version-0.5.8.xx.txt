@@ -1,6 +1,25 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1898 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug When Calling Two Niladic Functions One Of Which Erases The Other
+
+Directory branches/bsmith/NewTypes:
+
+EXECDFN.C:
+  In <ExecDfnOprGlb_EM_YY>, rename <lpYYFcnStr> to <lpYYFcnStrOpr> to avoid confusion with names with a similar prefix.
+
+EXECFNS.C:
+  Rename <ExecuteFn0> to <ExecuteFn0Glb> and add another arg so to as allow execution of HGLOBALs.
+
+PARSELINE.C:
+  In <plRedNF_NF>, handle the case where the first function executed erases the second function.
+  In <plRedNF_NF>, execute the functions from right to left.
+  Define <plExecuteFn0Glb> which allows execution of a function via its HGLOBAL.
+
+
 Build #1897 -- Version 0.5.8.xx
 -------------------------------
 

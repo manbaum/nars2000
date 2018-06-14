@@ -3003,46 +3003,69 @@ LPPL_YYSTYPE plRedNF_NF
      SO_ENUM       soType)              // Next SO_ENUM value
 
 {
-    // Execute the niladic function returning an array
-    lpplYYCurObj =
-      plExecuteFn0 (lpplYYCurObj);
+    LPPL_YYSTYPE lpYYCur = NULL,
+                 lpYYLst = NULL,
+                 lpYYRes = NULL;
+    HGLOBAL      hGlbCur,
+                 hGlbLst;
+
+    // Unstrand the functions if appropriate
+    UnFcnStrand_EM (&lpplYYCurObj, NAMETYPE_FN0, FALSE);
+    UnFcnStrand_EM (&lpplYYLstRht, NAMETYPE_FN0, FALSE);
+
+    // Save the function's global handles
+    hGlbCur = GetGlbHandle (&lpplYYCurObj->tkToken);
+    hGlbLst = GetGlbHandle (&lpplYYLstRht->tkToken);
+
+    // Increment the RefCnt for both NFs in case they get squirrelly with each other
+    DbgIncrRefCntDir_PTB (hGlbCur);
+    DbgIncrRefCntDir_PTB (hGlbLst);
+
+    // Execute the right-hand niladic function returning an array
+    lpYYLst =
+      plExecuteFn0Glb (lpplYYLstRht, hGlbLst, TRUE); lpplYYLstRht = NULL;
 
     // Check for error
-    if (lpplYYCurObj EQ NULL)
+    if (lpYYLst EQ NULL)
         goto ERROR_EXIT;
 
 #ifdef DEBUG
-    // Decrement the SI level of lpplYYCurObj
+    // Decrement the SI level of the previous result
     //   so YYResIsEmpty won't complain
-    lpplYYCurObj->SILevel--;
+    lpYYLst->SILevel--;
 #endif
-    // Execute the niladic function returning an array
-    lpplYYLstRht =
-      plExecuteFn0 (lpplYYLstRht);
+    // Execute the left-hand niladic function returning an array
+    lpYYCur =
+      plExecuteFn0Glb (lpplYYCurObj, hGlbCur, TRUE); lpplYYCurObj = NULL;
 #ifdef DEBUG
-    // Restore the SI level of lpplYYCurObj
-    lpplYYCurObj->SILevel++;
+    // Restore the SI level of the previous result
+    lpYYLst->SILevel++;
 #endif
     // Check for error
-    if (lpplYYLstRht EQ NULL)
+    if (lpYYCur EQ NULL)
         goto ERROR_EXIT;
 
     // Call common code
-    return plRedA_A (lpplLocalVars, lpplYYCurObj, lpplYYLstRht, soType);
+    lpYYRes = plRedA_A (lpplLocalVars, lpYYCur, lpYYLst, soType);
+    lpYYCur = lpYYLst = NULL;
 ERROR_EXIT:
-    if (lpplYYCurObj NE NULL)
+    // Decrement the RefCnt for both NFs in case they get squirrelly with each other
+    DbgDecrRefCntDir_PTB (hGlbCur);
+    DbgDecrRefCntDir_PTB (hGlbLst);
+
+    if (lpYYCur NE NULL)
     {
         // YYFree the current object
-        YYFree (lpplYYCurObj); lpplYYCurObj = NULL; // curSynObj = soNONE;
+        YYFree (lpYYCur); lpYYCur = NULL; // curSynObj = soNONE;
     } // End IF
 
-    if (lpplYYLstRht NE NULL)
+    if (lpYYLst NE NULL)
     {
         // YYFree the last right object
-        YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
+        YYFree (lpYYLst); lpYYLst = NULL; // lstSynObj = soNONE;
     } // End IF
 
-    return NULL;
+    return lpYYRes;
 } // End plRedNF_NF
 
 
@@ -7498,6 +7521,45 @@ SYNTAX_EXIT:
 
 
 //***************************************************************************
+//  $plExecuteFn0Glb
+//
+//  Execute a niladic function in the context of ParseLine
+//***************************************************************************
+
+LPPL_YYSTYPE plExecuteFn0Glb
+    (LPPL_YYSTYPE lpYYFn0,              // Ptr to niladic function
+     HGLOBAL      hGlbFcn,              // Function global memory handle
+     UBOOL        bYYFree)              // TRUE iff we're to YYFree at the end
+
+{
+    LPPL_YYSTYPE lpYYRes;               // Ptr to the result
+
+    Assert (lpYYFn0->lpplYYArgCurry EQ NULL);
+    Assert (lpYYFn0->lpplYYIdxCurry EQ NULL);
+////Assert (lpYYFn0->lpplYYFcnCurry EQ NULL);   // Handled in UnFcnStrand_EM
+////Assert (lpYYFn0->lpplYYOpRCurry EQ NULL);   // ...
+
+    // Execute the Niladic Function returning an array
+    lpYYRes =
+      ExecuteFn0Glb (lpYYFn0, hGlbFcn);
+
+    // If we're to YYFree, ...
+    if (bYYFree)
+    {
+        // Free the function (including YYFree)
+        FreeResult (lpYYFn0); YYFree (lpYYFn0); lpYYFn0 = NULL;
+    } // End IF
+
+    // Check for error
+    if (lpYYRes NE NULL
+     && !IsTokenNoValue (&lpYYRes->tkToken))
+        lpYYRes->tkToken.tkSynObj = soA;
+
+    return lpYYRes;     // Might be NULL
+} // End plExecuteFn0Glb
+
+
+//***************************************************************************
 //  $plExecuteFn0
 //
 //  Execute a niladic function in the context of ParseLine
@@ -7519,7 +7581,7 @@ LPPL_YYSTYPE plExecuteFn0
 
     // Execute the Niladic Function and replace the argument object with the result
     lpYYRes =
-      ExecuteFn0 (lpYYFn0);
+      plExecuteFn0Glb (lpYYFn0, GetGlbHandle (&lpYYFn0->tkToken), FALSE);
 
     // Free the function (including YYFree)
     FreeResult (lpYYFn0); YYFree (lpYYFn0); lpYYFn0 = NULL;

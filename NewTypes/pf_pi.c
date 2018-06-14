@@ -632,7 +632,7 @@ RESTART_RAT:
                 else
                 // If the arg is handled by this table, ...
                 if (mpz_cmp_ui (&aplMPIRht, 100) < 0)
-                    mpz_init_set_sx (&aplMPIRes, Nth1e0PrimeTab[mpz_get_si (&aplMPIRht)]);
+                    mpz_init_set_sx (&aplMPIRes, Nth1e0PrimeTab[mpz_get_si (&aplMPIRht) - bQuadIO]);
 ////////////////////aplMPIRes =
 ////////////////////  PrimFnPiNthPrime  (aplMPIRht,
 ////////////////////                    &Nth1e0PrimeTab[0],

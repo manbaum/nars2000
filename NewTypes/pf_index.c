@@ -3188,9 +3188,9 @@ UBOOL ArrayIndexSetSingLst_EM
     //***************************************************************
     if (hGlbSubLst EQ NULL)
     {
-        // If the name arg is a scalar, ...
-        if (IsScalar (aplRankNam))
-            goto INDEX_EXIT;
+        // If the name arg is not a vector, ...
+        if (!IsVector (aplRankNam))
+            goto RANK_EXIT;
 
         // Skip over the header to the dimensions
         lpMemDimNam = VarArrayBaseToDim (lpMemHdrNam);
@@ -3658,7 +3658,7 @@ UBOOL ArrayIndexSetSingLst_EM
                     // If the item is immediate,
                     //   and the parent is hetero, ...
                     if (hGlbSubRht EQ NULL
-                     && IsSimpleHet (aplTypeSet))
+                     && IsPtrArray (aplTypeSet))
                         // Use the immediate type
                         aplTypeSet2 = TranslateImmTypeToArrayType (immTypeSet);
                     else

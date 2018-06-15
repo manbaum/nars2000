@@ -5929,8 +5929,8 @@ void FreeStackTemps
 
         if (IsTknValid (lpYYRes->tkToken))
         {
-            // Free the function
-            FreeResult (lpYYRes);
+            // Free the function only if unnamed
+            FreeTempResult (lpYYRes);
 
             // Mark as to be YYFree'd
             bYYFree = TRUE;
@@ -5944,8 +5944,8 @@ void FreeStackTemps
 
         if (IsTknValid (lpYYRes->tkToken))
         {
-            // Free the temp
-            FreeResult (lpYYRes);
+            // Free the variable only if unnamed
+            FreeTempResult (lpYYRes);
 
             // Mark as to be YYFree'd
             bYYFree = TRUE;

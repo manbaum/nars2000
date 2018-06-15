@@ -1,6 +1,17 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1901 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug When Parsing Named Indexed Assignment
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+  When cleaning up after parsing, don't free named objects on the left or right parsing stacks which can appear from named indexed assignment, etc.
+
+
 Build #1900 -- Version 0.5.8.xx
 -------------------------------
 

@@ -1,0 +1,11 @@
+Build #1902 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug When Branching Inside A []ELX Statement
+
+Directory branches/bsmith/NewTypes:
+
+GOTO.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  In <GotoLine_EM> when winding back the SI stack looking for a UDFO, skip over DFNTYPE_FCNs with a NULL hGlbDfnHdr.
+  In <GotoLine_EM>, if a valid UDFO is found, mark is as no longer suspended.

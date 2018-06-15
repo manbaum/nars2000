@@ -220,11 +220,13 @@ EXIT_TYPES GotoLine_EM
         aplIntegerRht = -1;
 
     // Peel back to non-ImmExec, non-Execute, non-Quad layer
-    while (lpSISCur
+    while (lpSISCur NE NULL
         && (lpSISCur->DfnType EQ DFNTYPE_IMM
          || lpSISCur->DfnType EQ DFNTYPE_QUAD
          || lpSISCur->DfnType EQ DFNTYPE_EXEC
-         || lpSISCur->DfnType EQ DFNTYPE_ERRCTRL))
+         || lpSISCur->DfnType EQ DFNTYPE_ERRCTRL
+         || (lpSISCur->DfnType EQ DFNTYPE_FCN
+          && lpSISCur->hGlbDfnHdr EQ NULL)))
         lpSISCur = lpSISCur->lpSISPrv;
 
     // If we're at a UDFO layer, ...
@@ -308,6 +310,9 @@ EXIT_TYPES GotoLine_EM
     // If we're at a UDFO layer, ...
     if (lpSISCur NE NULL)
     {
+        // Mark as no longer suspended
+        lpSISCur->bSuspended = FALSE;
+
         // We no longer need this ptr
         MyGlobalUnlock (lpSISCur->hGlbDfnHdr); lpMemDfnHdr = NULL;
     } // End IF
@@ -317,7 +322,7 @@ EXIT_TYPES GotoLine_EM
     {
         case DFNTYPE_IMM:       // Restart execution in a suspended function
             // If there's a suspended function, ...
-            if (lpMemPTD->lpSISCur->lpSISPrv)
+            if (lpMemPTD->lpSISCur->lpSISPrv NE NULL)
             {
                 // Save as the next line & token #s
                 lpMemPTD->lpSISCur->lpSISPrv->NxtLineNum = (UINT) aplIntegerRht;
@@ -333,7 +338,7 @@ EXIT_TYPES GotoLine_EM
         case DFNTYPE_OP2:
         case DFNTYPE_FCN:       // Jump to a new line #
             // If there's a suspended function, ...
-            if (lpMemPTD->lpSISCur)
+            if (lpMemPTD->lpSISCur NE NULL)
             {
                 // Save as the next line & token #s
                 lpMemPTD->lpSISCur->NxtLineNum = (UINT) aplIntegerRht;
@@ -352,7 +357,7 @@ EXIT_TYPES GotoLine_EM
             lpSISCur = GetSISLayer (lpMemPTD->lpSISCur->lpSISPrv);
 
             // If there's an active or suspended user-defined function/operator, ...
-            if (lpSISCur
+            if (lpSISCur NE NULL
              && (lpSISCur->DfnType EQ DFNTYPE_OP1
               || lpSISCur->DfnType EQ DFNTYPE_OP2
               || lpSISCur->DfnType EQ DFNTYPE_FCN))
@@ -423,7 +428,7 @@ UBOOL SaveGotoTarget
     // Get ptr to current SIS header
     lpSISCur = lpMemPTD->lpSISCur;
 
-    while (lpSISCur
+    while (lpSISCur NE NULL
         && lpSISCur->DfnType NE DFNTYPE_FCN
         && lpSISCur->DfnType NE DFNTYPE_OP1
         && lpSISCur->DfnType NE DFNTYPE_OP2
@@ -432,7 +437,7 @@ UBOOL SaveGotoTarget
 
     // If there's an SIS level, ...
     //    and we're executing under []EA/[]EC, ...
-    if (lpSISCur
+    if (lpSISCur NE NULL
      && lpSISCur->DfnType EQ DFNTYPE_ERRCTRL)
     {
         // Split cases based upon the token type

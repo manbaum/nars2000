@@ -207,6 +207,8 @@ typedef enum tagMFO
 #define $QUAD_CT        WS_UTF16_QUAD L"CT"
 #define $QUAD_CR        WS_UTF16_QUAD L"CR"
 #define $QUAD_DM        WS_UTF16_QUAD L"DM"
+#define $QUAD_EA        WS_UTF16_QUAD L"EA"
+#define $QUAD_EC        WS_UTF16_QUAD L"EC"
 #define $QUAD_ELX       WS_UTF16_QUAD L"ELX"
 #define $QUAD_EM        WS_UTF16_QUAD L"EM"
 #define $QUAD_ERROR     WS_UTF16_QUAD L"ERROR"

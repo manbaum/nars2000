@@ -228,6 +228,25 @@ LPPL_YYSTYPE SysFnSICom_EM_YY
 
                 break;
 
+            case DFNTYPE_ERRCTRL:
+                // Count in another row
+                uNumRows++;
+
+                // Format the line
+                strcpyW (lpwszCur, $QUAD_EA L"/" $QUAD_EC);
+
+                // Calculate the length of this line
+                uLen = lstrlenW (lpwszCur);
+
+                // Calculate the maximum # cols
+                uNumCols = max (uNumCols, uLen);
+
+                // Skip over the formatted text
+                //   and the terminating zero
+                lpwszCur += uLen + 1;
+
+                break;
+
             case DFNTYPE_UNK:
             defstop
                 break;

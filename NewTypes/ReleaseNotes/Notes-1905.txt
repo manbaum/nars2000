@@ -1,0 +1,9 @@
+Build #1905 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In Residue Where Internal Calculations Near An Integer Are Not Rounded
+
+Directory branches/bsmith/NewTypes:
+
+PF_STILE.C:
+  In <ModHCxI>, <ModHCxF>, <ModHCxR>, and <ModHCxV>, with "A=L/R", IF "A==Floor(A)" return 0 ELSE return "L*(A-Floor(A))" in case "A" and "Floor(A)" are equal within []CT.

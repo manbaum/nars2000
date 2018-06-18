@@ -1947,6 +1947,7 @@ APLHC2I ModHC2I
         int     i;
         APLHC2F aplFltL,
                 aplFltR,
+                aplHCFlr,
                 aplTmp;
 
         // Loop through all of the parts
@@ -1960,9 +1961,17 @@ APLHC2I ModHC2I
         // Calculate Rht / Lft
         aplTmp = DivHC2F_RE (aplFltR, aplFltL);
 
-        // Calculate 1 | Rht / Lft
-        // a.k.a. (Rht / Lft) - floor (Rht / Lft)
-        aplTmp = SubHC2F_RE (aplTmp, FloorHC2F (aplTmp));
+        // Calculate Floor (Rht / Lft)
+        aplHCFlr = FloorHC2F (aplTmp);
+
+        // Calculate aplTmp EQ Floor (aplTmp)
+        if (EqualHCxFvHCxF ((LPALLTYPES) &aplTmp, (LPALLTYPES) &aplHCFlr, 2, GetQuadCT (), WFCN))
+            // Set aplTmp to Zero
+            ZeroMemory (&aplTmp, sizeof (aplTmp));
+        else
+            // Calculate 1 | Rht / Lft
+            // a.k.a. (Rht / Lft) - floor (Rht / Lft)
+            aplTmp = SubHC2F_RE (aplTmp, aplHCFlr);
 
         // Calculate Lft * 1 | Rht / Lft
         // Note that because Complex numbers are commutative,
@@ -2001,6 +2010,7 @@ APLHC2F ModHC2F
 
 {
     APLHC2F aplRes,
+            aplHCFlr,
             aplTmp;
     UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
             bNaNRht;            // ...          right ...
@@ -2021,14 +2031,6 @@ APLHC2F ModHC2F
         else
             aplRes = aplRht;
     } else
-    // If the either arg is a NaN, ...
-    if (bNaNLft || bNaNRht)
-    {
-        if (bNaNLft)
-            aplRes = aplLft;
-        else
-            aplRes = aplRht;
-    } else
     if (IsOneHCxF  (&aplLft, 2))
         aplRes = SubHC2F_RE (aplRht, FloorHC2F (aplRht));
     else
@@ -2036,9 +2038,17 @@ APLHC2F ModHC2F
         // Calculate Rht / Lft
         aplTmp = DivHC2F_RE (aplRht, aplLft);
 
-        // Calculate 1 | Rht / Lft
-        // a.k.a. (Rht / Lft) - floor (Rht / Lft)
-        aplTmp = SubHC2F_RE (aplTmp, FloorHC2F (aplTmp));
+        // Calculate Floor (Rht / Lft)
+        aplHCFlr = FloorHC2F (aplTmp);
+
+        // Calculate aplTmp EQ Floor (aplTmp)
+        if (EqualHCxFvHCxF ((LPALLTYPES) &aplTmp, (LPALLTYPES) &aplHCFlr, 2, GetQuadCT (), WFCN))
+            // Set aplTmp to Zero
+            ZeroMemory (&aplTmp, sizeof (aplTmp));
+        else
+            // Calculate 1 | Rht / Lft
+            // a.k.a. (Rht / Lft) - floor (Rht / Lft)
+            aplTmp = SubHC2F_RE (aplTmp, aplHCFlr);
 
         // Calculate Lft * 1 | Rht / Lft
         // Note that because Complex numbers are commutative,
@@ -2154,14 +2164,23 @@ APLHC2R ModHC2R
     else
     {
         APLHC2R aplTmp = {0},
+                aplHCFlr = {0},
                 aplSub = {0};
 
         // Calculate Rht / Lft
         aplTmp = DivHC2R_RE (aplRht, aplLft);
 
-        // Calculate 1 | Rht / Lft
-        // a.k.a. (Rht / Lft) - floor (Rht / Lft)
-        aplSub = SubHC2R_RE (aplTmp, FloorHC2R (aplTmp));
+        // Calculate Floor (Rht / Lft)
+        aplHCFlr = FloorHC2R (aplTmp);
+
+        // Calculate aplTmp EQ Floor (aplTmp)
+        if (EqualHCxRvHCxR ((LPALLTYPES) &aplTmp, (LPALLTYPES) &aplHCFlr, 2, GetQuadCT (), WFCN))
+            // Set aplTmp to Zero
+            mphc2r_init (&aplSub);
+        else
+            // Calculate 1 | Rht / Lft
+            // a.k.a. (Rht / Lft) - floor (Rht / Lft)
+            aplSub = SubHC2R_RE (aplTmp, aplHCFlr);
 
         // Calculate Lft * 1 | Rht / Lft
         // Note that because Complex numbers are commutative,
@@ -2171,6 +2190,7 @@ APLHC2R ModHC2R
 
         // Free the temps
         Myhc2r_clear (&aplSub);
+        Myhc2r_clear (&aplHCFlr);
         Myhc2r_clear (&aplTmp);
     } // End IF/ELSE/...
 
@@ -2259,14 +2279,23 @@ APLHC2V ModHC2V
     else
     {
         APLHC2V aplTmp = {0},
+                aplHCFlr = {0},
                 aplSub = {0};
 
         // Calculate Rht / Lft
         aplTmp = DivHC2V_RE (aplRht, aplLft);
 
-        // Calculate 1 | Rht / Lft
-        // a.k.a. (Rht / Lft) - floor (Rht / Lft)
-        aplSub = SubHC2V_RE (aplTmp, FloorHC2V (aplTmp));
+        // Calculate Floor (Rht / Lft)
+        aplHCFlr = FloorHC2V (aplTmp);
+
+        // Calculate aplTmp EQ Floor (aplTmp)
+        if (EqualHCxVvHCxV ((LPALLTYPES) &aplTmp, (LPALLTYPES) &aplHCFlr, 2, GetQuadCT (), WFCN))
+            // Set aplTmp to Zero
+            mphc2v_init0 (&aplSub);
+        else
+            // Calculate 1 | Rht / Lft
+            // a.k.a. (Rht / Lft) - floor (Rht / Lft)
+            aplSub = SubHC2V_RE (aplTmp, aplHCFlr);
 
         // Calculate Lft * 1 | Rht / Lft
         // Note that because Complex numbers are commutative,
@@ -2276,6 +2305,7 @@ APLHC2V ModHC2V
 
         // Free the temps
         Myhc2v_clear (&aplSub);
+        Myhc2v_clear (&aplHCFlr);
         Myhc2v_clear (&aplTmp);
     } // End IF/ELSE/...
 
@@ -2326,6 +2356,7 @@ APLHC4I ModHC4I
         int     i;
         APLHC4F aplFltL,
                 aplFltR,
+                aplHCFlr,
                 aplTmp;
 
         // Loop through all of the parts
@@ -2340,9 +2371,17 @@ APLHC4I ModHC4I
         // This function is sensitive to []LR
         aplTmp = DivHC4F_RE (aplFltR, aplFltL);
 
-        // Calculate 1 | Rht / Lft
-        // a.k.a. (Rht / Lft) - floor (Rht / Lft)
-        aplTmp = SubHC4F_RE (aplTmp, FloorHC4F (aplTmp));
+        // Calculate Floor (Rht / Lft)
+        aplHCFlr = FloorHC4F (aplTmp);
+
+        // Calculate aplTmp EQ Floor (aplTmp)
+        if (EqualHCxFvHCxF ((LPALLTYPES) &aplTmp, (LPALLTYPES) &aplHCFlr, 4, GetQuadCT (), WFCN))
+            // Set aplTmp to Zero
+            ZeroMemory (&aplTmp, sizeof (aplTmp));
+        else
+            // Calculate 1 | Rht / Lft
+            // a.k.a. (Rht / Lft) - floor (Rht / Lft)
+            aplTmp = SubHC4F_RE (aplTmp, aplHCFlr);
 
         if (GetQuadLR () EQ 'l')
             // Calculate Lft * 1 | Rht / Lft
@@ -2384,6 +2423,7 @@ APLHC4F ModHC4F
 
 {
     APLHC4F aplRes,
+            aplHCFlr,
             aplTmp;
     UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
             bNaNRht;            // ...          right ...
@@ -2418,9 +2458,17 @@ APLHC4F ModHC4F
             // This function is sensitive to []LR
             aplTmp = DivHC4F_RE (aplRht, aplLft);
 
-            // Calculate 1 | Rht / Lft
-            // a.k.a. (Rht / Lft) - floor (Rht / Lft)
-            aplTmp = SubHC4F_RE (aplTmp, FloorHC4F (aplTmp));
+            // Calculate Floor (Rht / Lft)
+            aplHCFlr = FloorHC4F (aplTmp);
+
+            // Calculate aplTmp EQ Floor (aplTmp)
+            if (EqualHCxFvHCxF ((LPALLTYPES) &aplTmp, (LPALLTYPES) &aplHCFlr, 4, GetQuadCT (), WFCN))
+                // Set aplTmp to Zero
+                ZeroMemory (&aplTmp, sizeof (aplTmp));
+            else
+                // Calculate 1 | Rht / Lft
+                // a.k.a. (Rht / Lft) - floor (Rht / Lft)
+                aplTmp = SubHC4F_RE (aplTmp, aplHCFlr);
 
             if (GetQuadLR () EQ 'l')
                 // Calculate Lft * 1 | Rht / Lft
@@ -2590,6 +2638,7 @@ APLHC4R ModHC4R
     else
     {
         APLHC4R aplTmp  = {0},
+                aplHCFlr  = {0},
                 aplSub  = {0},
                 aplRes2 = {0};
         APLVFP  aplMagL,
@@ -2603,9 +2652,17 @@ APLHC4R ModHC4R
         // This function is sensitive to []LR
         aplTmp = DivHC4R_RE (aplRht, aplLft);
 
-        // Calculate 1 | Rht / Lft
-        // a.k.a. (Rht / Lft) - floor (Rht / Lft)
-        aplSub = SubHC4R_RE (aplTmp, FloorHC4R (aplTmp));
+        // Calculate Floor (Rht / Lft)
+        aplHCFlr = FloorHC4R (aplTmp);
+
+        // Calculate aplTmp EQ Floor (aplTmp)
+        if (EqualHCxRvHCxR ((LPALLTYPES) &aplTmp, (LPALLTYPES) &aplHCFlr, 4, GetQuadCT (), WFCN))
+            // Set aplTmp to Zero
+            mphc4r_init (&aplSub);
+        else
+            // Calculate 1 | Rht / Lft
+            // a.k.a. (Rht / Lft) - floor (Rht / Lft)
+            aplSub = SubHC4R_RE (aplTmp, aplHCFlr);
 
         if (GetQuadLR () EQ 'l')
             // Calculate Lft * 1 | Rht / Lft
@@ -2684,12 +2741,13 @@ APLHC4R ModHC4R
             Assert (CmpCT_V (aplMagL, aplMagZ, SYS_CT, >));
 
         // Free the temps
-        Myhc4r_clear (&aplRes2);
-        mpq_clear    (&aplFlr);
-        mpq_clear    (&aplCel);
-        mpq_clear    (&aplAbs);
-        Myhc4r_clear (&aplSub );
-        Myhc4r_clear (&aplTmp );
+        Myhc4r_clear (&aplRes2  );
+        mpq_clear    (&aplFlr   );
+        mpq_clear    (&aplCel   );
+        mpq_clear    (&aplAbs   );
+        Myhc4r_clear (&aplSub   );
+        Myhc4r_clear (&aplHCFlr );
+        Myhc4r_clear (&aplTmp   );
     } // End IF/ELSE/...
 
     return aplRes;
@@ -2779,6 +2837,7 @@ APLHC4V ModHC4V
     else
     {
         APLHC4V aplTmp = {0},
+                aplHCFlr = {0},
                 aplSub = {0},
                 aplRes2 = {0};
         APLVFP  aplMagL,
@@ -2792,9 +2851,17 @@ APLHC4V ModHC4V
         // This function is sensitive to []LR
         aplTmp = DivHC4V_RE (aplRht, aplLft);
 
-        // Calculate 1 | Rht / Lft
-        // a.k.a. (Rht / Lft) - floor (Rht / Lft)
-        aplSub = SubHC4V_RE (aplTmp, FloorHC4V (aplTmp));
+        // Calculate Floor (Rht / Lft)
+        aplHCFlr = FloorHC4V (aplTmp);
+
+        // Calculate aplTmp EQ Floor (aplTmp)
+        if (EqualHCxVvHCxV ((LPALLTYPES) &aplTmp, (LPALLTYPES) &aplHCFlr, 4, GetQuadCT (), WFCN))
+            // Set aplTmp to Zero
+            mphc4v_init0 (&aplSub);
+        else
+            // Calculate 1 | Rht / Lft
+            // a.k.a. (Rht / Lft) - floor (Rht / Lft)
+            aplSub = SubHC4V_RE (aplTmp, aplHCFlr);
 
         if (GetQuadLR () EQ 'l')
             // Calculate Lft * 1 | Rht / Lft
@@ -2878,6 +2945,7 @@ APLHC4V ModHC4V
         mpfr_clear   (&aplCel);
         mpfr_clear   (&aplAbs);
         Myhc4v_clear (&aplSub);
+        Myhc4v_clear (&aplHCFlr);
         Myhc4v_clear (&aplTmp);
     } // End IF/ELSE/...
 

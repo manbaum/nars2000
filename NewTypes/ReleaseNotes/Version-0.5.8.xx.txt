@@ -1,6 +1,17 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1904 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In DotDot When Calculating the NELM On FP Numbers
+
+Directory branches/bsmith/NewTypes:
+
+PF_DOTDOT.C:
+  In <PrimFnDydDotDot_EM_YY>, use SYS_CT when calculating the NELM of the result given certain Floating Point numbers such as 1.1 0.1..1.4 .
+
+
 Build #1903 -- Version 0.5.8.xx
 -------------------------------
 

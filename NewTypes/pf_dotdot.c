@@ -371,8 +371,15 @@ LPPL_YYSTYPE PrimFnDydDotDot_EM_YY
                 atStp.aplFloat =  fabs (atStp.aplFloat);
             else
                 atStp.aplFloat = -fabs (atStp.aplFloat);
-            // The NELM of the result is
-            aplNELMRes = 1 + (APLINT) fabs ((atRht.aplFloat - atLft.aplFloat) / atStp.aplFloat);
+            // The NELM of the result is (rounding to nearest integer within SysCT) ...
+            // Normally we add 1 to the result of the rounded conversion (if successful).
+            //   However, if FloatToAplint_SCT returns bRet EQ FALSE, the result is the ceiling of the number --
+            //   1 + Floor (N) -- which already has the 1 added in.  If bRet EQ TRUE, the result is the rounded number
+            //   which when we add bRet to the result calculates the NELM.
+            //  N.B.  we can't just add bRet into the result of FLoatToAplint_SCT as we need the value assigned
+            //    by the function call, not the value before the function is called.
+            aplNELMRes = FloatToAplint_SCT (fabs ((atRht.aplFloat - atLft.aplFloat) / atStp.aplFloat), &bRet);
+            aplNELMRes += bRet;
 
             break;
 

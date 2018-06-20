@@ -40,6 +40,8 @@ typedef struct tagWFSO          // Struct for WaitForSingleObject
 #define DISP_QUAD_DM_TXT                       $QUAD_DM
 #define DISP_QUAD_DM_LEN    strcountof (DISP_QUAD_DM_TXT)
 
+extern UBOOL bDebugExecTrace;
+
 
 //***************************************************************************
 //  $WaitForImmExecStmt
@@ -366,9 +368,10 @@ void ImmExecLine
             break;
 
         case L']':          // User commands
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-            // ***FIXME***
-            DbgMsgW (L"User command");
+#ifdef DEBUG
+            if (bDebugExecTrace)
+                // ***FIXME***
+                DbgMsgW (L"User command");
 #endif
             AppendLine (ERRMSG_NONCE_ERROR, FALSE, TRUE);
 

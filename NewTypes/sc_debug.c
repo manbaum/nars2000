@@ -26,6 +26,7 @@
 
 extern UBOOL bDebugPLTrace,
              bDebugPLStart,
+             bDebugExecTrace,
              gYYAlloc;
 
 
@@ -52,10 +53,11 @@ UBOOL CmdDebug_EM
     {
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
-                   L"Is PLTrace = %d  PLStart = %d  YYAlloc = 0x%X\r\n"
+                   L"Is PLTrace = %d  PLStart = %d  ExecTrace = %d  YYAlloc = 0x%X\r\n"
                    L"   DbgLvl = %d  FcnLvl = %d  VfpLvl = %d  ResizeLvl = %d",
                     bDebugPLTrace,
                     bDebugPLStart,
+                    bDebugExecTrace,
                     gYYAlloc,
                     gDbgLvl,
                     gFcnLvl,
@@ -173,13 +175,14 @@ UBOOL CmdDebug_EM
 #define IsUCHAR(a)      (0 <= (a) && (a) < 256)
 #define IsWORD(a)       (0 <= (a) && (a) < 65536)
 
-    DEBUG_MAC (L"PLTrace"    , L"Was PLTrace = %d"   , bDebugPLTrace, IsBooleanValue)
-    DEBUG_MAC (L"PLStart"    , L"Was PLStart = %d"   , bDebugPLStart, IsBooleanValue)
-    DEBUG_MAC (L"YYAlloc"    , L"Was YYAlloc = 0x%X" , gYYAlloc     , IsWORD        )
-    DEBUG_MAC (L"DbgLvl"     , L"Was DbgLvl = %d"    , gDbgLvl      , IsUCHAR       )
-    DEBUG_MAC (L"FcnLvl"     , L"Was FcnLvl = %d"    , gFcnLvl      , IsUCHAR       )
-    DEBUG_MAC (L"VfpLvl"     , L"Was VfpLvl = %d"    , gVfpLvl      , IsUCHAR       )
-    DEBUG_MAC (L"ResizeLvl"  , L"Was ResizeLvl = %d" , gResizeLvl   , IsUCHAR       )
+    DEBUG_MAC (L"PLTrace"    , L"Was PLTrace = %d"   , bDebugPLTrace   , IsBooleanValue)
+    DEBUG_MAC (L"PLStart"    , L"Was PLStart = %d"   , bDebugPLStart   , IsBooleanValue)
+    DEBUG_MAC (L"ExecTrace"  , L"Was ExecTrace = %d" , bDebugExecTrace , IsBooleanValue)
+    DEBUG_MAC (L"YYAlloc"    , L"Was YYAlloc = 0x%X" , gYYAlloc        , IsWORD        )
+    DEBUG_MAC (L"DbgLvl"     , L"Was DbgLvl = %d"    , gDbgLvl         , IsUCHAR       )
+    DEBUG_MAC (L"FcnLvl"     , L"Was FcnLvl = %d"    , gFcnLvl         , IsUCHAR       )
+    DEBUG_MAC (L"VfpLvl"     , L"Was VfpLvl = %d"    , gVfpLvl         , IsUCHAR       )
+    DEBUG_MAC (L"ResizeLvl"  , L"Was ResizeLvl = %d" , gResizeLvl      , IsUCHAR       )
 
     return TRUE;
 } // End CmdDebug_EM

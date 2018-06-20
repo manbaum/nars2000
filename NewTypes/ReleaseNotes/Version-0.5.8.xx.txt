@@ -1,6 +1,19 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1906 -- Version 0.5.8.xx
+-------------------------------
+
+* Extend )DEBUG to Other Debug Contexts
+
+Directory branches/bsmith/NewTypes:
+
+IMMEXEC.C:
+SC_DEBUG.C:
+TOKENIZE.C:
+  Define more DEBUG contexts, this time for Execution and Tokenization Trace.
+
+
 Build #1905 -- Version 0.5.8.xx
 -------------------------------
 
@@ -9,7 +22,7 @@ Build #1905 -- Version 0.5.8.xx
 Directory branches/bsmith/NewTypes:
 
 PF_STILE.C:
-  In <ModHCxI>, <ModHCxF>, <ModHCxR>, and <ModHCxV>, IF "A==Floor(A)" return 0 ELSE return "A-Floor(A)" in case "A" and "Floor(A)" are equal within []CT.
+  In <ModHCxI>, <ModHCxF>, <ModHCxR>, and <ModHCxV>, with "A=L/R", IF "A==Floor(A)" return 0 ELSE return "L*(A-Floor(A))" in case "A" and "Floor(A)" are equal within []CT.
 
 
 Build #1904 -- Version 0.5.8.xx

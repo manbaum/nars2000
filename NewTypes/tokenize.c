@@ -29,8 +29,6 @@
 #undef  EXTERN
 
 
-////#define EXEC_TRACE
-
 /*
 
 The input line is first tokenized so we can store
@@ -48,6 +46,7 @@ functions, etc. as necessary.
  */
 
 extern TOKEN_SO tokenSo[];
+       UBOOL    bDebugExecTrace = FALSE;
 
 #define DEF_TOKEN_SIZE  1024    // Default initial amount of memory
                                 //   allocated for the tokenized line
@@ -4972,9 +4971,10 @@ __try
     if (tkLocalVars.hGlbStr EQ NULL)
         goto ERROR_EXIT;
 
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    // Display the tokens so far
-    DisplayTokens (tkLocalVars.hGlbToken);
+#ifdef DEBUG
+    if (bDebugExecTrace)
+        // Display the tokens so far
+        DisplayTokens (tkLocalVars.hGlbToken);
 #endif
 
     // Set the HTS
@@ -5070,7 +5070,11 @@ __try
         // Save the TKCOL_xxx value
         tkLocalVars.colIndex = colIndex;
 
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
+#ifdef DEBUG
+    if (bDebugExecTrace)
+    {
+        WCHAR wszTemp[1024];
+
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
                    L"wchO = %c (%d), wchT = %s (%d), CS = %d, NS = %d, Act1 = %p, Act2 = %p",
@@ -5083,6 +5087,7 @@ __try
                     fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction1,
                     fsaActTableTK[tkLocalVars.State[0]][colIndex].fnAction2);
         DbgMsgW (wszTemp);
+    } // End IF
 #endif
 
         // Get primary action and new state
@@ -5209,13 +5214,15 @@ ERROR_EXIT:
     goto FREED_EXIT;
 
 UNLOCKED_EXIT:
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    // Display the tokens so far
-    DisplayTokens (tkLocalVars.hGlbToken);
+#ifdef DEBUG
+    if (bDebugExecTrace)
+        // Display the tokens so far
+        DisplayTokens (tkLocalVars.hGlbToken);
 #endif
 FREED_EXIT:
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
-    DbgMsgW (L"*** Tokenize_EM End");
+#ifdef DEBUG
+    if (bDebugExecTrace)
+        DbgMsgW (L"*** Tokenize_EM End");
 #endif
 
     // Free the global memory:  hGlbNum
@@ -6429,7 +6436,8 @@ TKCOLINDICES CharTransTK
             return TKCOL_UNK;
 
         default:
-#if (defined (DEBUG)) && (defined (EXEC_TRACE))
+#ifdef DEBUG
+        if (bDebugExecTrace)
         {
             WCHAR wszTemp[64];
 
@@ -6439,7 +6447,7 @@ TKCOLINDICES CharTransTK
                         wchOrig,
                         wchOrig);
             DbgMsgW (wszTemp);
-        }
+        } // End IF
 #endif
             return TKCOL_UNK;
     } // End SWITCH

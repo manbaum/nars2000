@@ -504,6 +504,7 @@ LPPRIMSPEC PrimSpecTab[PRIMTAB_LEN];    // The table of corresponding LPPRIMSPEC
                                         //   for all of the primitive scalar functions
 typedef struct tagPRIMFLAGS
 {
+    union   {
     UINT      Index    :5,              // 00:  00000010:  Function index (see FBFN_INDS)
               IdentElem:1,              //      00000020:  TRUE iff this function has an identity element
               bLftIdent:1,              //      00000040:  TRUE iff the identity function is a left identity
@@ -515,12 +516,14 @@ typedef struct tagPRIMFLAGS
               AssocNumb:1,              //      00001000:  ...                       associative on all numbers
               FastBool :1,              //      00002000:  Boolean function w/reduction & scan can be sped up
                        :18;             //      FFFFC000:  Available flag bits
+    UINT      Flags;
+            };
     LPPRIMOPS lpPrimOps;                // 04:  Ptr to PRIMOPS entry of the identity function (or NULL if it's a scalar fcn)
 } PRIMFLAGS, *LPPRIMFLAGS;
 
 // N.B.:  Whenever changing the above struct (PRIMFLAGS),
 //   be sure to make a corresponding change to
-//    <DfnIdents[]> in <GetPrimFlagsPtr> in <getfns.c>, and
+//    <DfnIdentFns[]> in <GetPrimFlagsPtr> in <getfns.c>, and
 //    <InitPrimFlags> in <initdata.c>.
 
 EXTERN

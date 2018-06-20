@@ -3668,16 +3668,7 @@ LPPRIMFLAGS GetPrimFlagsPtr
     static PRIMFLAGS
       DfnIdentFns =
     {
-        FALSE,                              // Index
-        FALSE,                              // IdentElem
-        FALSE,                              // bLftIdent
-        FALSE,                              // bRhtIdent
-        FALSE,                              // DydScalar
-        FALSE,                              // MonScalar
-        FALSE,                              // Alter
-        FALSE,                              // AssocBool
-        FALSE,                              // AssocNumb
-        FALSE,                              // FastBool
+        FALSE,                              // Flags
         (LPPRIMOPS) ExecDfnGlbIdent_EM_YY,  // Ptr to PRIMOPS
     },
       PrimFlagsNone = {0};

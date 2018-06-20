@@ -858,7 +858,7 @@ void InitPrimFlags
     UINT      uCnt;                 // Loop counter
     PRIMFLAGS PrimFlag,             // Temporary save area
               PrimFlags0 = {0};     // All zero PrimFlags for global R/O use
-    APLU3264  PF_FB,                // Fast Boolean reduction and/or scan
+    UINT      PF_FB,                // Fast Boolean reduction and/or scan
               PF_AN,                // Function is associative on all numbers
               PF_AB,                // ...         associative on Booleans only
               PF_AL,                // ...         alternating
@@ -873,15 +873,15 @@ void InitPrimFlags
         PrimFlags[uCnt] = PrimFlags0;
 
     // Get the bits as masks
-    *((APLU3264 *) &PrimFlag) = 0; PrimFlag.FastBool  = TRUE; PF_FB = *(APLU3264 *) &PrimFlag;
-    *((APLU3264 *) &PrimFlag) = 0; PrimFlag.AssocBool = TRUE; PF_AB = *(APLU3264 *) &PrimFlag;
-    *((APLU3264 *) &PrimFlag) = 0; PrimFlag.AssocNumb = TRUE; PF_AN = *(APLU3264 *) &PrimFlag;
-    *((APLU3264 *) &PrimFlag) = 0; PrimFlag.Alter     = TRUE; PF_AL = *(APLU3264 *) &PrimFlag;
-    *((APLU3264 *) &PrimFlag) = 0; PrimFlag.MonScalar = TRUE; PF_MS = *(APLU3264 *) &PrimFlag;
-    *((APLU3264 *) &PrimFlag) = 0; PrimFlag.DydScalar = TRUE; PF_DS = *(APLU3264 *) &PrimFlag;
-    *((APLU3264 *) &PrimFlag) = 0; PrimFlag.IdentElem = TRUE; PF_ID = *(APLU3264 *) &PrimFlag;
-    *((APLU3264 *) &PrimFlag) = 0; PrimFlag.bLftIdent = TRUE; PF_LI = *(APLU3264 *) &PrimFlag;
-    *((APLU3264 *) &PrimFlag) = 0; PrimFlag.bRhtIdent = TRUE; PF_RI = *(APLU3264 *) &PrimFlag;
+    PrimFlag.Flags = 0; PrimFlag.FastBool  = TRUE; PF_FB = PrimFlag.Flags;
+    PrimFlag.Flags = 0; PrimFlag.AssocBool = TRUE; PF_AB = PrimFlag.Flags;
+    PrimFlag.Flags = 0; PrimFlag.AssocNumb = TRUE; PF_AN = PrimFlag.Flags;
+    PrimFlag.Flags = 0; PrimFlag.Alter     = TRUE; PF_AL = PrimFlag.Flags;
+    PrimFlag.Flags = 0; PrimFlag.MonScalar = TRUE; PF_MS = PrimFlag.Flags;
+    PrimFlag.Flags = 0; PrimFlag.DydScalar = TRUE; PF_DS = PrimFlag.Flags;
+    PrimFlag.Flags = 0; PrimFlag.IdentElem = TRUE; PF_ID = PrimFlag.Flags;
+    PrimFlag.Flags = 0; PrimFlag.bLftIdent = TRUE; PF_LI = PrimFlag.Flags;
+    PrimFlag.Flags = 0; PrimFlag.bRhtIdent = TRUE; PF_RI = PrimFlag.Flags;
 
     Init1PrimFlag (UTF16_BAR                 , 0                     | PF_AL | PF_MS | PF_DS | PF_ID |         PF_RI | PF_INDEX_MINUS     , (LPPRIMOPS) PrimIdentFnScalar_EM_YY           );
     Init1PrimFlag (UTF16_BAR2                , 0                     | PF_AL | PF_MS | PF_DS | PF_ID |         PF_RI | PF_INDEX_MINUS     , (LPPRIMOPS) PrimIdentFnScalar_EM_YY           );
@@ -960,12 +960,15 @@ void InitPrimFlags
 
 void Init1PrimFlag
     (WCHAR     wchFn,
-     APLU3264  uFlag,
+     UINT      uFlag,
      LPPRIMOPS lpPrimOps)
 
 {
-    *((APLU3264 *) &PrimFlags[FcnTrans (wchFn)]) |= uFlag;
-                    PrimFlags[FcnTrans (wchFn)].lpPrimOps = lpPrimOps;
+    PrimFlags[FcnTrans (wchFn)].Flags |= uFlag;
+    if (PrimFlags[FcnTrans (wchFn)].lpPrimOps NE NULL)
+        DbgStop ();         // We should never get here
+    else
+        PrimFlags[FcnTrans (wchFn)].lpPrimOps = lpPrimOps;
 } // End Init1PrimFlag
 
 

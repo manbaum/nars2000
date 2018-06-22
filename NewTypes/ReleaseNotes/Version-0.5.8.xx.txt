@@ -1,6 +1,17 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1909 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug When Comparing Certain Nested Arrays Of Different Depth
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+  Fix bug in <HeNe_cmp> when comparing certain Nested arrays of different depth.
+
+
 Build #1908 -- Version 0.5.8.xx
 -------------------------------
 

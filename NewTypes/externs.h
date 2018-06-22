@@ -505,18 +505,20 @@ LPPRIMSPEC PrimSpecTab[PRIMTAB_LEN];    // The table of corresponding LPPRIMSPEC
 typedef struct tagPRIMFLAGS
 {
     union   {
-    UINT      Index    :5,              // 00:  00000010:  Function index (see FBFN_INDS)
-              IdentElem:1,              //      00000020:  TRUE iff this function has an identity element
-              bLftIdent:1,              //      00000040:  TRUE iff the identity function is a left identity
-              bRhtIdent:1,              //      00000080:  ...                                 right ...
-              DydScalar:1,              //      00000100:  ...                    is scalar dyadic
-              MonScalar:1,              //      00000200:  ...                       ...    monadic
-              Alter    :1,              //      00000400:  ...                       alternating
-              AssocBool:1,              //      00000800:  ...                       associative on Booleans only
-              AssocNumb:1,              //      00001000:  ...                       associative on all numbers
-              FastBool :1,              //      00002000:  Boolean function w/reduction & scan can be sped up
-                       :18;             //      FFFFC000:  Available flag bits
-    UINT      Flags;
+        struct {
+                UINT Index    :5,       // 00:  00000010:  Function index (see FBFN_INDS)
+                     bIdentElem:1,      //      00000020:  TRUE iff this function has an identity element
+                     bLftIdent:1,       //      00000040:  TRUE iff the identity function is a left identity
+                     bRhtIdent:1,       //      00000080:  ...                                 right ...
+                     bDydScalar:1,      //      00000100:  ...                    is scalar dyadic
+                     bMonScalar:1,      //      00000200:  ...                       ...    monadic
+                     bAlter    :1,      //      00000400:  ...                       alternating
+                     bAssocBool:1,      //      00000800:  ...                       associative on Booleans only
+                     bAssocNumb:1,      //      00001000:  ...                       associative on all numbers
+                     bFastBool :1,      //      00002000:  Boolean function w/reduction & scan can be sped up
+                              :18;      //      FFFFC000:  Available flag bits
+               };
+    UINT      Flags;                    // 00:  Flags
             };
     LPPRIMOPS lpPrimOps;                // 04:  Ptr to PRIMOPS entry of the identity function (or NULL if it's a scalar fcn)
 } PRIMFLAGS, *LPPRIMFLAGS;
@@ -585,9 +587,9 @@ typedef struct tagFASTBOOLFNS
 {
     LPFASTBOOLFCN lpReduction;          // 00:  Ptr to Fast Boolean reduction routine
     LPFASTBOOLFCN lpScan;               // 04:  ...                 scan      ...
-    UINT          NotMarker:1,          // 08:  00000001:  Complement of Marker
-                  IdentElem:1,          //      00000002:  Identity element (if it exists)
-                  Suffix   :1,          //      00000004:  Suffix equivalence value
+    UINT          bNotMarker:1,         // 08:  00000001:  Complement of Marker
+                  bIdentElem:1,         //      00000002:  Identity element (if it exists)
+                  bSuffix   :1,         //      00000004:  Suffix equivalence value
                            :29;         //      FFFFFFF8:  Available bits
                                         // 0C:  Length
 } FASTBOOLFNS, *LPFASTBOOLFNS;

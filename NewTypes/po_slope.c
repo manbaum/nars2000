@@ -340,7 +340,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
 
     // If this function has no identity element,
     //   and is not a UDFO, ...
-    if (!lpPrimFlagsLft->IdentElem
+    if (!lpPrimFlagsLft->bIdentElem
      && !IsTknFcnOpr (&lpYYFcnStrLft->tkToken))
         goto DOMAIN_EXIT;
 
@@ -360,7 +360,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
        && apaMulRht EQ 0 ))
      && IsMultiDim (uDimAxRht)
      && lpPrimProtoLft EQ NULL
-     && lpPrimFlagsLft->FastBool)
+     && lpPrimFlagsLft->bFastBool)
     {
         // Mark as a Fast Boolean operation
         bFastBool = TRUE;
@@ -373,7 +373,7 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
     //   calculate the storage type of the result,
     //   otherwise, assume it's ARRAY_NESTED
     if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-     && lpPrimFlagsLft->DydScalar
+     && lpPrimFlagsLft->bDydScalar
      && IsSimpleNHGlbNum (aplTypeRht))
     {
         // If the function is equal or not-equal, and the right
@@ -669,9 +669,9 @@ RESTART_EXCEPTION:
             // If the right arg is associative, and
             // If this function is associative or alternating, speed it up
             if ((!IsSimpleGlbNum (aplTypeRht) || TranslateArrayTypeToHCDim (aplTypeRht) <= 4)
-             && ((lpPrimFlagsLft->AssocBool && IsSimpleBool (aplTypeRht))
-              || (lpPrimFlagsLft->AssocNumb && IsSimpleGlbNum (aplTypeRht))
-              ||  lpPrimFlagsLft->Alter))
+             && ((lpPrimFlagsLft->bAssocBool && IsSimpleBool (aplTypeRht))
+              || (lpPrimFlagsLft->bAssocNumb && IsSimpleGlbNum (aplTypeRht))
+              ||  lpPrimFlagsLft->bAlter))
             {
                 // Restore the original function in case it's alternating
                 YYFcnStrLft.tkToken.tkData.tkChar = alterChar;
@@ -1134,7 +1134,7 @@ RESTART_EXCEPTION:
                     } // End SWITCH
 
                     // If the left operand is alternating, ...
-                    if (lpPrimFlagsLft->Alter)
+                    if (lpPrimFlagsLft->bAlter)
                     {
                         // Split cases based upon the current left operand
                         switch (YYFcnStrLft.tkToken.tkData.tkChar)

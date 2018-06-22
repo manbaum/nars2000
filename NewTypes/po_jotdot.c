@@ -343,7 +343,7 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     // If the function is scalar dyadic,
     //   and there's no right operand axis,
     //   and both args are simple non-hetero, ...
-    if (lpPrimFlagsRht->DydScalar
+    if (lpPrimFlagsRht->bDydScalar
      && lptkAxisRht EQ NULL
      && IsSimpleNHGlbNum (aplTypeLft)
      && IsSimpleNHGlbNum (aplTypeRht))
@@ -521,7 +521,7 @@ RESTART_JOTDOT:
     // If the function is scalar dyadic,
     //   and there's no right operand axis,
     //   and both args are simple non-hetero or global numeric, ...
-    if (lpPrimFlagsRht->DydScalar
+    if (lpPrimFlagsRht->bDydScalar
      && lptkAxisRht EQ NULL
      && IsSimpleNHGlbNum (aplTypeLft)
      && IsSimpleNHGlbNum (aplTypeRht))

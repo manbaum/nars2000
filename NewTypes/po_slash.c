@@ -343,12 +343,12 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
 
         // If the reduction function is primitive scalar dyadic,
         //   and the right arg is not nested, ...
-        if (lpPrimFlagsLft->DydScalar
+        if (lpPrimFlagsLft->bDydScalar
          && !IsNested (aplTypeRht))
         {
             // If there's no identity element, or
             //   the right arg is character and is not Equal or NotEqual, ...
-            if (!lpPrimFlagsLft->IdentElem
+            if (!lpPrimFlagsLft->bIdentElem
              || (IsSimpleChar (aplTypeRht)
               && (lpPrimFlagsLft->Index NE PF_INDEX_EQUAL
               &&  lpPrimFlagsLft->Index NE PF_INDEX_NOTEQUAL)
@@ -391,7 +391,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
         //   or it is, but is without an identity element,
         //   signal a DOMAIN ERROR
         if (lpYYFcnStrLft->tkToken.tkFlags.TknType NE TKT_FCNIMMED
-         || !lpPrimFlagsLft->IdentElem)
+         || !lpPrimFlagsLft->bIdentElem)
             goto DOMAIN_EXIT;
 
         // Get the identity element
@@ -427,7 +427,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
        && apaMulRht EQ 0 ))
      && IsMultiDim (uDimAxRht)
      && lpPrimProtoLft EQ NULL
-     && (lpPrimFlagsLft->FastBool || lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_PLUS))
+     && (lpPrimFlagsLft->bFastBool || lpYYFcnStrLft->tkToken.tkData.tkChar EQ UTF16_PLUS))
     {
         // Mark as a Fast Boolean operation
         bFastBool = TRUE;
@@ -446,7 +446,7 @@ LPPL_YYSTYPE PrimOpMonSlashCommon_EM_YY
     //   otherwise, assume it's ARRAY_NESTED
     if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
      && lptkAxisLft EQ NULL
-     && lpPrimFlagsLft->DydScalar
+     && lpPrimFlagsLft->bDydScalar
      && (IsSimpleNH (aplTypeRht)
       || IsNumeric (aplTypeRht)))
     {
@@ -1848,9 +1848,9 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
         // If it's an immediate primitive function,
         //   and has an identity element, ...
         if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-         && (lpPrimFlagsLft->MonScalar
-          || lpPrimFlagsLft->DydScalar)
-         && lpPrimFlagsLft->IdentElem)
+         && (lpPrimFlagsLft->bMonScalar
+          || lpPrimFlagsLft->bDydScalar)
+         && lpPrimFlagsLft->bIdentElem)
         {
             // If the right arg is nested, ...
             if (IsNested (aplTypeRht))
@@ -1891,7 +1891,7 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     //   otherwise, assume it's ARRAY_NESTED
     if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
      && lptkAxisLft EQ NULL
-     && lpPrimFlagsLft->DydScalar)
+     && lpPrimFlagsLft->bDydScalar)
     {
         // Get the corresponding lpPrimSpecLft
         lpPrimSpecLft = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];

@@ -873,15 +873,15 @@ void InitPrimFlags
         PrimFlags[uCnt] = PrimFlags0;
 
     // Get the bits as masks
-    PrimFlag.Flags = 0; PrimFlag.FastBool  = TRUE; PF_FB = PrimFlag.Flags;
-    PrimFlag.Flags = 0; PrimFlag.AssocBool = TRUE; PF_AB = PrimFlag.Flags;
-    PrimFlag.Flags = 0; PrimFlag.AssocNumb = TRUE; PF_AN = PrimFlag.Flags;
-    PrimFlag.Flags = 0; PrimFlag.Alter     = TRUE; PF_AL = PrimFlag.Flags;
-    PrimFlag.Flags = 0; PrimFlag.MonScalar = TRUE; PF_MS = PrimFlag.Flags;
-    PrimFlag.Flags = 0; PrimFlag.DydScalar = TRUE; PF_DS = PrimFlag.Flags;
-    PrimFlag.Flags = 0; PrimFlag.IdentElem = TRUE; PF_ID = PrimFlag.Flags;
-    PrimFlag.Flags = 0; PrimFlag.bLftIdent = TRUE; PF_LI = PrimFlag.Flags;
-    PrimFlag.Flags = 0; PrimFlag.bRhtIdent = TRUE; PF_RI = PrimFlag.Flags;
+    PrimFlag.Flags = 0; PrimFlag.bFastBool  = TRUE; PF_FB = PrimFlag.Flags;
+    PrimFlag.Flags = 0; PrimFlag.bAssocBool = TRUE; PF_AB = PrimFlag.Flags;
+    PrimFlag.Flags = 0; PrimFlag.bAssocNumb = TRUE; PF_AN = PrimFlag.Flags;
+    PrimFlag.Flags = 0; PrimFlag.bAlter     = TRUE; PF_AL = PrimFlag.Flags;
+    PrimFlag.Flags = 0; PrimFlag.bMonScalar = TRUE; PF_MS = PrimFlag.Flags;
+    PrimFlag.Flags = 0; PrimFlag.bDydScalar = TRUE; PF_DS = PrimFlag.Flags;
+    PrimFlag.Flags = 0; PrimFlag.bIdentElem = TRUE; PF_ID = PrimFlag.Flags;
+    PrimFlag.Flags = 0; PrimFlag.bLftIdent  = TRUE; PF_LI = PrimFlag.Flags;
+    PrimFlag.Flags = 0; PrimFlag.bRhtIdent  = TRUE; PF_RI = PrimFlag.Flags;
 
     Init1PrimFlag (UTF16_BAR                 , 0                     | PF_AL | PF_MS | PF_DS | PF_ID |         PF_RI | PF_INDEX_MINUS     , (LPPRIMOPS) PrimIdentFnScalar_EM_YY           );
     Init1PrimFlag (UTF16_BAR2                , 0                     | PF_AL | PF_MS | PF_DS | PF_ID |         PF_RI | PF_INDEX_MINUS     , (LPPRIMOPS) PrimIdentFnScalar_EM_YY           );

@@ -503,7 +503,7 @@ LPPL_YYSTYPE PrimIdentFnScalar_EM_YY
     lpPrimFlags = GetPrimFlagsPtr (lptkFunc);
 
     // If there's an identity element, ...
-    if (lpPrimFlags NE NULL && lpPrimFlags->IdentElem)
+    if (lpPrimFlags NE NULL && lpPrimFlags->bIdentElem)
         lpPrimIdent = &PrimIdent[lpPrimFlags->Index];
     else
         goto DOMAIN_EXIT;

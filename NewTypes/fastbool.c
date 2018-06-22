@@ -11,7 +11,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2009 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -76,9 +76,9 @@ void FastBoolScan
     LPAPLBOOL     lpaplBool;        // Ptr to Booleans to reduce
 
     // Get the parameters specific to this function
-    uNotMarker = FastBoolFns[uFBFNIndex].NotMarker;     // J[0]
-    uIdentElem = FastBoolFns[uFBFNIndex].IdentElem;     // J[1]
-    uSuffix    = FastBoolFns[uFBFNIndex].Suffix;        // J[2]
+    uNotMarker = FastBoolFns[uFBFNIndex].bNotMarker;    // J[0]
+    uIdentElem = FastBoolFns[uFBFNIndex].bIdentElem;    // J[1]
+    uSuffix    = FastBoolFns[uFBFNIndex].bSuffix;       // J[2]
     fbtIndex   = fbtFirst[!uNotMarker];                 // FBT_FIRST1 or 0
 
     // If the right arg is an APA, handle it specially
@@ -488,9 +488,9 @@ void FastBoolRed
     LPAPLBOOL     lpaplBool;        // Ptr to Booleans to reduce
 
     // Get the parameters specific to this function
-    uNotMarker = FastBoolFns[uFBFNIndex].NotMarker;     // J[0]
-    uIdentElem = FastBoolFns[uFBFNIndex].IdentElem;     // J[1]
-    uSuffix    = FastBoolFns[uFBFNIndex].Suffix;        // J[2]
+    uNotMarker = FastBoolFns[uFBFNIndex].bNotMarker;    // J[0]
+    uIdentElem = FastBoolFns[uFBFNIndex].bIdentElem;    // J[1]
+    uSuffix    = FastBoolFns[uFBFNIndex].bSuffix;       // J[2]
     fbtIndex   = fbtFirst[!uNotMarker];                 // FBT_FIRST1 or 0
 
     // If the right arg is an APA, handle it specially

@@ -2768,14 +2768,14 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
             goto LEFT_OPERAND_NONCE_EXIT;
 
         // If both functions are primitive scalar dyadic, ...
-        if (lpPrimFlagsLft->DydScalar
-         && lpPrimFlagsRht->DydScalar)
+        if (lpPrimFlagsLft->bDydScalar
+         && lpPrimFlagsRht->bDydScalar)
         {
             // If it's not an immediate primitive function,
             //   or it is, but is without an identity element,
             //   signal a DOMAIN ERROR
             if (lpYYFcnStrLft->tkToken.tkFlags.TknType NE TKT_FCNIMMED
-             || !lpPrimFlagsLft->IdentElem)
+             || !lpPrimFlagsLft->bIdentElem)
                 goto LEFT_OPERAND_DOMAIN_EXIT;
 
             // Get the identity element
@@ -2812,11 +2812,11 @@ LPPL_YYSTYPE PrimOpDydDotCommon_EM_YY
     //   and there's no right operand axis,
     //   both args are simple non-hetero or global numeric, and
     //   the reduction function is scalar dyadic, ...
-    if (lpPrimFlagsRht->DydScalar
+    if (lpPrimFlagsRht->bDydScalar
      && lptkAxisRht EQ NULL
      && IsSimpleNHGlbNum (aplTypeLft)
      && IsSimpleNHGlbNum (aplTypeRht)
-     && lpPrimFlagsLft->DydScalar)
+     && lpPrimFlagsLft->bDydScalar)
     {
         // Get the left & right arg lpPrimSpec
         lpPrimSpecLft = PrimSpecTab[SymTrans (&lpYYFcnStrLft->tkToken)];

@@ -77,9 +77,12 @@ void pn_yyprint     (FILE *yyoutput, unsigned short int yytoknum, PN_YYSTYPE con
 
 #define YYERROR2        {lppnLocalVars->bYYERROR = TRUE; YYERROR;}
 
-////#define DbgMsgWP(a)         DbgMsgW(a)
-////#define DbgMsgWP(a)         DbgMsgW(a); DbgBrk ()
+#ifdef DEBUG
+UBOOL bDebugPN = FALSE;
+    #define DbgMsgWP(a)         if (bDebugPN) DbgMsgW (a)
+#else
     #define DbgMsgWP(a)
+#endif
 
 #define NEED_EOT    lppnLocalVars->bNeedEOT = TRUE;
 

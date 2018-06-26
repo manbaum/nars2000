@@ -58,10 +58,12 @@ void fh_yyprint     (FILE *yyoutput, unsigned short int yytoknum, FH_YYSTYPE con
 #define yy_reduce_print         fh_yy_reduce_print
 #define yydestruct              fh_yydestruct
 
-////#define DbgMsgWP(a)         DbgMsgW(a)
-////#define DbgMsgWP(a)         DbgMsgW(a); DbgBrk ()
-////#define DbgMsgWP(a)         DbgMsgW(a)
+#ifdef DEBUG
+UBOOL bDebugFH = FALSE;
+    #define DbgMsgWP(a)         if (bDebugFH) DbgMsgW (a)
+#else
     #define DbgMsgWP(a)
+#endif
 
 %}
 

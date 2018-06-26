@@ -53,10 +53,12 @@ void cs_yyprint     (FILE *yyoutput, unsigned short int yytoknum, CS_YYSTYPE con
 #define yy_reduce_print         cs_yy_reduce_print
 #define yydestruct              cs_yydestruct
 
-////#define DbgMsgWP(a)         DbgMsgW(a)
-////#define DbgMsgWP(a)         DbgMsgW(a); DbgBrk ()
-////#define DbgMsgWP(a)         DbgMsgW(a)
+#ifdef DEBUG
+UBOOL bDebugCS = FALSE;
+    #define DbgMsgWP(a)         if (bDebugCS) DbgMsgW (a)
+#else
     #define DbgMsgWP(a)
+#endif
 
 LPTOKEN     lptk1st, lptkPrv;
 TOKEN_TYPES TknType;

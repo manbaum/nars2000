@@ -27,6 +27,9 @@
 extern UBOOL bDebugPLTrace,
              bDebugPLStart,
              bDebugExecTrace,
+             bDebugCS,
+             bDebugFH,
+             bDebugPN,
              gYYAlloc;
 
 
@@ -53,11 +56,14 @@ UBOOL CmdDebug_EM
     {
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
-                   L"Is PLTrace = %d  PLStart = %d  ExecTrace = %d  YYAlloc = 0x%X\r\n"
+                   L"Is PLTrace = %d  PLStart = %d  ExecTrace = %d  CS = %d  FH = %d  PN = %d  YYAlloc = 0x%X\r\n"
                    L"   DbgLvl = %d  FcnLvl = %d  VfpLvl = %d  ResizeLvl = %d",
                     bDebugPLTrace,
                     bDebugPLStart,
                     bDebugExecTrace,
+                    bDebugCS,
+                    bDebugFH,
+                    bDebugPN,
                     gYYAlloc,
                     gDbgLvl,
                     gFcnLvl,
@@ -178,6 +184,9 @@ UBOOL CmdDebug_EM
     DEBUG_MAC (L"PLTrace"    , L"Was PLTrace = %d"   , bDebugPLTrace   , IsBooleanValue)
     DEBUG_MAC (L"PLStart"    , L"Was PLStart = %d"   , bDebugPLStart   , IsBooleanValue)
     DEBUG_MAC (L"ExecTrace"  , L"Was ExecTrace = %d" , bDebugExecTrace , IsBooleanValue)
+    DEBUG_MAC (L"CS"         , L"Was CS = %d"        , bDebugCS        , IsBooleanValue)
+    DEBUG_MAC (L"FH"         , L"Was FH = %d"        , bDebugFH        , IsBooleanValue)
+    DEBUG_MAC (L"PN"         , L"Was PN = %d"        , bDebugPN        , IsBooleanValue)
     DEBUG_MAC (L"YYAlloc"    , L"Was YYAlloc = 0x%X" , gYYAlloc        , IsWORD        )
     DEBUG_MAC (L"DbgLvl"     , L"Was DbgLvl = %d"    , gDbgLvl         , IsUCHAR       )
     DEBUG_MAC (L"FcnLvl"     , L"Was FcnLvl = %d"    , gFcnLvl         , IsUCHAR       )

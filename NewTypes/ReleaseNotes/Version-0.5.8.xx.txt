@@ -1,6 +1,20 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1910 -- Version 0.5.8.xx
+-------------------------------
+
+* Extend )DEBUG to Other Debug Contexts
+
+Directory branches/bsmith/NewTypes:
+
+CS_PARSE.Y:
+FH_PARSE.Y:
+PN_PARSE.Y:
+SC_DEBUG.C:
+  Define more DEBUG contexts, this time for CS, FH, and PN tracing.
+
+
 Build #1909 -- Version 0.5.8.xx
 -------------------------------
 

@@ -2804,7 +2804,9 @@ typedef struct tagLANGCHARS
                                            L"Unicode:  0x2364 or 9060"},
         {WS_UTF16_DIERESISSTAR      , {0}, L"DieresisStar",
                                            L"Power Operator:  (f" WS_UTF16_DIERESISSTAR L"Y) R\n"
-                                           L"               L (f" WS_UTF16_DIERESISSTAR L"Y) R\n\n"
+                                           L"               L (f" WS_UTF16_DIERESISSTAR L"Y) R\n"
+                                           L"                 (f" WS_UTF16_DIERESISSTAR L"g) R\n"
+                                           L"               L (f" WS_UTF16_DIERESISSTAR L"g) R\n\n"
                                            L"Keyboard:  Alt-'P' or Alt-Shift-'p'\n\n"
                                            L"Unicode:  0x2363 or 9059"},
 ////////{WS_UTF16_DIERESISDOT       , {0}, L""},       // Uncomment when implemented

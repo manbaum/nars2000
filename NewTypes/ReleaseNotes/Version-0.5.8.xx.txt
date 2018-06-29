@@ -1,6 +1,17 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1912 -- Version 0.5.8.xx
+-------------------------------
+
+* Document Power Operator With Function Right Operands In Language Bar
+
+Directory branches/bsmith/NewTypes:
+
+REBAR.C:
+  Document the Power operator on the Language Bar, this time with function right operands.
+
+
 Build #1911 -- Version 0.5.8.xx
 -------------------------------
 

@@ -639,6 +639,9 @@
     <ClCompile Include="sc_debug.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="po_distar.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Bison_Rule Include="cs_parse.y">

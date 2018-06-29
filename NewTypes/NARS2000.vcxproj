@@ -493,6 +493,7 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
     <ClCompile Include="po_didtack.c" />
     <ClCompile Include="po_dieresis.c" />
     <ClCompile Include="po_dijot.c" />
+    <ClCompile Include="po_distar.c" />
     <ClCompile Include="po_ditilde.c" />
     <ClCompile Include="po_dot.c">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug32|Win32'">$(INCLUDE);$(GSL_DIR)\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

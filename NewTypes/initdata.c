@@ -58,7 +58,6 @@ extern PRIMSPEC PrimSpecUpStile;
 
 // Dyadic  Operators TO DO                             Monadic          Dyadic
 /////// PrimOpDieresisDel_EM_YY                     // ERROR            Dual (*)
-/////// PrimOpDieresisStar_EM_YY                    // ERROR            Power (*)
 
 // (*) = Unfinished
 

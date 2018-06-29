@@ -147,6 +147,7 @@
   #include "po_didtack.pro"
   #include "po_dieresis.pro"
   #include "po_dijot.pro"
+  #include "po_distar.pro"
   #include "po_ditilde.pro"
   #include "po_dot.pro"
   #include "po_jot.pro"

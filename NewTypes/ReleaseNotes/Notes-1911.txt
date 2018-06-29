@@ -1,0 +1,37 @@
+Build #1911 -- Version 0.5.8.xx
+-------------------------------
+
+* Implement Power Operator Except For Inverses
+
+Directory branches/bsmith/NewTypes:
+
+COMPRO.H:
+  Include prototype file.
+
+EXECFNS.C:
+  Recognize the Power operator as a dyadic operator.
+
+INITDATA.C:
+  Note that the Power is not implemented (except for Inverses).
+
+MAKEFILE.INC:
+MAKEFILE.SRC:
+NARS2000.VCXPROJ:
+NARS2000.VCXPROJ.FILTERS:
+  Include the new source file in the list of files to make.
+
+PO_DIJOT.C:
+  Fix typo.
+
+PO_DISTAR.C:
+  New source file which implements the Power operator.
+
+REBAR.C:
+  Document the Power operator on the Language Bar.
+
+STRAND.C:
+  Define helper function to create a new function array appending an operator.
+
+YYFNS.C:
+  Define helper function to allocate a new YYRes from an existing token.
+  In <YYFree>, handle the case where the YYRes is not in use.

@@ -2802,8 +2802,12 @@ typedef struct tagLANGCHARS
                                            L"              L (f" WS_UTF16_DIERESISJOT L"[X] Y) R\n\n"
                                            L"Keyboard:  Alt-'J' or Alt-Shift-'j'\n\n"
                                            L"Unicode:  0x2364 or 9060"},
-////////{WS_UTF16_DIERESISSTAR      , {0}, L""},       // Uncomment when implemented
-////////{WS_UTF16_DIERESISDOT       , {0}, L""},       // ...
+        {WS_UTF16_DIERESISSTAR      , {0}, L"DieresisStar",
+                                           L"Power Operator:  (f" WS_UTF16_DIERESISSTAR L"Y) R\n"
+                                           L"               L (f" WS_UTF16_DIERESISSTAR L"Y) R\n\n"
+                                           L"Keyboard:  Alt-'P' or Alt-Shift-'p'\n\n"
+                                           L"Unicode:  0x2363 or 9059"},
+////////{WS_UTF16_DIERESISDOT       , {0}, L""},       // Uncomment when implemented
 ////////{WS_UTF16_DIERESISDEL       , {0}, L""},       // ...
 ////////{WS_UTF16_DELTILDE          , {0}, L""},       // ...
         {WS_UTF16_DIERESISDOWNTACK  , {0}, L"DieresisDownTack",

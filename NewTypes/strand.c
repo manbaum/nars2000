@@ -3240,5 +3240,66 @@ void UnVarStrand
 
 
 //***************************************************************************
+//  $MakeFcnStr_EM_YY
+//
+//  Make a new function strand
+//***************************************************************************
+
+LPPL_YYSTYPE MakeFcnStr_EM_YY
+    (LPPL_YYSTYPE lpYYFcnStrLft,    // Ptr to new left operand
+     LPTOKEN      lptkOper,         // Ptr to new operator
+     LPPL_YYSTYPE lpYYFcnStrRht)    // Ptr to new right operand (may be NULL if monadic operator)
+
+{
+    LPPL_YYSTYPE lpYYRes,
+                 lpYYRes2;
+
+    // Save the Operator token as a PL_YYSTYPE
+    lpYYRes2 = YYAllocTkn (lptkOper);
+
+    // If there's a right operand (hence, it's a Dyadic Operator), ...
+    if (lpYYFcnStrRht NE NULL)
+    {
+        // Combine the Dyadic Operator with the right operand
+        lpYYRes2 =
+          plRedDOP_RhtOper (NULL,           // Ptr to plLocalVars
+                            lpYYRes2,       // Ptr to current PL_YYSTYPE
+                            lpYYFcnStrRht,  // ...    last right ...
+                            soMOP);         // Next SO_ENUM value
+        if (lpYYRes2 EQ NULL)
+            goto SYNTAX_EXIT;
+    } // End IF
+
+    // Combine the Monadic Operator with the left operand
+    lpYYRes =
+      plRedLftOper_MOP (NULL,           // Ptr to plLocalVars
+                        lpYYFcnStrLft,  // Ptr to current PL_YYSTYPE
+                        lpYYRes2,       // ...    last right ...
+                        soF);           // Next SO_ENUM value
+    // Note that the above function returns its result as <lpYYRes2>,
+    //   so if the result is valid, don't YYFree it!
+
+    if (lpYYRes EQ NULL)
+        goto SYNTAX_EXIT;
+
+    // Unstrand the function if appropriate
+    UnFcnStrand_EM (&lpYYRes, NAMETYPE_FN12, FALSE);
+
+    return lpYYRes;
+
+SYNTAX_EXIT:
+    if (lpYYRes2 NE NULL)
+    {
+        // YYFree it, but do not Free it
+        YYFree (lpYYRes2); lpYYRes2 = NULL;
+    } // End IF
+
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkOper);
+    return NULL;
+} // End MakeFcnStr_EM_YY
+
+
+//***************************************************************************
 //  End of File: strand.c
 //***************************************************************************

@@ -35,6 +35,25 @@ UINT gYYAlloc  = 0x0000;
 
 
 //***************************************************************************
+//  $YYAllocTkn
+//
+//  Allocate a YYAlloc to hold a token
+//***************************************************************************
+
+LPPL_YYSTYPE YYAllocTkn
+    (LPTOKEN lptkToken)         // Ptr to token
+
+{
+    LPPL_YYSTYPE lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken = *lptkToken;  // Maybe <*CopyToken (lptkToken)>
+
+    return lpYYRes;
+} // YYAllocTkn
+
+
+//***************************************************************************
 //  $YYAllocGlb
 //
 //  Allocate a global array via YYAlloc
@@ -303,42 +322,49 @@ void _YYFree
 #ifdef DEBUG
     UINT YYIndex;
 
-    if (!lpYYRes->YYPerm)
+    // If this entry is Inuse, ...
+    if (lpYYRes->YYInuse)
     {
-        APLU3264     u;             // Index into lpMemPTD->YYRes
-        LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
+        if (!lpYYRes->YYPerm)
+        {
+            APLU3264     u;             // Index into lpMemPTD->YYRes
+            LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory
 
-        // Get ptr to PerTabData global memory
-        lpMemPTD = GetMemPTD ();
+            // Get ptr to PerTabData global memory
+            lpMemPTD = GetMemPTD ();
 
-        u = (APLU3264) (lpYYRes - lpMemPTD->lpYYRes);
-        Assert (u < lpMemPTD->numYYRes);
-        Assert (_YYCheckInuse (lpYYRes, lpFileName, uLineNum));
-    } else
-    {
-        WCHAR wszTemp[1024];
+            u = (APLU3264) (lpYYRes - lpMemPTD->lpYYRes);
+            Assert (u < lpMemPTD->numYYRes);
+            Assert (_YYCheckInuse (lpYYRes, lpFileName, uLineNum));
+        } else
+        {
+            WCHAR wszTemp[1024];
 
-        MySprintfW (wszTemp,
-                    sizeof (wszTemp),
-                   L"YYFree:  YYRes at %p index %04X is Perm and about to be YYFree'd.  YYAlloc'ed at %S#%d (%S#%d)",
-                    lpYYRes,
-                    lpYYRes->YYIndex,
-                    lpYYRes->lpFileName,
-                    lpYYRes->uLineNum,
-                    lpFileName,
-                    uLineNum);
-        DbgMsgW (wszTemp);
+            MySprintfW (wszTemp,
+                        sizeof (wszTemp),
+                       L"YYFree:  YYRes at %p index %04X is Perm and about to be YYFree'd.  YYAlloc'ed at %S#%d (%S#%d)",
+                        lpYYRes,
+                        lpYYRes->YYIndex,
+                        lpYYRes->lpFileName,
+                        lpYYRes->uLineNum,
+                        lpFileName,
+                        uLineNum);
+            DbgMsgW (wszTemp);
 
-        DbgBrk ();      // #ifdef DEBUG
-    } // End IF/ELSE
+            DbgBrk ();      // #ifdef DEBUG
+        } // End IF/ELSE
 
-    if (gYYAlloc NE 0)
-        Assert (lpYYRes->YYIndex NE gYYAlloc);
+        if (gYYAlloc NE 0)
+            Assert (lpYYRes->YYIndex NE gYYAlloc);
 
-    // Save the old value
-    YYIndex  = lpYYRes->YYIndex;
+        // Save the old value
+        YYIndex  = lpYYRes->YYIndex;
+    } // End IF
 #endif
-    ZeroMemory (lpYYRes, sizeof (lpYYRes[0]));
+    // If this entry is Inuse, ...
+    if (lpYYRes->YYInuse)
+        // Zap it
+        ZeroMemory (lpYYRes, sizeof (lpYYRes[0]));
 #ifdef DEBUG
     lpYYRes->lpFileName = lpFileName;
     lpYYRes->uLineNum   = uLineNum;

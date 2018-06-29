@@ -344,5 +344,5 @@ LPPL_YYSTYPE PrimOpDydDieresisJotCommon_EM_YY
 
 
 //***************************************************************************
-//  End of File: po_dieresisjot.c
+//  End of File: po_dijot.c
 //***************************************************************************

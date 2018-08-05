@@ -222,11 +222,11 @@ APLSTYPE PrimSpecColonBarStorageTypeMon
     aplTypeRes = *lpaplTypeRht;
 
     // Except that BOOL, INT and APA become FLOAT
-    if (IsSimpleInt (aplTypeRes))
+    if (IsRealBIA (aplTypeRes))
         return ARRAY_FLOAT;
 
     // Except that HCxI becomes HCxF
-    if (IsHCInt (aplTypeRes))
+    if (IsAnyInt (aplTypeRes))
         return aplTypeRes + 1;          // Assuming same order as in <ARRAY_TYPES>
 
     return aplTypeRes;
@@ -1396,7 +1396,7 @@ APLSTYPE PrimSpecColonBarStorageTypeDyd
 
     // Except that BOOL, INT, and APA become INT
     // If a result doesn't fit in an INT, blow up to FLOAT.
-    if (IsSimpleInt (aplTypeRes))
+    if (IsRealBIA (aplTypeRes))
         return ARRAY_INT;
 
     return aplTypeRes;

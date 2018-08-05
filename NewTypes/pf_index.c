@@ -4074,7 +4074,7 @@ UBOOL ArrayIndexSetVector_EM
         case ARRAY_FLOAT:
             // Replace the corresponding item in the result
             // If the right arg is simple integer, convert it to float
-            if (IsSimpleInt (aplTypeRht))
+            if (IsRealBIA (aplTypeRht))
                 ((LPAPLFLOAT)  lpMemRes)[aplLongestSubLst] = (APLFLOAT) (APLINT) aplLongestRht;
             else
                 ((LPAPLFLOAT)  lpMemRes)[aplLongestSubLst] = *(LPAPLFLOAT) &aplLongestRht;
@@ -4369,7 +4369,7 @@ UBOOL ArrayIndexReplace_EM
             break;
 
         case ARRAY_FLOAT:
-            if (IsSimpleInt (aplTypeSet))
+            if (IsRealBIA (aplTypeSet))
                 // Convert the integer to a float
                 ((LPAPLFLOAT) lpMemRht)[aplIndex] = (APLFLOAT) (APLINT) aplLongestSet;
             else

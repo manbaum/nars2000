@@ -510,7 +510,7 @@ LPPL_YYSTYPE SysFnDydFX_EM_YY
         goto LEFT_RANK_EXIT;
 
     // Check for numeric result
-    if (IsSimpleInt (aplTypeFix))
+    if (IsRealBIA (aplTypeFix))
         goto NORMAL_EXIT;
 
     // Get left & fixed arg's global ptrs

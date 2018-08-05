@@ -353,7 +353,7 @@ void PN_actFLT_VFP
 
 {
     // Initialize to 0
-    mphcxv_init0 (&lpSrc->at.aplVfp, 1);
+    mphcXv_init0 (&lpSrc->at.aplVfp, 1);
 
     // In order to preserve the precision of the floating point number,
     //   we rescan it as a VFP number
@@ -432,7 +432,7 @@ void PN_actFLT_HC2V
 
 {
     // Initialize to 0
-    mphcxv_init0 (&lpSrc->at.aplVfp, 2);
+    mphcXv_init0 (&lpSrc->at.aplVfp, 2);
 
     // In order to preserve the precision of the floating point number,
     //   we rescan it as a VFP number
@@ -453,7 +453,7 @@ void PN_actFLT_HC4V
 
 {
     // Initialize to 0
-    mphcxv_init0 (&lpSrc->at.aplVfp, 4);
+    mphcXv_init0 (&lpSrc->at.aplVfp, 4);
 
     // In order to preserve the precision of the floating point number,
     //   we rescan it as a VFP number
@@ -474,7 +474,7 @@ void PN_actFLT_HC8V
 
 {
     // Initialize to 0
-    mphcxv_init0 (&lpSrc->at.aplVfp, 8);
+    mphcXv_init0 (&lpSrc->at.aplVfp, 8);
 
     // In order to preserve the precision of the floating point number,
     //   we rescan it as a VFP number
@@ -2343,7 +2343,7 @@ LPPN_YYSTYPE PN_MakeRatPoint
         Myq_clear (&lpYYNum->at.aplRat);
 
     // Initialize to 0/1
-    mphcxr_init (&lpYYNum->at.aplHC8R, iHCDim);
+    mphcXr_init (&lpYYNum->at.aplHC8R, iHCDim);
 
     // Save and zap the next char
     chZap = lppnLocalVars->lpszStart[numLen + lpYYNum->uNumStart];
@@ -3791,7 +3791,7 @@ LPPN_YYSTYPE PN_MakeExpPoint
         case PN_NUMTYPE_HC4V:
         case PN_NUMTYPE_HC8V:
             // Initialize to 0
-            mphcxv_init0 (&lpYYArg->at.aplVfp, iHCDim);
+            mphcXv_init0 (&lpYYArg->at.aplVfp, iHCDim);
 
             // Fall through to common code
 
@@ -3832,7 +3832,7 @@ LPPN_YYSTYPE PN_MakeExpPoint
 ////////case PN_NUMTYPE_HC4V:
 ////////case PN_NUMTYPE_HC8V:
 ////////    // Initialize to 0
-////////    mphcxv_init0 (&lpYYArg->at.aplVfp, iHCDim);
+////////    mphcXv_init0 (&lpYYArg->at.aplVfp, iHCDim);
 ////////
 ////////    // If the previous code inserted an exponent separator, ...
 ////////    if (lppnLocalVars->lpszNumAccum[lpYYExponent->uNumAcc - 1] EQ 'e')

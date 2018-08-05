@@ -619,7 +619,7 @@ LPPL_YYSTYPE PrimFnDydMEO_EM_YY
         lpMemRht = &aplLongestRht;
 
     // Split cases based upon the left and right arg storage types
-    if (IsSimpleInt (aplTypeLft) && IsSimpleInt (aplTypeRht))
+    if (IsRealBIA (aplTypeLft) && IsRealBIA (aplTypeRht))
         lpPrimFnDydMEO_Com = PrimFnDydMEO_IvI;
     else
     if (IsSimpleNum (aplTypeLft) && IsSimpleNum (aplTypeRht))
@@ -1287,7 +1287,7 @@ LPPL_YYSTYPE PrimFnDydMIO_EM_YY
     NotFound = bQuadIO + aplNELMLft;
 
     // Split cases based upon the left and right arg storage types
-    if (IsSimpleInt (aplTypeLft) && IsSimpleInt (aplTypeRht))
+    if (IsRealBIA (aplTypeLft) && IsRealBIA (aplTypeRht))
         lpPrimFnDydMIO_Com = PrimFnDydMIO_IvI;
     else
     if (IsSimpleNum (aplTypeLft) && IsSimpleNum (aplTypeRht))
@@ -1939,7 +1939,7 @@ LPPL_YYSTYPE PrimFnDydMM_EM_YY
         lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
 
         // Split cases based upon the left and right arg storage types
-        if (IsSimpleInt (aplTypeLft) && IsSimpleInt (aplTypeRht))
+        if (IsRealBIA (aplTypeLft) && IsRealBIA (aplTypeRht))
             lpPrimFnDydMM_Com = PrimFnDydMM_IvI;
         else
         if (IsSimpleNum (aplTypeLft) && IsSimpleNum (aplTypeRht))

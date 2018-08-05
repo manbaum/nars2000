@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -369,12 +369,12 @@ void mphc8v_set
 
 
 //***************************************************************************
-//  $mphcxr_init_set
+//  $mphcXr_init_set
 //***************************************************************************
 
-void mphcxr_init_set
-    (LPVOID mphcxrVal,          // Ptr to item to set
-     LPVOID mphcxrSrc,          // Ptr to source item
+void mphcXr_init_set
+    (LPVOID mphcXrVal,          // Ptr to item to set
+     LPVOID mphcXrSrc,          // Ptr to source item
      int    iHCDimVal)          // HC Dimension of item (1, 2, 4, 8)
 
 {
@@ -382,29 +382,29 @@ void mphcxr_init_set
     switch (iHCDimVal)
     {
         case 1:
-            mphc1r_init_set (mphcxrVal, mphcxrSrc);
+            mphc1r_init_set (mphcXrVal, mphcXrSrc);
 
             break;
 
         case 2:
-            mphc2r_init_set (mphcxrVal, mphcxrSrc);
+            mphc2r_init_set (mphcXrVal, mphcXrSrc);
 
             break;
 
         case 4:
-            mphc4r_init_set (mphcxrVal, mphcxrSrc);
+            mphc4r_init_set (mphcXrVal, mphcXrSrc);
 
             break;
 
         case 8:
-            mphc8r_init_set (mphcxrVal, mphcxrSrc);
+            mphc8r_init_set (mphcXrVal, mphcXrSrc);
 
             break;
 
         defstop
             break;
     } // End SWITCH
-} // End mphcxr_init_set
+} // End mphcXr_init_set
 
 
 //***************************************************************************
@@ -709,11 +709,11 @@ void mphc8v_init_set_si
 
 
 //***************************************************************************
-//  $mphcxr_init
+//  $mphcXr_init
 //***************************************************************************
 
-void mphcxr_init
-    (LPVOID mphcxrVal,
+void mphcXr_init
+    (LPVOID mphcXrVal,
      int    iHCDimVal)
 
 {
@@ -722,32 +722,32 @@ void mphcxr_init
     {
         case 1:
             // Initialize to 0/1
-            mphc1r_init (mphcxrVal);
+            mphc1r_init (mphcXrVal);
 
             break;
 
         case 2:
             // Initialize to 0/1
-            mphc2r_init (mphcxrVal);
+            mphc2r_init (mphcXrVal);
 
             break;
 
         case 4:
             // Initialize to 0/1
-            mphc4r_init (mphcxrVal);
+            mphc4r_init (mphcXrVal);
 
             break;
 
         case 8:
             // Initialize to 0/1
-            mphc8r_init (mphcxrVal);
+            mphc8r_init (mphcXrVal);
 
             break;
 
         defstop
             break;
     } // End SWITCH
-} // mphcxr_init
+} // mphcXr_init
 
 
 //***************************************************************************
@@ -802,11 +802,11 @@ void mphc8r_init
 
 
 //***************************************************************************
-//  $mphcxv_init0
+//  $mphcXv_init0
 //***************************************************************************
 
-void mphcxv_init0
-    (LPVOID mphcxvVal,
+void mphcXv_init0
+    (LPVOID mphcXvVal,
      int    iHCDimVal)
 
 {
@@ -815,32 +815,32 @@ void mphcxv_init0
     {
         case 1:
             // Initialize to 0
-            mphc1v_init0 (mphcxvVal);
+            mphc1v_init0 (mphcXvVal);
 
             break;
 
         case 2:
             // Initialize to 0
-            mphc2v_init0 (mphcxvVal);
+            mphc2v_init0 (mphcXvVal);
 
             break;
 
         case 4:
             // Initialize to 0
-            mphc4v_init0 (mphcxvVal);
+            mphc4v_init0 (mphcXvVal);
 
             break;
 
         case 8:
             // Initialize to 0
-            mphc8v_init0 (mphcxvVal);
+            mphc8v_init0 (mphcXvVal);
 
             break;
 
         defstop
             break;
     } // End SWITCH
-} // mphcxv_init0
+} // mphcXv_init0
 
 
 //***************************************************************************

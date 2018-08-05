@@ -460,8 +460,8 @@ LPPL_YYSTYPE PrimFnDydEqualUnderbarCom_EM_YY
                     // Split cases into Numeric and Char
                     if (bNumLft)
                     {               // Both are numeric
-                        if (IsSimpleInt (aplTypeLft)
-                         && IsSimpleInt (aplTypeRht))
+                        if (IsRealBIA (aplTypeLft)
+                         && IsRealBIA (aplTypeRht))
                             aplIntegerRes = (aplIntegerLft EQ aplIntegerRht);
                         else
                             aplIntegerRes = CmpCT_F (aplFloatLft, aplFloatRht, fQuadCT, EQ);
@@ -1031,8 +1031,8 @@ UBOOL PrimFnDydEqualUnderbarNested
                     return FALSE;
 
                 // Strip out BOOL/INT vs. BOOL/INT
-                if (IsSimpleInt (aplTypeLft)
-                 && IsSimpleInt (aplTypeRht))
+                if (IsRealBIA (aplTypeLft)
+                 && IsRealBIA (aplTypeRht))
                 {
                     if (aplIntegerLft NE aplIntegerRht)
                         return FALSE;

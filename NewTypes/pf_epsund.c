@@ -492,7 +492,7 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
                                           lptkFunc))        // Ptr to function token
             goto ERROR_EXIT;
     } else
-    if (IsSimpleBool (aplTypeLft) && IsSimpleFlt (aplTypeRht))
+    if (IsSimpleBool (aplTypeLft) && IsRealFlt (aplTypeRht))
     {
         // Handle APLBOOL vs. APLFLOAT
         if (!PrimFnDydEpsilonUnderbarBvF (lpMemRes,         // Ptr to result global memory data
@@ -520,7 +520,7 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
                                           lptkFunc))        // Ptr to function token
             goto ERROR_EXIT;
     } else
-    if (IsSimpleAPA (aplTypeLft) && IsSimpleFlt (aplTypeRht))
+    if (IsSimpleAPA (aplTypeLft) && IsRealFlt (aplTypeRht))
     {
         // Handle APLAPA vs. APLFLOAT
         if (!PrimFnDydEpsilonUnderbarAvF (lpMemRes,         // Ptr to result global memory data
@@ -548,7 +548,7 @@ LPPL_YYSTYPE PrimFnDydEpsilonUnderbar_EM_YY
                                           lptkFunc))        // Ptr to function token
             goto ERROR_EXIT;
     } else
-    if (IsSimpleInt (aplTypeLft) && IsSimpleInt (aplTypeRht))
+    if (IsRealBIA (aplTypeLft) && IsRealBIA (aplTypeRht))
     {
         // Handle APLINT/APLAPA vs. APLBOOL/APLINT/APLAPA
         if (!PrimFnDydEpsilonUnderbarIvI (lpMemRes,         // Ptr to result global memory data
@@ -2314,14 +2314,14 @@ UBOOL PrimFnDydEpsilonUnderbarOvO
     UINT uLft,
          uRht;
 
-    // Is the left arg RAT, VFP, or Other?
-    uLft = (IsRat (aplTypeLft) ? 0
-                               : (IsVfp (aplTypeLft) ? 1
-                                                     : 2));
-    // Is the right arg RAT, VFP, or Other?
-    uRht = (IsRat (aplTypeRht) ? 0
-                               : (IsVfp (aplTypeRht) ? 1
-                                                     : 2));
+    // Is the left arg real-only RAT, VFP, or Other?
+    uLft = (IsRealRat (aplTypeLft) ? 0
+                                   : (IsRealVfp (aplTypeLft) ? 1
+                                                             : 2));
+    // Is the right arg real-only RAT, VFP, or Other?
+    uRht = (IsRealRat (aplTypeRht) ? 0
+                                   : (IsRealVfp (aplTypeRht) ? 1
+                                                             : 2));
     // Split cases based upon the left vs. right arg storage types
     switch (3 * uLft + 1 * uRht)
     {

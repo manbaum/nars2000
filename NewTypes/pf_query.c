@@ -847,22 +847,22 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
     // Check for LEFT/RIGHT DOMAIN ERRORs
     bRet = ((!IsSimpleChar (aplTypeLft))
          && (!IsSimpleChar (aplTypeRht)));
-    if (bRet && IsSimpleFlt (aplTypeLft))
+    if (bRet && IsRealFlt (aplTypeLft))
         // Attempt to convert the float to an integer using System []CT
         aplIntegerLft = FloatToAplint_SCT (aplFloatLft, &bRet);
-    if (bRet && IsSimpleFlt (aplTypeRht))
+    if (bRet && IsRealFlt (aplTypeRht))
         // Attempt to convert the float to an integer using System []CT
         aplIntegerRht = FloatToAplint_SCT (aplFloatRht, &bRet);
-    if (bRet && IsRat (aplTypeLft))
+    if (bRet && IsRealRat (aplTypeLft))
         // Attempt to convert the RAT to an integer using System []CT
         aplIntegerLft = mpq_get_sctsx ((LPAPLRAT) lpSymGlbLft, &bRet);
-    if (bRet && IsRat (aplTypeRht))
+    if (bRet && IsRealRat (aplTypeRht))
         // Attempt to convert the RAT to an integer using System []CT
         aplIntegerRht = mpq_get_sctsx ((LPAPLRAT) lpSymGlbRht, &bRet);
-    if (bRet && IsVfp (aplTypeLft))
+    if (bRet && IsRealVfp (aplTypeLft))
         // Attempt to convert the VFP to an integer using System []CT
         aplIntegerLft = mpfr_get_sctsx ((LPAPLVFP) lpSymGlbLft, &bRet);
-    if (bRet && IsVfp (aplTypeRht))
+    if (bRet && IsRealVfp (aplTypeRht))
         // Attempt to convert the VFP to an integer using System []CT
         aplIntegerRht = mpfr_get_sctsx ((LPAPLVFP) lpSymGlbRht, &bRet);
 

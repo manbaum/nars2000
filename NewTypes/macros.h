@@ -289,7 +289,7 @@
 #define IsSimpleBool(ArrType)           ((ArrType) EQ ARRAY_BOOL)
 
 // Define macro for detecting simple integer-like array type
-#define IsSimpleInt(ArrType)            ((ArrType) EQ ARRAY_BOOL || (ArrType) EQ ARRAY_INT || (ArrType) EQ ARRAY_APA)
+#define IsRealBIA(ArrType)              ((ArrType) EQ ARRAY_BOOL || (ArrType) EQ ARRAY_INT || (ArrType) EQ ARRAY_APA)
 
 // Define macro for detecting simple APA array type
 #define IsSimpleAPA(ArrType)            ((ArrType) EQ ARRAY_APA)
@@ -298,7 +298,7 @@
 #define IsBooleanAPA(lpAPA)             ((lpAPA) && ((lpAPA)->Mul EQ 0) && IsBooleanValue ((lpAPA)->Off))
 
 // Define macro for detecting simple float array type
-#define IsSimpleFlt(ArrType)            ((ArrType) EQ ARRAY_FLOAT)
+#define IsRealFlt(ArrType)              ((ArrType) EQ ARRAY_FLOAT)
 
 // Define macro for detecting Numeric arrays (including RAT, VFP, etc.)
 #define IsNumeric(ArrType)              (IsSimpleNum (ArrType) || IsGlbNum (ArrType))
@@ -336,41 +336,41 @@
 // Define macro for detecting list array type
 #define IsList(ArrType)                 ((ArrType) EQ ARRAY_LIST)
 
-// Define macro for detecting a Rat
-#define IsRat(ArrType)                  ((ArrType) EQ ARRAY_RAT)
+// Define macro for detecting a Real-only Rat
+#define IsRealRat(ArrType)              ((ArrType) EQ ARRAY_RAT)
 
-// Define macro for detecting a Variable FP
-#define IsVfp(ArrType)                  ((ArrType) EQ ARRAY_VFP)
+// Define macro for detecting a Real-only Variable FP
+#define IsRealVfp(ArrType)              ((ArrType) EQ ARRAY_VFP)
 
-// Define macro for detecting any HCxI
+// Define macro for detecting any Hypercomplex-only HCxI
 #define IsHCxI(ArrType)                 ((ArrType) EQ ARRAY_HC2I || (ArrType) EQ ARRAY_HC4I || (ArrType) EQ ARRAY_HC8I)
 
 // Define macro for detecting any INT including Hypercomplex
-#define IsHCInt(ArrType)                (IsSimpleInt (ArrType)   || IsHCxI (ArrType))
+#define IsAnyInt(ArrType)               (IsRealBIA (ArrType)     || IsHCxI (ArrType))
 
-// Define macro for detecting any HCxF
+// Define macro for detecting any Hypercomplex-only HCxF
 #define IsHCxF(ArrType)                 ((ArrType) EQ ARRAY_HC2F || (ArrType) EQ ARRAY_HC4F || (ArrType) EQ ARRAY_HC8F)
 
 // Define macro for detecting any FLT including Hypercomplex
-#define IsHCFlt(ArrType)                (IsSimpleFlt (ArrType)   || IsHCxF (ArrType))
+#define IsAnyFlt(ArrType)               (IsRealFlt (ArrType)     || IsHCxF (ArrType))
 
-// Define macro for detecting any HCxR
+// Define macro for detecting any Hypercomplex-only HCxR
 #define IsHCxR(ArrType)                 ((ArrType) EQ ARRAY_HC2R || (ArrType) EQ ARRAY_HC4R || (ArrType) EQ ARRAY_HC8R)
 
 // Define macro for detecting any Rat including Hypercomplex
-#define IsHCRat(ArrType)                (IsRat (ArrType)         || IsHCxR (ArrType))
+#define IsAnyRat(ArrType)               (IsRealRat (ArrType)     || IsHCxR (ArrType))
 
-// Define macro for detecting any HCxV
+// Define macro for detecting any Hypercomplex-only HCxV
 #define IsHCxV(ArrType)                 ((ArrType) EQ ARRAY_HC2V || (ArrType) EQ ARRAY_HC4V || (ArrType) EQ ARRAY_HC8V)
 
 // Define macro for detecting any Variable FP including Hypercomplex
-#define IsHCVfp(ArrType)                (IsVfp (ArrType)         || IsHCxV (ArrType))
+#define IsAnyVfp(ArrType)               (IsRealVfp (ArrType)     || IsHCxV (ArrType))
 
-// Define macro for detecting any Hypercomplex number
-#define IsHCAny(ArrType)                ((ARRAY_HC2I <= (ArrType)) && ((ArrType) <= ARRAY_HC8V))
+// Define macro for detecting any Hypercomplex-only number
+#define IsHCAny(ArrType)                (IsHCxI (ArrType) || IsHCxF (ArrType) || IsHCxR (ArrType) || IsHCxV (ArrType))
 
 // Define macro for detecting any numeric including Hypercomplex
-#define IsHCNum(ArrType)                (IsSimpleNum (ArrType) || IsHCInt (ArrType) || IsHCFlt (ArrType) || IsHCRat (ArrType) || IsHCVfp (ArrType))
+#define IsAnyNum(ArrType)               (IsSimpleNum (ArrType) || IsHCAny (ArrType))
 
 // Define macros for detecting permutation vectors
 #define IsPermVector0(lpHeader)         (((lpHeader) NE NULL) && (lpHeader)->PV0)

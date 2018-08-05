@@ -1165,8 +1165,8 @@ LPPL_YYSTYPE PrimOpVariantDomino_EM_YY
     NxN[1] = aplColsRht;
 
     // Check for DOMAIN ERROR or type demotion
-    if (!(IsSimpleInt (aplTypeRht)
-       || IsSimpleFlt (aplTypeRht)))
+    if (!(IsRealBIA (aplTypeRht)
+       || IsRealFlt (aplTypeRht)))
     {
         APLSTYPE aplTypeRht2;           // Right arg base storage type
 
@@ -1174,8 +1174,8 @@ LPPL_YYSTYPE PrimOpVariantDomino_EM_YY
         aplTypeRht2 = aToSimple[aplTypeRht];
 
         // If the demoted type is not a simple integer or float, ...
-        if (!(IsSimpleInt (aplTypeRht2)
-           || IsSimpleFlt (aplTypeRht2)))
+        if (!(IsRealBIA (aplTypeRht2)
+           || IsRealFlt (aplTypeRht2)))
             goto RIGHT_DOMAIN_EXIT;
 
         // Allocate new and Demote the right arg

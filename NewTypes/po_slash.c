@@ -642,7 +642,7 @@ RESTART_ALLOC:
     {
 RESTART_EXCEPTION_APA:
         // If the result is integer
-        if (IsSimpleInt (aplTypeRes))
+        if (IsRealBIA (aplTypeRes))
         {
             // Loop through the right arg calling the
             //   function strand between data, storing in the
@@ -683,7 +683,7 @@ RESTART_EXCEPTION_APA:
                                     MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                                     if (IsSimpleNum (aplTypeRes)
-                                     && !IsSimpleFlt (aplTypeRes))
+                                     && !IsRealFlt (aplTypeRes))
                                     {
                                         // It's now a FLOAT result
                                         aplTypeRes = ARRAY_FLOAT;
@@ -760,7 +760,7 @@ RESTART_EXCEPTION_APA:
                                     MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                                     if (IsSimpleNum (aplTypeRes)
-                                     && !IsSimpleFlt (aplTypeRes))
+                                     && !IsRealFlt (aplTypeRes))
                                     {
                                         // It's now a FLOAT result
                                         aplTypeRes = ARRAY_FLOAT;
@@ -837,7 +837,7 @@ RESTART_EXCEPTION_APA:
                                     MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                                     if (IsSimpleNum (aplTypeRes)
-                                     && !IsSimpleFlt (aplTypeRes))
+                                     && !IsRealFlt (aplTypeRes))
                                     {
                                         // It's now a FLOAT result
                                         aplTypeRes = ARRAY_FLOAT;
@@ -1159,8 +1159,8 @@ RESTART_EXCEPTION:
                                           apaMulRht,        // APA multiplier (if needed)
                                          &tkRhtArg);        // Ptr to token in which to place the value
                 // In case we blew up, check to see if we must blow up tkRhtArg
-                if (IsSimpleFlt (aplTypeRes)
-                 && IsSimpleInt (aplTypeRht))
+                if (IsRealFlt (aplTypeRes)
+                 && IsRealBIA (aplTypeRht))
                 {
                     // Change the immediate type & value
                     tkRhtArg.tkFlags.ImmType = IMMTYPE_FLOAT;
@@ -2370,8 +2370,8 @@ RESTART_EXCEPTION:
                                               apaMulRht,        // APA multiplier (if needed)
                                              &tkRhtArg);        // Ptr to token in which to place the value
                     // In case we blew up, check to see if we must blow up tkRhtArg
-                    if (IsSimpleFlt (aplTypeRes)
-                     && IsSimpleInt (aplTypeRht))
+                    if (IsRealFlt (aplTypeRes)
+                     && IsRealBIA (aplTypeRht))
                     {
                         // Change the immediate type & value
                         tkRhtArg.tkFlags.ImmType = IMMTYPE_FLOAT;

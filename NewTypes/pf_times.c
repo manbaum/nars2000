@@ -228,7 +228,7 @@ APLSTYPE PrimSpecTimesStorageTypeMon
     aplTypeRes = *lpaplTypeRht;
 
     // Except that FLOAT and APA become INT
-    if (IsSimpleFlt (aplTypeRes)
+    if (IsRealFlt (aplTypeRes)
      || IsSimpleAPA (aplTypeRes))
         return ARRAY_INT;
 

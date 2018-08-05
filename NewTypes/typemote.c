@@ -822,8 +822,8 @@ UNLOCK_EXIT:
                             aplTypeRes = aTypePromote[aplTypeRes][aplTypeSub];
 
                             // Check for no demotion
-                            if (!IsHCRat (aplTypeRes)
-                             && !IsHCVfp (aplTypeRes))
+                            if (!IsAnyRat (aplTypeRes)
+                             && !IsAnyVfp (aplTypeRes))
                                 goto NORMAL_EXIT;
                             break;
 
@@ -2694,7 +2694,7 @@ UBOOL TypePromoteGlb_EM
                         // Save a zero STE as the prototype
                         *((LPAPLHETERO) lpMemRes)++ =
                           MakeGlbEntry_EM (aplTypeArg,          // Array Type to use (see ARRAY_TYPES)
-                  (IsHCRat (aplTypeArg) ? (LPVOID) &mpqZero
+                 (IsAnyRat (aplTypeArg) ? (LPVOID) &mpqZero
                                         : (LPVOID) &mpfZero),   // Prt to value to use
                                            TRUE,                // TRUE iff we should initialize the target first
                                            lptkFunc);           // Ptr to token to use in case of error
@@ -17017,8 +17017,8 @@ UBOOL SimpleDemote
     AttrsOfGlb (hGlbArg, &aplTypeArg, &aplNELMArg, &aplRankArg, NULL);
 
     // Check for DOMAIN ERROR or type demotion
-    if (!(IsSimpleInt (aplTypeArg)
-       || IsSimpleFlt (aplTypeArg)))
+    if (!(IsRealBIA (aplTypeArg)
+       || IsRealFlt (aplTypeArg)))
     {
         APLSTYPE aplTypeArg2;           // Base storage type
         UBOOL    bRet;                  // TRUE iff the arg is demotable
@@ -17027,8 +17027,8 @@ UBOOL SimpleDemote
         aplTypeArg2 = aToSimple[aplTypeArg];
 
         // If the demoted type is not a simple integer or float, ...
-        if (!(IsSimpleInt (aplTypeArg2)
-           || IsSimpleFlt (aplTypeArg2)))
+        if (!(IsRealBIA (aplTypeArg2)
+           || IsRealFlt (aplTypeArg2)))
             return FALSE;
 
         // Convert tiny FLTs to zero
@@ -17089,7 +17089,7 @@ void ConvertTinyFlt2Zero
     aplTypeBase = aToSimple[aplTypeArg];
 
     // If it's not a FLT, ...
-    if (!IsSimpleFlt (aplTypeBase))
+    if (!IsRealFlt (aplTypeBase))
         return;
 
     // Calculate the arg HC dimension (1, 2, 4, 8)

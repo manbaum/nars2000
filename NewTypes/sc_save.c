@@ -2223,7 +2223,7 @@ LPAPLCHAR AppendArrayHeader
         // If common VFP array precision requested,
         //   and the array is non-empty, ...
         if (lpuCommPrec NE NULL
-         && IsHCVfp (lpHeader->ArrType)
+         && IsAnyVfp (lpHeader->ArrType)
          && !IsEmpty (aplNELMObj))
         {
             LPAPLVFP lpaplVfp;

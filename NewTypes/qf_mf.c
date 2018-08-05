@@ -302,7 +302,7 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
         // Lock the memory to get a ptr to it
         lpMemMonInfo = MyGlobalLock (hGlbMonInfo);
 
-        if (IsSimpleInt (aplTypeRes))
+        if (IsRealBIA (aplTypeRes))
             // Copy the function counter
             lpMemResUnion->MI_Int[0].Count = lpMemMonInfo[0].Count;
         else
@@ -318,7 +318,7 @@ LPPL_YYSTYPE SysFnMonMF_EM_YY
 
         // Copy the data to the result
         for (uCnt = 1; uCnt < aplRowsRes; uCnt++)
-        if (IsSimpleInt (aplTypeRes))
+        if (IsRealBIA (aplTypeRes))
         {
             lpMemResUnion->MI_Int[uCnt].IncSubFns = lpMemMonInfo[uCnt].IncSubFns;
 ////////////lpMemResUnion->MI_Int[uCnt].ExcSubFns = lpMemMonInfo[uCnt].ExcSubFns;

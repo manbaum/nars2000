@@ -1023,7 +1023,7 @@ UBOOL PrimIdentFnScalarCommon_EM
                             FillMemory (lpMemRes2, (APLU3264) RoundUpBitsToBytes (aplNELMRes2), 0xFF);
                     } else
                     {
-                        Assert (IsSimpleFlt (aplTypeRes2));
+                        Assert (IsRealFlt (aplTypeRes2));
 
                         for (uRht = 0; uRht < aplNELMRes2; uRht++)
                             *((LPAPLFLOAT) lpMemRes2)++ = lpPrimIdent->fIdentElem;
@@ -1298,7 +1298,7 @@ RESTART_EXCEPTION_VARIMMED:
                         Assert (!IsGlbNum (aplTypeRes));
 
                         if (IsSimpleNum (aplTypeRes)
-                         && !IsSimpleFlt (aplTypeRes))
+                         && !IsRealFlt (aplTypeRes))
                         {
                             // It's now a FLOAT result
                             aplTypeRes = ARRAY_FLOAT;
@@ -1595,7 +1595,7 @@ HGLOBAL PrimFnMonGlb_EM
                     Assert (!IsGlbNum (aplTypeRes));
 
                     if (IsSimpleNum (aplTypeRes)
-                     && !IsSimpleFlt (aplTypeRes))
+                     && !IsRealFlt (aplTypeRes))
                     {
                         // It's now a FLOAT result
                         aplTypeRes = ARRAY_FLOAT;
@@ -2164,7 +2164,7 @@ RESTART_EXCEPTION:
                             goto DOMAIN_EXIT;
 
                         // Do we need to promote the result type from HCxI to HCxF as in {floor},{NaN}  ?
-                        if (IsSimpleInt (aToSimple[aplTypeRes]))
+                        if (IsRealBIA (aToSimple[aplTypeRes]))
                             RaiseException (EXCEPTION_RESULT_FLOAT + 2 * iHCDimIndex, 0, 0, NULL);
 
                         // Copy the right arg to the result
@@ -6068,8 +6068,8 @@ RESTART_EXCEPTION:
                 case EXCEPTION_RESULT_VFP:
                     MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                    if (IsNumeric (aplTypeRes)
-                     && !IsVfp    (aplTypeRes))
+                    if (IsNumeric  (aplTypeRes)
+                     && !IsRealVfp (aplTypeRes))
                     {
                         // It's now a VFP result
                         aplTypeRes = ARRAY_VFP;
@@ -6582,10 +6582,10 @@ WSFULL_EXIT:
 //***************************************************************************
 
 /// #define TranslateResArgToPSFIndex(aplTypeRes,aplTypeArg)  \
-///    ((2 * IsHCFlt (aplTypeRes))                            \
-///   +      IsHCFlt (aplTypeArg)                             \
-///   +  4 * IsHCRat (aplTypeArg)                             \
-///   +  5 * IsHCVfp (aplTypeArg))
+///    ((2 * IsAnyFlt (aplTypeRes))                           \
+///   +      IsAnyFlt (aplTypeArg)                            \
+///   +  4 * IsAnyRat (aplTypeArg)                            \
+///   +  5 * IsAnyVfp (aplTypeArg))
 
 UINT TranslateResArgToPSFIndex
     (APLSTYPE aplTypeRes,
@@ -6599,23 +6599,23 @@ UINT TranslateResArgToPSFIndex
         case ARRAY_HC2I:
         case ARRAY_HC4I:
         case ARRAY_HC8I:
-            Assert (IsHCInt (aplTypeCom)
-                 || IsHCFlt (aplTypeCom));
-            return 0 + IsHCFlt (aplTypeCom);    // [0, 1]
+            Assert (IsAnyInt (aplTypeCom)
+                 || IsAnyFlt (aplTypeCom));
+            return 0 + IsAnyFlt (aplTypeCom);    // [0, 1]
 
         case ARRAY_FLOAT:
         case ARRAY_HC2F:
         case ARRAY_HC4F:
         case ARRAY_HC8F:
-            Assert (IsHCInt (aplTypeCom)
-                 || IsHCFlt (aplTypeCom));
-            return 2 + IsHCFlt (aplTypeCom);    // [2, 3]
+            Assert (IsAnyInt (aplTypeCom)
+                 || IsAnyFlt (aplTypeCom));
+            return 2 + IsAnyFlt (aplTypeCom);    // [2, 3]
 
         case ARRAY_RAT:
         case ARRAY_HC2R:
         case ARRAY_HC4R:
         case ARRAY_HC8R:
-            Assert (IsHCRat (aplTypeCom));
+            Assert (IsAnyRat (aplTypeCom));
 
             return 4;                           // [4, 4]
 
@@ -6624,12 +6624,12 @@ UINT TranslateResArgToPSFIndex
         case ARRAY_HC4V:
         case ARRAY_HC8V:
             // If the common type is FLT, ...
-            if (IsHCFlt (aplTypeCom))
+            if (IsAnyFlt (aplTypeCom))
                 return 3;                       // [3]
 
-            Assert (IsHCRat (aplTypeCom)
-                 || IsHCVfp (aplTypeCom));
-            return 5 + IsHCVfp (aplTypeCom);    // [5, 6]
+            Assert (IsAnyRat (aplTypeCom)
+                 || IsAnyVfp (aplTypeCom));
+            return 5 + IsAnyVfp (aplTypeCom);   // [5, 6]
 
         case ARRAY_BOOL:
         defstop
@@ -6652,8 +6652,8 @@ LPATISAT TranslateTypesToMonPSFIndex
 
     Assert (!IsSimpleBool (aplTypeRes));
 
-    // If the result is FLT/VFP and the arg is HC, ...
-    if ((IsSimpleFlt (aplTypeRes) || IsVfp (aplTypeRes))
+    // If the result is Real-only FLT/VFP and the arg is HC, ...
+    if ((IsRealFlt (aplTypeRes) || IsRealVfp (aplTypeRes))
      && IsHCAny (aplTypeRht))
     {
         // The index below is into the Table starting at FisHC2I through VisHC8V

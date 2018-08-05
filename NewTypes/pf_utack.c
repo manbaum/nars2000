@@ -493,7 +493,7 @@ RESTART_EXCEPTION:
                             case EXCEPTION_RESULT_FLOAT:
                                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                                if (!IsSimpleFlt (aplTypeRes))
+                                if (!IsRealFlt (aplTypeRes))
                                 {
                                     aplTypeRes = ARRAY_FLOAT;
 
@@ -581,7 +581,7 @@ RESTART_EXCEPTION:
                             case EXCEPTION_RESULT_HC2F:
                                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                                if (!IsSimpleFlt (aplTypeRes))
+                                if (!IsRealFlt (aplTypeRes))
                                 {
                                     aplTypeRes = ARRAY_HC2F;
 
@@ -629,7 +629,7 @@ RESTART_EXCEPTION:
                             case EXCEPTION_RESULT_HC4F:
                                 MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                                if (!IsSimpleFlt (aplTypeRes))
+                                if (!IsRealFlt (aplTypeRes))
                                 {
                                     aplTypeRes = ARRAY_HC4F;
 
@@ -678,7 +678,7 @@ RESTART_EXCEPTION:
 ////                        case EXCEPTION_RESULT_HC8F:
 ////                            MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 ////
-////                            if (!IsSimpleFlt (aplTypeRes))
+////                            if (!IsRealFlt (aplTypeRes))
 ////                            {
 ////                                aplTypeRes = ARRAY_HC8F;
 ////

@@ -193,11 +193,11 @@ LPPL_YYSTYPE PrimFnMonPi_EM_YY
     aplTypeRes = aToSimple[aplTypeRht];
 
     // Set the result type (FLT -> INT or VFP -> RAT)
-    if (IsSimpleFlt (aplTypeRes))
+    if (IsRealFlt (aplTypeRes))
         // Set to INT
         aplTypeRes = ARRAY_INT;
     else
-    if (IsVfp (aplTypeRes))
+    if (IsRealVfp (aplTypeRes))
         // Set to RAT
         aplTypeRes = ARRAY_RAT;
 
@@ -501,11 +501,11 @@ LPPL_YYSTYPE PrimFnDydPi_EM_YY
     aplTypeRes = aToSimple[aplTypeRht];
 
     // Set the result type (FLT -> INT or VFP -> RAT)
-    if (IsSimpleFlt (aplTypeRes))
+    if (IsRealFlt (aplTypeRes))
         // Set to INT
         aplTypeRes = ARRAY_INT;
     else
-    if (IsVfp (aplTypeRes))
+    if (IsRealVfp (aplTypeRes))
         // Set to RAT
         aplTypeRes = ARRAY_RAT;
 

@@ -3351,7 +3351,7 @@ RESTART_INNERPROD_RES:
                         for (uRes = 0; uRes < aplNELMRes; uRes++)
                         {
                             // Initialize the result to 0/1
-                            mphcxr_init (lpMemRes, iHCDimRes);
+                            mphcXr_init (lpMemRes, iHCDimRes);
 
                             // Set the real part of the result
                             mpq_set_ui (&((LPAPLHC8R) lpMemRes)->parts[0], lpPrimIdentLft->bIdentElem, 1);
@@ -3369,7 +3369,7 @@ RESTART_INNERPROD_RES:
                         for (uRes = 0; uRes < aplNELMRes; uRes++)
                         {
                             // Initialize the result to 0
-                            mphcxv_init0 (lpMemRes, iHCDimRes);
+                            mphcXv_init0 (lpMemRes, iHCDimRes);
 
                             // Set the real part of the result
                             mpfr_set_ui (&((LPAPLHC8V) lpMemRes)->parts[0], lpPrimIdentLft->bIdentElem, MPFR_RNDN);
@@ -3412,7 +3412,7 @@ RESTART_INNERPROD_RES:
                         for (uRes = 0; uRes < aplNELMRes; uRes++)
                         {
                             // Initialize the result to 0
-                            mphcxv_init0 (lpMemRes, iHCDimRes);
+                            mphcXv_init0 (lpMemRes, iHCDimRes);
 
                             // Set the real part of the result
                             mpfr_set_d (&((LPAPLHC8V) lpMemRes)->parts[0], lpPrimIdentLft->fIdentElem, MPFR_RNDN);

@@ -461,7 +461,7 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
         aplTypeRes = aplTypeRht;
 
     // Promote the result storage type as appropriate (HCxI -> HCxF)
-    if (IsHCInt (aplTypeRes))
+    if (IsAnyInt (aplTypeRes))
         aplTypeRes++;           // Relying on order of ARRAY_TYPES
 
     // If the right arg is a singleton, the result is an immediate or scalar global numeric,
@@ -1899,7 +1899,7 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
         aplTypeRes = ARRAY_FLOAT;
     else
     // Promote the result storage type as appropriate
-    if (IsHCInt (aplTypeRes))
+    if (IsAnyInt (aplTypeRes))
         aplTypeRes++;           // Relying on order of ARRAY_TYPES
 
     // Translate the array type to sizeof

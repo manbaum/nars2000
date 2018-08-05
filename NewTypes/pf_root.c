@@ -774,7 +774,7 @@ APLHC8V SqrtHCxV_RE
     if (IsMpf0 (&aplIMag) || mpfr_nan_p (&aplIMag))
     {
         // Initialize to 0
-        mphcxv_init0 (&aplRes, iHCDimRes);
+        mphcXv_init0 (&aplRes, iHCDimRes);
 
         // If the real part of the right arg is negative, ...
         if (mpfr_sgn (&aplRht.parts[0]) < 0)
@@ -789,7 +789,7 @@ APLHC8V SqrtHCxV_RE
             } else
             {
                 // Set the real part to 0
-////////////////mpfr_set_d (&aplRes.parts[0], 0.0, MPFR_RNDN);  // Already done in mphcxv_init0
+////////////////mpfr_set_d (&aplRes.parts[0], 0.0, MPFR_RNDN);  // Already done in mphcXv_init0
 
                 // Calculate the absolute value of the right arg real part
                 mpfr_abs (&aplV, &aplRht.parts[0], MPFR_RNDN);

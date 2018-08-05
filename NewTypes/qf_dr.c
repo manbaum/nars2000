@@ -1208,7 +1208,7 @@ LPPL_YYSTYPE SysFnDR_Show_EM_YY
 
     // If the array is any kind of VFP, ...
     //   and it's non-empty, ...
-    if (IsHCVfp (aplTypeRht)
+    if (IsAnyVfp (aplTypeRht)
      && !IsEmpty (aplNELMRht))
     {
         LPAPLVFP lpaplVfp;          // Ptr to VFP value
@@ -1351,7 +1351,7 @@ void SysFnDR_ConvertFloatToChar
 {
     APLFLOAT aplFloatRht;               // Temporary float
 
-    if (IsSimpleFlt (aplTypeRht))
+    if (IsRealFlt (aplTypeRht))
         // Copy the float
         aplFloatRht = *(LPAPLFLOAT) &aplLongestRht;
     else
@@ -1395,7 +1395,7 @@ void SysFnDR_ConvertIntToChar
 {
     APLINT aplIntRht;                   // Temporary integer
 
-    if (IsSimpleFlt (aplTypeRht))
+    if (IsRealFlt (aplTypeRht))
     {
         // If the value is float, convert it to integer
         aplIntRht = (APLINT) *(LPAPLFLOAT) &aplLongestRht;

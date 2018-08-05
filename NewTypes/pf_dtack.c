@@ -403,7 +403,7 @@ LPPL_YYSTYPE PrimFnDydDownTack_EM_YY
     else
     {
         // Check for exceptions
-        if ((IsAll2s (lpMemHdrLft) && IsSimpleInt (aplTypeRht))
+        if ((IsAll2s (lpMemHdrLft) && IsRealBIA (aplTypeRht))
          || (lpMemHdrLft EQ NULL && aplLongestLft EQ 2 && !IsGlbNum (aplTypeRht)))
             aplTypeRes = ARRAY_BOOL;
     } // End IF/ELSE
@@ -663,7 +663,7 @@ RESTART_EXCEPTION:
                         case EXCEPTION_RESULT_HC4F:
                             MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                            if (!IsHCFlt (aplTypeRes))
+                            if (!IsAnyFlt (aplTypeRes))
                             {
                                 aplTypeRes = TranslateExceptionCodeToArrayType (exCode);
 
@@ -688,7 +688,7 @@ RESTART_EXCEPTION:
                         case EXCEPTION_RESULT_HC4V:
                             MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                            if (!IsHCVfp (aplTypeRes))
+                            if (!IsAnyVfp (aplTypeRes))
                             {
                                 aplTypeRes = TranslateExceptionCodeToArrayType (exCode);
 
@@ -721,7 +721,7 @@ RESTART_EXCEPTION:
             } // End FOR
 
             // Assume the result is VFP-like
-            lpmphcXY_init = mphcxv_init0;
+            lpmphcXY_init = mphcXv_init0;
 
             // Split cases based upon the result storage type
             switch (aplTypeRes)
@@ -739,7 +739,7 @@ RESTART_EXCEPTION:
                 case ARRAY_HC2R:
                 case ARRAY_HC4R:
                     // Use RAT-like initializer
-                    lpmphcXY_init = mphcxr_init;
+                    lpmphcXY_init = mphcXr_init;
 
                     // Fall through to common code
 

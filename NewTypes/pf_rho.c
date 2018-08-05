@@ -482,7 +482,7 @@ LPPL_YYSTYPE PrimFnDydRho_EM_YY
     //***************************************************************
     // Handle APAs specially
     //***************************************************************
-    if (IsSimpleInt (aplTypeRht)    // If right arg is simple integer (BOOL, INT, APA),
+    if (IsRealBIA (aplTypeRht)    // If right arg is simple integer (BOOL, INT, APA),
      && IsSingleton (aplNELMRht)    //   and a singleton, ...
      && IsMultiNELM (aplNELMRes))   //   and the result has multiple elements
     {
@@ -767,7 +767,7 @@ UBOOL PrimFnDydRhoRhtCopyData
                 {
                     APLFLOAT aplFloat;
 
-                    Assert (IsSimpleFlt (aplTypeRes));
+                    Assert (IsRealFlt (aplTypeRes));
 
                     // Copy the single value to avoid recalling it everytime
                     aplFloat = lptkRhtArg->tkData.tkSym->stData.stFloat;
@@ -874,7 +874,7 @@ UBOOL PrimFnDydRhoRhtCopyData
                 {
                     APLFLOAT aplFloat;
 
-                    Assert (IsSimpleFlt (aplTypeRes));
+                    Assert (IsRealFlt (aplTypeRes));
 
                     // Copy the single value to avoid recalling it everytime
                     aplFloat = lptkRhtArg->tkData.tkFloat;

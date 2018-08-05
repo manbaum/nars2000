@@ -530,7 +530,7 @@ LPPL_YYSTYPE SysFnDydTF1_EM_YY
                                                  NULL,              // Ptr to result LPSYMENTRY or HGLOBAL (may be NULL)
                                                 &aplLongestItm,     // Ptr to result immediate value (may be NULL)
                                                  NULL);             // Ptr to result immediate type (see IMM_TYPES) (may be NULL)
-                                if (IsSimpleInt (aplTypeItm))
+                                if (IsRealBIA (aplTypeItm))
                                     lpwszTemp =
                                       FormatAplIntFC (lpwszTemp,                // Ptr to output save area
                                                       aplLongestItm,            // The value to format

@@ -455,7 +455,7 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
     //   and the result is integer-like, ...
     if (IsSingleton (aplNELMRht)
      && !IsEmpty (aplNELMRes)
-     && IsSimpleInt (aplTypeRes))
+     && IsRealBIA (aplTypeRes))
         // Store it in an APA
         aplTypeRes = ARRAY_APA;
 

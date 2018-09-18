@@ -40,10 +40,6 @@ LPPL_YYSTYPE PrimOpJotDot_EM_YY
 {
     Assert (lpYYFcnStrOpr->tkToken.tkData.tkChar EQ INDEX_JOTDOT);
 
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (&lpYYFcnStrOpr->tkToken APPEND_NAME_ARG);
-
     // Split cases based upon monadic or dyadic derived function
     if (lptkLftArg EQ NULL)
         return PrimOpMonJotDot_EM_YY (lpYYFcnStrOpr,    // Ptr to operator function strand
@@ -93,7 +89,8 @@ LPPL_YYSTYPE PrimProtoOpJotDot_EM_YY
 //***************************************************************************
 //  $PrimIdentOpJotDot_EM_YY
 //
-//  Generate an identity element for the primitive operator dyadic JotDot
+//  Generate an identity element for the dyadic derived function from the
+//    primitive operator JotDot
 //***************************************************************************
 
 LPPL_YYSTYPE PrimIdentOpJotDot_EM_YY
@@ -241,7 +238,9 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
                       aplTypeRht,           // Right ...
                       aplTypeNew,           // New result   ...
                       aplTypeCom = ARRAY_ERROR, // Common ...
-                      aplTypeRes;           // Result   ...
+                      aplTypeRes,           // Result   ...
+                      aplTypeLft2,          // Left arg base storage type
+                      aplTypeRht2;          // Right ...
     APLNELM           aplNELMLft,           // Left arg NELM
                       aplNELMRht,           // Right ...
                       aplNELMRes;           // Result   ...
@@ -255,7 +254,9 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
                       uValErrCnt = 0;       // VALUE ERROR counter
     HGLOBAL           hGlbLft = NULL,       // Left arg global memory handle
                       hGlbRht = NULL,       // Right ...
-                      hGlbRes = NULL;       // Result   ...
+                      hGlbRes = NULL,       // Result   ...
+                      hGlbLft2 = NULL,      // Temp handle for type demotion
+                      hGlbRht2 = NULL;      // ...
     LPVARARRAY_HEADER lpMemHdrLft = NULL,   // Ptr to left arg header
                       lpMemHdrRht = NULL,   // ...    right
                       lpMemHdrRes = NULL,   // ...    result
@@ -263,7 +264,8 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
     LPVOID            lpMemLft,             // Ptr to left arg global memory
                       lpMemRht,             // Ptr to right ...
                       lpMemRes;             // Ptr to result   ...
-    UBOOL             bRet = TRUE;          // TRUE iff result is valid
+    UBOOL             bRet = TRUE,          // TRUE iff result is valid
+                      bRealOnly = FALSE;    // TRUE iff the args must be demoted to real
     TOKEN             tkLftArg = {0},       // Left arg token
                       tkRhtArg = {0};       // Right ...
     IMM_TYPES         immType,              // Immediate type
@@ -360,9 +362,26 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
                                                    &lpYYFcnStrRht->tkToken,
                                                     aplNELMRht,
                                                    &aplTypeRht);
+        if (IsRealType (aplTypeRes))
+        {
+            // Calculate the left arg base storage type
+            aplTypeLft2 = aToSimple[aplTypeLft];
+
+            // Calculate the right arg base storage type
+            aplTypeRht2 = aToSimple[aplTypeRht];
+
+            // Set the result storage type to the base type
+            aplTypeRes = (*lpPrimSpec->StorageTypeDyd) (aplNELMLft,
+                                                       &aplTypeLft2,
+                                                       &lpYYFcnStrRht->tkToken,
+                                                        aplNELMRht,
+                                                       &aplTypeRht2);
+            // Mark as requiring type demotion of one or both args
+            bRealOnly = TRUE;
+        } else
         if (IsNonceType (aplTypeRes))
             goto NONCE_EXIT;
-
+        else
         if (IsErrorType (aplTypeRes))
             goto DOMAIN_EXIT;
         // For the moment, APA is treated as INT
@@ -405,6 +424,68 @@ RESTART_JOTDOT:
     // Get left and right arg's global ptrs
     GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
     GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
+
+    // If one or both args must be demoted, ...
+    if (bRealOnly)
+    {
+        // If the left arg is HC, ...
+        if (IsHCAny (aplTypeLft))
+        {
+            // Allocate new and Demote the left arg
+            hGlbLft2 = AllocateDemote (aplTypeLft2,         // Base storage type
+                                       hGlbLft,             // Left arg global memory handle (may be NULL)
+                                       NULL,                // Ptr to ALLTYPES values (may be NULL)
+                                       aplTypeLft,          // ... storage type
+                                       aplNELMLft,          // ... NELM
+                                       aplRankLft,          // ... rank
+                                      &bRet);               // TRUE iff the result is not a WS FULL
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
+
+            // Check for error
+            if (!bRet)
+                goto LEFT_DOMAIN_EXIT;
+            if (hGlbLft2 EQ NULL)
+                goto WSFULL_EXIT;
+            // Save as the new global handle and storage type
+            hGlbLft    = hGlbLft2;
+            aplTypeLft = aplTypeLft2;
+
+            // Lock the memory to get a ptr to it
+            lpMemHdrLft = MyGlobalLockVar (hGlbLft);
+
+            // Note that we need to delete the left arg (hGlbLft2) on exit
+        } // End IF
+
+        // If the right arg is HC, ...
+        if (IsHCAny (aplTypeRht))
+        {
+            // Allocate new and Demote the right arg
+            hGlbRht2 = AllocateDemote (aplTypeRht2,         // Base storage type
+                                       hGlbRht,             // Right arg global memory handle (may be NULL
+                                       NULL,                // Ptr to ALLTYPES values (may be NULL)
+                                       aplTypeRht,          // ... storage type
+                                       aplNELMRht,          // ... NELM
+                                       aplRankRht,          // ... rank
+                                      &bRet);               // TRUE iff the result is not a WS FULL
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
+
+            // Check for error
+            if (!bRet)
+                goto RIGHT_DOMAIN_EXIT;
+            if (hGlbRht2 EQ NULL)
+                goto WSFULL_EXIT;
+            // Save as the new global handle and storage type
+            hGlbRht    = hGlbRht2;
+            aplTypeRht = aplTypeRht2;
+
+            // Lock the memory to get a ptr to it
+            lpMemHdrRht = MyGlobalLockVar (hGlbRht);
+
+            // Note that we need to delete the right arg (hGlbRht2) on exit
+        } // End IF
+    } // End IF
 
     // Skip over the header to the dimensions
     lpMemRes = VarArrayBaseToDim (lpMemHdrRes);
@@ -592,6 +673,13 @@ RESTART_JOTDOT:
 
                         // We no longer need this resource
                         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+
+                        hGlbRes = GetGlbHandle (&tkRes);
+                        if (hGlbRes NE NULL)
+                        {
+                            // We no longer need this resource
+                            FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+                        } // End IF
 
                         if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
                         {
@@ -861,6 +949,16 @@ DOMAIN_EXIT:
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
 
+LEFT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
 RIGHT_OPERAND_NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
@@ -897,6 +995,20 @@ ERROR_EXIT:
         FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
     } // End IF
 NORMAL_EXIT:
+    // If we allocated to demote data, ...
+    if (hGlbLft2 NE NULL)
+    {
+        // We no longer need this resource
+        FreeResultGlobalIncompleteVar (hGlbLft2); hGlbLft2 = NULL;
+    } // End IF
+
+    // If we allocated to demote data, ...
+    if (hGlbRht2 NE NULL)
+    {
+        // We no longer need this resource
+        FreeResultGlobalIncompleteVar (hGlbRht2); hGlbRht2 = NULL;
+    } // End IF
+
     if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
     {
         // We no longer need this ptr

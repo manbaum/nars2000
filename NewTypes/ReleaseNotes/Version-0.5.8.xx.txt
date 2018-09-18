@@ -1,6 +1,20 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1914 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Memory Leak In Outer Product When Type Promoting
+
+Directory branches/bsmith/NewTypes:
+
+PO_JOTDOT.C:
+  Delete list test.
+  Improve comments.
+  In <PrimOpDydJotDotCommon_EM_YY>, handle result storage type of Real Only.
+  In <PrimOpDydJotDotCommon_EM_YY>, fix memory leak when type promoting.
+
+
 Build #1913 -- Version 0.5.8.xx
 -------------------------------
 

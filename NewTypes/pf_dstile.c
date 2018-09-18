@@ -149,7 +149,7 @@ PRIMSPEC PrimSpecDownStile = {
     NULL,   // &PrimFnDydDownStileHC8VisHC8RvHC8R, -- Can't happen w/DownStile
     NULL,   // &PrimFnDydDownStileHC8VisHC8VvHC8V, -- Can't happen w/DownStile
 
-    // Boolean chunk functions
+    // Monadic Boolean chunk functions
     NULL,   // &PrimFnMonDownStileB64isB64, -- Can't happen w/DownStile
     NULL,   // &PrimFnMonDownStileB32isB32, -- Can't happen w/DownStile
     NULL,   // &PrimFnMonDownStileB16isB16, -- Can't happen w/DownStile
@@ -782,7 +782,7 @@ APLHC2F FloorHC2F
                 aplIntFlr -= signumint (aplIntFlr);
 
             // Save half the value
-            aplTmp2.parts[i] = (APLFLOAT) (aplIntFlr / 2);
+            aplTmp2.parts[i] = ((APLFLOAT) aplIntFlr) / 2;
         } // End FOR
 
         //***************************************************************************
@@ -794,7 +794,8 @@ APLHC2F FloorHC2F
         aplDst2 = DistHC2F (aplRht, aplTmp2);
 
         // Use the one of smaller distance
-        aplFlr = (aplDst1 < aplDst2) ? aplTmp1 : aplTmp2;
+        //   with ties going to the integer coordinates
+        aplFlr = (aplDst1 <= aplDst2) ? aplTmp1 : aplTmp2;
     } else
     {
         // Loop through all of the parts
@@ -888,7 +889,7 @@ APLHC4F FloorHC4F
             aplIntFlr -= signumint (aplIntFlr);
 
         // Save half the value
-        aplTmp2.parts[i] = (APLFLOAT) (aplIntFlr / 2);
+        aplTmp2.parts[i] = ((APLFLOAT) aplIntFlr) / 2;
     } // End FOR
 
     //***************************************************************************
@@ -900,7 +901,8 @@ APLHC4F FloorHC4F
     aplDst2 = DistHC4F (aplRht, aplTmp2);
 
     // Use the one of smaller distance
-    return (aplDst1 < aplDst2) ? aplTmp1 : aplTmp2;
+    //   with ties going to the integer coordinates
+    return (aplDst1 <= aplDst2) ? aplTmp1 : aplTmp2;
 } // End FloorHC4F
 
 
@@ -918,10 +920,10 @@ APLHC2R FloorHC2R
              aplFrc = {0},
              aplTmp1,
              aplTmp2 = {0};
-    APLHC1R  aplSum,
-             aplRatFlr;
-    APLHC1V  aplDst1,                   // Distance between aplRht and aplTmp1
-             aplDst2;                   // ...                         aplTmp2
+    APLHC1R  aplSum = {0},
+             aplRatFlr = {0};
+    APLHC1V  aplDst1 = {0},             // Distance between aplRht and aplTmp1
+             aplDst2 = {0};             // ...                         aplTmp2
     APLINT   aplIntFlr;
     APLFLOAT fQuadCT = GetQuadCT ();
 
@@ -979,7 +981,7 @@ APLHC2R FloorHC2R
                 aplIntFlr -= signumint (aplIntFlr);
 
             // Save half the value
-            mpq_set_sx (&aplTmp2.parts[i], aplIntFlr / 2, 1);
+            mpq_set_sx (&aplTmp2.parts[i], aplIntFlr, 2);
         } // End FOR
 
         //***************************************************************************
@@ -991,7 +993,8 @@ APLHC2R FloorHC2R
         aplDst2 = DistHC2R (aplRht, aplTmp2);
 
         // Use the one of smaller distance
-        if (mpfr_cmp (&aplDst1, &aplDst2) < 0)
+        //   with ties going to the integer coordinates
+        if (mpfr_cmp (&aplDst1, &aplDst2) <= 0)
         {
             mphc2r_set   (&aplFlr, &aplTmp1);
             Myhc2r_clear (&aplTmp2);
@@ -1066,13 +1069,13 @@ APLHC4R FloorHC4R
 {
     int      i;
     UBOOL    bRet;
-    APLHC4R  aplTmp1,
+    APLHC4R  aplTmp1 = {0},
              aplTmp2 = {0},
              aplRes = {0};
-    APLHC1R  aplSum,
-             aplRatFlr;
-    APLHC1V  aplDst1,                   // Distance between aplRht and aplTmp1
-             aplDst2;                   // ...                         aplTmp2
+    APLHC1R  aplSum = {0},
+             aplRatFlr = {0};
+    APLHC1V  aplDst1 = {0},             // Distance between aplRht and aplTmp1
+             aplDst2 = {0};             // ...                         aplTmp2
     APLINT   aplIntFlr;
 
     // No exceptions in this code
@@ -1126,7 +1129,7 @@ APLHC4R FloorHC4R
             aplIntFlr -= signumint (aplIntFlr);
 
         // Save half the value
-        mpq_set_sx (&aplTmp2.parts[i], aplIntFlr / 2, 1);
+        mpq_set_sx (&aplTmp2.parts[i], aplIntFlr, 2);
     } // End FOR
 
     //***************************************************************************
@@ -1138,7 +1141,8 @@ APLHC4R FloorHC4R
     aplDst2 = DistHC4R (aplRht, aplTmp2);
 
     // Choose the smaller distance
-    if (mpfr_cmp (&aplDst1, &aplDst2) < 0)
+    //   with ties going to the integer coordinates
+    if (mpfr_cmp (&aplDst1, &aplDst2) <= 0)
     {
         mphc4r_init_set (&aplRes, &aplTmp1);
         Myhc4r_clear    (&aplTmp2);
@@ -1167,12 +1171,12 @@ APLHC2V FloorHC2V
     UBOOL    bRet;
     APLHC2V  aplFlr = {0},
              aplFrc = {0},
-             aplTmp1,
+             aplTmp1 = {0},
              aplTmp2 = {0};
-    APLHC1V  aplSum,
-             aplVfpFlr;
-    APLHC1V  aplDst1,                   // Distance between aplRht and aplTmp1
-             aplDst2;                   // ...                         aplTmp2
+    APLHC1V  aplSum = {0},
+             aplVfpFlr = {0};
+    APLHC1V  aplDst1 = {0},             // Distance between aplRht and aplTmp1
+             aplDst2 = {0};             // ...                         aplTmp2
     APLINT   aplIntFlr;
     APLFLOAT fQuadCT = GetQuadCT ();
 
@@ -1230,7 +1234,7 @@ APLHC2V FloorHC2V
                 aplIntFlr -= signumint (aplIntFlr);
 
             // Save half the value
-            mpfr_set_sx (&aplTmp2.parts[i], aplIntFlr / 2, 1);
+            mpfr_set_sj_2exp (&aplTmp2.parts[i], aplIntFlr, -1, MPFR_RNDN);
         } // End FOR
 
         //***************************************************************************
@@ -1242,7 +1246,8 @@ APLHC2V FloorHC2V
         aplDst2 = DistHC2V (aplRht, aplTmp2);
 
         // Choose the smaller distance
-        if (mpfr_cmp (&aplDst1, &aplDst2) < 0)
+        //   with ties going to the integer coordinates
+        if (mpfr_cmp (&aplDst1, &aplDst2) <= 0)
         {
             mphc2v_init_set (&aplFlr, &aplTmp1);
             Myhc2v_clear    (&aplTmp2);
@@ -1319,13 +1324,13 @@ APLHC4V FloorHC4V
     UBOOL    bRet;
     APLHC4V  aplFlr = {0},
              aplFrc = {0},
-             aplTmp1,
+             aplTmp1 = {0},
              aplTmp2 = {0},
              aplRes = {0};
-    APLHC1V  aplSum,
-             aplVfpFlr;
-    APLHC1V  aplDst1,                   // Distance between aplRht and aplTmp1
-             aplDst2;                   // ...                         aplTmp2
+    APLHC1V  aplSum = {0},
+             aplVfpFlr = {0};
+    APLHC1V  aplDst1 = {0},             // Distance between aplRht and aplTmp1
+             aplDst2 = {0};             // ...                         aplTmp2
     APLINT   aplIntFlr;
 
     // No exceptions in this code
@@ -1379,7 +1384,7 @@ APLHC4V FloorHC4V
             aplIntFlr -= signumint (aplIntFlr);
 
         // Save half the value
-        mpfr_set_sx (&aplTmp2.parts[i], aplIntFlr / 2, 1);
+        mpfr_set_sj_2exp (&aplTmp2.parts[i], aplIntFlr, -1, MPFR_RNDN);
     } // End FOR
 
     //***************************************************************************
@@ -1391,7 +1396,8 @@ APLHC4V FloorHC4V
     aplDst2 = DistHC4V (aplRht, aplTmp2);
 
     // Choose the smaller distance
-    if (mpfr_cmp (&aplDst1, &aplDst2) < 0)
+    //   with ties going to the integer coordinates
+    if (mpfr_cmp (&aplDst1, &aplDst2) <= 0)
     {
         mphc4v_init_set (&aplRes, &aplTmp1);
         Myhc4v_clear    (&aplTmp2);

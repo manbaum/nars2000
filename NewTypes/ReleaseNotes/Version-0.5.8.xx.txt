@@ -1,6 +1,19 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1915 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In Quaternion Floor With Hurwitz Integers
+
+Directory branches/bsmith/NewTypes:
+
+PF_DSTILE.C:
+  Improve comments.
+  Fix bug when coding division using APL-like code instead of C.
+  Fix bug of not initializing to zero GlbNum declarations.
+
+
 Build #1914 -- Version 0.5.8.xx
 -------------------------------
 

@@ -221,6 +221,9 @@ typedef unsigned Long ULong;
 #endif
 #endif
 
+#define MALLOC  malloc
+#define FREE    free
+
 #ifdef MALLOC
 #ifdef KR_headers
 extern char *MALLOC();

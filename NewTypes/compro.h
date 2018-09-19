@@ -70,7 +70,7 @@
   #include "iniparser.pro"
   #include "initdata.pro"
   #include "main.pro"
-  #include "malloc.pro"
+//#include "malloc.pro"
   #include "mpci.pro"
   #include "mphi.pro"
   #include "mpoi.pro"

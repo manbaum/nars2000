@@ -539,10 +539,10 @@ $(O)inifile.obj:        $(@B).c         $(INIFILE_DEP)
 $(O)iniparser.obj:      $(@B).c         $(INIPARSER_DEP)
 $(O)initdata.obj:       $(@B).c         $(INITDATA_DEP)
 $(O)main.obj:           $(@B).c         $(MAIN_DEP)
-$(O)malloc.obj:         $(@B).c         $(MALLOC_DEP)
-        @Set INCLUDE=$(I98);$(O)
-        @if exist $@ del $@
-        @$(CC) $(CFLAGS_WEXE) /D USE_LOCKS=1 /Fo$@ $(LIST) %s
+##$(O)malloc.obj:         $(@B).c         $(MALLOC_DEP)
+##        @Set INCLUDE=$(I98);$(O)
+##        @if exist $@ del $@
+##        @$(CC) $(CFLAGS_WEXE) /D USE_LOCKS=1 /Fo$@ $(LIST) %s
 $(O)mpci.obj:           $(@B).c         $(MPCI_DEP)
 $(O)mphi.obj:           $(@B).c         $(MPHI_DEP)
 $(O)mpoi.obj:           $(@B).c         $(MPOI_DEP)

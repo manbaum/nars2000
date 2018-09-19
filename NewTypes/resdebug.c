@@ -1446,7 +1446,7 @@ LPVOID _MyHeapAlloc
     __try
     {
 ////////lpMem = HeapAlloc (hHeap, dwFlags, dwBytes);
-        lpMem = dlmalloc (dwBytes);
+        lpMem = malloc (dwBytes);
     } __except (CheckException (GetExceptionInformation (), L"_MyHeapAlloc"))
     {
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
@@ -1474,7 +1474,7 @@ LPVOID _MyHeapAlloc
 
     return lpMem;
 #else
-    return dlmalloc (dwBytes);
+    return malloc (dwBytes);
 #endif
 } // End _MyHeapAlloc
 
@@ -1501,7 +1501,7 @@ HGLOBAL _MyHeapReAlloc
     __try
     {
 ////////hGlb = HeapReAlloc (hHeap, dwFlags, lpMem, dwBytes);
-        hGlb = dlrealloc (lpMem, dwBytes);
+        hGlb = realloc (lpMem, dwBytes);
     } __except (CheckException (GetExceptionInformation (), L"HeapReAlloc"))
     {
         dprintfWL0 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
@@ -1532,7 +1532,7 @@ HGLOBAL _MyHeapReAlloc
 
     return hGlb;
 #else
-    return dlrealloc (lpMem, dwBytes);
+    return realloc (lpMem, dwBytes);
 #endif
 } // End _MyHeapReAlloc
 
@@ -1559,7 +1559,7 @@ UBOOL _MyHeapFree
 #endif
 
 ////return HeapFree (hHeap, dwFlags, lpMem);
-    dlfree (lpMem);
+    free (lpMem);
 
     return TRUE;
 } // End _MyHeapFree

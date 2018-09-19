@@ -54,6 +54,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #define MP_RAT        int
 #define __mpfr_struct int
 
+#include "NARSmalloc.h"
 #include "macros.h"
 #include "enums.h"
 #include "defines.h"

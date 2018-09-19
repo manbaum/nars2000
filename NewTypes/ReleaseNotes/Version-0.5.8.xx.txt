@@ -1,6 +1,50 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1916 -- Version 0.5.8.xx
+-------------------------------
+
+* Prepare For Common Malloc/Free/Realloc
+
+Directory branches/bsmith/NewTypes:
+
+COMPRO.H:
+  Delete references to "dl" Memory Management as we no longer use it as a substitute memory allocator.
+
+DICTIONARY.C:
+  Use common Memory Allocator header.
+
+DISPDBG.C:
+  Append CRLF to end of DbgMsg output in case the string goes to <OutputDebugString>
+    which requires that ending.
+  Delete references to "dl" Memory Management as we no longer use it as a substitute memory allocator.
+
+DTOA.C:
+  Define macros for Memory Management.
+
+HEADERS.H:
+  Use common Memory Allocator header.
+
+INIPARSER.C:
+  Use common Memory Allocator header.
+  Comment out instruction which deletes leading spaces from function lines
+    so as to preserve leading spaces when saving to a workspace file.
+
+MAKEFILE.INC:
+MAKEFILE.SRC:
+NARS2000.VCXPROJ:
+STARTADDR.H:
+  Delete references to "dl" Memory Management as we no longer use it as a substitute memory allocator.
+
+MPFNS.C:
+PO_COMB.C;
+RESDEBUG.C:
+  Use common Memory Manager API instead of "dl" prefix versions.
+
+NARSMALLOC.H:
+  Define Memory Allocator header.
+
+
 Build #1915 -- Version 0.5.8.xx
 -------------------------------
 

@@ -449,9 +449,9 @@ typedef struct tagSTART_ADDRESSES
     "MFWndProc"                 , (LPUCHAR) &MFWndProc                  ,
 
     // malloc.c
-    "dlfree"                    , (LPUCHAR) &dlfree                     ,
-    "dlmalloc"                  , (LPUCHAR) &dlmalloc                   ,
-    "dlrealloc"                 , (LPUCHAR) &dlrealloc                  ,
+////"dlfree"                    , (LPUCHAR) &dlfree                     ,
+////"dlmalloc"                  , (LPUCHAR) &dlmalloc                   ,
+////"dlrealloc"                 , (LPUCHAR) &dlrealloc                  ,
 
     // mpfns.c
     "mp_alloc"                  , (LPUCHAR) &mp_alloc                   ,

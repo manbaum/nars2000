@@ -29,11 +29,11 @@
 #define GlobalUnlock3(a)
 #define GlobalFree3(a)              GlobalFree (a)
 
-#define GlobalAllocGHND(a,b)        dlmalloc (b)            // GlobalAlloc (GHND, b)
-#define GlobalReAllocGHND(a,b,c)    dlrealloc (a, b)        // GlobalReAlloc (a, b, c)
+#define GlobalAllocGHND(a,b)        malloc (b)              // GlobalAlloc (GHND, b)
+#define GlobalReAllocGHND(a,b,c)    realloc (a, b)          // GlobalReAlloc (a, b, c)
 #define GlobalLockGHND(a)           (a)                     // GlobalLock (a)
 #define GlobalUnlockGHND(a)                                 // GlobalUnlock (a)
-#define GlobalFreeGHND(a)           dlfree (a)              // GlobalFree (a)
+#define GlobalFreeGHND(a)           free (a)                // GlobalFree (a)
 
 // Uncomment out the following line to look for unset values from PNR in PNI
 // The timings don't show any advantage of doing this

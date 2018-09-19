@@ -378,7 +378,6 @@ echo *****Solution directory is $(SolutionDir), Configuration-Platform is $(Conf
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug32|Win32'">.\;$(OutDir);$(MPIR_DIR)include;$(MPFR_DIR)include;$(FLINT_DIR)include;$(MPC_DIR)include;$(ECM_DIR)include;$(MS_DIR);$(NARSROOT)qdebug;$(GSL_DIR)\x86\include;;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release32|Win32'">.\;$(OutDir);$(MPIR_DIR)include;$(MPFR_DIR)include;$(FLINT_DIR)include;$(MPC_DIR)include;$(ECM_DIR)include;$(MS_DIR);$(NARSROOT)qdebug;$(GSL_DIR)\x86\include;;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
-    <ClCompile Include="malloc.c" />
     <ClCompile Include="mpcf.c" />
     <ClCompile Include="mpcho_com.c">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug32|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

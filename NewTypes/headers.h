@@ -85,7 +85,7 @@
 #ifndef REAL_MPIFNS
   #include "mpifns.h"
 #endif
-#include "malloc.h"
+#include "NARSmalloc.h"
 #include "qf_dr.h"
 #include "hungarian.h"
 #include "sc_save.h"

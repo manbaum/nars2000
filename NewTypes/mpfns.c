@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ LPVOID mp_alloc
                    ,
                    size);
 #else
-      dlmalloc (size);
+      malloc (size);
 #endif
     if (lpMemRes EQ NULL)
     {
@@ -104,13 +104,13 @@ LPVOID mp_realloc
                      lpMem,
                      new_size);
 #else
-      dlrealloc (lpMem, new_size);
+      realloc (lpMem, new_size);
 #endif
     if (lpMemRes EQ NULL)
     {
 #ifdef DEBUG
         APLINT aplOldSize = old_size,
-               aplUseSize = dlmalloc_usable_size (lpMem),
+               aplUseSize = malloc_usable_size (lpMem),
                aplNewSize = new_size;
 
         dprintfWL0 (L"###Heap re-allocation failure:  OldSize = %I64u, UseSize = %I64u, NewSize = %I64u", aplOldSize, aplUseSize, aplNewSize);
@@ -155,7 +155,7 @@ void mp_free
                 0,
                 lpMem);
 #else
-    dlfree (lpMem);
+    free (lpMem);
 #endif
 #ifdef DEBUG
     if (gDbgLvl >= gVfpLvl)

@@ -58,11 +58,11 @@ void DisplayHshTab
     int        i;                   // Loop counter
     WCHAR      wszTemp[1024];       // Ptr to temporary output area
 
-    DbgMsgW (L"********** Start Hash Table ****************************");
+    DbgMsgW (L"********** Start Hash Table ****************************\r\n");
 
     MySprintfW (wszTemp,
                 sizeof (wszTemp),
-               L"lpHshTab = %p, SplitNext = %p, Last = %p",
+               L"lpHshTab = %p, SplitNext = %p, Last = %p\r\n",
                 lpHTS->lpHshTab,
                 lpHTS->lpHshTabSplitNext,
                &lpHTS->lpHshTab[lpHTS->iHshTabTotalNelm]);
@@ -79,7 +79,7 @@ void DisplayHshTab
         DbgMsgW (wszTemp);
     } // End FOR
 
-    DbgMsgW (L"********** End Hash Table ******************************");
+    DbgMsgW (L"********** End Hash Table ******************************\r\n");
 
     UpdateDBWindow ();
 } // End DisplayHshTab
@@ -126,7 +126,7 @@ void FormatHTE
     {
         MySprintfW (lpwszTemp,
                     iTempMaxSize,
-                   L"HT:%3d ***INVALID HSHENTRY (NULL)***",
+                   L"HT:%3d ***INVALID HSHENTRY (NULL)***\r\n",
                     i);
         return;
     } // End IF
@@ -156,7 +156,7 @@ void FormatHTE
         if (lpSymEntry->stFlags.Imm)
             MySprintfW (lpwszTemp,
                         iTempMaxSize,
-                       L"HT:%3d uH=%08X, uH&M=%d, <%s>, ull=%I64X, Sym=%p",
+                       L"HT:%3d uH=%08X, uH&M=%d, <%s>, ull=%I64X, Sym=%p\r\n",
                         i,
                         lpHshEntry->uHash,
                         lpHshEntry->uHashAndMask,
@@ -173,7 +173,7 @@ void FormatHTE
 
             MySprintfW (lpwszTemp,
                         iTempMaxSize,
-                       L"HT:%3d uH=%08X, uH&M=%d, <%s>, <%s>, Sym=%p, %p-%p",
+                       L"HT:%3d uH=%08X, uH&M=%d, <%s>, <%s>, Sym=%p, %p-%p\r\n",
                         i,
                         lpHshEntry->uHash,
                         lpHshEntry->uHashAndMask,
@@ -188,7 +188,7 @@ void FormatHTE
     } else
         MySprintfW (lpwszTemp,
                     iTempMaxSize,
-                   L"HT:%3d (EMPTY) <%s>, Sym=%p, <%p-%p>",
+                   L"HT:%3d (EMPTY) <%s>, Sym=%p, <%p-%p>\r\n",
                     i,
                    &wszFlags[1],
                     lpHshEntry->htSymEntry,
@@ -222,16 +222,16 @@ void DisplaySymTab
 
     if (bDispAll)
     {
-        DbgMsgW (L"********** Start Symbol Table **************************");
+        DbgMsgW (L"********** Start Symbol Table **************************\r\n");
     } else
     {
-        DbgMsgW (L"********** Symbol Table Referenced Non-SysNames ********");
+        DbgMsgW (L"********** Symbol Table Referenced Non-SysNames ********\r\n");
     } // End IF/ELSE -- DO NOT REMOVE as the DbgMsgW macro needs
     //                  this because of the trailing semicolon
 
     MySprintfW (wszTemp,
                 sizeof (wszTemp),
-               L"lpSymTab = %p, Last = %p",
+               L"lpSymTab = %p, Last = %p\r\n",
                 lpHTS->lpSymTab,
                &lpHTS->lpSymTab[lpHTS->iSymTabTotalNelm]);
     DbgMsgW (wszTemp);
@@ -249,7 +249,7 @@ void DisplaySymTab
         DbgMsgW (wszTemp);
     } // End FOR
 
-    DbgMsgW (L"********** End Symbol Table ****************************");
+    DbgMsgW (L"********** End Symbol Table ****************************\r\n");
 
     UpdateDBWindow ();
 } // End DisplaySymTab
@@ -371,7 +371,7 @@ void FormatSTE
         {
             MySprintfW (lpwszTemp,
                         iTempMaxSize,
-                       L"ST:%p <%s> <%s>, ull=%I64X, Hsh=%p, Prv=%p",
+                       L"ST:%p <%s> <%s>, ull=%I64X, Hsh=%p, Prv=%p\r\n",
                         lpSymEntry,
                         wszName,
                        &wszFlags[1],
@@ -389,7 +389,7 @@ void FormatSTE
             {
                 MySprintfW (lpwszTemp,
                             iTempMaxSize,
-                           L"ST:%p <%s>, <%s>, Data=%p, Hsh=%p, Prv=%p",
+                           L"ST:%p <%s>, <%s>, Data=%p, Hsh=%p, Prv=%p\r\n",
                             lpSymEntry,
                             wszName,
                            &wszFlags[1],
@@ -399,7 +399,7 @@ void FormatSTE
             } else
                 MySprintfW (lpwszTemp,
                             iTempMaxSize,
-                           L"ST:%p <******>, <%s>, Hsh=0, Prv=%p",
+                           L"ST:%p <******>, <%s>, Hsh=0, Prv=%p\r\n",
                             lpSymEntry,
                            &wszFlags[1],
                             lpPrvEntry);
@@ -407,7 +407,7 @@ void FormatSTE
     } else
         MySprintfW (lpwszTemp,
                     iTempMaxSize,
-                   L"ST:%p (EMPTY) <%s>, Hsh=%p, Prv=%p",
+                   L"ST:%p (EMPTY) <%s>, Hsh=%p, Prv=%p\r\n",
                     lpSymEntry,
                    &wszFlags[1],
                     lpSymEntry->stHshEntry,
@@ -461,7 +461,7 @@ void DisplayGlobals
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    DbgMsgW (L"********** Start Globals *******************************");
+    DbgMsgW (L"********** Start Globals *******************************\r\n");
 
 #define MAX_VAL_LEN     80
     for (i = 0; i < MAXOBJ; i++)
@@ -476,7 +476,7 @@ void DisplayGlobals
         {
             MySprintfW (wszTemp,
                         sizeof (wszTemp),
-                       L"hGlb=%p *** INVALID ***",
+                       L"hGlb=%p *** INVALID ***\r\n",
                         hGlb);
             DbgMsgW (wszTemp);
 
@@ -804,8 +804,8 @@ void DisplayGlobals
                                         LODWORD (aplDim));
                         MySprintfW (wszTemp,
                                     sizeof (wszTemp),
-///////////////////////////////////L"%shGlb=%p AType=%c%c NELM=%3d RC=%2d Rnk=%2d Dim1=%3d Lck=%d (%S#%d) (%s)",
-                                   L"%shGlb=%p AType=%c%c NELM=%3d RC=%2d Rnk=%2d %s Lck=%d (%S#%d) (%s)",
+///////////////////////////////////L"%shGlb=%p AType=%c%c NELM=%3d RC=%2d Rnk=%2d Dim1=%3d Lck=%d (%S#%d) (%s)\r\n",
+                                   L"%shGlb=%p AType=%c%c NELM=%3d RC=%2d Rnk=%2d %s Lck=%d (%S#%d) (%s)\r\n",
                                     (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
                                     hGlb,
                                     TranslateArrayTypeToChar (lpHeader->ArrType),
@@ -864,7 +864,7 @@ void DisplayGlobals
 
                 MySprintfW (wszTemp,
                             sizeof (wszTemp),
-                           L"%shGlb=%p NType=%sNELM=%3d RC=%2d                 Lck=%d (%S#%4d) %s",
+                           L"%shGlb=%p NType=%sNELM=%3d RC=%2d                 Lck=%d (%S#%4d) %s\r\n",
                             (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
                             hGlb,
                             lpwNameTypeStr[lpHeader->fnNameType],
@@ -901,7 +901,7 @@ void DisplayGlobals
                         // Copy a default name
                         MySprintfW (lpMemPTD->lpwszTemp,
                                     lpMemPTD->iTempMaxSize,
-                                   L"***BAD PTR***:  steFcnName (%p)",
+                                   L"***BAD PTR***:  steFcnName (%p)\r\n",
                                     lpHeader->steFcnName);
                         DbgNop ();      // We should never get here
                     } // End IF/ELSE
@@ -918,7 +918,7 @@ void DisplayGlobals
 
                         MySprintfW (wszTemp,
                                     sizeof (wszTemp),
-                                   L"%shGlb=%p DType=%c  NELM=%3d RC=%2d                 Lck=%d (%S#%4d) (%s)",
+                                   L"%shGlb=%p DType=%c  NELM=%3d RC=%2d                 Lck=%d (%S#%4d) (%s)\r\n",
                                     (lpHeader->RefCnt NE 1) ? WS_UTF16_REFCNT_NE1 : L"",
                                     hGlb,
                                     cDfnTypeStr[lpHeader->DfnType],
@@ -940,7 +940,7 @@ void DisplayGlobals
                 {
                     MySprintfW (wszTemp,
                                 sizeof (wszTemp),
-                               L"hGlb=%p -- No NARS/FCNS Signature (%u bytes)",
+                               L"hGlb=%p -- No NARS/FCNS Signature (%u bytes)\r\n",
                                 hGlb,
                                 MyGlobalSize (hGlb));
                     DbgMsgW (wszTemp);
@@ -954,16 +954,16 @@ void DisplayGlobals
     } // End FOR/IF
 #undef  MAX_VAL_LEN
 
-    DbgMsgW (L"********** End Globals *********************************");
+    DbgMsgW (L"********** End Globals *********************************\r\n");
 
-////DbgMsgW (L"********** Start Semaphores ****************************");
+////DbgMsgW (L"********** Start Semaphores ****************************\r\n");
 
     for (uValid = FALSE, i = 0; i < MAXOBJ; i++)
     if (hGlb = ahSEMAPHORE[i])
     {
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
-                   L"hGlb=%p                                               (%S#%4d)",
+                   L"hGlb=%p                                               (%S#%4d)\r\n",
                     hGlb,
                     lpaFileNameSEMAPHORE[i],
                     auLinNumSEMAPHORE[i]);
@@ -974,7 +974,7 @@ void DisplayGlobals
     } // End FOR/IF
 
     if (uValid)
-        DbgMsgW (L"********** End Semaphores ******************************");
+        DbgMsgW (L"********** End Semaphores ******************************\r\n");
 
     UpdateDBWindow ();
 #endif
@@ -1263,7 +1263,7 @@ void DisplayHeap
     WCHAR   wszTemp[1024];      // Ptr to temporary output area
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
-    DbgMsgW (L"********** Start Heap **********************************");
+    DbgMsgW (L"********** Start Heap **********************************\r\n");
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -1311,12 +1311,11 @@ void DisplayHeap
         if (j < (int) NthPowerCnt)
             continue;
         // Get the size of the global memory
-////////aplSize = HeapSize (GetProcessHeap (), 0, hGlb);
-        aplSize = dlmalloc_usable_size (hGlb);
+        aplSize = malloc_usable_size (hGlb);
 
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
-                   L"hGlb=%p, size=%I64u (%S#%d)",
+                   L"hGlb=%p, size=%I64u (%S#%d)\r\n",
                     hGlb,
                     aplSize,
                     "",      // lpaFileNameHEAPALLOC[i],
@@ -1324,7 +1323,7 @@ void DisplayHeap
         DbgMsgW (wszTemp);
     } // End FOR/IF
 
-    DbgMsgW (L"********** End Heap ************************************");
+    DbgMsgW (L"********** End Heap ************************************\r\n");
 #endif
 } // End DisplayHeap
 #endif
@@ -1351,12 +1350,12 @@ void DisplayTokens
     if (gDbgLvl < 3)
         return;
 
-    DbgMsgW (L"********** Start Tokens ********************************");
+    DbgMsgW (L"********** Start Tokens ********************************\r\n");
 
     // Ensure it's valid
     if (lpMemTknHdr EQ NULL)
     {
-        DbgMsgW (L"DisplayTokens:  ***INAVLID HANDLE***:  lpMemTknHdr EQ 0");
+        DbgMsgW (L"DisplayTokens:  ***INAVLID HANDLE***:  lpMemTknHdr EQ 0\r\n");
         return;
     } // End IF
 
@@ -1365,7 +1364,7 @@ void DisplayTokens
 
     MySprintfW (wszTemp,
                 sizeof (wszTemp),
-               L"lpMemTknLine = %p, Version # = %d, TokenCnt = %d, PrevGroup = %d",
+               L"lpMemTknLine = %p, Version # = %d, TokenCnt = %d, PrevGroup = %d\r\n",
                 lpMemTknHdr,
                 lpMemTknHdr->Version,
                 lpMemTknHdr->TokenCnt,
@@ -1380,7 +1379,7 @@ void DisplayTokens
     {
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
-                   L"(%2d) Data=%I64X, CharIndex=%2d, Type=%S, so=<%s>",
+                   L"(%2d) Data=%I64X, CharIndex=%2d, Type=%S, so=<%s>\r\n",
                     i,
                     *(LPAPLINT) &lpMemTknLine->tkData.tkFloat,
                     lpMemTknLine->tkCharIndex,
@@ -1391,7 +1390,7 @@ void DisplayTokens
     } // End FOR
 
     DbgMsgW (L"********** End Tokens **********************************");
-} // End DisplayTokensSub
+} // End DisplayTokens
 #endif
 
 
@@ -2655,7 +2654,7 @@ void DisplayFcnArr
     if (gDbgLvl < gFcnLvl)
         return;
 
-    DbgMsgW (L"********** Start Function Array ************************");
+    DbgMsgW (L"********** Start Function Array ************************\r\n");
 
     DisplayFcnGlb (wszTemp,         // Ptr to output save area
                    hGlbStr,         // Function array global memory handle
@@ -2666,7 +2665,7 @@ void DisplayFcnArr
                    NULL);           // Ptr to extra parameters for lpSavedWsGlbFcnConv (may be NULL)
     DbgMsgW (wszTemp);
 
-    DbgMsgW (L"********** End Function Array **************************");
+    DbgMsgW (L"********** End Function Array **************************\r\n");
 } // End DisplayFcnArr
 #endif
 
@@ -2781,22 +2780,22 @@ void DisplayStrand
     switch (strType)
     {
         case STRAND_VAR:
-            DbgMsgW (L"********** Start Variable Strands **********************");
+            DbgMsgW (L"********** Start Variable Strands **********************\r\n");
 
             break;
 
         case STRAND_FCN:
-            DbgMsgW (L"********** Start Function Strands **********************");
+            DbgMsgW (L"********** Start Function Strands **********************\r\n");
 
             break;
 
         case STRAND_LST:
-            DbgMsgW (L"********** Start List Strands **************************");
+            DbgMsgW (L"********** Start List Strands **************************\r\n");
 
             break;
 
         case STRAND_NAM:
-            DbgMsgW (L"********** Start Name Strands **************************");
+            DbgMsgW (L"********** Start Name Strands **************************\r\n");
 
             break;
 
@@ -2806,7 +2805,7 @@ void DisplayStrand
 
     MySprintfW (wszTemp,
                 sizeof (wszTemp),
-               L"Start=%p Base=%p Next=%p",
+               L"Start=%p Base=%p Next=%p\r\n",
                 lpplLocalVars->lpYYStrArrStart[strType],
                 lpplLocalVars->lpYYStrArrBase[strType],
                 lpplLocalVars->lpYYStrArrNext[strType]);
@@ -2818,7 +2817,7 @@ void DisplayStrand
     {
         if (lpLast NE lp->lpYYStrandBase)
         {
-            DbgMsgW (L"--------------------------------------------------------");
+            DbgMsgW (L"--------------------------------------------------------\r\n");
             lpLast  = lp->lpYYStrandBase;
         } // End IF
 
@@ -2843,7 +2842,7 @@ void DisplayStrand
         DbgMsgW (wszTemp);
     } // End FOR
 
-    DbgMsgW (L"********** End Strands *********************************");
+    DbgMsgW (L"********** End Strands *********************************\r\n");
 } // End DisplayStrand
 #endif
 
@@ -2884,7 +2883,7 @@ void DisplayUndo
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
 
-    DbgMsgW (L"********** Start Undo Buffer ***************************");
+    DbgMsgW (L"********** Start Undo Buffer ***************************\r\n");
 
     // Get the shift key state
     bShift = (GetKeyState (VK_SHIFT) & BIT15);
@@ -2899,7 +2898,7 @@ void DisplayUndo
     (HANDLE_PTR) hGlbEC = SendMessageW (hWnd, EM_GETHANDLE, 0, 0);
 
     // Display it
-    dprintfWL9 (L"Caret position = %d, # lines = %d, hGlbEC = %p (%S#%d)",
+    dprintfWL9 (L"Caret position = %d, # lines = %d, hGlbEC = %p (%S#%d)\r\n",
               uCharPos,
               uLineCount,
               hGlbEC,
@@ -2924,7 +2923,7 @@ void DisplayUndo
         *p = VIS_HT;
 
     // Display it
-    dprintfWL9 (L"Text = <%s>",
+    dprintfWL9 (L"Text = <%s>\r\n",
               lpwsz);
 
     // Restore HT
@@ -2957,7 +2956,7 @@ void DisplayUndo
     {
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
-                   L"Act = %9s, %2d-%2d, Group = %3d, Char = 0x%04X",
+                   L"Act = %9s, %2d-%2d, Group = %3d, Char = 0x%04X\r\n",
                     Actions[lpUndoBeg->Action],
                     lpUndoBeg->CharPosBeg,
                     lpUndoBeg->CharPosEnd,
@@ -2966,7 +2965,7 @@ void DisplayUndo
         DbgMsgW (wszTemp);
     } // End FOR
 
-    DbgMsgW (L"********** End Undo Buffer *****************************");
+    DbgMsgW (L"********** End Undo Buffer *****************************\r\n");
 } // End DisplayUndo
 #endif
 

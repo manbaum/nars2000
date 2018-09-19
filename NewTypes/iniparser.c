@@ -51,6 +51,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include "macros.h"
 #include "defines.h"
+#include "NARSmalloc.h"
 #include "dictionary.h"
 
 // Include prototypes unless prototyping
@@ -694,7 +695,9 @@ static LINESTATUS iniparser_line
 
         /* Usual key=value, with or without comments */
         *lplpKey = strlwrW2 (strstrip (*lplpKey));
-        *lplpVal =          strstrip (*lplpVal);
+        // The following line was commented out so as not to
+        //   remove leading blanks from function lines
+////////*lplpVal =           strstrip (*lplpVal);
 
         if (*lplpVal EQ L'\0')
             *lplpVal = NULL;

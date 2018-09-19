@@ -944,13 +944,13 @@ int HeNe_cmp
     } else
     // One or both items are HETERO/NESTED
     {
-        // If one is simple and the other is nested, ...
-        if (IsPtrArray (aplTypeLft) && IsSimpleNH (aplTypeRht))
+        // If one is nested and the other is simple, ...
+        if (IsPtrArray       (aplTypeLft) && IsSimpleNHGlbNum (aplTypeRht))
             // Simple < NOSH
             iDiff = -1;
         else
-        // If the storage types differ (Char vs. Numeric), ...
-        if (IsSimpleNH (aplTypeLft) && IsPtrArray (aplTypeRht))
+        // If one is simple and the other is nested, ...
+        if (IsSimpleNHGlbNum (aplTypeLft) && IsPtrArray       (aplTypeRht))
             // NOSH > Simple
             iDiff =  1;
         else

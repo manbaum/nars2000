@@ -1324,11 +1324,8 @@ APLSTYPE TranslateExceptionCodeToArrayType
     // Split cases based upon the ExceptionCode
     switch (exCode)
     {
-        case EXCEPTION_RESULT_FLOAT:
+        case EXCEPTION_RESULT_FLT:
             return ARRAY_FLOAT;
-
-        case EXCEPTION_RESULT_VFP:
-            return ARRAY_VFP;
 
         case EXCEPTION_RESULT_HC2F:
             return ARRAY_HC2F;
@@ -1338,6 +1335,21 @@ APLSTYPE TranslateExceptionCodeToArrayType
 
         case EXCEPTION_RESULT_HC8F:
             return ARRAY_HC8F;
+
+        case EXCEPTION_RESULT_RAT:
+            return ARRAY_RAT;
+
+        case EXCEPTION_RESULT_HC2R:
+            return ARRAY_HC2R;
+
+        case EXCEPTION_RESULT_HC4R:
+            return ARRAY_HC4R;
+
+        case EXCEPTION_RESULT_HC8R:
+            return ARRAY_HC8R;
+
+        case EXCEPTION_RESULT_VFP:
+            return ARRAY_VFP;
 
         case EXCEPTION_RESULT_HC2V:
             return ARRAY_HC2V;

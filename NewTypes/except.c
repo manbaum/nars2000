@@ -182,17 +182,20 @@ LPWSTR MyGetExceptionStr
         case EXCEPTION_SUCCESS:
             return L"EXCEPTION_SUCCESS";
 
-        case EXCEPTION_RESULT_FLOAT:
-            return L"EXCEPTION_RESULT_FLOAT";
+        case EXCEPTION_RESULT_FLT:
+            return L"EXCEPTION_RESULT_FLT";
 
-////////case EXCEPTION_RESULT_RAT:
-////////    return L"EXCEPTION_RESULT_RAT";
-////////
+        case EXCEPTION_RESULT_RAT:
+            return L"EXCEPTION_RESULT_RAT";
+
         case EXCEPTION_RESULT_VFP:
             return L"EXCEPTION_RESULT_VFP";
 
         case EXCEPTION_RESULT_HC2F:
             return L"EXCEPTION_RESULT_HC2F";
+
+        case EXCEPTION_RESULT_HC2R:
+            return L"EXCEPTION_RESULT_HC2R";
 
         case EXCEPTION_RESULT_HC2V:
             return L"EXCEPTION_RESULT_HC2V";
@@ -200,11 +203,17 @@ LPWSTR MyGetExceptionStr
         case EXCEPTION_RESULT_HC4F:
             return L"EXCEPTION_RESULT_HC4F";
 
+        case EXCEPTION_RESULT_HC4R:
+            return L"EXCEPTION_RESULT_HC4R";
+
         case EXCEPTION_RESULT_HC4V:
             return L"EXCEPTION_RESULT_HC4V";
 
         case EXCEPTION_RESULT_HC8F:
             return L"EXCEPTION_RESULT_HC8F";
+
+        case EXCEPTION_RESULT_HC8R:
+            return L"EXCEPTION_RESULT_HC8R";
 
         case EXCEPTION_RESULT_HC8V:
             return L"EXCEPTION_RESULT_HC8V";
@@ -453,7 +462,8 @@ long CheckHCDim
     // Split cases based upon the exception code
     switch (lpExcept->ExceptionRecord->ExceptionCode)
     {
-        case EXCEPTION_RESULT_FLOAT:
+        case EXCEPTION_RESULT_FLT:
+        case EXCEPTION_RESULT_RAT:
         case EXCEPTION_RESULT_VFP:
             if (iHCDim <= 1)
                 return EXCEPTION_CONTINUE_SEARCH;
@@ -461,6 +471,7 @@ long CheckHCDim
                 return EXCEPTION_EXECUTE_HANDLER;
 
         case EXCEPTION_RESULT_HC2F:
+        case EXCEPTION_RESULT_HC2R:
         case EXCEPTION_RESULT_HC2V:
             if (iHCDim <= 2)
                 return EXCEPTION_CONTINUE_SEARCH;
@@ -468,6 +479,7 @@ long CheckHCDim
                 return EXCEPTION_EXECUTE_HANDLER;
 
         case EXCEPTION_RESULT_HC4F:
+        case EXCEPTION_RESULT_HC4R:
         case EXCEPTION_RESULT_HC4V:
             if (iHCDim <= 4)
                 return EXCEPTION_CONTINUE_SEARCH;
@@ -475,6 +487,7 @@ long CheckHCDim
                 return EXCEPTION_EXECUTE_HANDLER;
 
 ////////case EXCEPTION_RESULT_HC8F:
+////////case EXCEPTION_RESULT_HC8R:
 ////////case EXCEPTION_RESULT_HC8V:
 ////////    if (iHCDim <= 8)
 ////////        return EXCEPTION_CONTINUE_SEARCH;
@@ -537,14 +550,17 @@ long CheckException
 
 ////////case EXCEPTION_RESULT_BOOL:
 ////////case EXCEPTION_RESULT_INT:
-        case EXCEPTION_RESULT_FLOAT:
+        case EXCEPTION_RESULT_FLT:
+        case EXCEPTION_RESULT_RAT:
         case EXCEPTION_RESULT_VFP:
-////////case EXCEPTION_RESULT_RAT:
         case EXCEPTION_RESULT_HC2F:
+        case EXCEPTION_RESULT_HC2R:
         case EXCEPTION_RESULT_HC2V:
         case EXCEPTION_RESULT_HC4F:
+        case EXCEPTION_RESULT_HC4R:
         case EXCEPTION_RESULT_HC4V:
         case EXCEPTION_RESULT_HC8F:
+        case EXCEPTION_RESULT_HC8R:
         case EXCEPTION_RESULT_HC8V:
         case EXCEPTION_DOMAIN_ERROR:
         case EXCEPTION_NONCE_ERROR:

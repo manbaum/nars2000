@@ -1291,7 +1291,7 @@ RESTART_EXCEPTION_VARIMMED:
 
                         goto NONCE_EXIT;
 
-                    case EXCEPTION_RESULT_FLOAT:
+                    case EXCEPTION_RESULT_FLT:
                         MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                         // Because the right arg is immediate, it can't be global numeric
@@ -1313,10 +1313,16 @@ RESTART_EXCEPTION_VARIMMED:
 
                         break;
 
-                    case EXCEPTION_RESULT_VFP:
                     case EXCEPTION_RESULT_HC2F:
                     case EXCEPTION_RESULT_HC4F:
                     case EXCEPTION_RESULT_HC8F:
+
+                    case EXCEPTION_RESULT_RAT:
+                    case EXCEPTION_RESULT_HC2R:
+                    case EXCEPTION_RESULT_HC4R:
+                    case EXCEPTION_RESULT_HC8R:
+
+                    case EXCEPTION_RESULT_VFP:
                     case EXCEPTION_RESULT_HC2V:
                     case EXCEPTION_RESULT_HC4V:
                     case EXCEPTION_RESULT_HC8V:
@@ -1329,7 +1335,7 @@ RESTART_EXCEPTION_VARIMMED:
                         {
                             TOKEN tkTmp;
 
-                            // It's now a HC[248][FV] result
+                            // It's now a HC[1248][FRV] result
                             aplTypeRes = TranslateExceptionCodeToArrayType (ExceptionCode);
 
                             dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #2A: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
@@ -1588,7 +1594,7 @@ HGLOBAL PrimFnMonGlb_EM
 
                     goto NONCE_EXIT;
 
-                case EXCEPTION_RESULT_FLOAT:
+                case EXCEPTION_RESULT_FLT:
                     MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                     // Because the right arg is immediate, it can't be global numeric
@@ -1625,14 +1631,14 @@ HGLOBAL PrimFnMonGlb_EM
 
                     break;
 
-////////////////case EXCEPTION_RESULT_RAT:
-////////////////case EXCEPTION_RESULT_HC2R:
-////////////////case EXCEPTION_RESULT_HC4R:
-////////////////case EXCEPTION_RESULT_HC8R:
-
                 case EXCEPTION_RESULT_HC2F:
                 case EXCEPTION_RESULT_HC4F:
                 case EXCEPTION_RESULT_HC8F:
+
+                case EXCEPTION_RESULT_RAT:
+                case EXCEPTION_RESULT_HC2R:
+                case EXCEPTION_RESULT_HC4R:
+                case EXCEPTION_RESULT_HC8R:
 
                 case EXCEPTION_RESULT_VFP:
                 case EXCEPTION_RESULT_HC2V:
@@ -2165,7 +2171,7 @@ RESTART_EXCEPTION:
 
                         // Do we need to promote the result type from HCxI to HCxF as in {floor},{NaN}  ?
                         if (IsRealBIA (aToSimple[aplTypeRes]))
-                            RaiseException (EXCEPTION_RESULT_FLOAT + 2 * iHCDimIndex, 0, 0, NULL);
+                            RaiseException (EXCEPTION_RESULT_FLT + FRV_MUL * iHCDimIndex, 0, 0, NULL);
 
                         // Copy the right arg to the result
                         (*aTypeActPromote[aplTypeRht][aplTypeRes]) (lpMemRht, uRes, (LPALLTYPES) ByteAddr (lpMemRes, uRes * iSizeofRes));
@@ -2229,11 +2235,17 @@ RESTART_EXCEPTION:
 
                 goto NONCE_EXIT;
 
-            case EXCEPTION_RESULT_HC1F:
+            case EXCEPTION_RESULT_FLT:
             case EXCEPTION_RESULT_HC2F:
             case EXCEPTION_RESULT_HC4F:
             case EXCEPTION_RESULT_HC8F:
-            case EXCEPTION_RESULT_HC1V:
+
+            case EXCEPTION_RESULT_RAT:
+            case EXCEPTION_RESULT_HC2R:
+            case EXCEPTION_RESULT_HC4R:
+            case EXCEPTION_RESULT_HC8R:
+
+            case EXCEPTION_RESULT_VFP:
             case EXCEPTION_RESULT_HC2V:
             case EXCEPTION_RESULT_HC4V:
             case EXCEPTION_RESULT_HC8V:
@@ -2241,7 +2253,7 @@ RESTART_EXCEPTION:
 
                 if (IsNumeric (aplTypeRes))
                 {
-                    /* It's now a HCxF or HCxV result */
+                    // It's now a HC[1248][FRV] result
                     aplTypeRes = TranslateExceptionCodeToArrayType (ExceptionCode);
 
                     /* We no longer need this ptr */
@@ -2547,7 +2559,7 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
             // Split cases based upon the ExceptionCode
             switch (ExceptionCode)
             {
-                case EXCEPTION_RESULT_FLOAT:
+                case EXCEPTION_RESULT_FLT:
                     MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                     // It's now a FLOAT result
@@ -4200,10 +4212,16 @@ RESTART_EXCEPTION:
 
                             goto NONCE_EXIT;
 
-                        case EXCEPTION_RESULT_FLOAT:
+                        case EXCEPTION_RESULT_FLT:
                         case EXCEPTION_RESULT_HC2F:
                         case EXCEPTION_RESULT_HC4F:
                         case EXCEPTION_RESULT_HC8F:
+
+                        case EXCEPTION_RESULT_RAT:
+                        case EXCEPTION_RESULT_HC2R:
+                        case EXCEPTION_RESULT_HC4R:
+                        case EXCEPTION_RESULT_HC8R:
+
                         case EXCEPTION_RESULT_VFP:
                         case EXCEPTION_RESULT_HC2V:
                         case EXCEPTION_RESULT_HC4V:
@@ -4224,7 +4242,7 @@ RESTART_EXCEPTION:
                                     FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
                                 } // End IF
 
-                                // It's now a promoted result
+                                // It's now a HC[1248][FRV] result
                                 aplTypeRes = TranslateExceptionCodeToArrayType (ExceptionCode);
 
                                 dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #7: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
@@ -5038,10 +5056,16 @@ RESTART_EXCEPTION:
 
                             goto NONCE_EXIT;
 
-                        case EXCEPTION_RESULT_FLOAT:
+                        case EXCEPTION_RESULT_FLT:
                         case EXCEPTION_RESULT_HC2F:
                         case EXCEPTION_RESULT_HC4F:
                         case EXCEPTION_RESULT_HC8F:
+
+                        case EXCEPTION_RESULT_RAT:
+                        case EXCEPTION_RESULT_HC2R:
+                        case EXCEPTION_RESULT_HC4R:
+                        case EXCEPTION_RESULT_HC8R:
+
                         case EXCEPTION_RESULT_VFP:
                         case EXCEPTION_RESULT_HC2V:
                         case EXCEPTION_RESULT_HC4V:
@@ -5062,7 +5086,7 @@ RESTART_EXCEPTION:
                                     FreeResultGlobalVar (hGlbRes); hGlbRes = NULL;
                                 } // End IF
 
-                                // It's now a promoted result
+                                // It's now a HC[1248][FRV] result
                                 aplTypeRes = TranslateExceptionCodeToArrayType (ExceptionCode);
 
                                 dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #8: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
@@ -5411,10 +5435,16 @@ RESTART_EXCEPTION_IMMED:
 
                 goto NONCE_EXIT;
 
-            case EXCEPTION_RESULT_FLOAT:
+            case EXCEPTION_RESULT_FLT:
             case EXCEPTION_RESULT_HC2F:
             case EXCEPTION_RESULT_HC4F:
             case EXCEPTION_RESULT_HC8F:
+
+            case EXCEPTION_RESULT_RAT:
+            case EXCEPTION_RESULT_HC2R:
+            case EXCEPTION_RESULT_HC4R:
+            case EXCEPTION_RESULT_HC8R:
+
             case EXCEPTION_RESULT_VFP:
             case EXCEPTION_RESULT_HC2V:
             case EXCEPTION_RESULT_HC4V:
@@ -5446,7 +5476,7 @@ RESTART_EXCEPTION_IMMED:
                         FreeResultGlobalVar (hGlbTmp); hGlbTmp = NULL;
                     } // End IF/ELSE
 
-                    // It's now a VFP result
+                    // It's now a HC[1248][FRV] result
                     aplTypeRes = TranslateExceptionCodeToArrayType (ExceptionCode);
 
                     dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #9: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
@@ -6065,14 +6095,26 @@ RESTART_EXCEPTION:
 
                     goto NONCE_EXIT;
 
+                case EXCEPTION_RESULT_FLT:
+                case EXCEPTION_RESULT_HC2F:
+                case EXCEPTION_RESULT_HC4F:
+                case EXCEPTION_RESULT_HC8F:
+
+                case EXCEPTION_RESULT_RAT:
+                case EXCEPTION_RESULT_HC2R:
+                case EXCEPTION_RESULT_HC4R:
+                case EXCEPTION_RESULT_HC8R:
+
                 case EXCEPTION_RESULT_VFP:
+                case EXCEPTION_RESULT_HC2V:
+                case EXCEPTION_RESULT_HC4V:
+                case EXCEPTION_RESULT_HC8V:
                     MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
-                    if (IsNumeric  (aplTypeRes)
-                     && !IsRealVfp (aplTypeRes))
+                    if (IsNumeric (aplTypeRes))
                     {
-                        // It's now a VFP result
-                        aplTypeRes = ARRAY_VFP;
+                        // It's now a HC[1248][FRV] result
+                        aplTypeRes = TranslateExceptionCodeToArrayType (ExceptionCode);
 
                         // If the old result is not immediate, ...
                         if (lpMemHdrRes NE NULL)
@@ -6120,139 +6162,11 @@ RESTART_EXCEPTION:
 
                     break;
 
-                case EXCEPTION_RESULT_FLOAT:
-                    MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
-
-                    if (IsNumeric (aplTypeRes))
-                    {
-                        // If the previous result is Boolean, we need to
-                        //   unlock, free, and allocate the result anew
-                        if (IsSimpleBool (aplTypeRes))
-                        {
-                            // It's now a FLOAT result
-                            aplTypeRes = ARRAY_FLOAT;
-
-                            // If the old result is not immediate, ...
-                            if (lpMemHdrRes NE NULL)
-                            {
-                                // We need to start over with the result
-                                MyGlobalUnlock (*lphGlbRes); lpMemRes = lpMemHdrRes = NULL;
-                                FreeResultGlobalVar (*lphGlbRes); *lphGlbRes = NULL;
-                            } // End IF
-
-                            if (!PrimScalarFnDydAllocate_EM (lptkFunc,
-                                                             lphGlbRes,
-                                                             lpMemHdrLft,
-                                                             lpMemHdrRht,
-                                                             aplRankLft,
-                                                             aplRankRht,
-                                                            &aplRankRes,
-                                                             aplTypeRes,
-                                                             bLftIdent,
-                                                             bRhtIdent,
-                                                             aplNELMLft,
-                                                             aplNELMRht,
-                                                             aplNELMRes))
-                                goto ERROR_EXIT;
-
-                            Assert (*lphGlbRes NE NULL);
-
-                            // Lock the memory to get a ptr to it
-                            lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
-                        } else
-                        // The previous result must have been INT which is
-                        //   the same size as FLOAT, so there's no need to
-                        //   change storage.
-                            // It's now a FLOAT result
-                            aplTypeRes = ARRAY_FLOAT;
-
-                        // If the result is not immediate, ...
-                        if (lpMemHdrRes NE NULL)
-                        {
-                            // If the result is not nested, ...
-                            if (!IsNested (lpMemHdrRes->ArrType))
-                                // Tell the header about it
-                                lpMemHdrRes->ArrType = aplTypeRes;
-
-                            // Skip over the header and dimensions to the data
-                            lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
-                        } // End IF
-
-                        dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #12: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
-
-                        goto RESTART_EXCEPTION;
-                    } // End IF
-
-                    // Display message for unhandled exception
-                    DisplayException ();
-
-                    break;
-
-                case EXCEPTION_RESULT_HC2F:
-                case EXCEPTION_RESULT_HC4F:
-                case EXCEPTION_RESULT_HC8F:
-                case EXCEPTION_RESULT_HC2V:
-                case EXCEPTION_RESULT_HC4V:
-                case EXCEPTION_RESULT_HC8V:
-                    MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
-
-                    if (IsNumeric (aplTypeRes))
-                    {
-                        // It's now a HCxy result
-                        aplTypeRes = TranslateExceptionCodeToArrayType (ExceptionCode);
-
-                        // If the old result is not immediate, ...
-                        if (lpMemHdrRes NE NULL)
-                        {
-                            // We need to start over with the result
-                            MyGlobalUnlock (*lphGlbRes); lpMemRes = lpMemHdrRes = NULL;
-                            FreeResultGlobalVar (*lphGlbRes); *lphGlbRes = NULL;
-                        } // End IF
-
-                        if (!PrimScalarFnDydAllocate_EM (lptkFunc,
-                                                         lphGlbRes,
-                                                         lpMemHdrLft,
-                                                         lpMemHdrRht,
-                                                         aplRankLft,
-                                                         aplRankRht,
-                                                        &aplRankRes,
-                                                         aplTypeRes,
-                                                         bLftIdent,
-                                                         bRhtIdent,
-                                                         aplNELMLft,
-                                                         aplNELMRht,
-                                                         aplNELMRes))
-                            goto ERROR_EXIT;
-
-                        Assert (*lphGlbRes NE NULL);
-
-                        // Lock the memory to get a ptr to it
-                        lpMemHdrRes = MyGlobalLockVar (*lphGlbRes);
-
-                        // If the result is not nested, ...
-                        if (!IsNested (lpMemHdrRes->ArrType))
-                            // Tell the header about it
-                            lpMemHdrRes->ArrType = aplTypeRes;
-
-                        // Skip over the header and dimensions to the data
-                        lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
-
-                        dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #12: %s (%S#%d)", MyGetExceptionStr (ExceptionCode), FNLN);
-
-                        goto RESTART_EXCEPTION;
-                    } // End IF
-
-                    // Display message for unhandled exception
-                    DisplayException ();
-
-                    break;
-
                 case EXCEPTION_ERRMSG_ALREADY_SET:
                     MySetExceptionCode (EXCEPTION_SUCCESS); // Reset
 
                     goto ERRMSG_ALREADY_SET_EXIT;
 
-////////////////case EXCEPTION_RESULT_RAT:
                 default:
                     // Display message for unhandled exception
                     DisplayException ();
@@ -6776,10 +6690,15 @@ void CheckExCodeHelper
         case EXCEPTION_SUCCESS:
         case EXCEPTION_DOMAIN_ERROR:
 
-        case EXCEPTION_RESULT_FLOAT:
+        case EXCEPTION_RESULT_FLT:
         case EXCEPTION_RESULT_HC2F:
         case EXCEPTION_RESULT_HC4F:
         case EXCEPTION_RESULT_HC8F:
+
+        case EXCEPTION_RESULT_RAT:
+        case EXCEPTION_RESULT_HC2R:
+        case EXCEPTION_RESULT_HC4R:
+        case EXCEPTION_RESULT_HC8R:
 
         case EXCEPTION_RESULT_VFP:
         case EXCEPTION_RESULT_HC2V:
@@ -6819,10 +6738,15 @@ void CheckExCodeMain_RE
 
             break;
 
-        case EXCEPTION_RESULT_FLOAT:
+        case EXCEPTION_RESULT_FLT:
         case EXCEPTION_RESULT_HC2F:
         case EXCEPTION_RESULT_HC4F:
         case EXCEPTION_RESULT_HC8F:
+
+        case EXCEPTION_RESULT_RAT:
+        case EXCEPTION_RESULT_HC2R:
+        case EXCEPTION_RESULT_HC4R:
+        case EXCEPTION_RESULT_HC8R:
 
         case EXCEPTION_RESULT_VFP:
         case EXCEPTION_RESULT_HC2V:

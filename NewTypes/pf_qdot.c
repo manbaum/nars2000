@@ -358,14 +358,14 @@ void PrimFnMonQuoteDotIisI
                                 FALSE);
         // If it's infinite, ...
         if (IsFltInfinity (aplFloatRes))
-            RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+            RaiseException (EXCEPTION_RESULT_FLT, 0, 0, NULL);
         else
             lpMemRes[uRes] = (APLINT) aplFloatRes;
     } else
     {
         // Check for results too large to express as integers
         if (lpatRht->aplInteger >= countof (factorial))
-            RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
+            RaiseException (EXCEPTION_RESULT_FLT, 0, 0, NULL);
         else
             // Lookup the result
             lpMemRes[uRes] = factorial[lpatRht->aplInteger];
@@ -437,7 +437,7 @@ APLFLOAT FactFLT
         else
         // Check for too large for GSL
         if ((aplFloatRht + 1) > GSL_SF_GAMMA_XMAX)
-            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+            RaiseException (EXCEPTION_RESULT_RAT, 0, 0, NULL);
         else
         {
             gsl_sf_result gsr = {0};
@@ -647,7 +647,7 @@ APLHC2F FactHC2F
 ////    else
 ////    // Check for too large for GSL
 ////    if ((aplFloatRht + 1) > GSL_SF_GAMMA_XMAX)
-////        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+////        RaiseException (EXCEPTION_RESULT_RAT, 0, 0, NULL);
 ////    else
         {
             gsl_sf_result gsrLnr = {0},
@@ -1431,7 +1431,7 @@ void PrimFnDydQuoteDotFisIvI
                 if (CheckCtrlBreak (lpbCtrlBreak))
                     break;
 
-                TI2 = imul64 (ZI, II + TI, &bRet, EXCEPTION_RESULT_FLOAT);
+                TI2 = imul64 (ZI, II + TI, &bRet, EXCEPTION_RESULT_FLT);
                 if (bRet)
                     ZI = TI2 / II;
                 else

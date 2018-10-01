@@ -1,6 +1,36 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1918 -- Version 0.5.8.xx
+-------------------------------
+
+* Promote Large Factorials From FLT To RAT
+
+Directory branches/bsmith/NewTypes:
+
+ENUMS.H:
+  Define new Exception Codes for HCxR.
+  Move towards replacing "_FLOAT" with "_FLT".
+  Fix mis-attribution in comment.
+
+EXCEPT.C:
+  Define new Exception Codes for HCxR.
+  Move towards replacing "_FLOAT" with "_FLT".
+
+PF_QDOT.C:
+  Move towards replacing "_FLOAT" with "_FLT".
+  Replace "DOMAIN ERROR" for large Factorials with RAT result.
+
+PRIMSPEC:
+  Move towards replacing "_FLOAT" with "_FLT".
+  Handle "EXCEPTION_RESULT_RAT" and friends as a new exception.
+  In <PrimFnDydSimpSimp_EM>, merge similar code in the exception handler.
+
+TRANSLATE.C:
+  Move towards replacing "_FLOAT" with "_FLT".
+  Handle "EXCEPTION_RESULT_RAT" and friends as a new exception.
+
+
 Build #1917 -- Version 0.5.8.xx
 -------------------------------
 

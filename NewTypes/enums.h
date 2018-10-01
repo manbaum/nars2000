@@ -126,30 +126,40 @@ typedef enum tagSYSCMDS_ENUM    // System Commands
 } SYSCMDS_ENUM, *LPSYSCMDS_ENUM;
 
 
+#define FRV_MUL     3
+
+#define MAKE_ERRCODE(code)      ((HRESULT) ((0xE << 28) | (FACILITY_WINDOWS << 16) | code))
+
 typedef enum tagEXCEPTION_CODES // Exception Codes
 {
-    EXCEPTION_SUCCESS = 0       ,   // 00:  All OK
-    EXCEPTION_DOMAIN_ERROR      ,   // 01:  Signal a DOMAIN ERROR
-    EXCEPTION_LIMIT_ERROR       ,   // 02:  Signal a LIMIT ERROR
-    EXCEPTION_NONCE_ERROR       ,   // 03:  Signal a NONCE ERROR
-    EXCEPTION_WS_FULL           ,   // 04:  Signal a WS FULL
-    EXCEPTION_CTRL_BREAK        ,   // 05:  Ctrl-Break pressed
-                                    // N.B.  The following values *MUST* be in order F, V, F, V, etc.
-                                    //       so we can do arithmetic on them as in
-                                    //       EXCEPTION_RESULT_FLOAT + 2 * iHCDimIndex
-    EXCEPTION_RESULT_FLOAT      ,   // 06:  Result should be Float
-    EXCEPTION_RESULT_VFP        ,   // 07:  Result should be VFP
-    EXCEPTION_RESULT_HC2F       ,   // 08:  Result should be HC2F
-    EXCEPTION_RESULT_HC2V       ,   // 09:  Result should be HC2V
-    EXCEPTION_RESULT_HC4F       ,   // 0A:  Result should be HC4F
-    EXCEPTION_RESULT_HC4V       ,   // 0B:  Result should be HC4V
-    EXCEPTION_RESULT_HC8F       ,   // 0C:  Result should be HC8F
-    EXCEPTION_RESULT_HC8V       ,   // 0D:  Result should be HC8V
+    EXCEPTION_SUCCESS            = 0                    ,   // 00:  All OK
+    EXCEPTION_DOMAIN_ERROR       = MAKE_ERRCODE (0x01)  ,   // 01:  Signal a DOMAIN ERROR
+    EXCEPTION_LIMIT_ERROR        = MAKE_ERRCODE (0x02)  ,   // 02:  Signal a LIMIT ERROR
+    EXCEPTION_NONCE_ERROR        = MAKE_ERRCODE (0x03)  ,   // 03:  Signal a NONCE ERROR
+    EXCEPTION_WS_FULL            = MAKE_ERRCODE (0x04)  ,   // 04:  Signal a WS FULL
+    EXCEPTION_CTRL_BREAK         = MAKE_ERRCODE (0x05)  ,   // 05:  Ctrl-Break pressed
+                                                            // N.B.  The following values *MUST* be in order F, R, V, F, R, V, etc.
+                                                            //       so we can do arithmetic on them as in
+                                                            //       EXCEPTION_RESULT_FLT + FRV_MUL * iHCDimIndex
+    EXCEPTION_RESULT_FLT         = MAKE_ERRCODE (0x06)  ,   // 06:  Result should be FLT
+    EXCEPTION_RESULT_RAT         = MAKE_ERRCODE (0x07)  ,   // 07:  ...              RAT
+    EXCEPTION_RESULT_VFP         = MAKE_ERRCODE (0x08)  ,   // 08:  ...              VFP
+    EXCEPTION_RESULT_HC2F        = MAKE_ERRCODE (0x09)  ,   // 09:  ...              HC2F
+    EXCEPTION_RESULT_HC2R        = MAKE_ERRCODE (0x0A)  ,   // 0A:  ...              HC2R
+    EXCEPTION_RESULT_HC2V        = MAKE_ERRCODE (0x0B)  ,   // 0B:  ...              HC2V
+    EXCEPTION_RESULT_HC4F        = MAKE_ERRCODE (0x0C)  ,   // 0C:  ...              HC4F
+    EXCEPTION_RESULT_HC4R        = MAKE_ERRCODE (0x0D)  ,   // 0D:  ...              HC4R
+    EXCEPTION_RESULT_HC4V        = MAKE_ERRCODE (0x0E)  ,   // 0E:  ...              HC4V
+    EXCEPTION_RESULT_HC8F        = MAKE_ERRCODE (0x0F)  ,   // 0F:  ...              HC8F
+    EXCEPTION_RESULT_HC8R        = MAKE_ERRCODE (0x10)  ,   // 10:  ...              HC8R
+    EXCEPTION_RESULT_HC8V        = MAKE_ERRCODE (0x11)  ,   // 11:  ...              HC8V
 
-    EXCEPTION_ERRMSG_ALREADY_SET,   // 0E:  Look in lpMemPTD->lpwszErrorMessage
+    EXCEPTION_ERRMSG_ALREADY_SET = MAKE_ERRCODE (0x12)  ,   // 12:  Look in lpMemPTD->lpwszErrorMessage
 
-    EXCEPTION_RESULT_HC1F = EXCEPTION_RESULT_FLOAT, // To simplify common macros
-    EXCEPTION_RESULT_HC1V = EXCEPTION_RESULT_VFP  , // ...
+    EXCEPTION_RESULT_FLOAT= EXCEPTION_RESULT_FLT        ,   // An old alias
+    EXCEPTION_RESULT_HC1F = EXCEPTION_RESULT_FLT        ,   // To simplify common macros
+    EXCEPTION_RESULT_HC1R = EXCEPTION_RESULT_RAT        ,   // ...
+    EXCEPTION_RESULT_HC1V = EXCEPTION_RESULT_VFP        ,   // ...
 } EXCEPTION_CODES, *LPEXCEPTION_CODES;
 
 // N.B.:  Whenever changing the above tagEXCEPTION_CODES enum,
@@ -404,7 +414,7 @@ typedef enum tagENUM_HCFI   // Indices into HCxFCN arrays
 
 // N.B.: Whenever changing the above enum (ENUM_HCFI),
 //   be sure to make a corresponding change to
-//   <aArrayTypeToHCDimIndex> in <externs.h>, and
+//   <aArrayTypeToHCDimIndex> in <hc_proc.h>, and
 //   the four <HCx_FCN>s in <externs.h>.
 
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,31 +25,38 @@ typedef enum tagPN_NUMTYPE
     // N.B.  The following values *MUST* be in order I before F, for all types
     //       so we can do arithmetic on them as in PN_NUMTYPE_INT + 1 to get
     //       the corresponding _FLT (or HCxF) type.
-    PN_NUMTYPE_BOOL,                // 00:  Boolean type
-    PN_NUMTYPE_INT,                 // 01:  Integer ...
-    PN_NUMTYPE_FLT,                 // 02:  Float   ...
-    PN_NUMTYPE_RAT,                 // 03:  RAT     ...
-    PN_NUMTYPE_VFP,                 // 04:  VFP     ...
-    PN_NUMTYPE_HC2I,                // 05:  Complex    INT coefficients
-    PN_NUMTYPE_HC2F,                // 06:  ...        FLT ...
-    PN_NUMTYPE_HC2R,                // 07:  ...        RAT ...
-    PN_NUMTYPE_HC2V,                // 08:  ...        VFP ...
-    PN_NUMTYPE_HC4I,                // 09:  Quaternion INT ...
-    PN_NUMTYPE_HC4F,                // 0A:  ...        FLT ...
-    PN_NUMTYPE_HC4R,                // 0B:  ...        RAT ...
-    PN_NUMTYPE_HC4V,                // 0C:  ...        VFP ...
-    PN_NUMTYPE_HC8I,                // 0D:  Octonion   INT ...
-    PN_NUMTYPE_HC8F,                // 0E:  ...        FLT ...
-    PN_NUMTYPE_HC8R,                // 0F:  ...        RAT ...
-    PN_NUMTYPE_HC8V,                // 10:  ...        VFP ...
-    PN_NUMTYPE_INIT,                // 11:  Initial value (used in <aNumTypePromote>)
-    PN_NUMTYPE_LENGTH,              // 12:  Length
-    PN_NUMTYPE_ERR = -1,            // -1:  Error
+    PN_NUMTYPE_BOOL,                    // 00:  Boolean type
+    PN_NUMTYPE_INT,                     // 01:  Integer ...
+    PN_NUMTYPE_FLT,                     // 02:  Float   ...
+    PN_NUMTYPE_RAT,                     // 03:  RAT     ...
+    PN_NUMTYPE_VFP,                     // 04:  VFP     ...
+    PN_NUMTYPE_HC2I,                    // 05:  Complex    INT coefficients
+    PN_NUMTYPE_HC2F,                    // 06:  ...        FLT ...
+    PN_NUMTYPE_HC2R,                    // 07:  ...        RAT ...
+    PN_NUMTYPE_HC2V,                    // 08:  ...        VFP ...
+    PN_NUMTYPE_HC4I,                    // 09:  Quaternion INT ...
+    PN_NUMTYPE_HC4F,                    // 0A:  ...        FLT ...
+    PN_NUMTYPE_HC4R,                    // 0B:  ...        RAT ...
+    PN_NUMTYPE_HC4V,                    // 0C:  ...        VFP ...
+    PN_NUMTYPE_HC8I,                    // 0D:  Octonion   INT ...
+    PN_NUMTYPE_HC8F,                    // 0E:  ...        FLT ...
+    PN_NUMTYPE_HC8R,                    // 0F:  ...        RAT ...
+    PN_NUMTYPE_HC8V,                    // 10:  ...        VFP ...
+    PN_NUMTYPE_INIT,                    // 11:  Initial value (used in <aNumTypePromote>)
+    PN_NUMTYPE_LENGTH,                  // 12:  Length
+                                        //      *MUST* be the last non-error entry
+
+    PN_NUMTYPE_ERR = -1,                // -1:  Error
+
+    PN_NUMTYPE_HC1I = PN_NUMTYPE_INT ,  // To simplify common macros
+    PN_NUMTYPE_HC1F = PN_NUMTYPE_FLT ,  // ...
+    PN_NUMTYPE_HC1R = PN_NUMTYPE_RAT ,  // ...
+    PN_NUMTYPE_HC1V = PN_NUMTYPE_VFP ,  // ...
 } PNNUMTYPE, *LPPNNUMTYPE;
 
 // N.B.:  Whenever changing the above tagPN_NUMTYPE enum,
 //   be sure to make a corresponding change to
-//   <PN_MAT> in <pn_parse.y>,
+//   <PN_MAT> in <pn_proc.c>,
 //   chComType++ in <PN_VectorRes> in <pn_proc.c>.
 
 
@@ -88,14 +95,14 @@ typedef enum tagPN_NUMTYPE
 typedef struct tagPN_YYSTYPE        // YYSTYPE for Point Notation parser
 {
     ALLTYPES  at;                   // 00:  All datatypes as a union (64 bytes)
-    UINT      uNumAcc:30,           // 40:  3FFFFFFF:  Starting offset into lpszNumAccum
-              bSigned:1,            //      40000000:  TRUE iff the value is negative
-              bFiller:1;            //      80000000:  TRUE iff the value is the filler <pnBool>
-    PNNUMTYPE chType;               // 44:  The numeric type (see PNNUMTYPE)
-    UINT      uNumStart;            // 48:  Starting offset into lpszStart
-    UCHAR     chCur,                // 4C:  A char for the accumulator
-              chAlign[3];           // 4D:  For alignment
-                                    // 50:  Length
+    size_t    uNumAcc;              // 40:  Starting offset into lpszNumAccum
+    UINT      bSigned:1,            // 44:  00000001:  TRUE iff the value is negative
+              bFiller:1;            //      00000002:  TRUE iff the value is the filler <pnBool>
+    PNNUMTYPE chType;               // 48:  The numeric type (see PNNUMTYPE)
+    size_t    uNumStart;            // 4C:  Starting offset into lpszStart
+    UCHAR     chCur,                // 50:  A char for the accumulator
+              chAlign[3];           // 51:  For alignment
+                                    // 54:  Length
 } PN_YYSTYPE, *LPPN_YYSTYPE;        // Data type of yacc stack
 
 // N.B.:  Whenever changing the above tagPN_YYSTYPE enum,
@@ -110,7 +117,7 @@ typedef struct tagPN_VECTOR
     ALLTYPES  at;                   // 00:  All datatypes as a union (64 bytes)
     PNNUMTYPE chType;               // 44:  The numeric type (see PNNUMTYPE)
     LPCHAR    lpStart;              // 48:  Ptr to start of char stream
-    UINT      uNumLen;              // 4C:  # chars in lpStart
+    size_t    uNumLen;              // 4C:  # chars in lpStart
     UINT      bRatExp:1,            // 50:  00000001:  TRUE iff the number is expressible as a Rat
               :31;                  //      FFFFFFFE:  Available bits
                                     // 54:  Length
@@ -123,7 +130,7 @@ typedef struct tagPN_VECTOR
 typedef struct tagPNLOCALVARS       // Point Notation Local Vars
 {
     LPCHAR        lpszStart;        // 00:  Ptr to start of char stream
-    UINT          uNumLen,          // 04:  # chars in lpszStart
+    size_t        uNumLen,          // 04:  # chars in lpszStart
                   uNumCur,          // 08:  Current index into lpszStart
                   uNumIni,          // 0C:  Initial index into lpszStart
                   uAlpAccInt,       // 10:  Current index into lpszAlphaInt
@@ -159,6 +166,14 @@ typedef struct tagPNLOCALVARS       // Point Notation Local Vars
 #define PN_NONCE        "nonce error"
 #define PN_WSFULL       "memory exhausted"
 #define PN_DOMAIN       "domain error"
+
+// Text strings
+#define INT_CHARS       "0123456789-"
+#define INT_CHARS_WS    WIDEN (INT_CHARS)
+#define DEC_CHARS       INT_CHARS "eE."
+#define DEC_CHARS_WS    WIDEN (DEC_CHARS)
+#define HC_SEPS         "sijJklo"
+#define HC_CHARS        HC_SEPS "adu0123456789rv.eE" OVERBAR1_STR
 
 
 //***************************************************************************

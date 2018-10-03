@@ -166,18 +166,26 @@ UnInteger:
     ;
 
 AlphaInt:
-               Alphabet             {DbgMsgWP (L"%%AlphaInt:  Alphabet");
-                                     lppnLocalVars->uAlpAccInt = 0;
+      {lppnLocalVars->uAlpAccInt = 0;}
+          AlphaPos                  {DbgMsgWP (L"%%AlphaInt:  AlphaPos");
+                                    }
+    |
+      {lppnLocalVars->uAlpAccInt = 0; PN_ChrAccInt (lppnLocalVars, OVERBAR1);}
+      OVR AlphaPos                  {DbgMsgWP (L"%%AlphaInt:  " WS_UTF16_OVERBAR L"AlphaPos");
+                                    }
+    ;
+
+AlphaPos:
+               Alphabet             {DbgMsgWP (L"%%AlphaPos:  Alphabet");
                                      PN_ChrAccInt (lppnLocalVars, $1.chCur);
                                     }
-    |          Digit                {DbgMsgWP (L"%%AlphaInt:  Digit");
-                                     lppnLocalVars->uAlpAccInt = 0;
+    |          Digit                {DbgMsgWP (L"%%AlphaPos:  Digit");
                                      PN_ChrAccInt (lppnLocalVars, $1.chCur);
                                     }
-    | AlphaInt Alphabet             {DbgMsgWP (L"%%AlphaInt:  AlphaInt Alphabet");
+    | AlphaPos Alphabet             {DbgMsgWP (L"%%AlphaPos:  AlphaPos Alphabet");
                                      PN_ChrAccInt (lppnLocalVars, $2.chCur);
                                     }
-    | AlphaInt Digit                {DbgMsgWP (L"%%AlphaInt:  AlphaInt Digit");
+    | AlphaPos Digit                {DbgMsgWP (L"%%AlphaPos:  AlphaPos Digit");
                                      PN_ChrAccInt (lppnLocalVars, $2.chCur);
                                     }
     ;
@@ -827,15 +835,13 @@ PiPoint:
                                     }
     ;
 
+eE:
+      'e'
+    | 'E'
+    ;
+
 ExpPoint:
-      DecPoint 'e' IntPoint         {DbgMsgWP (L"%%ExpPoint:  DecPoint 'e' IntPoint");
-                                     // Make it into a ExpPoint number
-                                     lppnLocalVars->lpYYRes = PN_MakeExpPoint   (&$1, &$3,  lppnLocalVars);
-                                     if (lppnLocalVars->lpYYRes EQ NULL)
-                                         YYERROR2;
-                                     $$ = *lppnLocalVars->lpYYRes;
-                                    }
-    | DecPoint 'E' IntPoint         {DbgMsgWP (L"%%ExpPoint:  DecPoint 'E' IntPoint");
+      DecPoint eE  IntPoint         {DbgMsgWP (L"%%ExpPoint:  DecPoint 'e' IntPoint");
                                      // Make it into a ExpPoint number
                                      lppnLocalVars->lpYYRes = PN_MakeExpPoint   (&$1, &$3,  lppnLocalVars);
                                      if (lppnLocalVars->lpYYRes EQ NULL)
@@ -859,7 +865,7 @@ VfpPoint:
                                          YYERROR2;
                                      $$ = *lppnLocalVars->lpYYRes;
                                     }
-    | DecPoint 'e' IntPoint DEF_VFPSEP
+    | DecPoint eE  IntPoint DEF_VFPSEP
                                     {DbgMsgWP (L"%%VfpPoint:  DecPoint 'e' IntPoint 'v'");
                                      // Make it into a VfpPoint number
                                      lppnLocalVars->lpYYRes = PN_MakeVfpPoint   (&$1, &$3,  lppnLocalVars, NULL);
@@ -867,24 +873,8 @@ VfpPoint:
                                          YYERROR2;
                                      $$ = *lppnLocalVars->lpYYRes;
                                     }
-    | DecPoint 'e' IntPoint DEF_VFPSEP UnIntPoint
+    | DecPoint eE  IntPoint DEF_VFPSEP UnIntPoint
                                     {DbgMsgWP (L"%%VfpPoint:  DecPoint 'e' IntPoint 'v' UnIntPoint");
-                                     // Make it into a VfpPoint number
-                                     lppnLocalVars->lpYYRes = PN_MakeVfpPoint   (&$1, &$3,  lppnLocalVars, &$5.at.aplInteger);
-                                     if (lppnLocalVars->lpYYRes EQ NULL)
-                                         YYERROR2;
-                                     $$ = *lppnLocalVars->lpYYRes;
-                                    }
-    | DecPoint 'E' IntPoint DEF_VFPSEP
-                                    {DbgMsgWP (L"%%VfpPoint:  DecPoint 'E' IntPoint 'v'");
-                                     // Make it into a VfpPoint number
-                                     lppnLocalVars->lpYYRes = PN_MakeVfpPoint   (&$1, &$3,  lppnLocalVars, NULL);
-                                     if (lppnLocalVars->lpYYRes EQ NULL)
-                                         YYERROR2;
-                                     $$ = *lppnLocalVars->lpYYRes;
-                                    }
-    | DecPoint 'E' IntPoint DEF_VFPSEP UnIntPoint
-                                    {DbgMsgWP (L"%%VfpPoint:  DecPoint 'E' IntPoint 'v' UnIntPoint");
                                      // Make it into a VfpPoint number
                                      lppnLocalVars->lpYYRes = PN_MakeVfpPoint   (&$1, &$3,  lppnLocalVars, &$5.at.aplInteger);
                                      if (lppnLocalVars->lpYYRes EQ NULL)
@@ -1233,7 +1223,7 @@ int pn_yylex
 
     // If the current char is a HC separator, ...
     if (uChar NE AC_EOS
-     && strchr ("sijJklo", uChar) NE NULL)
+     && strchr (HC_SEPS, uChar) NE NULL)
     {
         LPCHAR lpChar;
         UCHAR  uCharPrv,
@@ -1251,8 +1241,7 @@ int pn_yylex
         //   "uChar" came.
         lppnLocalVars->lpszStart[lppnLocalVars->uNumLen] = AC_EOS;
         lpChar = SkipPastStr (&lppnLocalVars->lpszStart[lppnLocalVars->uNumCur - 1],
-                               "sijJklo0123456789rv.eE" OVERBAR1_STR);
-
+                               HC_CHARS);
         // Get the char at the end of and after the HC notation chars
         uCharPrv = lpChar[-1];
         uCharNxt = lpChar[ 0];
@@ -1266,7 +1255,7 @@ int pn_yylex
 
         // If the ending char is a HC separator,
         //   and the next char is an EOS or white space, ...
-        if (strchr ("sijJklo", uCharPrv) NE NULL
+        if (strchr (HC_SEPS, uCharPrv) NE NULL
          && (uCharNxt EQ AC_EOS || IsWhite (uCharNxt)))
         {
             // Mark as needing an EOT

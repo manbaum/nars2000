@@ -30,6 +30,8 @@
 #include <math.h>
 #include "headers.h"
 
+//#define DEBUG_FMT
+
 
 //***************************************************************************
 //  $PN_actIDENT
@@ -1785,25 +1787,25 @@ void PN_actHC8R_HC8V
 // The first and second columns of M(a,b) are the action routine <PN_act##a##_##b> used to promote to a common type <b>.
 // The second column of M(a,b) is the numeric type <PN_NUMTYPE_##b> to which the row and col are promoted when joined.
 
-#define PN_MAT                                                                                                                                                                                                                                              \
+#define PN_MAT                                                                                                                                                                                                                                                                                                  \
 {/*     BOOL          INT          FLT          RAT          VFP          HC2I         HC2F         HC2R         HC2V         HC4I         HC4F         HC4R         HC4V         HC8I         HC8F         HC8R         HC8V        INIT     */            \
-   {M(BOOL,BOOL),M(BOOL,INT ),M(BOOL,FLT ),M(BOOL,RAT ),M(BOOL,VFP ),M(BOOL,HC2I),M(BOOL,HC2F),M(BOOL,HC2R),M(BOOL,HC2V),M(BOOL,HC4I),M(BOOL,HC4F),M(BOOL,HC4R),M(BOOL,HC4V),M(BOOL,HC8I),M(BOOL,HC8F),M(BOOL,HC8R),M(BOOL,HC8V),M(BOOL,BOOL)}, /* BOOL */  \
-   {M(INT ,INT ),M(INT ,INT ),M(INT ,FLT ),M(INT ,RAT ),M(INT ,VFP ),M(INT ,HC2I),M(INT ,HC2F),M(INT ,HC2R),M(INT ,HC2V),M(INT ,HC4I),M(INT ,HC4F),M(INT ,HC4R),M(INT ,HC4V),M(INT ,HC8I),M(INT ,HC8F),M(INT ,HC8R),M(INT ,HC8V),M(INT ,INT )}, /* INT  */  \
-   {M(FLT ,FLT ),M(FLT ,FLT ),M(FLT ,FLT ),M(FLT ,VFP ),M(FLT ,VFP ),M(FLT ,HC2F),M(FLT ,HC2F),M(FLT ,HC2V),M(FLT ,HC2V),M(FLT ,HC4F),M(FLT ,HC4F),M(FLT ,HC4V),M(FLT ,HC4V),M(FLT ,HC8F),M(FLT ,HC8F),M(FLT ,HC8V),M(FLT ,HC8V),M(FLT ,FLT )}, /* FLT  */  \
-   {M(RAT ,RAT ),M(RAT ,RAT ),M(RAT ,VFP ),M(RAT ,RAT ),M(RAT ,VFP ),M(RAT ,HC2R),M(RAT ,HC2V),M(RAT ,HC2R),M(RAT ,HC2V),M(RAT ,HC4R),M(RAT ,HC4V),M(RAT ,HC4R),M(RAT ,HC4V),M(RAT ,HC8R),M(RAT ,HC8V),M(RAT ,HC8R),M(RAT ,HC8V),M(VFP ,VFP )}, /* RAT  */  \
-   {M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,HC2V),M(VFP ,HC2V),M(VFP ,HC2V),M(VFP ,HC2V),M(VFP ,HC4V),M(VFP ,HC4V),M(VFP ,HC4V),M(VFP ,HC4V),M(VFP ,HC8V),M(VFP ,HC8V),M(VFP ,HC8V),M(VFP ,HC8V),M(RAT ,RAT )}, /* VFP  */  \
-   {M(HC2I,HC2I),M(HC2I,HC2I),M(HC2I,HC2F),M(HC2I,HC2R),M(HC2I,HC2V),M(HC2I,HC2I),M(HC2I,HC2F),M(HC2I,HC2R),M(HC2I,HC2V),M(HC2I,HC4I),M(HC2I,HC4F),M(HC2I,HC4R),M(HC2I,HC4V),M(HC2I,HC8I),M(HC2I,HC8F),M(HC2I,HC8R),M(HC2I,HC8V),M(HC2I,HC2I)}, /* HC2I */  \
-   {M(HC2F,HC2F),M(HC2F,HC2F),M(HC2F,HC2F),M(HC2F,HC2V),M(HC2F,HC2V),M(HC2F,HC2F),M(HC2F,HC2F),M(HC2F,HC2V),M(HC2F,HC2V),M(HC2F,HC4F),M(HC2F,HC4F),M(HC2F,HC4V),M(HC2F,HC4V),M(HC2F,HC8F),M(HC2F,HC8F),M(HC2F,HC8V),M(HC2F,HC8V),M(HC2F,HC2F)}, /* HC2F */  \
-   {M(HC2R,HC2R),M(HC2R,HC2R),M(HC2R,HC2V),M(HC2R,HC2R),M(HC2R,HC2V),M(HC2R,HC2R),M(HC2R,HC2V),M(HC2R,HC2R),M(HC2R,HC2V),M(HC2R,HC4R),M(HC2R,HC4V),M(HC2R,HC4R),M(HC2R,HC4V),M(HC2R,HC8R),M(HC2R,HC8V),M(HC2R,HC8R),M(HC2R,HC8V),M(HC2R,HC2R)}, /* HC2R */  \
-   {M(HC2V,HC2V),M(HC2V,HC2V),M(HC2V,HC2V),M(HC2V,HC2V),M(HC2V,HC2V),M(HC2V,HC2V),M(HC2V,HC2V),M(HC2V,HC2V),M(HC2V,HC2V),M(HC2V,HC4V),M(HC2V,HC4V),M(HC2V,HC4V),M(HC2V,HC4V),M(HC2V,HC8V),M(HC2V,HC8V),M(HC2V,HC8V),M(HC2V,HC8V),M(HC2V,HC2V)}, /* HC2V */  \
-   {M(HC4I,HC4I),M(HC4I,HC4I),M(HC4I,HC4F),M(HC4I,HC4R),M(HC4I,HC4V),M(HC4I,HC4I),M(HC4I,HC4F),M(HC4I,HC4R),M(HC4I,HC4V),M(HC4I,HC4I),M(HC4I,HC4F),M(HC4I,HC4R),M(HC4I,HC4V),M(HC4I,HC8I),M(HC4I,HC8F),M(HC4I,HC8R),M(HC4I,HC8V),M(HC4I,HC4I)}, /* HC4I */  \
-   {M(HC4F,HC4F),M(HC4F,HC4F),M(HC4F,HC4F),M(HC4F,HC4V),M(HC4F,HC4V),M(HC4F,HC4F),M(HC4F,HC4F),M(HC4F,HC4V),M(HC4F,HC4V),M(HC4F,HC4F),M(HC4F,HC4F),M(HC4F,HC4V),M(HC4F,HC4V),M(HC4F,HC8F),M(HC4F,HC8F),M(HC4F,HC8V),M(HC4F,HC8V),M(HC4F,HC4F)}, /* HC4F */  \
-   {M(HC4R,HC4R),M(HC4R,HC4R),M(HC4R,HC4V),M(HC4R,HC4R),M(HC4R,HC4V),M(HC4R,HC4R),M(HC4R,HC4V),M(HC4R,HC4R),M(HC4R,HC4V),M(HC4R,HC4R),M(HC4R,HC4V),M(HC4R,HC4R),M(HC4R,HC4V),M(HC4R,HC8R),M(HC4R,HC8V),M(HC4R,HC8R),M(HC4R,HC8V),M(HC4R,HC4R)}, /* HC4R */  \
-   {M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC8V),M(HC4V,HC8V),M(HC4V,HC8V),M(HC4V,HC8V),M(HC4V,HC4V)}, /* HC4V */  \
-   {M(HC8I,HC8I),M(HC8I,HC8I),M(HC8I,HC8F),M(HC8I,HC8R),M(HC8I,HC8V),M(HC8I,HC8I),M(HC8I,HC8F),M(HC8I,HC8R),M(HC8I,HC8V),M(HC8I,HC8I),M(HC8I,HC8F),M(HC8I,HC8R),M(HC8I,HC8V),M(HC8I,HC8I),M(HC8I,HC8F),M(HC8I,HC8R),M(HC8I,HC8V),M(HC8I,HC8I)}, /* HC8I */  \
-   {M(HC8F,HC8F),M(HC8F,HC8F),M(HC8F,HC8F),M(HC8F,HC8V),M(HC8F,HC8V),M(HC8F,HC8F),M(HC8F,HC8F),M(HC8F,HC8V),M(HC8F,HC8V),M(HC8F,HC8F),M(HC8F,HC8F),M(HC8F,HC8V),M(HC8F,HC8V),M(HC8F,HC8F),M(HC8F,HC8F),M(HC8F,HC8V),M(HC8F,HC8V),M(HC8F,HC8F)}, /* HC8F */  \
-   {M(HC8R,HC8R),M(HC8R,HC8R),M(HC8R,HC8V),M(HC8R,HC8R),M(HC8R,HC8V),M(HC8R,HC8R),M(HC8R,HC8V),M(HC8R,HC8R),M(HC8R,HC8V),M(HC8R,HC8R),M(HC8R,HC8V),M(HC8R,HC8R),M(HC8R,HC8V),M(HC8R,HC8R),M(HC8R,HC8V),M(HC8R,HC8R),M(HC8R,HC8V),M(HC8R,HC8R)}, /* HC8R */  \
-   {M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V)}, /* HC8V */  \
+   {M(BOOL,BOOL),M(BOOL,INT ),M(BOOL,FLT ),M(BOOL,RAT ),M(BOOL,VFP ),M(BOOL,HC2I),M(BOOL,HC2F),M(BOOL,HC2R),M(BOOL,HC2V),M(BOOL,HC4I),M(BOOL,HC4F),M(BOOL,HC4R),M(BOOL,HC4V),M(BOOL,HC8I),M(BOOL,HC8F),M(BOOL,HC8R),M(BOOL,HC8V),M(BOOL,INIT)}, /* BOOL */  \
+   {M(INT ,INT ),M(INT ,INT ),M(INT ,FLT ),M(INT ,RAT ),M(INT ,VFP ),M(INT ,HC2I),M(INT ,HC2F),M(INT ,HC2R),M(INT ,HC2V),M(INT ,HC4I),M(INT ,HC4F),M(INT ,HC4R),M(INT ,HC4V),M(INT ,HC8I),M(INT ,HC8F),M(INT ,HC8R),M(INT ,HC8V),M(INT ,INIT)}, /* INT  */  \
+   {M(FLT ,FLT ),M(FLT ,FLT ),M(FLT ,FLT ),M(FLT ,VFP ),M(FLT ,VFP ),M(FLT ,HC2F),M(FLT ,HC2F),M(FLT ,HC2V),M(FLT ,HC2V),M(FLT ,HC4F),M(FLT ,HC4F),M(FLT ,HC4V),M(FLT ,HC4V),M(FLT ,HC8F),M(FLT ,HC8F),M(FLT ,HC8V),M(FLT ,HC8V),M(FLT ,INIT)}, /* FLT  */  \
+   {M(RAT ,RAT ),M(RAT ,RAT ),M(RAT ,VFP ),M(RAT ,RAT ),M(RAT ,VFP ),M(RAT ,HC2R),M(RAT ,HC2V),M(RAT ,HC2R),M(RAT ,HC2V),M(RAT ,HC4R),M(RAT ,HC4V),M(RAT ,HC4R),M(RAT ,HC4V),M(RAT ,HC8R),M(RAT ,HC8V),M(RAT ,HC8R),M(RAT ,HC8V),M(RAT ,INIT)}, /* RAT  */  \
+   {M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,VFP ),M(VFP ,HC2V),M(VFP ,HC2V),M(VFP ,HC2V),M(VFP ,HC2V),M(VFP ,HC4V),M(VFP ,HC4V),M(VFP ,HC4V),M(VFP ,HC4V),M(VFP ,HC8V),M(VFP ,HC8V),M(VFP ,HC8V),M(VFP ,HC8V),M(VFP ,INIT)}, /* VFP  */  \
+   {M(HC2I,HC2I),M(HC2I,HC2I),M(HC2I,HC2F),M(HC2I,HC2R),M(HC2I,HC2V),M(HC2I,HC2I),M(HC2I,HC2F),M(HC2I,HC2R),M(HC2I,HC2V),M(HC2I,HC4I),M(HC2I,HC4F),M(HC2I,HC4R),M(HC2I,HC4V),M(HC2I,HC8I),M(HC2I,HC8F),M(HC2I,HC8R),M(HC2I,HC8V),M(HC2I,INIT)}, /* HC2I */  \
+   {M(HC2F,HC2F),M(HC2F,HC2F),M(HC2F,HC2F),M(HC2F,HC2V),M(HC2F,HC2V),M(HC2F,HC2F),M(HC2F,HC2F),M(HC2F,HC2V),M(HC2F,HC2V),M(HC2F,HC4F),M(HC2F,HC4F),M(HC2F,HC4V),M(HC2F,HC4V),M(HC2F,HC8F),M(HC2F,HC8F),M(HC2F,HC8V),M(HC2F,HC8V),M(HC2F,INIT)}, /* HC2F */  \
+   {M(HC2R,HC2R),M(HC2R,HC2R),M(HC2R,HC2V),M(HC2R,HC2R),M(HC2R,HC2V),M(HC2R,HC2R),M(HC2R,HC2V),M(HC2R,HC2R),M(HC2R,HC2V),M(HC2R,HC4R),M(HC2R,HC4V),M(HC2R,HC4R),M(HC2R,HC4V),M(HC2R,HC8R),M(HC2R,HC8V),M(HC2R,HC8R),M(HC2R,HC8V),M(HC2R,INIT)}, /* HC2R */  \
+   {M(HC2V,HC2V),M(HC2V,HC2V),M(HC2V,HC2V),M(HC2V,HC2V),M(HC2V,HC2V),M(HC2V,HC2V),M(HC2V,HC2V),M(HC2V,HC2V),M(HC2V,HC2V),M(HC2V,HC4V),M(HC2V,HC4V),M(HC2V,HC4V),M(HC2V,HC4V),M(HC2V,HC8V),M(HC2V,HC8V),M(HC2V,HC8V),M(HC2V,HC8V),M(HC2V,INIT)}, /* HC2V */  \
+   {M(HC4I,HC4I),M(HC4I,HC4I),M(HC4I,HC4F),M(HC4I,HC4R),M(HC4I,HC4V),M(HC4I,HC4I),M(HC4I,HC4F),M(HC4I,HC4R),M(HC4I,HC4V),M(HC4I,HC4I),M(HC4I,HC4F),M(HC4I,HC4R),M(HC4I,HC4V),M(HC4I,HC8I),M(HC4I,HC8F),M(HC4I,HC8R),M(HC4I,HC8V),M(HC4I,INIT)}, /* HC4I */  \
+   {M(HC4F,HC4F),M(HC4F,HC4F),M(HC4F,HC4F),M(HC4F,HC4V),M(HC4F,HC4V),M(HC4F,HC4F),M(HC4F,HC4F),M(HC4F,HC4V),M(HC4F,HC4V),M(HC4F,HC4F),M(HC4F,HC4F),M(HC4F,HC4V),M(HC4F,HC4V),M(HC4F,HC8F),M(HC4F,HC8F),M(HC4F,HC8V),M(HC4F,HC8V),M(HC4F,INIT)}, /* HC4F */  \
+   {M(HC4R,HC4R),M(HC4R,HC4R),M(HC4R,HC4V),M(HC4R,HC4R),M(HC4R,HC4V),M(HC4R,HC4R),M(HC4R,HC4V),M(HC4R,HC4R),M(HC4R,HC4V),M(HC4R,HC4R),M(HC4R,HC4V),M(HC4R,HC4R),M(HC4R,HC4V),M(HC4R,HC8R),M(HC4R,HC8V),M(HC4R,HC8R),M(HC4R,HC8V),M(HC4R,INIT)}, /* HC4R */  \
+   {M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC4V),M(HC4V,HC8V),M(HC4V,HC8V),M(HC4V,HC8V),M(HC4V,HC8V),M(HC4V,INIT)}, /* HC4V */  \
+   {M(HC8I,HC8I),M(HC8I,HC8I),M(HC8I,HC8F),M(HC8I,HC8R),M(HC8I,HC8V),M(HC8I,HC8I),M(HC8I,HC8F),M(HC8I,HC8R),M(HC8I,HC8V),M(HC8I,HC8I),M(HC8I,HC8F),M(HC8I,HC8R),M(HC8I,HC8V),M(HC8I,HC8I),M(HC8I,HC8F),M(HC8I,HC8R),M(HC8I,HC8V),M(HC8I,INIT)}, /* HC8I */  \
+   {M(HC8F,HC8F),M(HC8F,HC8F),M(HC8F,HC8F),M(HC8F,HC8V),M(HC8F,HC8V),M(HC8F,HC8F),M(HC8F,HC8F),M(HC8F,HC8V),M(HC8F,HC8V),M(HC8F,HC8F),M(HC8F,HC8F),M(HC8F,HC8V),M(HC8F,HC8V),M(HC8F,HC8F),M(HC8F,HC8F),M(HC8F,HC8V),M(HC8F,HC8V),M(HC8F,INIT)}, /* HC8F */  \
+   {M(HC8R,HC8R),M(HC8R,HC8R),M(HC8R,HC8V),M(HC8R,HC8R),M(HC8R,HC8V),M(HC8R,HC8R),M(HC8R,HC8V),M(HC8R,HC8R),M(HC8R,HC8V),M(HC8R,HC8R),M(HC8R,HC8V),M(HC8R,HC8R),M(HC8R,HC8V),M(HC8R,HC8R),M(HC8R,HC8V),M(HC8R,HC8R),M(HC8R,HC8V),M(HC8R,INIT)}, /* HC8R */  \
+   {M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,HC8V),M(HC8V,INIT)}, /* HC8V */  \
    {M(INIT,BOOL),M(INIT,INT ),M(INIT,FLT ),M(INIT,RAT ),M(INIT,VFP ),M(INIT,HC2I),M(INIT,HC2F),M(INIT,HC2R),M(INIT,HC2V),M(INIT,HC4I),M(INIT,HC4F),M(INIT,HC4R),M(INIT,HC4V),M(INIT,HC8I),M(INIT,HC8F),M(INIT,HC8R),M(INIT,HC8V),M(INIT,INIT)}, /* INIT */  \
 }
 
@@ -1814,6 +1816,24 @@ PNNUMTYPE aNumTypePromote[PN_NUMTYPE_LENGTH][PN_NUMTYPE_LENGTH] =
 #define M(a,b)  PN_NUMTYPE_##b
 PN_MAT;
 #undef  M
+
+#define PN_actBOOL_INIT     PN_actIDENT
+#define PN_actINT_INIT      PN_actIDENT
+#define PN_actFLT_INIT      PN_actIDENT
+#define PN_actRAT_INIT      PN_actIDENT
+#define PN_actVFP_INIT      PN_actIDENT
+#define PN_actHC2I_INIT     PN_actIDENT
+#define PN_actHC2F_INIT     PN_actIDENT
+#define PN_actHC2R_INIT     PN_actIDENT
+#define PN_actHC2V_INIT     PN_actIDENT
+#define PN_actHC4I_INIT     PN_actIDENT
+#define PN_actHC4F_INIT     PN_actIDENT
+#define PN_actHC4R_INIT     PN_actIDENT
+#define PN_actHC4V_INIT     PN_actIDENT
+#define PN_actHC8I_INIT     PN_actIDENT
+#define PN_actHC8F_INIT     PN_actIDENT
+#define PN_actHC8R_INIT     PN_actIDENT
+#define PN_actHC8V_INIT     PN_actIDENT
 
 #define PN_actBOOL_BOOL     PN_actIDENT
 #define PN_actBOOL_INT      PN_actIDENT
@@ -1994,7 +2014,7 @@ void PN_NumCalc
     UBOOL     bRet = TRUE,              // TRUE iff the result is valid
               bSigned;                  // TRUE iff the number is negative
     APLINT    aplInteger;               // Temporary integer
-    UINT      uLen,                     // Loop length
+    size_t    uLen,                     // Loop length
               uNumAcc,                  // Starting offset
               uAcc;                     // Loop counter
     PNNUMTYPE chType;                   // The numeric type (see PNNUMTYPE)
@@ -2092,10 +2112,15 @@ void PN_NumCalc
 
             break;
 
-        case PN_NUMTYPE_RAT:
         case PN_NUMTYPE_HC2R:               // Convert the number to a RAT
         case PN_NUMTYPE_HC8R:               // ...
         case PN_NUMTYPE_HC4R:               // ...
+            // Initialize to 0/1
+            mphcXr_init (&lpYYArg->at.aplRat, TranslateNumTypeToHCDim (chType));
+
+            // Fall through to common code
+
+        case PN_NUMTYPE_RAT:                // Convert the number to a RAT
             // If we're in the first pass, ...
             if (lppnLocalVars->chComType EQ PN_NUMTYPE_INIT)
             {
@@ -2174,7 +2199,6 @@ void PN_NumCalc
                     mpq_canonicalize (&lpYYArg->at.aplRat);
             } else
             {
-
                 // Not formatting from a Rational number
                 // Must be one that is expressible as an integer
                 Assert (!bUseRat);
@@ -2248,19 +2272,35 @@ void PN_NumCalc
 
             break;
 
+
+#define PN_NumCalcHCxV(N)                                                                                   \
+            /* Not formatting from a Rational number */                                                     \
+            Assert (!bUseRat);                                                                              \
+                                                                                                            \
+            /* Initialize to 0 */                                                                           \
+            mphcXv_init0 (&lpYYArg->at.aplVfp, N);                                                          \
+                                                                                                            \
+            /* Convert the string to a VFP number */                                                        \
+            mpfr_set_str (&lpYYArg->at.aplVfp, &lpszNumAccum[uNumAcc], 10, MPFR_RNDN);                      \
+                                                                                                            \
+            /* Change the type to HCxV */                                                                   \
+            lpYYArg->chType = PN_NUMTYPE_HC##N##V;
+
+
         case PN_NUMTYPE_VFP:
+            PN_NumCalcHCxV (1)
+            break;
+
         case PN_NUMTYPE_HC2V:
+            PN_NumCalcHCxV (2)
+            break;
+
         case PN_NUMTYPE_HC4V:
+            PN_NumCalcHCxV (4)
+            break;
+
         case PN_NUMTYPE_HC8V:
-            // Not formatting from a Rational number
-            Assert (!bUseRat);
-
-            // Convert the string to a VFP number
-            mpfr_init_set_str (&lpYYArg->at.aplVfp, &lpszNumAccum[uNumAcc], 10, MPFR_RNDN);
-
-            // Change the type to VFP
-            lpYYArg->chType = PN_NUMTYPE_VFP;
-
+            PN_NumCalcHCxV (8)
             break;
 
         case PN_NUMTYPE_HC2I:               // Can't happen with PN_NumCalc as it's used to produce simple results only
@@ -2318,7 +2358,7 @@ void PN_ChrAccDec
 
 LPPN_YYSTYPE PN_MakeRatPoint
     (LPPN_YYSTYPE  lpYYNum,             // Ptr to The numerator part
-     LPPN_YYSTYPE  lpYYDen,             // Ptr to The denominator part (may be NULL)
+     LPPN_YYSTYPE  lpYYDen,             // Ptr to The denominator part (may be NULL) (N.B. This parameter is unused)
      LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
 
 {
@@ -2335,7 +2375,8 @@ LPPN_YYSTYPE PN_MakeRatPoint
     iHCDim = TranslateNumTypeToHCDim (chType);
 
     // Get the length of the number
-    numLen = strspn (&lppnLocalVars->lpszStart[lpYYNum->uNumStart], OVERBAR1_STR INFINITY1_STR ".0123456789eEr/");
+    numLen  = strspn (&lppnLocalVars->lpszStart[lpYYNum->uNumStart         ], OVERBAR1_STR INFINITY1_STR               );
+    numLen += strspn (&lppnLocalVars->lpszStart[lpYYNum->uNumStart + numLen],                            DEC_CHARS "r/");
 
     // If it's already a RAT, ...
     if (IsPnNumTypeRat (lpYYNum->chType))
@@ -2343,6 +2384,7 @@ LPPN_YYSTYPE PN_MakeRatPoint
         Myq_clear (&lpYYNum->at.aplRat);
 
     // Initialize to 0/1
+    ZeroMemory  (&lpYYNum->at.aplHC8R, sizeof (lpYYNum->at.aplHC8R));
     mphcXr_init (&lpYYNum->at.aplHC8R, iHCDim);
 
     // Save and zap the next char
@@ -2402,6 +2444,11 @@ LPPN_YYSTYPE PN_MakeRatPoint
             break;
     } // End SWITCH
 
+    // If the result type is not INIT, ...
+    if (lppnLocalVars->chComType NE PN_NUMTYPE_INIT)
+        // Promote the result
+        (*aNumTypeAction[lpYYNum->chType][lppnLocalVars->chComType]) (lpYYNum, lppnLocalVars);
+
     return lpYYNum;
 } // End PN_MakeRatPoint
 
@@ -2426,6 +2473,7 @@ LPPN_YYSTYPE PN_MakeBasePoint
     APLSTYPE     aplTypeNum;            // ... as an APLSTYPE
     ALLTYPES     atBaseInt = {0},       // Copy of lpYYBase->at for the Integer part
                  atBaseDec = {0};       // ...                          Decimal ...
+    int          iHCDim;                // HC Dimension (1, 2, 4, 8)
 
     // If there's been a YYERROR, ...
     if (lppnLocalVars->bYYERROR)
@@ -2452,6 +2500,57 @@ LPPN_YYSTYPE PN_MakeBasePoint
                                lppnLocalVars->uAlpAccInt,
                                lppnLocalVars))
             goto ERROR_EXIT;
+    // If we promoted, ...
+    if (lpYYBase->chType NE pnBaseInt.chType)
+    {
+        Assert (IsPnNumTypeInt (lpYYBase->chType));
+
+        // Copy to result var
+        CopyAll (lpYYBase, &pnBaseInt);
+
+        // Clear the ALLTYPES
+        ZeroMemory (&lpYYBase->at, sizeof (lpYYBase->at));
+
+        // Calculate the HC Dimension (1, 2, 4, 8)
+        iHCDim = TranslateNumTypeToHCDim (lpYYBase->chType);
+
+        // Initialize the ALLTYPES
+        switch (lpYYBase->chType)
+        {
+            case PN_NUMTYPE_BOOL:   // Skip the non-global numerics
+            case PN_NUMTYPE_INT:    // ...
+            case PN_NUMTYPE_HC2I:   // ...
+            case PN_NUMTYPE_HC4I:   // ...
+            case PN_NUMTYPE_HC8I:   // ...
+            case PN_NUMTYPE_FLT:    // ...
+            case PN_NUMTYPE_HC2F:   // ...
+            case PN_NUMTYPE_HC4F:   // ...
+            case PN_NUMTYPE_HC8F:   // ...
+                break;
+
+            case PN_NUMTYPE_RAT:
+            case PN_NUMTYPE_HC2R:
+            case PN_NUMTYPE_HC4R:
+            case PN_NUMTYPE_HC8R:
+                // Initialize to 0/1
+                mphcXr_init  (&lpYYBase->at.aplRat, iHCDim);
+
+                break;
+
+            case PN_NUMTYPE_VFP:
+            case PN_NUMTYPE_HC2V:
+            case PN_NUMTYPE_HC4V:
+            case PN_NUMTYPE_HC8V:
+                // Initialize to 0
+                mphcXv_init0 (&lpYYBase->at.aplVfp, iHCDim);
+
+                break;
+
+            defstop
+                break;
+        } // End SWITCH
+    } // End IF
+
     // If there's a decimal part, ...
     if (lppnLocalVars->uAlpAccDec NE 0)
     {
@@ -2503,7 +2602,9 @@ LPPN_YYSTYPE PN_MakeBasePoint
 
 #define PN_BaseHCxF_MAC(N)                                                              \
             {                                                                           \
-                APLHC##N##F aplPow, aplDiv, aplExp = {lppnLocalVars->uAlpAccDec};       \
+                APLHC##N##F aplPow,                                                     \
+                            aplDiv,                                                     \
+                            aplExp = {(UINT) lppnLocalVars->uAlpAccDec};                \
                                                                                         \
                 /* Calculate lpYYBase to the power uAlpAccDec                         */\
                 aplPow = PowHC##N##F_RE (lpYYBase->at.aplHC##N##F, aplExp);             \
@@ -2668,8 +2769,8 @@ NORMAL_EXIT:
 UBOOL PN_MakeBasePointSub
     (LPPN_YYSTYPE  lpYYBase,            // Ptr to the base part
      LPPN_YYSTYPE  lpYYAlphaInt,        // Ptr to the Integer AlphaInt part
-     LPCHAR        lpszAlphaInt,        // Ptr to szAlphaInt buffer
-     UINT          uLen,                // Length of lpAlphaInt
+     LPCHAR        lpszAlphaInt,        // Ptr to the beginning of szAlphaInt buffer
+     size_t        uLen,                // Length of lpAlphaInt
      LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
 
 {
@@ -2682,12 +2783,14 @@ UBOOL PN_MakeBasePointSub
                aplFltPowBase,           // Base as successive powers
                aplFltAcc;               // Temporary accumulator
     APLRAT     aplRatCur = {0};         // Temporary RAT for chCur
-    APLVFP     aplVfpCur = {0};         // Temporary RAT for chCur
+    APLVFP     aplVfpCur = {0};         // Temporary VFP for chCur
     ALLTYPES   atAcc     = {0},         // Accumulator as ALLTYPES
                atBase    = {0},         // Base        ...
                atPowBase = {0};         // Power of base ...
-    UBOOL      bRet = TRUE;             // TRUE iff the result is valid
+    UBOOL      bRet = TRUE,             // TRUE iff the result is valid
+               bNeg = FALSE;            // TRUE iff the result is negative
     UCHAR      chCur;                   // Temporary character
+    LPCHAR     lpszAlphaEnd;            // Ptr to end of szAlphaInt buffer
     PNNUMTYPE  chType;                  // The numeric type (see PNNUMTYPE)
     PN_YYSTYPE pnBase;                  // Local copy of <lpYYBase>
     int        i,                       // Loop counter
@@ -2696,8 +2799,11 @@ UBOOL PN_MakeBasePointSub
     // Copy the arg in case we promote
     pnBase = *lpYYBase;
 RESTART_BASEPOINT:
+    // Is the first char a negative sign?
+    bNeg = uAcc = (lpszAlphaInt[0] EQ OVERBAR1);
+
     // Get the ptr to the end of the AlphaInt string
-    lpszAlphaInt = &lpszAlphaInt[uLen - 1];
+    lpszAlphaEnd = &lpszAlphaInt[uLen - 1];
 
     // Get the numeric type
     chType = (lppnLocalVars->chComType EQ PN_NUMTYPE_INIT) ? pnBase.chType : lppnLocalVars->chComType;
@@ -2720,10 +2826,10 @@ RESTART_BASEPOINT:
                 aplIntPowBase = 1;
 
                 // Loop through the AlphaInt arg
-                for (uAcc = 0; bRet && uAcc < uLen; uAcc++)
+                for (; bRet && uAcc < uLen; uAcc++)
                 {
                     // Get the next char as lowercase
-                    chCur = (UCHAR) CharLower ((LPCHAR) (*lpszAlphaInt--));
+                    chCur = (UCHAR) CharLower ((LPCHAR) (*lpszAlphaEnd--));
 
                     // Convert to a number
                     if ('0' <= chCur
@@ -2756,6 +2862,10 @@ RESTART_BASEPOINT:
 
                 if (bRet)
                 {
+                    // If the result is negative, ...
+                    if (bNeg)
+                        aplIntAcc = -aplIntAcc;
+
                     // Save the result
                     lpYYBase->at.aplInteger = aplIntAcc;
                     lpYYBase->chType        = PN_NUMTYPE_INT;
@@ -2766,13 +2876,10 @@ RESTART_BASEPOINT:
                 // Convert the base value to Rational
                 mpq_init_set_sx (&lpYYBase->at.aplRat, pnBase.at.aplInteger, 1);
 
-                // Get the ptr to the end of the AlphaInt string
-                lpszAlphaInt = &lppnLocalVars->lpszAlphaInt[uLen - 1];
-
                 // Change the type to RAT
-                pnBase.chType = PN_NUMTYPE_RAT;
+                lpYYBase->chType = pnBase.chType = PN_NUMTYPE_RAT;
 
-                // Fall through to the rational case
+                goto RESTART_BASEPOINT;
 
             case PN_NUMTYPE_RAT:
             {
@@ -2789,10 +2896,10 @@ RESTART_BASEPOINT:
                 mpq_init (&aplRatTmp);
 
                 // Loop through the AlphaInt arg
-                for (uAcc = 0; uAcc < uLen; uAcc++)
+                for (; uAcc < uLen; uAcc++)
                 {
                     // Get the next char as lowercase
-                    chCur = (UCHAR) CharLower ((LPCHAR) (*lpszAlphaInt--));
+                    chCur = (UCHAR) CharLower ((LPCHAR) (*lpszAlphaEnd--));
 
                     // Convert to a number
                     if ('0' <= chCur
@@ -2812,6 +2919,11 @@ RESTART_BASEPOINT:
                     // Shift over the power base
                     mpq_mul (&aplRatPowBase, &aplRatPowBase, &aplRatBase);
                 } // End FOR
+
+                // If the result is negative, ...
+                if (bNeg)
+                    // Negate the result
+                    mpq_neg (&lpYYBase->at.aplRat, &lpYYBase->at.aplRat);
 
                 // We no longer need this storage
                 Myq_clear (&aplRatTmp);
@@ -2836,10 +2948,10 @@ RESTART_BASEPOINT:
                 mpfr_init0 (&aplVfpTmp);
 
                 // Loop through the AlphaInt arg
-                for (uAcc = 0; uAcc < uLen; uAcc++)
+                for (; uAcc < uLen; uAcc++)
                 {
                     // Get the next char as lowercase
-                    chCur = (UCHAR) CharLower ((LPCHAR) (*lpszAlphaInt--));
+                    chCur = (UCHAR) CharLower ((LPCHAR) (*lpszAlphaEnd--));
 
                     // Convert to a number
                     if ('0' <= chCur
@@ -2859,6 +2971,11 @@ RESTART_BASEPOINT:
                     mpfr_mul (&aplVfpPowBase, &aplVfpPowBase, &aplVfpBase, MPFR_RNDN);
                 } // End FOR
 
+                // If the result is negative, ...
+                if (bNeg)
+                    // Negate the result
+                    mpfr_neg (&lpYYBase->at.aplVfp, &lpYYBase->at.aplVfp, MPFR_RNDN);
+
                 // We no longer need this storage
                 Myf_clear (&aplVfpTmp);
                 Myf_clear (&aplVfpPowBase);
@@ -2876,10 +2993,10 @@ RESTART_BASEPOINT:
                 aplFltPowBase = 1;
 
                 // Loop through the AlphaInt arg
-                for (uAcc = 0; uAcc < uLen; uAcc++)
+                for (; uAcc < uLen; uAcc++)
                 {
                     // Get the next char as lowercase
-                    chCur = (UCHAR) CharLower ((LPCHAR) (*lpszAlphaInt--));
+                    chCur = (UCHAR) CharLower ((LPCHAR) (*lpszAlphaEnd--));
 
                     // Convert to a number
                     if ('0' <= chCur
@@ -2896,6 +3013,11 @@ RESTART_BASEPOINT:
                     // Shift over the power base
                     aplFltPowBase *= aplFltBase;
                 } // End FOR
+
+                // If the result is negative, ...
+                if (bNeg)
+                    // Negate the result
+                    aplFltAcc = -aplFltAcc;
 
                 // Save the result
                 lpYYBase->at.aplFloat = aplFltAcc;
@@ -2914,10 +3036,10 @@ RESTART_BASEPOINT:
                 atPowBase.aplHC8I.parts[0] = 1;
 
                 // Loop through the AlphaInt arg
-                for (uAcc = 0; uAcc < uLen; uAcc++)
+                for (; uAcc < uLen; uAcc++)
                 {
                     // Get the next char as lowercase
-                    chCur = (UCHAR) CharLower ((LPCHAR) (*lpszAlphaInt--));
+                    chCur = (UCHAR) CharLower ((LPCHAR) (*lpszAlphaEnd--));
 
                     // Convert to a number
                     if ('0' <= chCur
@@ -2959,6 +3081,13 @@ RESTART_BASEPOINT:
                     } // End SWITCH
                 } // End FOR
 
+                // If the result is negative, ...
+                if (bNeg)
+                // Loop through all of the parts
+                for (i = 0; i < iHCDim; i++)
+                    // Negate the result
+                    atAcc.aplHC8I.parts[i] = -atAcc.aplHC8I.parts[i];
+
                 // Save the result
                 lpYYBase->chType = chType;
                 lpYYBase->at     = atAcc;
@@ -2977,10 +3106,10 @@ RESTART_BASEPOINT:
                 atPowBase.aplHC8F.parts[0] = 1;
 
                 // Loop through the AlphaInt arg
-                for (uAcc = 0; uAcc < uLen; uAcc++)
+                for (; uAcc < uLen; uAcc++)
                 {
                     // Get the next char as lowercase
-                    chCur = (UCHAR) CharLower ((LPCHAR) (*lpszAlphaInt--));
+                    chCur = (UCHAR) CharLower ((LPCHAR) (*lpszAlphaEnd--));
 
                     // Convert to a number
                     if ('0' <= chCur
@@ -3022,6 +3151,13 @@ RESTART_BASEPOINT:
                     } // End SWITCH
                 } // End FOR
 
+                // If the result is negative, ...
+                if (bNeg)
+                // Loop through all of the parts
+                for (i = 0; i < iHCDim; i++)
+                    // Negate the result
+                    atAcc.aplHC8F.parts[i] = -atAcc.aplHC8F.parts[i];
+
                 // Save the result
                 lpYYBase->chType = chType;
                 lpYYBase->at     = atAcc;
@@ -3050,10 +3186,10 @@ RESTART_BASEPOINT:
                 mpq_init (&aplRatCur);
 
                 // Loop through the AlphaInt arg
-                for (uAcc = 0; uAcc < uLen; uAcc++)
+                for (; uAcc < uLen; uAcc++)
                 {
                     // Get the next char as lowercase
-                    chCur = (UCHAR) CharLower ((LPCHAR) (*lpszAlphaInt--));
+                    chCur = (UCHAR) CharLower ((LPCHAR) (*lpszAlphaEnd--));
 
                     // Convert to a number
                     if ('0' <= chCur
@@ -3124,6 +3260,13 @@ RESTART_BASEPOINT:
                     } // End SWITCH
                 } // End FOR
 
+                // If the result is negative, ...
+                if (bNeg)
+                // Loop through all of the parts
+                for (i = 0; i < iHCDim; i++)
+                    // Negate the result
+                    mpq_neg (&atAcc.aplHC8R.parts[i], &atAcc.aplHC8R.parts[i]);
+
                 // Save the result
                 lpYYBase->chType = chType;
 
@@ -3154,10 +3297,10 @@ RESTART_BASEPOINT:
                 mpfr_init0 (&aplVfpCur);
 
                 // Loop through the AlphaInt arg
-                for (uAcc = 0; uAcc < uLen; uAcc++)
+                for (; uAcc < uLen; uAcc++)
                 {
                     // Get the next char as lowercase
-                    chCur = (UCHAR) CharLower ((LPCHAR) (*lpszAlphaInt--));
+                    chCur = (UCHAR) CharLower ((LPCHAR) (*lpszAlphaEnd--));
 
                     // Convert to a number
                     if ('0' <= chCur
@@ -3227,6 +3370,13 @@ RESTART_BASEPOINT:
                             break;
                     } // End SWITCH
                 } // End FOR
+
+                // If the result is negative, ...
+                if (bNeg)
+                // Loop through all of the parts
+                for (i = 0; i < iHCDim; i++)
+                    // Negate the result
+                    mpfr_neg (&atAcc.aplHC8V.parts[i], &atAcc.aplHC8V.parts[i], MPFR_RNDN);
 
                 // Save the result
                 lpYYBase->chType = chType;
@@ -3340,7 +3490,7 @@ ERROR_EXIT2:
 //***************************************************************************
 //  $PN_MakeEulerPoint
 //
-//  Merge the multiplier and exponential part to form a number
+//  Merge the Multiplier and Exponential part to form a number
 //***************************************************************************
 
 LPPN_YYSTYPE PN_MakeEulerPoint
@@ -3364,7 +3514,7 @@ LPPN_YYSTYPE PN_MakeEulerPoint
     // If this is the first time through, ...
     if (lppnLocalVars->chComType EQ PN_NUMTYPE_INIT)
     {
-        // Promote the multiplier and exponent to a common format
+        // Promote the Multiplier and Exponent to a common format
         pnTypeRes = aNumTypePromote[lpYYMultiplier->chType][lpYYExponent->chType];
 
         // If the result is BOOL/INT, ...
@@ -3381,7 +3531,7 @@ LPPN_YYSTYPE PN_MakeEulerPoint
         // Use common type
         pnTypeRes = lppnLocalVars->chComType;
 
-    // If the multiplier must be promoted, ...
+    // If the Multiplier must be promoted, ...
     if (pnTypeRes NE lpYYMultiplier->chType
      && aNumTypeAction[lpYYMultiplier->chType][pnTypeRes] NE NULL)
         (*aNumTypeAction[lpYYMultiplier->chType][pnTypeRes]) (lpYYMultiplier, lppnLocalVars);
@@ -3401,13 +3551,13 @@ LPPN_YYSTYPE PN_MakeEulerPoint
     // Split cases based upon the numeric type of the result
     switch (pnTypeRes)
     {
-        case PN_NUMTYPE_BOOL:
-        case PN_NUMTYPE_INT:
-            // The result is Multiplier x (*1) * Exponent
-            lpYYMultiplier->at.aplFloat *= pow (FloatE, (APLFLOAT) lpYYExponent->at.aplInteger);
-
-            break;
-
+////////case PN_NUMTYPE_BOOL:
+////////case PN_NUMTYPE_INT:
+////////    // The result is Multiplier x (*1) * Exponent
+////////    lpYYMultiplier->at.aplFloat *= pow (FloatE, (APLFLOAT) lpYYExponent->at.aplInteger);
+////////
+////////    break;
+////////
         case PN_NUMTYPE_FLT:
             // The result is Multiplier x (*1) * Exponent
             lpYYMultiplier->at.aplFloat *= pow (FloatE, lpYYExponent->at.aplFloat);
@@ -3416,30 +3566,27 @@ LPPN_YYSTYPE PN_MakeEulerPoint
 
         case PN_NUMTYPE_VFP:
         {
-            LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory handle
-#ifdef DEBUG_FMT
+            LPPERTABDATA lpMemPTD = GetMemPTD ();   // Ptr to PerTabData global memory handle
+#if (defined DEBUG) && (defined DEBUG_FMT)
             WCHAR wszTemp[512];
 #endif
             // Initialize the temp array
             mpfr_init0 (&atRes.aplVfp);
-#ifdef DEBUG_FMT
+#if (defined DEBUG) && (defined DEBUG_FMT)
             strcpyW (wszTemp, L"Mul:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpYYMultiplier->at.aplVfp, 0) = WC_EOS; DbgMsgW (wszTemp);
             strcpyW (wszTemp, L"Exp:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpYYExponent->at.aplVfp, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
-            // Get the PerTabData ptr
-            lpMemPTD = GetMemPTD ();
-
             // Initialize the VFP E if not already done
             InitPTD_E (lpMemPTD);
 
             // The result is Multiplier x (*1) * Exponent
             mpfr_pow (&atRes.aplVfp, &lpMemPTD->mpfrE, &lpYYExponent->at.aplVfp, MPFR_RNDN);
-#ifdef DEBUG_FMT
+#if (defined DEBUG) && (defined DEBUG_FMT)
             strcpyW (wszTemp, L"e *:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], atRes.aplVfp, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
-            // Accumulate in the multiplier
+            // Accumulate in the Multiplier
             mpfr_mul (&lpYYMultiplier->at.aplVfp, &lpYYMultiplier->at.aplVfp, &atRes.aplVfp, MPFR_RNDN);
-#ifdef DEBUG_FMT
+#if (defined DEBUG) && (defined DEBUG_FMT)
             strcpyW (wszTemp, L"Res:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpYYMultiplier->at.aplVfp, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
             // We no longer need this storage
@@ -3449,76 +3596,76 @@ LPPN_YYSTYPE PN_MakeEulerPoint
             break;
         } // End PN_NUMTYPE_VFP
 
-        case PN_NUMTYPE_HC2I:
-            // Convert the Exponent to the result type
-            (*aTypeActPromote[ARRAY_HC2I][ARRAY_HC2F]) (&lpYYExponent->at.aplHC2I, 0, &atExp);
-
-            // Calculate (*1) * Exponent
-            atExp.aplHC2F = ExpHC2F_RE (atExp.aplHC2F);
-
-            // Convert the Multiplier to the result type
-            (*aTypeActPromote[ARRAY_HC2I][ARRAY_HC2F]) (&lpYYMultiplier->at.aplHC2I, 0, &atMul);
-
-            // The result is Multiplier x (*1) * Exponent
-            lpYYMultiplier->at.aplHC2F = MulHC2F_RE (atMul.aplHC2F, atExp.aplHC2F);
-
-            // Change the result type
-            lpYYMultiplier->chType = PN_NUMTYPE_HC2F;
-
-            break;
-
-        case PN_NUMTYPE_HC4I:
-            // Convert the Exponent to the result type
-            (*aTypeActPromote[ARRAY_HC4I][ARRAY_HC4F]) (&lpYYExponent->at.aplHC4I, 0, &atExp);
-
-            // Calculate (*1) * Exponent
-            atExp.aplHC4F = ExpHC4F_RE (atExp.aplHC4F);
-
-            // Convert the Multiplier to the result type
-            (*aTypeActPromote[ARRAY_HC4I][ARRAY_HC4F]) (&lpYYMultiplier->at.aplHC4I, 0, &atMul);
-
-            // The result is Multiplier x (*1) * Exponent
-            lpYYMultiplier->at.aplHC4F = MulHC4F_RE (atMul.aplHC4F, atExp.aplHC4F);
-
-            // Change the result type
-            lpYYMultiplier->chType = PN_NUMTYPE_HC4F;
-
-            break;
-
-        case PN_NUMTYPE_HC8I:
-            // Convert the Exponent to the result type
-            (*aTypeActPromote[ARRAY_HC8I][ARRAY_HC8F]) (&lpYYExponent->at.aplHC8I, 0, &atExp);
-
-            // Calculate (*1) * Exponent
-            atExp.aplHC8F = ExpHC8F_RE (atExp.aplHC8F);
-
-            // Convert the Multiplier to the result type
-            (*aTypeActPromote[ARRAY_HC8I][ARRAY_HC8F]) (&lpYYMultiplier->at.aplHC8I, 0, &atMul);
-
-            // The result is Multiplier x (*1) * Exponent
-            lpYYMultiplier->at.aplHC8F = MulHC8F_RE (atMul.aplHC8F, atExp.aplHC8F);
-
-            // Change the result type
-            lpYYMultiplier->chType = PN_NUMTYPE_HC8F;
-
-            break;
-
+////////case PN_NUMTYPE_HC2I:
+////////    // Convert the Exponent to the result type
+////////    (*aTypeActPromote[ARRAY_HC2I][ARRAY_HC2F]) (&lpYYExponent->at.aplHC2I, 0, &atExp);
+////////
+////////    // Calculate (*1) * Exponent
+////////    atExp.aplHC2F = ExpHC2F_RE (atExp.aplHC2F);
+////////
+////////    // Convert the Multiplier to the result type
+////////    (*aTypeActPromote[ARRAY_HC2I][ARRAY_HC2F]) (&lpYYMultiplier->at.aplHC2I, 0, &atMul);
+////////
+////////    // The result is Multiplier x (*1) * Exponent
+////////    lpYYMultiplier->at.aplHC2F = MulHC2F_RE (atMul.aplHC2F, atExp.aplHC2F);
+////////
+////////    // Change the result type
+////////    lpYYMultiplier->chType = PN_NUMTYPE_HC2F;
+////////
+////////    break;
+////////
+////////case PN_NUMTYPE_HC4I:
+////////    // Convert the Exponent to the result type
+////////    (*aTypeActPromote[ARRAY_HC4I][ARRAY_HC4F]) (&lpYYExponent->at.aplHC4I, 0, &atExp);
+////////
+////////    // Calculate (*1) * Exponent
+////////    atExp.aplHC4F = ExpHC4F_RE (atExp.aplHC4F);
+////////
+////////    // Convert the Multiplier to the result type
+////////    (*aTypeActPromote[ARRAY_HC4I][ARRAY_HC4F]) (&lpYYMultiplier->at.aplHC4I, 0, &atMul);
+////////
+////////    // The result is Multiplier x (*1) * Exponent
+////////    lpYYMultiplier->at.aplHC4F = MulHC4F_RE (atMul.aplHC4F, atExp.aplHC4F);
+////////
+////////    // Change the result type
+////////    lpYYMultiplier->chType = PN_NUMTYPE_HC4F;
+////////
+////////    break;
+////////
+////////case PN_NUMTYPE_HC8I:
+////////    // Convert the Exponent to the result type
+////////    (*aTypeActPromote[ARRAY_HC8I][ARRAY_HC8F]) (&lpYYExponent->at.aplHC8I, 0, &atExp);
+////////
+////////    // Calculate (*1) * Exponent
+////////    atExp.aplHC8F = ExpHC8F_RE (atExp.aplHC8F);
+////////
+////////    // Convert the Multiplier to the result type
+////////    (*aTypeActPromote[ARRAY_HC8I][ARRAY_HC8F]) (&lpYYMultiplier->at.aplHC8I, 0, &atMul);
+////////
+////////    // The result is Multiplier x (*1) * Exponent
+////////    lpYYMultiplier->at.aplHC8F = MulHC8F_RE (atMul.aplHC8F, atExp.aplHC8F);
+////////
+////////    // Change the result type
+////////    lpYYMultiplier->chType = PN_NUMTYPE_HC8F;
+////////
+////////    break;
+////////
         case PN_NUMTYPE_HC2F:
             // The result is Multiplier x (*1) * Exponent
-            lpYYMultiplier->at.aplHC2F = MulHC2F_RE (lpYYMultiplier->at.aplHC2F, ExpHC2F_RE (lpYYExponent->at.aplHC2F));
-
+            lpYYMultiplier->at.aplHC2F = MulHC2F_RE (lpYYMultiplier->at.aplHC2F,
+                                                     ExpHC2F_RE (lpYYExponent->at.aplHC2F));
             break;
 
         case PN_NUMTYPE_HC4F:
             // The result is Multiplier x (*1) * Exponent
-            lpYYMultiplier->at.aplHC4F = MulHC4F_RE (lpYYMultiplier->at.aplHC4F, ExpHC4F_RE (lpYYExponent->at.aplHC4F));
-
+            lpYYMultiplier->at.aplHC4F = MulHC4F_RE (lpYYMultiplier->at.aplHC4F,
+                                                     ExpHC4F_RE (lpYYExponent->at.aplHC4F));
             break;
 
         case PN_NUMTYPE_HC8F:
             // The result is Multiplier x (*1) * Exponent
-            lpYYMultiplier->at.aplHC8F = MulHC8F_RE (lpYYMultiplier->at.aplHC8F, ExpHC8F_RE (lpYYExponent->at.aplHC8F));
-
+            lpYYMultiplier->at.aplHC8F = MulHC8F_RE (lpYYMultiplier->at.aplHC8F,
+                                                     ExpHC8F_RE (lpYYExponent->at.aplHC8F));
             break;
 
         case PN_NUMTYPE_HC2R:
@@ -3674,24 +3821,24 @@ LPPN_YYSTYPE PN_MakeEulerPoint
 //***************************************************************************
 //  $PN_MakeExpPoint
 //
-//  Merge the multiplier and exponential part to form a number
+//  Merge the Multiplier and Exponential part to form a number
 //***************************************************************************
 
 LPPN_YYSTYPE PN_MakeExpPoint
-    (LPPN_YYSTYPE  lpYYArg,             // Ptr to the mantissa part
-     LPPN_YYSTYPE  lpYYExponent,        // Ptr to the exponent part
+    (LPPN_YYSTYPE  lpYYArg,             // Ptr to the Mantissa part
+     LPPN_YYSTYPE  lpYYExponent,        // Ptr to the Exponent part
      LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
 
 {
-    UINT    uNumAcc;                    // Starting offset
-    APLMPI  aplMpiMult = {0},
-            aplMpiExp  = {0};
-#ifdef DEBUG_FMT
-    WCHAR   wszTemp[512];
+    size_t         uNumAcc;             // Starting offset
+    APLMPI         aplMpiMult = {0},
+                   aplMpiExp  = {0};
+#if (defined DEBUG) && (defined DEBUG_FMT)
+    WCHAR          wszTemp[512];
 #endif
-    LPCHAR  lpszNumAccum;               // Ptr to next byte
-    int     iHCDim,                     // HC Dimension (1, 2, 4, 8)
-            i;                          // Loop counter
+    LPCHAR         lpszNumAccum;        // Ptr to next byte
+    int            iHCDim,              // HC Dimension (1, 2, 4, 8)
+                   i;                   // Loop counter
 
     // Initialize the starting offset
     uNumAcc = lpYYArg->uNumAcc;
@@ -3743,12 +3890,12 @@ LPPN_YYSTYPE PN_MakeExpPoint
                 // Create 10 * abs (exp)
                 mpz_ui_pow_ui (&aplMpiExp, 10, mpz_get_ui (&aplMpiExp));
 
-                // If we inserted an exponent separator, ...
+                // If we inserted an Exponent separator, ...
                 if (lppnLocalVars->lpszNumAccum[lpYYExponent->uNumAcc - 1] EQ 'e')
-                    // Delete it so we can convert the multiplier
+                    // Delete it so we can convert the Multiplier
                     lppnLocalVars->lpszNumAccum[lpYYExponent->uNumAcc - 1] = AC_EOS;
 
-                // Convert the multiplier to a rational integer
+                // Convert the Multiplier to a rational integer
                 mpz_init_set_str (&aplMpiMult, &lpszNumAccum[uNumAcc], 10);
 
                 // If the exponent sign is negative, ...
@@ -3762,14 +3909,14 @@ LPPN_YYSTYPE PN_MakeExpPoint
                                *mpq_numref (&lpYYArg->at.aplRat) = aplMpiExp;
                 } // End IF/ELSE
 
-#ifdef DEBUG_FMT
+#if (defined DEBUG) && (defined DEBUG_FMT)
                 strcpyW (wszTemp, L"Res1: "); *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], lpYYArg->at.aplRat) = WC_EOS; DbgMsgW (wszTemp);
 #endif
-                // Multiply the multiplier by the 10 * exp
+                // Multiply the Multiplier by the 10 * exp
                 mpz_mul (mpq_numref (&lpYYArg->at.aplRat),
                          mpq_numref (&lpYYArg->at.aplRat),
                         &aplMpiMult);
-#ifdef DEBUG_FMT
+#if (defined DEBUG) && (defined DEBUG_FMT)
                 strcpyW (wszTemp, L"Res2: "); *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], lpYYArg->at.aplRat) = WC_EOS; DbgMsgW (wszTemp);
 #endif
                 mpq_canonicalize (&lpYYArg->at.aplRat);
@@ -3777,7 +3924,7 @@ LPPN_YYSTYPE PN_MakeExpPoint
                 // We no longer need this storage
                 Myz_clear (&aplMpiMult);
 
-#ifdef DEBUG_FMT
+#if (defined DEBUG) && (defined DEBUG_FMT)
                 strcpyW (wszTemp, L"Res3: "); *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], lpYYArg->at.aplRat) = WC_EOS; DbgMsgW (wszTemp);
 #endif
             } // End IF/ELSE
@@ -3834,21 +3981,21 @@ LPPN_YYSTYPE PN_MakeExpPoint
 ////////    // Initialize to 0
 ////////    mphcXv_init0 (&lpYYArg->at.aplVfp, iHCDim);
 ////////
-////////    // If the previous code inserted an exponent separator, ...
+////////    // If the previous code inserted an Exponent separator, ...
 ////////    if (lppnLocalVars->lpszNumAccum[lpYYExponent->uNumAcc - 1] EQ 'e')
-////////        // Remove it so we can convert the multiplier and exponent separately
+////////        // Remove it so we can convert the Multiplier and Exponent separately
 ////////        lppnLocalVars->lpszNumAccum[lpYYExponent->uNumAcc - 1] = AC_EOS;
 ////////
-////////    // Convert the multiplier string to a VFP number
+////////    // Convert the Multiplier string to a VFP number
 ////////    mpfr_set_str (&lpYYArg->at.aplVfp,      &lppnLocalVars->lpszNumAccum[lpYYArg->uNumAcc], 10, MPFR_RNDN);
 ////////
-////////    // Convert the exponent string to a VFP number
+////////    // Convert the Exponent string to a VFP number
 ////////    mpfr_init_set_str (&lpYYExponent->at.aplVfp, &lppnLocalVars->lpszNumAccum[lpYYExponent->uNumAcc], 10, MPFR_RNDN);
 ////////
-////////    // Raise 10 to the power of the exponent
+////////    // Raise 10 to the power of the Exponent
 ////////    mpfr_ui_pow (&lpYYExponent->at.aplVfp, 10, &lpYYExponent->at.aplVfp, MPFR_RNDN);
 ////////
-////////    // Multiply by the multiplier
+////////    // Multiply by the Multiplier
 ////////    mpfr_mul (&lpYYArg->at.aplVfp, &lpYYArg->at.aplVfp, &lpYYExponent->at.aplVfp, MPFR_RNDN);
 ////////
 ////////    // Change the type to HCxV
@@ -3873,18 +4020,19 @@ LPPN_YYSTYPE PN_MakeExpPoint
 //***************************************************************************
 //  $PN_MakeGammaPoint
 //
-//  Merge the multiplier and exponential part to form a number
+//  Merge the Multiplier and Exponential part to form a number
 //***************************************************************************
 
 LPPN_YYSTYPE PN_MakeGammaPoint
-    (LPPN_YYSTYPE  lpYYMultiplier,      // The multiplier part
-     LPPN_YYSTYPE  lpYYExponent,        // The exponent part
+    (LPPN_YYSTYPE  lpYYMultiplier,      // The Multiplier part
+     LPPN_YYSTYPE  lpYYExponent,        // The Exponent part
      LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
 
 {
     PNNUMTYPE pnTypeRes;                // Result type
     ALLTYPES  atExp = {0},              // Exponent as ALLTYPES
               atMul = {0};              // Multiplier ...
+    LPPERTABDATA lpMemPTD = GetMemPTD ();   // Ptr to PerTabData global memory handle
 
     // If there's been a YYERROR, ...
     if (lppnLocalVars->bYYERROR)
@@ -3893,7 +4041,7 @@ LPPN_YYSTYPE PN_MakeGammaPoint
     // If this is the first time through, ...
     if (lppnLocalVars->chComType EQ PN_NUMTYPE_INIT)
     {
-        // Promote the multiplier and exponent to a common format
+        // Promote the Multiplier and Exponent to a common format
         pnTypeRes = aNumTypePromote[lpYYMultiplier->chType][lpYYExponent->chType];
 
         // If the result is BOOL, ...
@@ -3914,12 +4062,12 @@ LPPN_YYSTYPE PN_MakeGammaPoint
         // Use common type
         pnTypeRes = lppnLocalVars->chComType;
 
-    // If the multiplier must be promoted, ...
+    // If the Multiplier must be promoted, ...
     if (pnTypeRes NE lpYYMultiplier->chType
      && aNumTypeAction[lpYYMultiplier->chType][pnTypeRes] NE NULL)
         (*aNumTypeAction[lpYYMultiplier->chType][pnTypeRes]) (lpYYMultiplier, lppnLocalVars);
 
-    // If the exponent must be promoted, ...
+    // If the Exponent must be promoted, ...
     if (pnTypeRes NE lpYYExponent->chType
      && aNumTypeAction[lpYYExponent->chType  ][pnTypeRes] NE NULL)
         (*aNumTypeAction[lpYYExponent->chType  ][pnTypeRes]) (lpYYExponent, lppnLocalVars);
@@ -3927,6 +4075,9 @@ LPPN_YYSTYPE PN_MakeGammaPoint
     // Set the result type
     lpYYMultiplier->chType =
     lpYYExponent->chType   = pnTypeRes;
+
+    // Initialize the VFP Gamma if not already done
+    InitPTD_Gamma (lpMemPTD);
 
     // Split cases based upon the numeric type
     switch (pnTypeRes)
@@ -3939,22 +4090,15 @@ LPPN_YYSTYPE PN_MakeGammaPoint
 
         case PN_NUMTYPE_VFP:
         {
-            LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory handle
-            APLVFP       aplVfpTmp = {0};
+            APLVFP aplVfpTmp = {0};
 
             // Initialize the temp array
             mpfr_init0 (&aplVfpTmp);
 
-            // Get the PerTabData ptr
-            lpMemPTD = GetMemPTD ();
-
-            // Initialize the VFP Gamma if not already done
-            InitPTD_Gamma (lpMemPTD);
-
             // The result is Multiplier x Gamma * Exponent
             mpfr_pow (&aplVfpTmp, &lpMemPTD->mpfrGamma, &lpYYExponent->at.aplVfp, MPFR_RNDN);
 
-            // Accumulate in the multiplier
+            // Accumulate in the Multiplier
             mpfr_mul (&lpYYMultiplier->at.aplVfp, &lpYYMultiplier->at.aplVfp, &aplVfpTmp, MPFR_RNDN);
 
             // We no longer need this storage
@@ -4053,18 +4197,22 @@ LPPN_YYSTYPE PN_MakeGammaPoint
 //***************************************************************************
 //  $PN_MakePiPoint
 //
-//  Merge the multiplier and exponential part to form a number
+//  Merge the Multiplier and Exponential part to form a number
 //***************************************************************************
 
 LPPN_YYSTYPE PN_MakePiPoint
-    (LPPN_YYSTYPE  lpYYMultiplier,      // Ptr to the multiplier part
-     LPPN_YYSTYPE  lpYYExponent,        // Ptr to the exponent part
+    (LPPN_YYSTYPE  lpYYMultiplier,      // Ptr to the Multiplier part
+     LPPN_YYSTYPE  lpYYExponent,        // Ptr to the Exponent part
      LPPNLOCALVARS lppnLocalVars)       // Ptr to local pnLocalVars
 
 {
     PNNUMTYPE pnTypeRes;                // Result type
     ALLTYPES  atExp = {0},              // Exponent as ALLTYPES
-              atMul = {0};              // Multiplier ...
+              atMul = {0},              // Multiplier ...
+              atRes = {0};              // Result ...
+    int       i = 0,                    // Loop counter
+              iHCDimRes;                // HC Dimension (1, 2, 4, 8)
+    LPPERTABDATA lpMemPTD = GetMemPTD ();   // Ptr to PerTabData global memory handle
 
     // If there's been a YYERROR, ...
     if (lppnLocalVars->bYYERROR)
@@ -4073,7 +4221,7 @@ LPPN_YYSTYPE PN_MakePiPoint
     // If this is the first time through, ...
     if (lppnLocalVars->chComType EQ PN_NUMTYPE_INIT)
     {
-        // Promote the multiplier and exponent to a common format
+        // Promote the Multiplier and Exponent to a common format
         pnTypeRes = aNumTypePromote[lpYYMultiplier->chType][lpYYExponent->chType];
 
         // If the result is BOOL, ...
@@ -4094,12 +4242,12 @@ LPPN_YYSTYPE PN_MakePiPoint
         // Use common type
         pnTypeRes = lppnLocalVars->chComType;
 
-    // If the multiplier must be promoted, ...
+    // If the Multiplier must be promoted, ...
     if (pnTypeRes NE lpYYMultiplier->chType
      && aNumTypeAction[lpYYMultiplier->chType][pnTypeRes] NE NULL)
         (*aNumTypeAction[lpYYMultiplier->chType][pnTypeRes]) (lpYYMultiplier, lppnLocalVars);
 
-    // If the exponent must be promoted, ...
+    // If the Exponent must be promoted, ...
     if (pnTypeRes NE lpYYExponent->chType
      && aNumTypeAction[lpYYExponent->chType  ][pnTypeRes] NE NULL)
         (*aNumTypeAction[lpYYExponent->chType  ][pnTypeRes]) (lpYYExponent, lppnLocalVars);
@@ -4107,6 +4255,12 @@ LPPN_YYSTYPE PN_MakePiPoint
     // Set the result type
     lpYYMultiplier->chType =
     lpYYExponent->chType   = pnTypeRes;
+
+    // Calculate the HC Dimension (1, 2, 4, 8)
+    iHCDimRes = TranslateArrayTypeToHCDim (TranslateNumTypeToArrayType (pnTypeRes));
+
+    // Initialize the VFP Pi if not already done
+    InitPTD_Pi (lpMemPTD);
 
     // Split cases based upon the numeric type
     switch (pnTypeRes)
@@ -4126,26 +4280,20 @@ LPPN_YYSTYPE PN_MakePiPoint
 
         case PN_NUMTYPE_VFP:
         {
-            LPPERTABDATA lpMemPTD;      // Ptr to PerTabData global memory handle
-            APLVFP       aplVfpTmp = {0};
-
             // Initialize the temp array
-            mpfr_init0 (&aplVfpTmp);
+            mpfr_init0 (&atRes.aplVfp);
 
             // Get the PerTabData ptr
             lpMemPTD = GetMemPTD ();
 
-            // Initialize the VFP Pi if not already done
-            InitPTD_Pi (lpMemPTD);
-
             // The result is Multiplier x (o1) * Exponent
-            mpfr_pow (&aplVfpTmp, &lpMemPTD->mpfrPi, &lpYYExponent->at.aplVfp, MPFR_RNDN);
+            mpfr_pow (&atRes.aplVfp, &lpMemPTD->mpfrPi, &lpYYExponent->at.aplVfp, MPFR_RNDN);
 
-            // Accumulate in the multiplier
-            mpfr_mul (&lpYYMultiplier->at.aplVfp, &lpYYMultiplier->at.aplVfp, &aplVfpTmp, MPFR_RNDN);
+            // Accumulate in the Multiplier
+            mpfr_mul (&lpYYMultiplier->at.aplVfp, &lpYYMultiplier->at.aplVfp, &atRes.aplVfp, MPFR_RNDN);
 
             // We no longer need this storage
-            Myf_clear (&aplVfpTmp);
+            Myf_clear (&atRes.aplVfp);
             Myf_clear (&lpYYExponent->at.aplVfp);
 
             break;
@@ -4248,7 +4396,7 @@ LPPN_YYSTYPE PN_MakeVfpPoint
      LPAPLINT      lpiVfpPrec)          // Ptr to VFP precision (may be NULL)
 
 {
-    UINT      uNumAcc,                  // Starting offset
+    size_t    uNumAcc,                  // Starting offset
               uDig,                     // # significant digits
               uArg,                     // Loop counter
               uLen;                     // # accumulated chars
@@ -4263,9 +4411,6 @@ LPPN_YYSTYPE PN_MakeVfpPoint
     // If there's been a YYERROR, ...
     if (lppnLocalVars->bYYERROR)
         return NULL;
-
-    Assert (lppnLocalVars->chComType EQ PN_NUMTYPE_INIT
-         || lppnLocalVars->chComType EQ PN_NUMTYPE_VFP);
 
     // Get # accumulated chars
     uLen = lstrlen (&lpszNumAccum[uNumAcc]);
@@ -4319,6 +4464,11 @@ LPPN_YYSTYPE PN_MakeVfpPoint
 
     // Change the type to VFP
     lpYYArg->chType = PN_NUMTYPE_VFP;
+
+    // If the result type is not INIT, ...
+    if (lppnLocalVars->chComType NE PN_NUMTYPE_INIT)
+        // Promote the result
+        (*aNumTypeAction[lpYYArg->chType][lppnLocalVars->chComType]) (lpYYArg, lppnLocalVars);
 
     // Return as the result
     return lpYYArg;
@@ -4429,16 +4579,16 @@ PN_YYSTYPE PN_MakeHc2Point
      LPPNLOCALVARS lppnLocalVars)   // Ptr to PN local vars
 
 {
-    PNNUMTYPE    chType,
-                 chCom;
-    APLHC2V      aplHC2V;           // Temp value
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-    APLFLOAT     aplFloat0;         // Temp var
-    APLINT       aplInteger0,       // ...
-                 aplInteger1;       // ...
-    APLRAT       aplRat0 = {0};     // ...
-    APLVFP       aplVfp0 = {0};     // ...
-    UBOOL        bRet;              // TRUE iff the result is valid
+    PNNUMTYPE        chType,            // Type
+                     chCom;             // Temp
+    APLHC2V          aplHC2V;           // Temp value
+    LPPERTABDATA     lpMemPTD;          // Ptr to PerTabData global memory
+    APLFLOAT         aplFloat0;         // Temp var
+    APLINT           aplInteger0,       // ...
+                     aplInteger1;       // ...
+    APLRAT           aplRat0 = {0};     // ...
+    APLVFP           aplVfp0 = {0};     // ...
+    UBOOL            bRet;              // TRUE iff the result is valid
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -4636,8 +4786,8 @@ PN_YYSTYPE PN_MakeHc2Point
             // Fall through to common code
 
         case PN_NUMTYPE_HC2F:
-        case PN_NUMTYPE_HC4F:
-        case PN_NUMTYPE_HC8F:
+////////case PN_NUMTYPE_HC4F:
+////////case PN_NUMTYPE_HC8F:
             // Promote the coefficients to the common type
             (*aNumTypeAction[lpC0->chType][chType]) (lpC0, lppnLocalVars);
             (*aNumTypeAction[lpC1->chType][chType]) (lpC1, lppnLocalVars);
@@ -4740,8 +4890,8 @@ PN_YYSTYPE PN_MakeHc2Point
             // Fall through to common code
 
         case PN_NUMTYPE_HC2R:
-        case PN_NUMTYPE_HC4R:
-        case PN_NUMTYPE_HC8R:
+////////case PN_NUMTYPE_HC4R:
+////////case PN_NUMTYPE_HC8R:
             // If we're using Unit Normalized Radians, ...
             if (cConvType EQ 'u')
             {
@@ -4898,8 +5048,8 @@ PN_YYSTYPE PN_MakeHc2Point
             // Fall through to common code
 
         case PN_NUMTYPE_HC2V:
-        case PN_NUMTYPE_HC4V:
-        case PN_NUMTYPE_HC8V:
+////////case PN_NUMTYPE_HC4V:
+////////case PN_NUMTYPE_HC8V:
             // Set common type
             chCom  = PN_NUMTYPE_VFP;
 
@@ -5230,9 +5380,9 @@ PN_YYSTYPE PN_MakeHcxPoint
 {
            int        i,                // Loop counter
                       iHCDimRes;        // HC Dimension (1, 2, 4, 8)
-           UINT       uNumStart = -1;   // Starting point initialize to a large unsigned #
+           size_t     uNumStart = -1;   // Starting point initialize to a large unsigned #
     static PN_YYSTYPE pnBool = {{0},                // at
-                                0,                  // uNumAcc:30
+                                0,                  // uNumAcc
                                 FALSE,              // bSigned:1,
                                 TRUE,               // bFiller:1
                                 PN_NUMTYPE_BOOL,    // chType
@@ -5605,7 +5755,7 @@ UBOOL PN_VectorAcc
 {
     LPPN_VECTOR lppnVector;
     LPCHAR      lpStart;
-    UINT        uNumLen;
+    size_t      uNumLen;
     UBOOL       bFltN0,                 // TRUE iff the arg is FLT and -0
                 bVfpN0,                 // ...                 VFP ...
                 bNeg0;                  // ...      bFltN0 || bVfpN0
@@ -5797,7 +5947,7 @@ UBOOL PN_VectorRes
                              : FALSE
                  )
                 )
-                // ***ASSUME***:  chtype - 1 is INT- or RAT-like
+                // ***ASSUME***:  chType - 1 is INT- or RAT-like
                 lppnLocalVars->chComType = aNumTypePromote[lppnLocalVars->chComType][lppnVector[uCnt].chType - bFlt];
             else
                 lppnLocalVars->chComType = aNumTypePromote[lppnLocalVars->chComType][lppnVector[uCnt].chType       ];
@@ -6025,8 +6175,11 @@ NORMAL_EXIT:
         MyGlobalUnlock (lppnLocalVars->hGlbRes); lppnLocalVars->lpMemHdrRes = NULL;
     } // End IF
 
-    // We no longer need this ptr
-    MyGlobalUnlock (lppnLocalVars->hGlbVector); lppnVector = NULL;
+    if (lppnVector NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (lppnLocalVars->hGlbVector); lppnVector = NULL;
+    } // End IF
 
     if (bPass1)
     {
@@ -6091,7 +6244,7 @@ WCHAR PN_CoeffType
 PN_YYSTYPE PN_SetInfinity
     (LPPNLOCALVARS lppnLocalVars,       // Ptr to local pnLocalVars
      PNNUMTYPE     pnNumType,           // The suggested PN_NUMTYPE_xx
-     int           uNumStart,           // The starting offset in lpszStart
+     size_t        uNumStart,           // The starting offset in lpszStart
      int           iInfSgn,             // The sign of infinity (1 for positive, -1 for negative)
      LPAPLINT      lpiVfpPrec)          // Ptr to VFP Precision (NULL = none, ptr to 0 = default)
 
@@ -6197,7 +6350,7 @@ PN_YYSTYPE PN_SetInfinity
 PN_YYSTYPE PN_SetNaN
     (LPPNLOCALVARS lppnLocalVars,       // Ptr to local pnLocalVars
      PNNUMTYPE     pnNumType,           // The suggested PN_NUMTYPE_xx
-     int           uNumStart,           // The starting offset in lpszStart
+     size_t        uNumStart,           // The starting offset in lpszStart
      LPAPLINT      lpiVfpPrec)          // Ptr to VFP Precision (NULL = none, ptr to 0 = default)
 
 {

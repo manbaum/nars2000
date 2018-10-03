@@ -1,0 +1,28 @@
+Build #1923 -- Version 0.5.8.xx
+-------------------------------
+
+* Simplify 64-bit Compiles
+* Allow Negative Sign In BasePoint
+
+Directory branches/bsmith/NewTypes:
+
+PN_PARSE.H:
+  Define additional ENUMs to simplify common macros
+  Fix mis-attribution comment.
+  Move <uNamAcc> from bit field to its own UINT.
+  Change UINT to size_t where it matters for 64-bit compiles.
+  Define various common text strings as opposed to using literals in mutiple places.
+
+PN_PARSE.Y:
+  Allow negative sign in BasePoint as 16b-XXX.
+  Simplify 'e' vs. 'E' into its own terminal.
+  Use defined common text strings instead of literals.
+
+PN_PROC.C:
+  Fix last column (INIT) of PN_MAT.
+  Change UINT to size_t where it matters for 64-bit compiles.
+  Allow negative sign in BasePoint as 16b-XXX.
+  Improve comments.
+
+SC_LOAD.C:
+  Use defined common text strings instead of literals.

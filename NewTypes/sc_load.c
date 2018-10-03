@@ -1879,7 +1879,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                             *((LPAPLINT) lpMemObj)++ = _wtoi64 (lpwszProf);
 
                             // Skip over the scanned chars
-                            lpwszProf += strspnW (lpwszProf, L"0123456789-");
+                            lpwszProf += strspnW (lpwszProf, INT_CHARS_WS);
                             lpwszProf += strspnW (lpwszProf, L"ijJkl");
                         } // End FOR
 
@@ -1919,7 +1919,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                             *((LPAPLINT) lpMemObj)++ = _wtoi64 (lpwszProf);
 
                             // Skip over the scanned chars
-                            lpwszProf += strspnW (lpwszProf, L"0123456789-");
+                            lpwszProf += strspnW (lpwszProf, INT_CHARS_WS);
                             lpwszProf += strspnW (lpwszProf, L"ijJkl");
                         } // End FOR
 
@@ -1960,7 +1960,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                             *((LPAPLINT) lpMemObj)++ = _wtoi64 (lpwszProf);
 
                             // Skip over the scanned chars
-                            lpwszProf += strspnW (lpwszProf, L"0123456789-");
+                            lpwszProf += strspnW (lpwszProf, INT_CHARS_WS);
                             lpwszProf += strspnW (lpwszProf, L"ijJkl");
                         } // End FOR
 
@@ -2820,7 +2820,7 @@ void ParseHCxFs
             *(*lplpMemObj)++ = MyStrtod (lpFmt, NULL);
 
             // Count the scanned chars
-            uLen = strspn (lpFmt, "0123456789eE.-");
+            uLen = strspn (lpFmt, DEC_CHARS);
         } // End IF/ELSE/...
 
         // Skip over the scanned chars
@@ -2832,7 +2832,7 @@ void ParseHCxFs
         {
             // If there's a separator, ...
             if (strncmpW ((*lplpwszProf), lphcXSep[uCnt], uLen = lstrlenW (lphcXSep[uCnt])) EQ 0
-             && (strchrW (L"0123456789-{" WS_UTF16_NAN, (*lplpwszProf)[uLen]) NE NULL))
+             && (strchrW (INT_CHARS_WS L"{" WS_UTF16_NAN, (*lplpwszProf)[uLen]) NE NULL))
             {
                 // Skip over the separator
                 (*lplpwszProf) += uLen;
@@ -2876,7 +2876,7 @@ void ParseHCxFs
                     *(*lplpMemObj)++ = MyStrtod (lpFmt, NULL);
 
                     // Count the scanned chars
-                    uLen = strspn (lpFmt, "0123456789eE.-");
+                    uLen = strspn (lpFmt, DEC_CHARS);
                 } // End IF/ELSE/...
 
                 // Skip over the scanned chars
@@ -2975,7 +2975,7 @@ void ParseHCxRs
             Assert (crRetCode EQ CR_SUCCESS);
 
             // Count the scanned chars
-            uLen = strspn (lpFmt, "0123456789/-");
+            uLen = strspn (lpFmt, INT_CHARS "/");
         } // End IF/ELSE/...
 
         // Skip over the scanned chars
@@ -2990,7 +2990,7 @@ void ParseHCxRs
 
             // If there's a separator, ...
             if (strncmpW (*lplpwszProf, lphcXSep[uCnt], uLen = lstrlenW (lphcXSep[uCnt])) EQ 0
-             && (strchrW (L"0123456789-{" WS_UTF16_NAN, (*lplpwszProf)[uLen]) NE NULL))
+             && (strchrW (INT_CHARS_WS L"{" WS_UTF16_NAN, (*lplpwszProf)[uLen]) NE NULL))
             {
                 // Skip over the separator
                 (*lplpwszProf) += uLen;
@@ -3032,7 +3032,7 @@ void ParseHCxRs
                 } else
                 {
                     // Count the scanned chars
-                    uLen = strspn (lpFmt, "0123456789/-");
+                    uLen = strspn (lpFmt, INT_CHARS "/");
 
                     // Convert the string to rational
                     crRetCode = mpq_set_str2 ((*lplpMemObj)++, lpFmt, 10);
@@ -3158,7 +3158,7 @@ void ParseHCxVs
             mpfr_strtofr ((*lplpMemObj)++, lpFmt, &lpEndPtr, 10, MPFR_RNDN);
 
             // Count the scanned chars
-            uLen = strspn (lpFmt, "0123456789eE.-");
+            uLen = strspn (lpFmt, DEC_CHARS);
 
             Assert (uLen EQ (lpEndPtr - lpFmt));
         } // End IF/ELSE/...
@@ -3175,7 +3175,7 @@ void ParseHCxVs
 
             // If there's a separator, ...
             if (strncmpW (*lplpwszProf, lphcXSep[uCnt], uLen = lstrlenW (lphcXSep[uCnt])) EQ 0
-             && (strchrW (L"0123456789-{" WS_UTF16_NAN, (*lplpwszProf)[uLen]) NE NULL))
+             && (strchrW (INT_CHARS_WS L"{(" WS_UTF16_NAN, (*lplpwszProf)[uLen]) NE NULL))
             {
                 // Skip over the separator
                 (*lplpwszProf) += uLen;
@@ -3220,7 +3220,7 @@ void ParseHCxVs
                     mpfr_strtofr ((*lplpMemObj)++, lpFmt, &lpEndPtr, 10, MPFR_RNDN);
 
                     // Count the scanned chars
-                    uLen = strspn (lpFmt, "0123456789eE.-");
+                    uLen = strspn (lpFmt, DEC_CHARS);
 
                     Assert (uLen EQ (lpEndPtr - lpFmt));
                 } // End IF/ELSE/...

@@ -1,0 +1,24 @@
+Build #1925 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug When Saving An Edited Function With Line Continuations Within Certain Control Structures
+
+Directory branches/bsmith/NewTypes:
+
+CS_PARSE.Y:
+  Distinguish between Logical and Physical lines when saving a function.
+
+CS_PROC.C:
+  Assert when loading a Token Header that it really is one.
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+
+EDITFCN.C:
+EXECDFN.C:
+EXECMFN.C:
+IMMEXEC.C:
+PF_UTACKJOT.C:
+SAVEFCN.C:
+TOKENIZE.C:
+  Distinguish between Logical and Physical lines when saving a function.
+  This fixes a bug when saving an edited function with Line Continuations
+    within certain Control Structures.

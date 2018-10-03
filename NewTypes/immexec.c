@@ -238,7 +238,7 @@ UINT GetLogicalLineCountFE
 
 UINT CopyBlockLines
     (HWND    hWndEC,                        // Handle of Edit Ctrl window
-     UINT    uLineNum,                      // Starting line #
+     UINT    uPhyLineNum,                   // Starting physical line #
      LPWCHAR lpwszLine)                     // Ptr to output buffer
 
 {
@@ -249,10 +249,10 @@ UINT CopyBlockLines
     Assert (IzitSM (GetParent (hWndEC)) || IzitFE (GetParent (hWndEC)));
 
     // While the current physical line continues to the next line, ...
-    while (SendMessageW (hWndEC, MYEM_ISLINECONT, uLineNum, 0) EQ TRUE)
+    while (SendMessageW (hWndEC, MYEM_ISLINECONT, uPhyLineNum, 0) EQ TRUE)
     {
         // Get the position of the start of the line
-        uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
+        uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uPhyLineNum, 0);
 
         // Get the line length
         uLineLen = (UINT) SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
@@ -261,7 +261,7 @@ UINT CopyBlockLines
         ((LPWORD) lpwszLine)[0] = uLineLen + 1;
 
         // Get the contents of the line including the terminating zero because we allowed for it
-        SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwszLine);
+        SendMessageW (hWndEC, EM_GETLINE, uPhyLineNum, (LPARAM) lpwszLine);
 
         // Skip to the next line ptr
         lpwszLine = &lpwszLine[uLineLen];
@@ -273,13 +273,13 @@ UINT CopyBlockLines
         uBlockLen += uLineLen + strcountof (WS_CRCRLF);
 
         // Skip to the next line
-        uLineNum++;
+        uPhyLineNum++;
     } // End WHILE
 
     // Once more to get the contents of the last (non-continued) line
 
     // Get the position of the start of the line
-    uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uLineNum, 0);
+    uLinePos = (UINT) SendMessageW (hWndEC, EM_LINEINDEX, uPhyLineNum, 0);
 
     // Get the line length
     uLineLen = (UINT) SendMessageW (hWndEC, EM_LINELENGTH, uLinePos, 0);
@@ -288,7 +288,7 @@ UINT CopyBlockLines
     ((LPWORD) lpwszLine)[0] = uLineLen + 1;
 
     // Get the contents of the line including the terminating zero because we allowed for it
-    SendMessageW (hWndEC, EM_GETLINE, uLineNum, (LPARAM) lpwszLine);
+    SendMessageW (hWndEC, EM_GETLINE, uPhyLineNum, (LPARAM) lpwszLine);
 
     // Accumulate in result
     return uBlockLen + uLineLen;
@@ -606,7 +606,8 @@ DWORD WINAPI ImmExecStmtInThread
           Tokenize_EM (lpwszCompLine,       // The line to tokenize (not necessarily zero-terminated)
                        aplNELM,             // NELM of lpwszLine
                        hWndEC,              // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
-                       1,                   // Function line # (0 = header)
+                       1,                   // Logical function line # (0 = header)
+                       1,                   // Physical ...
                       &ErrorMessageDirect,  // Ptr to error handling function (may be NULL)
                        NULL,                // Ptr to common struc (may be NULL if unused)
                        FALSE);              // TRUE iff we're tokenizing a Magic Function/Operator

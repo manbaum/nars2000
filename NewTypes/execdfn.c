@@ -1157,7 +1157,8 @@ NEXTLINE:
                   Tokenize_EM (lpwszLine,               // The line to tokenize (not necessarily zero-terminated)
                                lstrlenW (lpwszLine),    // NELM of lpwszLine
                                NULL,                    // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
-                               1,                       // Function line # (0 = header)
+                               1,                       // Logical function line # (0 = header)
+                               1,                       // Physical ...
                                NULL,                    // Ptr to error handling function (may be NULL)
                                NULL,                    // Ptr to common struc (may be NULL if unused)
                                FALSE);                  // TRUE iff we're tokenizing a Magic Function/Operator

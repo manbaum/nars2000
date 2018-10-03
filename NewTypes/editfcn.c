@@ -5810,7 +5810,8 @@ LPSYMENTRY ParseFunctionName
       Tokenize_EM (lpaplChar,               // The line to tokenize
                    lstrlenW (lpaplChar),    // The length of the above line
                    NULL,                    // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
-                   0,                       // Function line # (0 = header)
+                   0,                       // Logical function line # (0 = header)
+                   0,                       // Physical ...
                    NULL,                    // Ptr to error handling function (may be NULL)
                    NULL,                    // Ptr to common struc (may be NULL if unused)
                    FALSE);                  // TRUE iff we're tokenizing a Magic Function/Operator

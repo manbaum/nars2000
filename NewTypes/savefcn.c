@@ -201,7 +201,7 @@ HGLOBAL CopyUDFO
 UINT SF_IsLineContCom
     (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
      LPVOID      lpVoid,            // Ptr to common struc
-     UINT        uLineNum)          // Function line # (0 = header)
+     UINT        uPhyLineNum)       // Physical function line # (0 = header)
 
 {
     return FALSE;
@@ -218,10 +218,10 @@ UINT SF_IsLineContCom
 UINT SF_IsLineContFE
     (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
      LPVOID      lpVoid,            // Ptr to common struc
-     UINT        uLineNum)          // Function line # (0 = header)
+     UINT        uPhyLineNum)       // Physical function line # (0 = header)
 
 {
-    return SendMessageW (hWndEC, MYEM_ISLINECONT, uLineNum, 0) EQ TRUE;
+    return SendMessageW (hWndEC, MYEM_ISLINECONT, uPhyLineNum, 0) EQ TRUE;
 } // End SF_IsLineContFE
 
 
@@ -235,7 +235,7 @@ UINT SF_IsLineContFE
 UINT SF_IsLineContSV
     (HWND      hWndEC,              // Edit Ctrl window handle (FE only)
      LPSF_FCNS lpSF_Fcns,           // Ptr to common struc
-     UINT      uLineNum)            // Function line # (0 = header)
+     UINT      uPhyLineNum)         // Physical function line # (0 = header)
 
 {
     // If it's an AFO, ...
@@ -248,10 +248,94 @@ UINT SF_IsLineContSV
         lpFX_Params    = lpSF_Fcns->LclParams;
         lpafoDetectStr = lpFX_Params->lpafoDetectStr;
 
-        return lpafoDetectStr->lpafoLineStr[uLineNum].bLineCont;
+        return lpafoDetectStr->lpafoLineStr[uPhyLineNum].bLineCont;
     } else
         return FALSE;
 } // End SF_IsLineContSV
+
+
+//***************************************************************************
+//  $SF_IsLineContUDFO
+//
+//  Return TRUE iff the line is continued to the next line
+//    when copying a UDFO
+//***************************************************************************
+
+UINT SF_IsLineContUDFO
+    (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
+     LPSF_FCNS   lpSF_Fcns,         // Ptr to common struc
+     UINT        uPhyLineNum)       // Physical function line # (0 = header)
+
+{
+    LPUDFO_PARAMS  lpUDFO_Params;   // Ptr to common struc
+    LPDFN_HEADER   lpMemDfnHdr;     // Ptr to user-defined function/operator header global memory
+    HGLOBAL        hGlbTxtLine;     // Text global memory handle
+    LPMEMTXT_UNION lpMemTxtLine;    // Ptr to text line
+    LPWCHAR        p;               // Temp
+    UBOOL          bRet;            // TRUE iff the result is TRUE
+
+    // Save local params
+    lpUDFO_Params = lpSF_Fcns->LclParams;
+
+    // Lock the memory to get a ptr to it
+    lpMemDfnHdr = MyGlobalLockDfn (lpUDFO_Params->hGlbDfnHdr);
+
+    // Get the UDFO text line global memory handle
+    hGlbTxtLine = SF_GlbTxtUDFO (lpMemDfnHdr, uPhyLineNum);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (lpUDFO_Params->hGlbDfnHdr); lpMemDfnHdr = NULL;
+
+    // Lock the memory to get a ptr to it
+    lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
+
+    // Find the trailing CR
+    p = strchrW (&lpMemTxtLine->C, L'\r');
+
+    // Is it followed by CR, LF ?
+    bRet = (p NE NULL && p[1] EQ L'\r' && p[2] EQ L'\n');
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
+
+    // Return the result
+    return bRet;
+} // End SF_IsLineContUDFO
+
+
+//***************************************************************************
+//  $SF_IsLineContMFO
+//
+//  Return TRUE iff the line is continued to the next line
+//    when saving an MFO
+//***************************************************************************
+
+UINT SF_IsLineContMFO
+    (HWND           hWndEC,         // Edit Ctrl window handle (FE only)
+     LPMAGIC_FCNOPR lpMagicFcnOpr,  // Ptr to magic function/operator struc
+     UINT           uPhyLineNum)    // Physical function line # (origin-1) (0 = header)
+
+{
+    LPWCHAR        lpMemTxtLine;    // Ptr to text line
+    LPWCHAR        p;               // Temp
+    UBOOL          bRet;            // TRUE iff the result is TRUE
+
+    // If it's the function header, ...
+    if (uPhyLineNum EQ 0)
+        return FALSE;
+
+    // Get the MFO text line global memory ptr
+    lpMemTxtLine = lpMagicFcnOpr->Body[uPhyLineNum - 1];
+
+    // Find the trailing CR
+    p = strchrW (lpMemTxtLine, L'\r');
+
+    // Is it followed by CR, LF ?
+    bRet = (p NE NULL && p[1] EQ L'\r' && p[2] EQ L'\n');
+
+    // Return the result
+    return bRet;
+} // End SF_IsLineContMFO
 
 
 //***************************************************************************
@@ -306,13 +390,13 @@ UINT SF_LineLenAN
 
 HGLOBAL SF_GlbTxtUDFO
     (LPDFN_HEADER lpMemDfnHdr,      // Ptr to user-defined function/operator header global memory
-     UINT         uLineNum)         // Function line # (0 = header)
+     UINT         uPhyLineNum)      // Physical function line # (origin-1) (0 = header)
 
 {
     HGLOBAL hGlbTxtLine;            // Text global memory handle
 
     // If it's the header, ...
-    if (uLineNum EQ 0)
+    if (uPhyLineNum EQ 0)
         // Get the global memory handle
         hGlbTxtLine = lpMemDfnHdr->hGlbTxtHdr;
     else
@@ -323,58 +407,11 @@ HGLOBAL SF_GlbTxtUDFO
         lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
 
         // Get the ptr to the given line's tokenized header global memory
-        hGlbTxtLine = lpFcnLines[uLineNum - 1].hGlbTxtLine;
+        hGlbTxtLine = lpFcnLines[uPhyLineNum - 1].hGlbTxtLine;
     } // End IF/ELSE
 
     return hGlbTxtLine;
 } // End SF_GlbTxtUDFO
-
-
-//***************************************************************************
-//  $SF_IsLineContUDFO
-//
-//  Return TRUE iff the line is continued to the next line
-//    when copying a UDFO
-//***************************************************************************
-
-UINT SF_IsLineContUDFO
-    (HWND        hWndEC,            // Edit Ctrl window handle (FE only)
-     LPSF_FCNS   lpSF_Fcns,         // Ptr to common struc
-     UINT        uLineNum)          // Function line # (0 = header)
-
-{
-    LPUDFO_PARAMS  lpUDFO_Params;   // Ptr to common struc
-    LPDFN_HEADER   lpMemDfnHdr;     // Ptr to user-defined function/operator header global memory
-    HGLOBAL        hGlbTxtLine;     // Text global memory handle
-    LPMEMTXT_UNION lpMemTxtLine;    // Ptr to text line
-    LPWCHAR        p;               // Temp
-    UBOOL          bRet;            // TRUE iff the result is TRUE
-
-    // Save local params
-    lpUDFO_Params = lpSF_Fcns->LclParams;
-
-    // Lock the memory to get a ptr to it
-    lpMemDfnHdr = MyGlobalLockDfn (lpUDFO_Params->hGlbDfnHdr);
-
-    // Get the UDFO text line global memory handle
-    hGlbTxtLine = SF_GlbTxtUDFO (lpMemDfnHdr, uLineNum);
-
-    // We no longer need this ptr
-    MyGlobalUnlock (lpUDFO_Params->hGlbDfnHdr); lpMemDfnHdr = NULL;
-
-    // Lock the memory to get a ptr to it
-    lpMemTxtLine = MyGlobalLockTxt (hGlbTxtLine);
-
-    // Find the trailing CR
-    p = strchrW (&lpMemTxtLine->C, L'\r');
-    bRet = (p NE NULL && p[1] EQ L'\r' && p[2] EQ L'\n');
-
-    // We no longer need this ptr
-    MyGlobalUnlock (hGlbTxtLine); lpMemTxtLine = NULL;
-
-    // Return the result
-    return bRet;
-} // End SF_IsLineContUDFO
 
 
 //***************************************************************************
@@ -2085,7 +2122,8 @@ UBOOL SaveFunctionCom
 {
     HWND           hWndEC = NULL;           // Edit Ctrl Window handle (FE only)
     UINT           uLineLen,                // Line length
-                   uLineNum,                // Current line # in the Edit Ctrl (0 = header)
+                   uLogLineNum,             // Current logical line # in the Edit Ctrl (0 = header)
+                   uPhyLineNum,             // ...     physical ...
                    uOffset,                 // Cumulative offset
                    numPhyLines,             // # physical lines in the function
                    numLogLines;             // # logical  ...
@@ -2169,12 +2207,15 @@ UBOOL SaveFunctionCom
         numLogLines = (*lpSF_Fcns->SF_NumLogLines) (hWndEC, lpSF_Fcns);
 
         // Get size of tokenization of all lines (excluding the header)
-        for (uOffset = 0, uLineNum = 1; uLineNum <= numPhyLines; uLineNum++)
+        for (uOffset = 0, uLogLineNum = uPhyLineNum = 1; uPhyLineNum <= numPhyLines; uPhyLineNum++)
             // If the preceding physical line is not continued to the current line, ...
-            if (!(*lpSF_Fcns->SF_IsLineCont) (hWndEC, lpSF_Fcns, uLineNum - 1))
-            // Size a function line
-            if (SaveFunctionLine (lpSF_Fcns, NULL, NULL, uLineNum, NULL, hWndEC, hWndFE, &uOffset) EQ -1)
-                goto ERROR_EXIT;
+            if (!(*lpSF_Fcns->SF_IsLineCont) (hWndEC, lpSF_Fcns, uPhyLineNum - 1))
+            {
+                // Size a function line
+                if (SaveFunctionLine (lpSF_Fcns, NULL, NULL, uLogLineNum, uPhyLineNum, NULL, hWndEC, hWndFE, &uOffset) EQ -1)
+                    goto ERROR_EXIT;
+            } // End IF
+
         // Restore the ptr to the next token on the CS stack
         //   because we advanced it during the above sizing
         lpMemPTD->lptkCSNxt = lptkCSBeg;
@@ -2254,7 +2295,8 @@ UBOOL SaveFunctionCom
           Tokenize_EM (lpwUdfoHdr,          // The line to tokenize (not necessarily zero-terminated)
                        uLineLen,            // NELM of lpwszLine
                        hWndEC,              // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
-                       0,                   // Function line # (0 = header)
+                       0,                   // Logical function line # (0 = header)
+                       0,                   // Physical ...
                       &ErrorHandler,        // Ptr to error handling function (may be NULL)
                        lpSF_Fcns,           // Ptr to common struc (may be NULL if unused)
                        FALSE);              // TRUE iff we're tokenizing a Magic Function/Operator
@@ -2329,7 +2371,9 @@ UBOOL SaveFunctionCom
                      numLftArgSTE,      // # left arg ...
                      numRhtArgSTE,      // # right ...
                      numLocalsSTE,      // # locals ...
-                     numSTE;            // Loop counter
+                     numSTE,            // Loop counter
+                     uLogLineNum,       // ...
+                     uPhyLineNum;       // ...
         LPFCNLINE    lpFcnLines;        // Ptr to array of function line structs (FCNLINE[numLogLines])
         LPSYMENTRY   lpSymName = NULL,  // Ptr to SYMENTRY for the function name
                     *lplpSymDfnHdr;     // Ptr to LPSYMENTRYs at end of user-defined function/operator header
@@ -2604,12 +2648,15 @@ UBOOL SaveFunctionCom
         numLogLines = (*lpSF_Fcns->SF_NumLogLines) (hWndEC, lpSF_Fcns);
 
         // Get size of tokenization of all lines (excluding the header)
-        for (uOffset = 0, uLineNum = 1; uLineNum <= numPhyLines; uLineNum++)
+        for (uOffset = 0, uLogLineNum = uPhyLineNum = 1; uPhyLineNum <= numPhyLines; uPhyLineNum++)
             // If the preceding physical line is not continued to the current line, ...
-            if (!(*lpSF_Fcns->SF_IsLineCont) (hWndEC, lpSF_Fcns, uLineNum - 1))
-            // Size a function line
-            if (SaveFunctionLine (lpSF_Fcns, NULL, NULL, uLineNum, NULL, hWndEC, hWndFE, &uOffset) EQ -1)
-                goto ERROR_EXIT;
+            if (!(*lpSF_Fcns->SF_IsLineCont) (hWndEC, lpSF_Fcns, uPhyLineNum - 1))
+            {
+                // Size a function line
+                if (SaveFunctionLine (lpSF_Fcns, NULL, NULL, uLogLineNum, uPhyLineNum, NULL, hWndEC, hWndFE, &uOffset) EQ -1)
+                    goto ERROR_EXIT;
+            } // End IF
+
         // Restore the ptr to the next token on the CS stack
         //   because we advanced it during the above sizing
         lpMemPTD->lptkCSNxt = lptkCSBeg;
@@ -2808,47 +2855,49 @@ UBOOL SaveFunctionCom
         uOffset = lpMemDfnHdr->offTknLines;
 
         // Loop through the lines (excluding the header)
-        for (uLineNum = 1; uLineNum <= numPhyLines; uLineNum++)
-        // If the preceding physical line is not continued to the current line, ...
-        if (!(*lpSF_Fcns->SF_IsLineCont) (hWndEC, lpSF_Fcns, uLineNum - 1))
+        for (uPhyLineNum = uLogLineNum = 1; uPhyLineNum <= numPhyLines; uPhyLineNum++)
         {
-            // Save a function line
-            uLineLen =
-              SaveFunctionLine (lpSF_Fcns, NULL, lpMemDfnHdr, uLineNum, lpFcnLines, hWndEC, hWndFE, &uOffset);
-            if (uLineLen EQ -1)
-                goto ERROR_EXIT;
-
-            // If tokenization failed, ...
-            if (lpFcnLines->offTknLine EQ 0)
+            // If the preceding physical line is not continued to the current line, ...
+            if (!(*lpSF_Fcns->SF_IsLineCont) (hWndEC, lpSF_Fcns, uPhyLineNum - 1))
             {
-                if (hWndFE NE NULL)
+                // Save a function line
+                uLineLen =
+                  SaveFunctionLine (lpSF_Fcns, NULL, lpMemDfnHdr, uLogLineNum, uPhyLineNum, lpFcnLines, hWndEC, hWndFE, &uOffset);
+                if (uLineLen EQ -1)
+                    goto ERROR_EXIT;
+
+                // If tokenization failed, ...
+                if (lpFcnLines->offTknLine EQ 0)
                 {
-                    // Format the error message
-                    MySprintfW (wszTemp,
-                                sizeof (wszTemp),
-                               L"SYNTAX ERROR on line # %d, position %d -- function not saved",
-                                uLineNum,
-                                lpMemPTD->uCaret);
-                    // Display the error message
-                    MessageBoxW (hWndMF,
-                                 wszTemp,
-                                 lpwszAppName,
-                                 MB_OK | MB_ICONWARNING | MB_APPLMODAL);
-                    MySetFocus (GetParent (hWndEC));
-                } else
-                    // Save the line # in error (origin-0)
-                    lpSF_Fcns->uErrLine = uLineNum;
+                    if (hWndFE NE NULL)
+                    {
+                        // Format the error message
+                        MySprintfW (wszTemp,
+                                    sizeof (wszTemp),
+                                   L"SYNTAX ERROR on line # %d, position %d -- function not saved",
+                                    uLogLineNum,
+                                    lpMemPTD->uCaret);
+                        // Display the error message
+                        MessageBoxW (hWndMF,
+                                     wszTemp,
+                                     lpwszAppName,
+                                     MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                        MySetFocus (GetParent (hWndEC));
+                    } else
+                        // Save the line # in error (origin-0)
+                        lpSF_Fcns->uErrLine = uLogLineNum;
 
-                goto ERROR_EXIT;
+                    goto ERROR_EXIT;
+                } // End IF
+
+                // Transfer Stop & Trace info
+                lpFcnLines->bStop  =
+                lpFcnLines->bTrace = FALSE;     // ***FIXME*** -- transfer from orig fn
+
+                // Skip to the next struct
+                lpFcnLines++;
             } // End IF
-
-            // Transfer Stop & Trace info
-            lpFcnLines->bStop  =
-            lpFcnLines->bTrace = FALSE;     // ***FIXME*** -- transfer from orig fn
-
-            // Skip to the next struct
-            lpFcnLines++;
-        } // End FOR/IF
+        } // End FOR
 
         // Fill in the CS local vars struc
         csLocalVars.hWndEC      = hWndEC;
@@ -3130,7 +3179,8 @@ UINT SaveFunctionLine
     (LPSF_FCNS      lpSF_Fcns,              // Ptr to common struc (may be NULL if unused)
      LPMAGIC_FCNOPR lpMagicFcnOpr,          // Ptr to magic function/operator struc (is not NULL if Magic Functions)
      LPDFN_HEADER   lpMemDfnHdr,            // Ptr to user-defined function/operator header (may be NULL if sizing)
-     UINT           uLineNum,               // Current line # in the Edit Ctrl (0 = header)
+     UINT           uLogLineNum,            // Current logical line # in the Edit Ctrl (0 = header)
+     UINT           uPhyLineNum,            // Current physical
      LPFCNLINE      lpFcnLines,             // Ptr to array of function line structs (FCNLINE[numLogLines]) (may be NULL if sizing)
      HWND           hWndEC,                 // Edit Ctrl Window handle (FE only)
      HWND           hWndFE,                 // Function Editor window handle (FE only, NULL otherwise)
@@ -3154,10 +3204,10 @@ UINT SaveFunctionLine
     // If it's a Magic Function, ...
     if (lpMagicFcnOpr NE NULL)
         // Get the line length of the line
-        uLineLen = lstrlenW (lpMagicFcnOpr->Body[uLineNum - 1]);
+        uLineLen = lstrlenW (lpMagicFcnOpr->Body[uLogLineNum - 1]);
     else
         // Get the length of the function line
-        uLineLen = (*lpSF_Fcns->SF_LineLen) (hWndEC, lpSF_Fcns, uLineNum);
+        uLineLen = (*lpSF_Fcns->SF_LineLen) (hWndEC, lpSF_Fcns, uPhyLineNum);
 
     // Calculate extra WCHARs in case we need to surround the line with braces
     uLen = 2 * (lpSF_Fcns && lpSF_Fcns->bAFO && !lpSF_Fcns->bMakeAFO);
@@ -3213,11 +3263,11 @@ UINT SaveFunctionLine
         // If it's a Magic Function, ...
         if (lpMagicFcnOpr NE NULL)
             // Copy the line text to global memory
-            CopyMemoryW (lpwszLine, lpMagicFcnOpr->Body[uLineNum - 1], uLineLen);
+            CopyMemoryW (lpwszLine, lpMagicFcnOpr->Body[uLogLineNum - 1], uLineLen);
         else
         {
             // Read in the line text
-            (*lpSF_Fcns->SF_ReadLine) (hWndEC, lpSF_Fcns, uLineNum, lpwszLine);
+            (*lpSF_Fcns->SF_ReadLine) (hWndEC, lpSF_Fcns, uPhyLineNum, lpwszLine);
 
             // If we're about to tokenize an AFO
             //   and we're not called from MakeAFO
@@ -3244,7 +3294,8 @@ UINT SaveFunctionLine
                   Tokenize_EM (lpwszLine,               // The line to tokenize (not necessarily zero-terminated)
                                uLineLen + 2,            // NELM of lpwszLine (including surrounding braces)
                                hWndEC,                  // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
-                               uLineNum,                // Function line # (0 = header)
+                               uLogLineNum,             // Logical function line # (0 = header)
+                               uPhyLineNum,             // Physical ...
                               &ErrorHandler,            // Ptr to error handling function (may be NULL)
                                lpSF_Fcns,               // Ptr to common struc (may be NULL if unused)
                               (lpMagicFcnOpr NE NULL)
@@ -3270,7 +3321,8 @@ UINT SaveFunctionLine
       Tokenize_EM (lpwszLine,               // The line to tokenize (not necessarily zero-terminated)
                    uLineLen,                // NELM of lpwszLine
                    hWndEC,                  // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
-                   uLineNum,                // Function line # (0 = header)
+                   uLogLineNum,             // Logical function line # (0 = header)
+                   uPhyLineNum,             // Physical ...
                   &ErrorHandler,            // Ptr to error handling function (may be NULL)
                    lpSF_Fcns,               // Ptr to common struc (may be NULL if unused)
                   (lpMagicFcnOpr NE NULL)
@@ -3294,7 +3346,7 @@ UINT SaveFunctionLine
         // If it's valid, ...
         if (lpSF_Fcns NE NULL)
             // Mark the line in error
-            lpSF_Fcns->uErrLine = uLineNum;
+            lpSF_Fcns->uErrLine = uLogLineNum;
 
         if (hWndFE NE NULL)
         {
@@ -3302,7 +3354,7 @@ UINT SaveFunctionLine
             MySprintfW (wszTemp,
                         sizeof (wszTemp),
                         ERRMSG_SYNTAX_ERROR_IN_FUNCTION_LINE APPEND_NAME,
-                        uLineNum,
+                        uLogLineNum,
                         lpMemPTD->uCaret);
             // Display the error message
             MessageBoxW (hWndMF,

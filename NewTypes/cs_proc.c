@@ -66,6 +66,9 @@ void CS_ChangeTokenType
 
         // Get the ptr to the given line's tokenized header global memory
         lpMemTknHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines[lptkArg1->tkData.Orig.c.uLineNum - 1].offTknLine);
+
+        // It's a token header
+        Assert (lpMemTknHdr->Sig.nature EQ TOKEN_HEADER_SIGNATURE);
     } // End IF/ELSE
 
     // Skip over the header to the data
@@ -134,6 +137,9 @@ void CS_ChainTokens
 
         // Get the given line's tokenized global memory handle
         lpMemTknHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines[lptdArg1->Orig.c.uLineNum - 1].offTknLine);
+
+        // It's a token header
+        Assert (lpMemTknHdr->Sig.nature EQ TOKEN_HEADER_SIGNATURE);
     } // End IF/ELSE
 
     // Skip over the header to the data
@@ -288,6 +294,9 @@ void CS_SetTokenCLIndex
 
         // Get the given line's tokenized global memory handle
         lpMemTknHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines[lptdArg->Orig.c.uLineNum - 1].offTknLine);
+
+        // It's a token header
+        Assert (lpMemTknHdr->Sig.nature EQ TOKEN_HEADER_SIGNATURE);
     } // End IF/ELSE
 
     // Skip over the header to the data
@@ -1745,11 +1754,14 @@ void CS_GetToken_COM
         offTknHdr = lpFcnLines[lpLoc->uLineNum - 1].offTknLine;
 
         // If the caller wants the offset to the tokenized line header, ...
-        if (lpOffTknHdr)
+        if (lpOffTknHdr NE NULL)
             *lpOffTknHdr = offTknHdr;
 
         // Get the given line's tokenized global memory handle
         lpMemTknHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, offTknHdr);
+
+        // It's a token header
+        Assert (lpMemTknHdr->Sig.nature EQ TOKEN_HEADER_SIGNATURE);
 
         // Copy the text line's global memory handle
         hGlbTxtLine = lpFcnLines[lpLoc->uLineNum - 1].hGlbTxtLine;
@@ -1762,11 +1774,11 @@ void CS_GetToken_COM
     } // End IF/ELSE
 
     // If the caller wants the tokenized line's global memory handle, ...
-    if (lplpMemTknHdr)
+    if (lplpMemTknHdr NE NULL)
         *lplpMemTknHdr = lpMemTknHdr;
 
     // If the caller wants the text line's global memory handle, ...
-    if (lphGlbTxtLine)
+    if (lphGlbTxtLine NE NULL)
         *lphGlbTxtLine = hGlbTxtLine;
 
     // If the stmts are NOT on the same line, ...

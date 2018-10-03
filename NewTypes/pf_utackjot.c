@@ -439,7 +439,8 @@ EXIT_TYPES WINAPI PrimFnMonUpTackJotCSPLParse
       Tokenize_EM (lpwszCompLine,               // The line to tokenize (not necessarily zero-terminated)
                    aplNELMComp,                 // Length of the line to execute
                    hWndEC,                      // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
-                   1,                           // Function line # (0 = header)
+                   1,                           // Logical function line # (0 = header)
+                   1,                           // Physical ...
                   &ErrorMessageDirect,          // Ptr to error handling function (may be NULL)
                    NULL,                        // Ptr to common struc (may be NULL if unused)
                    FALSE);                      // TRUE iff we're tokenizing a Magic Function/Operator

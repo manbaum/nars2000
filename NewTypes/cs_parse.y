@@ -2690,7 +2690,7 @@ void cs_yyerror                         // Called for Bison syntax error
 
 {
     char szTemp[1024], *p;
-    UINT uLineNum,
+    UINT uLogLineNum,
          uLinePos;
 
 #ifdef DEBUG
@@ -2702,8 +2702,8 @@ void cs_yyerror                         // Called for Bison syntax error
         lpcsLocalVars->tkCSErr = lpcsLocalVars->lptkCSNxt[-1];
 
     // Get and save the character index position
-    uLinePos = lpcsLocalVars->tkCSErr.tkCharIndex;
-    uLineNum = lpcsLocalVars->tkCSErr.tkData.Orig.c.uLineNum;
+    uLinePos    = lpcsLocalVars->tkCSErr.tkCharIndex;
+    uLogLineNum = lpcsLocalVars->tkCSErr.tkData.Orig.c.uLineNum;
 
     // If the caller wants error messages displayed, ...
     if (lpcsLocalVars->bDisplayErr)
@@ -2715,7 +2715,7 @@ void cs_yyerror                         // Called for Bison syntax error
         {
             wsprintf (szTemp,
                       "SYNTAX ERROR in line %d, position %d -- function NOT saved.",
-                      uLineNum,
+                      uLogLineNum,
                       uLinePos);
             p = szTemp;
 
@@ -2730,7 +2730,7 @@ void cs_yyerror                         // Called for Bison syntax error
         {
             wsprintf (szTemp,
                       "VALUE ERROR in line %d, position %d -- function NOT saved.",
-                      uLineNum,
+                      uLogLineNum,
                       uLinePos);
             p = szTemp;
 
@@ -2745,7 +2745,7 @@ void cs_yyerror                         // Called for Bison syntax error
         {
             wsprintf (szTemp,
                       "LENGTH ERROR in line %d, position %d -- function NOT saved.",
-                      uLineNum,
+                      uLogLineNum,
                       uLinePos);
             p = szTemp;
 

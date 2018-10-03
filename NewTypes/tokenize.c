@@ -4873,7 +4873,8 @@ HGLOBAL Tokenize_EM
     (LPAPLCHAR   lpwszLine,         // The line to tokenize (not necessarily zero-terminated)
      APLNELM     aplNELM,           // NELM of lpwszLine
      HWND        hWndEC,            // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
-     UINT        uLineNum,          // Function line # (0 = header)
+     UINT        uLogLineNum,       // Logical function line # (0 = header)
+     UINT        uPhyLineNum,       // Physical ...
      LPERRHANDFN lpErrHandFn,       // Ptr to error handling function (may be NULL)
      LPSF_FCNS   lpSF_Fcns,         // Ptr to common struc (may be NULL if unused)
      UBOOL       bMFO)              // TRUE iff we're tokenizing a Magic Function/Operator
@@ -4908,17 +4909,17 @@ __try
     tkLocalVars.State[2]        =
     tkLocalVars.State[1]        =
     tkLocalVars.State[0]        = TKROW_SOS;
-    tkLocalVars.Orig.d.uLineNum = uLineNum;
+    tkLocalVars.Orig.d.uLineNum = uLogLineNum;
     tkLocalVars.Orig.d.uStmtNum = 0;
     tkLocalVars.bMFO            = bMFO;             // TRUE iff we're tokenizing a Magic Function/Operator
     tkLocalVars.lpMemPTD        = lpMemPTD;         // Ptr to PerTabData global memory
     tkLocalVars.lpSF_Fcns       = lpSF_Fcns;        // Ptr to common struc
 
-    // If this is the function header (uLineNum EQ 0)
+    // If this is the function header (uPhyLineNum EQ 0),
     //   save and restore the ptr to the next token
     //   on the CS stack as there are no CSs in the
     //   function header
-    if (uLineNum EQ 0)
+    if (uPhyLineNum EQ 0)
         // Save the ptr to the next token on the CS stack
         lptkCSNxt = lpMemPTD->lptkCSNxt;
 
@@ -5237,8 +5238,11 @@ FREED_EXIT:
         DbgGlobalFree (tkLocalVars.hGlbStr); tkLocalVars.hGlbStr = NULL;
     } // End IF
 
-    // If this is the function header, ...
-    if (uLineNum EQ 0)
+    // If this is the function header (uPhyLineNum EQ 0),
+    //   save and restore the ptr to the next token
+    //   on the CS stack as there are no CSs in the
+    //   function header
+    if (uPhyLineNum EQ 0)
         // Restore the ptr to the next token on the CS stack
         lpMemPTD->lptkCSNxt = lptkCSNxt;
 } __except (CheckException (GetExceptionInformation (), L"Tokenize_EM"))

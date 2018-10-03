@@ -1,6 +1,19 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1924 -- Version 0.5.8.xx
+-------------------------------
+
+* Define More )DEBUG Commands
+
+Directory branches/bsmith/NewTypes:
+
+SC_DEBUG.C:
+  Define more )DEBUG commands such as [ON|OFF] to turn the debuger [ON|OFF],
+    and )DEBUG test=[0|1] to define a global test var.
+  Move <IncorrectCommand> code to the end.
+
+
 Build #1923 -- Version 0.5.8.xx
 -------------------------------
 

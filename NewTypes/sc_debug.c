@@ -31,6 +31,7 @@ extern UBOOL bDebugPLTrace,
              bDebugFH,
              bDebugPN,
              gYYAlloc;
+UCHAR guTest = 0;
 
 
 //***************************************************************************
@@ -47,6 +48,7 @@ UBOOL CmdDebug_EM
             q;
     WCHAR   wszTemp[1024];
     int     i;
+    UBOOL   bRet = FALSE;       // TRUE iff the result is valid
 
     // Skip over leading white space
     p = SkipWhiteW (p);
@@ -56,8 +58,9 @@ UBOOL CmdDebug_EM
     {
         MySprintfW (wszTemp,
                     sizeof (wszTemp),
-                   L"Is PLTrace = %d  PLStart = %d  ExecTrace = %d  CS = %d  FH = %d  PN = %d  YYAlloc = 0x%X\r\n"
-                   L"   DbgLvl = %d  FcnLvl = %d  VfpLvl = %d  ResizeLvl = %d",
+                   L"Is %s PLTrace = %d  PLStart = %d  ExecTrace = %d  CS = %d  FH = %d  PN = %d  YYAlloc = 0x%X\r\n"
+                   L"   DbgLvl = %d  FcnLvl = %d  VfpLvl = %d  ResizeLvl = %d  Test = %d",
+                   (hWndDB EQ NULL) ? L"OFF" : L"ON",
                     bDebugPLTrace,
                     bDebugPLStart,
                     bDebugExecTrace,
@@ -68,12 +71,58 @@ UBOOL CmdDebug_EM
                     gDbgLvl,
                     gFcnLvl,
                     gVfpLvl,
-                    gResizeLvl);
+                    gResizeLvl,
+                    guTest);
         // Tell the user about it
         AppendLine (wszTemp, FALSE, TRUE);
 
+
+        // Mark as successful
         return TRUE;
     } // End IF
+
+    // Check for "ON"
+#define OPT     L"ON"
+    if (strncmpiW (p, OPT, strcountof (OPT)) EQ 0)
+    {
+        if (hWndDB NE NULL)
+            AppendLine (L"Already ON", FALSE, TRUE);
+        else
+        {
+            // Create the Debugger window
+            CreateDebuggerWindow (hWndMF);
+
+            AppendLine (L"Is ON", FALSE, TRUE);
+        } // End IF/ELSE
+
+        // Restore focus
+        SetFocus (hWndMF);
+
+        // Mark as successful
+        return TRUE;
+    } // End IF
+#undef  OPT
+    // Check for "OFF"
+#define OPT     L"OFF"
+    if (strncmpiW (p, OPT, strcountof (OPT)) EQ 0)
+    {
+        if (hWndDB EQ NULL)
+            AppendLine (L"Already OFF", FALSE, TRUE);
+        else
+        {
+            // Close the Debugger window
+            PostMessageW (hWndDB, WM_CLOSE, 0, 0);
+
+            AppendLine (L"Is OFF", FALSE, TRUE);
+        } // End IF/ELSE
+
+        // Restore focus
+        SetFocus (hWndMF);
+
+        // Mark as successful
+        return TRUE;
+    } // End IF
+#undef  OPT
 
     // Check for allPL=[0|1]
 #define OPT     L"allPL"
@@ -162,20 +211,11 @@ UBOOL CmdDebug_EM
                                                         \
                 /* Save the new value                 */\
                 NAM = i;                                \
-            } else                                      \
-            {                                           \
-                /* Tell the user about it             */\
-                IncorrectCommand ();                    \
                                                         \
-                return FALSE;                           \
-            } /* End IF/ELSE                          */\
-        } else                                          \
-        {                                               \
-            /* Tell the user about it                 */\
-            IncorrectCommand ();                        \
-                                                        \
-            return FALSE;                               \
-        } /* End IF/ELSE                              */\
+                /* Mark as successful                 */\
+                bRet = TRUE;                            \
+            } /* End IF                               */\
+        } /* End IF                                   */\
     } /* End IF                                       */
 
 #define IsUCHAR(a)      (0 <= (a) && (a) < 256)
@@ -192,8 +232,14 @@ UBOOL CmdDebug_EM
     DEBUG_MAC (L"FcnLvl"     , L"Was FcnLvl = %d"    , gFcnLvl         , IsUCHAR       )
     DEBUG_MAC (L"VfpLvl"     , L"Was VfpLvl = %d"    , gVfpLvl         , IsUCHAR       )
     DEBUG_MAC (L"ResizeLvl"  , L"Was ResizeLvl = %d" , gResizeLvl      , IsUCHAR       )
+    DEBUG_MAC (L"Test"       , L"Was Test = %d"      , guTest          , IsUCHAR       )
 
-    return TRUE;
+    // If there was no match, ...
+    if (!bRet)
+        // Tell the user about it
+        IncorrectCommand ();
+
+    return bRet;
 } // End CmdDebug_EM
 
 

@@ -391,7 +391,7 @@ APLHC1F FloorHC1F
         //   aplRes = Near; otherwise, aplRes = Near - 1
         if (aplNear)
         {
-            if (CmpCT_F (aplRht,
+            if (CmpSCT_F (aplRht,
               (APLFLOAT) aplNear,
                          GetQuadCT (),
                          EQ))
@@ -508,7 +508,7 @@ APLHC1R FloorHC1R
             {
                 mpq_set (&aplRes, &mpqNear);
 
-                if (CmpCT_R (aplRht,
+                if (CmpSCT_R (aplRht,
                              mpqNear,
                              GetQuadCT (),
                              NE))
@@ -648,7 +648,7 @@ APLHC1V FloorHC1V
             {
                 mpfr_set (&aplRes, &mpfNear, MPFR_RNDN);
 
-                if (CmpCT_V (aplRht,
+                if (CmpSCT_V (aplRht,
                              mpfNear,
                              GetQuadCT (),
                              NE))
@@ -702,6 +702,7 @@ void PrimFnMonDownStileVisR
 
     PrimFnMonDownStileVisV (lpMemRes, uRes, &atRht, lpPrimSpec);
 
+    // We no longer need this storage
     Myhc1v_clear (&atRht.aplHC1V);
 } // End PrimFnMonDownStileVisR
 
@@ -795,7 +796,7 @@ APLHC2F FloorHC2F
 
         // Use the one of smaller distance
         //   with ties going to the integer coordinates
-        aplFlr = (aplDst1 <= aplDst2) ? aplTmp1 : aplTmp2;
+        aplFlr = CmpSCT_F (aplDst1, aplDst2, SYS_CT, <=) ? aplTmp1 : aplTmp2;
     } else
     {
         // Loop through all of the parts
@@ -812,7 +813,7 @@ APLHC2F FloorHC2F
         } // End FOR
 
         // If the point is NOT in the corner containing zero, ...
-        if (CmpCT_F (aplSum, 1, fQuadCT, >=))
+        if (CmpSCT_F (aplSum, 1, 0, >=))
         {
             int j;
 
@@ -823,7 +824,7 @@ APLHC2F FloorHC2F
             // Loop through the imaginary parts
             for (i = 1; i < 2; i++)
             // If this part is larger (within []CT), ...
-            if (CmpCT_F (aplSum, aplFrc.parts[i], fQuadCT, <))
+            if (CmpSCT_F (aplSum, aplFrc.parts[i], fQuadCT, <))
             {
                 // Save as the largest so far
                 j = i; aplSum = aplFrc.parts[j];
@@ -902,7 +903,7 @@ APLHC4F FloorHC4F
 
     // Use the one of smaller distance
     //   with ties going to the integer coordinates
-    return (aplDst1 <= aplDst2) ? aplTmp1 : aplTmp2;
+    return CmpSCT_F (aplDst1, aplDst2, SYS_CT, <=) ? aplTmp1 : aplTmp2;
 } // End FloorHC4F
 
 
@@ -925,7 +926,6 @@ APLHC2R FloorHC2R
     APLHC1V  aplDst1 = {0},             // Distance between aplRht and aplTmp1
              aplDst2 = {0};             // ...                         aplTmp2
     APLINT   aplIntFlr;
-    APLFLOAT fQuadCT = GetQuadCT ();
 
     // No exceptions in this code
 
@@ -948,6 +948,7 @@ APLHC2R FloorHC2R
             // Calculate the floor of each part
             aplTmp1.parts[i] = FloorHC1R (aplSum);
 
+            // We no longer need this storage
             Myq_clear (&aplSum);
 
             //***************************************************************************
@@ -965,6 +966,7 @@ APLHC2R FloorHC2R
 
             Assert (mpq_integer_p (&aplRatFlr));
 
+            // We no longer need this storage
             Myq_clear (&aplSum);
 
             // Extract the integer within
@@ -972,6 +974,7 @@ APLHC2R FloorHC2R
 
             Assert (bRet);
 
+            // We no longer need this storage
             Myq_clear (&aplRatFlr);
 
             // If the number if non-zero and even, ...
@@ -994,16 +997,23 @@ APLHC2R FloorHC2R
 
         // Use the one of smaller distance
         //   with ties going to the integer coordinates
-        if (mpfr_cmp (&aplDst1, &aplDst2) <= 0)
+        if (CmpSCT_V (aplDst1, aplDst2, SYS_CT, <=))
         {
+            // Save integer coordinates in the result
             mphc2r_set   (&aplFlr, &aplTmp1);
+
+            // We no longer need this storage
             Myhc2r_clear (&aplTmp2);
         } else
         {
+            // Save half integer coordinates in the result
             mphc2r_set   (&aplFlr, &aplTmp2);
+
+            // We no longer need this storage
             Myhc2r_clear (&aplTmp1);
         } // End IF/ELSE
 
+        // We no longer need this storage
         Myf_clear (&aplDst1);
         Myf_clear (&aplDst2);
     } else
@@ -1025,7 +1035,7 @@ APLHC2R FloorHC2R
         } // End FOR
 
         // Compare against the hyperplane between the nearest corners
-        bRet = CmpCT_R (aplSum, mpqOne, fQuadCT, >=);
+        bRet = CmpSCT_R (aplSum, mpqOne, 0, >=);
 
         // We no longer need this storage
         Myhc1r_clear (&aplSum);
@@ -1042,7 +1052,7 @@ APLHC2R FloorHC2R
             // Loop through the imaginary parts
             for (i = 1; i < 2; i++)
             // If this part is larger (within []CT), ...
-            if (CmpCT_R (aplSum, aplFrc.parts[i], fQuadCT, <))
+            if (CmpSCT_R (aplSum, aplFrc.parts[i], SYS_CT, <))
             {
                 // Save as the largest so far
                 j = i; aplSum = aplFrc.parts[j];
@@ -1052,6 +1062,7 @@ APLHC2R FloorHC2R
             mpq_add (&aplFlr.parts[j], &aplFlr.parts[j], &mpqOne);
         } // End IF
 
+        // We no longer need this storage
         Myhc2r_clear (&aplFrc);
     } // End IF/ELSE
 
@@ -1096,6 +1107,7 @@ APLHC4R FloorHC4R
         // Calculate the floor of each part
         aplTmp1.parts[i] = FloorHC1R (aplSum);
 
+        // We no longer need this storage
         Myq_clear (&aplSum);
 
         //***************************************************************************
@@ -1113,6 +1125,7 @@ APLHC4R FloorHC4R
 
         Assert (mpq_integer_p (&aplRatFlr));
 
+        // We no longer need this storage
         Myq_clear (&aplSum);
 
         // Extract the integer within
@@ -1120,6 +1133,7 @@ APLHC4R FloorHC4R
 
         Assert (bRet);
 
+        // We no longer need this storage
         Myq_clear (&aplRatFlr);
 
         // If the number if non-zero and even, ...
@@ -1142,16 +1156,23 @@ APLHC4R FloorHC4R
 
     // Choose the smaller distance
     //   with ties going to the integer coordinates
-    if (mpfr_cmp (&aplDst1, &aplDst2) <= 0)
+    if (CmpSCT_V (aplDst1, aplDst2, SYS_CT, <=))
     {
+        // Save integer coordinates in the result
         mphc4r_init_set (&aplRes, &aplTmp1);
+
+        // We no longer need this storage
         Myhc4r_clear    (&aplTmp2);
     } else
     {
+        // Save half integer coordinates in the result
         mphc4r_init_set (&aplRes, &aplTmp2);
+
+        // We no longer need this storage
         Myhc4r_clear    (&aplTmp1);
     } // End IF/ELSE
 
+    // We no longer need this storage
     Myf_clear    (&aplDst1);
     Myf_clear    (&aplDst2);
 
@@ -1178,7 +1199,6 @@ APLHC2V FloorHC2V
     APLHC1V  aplDst1 = {0},             // Distance between aplRht and aplTmp1
              aplDst2 = {0};             // ...                         aplTmp2
     APLINT   aplIntFlr;
-    APLFLOAT fQuadCT = GetQuadCT ();
 
     // No exceptions in this code
 
@@ -1201,6 +1221,7 @@ APLHC2V FloorHC2V
             // Calculate the floor of each part
             aplTmp1.parts[i] = FloorHC1V (aplSum);
 
+            // We no longer need this storage
             Myf_clear (&aplSum);
 
             //***************************************************************************
@@ -1218,6 +1239,7 @@ APLHC2V FloorHC2V
 
             Assert (mpfr_integer_p (&aplVfpFlr));
 
+            // We no longer need this storage
             Myf_clear (&aplSum);
 
             // Extract the integer within
@@ -1225,6 +1247,7 @@ APLHC2V FloorHC2V
 
             Assert (bRet);
 
+            // We no longer need this storage
             Myf_clear (&aplVfpFlr);
 
             // If the number if non-zero and even, ...
@@ -1247,16 +1270,23 @@ APLHC2V FloorHC2V
 
         // Choose the smaller distance
         //   with ties going to the integer coordinates
-        if (mpfr_cmp (&aplDst1, &aplDst2) <= 0)
+        if (CmpSCT_V (aplDst1, aplDst2, SYS_CT, <=))
         {
+            // Save integer coordinates in the result
             mphc2v_init_set (&aplFlr, &aplTmp1);
+
+            // We no longer need this storage
             Myhc2v_clear    (&aplTmp2);
         } else
         {
+            // Save half integer coordinates in the result
             mphc2v_init_set (&aplFlr, &aplTmp2);
+
+            // We no longer need this storage
             Myhc2v_clear    (&aplTmp1);
         } // End IF/ELSE
 
+        // We no longer need this storage
         Myf_clear    (&aplDst1);
         Myf_clear    (&aplDst2);
     } else
@@ -1278,7 +1308,7 @@ APLHC2V FloorHC2V
         } // End FOR
 
         // Compare against the hyperplane between the nearest corners
-        bRet = CmpCT_V (aplSum, mpfOne, fQuadCT, >=);
+        bRet = CmpSCT_V (aplSum, mpfOne, 0, >=);
 
         // We no longer need this storage
         Myhc1v_clear (&aplSum);
@@ -1295,7 +1325,7 @@ APLHC2V FloorHC2V
             // Loop through the imaginary parts
             for (i = 1; i < 2; i++)
             // If this part is larger (within []CT), ...
-            if (CmpCT_V (aplSum, aplFrc.parts[i], fQuadCT, <))
+            if (CmpSCT_V (aplSum, aplFrc.parts[i], SYS_CT, <))
             {
                 // Save as the largest so far
                 j = i; aplSum = aplFrc.parts[j];
@@ -1305,6 +1335,7 @@ APLHC2V FloorHC2V
             mpfr_add (&aplFlr.parts[j], &aplFlr.parts[j], &mpfOne, MPFR_RNDN);
         } // End IF
 
+        // We no longer need this storage
         Myhc2v_clear (&aplFrc);
     } // End IF/ELSE
 
@@ -1351,6 +1382,7 @@ APLHC4V FloorHC4V
         // Calculate the floor of each part
         aplTmp1.parts[i] = FloorHC1V (aplSum);
 
+        // We no longer need this storage
         Myf_clear (&aplSum);
 
         //***************************************************************************
@@ -1368,6 +1400,7 @@ APLHC4V FloorHC4V
 
         Assert (mpfr_integer_p (&aplVfpFlr));
 
+        // We no longer need this storage
         Myf_clear (&aplSum);
 
         // Extract the integer within
@@ -1375,6 +1408,7 @@ APLHC4V FloorHC4V
 
         Assert (bRet);
 
+        // We no longer need this storage
         Myf_clear (&aplVfpFlr);
 
         // If the number if non-zero and even, ...
@@ -1397,16 +1431,23 @@ APLHC4V FloorHC4V
 
     // Choose the smaller distance
     //   with ties going to the integer coordinates
-    if (mpfr_cmp (&aplDst1, &aplDst2) <= 0)
+    if (CmpSCT_V (aplDst1, aplDst2, SYS_CT, <=))
     {
+        // Save integer coordinates in the result
         mphc4v_init_set (&aplRes, &aplTmp1);
+
+        // We no longer need this storage
         Myhc4v_clear    (&aplTmp2);
     } else
     {
+        // Save half integer coordinates in the result
         mphc4v_init_set (&aplRes, &aplTmp2);
+
+        // We no longer need this storage
         Myhc4v_clear    (&aplTmp1);
     } // End IF/ELSE
 
+    // We no longer need this storage
     Myf_clear    (&aplDst1);
     Myf_clear    (&aplDst2);
 
@@ -1649,6 +1690,7 @@ void PrimFnMonDownStileHC2VisHC2R
     // Save in the result
     PrimFnMonDownStileHC2VisHC2V (lpMemRes, uRes, &atRht, lpPrimSpec);
 
+    // We no longer need this storage
     Myhc2v_clear (&atRht.aplHC2V);
 } // End PrimFnMonDownStileHC2VisHC2R
 
@@ -1674,6 +1716,7 @@ void PrimFnMonDownStileHC4VisHC4R
     // Save in the result
     PrimFnMonDownStileHC4VisHC4V (lpMemRes, uRes, &atRht, lpPrimSpec);
 
+    // We no longer need this storage
     Myhc4v_clear (&atRht.aplHC4V);
 } // End PrimFnMonDownStileHC4VisHC4R
 

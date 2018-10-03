@@ -1,6 +1,20 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1922 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In Floor Between FLT and RAT
+
+Directory branches/bsmith/NewTypes:
+
+PF_DSTILE.:
+  Fix bug in Floor where it returns different values for the same value as a FLT vs. as a RAT.  The problem is
+    that they used different comparisons, both meant to be exact, but on values that differed by a few ULPs
+    because of the different ways FLT and RAT calculates distances.  Now all of those comparisons use []CT.
+  Improve comments.
+
+
 Build #1921 -- Version 0.5.8.xx
 -------------------------------
 

@@ -361,7 +361,7 @@ APLRAT NegHC1R_RE1
         switch (exCode)
         {
             case EXCEPTION_RESULT_HC1V:
-                RaiseException (exCode + 2, 0, 0, NULL);
+                RaiseException (exCode + FRV_MUL, 0, 0, NULL);
 
                 break;
 
@@ -649,7 +649,7 @@ APLHC2R NegHC2R_RE1
         switch (exCode)
         {
             case EXCEPTION_RESULT_HC2V:
-                RaiseException (exCode + 2, 0, 0, NULL);
+                RaiseException (exCode + FRV_MUL, 0, 0, NULL);
 
                 break;
 
@@ -942,7 +942,7 @@ APLHC4R NegHC4R_RE1
         switch (exCode)
         {
             case EXCEPTION_RESULT_HC4V:
-                RaiseException (exCode + 2, 0, 0, NULL);
+                RaiseException (exCode + FRV_MUL, 0, 0, NULL);
 
                 break;
 

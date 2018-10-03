@@ -3934,17 +3934,12 @@ LPPN_YYSTYPE PN_MakeExpPoint
 
             break;
 
+        case PN_NUMTYPE_VFP:
         case PN_NUMTYPE_HC2V:
         case PN_NUMTYPE_HC4V:
         case PN_NUMTYPE_HC8V:
-            // Initialize to 0
-            mphcXv_init0 (&lpYYArg->at.aplVfp, iHCDim);
-
-            // Fall through to common code
-
-        case PN_NUMTYPE_VFP:
             // Convert the string to a VFP number
-            mpfr_init_set_str (&lpYYArg->at.aplVfp, &lppnLocalVars->lpszStart[lpYYArg->uNumAcc], 10, MPFR_RNDN);
+            mpfr_set_str (&lpYYArg->at.aplVfp, &lppnLocalVars->lpszStart[lpYYArg->uNumAcc], 10, MPFR_RNDN);
 
             // Change the type to HCxV
             lpYYArg->chType = lppnLocalVars->chComType;
@@ -3974,34 +3969,6 @@ LPPN_YYSTYPE PN_MakeExpPoint
                 lpYYArg->chType = lppnLocalVars->chComType;
 
             break;
-
-////////case PN_NUMTYPE_HC2V:
-////////case PN_NUMTYPE_HC4V:
-////////case PN_NUMTYPE_HC8V:
-////////    // Initialize to 0
-////////    mphcXv_init0 (&lpYYArg->at.aplVfp, iHCDim);
-////////
-////////    // If the previous code inserted an Exponent separator, ...
-////////    if (lppnLocalVars->lpszNumAccum[lpYYExponent->uNumAcc - 1] EQ 'e')
-////////        // Remove it so we can convert the Multiplier and Exponent separately
-////////        lppnLocalVars->lpszNumAccum[lpYYExponent->uNumAcc - 1] = AC_EOS;
-////////
-////////    // Convert the Multiplier string to a VFP number
-////////    mpfr_set_str (&lpYYArg->at.aplVfp,      &lppnLocalVars->lpszNumAccum[lpYYArg->uNumAcc], 10, MPFR_RNDN);
-////////
-////////    // Convert the Exponent string to a VFP number
-////////    mpfr_init_set_str (&lpYYExponent->at.aplVfp, &lppnLocalVars->lpszNumAccum[lpYYExponent->uNumAcc], 10, MPFR_RNDN);
-////////
-////////    // Raise 10 to the power of the Exponent
-////////    mpfr_ui_pow (&lpYYExponent->at.aplVfp, 10, &lpYYExponent->at.aplVfp, MPFR_RNDN);
-////////
-////////    // Multiply by the Multiplier
-////////    mpfr_mul (&lpYYArg->at.aplVfp, &lpYYArg->at.aplVfp, &lpYYExponent->at.aplVfp, MPFR_RNDN);
-////////
-////////    // Change the type to HCxV
-////////    lpYYArg->chType = lppnLocalVars->chComType;
-////////
-////////    break;
 
         case PN_NUMTYPE_BOOL:       // Can't occur as the result of MakeExpPoint
         case PN_NUMTYPE_INT:        // ...

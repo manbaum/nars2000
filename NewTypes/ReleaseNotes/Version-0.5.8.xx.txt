@@ -1,6 +1,18 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1927 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Memory Leak
+
+Directory branches/bsmith/NewTypes:
+
+PN_PROC.C:
+  In <PN_MakeExpPoint>, avoid memory leak when creating a VFP Exponential.
+  Delete obsolete commented out code.
+
+
 Build #1926 -- Version 0.5.8.xx
 -------------------------------
 

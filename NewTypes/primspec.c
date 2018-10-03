@@ -6122,7 +6122,9 @@ RESTART_EXCEPTION:
                         aplTypeRes = TranslateExceptionCodeToArrayType (ExceptionCode);
 
                         // If the exception is NOT Result is FLT, ...
-                        if (ExceptionCode NE EXCEPTION_RESULT_FLT)
+                        //   and the result is an immediate, ...
+                        if (ExceptionCode NE EXCEPTION_RESULT_FLT
+                         || lpMemHdrRes NE NULL)
                         {
                             // If the old result is not immediate, ...
                             if (lpMemHdrRes NE NULL)

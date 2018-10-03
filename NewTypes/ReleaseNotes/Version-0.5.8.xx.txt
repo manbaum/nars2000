@@ -1,6 +1,22 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1926 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug From Last Build
+
+Directory branches/bsmith/NewTypes:
+
+EXECMFN.C:
+SAVEFCN.C:
+  Forgot to leave in code to increment the Logical Line number.
+  More distinguishing between Logical and Physical lines when saving a function.
+
+FH_PARSE.H:
+  Define new field in UDFO header to hold the # physical lines.
+
+
 Build #1925 -- Version 0.5.8.xx
 -------------------------------
 

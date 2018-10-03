@@ -2214,6 +2214,8 @@ UBOOL SaveFunctionCom
                 // Size a function line
                 if (SaveFunctionLine (lpSF_Fcns, NULL, NULL, uLogLineNum, uPhyLineNum, NULL, hWndEC, hWndFE, &uOffset) EQ -1)
                     goto ERROR_EXIT;
+                // Count in another logical line
+                uLogLineNum++;
             } // End IF
 
         // Restore the ptr to the next token on the CS stack
@@ -2655,6 +2657,8 @@ UBOOL SaveFunctionCom
                 // Size a function line
                 if (SaveFunctionLine (lpSF_Fcns, NULL, NULL, uLogLineNum, uPhyLineNum, NULL, hWndEC, hWndFE, &uOffset) EQ -1)
                     goto ERROR_EXIT;
+                // Count in another logical line
+                uLogLineNum++;
             } // End IF
 
         // Restore the ptr to the next token on the CS stack
@@ -2725,6 +2729,7 @@ UBOOL SaveFunctionCom
         lpMemDfnHdr->bLclRL       = fhLocalVars.bLclRL;
         lpMemDfnHdr->RefCnt       = 1;
         lpMemDfnHdr->numFcnLines  = numLogLines;
+        lpMemDfnHdr->numPhyLines  = numPhyLines;
         lpMemDfnHdr->steLftOpr    = fhLocalVars.lpYYLftOpr
                                   ? fhLocalVars.lpYYLftOpr ->tkToken.tkData.tkSym
                                   : NULL;
@@ -2865,6 +2870,9 @@ UBOOL SaveFunctionCom
                   SaveFunctionLine (lpSF_Fcns, NULL, lpMemDfnHdr, uLogLineNum, uPhyLineNum, lpFcnLines, hWndEC, hWndFE, &uOffset);
                 if (uLineLen EQ -1)
                     goto ERROR_EXIT;
+
+                // Count in another logical line
+                uLogLineNum++;
 
                 // If tokenization failed, ...
                 if (lpFcnLines->offTknLine EQ 0)
@@ -3633,6 +3641,7 @@ UBOOL GetLabelNums
 
 {
     UINT           numLogLines,         // # logical lines in the function
+                   numPhyLines,         // # physical ...
                    uDupLineNum1,        // Line # of duplicate label (origin-1)
                    uCnt,                // Loop counter
                    uLineNum1;           // Line # (origin-1)
@@ -3646,8 +3655,9 @@ UBOOL GetLabelNums
     UBOOL          bRet;                // TRUE iff the result is valid
     HGLOBAL        hGlbName;            // Name's global memory handle
 
-    // Get # logical lines in the function
+    // Get # logical and physical lines in the function
     numLogLines = lpMemDfnHdr->numFcnLines;
+    numPhyLines = lpMemDfnHdr->numPhyLines;
 
     // Allocate room for <numLogLines> of <LPSYMENTRY>s for the line labels
     //   so we can sort the labels and find duplicates
@@ -3673,6 +3683,9 @@ UBOOL GetLabelNums
 
         // Get a ptr to the token header
         lptkHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines->offTknLine);
+
+        // It's a token header
+        Assert (lptkHdr->Sig.nature EQ TOKEN_HEADER_SIGNATURE);
 
         // Get the # tokens in the line
         numTokens = lptkHdr->TokenCnt;

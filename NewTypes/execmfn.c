@@ -488,9 +488,14 @@ HGLOBAL Init1MagicFunction
         for (uOffset = 0, uLogLineNum = uPhyLineNum = 1; uPhyLineNum <= numPhyLines; uPhyLineNum++)
             // If the preceding physical line is not continued to the current line, ...
             if (!SF_IsLineContMFO (hWndEC, lpMagicFcnOpr, uPhyLineNum - 1))
+            {
                 // Size a function line
                 if (SaveFunctionLine (NULL, lpMagicFcnOpr, NULL, uLogLineNum, uPhyLineNum, NULL, hWndEC, NULL, &uOffset) EQ -1)
                     goto ERROR_EXIT;
+                // Count in another logical line
+                uLogLineNum++;
+            } // End IF
+
         // Allocate global memory for the function header
         hGlbDfnHdr =
           DbgGlobalAlloc (GHND, sizeof (DFN_HEADER)
@@ -641,6 +646,8 @@ HGLOBAL Init1MagicFunction
                   SaveFunctionLine (NULL, lpMagicFcnOpr, lpMemDfnHdr, uLogLineNum, uPhyLineNum, lpFcnLines, hWndEC, hWndEC, &uOffset);
                 if (uLineLen EQ -1)
                     goto ERROR_EXIT;
+                // Count in another logical line
+                uLogLineNum++;
             } // End IF
 
             // Transfer Stop & Trace info

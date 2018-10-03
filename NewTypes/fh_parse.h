@@ -120,28 +120,29 @@ typedef struct tagDFN_HEADER            // Function header structure
                      offRhtArgSTE,      // 24:  Offset to right arg STEs (ignored if numRhtArgSTE is zero)
                      numLocalsSTE,      // 28:  # right arg STEs (may be zero if niladic)
                      offLocalsSTE,      // 2C:  Offset to start of function lines (FCNLINE[nLines])
-                     numFcnLines,       // 30:  # lines in the function (not counting the header)
-                     offFcnLines,       // 34:  Offset to start of function lines (FCNLINE[nLines])
-                     offTknLines,       // 38:  Offset to start of tokenized function lines
-                     numLblLines,       // 3C:  # labeled lines in the function
-                     num1stLabel1;      // 40:  Line # of 1st labeled line (origin-1)
-    SYSLBLENTRY      aSysLblId,         // 44:  Line/token #s of the []ID  label (0 if not present) (8 bytes)
-                     aSysLblInv,        // 4C:  Line/token #s of the []INV ...
-                     aSysLblMs,         // 54:  Line/token #s of the []MS  ...
-                     aSysLblPro;        // 5C:  Line/token #s of the []PRO ...
-    LPSYMENTRY       steLftOpr,         // 60:  Left operand STE (may be NULL if not an operator)
-                     steFcnName,        // 64:  Function name STE
-                     steAxisOpr,        // 68:  Axis operator STE
-                     steRhtOpr;         // 6C:  Right operand STE (may be NULL if monadic operator or not an operator)
-    HGLOBAL          hGlbTxtHdr,        // 70:  Text of function header (APLCHAR) global memory handle
-                     hGlbTknHdr,        // 74:  Tokenized function header (TOKEN) ...
-                     hGlbUndoBuff,      // 78:  Undo buffer (UNDO_BUF)            ... (may be NULL)
-                     hGlbMonInfo;       // 7C:  Function line monitor info (MONINFO)
-    FILETIME         ftCreation,        // 80:  Time of creation (8 bytes)
-                     ftLastMod;         // 88:  Time of last modification (8 bytes)
-    HSHTABSTR        htsDFN;            // 90:  Local HTS (htsDFN.lpHshTab may be NULL if none) (124 bytes)
-                                        //10C:  Length
-                                        //10C:  Array of function line structures (FCNLINE[nLines])
+                     numFcnLines,       // 30:  # Logical lines in the function (not counting the header)
+                     numPhyLines,       // 34:  # Physical ...
+                     offFcnLines,       // 38:  Offset to start of function lines (FCNLINE[nLines])
+                     offTknLines,       // 3C:  Offset to start of tokenized function lines
+                     numLblLines,       // 40:  # labeled lines in the function
+                     num1stLabel1;      // 44:  Line # of 1st labeled line (origin-1)
+    SYSLBLENTRY      aSysLblId,         // 48:  Line/token #s of the []ID  label (0 if not present) (8 bytes)
+                     aSysLblInv,        // 50:  Line/token #s of the []INV ...
+                     aSysLblMs,         // 58:  Line/token #s of the []MS  ...
+                     aSysLblPro;        // 60:  Line/token #s of the []PRO ...
+    LPSYMENTRY       steLftOpr,         // 64:  Left operand STE (may be NULL if not an operator)
+                     steFcnName,        // 68:  Function name STE
+                     steAxisOpr,        // 6C:  Axis operator STE
+                     steRhtOpr;         // 70:  Right operand STE (may be NULL if monadic operator or not an operator)
+    HGLOBAL          hGlbTxtHdr,        // 74:  Text of function header (APLCHAR) global memory handle
+                     hGlbTknHdr,        // 78:  Tokenized function header (TOKEN) ...
+                     hGlbUndoBuff,      // 7C:  Undo buffer (UNDO_BUF)            ... (may be NULL)
+                     hGlbMonInfo;       // 80:  Function line monitor info (MONINFO)
+    FILETIME         ftCreation,        // 84:  Time of creation (8 bytes)
+                     ftLastMod;         // 8C:  Time of last modification (8 bytes)
+    HSHTABSTR        htsDFN;            // 94:  Local HTS (htsDFN.lpHshTab may be NULL if none) (124 bytes)
+                                        //110:  Length
+                                        //110:  Array of function line structures (FCNLINE[nLines])
 } DFN_HEADER, *LPDFN_HEADER;
 
 // Whenever changing the above struct, be sure to make a

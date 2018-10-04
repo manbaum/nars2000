@@ -2019,9 +2019,13 @@ typedef enum tagUNDO_ACTS
     undoRep,                // 0002:  Replace a character
     undoDel,                // 0003:  Delete one or more characters
     undoSel,                // 0004:  Select one or more characters
-    undoInsToggle,      // 0005:  Toggle the insert mode
+    undoToggleIns,          // 0005:  Toggle the insert mode
                             // 0006-FFFF:  Available entries (16 bits)
 } UNDO_ACTS;
+
+// N.B.:  Whenever changing the above enum (tagUNDO_ACTS),
+//   be sure to make a corresponding change to
+//   <UndoActToChar> in <externs.h>.
 
 // Define the corresponding one-letter actions
 #define UndoActToChar   L"NIRDST"

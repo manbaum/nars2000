@@ -1936,7 +1936,7 @@ HGLOBAL SF_UndoBufferLW
 
             case L'T':
                 // Save the Action
-                lpMemUndoBin->Action = undoInsToggle;
+                lpMemUndoBin->Action = undoToggleIns;
 
                 break;
 

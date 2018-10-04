@@ -41,6 +41,7 @@ SYMBOLNAMES aSymbolNames[]
   {UTF16_QUADRIGHTARROW       , L"{quadrightarrow}"     },
   {UTF16_QUADUPARROW          , L"{quaduparrow}"        },
   {UTF16_QUADDOWNARROW        , L"{quaddownarrow}"      },
+  {UTF16_REPLACEMENT0000      , L"{nul}"                },
 
 //***************************************************************
 //  Note that identical UTF16_xxx names MUST appear adjacently

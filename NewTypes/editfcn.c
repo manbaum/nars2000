@@ -1327,7 +1327,7 @@ UBOOL SyntaxColor
     // Allocate storage for hGlbNum
     tkLocalVars.hGlbNum =
       DbgGlobalAlloc (GHND, tkLocalVars.iNumLim * sizeof (char));
-    if (!tkLocalVars.hGlbNum)
+    if (tkLocalVars.hGlbNum EQ NULL)
         goto FREEGLB_EXIT;
 
     // Set initial limit for hGlbStr
@@ -1336,7 +1336,7 @@ UBOOL SyntaxColor
     // Allocate storage for hGlbStr
     tkLocalVars.hGlbStr =
       DbgGlobalAlloc (GHND, tkLocalVars.iStrLim * sizeof (APLCHAR));
-    if (!tkLocalVars.hGlbStr)
+    if (tkLocalVars.hGlbStr EQ NULL)
         goto FREEGLB_EXIT;
 
     // Initialize the accumulation variables for the next constant
@@ -1402,12 +1402,12 @@ UBOOL SyntaxColor
         SetTokenStatesTK (&tkLocalVars, fsaActTableTK[tkLocalVars.State[0]][tkColInd].iNewState);
 
         // Check for primary action
-        if (scAction1_EM
+        if (scAction1_EM NE NULL
          && !(*scAction1_EM) (&tkLocalVars))
             goto ERROR_EXIT;
 
         // Check for secondary action
-        if (scAction2_EM
+        if (scAction2_EM NE NULL
          && !(*scAction2_EM) (&tkLocalVars))
             goto ERROR_EXIT;
 
@@ -1442,13 +1442,13 @@ ERROR_EXIT:
     Assert ((uChar - uCharIni) EQ (UINT) (tkLocalVars.lpMemClrNxt - lpMemClr));
 
     // Free the global memory:  hGlbNum
-    if (tkLocalVars.hGlbNum)
+    if (tkLocalVars.hGlbNum NE NULL)
     {
         DbgGlobalFree (tkLocalVars.hGlbNum); tkLocalVars.hGlbNum = NULL;
     } // End IF
 
     // Free the global memory:  hGlbStr
-    if (tkLocalVars.hGlbStr)
+    if (tkLocalVars.hGlbStr NE NULL)
     {
         DbgGlobalFree (tkLocalVars.hGlbStr); tkLocalVars.hGlbStr = NULL;
     } // End IF
@@ -1817,7 +1817,7 @@ int LclECPaintHook
     } // End Nothing
 #endif
     // If we're printing, ...
-    if (lFlags & PRF_PRINTCLIENT)
+    if ((lFlags & PRF_PRINTCLIENT) NE 0)
     {
         SelectObject (hDC, hFontOld);
 
@@ -1905,7 +1905,7 @@ HRESULT DrawTextFLsub
     if (FAILED (hr))
         return hr;
 
-    if (dwActualCodePages & dwFontCodePages)
+    if ((dwActualCodePages & dwFontCodePages) NE 0)
         OneDrawTextW (hdc, lprc, lplpsz, cchActual, cxAveChar);
     else
     if (FAILED (hr = IMLangFontLink_MapFont (pfl, hdc, dwActualCodePages, 0, &hfLinked)))
@@ -2762,7 +2762,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                     // Save Undo entry
                     AppendUndo (hWndParent,                 // SM/FE Window handle
                                 GWLSF_UNDO_NXT,             // Offset in hWnd extra bytes of lpUndoNxt
-                                undoInsToggle,              // Action
+                                undoToggleIns,              // Action
                                 uCharPos,                   // Beginning char position
                                 uCharPos + 1,               // Ending    ...
                                 UNDO_NOGROUP,               // Group index
@@ -2889,7 +2889,7 @@ LRESULT WINAPI LclEditCtrlWndProc
             switch (nVirtKey)
             {
                 case VK_MENU:
-                    if (uAltNum)
+                    if (uAltNum NE 0)
                     {
                         // Insert/replace the corresponding Unicode char
                         InsRepCharStr (hWnd, (LPWCHAR) &uAltNum, lpMemPTD EQ NULL);
@@ -3519,7 +3519,7 @@ LRESULT WINAPI LclEditCtrlWndProc
 
                         break;
 
-                    case undoInsToggle:
+                    case undoToggleIns:
                         // Get the current vkState
                         vkState = GetVkState (hWnd);
 
@@ -3628,7 +3628,7 @@ LRESULT WINAPI LclEditCtrlWndProc
                 return FALSE;       // We handled the message
 
             // If we've not already laundered the input, do so now
-            if (wParam)
+            if (wParam NE 0)
                 // Run through the "Normal" processing
                 PasteAPLChars_EM (hWnd, UNITRANS_NORMAL);
             else
@@ -4246,13 +4246,11 @@ void RespecifyNewQuadPW
             lpMemPTD = GetMemPTD ();
 
             // If the lphtsPTD is valid, ...
-            if (lpMemPTD->lphtsPTD)
+            // It might not be valid due to odd timing of messages
+            //   where the WM_SIZE comes in after the htsPTD has been freed
+            if (lpMemPTD->lphtsPTD NE NULL)
                 // Save as new []PW
                 lpMemPTD->lphtsPTD->lpSymQuad[SYSVAR_PW]->stData.stInteger = aplInteger;
-#ifdef DEBUG
-            else
-                DbgStop ();         // #ifdef DEBUG
-#endif
         } // End IF
     } // End IF
 } // End RespecifyNewQuadPW
@@ -4785,7 +4783,7 @@ void PasteAPLChars_EM
 
             // Translate the other APL charset to the NARS charset
             for (uText = 0; uText < uLen; uText++, lpMemText++)
-            if (*lpMemText)
+            if (*lpMemText NE WC_EOS)
             {
                 for (uTran = 0; uTran < UNITRANS_NROWS; uTran++)
                 if (*lpMemText EQ uniTransTab[uTran][uIndex])
@@ -5125,6 +5123,12 @@ RESTART_UNDO:
 
     __try
     {
+        // Check for Inserting a WC_EOS
+        if (Action EQ undoIns
+         && Char EQ WC_EOS)
+            // Substitute a printable char
+            Char = UTF16_REPLACEMENT0000;
+
         // Save the undo entry
         lpUndoNxt->Action     = Action;
         lpUndoNxt->CharPosBeg = (UINT) CharPosBeg;
@@ -5857,7 +5861,7 @@ LPSYMENTRY ParseFunctionName
 ERROR_EXIT:
 NORMAL_EXIT:
     // If we allocated virtual storage, ...
-    if (lclMemVirtStr[0].IniAddr)
+    if (lclMemVirtStr[0].IniAddr NE NULL)
     {
         // Free the virtual storage
         MyVirtualFree (lclMemVirtStr[0].IniAddr, 0, MEM_RELEASE); lclMemVirtStr[0].IniAddr = NULL;

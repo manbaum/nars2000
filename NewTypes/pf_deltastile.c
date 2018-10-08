@@ -45,10 +45,6 @@ LPPL_YYSTYPE PrimFnDeltaStile_EM_YY
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UTF16_DELTASTILE);
 
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
-
     //***************************************************************
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
@@ -83,11 +79,7 @@ LPPL_YYSTYPE PrimFnDelStile_EM_YY
 
 {
     // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UTF16_DELSTILE);
-
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
+    Assert (lptkFunc->tkData.tkChar EQ UTF16_DELTASTILE);
 
     //***************************************************************
     // This function is not sensitive to the axis operator,
@@ -1311,28 +1303,35 @@ APLINT PrimFnGradeCompare
         case ARRAY_FLOAT:
             // Compare the hyper-planes of the right arg
             for (uRest = 0; uRest < aplNELMRest; uRest++)
-            // If we're not grading all items and either item is a NaN, ...
-            if (!lpGradeData->bGradeAll
-             && (_isnan (((LPAPLFLOAT) lpMemRht)[aplUIntLft * aplNELMRest + uRest])
+            // If either item is a NaN, ...
+            if ((_isnan (((LPAPLFLOAT) lpMemRht)[aplUIntLft * aplNELMRest + uRest])
               || _isnan (((LPAPLFLOAT) lpMemRht)[aplUIntRht * aplNELMRest + uRest])))
-                RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-            else
-            // Split cases based upon the signum of the difference
-            switch (signumflt (((LPAPLFLOAT) lpMemRht)[aplUIntLft * aplNELMRest + uRest]
-                             - ((LPAPLFLOAT) lpMemRht)[aplUIntRht * aplNELMRest + uRest]))
             {
-                case 1:
-                    return  1 * lpGradeData->iMul;
+                // If we're not grading all items, ...
+                if (!lpGradeData->bGradeAll)
+                    RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+                else
+                    return CmpFltNaNs (((LPAPLFLOAT) lpMemRht)[aplUIntLft * aplNELMRest + uRest],
+                                       ((LPAPLFLOAT) lpMemRht)[aplUIntRht * aplNELMRest + uRest]);
+            } else
+            {
+                // Split cases based upon the signum of the difference
+                switch (signumflt (((LPAPLFLOAT) lpMemRht)[aplUIntLft * aplNELMRest + uRest]
+                                 - ((LPAPLFLOAT) lpMemRht)[aplUIntRht * aplNELMRest + uRest]))
+                {
+                    case 1:
+                        return  1 * lpGradeData->iMul;
 
-                case 0:
-                    break;
+                    case 0:
+                        break;
 
-                case -1:
-                    return -1 * lpGradeData->iMul;
+                    case -1:
+                        return -1 * lpGradeData->iMul;
 
-                defstop
-                    break;
-            } // End FOR/IF/ELSE/SWITCH
+                    defstop
+                        break;
+                } // End SWITCH
+            } // End FOR/IF/ELSE
 
             // The hyper-planes are equal -- compare indices so the sort is stable
             return signumint (aplUIntLft - aplUIntRht);

@@ -1673,14 +1673,9 @@ int flt_cmp_ct
              aplRhtAbs,
              aplHoodLo;
 
-    // If both args are NaNs, ...
-    if (_isnan (aplFloatLft) && _isnan (aplFloatRht))
-        return 0;
-
-    // If only one arg is a NaN, ...
+    // If either arg is a NaN, ...
     if (_isnan (aplFloatLft) || _isnan (aplFloatRht))
-        // Return 1 if the left is a NaN, -1 if the right is a NaN
-        return -1+2*_isnan (aplFloatLft);
+        return CmpFltNaNs (aplFloatLft, aplFloatRht);
 
     // If Lft EQ Rht (absolutely), return 0 (equal)
     if (aplFloatLft EQ aplFloatRht)
@@ -1738,6 +1733,36 @@ int flt_cmp_ct
     // Otherwise, return the signum of the difference
     return signumflt (aplFloatLft - aplFloatRht);
 } // End flt_cmp_ct
+
+
+//***************************************************************************
+//  $CmpFltNaNs
+//    returning -1 if L<R
+//               0    L=R
+//               1    L>R
+//***************************************************************************
+
+int CmpFltNaNs
+    (APLFLOAT L,
+     APLFLOAT R)
+
+{
+    UBOOL Nl = _isnan (L),
+          Nr = _isnan (R);
+
+    if (Nl && Nr)
+        return 0;       // NaN == NaN
+    else
+    if (Nl)
+        return 1;       // NaN > everything including Infinities
+    else
+    if (Nr)
+        return -1;      // ...
+    else
+        DbgBrk ();      // ERROR
+
+    return 0xABCD;
+} // End CmpFltNaNs
 
 
 //***************************************************************************
@@ -1984,31 +2009,6 @@ APLRAT ConvertToRAT_SCT
 
     return atArg.aplRat;
 } // End ConvertToRAT_SCT
-
-
-//***************************************************************************
-//  $ConvertToVFP_SCT
-//
-//  Convert a value to a VFP (if possible) using System []CT
-//***************************************************************************
-
-APLVFP ConvertToVFP_SCT
-    (APLSTYPE   aplTypeArg,             // Argument storage type
-     LPVOID     lpSymGlbArg,            // ...      global memory handle
-     APLUINT    uArg,                   // Index into <lpSymGlbArg>
-     LPUBOOL    lpbRet)                 // Ptr to TRUE iff the result is valid
-
-{
-    ALLTYPES atArg = {0};
-
-    // Mark as using SYS_CT
-    atArg.enumCT = ENUMCT_SYS;
-
-    // Attempt to convert the value in <lpSymGlbArg> to a VFP using System []CT
-    (*aTypeActConvert[aplTypeArg][ARRAY_VFP]) (lpSymGlbArg, uArg, &atArg, lpbRet);
-
-    return atArg.aplVfp;
-} // End ConvertToVFP_SCT
 
 
 //***************************************************************************

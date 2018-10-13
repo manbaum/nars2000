@@ -54,10 +54,13 @@
 
 #define DESTROY_PERTABVARS                          \
     gmp_randclear (lpMemPTD->randState);            \
-    Myf_clear (&lpMemPTD->mpfrPi);                  \
-    Myf_clear (&lpMemPTD->mpfrGamma);               \
-    Myf_clear (&lpMemPTD->mpfrE);                   \
-    gsl_rng_free (lpMemPTD->gslRNG);                \
+    Myhc8v_clear    (&lpMemPTD->mpfrHC8V_Pi   );    \
+    Myhc8v_clear    (&lpMemPTD->mpfrHC8V_Gamma);    \
+    Myhc8v_clear    (&lpMemPTD->mpfrHC8V_E    );    \
+    lpMemPTD->bInit_Pi    = FALSE;                  \
+    lpMemPTD->bInit_E     = FALSE;                  \
+    lpMemPTD->bInit_Gamma = FALSE;                  \
+    gsl_rng_free    (lpMemPTD->gslRNG);             \
 
 // Define the number and order of the local HTS structs for MFOs
 typedef enum tagHTS_MFO
@@ -93,7 +96,10 @@ typedef struct tagPERTABDATA
                  bTempOpen:1,               // 00000010:  TRUE if lpwszTemp is open and open-ended
                  eHCMul:3,                  // 000000E0:  Hypercomplex Multiplication Variant (see tagENUM_HCMUL)
                  bResetInProgress:1,        // 00000100:  TRUE if )RESET is in progress via CreateResetThread
-                 :23;                       // FFFFFE00:  Available bits
+                 bInit_E:1,                 // 00000200:  TRUE iff InitPTD_E called
+                 bInit_Gamma:1,             // 00000400:  ...             _Gamma ...
+                 bInit_Pi:1,                // 00000800:  ...             _Pi ...
+                 :20;                       // FFFFF000:  Available bits
     HGLOBAL      hGlbCurLine;               // Current line global memory handle
 #ifdef DEBUG
     LPWCHAR      lpwszTempName,             // Ptr to current name with lpwszTemp open
@@ -155,9 +161,9 @@ typedef struct tagPERTABDATA
     HWND         hWndFENxt;                 // Next FE window handle (NULL = none)
     APLINT       aplCurrentFEATURE[FEATURENDX_LENGTH];  // Current values for []FEATURE
     gmp_randstate_t randState;              // MPIR random number state for Query
-    APLVFP       mpfrPi,                    // MPFR value for Pi
-                 mpfrGamma,                 // ...            Gamma
-                 mpfrE;                     // ...            e
+    APLHC8V      mpfrHC8V_Pi,               // MPFR value for Pi
+                 mpfrHC8V_Gamma,            // ...            Gamma
+                 mpfrHC8V_E;                // ...            e
     HGLOBAL      hGlbNfns;                  // Global memory handle for []Nfns data
     LPVOID       gslRNG;                    // Ptr to GSL random number generator
     LARGE_INTEGER liTickCnt;                // Performance counter

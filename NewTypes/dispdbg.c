@@ -1289,16 +1289,16 @@ void DisplayHeap
          || hGlb EQ mpfMinInt           ._mpfr_d
          || hGlb EQ mpfMaxInt           ._mpfr_d
          || hGlb EQ mpfMaxUInt          ._mpfr_d
-         || hGlb EQ lpMemPTD->mpfrE     ._mpfr_d
-         || hGlb EQ lpMemPTD->mpfrGamma ._mpfr_d
-         || hGlb EQ lpMemPTD->mpfrPi    ._mpfr_d
+         || hGlb EQ lpMemPTD->mpfrHC8V_E     .parts[0]._mpfr_d
+         || hGlb EQ lpMemPTD->mpfrHC8V_Gamma .parts[0]._mpfr_d
+         || hGlb EQ lpMemPTD->mpfrHC8V_Pi    .parts[0]._mpfr_d
          || hGlb EQ mpfHalf             ._mpfr_d
          || hGlb EQ (HGLOBAL) ByteDiff (mpfMinInt           ._mpfr_d, 4)
          || hGlb EQ (HGLOBAL) ByteDiff (mpfMaxInt           ._mpfr_d, 4)
          || hGlb EQ (HGLOBAL) ByteDiff (mpfMaxUInt          ._mpfr_d, 4)
-         || hGlb EQ (HGLOBAL) ByteDiff (lpMemPTD->mpfrE     ._mpfr_d, 4)
-         || hGlb EQ (HGLOBAL) ByteDiff (lpMemPTD->mpfrGamma ._mpfr_d, 4)
-         || hGlb EQ (HGLOBAL) ByteDiff (lpMemPTD->mpfrPi    ._mpfr_d, 4)
+         || hGlb EQ (HGLOBAL) ByteDiff (lpMemPTD->mpfrHC8V_E     .parts[0]._mpfr_d, 4)
+         || hGlb EQ (HGLOBAL) ByteDiff (lpMemPTD->mpfrHC8V_Gamma .parts[0]._mpfr_d, 4)
+         || hGlb EQ (HGLOBAL) ByteDiff (lpMemPTD->mpfrHC8V_Pi    .parts[0]._mpfr_d, 4)
          || hGlb EQ (HGLOBAL) ByteDiff (mpfHalf             ._mpfr_d, 4)
          || hGlb EQ lpMemPTD->randState->_mp_seed->_mp_d
            )
@@ -1346,10 +1346,6 @@ void DisplayTokens
     WCHAR        wszTemp[1024];     // Ptr to temporary output area
     LPTOKEN      lpMemTknLine;      // Ptr to tokenized line
 
-    // Check debug level
-    if (gDbgLvl < 3)
-        return;
-
     DbgMsgW (L"********** Start Tokens ********************************\r\n");
 
     // Ensure it's valid
@@ -1389,7 +1385,7 @@ void DisplayTokens
         DbgMsgW (wszTemp);
     } // End FOR
 
-    DbgMsgW (L"********** End Tokens **********************************");
+    DbgMsgW (L"********** End Tokens **********************************\r\n");
 } // End DisplayTokens
 #endif
 

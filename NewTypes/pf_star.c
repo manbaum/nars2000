@@ -235,6 +235,7 @@ APLSTYPE PrimSpecStarStorageTypeMon
         case ARRAY_HC2I:
         case ARRAY_HC4I:
         case ARRAY_HC8I:
+
         case ARRAY_RAT:
         case ARRAY_HC2R:
         case ARRAY_HC4R:
@@ -245,11 +246,12 @@ APLSTYPE PrimSpecStarStorageTypeMon
 
         case ARRAY_FLOAT:
         case ARRAY_HC2F:
-        case ARRAY_HC2V:
         case ARRAY_HC4F:
-        case ARRAY_VFP:
-        case ARRAY_HC4V:
         case ARRAY_HC8F:
+
+        case ARRAY_VFP:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
         case ARRAY_HC8V:
         case ARRAY_NESTED:
             break;
@@ -824,7 +826,7 @@ APLHC2V ExpHC2V_RE
 {
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
-    APLHC2V       aplRes;               // The result
+    APLHC2V       aplRes = {0};         // The result
     UBOOL         bCtrlBreak = FALSE;   // Temp var for Ctrl-Break
 
     // Get the thread's ptr to local vars
@@ -904,7 +906,7 @@ APLHC4V ExpHC4V_RE
 {
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
-    APLHC4V       aplRes;               // The result
+    APLHC4V       aplRes = {0};         // The result
     UBOOL         bCtrlBreak = FALSE;   // Temp var for Ctrl-Break
 
     // Get the thread's ptr to local vars
@@ -926,7 +928,7 @@ APLHC4V ExpHC4V_RE
     {
         // Handle via macro
         PrimMonStarHCxV_MAC (4)
-    } // End IF
+    } // End IF/ELSE
 
     return aplRes;
 } // End ExpHC4V_RE
@@ -984,7 +986,7 @@ APLHC8V ExpHC8V_RE
 {
     LPPLLOCALVARS lpplLocalVars;        // Ptr to re-entrant vars
     LPUBOOL       lpbCtrlBreak;         // Ptr to Ctrl-Break flag
-    APLHC8V       aplRes;               // The result
+    APLHC8V       aplRes = {0};         // The result
     UBOOL         bCtrlBreak = FALSE;   // Temp var for Ctrl-Break
 
     // Get the thread's ptr to local vars
@@ -1006,7 +1008,7 @@ APLHC8V ExpHC8V_RE
     {
         // Handle via macro
         PrimMonStarHCxV_MAC (8)
-    } // End IF
+    } // End IF/ELSE
 
     return aplRes;
 } // End ExpHC8V_RE
@@ -1110,14 +1112,17 @@ APLSTYPE PrimSpecStarStorageTypeDyd
         case ARRAY_HC2I:                // ...
         case ARRAY_HC4I:                // ...
         case ARRAY_HC8I:                // ...
+
         case ARRAY_RAT:                 // ...
         case ARRAY_HC2R:                // ...
         case ARRAY_HC4R:                // ...
         case ARRAY_HC8R:                // ...
+
         case ARRAY_FLOAT:
         case ARRAY_HC2F:
         case ARRAY_HC4F:
         case ARRAY_HC8F:
+
         case ARRAY_VFP:
         case ARRAY_HC2V:
         case ARRAY_HC4V:
@@ -1413,7 +1418,7 @@ APLHC1F PowHC1F_RE
      APLHC1F aplRht)                // Right ...
 
 {
-    APLHC1F aplRes;                 // The result
+    APLHC1F aplRes = {0};           // The result
 
     // Check for indeterminates:  0 * 0
     if (aplLft EQ 0
@@ -1522,7 +1527,7 @@ APLHC1R PowHC1R_RE
      APLHC1R aplRht)                // Right ...
 
 {
-    APLHC1R aplRes;                 // The result
+    APLHC1R aplRes = {0};           // The result
     mpir_ui uRht;
 
     // Check for indeterminates:  0 * 0
@@ -1707,7 +1712,7 @@ APLHC1V PowHC1V_RE
      APLHC1V aplRht)                // Right ...
 
 {
-    APLHC1V aplRes;                 // The result
+    APLHC1V aplRes = {0};           // The result
     APLVFP mpfTmp = {0};
 
     // Check for indeterminates:  0 * 0
@@ -1850,7 +1855,7 @@ APLHC2I PowHC2I_RE
      APLHC2I aplRht)                // Right ...
 
 {
-    APLHC2I aplRes;                 // The result
+    APLHC2I aplRes = {0};           // The result
     int     i;                      // Loop counter
 
     // Check for indeterminates:  0 * 0
@@ -1975,7 +1980,7 @@ APLHC2F PowHC2F_RE
      APLHC2F aplRht)                // Right ...
 
 {
-    APLHC2F aplRes;                 // The result
+    APLHC2F aplRes = {0};           // The result
     UBOOL   bImagLft = IzitImaginary (ARRAY_HC2F, &aplLft),
             bImagRht = IzitImaginary (ARRAY_HC2F, &aplRht);
 
@@ -2402,7 +2407,7 @@ APLHC2V PowHC2V_RE
      APLHC2V aplRht)                // Right ...
 
 {
-    APLHC2V aplRes;
+    APLHC2V aplRes = {0};
     UBOOL   bImagLft = IzitImaginary (ARRAY_HC2V, &aplLft),
             bImagRht = IzitImaginary (ARRAY_HC2V, &aplRht);
 
@@ -2626,7 +2631,7 @@ APLHC4I PowHC4I_RE
      APLHC4I aplRht)
 
 {
-    APLHC4I aplRes;                 // The result
+    APLHC4I aplRes = {0};           // The result
     int     i;                      // Loop counter
 
     // Check for indeterminates:  0 * 0
@@ -2746,7 +2751,7 @@ APLHC4F PowHC4F_RE
      APLHC4F aplRht)                // Right ...
 
 {
-    APLHC4F aplRes;                 // The result
+    APLHC4F aplRes = {0};           // The result
     UBOOL   bImagLft = IzitImaginary (ARRAY_HC4F, &aplLft),
             bImagRht = IzitImaginary (ARRAY_HC4F, &aplRht);
 
@@ -3176,7 +3181,7 @@ APLHC4V PowHC4V_RE
      APLHC4V aplRht)                // Right ...
 
 {
-    APLHC4V aplRes;
+    APLHC4V aplRes = {0};
     UBOOL   bImagLft = IzitImaginary (ARRAY_HC4V, &aplLft),
             bImagRht = IzitImaginary (ARRAY_HC4V, &aplRht);
 
@@ -3399,7 +3404,7 @@ APLHC8I PowHC8I_RE
      APLHC8I aplRht)                // Right ...
 
 {
-    APLHC8I aplRes;                 // The result
+    APLHC8I aplRes = {0};           // The result
     int     i;                      // Loop counter
 
     // Check for indeterminates:  0 * 0
@@ -3519,7 +3524,7 @@ APLHC8F PowHC8F_RE
      APLHC8F aplRht)                // Right ...
 
 {
-    APLHC8F aplRes;                 // The result
+    APLHC8F aplRes = {0};           // The result
     UBOOL   bImagLft = IzitImaginary (ARRAY_HC8F, &aplLft),
             bImagRht = IzitImaginary (ARRAY_HC8F, &aplRht);
 
@@ -3949,7 +3954,7 @@ APLHC8V PowHC8V_RE
      APLHC8V aplRht)                // Right ...
 
 {
-    APLHC8V aplRes;
+    APLHC8V aplRes = {0};
     UBOOL   bImagLft = IzitImaginary (ARRAY_HC8V, &aplLft),
             bImagRht = IzitImaginary (ARRAY_HC8V, &aplRht);
 
@@ -4177,7 +4182,7 @@ APLFLOAT sinCT_Flt
     (APLFLOAT aplRht)
 
 {
-    APLFLOAT aplRes;
+    APLFLOAT aplRes = {0};
 
     // Divide so we can compare it with its floor
     aplRes = aplRht / FloatPi;
@@ -4218,7 +4223,7 @@ APLVFP sinCT_Vfp
     InitPTD_Pi (lpMemPTD);
 
     // Divide so we can compare it with its floor
-    mpfr_div (&aplRes, &aplRht, &lpMemPTD->mpfrPi, MPFR_RNDN);
+    mpfr_div (&aplRes, &aplRht, &lpMemPTD->mpfrHC8V_Pi.parts[0], MPFR_RNDN);
 
     // Calculate the floor so we can see if it's an integer
     aplFlr = FloorHC1V (aplRes);
@@ -4253,7 +4258,7 @@ APLFLOAT cosCT_Flt
     UBOOL    bRet;
 
     // Divide by Pi/2 so we can compare it with its floor
-    aplRes = aplRht / FloatPi2;
+    aplRes = aplRht / (FloatPi / 2);
 
     // Calculate the floor so we can see if it's an odd integer
     aplFlr = floor (aplRes);
@@ -4289,12 +4294,17 @@ APLVFP cosCT_Vfp
            aplRes = {0};
     APLINT aplInt;
     UBOOL  bRet;
+    LPPERTABDATA lpMemPTD = GetMemPTD ();   // Ptr to PerTabData global memory
+
+    // Initialize the VFP Pi if not already done
+    InitPTD_Pi (lpMemPTD);
 
     // Initialize the temp to 0
     mpfr_init0 (&aplRes);
 
     // Divide by Pi/2 so we can compare it with its floor
-    mpfr_div (&aplRes, &aplRht, &aplPi2HC8V.parts[0], MPFR_RNDN);
+    mpfr_div    (&aplRes, &aplRht, &lpMemPTD->mpfrHC8V_Pi.parts[0], MPFR_RNDN);
+    mpfr_div_ui (&aplRes, &aplRes,                   2, MPFR_RNDN);
 
     // Calculate the floor so we can see if it's an odd integer
     aplFlr = FloorHC1V (aplRes);

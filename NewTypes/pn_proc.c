@@ -3580,7 +3580,7 @@ LPPN_YYSTYPE PN_MakeEulerPoint
             InitPTD_E (lpMemPTD);
 
             // The result is Multiplier x (*1) * Exponent
-            mpfr_pow (&atRes.aplVfp, &lpMemPTD->mpfrE, &lpYYExponent->at.aplVfp, MPFR_RNDN);
+            mpfr_pow (&atRes.aplVfp, &lpMemPTD->mpfrHC8V_E.parts[0], &lpYYExponent->at.aplVfp, MPFR_RNDN);
 #if (defined DEBUG) && (defined DEBUG_FMT)
             strcpyW (wszTemp, L"e *:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], atRes.aplVfp, 0) = WC_EOS; DbgMsgW (wszTemp);
 #endif
@@ -4063,7 +4063,7 @@ LPPN_YYSTYPE PN_MakeGammaPoint
             mpfr_init0 (&aplVfpTmp);
 
             // The result is Multiplier x Gamma * Exponent
-            mpfr_pow (&aplVfpTmp, &lpMemPTD->mpfrGamma, &lpYYExponent->at.aplVfp, MPFR_RNDN);
+            mpfr_pow (&aplVfpTmp, &lpMemPTD->mpfrHC8V_Gamma.parts[0], &lpYYExponent->at.aplVfp, MPFR_RNDN);
 
             // Accumulate in the Multiplier
             mpfr_mul (&lpYYMultiplier->at.aplVfp, &lpYYMultiplier->at.aplVfp, &aplVfpTmp, MPFR_RNDN);
@@ -4078,27 +4078,27 @@ LPPN_YYSTYPE PN_MakeGammaPoint
         case PN_NUMTYPE_HC2F:
             // The result is Multiplier x Gamma * Exponent
             lpYYMultiplier->at.aplHC2F = MulHC2F_RE (lpYYMultiplier->at.aplHC2F,
-                                                     PowHC2F_RE (aplGammaHC8F.partsLo[0].partsLo[0],
+                                                     PowHC2F_RE (aplHC8F_Gamma.partsLo[0].partsLo[0],
                                                                  lpYYExponent->at.aplHC2F));
             break;
 
         case PN_NUMTYPE_HC4F:
             // The result is Multiplier x Gamma * Exponent
             lpYYMultiplier->at.aplHC4F = MulHC4F_RE (lpYYMultiplier->at.aplHC4F,
-                                                     PowHC4F_RE (aplGammaHC8F.partsLo[0],
+                                                     PowHC4F_RE (aplHC8F_Gamma.partsLo[0],
                                                                  lpYYExponent->at.aplHC4F));
             break;
 
         case PN_NUMTYPE_HC8F:
             // The result is Multiplier x Gamma * Exponent
             lpYYMultiplier->at.aplHC8F = MulHC8F_RE (lpYYMultiplier->at.aplHC8F,
-                                                     PowHC8F_RE (aplGammaHC8F,
+                                                     PowHC8F_RE (aplHC8F_Gamma,
                                                                  lpYYExponent->at.aplHC8F));
             break;
 
         case PN_NUMTYPE_HC2V:
             // Calculate the power
-            atExp.aplHC2V = PowHC2V_RE (aplGammaHC8V.partsLo.partsLo, lpYYExponent->at.aplHC2V);
+            atExp.aplHC2V = PowHC2V_RE (lpMemPTD->mpfrHC8V_Gamma.partsLo.partsLo, lpYYExponent->at.aplHC2V);
 
             // The result is Multiplier x Gamma * Exponent
             atMul.aplHC2V = MulHC2V_RE (lpYYMultiplier->at.aplHC2V, atExp.aplHC2V);
@@ -4114,7 +4114,7 @@ LPPN_YYSTYPE PN_MakeGammaPoint
 
         case PN_NUMTYPE_HC4V:
             // Calculate the power
-            atExp.aplHC4V = PowHC4V_RE (aplGammaHC8V.partsLo        , lpYYExponent->at.aplHC4V);
+            atExp.aplHC4V = PowHC4V_RE (lpMemPTD->mpfrHC8V_Gamma.partsLo        , lpYYExponent->at.aplHC4V);
 
             // The result is Multiplier x Gamma * Exponent
             atMul.aplHC4V = MulHC4V_RE (lpYYMultiplier->at.aplHC4V, atExp.aplHC4V);
@@ -4130,7 +4130,7 @@ LPPN_YYSTYPE PN_MakeGammaPoint
 
         case PN_NUMTYPE_HC8V:
             // Calculate the power
-            atExp.aplHC8V = PowHC8V_RE (aplGammaHC8V                , lpYYExponent->at.aplHC8V);
+            atExp.aplHC8V = PowHC8V_RE (lpMemPTD->mpfrHC8V_Gamma                , lpYYExponent->at.aplHC8V);
 
             // The result is Multiplier x Gamma * Exponent
             atMul.aplHC8V = MulHC8V_RE (lpYYMultiplier->at.aplHC8V, atExp.aplHC8V);
@@ -4254,7 +4254,7 @@ LPPN_YYSTYPE PN_MakePiPoint
             lpMemPTD = GetMemPTD ();
 
             // The result is Multiplier x (o1) * Exponent
-            mpfr_pow (&atRes.aplVfp, &lpMemPTD->mpfrPi, &lpYYExponent->at.aplVfp, MPFR_RNDN);
+            mpfr_pow (&atRes.aplVfp, &lpMemPTD->mpfrHC8V_Pi.parts[0], &lpYYExponent->at.aplVfp, MPFR_RNDN);
 
             // Accumulate in the Multiplier
             mpfr_mul (&lpYYMultiplier->at.aplVfp, &lpYYMultiplier->at.aplVfp, &atRes.aplVfp, MPFR_RNDN);
@@ -4269,27 +4269,27 @@ LPPN_YYSTYPE PN_MakePiPoint
         case PN_NUMTYPE_HC2F:
             // The result is Multiplier x (o1) * Exponent
             lpYYMultiplier->at.aplHC2F = MulHC2F_RE (lpYYMultiplier->at.aplHC2F,
-                                                     PowHC2F_RE (aplPiHC8F.partsLo[0].partsLo[0],
+                                                     PowHC2F_RE (aplHC8F_Pi.partsLo[0].partsLo[0],
                                                                  lpYYExponent->at.aplHC2F));
             break;
 
         case PN_NUMTYPE_HC4F:
             // The result is Multiplier x (o1) * Exponent
             lpYYMultiplier->at.aplHC4F = MulHC4F_RE (lpYYMultiplier->at.aplHC4F,
-                                                     PowHC4F_RE (aplPiHC8F.partsLo[0],
+                                                     PowHC4F_RE (aplHC8F_Pi.partsLo[0],
                                                                  lpYYExponent->at.aplHC4F));
             break;
 
         case PN_NUMTYPE_HC8F:
             // The result is Multiplier x (o1) * Exponent
             lpYYMultiplier->at.aplHC8F = MulHC8F_RE (lpYYMultiplier->at.aplHC8F,
-                                                     PowHC8F_RE (aplPiHC8F,
+                                                     PowHC8F_RE (aplHC8F_Pi,
                                                                  lpYYExponent->at.aplHC8F));
             break;
 
         case PN_NUMTYPE_HC2V:
             // Calculate the power
-            atExp.aplHC2V = PowHC2V_RE (aplPiHC8V.partsLo.partsLo, lpYYExponent->at.aplHC2V);
+            atExp.aplHC2V = PowHC2V_RE (lpMemPTD->mpfrHC8V_Pi.partsLo.partsLo, lpYYExponent->at.aplHC2V);
 
             // The result is Multiplier x (o1) * Exponent
             atMul.aplHC2V = MulHC2V_RE (lpYYMultiplier->at.aplHC2V, atExp.aplHC2V);
@@ -4305,7 +4305,7 @@ LPPN_YYSTYPE PN_MakePiPoint
 
         case PN_NUMTYPE_HC4V:
             // Calculate the power
-            atExp.aplHC4V = PowHC4V_RE (aplPiHC8V.partsLo        , lpYYExponent->at.aplHC4V);
+            atExp.aplHC4V = PowHC4V_RE (lpMemPTD->mpfrHC8V_Pi.partsLo        , lpYYExponent->at.aplHC4V);
 
             // The result is Multiplier x (o1) * Exponent
             atMul.aplHC4V = MulHC4V_RE (lpYYMultiplier->at.aplHC4V, atExp.aplHC4V);
@@ -4321,7 +4321,7 @@ LPPN_YYSTYPE PN_MakePiPoint
 
         case PN_NUMTYPE_HC8V:
             // Calculate the power
-            atExp.aplHC8V = PowHC8V_RE (aplPiHC8V                , lpYYExponent->at.aplHC8V);
+            atExp.aplHC8V = PowHC8V_RE (lpMemPTD->mpfrHC8V_Pi             , lpYYExponent->at.aplHC8V);
 
             // The result is Multiplier x (o1) * Exponent
             atMul.aplHC8V = MulHC8V_RE (lpYYMultiplier->at.aplHC8V, atExp.aplHC8V);
@@ -4559,6 +4559,9 @@ PN_YYSTYPE PN_MakeHc2Point
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
+
+    // Initialize the VFP Pi if not already done
+    InitPTD_Pi (lpMemPTD);
 
     // Promote to a common type
     chType = aNumTypePromote[lpC0->chType][lpC1->chType];
@@ -4974,7 +4977,7 @@ PN_YYSTYPE PN_MakeHc2Point
                     // Convert lpC1 from degrees to radians
 ////////////////////lpC1->at.aplVfp = FloatPi * lpC1->at.aplVfp / 180;
                     mpfr_div_ui (&lpC1->at.aplVfp, &lpC1->at.aplVfp, 180, MPFR_RNDN);
-                    mpfr_mul    (&lpC1->at.aplVfp, &lpC1->at.aplVfp, &lpMemPTD->mpfrPi, MPFR_RNDN);
+                    mpfr_mul    (&lpC1->at.aplVfp, &lpC1->at.aplVfp, &lpMemPTD->mpfrHC8V_Pi.parts[0], MPFR_RNDN);
 
                     // Fall through to common code
 
@@ -5099,7 +5102,7 @@ PN_YYSTYPE PN_MakeHc2Point
                     // Convert lpC1 from degrees to radians
 ////////////////////lpC1->at.aplVfp = FloatPi * lpC1->at.aplVfp / 180;
                     mpfr_div_ui (&lpC1->at.aplVfp, &lpC1->at.aplVfp, 180, MPFR_RNDN);
-                    mpfr_mul    (&lpC1->at.aplVfp, &lpC1->at.aplVfp, &lpMemPTD->mpfrPi, MPFR_RNDN);
+                    mpfr_mul    (&lpC1->at.aplVfp, &lpC1->at.aplVfp, &lpMemPTD->mpfrHC8V_Pi.parts[0], MPFR_RNDN);
 
                     // Fall through to common code
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -101,6 +101,10 @@ APLHC8F confpof_0
 #ifdef DEFINE_VALUES
  = {0, -1, 0, 0, 0, 0, 0, 0}
 #endif
+,
+        aplHC8F_Pi,
+        aplHC8F_E,
+        aplHC8F_Gamma
 ;
 
 #define fpciZero    confpoi_0.partsLo->partsLo[0]
@@ -111,28 +115,83 @@ APLHC8F confpof_0
 #define fphfZero    confpof_0.partsLo[0]
 #define fpofZero    confpof_0
 
-EXTERN
-APLHC8R conmpoi_0,
-        conmpoi_1,
-        conmpoi_N1,
-        conmpoi_I,
-        conmpoi_NI;
+#define fpciOne     confpoi_1.partsLo->partsLo[0]
+#define fphiOne     confpoi_1.partsLo[0]
+#define fpoiOne     confpoi_1
+
+#define fpcfOne     confpof_1.partsLo->partsLo[0]
+#define fphfOne     confpof_1.partsLo[0]
+#define fpofOne     confpof_1
+
+#define mpciZero    conmpoi_0.partsLo.partsLo
+#define mphiZero    conmpoi_0.partsLo
+#define mpoiZero    conmpoi_0
+
+#define mpcfZero    conmpof_0.partsLo.partsLo
+#define mphfZero    conmpof_0.partsLo
+#define mpofZero    conmpof_0
+
+#define mpciOne     conmpoi_1.partsLo.partsLo
+#define mphiOne     conmpoi_1.partsLo
+#define mpoiOne     conmpoi_1
+
+#define mpcfOne     conmpof_1.partsLo.partsLo
+#define mphfOne     conmpof_1.partsLo
+#define mpofOne     conmpof_1
 
 EXTERN
-APLHC8V conmpof_0,
-        conmpof_1,
-        conmpof_N1,
-        conmpof_I,
-        conmpof_NI;
+APLHC8R conmpoi_0
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+,
+        conmpoi_1
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+,
+        conmpoi_N1
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+,
+        conmpoi_I
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+,
+        conmpoi_NI
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+;
 
 EXTERN
-APLHC8F aplPiHC8F,          // Initialized in <initdata.c>
-        aplGammaHC8F;       // ...
-
-EXTERN
-APLHC8V aplPiHC8V,          // Initialized in <initdata.c>
-        aplPi2HC8V,         // ...
-        aplGammaHC8V;       // ...
+APLHC8V conmpof_0
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+,
+        conmpof_1
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+,
+        conmpof_N1
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+,
+        conmpof_I
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+,
+        conmpof_NI
+#ifdef DEFINE_VALUES
+= {0}
+#endif
+;
 
 typedef LPAPLCHAR (*HCI_FCN) (LPWCHAR, LPVOID);
 typedef LPAPLCHAR (*HCF_FCN) (LPWCHAR, LPVOID, APLUINT);
@@ -171,7 +230,7 @@ ENUM_HCFI aArrayTypeToHCDimIndex[ARRAY_LENGTH]
 
 // N.B.: Whenever changing the above array (aArrayTypeToHCDimIndex),
 //   be sure to make a corresponding change to
-//   the four <HCx_FCN>s in <externs.h>.
+//   the four <HCx_FCN>s in <hc_proc.h>.
 
 
 // Same order as in ARRAY_TYPES
@@ -288,15 +347,15 @@ int   iHCDimPof2[8]
 EXTERN
 ENUM_HCFI aHCDimToIndex[9]
 #ifdef DEFINE_VALUES
- = {ENUM_HCFI_ERR ,     // 0
-    ENUM_HCFI1    ,     // 1
-    ENUM_HCFI2    ,     // 2
-    ENUM_HCFI4    ,     // 3
-    ENUM_HCFI4    ,     // 4
-    ENUM_HCFI8    ,     // 5
-    ENUM_HCFI8    ,     // 6
-    ENUM_HCFI8    ,     // 7
-    ENUM_HCFI8    ,     // 8
+ = {ENUM_HCFI_ERR ,     // 0 == -1
+    ENUM_HCFI1    ,     // 1 ==  0
+    ENUM_HCFI2    ,     // 2 ==  1
+    ENUM_HCFI4    ,     // 3 ==  2
+    ENUM_HCFI4    ,     // 4 ==  2
+    ENUM_HCFI8    ,     // 5 ==  3
+    ENUM_HCFI8    ,     // 6 ==  3
+    ENUM_HCFI8    ,     // 7 ==  3
+    ENUM_HCFI8    ,     // 8 ==  3
   }
 #endif
 ;

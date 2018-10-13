@@ -470,8 +470,14 @@ void mpXf_atan
 ////// If the real part of the arg is zero, ...
 ////if (mpfr_zero_p (&op->parts[0]))
 ////{
+////    LPPERTABDATA lpMemPTD = GetMemPTD ();
+////
+////    // Initialize the VFP Pi if not already done
+////    InitPTD_Pi (lpMemPTD);
+////
 ////    // Set the real part of the result to ±Pi/2
-////    mpfr_set (&rop->parts[0], aplHC8V.parts[0], rnd);
+////    mpfr_set    (&rop->parts[0], &lpMemPTD->mpfrHC8V_Pi.parts[0], rnd);
+////    mpfr_div_ui (&rop->parts[0], &rop->parts[0],                  2, rnd);
 ////
 ////    // Set the sign of the real part of the result
 ////    //   to the opposite sign of the (first) imag part
@@ -848,6 +854,10 @@ void mpXf_atanh
     mpfr_t mpfIMag,             // Magnitude of imag parts in the arg
            mpfTmp1;             // Temp var
     mpc_t  Z1, Z2;
+    LPPERTABDATA lpMemPTD = GetMemPTD ();
+
+    // Initialize the VFP Pi if not already done
+    InitPTD_Pi (lpMemPTD);
 
     // Initialize to NaN
     mpfr_init (mpfIMag);
@@ -904,7 +914,8 @@ void mpXf_atanh
         mpfr_set_inf (Z2->re, mpfr_sgn (Z1->re));
 
         // Set the imag part of Z2 to ±Pi/2
-        mpfr_set (Z2->im, &aplPi2HC8V.parts[0], MPFR_RNDN);
+        mpfr_set (Z2->im, &lpMemPTD->mpfrHC8V_Pi.parts[0], MPFR_RNDN);
+        mpfr_div_ui (Z2->im, Z2->im, 2, MPFR_RNDN);
 
         // Set the sign of the imag part in Z2
         //   to the opposite sign of the real

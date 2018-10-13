@@ -2694,7 +2694,7 @@ APLHC4R ModHC4R
         // If the magnitudes are equal, ...
         if (CmpCT_V (aplMagL, aplMagZ, SYS_CT, EQ))
             // Return 0/1
-            mphc4r_set (&aplRes, &conmpoi_0.partsLo);
+            mphc4r_set (&aplRes, &mphiZero);
         else
             Assert (CmpCT_V (aplMagL, aplMagZ, SYS_CT, >));
 
@@ -2895,7 +2895,7 @@ APLHC4V ModHC4V
         // If the magnitudes are equal, ...
         if (CmpCT_V (aplMagL, aplMagZ, SYS_CT, EQ))
             // Return 0/1
-            mphc4v_set (&aplRes, &conmpof_0.partsLo);
+            mphc4v_set (&aplRes, &mphfZero);
         else
             Assert (CmpCT_V (aplMagL, aplMagZ, SYS_CT, >));
 

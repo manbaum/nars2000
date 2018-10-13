@@ -317,7 +317,7 @@ void PrimFnMonCircleVisR
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory handle
+    LPPERTABDATA lpMemPTD = GetMemPTD ();   // Ptr to PerTabData global memory handle
     ALLTYPES     atRht = {0};
 
     // Promote the right arg to the result type
@@ -326,13 +326,10 @@ void PrimFnMonCircleVisR
     // Initialize the result to 0
     mpfr_init0 (&lpMemRes[uRes]);
 
-    // Get the PerTabData ptr
-    lpMemPTD = GetMemPTD ();
-
     // Initialize the VFP Pi if not already done
     InitPTD_Pi (lpMemPTD);
 
-    mpfr_mul (&lpMemRes[uRes], &atRht.aplVfp, &lpMemPTD->mpfrPi, MPFR_RNDN);
+    mpfr_mul (&lpMemRes[uRes], &atRht.aplVfp, &lpMemPTD->mpfrHC8V_Pi.parts[0], MPFR_RNDN);
 
     Myhc1v_clear (&atRht.aplHC1V);
 } // End PrimFnMonCircleVisR
@@ -351,18 +348,15 @@ void PrimFnMonCircleVisV
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory handle
+    LPPERTABDATA lpMemPTD = GetMemPTD ();   // Ptr to PerTabData global memory handle
 
     // Initialize the result to 0
     mpfr_init0 (&lpMemRes[uRes]);
 
-    // Get the PerTabData ptr
-    lpMemPTD = GetMemPTD ();
-
     // Initialize the VFP Pi if not already done
     InitPTD_Pi (lpMemPTD);
 
-    mpfr_mul (&lpMemRes[uRes], &lpatRht->aplVfp, &lpMemPTD->mpfrPi, MPFR_RNDN);
+    mpfr_mul (&lpMemRes[uRes], &lpatRht->aplVfp, &lpMemPTD->mpfrHC8V_Pi.parts[0], MPFR_RNDN);
 } // End PrimFnMonCircleVisV
 
 
@@ -423,18 +417,15 @@ void PrimFnMonCircleHC2VisHC2R
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory handle
+    LPPERTABDATA lpMemPTD = GetMemPTD ();   // Ptr to PerTabData global memory handle
     int          i;                       // Loop counter
     APLVFP       aplVfpPi;
     ALLTYPES     atRht = {0};
 
-    // Get the PerTabData ptr
-    lpMemPTD = GetMemPTD ();
-
     // Initialize the VFP Pi if not already done
     InitPTD_Pi (lpMemPTD);
 
-    aplVfpPi = lpMemPTD->mpfrPi;
+    aplVfpPi = lpMemPTD->mpfrHC8V_Pi.parts[0];
 
     // Promote the right arg to the result type
     (*aTypeActPromote[ARRAY_HC2R][ARRAY_HC2V]) (&lpatRht->aplHC2R, 0, &atRht);
@@ -463,20 +454,17 @@ void PrimFnMonCircleHC2VisHC2V
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory handle
+    LPPERTABDATA lpMemPTD = GetMemPTD ();   // Ptr to PerTabData global memory handle
     int          i;                 // Loop counter
     APLVFP       aplVfpPi;
 
     // Initialize to 0
     mpcf_init0 (&lpMemRes[uRes]);
 
-    // Get the PerTabData ptr
-    lpMemPTD = GetMemPTD ();
-
     // Initialize the VFP Pi if not already done
     InitPTD_Pi (lpMemPTD);
 
-    aplVfpPi = lpMemPTD->mpfrPi;
+    aplVfpPi = lpMemPTD->mpfrHC8V_Pi.parts[0];
 
     // Loop through all the parts
     for (i = 0; i < 2; i++)
@@ -541,7 +529,7 @@ void PrimFnMonCircleHC4VisHC4R
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory handle
+    LPPERTABDATA lpMemPTD = GetMemPTD ();   // Ptr to PerTabData global memory handle
     int          i;                 // Loop counter
     APLVFP       aplVfpPi;
     ALLTYPES     atRht = {0};
@@ -552,13 +540,10 @@ void PrimFnMonCircleHC4VisHC4R
     // Initialize to 0
     mphf_init0 (&lpMemRes[uRes]);
 
-    // Get the PerTabData ptr
-    lpMemPTD = GetMemPTD ();
-
     // Initialize the VFP Pi if not already done
     InitPTD_Pi (lpMemPTD);
 
-    aplVfpPi = lpMemPTD->mpfrPi;
+    aplVfpPi = lpMemPTD->mpfrHC8V_Pi.parts[0];
 
     // Loop through all the parts
     for (i = 0; i < 4; i++)
@@ -581,20 +566,17 @@ void PrimFnMonCircleHC4VisHC4V
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory handle
+    LPPERTABDATA lpMemPTD = GetMemPTD ();   // Ptr to PerTabData global memory handle
     int          i;                 // Loop counter
     APLVFP       aplVfpPi;
 
     // Initialize to 0
     mphf_init0 (&lpMemRes[uRes]);
 
-    // Get the PerTabData ptr
-    lpMemPTD = GetMemPTD ();
-
     // Initialize the VFP Pi if not already done
     InitPTD_Pi (lpMemPTD);
 
-    aplVfpPi = lpMemPTD->mpfrPi;
+    aplVfpPi = lpMemPTD->mpfrHC8V_Pi.parts[0];
 
     // Loop through all the parts
     for (i = 0; i < 4; i++)
@@ -659,7 +641,7 @@ void PrimFnMonCircleHC8VisHC8R
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory handle
+    LPPERTABDATA lpMemPTD = GetMemPTD ();   // Ptr to PerTabData global memory handle
     int          i;                 // Loop counter
     APLVFP       aplVfpPi;
     ALLTYPES     atRht = {0};
@@ -670,13 +652,10 @@ void PrimFnMonCircleHC8VisHC8R
     // Initialize to 0
     mpof_init0 (&lpMemRes[uRes]);
 
-    // Get the PerTabData ptr
-    lpMemPTD = GetMemPTD ();
-
     // Initialize the VFP Pi if not already done
     InitPTD_Pi (lpMemPTD);
 
-    aplVfpPi = lpMemPTD->mpfrPi;
+    aplVfpPi = lpMemPTD->mpfrHC8V_Pi.parts[0];
 
     // Loop through all the parts
     for (i = 0; i < 8; i++)
@@ -699,20 +678,17 @@ void PrimFnMonCircleHC8VisHC8V
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory handle
+    LPPERTABDATA lpMemPTD = GetMemPTD ();   // Ptr to PerTabData global memory handle
     int          i;                 // Loop counter
     APLVFP       aplVfpPi;
 
     // Initialize to 0
     mpof_init0 (&lpMemRes[uRes]);
 
-    // Get the PerTabData ptr
-    lpMemPTD = GetMemPTD ();
-
     // Initialize the VFP Pi if not already done
     InitPTD_Pi (lpMemPTD);
 
-    aplVfpPi = lpMemPTD->mpfrPi;
+    aplVfpPi = lpMemPTD->mpfrHC8V_Pi.parts[0];
 
     // Loop through all the parts
     for (i = 0; i < 8; i++)
@@ -1374,8 +1350,13 @@ void PrimFnDydCircleVisVvV
                     break;
             } else
             {
+                LPPERTABDATA lpMemPTD = GetMemPTD ();   // Ptr to PerTabData global memory handle
+
+                // Initialize the VFP Pi if not already done
+                InitPTD_Pi (lpMemPTD);
+
                 if (SIGN_APLVFP (&lpatRht->aplVfp))
-                    mpfr_init_set (&lpMemRes[uRes], &aplPiHC8V.parts[0], MPFR_RNDN);
+                    mpfr_init_set (&lpMemRes[uRes], &lpMemPTD->mpfrHC8V_Pi.parts[0], MPFR_RNDN);
                 else
                     mpfr_init0    (&lpMemRes[uRes]);
                 // Check for NaN

@@ -239,6 +239,7 @@ APLSTYPE PrimSpecCircleStarStorageTypeMon
         case ARRAY_HC2I:
         case ARRAY_HC4I:
         case ARRAY_HC8I:
+
         case ARRAY_RAT:
         case ARRAY_HC2R:
         case ARRAY_HC4R:
@@ -251,6 +252,7 @@ APLSTYPE PrimSpecCircleStarStorageTypeMon
         case ARRAY_HC2F:
         case ARRAY_HC4F:
         case ARRAY_HC8F:
+
         case ARRAY_VFP:
         case ARRAY_HC2V:
         case ARRAY_HC4V:
@@ -643,7 +645,7 @@ APLHC8F ArcHCxF_RE
 
             case 2 * 0 + 1 * 1:         // Finite, infinite
                 // Set the imaginary part to 켗i/2 depending upon the sign of the imaginary part
-                aplRes.parts[i] = (aplRht.parts[i] < 0) ? -FloatPi2 : FloatPi2;
+                aplRes.parts[i] = ((aplRht.parts[i] < 0) ? -FloatPi : FloatPi) / 2;
 
                 break;
 
@@ -659,22 +661,22 @@ APLHC8F ArcHCxF_RE
                 {
                     // Set the imaginary part to Pi/4 � N * Pi/2 depending upon the signs of the real and imaginary parts
                     case 2 * 0 + 1 * 0:         // Pos, Pos
-                        aplRes.parts[i] =  1 * FloatPi2 / 2;
+                        aplRes.parts[i] =  1 * FloatPi / 4;
 
                         break;
 
                     case 2 * 1 + 1 * 0:         // Neg, Pos
-                        aplRes.parts[i] =  3 * FloatPi2 / 2;
+                        aplRes.parts[i] =  3 * FloatPi / 4;
 
                         break;
 
                     case 2 * 1 + 1 * 1:         // Neg, Neg
-                        aplRes.parts[i] = -3 * FloatPi2 / 2;
+                        aplRes.parts[i] = -3 * FloatPi / 4;
 
                         break;
 
                     case 2 * 0 + 1 * 1:         // Pos, Neg
-                        aplRes.parts[i] = -1 * FloatPi2 / 2;
+                        aplRes.parts[i] = -1 * FloatPi / 4;
 
                         break;
 
@@ -785,7 +787,7 @@ APLHC8F LogHCxF_RE
                 if (IsFltInfinity (aplRht.parts[i]))
                 {
                     // Set the corresponding item in the result to 켗i/2
-                    aplRes.parts[i] = FloatPi2;
+                    aplRes.parts[i] = FloatPi / 2;
 
                     if (SIGN_APLFLOAT_RAW (aplRht.parts[i]) NE SIGN_APLFLOAT_RAW (aplMul))
                         // Negate the value
@@ -971,6 +973,10 @@ APLHC8V ArcHCxV_RE
     APLVFP   aplIMag = {0},         // Magnitude of the imaginary parts
              aplTmp;                // Temp var
     int      i;                     // Loop counter
+    LPPERTABDATA lpMemPTD = GetMemPTD ();
+
+    // Initialize the VFP Pi if not already done
+    InitPTD_Pi (lpMemPTD);
 
     /*
         From http://tamivox.org/redbear/qtrn_calc/index.html
@@ -1025,7 +1031,7 @@ APLHC8V ArcHCxV_RE
     // If the number has imaginary parts, ...
     if (!IsMpf0 (&aplIMag))
     {
-        APLVFP aplMul;              // Multiplier:  arctan2 (...) / ...
+        APLVFP aplMul = {0};        // Multiplier:  arctan2 (...) / ...
 
         // Initialize to 0
         mpfr_init0 (&aplMul);
@@ -1050,7 +1056,8 @@ APLHC8V ArcHCxV_RE
 
             case 2 * 0 + 1 * 1:         // Finite, infinite
                 // Set the imaginary part to 켗i/2
-                mpfr_init_set (&aplRes.parts[i], &aplPi2HC8V.parts[0], MPFR_RNDN);
+                mpfr_init_set (&aplRes.parts[i], &lpMemPTD->mpfrHC8V_Pi.parts[0], MPFR_RNDN);
+                mpfr_div_ui   (&aplRes.parts[i], &aplRes.parts[i], 2, MPFR_RNDN);
 
                 if (signumvfp (&aplRht.parts[i]) < 0)
                     mpfr_neg (&aplRes.parts[i], &aplRes.parts[i], MPFR_RNDN);
@@ -1059,13 +1066,14 @@ APLHC8V ArcHCxV_RE
 
             case 2 * 1 + 1 * 0:         // Infinite, finite
                 // Set the imaginary part to 0 or Pi depending upon the sign of the real part
-                mpfr_init_set (&aplRes.parts[i], (signumvfp (&aplRht.parts[0]) < 0) ? &aplPiHC8V.parts[0] : &mpfZero, MPFR_RNDN);
+                mpfr_init_set (&aplRes.parts[i], (signumvfp (&aplRht.parts[0]) < 0) ? &lpMemPTD->mpfrHC8V_Pi.parts[0] : &mpfZero, MPFR_RNDN);
 
                 break;
 
             case 2 * 1 + 1 * 1:         // Infinite, infinite
                 // Copy Pi/2
-                mpfr_set (&aplMul, &aplPi2HC8V.parts[0], MPFR_RNDN);
+                mpfr_set    (&aplMul, &lpMemPTD->mpfrHC8V_Pi.parts[0], MPFR_RNDN);
+                mpfr_div_ui (&aplMul, &aplMul,                      2, MPFR_RNDN);
 
                 // Calculate Pi/4
                 mpfr_div_ui (&aplMul, &aplMul, 2, MPFR_RNDN);
@@ -1075,29 +1083,29 @@ APLHC8V ArcHCxV_RE
                 {
                     // Set the imaginary part to Pi/4 � N * Pi/2 depending upon the signs of the real and imaginary parts
                     case 2 * 0 + 1 * 0:         // Pos, Pos
-////////////////////////aplRes.parts[i] =  1 * FloatPi2 / 2;
-////////////////////////mpfr_mul_d (&aplMul, &aplMul,  1.0, MPFR_RNDN);
+////////////////////////aplRes.parts[i] =  1 * FloatPi / 4;
+////////////////////////mpfr_mul_si (&aplMul, &aplMul,  1, MPFR_RNDN);
                         mpfr_init_set (&aplRes.parts[i], &aplMul, MPFR_RNDN);
 
                         break;
 
                     case 2 * 1 + 1 * 0:         // Neg, Pos
-////////////////////////aplRes.parts[i] =  3 * FloatPi2 / 2;
-                        mpfr_mul_d (&aplMul, &aplMul,  3.0, MPFR_RNDN);
+////////////////////////aplRes.parts[i] =  3 * FloatPi / 4;
+                        mpfr_mul_si (&aplMul, &aplMul,  3, MPFR_RNDN);
                         mpfr_init_set (&aplRes.parts[i], &aplMul, MPFR_RNDN);
 
                         break;
 
                     case 2 * 1 + 1 * 1:         // Neg, Neg
-////////////////////////aplRes.parts[i] = -3 * FloatPi2 / 2;
-                        mpfr_mul_d (&aplMul, &aplMul, -3.0, MPFR_RNDN);
+////////////////////////aplRes.parts[i] = -3 * FloatPi / 4;
+                        mpfr_mul_si (&aplMul, &aplMul, -3, MPFR_RNDN);
                         mpfr_init_set (&aplRes.parts[i], &aplMul, MPFR_RNDN);
 
                         break;
 
                     case 2 * 0 + 1 * 1:         // Pos, Neg
-////////////////////////aplRes.parts[i] = -1 * FloatPi2 / 2;
-                        mpfr_mul_d (&aplMul, &aplMul, -1.0, MPFR_RNDN);
+////////////////////////aplRes.parts[i] = -1 * FloatPi / 4;
+                        mpfr_mul_si (&aplMul, &aplMul, -1, MPFR_RNDN);
                         mpfr_init_set (&aplRes.parts[i], &aplMul, MPFR_RNDN);
 
                         break;
@@ -1119,7 +1127,7 @@ APLHC8V ArcHCxV_RE
         // If the real part is < 0, ...
         if (mpfr_cmp_ui (&aplRht.parts[0], 0) < 0)
             // Point the first imaginary part to +180 degrees
-            mpfr_init_set (&aplRes.parts[1], &aplPiHC8V.parts[0], MPFR_RNDN);
+            mpfr_init_set (&aplRes.parts[1], &lpMemPTD->mpfrHC8V_Pi.parts[0], MPFR_RNDN);
         else
             // Point the first imaginary part to 0 degrees
             mpfr_init0    (&aplRes.parts[1]);
@@ -1150,9 +1158,13 @@ APLHC8V LogHCxV_RE
     APLVFP   aplRMag,               // Magnitude of the entire arg
              aplIMag = {0},         // ...              imaginary parts
              aplTmp,                // Temp var
-             aplMul;                // Multiplier:  arctan2 (...) / ...
+             aplMul = {0};          // Multiplier:  arctan2 (...) / ...
     int      i;                     // Loop counter
     UBOOL    bAllowNeg0 = (UBOOL) gAllowNeg0;
+    LPPERTABDATA lpMemPTD = GetMemPTD ();
+
+    // Initialize the VFP Pi if not already done
+    InitPTD_Pi (lpMemPTD);
 
     /*
         From http://tamivox.org/redbear/qtrn_calc/index.html
@@ -1235,7 +1247,8 @@ APLHC8V LogHCxV_RE
                 if (IsMpfInfinity (&aplRht.parts[i]))
                 {
                     // Set the corresponding item in the result to 켗i/2
-                    mpfr_init_set   (&aplRes.parts[i], &aplPi2HC8V.parts[0], MPFR_RNDN);
+                    mpfr_init_set   (&aplRes.parts[i], &lpMemPTD->mpfrHC8V_Pi.parts[0], MPFR_RNDN);
+                    mpfr_div_ui     (&aplRes.parts[i], &aplRes.parts[i],             2, MPFR_RNDN);
 
                     // If the signs differ, ...
                     if (SIGN_APLVFP_RAW (&aplRht.parts[i]) NE SIGN_APLVFP_RAW (&aplMul))
@@ -1270,7 +1283,7 @@ APLHC8V LogHCxV_RE
         // If the real part is < 0, ...
         if (mpfr_cmp_ui (&aplRht.parts[0], 0) < 0)
             // Point the first imaginary part to +180 degrees
-            mpfr_init_set (&aplRes.parts[1], &aplPiHC8V.parts[0], MPFR_RNDN);
+            mpfr_init_set (&aplRes.parts[1], &lpMemPTD->mpfrHC8V_Pi.parts[0], MPFR_RNDN);
         else
             // Point the first imaginary part to 0 degrees
             mpfr_init0    (&aplRes.parts[1]);
@@ -1446,6 +1459,7 @@ APLSTYPE PrimSpecCircleStarStorageTypeDyd
         case ARRAY_HC2I:
         case ARRAY_HC4I:
         case ARRAY_HC8I:
+
         case ARRAY_RAT:
         case ARRAY_HC2R:
         case ARRAY_HC4R:
@@ -1458,54 +1472,12 @@ APLSTYPE PrimSpecCircleStarStorageTypeDyd
         case ARRAY_HC2F:
         case ARRAY_HC4F:
         case ARRAY_HC8F:
+
         case ARRAY_VFP:
         case ARRAY_HC2V:
         case ARRAY_HC4V:
         case ARRAY_HC8V:
-        case ARRAY_NESTED:
-            break;
 
-        case ARRAY_CHAR:
-        case ARRAY_HETERO:
-            aplTypeRes = ARRAY_ERROR;
-
-            break;
-
-        defstop
-            break;
-    } // End SWITCH
-
-    // Split cases based upon the storage type
-    switch (aplTypeRes)
-    {
-        // Except all simple numerics become FLOAT
-        case ARRAY_BOOL:
-        case ARRAY_APA:
-            aplTypeRes = ARRAY_FLOAT;
-
-            break;
-
-        // Except that INT -> FLT, RAT -> VFP, etc.
-        case ARRAY_INT:
-        case ARRAY_HC2I:
-        case ARRAY_HC4I:
-        case ARRAY_HC8I:
-        case ARRAY_RAT:
-        case ARRAY_HC2R:
-        case ARRAY_HC4R:
-        case ARRAY_HC8R:
-            aplTypeRes++;               // Assuming order as in <ARRAY_TYPES>
-
-            break;
-
-        case ARRAY_FLOAT:
-        case ARRAY_HC2F:
-        case ARRAY_HC4F:
-        case ARRAY_HC8F:
-        case ARRAY_VFP:
-        case ARRAY_HC2V:
-        case ARRAY_HC4V:
-        case ARRAY_HC8V:
         case ARRAY_NESTED:
             break;
 

@@ -1,6 +1,52 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1934 -- Version 0.5.8.xx
+-------------------------------
+
+* Replace Global E/Gamma/Pi MP Constants With PerTabData Local Ones
+
+Directory branches/bsmith/NewTypes:
+
+DISPDBG.C:
+HC_PROC.H:
+  Replace global E/Gamma/Pi MP constants with PerTabData local ones.
+
+INITDATA.C:
+  Replace global E/Gamma/Pi MP constants with PerTabData local ones.
+  Note when E/Gamma/Pi constants have been initialized or uninitialized so we don't do it twice.
+  In <InitPrimFlags>, correct the PF_xx flags w.r.t. valence and Identity element.
+
+MPCHO_COM.C:
+  Replace global E/Gamma/Pi MP constants with PerTabData local ones.
+  Ensure PTD vars are initialized before using.
+
+PERTAB.H:
+  Replace global E/Gamma/Pi MP constants with PerTabData local ones.
+  Note when E/Gamma/Pi constants have been initialized or uninitialized so we don't do it twice.
+
+PF_CIRCLE.C:
+  Replace global E/Gamma/Pi MP constants with PerTabData local ones.
+  Ensure PTD vars are initialized before using.
+
+PF_CSTAR.C:
+  Replace global E/Gamma/Pi MP constants with PerTabData local ones.
+  Ensure PTD vars are initialized before using.
+
+PF_STAR.C:
+  Ensure that global numerics are zeroed before initializing.
+  Replace global E/Gamma/Pi MP constants with PerTabData local ones.
+  Omit Pi/2 as a global constant.
+  Ensure PTD vars are initialized before using.
+
+PF_STILE.C:
+  Use mp[cho][fi]XXX form of constants instead raw conmp[cho][fi]_XXX.
+
+PN_PROC.C:
+  Replace global E/Gamma/Pi MP constants with PerTabData local ones.
+  Ensure PTD vars are initialized before using.
+
+
 Build #1933 -- Version 0.5.8.xx
 -------------------------------
 

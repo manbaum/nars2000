@@ -130,6 +130,8 @@ SYSNAME aSystemNames[] =
 // The # rows in the above table
 #define ASYSTEMNAMES_NROWS  countof (aSystemNames)
 
+int aSystemNames_NROWS = ASYSTEMNAMES_NROWS;
+
 
 //***************************************************************************
 //  $CreateQuadA
@@ -4145,7 +4147,7 @@ UBOOL ValidSetWSID_EM
 //***************************************************************************
 //  $ValidPostWSID
 //
-//  Post-validate code for []WSID
+//  Post-validation for []WSID
 //***************************************************************************
 
 void ValidPostWSID
@@ -4357,7 +4359,10 @@ void DeleSysVars
 
 {
     // If the HSHTABSTR is valid, ...
-    if (lphtsDst NE NULL)
+    if (IsValidPtr (lphtsDst                                , sizeof (LPVOID))
+     && IsValidPtr (lphtsDst->lpSymQuad                     , sizeof (LPVOID))
+     && IsValidPtr (lphtsDst->lpSymQuad[0]                  , sizeof (LPVOID))
+     && IsValidPtr (lphtsDst->lpSymQuad[0]->stData.stGlbData, sizeof (LPVOID)))
     {
         // Delete HGLOBAL values
         FreeResultGlobalVar (lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData); lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stData.stGlbData = NULL; lphtsDst->lpSymQuad[SYSVAR_ALX     ]->stFlags.Value = FALSE;
@@ -4389,8 +4394,10 @@ void DeleMfoSysVars
 
     // Loop through all local HTS structs
     for (uCnt = 0; uCnt < HTS_LENGTH; uCnt++)
+    {
         // Delete all system vars in this local HTS struct
-        DeleSysVars (&lpMemPTD->ahtsMFO[uCnt]);
+        DeleSysVars (&lpMemPTD->ahtsMFO[uCnt]); lpMemPTD->ahtsMFO[uCnt].lpSymTab = NULL;
+    } // End IF
 } // End DeleMfoSysVars
 
 

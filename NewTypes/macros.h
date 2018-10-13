@@ -522,6 +522,10 @@
 #define IsImmVfp(a)                 ((a) EQ IMMTYPE_VFP)
 #define IsImmGlbNum(a)              (IMMTYPE_RAT <= (a) && (a) <= IMMTYPE_HC8V)
 #define IsImmErr(a)                 ((a) EQ IMMTYPE_ERROR)
+#define IsImmFcn(a)                 ((a) EQ IMMTYPE_PRIMFCN)
+#define IsImmOpr(a)                 (IMMTYPE_PRIMOP1 <= (a) && (a) <= IMMTYPE_PRIMOP3)
+#define IsImmFop(a)                 (IsImmFcn (a) || IsImmOpr (a))
+
 
 // The enum NAME_TYPES in <symtab.h> is constructed to allow
 //  the following macros to be used.

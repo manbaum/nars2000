@@ -1,6 +1,28 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1930 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bugs In []CR When Passed A Variable Or System Function
+
+Directory branches/bsmith/NewTypes:
+
+MACROS.H:
+  Define macros to identify IMMTYPE_xxx functions and operators.
+
+QF_CR.C:
+  In <SysFnCR_Common_EM_YY>, return empty result if an immediate input is not a function/operator.
+  In <SysFnCR_Common_EM_YY>, call separate function to copy the FCN/OPR name of the immediate input to the result.
+  Define new function <CopyFcnName> to copy the name of a internal system function to the result.
+
+SYSVARS.C:
+  Define a variable containing the number of rows in <aSystemNames> so it can be used in other files.
+  Fix typo in comment.
+  In <DeleSysVars>, check for deleted vars before doing it again.
+  In <DeleMfoSysVars>, zap the item just deleted so we don't try to delete it again.
+
+
 Build #1929 -- Version 0.5.8.xx
 -------------------------------
 

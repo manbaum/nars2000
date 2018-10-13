@@ -25,6 +25,9 @@
 #include "headers.h"
 #include "debug.h"              // For xxx_TEMP_OPEN macros
 
+extern int aSystemNames_NROWS;
+extern SYSNAME aSystemNames[];
+
 
 //***************************************************************************
 //  $SysFnCR_EM_YY
@@ -174,11 +177,14 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
     // If not found,
     //   or it's a System Name,
     //   or (without a value and not {del}),
+    //   or (it's immediate and not a Fcn/Opr),
     //   return empty vector or 0 x 0 char matrix
     if (lpSymEntry EQ NULL
      ||  lpSymEntry->stFlags.ObjName EQ OBJNAME_SYS
      || (!lpSymEntry->stFlags.Value
-      && !IsSymDel (lpSymEntry)))
+      && !IsSymDel (lpSymEntry))
+     || (lpSymEntry->stFlags.Imm
+      && !IsImmFop (lpSymEntry->stFlags.ImmType)))
         // Not the signature of anything we know
         // Return an empty nested char vector or a 0 x 0 char matrix
         hGlbRes = SysFnMonCR_ALLOC_EM (0, aplRankRes, NULL, lptkFunc);
@@ -193,7 +199,7 @@ LPPL_YYSTYPE SysFnCR_Common_EM_YY
         if (lpSymEntry->stFlags.FcnDir)
         {
             // Append the function name from the symbol table
-            CopySteName (lpwszTemp, lpSymEntry, &aplNELMRes);
+            CopyFcnName (lpwszTemp, lpSymEntry, &aplNELMRes);
 
             // Finish the job via subroutine
             hGlbRes = SysFnMonCR_ALLOC_EM (aplNELMRes, aplRankRes, lpwszTemp, lptkFunc);
@@ -729,6 +735,8 @@ LPAPLCHAR CopySteName
     Assert (IsValidPtr    (lpSymEntry->stHshEntry           , sizeof (lpSymEntry->stHshEntry)));
     Assert (IsValidHandle (lpSymEntry->stHshEntry->htGlbName                                 ));
 
+    Assert (!lpSymEntry->stFlags.FcnDir);
+
     // Lock the memory to get a ptr to it
     lpMemName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
 
@@ -750,6 +758,82 @@ LPAPLCHAR CopySteName
 
     return lpMemRes;
 } // End CopySteName
+
+
+//***************************************************************************
+//  $CopyFcnName
+//
+//  Copy a FCN name from an STE
+//***************************************************************************
+
+LPAPLCHAR CopyFcnName
+    (LPAPLCHAR  lpMemRes,       // Ptr to result global memory
+     LPSYMENTRY lpSymEntry,     // Ptr to function symbol table entry
+     LPAPLNELM  lpaplNELM)      // Ptr to name length (may be NULL)
+
+{
+    LPAPLCHAR  lpMemName;       // Ptr to function name global memory
+    APLU3264   uNameLen;        // Length of STE name
+    STFLAGS    stFlags = {0};   // STE flags
+
+    Assert (IsValidPtr    (lpSymEntry                       , sizeof (lpSymEntry)            ));
+    Assert (IsValidPtr    (lpSymEntry->stHshEntry           , sizeof (lpSymEntry->stHshEntry)));
+    Assert (IsValidHandle (lpSymEntry->stHshEntry->htGlbName                                 ));
+
+    if (lpSymEntry->stFlags.FcnDir)
+    {
+        int i;          // Loop counter
+
+        // Lookup the FcnDir address in <aSystemNames>
+        for (i = 0; i < aSystemNames_NROWS; i++)
+        // If it's a function, ...
+        if (!aSystemNames[i].bSysVar
+         && (aSystemNames[i].lpNameFcn EQ lpSymEntry->stData.stNameFcn))
+        {
+            // Point to the name
+            lpMemName = aSystemNames[i].lpwszName;
+
+            // Get the name length
+            uNameLen = lstrlenW (lpMemName);
+
+            // Copy the name to the output area
+            CopyMemoryW (lpMemRes, lpMemName, uNameLen);
+
+            // Convert to uppercase
+            CharUpperBuffW (lpMemRes, (DWORD) uNameLen);
+
+            // Skip over the name
+            lpMemRes += uNameLen;
+
+            // Return the name length, if requested
+            if (lpaplNELM NE NULL)
+                *lpaplNELM = uNameLen;
+            break;
+        } // End FOR/IF
+    } else
+    {
+        // Lock the memory to get a ptr to it
+        lpMemName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
+
+        // Get the name length
+        uNameLen = lstrlenW (lpMemName);
+
+        // Copy the name to the output area
+        CopyMemoryW (lpMemRes, lpMemName, uNameLen);
+
+        // Skip over the name
+        lpMemRes += uNameLen;
+
+        // Return the name length, if requested
+        if (lpaplNELM NE NULL)
+            *lpaplNELM = uNameLen;
+
+        // We no longer need this ptr
+        MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;
+    } // End IF
+
+    return lpMemRes;
+} // End CopyFcnName
 
 
 //***************************************************************************

@@ -470,9 +470,6 @@
 // Define macro for detecting a valid mpfr_* var
 #define IsMpfValid(a)                   ((a)->_mp_d NE NULL)
 
-// Define macro for detecting a parenthetic list
-#define IsTknParList(Tkn)               ((Tkn)->tkFlags.TknType EQ TKT_LISTPAR)
-
 // Define macro for detecting a Fill Jot token
 #define IsTknFillJot(Tkn)               ((Tkn)->tkFlags.TknType EQ TKT_FILLJOT)
 

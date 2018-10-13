@@ -41,10 +41,6 @@ LPPL_YYSTYPE PrimFnDownShoe_EM_YY
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UTF16_DOWNSHOE);
 
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
-
     //***************************************************************
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present
@@ -1011,10 +1007,6 @@ LPPL_YYSTYPE PrimFnDydDownShoe_EM_YY
     HGLOBAL      hGlbMFO;           // Magic function/operator global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
 
     //***************************************************************
     // This function is not sensitive to the axis operator,

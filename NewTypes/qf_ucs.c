@@ -39,10 +39,6 @@ LPPL_YYSTYPE SysFnUCS_EM_YY
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
 
 {
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
-
     //***************************************************************
     // This function is not sensitive to the axis operator,
     //   so signal a syntax error if present

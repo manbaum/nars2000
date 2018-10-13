@@ -41,10 +41,6 @@ LPPL_YYSTYPE PrimFnEqualUnderbar_EM_YY
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UTF16_EQUALUNDERBAR);
 
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
-
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonEqualUnderbar_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
@@ -1120,10 +1116,6 @@ LPPL_YYSTYPE PrimFnNotEqualUnderbar_EM_YY
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UTF16_NOTEQUALUNDERBAR);
 
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
-
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonNotEqualUnderbar_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
@@ -1175,10 +1167,6 @@ LPPL_YYSTYPE PrimFnMonNotEqualUnderbar_EM_YY
     APLRANK           aplRankRht;           // Right arg rank
     APLINT            aplIntegerRes;        // The result value
     LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
-
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
 
     //***************************************************************
     // This function is not sensitive to the axis operator,

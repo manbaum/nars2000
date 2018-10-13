@@ -41,10 +41,6 @@ LPPL_YYSTYPE PrimFnRightShoeUnderbar_EM_YY
     // Ensure not an overflow function
     Assert (lptkFunc->tkData.tkChar EQ UTF16_RIGHTSHOEUNDERBAR);
 
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
-
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonRightShoeUnderbar_EM_YY             (lptkFunc, lptkRhtArg, lptkAxis);
@@ -114,10 +110,6 @@ LPPL_YYSTYPE PrimFnDydRightShoeUnderbar_EM_YY
     HGLOBAL      hGlbMFO;           // Magic function/operator global memory handle
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPPL_YYSTYPE lpYYRes = NULL;    // Ptr to the result
-
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
 
     //***************************************************************
     // This function is not sensitive to the axis operator,

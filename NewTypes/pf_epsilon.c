@@ -48,10 +48,6 @@ LPPL_YYSTYPE PrimFnEpsilon_EM_YY
     // Ensure not an overflow function
     Assert (IsAPLCharEpsilon (lptkFunc->tkData.tkChar));
 
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
-
     // Split cases based upon monadic or dyadic
     if (lptkLftArg EQ NULL)
         return PrimFnMonEpsilon_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);

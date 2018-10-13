@@ -1,0 +1,37 @@
+Build #1933 -- Version 0.5.8.xx
+-------------------------------
+
+* Remove Spurious Test For Parenthesized Lists
+
+Directory branches/bsmith/NewTypes:
+
+MACROS.H:
+PF_DOMINO.C:
+PF_DOTDOT.C:
+PF_DSHOE.C:
+PF_DTACK.C:
+PF_DTACKJOT.C:
+PF_EPSILON.C:
+PF_EPSUND.C:
+PF_EQUALUND.C:
+PF_IOTA.C:
+PF_IOTAUND.C:
+PF_LSHOEUND.C:
+PF_LTACK.C:
+PF_RHO.C:
+PF_RSHOEUND.C:
+PF_RTACK.C:
+PF_USHOE.C:
+PF_UTACK.C:
+PF_UTACKJOT.C:
+QF_CR.C:
+QF_DL.C:
+QF_ERROR.C:
+QF_ES.C:
+QF_EX.C:
+QF_FMT.C:
+QF_NC.C:
+QF_NL.C:
+QF_UCS.C:
+QF_VR.C:
+  Remove spurious test for parenthesized lists.

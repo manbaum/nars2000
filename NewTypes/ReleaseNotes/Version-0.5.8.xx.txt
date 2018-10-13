@@ -1,6 +1,32 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1931 -- Version 0.5.8.xx
+-------------------------------
+
+* Implement Internal Functions To Calculate Squared Norms
+
+Directory branches/bsmith/NewTypes:
+
+HC_PROC.C:
+  Implement internal functions to calculate Squared Norms.
+
+MACROS.H:
+  Define equates for non-DEBUG calls to Squared Norms.
+
+PF_COLONBAR.C:
+  In monadic and dyadic ColonBar functions, call Squared Norms when needed.
+
+PF_NEQUAL.C:
+  In monadic NotEqual functions, call Squared Norms as needed.
+
+PF_STILE.C:
+  In monadic Magnitude functions, call Squared Norms as needed.
+  In dyadic Residue functions for Quaternions, fix bug where some comparisons are fizzy and some are not.  This has the effect
+    of producing different results for FLT and RAT arguments that are otherwise identical, and can be fixed by making
+    more comparisons fuzzy.
+
+
 Build #1930 -- Version 0.5.8.xx
 -------------------------------
 

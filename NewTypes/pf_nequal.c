@@ -211,9 +211,6 @@ LPPL_YYSTYPE PrimFnMonNotEqual_EM_YY
     APLRANK           aplRankRht;           // ...       rank
     APLUINT           ByteRes,              // # bytes in the result
                       uCnt;                 // Loop counter
-    ALLTYPES          atRes = {0},          // Result as ALLTYPES
-                      atItm = {0},          // Item   ...
-                      atMul = {0};          // Multiplier ...
     HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
                       hGlbRes = NULL;       // Result    ...
     LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
@@ -224,8 +221,7 @@ LPPL_YYSTYPE PrimFnMonNotEqual_EM_YY
                       lpMemDimRes;          // ...    result    ...
     APLLONGEST        aplLongestRht;        // Right arg as immediate
     LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to result
-    int               iHCDimRht,            // Right arg dimension (1, 2, 4, 8)
-                      i;                    // Loop counter
+    int               iHCDimRht;            // Right arg dimension (1, 2, 4, 8)
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
     AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
@@ -314,24 +310,8 @@ LPPL_YYSTYPE PrimFnMonNotEqual_EM_YY
         case ARRAY_HC8I:
             // Loop through the items
             for (uCnt = 0; uCnt < aplNELMRht; uCnt++)
-            {
-                // Initialize the accumulator
-                atRes.aplInteger = 0;
-
-                // Looop through all of the parts
-                for (i = 0; i < iHCDimRht; i++)
-                {
-                    // Get the next item
-                    atItm.aplInteger = *((LPAPLINT) lpMemRht)++;
-
-                    // Square it and accumulate
-                    atRes.aplInteger += atItm.aplInteger * atItm.aplInteger;
-                } // End FOR
-
                 // Save in the result
-                *((LPAPLINT) lpMemRes)++ = atRes.aplInteger;
-            } // End FOR
-
+                *((LPAPLINT) lpMemRes)++ = SqNrmHCxI (((LPAPLINT) lpMemRht)++, iHCDimRht);
             break;
 
         case ARRAY_HC2F:
@@ -339,99 +319,26 @@ LPPL_YYSTYPE PrimFnMonNotEqual_EM_YY
         case ARRAY_HC8F:
             // Loop through the items
             for (uCnt = 0; uCnt < aplNELMRht; uCnt++)
-            {
-                // Initialize the accumulator
-                atRes.aplFloat = 0;         // Already zero from = {0}
-
-                // Loop through all of the parts
-                for (i = 0; i < iHCDimRht; i++)
-                {
-                    // Get the next item
-                    atItm.aplFloat = *((LPAPLFLOAT) lpMemRht)++;
-
-                    // Square it and accumulate
-                    atRes.aplFloat += atItm.aplFloat * atItm.aplFloat;
-                } // End FOR
-
                 // Save in the result
-                *((LPAPLFLOAT) lpMemRes)++ = atRes.aplFloat;
-            } // End FOR
-
+                *((LPAPLFLOAT) lpMemRes)++ = SqNrmHCxF (((LPAPLFLOAT) lpMemRht)++, iHCDimRht);
             break;
 
         case ARRAY_HC2R:
         case ARRAY_HC4R:
         case ARRAY_HC8R:
-            // Initialize to 0/1
-            mpq_init (&atRes.aplRat);
-            mpq_init (&atItm.aplRat);
-            mpq_init (&atMul.aplRat);
-
             // Loop through the items
             for (uCnt = 0; uCnt < aplNELMRht; uCnt++)
-            {
-                // Initialize the accumulator
-                mpq_set_si (&atRes.aplRat, 0, 1);
-
-                // Looop through all of the parts
-                for (i = 0; i < iHCDimRht; i++)
-                {
-                    // Get the next item
-                    mpq_set (&atItm.aplRat, ((LPAPLRAT) lpMemRht)++);
-
-                    // Square it
-                    mpq_mul (&atMul.aplRat, &atItm.aplRat, &atItm.aplRat);
-
-                    // Accumulate
-                    mpq_add (&atRes.aplRat, &atRes.aplRat, &atMul.aplRat);
-                } // End FOR
-
                 // Save in the result
-                mpq_init_set (((LPAPLRAT) lpMemRes)++, &atRes.aplRat);
-            } // End FOR
-
-            // We no longer need this storage
-            Myq_clear (&atMul.aplRat);
-            Myq_clear (&atItm.aplRat);
-            Myq_clear (&atRes.aplRat);
-
+                *((LPAPLRAT) lpMemRes)++ = SqNrmHCxR (((LPAPLRAT) lpMemRht)++, iHCDimRht);
             break;
 
         case ARRAY_HC2V:
         case ARRAY_HC4V:
         case ARRAY_HC8V:
-            // Initialize to 0
-            mpfr_init0 (&atRes.aplVfp);
-            mpfr_init0 (&atItm.aplVfp);
-            mpfr_init0 (&atMul.aplVfp);
-
             // Loop through the items
             for (uCnt = 0; uCnt < aplNELMRht; uCnt++)
-            {
-                // Initialize the accumulator
-                mpfr_set_si (&atRes.aplVfp, 0, MPFR_RNDN);
-
-                // Looop through all of the parts
-                for (i = 0; i < iHCDimRht; i++)
-                {
-                    // Get the next item
-                    mpfr_set (&atItm.aplVfp, ((LPAPLVFP) lpMemRht)++, MPFR_RNDN);
-
-                    // Square it
-                    mpfr_mul (&atMul.aplVfp, &atItm.aplVfp, &atItm.aplVfp, MPFR_RNDN);
-
-                    // Accumulate
-                    mpfr_add (&atRes.aplVfp, &atRes.aplVfp, &atMul.aplVfp, MPFR_RNDN);
-                } // End FOR
-
                 // Save in the result
-                mpfr_init_set (((LPAPLVFP) lpMemRes)++, &atRes.aplVfp, MPFR_RNDN);
-            } // End FOR
-
-            // We no longer need this storage
-            Myf_clear (&atMul.aplVfp);
-            Myf_clear (&atItm.aplVfp);
-            Myf_clear (&atRes.aplVfp);
+                *((LPAPLVFP) lpMemRes)++ = SqNrmHCxV (((LPAPLVFP) lpMemRht)++, iHCDimRht);
 
             break;
 

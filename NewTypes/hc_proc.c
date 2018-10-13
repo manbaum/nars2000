@@ -1294,6 +1294,305 @@ APLVFP DistHC8V
 
 
 //***************************************************************************
+//  $SqNrmHCx2I
+//***************************************************************************
+
+APLINT SqNrmHCxI
+    (LPVOID lpaplRht,                   // Ptr to right arg
+     int    iHCDim)
+
+{
+    APLINT aplRes = 0,
+           aplTmp;
+    int    i;
+
+    // Looop through all of the parts
+    for (i = 0; i < iHCDim; i++)
+    {
+        // Get the next item
+        aplTmp = *((LPAPLINT) lpaplRht)++;
+
+        // Square it ...
+        aplTmp = imul64 (aplTmp, aplTmp, NULL, EXCEPTION_RESULT_FLOAT);
+
+        // and accumulate
+        aplRes = iadd64 (aplRes, aplTmp, NULL, EXCEPTION_RESULT_FLOAT);
+    } // End FOR
+
+    return aplRes;
+} // End SqNrmHCxI
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $SqNrmHC2I
+//***************************************************************************
+
+APLINT SqNrmHC2I
+    (LPAPLHC2I lpaplRht)                // Right arg
+
+{
+    return SqNrmHCxI (lpaplRht, 2);
+} // End SqNrmHC2I
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $SqNrmHC4I
+//***************************************************************************
+
+APLINT SqNrmHC4I
+    (LPAPLHC4I lpaplRht)                // Right arg
+
+{
+    return SqNrmHCxI (lpaplRht, 4);
+} // End SqNrmHC4I
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $SqNrmHC8I
+//***************************************************************************
+
+APLINT SqNrmHC8I
+    (LPAPLHC8I lpaplRht)                // Right arg
+
+{
+    return SqNrmHCxI (lpaplRht, 8);
+} // End SqNrmHC8I
+#endif
+
+
+//***************************************************************************
+//  $SqNrmHCx2F
+//***************************************************************************
+
+APLFLOAT SqNrmHCxF
+    (LPVOID lpaplRht,                   // Ptr to right arg
+     int    iHCDim)
+
+{
+    APLFLOAT aplRes = 0.0,
+             aplTmp;
+    int      i;
+
+    // Looop through all of the parts
+    for (i = 0; i < iHCDim; i++)
+    {
+        // Get the next item
+        aplTmp = *((LPAPLFLOAT) lpaplRht)++;
+
+        // Square it and accumulate
+        aplRes += aplTmp * aplTmp;
+    } // End FOR
+
+    return aplRes;
+} // End SqNrmHCxF
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $SqNrmHC2F
+//***************************************************************************
+
+APLFLOAT SqNrmHC2F
+    (LPAPLHC2F lpaplRht)                // Right arg
+
+{
+    return SqNrmHCxF (lpaplRht, 2);
+} // End SqNrmHC2F
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $SqNrmHC4F
+//***************************************************************************
+
+APLFLOAT SqNrmHC4F
+    (LPAPLHC4F lpaplRht)                // Right arg
+
+{
+    return SqNrmHCxF (lpaplRht, 4);
+} // End SqNrmHC4F
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $SqNrmHC8F
+//***************************************************************************
+
+APLFLOAT SqNrmHC8F
+    (LPAPLHC8F lpaplRht)                // Right arg
+
+{
+    return SqNrmHCxF (lpaplRht, 8);
+} // End SqNrmHC8F
+#endif
+
+
+//***************************************************************************
+//  $SqNrmHCx2R
+//***************************************************************************
+
+APLRAT SqNrmHCxR
+    (LPVOID lpaplRht,                   // Ptr to right arg
+     int    iHCDim)
+
+{
+    APLRAT aplRes,
+           aplTmp;
+    int    i;
+
+    // Initialize to 0/1
+    mpq_init (&aplRes);
+    mpq_init (&aplTmp);
+
+    // Looop through all of the parts
+    for (i = 0; i < iHCDim; i++)
+    {
+        // Get the next item
+        mpq_set (&aplTmp, ((LPAPLRAT) lpaplRht)++);
+
+        // Square it ...
+        mpq_mul (&aplTmp, &aplTmp, &aplTmp);
+
+        // ... and accumulate
+        mpq_add (&aplRes, &aplRes, &aplTmp);
+    } // End FOR
+
+    // We no longer need this storage
+    mpq_clear (&aplTmp);
+
+    return aplRes;
+} // End SqNrmHCxR
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $SqNrmHC2R
+//***************************************************************************
+
+APLRAT SqNrmHC2R
+    (LPAPLHC2R lpaplRht)                // Right arg
+
+{
+    return SqNrmHCxR (lpaplRht, 2);
+} // End SqNrmHC2R
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $SqNrmHC4R
+//***************************************************************************
+
+APLRAT SqNrmHC4R
+    (LPAPLHC4R lpaplRht)                // Right arg
+
+{
+    return SqNrmHCxR (lpaplRht, 4);
+} // End SqNrmHC4R
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $SqNrmHC8R
+//***************************************************************************
+
+APLRAT SqNrmHC8R
+    (LPAPLHC8R lpaplRht)                // Right arg
+
+{
+    return SqNrmHCxR (lpaplRht, 8);
+} // End SqNrmHC8R
+#endif
+
+
+//***************************************************************************
+//  $SqNrmHCx2V
+//***************************************************************************
+
+APLVFP SqNrmHCxV
+    (LPVOID lpaplRht,                   // Ptr to right arg
+     int    iHCDim)
+
+{
+    APLVFP aplRes,
+           aplTmp;
+    int    i;
+
+    // Initialize to 0
+    mpfr_init0 (&aplRes);
+    mpfr_init0 (&aplTmp);
+
+    // Looop through all of the parts
+    for (i = 0; i < iHCDim; i++)
+    {
+        // Get the next item
+        mpfr_set (&aplTmp, ((LPAPLVFP) lpaplRht)++, MPFR_RNDN);
+
+        // Square it ...
+        mpfr_mul (&aplTmp, &aplTmp, &aplTmp, MPFR_RNDN);
+
+        // ... and accumulate
+        mpfr_add (&aplRes, &aplRes, &aplTmp, MPFR_RNDN);
+    } // End FOR
+
+    // We no longer need this storage
+    mpfr_clear (&aplTmp);
+
+    return aplRes;
+} // End SqNrmHCxV
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $SqNrmHC2V
+//***************************************************************************
+
+APLVFP SqNrmHC2V
+    (LPAPLHC2V lpaplRht)                // Right arg
+
+{
+    return SqNrmHCxV (lpaplRht, 2);
+} // End SqNrmHC2V
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $SqNrmHC4V
+//***************************************************************************
+
+APLVFP SqNrmHC4V
+    (LPAPLHC4V lpaplRht)                // Right arg
+
+{
+    return SqNrmHCxV (lpaplRht, 4);
+} // End SqNrmHC4V
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $SqNrmHC8V
+//***************************************************************************
+
+APLVFP SqNrmHC8V
+    (LPAPLHC8V lpaplRht)                // Right arg
+
+{
+    return SqNrmHCxV (lpaplRht, 8);
+} // End SqNrmHC8V
+#endif
+
+
+//***************************************************************************
 //  $InitSet
 //
 //  Initialize a memory location and copy data to it

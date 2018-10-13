@@ -372,6 +372,24 @@
 // Define macro for detecting any numeric including Hypercomplex
 #define IsAnyNum(ArrType)               (IsSimpleNum (ArrType) || IsHCAny (ArrType))
 
+#ifndef DEBUG
+#define SqNrmHC2I(a)                    SqNrmHCxI ((a), 2)
+#define SqNrmHC4I(a)                    SqNrmHCxI ((a), 4)
+#define SqNrmHC8I(a)                    SqNrmHCxI ((a), 8)
+
+#define SqNrmHC2F(a)                    SqNrmHCxF ((a), 2)
+#define SqNrmHC4F(a)                    SqNrmHCxF ((a), 4)
+#define SqNrmHC8F(a)                    SqNrmHCxF ((a), 8)
+
+#define SqNrmHC2R(a)                    SqNrmHCxR ((a), 2)
+#define SqNrmHC4R(a)                    SqNrmHCxR ((a), 4)
+#define SqNrmHC8R(a)                    SqNrmHCxR ((a), 8)
+
+#define SqNrmHC2V(a)                    SqNrmHCxV ((a), 2)
+#define SqNrmHC4V(a)                    SqNrmHCxV ((a), 4)
+#define SqNrmHC8V(a)                    SqNrmHCxV ((a), 8)
+#endif
+
 // Define macros for detecting permutation vectors
 #define IsPermVector0(lpHeader)         (((lpHeader) NE NULL) && (lpHeader)->PV0)
 #define IsPermVector1(lpHeader)         (((lpHeader) NE NULL) && (lpHeader)->PV1)

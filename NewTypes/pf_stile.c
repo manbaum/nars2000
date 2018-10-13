@@ -444,15 +444,10 @@ APLFLOAT MagHC2I
     (APLHC2I aplRht)                    // Right arg
 
 {
-    int      i;
-    APLFLOAT aplRes = 0.0;
+    APLFLOAT aplRes;
 
-    // No exceptions in this code
-
-    // Loop through all of the parts
-    for (i = 0; i < 2; i++)
-        // Sum the squares
-        aplRes += (APLFLOAT) aplRht.parts[i] * (APLFLOAT) aplRht.parts[i];
+    // Sum the squares
+    aplRes = (APLFLOAT) SqNrmHC2I (&aplRht);
 
     // Get the magnitude of the arg
     return sqrt (aplRes);
@@ -487,15 +482,12 @@ APLFLOAT MagHC2F
     (APLHC2F aplRht)                    // Right arg
 
 {
-    int      i;
-    APLFLOAT aplRes = 0.0;
+    APLFLOAT aplRes;
 
     // No exceptions in this code
 
-    // Loop through all of the parts
-    for (i = 0; i < 2; i++)
-        // Sum the squares
-        aplRes += aplRht.parts[i] * aplRht.parts[i];
+    // Sum the squares
+    aplRes = SqNrmHC2F (&aplRht);
 
     // Get the magnitude of the arg
     return sqrt (aplRes);
@@ -530,13 +522,22 @@ APLVFP MagHC2R
     (APLHC2R aplRht)                    // Right arg
 
 {
-    ALLTYPES atRht = {0};
+    APLRAT aplTmp;
+    APLVFP aplRes = {0};
 
-    // Convert the right arg to HC2V
-    (*aTypeActPromote[ARRAY_HC2R][ARRAY_HC2V]) (&aplRht, 0, &atRht);
+    // Sum the squares
+    aplTmp = SqNrmHC2R (&aplRht);
+
+    // Convert the Squared Norm to VFP
+    mpfr_init_set_q (&aplRes, &aplTmp, MPFR_RNDN);
+
+    // We no longer need this storage
+    mpq_clear (&aplTmp);
 
     // Get the magnitude of the arg
-    return MagHC2V (atRht.aplHC2V);
+    mpfr_sqrt (&aplRes, &aplRes, MPFR_RNDN);
+
+    return aplRes;
 } // End MagHC2R
 
 
@@ -548,39 +549,13 @@ APLVFP MagHC2V
     (APLHC2V aplRht)                    // Right arg
 
 {
-    int    i;
-    APLVFP aplRes = {0},
-           aplTmp = {0};
-////WCHAR  wszTemp[1024];
+    APLVFP aplRes;
 
-    // No exceptions in this code
-
-    // Initialize to 0
-    mpfr_init0 (&aplRes);
-    mpfr_init0 (&aplTmp);
-
-    // Loop through all of the parts
-    for (i = 0; i < 2; i++)
-    {
-////////strcpyW (wszTemp, L"Rht: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &aplRht.parts[i], 0) = WC_EOS; DbgMsgW (wszTemp);
-
-        // Square the parts
-        mpfr_mul (&aplTmp, &aplRht.parts[i], &aplRht.parts[i], MPFR_RNDN);
-
-////////strcpyW (wszTemp, L"Tmp: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &aplTmp         , 0) = WC_EOS; DbgMsgW (wszTemp);
-
-        // Sum the squares
-        mpfr_add (&aplRes, &aplRes, &aplTmp, MPFR_RNDN);
-
-////////strcpyW (wszTemp, L"Res: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &aplRes         , 0) = WC_EOS; DbgMsgW (wszTemp);
-    } // End FOR
-
-    Myf_clear (&aplTmp);
+    // Sum the squares
+    aplRes = SqNrmHC2V (&aplRht);
 
     // Get the magnitude of the arg
     mpfr_sqrt (&aplRes, &aplRes, MPFR_RNDN);
-
-////strcpyW (wszTemp, L"Sqrt:"); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &aplRes         , 0) = WC_EOS; DbgMsgW (wszTemp);
 
     return aplRes;
 } // End MagHC2V
@@ -653,15 +628,10 @@ APLFLOAT MagHC4I
     (APLHC4I aplRht)                    // Right arg
 
 {
-    int      i;
-    APLFLOAT aplRes = 0.0;
+    APLFLOAT aplRes;
 
-    // No exceptions in this code
-
-    // Loop through all of the parts
-    for (i = 0; i < 4; i++)
-        // Sum the squares
-        aplRes += (APLFLOAT) aplRht.parts[i] * (APLFLOAT) aplRht.parts[i];
+    // Sum the squares
+    aplRes = (APLFLOAT) SqNrmHC4I (&aplRht);
 
     // Get the magnitude of the arg
     return sqrt (aplRes);
@@ -696,15 +666,12 @@ APLFLOAT MagHC4F
     (APLHC4F aplRht)                    // Right arg
 
 {
-    int      i;
-    APLFLOAT aplRes = 0.0;
+    APLFLOAT aplRes;
 
     // No exceptions in this code
 
-    // Loop through all of the parts
-    for (i = 0; i < 4; i++)
-        // Sum the squares
-        aplRes += aplRht.parts[i] * aplRht.parts[i];
+    // Sum the squares
+    aplRes = SqNrmHC4F (&aplRht);
 
     // Get the magnitude of the arg
     return sqrt (aplRes);
@@ -739,12 +706,22 @@ APLVFP MagHC4R
     (APLHC4R aplRht)                    // Right arg
 
 {
-    ALLTYPES atRht = {0};
+    APLRAT aplTmp;
+    APLVFP aplRes = {0};
 
-    // Convert the right arg to HC4V
-    (*aTypeActPromote[ARRAY_HC4R][ARRAY_HC4V]) (&aplRht, 0, &atRht);
+    // Sum the squares
+    aplTmp = SqNrmHC4R (&aplRht);
 
-    return MagHC4V (atRht.aplHC4V);
+    // Convert the Squared Norm to VFP
+    mpfr_init_set_q (&aplRes, &aplTmp, MPFR_RNDN);
+
+    // We no longer need this storage
+    mpq_clear (&aplTmp);
+
+    // Get the magnitude of the arg
+    mpfr_sqrt (&aplRes, &aplRes, MPFR_RNDN);
+
+    return aplRes;
 } // End MagHC4R
 
 
@@ -756,27 +733,10 @@ APLVFP MagHC4V
     (APLHC4V aplRht)                    // Right arg
 
 {
-    int    i;
-    APLVFP aplRes = {0},
-           aplTmp = {0};
+    APLVFP aplRes;
 
-    // No exceptions in this code
-
-    // Initialize to 0
-    mpfr_init0 (&aplRes);
-    mpfr_init0 (&aplTmp);
-
-    // Loop through all of the parts
-    for (i = 0; i < 4; i++)
-    {
-        // Square the parts
-        mpfr_mul (&aplTmp, &aplRht.parts[i], &aplRht.parts[i], MPFR_RNDN);
-
-        // Sum the squares
-        mpfr_add (&aplRes, &aplRes, &aplTmp, MPFR_RNDN);
-    } // End FOR
-
-    Myf_clear (&aplTmp);
+    // Sum the squares
+    aplRes = SqNrmHC4V (&aplRht);
 
     // Get the magnitude of the arg
     mpfr_sqrt (&aplRes, &aplRes, MPFR_RNDN);
@@ -852,15 +812,10 @@ APLFLOAT MagHC8I
     (APLHC8I aplRht)                    // Right arg
 
 {
-    int      i;
-    APLFLOAT aplRes = 0.0;
+    APLFLOAT aplRes;
 
-    // No exceptions in this code
-
-    // Loop through all of the parts
-    for (i = 0; i < 8; i++)
-        // Sum the squares
-        aplRes += (APLFLOAT) aplRht.parts[i] * (APLFLOAT) aplRht.parts[i];
+    // Sum the squares
+    aplRes = (APLFLOAT) SqNrmHC8I (&aplRht);
 
     // Get the magnitude of the arg
     return sqrt (aplRes);
@@ -895,15 +850,12 @@ APLFLOAT MagHC8F
     (APLHC8F aplRht)                    // Right arg
 
 {
-    int      i;
-    APLFLOAT aplRes = 0.0;
+    APLFLOAT aplRes;
 
     // No exceptions in this code
 
-    // Loop through all of the parts
-    for (i = 0; i < 8; i++)
-        // Sum the squares
-        aplRes += aplRht.parts[i] * aplRht.parts[i];
+    // Sum the squares
+    aplRes = SqNrmHC8F (&aplRht);
 
     // Get the magnitude of the arg
     return sqrt (aplRes);
@@ -938,12 +890,22 @@ APLVFP MagHC8R
     (APLHC8R aplRht)                    // Right arg
 
 {
-    ALLTYPES atRht = {0};
+    APLRAT aplTmp;
+    APLVFP aplRes = {0};
 
-    // Convert the right arg to HC8V
-    (*aTypeActPromote[ARRAY_HC8R][ARRAY_HC8V]) (&aplRht, 0, &atRht);
+    // Sum the squares
+    aplTmp = SqNrmHC8R (&aplRht);
 
-    return MagHC8V (atRht.aplHC8V);
+    // Convert the Squared Norm to VFP
+    mpfr_init_set_q (&aplRes, &aplTmp, MPFR_RNDN);
+
+    // We no longer need this storage
+    mpq_clear (&aplTmp);
+
+    // Get the magnitude of the arg
+    mpfr_sqrt (&aplRes, &aplRes, MPFR_RNDN);
+
+    return aplRes;
 } // End MagHC8R
 
 
@@ -955,27 +917,10 @@ APLVFP MagHC8V
     (APLHC8V aplRht)                    // Right arg
 
 {
-    int    i;
-    APLVFP aplRes = {0},
-           aplTmp = {0};
+    APLVFP aplRes;
 
-    // No exceptions in this code
-
-    // Initialize to 0
-    mpfr_init0 (&aplRes);
-    mpfr_init0 (&aplTmp);
-
-    // Loop through all of the parts
-    for (i = 0; i < 8; i++)
-    {
-        // Square the parts
-        mpfr_mul (&aplTmp, &aplRht.parts[i], &aplRht.parts[i], MPFR_RNDN);
-
-        // Sum the squares
-        mpfr_add (&aplRes, &aplRes, &aplTmp, MPFR_RNDN);
-    } // End FOR
-
-    Myf_clear (&aplTmp);
+    // Sum the squares
+    aplRes = SqNrmHC8V (&aplRht);
 
     // Get the magnitude of the arg
     mpfr_sqrt (&aplRes, &aplRes, MPFR_RNDN);
@@ -2422,11 +2367,9 @@ APLHC4F ModHC4F
      APLHC4F aplRht)                // Right arg (argument)
 
 {
-    APLHC4F aplRes,
-            aplHCFlr,
-            aplTmp;
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
+    APLHC4F aplRes;
+    UBOOL   bNaNLft,                // TRUE iff the left arg is a NaN
+            bNaNRht;                // ...          right ...
 
     // Is either arg a NaN?
     bNaNLft = IsArgNaN (ARRAY_HC4F, &aplLft, 0);
@@ -2436,7 +2379,7 @@ APLHC4F ModHC4F
     if (IsZeroHCxF (&aplLft, 4))
         aplRes = aplRht;
     else
-    // If the either arg is a NaN, ...
+    // If either arg is a NaN, ...
     if (bNaNLft || bNaNRht)
     {
         if (bNaNLft)
@@ -2445,10 +2388,16 @@ APLHC4F ModHC4F
             aplRes = aplRht;
     } else
     {
+        APLHC4F  aplTmp,
+                 aplHCFlr,
+                 aplSub,
+                 aplRes2;
         APLFLOAT aplMagL,
                  aplMagZ;
-        APLHC4F  aplRes2;
-        int      i;
+        APLFLOAT aplAbs,
+                 aplFlr,
+                 aplCel;
+        int      i;                         // Loop counter
 
         if (IsOneHCxF  (&aplLft, 4))
             aplRes = SubHC4F_RE (aplRht, FloorHC4F (aplRht));
@@ -2463,19 +2412,19 @@ APLHC4F ModHC4F
 
             // Calculate aplTmp EQ Floor (aplTmp)
             if (EqualHCxFvHCxF ((LPALLTYPES) &aplTmp, (LPALLTYPES) &aplHCFlr, 4, GetQuadCT (), WFCN))
-                // Set aplTmp to Zero
-                ZeroMemory (&aplTmp, sizeof (aplTmp));
+                // Set aplSub to Zero
+                ZeroMemory (&aplSub, sizeof (aplSub));
             else
                 // Calculate 1 | Rht / Lft
                 // a.k.a. (Rht / Lft) - floor (Rht / Lft)
-                aplTmp = SubHC4F_RE (aplTmp, aplHCFlr);
+                aplSub = SubHC4F_RE (aplTmp, aplHCFlr);
 
             if (GetQuadLR () EQ 'l')
                 // Calculate Lft * 1 | Rht / Lft
-                aplRes = MulHC4F_RE (        aplLft, aplTmp);
+                aplRes = MulHC4F_RE (        aplLft, aplSub);
             else
                 // Calculate      (1 | Rht / Lft) * Lft
-                aplRes = MulHC4F_RE (aplTmp, aplLft);
+                aplRes = MulHC4F_RE (aplSub, aplLft);
         } // End IF/ELSE
 
         //***************************************************************************
@@ -2485,20 +2434,26 @@ APLHC4F ModHC4F
         // Loop through all of the parts
         for (i = 0; i < 4; i++)
         {
-            APLFLOAT aplTmp;
-
             // Get the absolute value
-            aplTmp = fabs (aplRes.parts[i]);
+            aplAbs = fabs (aplRes.parts[i]);
 
-            // If floor (aplTmp) is near a Hurwitz integer within SYS_CT, ...
-            if (CmpSCT_F (aplTmp, floor (aplTmp) + 0.5, SYS_CT, EQ))
+            // Get the Floor and Ceiling
+            aplFlr = floor (aplAbs);
+            aplCel = ceil  (aplAbs);
+
+            // Add/subtract 0.5 to/from Floor/Ceiling
+            aplFlr += 0.5;
+            aplCel -= 0.5;
+
+            // If floor (aplAbs) is near a Hurwitz integer within SYS_CT, ...
+            if (CmpSCT_F (aplAbs, aplFlr, SYS_CT, EQ))
                 // Save the half integer
-                aplRes2.parts[i] = floor (aplTmp) + 0.5;
+                aplRes2.parts[i] = aplFlr;
             else
-            // If ceil  (aplTmp) is near a Hurwitz integer within SYS_CT, ...
-            if (CmpSCT_F (aplTmp, ceil  (aplTmp) - 0.5, SYS_CT, EQ))
+            // If ceil  (aplAbs) is near a Hurwitz integer within SYS_CT, ...
+            if (CmpSCT_F (aplAbs, aplCel, SYS_CT, EQ))
                 // Save the half integer
-                aplRes2.parts[i] = ceil  (aplTmp) - 0.5;
+                aplRes2.parts[i] = aplCel;
             else
                 break;
         } // End IF
@@ -2614,8 +2569,8 @@ APLHC4R ModHC4R
 
 {
     APLHC4R aplRes = {0};           // The result
-    UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
-            bNaNRht;            // ...          right ...
+    UBOOL   bNaNLft,                // TRUE iff the left arg is a NaN
+            bNaNRht;                // ...          right ...
 
     // Is either arg a NaN?
     bNaNLft = IsArgNaN (ARRAY_HC4R, &aplLft, 0);
@@ -2625,7 +2580,7 @@ APLHC4R ModHC4R
     if (IsZeroHCxR (&aplLft, 4))
         mphc4r_init_set (&aplRes, &aplRht);
     else
-    // If the either arg is a NaN, ...
+    // If either arg is a NaN, ...
     if (bNaNLft || bNaNRht)
     {
         if (bNaNLft)
@@ -2633,9 +2588,6 @@ APLHC4R ModHC4R
         else
             mphc4r_set (&aplRes, &aplRht);
     } else
-    if (IsOneHCxR  (&aplLft, 4))
-        aplRes = SubHC4R_RE (aplRht, FloorHC4R (aplRht));
-    else
     {
         APLHC4R aplTmp  = {0},
                 aplHCFlr  = {0},
@@ -2648,28 +2600,33 @@ APLHC4R ModHC4R
                 aplCel;
         int     i;                      // Loop counter
 
-        // Calculate Rht / Lft
-        // This function is sensitive to []LR
-        aplTmp = DivHC4R_RE (aplRht, aplLft);
-
-        // Calculate Floor (Rht / Lft)
-        aplHCFlr = FloorHC4R (aplTmp);
-
-        // Calculate aplTmp EQ Floor (aplTmp)
-        if (EqualHCxRvHCxR ((LPALLTYPES) &aplTmp, (LPALLTYPES) &aplHCFlr, 4, GetQuadCT (), WFCN))
-            // Set aplTmp to Zero
-            mphc4r_init (&aplSub);
+        if (IsOneHCxR  (&aplLft, 4))
+            aplRes = SubHC4R_RE (aplRht, FloorHC4R (aplRht));
         else
-            // Calculate 1 | Rht / Lft
-            // a.k.a. (Rht / Lft) - floor (Rht / Lft)
-            aplSub = SubHC4R_RE (aplTmp, aplHCFlr);
+        {
+            // Calculate Rht / Lft
+            // This function is sensitive to []LR
+            aplTmp = DivHC4R_RE (aplRht, aplLft);
 
-        if (GetQuadLR () EQ 'l')
-            // Calculate Lft * 1 | Rht / Lft
-            aplRes = MulHC4R_RE (        aplLft, aplSub);
-        else
-            // Calculate      (1 | Rht / Lft) * Lft
-            aplRes = MulHC4R_RE (aplSub, aplLft);
+            // Calculate Floor (Rht / Lft)
+            aplHCFlr = FloorHC4R (aplTmp);
+
+            // Calculate aplTmp EQ Floor (aplTmp)
+            if (EqualHCxRvHCxR ((LPALLTYPES) &aplTmp, (LPALLTYPES) &aplHCFlr, 4, GetQuadCT (), WFCN))
+                // Set aplSub to Zero
+                mphc4r_init (&aplSub);
+            else
+                // Calculate 1 | Rht / Lft
+                // a.k.a. (Rht / Lft) - floor (Rht / Lft)
+                aplSub = SubHC4R_RE (aplTmp, aplHCFlr);
+
+            if (GetQuadLR () EQ 'l')
+                // Calculate Lft * 1 | Rht / Lft
+                aplRes = MulHC4R_RE (        aplLft, aplSub);
+            else
+                // Calculate      (1 | Rht / Lft) * Lft
+                aplRes = MulHC4R_RE (aplSub, aplLft);
+        } // End IF/ELSE
 
         // Initialize to 0/1
         mpq_init    (&aplAbs);
@@ -2687,7 +2644,7 @@ APLHC4R ModHC4R
             // Get the absolute value
             mpq_abs (&aplAbs, &aplRes.parts[i]);
 
-            // Get the floor and ceiling
+            // Get the Floor and Ceiling
             mpq_floor (&aplFlr, &aplAbs);
             mpq_ceil  (&aplCel, &aplAbs);
 
@@ -2695,12 +2652,12 @@ APLHC4R ModHC4R
             mpq_add (&aplFlr, &aplFlr, &mpqHalf);
             mpq_sub (&aplCel, &aplCel, &mpqHalf);
 
-            // If floor (aplTmp) is near a Hurwitz integer within SYS_CT, ...
+            // If floor (aplAbs) is near a Hurwitz integer within SYS_CT, ...
             if (CmpSCT_R (aplAbs, aplFlr, SYS_CT, EQ))
                 // Save the half integer
                 mpq_set (&aplRes2.parts[i], &aplFlr);
             else
-            // If ceil  (aplTmp) is near a Hurwitz integer within SYS_CT, ...
+            // If ceil  (aplAbs) is near a Hurwitz integer within SYS_CT, ...
             if (CmpSCT_R (aplAbs, aplCel, SYS_CT, EQ))
                 // Save the half integer
                 mpq_set (&aplRes2.parts[i], &aplCel);
@@ -2713,7 +2670,7 @@ APLHC4R ModHC4R
             // Loop through all of the parts
             for (i = 0; i < 4; i++)
             {
-                // Save the sign of aplRes
+                // Copy the sign of aplRes
                 if (mpq_sgn (&aplRes.parts[i]) < 0)
                     // Negate it
                     mpq_neg (&aplRes2.parts[i], &aplRes2.parts[i]);
@@ -2832,9 +2789,6 @@ APLHC4V ModHC4V
         else
             mphc4v_set (&aplRes, &aplRht);
     } else
-    if (IsOneHCxV  (&aplLft, 4))
-        aplRes = SubHC4V_RE (aplRht, FloorHC4V (aplRht));
-    else
     {
         APLHC4V aplTmp = {0},
                 aplHCFlr = {0},
@@ -2847,28 +2801,33 @@ APLHC4V ModHC4V
                 aplCel;
         int     i;                      // Loop counter
 
-        // Calculate Rht / Lft
-        // This function is sensitive to []LR
-        aplTmp = DivHC4V_RE (aplRht, aplLft);
-
-        // Calculate Floor (Rht / Lft)
-        aplHCFlr = FloorHC4V (aplTmp);
-
-        // Calculate aplTmp EQ Floor (aplTmp)
-        if (EqualHCxVvHCxV ((LPALLTYPES) &aplTmp, (LPALLTYPES) &aplHCFlr, 4, GetQuadCT (), WFCN))
-            // Set aplTmp to Zero
-            mphc4v_init0 (&aplSub);
+        if (IsOneHCxV  (&aplLft, 4))
+            aplRes = SubHC4V_RE (aplRht, FloorHC4V (aplRht));
         else
-            // Calculate 1 | Rht / Lft
-            // a.k.a. (Rht / Lft) - floor (Rht / Lft)
-            aplSub = SubHC4V_RE (aplTmp, aplHCFlr);
+        {
+            // Calculate Rht / Lft
+            // This function is sensitive to []LR
+            aplTmp = DivHC4V_RE (aplRht, aplLft);
 
-        if (GetQuadLR () EQ 'l')
-            // Calculate Lft * 1 | Rht / Lft
-            aplRes = MulHC4V_RE (        aplLft, aplSub);
-        else
-            // Calculate      (1 | Rht / Lft) * Lft
-            aplRes = MulHC4V_RE (aplSub, aplLft);
+            // Calculate Floor (Rht / Lft)
+            aplHCFlr = FloorHC4V (aplTmp);
+
+            // Calculate aplTmp EQ Floor (aplTmp)
+            if (EqualHCxVvHCxV ((LPALLTYPES) &aplTmp, (LPALLTYPES) &aplHCFlr, 4, GetQuadCT (), WFCN))
+                // Set aplTmp to Zero
+                mphc4v_init0 (&aplSub);
+            else
+                // Calculate 1 | Rht / Lft
+                // a.k.a. (Rht / Lft) - floor (Rht / Lft)
+                aplSub = SubHC4V_RE (aplTmp, aplHCFlr);
+
+            if (GetQuadLR () EQ 'l')
+                // Calculate Lft * 1 | Rht / Lft
+                aplRes = MulHC4V_RE (        aplLft, aplSub);
+            else
+                // Calculate      (1 | Rht / Lft) * Lft
+                aplRes = MulHC4V_RE (aplSub, aplLft);
+        } // End IF/ELSE
 
         // Initialize to 0
         mpfr_init0   (&aplAbs);

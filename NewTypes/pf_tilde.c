@@ -177,7 +177,7 @@ static LPPRIMSPEC lpPrimSpec = {&PrimSpecTilde};
 //***************************************************************************
 
 LPPL_YYSTYPE PrimFnTilde_EM_YY
-    (LPTOKEN lptkLftArg,             // Ptr to left arg token (may be NULL if monadic)
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
      LPTOKEN lptkFunc,              // Ptr to function token
      LPTOKEN lptkRhtArg,            // Ptr to right arg token
      LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
@@ -325,7 +325,8 @@ APLSTYPE PrimSpecTildeStorageTypeMon
 
     // Is the result HC?
     if (IsHCAny (aplTypeRes))
-        return ARRAY_ERROR;
+        // Tell the caller to demote the data to HC dimension 1
+        return ARRAY_REALONLY;
 
     // Split cases based upon the storage type
     switch (aplTypeRes)
@@ -587,10 +588,6 @@ LPPL_YYSTYPE PrimFnDydTilde_EM_YY
     LPPL_YYSTYPE lpYYRes = NULL,    // Ptr to the result
                  lpYYRes1;          // Ptr to temporary result
     TOKEN        tkFunc = {0};      // Function token
-
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
 
     //***************************************************************
     // This function is not sensitive to the axis operator,

@@ -227,7 +227,8 @@ APLSTYPE PrimSpecDownCaretStorageTypeDyd
     //   such as Character, Nested, Hetero, Octonions, and Quaternions w/o Hurwitz
     if (!IsNested (aplTypeRes)
      && !HasFractionality (aplTypeRes))
-        return ARRAY_ERROR;
+        // Tell the caller to demote the data to HC dimension 1
+        return ARRAY_REALONLY;
 
     return aplTypeRes;
 } // End PrimSpecDownCaretStorageTypeDyd

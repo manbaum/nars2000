@@ -228,7 +228,8 @@ APLSTYPE PrimSpecUpCaretStorageTypeDyd
     //   such as Character, Nested, Hetero, Octonions, and Quaternions w/o Hurwitz
     if (!IsNested (aplTypeRes)
      && !HasFractionality (aplTypeRes))
-        return ARRAY_ERROR;
+        // Tell the caller to demote the data to HC dimension 1
+        return ARRAY_REALONLY;
 
     return aplTypeRes;
 } // End PrimSpecUpCaretStorageTypeDyd
@@ -944,11 +945,12 @@ void PrimFnDydUpCaretVisVvV
     // Check for indeterminates:  lcm (PoM_, 0)  or  lcm (0, PoM_)
     if ((mpfr_inf_p (&lpatLft->aplVfp) && IsMpf0 (&lpatRht->aplVfp))
      || (mpfr_inf_p (&lpatRht->aplVfp) && IsMpf0 (&lpatLft->aplVfp)))
-        lpMemRes[uRes] = *mpfr_QuadICValue (&lpatLft->aplVfp,
-                                   ICNDX_0LCMInf,
-                                  &lpatRht->aplVfp,
-                                  &lpMemRes[uRes],
-                                   SIGN_APLVFP (&lpatLft->aplVfp));
+        lpMemRes[uRes] =
+          *mpfr_QuadICValue (&lpatLft->aplVfp,
+                              ICNDX_0LCMInf,
+                             &lpatRht->aplVfp,
+                             &lpMemRes[uRes],
+                              SIGN_APLVFP (&lpatLft->aplVfp));
     else
     // Check for special cases:  lcm (PoM_, N)  or  lcm (N, PoM_)
     if (mpfr_inf_p (&lpatLft->aplVfp)

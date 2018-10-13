@@ -1,6 +1,23 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1932 -- Version 0.5.8.xx
+-------------------------------
+
+* Extend REALONLY To More Scalar Functions
+
+Directory branches/bsmith/NewTypes:
+
+PF_DCARET.C:
+PF_NDCARET.C:
+PF_NUCARET.C:
+PF_QUERRY.C:
+PF_STILE.C:
+PF_TILDE.C:
+PF_UCARET.C:
+  Extend REALONLY to more scalar functions.
+
+
 Build #1931 -- Version 0.5.8.xx
 -------------------------------
 

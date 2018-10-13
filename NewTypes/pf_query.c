@@ -253,9 +253,13 @@ APLSTYPE PrimSpecQueryStorageTypeMon
         *lpaplTypeRht = ARRAY_BOOL;
 
     // Weed out chars & heteros & HC
-    if (IsSimpleCH (*lpaplTypeRht)
-     || IsHCAny (*lpaplTypeRht))
+    if (IsSimpleCH (*lpaplTypeRht))
         return ARRAY_ERROR;
+
+    // Is the result HC?
+    if (IsHCAny (*lpaplTypeRht))
+        // Tell the caller to demote the data to HC dimension 1
+        return ARRAY_REALONLY;
 
     // The storage type of the result is
     //   the same as that of the right arg
@@ -793,10 +797,6 @@ LPPL_YYSTYPE PrimFnDydQuery_EM_YY
 
     // Get the ptr to the Ctrl-Break flag
     lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
-
-    // If the right arg is a list, ...
-    if (IsTknParList (lptkRhtArg))
-        return PrimFnSyntaxError_EM (lptkFunc APPEND_NAME_ARG);
 
     //***************************************************************
     // This function is not sensitive to the axis operator,

@@ -222,7 +222,8 @@ APLSTYPE PrimSpecDownCaretTildeStorageTypeDyd
     // Is either arg HC?
     if (IsHCAny (*lpaplTypeLft)
      || IsHCAny (*lpaplTypeRht))
-        return ARRAY_ERROR;
+        // Tell the caller to demote the data to HC dimension 1
+        return ARRAY_REALONLY;
 
     // Calculate the storage type of the result
     aplTypeRes = StorageType (*lpaplTypeLft, lptkFunc, *lpaplTypeRht);

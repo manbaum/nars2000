@@ -1,6 +1,20 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1935 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In []NC On Empty Vectors And Scalar Blanks
+
+Directory branches/bsmith/NewTypes:
+
+QF_NC.C:
+  Fix bug in NC on empty vectors and scalar blanks.
+
+QF_NL.C:
+  Optimize []NL on empty right args.
+
+
 Build #1934 -- Version 0.5.8.xx
 -------------------------------
 

@@ -143,7 +143,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
     APLNELM           uNameLen;             // Length of the current name
     APLUINT           nameClasses = 0;      // Bit flags for each nameclass 1 through (NAMECLASS_LENp1 - 1)
     UINT              uMaxNameLen = 0,      // Length of longest name
-                      uSymCnt,              // Count of # matching STEs
+                      uSymCnt = 0,          // Count of # matching STEs
                       uSymNum;              // Loop counter
     UBOOL             bRet;                 // TRUE iff result is valid
     LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
@@ -273,7 +273,7 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
             // Loop through the right arg elements
             for (uRht = 0; uRht < aplNELMRht; uRht++)
             {
-                // Attempt to convert the RAT to an integer using System []CT
+                // Attempt to convert the VFP to an integer using System []CT
                 aplLongestRht = GetNextVfpIntGlb (hGlbRht, uRht, &bRet);
 
                 if (!bRet
@@ -291,53 +291,57 @@ LPPL_YYSTYPE SysFnDydNL_EM_YY
             break;
     } // End SWITCH
 
-    // Initialize the LPSYMENTRY sort array
-    lpSymSort = (LPSYMENTRY *) lpMemPTD->lpwszTemp;
-
-    // Loop through the symbol table looking for STEs
-    //   with one of the right arg name classes
-    for (lpSymEntry = lpMemPTD->lphtsPTD->lpSymTab, uSymCnt = 0;
-         lpSymEntry < lpMemPTD->lphtsPTD->lpSymTabNext;
-         lpSymEntry++)
-    if (lpSymEntry->stFlags.Inuse                                       // It's in use
-     && lpSymEntry->stFlags.ObjName NE OBJNAME_NONE                     // It has an object name
-     && lpSymEntry->stFlags.Value                                       // It has a value
-     && nameClasses & (APLINT) (BIT0 << CalcNameClass (lpSymEntry)))    // It's in one of the specified name classes
+    // If there are any NameClasses, ...
+    if (nameClasses NE 0)
     {
-        // Lock the memory to get a ptr to it
-        lpMemName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
+        // Initialize the LPSYMENTRY sort array
+        lpSymSort = (LPSYMENTRY *) lpMemPTD->lpwszTemp;
 
-        // If there's a left arg, ensure the first char of the name
-        //   is in the left arg
-        if (lptkLftArg NE NULL)
+        // Loop through the symbol table looking for STEs
+        //   with one of the right arg name classes
+        for (lpSymEntry = lpMemPTD->lphtsPTD->lpSymTab;
+             lpSymEntry < lpMemPTD->lphtsPTD->lpSymTabNext;
+             lpSymEntry++)
+        if (lpSymEntry->stFlags.Inuse                                       // It's in use
+         && lpSymEntry->stFlags.ObjName NE OBJNAME_NONE                     // It has an object name
+         && lpSymEntry->stFlags.Value                                       // It has a value
+         && nameClasses & (APLINT) (BIT0 << CalcNameClass (lpSymEntry)))    // It's in one of the specified name classes
         {
-            for (uLft = 0; uLft < aplNELMLft; uLft++)
-            if (lpMemName[0] EQ lpMemLft[uLft])
-                break;
+            // Lock the memory to get a ptr to it
+            lpMemName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
 
-            // If there's no match, continue looking
-            if (uLft EQ aplNELMLft)
-                continue;
-        } // End IF
+            // If there's a left arg, ensure the first char of the name
+            //   is in the left arg
+            if (lptkLftArg NE NULL)
+            {
+                for (uLft = 0; uLft < aplNELMLft; uLft++)
+                if (lpMemName[0] EQ lpMemLft[uLft])
+                    break;
 
-        // Get the name length
-        uNameLen = lstrlenW (lpMemName);
+                // If there's no match, continue looking
+                if (uLft EQ aplNELMLft)
+                    continue;
+            } // End IF
 
-        // Find the longest name
-        uMaxNameLen = max (uMaxNameLen, (UINT) uNameLen);
+            // Get the name length
+            uNameLen = lstrlenW (lpMemName);
 
-        // We no longer need this ptr
-        MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;
+            // Find the longest name
+            uMaxNameLen = max (uMaxNameLen, (UINT) uNameLen);
 
-        // Save the LPSYMENTRY ptr for later use
-        lpSymSort[uSymCnt] = lpSymEntry;
+            // We no longer need this ptr
+            MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;
 
-        // Count in another matching name
-        uSymCnt++;
-    } // End FOR/IF
+            // Save the LPSYMENTRY ptr for later use
+            lpSymSort[uSymCnt] = lpSymEntry;
 
-    // Sort the HGLOBALs
-    ShellSort (lpSymSort, uSymCnt, CmpLPSYMENTRY);
+            // Count in another matching name
+            uSymCnt++;
+        } // End FOR/IF
+
+        // Sort the HGLOBALs
+        ShellSort (lpSymSort, uSymCnt, CmpLPSYMENTRY);
+    } // End IF
 
     // Calculate space needed for the result
     ByteRes = CalcArraySize (ARRAY_CHAR, uSymCnt * uMaxNameLen, 2);

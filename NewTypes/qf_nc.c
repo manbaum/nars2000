@@ -168,6 +168,8 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
 
     // Calculate the name class of each element
 
+    // If the result is non-empty, ...
+    if (!IsEmpty (aplNELMRes))
     // Split cases based upon the right arg rank
     switch (aplRankRht)
     {
@@ -258,7 +260,7 @@ LPPL_YYSTYPE SysFnMonNC_EM_YY
 
         defstop
             break;
-    } // End SWITCH
+    } // End IF/SWITCH
 YYALLOC_EXIT:
     // We no longer need this ptr
     MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;

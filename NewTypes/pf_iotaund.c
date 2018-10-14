@@ -274,7 +274,7 @@ LPPL_YYSTYPE PrimFnMonIotaUnderbar_EM_YY
                     //  (apaOff * aplNELMRht) + (apaMul * aplNELMRht * (aplNELMRht - 1)) / 2
                     aplNELMRes = imul64_RE (apaOff,            aplNELMRht, FLOAT)
                                + imul64_RE (apaMul, imul64_RE (aplNELMRht,  aplNELMRht - 1, FLOAT) / 2, FLOAT);
-                } __except (CheckException (GetExceptionInformation (), L"PrimFnMonIotaUnderbar_EM_YY"))
+                } __except (CheckException (GetExceptionInformation (), WFCN))
                 {
                     dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 

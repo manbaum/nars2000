@@ -334,7 +334,7 @@ __try
 #undef  idCtl
     } // End SWITCH
 
-} __except (CheckException (GetExceptionInformation (), L"WebColorsDlgProc"))
+} __except (CheckException (GetExceptionInformation (), WFCN))
 {
     // Display message for unhandled exception
     DisplayException ();

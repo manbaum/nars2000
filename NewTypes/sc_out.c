@@ -303,7 +303,7 @@ UBOOL CmdOut_EM
                 } // End FOR
             } // End IF
         } // End IF
-    } __except (CheckException (GetExceptionInformation (), L"CmdOut_EM"))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         // Display message for unhandled exception
         DisplayException ();

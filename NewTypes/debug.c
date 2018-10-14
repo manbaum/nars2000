@@ -189,7 +189,7 @@ UBOOL WINAPI CreateDebuggerInThread
             // GetMessageW returned FALSE for a Quit message
             //***************************************************************
         } // End IF/ELSE
-    } __except (CheckException (GetExceptionInformation (), L"CreateDebuggerInThread"))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         // Display message for unhandled exception
         DisplayException ();

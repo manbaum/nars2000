@@ -5244,7 +5244,7 @@ FREED_EXIT:
     if (uPhyLineNum EQ 0)
         // Restore the ptr to the next token on the CS stack
         lpMemPTD->lptkCSNxt = lptkCSNxt;
-} __except (CheckException (GetExceptionInformation (), L"Tokenize_EM"))
+} __except (CheckException (GetExceptionInformation (), WFCN))
 {
     if (tkLocalVars.hGlbToken NE NULL)
     {

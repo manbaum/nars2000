@@ -2449,7 +2449,7 @@ UBOOL ParseCtrlStruc_EM
         // Disable debugging
         yydebug = FALSE;
 #endif
-    } __except (CheckException (GetExceptionInformation (), L"ParseCtrlStruc"))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         // Split cases based upon the ExceptionCode
         switch (MyGetExceptionCode ())

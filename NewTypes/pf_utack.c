@@ -482,7 +482,7 @@ RESTART_EXCEPTION:
 
                         // Multiply into the weighting value
                         atVal.aplInteger = imul64_RE (atVal.aplInteger, GetNextInteger (lpMemLft, aplTypeLft, uInnLft), FLOAT);
-                    } __except (CheckException (GetExceptionInformation (), L"PrimFnDydUpTack_EM_YY"))
+                    } __except (CheckException (GetExceptionInformation (), WFCN L" #1"))
                     {
                         switch (MyGetExceptionCode ())
                         {
@@ -569,7 +569,7 @@ RESTART_EXCEPTION:
 ////////////////////////atVal.aplHCxI = atLft.aplHCxI * atVal.aplHCxI
                         atVal.aplHC2I = MulHC2I_RE (atLft.aplHC2I,
                                                     atVal.aplHC2I);
-                    } __except (CheckException (GetExceptionInformation (), L"PrimFnDydUpTack_EM_YY"))
+                    } __except (CheckException (GetExceptionInformation (), WFCN L" #2"))
                     {
                         switch (MyGetExceptionCode ())
                         {
@@ -616,7 +616,7 @@ RESTART_EXCEPTION:
 ////////////////////////atVal.aplHCxI = atLft.aplHCxI * atVal.aplHCxI;
                         atVal.aplHC4I = MulHC4I_RE (atLft.aplHC4I,
                                                     atVal.aplHC4I);
-                    } __except (CheckException (GetExceptionInformation (), L"PrimFnDydUpTack_EM_YY"))
+                    } __except (CheckException (GetExceptionInformation (), WFCN L" #3"))
                     {
                         switch (MyGetExceptionCode ())
                         {
@@ -664,7 +664,7 @@ RESTART_EXCEPTION:
 ////////////////////////atVal.aplHCxI = atLft.aplHCxI * atVal.aplHCxI;
 ////                    atVal.aplHC8I = MulHC8I_RE (atLft.aplHC8I,
 ////                                                atVal.aplHC8I);
-////                } __except (CheckException (GetExceptionInformation (), L"PrimFnDydUpTack_EM_YY"))
+////                } __except (CheckException (GetExceptionInformation (), WFCN L" #4"))
 ////                {
 ////                    switch (MyGetExceptionCode ())
 ////                    {

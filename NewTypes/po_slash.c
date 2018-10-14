@@ -672,7 +672,7 @@ RESTART_EXCEPTION_APA:
 ////////////////////////////                         + (apaMulRht * uDimHi * uDimAxRht * (uDimAxRht - 1)) / 2;
                             *((LPAPLINT) lpMemRes)++ = iadd64_RE (imul64_RE (uDimAxRht, iadd64_RE (apaOffRht, imul64_RE (apaMulRht, uDimRht, FLOAT), FLOAT), FLOAT),
                                                                   imul64_RE (apaMulRht, imul64_RE (uDimHi,    imul64_RE (uDimAxRht, isub64_RE (uDimAxRht, 1, FLOAT), FLOAT), FLOAT), FLOAT) / 2, FLOAT);
-                        } __except (CheckException (GetExceptionInformation (), L"PrimFnMon_EM_YY #1"))
+                        } __except (CheckException (GetExceptionInformation (), WFCN L" #1"))
                         {
                             dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 
@@ -749,7 +749,7 @@ RESTART_EXCEPTION_APA:
                                 defstop
                                     break;
                             } // End SWITCH
-                        } __except (CheckException (GetExceptionInformation (), L"PrimFnMon_EM_YY #1"))
+                        } __except (CheckException (GetExceptionInformation (), WFCN L" #2"))
                         {
                             dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #2: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 
@@ -826,7 +826,7 @@ RESTART_EXCEPTION_APA:
                                 defstop
                                     break;
                             } // End SWITCH
-                        } __except (CheckException (GetExceptionInformation (), L"PrimFnMon_EM_YY #1"))
+                        } __except (CheckException (GetExceptionInformation (), WFCN L" #3"))
                         {
                             dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #3: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 

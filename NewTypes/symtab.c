@@ -333,7 +333,7 @@ UBOOL HshTabFrisk
                 MBC ("HshTabFrisk:  lps->stHshEntry->htSymEntry NE lps")
             } // End FOR/IF/...
         } // End IF
-    } __except (CheckException (GetExceptionInformation (), L"HshTabFrisk"))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         // Display message for unhandled exception
         DisplayException ();

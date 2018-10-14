@@ -543,7 +543,7 @@ UBOOL CmdSave_EM
                                   lpDict);          // Ptr to the dictionary
             } // End IF/ELSE/...
         } // End FOR/IF/...
-    } __except (CheckException (GetExceptionInformation (), L"CmdSave_EM #1"))
+    } __except (CheckException (GetExceptionInformation (), WFCN L" #1"))
     {
         EXIT_TEMP_OPEN          // lpwszTemp is used in CleanUpAfterSav
 
@@ -2002,7 +2002,7 @@ LPAPLCHAR SavedWsFormGlbVar
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckException (GetExceptionInformation (), L"CmdSave_EM #2"))
+    } __except (CheckException (GetExceptionInformation (), WFCN L" #2"))
     {
         if (hGlbObj NE NULL && lpMemObj NE NULL)
         {

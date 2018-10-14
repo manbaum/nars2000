@@ -309,7 +309,7 @@ UBOOL crExit
                          lpcrLocalVars->mpqRes,
                          lpcrLocalVars->mpqMul);
             } // End IF/ELSE
-        } __except (CheckException (GetExceptionInformation (), L"crExit"))
+        } __except (CheckException (GetExceptionInformation (), WFCN))
         {
             lpcrLocalVars->crRetCode = CR_DOMAIN_ERROR;
 

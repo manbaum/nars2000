@@ -153,7 +153,7 @@ LPPL_YYSTYPE PushVarStrand_YY
         // Save this token on the strand stack
         //   and skip over it
         YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_VAR]++, lpYYArg);
-    } __except (CheckException (GetExceptionInformation (), L"PushVarStrand_YY"))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         YYFree (lpYYRes); lpYYRes = NULL;
     } // End __try/__except
@@ -2404,7 +2404,7 @@ LPPL_YYSTYPE PushNameStrand_YY
         // Save this token on the strand stack
         //   and skip over it
         YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_NAM]++, lpYYArg);
-    } __except (CheckException (GetExceptionInformation (), L"PushNameStrand_YY"))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         YYFree (lpYYRes); lpYYRes = NULL;
     } // End __try/__except
@@ -2674,7 +2674,7 @@ LPPL_YYSTYPE PushList_YY
         // Copy this token to the strand stack
         //   and skip over it
         YYCopyFreeDst (lpplLocalVars->lpYYStrArrNext[STRAND_LST]++, lpYYArg);
-    } __except (CheckException (GetExceptionInformation (), L"PushList_YY"))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         YYFree (lpYYRes); lpYYRes = NULL;
     } // End __try/__except

@@ -748,7 +748,7 @@ RESTART_RAT:
             // We no longer need this storage
             Myz_clear (&aplMPIRes);
     } // End FOR
-    } __except (CheckException (GetExceptionInformation (), L"PrimFnDydPi_EM_YY"))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         dprintfWL9 (L"!!Initiating Exception in " APPEND_NAME L" #1: %2d (%S#%d)", MyGetExceptionCode (), FNLN);
 

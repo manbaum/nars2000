@@ -171,7 +171,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                               &lpYYFcnStr->tkToken,             // Ptr to function token
                                lptkRhtArg,                      // Ptr to right arg token
                                lptkAxis);                       // Ptr to axis token (may be NULL)
-            } __except (CheckException (GetExceptionInformation (), L"ExecFunc_EM_YY #1"))
+            } __except (CheckException (GetExceptionInformation (), WFCN L" #1"))
             {
 #ifdef DEBUG
                 DbgBrk ();
@@ -243,7 +243,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                                        &lpYYFcnStr->tkToken,    // Ptr to function token
                                         lptkRhtArg,             // Ptr to right arg token
                                         lptkAxis);              // Ptr to axis token (may be NULL)
-                    } __except (CheckException (GetExceptionInformation (), L"ExecFunc_EM_YY #2"))
+                    } __except (CheckException (GetExceptionInformation (), WFCN L" #2"))
                     {
 #ifdef DEBUG
                         DbgBrk ();
@@ -294,7 +294,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                                             hGlbFcn,        // Function array global memory handle
                                             lptkRhtArg,     // Ptr to right arg token (may be NULL if niladic)
                                             lptkAxis);      // Ptr to axis token (may be NULL)
-                } __except (CheckException (GetExceptionInformation (), L"ExecFunc_EM_YY #3"))
+                } __except (CheckException (GetExceptionInformation (), WFCN L" #3"))
                 {
 #ifdef DEBUG
                     DbgBrk ();
@@ -337,7 +337,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                                       &tkFn,            // Ptr to function token
                                        lptkRhtArg,      // Ptr to right arg token
                                        lptkAxis);       // Ptr to axis token (may be NULL)
-                    } __except (CheckException (GetExceptionInformation (), L"ExecFunc_EM_YY #4"))
+                    } __except (CheckException (GetExceptionInformation (), WFCN L" #4"))
                     {
 #ifdef DEBUG
                         DbgBrk ();
@@ -398,7 +398,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                     defstop
                         break;
                 } // End SWITCH
-            } __except (CheckException (GetExceptionInformation (), L"ExecFunc_EM_YY #5"))
+            } __except (CheckException (GetExceptionInformation (), WFCN L" #5"))
             {
 #ifdef DEBUG
                 DbgBrk ();
@@ -437,7 +437,7 @@ LPPL_YYSTYPE ExecFunc_EM_YY
                                        lptkAxis,        // Ptr to axis token (may be NULL -- used only if function strand is NULL)
                                        lptkRhtArg,      // Ptr to right arg token
                                        LINENUM_ONE);    // Starting line # (see LINE_NUMS)
-            } __except (CheckException (GetExceptionInformation (), L"ExecFunc_EM_YY #6"))
+            } __except (CheckException (GetExceptionInformation (), WFCN L" #6"))
             {
 #ifdef DEBUG
                 DbgBrk ();

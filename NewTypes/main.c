@@ -4352,12 +4352,16 @@ int PASCAL WinMain
                     {
                         TranslateMessage (&Msg);
                         DispatchMessageW (&Msg);
-                    } // End IF/IF
-                } // End IF/IF
+                    } // End IF
+                } // End IF
             } // End IF/ELSE
         } // End WHILE
+
+        //***************************************************************
+        // GetMessageW returned FALSE for a WM_QUIT message
+        //***************************************************************
 #ifdef DEBUG
-    } __except (CheckException (GetExceptionInformation (), L"WinMain"))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         // Display message for unhandled exception
         DisplayException ();
@@ -4367,11 +4371,14 @@ int PASCAL WinMain
     // GetMessageW returned FALSE for a Quit message
 
 EXIT5:
-    // Uninitialize Combinatorial cache
-    UninitCombCache ();
+    // The free routines take a very long time, so we skip it
+    //   as we're exiting anyway.
 
-    // Uninitialize global numeric constants
-    UninitGlbNumConstants ();
+////// Uninitialize Combinatorial cache
+////UninitCombCache ();
+
+////// Uninitialize global numeric constants
+////UninitGlbNumConstants ();
 EXIT4:
     // Mark as all CSO deleted
     bCSO = FALSE;

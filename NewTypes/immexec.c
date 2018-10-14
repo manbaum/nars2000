@@ -915,7 +915,7 @@ ERROR_EXIT:
             MyReleaseSemaphore (lpMemPTD->hExitphore, 1, NULL);
 
         goto NORMAL_EXIT;
-    } __except (CheckException (GetExceptionInformation (), L"ImmExecStmtInThread"))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         // Display message for unhandled exception
         DisplayException ();

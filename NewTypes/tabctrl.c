@@ -453,7 +453,7 @@ UBOOL WINAPI CreateNewTabInThread
                 DispatchMessageW (&Msg);
             } // End IF
         } // End WHILE
-    } __except (CheckException (GetExceptionInformation (), L"CreateNewTabInThread"))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         // Display message for unhandled exception
         DisplayException ();

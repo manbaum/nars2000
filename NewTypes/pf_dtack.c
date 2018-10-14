@@ -647,7 +647,7 @@ RESTART_EXCEPTION:
                         // Free the old atLft
                         (*aTypeFree[aplTypeRes]) (&atLft, 0);
                     } // End __try/__finally
-                } __except (CheckException (GetExceptionInformation (), L"PrimFnDydUpTack_EM_YY"))
+                } __except (CheckException (GetExceptionInformation (), WFCN))
                 {
                     EXCEPTION_CODES exCode = MyGetExceptionCode ();
 

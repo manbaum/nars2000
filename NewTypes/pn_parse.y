@@ -1080,7 +1080,7 @@ UBOOL ParsePointNotation
         //   1 = YYABORT or APL error
         //   2 = memory exhausted
         bRet = pn_yyparse (lppnLocalVars) EQ 0;
-    } __except (CheckException (GetExceptionInformation (), L"ParsePointNotation"))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         // Split cases based upon the ExceptionCode
         switch (MyGetExceptionCode ())

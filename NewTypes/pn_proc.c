@@ -3389,7 +3389,7 @@ RESTART_BASEPOINT:
             defstop
                 break;
         } // End SWITCH
-    } __except (CheckException (GetExceptionInformation (), L"PN_MakeBasePoint"))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         EXCEPTION_CODES ExceptionCode = MyGetExceptionCode ();  // The exception code
         PNNUMTYPE       pnType;             // Temp PNNUMTYPE

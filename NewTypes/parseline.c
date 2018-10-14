@@ -5426,7 +5426,7 @@ PARSELINE_DONE:
         } __except (CheckVirtAlloc (GetExceptionInformation (),
                                     L"ParseLine"))
         {} // End __try/__except
-    } __except (CheckException (GetExceptionInformation (), L"ParseLine"))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         // Split cases based upon the ExceptionCode
         switch (MyGetExceptionCode ())

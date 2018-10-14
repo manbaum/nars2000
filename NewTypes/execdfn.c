@@ -562,7 +562,7 @@ LPPL_YYSTYPE ExecDfnOprGlb_EM_YY
         // Execute the user-defined function/operator
         lpYYRes =
           ExecuteFunction_EM_YY (startLineNum, startTknNum, &lpYYFcnStrOpr->tkToken);
-    } __except (CheckException (GetExceptionInformation (), L"ExecDfnOprGlb_EM_YY"))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         // Unlocalize the STEs on the innermost level
         //   and strip off one level
@@ -750,7 +750,7 @@ void LocalizeAll
         lpMemPTD->lpSISNxt                = (LPSIS_HEADER) lpSymEntryNxt;
 
         Assert (lpMemPTD->lpSISNxt NE lpMemPTD->lpSISCur);
-    } __except (CheckException (GetExceptionInformation (), L"LocalizeAll"))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         // Save the # LPSYMENTRYs localized
         lpMemPTD->lpSISNxt->numSymEntries = (UINT) (lpSymEntryNxt - lpSymEntryBeg);
@@ -812,7 +812,7 @@ void _CheckSymEntries
                     DbgBrk ();
                 if (lpSymEntryNxt->stHshEntry->htSymEntry EQ NULL)
                     DbgBrk ();
-            } __except (CheckException (GetExceptionInformation (), L"CheckSymEntries"))
+            } __except (CheckException (GetExceptionInformation (), WFCN))
             {
                 wsprintfW (lpMemPTD->lpwszTemp,
                            L"CheckSymEntries was called from <%S> line #%d",

@@ -714,7 +714,7 @@ UBOOL ParseFcnHeader
         // Disable debugging
         yydebug = FALSE;
 #endif
-    } __except (CheckException (GetExceptionInformation (), L"ParseFcnHeader"))
+    } __except (CheckException (GetExceptionInformation (), WFCN))
     {
         // Display message for unhandled exception
         DisplayException ();

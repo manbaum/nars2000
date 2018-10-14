@@ -420,7 +420,7 @@ __try
         defstop
             break;
     } // End SWITCH
-} __except (CheckException (GetExceptionInformation (), L"PrimFnMonDownTackJot_EM_YY"))
+} __except (CheckException (GetExceptionInformation (), WFCN L" #1"))
 {
     // Split cases based upon the exception code
     switch (MyGetExceptionCode ())
@@ -3314,7 +3314,7 @@ LPAPLCHAR FormatArrSimple
                 // Point to the next FMTROWSTR
                 lpFmtRowStr = lpFmtRowStr->lpFmtRowNxt;
             } // End FOR
-        } __except (CheckException (GetExceptionInformation (), L"PrimFnMonDownTackJot_EM_YY"))
+        } __except (CheckException (GetExceptionInformation (), WFCN L" #2"))
         {
             EXCEPTION_CODES exCode = MyGetExceptionCode ();  // The exception code
 

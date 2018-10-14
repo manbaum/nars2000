@@ -631,15 +631,15 @@ STYLE WS_CHILD | DS_SHELLFONT
 FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "Check the box to map assigned values of these system vars to the allowable range.  An unchecked box means that assigning an out of range value signals a DOMAIN ERROR.",
-                                IDC_STATIC           ,65, 26,143,78
-    AUTOCHECKBOX    "CT"      , IDC_RANGE_XB_CT      ,10, 26, 55,10
-    AUTOCHECKBOX    "FEATURE" , IDC_RANGE_XB_FEATURE ,10, 39, 55,10
-    AUTOCHECKBOX    "FPC"     , IDC_RANGE_XB_FPC     ,10, 52, 55,10
-    AUTOCHECKBOX    "IC"      , IDC_RANGE_XB_IC      ,10, 65, 55,10
-    AUTOCHECKBOX    "IO"      , IDC_RANGE_XB_IO      ,10, 78, 55,10
-    AUTOCHECKBOX    "PP"      , IDC_RANGE_XB_PP      ,10, 91, 55,10
-    AUTOCHECKBOX    "PW"      , IDC_RANGE_XB_PW      ,10,104, 55,10
-    AUTOCHECKBOX    "RL"      , IDC_RANGE_XB_RL      ,10,117, 55,10
+                                IDC_STATIC           ,65, 13,143,78
+    AUTOCHECKBOX    "CT"      , IDC_RANGE_XB_CT      ,10, 13, 55,10
+    AUTOCHECKBOX    "FEATURE" , IDC_RANGE_XB_FEATURE ,10, 26, 55,10
+    AUTOCHECKBOX    "FPC"     , IDC_RANGE_XB_FPC     ,10, 39, 55,10
+    AUTOCHECKBOX    "IC"      , IDC_RANGE_XB_IC      ,10, 52, 55,10
+    AUTOCHECKBOX    "IO"      , IDC_RANGE_XB_IO      ,10, 65, 55,10
+    AUTOCHECKBOX    "PP"      , IDC_RANGE_XB_PP      ,10, 78, 55,10
+    AUTOCHECKBOX    "PW"      , IDC_RANGE_XB_PW      ,10, 91, 55,10
+    AUTOCHECKBOX    "RL"      , IDC_RANGE_XB_RL      ,10,104, 55,10
 END
 
 IDD_PROPPAGE_SYNTAX_COLORING DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
@@ -647,8 +647,8 @@ STYLE WS_CHILD | DS_SHELLFONT
 FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "Background Transparent"    , IDC_STATIC            ,200,  5, 45, 18
-    GROUPBOX        "Foreground"                , IDC_STATIC            , 95, 10, 48,272
-    GROUPBOX        "Background"                , IDC_STATIC            ,150, 10, 48,272
+    GROUPBOX        "Foreground"                , IDC_STATIC            , 95, 10, 48,282
+    GROUPBOX        "Background"                , IDC_STATIC            ,150, 10, 48,282
 
     LTEXT           ""                          , IDC_SYNTCLR_LT1       ,  5, 20, 90,  9    // "Global Name"
     LTEXT           ""                          , IDC_SYNTCLR_LT_FGMRK1 , 97, 20,  8,  8, SS_BITMAP
@@ -850,54 +850,54 @@ IDD_PROPPAGE_SYSTEM_VAR_RESET DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
 STYLE WS_CHILD | DS_SHELLFONT
 FONT 8, "MS Shell Dlg"
 BEGIN
-    LTEXT           ""              ,IDC_RESET_TEXT           , 5, 26,200,40
+    LTEXT           ""              ,IDC_RESET_TEXT           , 5, 13,200,40
 
-    LTEXT           "CLEAR WS"      ,IDC_STATIC               ,40, 71, 60,10
-    LTEXT           "System Default",IDC_STATIC               ,80, 71, 60,10
+    LTEXT           "CLEAR WS"      ,IDC_STATIC               ,40, 58, 60,10
+    LTEXT           "System Default",IDC_STATIC               ,80, 58, 60,10
 
-    LTEXT           "CT"            ,IDC_STATIC               , 5, 86, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_CT_RADIO1      ,55, 86, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_CT_RADIO2      ,95, 86, 16, 8
+    LTEXT           "CT"            ,IDC_STATIC               , 5, 73, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_CT_RADIO1      ,55, 73, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_CT_RADIO2      ,95, 73, 16, 8
 
-    LTEXT           "DT"            ,IDC_STATIC               , 5,101, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_DT_RADIO1      ,55,101, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_DT_RADIO2      ,95,101, 16, 8
+    LTEXT           "DT"            ,IDC_STATIC               , 5, 88, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_DT_RADIO1      ,55, 88, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_DT_RADIO2      ,95, 88, 16, 8
 
-    LTEXT           "FC"            ,IDC_STATIC               , 5,116, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_FC_RADIO1      ,55,116, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_FC_RADIO2      ,95,116, 16, 8
+    LTEXT           "FC"            ,IDC_STATIC               , 5,103, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FC_RADIO1      ,55,103, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FC_RADIO2      ,95,103, 16, 8
 
-    LTEXT           "FEATURE"       ,IDC_STATIC               , 5,131, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_FEATURE_RADIO1 ,55,131, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_FEATURE_RADIO2 ,95,131, 16, 8
+    LTEXT           "FEATURE"       ,IDC_STATIC               , 5,118, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FEATURE_RADIO1 ,55,118, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FEATURE_RADIO2 ,95,118, 16, 8
 
-    LTEXT           "FPC"           ,IDC_STATIC               , 5,146, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_FPC_RADIO1     ,55,146, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_FPC_RADIO2     ,95,146, 16, 8
+    LTEXT           "FPC"           ,IDC_STATIC               , 5,133, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FPC_RADIO1     ,55,133, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_FPC_RADIO2     ,95,133, 16, 8
 
-    LTEXT           "IC"            ,IDC_STATIC               , 5,161, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_IC_RADIO1      ,55,161, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_IC_RADIO2      ,95,161, 16, 8
+    LTEXT           "IC"            ,IDC_STATIC               , 5,148, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IC_RADIO1      ,55,148, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IC_RADIO2      ,95,148, 16, 8
 
-    LTEXT           "IO"            ,IDC_STATIC               , 5,176, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_IO_RADIO1      ,55,176, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_IO_RADIO2      ,95,176, 16, 8
+    LTEXT           "IO"            ,IDC_STATIC               , 5,163, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IO_RADIO1      ,55,163, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_IO_RADIO2      ,95,163, 16, 8
 
-    LTEXT           "LR"            ,IDC_STATIC               , 5,191, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_LR_RADIO1      ,55,191, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_LR_RADIO2      ,95,191, 16, 8
+    LTEXT           "LR"            ,IDC_STATIC               , 5,178, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_LR_RADIO1      ,55,178, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_LR_RADIO2      ,95,178, 16, 8
 
-    LTEXT           "PP"            ,IDC_STATIC               , 5,206, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_PP_RADIO1      ,55,206, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_PP_RADIO2      ,95,206, 16, 8
+    LTEXT           "PP"            ,IDC_STATIC               , 5,193, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PP_RADIO1      ,55,193, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PP_RADIO2      ,95,193, 16, 8
 
-    LTEXT           "PW"            ,IDC_STATIC               , 5,221, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_PW_RADIO1      ,55,221, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_PW_RADIO2      ,95,221, 16, 8
+    LTEXT           "PW"            ,IDC_STATIC               , 5,208, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PW_RADIO1      ,55,208, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_PW_RADIO2      ,95,208, 16, 8
 
-    LTEXT           "RL"            ,IDC_STATIC               , 5,237, 50, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_RL_RADIO1      ,55,237, 16, 8
-    AUTORADIOBUTTON ""              ,IDC_RESET_RL_RADIO2      ,95,237, 16, 8
+    LTEXT           "RL"            ,IDC_STATIC               , 5,224, 50, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_RL_RADIO1      ,55,224, 16, 8
+    AUTORADIOBUTTON ""              ,IDC_RESET_RL_RADIO2      ,95,224, 16, 8
 END
 
 IDD_PROPPAGE_TAB_COLORS DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
@@ -911,57 +911,55 @@ IDD_PROPPAGE_USER_PREFS DIALOGEX DISCARDABLE  0, 0, PP_CX, PP_CY
 STYLE WS_CHILD | DS_SHELLFONT
 FONT 8, "MS Shell Dlg"
 BEGIN
-////AUTOCHECKBOX    "Underbar alphabet converted to lowercase",
-////                IDC_USER_PREFS_XB_UNDERBARTOLOWERCASE, 10, 26,260, 10
     AUTOCHECKBOX    L"Adjust \x2395PW on window resize",
-                    IDC_USER_PREFS_XB_ADJUSTPW           , 10, 39,260, 10
+                    IDC_USER_PREFS_XB_ADJUSTPW           , 10, 13,260, 10
     AUTOCHECKBOX    "New tab on )CLEAR",
-                    IDC_USER_PREFS_XB_NEWTABONCLEAR      , 10, 52,260, 10
+                    IDC_USER_PREFS_XB_NEWTABONCLEAR      , 10, 26,260, 10
     AUTOCHECKBOX    "New tab on )LOAD",
-                    IDC_USER_PREFS_XB_NEWTABONLOAD       , 10, 65,260, 10
+                    IDC_USER_PREFS_XB_NEWTABONLOAD       , 10, 39,260, 10
     AUTOCHECKBOX    "Use local time (instead of UTC)",
-                    IDC_USER_PREFS_XB_USELOCALTIME       , 10, 78,260, 10
+                    IDC_USER_PREFS_XB_USELOCALTIME       , 10, 52,260, 10
     AUTOCHECKBOX    "Make backup of workspace on )LOAD",
-                    IDC_USER_PREFS_XB_BACKUPONLOAD       , 10, 91,260, 10
+                    IDC_USER_PREFS_XB_BACKUPONLOAD       , 10, 65,260, 10
     AUTOCHECKBOX    "Make backup of workspace on )SAVE",
-                    IDC_USER_PREFS_XB_BACKUPONSAVE       , 10,104,260, 10
+                    IDC_USER_PREFS_XB_BACKUPONSAVE       , 10, 78,260, 10
     AUTOCHECKBOX    "Suppress copyright message at startup",
-                    IDC_USER_PREFS_XB_NOCOPYRIGHTMSG     , 10,117,260, 10
+                    IDC_USER_PREFS_XB_NOCOPYRIGHTMSG     , 10, 91,260, 10
     AUTOCHECKBOX    "Check for unmatched or improperly nested grouping symbols",
-                    IDC_USER_PREFS_XB_CHECKGROUP         , 10,130,260, 10
+                    IDC_USER_PREFS_XB_CHECKGROUP         , 10,104,260, 10
     AUTOCHECKBOX    "Insert key ON at startup",
-                    IDC_USER_PREFS_XB_INSSTATE           , 10,143,260, 10
+                    IDC_USER_PREFS_XB_INSSTATE           , 10,117,260, 10
     AUTOCHECKBOX    "Reverse double-click so that left=edit, right=select",
-                    IDC_USER_PREFS_XB_REVDBLCLK          , 10,156,260, 10
+                    IDC_USER_PREFS_XB_REVDBLCLK          , 10,130,260, 10
     AUTOCHECKBOX    "Default is to display function line numbers",
-                    IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS , 10,169,260, 10
+                    IDC_USER_PREFS_XB_DEFDISPFCNLINENUMS , 10,143,260, 10
     AUTOCHECKBOX    "Display multi-precision numbers with suffix 'x' or 'v'",
-                    IDC_USER_PREFS_XB_DISPMPSUF          , 10,182,260, 10
+                    IDC_USER_PREFS_XB_DISPMPSUF          , 10,156,260, 10
     AUTOCHECKBOX    "Enable output debugging",
-                    IDC_USER_PREFS_XB_OUTPUTDEBUG        , 10,195,260, 10
+                    IDC_USER_PREFS_XB_OUTPUTDEBUG        , 10,169,260, 10
 
-    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTPASTE       , 10,208, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTPASTE       , 10,182, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Default translation on Paste (Ctrl-V)",
-                    IDC_STATIC                           ,100,208,160, 10
-    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTCOPY        , 10,224, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
+                    IDC_STATIC                           ,100,182,160, 10
+    COMBOBOX        IDC_USER_PREFS_CB_DEFAULTCOPY        , 10,195, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Default translation on Copy (Ctrl-C)",
-                    IDC_STATIC                           ,100,224,160, 10
-    COMBOBOX        IDC_USER_PREFS_CB_UPDFRQ             , 10,240, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
+                    IDC_STATIC                           ,100,195,160, 10
+    COMBOBOX        IDC_USER_PREFS_CB_UPDFRQ             , 10,213, 80,100, CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "Frequency of check for new updates",
-                    IDC_STATIC                           ,100,240,160, 10
+                    IDC_STATIC                           ,100,213,160, 10
 
-    LTEXT           "Unicode"      , IDC_STATIC          , 10,258, 50, 14
+    LTEXT           "Unicode"      , IDC_STATIC          , 10,232, 50, 14
     CONTROL         ""               IDC_USER_PREFS_EC_UNICODE , ECWNDCLASS, WS_BORDER | WS_TABSTOP
-                                                         , 10,268, 30, 14
-    LTEXT           "Char"         , IDC_STATIC          , 55,258, 30, 14
+                                                         , 10,242, 30, 14
+    LTEXT           "Char"         , IDC_STATIC          , 55,232, 30, 14
     CONTROL         ""             , IDC_USER_PREFS_BN_UNICODE , ECWNDCLASS, WS_BORDER | WS_TABSTOP
-                                                         , 55,268, 14, 14
+                                                         , 55,242, 14, 14
     AUTORADIOBUTTON "Dec"          , IDC_USER_PREFS_RB_DEC
-                                                         , 10,283, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
+                                                         , 10,257, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP | WS_GROUP
     AUTORADIOBUTTON "Hex"          , IDC_USER_PREFS_RB_HEX
-                                                         , 45,283, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP
+                                                         , 45,257, 30, 10, BS_AUTORADIOBUTTON | WS_TABSTOP
     LTEXT           "Line Continuation Marker",
-                                     IDC_STATIC          , 75,280,120, 14
+                                     IDC_STATIC          , 75,242,120, 14
 
 END
 
@@ -970,13 +968,13 @@ STYLE WS_CHILD | DS_SHELLFONT
 FONT 8, "MS Shell Dlg"
 BEGIN
     AUTOCHECKBOX    "Use 'J' instead of 'i' as Complex number separator",
-                    IDC_HC_PREFS_XB_J4i                  , 10, 26,260, 10
+                    IDC_HC_PREFS_XB_J4i                  , 10, 13,260, 10
     AUTOCHECKBOX    "Display the imaginary parts of a Hypercomplex number even if 0",
-                    IDC_HC_PREFS_XB_DISP0IMAG            , 10, 39,260, 10
+                    IDC_HC_PREFS_XB_DISP0IMAG            , 10, 26,260, 10
     AUTOCHECKBOX    "Display Hypercomplex numbers using Infix instead of Postfix notation",
-                    IDC_HC_PREFS_XB_DISPINFIX            , 10, 52,260, 10
+                    IDC_HC_PREFS_XB_DISPINFIX            , 10, 39,260, 10
     AUTOCHECKBOX    "Display Octonion numbers using Octonion Digraphs",
-                    IDC_HC_PREFS_XB_DISPOCTODIG          , 10, 65,260, 10
+                    IDC_HC_PREFS_XB_DISPOCTODIG          , 10, 52,260, 10
 END
 
 IDD_NEWKEYB DIALOGEX DISCARDABLE  0, 0, 140, 65

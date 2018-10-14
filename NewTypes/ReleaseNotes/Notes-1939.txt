@@ -1,0 +1,10 @@
+Build #1939 -- Version 0.5.8.xx
+-------------------------------
+
+* Move Up One Line Customize Dialog Page To Common Line
+
+Directory branches/bsmith/NewTypes:
+
+MAIN.RC:
+  Move up one line Customize dialog page to common line.
+  Extend the GroupBox in Syntax Coloring to encompass entire Group.

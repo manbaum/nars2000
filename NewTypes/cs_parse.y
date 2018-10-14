@@ -54,7 +54,6 @@ void cs_yyprint     (FILE *yyoutput, unsigned short int yytoknum, CS_YYSTYPE con
 #define yydestruct              cs_yydestruct
 
 #ifdef DEBUG
-UBOOL bDebugCS = FALSE;
     #define DbgMsgWP(a)         if (bDebugCS) DbgMsgW (a)
 #else
     #define DbgMsgWP(a)

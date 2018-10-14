@@ -40,8 +40,6 @@ typedef struct tagWFSO          // Struct for WaitForSingleObject
 #define DISP_QUAD_DM_TXT                       $QUAD_DM
 #define DISP_QUAD_DM_LEN    strcountof (DISP_QUAD_DM_TXT)
 
-extern UBOOL bDebugExecTrace;
-
 
 //***************************************************************************
 //  $WaitForImmExecStmt

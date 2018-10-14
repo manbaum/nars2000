@@ -46,7 +46,6 @@ functions, etc. as necessary.
  */
 
 extern TOKEN_SO tokenSo[];
-       UBOOL    bDebugExecTrace = FALSE;
 
 #define DEF_TOKEN_SIZE  1024    // Default initial amount of memory
                                 //   allocated for the tokenized line

@@ -139,6 +139,10 @@
 #define plRedMF_MOPN    plRedLftOper_MOP
 #define plRedF_MR       plRedLftOper_MOP
 #define plRedMOP_MR     plRedLftOper_MOP
+#define plRedMOP_MOP    plRedLftOper_MOP
+#define plRedMOPN_MOP   plRedLftOper_MOP
+#define plRedMOP_MOPN   plRedLftOper_MOP
+#define plRedMOPN_MOPN  plRedLftOper_MOP
 #define plRedMOPN_MR    plRedLftOper_MOP
 #define plRedF_HR       plRedLftOper_MOP
 
@@ -286,9 +290,6 @@
 #define IsTknTypeNamedVar(a)        ((a) EQ TKT_VARNAMED)
 
 #ifdef DEBUG
-UBOOL bDebugPLTrace = FALSE,
-      bDebugPLStart = FALSE;
-
   #define TRACE(a,EVENT,soType,rhtSynObj)                         \
               dprintfWL0 (L"%s %s %3d %-4s %3d %s %s (#%d)",      \
                           (a),                                    \
@@ -732,7 +733,7 @@ LPPL_YYSTYPE plRedA_RBK
     // Initialize a list with the arg
     lpYYRes =
       InitList1_YY (lpplYYCurObj, lpplYYCurObj);
-////FreeResult (lpplYYCurObj);              // Copied w/o IncrRefCnt in PushList_YY
+////FreeResult (lpplYYCurObj);              // Copied w/o IncrRefCnt in InitList_YY
 
     // YYFree the last right & current objects
     YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
@@ -3589,8 +3590,15 @@ LPPL_YYSTYPE plRedNAM_ISPA
         FreeResult (lpplYYLstRht); YYFree (lpplYYLstRht); lpplYYLstRht = NULL;
     } else
     {
+        // Free the IDX as its RefCnt gets incremented in <pl_YYLexCOM/TKT_VARNAMED>
+        //   but not decremented anywhere else
+        FreeResult (lpYYIdx);
+
         // Change the tkSynObj
         lpplYYLstRht->tkToken.tkSynObj = soType;
+
+        // YYFree the curried index
+        YYFree (lpplYYLstRht->lpplYYIdxCurry); lpplYYLstRht->lpplYYIdxCurry = NULL;
 
         // Mark as already displayed
         lpplYYLstRht->tkToken.tkFlags.NoDisplay = TRUE;
@@ -4152,8 +4160,9 @@ EXIT_TYPES ParseLine
         goto NORMAL_EXIT;
     } // End IF
 #ifdef DEBUG
-    // Display the tokens so far
-    DisplayTokens (lpMemTknHdr);
+    if (bDebugExecTrace)
+        // Display the tokens so far
+        DisplayTokens (lpMemTknHdr);
 #endif
 
     // If there's a UDFO global memory handle, ...
@@ -4819,7 +4828,7 @@ PARSELINE_REDUCE:
                     MessageBoxW (NULL,
                                  wszTemp,
                                  lpwszAppName,
-                                 MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+                                 MB_OK | MB_ICONWARNING | MB_SYSTEMMODAL);
                     DbgBrk ();      // ***FINISHME*** -- Missing reduction in 2by2
                 } // End IF
 
@@ -5272,7 +5281,8 @@ PARSELINE_DONE:
                 //   or naked goto, ...
                 if (bAssignName
                  || curSynObj EQ soNVAL
-                 || curSynObj EQ soGO)
+                 || curSynObj EQ soGO
+                 || curSynObj EQ soCS1)
                 {
                     // YYFree the current object
                     YYFree (lpplYYCurObj); lpplYYCurObj = NULL; curSynObj = soNONE;

@@ -24,15 +24,6 @@
 #include <windows.h>
 #include "headers.h"
 
-#ifdef DEBUG
-// When debugging a <YYResIsEmpty> memory leak,
-//   set gYYAlloc to XXXX via )DEBUG YYAlloc=XXXX
-//   so as to save the leaking <YYIndex> number
-//   in <gYYAlloc> so as to trap the <YYAlloc>/<YYFree>
-//   of the allocation leak.
-UINT gYYAlloc  = 0x0000;
-#endif
-
 
 //***************************************************************************
 //  $YYAllocTkn

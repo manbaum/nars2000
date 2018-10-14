@@ -24,15 +24,6 @@
 #include <windows.h>
 #include "headers.h"
 
-extern UBOOL bDebugPLTrace,
-             bDebugPLStart,
-             bDebugExecTrace,
-             bDebugCS,
-             bDebugFH,
-             bDebugPN,
-             gYYAlloc;
-UCHAR guTest = 0;
-
 
 //***************************************************************************
 //  $CmdDebug_EM

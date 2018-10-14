@@ -59,7 +59,6 @@ void fh_yyprint     (FILE *yyoutput, unsigned short int yytoknum, FH_YYSTYPE con
 #define yydestruct              fh_yydestruct
 
 #ifdef DEBUG
-UBOOL bDebugFH = FALSE;
     #define DbgMsgWP(a)         if (bDebugFH) DbgMsgW (a)
 #else
     #define DbgMsgWP(a)

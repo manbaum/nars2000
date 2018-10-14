@@ -2551,6 +2551,62 @@ typedef struct tagCOMB_ARGS
 
 #include "hc_proc.h"
 
+
+//***************************************************************************
+//  Debugging Vars
+//***************************************************************************
+
+#ifdef DEBUG
+UBOOL bDebugExecTrace
+#ifdef DEFINE_VALUES
+ = FALSE
+#endif
+,
+      bDebugPLTrace
+#ifdef DEFINE_VALUES
+ = FALSE
+#endif
+,
+      bDebugPLStart
+#ifdef DEFINE_VALUES
+ = FALSE
+#endif
+,
+      bDebugCS
+#ifdef DEFINE_VALUES
+ = FALSE
+#endif
+,
+      bDebugFH
+#ifdef DEFINE_VALUES
+ = FALSE
+#endif
+,
+      bDebugPN
+#ifdef DEFINE_VALUES
+ = FALSE
+#endif
+;
+
+// When debugging a <YYResIsEmpty> memory leak,
+//   set gYYAlloc to XXXX via )DEBUG YYAlloc=XXXX
+//   so as to save the leaking <YYIndex> number
+//   in <gYYAlloc> whcih then allows you to trap
+//   the <YYAlloc>/<YYFree> of the allocation leak.
+UINT gYYAlloc
+#ifdef DEFINE_VALUES
+ = 0x0000
+#endif
+;
+
+UCHAR guTest
+#ifdef DEFINE_VALUES
+ = 0
+#endif
+#endif
+;
+
+
 #define ENUMS_DEFINED
 #undef  EXTERN
 

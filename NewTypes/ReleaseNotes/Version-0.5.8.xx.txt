@@ -1,6 +1,17 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1938 -- Version 0.5.8.xx
+-------------------------------
+
+* Insert Missing EXTERN Statements in "Debugging Vars" Section
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+  Insert missing EXTERN statements in "Debugging Vars" section.
+
+
 Build #1937 -- Version 0.5.8.xx
 -------------------------------
 

@@ -2557,6 +2557,7 @@ typedef struct tagCOMB_ARGS
 //***************************************************************************
 
 #ifdef DEBUG
+EXTERN
 UBOOL bDebugExecTrace
 #ifdef DEFINE_VALUES
  = FALSE
@@ -2593,12 +2594,14 @@ UBOOL bDebugExecTrace
 //   so as to save the leaking <YYIndex> number
 //   in <gYYAlloc> whcih then allows you to trap
 //   the <YYAlloc>/<YYFree> of the allocation leak.
+EXTERN
 UINT gYYAlloc
 #ifdef DEFINE_VALUES
  = 0x0000
 #endif
 ;
 
+EXTERN
 UCHAR guTest
 #ifdef DEFINE_VALUES
  = 0

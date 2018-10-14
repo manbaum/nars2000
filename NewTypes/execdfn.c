@@ -940,6 +940,9 @@ LPPL_YYSTYPE ExecuteFunction_EM_YY
         hGlbTxtLine = lpFcnLines[uLineNum - 1].hGlbTxtLine;
         lpMemTknLine = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines[uLineNum - 1].offTknLine);
 
+        // It's a token header
+        Assert (lpMemTknLine->Sig.nature EQ TOKEN_HEADER_SIGNATURE);
+
         // Get the token count of this line
         uTokenCnt = lpMemTknLine->TokenCnt;
 
@@ -1828,6 +1831,9 @@ LPSYMENTRY LocalizeLabels
 
         // Get a ptr to the token header
         lptkHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines[uLineNum1 - 1].offTknLine);
+
+        // It's a token header
+        Assert (lptkHdr->Sig.nature EQ TOKEN_HEADER_SIGNATURE);
 
         // Get ptr to the tokens in the line
         lptkLine = TokenBaseToStart (lptkHdr);

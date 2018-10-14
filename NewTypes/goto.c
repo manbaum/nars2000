@@ -248,6 +248,9 @@ EXIT_TYPES GotoLine_EM
         // Get a ptr to the corresponding tokenized line's global memory
         lpMemTknHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines[aplIntegerRht - 1].offTknLine);
 
+        // It's a token header
+        Assert (lpMemTknHdr->Sig.nature EQ TOKEN_HEADER_SIGNATURE);
+
         // Get the token count
         TokenCnt = lpMemTknHdr->TokenCnt;
 

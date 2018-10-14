@@ -1,6 +1,18 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1936 -- Version 0.5.8.xx
+-------------------------------
+
+* Assert That The Token Header Address Is Valid
+
+Directory branches/bsmith/NewTypes:
+
+EXECDFN.C:
+GOTO.C:
+  Assert that the Token Header address is valid.
+
+
 Build #1935 -- Version 0.5.8.xx
 -------------------------------
 

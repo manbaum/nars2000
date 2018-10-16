@@ -1,0 +1,11 @@
+Build #1947 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In Inner Product If The Result Of A Reduction Is Of Different Type Than Right Arg
+
+Directory branches/bsmith/NewTypes:
+
+PO_DOT.C:
+  In <PrimOpMonDotCommon_EM_YY> for singleton right arg, YYFree the result of LO/RO/,R before continuing.
+  In <IzitMinMaxAfo>, assert the Token Header address is valid.
+  Fix bug in <PrimOpMonDotCommon_EM_YY> after computing each reduction result, if it's immediate, promote the result using the actual IMMTYPE_xxx instead of the right arg type.

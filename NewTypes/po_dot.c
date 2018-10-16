@@ -96,7 +96,8 @@ LPPL_YYSTYPE PrimProtoOpDot_EM_YY
 //***************************************************************************
 //  $PrimIdentOpDot_EM_YY
 //
-//  Generate an identity element for the primitive operator dyadic Dot
+//  Generate an identity element for the dyadic derived function from the
+//    primitive operator Dot
 //***************************************************************************
 
 LPPL_YYSTYPE PrimIdentOpDot_EM_YY
@@ -517,8 +518,6 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
       && IsSingleton (aplDimRows))
     {
         IMM_TYPES immTypeRes;
-        APLRAT    aplRatRht = {0};
-        APLVFP    aplVfpRht = {0};
         HGLOBAL   hGlbMFO;
 
         // According to Reduction of Singletons, the result is actually
@@ -555,6 +554,9 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
                             &lpSymGlbRht,       // Ptr to lpSym/Glb ...
                              NULL,              // Ptr to ...immediate type ...
                              NULL);             // Ptr to array type ...
+        // YYFree the YYRes
+        YYFree (lpYYRes); lpYYRes = NULL;
+
         // Allocate a new YYRes
         lpYYRes = YYAlloc ();
 
@@ -589,13 +591,16 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
             case ARRAY_HC2I:
             case ARRAY_HC4I:
             case ARRAY_HC8I:
+
             case ARRAY_HC2F:
             case ARRAY_HC4F:
             case ARRAY_HC8F:
+
             case ARRAY_RAT:
             case ARRAY_HC2R:
             case ARRAY_HC4R:
             case ARRAY_HC8R:
+
             case ARRAY_VFP:
             case ARRAY_HC2V:
             case ARRAY_HC4V:
@@ -609,7 +614,8 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
                 lpYYRes->tkToken.tkData.tkGlbData  =
                   MakeGlbEntry_EM (aplTypeRes,
                                    lpSymGlbRht,
-                                   TRUE,
+                                   FALSE,               // Note that lpSymGlbRht came from the calculation of LO/RO/,R
+                                                        // This is my way of freeing it
                                    lptkFunc);
                 // Check for errors
                 if (lpYYRes->tkToken.tkData.tkGlbData EQ NULL)
@@ -1409,12 +1415,15 @@ MINDOTPLUS:
         case ARRAY_HC2I:
         case ARRAY_HC4I:
         case ARRAY_HC8I:
+
         case ARRAY_HC2F:
         case ARRAY_HC4F:
         case ARRAY_HC8F:
+
         case ARRAY_HC2R:
         case ARRAY_HC4R:
         case ARRAY_HC8R:
+
         case ARRAY_HC2V:
         case ARRAY_HC4V:
         case ARRAY_HC8V:
@@ -1617,6 +1626,9 @@ UBOOL IzitMinMaxAfo
 
             // Get ptr to the starting line's tokens
             lpMemTknHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines[0].offTknLine);
+
+            // It's a token header
+            Assert (lpMemTknHdr->Sig.nature EQ TOKEN_HEADER_SIGNATURE);
 
             // Get the token count of this line
             uTokenCnt = lpMemTknHdr->TokenCnt;
@@ -3018,13 +3030,16 @@ RESTART_INNERPROD_RES:
                     case ARRAY_HC2I:
                     case ARRAY_HC4I:
                     case ARRAY_HC8I:
+
                     case ARRAY_HC2F:
                     case ARRAY_HC4F:
                     case ARRAY_HC8F:
+
                     case ARRAY_RAT:
                     case ARRAY_HC2R:
                     case ARRAY_HC4R:
                     case ARRAY_HC8R:
+
                     case ARRAY_VFP:
                     case ARRAY_HC2V:
                     case ARRAY_HC4V:
@@ -3126,13 +3141,16 @@ RESTART_INNERPROD_RES:
                     case ARRAY_HC2I:
                     case ARRAY_HC4I:
                     case ARRAY_HC8I:
+
                     case ARRAY_HC2F:
                     case ARRAY_HC4F:
                     case ARRAY_HC8F:
+
                     case ARRAY_RAT:
                     case ARRAY_HC2R:
                     case ARRAY_HC4R:
                     case ARRAY_HC8R:
+
                     case ARRAY_VFP:
                     case ARRAY_HC2V:
                     case ARRAY_HC4V:
@@ -3698,8 +3716,10 @@ RESTART_INNERPROD_RES:
                 // If the token type is an immediate, ...
                 if (tkRes.tkFlags.TknType EQ TKT_VARIMMED)
                 {
+                    APLSTYPE aplTypetkRes = TranslateImmTypeToArrayType (tkRes.tkFlags.ImmType);
+
                     // Copy the immediate value to atCmpRht
-                    (*aTypeActPromote[aplTypeCmpRht][aplTypeCmpRht]) (&tkRes.tkData.tkLongest, 0, &atCmpRht);
+                    (*aTypeActPromote[aplTypetkRes][aplTypeCmpRht]) (&tkRes.tkData.tkLongest, 0, &atCmpRht);
 
                     // Point to it
                     lpSymGlbCmpRht = &atCmpRht;

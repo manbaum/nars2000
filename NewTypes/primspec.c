@@ -2430,6 +2430,12 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
                                            lptkAxis);   // Ptr to axis token (may be NULL)
         bRet = (lpYYRes NE NULL);
 
+        // If the result is valid, ...
+        if (bRet)
+            // See if it fits into a lower (but not necessarily smaller) datatype
+            TypeDemote (&lpYYRes->tkToken,
+                         lpPrimSpec->bDydDimDemote
+                      || lpPrimSpec->bLclDimDemote);
         goto NORMAL_EXIT;
     } // End IF
 
@@ -3754,7 +3760,6 @@ HGLOBAL PrimFnDydNestSiSc_EM
                       atRht2 = {0};
     LPALLTYPES        lpatRht2 = NULL;
     LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
-    int               iSizeofRes;           // Sizeof an item in the result
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -3808,9 +3813,6 @@ HGLOBAL PrimFnDydNestSiSc_EM
     else
     if (IsErrorType (aplTypeRes))
         goto DOMAIN_EXIT;
-
-    // Calculate the sizeof
-    iSizeofRes = TranslateArrayTypeToSizeof (aplTypeRes);
 
     // Special case APA result
     if (IsSimpleAPA (aplTypeRes))
@@ -4124,7 +4126,7 @@ RESTART_EXCEPTION:
                                     Assert (IsSimpleBool (aplTypeRes));
 
                                     // Calculate the Boolean result
-                                    bValue = (bNaNLft && bNaNRht) && (EqualHCxy (aplTypeHetLft, lpatTmp, 0, aplTypeRht, lpatRht, 0) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL));
+                                    bValue = (bNaNLft && bNaNRht) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL);
 
                                     // Save the result
                                     ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |= bValue << (MASKLOG2NBIB & (UINT) uRes);
@@ -4598,7 +4600,6 @@ HGLOBAL PrimFnDydSiScNest_EM
                       atLft2 = {0};
     LPALLTYPES        lpatLft2 = NULL;
     LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
-    int               iSizeofRes;           // Sizeof an item in the result
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -4652,9 +4653,6 @@ HGLOBAL PrimFnDydSiScNest_EM
     else
     if (IsErrorType (aplTypeRes))
         goto DOMAIN_EXIT;
-
-    // Calculate the sizeof
-    iSizeofRes = TranslateArrayTypeToSizeof (aplTypeRes);
 
     // Special case APA result
     if (IsSimpleAPA (aplTypeRes))
@@ -4968,7 +4966,7 @@ RESTART_EXCEPTION:
                                     Assert (IsSimpleBool (aplTypeRes));
 
                                     // Calculate the Boolean result
-                                    bValue = (bNaNLft && bNaNRht) && (EqualHCxy (aplTypeLft, lpatLft, 0, aplTypeHetRht, lpatTmp, 0) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL));
+                                    bValue = (bNaNLft && bNaNRht) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL);
 
                                     // Save the result
                                     ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |= bValue << (MASKLOG2NBIB & (UINT) uRes);
@@ -6008,7 +6006,7 @@ RESTART_EXCEPTION:
                                 Assert (IsSimpleBool (aplTypeRes));
 
                                 // Calculate the Boolean result
-                                bValue = (bNaNLft && bNaNRht) && (EqualHCxy (aplTypeHetLft, lpMemLft, uLft, aplTypeHetRht, lpMemRht, uRht) && (bNaNLft && bNaNRht)) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL);
+                                bValue = (bNaNLft && bNaNRht) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL);
 
                                 // Save the result
                                 ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |= bValue << (MASKLOG2NBIB & (UINT) uRes);
@@ -6122,7 +6120,7 @@ RESTART_EXCEPTION:
                         aplTypeRes = TranslateExceptionCodeToArrayType (ExceptionCode);
 
                         // If the exception is NOT Result is FLT, ...
-                        //   and the result is an immediate, ...
+                        //   or the result is NOT an immediate, ...
                         if (ExceptionCode NE EXCEPTION_RESULT_FLT
                          || lpMemHdrRes NE NULL)
                         {

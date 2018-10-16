@@ -1,0 +1,12 @@
+Build #1943 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug Of Failure To DimDemote Dyadic Scalar Fn With Scalar Args
+* Fix Bug When {Equal} Or {NotEqual} Compares A NaN With A Non-NaN
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC.C:
+  Fix bug of failure to dimdemote dyadic scalar fn with scalar args.
+  Fix bug when {Equal} or {NotEqual} compares a NaN wth a non-NaN.
+  Improve comments.

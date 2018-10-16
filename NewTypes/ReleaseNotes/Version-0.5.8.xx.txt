@@ -1,6 +1,17 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1942 -- Version 0.5.8.xx
+-------------------------------
+
+* Clean Up Code
+
+Directory branches/bsmith/NewTypes:
+
+TYPEMOTE.C:
+  Clean up code.
+
+
 Build #1941 -- Version 0.5.8.xx
 -------------------------------
 

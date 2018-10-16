@@ -412,7 +412,7 @@ UNLOCK_EXIT:
     // Split cases based upon the right arg's storage type
     switch (aplTypeRht)
     {
-        case ARRAY_HC2I:        // Attempt to catch trailing imaginary parts
+        case ARRAY_HC2I:        // Attempt to catch trailing zero imaginary parts
         case ARRAY_HC4I:        // ...
         case ARRAY_HC8I:        // ...
             if (!bDimDemote)
@@ -439,40 +439,13 @@ UNLOCK_EXIT:
             // i == 5                  HC8I
             // i == 6                  HC8I
             // i == 7                  HC8I
-            // Split cases as abovebased upon the HC Dimension
-            switch (iHCMax)
-            {
-                case 0:
-                    aplTypeRes = ARRAY_INT;
 
-                    break;
-
-                case 1:
-                    aplTypeRes = ARRAY_HC2I;
-
-                    break;
-
-                case 2:
-                case 3:
-                    aplTypeRes = ARRAY_HC4I;
-
-                    break;
-
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                    aplTypeRes = ARRAY_HC8I;
-
-                    break;
-
-                defstop
-                    break;
-            } // End SWITCH
+            // Calculate the result storage type
+            aplTypeRes = uHCxI[aHCDimToIndex[iHCMax + 1]];  // "+ 1" to skip over aHCDimToIndex[0] == ENUM_HCFI_ERR
 
             break;
 
-        case ARRAY_HC2F:        // ...
+        case ARRAY_HC2F:        // Attempt to catch trailing zero imaginary parts
         case ARRAY_HC4F:        // ...
         case ARRAY_HC8F:        // ...
             if (!bDimDemote)
@@ -499,40 +472,13 @@ UNLOCK_EXIT:
             // i == 5                  HC8F
             // i == 6                  HC8F
             // i == 7                  HC8F
-            // Split cases as above based upon the HC Dimension
-            switch (iHCMax)
-            {
-                case 0:
-                    aplTypeRes = ARRAY_FLOAT;
 
-                    break;
-
-                case 1:
-                    aplTypeRes = ARRAY_HC2F;
-
-                    break;
-
-                case 2:
-                case 3:
-                    aplTypeRes = ARRAY_HC4F;
-
-                    break;
-
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                    aplTypeRes = ARRAY_HC8F;
-
-                    break;
-
-                defstop
-                    break;
-            } // End SWITCH
+            // Calculate the result storage type
+            aplTypeRes = uHCxF[aHCDimToIndex[iHCMax + 1]];  // "+ 1" to skip over aHCDimToIndex[0] == ENUM_HCFI_ERR
 
             break;
 
-        case ARRAY_HC2R:        // ...
+        case ARRAY_HC2R:        // Attempt to catch trailing zero imaginary parts
         case ARRAY_HC4R:        // ...
         case ARRAY_HC8R:        // ...
             if (!bDimDemote)
@@ -559,40 +505,13 @@ UNLOCK_EXIT:
             // i == 5                  HC8R
             // i == 6                  HC8R
             // i == 7                  HC8R
-            // Split cases as abovebased upon the HC Dimension
-            switch (iHCMax)
-            {
-                case 0:
-                    aplTypeRes = ARRAY_RAT;
 
-                    break;
-
-                case 1:
-                    aplTypeRes = ARRAY_HC2R;
-
-                    break;
-
-                case 2:
-                case 3:
-                    aplTypeRes = ARRAY_HC4R;
-
-                    break;
-
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                    aplTypeRes = ARRAY_HC8R;
-
-                    break;
-
-                defstop
-                    break;
-            } // End SWITCH
+            // Calculate the result storage type
+            aplTypeRes = uHCxR[aHCDimToIndex[iHCMax + 1]];  // "+ 1" to skip over aHCDimToIndex[0] == ENUM_HCFI_ERR
 
             break;
 
-        case ARRAY_HC2V:        // ...
+        case ARRAY_HC2V:        // Attempt to catch trailing zero imaginary parts
         case ARRAY_HC4V:        // ...
         case ARRAY_HC8V:        // ...
             if (!bDimDemote)
@@ -619,36 +538,9 @@ UNLOCK_EXIT:
             // i == 5                  HC8V
             // i == 6                  HC8V
             // i == 7                  HC8V
-            // Split cases as abovebased upon the HC Dimension
-            switch (iHCMax)
-            {
-                case 0:
-                    aplTypeRes = ARRAY_VFP;
 
-                    break;
-
-                case 1:
-                    aplTypeRes = ARRAY_HC2V;
-
-                    break;
-
-                case 2:
-                case 3:
-                    aplTypeRes = ARRAY_HC4V;
-
-                    break;
-
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                    aplTypeRes = ARRAY_HC8V;
-
-                    break;
-
-                defstop
-                    break;
-            } // End SWITCH
+            // Calculate the result storage type
+            aplTypeRes = uHCxV[aHCDimToIndex[iHCMax + 1]];  // "+ 1" to skip over aHCDimToIndex[0] == ENUM_HCFI_ERR
 
             break;
 
@@ -805,11 +697,6 @@ UNLOCK_EXIT:
                         case ARRAY_HC2F:
                         case ARRAY_HC4F:
                         case ARRAY_HC8F:
-                            // Check storage type
-                            aplTypeRes = aTypePromote[aplTypeRes][aplTypeSub];
-
-                            break;
-
                         case ARRAY_RAT:
                         case ARRAY_HC2R:
                         case ARRAY_HC4R:
@@ -821,10 +708,6 @@ UNLOCK_EXIT:
                             // Check storage type
                             aplTypeRes = aTypePromote[aplTypeRes][aplTypeSub];
 
-                            // Check for no demotion
-                            if (!IsAnyRat (aplTypeRes)
-                             && !IsAnyVfp (aplTypeRes))
-                                goto NORMAL_EXIT;
                             break;
 
                         defstop
@@ -4828,7 +4711,7 @@ void TPA_BOOL_BOOL
      LPALLTYPES  lpAllTypes)
 
 {
-    lpAllTypes->aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
+    lpAllTypes->aplInteger = GetNextBoolean (lpaplBoolean, uInt);
 } // TPA_BOOL_BOOL
 
 
@@ -4842,7 +4725,7 @@ void TPA_BOOL_INT
      LPALLTYPES  lpAllTypes)
 
 {
-    lpAllTypes->aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
+    lpAllTypes->aplInteger = GetNextBoolean (lpaplBoolean, uInt);
 } // TPA_BOOL_INT
 
 
@@ -4856,7 +4739,7 @@ void TPA_BOOL_FLT
      LPALLTYPES  lpAllTypes)
 
 {
-    lpAllTypes->aplFloat = GetNextFloat (lpaplBoolean, ARRAY_BOOL, uInt);
+    lpAllTypes->aplFloat = (APLFLOAT) GetNextBoolean (lpaplBoolean, uInt);
 } // TPA_BOOL_FLT
 
 
@@ -4873,7 +4756,7 @@ void TPA_BOOL_HETE
     APLINT aplInteger;
 
     // Copy the input value in case it overlaps with the output
-    aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
+    aplInteger = GetNextBoolean (lpaplBoolean, uInt);
 
     lpAllTypes->aplHetero =
       MakeSymEntry_EM (IMMTYPE_BOOL,
@@ -4897,7 +4780,7 @@ void TPA_BOOL_NEST
     APLINT aplInteger;
 
     // Copy the input value in case it overlaps with the output
-    aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
+    aplInteger = GetNextBoolean (lpaplBoolean, uInt);
 
     lpAllTypes->aplNested =
       MakeSymEntry_EM (IMMTYPE_BOOL,
@@ -4921,7 +4804,7 @@ void TPA_BOOL_RAT
     APLINT aplInteger;
 
     // Copy the input value in case it overlaps with the output
-    aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
+    aplInteger = GetNextBoolean (lpaplBoolean, uInt);
 
     // Initialize the result to 0/1
     Myq_init (&lpAllTypes->aplRat);
@@ -4943,7 +4826,7 @@ void TPA_BOOL_VFP
     APLINT aplInteger;
 
     // Copy the input value in case it overlaps with the output
-    aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
+    aplInteger = GetNextBoolean (lpaplBoolean, uInt);
 
     // Initialize the result to NaN
     Myf_init (&lpAllTypes->aplVfp);
@@ -5570,7 +5453,7 @@ void TPA_BOOL_HC2R
     APLINT aplInteger;
 
     // Copy the input value in case it overlaps with the output
-    aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
+    aplInteger = GetNextBoolean (lpaplBoolean, uInt);
 
     // Initialize the result to 0/1
     mphc2r_init (&lpAllTypes->aplHC2R);
@@ -5592,7 +5475,7 @@ void TPA_BOOL_HC2V
     APLINT aplInteger;
 
     // Copy the input value in case it overlaps with the output
-    aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
+    aplInteger = GetNextBoolean (lpaplBoolean, uInt);
 
     // Initialize the result to 0
     mphc2v_init0 (&lpAllTypes->aplHC2V);
@@ -5614,7 +5497,7 @@ void TPA_BOOL_HC4R
     APLINT aplInteger;
 
     // Copy the input value in case it overlaps with the output
-    aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
+    aplInteger = GetNextBoolean (lpaplBoolean, uInt);
 
     // Initialize the result to 0/1
     mphc4r_init (&lpAllTypes->aplHC4R);
@@ -5636,7 +5519,7 @@ void TPA_BOOL_HC4V
     APLINT aplInteger;
 
     // Copy the input value in case it overlaps with the output
-    aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
+    aplInteger = GetNextBoolean (lpaplBoolean, uInt);
 
     // Initialize the result to 0
     mphc4v_init0 (&lpAllTypes->aplHC4V);
@@ -5658,7 +5541,7 @@ void TPA_BOOL_HC8R
     APLINT aplInteger;
 
     // Copy the input value in case it overlaps with the output
-    aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
+    aplInteger = GetNextBoolean (lpaplBoolean, uInt);
 
     // Initialize the result to 0/1
     mphc8r_init (&lpAllTypes->aplHC8R);
@@ -5680,7 +5563,7 @@ void TPA_BOOL_HC8V
     APLINT aplInteger;
 
     // Copy the input value in case it overlaps with the output
-    aplInteger = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
+    aplInteger = GetNextBoolean (lpaplBoolean, uInt);
 
     // Initialize the result to 0
     mphc8v_init0 (&lpAllTypes->aplHC8V);
@@ -6043,7 +5926,7 @@ void TPA_RAT_HC2R
     // Initialize the result to 0/1
     mphc2r_init (&lpAllTypes->aplHC2R);
 
-    // Set the parts common to RAT & HC2R
+    // Set the common parts to RAT & HC2R
     mpq_set (&lpAllTypes->aplRat, &aplRat);
 } // TPA_RAT_HC2R
 
@@ -6072,7 +5955,7 @@ void TPA_RAT_HC2V
     // Initialize the result to 0
     mphc2v_init0 (&lpAllTypes->aplHC2V);
 
-    // Set the parts common to RAT & HC2V
+    // Set the common parts to RAT & HC2V
     mpfr_set_q  (&lpAllTypes->aplVfp, &aplRat, MPFR_RNDN);
 } // TPA_RAT_HC2V
 
@@ -6101,7 +5984,7 @@ void TPA_RAT_HC4R
     // Initialize the result to 0/1
     mphc4r_init (&lpAllTypes->aplHC4R);
 
-    // Set the parts common to RAT & HC4R
+    // Set the common parts to RAT & HC4R
     mpq_set (&lpAllTypes->aplRat, &aplRat);
 } // TPA_RAT_HC4R
 
@@ -6130,7 +6013,7 @@ void TPA_RAT_HC4V
     // Initialize the result to 0
     mphc4v_init0 (&lpAllTypes->aplHC4V);
 
-    // Set the parts common to RAT & HC4V
+    // Set the common parts to RAT & HC4V
     mpfr_set_q  (&lpAllTypes->aplVfp, &aplRat, MPFR_RNDN);
 } // TPA_RAT_HC4V
 
@@ -6159,7 +6042,7 @@ void TPA_RAT_HC8R
     // Initialize the result to 0/1
     mphc8r_init (&lpAllTypes->aplHC8R);
 
-    // Set the parts common to RAT & HC8R
+    // Set the common parts to RAT & HC8R
     mpq_set (&lpAllTypes->aplRat, &aplRat);
 } // TPA_RAT_HC8R
 
@@ -6188,7 +6071,7 @@ void TPA_RAT_HC8V
     // Initialize the result to 0
     mphc8v_init0 (&lpAllTypes->aplHC8V);
 
-    // Set the parts common to RAT & HC8V
+    // Set the common parts to RAT & HC8V
     mpfr_set_q  (&lpAllTypes->aplVfp, &aplRat, MPFR_RNDN);
 } // TPA_RAT_HC8V
 
@@ -6217,7 +6100,7 @@ void TPA_VFP_HC2V
     // Initialize the result to 0
     mphc2v_init0 (&lpAllTypes->aplHC2V);
 
-    // Set the parts common to VFP & HC2V
+    // Set the common parts to VFP & HC2V
     mpfr_copy (&lpAllTypes->aplVfp, &aplVfp);
 } // TPA_VFP_HC2V
 
@@ -6246,7 +6129,7 @@ void TPA_VFP_HC4V
     // Initialize the result to 0
     mphc4v_init0 (&lpAllTypes->aplHC4V);
 
-    // Set the parts common to VFP & HC4V
+    // Set the common parts to VFP & HC4V
     mpfr_copy (&lpAllTypes->aplVfp, &aplVfp);
 } // TPA_VFP_HC4V
 
@@ -6275,7 +6158,7 @@ void TPA_VFP_HC8V
     // Initialize the result to 0
     mphc8v_init0 (&lpAllTypes->aplHC8V);
 
-    // Set the parts common to VFP & HC8V
+    // Set the common parts to VFP & HC8V
     mpfr_copy (&lpAllTypes->aplVfp, &aplVfp);
 } // TPA_VFP_HC8V
 
@@ -6429,7 +6312,7 @@ void TPA_HC2I_HC4R
     mphc4r_init (&lpAllTypes->aplHC4R);
 
     // Loop through all of the parts
-    for (i = 0; i < 2; i++)     // Note 2 from HC2I
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the right arg to the result
         mpq_set_sx (&lpAllTypes->aplHC4R.parts[i], aplHC2I.parts[i], 1);
 } // TPA_HC2I_HC4R
@@ -6455,7 +6338,7 @@ void TPA_HC2I_HC4V
     mphc4v_init0 (&lpAllTypes->aplHC4V);
 
     // Loop through all of the parts
-    for (i = 0; i < 2; i++)     // Note 2 from HC2I
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the right arg to the result
         mpfr_set_sx (&lpAllTypes->aplHC4V.parts[i], aplHC2I.parts[i], MPFR_RNDN);
 } // TPA_HC2I_HC4V
@@ -6481,7 +6364,7 @@ void TPA_HC2I_HC8R
     mphc8r_init (&lpAllTypes->aplHC8R);
 
     // Loop through all of the parts
-    for (i = 0; i < 2; i++)     // Note 2 from HC2I
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the right arg to the result
         mpq_set_sx (&lpAllTypes->aplHC8R.parts[i], aplHC2I.parts[i], 1);
 } // TPA_HC2I_HC8R
@@ -6507,7 +6390,7 @@ void TPA_HC2I_HC8V
     mphc8v_init0 (&lpAllTypes->aplHC8V);
 
     // Loop through all of the parts
-    for (i = 0; i < 2; i++)     // Note 2 from HC2I
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the right arg to the result
         mpfr_set_sx (&lpAllTypes->aplHC8V.parts[i], aplHC2I.parts[i], MPFR_RNDN);
 } // TPA_HC2I_HC8V
@@ -6615,7 +6498,7 @@ void TPA_HC2F_HC4V
     mphc4v_init0 (&lpAllTypes->aplHC4V);
 
     // Loop through all of the parts
-    for (i = 0; i < 2; i++)     // Note 2 from HC2F
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the right arg to the result
         mpfr_set_d  (&lpAllTypes->aplHC4V.parts[i], aplHC2F.parts[i], MPFR_RNDN);
 } // TPA_HC2F_HC4V
@@ -6641,7 +6524,7 @@ void TPA_HC2F_HC8V
     mphc8v_init0 (&lpAllTypes->aplHC8V);
 
     // Loop through all of the parts
-    for (i = 0; i < 2; i++)     // Note 2 from HC2F
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the right arg to the result
         mpfr_set_d  (&lpAllTypes->aplHC8V.parts[i], aplHC2F.parts[i], MPFR_RNDN);
 } // TPA_HC2F_HC8V
@@ -6796,7 +6679,7 @@ void TPA_HC4I_HC8R
     mphc8r_init (&lpAllTypes->aplHC8R);
 
     // Loop through all of the parts
-    for (i = 0; i < 4; i++)     // Note 4 from HC4I
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the right arg to the result
         mpq_set_sx (&lpAllTypes->aplHC8R.parts[i], aplHC4I.parts[i], 1);
 } // TPA_HC4I_HC8R
@@ -6822,7 +6705,7 @@ void TPA_HC4I_HC8V
     mphc8v_init0 (&lpAllTypes->aplHC8V);
 
     // Loop through all of the parts
-    for (i = 0; i < 4; i++)     // Note 4 from HC4I
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the right arg to the result
         mpfr_set_sx (&lpAllTypes->aplHC8V.parts[i], aplHC4I.parts[i], MPFR_RNDN);
 } // TPA_HC4I_HC8V
@@ -6913,8 +6796,8 @@ void TPA_HC4F_HC8V
     // Initialize the result to 0
     mphc8v_init0 (&lpAllTypes->aplHC8V);
 
-    // Loop through all of the parts
-    for (i = 0; i < 4; i++)     // Note 4 from HC4F
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the right arg to the result
         mpfr_set_d  (&lpAllTypes->aplHC8V.parts[i], aplHC4F.parts[i], MPFR_RNDN);
 } // TPA_HC4F_HC8V
@@ -7210,7 +7093,7 @@ void TPA_HC2R_HC2R
     // Initialize the result to 0/1
     mphc2r_init (&lpAllTypes->aplHC2R);
 
-    // Loop through all of the parts common to HC2R & HC2R
+    // Loop through the common parts
     for (i = 0; i < 2; i++)
         // Copy the right arg to the result
         mpq_set (&lpAllTypes->aplHC2R.parts[i], &aplHC2R.parts[i]);
@@ -7242,7 +7125,7 @@ void TPA_HC2R_HC2V
     // Initialize the result to 0
     mphc2v_init0 (&lpAllTypes->aplHC2V);
 
-    // Loop through all of the parts common to HC2R & HC2V
+    // Loop through the common parts
     for (i = 0; i < 2; i++)
         // Copy the right arg to the result
         mpfr_set_q  (&lpAllTypes->aplHC2V.parts[i], &aplHC2R.parts[i], MPFR_RNDN);
@@ -7274,8 +7157,8 @@ void TPA_HC2R_HC4R
     // Initialize the result to 0/1
     mphc4r_init (&lpAllTypes->aplHC4R);
 
-    // Loop through all of the parts common to HC2R & HC4R
-    for (i = 0; i < 2; i++)     // Note 2 from HC2R
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the right arg to the result
         mpq_set (&lpAllTypes->aplHC4R.parts[i], &aplHC2R.parts[i]);
 } // TPA_HC2R_HC4R
@@ -7306,8 +7189,8 @@ void TPA_HC2R_HC4V
     // Initialize the result to 0
     mphc4v_init0 (&lpAllTypes->aplHC4V);
 
-    // Loop through all of the parts common to HC2R & HC4V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2R
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the right arg to the result
         mpfr_set_q  (&lpAllTypes->aplHC4V.parts[i], &aplHC2R.parts[i], MPFR_RNDN);
 } // TPA_HC2R_HC4V
@@ -7338,8 +7221,8 @@ void TPA_HC2R_HC8R
     // Initialize the result to 0/1
     mphc8r_init (&lpAllTypes->aplHC8R);
 
-    // Loop through all of the parts common to HC2R & HC8R
-    for (i = 0; i < 2; i++)     // Note 2 from HC2R
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the right arg to the result
         mpq_set (&lpAllTypes->aplHC8R.parts[i], &aplHC2R.parts[i]);
 } // TPA_HC2R_HC8R
@@ -7370,8 +7253,8 @@ void TPA_HC2R_HC8V
     // Initialize the result to 0
     mphc8v_init0 (&lpAllTypes->aplHC8V);
 
-    // Loop through all of the parts common to HC2R & HC8V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2R
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the right arg to the result
         mpfr_set_q  (&lpAllTypes->aplHC8V.parts[i], &aplHC2R.parts[i], MPFR_RNDN);
 } // TPA_HC2R_HC8V
@@ -7442,7 +7325,7 @@ void TPA_HC4R_HC4R
     // Initialize the result to 0/1
     mphc4r_init (&lpAllTypes->aplHC4R);
 
-    // Loop through all of the parts common to HC4R & HC4R
+    // Loop through the common parts
     for (i = 0; i < 4; i++)
         // Copy the right arg to the result
         mpq_set (&lpAllTypes->aplHC4R.parts[i], &aplHC4R.parts[i]);
@@ -7474,7 +7357,7 @@ void TPA_HC4R_HC4V
     // Initialize the result to 0
     mphc4v_init0 (&lpAllTypes->aplHC4V);
 
-    // Loop through all of the parts common to HC4R & HC4V
+    // Loop through the common parts
     for (i = 0; i < 4; i++)
         // Convert HC4R to HC4V
         mpfr_set_q (&lpAllTypes->aplHC4V.parts[i], &aplHC4R.parts[i], MPFR_RNDN);
@@ -7506,8 +7389,8 @@ void TPA_HC4R_HC8R
     // Initialize the result to 0/1
     mphc8r_init (&lpAllTypes->aplHC8R);
 
-    // Loop through all of the parts common to HC4R & HC8R
-    for (i = 0; i < 4; i++)     // Note 4 from HC4R
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Convert HC4R to HC8R
         mpq_set (&lpAllTypes->aplHC8R.parts[i], &aplHC4R.parts[i]);
 } // TPA_HC4R_HC8R
@@ -7538,8 +7421,8 @@ void TPA_HC4R_HC8V
     // Initialize the result to 0
     mphc8v_init0 (&lpAllTypes->aplHC8V);
 
-    // Loop through all of the parts common to HC4R & HC8V
-    for (i = 0; i < 4; i++)     // Note 4 from HC4R
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Convert HC4R to HC8V
         mpfr_set_q  (&lpAllTypes->aplHC8V.parts[i], &aplHC4R.parts[i], MPFR_RNDN);
 } // TPA_HC4R_HC8V
@@ -7610,7 +7493,7 @@ void TPA_HC8R_HC8R
     // Initialize the result to 0/1
     mphc8r_init (&lpAllTypes->aplHC8R);
 
-    // Loop through all of the parts common to HC8R & HC8R
+    // Loop through the common parts
     for (i = 0; i < 8; i++)
         // Copy the right arg to the result
         mpq_set (&lpAllTypes->aplHC8R.parts[i], &aplHC8R.parts[i]);
@@ -7642,7 +7525,7 @@ void TPA_HC8R_HC8V
     // Initialize the result to 0
     mphc8v_init0 (&lpAllTypes->aplHC8V);
 
-    // Loop through all of the parts common to HC8R & HC8V
+    // Loop through the common parts
     for (i = 0; i < 8; i++)
         // Copy the right arg to the result
         mpfr_set_q  (&lpAllTypes->aplHC8V.parts[i], &aplHC8R.parts[i], MPFR_RNDN);
@@ -7714,7 +7597,7 @@ void TPA_HC2V_HC2V
     // Initialize the result to 0
     mphc2v_init0 (&lpAllTypes->aplHC2V);
 
-    // Loop through all of the parts common to HC2V & HC2V
+    // Loop through the common parts
     for (i = 0; i < 2; i++)
         // Copy the right arg to the result
         mpfr_copy (&lpAllTypes->aplHC2V.parts[i], &aplHC2V.parts[i]);
@@ -7746,8 +7629,8 @@ void TPA_HC2V_HC4V
     // Initialize the result to 0
     mphc4v_init0 (&lpAllTypes->aplHC4V);
 
-    // Loop through all of the parts common to HC2V & HC4V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2V
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the right arg to the result
         mpfr_copy (&lpAllTypes->aplHC4V.parts[i], &aplHC2V.parts[i]);
 } // TPA_HC2V_HC4V
@@ -7778,8 +7661,8 @@ void TPA_HC2V_HC8V
     // Initialize the result to 0
     mphc8v_init0 (&lpAllTypes->aplHC8V);
 
-    // Loop through all of the parts common to HC2V & HC8V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2V
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the right arg to the result
         mpfr_copy (&lpAllTypes->aplHC8V.parts[i], &aplHC2V.parts[i]);
 } // TPA_HC2V_HC8V
@@ -7850,7 +7733,7 @@ void TPA_HC4V_HC4V
     // Initialize the result to 0
     mphc4v_init0 (&lpAllTypes->aplHC4V);
 
-    // Loop through all of the parts common to HC4V & HC4V
+    // Loop through the common parts
     for (i = 0; i < 4; i++)
         // Copy the right arg to the result
         mpfr_copy (&lpAllTypes->aplHC4V.parts[i], &aplHC4V.parts[i]);
@@ -7882,8 +7765,8 @@ void TPA_HC4V_HC8V
     // Initialize the result to 0
     mphc8v_init0 (&lpAllTypes->aplHC8V);
 
-    // Loop through all of the parts xommon to HC4V & HC8V
-    for (i = 0; i < 4; i++)     // Note 4 from HC4V
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the right arg to the result
         mpfr_copy (&lpAllTypes->aplHC8V.parts[i], &aplHC4V.parts[i]);
 } // TPA_HC4V_HC8V
@@ -7954,7 +7837,7 @@ void TPA_HC8V_HC8V
     // Initialize the result to 0
     mphc8v_init0 (&lpAllTypes->aplHC8V);
 
-    // Loop through all of the parts common to HC8V & HC8V
+    // Loop through the common parts
     for (i = 0; i < 8; i++)
         // Copy the right arg to the result
         mpfr_copy (&lpAllTypes->aplHC8V.parts[i], &aplHC8V.parts[i]);
@@ -7979,7 +7862,7 @@ void TCA_ERROR
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as in error
-        *lpbRet = FALSE;
+        lpbRet[0] = FALSE;
 } // TCA_ERROR
 
 
@@ -7999,7 +7882,7 @@ void TCA_BOOL_BOOL
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_BOOL_BOOL
 
 
@@ -8019,7 +7902,7 @@ void TCA_BOOL_INT
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_BOOL_INT
 
 
@@ -8034,20 +7917,20 @@ void TCA_BOOL_HC2I
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC2I.parts[0] = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
 
     // Loop through the remainder of the imaginary HC2I parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Zero the imaginary part
         lpAllTypes->aplHC2I.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_BOOL_HC2I
 
 
@@ -8062,20 +7945,20 @@ void TCA_BOOL_HC4I
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC4I.parts[0] = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
 
     // Loop through the remainder of the imaginary HC4I parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Zero the imaginary part
         lpAllTypes->aplHC4I.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_BOOL_HC4I
 
 
@@ -8090,20 +7973,20 @@ void TCA_BOOL_HC8I
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC8I.parts[0] = GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt);
 
     // Loop through the remainder of the imaginary HC8I parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Zero the imaginary part
         lpAllTypes->aplHC8I.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_BOOL_HC8I
 
 
@@ -8124,7 +8007,7 @@ void TCA_BOOL_FLT
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_BOOL_FLT
 
 
@@ -8139,20 +8022,20 @@ void TCA_BOOL_HC2F
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC2F.parts[0] = GetNextFloat (lpaplBoolean, ARRAY_BOOL, uInt);
 
     // Loop through the remainder of the imaginary HC2F parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Zero the imaginary part
         lpAllTypes->aplHC2F.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_BOOL_HC2F
 
 
@@ -8167,20 +8050,20 @@ void TCA_BOOL_HC4F
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC4F.parts[0] = GetNextFloat (lpaplBoolean, ARRAY_BOOL, uInt);
 
     // Loop through the remainder of the imaginary HC4F parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Zero the imaginary part
         lpAllTypes->aplHC4F.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_BOOL_HC4F
 
 
@@ -8195,20 +8078,20 @@ void TCA_BOOL_HC8F
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC8F.parts[0] = GetNextFloat (lpaplBoolean, ARRAY_BOOL, uInt);
 
     // Loop through the remainder of the imaginary HC8F parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Zero the imaginary part
         lpAllTypes->aplHC8F.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_BOOL_HC8F
 
 
@@ -8229,7 +8112,7 @@ void TCA_BOOL_RAT
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_BOOL_RAT
 
 
@@ -8244,20 +8127,20 @@ void TCA_BOOL_HC2R
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpq_init_set_sx (&lpAllTypes->aplHC2R.parts[0], GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt), 1);
 
     // Loop through the remainder of the imaginary HC2R parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0/1
         mpq_init (&lpAllTypes->aplHC2R.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_BOOL_HC2R
 
 
@@ -8272,20 +8155,20 @@ void TCA_BOOL_HC4R
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpq_init_set_sx (&lpAllTypes->aplHC4R.parts[0], GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt), 1);
 
     // Loop through the remainder of the imaginary HC4R parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0/1
         mpq_init (&lpAllTypes->aplHC4R.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_BOOL_HC4R
 
 
@@ -8300,20 +8183,20 @@ void TCA_BOOL_HC8R
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpq_init_set_sx (&lpAllTypes->aplHC8R.parts[0], GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt), 1);
 
     // Loop through the remainder of the imaginary HC8R parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0/1
         mpq_init (&lpAllTypes->aplHC8R.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_BOOL_HC8R
 
 
@@ -8334,7 +8217,7 @@ void TCA_BOOL_VFP
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_BOOL_VFP
 
 
@@ -8349,20 +8232,20 @@ void TCA_BOOL_HC2V
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpfr_init_set_sx (&lpAllTypes->aplHC2V.parts[0], GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt), MPFR_RNDN);
 
     // Loop through the remainder of the imaginary HC2V parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0
         mpfr_init0 (&lpAllTypes->aplHC2V.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_BOOL_HC2V
 
 
@@ -8377,20 +8260,20 @@ void TCA_BOOL_HC4V
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpfr_init_set_sx (&lpAllTypes->aplHC4V.parts[0], GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt), MPFR_RNDN);
 
     // Loop through the remainder of the imaginary HC4V parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0
         mpfr_init0 (&lpAllTypes->aplHC4V.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_BOOL_HC4V
 
 
@@ -8405,20 +8288,20 @@ void TCA_BOOL_HC8V
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpfr_init_set_sx (&lpAllTypes->aplHC8V.parts[0], GetNextInteger (lpaplBoolean, ARRAY_BOOL, uInt), MPFR_RNDN);
 
     // Loop through the remainder of the imaginary HC8V parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0
         mpfr_init0 (&lpAllTypes->aplHC8V.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_BOOL_HC8V
 
 
@@ -8438,7 +8321,7 @@ void TCA_INT_BOOL
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = IsBooleanValue (lpaplInteger[uInt]);
+        lpbRet[0] = IsBooleanValue (lpaplInteger[uInt]);
 } // TCA_INT_BOOL
 
 
@@ -8458,7 +8341,7 @@ void TCA_INT_INT
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_INT_INT
 
 
@@ -8473,20 +8356,20 @@ void TCA_INT_HC2I
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC2I.parts[0] = lpaplInteger[uInt];
 
     // Loop through the remainder of the imaginary HC2I parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC2I.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_INT_HC2I
 
 
@@ -8501,20 +8384,20 @@ void TCA_INT_HC4I
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC4I.parts[0] = lpaplInteger[uInt];
 
     // Loop through the remainder of the imaginary HC4I parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC4I.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_INT_HC4I
 
 
@@ -8529,20 +8412,20 @@ void TCA_INT_HC8I
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC8I.parts[0] = lpaplInteger[uInt];
 
     // Loop through the remainder of the imaginary HC8I parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC8I.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_INT_HC8I
 
 
@@ -8562,7 +8445,7 @@ void TCA_INT_FLT
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_INT_FLT
 
 
@@ -8577,20 +8460,20 @@ void TCA_INT_HC2F
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC2F.parts[0] = (APLFLOAT) lpaplInteger[uInt];
 
     // Loop through the remainder of the imaginary HC2F parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC2F.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_INT_HC2F
 
 
@@ -8605,20 +8488,20 @@ void TCA_INT_HC4F
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC4F.parts[0] = (APLFLOAT) lpaplInteger[uInt];
 
     // Loop through the remainder of the imaginary HC4F parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC4F.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_INT_HC4F
 
 
@@ -8633,20 +8516,20 @@ void TCA_INT_HC8F
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC8F.parts[0] = (APLFLOAT) lpaplInteger[uInt];
 
     // Loop through the remainder of the imaginary HC8F parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC8F.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_INT_HC8F
 
 
@@ -8667,7 +8550,7 @@ void TCA_INT_RAT
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_INT_RAT
 
 
@@ -8682,20 +8565,20 @@ void TCA_INT_HC2R
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpq_init_set_sx (&lpAllTypes->aplHC2R.parts[0], lpaplInteger[uInt], 1);
 
     // Loop through the remainder of the imaginary HC2R parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0/1
         mpq_init (&lpAllTypes->aplHC2R.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_INT_HC2R
 
 
@@ -8710,20 +8593,20 @@ void TCA_INT_HC4R
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpq_init_set_sx (&lpAllTypes->aplHC4R.parts[0], lpaplInteger[uInt], 1);
 
     // Loop through the remainder of the imaginary HC4R parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0/1
         mpq_init (&lpAllTypes->aplHC4R.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_INT_HC4R
 
 
@@ -8738,20 +8621,20 @@ void TCA_INT_HC8R
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpq_init_set_sx (&lpAllTypes->aplHC8R.parts[0], lpaplInteger[uInt], 1);
 
     // Loop through the remainder of the imaginary HC8R parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0/1
         mpq_init (&lpAllTypes->aplHC8R.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_INT_HC8R
 
 
@@ -8771,7 +8654,7 @@ void TCA_INT_VFP
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_INT_VFP
 
 
@@ -8786,20 +8669,20 @@ void TCA_INT_HC2V
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpfr_init_set_sx (&lpAllTypes->aplHC2V.parts[0], lpaplInteger[uInt], MPFR_RNDN);
 
     // Loop through the remainder of the imaginary HC2V parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0
         mpfr_init0 (&lpAllTypes->aplHC2V.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_INT_HC2V
 
 
@@ -8814,20 +8697,20 @@ void TCA_INT_HC4V
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpfr_init_set_sx (&lpAllTypes->aplHC4V.parts[0], lpaplInteger[uInt], MPFR_RNDN);
 
     // Loop through the remainder of the imaginary HC4V parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0
         mpfr_init0 (&lpAllTypes->aplHC4V.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_INT_HC4V
 
 
@@ -8842,20 +8725,20 @@ void TCA_INT_HC8V
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpfr_init_set_sx (&lpAllTypes->aplHC8V.parts[0], lpaplInteger[uInt], MPFR_RNDN);
 
     // Loop through the remainder of the imaginary HC8V parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0
         mpfr_init0 (&lpAllTypes->aplHC8V.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_INT_HC8V
 
 
@@ -8874,9 +8757,10 @@ void TCA_FLT_BOOL
     lpAllTypes->aplInteger = ConvertFltToInt (lpaplFloat, uInt, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
         // Mark as successful or not
-        *lpbRet &= IsBooleanValue (lpAllTypes->aplInteger);
+        lpbRet[0] &= IsBooleanValue (lpAllTypes->aplInteger);
 } // TCA_FLT_BOOL
 
 
@@ -8893,6 +8777,11 @@ void TCA_FLT_INT
 {
     // Attempt to convert the FLT to an integer using []CT as called for by lpAllTypes->enumCT
     lpAllTypes->aplInteger = ConvertFltToInt (lpaplFloat, uInt, lpAllTypes, lpbRet);
+
+////// If the flag ptr is valid, ...
+////if (lpbRet NE NULL)
+////    // Mark as successful
+////    lpbRet[0] = TRUE;       // Already set above
 } // TCA_FLT_INT
 
 
@@ -8907,15 +8796,20 @@ void TCA_FLT_HC2I
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Attempt to convert the FLT to an integer using []CT as called for by lpAllTypes->enumCT
     lpAllTypes->aplInteger = ConvertFltToInt (lpaplFloat, uInt, lpAllTypes, lpbRet);
 
     // Loop through the remainder of the imaginary HC2I parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC2I.parts[i] = 0;
+
+////// If the flag ptr is valid, ...
+////if (lpbRet NE NULL)
+////    // Mark as successful
+////    lpbRet[0] = TRUE;       // Already set above
 } // TCA_FLT_HC2I
 
 
@@ -8930,15 +8824,20 @@ void TCA_FLT_HC4I
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Attempt to convert the FLT to an integer using []CT as called for by lpAllTypes->enumCT
     lpAllTypes->aplInteger = ConvertFltToInt (lpaplFloat, uInt, lpAllTypes, lpbRet);
 
     // Loop through the remainder of the imaginary HC4I parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC4I.parts[i] = 0;
+
+////// If the flag ptr is valid, ...
+////if (lpbRet NE NULL)
+////    // Mark as successful
+////    lpbRet[0] = TRUE;       // Already set above
 } // TCA_FLT_HC4I
 
 
@@ -8953,15 +8852,20 @@ void TCA_FLT_HC8I
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Attempt to convert the FLT to an integer using []CT as called for by lpAllTypes->enumCT
     lpAllTypes->aplInteger = ConvertFltToInt (lpaplFloat, uInt, lpAllTypes, lpbRet);
 
     // Loop through the remainder of the imaginary HC8I parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC8I.parts[i] = 0;
+
+////// If the flag ptr is valid, ...
+////if (lpbRet NE NULL)
+////    // Mark as successful
+////    lpbRet[0] = TRUE;       // Already set above
 } // TCA_FLT_HC8I
 
 
@@ -8982,7 +8886,7 @@ void TCA_FLT_FLT
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_FLT_FLT
 
 
@@ -8997,20 +8901,20 @@ void TCA_FLT_HC2F
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Copy the FLT to the result
     lpAllTypes->aplHC2F.parts[0] = lpaplFloat[uInt];
 
     // Loop through the remainder of the imaginary HC2F parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC2F.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_FLT_HC2F
 
 
@@ -9025,20 +8929,20 @@ void TCA_FLT_HC4F
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Copy the FLT to the result
     lpAllTypes->aplHC4F.parts[0] = lpaplFloat[uInt];
 
     // Loop through the remainder of the imaginary HC4F parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC4F.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_FLT_HC4F
 
 
@@ -9053,20 +8957,20 @@ void TCA_FLT_HC8F
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Copy the FLT to the result
     lpAllTypes->aplHC8F.parts[0] = lpaplFloat[uInt];
 
     // Loop through the remainder of the imaginary HC8F parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC8F.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_FLT_HC8F
 
 
@@ -9087,7 +8991,7 @@ void TCA_FLT_RAT
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_FLT_RAT
 
 
@@ -9102,20 +9006,20 @@ void TCA_FLT_HC2R
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpq_init_set_d (&lpAllTypes->aplHC2R.parts[0], lpaplFloat[uInt]);
 
     // Loop through the remainder of the imaginary HC2R parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0/1
         mpq_init (&lpAllTypes->aplHC2R.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_FLT_HC2R
 
 
@@ -9130,20 +9034,20 @@ void TCA_FLT_HC4R
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpq_init_set_d (&lpAllTypes->aplHC4R.parts[0], lpaplFloat[uInt]);
 
     // Loop through the remainder of the imaginary HC4R parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0/1
         mpq_init (&lpAllTypes->aplHC4R.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_FLT_HC4R
 
 
@@ -9158,20 +9062,20 @@ void TCA_FLT_HC8R
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpq_init_set_d (&lpAllTypes->aplHC8R.parts[0], lpaplFloat[uInt]);
 
     // Loop through the remainder of the imaginary HC8R parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0/1
         mpq_init (&lpAllTypes->aplHC8R.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_FLT_HC8R
 
 
@@ -9192,7 +9096,7 @@ void TCA_FLT_VFP
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_FLT_VFP
 
 
@@ -9207,20 +9111,20 @@ void TCA_FLT_HC2V
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real aprt
     mpfr_init_set_d (&lpAllTypes->aplHC2V.parts[0], lpaplFloat[uInt], MPFR_RNDN);
 
     // Loop through the remainder of the imaginary HC2V parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0
         mpfr_init0 (&lpAllTypes->aplHC2V.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_FLT_HC2V
 
 
@@ -9235,20 +9139,20 @@ void TCA_FLT_HC4V
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real aprt
     mpfr_init_set_d (&lpAllTypes->aplHC4V.parts[0], lpaplFloat[uInt], MPFR_RNDN);
 
     // Loop through the remainder of the imaginary HC4V parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0
         mpfr_init0 (&lpAllTypes->aplHC4V.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_FLT_HC4V
 
 
@@ -9263,20 +9167,20 @@ void TCA_FLT_HC8V
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real aprt
     mpfr_init_set_d (&lpAllTypes->aplHC8V.parts[0], lpaplFloat[uInt], MPFR_RNDN);
 
     // Loop through the remainder of the imaginary HC8V parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0
         mpfr_init0 (&lpAllTypes->aplHC8V.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_FLT_HC8V
 
 
@@ -9297,7 +9201,7 @@ void TCA_CHAR_CHAR
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_CHAR_CHAR
 
 
@@ -9318,7 +9222,7 @@ void TCA_HETE_HETE
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HETE_HETE
 
 
@@ -9349,7 +9253,7 @@ void TCA_NEST_BOOL
             // If the flag ptr is valid, ...
             if (lpbRet NE NULL)
                 // Ensure the value is Boolean
-                *lpbRet = IsBooleanValue (lpAllTypes->aplInteger);
+                lpbRet[0] = IsBooleanValue (lpAllTypes->aplInteger);
 
             break;
 
@@ -9357,7 +9261,7 @@ void TCA_NEST_BOOL
             // If the flag ptr is valid, ...
             if (lpbRet NE NULL)
                 // Mark as in error
-                *lpbRet = FALSE;
+                lpbRet[0] = FALSE;
             break;
 
         defstop
@@ -9398,7 +9302,7 @@ void TCA_NEST_INT
             // If the flag ptr is valid, ...
             if (lpbRet NE NULL)
                 // Mark as in error
-                *lpbRet = FALSE;
+                lpbRet[0] = FALSE;
             break;
 
         defstop
@@ -9438,7 +9342,7 @@ void TCA_NEST_FLT
             // If the flag ptr is valid, ...
             if (lpbRet NE NULL)
                 // Mark as in error
-                *lpbRet = FALSE;
+                lpbRet[0] = FALSE;
             break;
 
         defstop
@@ -9475,14 +9379,14 @@ void TCA_NEST_CHAR
             // If the flag ptr is valid, ...
             if (lpbRet NE NULL)
                 // Mark as done
-                *lpbRet = bRet;
+                lpbRet[0] = bRet;
             break;
 
         case PTRTYPE_HGLOBAL:
             // If the flag ptr is valid, ...
             if (lpbRet NE NULL)
                 // Mark as in error
-                *lpbRet = FALSE;
+                lpbRet[0] = FALSE;
             break;
 
         defstop
@@ -9508,7 +9412,7 @@ void TCA_NEST_NEST
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_NEST_NEST
 
 
@@ -9531,9 +9435,9 @@ void TCA_APA_BOOL
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1]
-               && IsBooleanValue (lpAllTypes->aplInteger);
+        lpbRet[0] = bRet[0]
+                 && bRet[1]
+                 && IsBooleanValue (lpAllTypes->aplInteger);
 } // TCA_APA_BOOL
 
 
@@ -9556,8 +9460,8 @@ void TCA_APA_INT
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_APA_INT
 
 
@@ -9572,22 +9476,22 @@ void TCA_APA_HC2I
      LPUBOOL     lpbRet)
 
 {
-    int   i;
+    int   i = 1;
     UBOOL bRet[2];
 
     // Save in the result
     lpAllTypes->aplHC2I.parts[0] = iadd64 (lpaplApa->Off, imul64 (lpaplApa->Mul, uInt, &bRet[0], EXCEPTION_RESULT_FLOAT), &bRet[1], EXCEPTION_RESULT_FLOAT);
 
     // Loop through the remainder of the imaginary HC2I parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC2I.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_APA_HC2I
 
 
@@ -9602,22 +9506,22 @@ void TCA_APA_HC4I
      LPUBOOL     lpbRet)
 
 {
-    int   i;
+    int   i = 1;
     UBOOL bRet[2];
 
     // Save in the result
     lpAllTypes->aplHC4I.parts[0] = iadd64 (lpaplApa->Off, imul64 (lpaplApa->Mul, uInt, &bRet[0], EXCEPTION_RESULT_FLOAT), &bRet[1], EXCEPTION_RESULT_FLOAT);
 
     // Loop through the remainder of the imaginary HC4I parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC4I.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_APA_HC4I
 
 
@@ -9632,22 +9536,22 @@ void TCA_APA_HC8I
      LPUBOOL     lpbRet)
 
 {
-    int   i;
+    int   i = 1;
     UBOOL bRet[2];
 
     // Save in the result
     lpAllTypes->aplHC8I.parts[0] = iadd64 (lpaplApa->Off, imul64 (lpaplApa->Mul, uInt, &bRet[0], EXCEPTION_RESULT_FLOAT), &bRet[1], EXCEPTION_RESULT_FLOAT);
 
     // Loop through the remainder of the imaginary HC8I parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC8I.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_APA_HC8I
 
 
@@ -9670,8 +9574,8 @@ void TCA_APA_FLT
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_APA_FLT
 
 
@@ -9686,22 +9590,22 @@ void TCA_APA_HC2F
      LPUBOOL     lpbRet)
 
 {
-    int   i;
+    int   i = 1;
     UBOOL bRet[2];
 
     // Save in the result
     lpAllTypes->aplHC2F.parts[0] = (APLFLOAT) iadd64 (lpaplApa->Off, imul64 (lpaplApa->Mul, uInt, &bRet[0], EXCEPTION_RESULT_FLOAT), &bRet[1], EXCEPTION_RESULT_FLOAT);
 
     // Loop through the remainder of the imaginary HC2F parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC2F.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_APA_HC2F
 
 
@@ -9716,22 +9620,22 @@ void TCA_APA_HC4F
      LPUBOOL     lpbRet)
 
 {
-    int   i;
+    int   i = 1;
     UBOOL bRet[2];
 
     // Save in the result
     lpAllTypes->aplHC4F.parts[0] = (APLFLOAT) iadd64 (lpaplApa->Off, imul64 (lpaplApa->Mul, uInt, &bRet[0], EXCEPTION_RESULT_FLOAT), &bRet[1], EXCEPTION_RESULT_FLOAT);
 
     // Loop through the remainder of the imaginary HC4F parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC4F.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_APA_HC4F
 
 
@@ -9746,22 +9650,22 @@ void TCA_APA_HC8F
      LPUBOOL     lpbRet)
 
 {
-    int   i;
+    int   i = 1;
     UBOOL bRet[2];
 
     // Save in the result
     lpAllTypes->aplHC8F.parts[0] = (APLFLOAT) iadd64 (lpaplApa->Off, imul64 (lpaplApa->Mul, uInt, &bRet[0], EXCEPTION_RESULT_FLOAT), &bRet[1], EXCEPTION_RESULT_FLOAT);
 
     // Loop through the remainder of the imaginary HC8F parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC8F.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_APA_HC8F
 
 
@@ -9784,8 +9688,8 @@ void TCA_APA_RAT
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_APA_RAT
 
 
@@ -9800,22 +9704,22 @@ void TCA_APA_HC2R
      LPUBOOL     lpbRet)
 
 {
-    int   i;
+    int   i = 1;
     UBOOL bRet[2];
 
     // Set the real part
     mpq_init_set_sx (&lpAllTypes->aplHC2R.parts[0], iadd64 (lpaplApa->Off, imul64 (lpaplApa->Mul, uInt, &bRet[0], EXCEPTION_RESULT_FLOAT), &bRet[1], EXCEPTION_RESULT_FLOAT), 1);
 
     // Loop through the remainder of the imaginary HC2R parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary part to 0/1
         mpq_init (&lpAllTypes->aplHC2R.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_APA_HC2R
 
 
@@ -9830,22 +9734,22 @@ void TCA_APA_HC4R
      LPUBOOL     lpbRet)
 
 {
-    int   i;
+    int   i = 1;
     UBOOL bRet[2];
 
     // Set the real part
     mpq_init_set_sx (&lpAllTypes->aplHC4R.parts[0], iadd64 (lpaplApa->Off, imul64 (lpaplApa->Mul, uInt, &bRet[0], EXCEPTION_RESULT_FLOAT), &bRet[1], EXCEPTION_RESULT_FLOAT), 1);
 
     // Loop through the remainder of the imaginary HC4R parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary part to 0/1
         mpq_init (&lpAllTypes->aplHC4R.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_APA_HC4R
 
 
@@ -9860,22 +9764,22 @@ void TCA_APA_HC8R
      LPUBOOL     lpbRet)
 
 {
-    int   i;
+    int   i = 1;
     UBOOL bRet[2];
 
     // Set the real part
     mpq_init_set_sx (&lpAllTypes->aplHC8R.parts[0], iadd64 (lpaplApa->Off, imul64 (lpaplApa->Mul, uInt, &bRet[0], EXCEPTION_RESULT_FLOAT), &bRet[1], EXCEPTION_RESULT_FLOAT), 1);
 
     // Loop through the remainder of the imaginary HC8R parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary part to 0/1
         mpq_init (&lpAllTypes->aplHC8R.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_APA_HC8R
 
 
@@ -9897,8 +9801,8 @@ void TCA_APA_VFP
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_APA_VFP
 
 
@@ -9913,22 +9817,22 @@ void TCA_APA_HC2V
      LPUBOOL     lpbRet)
 
 {
-    int   i;
+    int   i = 1;
     UBOOL bRet[2];
 
     // Set the real part
     mpfr_init_set_sx (&lpAllTypes->aplHC2V.parts[0], iadd64 (lpaplApa->Off, imul64 (lpaplApa->Mul, uInt, &bRet[0], EXCEPTION_RESULT_FLOAT), &bRet[1], EXCEPTION_RESULT_FLOAT), 1);
 
     // Loop through the remainder of the imaginary HC2V parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary part to 0
         mpfr_init0 (&lpAllTypes->aplHC2V.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_APA_HC2V
 
 
@@ -9943,22 +9847,22 @@ void TCA_APA_HC4V
      LPUBOOL     lpbRet)
 
 {
-    int   i;
+    int   i = 1;
     UBOOL bRet[2];
 
     // Set the real part
     mpfr_init_set_sx (&lpAllTypes->aplHC4V.parts[0], iadd64 (lpaplApa->Off, imul64 (lpaplApa->Mul, uInt, &bRet[0], EXCEPTION_RESULT_FLOAT), &bRet[1], EXCEPTION_RESULT_FLOAT), 1);
 
     // Loop through the remainder of the imaginary HC4V parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary part to 0
         mpfr_init0 (&lpAllTypes->aplHC4V.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_APA_HC4V
 
 
@@ -9973,22 +9877,22 @@ void TCA_APA_HC8V
      LPUBOOL     lpbRet)
 
 {
-    int   i;
+    int   i = 1;
     UBOOL bRet[2];
 
     // Set the real part
     mpfr_init_set_sx (&lpAllTypes->aplHC8V.parts[0], iadd64 (lpaplApa->Off, imul64 (lpaplApa->Mul, uInt, &bRet[0], EXCEPTION_RESULT_FLOAT), &bRet[1], EXCEPTION_RESULT_FLOAT), 1);
 
     // Loop through the remainder of the imaginary HC8V parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary part to 0
         mpfr_init0 (&lpAllTypes->aplHC8V.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_APA_HC8V
 
 
@@ -10006,9 +9910,10 @@ void TCA_RAT_BOOL
     lpAllTypes->aplInteger = ConvertRatToInt (lpaplRat, uInt, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
         // Mark as successful or not
-        *lpbRet &= IsBooleanValue (lpAllTypes->aplInteger);
+        lpbRet[0] &= IsBooleanValue (lpAllTypes->aplInteger);
 } // TCA_RAT_BOOL
 
 
@@ -10024,6 +9929,11 @@ void TCA_RAT_INT
 
 {
     lpAllTypes->aplInteger = ConvertRatToInt (lpaplRat, uInt, lpAllTypes, lpbRet);
+
+////// If the flag ptr is valid, ...
+////if (lpbRet NE NULL)
+////    // Mark as successful
+////    lpbRet[0] = TRUE;       // Already set above
 } // TCA_RAT_INT
 
 
@@ -10038,15 +9948,20 @@ void TCA_RAT_HC2I
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC2I.parts[0] = ConvertRatToInt (lpaplRat, uInt, lpAllTypes, lpbRet);
 
     // Loop through the remainder of the imaginary HC2I parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC2I.parts[i] = 0;
+
+////// If the flag ptr is valid, ...
+////if (lpbRet NE NULL)
+////    // Mark as successful
+////    lpbRet[0] = TRUE;       // Already set above
 } // TCA_RAT_HC2I
 
 
@@ -10061,15 +9976,20 @@ void TCA_RAT_HC4I
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC4I.parts[0] = ConvertRatToInt (lpaplRat, uInt, lpAllTypes, lpbRet);
 
     // Loop through the remainder of the imaginary HC4I parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC4I.parts[i] = 0;
+
+////// If the flag ptr is valid, ...
+////if (lpbRet NE NULL)
+////    // Mark as successful
+////    lpbRet[0] = TRUE;       // Already set above
 } // TCA_RAT_HC4I
 
 
@@ -10084,15 +10004,20 @@ void TCA_RAT_HC8I
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC8I.parts[0] = ConvertRatToInt (lpaplRat, uInt, lpAllTypes, lpbRet);
 
     // Loop through the remainder of the imaginary HC8I parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC8I.parts[i] = 0;
+
+////// If the flag ptr is valid, ...
+////if (lpbRet NE NULL)
+////    // Mark as successful
+////    lpbRet[0] = TRUE;       // Already set above
 } // TCA_RAT_HC8I
 
 
@@ -10113,7 +10038,7 @@ void TCA_RAT_FLT
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_RAT_FLT
 
 
@@ -10128,20 +10053,20 @@ void TCA_RAT_HC2F
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC2F.parts[0] = mpq_get_d (&lpaplRat[uInt]);
 
     // Loop through the remainder of the imaginary HC2F parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC2F.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_RAT_HC2F
 
 
@@ -10156,20 +10081,20 @@ void TCA_RAT_HC4F
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC4F.parts[0] = mpq_get_d (&lpaplRat[uInt]);
 
     // Loop through the remainder of the imaginary HC4F parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC4F.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_RAT_HC4F
 
 
@@ -10184,20 +10109,20 @@ void TCA_RAT_HC8F
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC8F.parts[0] = mpq_get_d (&lpaplRat[uInt]);
 
     // Loop through the remainder of the imaginary HC8F parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC8F.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_RAT_HC8F
 
 
@@ -10218,7 +10143,7 @@ void TCA_RAT_RAT
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_RAT_RAT
 
 
@@ -10233,20 +10158,20 @@ void TCA_RAT_HC2R
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpq_init_set (&lpAllTypes->aplHC2R.parts[0], &lpaplRat[uInt]);
 
     // Loop through the remainder of the imaginary HC2R parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0/1
         mpq_init (&lpAllTypes->aplHC2R.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_RAT_HC2R
 
 
@@ -10261,20 +10186,20 @@ void TCA_RAT_HC4R
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpq_init_set (&lpAllTypes->aplHC4R.parts[0], &lpaplRat[uInt]);
 
     // Loop through the remainder of the imaginary HC4R parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0/1
         mpq_init (&lpAllTypes->aplHC4R.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_RAT_HC4R
 
 
@@ -10289,20 +10214,20 @@ void TCA_RAT_HC8R
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpq_init_set (&lpAllTypes->aplHC8R.parts[0], &lpaplRat[uInt]);
 
     // Loop through the remainder of the imaginary HC8R parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0/1
         mpq_init (&lpAllTypes->aplHC8R.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_RAT_HC8R
 
 
@@ -10323,7 +10248,7 @@ void TCA_RAT_VFP
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_RAT_VFP
 
 
@@ -10338,20 +10263,20 @@ void TCA_RAT_HC2V
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpfr_init_set_q  (&lpAllTypes->aplHC2V.parts[0], &lpaplRat[uInt], MPFR_RNDN);
 
     // Loop through the remainder of the imaginary HC2V parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0
         mpfr_init0 (&lpAllTypes->aplHC2V.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_RAT_HC2V
 
 
@@ -10366,20 +10291,20 @@ void TCA_RAT_HC4V
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpfr_init_set_q  (&lpAllTypes->aplHC4V.parts[0], &lpaplRat[uInt], MPFR_RNDN);
 
     // Loop through the remainder of the imaginary HC4V parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0
         mpfr_init0 (&lpAllTypes->aplHC4V.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_RAT_HC4V
 
 
@@ -10394,20 +10319,20 @@ void TCA_RAT_HC8V
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpfr_init_set_q  (&lpAllTypes->aplHC8V.parts[0], &lpaplRat[uInt], MPFR_RNDN);
 
     // Loop through the remainder of the imaginary HC8V parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0
         mpfr_init0 (&lpAllTypes->aplHC8V.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_RAT_HC8V
 
 
@@ -10426,9 +10351,10 @@ void TCA_VFP_BOOL
     lpAllTypes->aplInteger = ConvertVfpToInt (&lpaplVfp[uInt], 0, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
         // Mark as successful or not
-        *lpbRet &= IsBooleanValue (lpAllTypes->aplInteger);
+        lpbRet[0] &= IsBooleanValue (lpAllTypes->aplInteger);
 } // TCA_VFP_BOOL
 
 
@@ -10445,6 +10371,11 @@ void TCA_VFP_INT
 {
     // Attempt to convert the VFP to an integer using []CT as called for by lpAllTypes->enumCT
     lpAllTypes->aplInteger = ConvertVfpToInt (&lpaplVfp[uInt], 0, lpAllTypes, lpbRet);
+
+////// If the flag ptr is valid, ...
+////if (lpbRet NE NULL)
+////    // Mark as successful
+////    lpbRet[0] = TRUE;       // Already set above
 } // TCA_VFP_INT
 
 
@@ -10459,15 +10390,20 @@ void TCA_VFP_HC2I
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Attempt to convert the VFP to an integer using []CT as called for by lpAllTypes->enumCT
     lpAllTypes->aplInteger = ConvertVfpToInt (&lpaplVfp[uInt], 0, lpAllTypes, lpbRet);
 
     // Loop through the remainder of the imaginary HC2I parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC2I.parts[i] = 0;
+
+////// If the flag ptr is valid, ...
+////if (lpbRet NE NULL)
+////    // Mark as successful
+////    lpbRet[0] = TRUE;       // Already set above
 } // TCA_VFP_HC2I
 
 
@@ -10482,15 +10418,20 @@ void TCA_VFP_HC4I
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Attempt to convert the VFP to an integer using []CT as called for by lpAllTypes->enumCT
     lpAllTypes->aplInteger = ConvertVfpToInt (&lpaplVfp[uInt], 0, lpAllTypes, lpbRet);
 
     // Loop through the remainder of the imaginary HC4I parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC4I.parts[i] = 0;
+
+////// If the flag ptr is valid, ...
+////if (lpbRet NE NULL)
+////    // Mark as successful
+////    lpbRet[0] = TRUE;       // Already set above
 } // TCA_VFP_HC4I
 
 
@@ -10505,15 +10446,20 @@ void TCA_VFP_HC8I
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Attempt to convert the VFP to an integer using []CT as called for by lpAllTypes->enumCT
     lpAllTypes->aplInteger = ConvertVfpToInt (&lpaplVfp[uInt], 0, lpAllTypes, lpbRet);
 
     // Loop through the remainder of the imaginary HC8I parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC8I.parts[i] = 0;
+
+////// If the flag ptr is valid, ...
+////if (lpbRet NE NULL)
+////    // Mark as successful
+////    lpbRet[0] = TRUE;       // Already set above
 } // TCA_VFP_HC8I
 
 
@@ -10534,7 +10480,7 @@ void TCA_VFP_FLT
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_VFP_FLT
 
 
@@ -10549,20 +10495,20 @@ void TCA_VFP_HC2F
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC2F.parts[0] = mpfr_get_d (&lpaplVfp[uInt], MPFR_RNDN);
 
     // Loop through the remainder of the imaginary HC2F parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC2F.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_VFP_HC2F
 
 
@@ -10577,20 +10523,20 @@ void TCA_VFP_HC4F
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC4F.parts[0] = mpfr_get_d (&lpaplVfp[uInt], MPFR_RNDN);
 
     // Loop through the remainder of the imaginary HC4F parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC4F.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_VFP_HC4F
 
 
@@ -10605,20 +10551,20 @@ void TCA_VFP_HC8F
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     lpAllTypes->aplHC8F.parts[0] = mpfr_get_d (&lpaplVfp[uInt], MPFR_RNDN);
 
     // Loop through the remainder of the imaginary HC8F parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0
         lpAllTypes->aplHC8F.parts[i] = 0;
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_VFP_HC8F
 
 
@@ -10639,7 +10585,7 @@ void TCA_VFP_RAT
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_VFP_RAT
 
 
@@ -10654,20 +10600,20 @@ void TCA_VFP_HC2R
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpq_init_set_fr (&lpAllTypes->aplHC2R.parts[0], &lpaplVfp[uInt]);
 
     // Loop through the remainder of the imaginary HC2R parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0/1
         mpq_init (&lpAllTypes->aplHC2R.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_VFP_HC2R
 
 
@@ -10682,20 +10628,20 @@ void TCA_VFP_HC4R
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpq_init_set_fr (&lpAllTypes->aplHC4R.parts[0], &lpaplVfp[uInt]);
 
     // Loop through the remainder of the imaginary HC4R parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0/1
         mpq_init (&lpAllTypes->aplHC4R.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_VFP_HC4R
 
 
@@ -10710,21 +10656,20 @@ void TCA_VFP_HC8R
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpq_init_set_fr (&lpAllTypes->aplHC8R.parts[0], &lpaplVfp[uInt]);
 
     // Loop through the remainder of the imaginary HC8R parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0/1
         mpq_init (&lpAllTypes->aplHC8R.parts[i]);
 
     // If the flag ptr is valid, ...
-    if
-     (lpbRet NE NULL)
+    if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_VFP_HC8R
 
 
@@ -10745,7 +10690,7 @@ void TCA_VFP_VFP
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_VFP_VFP
 
 
@@ -10760,20 +10705,20 @@ void TCA_VFP_HC2V
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpfr_init_set (&lpAllTypes->aplHC2V.parts[0], &lpaplVfp[uInt], MPFR_RNDN);
 
     // Loop through the remainder of the imaginary HC2V parts
-    for (i = 1; i < 2; i++)
+    for (; i < 2; i++)          // No bRet
         // Set the imaginary parts to 0
         mpfr_init0 (&lpAllTypes->aplHC2V.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_VFP_HC2V
 
 
@@ -10788,20 +10733,20 @@ void TCA_VFP_HC4V
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpfr_init_set (&lpAllTypes->aplHC4V.parts[0], &lpaplVfp[uInt], MPFR_RNDN);
 
     // Loop through the remainder of the imaginary HC4V parts
-    for (i = 1; i < 4; i++)
+    for (; i < 4; i++)          // No bRet
         // Set the imaginary parts to 0
         mpfr_init0 (&lpAllTypes->aplHC4V.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_VFP_HC4V
 
 
@@ -10816,20 +10761,20 @@ void TCA_VFP_HC8V
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part
     mpfr_init_set (&lpAllTypes->aplHC8V.parts[0], &lpaplVfp[uInt], MPFR_RNDN);
 
     // Loop through the remainder of the imaginary HC8V parts
-    for (i = 1; i < 8; i++)
+    for (; i < 8; i++)          // No bRet
         // Set the imaginary parts to 0
         mpfr_init0 (&lpAllTypes->aplHC8V.parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_VFP_HC8V
 
 
@@ -10844,21 +10789,21 @@ void TCA_HC2I_BOOL
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to BOOL
     lpAllTypes->aplInteger = lpaplHC2I[uInt].parts[0];
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful or not
-        *lpbRet = IsBooleanValue (lpAllTypes->aplInteger);
+        lpbRet[0] = IsBooleanValue (lpAllTypes->aplInteger);
 
         // Loop through the remainder of the imaginary HC2I parts
-        for (i = 1; i < 2; i++) // No bRet
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2I part is 0
-            *lpbRet &= lpaplHC2I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC2I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC2I_BOOL
 
@@ -10874,21 +10819,21 @@ void TCA_HC2I_INT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to INT
     lpAllTypes->aplInteger = lpaplHC2I[uInt].parts[0];
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC2I parts
-        for (i = 1; i < 2; i++) // No bRet
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2I part is 0
-            *lpbRet &= lpaplHC2I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC2I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC2I_INT
 
@@ -10910,7 +10855,7 @@ void TCA_HC2I_HC2I
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2I_HC2I
 
 
@@ -10934,7 +10879,7 @@ void TCA_HC2I_HC4I
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2I_HC4I
 
 
@@ -10958,7 +10903,7 @@ void TCA_HC2I_HC8I
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2I_HC8I
 
 
@@ -10973,21 +10918,21 @@ void TCA_HC2I_FLT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to FLT
     lpAllTypes->aplFloat = (APLFLOAT) lpaplHC2I[uInt].parts[0];
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC2I parts
-        for (i = 1; i < 2; i++) // No bRet
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2I part is 0
-            *lpbRet &= lpaplHC2I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC2I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC2I_FLT
 
@@ -11008,15 +10953,15 @@ void TCA_HC2I_HC2F
 ////// Zero the HC2F memory
 ////ZeroMemory (&lpAllTypes->aplHC2F, sizeof (lpAllTypes->aplHC2F));
 
-    // Loop through all of the parts common to HC2I & HC2F
-    for (i = 0; i < 2; i++)
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC2I as HC2F
         lpAllTypes->aplHC2F.parts[i] = (APLFLOAT) lpaplHC2I[uInt].parts[i];
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2I_HC2F
 
 
@@ -11036,15 +10981,15 @@ void TCA_HC2I_HC4F
     // Zero the HC4F memory
     ZeroMemory (&lpAllTypes->aplHC4F, sizeof (lpAllTypes->aplHC4F));
 
-    // Loop through all of the parts common to HC2I & HC4F
-    for (i = 0; i < 2; i++)     // Note 2 from HC2I
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC2I as HC4F
         lpAllTypes->aplHC4F.parts[i] = (APLFLOAT) lpaplHC2I[uInt].parts[i];
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2I_HC4F
 
 
@@ -11064,15 +11009,15 @@ void TCA_HC2I_HC8F
     // Zero the HC8F memory
     ZeroMemory (&lpAllTypes->aplHC8F, sizeof (lpAllTypes->aplHC8F));
 
-    // Loop through all of the parts common to HC2I & HC8F
-    for (i = 0; i < 2; i++)     // Note 2 from HC2I
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC2I as HC8F
         lpAllTypes->aplHC8F.parts[i] = (APLFLOAT) lpaplHC2I[uInt].parts[i];
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2I_HC8F
 
 
@@ -11087,21 +11032,21 @@ void TCA_HC2I_RAT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Convert the real part of HC2I to a RAT
     mpq_init_set_sx (&lpAllTypes->aplRat, lpaplHC2I[uInt].parts[0], 1);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC2I parts
-        for (i = 1; i < 2; i++) // No bRet
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2I part is 0
-            *lpbRet &= lpaplHC2I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC2I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC2I_RAT
 
@@ -11119,15 +11064,15 @@ void TCA_HC2I_HC2R
 {
     int i;
 
-    // Loop through all of the parts common to HC2I & HC2R
-    for (i = 0; i < 2; i++)
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Set the parts to HC2R
         mpq_init_set_sx (&lpAllTypes->aplHC2R.parts[i], lpaplHC2I[uInt].parts[i], 1);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2I_HC2R
 
 
@@ -11144,18 +11089,18 @@ void TCA_HC2I_HC4R
 {
     int i;
 
-    // Loop through all of the parts common to HC2I & HC4R
-    for (i = 0; i < 2; i++)     // Note 2 from HC2I
-        // Copy the HC2I parts to HC4R
-        mpq_init_set_sx (&lpAllTypes->aplHC4R.parts[i], lpaplHC2I[uInt].parts[i], 1);
-
     // Initialize to 0/1
-    mphc2r_init (&lpAllTypes->aplHC4R.partsHi);
+    mphc4r_init (&lpAllTypes->aplHC4R);
+
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
+        // Copy the HC2I parts to HC4R
+        mpq_set_sx (&lpAllTypes->aplHC4R.parts[i], lpaplHC2I[uInt].parts[i], 1);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2I_HC4R
 
 
@@ -11172,19 +11117,18 @@ void TCA_HC2I_HC8R
 {
     int i;
 
-    // Loop through all of the parts common to HC2I & HC8R
-    for (i = 0; i < 2; i++)     // Note 2 from HC2I
-        // Copy the HC2I parts to HC8R
-        mpq_init_set_sx (&lpAllTypes->aplHC8R.parts[i], lpaplHC2I[uInt].parts[i], 1);
-
     // Initialize to 0/1
-    mphc2r_init (&lpAllTypes->aplHC4R.partsHi);
-    mphc4r_init (&lpAllTypes->aplHC8R.partsHi);
+    mphc8r_init (&lpAllTypes->aplHC8R);
+
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
+        // Copy the HC2I parts to HC8R
+        mpq_set_sx (&lpAllTypes->aplHC8R.parts[i], lpaplHC2I[uInt].parts[i], 1);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2I_HC8R
 
 
@@ -11199,21 +11143,21 @@ void TCA_HC2I_VFP
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to VFP
     mpfr_init_set_sx (&lpAllTypes->aplVfp, lpaplHC2I[uInt].parts[0], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC2I parts
-        for (i = 1; i < 2; i++) // No bRet
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2I part is 0
-            *lpbRet &= lpaplHC2I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC2I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC2I_VFP
 
@@ -11231,15 +11175,15 @@ void TCA_HC2I_HC2V
 {
     int i;
 
-    // Loop through all of the parts common to HC2I & HC2V
-    for (i = 0; i < 2; i++)
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC2I parts to HC2V
         mpfr_init_set_sx (&lpAllTypes->aplHC2V.parts[i], lpaplHC2I[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2I_HC2V
 
 
@@ -11256,18 +11200,18 @@ void TCA_HC2I_HC4V
 {
     int i;
 
-    // Loop through all of the parts common to HC2I & HC4V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2I
-        // Copy the HC2I parts to HC4V
-        mpfr_init_set_sx (&lpAllTypes->aplHC4V.parts[i], lpaplHC2I[uInt].parts[i], MPFR_RNDN);
-
     // Initialize to 0
-    mphc2v_init0 (&lpAllTypes->aplHC4V.partsHi);
+    mphc4v_init0 (&lpAllTypes->aplHC4V);
+
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
+        // Copy the HC2I parts to HC4V
+        mpfr_set_sx (&lpAllTypes->aplHC4V.parts[i], lpaplHC2I[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2I_HC4V
 
 
@@ -11284,19 +11228,18 @@ void TCA_HC2I_HC8V
 {
     int i;
 
-    // Loop through all of the parts common to HC2I & HC8V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2I
-        // Copy the HC2I parts to HC8V
-        mpfr_init_set_sx (&lpAllTypes->aplHC8V.parts[i], lpaplHC2I[uInt].parts[i], MPFR_RNDN);
-
     // Initialize to 0
-    mphc2v_init0 (&lpAllTypes->aplHC4V.partsHi);
-    mphc4v_init0 (&lpAllTypes->aplHC8V.partsHi);
+    mphc8v_init0 (&lpAllTypes->aplHC8V);
+
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
+        // Copy the HC2I parts to HC8V
+        mpfr_set_sx (&lpAllTypes->aplHC8V.parts[i], lpaplHC2I[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2I_HC8V
 
 
@@ -11311,23 +11254,22 @@ void TCA_HC2F_BOOL
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Attempt to convert the HC2F real part to an integer using System CT
     lpAllTypes->aplInteger = ConvertFltToInt (&lpaplHC2F[uInt].parts[0], 0, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
     {
+        int i = 1;
+
         // Mark as successful or not
-        UBOOL bRet = *lpbRet && IsBooleanValue (lpAllTypes->aplInteger);
+        lpbRet[0] &= IsBooleanValue (lpAllTypes->aplInteger);
 
         // Loop through the remainder of the imaginary HC2F parts
-        for (i = 1; bRet && i < 2; i++)
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2F part is a near 0
-            bRet &= (ConvertFltToInt (&lpaplHC2F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0);
-
-        *lpbRet = bRet;
+            lpbRet[0] &= (ConvertFltToInt (&lpaplHC2F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0);
     } // End IF
 } // TCA_HC2F_BOOL
 
@@ -11343,24 +11285,19 @@ void TCA_HC2F_INT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Attempt to convert the HC2F real part to an integer using System CT
     lpAllTypes->aplInteger = ConvertFltToInt (&lpaplHC2F[uInt].parts[0], 0, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL
-     && *lpbRet)
+     && lpbRet[0])
     {
-        // Initialize as successful
-        UBOOL bRet = TRUE;
+        int i = 1;
 
         // Loop through the remainder of the imaginary HC2F parts
-        for (i = 1; bRet && i < 2; i++)
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2F part is a near 0
-            bRet &= (ConvertFltToInt (&lpaplHC2F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0);
-
-        *lpbRet = bRet;
+            lpbRet[0] &= (ConvertFltToInt (&lpaplHC2F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0);
     } // End IF
 } // TCA_HC2F_INT
 
@@ -11379,16 +11316,16 @@ void TCA_HC2F_HC2I
     int   i;
     UBOOL bRet[2];
 
-    // Loop through all of the parts common to HC2F & HC2I
-    for (i = 0; i < 2; i++)
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Attempt to convert the HC2F to HC2I using []CT as called for by lpAllTypes->enumCT
         lpAllTypes->aplHC2I.parts[i] = ConvertFltToInt (&lpaplHC2F[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_HC2F_HC2I
 
 
@@ -11409,16 +11346,16 @@ void TCA_HC2F_HC4I
     // Zero the HC4I memory
     ZeroMemory (&lpAllTypes->aplHC4I, sizeof (lpAllTypes->aplHC4I));
 
-    // Loop through all of the parts common to HC2F & HC4I
-    for (i = 0; i < 2; i++)     // Note 2 from HC2F
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Attempt to convert the HC2F to HC4I using []CT as called for by lpAllTypes->enumCT
         lpAllTypes->aplHC4I.parts[i] = ConvertFltToInt (&lpaplHC2F[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_HC2F_HC4I
 
 
@@ -11439,16 +11376,16 @@ void TCA_HC2F_HC8I
     // Zero the HC8I memory
     ZeroMemory (&lpAllTypes->aplHC8I, sizeof (lpAllTypes->aplHC8I));
 
-    // Loop through all of the parts common to HC2F & HC8I
-    for (i = 0; i < 2; i++)     // Note 2 from HC2F
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Attempt to convert the HC2F to HC8I using []CT as called for by lpAllTypes->enumCT
         lpAllTypes->aplHC8I.parts[i] = ConvertFltToInt (&lpaplHC2F[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_HC2F_HC8I
 
 
@@ -11463,24 +11400,21 @@ void TCA_HC2F_FLT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to FLT
     lpAllTypes->aplFloat = lpaplHC2F[uInt].parts[0];
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC2F parts
-        for (i = 1; bRet && i < 2; i++)
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2F part is a near 0
-            bRet &= (ConvertFltToInt (&lpaplHC2F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0);
-
-        // Copy the flag
-        *lpbRet = bRet;
+            lpbRet[0] &= (ConvertFltToInt (&lpaplHC2F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0);
     } // End IF
 } // TCA_HC2F_FLT
 
@@ -11502,7 +11436,7 @@ void TCA_HC2F_HC2F
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2F_HC2F
 
 
@@ -11526,7 +11460,7 @@ void TCA_HC2F_HC4F
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2F_HC4F
 
 
@@ -11550,7 +11484,7 @@ void TCA_HC2F_HC8F
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2F_HC8F
 
 
@@ -11565,23 +11499,21 @@ void TCA_HC2F_RAT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Convert the real part of HC2F to a RAT
     mpq_init_set_d (&lpAllTypes->aplRat, lpaplHC2F[uInt].parts[0]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
-        // Initialize as successful
-        UBOOL bRet = TRUE;
+        int i = 1;
+
+        // Mark as successful
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC2F parts
-        for (i = 1; bRet && i < 2; i++)
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2F part is a near 0
-            bRet &= ConvertFltToInt (&lpaplHC2F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC2F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC2F_RAT
 
@@ -11599,15 +11531,15 @@ void TCA_HC2F_HC2R
 {
     int i;
 
-    // Loop through all of the parts common to HC2F & HC2R
-    for (i = 0; i < 2; i++)
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy HC2F to HC2R
         mpq_init_set_d (&lpAllTypes->aplHC2R.parts[i], lpaplHC2F[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2F_HC2R
 
 
@@ -11624,18 +11556,18 @@ void TCA_HC2F_HC4R
 {
     int i;
 
-    // Loop through all of the parts common to HC2F & HC4R
-    for (i = 0; i < 2; i++)     // Note 2 from HC2F
-        // Copy HC2F to HC4R
-        mpq_init_set_d (&lpAllTypes->aplHC4R.parts[i], lpaplHC2F[uInt].parts[i]);
-
     // Initialize to 0/1
-    mphc2r_init (&lpAllTypes->aplHC4R.partsHi);
+    mphc4r_init (&lpAllTypes->aplHC4R);
+
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
+        // Copy HC2F to HC4R
+        mpq_set_d (&lpAllTypes->aplHC4R.parts[i], lpaplHC2F[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2F_HC4R
 
 
@@ -11652,19 +11584,18 @@ void TCA_HC2F_HC8R
 {
     int i;
 
-    // Loop through all of the parts common to HC2F & HC8R
-    for (i = 0; i < 2; i++)     // Note 2 from HC2F
-        // Copy HC2F to HC8R
-        mpq_init_set_d (&lpAllTypes->aplHC8R.parts[i], lpaplHC2F[uInt].parts[i]);
-
     // Initialize to 0/1
-    mphc2r_init (&lpAllTypes->aplHC8R.partsLo.partsHi);
-    mphc4r_init (&lpAllTypes->aplHC8R.partsHi);
+    mphc8r_init (&lpAllTypes->aplHC8R);
+
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
+        // Copy HC2F to HC8R
+        mpq_set_d (&lpAllTypes->aplHC8R.parts[i], lpaplHC2F[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2F_HC8R
 
 
@@ -11679,23 +11610,21 @@ void TCA_HC2F_VFP
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to VFP
     mpfr_init_set_d (&lpAllTypes->aplVfp, lpaplHC2F[uInt].parts[0], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
-        // Initialize as successful
-        UBOOL bRet = TRUE;
+        int i = 1;
+
+        // Mark as successful
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC2F parts
-        for (i = 1; bRet && i < 2; i++)
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2F part is a near 0
-            bRet &= ConvertFltToInt (&lpaplHC2F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC2F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC2F_VFP
 
@@ -11711,17 +11640,17 @@ void TCA_HC2F_HC2V
      LPUBOOL     lpbRet)
 
 {
-    int   i;
+    int i;
 
-    // Loop through all of the parts common to HC2F & HC2V
-    for (i = 0; i < 2; i++)
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC2F parts to HC2V
         mpfr_init_set_d (&lpAllTypes->aplHC2V.parts[i], lpaplHC2F[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2F_HC2V
 
 
@@ -11738,18 +11667,18 @@ void TCA_HC2F_HC4V
 {
     int i;
 
-    // Loop through all of the parts common to HC2F & HC4V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2F
-        // Copy the HC2F parts to HC4V
-        mpfr_init_set_d (&lpAllTypes->aplHC4V.parts[i], lpaplHC2F[uInt].parts[i], MPFR_RNDN);
-
     // Initialize to 0
-    mphc2v_init0 (&lpAllTypes->aplHC4V.partsHi);
+    mphc4v_init0 (&lpAllTypes->aplHC4V);
+
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
+        // Copy the HC2F parts to HC4V
+        mpfr_set_d (&lpAllTypes->aplHC4V.parts[i], lpaplHC2F[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2F_HC4V
 
 
@@ -11766,19 +11695,18 @@ void TCA_HC2F_HC8V
 {
     int i;
 
-    // Loop through all of the parts common to HC2F & HC8V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2F
-        // Copy the HC2F parts to HC8V
-        mpfr_init_set_d (&lpAllTypes->aplHC8V.parts[i], lpaplHC2F[uInt].parts[i], MPFR_RNDN);
-
     // Initialize to 0
-    mphc2v_init0 (&lpAllTypes->aplHC8V.partsLo.partsHi);
-    mphc4v_init0 (&lpAllTypes->aplHC8V.partsHi);
+    mphc8v_init0 (&lpAllTypes->aplHC8V);
+
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
+        // Copy the HC2F parts to HC8V
+        mpfr_set_d (&lpAllTypes->aplHC8V.parts[i], lpaplHC2F[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2F_HC8V
 
 
@@ -11793,23 +11721,22 @@ void TCA_HC2R_BOOL
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to BOOL
     lpAllTypes->aplInteger = ConvertRatToInt (&lpaplHC2R[uInt].parts[0], 0, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
     {
+        int i = 1;
+
         // Mark as successful or not
-        UBOOL bRet = *lpbRet && IsBooleanValue (lpAllTypes->aplInteger);
+        lpbRet[0] &= IsBooleanValue (lpAllTypes->aplInteger);
 
         // Loop through the remainder of the imaginary HC2R parts
-        for (i = 1; bRet && i < 2; i++)
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC2R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC2R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC2R_BOOL
 
@@ -11825,23 +11752,19 @@ void TCA_HC2R_INT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Attempt to convert the real part of HC2R to INT
     lpAllTypes->aplInteger = ConvertRatToInt (&lpaplHC2R[uInt].parts[0], 0, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
     {
-        // Initialize to successful
-        UBOOL bRet = TRUE;
+        int i = 1;
 
         // Loop through the remainder of the imaginary HC2R parts
-        for (i = 1; bRet && i < 2; i++)
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC2R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC2R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC2R_INT
 
@@ -11860,16 +11783,16 @@ void TCA_HC2R_HC2I
     int   i;
     UBOOL bRet[2];
 
-    // Loop through all of the parts common to HC2R & HC2I
-    for (i = 0; i < 2; i++)
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Attempt to convert each part of HC2R to INT
         lpAllTypes->aplHC2I.parts[i] = ConvertRatToInt (&lpaplHC2R[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_HC2R_HC2I
 
 
@@ -11890,16 +11813,16 @@ void TCA_HC2R_HC4I
     // Zero the HC4I memory
     ZeroMemory (&lpAllTypes->aplHC4I, sizeof (lpAllTypes->aplHC4I));
 
-    // Loop through all of the parts common to HC2R & HC4I
-    for (i = 0; i < 2; i++)     // Note 2 from HC2R
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Attempt to convert each part of HC2R to INT
         lpAllTypes->aplHC4I.parts[i] = ConvertRatToInt (&lpaplHC2R[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_HC2R_HC4I
 
 
@@ -11920,16 +11843,16 @@ void TCA_HC2R_HC8I
     // Zero the HC8I memory
     ZeroMemory (&lpAllTypes->aplHC8I, sizeof (lpAllTypes->aplHC8I));
 
-    // Loop through all of the parts common to HC2R & HC8I
-    for (i = 0; i < 2; i++)     // Note 2 from HC2R
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Attempt to convert each part of HC2R to INT
         lpAllTypes->aplHC8I.parts[i] = ConvertRatToInt (&lpaplHC2R[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_HC2R_HC8I
 
 
@@ -11944,23 +11867,21 @@ void TCA_HC2R_FLT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Copy the real part of HC2R as FLT
     lpAllTypes->aplFloat = mpq_get_d (&lpaplHC2R[uInt].parts[0]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC2R parts
-        for (i = 1; bRet && i < 2; i++)
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC2R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC2R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC2R_FLT
 
@@ -11978,15 +11899,15 @@ void TCA_HC2R_HC2F
 {
     int i;
 
-    // Loop through all of the parts common to HC2R & HC2F
-    for (i = 0; i < 2; i++)
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the parts of HC2R as HC2F
         lpAllTypes->aplHC2F.parts[i] = mpq_get_d (&lpaplHC2R[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2R_HC2F
 
 
@@ -12006,15 +11927,15 @@ void TCA_HC2R_HC4F
     // Zero the HC4F memory
     ZeroMemory (&lpAllTypes->aplHC4F, sizeof (lpAllTypes->aplHC4F));
 
-    // Loop through all of the parts common to HC2R & HC4F
-    for (i = 0; i < 2; i++)     // Note 2 from HC2R
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the parts of HC2R as HC4F
         lpAllTypes->aplHC4F.parts[i] = mpq_get_d (&lpaplHC2R[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2R_HC4F
 
 
@@ -12034,15 +11955,15 @@ void TCA_HC2R_HC8F
     // Zero the HC8F memory
     ZeroMemory (&lpAllTypes->aplHC8F, sizeof (lpAllTypes->aplHC8F));
 
-    // Loop through all of the parts common to HC2R & HC8F
-    for (i = 0; i < 2; i++)     // Note 2 from HC2R
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the parts of HC2R as HC8F
         lpAllTypes->aplHC8F.parts[i] = mpq_get_d (&lpaplHC2R[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2R_HC8F
 
 
@@ -12057,23 +11978,21 @@ void TCA_HC2R_RAT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Copy the real part of HC2R to a RAT
     mpq_init_set (&lpAllTypes->aplRat, &lpaplHC2R[uInt].parts[0]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC2R parts
-        for (i = 1; bRet && i < 2; i++)
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC2R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC2R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC2R_RAT
 
@@ -12091,15 +12010,15 @@ void TCA_HC2R_HC2R
 {
     int i;
 
-    // Loop through all of the parts common to HC2R & HC2R
-    for (i = 0; i < 2; i++)
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC2R as HC2R
         mpq_init_set (&lpAllTypes->aplHC2R.parts[i], &lpaplHC2R[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2R_HC2R
 
 
@@ -12116,18 +12035,18 @@ void TCA_HC2R_HC4R
 {
     int i;
 
-    // Loop through all of the parts common to HC2R & HC4R
-    for (i = 0; i < 2; i++)
-        // Copy the HC2R as HC4R
-        mpq_init_set (&lpAllTypes->aplHC4R.parts[i], &lpaplHC2R[uInt].parts[i]);
+    // Initialize to 0
+    mphc4r_init (&lpAllTypes->aplHC4R);
 
-    // Initialize to 0/1
-    mphc2r_init (&lpAllTypes->aplHC4R.partsHi);
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
+        // Copy the HC2R as HC4R
+        mpq_set (&lpAllTypes->aplHC4R.parts[i], &lpaplHC2R[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2R_HC4R
 
 
@@ -12144,19 +12063,18 @@ void TCA_HC2R_HC8R
 {
     int i;
 
-    // Loop through all of the parts common to HC2R & HC8R
-    for (i = 0; i < 2; i++)     // Note 2 from HC2R
-        // Copy the HC2R as HC8R
-        mpq_init_set (&lpAllTypes->aplHC8R.parts[i], &lpaplHC2R[uInt].parts[i]);
+    // Initialize to 0
+    mphc8r_init (&lpAllTypes->aplHC8R);
 
-    // Initialize to 0/1
-    mphc2r_init (&lpAllTypes->aplHC8R.partsLo.partsHi);
-    mphc4r_init (&lpAllTypes->aplHC8R.partsHi);
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
+        // Copy the HC2R as HC8R
+        mpq_set (&lpAllTypes->aplHC8R.parts[i], &lpaplHC2R[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2R_HC8R
 
 
@@ -12171,23 +12089,21 @@ void TCA_HC2R_VFP
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Copy the real part of HC2R as VFP
     mpfr_init_set_q  (&lpAllTypes->aplVfp, &lpaplHC2R[uInt].parts[0], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
-        // Loop through the remainder of the imaginary HC2R ports
-        for (i = 1; bRet && i < 2; i++)
+        // Loop through the remainder of the imaginary HC2R parts
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC2R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC2R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC2R_VFP
 
@@ -12205,15 +12121,15 @@ void TCA_HC2R_HC2V
 {
     int i;
 
-    // Loop through all of the parts common to HC2R & HC2V
-    for (i = 0; i < 2; i++)
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the parts of HC2R as HC2V
         mpfr_init_set_q  (&lpAllTypes->aplHC2V.parts[i], &lpaplHC2R[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2R_HC2V
 
 
@@ -12230,18 +12146,18 @@ void TCA_HC2R_HC4V
 {
     int i;
 
-    // Loop through all of the parts common to HC2R & HC4V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2R
-        // Copy the parts of HC2R as HC4V
-        mpfr_init_set_q  (&lpAllTypes->aplHC4V.parts[i], &lpaplHC2R[uInt].parts[i], MPFR_RNDN);
-
     // Initialize to 0
-    mphc2v_init0 (&lpAllTypes->aplHC4V.partsHi);
+    mphc4v_init0 (&lpAllTypes->aplHC4V);
+
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
+        // Copy the parts of HC2R as HC4V
+        mpfr_set_q  (&lpAllTypes->aplHC4V.parts[i], &lpaplHC2R[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2R_HC4V
 
 
@@ -12258,19 +12174,18 @@ void TCA_HC2R_HC8V
 {
     int i;
 
-    // Loop through all of the parts common to HC2R & HC8V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2R
-        // Copy the parts of HC2R as HC8V
-        mpfr_init_set_q  (&lpAllTypes->aplHC8V.parts[i], &lpaplHC2R[uInt].parts[i], MPFR_RNDN);
-
     // Initialize to 0
-    mphc2v_init0 (&lpAllTypes->aplHC8V.partsLo.partsHi);
-    mphc4v_init0 (&lpAllTypes->aplHC8V.partsHi);
+    mphc8v_init0 (&lpAllTypes->aplHC8V);
+
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
+        // Copy the parts of HC2R as HC8V
+        mpfr_set_q  (&lpAllTypes->aplHC8V.parts[i], &lpaplHC2R[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2R_HC8V
 
 
@@ -12285,23 +12200,22 @@ void TCA_HC2V_BOOL
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Attempt to convert the real part of HC2V to an integer using []CT as called for by lpAllTypes->enumCT
     lpAllTypes->aplInteger = ConvertVfpToInt (&lpaplHC2V[uInt].parts[0], 0, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
     {
+        int i = 1;
+
         // Mark as successful or not
-        UBOOL bRet = *lpbRet && IsBooleanValue (lpAllTypes->aplInteger);
+        lpbRet[0] &= IsBooleanValue (lpAllTypes->aplInteger);
 
         // Loop through the remainder of the imaginary HC2V parts
-        for (i = 1; bRet && i < 2; i++)
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC2V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC2V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC2V_BOOL
 
@@ -12317,22 +12231,19 @@ void TCA_HC2V_INT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Attempt to convert the real part of HC2V to an integer using []CT as called for by lpAllTypes->enumCT
     lpAllTypes->aplInteger = ConvertVfpToInt (&lpaplHC2V[uInt].parts[0], 0, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
     {
-        UBOOL bRet = *lpbRet;
+        int i = 1;
 
         // Loop through the remainder of the imaginary HC2V parts
-        for (i = 1; bRet && i < 2; i++)
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC2V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC2V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC2V_INT
 
@@ -12351,16 +12262,16 @@ void TCA_HC2V_HC2I
     int   i;
     UBOOL bRet[2];
 
-    // Loop through all of the parts common to HC2V & HC2I
-    for (i = 0; i < 2; i++)
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Attempt to convert each part of HC2V to INT
         lpAllTypes->aplHC2I.parts[i] = ConvertVfpToInt (&lpaplHC2V[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_HC2V_HC2I
 
 
@@ -12381,16 +12292,16 @@ void TCA_HC2V_HC4I
     // Zero the HC4I memory
     ZeroMemory (&lpAllTypes->aplHC4I, sizeof (lpAllTypes->aplHC4I));
 
-    // Loop through all of the parts common to HC2V & HC4I
-    for (i = 0; i < 2; i++)     // Note 2 from HC2V
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Attempt to convert each part of HC2V to INT
         lpAllTypes->aplHC4I.parts[i] = ConvertVfpToInt (&lpaplHC2V[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_HC2V_HC4I
 
 
@@ -12411,16 +12322,16 @@ void TCA_HC2V_HC8I
     // Zero the HC8I memory
     ZeroMemory (&lpAllTypes->aplHC8I, sizeof (lpAllTypes->aplHC8I));
 
-    // Loop through all of the parts common to HC2V & HC8I
-    for (i = 0; i < 2; i++)     // Note 2 from HC2V
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Attempt to convert each part of HC2V to INT
         lpAllTypes->aplHC8I.parts[i] = ConvertVfpToInt (&lpaplHC2V[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1];
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
 } // TCA_HC2V_HC8I
 
 
@@ -12435,23 +12346,21 @@ void TCA_HC2V_FLT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Copy the real part of HC2V as FLT
     lpAllTypes->aplFloat = mpfr_get_d (&lpaplHC2V[uInt].parts[0], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC2V parts
-        for (i = 1; bRet && i < 2; i++)
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC2V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC2V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC2V_FLT
 
@@ -12469,15 +12378,15 @@ void TCA_HC2V_HC2F
 {
     int i;
 
-    // Loop through all of the parts common to HC2V & HC2F
-    for (i = 0; i < 2; i++)
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the parts of HC2V as HC2F
         lpAllTypes->aplHC2F.parts[i] = mpfr_get_d (&lpaplHC2V[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2V_HC2F
 
 
@@ -12497,15 +12406,15 @@ void TCA_HC2V_HC4F
     // Zero the HC4F memory
     ZeroMemory (&lpAllTypes->aplHC4F, sizeof (lpAllTypes->aplHC4F));
 
-    // Loop through all of the parts common to HC2V & HC4F
-    for (i = 0; i < 2; i++)     // Note 2 from HC2V
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the parts of HC2V as HC4F
         lpAllTypes->aplHC4F.parts[i] = mpfr_get_d (&lpaplHC2V[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2V_HC4F
 
 
@@ -12525,15 +12434,15 @@ void TCA_HC2V_HC8F
     // Zero the HC8F memory
     ZeroMemory (&lpAllTypes->aplHC8F, sizeof (lpAllTypes->aplHC8F));
 
-    // Loop through all of the parts common to HC2V & HC8F
-    for (i = 0; i < 2; i++)     // Note 2 from HC2V
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the parts of HC2V as HC8F
         lpAllTypes->aplHC8F.parts[i] = mpfr_get_d (&lpaplHC2V[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2V_HC8F
 
 
@@ -12548,23 +12457,21 @@ void TCA_HC2V_RAT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Copy the real part of HC2V to a RAT
     mpq_init_set_fr (&lpAllTypes->aplRat, &lpaplHC2V[uInt].parts[0]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC2V parts
-        for (i = 1; bRet && i < 2; i++)
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC2V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC2V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC2V_RAT
 
@@ -12582,15 +12489,15 @@ void TCA_HC2V_HC2R
 {
     int i;
 
-    // Loop through all of the parts common to HC2V & HC2R
-    for (i = 0; i < 2; i++)
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC2V as HC4R
         mpq_init_set_fr (&lpAllTypes->aplHC4R.parts[i], &lpaplHC2V[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2V_HC2R
 
 
@@ -12607,18 +12514,18 @@ void TCA_HC2V_HC4R
 {
     int i;
 
-    // Loop through all of the parts common to HC2V & HC4R
-    for (i = 0; i < 2; i++)     // Note 2 from HC2V
-        // Copy the HC2V as HC4R
-        mpq_init_set_fr (&lpAllTypes->aplHC4R.parts[i], &lpaplHC2V[uInt].parts[i]);
-
     // Initialize to 0/1
-    mphc2r_init (&lpAllTypes->aplHC4R.partsHi);
+    mphc4r_init (&lpAllTypes->aplHC4R);
+
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
+        // Copy the HC2V as HC4R
+        mpq_set_fr (&lpAllTypes->aplHC4R.parts[i], &lpaplHC2V[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2V_HC4R
 
 
@@ -12635,19 +12542,18 @@ void TCA_HC2V_HC8R
 {
     int i;
 
-    // Loop through all of the parts common to HC2V & HC8R
-    for (i = 0; i < 2; i++)     // Note 2 from HC2V
-        // Copy the HC2V as HC8R
-        mpq_init_set_fr (&lpAllTypes->aplHC8R.parts[i], &lpaplHC2V[uInt].parts[i]);
-
     // Initialize to 0/1
-    mphc2r_init (&lpAllTypes->aplHC8R.partsLo.partsHi);
-    mphc4r_init (&lpAllTypes->aplHC8R.partsHi);
+    mphc8r_init (&lpAllTypes->aplHC8R);
+
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
+        // Copy the HC2V as HC8R
+        mpq_set_fr (&lpAllTypes->aplHC8R.parts[i], &lpaplHC2V[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2V_HC8R
 
 
@@ -12662,23 +12568,21 @@ void TCA_HC2V_VFP
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Copy the real part of HC2V as VFP
     mpfr_init_set  (&lpAllTypes->aplVfp, &lpaplHC2V[uInt].parts[0], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
-        // Loop through the remainder of the imaginary HC2V ports
-        for (i = 1; bRet && i < 2; i++)
+        // Loop through the remainder of the imaginary HC2V parts
+        for (; lpbRet[0] && i < 2; i++)
             // Ensure the imaginary HC2V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC2V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC2V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC2V_VFP
 
@@ -12696,15 +12600,15 @@ void TCA_HC2V_HC2V
 {
     int i;
 
-    // Loop through all of the parts common to HC2V & HC2V
-    for (i = 0; i < 2; i++)
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC2V part to HC2V
         mpfr_init_set (&lpAllTypes->aplHC2V.parts[i], &lpaplHC2V[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2V_HC2V
 
 
@@ -12721,18 +12625,18 @@ void TCA_HC2V_HC4V
 {
     int i;
 
-    // Loop through all of the parts common to HC2V & HC4V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2V
-        // Copy the HC2V part to HC4V
-        mpfr_init_set (&lpAllTypes->aplHC4V.parts[i], &lpaplHC2V[uInt].parts[i], MPFR_RNDN);
-
     // Initialize to 0
-    mphc2v_init0 (&lpAllTypes->aplHC4V.partsHi);
+    mphc4v_init0 (&lpAllTypes->aplHC4V);
+
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
+        // Copy the HC2V part to HC4V
+        mpfr_set (&lpAllTypes->aplHC4V.parts[i], &lpaplHC2V[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2V_HC4V
 
 
@@ -12749,19 +12653,18 @@ void TCA_HC2V_HC8V
 {
     int i;
 
-    // Loop through all of the parts common to HC2V & HC8V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2V
-        // Copy the HC2V part to HC8V
-        mpfr_init_set (&lpAllTypes->aplHC8V.parts[0], &lpaplHC2V[uInt].parts[i], MPFR_RNDN);
-
     // Initialize to 0
-    mphc2v_init0 (&lpAllTypes->aplHC8V.partsHi.partsLo);
-    mphc4v_init0 (&lpAllTypes->aplHC8V.partsHi);
+    mphc8v_init0 (&lpAllTypes->aplHC8V);
+
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
+        // Copy the HC2V part to HC8V
+        mpfr_set (&lpAllTypes->aplHC8V.parts[0], &lpaplHC2V[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2V_HC8V
 
 
@@ -12776,21 +12679,21 @@ void TCA_HC4I_BOOL
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to BOOL
     lpAllTypes->aplInteger = lpaplHC4I[uInt].parts[0];
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful or not
-        *lpbRet = IsBooleanValue (lpAllTypes->aplInteger);
+        lpbRet[0] = IsBooleanValue (lpAllTypes->aplInteger);
 
         // Loop through the remainder of the imaginary HC4I parts
-        for (i = 1; i < 4; i++) // No bRet
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4I part is 0
-            *lpbRet &= lpaplHC4I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC4I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC4I_BOOL
 
@@ -12806,21 +12709,21 @@ void TCA_HC4I_INT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to INT
     lpAllTypes->aplInteger = lpaplHC4I[uInt].parts[0];
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4I parts
-        for (i = 1; i < 4; i++) // No bRet
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4I part is 0
-            *lpbRet &= lpaplHC4I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC4I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC4I_INT
 
@@ -12838,8 +12741,8 @@ void TCA_HC4I_HC2I
 {
     int i;
 
-    // Loop through all of the parts common to HC4I & HC2I
-    for (i = 0; i < 2;i++)
+    // Loop through the common parts
+    for (i = 0; i < 2;i++)      // No bRet
         // Copy the HC4I as HC2I
         lpAllTypes->aplHC2I.parts[i] = lpaplHC4I[uInt].parts[i];
 
@@ -12847,12 +12750,12 @@ void TCA_HC4I_HC2I
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4I parts
-        for (; i < 4; i++)  // No bRet
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4I part is 0
-            *lpbRet &= lpaplHC4I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC4I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC4I_HC2I
 
@@ -12874,7 +12777,7 @@ void TCA_HC4I_HC4I
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4I_HC4I
 
 
@@ -12898,7 +12801,7 @@ void TCA_HC4I_HC8I
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4I_HC8I
 
 
@@ -12913,21 +12816,21 @@ void TCA_HC4I_FLT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to FLT
     lpAllTypes->aplFloat = (APLFLOAT) lpaplHC4I[uInt].parts[0];
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4I parts
-        for (i = 1; i < 4; i++) // No bRet
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4I part is 0
-            *lpbRet &= lpaplHC4I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC4I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC4I_FLT
 
@@ -12945,8 +12848,8 @@ void TCA_HC4I_HC2F
 {
     int i;
 
-    // Loop through all of the parts common to HC4I & HC2F
-    for (i = 0; i < 2; i++)     // Note 2 from HC2F
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC4I as HC2F
         lpAllTypes->aplHC2F.parts[i] = (APLFLOAT) lpaplHC4I[uInt].parts[i];
 
@@ -12954,12 +12857,12 @@ void TCA_HC4I_HC2F
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
-        // Loop throug the remainder of the HC4I parts
-        for (; i < 4; i++)  // No bRet
+        // Loop through the remainder of the HC4I parts
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4I part is zero
-            *lpbRet &= lpaplHC4I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC4I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC4I_HC2F
 
@@ -12977,15 +12880,15 @@ void TCA_HC4I_HC4F
 {
     int i;
 
-    // Loop through all of the parts common to HC4I & HC4F
-    for (i = 0; i < 4; i++)
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the HC4I as HC4F
         lpAllTypes->aplHC4F.parts[i] = (APLFLOAT) lpaplHC4I[uInt].parts[i];
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4I_HC4F
 
 
@@ -13005,15 +12908,15 @@ void TCA_HC4I_HC8F
     // Zero the HC8F memory
     ZeroMemory (&lpAllTypes->aplHC8F, sizeof (lpAllTypes->aplHC8F));
 
-    // Loop through all of the parts common to HC4I & HC8F
-    for (i = 0; i < 4; i++)     // Note 4 from HC4I
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the HC4I as HC8F
         lpAllTypes->aplHC8F.parts[i] = (APLFLOAT) lpaplHC4I[uInt].parts[i];
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4I_HC8F
 
 
@@ -13028,21 +12931,21 @@ void TCA_HC4I_RAT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Convert the real part of HC4I to a RAT
     mpq_init_set_sx (&lpAllTypes->aplRat, lpaplHC4I[uInt].parts[0], 1);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4I parts
-        for (i = 1; i < 4; i++) // No bRet
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4I part is 0
-            *lpbRet &= lpaplHC4I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC4I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC4I_RAT
 
@@ -13058,10 +12961,10 @@ void TCA_HC4I_HC2R
      LPUBOOL     lpbRet)
 
 {
-    int   i;
+    int i;
 
-    // Loop through all of the parts common to HC4I & HC2R
-    for (i = 0; i < 2; i++)     // Note 2 from HC2R
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Set the parts to HC2R
         mpq_init_set_sx (&lpAllTypes->aplHC2R.parts[i], lpaplHC4I[uInt].parts[i], 1);
 
@@ -13069,12 +12972,12 @@ void TCA_HC4I_HC2R
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4I parts
-        for (; i < 4; i++)  // No bRet
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4I part is 0
-            *lpbRet &= lpaplHC4I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC4I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC4I_HC2R
 
@@ -13092,15 +12995,15 @@ void TCA_HC4I_HC4R
 {
     int i;
 
-    // Loop through all of the parts common to HC4I & HC4R
-    for (i = 0; i < 4; i++)
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the HC4I parts to HC4R
         mpq_init_set_sx (&lpAllTypes->aplHC4R.parts[i], lpaplHC4I[uInt].parts[i], 1);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4I_HC4R
 
 
@@ -13117,18 +13020,18 @@ void TCA_HC4I_HC8R
 {
     int i;
 
-    // Loop through all of the parts common to HC4I & HC8R
-    for (i = 0; i < 4; i++)     // Note 4 from HC4I
-        // Copy the HC4I parts to HC8R
-        mpq_init_set_sx (&lpAllTypes->aplHC8R.parts[i], lpaplHC4I[uInt].parts[i], 1);
-
     // Initialize to 0/1
-    mphc4r_init (&lpAllTypes->aplHC8R.partsHi);
+    mphc8r_init (&lpAllTypes->aplHC8R);
+
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
+        // Copy the HC4I parts to HC8R
+        mpq_set_sx (&lpAllTypes->aplHC8R.parts[i], lpaplHC4I[uInt].parts[i], 1);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4I_HC8R
 
 
@@ -13143,21 +13046,21 @@ void TCA_HC4I_VFP
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to VFP
     mpfr_init_set_sx (&lpAllTypes->aplVfp, lpaplHC4I[uInt].parts[0], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4I parts
-        for (i = 1; i < 4; i++) // No bRet
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4I part is 0
-            *lpbRet &= lpaplHC4I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC4I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC4I_VFP
 
@@ -13175,8 +13078,8 @@ void TCA_HC4I_HC2V
 {
     int i;
 
-    // Loop through all of the parts common to HC4I & HC2V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2V
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC4I parts to HC2V
         mpfr_init_set_sx (&lpAllTypes->aplHC2V.parts[i], lpaplHC4I[uInt].parts[i], MPFR_RNDN);
 
@@ -13184,12 +13087,12 @@ void TCA_HC4I_HC2V
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4I parts
-        for (; i < 4; i++)  // No bRet
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4I part is 0
-            *lpbRet &= lpaplHC4I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC4I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC4I_HC2V
 
@@ -13207,15 +13110,15 @@ void TCA_HC4I_HC4V
 {
     int i;
 
-    // Loop through all of the parts common to HC4I & HC4V
-    for (i = 0; i < 4; i++)
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the HC4I parts to HC4V
         mpfr_init_set_sx (&lpAllTypes->aplHC4V.parts[i], lpaplHC4I[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4I_HC4V
 
 
@@ -13232,19 +13135,18 @@ void TCA_HC4I_HC8V
 {
     int i;
 
-    // Loop through all of the parts common to HC4I & HC8V
-    for (i = 0; i < 4; i++)     // Note 4 from HC4I
-        // Copy the HC4I parts to HC8V
-        mpfr_init_set_sx (&lpAllTypes->aplHC8V.parts[i], lpaplHC4I[uInt].parts[i], MPFR_RNDN);
-
     // Initialize to 0
-    mphc2v_init0 (&lpAllTypes->aplHC4V.partsHi);
-    mphc4v_init0 (&lpAllTypes->aplHC8V.partsHi);
+    mphc8v_init0 (&lpAllTypes->aplHC8V);
+
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
+        // Copy the HC4I parts to HC8V
+        mpfr_set_sx (&lpAllTypes->aplHC8V.parts[i], lpaplHC4I[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4I_HC8V
 
 
@@ -13259,23 +13161,22 @@ void TCA_HC4F_BOOL
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Attempt to convert the HC4F real part to an integer using System CT
     lpAllTypes->aplInteger = ConvertFltToInt (&lpaplHC4F[uInt].parts[0], 0, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
     {
+        int i = 1;
+
         // Mark as successful or not
-        UBOOL bRet = *lpbRet && IsBooleanValue (lpAllTypes->aplInteger);
+        lpbRet[0] &= IsBooleanValue (lpAllTypes->aplInteger);
 
         // Loop through the remainder of the imaginary HC4F parts
-        for (i = 1; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4F part is a near 0
-            bRet &= (ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0);
-
-        *lpbRet &= bRet;
+            lpbRet[0] &= (ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0);
     } // End IF
 } // TCA_HC4F_BOOL
 
@@ -13291,23 +13192,19 @@ void TCA_HC4F_INT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Attempt to convert the HC4F real part to an integer using System CT
     lpAllTypes->aplInteger = ConvertFltToInt (&lpaplHC4F[uInt].parts[0], 0, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
     {
-        // Initialize
-        UBOOL bRet = *lpbRet;
+        int i = 1;
 
         // Loop through the remainder of the imaginary HC4F parts
-        for (i = 1; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4F part is a near 0
-            bRet &= (ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0);
-
-        *lpbRet = bRet;
+            lpbRet[0] &= (ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0);
     } // End IF
 } // TCA_HC4F_INT
 
@@ -13326,8 +13223,8 @@ void TCA_HC4F_HC2I
     int   i;
     UBOOL bRet[2];
 
-    // Loop through all of the parts common to HC4F & HC2I
-    for (i = 0; i < 2; i++)     // Note 2 from HC2I
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Attempt to convert the HC4F to HC2I
         lpAllTypes->aplHC2I.parts[i] = ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
@@ -13335,14 +13232,12 @@ void TCA_HC4F_HC2I
     if (lpbRet NE NULL)
     {
         // Mark as successful or not
-        bRet[0] &= bRet[1];
-
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
         // Loop through the remainder of the imaginary HC4F parts
-        for (; bRet[0] && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4F part is a near 0
-            bRet[0] &= ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &bRet[0]) EQ 0;
-
-        *lpbRet = bRet[0];
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4F_HC2I
 
@@ -13364,18 +13259,18 @@ void TCA_HC4F_HC4I
 ////// Zero the HC4I memory
 ////ZeroMemory (&lpAllTypes->aplHC4I, sizeof (lpAllTypes->aplHC4I));
 
-    // Loop through all of the parts common to HC4F & HC4I
-    for (i = 0; i < 4; i++)
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Attempt to convert the HC4F to HC4I using System CT
         lpAllTypes->aplHC4I.parts[i] = ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1]
-               && bRet[2]
-               && bRet[3];
+        lpbRet[0] = bRet[0]
+                 && bRet[1]
+                 && bRet[2]
+                 && bRet[3];
 } // TCA_HC4F_HC4I
 
 
@@ -13396,18 +13291,18 @@ void TCA_HC4F_HC8I
     // Zero the HC8I memory
     ZeroMemory (&lpAllTypes->aplHC8I, sizeof (lpAllTypes->aplHC8I));
 
-    // Loop through all of the parts common to HC4F & HC8I
-    for (i = 0; i < 4; i++)     // Note 4 from HC4F
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Attempt to convert the HC4F to HC8I using System CT
         lpAllTypes->aplHC8I.parts[i] = ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1]
-               && bRet[2]
-               && bRet[3];
+        lpbRet[0] = bRet[0]
+                 && bRet[1]
+                 && bRet[2]
+                 && bRet[3];
 } // TCA_HC4F_HC8I
 
 
@@ -13422,23 +13317,21 @@ void TCA_HC4F_FLT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to FLT
     lpAllTypes->aplFloat = lpaplHC4F[uInt].parts[0];
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4F parts
-        for (i = 1; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4F part is a near 0
-            bRet &= ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4F_FLT
 
@@ -13454,23 +13347,21 @@ void TCA_HC4F_HC2F
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Copy the HC4F as HC2F
     lpAllTypes->aplHC2F = lpaplHC4F[uInt].partsLo[0];
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4F parts
-        for (i = 1; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4F part is a near 0
-            bRet &= ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4F_HC2F
 
@@ -13492,7 +13383,7 @@ void TCA_HC4F_HC4F
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4F_HC4F
 
 
@@ -13516,7 +13407,7 @@ void TCA_HC4F_HC8F
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4F_HC8F
 
 
@@ -13531,23 +13422,21 @@ void TCA_HC4F_RAT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Convert the real part of HC4F to a RAT
     mpq_init_set_d (&lpAllTypes->aplRat, lpaplHC4F[uInt].parts[0]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4F parts
-        for (i = 1; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4F part is a near 0
-            bRet &= ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4F_RAT
 
@@ -13565,8 +13454,8 @@ void TCA_HC4F_HC2R
 {
     int i;
 
-    // Loop through all of the parts common to HC4F & HC2R
-    for (i = 0; i < 2; i++)     // Note 2 from HC2R
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy HC4F to HC2R
         mpq_init_set_d (&lpAllTypes->aplHC2R.parts[i], lpaplHC4F[uInt].parts[i]);
 
@@ -13574,14 +13463,12 @@ void TCA_HC4F_HC2R
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4F parts
-        for (; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4F part is a near 0
-            bRet &= ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4F_HC2R
 
@@ -13599,15 +13486,15 @@ void TCA_HC4F_HC4R
 {
     int i;
 
-    // Loop through all of the parts common to HC4F & HC4R
-    for (i = 0; i < 4; i++)
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy HC4F to HC4R
         mpq_init_set_d (&lpAllTypes->aplHC4R.parts[i], lpaplHC4F[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4F_HC4R
 
 
@@ -13624,18 +13511,18 @@ void TCA_HC4F_HC8R
 {
     int i;
 
-    // Loop through all of the parts common to HC4F & HC8R
-    for (i = 0; i < 4; i++)     // Note 4 from HC4F
-        // Copy HC4F to HC8R
-        mpq_init_set_d (&lpAllTypes->aplHC8R.parts[i], lpaplHC4F[uInt].parts[i]);
-
     // Initialize to 0/1
-    mphc4r_init (&lpAllTypes->aplHC8R.partsHi);
+    mphc8r_init (&lpAllTypes->aplHC8R);
+
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
+        // Copy HC4F to HC8R
+        mpq_set_d (&lpAllTypes->aplHC8R.parts[i], lpaplHC4F[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4F_HC8R
 
 
@@ -13650,23 +13537,21 @@ void TCA_HC4F_VFP
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to VFP
     mpfr_init_set_d (&lpAllTypes->aplVfp, lpaplHC4F[uInt].parts[0], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4F parts
-        for (i = 1; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4F part is a near 0
-            bRet &= ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4F_VFP
 
@@ -13684,8 +13569,8 @@ void TCA_HC4F_HC2V
 {
     int   i;
 
-    // Loop through all of the parts common to HC4F & HC2V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2V
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC4F parts to HC2V
         mpfr_init_set_d (&lpAllTypes->aplHC2V.parts[i], lpaplHC4F[uInt].parts[i], MPFR_RNDN);
 
@@ -13693,14 +13578,12 @@ void TCA_HC4F_HC2V
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4F parts
-        for (; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4F part is a near 0
-            bRet &= ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC4F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4F_HC2V
 
@@ -13718,15 +13601,15 @@ void TCA_HC4F_HC4V
 {
     int i;
 
-    // Loop through all of the parts common to HC4F & HC4V
-    for (i = 0; i < 4; i++)
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the HC4F parts to HC4V
         mpfr_init_set_d (&lpAllTypes->aplHC4V.parts[i], lpaplHC4F[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4F_HC4V
 
 
@@ -13743,18 +13626,18 @@ void TCA_HC4F_HC8V
 {
     int i;
 
-    // Loop through all of the parts common to HC4F & HC8V
-    for (i = 0; i < 4; i++)     // Note 4 from HC4F
-        // Copy the HC4F parts to HC8V
-        mpfr_init_set_d (&lpAllTypes->aplHC8V.parts[i], lpaplHC4F[uInt].parts[i], MPFR_RNDN);
-
     // Initialize to 0
-    mphc4v_init0 (&lpAllTypes->aplHC8V.partsHi);
+    mphc8v_init0 (&lpAllTypes->aplHC8V);
+
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
+        // Copy the HC4F parts to HC8V
+        mpfr_set_d (&lpAllTypes->aplHC8V.parts[i], lpaplHC4F[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4F_HC8V
 
 
@@ -13769,23 +13652,22 @@ void TCA_HC4R_BOOL
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to BOOL
     lpAllTypes->aplInteger = ConvertRatToInt (&lpaplHC4R[uInt].parts[0], 0, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
     {
+        int i = 1;
+
         // Mark as successful or not
-        UBOOL bRet = &lpbRet && IsBooleanValue (lpAllTypes->aplInteger);
+        lpbRet[0] &= IsBooleanValue (lpAllTypes->aplInteger);
 
         // Loop through the remainder of the imaginary HC4R parts
-        for (i = 1; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4R_BOOL
 
@@ -13801,23 +13683,19 @@ void TCA_HC4R_INT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Attempt to convert the real part of HC4R to INT
     lpAllTypes->aplInteger = ConvertRatToInt (&lpaplHC4R[uInt].parts[0], 0, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
     {
-        // Initialize to successful
-        UBOOL bRet = TRUE;
+        int i = 1;
 
         // Loop through the remainder of the imaginary HC4R parts
-        for (i = 1; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4R_INT
 
@@ -13836,8 +13714,8 @@ void TCA_HC4R_HC2I
     int   i;
     UBOOL bRet[2];
 
-    // Loop through all of the parts common to HC4R & HC2I
-    for (i = 0; i < 2; i++)
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Attempt to convert each part of HC4R to INT
         lpAllTypes->aplHC2I.parts[i] = ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
@@ -13845,14 +13723,12 @@ void TCA_HC4R_HC2I
     if (lpbRet NE NULL)
     {
         // Mark as successful or not
-        bRet[0] &= bRet[1];
-
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
         // Loop through the remainder of the imaginary HC4R parts
-        for (; bRet[0] && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4R part is a near 0
-            bRet[0] &= ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &bRet[0]) EQ 0;
-
-        *lpbRet = bRet[0];
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4R_HC2I
 
@@ -13871,18 +13747,18 @@ void TCA_HC4R_HC4I
     int   i;
     UBOOL bRet[4];
 
-    // Loop through all of the parts common to HC4R & HC4I
-    for (i = 0; i < 4; i++)
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Attempt to convert each part of HC4R to INT
         lpAllTypes->aplHC4I.parts[i] = ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1]
-               && bRet[2]
-               && bRet[3];
+        lpbRet[0] = bRet[0]
+                 && bRet[1]
+                 && bRet[2]
+                 && bRet[3];
 } // TCA_HC4R_HC4I
 
 
@@ -13903,18 +13779,18 @@ void TCA_HC4R_HC8I
     // Zero the HC8I memory
     ZeroMemory (&lpAllTypes->aplHC8I, sizeof (lpAllTypes->aplHC8I));
 
-    // Loop through all of the parts common to HC4R & HC8I
-    for (i = 0; i < 4; i++)     // Note 4 from HC4R
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Attempt to convert each part of HC4R to INT
         lpAllTypes->aplHC8I.parts[i] = ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1]
-               && bRet[2]
-               && bRet[3];
+        lpbRet[0] = bRet[0]
+                 && bRet[1]
+                 && bRet[2]
+                 && bRet[3];
 } // TCA_HC4R_HC8I
 
 
@@ -13929,23 +13805,21 @@ void TCA_HC4R_FLT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Copy the real part of HC4R as FLT
     lpAllTypes->aplFloat = mpq_get_d (&lpaplHC4R[uInt].parts[0]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4R parts
-        for (i = 1; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4R_FLT
 
@@ -13963,8 +13837,8 @@ void TCA_HC4R_HC2F
 {
     int i;
 
-    // Loop through all of the parts common to HC4R & HC2F
-    for (i = 0; i < 2; i++)     // Note 2 from HC2F
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the parts of HC4R as HC2F
         lpAllTypes->aplHC2F.parts[i] = mpq_get_d (&lpaplHC4R[uInt].parts[i]);
 
@@ -13972,14 +13846,12 @@ void TCA_HC4R_HC2F
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4R parts
-        for (; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4R_HC2F
 
@@ -13997,15 +13869,15 @@ void TCA_HC4R_HC4F
 {
     int i;
 
-    // Loop through all of the parts common to HC4R & HC4F
-    for (i = 0; i < 4; i++)
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the parts of HC4R as HC4F
         lpAllTypes->aplHC4F.parts[i] = mpq_get_d (&lpaplHC4R[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4R_HC4F
 
 
@@ -14025,15 +13897,15 @@ void TCA_HC4R_HC8F
     // Zero the HC8F memory
     ZeroMemory (&lpAllTypes->aplHC8F, sizeof (lpAllTypes->aplHC8F));
 
-    // Loop through all of the parts common to HC4R & HC8F
-    for (i = 0; i < 4; i++)     // Note 4 from HC4R
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the parts of HC4R as HC8F
         lpAllTypes->aplHC8F.parts[i] = mpq_get_d (&lpaplHC4R[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4R_HC8F
 
 
@@ -14048,23 +13920,21 @@ void TCA_HC4R_RAT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Convert the real part of HC4R to a RAT
     mpq_init_set (&lpAllTypes->aplRat, &lpaplHC4R[uInt].parts[0]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4R parts
-        for (i = 1; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4R_RAT
 
@@ -14082,8 +13952,8 @@ void TCA_HC4R_HC2R
 {
     int i;
 
-    // Loop through all of the parts common to HC4R & HC2R
-    for (i = 0; i < 2; i++)     // Note 2 from HC2R
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC4R as HC2R
         mpq_init_set (&lpAllTypes->aplHC2R.parts[i], &lpaplHC4R[uInt].parts[i]);
 
@@ -14091,14 +13961,12 @@ void TCA_HC4R_HC2R
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4R parts
-        for (; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4R_HC2R
 
@@ -14116,15 +13984,15 @@ void TCA_HC4R_HC4R
 {
     int i;
 
-    // Loop through all of the parts common to HC4R & HC4R
-    for (i = 0; i < 4; i++)
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the HC4R as HC4R
         mpq_init_set (&lpAllTypes->aplHC4R.parts[i], &lpaplHC4R[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4R_HC4R
 
 
@@ -14141,18 +14009,18 @@ void TCA_HC4R_HC8R
 {
     int i;
 
-    // Loop through all of the parts common to HC4R & HC8R
-    for (i = 0; i < 4; i++)     // Note 4 from HC4R
-        // Copy the HC4R as HC8R
-        mpq_init_set (&lpAllTypes->aplHC8R.parts[i], &lpaplHC4R[uInt].parts[i]);
-
     // Initialize to 0/1
-    mphc4r_init (&lpAllTypes->aplHC8R.partsHi);
+    mphc8r_init (&lpAllTypes->aplHC8R);
+
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
+        // Copy the HC4R as HC8R
+        mpq_set (&lpAllTypes->aplHC8R.parts[i], &lpaplHC4R[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2R_HC8R
 
 
@@ -14167,23 +14035,21 @@ void TCA_HC4R_VFP
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Copy the real part of HC4R as VFP
     mpfr_init_set_q  (&lpAllTypes->aplVfp, &lpaplHC4R[uInt].parts[0], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
-        // Loop through the remainder of the imaginary HC4R ports
-        for (i = 1; bRet && i < 4; i++)
+        // Loop through the remainder of the imaginary HC4R parts
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4R_VFP
 
@@ -14201,8 +14067,8 @@ void TCA_HC4R_HC2V
 {
     int i;
 
-    // Loop through all of the parts common to HC4R & HC2V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2V
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the parts of HC4R as HC2V
         mpfr_init_set_q  (&lpAllTypes->aplHC2V.parts[i], &lpaplHC4R[uInt].parts[i], MPFR_RNDN);
 
@@ -14210,14 +14076,12 @@ void TCA_HC4R_HC2V
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4R parts
-        for (; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC4R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4R_HC2V
 
@@ -14235,15 +14099,15 @@ void TCA_HC4R_HC4V
 {
     int i;
 
-    // Loop through all of the parts common to HC4R & HC4V
-    for (i = 0; i < 4; i++)
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the parts of HC4R as HC4V
         mpfr_init_set_q  (&lpAllTypes->aplHC4V.parts[i], &lpaplHC4R[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4R_HC4V
 
 
@@ -14260,18 +14124,18 @@ void TCA_HC4R_HC8V
 {
     int i;
 
-    // Loop through all of the parts common to HC4R & HC8V
-    for (i = 0; i < 4; i++)     // Note 4 from HC4R
-        // Copy the parts of HC4R as HC8V
-        mpfr_init_set_q  (&lpAllTypes->aplHC8V.parts[i], &lpaplHC4R[uInt].parts[i], MPFR_RNDN);
-
     // Initialize to 0
-    mphc4v_init0 (&lpAllTypes->aplHC8V.partsHi);
+    mphc8v_init0 (&lpAllTypes->aplHC8V);
+
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
+        // Copy the parts of HC4R as HC8V
+        mpfr_set_q  (&lpAllTypes->aplHC8V.parts[i], &lpaplHC4R[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4R_HC8V
 
 
@@ -14286,23 +14150,22 @@ void TCA_HC4V_BOOL
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part of HC4V to BOOL
     lpAllTypes->aplInteger = ConvertVfpToInt (&lpaplHC4V[uInt].parts[0], 0, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
     {
+        int i = 1;
+
         // Mark as successful or not
-        UBOOL bRet = *lpbRet && IsBooleanValue (lpAllTypes->aplInteger);
+        lpbRet[0] &= IsBooleanValue (lpAllTypes->aplInteger);
 
         // Loop through the remainder of the imaginary HC4V parts
-        for (i = 1; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4V_BOOL
 
@@ -14318,22 +14181,19 @@ void TCA_HC4V_INT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Attempt to convert the real part of HC4V to INT
     lpAllTypes->aplInteger = ConvertVfpToInt (&lpaplHC4V[uInt].parts[0], 0, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
     {
-        UBOOL bRet = *lpbRet;
+        int i = 1;
 
         // Loop through the remainder of the imaginary HC4V parts
-        for (i = 1; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4V_INT
 
@@ -14352,8 +14212,8 @@ void TCA_HC4V_HC2I
     int   i;
     UBOOL bRet[2];
 
-    // Loop through all of the parts common to HC4V & HC2I
-    for (i = 0; i < 2; i++)     // Note 2 from HC2I
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Attempt to convert each part of HC4V to INT
         lpAllTypes->aplHC2I.parts[i] = ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
@@ -14361,14 +14221,12 @@ void TCA_HC4V_HC2I
     if (lpbRet NE NULL)
     {
         // Mark as successful or not
-        bRet[0] &= bRet[1];
-
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
         // Loop through the remainder of the imaginary HC4V parts
-        for (; bRet[0] && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4V part is a near 0
-            bRet[0] &= ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &bRet[0]) EQ 0;
-
-        *lpbRet = bRet[0];
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4V_HC2I
 
@@ -14387,18 +14245,18 @@ void TCA_HC4V_HC4I
     int   i;
     UBOOL bRet[4];
 
-    // Loop through all of the parts common to HC4V & HC4I
-    for (i = 0; i < 4; i++)
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Attempt to convert each part of HC4V to INT
         lpAllTypes->aplHC4I.parts[i] = ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1]
-               && bRet[2]
-               && bRet[3];
+        lpbRet[0] = bRet[0]
+                 && bRet[1]
+                 && bRet[2]
+                 && bRet[3];
 } // TCA_HC4V_HC4I
 
 
@@ -14419,18 +14277,18 @@ void TCA_HC4V_HC8I
     // Zero the HC8I memory
     ZeroMemory (&lpAllTypes->aplHC8I, sizeof (lpAllTypes->aplHC8I));
 
-    // Loop through all of the parts common to HC4V & HC8I
-    for (i = 0; i < 4; i++)     // Note 4 from HC4V
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Attempt to convert each part of HC4V to INT
         lpAllTypes->aplHC8I.parts[i] = ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1]
-               && bRet[2]
-               && bRet[3];
+        lpbRet[0] = bRet[0]
+                 && bRet[1]
+                 && bRet[2]
+                 && bRet[3];
 } // TCA_HC4V_HC8I
 
 
@@ -14445,23 +14303,21 @@ void TCA_HC4V_FLT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Copy the real part of HC4V as FLT
     lpAllTypes->aplFloat = mpfr_get_d (&lpaplHC4V[uInt].parts[0], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4V parts
-        for (i = 1; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4V_FLT
 
@@ -14479,8 +14335,8 @@ void TCA_HC4V_HC2F
 {
     int i;
 
-    // Loop through all of the parts common to HC4V & HC2F
-    for (i = 0; i < 2; i++)     // Note 2 from HC2F
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the parts of HC4V as HC2F
         lpAllTypes->aplHC2F.parts[i] = mpfr_get_d (&lpaplHC4V[uInt].parts[i], MPFR_RNDN);
 
@@ -14488,14 +14344,12 @@ void TCA_HC4V_HC2F
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4V parts
-        for (; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4V_HC2F
 
@@ -14513,15 +14367,15 @@ void TCA_HC4V_HC4F
 {
     int i;
 
-    // Loop through all of the parts common to HC4V & HC4F
-    for (i = 0; i < 4; i++)
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the parts of HC4V as HC4F
         lpAllTypes->aplHC4F.parts[i] = mpfr_get_d (&lpaplHC4V[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4V_HC4F
 
 
@@ -14541,15 +14395,15 @@ void TCA_HC4V_HC8F
     // Zero the HC8F memory
     ZeroMemory (&lpAllTypes->aplHC8F, sizeof (lpAllTypes->aplHC8F));
 
-    // Loop through all of the parts common to HC4V & HC8F
-    for (i = 0; i < 4; i++)     // Note 4 from HC4V
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the parts of HC4V as HC8F
         lpAllTypes->aplHC8F.parts[i] = mpfr_get_d (&lpaplHC4V[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4V_HC8F
 
 
@@ -14564,23 +14418,21 @@ void TCA_HC4V_RAT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Copy the real part of HC4V to a RAT
     mpq_init_set_fr (&lpAllTypes->aplRat, &lpaplHC4V[uInt].parts[0]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4V parts
-        for (i = 1; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4V_RAT
 
@@ -14598,8 +14450,8 @@ void TCA_HC4V_HC2R
 {
     int i;
 
-    // Loop through all of the parts common to HC4V & HC2R
-    for (i = 0; i < 2; i++)     // Note 2 from HC2R
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC4V as HC4R
         mpq_init_set_fr (&lpAllTypes->aplHC4R.parts[i], &lpaplHC4V[uInt].parts[i]);
 
@@ -14607,14 +14459,12 @@ void TCA_HC4V_HC2R
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4V parts
-        for (; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4V_HC2R
 
@@ -14632,15 +14482,15 @@ void TCA_HC4V_HC4R
 {
     int i;
 
-    // Loop through all of the parts common to HC4V & HC4R
-    for (i = 0; i < 4; i++)
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the HC4V as HC4R
         mpq_init_set_fr (&lpAllTypes->aplHC4R.parts[i], &lpaplHC4V[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4V_HC4R
 
 
@@ -14657,18 +14507,18 @@ void TCA_HC4V_HC8R
 {
     int i;
 
-    // Loop through all of the parts common to HC4V & HC8R
-    for (i = 0; i < 4; i++)     // Note 4 from HC4V
-        // Copy the HC4V as HC8R
-        mpq_init_set_fr (&lpAllTypes->aplHC8R.parts[i], &lpaplHC4V[uInt].parts[i]);
-
     // Initialize to 0/1
-    mphc4r_init (&lpAllTypes->aplHC8R.partsHi);
+    mphc8r_init (&lpAllTypes->aplHC8R);
+
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
+        // Copy the HC4V as HC8R
+        mpq_set_fr (&lpAllTypes->aplHC8R.parts[i], &lpaplHC4V[uInt].parts[i]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4V_HC8R
 
 
@@ -14683,23 +14533,21 @@ void TCA_HC4V_VFP
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Copy the real part of HC4V as VFP
     mpfr_init_set  (&lpAllTypes->aplVfp, &lpaplHC4V[uInt].parts[0], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
-        // Loop through the remainder of the imaginary HC4V ports
-        for (i = 1; bRet && i < 4; i++)
+        // Loop through the remainder of the imaginary HC4V parts
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4V_VFP
 
@@ -14717,8 +14565,8 @@ void TCA_HC4V_HC2V
 {
     int i;
 
-    // Loop through all of the parts common to HC4V & HC2V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2V
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC4V part to HC2V
         mpfr_init_set (&lpAllTypes->aplHC2V.parts[i], &lpaplHC4V[uInt].parts[i], MPFR_RNDN);
 
@@ -14726,14 +14574,12 @@ void TCA_HC4V_HC2V
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC4V parts
-        for (; bRet && i < 4; i++)
+        for (; lpbRet[0] && i < 4; i++)
             // Ensure the imaginary HC4V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC4V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4V_HC2V
 
@@ -14751,15 +14597,15 @@ void TCA_HC4V_HC4V
 {
     int i;
 
-    // Loop through all of the parts common to HC4V & HC4V
-    for (i = 0; i < 4; i++)
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the HC4V part to HC4V
         mpfr_init_set (&lpAllTypes->aplHC4V.parts[i], &lpaplHC4V[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4V_HC4V
 
 
@@ -14776,18 +14622,18 @@ void TCA_HC4V_HC8V
 {
     int i;
 
-    // Loop through all of the parts common to HC4V & HC8V
-    for (i = 0; i < 4; i++)     // Note 4 from HC4V
-        // Copy the HC4V part to HC8V
-        mpfr_init_set (&lpAllTypes->aplHC8V.parts[0], &lpaplHC4V[uInt].parts[i], MPFR_RNDN);
-
     // Initialize to 0
-    mphc4v_init0 (&lpAllTypes->aplHC8V.partsHi);
+    mphc8v_init0 (&lpAllTypes->aplHC8V);
+
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
+        // Copy the HC4V part to HC8V
+        mpfr_set (&lpAllTypes->aplHC8V.parts[0], &lpaplHC4V[uInt].parts[i], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC4V_HC8V
 
 
@@ -14802,21 +14648,21 @@ void TCA_HC8I_BOOL
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to BOOL
     lpAllTypes->aplInteger = lpaplHC8I[uInt].parts[0];
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful or not
-        *lpbRet = IsBooleanValue (lpAllTypes->aplInteger);
+        lpbRet[0] = IsBooleanValue (lpAllTypes->aplInteger);
 
         // Loop through the remainder of the imaginary HC8I parts
-        for (i = 1; i < 8; i++) // No bRet
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8I part is 0
-            *lpbRet &= lpaplHC8I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC8I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC8I_BOOL
 
@@ -14832,21 +14678,21 @@ void TCA_HC8I_INT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to INT
     lpAllTypes->aplInteger = lpaplHC8I[uInt].parts[0];
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8I parts
-        for (i = 1; i < 8; i++) // No bRet
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8I part is 0
-            *lpbRet &= lpaplHC8I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC8I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC8I_INT
 
@@ -14864,8 +14710,8 @@ void TCA_HC8I_HC2I
 {
     int i;
 
-    // Loop through all of the parts common to HC8I & HC2I
-    for (i = 0; i < 2;i++)
+    // Loop through the common parts
+    for (i = 0; i < 2;i++)      // No bRet
         // Copy the HC8I as HC2I
         lpAllTypes->aplHC2I.parts[i] = lpaplHC8I[uInt].parts[i];
 
@@ -14873,12 +14719,12 @@ void TCA_HC8I_HC2I
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8I parts
-        for (; i < 8; i++)  // No bRet
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8I part is 0
-            *lpbRet &= lpaplHC8I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC8I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC8I_HC2I
 
@@ -14896,8 +14742,8 @@ void TCA_HC8I_HC4I
 {
     int i;
 
-    // Loop through all of the parts common to HC8I & HC4I
-    for (i = 0; i < 4; i++)
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the HC8I as HC4I
         lpAllTypes->aplHC4I.parts[i] = lpaplHC8I[uInt].parts[i];
 
@@ -14905,12 +14751,12 @@ void TCA_HC8I_HC4I
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8I parts
-        for (; i < 8; i++)  // No bRet
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8I part is 0
-            *lpbRet &= lpaplHC8I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC8I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC4I_HC4I
 
@@ -14932,7 +14778,7 @@ void TCA_HC8I_HC8I
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC8I_HC8I
 
 
@@ -14947,21 +14793,21 @@ void TCA_HC8I_FLT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to FLT
     lpAllTypes->aplFloat = (APLFLOAT) lpaplHC8I[uInt].parts[0];
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8I parts
-        for (i = 1; i < 8; i++) // No bRet
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8I part is 0
-            *lpbRet &= lpaplHC8I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC8I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC8I_FLT
 
@@ -14979,8 +14825,8 @@ void TCA_HC8I_HC2F
 {
     int i;
 
-    // Loop through all of the parts common to HC8I & HC2F
-    for (i = 0; i < 2; i++)     // Note 2 from HC2F
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC8I as HC2F
         lpAllTypes->aplHC2F.parts[i] = (APLFLOAT) lpaplHC8I[uInt].parts[i];
 
@@ -14988,12 +14834,12 @@ void TCA_HC8I_HC2F
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
-        // Loop throug the remainder of the HC8I parts
-        for (; i < 8; i++)  // No bRet
+        // Loop through the remainder of the HC8I parts
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8I part is zero
-            *lpbRet &= lpaplHC8I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC8I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC8I_HC2F
 
@@ -15011,15 +14857,15 @@ void TCA_HC8I_HC4F
 {
     int i;
 
-    // Loop through all of the parts common to HC8I & HC4F
-    for (i = 0; i < 4; i++)     // Note 4 from HC4F
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the HC8I as HC4F
         lpAllTypes->aplHC4F.parts[i] = (APLFLOAT) lpaplHC8I[uInt].parts[i];
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC8I_HC4F
 
 
@@ -15039,7 +14885,7 @@ void TCA_HC8I_HC8F
     // Zero the HC8F memory
     ZeroMemory (&lpAllTypes->aplHC8F, sizeof (lpAllTypes->aplHC8F));
 
-    // Loop through all of the parts common to HC8I & HC8F
+    // Loop through the common parts
     for (i = 0; i < 8; i++)
         // Copy the HC8I as HC8F
         lpAllTypes->aplHC8F.parts[i] = (APLFLOAT) lpaplHC8I[uInt].parts[i];
@@ -15047,7 +14893,7 @@ void TCA_HC8I_HC8F
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC8I_HC8F
 
 
@@ -15062,21 +14908,21 @@ void TCA_HC8I_RAT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Convert the real part of HC8I to a RAT
     mpq_init_set_sx (&lpAllTypes->aplRat, lpaplHC8I[uInt].parts[0], 1);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8I parts
-        for (i = 1; i < 8; i++) // No bRet
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8I part is 0
-            *lpbRet &= lpaplHC8I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC8I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC8I_RAT
 
@@ -15094,8 +14940,8 @@ void TCA_HC8I_HC2R
 {
     int i;
 
-    // Loop through all of the parts common to HC8I & HC2R
-    for (i = 0; i < 2; i++)     // Note 2 from HC2R
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Set the parts to HC2R
         mpq_init_set_sx (&lpAllTypes->aplHC2R.parts[i], lpaplHC8I[uInt].parts[i], 1);
 
@@ -15103,12 +14949,12 @@ void TCA_HC8I_HC2R
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8I parts
-        for (; i < 8; i++)  // No bRet
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8I part is 0
-            *lpbRet &= lpaplHC8I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC8I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC8I_HC2R
 
@@ -15126,8 +14972,8 @@ void TCA_HC8I_HC4R
 {
     int i;
 
-    // Loop through all of the parts common to HC8I & HC4R
-    for (i = 0; i < 4; i++)     // Note 4 from HC4R
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the HC8I parts to HC4R
         mpq_init_set_sx (&lpAllTypes->aplHC4R.parts[i], lpaplHC8I[uInt].parts[i], 1);
 
@@ -15135,12 +14981,12 @@ void TCA_HC8I_HC4R
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8I parts
-        for (; i < 8; i++)  // No bRet
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8I part is 0
-            *lpbRet &= lpaplHC8I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC8I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC8I_HC4R
 
@@ -15158,7 +15004,7 @@ void TCA_HC8I_HC8R
 {
     int i;
 
-    // Loop through all of the parts common to HC8I & HC8R
+    // Loop through the common parts
     for (i = 0; i < 8; i++)
         // Copy the HC8I parts to HC8R
         mpq_init_set_sx (&lpAllTypes->aplHC8R.parts[i], lpaplHC8I[uInt].parts[i], 1);
@@ -15166,7 +15012,7 @@ void TCA_HC8I_HC8R
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC8I_HC8R
 
 
@@ -15181,7 +15027,7 @@ void TCA_HC8I_VFP
      LPUBOOL     lpbRet)
 
 {
-    int i;
+    int i = 1;
 
     // Set the real part to VFP
     mpfr_init_set_sx (&lpAllTypes->aplVfp, lpaplHC8I[uInt].parts[0], MPFR_RNDN);
@@ -15190,12 +15036,12 @@ void TCA_HC8I_VFP
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8I parts
-        for (i = 1; i < 8; i++) // No bRet
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8I part is 0
-            *lpbRet &= lpaplHC8I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC8I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC8I_VFP
 
@@ -15213,8 +15059,8 @@ void TCA_HC8I_HC2V
 {
     int i;
 
-    // Loop through all of the parts common to HC8I & HC2V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2V
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC8I parts to HC2V
         mpfr_init_set_sx (&lpAllTypes->aplHC2V.parts[i], lpaplHC8I[uInt].parts[i], MPFR_RNDN);
 
@@ -15222,12 +15068,12 @@ void TCA_HC8I_HC2V
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8I parts
-        for (; i < 8; i++)  // No bRet
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8I part is 0
-            *lpbRet &= lpaplHC8I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC8I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC8I_HC2V
 
@@ -15245,8 +15091,8 @@ void TCA_HC8I_HC4V
 {
     int i;
 
-    // Loop through all of the parts common to HC8I & HC4V
-    for (i = 0; i < 4; i++)     // Note 4 from HC4V
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the HC8I parts to HC4V
         mpfr_init_set_sx (&lpAllTypes->aplHC4V.parts[i], lpaplHC8I[uInt].parts[i], MPFR_RNDN);
 
@@ -15254,12 +15100,12 @@ void TCA_HC8I_HC4V
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8I parts
-        for (; i < 8; i++)  // No bRet
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8I part is 0
-            *lpbRet &= lpaplHC8I[uInt].parts[i] EQ 0;
+            lpbRet[0] &= lpaplHC8I[uInt].parts[i] EQ 0;
     } // End IF
 } // TCA_HC8I_HC4V
 
@@ -15277,7 +15123,7 @@ void TCA_HC8I_HC8V
 {
     int i;
 
-    // Loop through all of the parts common to HC8I & HC8V
+    // Loop through the common parts
     for (i = 0; i < 8; i++)
         // Copy the HC8I parts to HC8V
         mpfr_init_set_sx (&lpAllTypes->aplHC8V.parts[i], lpaplHC8I[uInt].parts[i], MPFR_RNDN);
@@ -15285,7 +15131,7 @@ void TCA_HC8I_HC8V
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC8I_HC8V
 
 
@@ -15300,23 +15146,22 @@ void TCA_HC8F_BOOL
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Attempt to convert the FLT to an integer using System CT
     lpAllTypes->aplInteger = ConvertFltToInt (&lpaplHC8F[uInt].parts[0], 0, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
     {
+        int i = 1;
+
         // Mark as successful or not
-        UBOOL bRet = *lpbRet && IsBooleanValue (lpAllTypes->aplInteger);
+        lpbRet[0] &= IsBooleanValue (lpAllTypes->aplInteger);
 
         // Loop through the remainder of the imaginary HC8F parts
-        for (i = 1; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8F part is a near 0
-            bRet &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8F_BOOL
 
@@ -15332,23 +15177,19 @@ void TCA_HC8F_INT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Attempt to convert the HC8F real part to an integer using System CT
     lpAllTypes->aplInteger = ConvertFltToInt (&lpaplHC8F[uInt].parts[0], 0, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
     {
-        // Initialize
-        UBOOL bRet = *lpbRet;
+        int i = 1;
 
         // Loop through the remainder of the imaginary HC8F parts
-        for (i = 1; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8F part is a near 0
-            bRet &= (ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0);
-
-        *lpbRet = bRet;
+            lpbRet[0] &= (ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0);
     } // End IF
 } // TCA_HC8F_INT
 
@@ -15367,8 +15208,8 @@ void TCA_HC8F_HC2I
     int   i;
     UBOOL bRet[2];
 
-    // Loop through all of the parts common to HC8F & HC2I
-    for (i = 0; i < 2; i++)     // Note 2 from HC2I
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Attempt to convert the HC8F to HC2I using System CT
         lpAllTypes->aplHC2I.parts[i] = ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
@@ -15376,14 +15217,12 @@ void TCA_HC8F_HC2I
     if (lpbRet NE NULL)
     {
         // Mark as successful or not
-        bRet[0] &= bRet[1];
-
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
         // Loop through the remainder of the imaginary HC8F parts
-        for (; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8F part is a near 0
-            bRet[0] &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &bRet[0]) EQ 0;
-
-        *lpbRet = bRet[0];
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8F_HC2I
 
@@ -15402,8 +15241,8 @@ void TCA_HC8F_HC4I
     int   i;
     UBOOL bRet[4];
 
-    // Loop through all of the parts common to HC8F & HC4I
-    for (i = 0; i < 4; i++)     // Note 4 from HC4I
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Attempt to convert the HC8F to HC4I using System CT
         lpAllTypes->aplHC4I.parts[i] = ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
@@ -15411,15 +15250,14 @@ void TCA_HC8F_HC4I
     if (lpbRet NE NULL)
     {
         // Mark as successful or not
-        bRet[0] &= bRet[1]
-                && bRet[2]
-                && bRet[3];
+        lpbRet[0] = bRet[0]
+                 && bRet[1]
+                 && bRet[2]
+                 && bRet[3];
         // Loop through the remainder of the imaginary HC8F parts
-        for (; bRet[0] && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8F part is a near 0
-            bRet[0] &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &bRet[0]) EQ 0;
-
-        *lpbRet = bRet[0];
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8F_HC4I
 
@@ -15438,7 +15276,7 @@ void TCA_HC8F_HC8I
     int   i;
     UBOOL bRet[8];
 
-    // Loop through all of the parts common to HC8F & HC8I
+    // Loop through the common parts
     for (i = 0; i < 8; i++)
         // Attempt to convert the HC8F to HC4I using System CT
         lpAllTypes->aplHC8I.parts[i] = ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
@@ -15446,14 +15284,14 @@ void TCA_HC8F_HC8I
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1]
-               && bRet[2]
-               && bRet[3]
-               && bRet[4]
-               && bRet[5]
-               && bRet[6]
-               && bRet[7];
+        lpbRet[0] = bRet[0]
+                 && bRet[1]
+                 && bRet[2]
+                 && bRet[3]
+                 && bRet[4]
+                 && bRet[5]
+                 && bRet[6]
+                 && bRet[7];
 } // TCA_HC8F_HC8I
 
 
@@ -15468,23 +15306,21 @@ void TCA_HC8F_FLT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to FLT
     lpAllTypes->aplFloat = lpaplHC8F[uInt].parts[0];
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8F parts
-        for (i = 1; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8F part is a near 0
-            bRet &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8F_FLT
 
@@ -15502,7 +15338,7 @@ void TCA_HC8F_HC2F
 {
     int i;
 
-    // Loop through all of the parts common to HC8F & HC2F
+    // Loop through the common parts
     for (i = 0; i < 2; i++)
         // Copy the HC8F as HC2F
         lpAllTypes->aplHC2F.parts[i] = lpaplHC8F[uInt].parts[i];
@@ -15511,14 +15347,12 @@ void TCA_HC8F_HC2F
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8F parts
-        for (; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8F part is a near 0
-            bRet &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8F_HC2F
 
@@ -15536,7 +15370,7 @@ void TCA_HC8F_HC4F
 {
     int i;
 
-    // Loop through all of the parts common to HC8F & HC4F
+    // Loop through the common parts
     for (i = 0; i < 4; i++)
         // Copy the HC8F as HC4F
         lpAllTypes->aplHC4F.parts[i] = lpaplHC8F[uInt].parts[i];
@@ -15545,14 +15379,12 @@ void TCA_HC8F_HC4F
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8F parts
-        for (; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8F part is a near 0
-            bRet &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8F_HC4F
 
@@ -15574,7 +15406,7 @@ void TCA_HC8F_HC8F
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC8F_HC8F
 
 
@@ -15589,23 +15421,20 @@ void TCA_HC8F_RAT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Convert the real part of HC8F to a RAT
     mpq_init_set_d (&lpAllTypes->aplRat, lpaplHC8F[uInt].parts[0]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8F parts
-        for (i = 1; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8F part is a near 0
-            bRet &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8F_RAT
 
@@ -15623,8 +15452,8 @@ void TCA_HC8F_HC2R
 {
     int i;
 
-    // Loop through all of the parts common to HC8F & HC2R
-    for (i = 0; i < 2; i++)     // Note 2 from HC2R
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy HC8F to HC2R
         mpq_init_set_d (&lpAllTypes->aplHC2R.parts[i], lpaplHC8F[uInt].parts[i]);
 
@@ -15632,14 +15461,12 @@ void TCA_HC8F_HC2R
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8F parts
-        for (; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8F part is a near 0
-            bRet &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8F_HC2R
 
@@ -15657,8 +15484,8 @@ void TCA_HC8F_HC4R
 {
     int i;
 
-    // Loop through all of the parts common to HC8F & HC4R
-    for (i = 0; i < 4; i++)     // Note 4 from HC4R
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy HC8F to HC4R
         mpq_init_set_d (&lpAllTypes->aplHC4R.parts[i], lpaplHC8F[uInt].parts[i]);
 
@@ -15666,14 +15493,12 @@ void TCA_HC8F_HC4R
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HX8F parts
-        for (; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8F part is a near 0
-            bRet &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8F_HC4R
 
@@ -15691,7 +15516,7 @@ void TCA_HC8F_HC8R
 {
     int i;
 
-    // Loop through all of the parts common to HC8F & HC8R
+    // Loop through the common parts
     for (i = 0; i < 8; i++)
         // Copy HC8F to HC8R
         mpq_init_set_d (&lpAllTypes->aplHC8R.parts[i], lpaplHC8F[uInt].parts[i]);
@@ -15699,7 +15524,7 @@ void TCA_HC8F_HC8R
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC8F_HC8R
 
 
@@ -15714,23 +15539,21 @@ void TCA_HC8F_VFP
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to VFP
     mpfr_init_set_d (&lpAllTypes->aplVfp, lpaplHC8F[uInt].parts[0], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8F parts
-        for (i = 1; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8F part is a near 0
-            bRet &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8F_VFP
 
@@ -15748,8 +15571,8 @@ void TCA_HC8F_HC2V
 {
     int i;
 
-    // Loop through all of the parts common to HC8F & HC2V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2V
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC8F parts to HC2V
         mpfr_init_set_d (&lpAllTypes->aplHC2V.parts[i], lpaplHC8F[uInt].parts[i], MPFR_RNDN);
 
@@ -15757,14 +15580,12 @@ void TCA_HC8F_HC2V
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8F parts
-        for (; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8F part is a near 0
-            bRet &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8F_HC2V
 
@@ -15782,8 +15603,8 @@ void TCA_HC8F_HC4V
 {
     int i;
 
-    // Loop through all of the parts common to HC8F & HC4V
-    for (i = 0; i < 4; i++)     // Note 4 from HC4V
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the HC8F parts to HC4V
         mpfr_init_set_d (&lpAllTypes->aplHC4V.parts[i], lpaplHC8F[uInt].parts[i], MPFR_RNDN);
 
@@ -15791,14 +15612,12 @@ void TCA_HC8F_HC4V
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8F parts
-        for (; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8F part is a near 0
-            bRet &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertFltToInt (&lpaplHC8F[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8F_HC4V
 
@@ -15816,7 +15635,7 @@ void TCA_HC8F_HC8V
 {
     int i;
 
-    // Loop through all of the parts common to HC8F & HC8V
+    // Loop through the common parts
     for (i = 0; i < 8; i++)
         // Copy the HC8F parts to HC8V
         mpfr_init_set_d (&lpAllTypes->aplHC8V.parts[i], lpaplHC8F[uInt].parts[i], MPFR_RNDN);
@@ -15824,7 +15643,7 @@ void TCA_HC8F_HC8V
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC8F_HC8V
 
 
@@ -15839,23 +15658,22 @@ void TCA_HC8R_BOOL
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part to BOOL
     lpAllTypes->aplInteger = ConvertRatToInt (&lpaplHC8R[uInt].parts[0], 0, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
     {
+        int i = 1;
+
         // Mark as successful or not
-        UBOOL bRet = *lpbRet && IsBooleanValue (lpAllTypes->aplInteger);
+        lpbRet[0] &= IsBooleanValue (lpAllTypes->aplInteger);
 
         // Loop through the remainder of the imaginary HC8R parts
-        for (i = 1; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8R_BOOL
 
@@ -15871,23 +15689,19 @@ void TCA_HC8R_INT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Attempt to convert the real part of HC8R to INT
     lpAllTypes->aplInteger = ConvertRatToInt (&lpaplHC8R[uInt].parts[0], 0, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
     {
-        // Initialize to successful
-        UBOOL bRet = TRUE;
+        int i = 1;
 
         // Loop through the remainder of the imaginary HC8R parts
-        for (i = 1; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8R_INT
 
@@ -15906,7 +15720,7 @@ void TCA_HC8R_HC2I
     int   i;
     UBOOL bRet[2];
 
-    // Loop through all of the parts common to HC8R & HC2I
+    // Loop through the common parts
     for (i = 0; i < 2; i++)
         // Attempt to convert each part of HC8R to INT
         lpAllTypes->aplHC2I.parts[i] = ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
@@ -15915,14 +15729,12 @@ void TCA_HC8R_HC2I
     if (lpbRet NE NULL)
     {
         // Mark as successful or not
-        bRet[0] &= bRet[1];
-
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
         // Loop through the remainder of the imaginary HC8R parts
-        for (; bRet[0] && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8R part is a near 0
-            bRet[0] &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &bRet[0]) EQ 0;
-
-        *lpbRet = bRet[0];
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8R_HC2I
 
@@ -15941,8 +15753,8 @@ void TCA_HC8R_HC4I
     int   i;
     UBOOL bRet[4];
 
-    // Loop through all of the parts common to HC8R & HC4I
-    for (i = 0; i < 4; i++)     // Note 4 from HC4I
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Attempt to convert each part of HC8R to INT
         lpAllTypes->aplHC4I.parts[i] = ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
@@ -15950,15 +15762,14 @@ void TCA_HC8R_HC4I
     if (lpbRet NE NULL)
     {
         // Mark as successful or not
-        bRet[0] &= bRet[1]
-                && bRet[2]
-                && bRet[3];
+        lpbRet[0] = bRet[0]
+                 && bRet[1]
+                 && bRet[2]
+                 && bRet[3];
         // Loop through the remainder of the imaginary HC8R parts
-        for (; bRet[0] && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8R part is a near 0
-            bRet[0] &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &bRet[0]) EQ 0;
-
-        *lpbRet = bRet[0];
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8R_HC4I
 
@@ -15977,7 +15788,7 @@ void TCA_HC8R_HC8I
     int   i;
     UBOOL bRet[8];
 
-    // Loop through all of the parts common to HC8R & HC8I
+    // Loop through the common parts
     for (i = 0; i < 8; i++)
         // Attempt to convert each part of HC8R to INT
         lpAllTypes->aplHC8I.parts[i] = ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
@@ -15985,14 +15796,14 @@ void TCA_HC8R_HC8I
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1]
-               && bRet[2]
-               && bRet[3]
-               && bRet[4]
-               && bRet[5]
-               && bRet[6]
-               && bRet[7];
+        lpbRet[0] = bRet[0]
+                 && bRet[1]
+                 && bRet[2]
+                 && bRet[3]
+                 && bRet[4]
+                 && bRet[5]
+                 && bRet[6]
+                 && bRet[7];
 } // TCA_HC8R_HC8I
 
 
@@ -16007,23 +15818,21 @@ void TCA_HC8R_FLT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Copy the real part of HC8R as FLT
     lpAllTypes->aplFloat = mpq_get_d (&lpaplHC8R[uInt].parts[0]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8R parts
-        for (i = 1; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8R_FLT
 
@@ -16041,8 +15850,8 @@ void TCA_HC8R_HC2F
 {
     int i;
 
-    // Loop through all of the parts common to HC8R & HC2F
-    for (i = 0; i < 2; i++)     // Note 2 from HC2F
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the parts of HC8R as HC2F
         lpAllTypes->aplHC2F.parts[i] = mpq_get_d (&lpaplHC8R[uInt].parts[i]);
 
@@ -16050,14 +15859,12 @@ void TCA_HC8R_HC2F
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8R parts
-        for (; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8R_HC2F
 
@@ -16075,8 +15882,8 @@ void TCA_HC8R_HC4F
 {
     int i;
 
-    // Loop through all of the parts common to HC8R & HC4F
-    for (i = 0; i < 4; i++)     // Note 4 from HC4F
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the parts of HC8R as HC4F
         lpAllTypes->aplHC4F.parts[i] = mpq_get_d (&lpaplHC8R[uInt].parts[i]);
 
@@ -16084,14 +15891,12 @@ void TCA_HC8R_HC4F
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8R parts
-        for (; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8R_HC4F
 
@@ -16109,7 +15914,7 @@ void TCA_HC8R_HC8F
 {
     int i;
 
-    // Loop through all of the parts common to HC8R & HC8F
+    // Loop through the common parts
     for (i = 0; i < 8; i++)
         // Copy the parts of HC8R as HC8F
         lpAllTypes->aplHC8F.parts[i] = mpq_get_d (&lpaplHC8R[uInt].parts[i]);
@@ -16117,7 +15922,7 @@ void TCA_HC8R_HC8F
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC8R_HC8F
 
 
@@ -16132,23 +15937,21 @@ void TCA_HC8R_RAT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Convert the real part of HC8R to a RAT
     mpq_init_set (&lpAllTypes->aplRat, &lpaplHC8R[uInt].parts[0]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8R parts
-        for (i = 1; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8R_RAT
 
@@ -16166,8 +15969,8 @@ void TCA_HC8R_HC2R
 {
     int i;
 
-    // Loop through all of the parts common to HC8R & HC2R
-    for (i = 0; i < 2; i++)     // Note 2 from HC2R
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC8R as HC2R
         mpq_init_set (&lpAllTypes->aplHC2R.parts[i], &lpaplHC8R[uInt].parts[i]);
 
@@ -16175,14 +15978,12 @@ void TCA_HC8R_HC2R
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8R parts
-        for (; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8R_HC2R
 
@@ -16200,8 +16001,8 @@ void TCA_HC8R_HC4R
 {
     int i;
 
-    // Loop through all of the parts common to HC8R & HC4R
-    for (i = 0; i < 4; i++)     // Note 4 from HC4R
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the HC8R as HC4R
         mpq_init_set (&lpAllTypes->aplHC4R.parts[i], &lpaplHC8R[uInt].parts[i]);
 
@@ -16209,14 +16010,12 @@ void TCA_HC8R_HC4R
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8R parts
-        for (; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC4R_HC4R
 
@@ -16234,7 +16033,7 @@ void TCA_HC8R_HC8R
 {
     int i;
 
-    // Loop through all of the parts common to HC8R & HC8R
+    // Loop through the common parts
     for (i = 0; i < 8; i++)
         // Copy the HC8R as HC8R
         mpq_init_set (&lpAllTypes->aplHC8R.parts[i], &lpaplHC8R[uInt].parts[i]);
@@ -16242,7 +16041,7 @@ void TCA_HC8R_HC8R
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC2R_HC8R
 
 
@@ -16257,23 +16056,21 @@ void TCA_HC8R_VFP
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Copy the real part of HC8R as VFP
     mpfr_init_set_q  (&lpAllTypes->aplVfp, &lpaplHC8R[uInt].parts[0], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
-        // Loop through the remainder of the imaginary HC8R ports
-        for (i = 1; bRet && i < 8; i++)
+        // Loop through the remainder of the imaginary HC8R parts
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8R_VFP
 
@@ -16291,8 +16088,8 @@ void TCA_HC8R_HC2V
 {
     int i;
 
-    // Loop through all of the parts common to HC8R & HC2V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2V
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the parts of HC8R as HC2V
         mpfr_init_set_q  (&lpAllTypes->aplHC2V.parts[i], &lpaplHC8R[uInt].parts[i], MPFR_RNDN);
 
@@ -16300,14 +16097,12 @@ void TCA_HC8R_HC2V
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8R parts
-        for (; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8R_HC2V
 
@@ -16325,8 +16120,8 @@ void TCA_HC8R_HC4V
 {
     int i;
 
-    // Loop through all of the parts common to HC8R & HC4V
-    for (i = 0; i < 4; i++)     // Note 4 from HC4V
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the parts of HC8R as HC4V
         mpfr_init_set_q  (&lpAllTypes->aplHC4V.parts[i], &lpaplHC8R[uInt].parts[i], MPFR_RNDN);
 
@@ -16334,14 +16129,12 @@ void TCA_HC8R_HC4V
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8R parts
-        for (; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8R part is a near 0
-            bRet &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertRatToInt (&lpaplHC8R[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8R_HC4V
 
@@ -16359,7 +16152,7 @@ void TCA_HC8R_HC8V
 {
     int i;
 
-    // Loop through all of the parts common to HC8R & HC8V
+    // Loop through the common parts
     for (i = 0; i < 8; i++)
         // Copy the parts of HC8R as HC8V
         mpfr_init_set_q  (&lpAllTypes->aplHC8V.parts[i], &lpaplHC8R[uInt].parts[i], MPFR_RNDN);
@@ -16367,7 +16160,7 @@ void TCA_HC8R_HC8V
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC8R_HC8V
 
 
@@ -16382,23 +16175,22 @@ void TCA_HC8V_BOOL
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Set the real part of HC8V to BOOL
     lpAllTypes->aplInteger = ConvertVfpToInt (&lpaplHC8V[uInt].parts[0], 0, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
     {
+        int i = 1;
+
         // Mark as successful or not
-        UBOOL bRet = *lpbRet && IsBooleanValue (lpAllTypes->aplInteger);
+        lpbRet[0] &= IsBooleanValue (lpAllTypes->aplInteger);
 
         // Loop through the remainder of the imaginary HC8V parts
-        for (i = 1; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8V_BOOL
 
@@ -16414,22 +16206,19 @@ void TCA_HC8V_INT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Attempt to convert the real part of HC8V to INT
     lpAllTypes->aplInteger = ConvertVfpToInt (&lpaplHC8V[uInt].parts[0], 0, lpAllTypes, lpbRet);
 
     // If the flag ptr is valid, ...
-    if (lpbRet NE NULL)
+    if (lpbRet NE NULL
+     && lpbRet[0])
     {
-        UBOOL bRet = TRUE;
+        int i = 1;
 
         // Loop through the remainder of the imaginary HC8V parts
-        for (i = 1; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8V_INT
 
@@ -16448,8 +16237,8 @@ void TCA_HC8V_HC2I
     int   i;
     UBOOL bRet[2];
 
-    // Loop through all of the parts common to HC8V & HC2I
-    for (i = 0; i < 2; i++)     // Note 2 from HC2I
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Attempt to convert each part of HC8V to INT
         lpAllTypes->aplHC2I.parts[i] = ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
@@ -16457,14 +16246,12 @@ void TCA_HC8V_HC2I
     if (lpbRet NE NULL)
     {
         // Mark as successful or not
-        bRet[0] &= bRet[1];
-
+        lpbRet[0] = bRet[0]
+                 && bRet[1];
         // Loop through the remainder of the imaginary HC8V parts
-        for (; bRet[0] && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8V part is a near 0
-            bRet[0] &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &bRet[0]) EQ 0;
-
-        *lpbRet = bRet[0];
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8V_HC2I
 
@@ -16483,8 +16270,8 @@ void TCA_HC8V_HC4I
     int   i;
     UBOOL bRet[4];
 
-    // Loop through all of the parts common to HC8V & HC4I
-    for (i = 0; i < 4; i++)     // Note 4 from HC4I
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Attempt to convert each part of HC8V to INT
         lpAllTypes->aplHC4I.parts[i] = ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
 
@@ -16492,15 +16279,14 @@ void TCA_HC8V_HC4I
     if (lpbRet NE NULL)
     {
         // Mark as successful or not
-        bRet[0] &= bRet[1]
-                && bRet[2]
-                && bRet[3];
+        lpbRet[0] &= bRet[0]
+                  && bRet[1]
+                  && bRet[2]
+                  && bRet[3];
         // Loop through the remainder of the imaginary HC8V parts
-        for (; bRet[0] && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8V part is a near 0
-            bRet[0] &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &bRet[0]) EQ 0;
-
-        *lpbRet = bRet[0];
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8V_HC4I
 
@@ -16519,7 +16305,7 @@ void TCA_HC8V_HC8I
     int   i;
     UBOOL bRet[8];
 
-    // Loop through all of the parts common to HC8V & HC8I
+    // Loop through the common parts
     for (i = 0; i < 8; i++)
         // Attempt to convert each part of HC8V to INT
         lpAllTypes->aplHC8I.parts[i] = ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &bRet[i]);
@@ -16527,14 +16313,14 @@ void TCA_HC8V_HC8I
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful or not
-        *lpbRet = bRet[0]
-               && bRet[1]
-               && bRet[2]
-               && bRet[3]
-               && bRet[4]
-               && bRet[5]
-               && bRet[6]
-               && bRet[7];
+        lpbRet[0] = bRet[0]
+                 && bRet[1]
+                 && bRet[2]
+                 && bRet[3]
+                 && bRet[4]
+                 && bRet[5]
+                 && bRet[6]
+                 && bRet[7];
 } // TCA_HC8V_HC8I
 
 
@@ -16549,23 +16335,21 @@ void TCA_HC8V_FLT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Copy the real part of HC8V as FLT
     lpAllTypes->aplFloat = mpfr_get_d (&lpaplHC8V[uInt].parts[0], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8V parts
-        for (i = 1; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8V_FLT
 
@@ -16583,8 +16367,8 @@ void TCA_HC8V_HC2F
 {
     int i;
 
-    // Loop through all of the parts common to HC8V & HC2F
-    for (i = 0; i < 2; i++)     // Note 2 from HC2F
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the parts of HC8V as HC2F
         lpAllTypes->aplHC2F.parts[i] = mpfr_get_d (&lpaplHC8V[uInt].parts[i], MPFR_RNDN);
 
@@ -16592,14 +16376,12 @@ void TCA_HC8V_HC2F
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8V parts
-        for (; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8V_HC2F
 
@@ -16617,8 +16399,8 @@ void TCA_HC8V_HC4F
 {
     int i;
 
-    // Loop through all of the parts common to HC8V & HC4F
-    for (i = 0; i < 4; i++)     // Note 4 from HC4F
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the parts of HC8V as HC4F
         lpAllTypes->aplHC4F.parts[i] = mpfr_get_d (&lpaplHC8V[uInt].parts[i], MPFR_RNDN);
 
@@ -16626,14 +16408,12 @@ void TCA_HC8V_HC4F
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8V parts
-        for (i = 1; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8V_HC4F
 
@@ -16651,7 +16431,7 @@ void TCA_HC8V_HC8F
 {
     int i;
 
-    // Loop through all of the parts common to HC8V & HC8F
+    // Loop through the common parts
     for (i = 0; i < 8; i++)
         // Copy the parts of HC8V as HC8F
         lpAllTypes->aplHC8F.parts[i] = mpfr_get_d (&lpaplHC8V[uInt].parts[i], MPFR_RNDN);
@@ -16659,7 +16439,7 @@ void TCA_HC8V_HC8F
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC8V_HC8F
 
 
@@ -16674,23 +16454,21 @@ void TCA_HC8V_RAT
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Convert the real part of HC8V to a RAT
     mpq_init_set_fr (&lpAllTypes->aplRat, &lpaplHC8V[uInt].parts[0]);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8V parts
-        for (i = 1; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8V_RAT
 
@@ -16708,8 +16486,8 @@ void TCA_HC8V_HC2R
 {
     int i;
 
-    // Loop through all of the parts common to HC8V & HC2R
-    for (i = 0; i < 2; i++)     // Note 2 from HC2R
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC8V as HC4R
         mpq_init_set_fr (&lpAllTypes->aplHC4R.parts[i], &lpaplHC8V[uInt].parts[i]);
 
@@ -16717,14 +16495,12 @@ void TCA_HC8V_HC2R
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8V parts
-        for (; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8V_HC2R
 
@@ -16742,8 +16518,8 @@ void TCA_HC8V_HC4R
 {
     int i;
 
-    // Loop through all of the parts common to HC8V & HC4R
-    for (i = 0; i < 4; i++)     // Note 4 from HC4R
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the HC8V as HC4R
         mpq_init_set_fr (&lpAllTypes->aplHC4R.parts[i], &lpaplHC8V[uInt].parts[i]);
 
@@ -16751,14 +16527,12 @@ void TCA_HC8V_HC4R
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8V parts
-        for (; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8V_HC4R
 
@@ -16776,7 +16550,7 @@ void TCA_HC8V_HC8R
 {
     int i;
 
-    // Loop through all of the parts common to HC8V & HC8R
+    // Loop through the common parts
     for (i = 0; i < 8; i++)
         // Copy the HC8V as HC8R
         mpq_init_set_fr (&lpAllTypes->aplHC8R.parts[i], &lpaplHC8V[uInt].parts[i]);
@@ -16784,7 +16558,7 @@ void TCA_HC8V_HC8R
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC8V_HC8R
 
 
@@ -16799,23 +16573,21 @@ void TCA_HC8V_VFP
      LPUBOOL     lpbRet)
 
 {
-    int i;
-
     // Copy the real part of HC8V as VFP
     mpfr_init_set  (&lpAllTypes->aplVfp, &lpaplHC8V[uInt].parts[0], MPFR_RNDN);
 
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
     {
+        int i = 1;
+
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
-        // Loop through the remainder of the imaginary HC8V ports
-        for (i = 1; bRet && i < 8; i++)
+        // Loop through the remainder of the imaginary HC8V parts
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8V_VFP
 
@@ -16833,8 +16605,8 @@ void TCA_HC8V_HC2V
 {
     int i;
 
-    // Loop through all of the parts common to HC8V & HC2V
-    for (i = 0; i < 2; i++)     // Note 2 from HC2V
+    // Loop through the common parts
+    for (i = 0; i < 2; i++)     // No bRet
         // Copy the HC8V part to HC2V
         mpfr_init_set (&lpAllTypes->aplHC2V.parts[i], &lpaplHC8V[uInt].parts[i], MPFR_RNDN);
 
@@ -16842,14 +16614,12 @@ void TCA_HC8V_HC2V
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
         // Loop through the remainder of the imaginary HC8V parts
-        for (; bRet && i < 8; i++)
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8V_HC2V
 
@@ -16867,8 +16637,8 @@ void TCA_HC8V_HC4V
 {
     int i;
 
-    // Loop through all of the parts common to HC8V & HC4V
-    for (i = 0; i < 4; i++)     // Note 4 from HC4V
+    // Loop through the common parts
+    for (i = 0; i < 4; i++)     // No bRet
         // Copy the HC4V part to HC4V
         mpfr_init_set (&lpAllTypes->aplHC4V.parts[i], &lpaplHC8V[uInt].parts[i], MPFR_RNDN);
 
@@ -16876,14 +16646,12 @@ void TCA_HC8V_HC4V
     if (lpbRet NE NULL)
     {
         // Mark as successful
-        UBOOL bRet = TRUE;
+        lpbRet[0] = TRUE;
 
-        // Loop through the remainder of the imaginary HC8V ports
-        for (i = 1; bRet && i < 8; i++)
+        // Loop through the remainder of the imaginary HC8V parts
+        for (; lpbRet[0] && i < 8; i++)
             // Ensure the imaginary HC8V part is a near 0
-            bRet &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &bRet) EQ 0;
-
-        *lpbRet = bRet;
+            lpbRet[0] &= ConvertVfpToInt (&lpaplHC8V[uInt].parts[i], 0, lpAllTypes, &lpbRet[0]) EQ 0;
     } // End IF
 } // TCA_HC8V_HC4V
 
@@ -16901,7 +16669,7 @@ void TCA_HC8V_HC8V
 {
     int i;
 
-    // Loop through all of the parts common to HC8V & HC8V
+    // Loop through the common parts
     for (i = 0; i < 8; i++)
         // Copy the HC8V part to HC8V
         mpfr_init_set (&lpAllTypes->aplHC8V.parts[0], &lpaplHC8V[uInt].parts[i], MPFR_RNDN);
@@ -16909,7 +16677,7 @@ void TCA_HC8V_HC8V
     // If the flag ptr is valid, ...
     if (lpbRet NE NULL)
         // Mark as successful
-        *lpbRet = TRUE;
+        lpbRet[0] = TRUE;
 } // TCA_HC8V_HC8V
 
 
@@ -16934,7 +16702,7 @@ HGLOBAL AllocateDemote
                       lpMemHdrArg = NULL;   // Ptr to arg header
 
     // Assume no error
-    *lpbRet = TRUE;
+    lpbRet[0] = TRUE;
 
     // If the arg is HC, ...
     if (IsHCAny (aplTypeArg))
@@ -16961,7 +16729,7 @@ HGLOBAL AllocateDemote
                          FALSE))                                // TRUE iff dimension demotion allowed
         {
             // Mark as not demotable
-            *lpbRet = FALSE;
+            lpbRet[0] = FALSE;
 
             goto DOMAIN_EXIT;
         } // End IF
@@ -17011,7 +16779,7 @@ UBOOL SimpleDemote
     // Assume we fail
     *lphGlbArg = NULL;
     if (lpbRet NE NULL)
-        *lpbRet = FALSE;
+        lpbRet[0] = FALSE;
 
     // Get the attributes (Type, NELM, and Rank) of the right arg
     AttrsOfGlb (hGlbArg, &aplTypeArg, &aplNELMArg, &aplRankArg, NULL);
@@ -17045,7 +16813,7 @@ UBOOL SimpleDemote
                          &bRet);            // Ptr to TRUE iff the result is not a DOMAIN ERROR
         // Set result if the caller asked
         if (lpbRet NE NULL)
-            *lpbRet = bRet;
+            lpbRet[0] = bRet;
 
         // Check for error
         if (!bRet)

@@ -1,0 +1,9 @@
+Build #1944 -- Version 0.5.8.xx
+-------------------------------
+
+* Consolidate Code
+
+Directory branches/bsmith/NewTypes:
+
+PRIMFNS.C:
+  Consolidate code.

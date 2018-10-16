@@ -670,10 +670,12 @@ APLSTYPE StorageType
         case ARRAY_HC2F:
         case ARRAY_HC2R:
         case ARRAY_HC2V:
+
         case ARRAY_HC4I:
         case ARRAY_HC4F:
         case ARRAY_HC4R:
         case ARRAY_HC4V:
+
         case ARRAY_HC8I:
         case ARRAY_HC8F:
         case ARRAY_HC8R:
@@ -950,10 +952,12 @@ HGLOBAL MakeMonPrototype_EM_PTB
             case ARRAY_HC2F:
             case ARRAY_HC2R:
             case ARRAY_HC2V:
+
             case ARRAY_HC4I:
             case ARRAY_HC4F:
             case ARRAY_HC4R:
             case ARRAY_HC4V:
+
             case ARRAY_HC8I:
             case ARRAY_HC8F:
             case ARRAY_HC8R:
@@ -1233,12 +1237,13 @@ HGLOBAL MakeMonPrototype_EM_PTB
             break;
 
         case ARRAY_RAT:
-        case ARRAY_VFP:
         case ARRAY_HC2R:
-        case ARRAY_HC2V:
         case ARRAY_HC4R:
-        case ARRAY_HC4V:
         case ARRAY_HC8R:
+
+        case ARRAY_VFP:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
         case ARRAY_HC8V:
             // Calculate space needed for the result
             ByteRes = CalcArraySize (aplType, aplNELM, aplRank);
@@ -2626,36 +2631,21 @@ HGLOBAL CopyGlbAsType_EM
         case ARRAY_HC2I:                    // Res = HC2I
         case ARRAY_HC4I:                    // Res = HC4I
         case ARRAY_HC8I:                    // Res = HC8I
-            // Loop through the arg elements
-            for (uArg = 0; uArg < aplNELMArg; uArg++, ((LPBYTE) lpMemRes) += iSizeofRes)
-                (*aTypeActPromote[aplTypeArg][aplTypeRes]) (lpMemArg, uArg, (LPALLTYPES) lpMemRes);
-
-            break;
 
         case ARRAY_FLOAT:                   // Res = FLOAT
         case ARRAY_HC2F:                    // Res = HC2F
         case ARRAY_HC4F:                    // Res = HC4F
         case ARRAY_HC8F:                    // Res = HC8F
-            // Loop through the arg elements
-            for (uArg = 0; uArg < aplNELMArg; uArg++, ((LPBYTE) lpMemRes) += iSizeofRes)
-                (*aTypeActPromote[aplTypeArg][aplTypeRes]) (lpMemArg, uArg, (LPALLTYPES) lpMemRes);
-
-            break;
 
         case ARRAY_RAT:                     // Res = RAT
         case ARRAY_HC2R:                    // Res = HC2R
         case ARRAY_HC4R:                    // Res = HC4R
         case ARRAY_HC8R:                    // Res = HC8R
-            // Loop through the arg elements
-            for (uArg = 0; uArg < aplNELMArg; uArg++, ((LPBYTE) lpMemRes) += iSizeofRes)
-                (*aTypeActPromote[aplTypeArg][aplTypeRes]) (lpMemArg, uArg, (LPALLTYPES) lpMemRes);
-
-            break;
 
         case ARRAY_VFP:                     // Res = VFP
-        case ARRAY_HC2V:                    // Res = HC2R
-        case ARRAY_HC4V:                    // Res = HC4R
-        case ARRAY_HC8V:                    // Res = HC8R
+        case ARRAY_HC2V:                    // Res = HC2V
+        case ARRAY_HC4V:                    // Res = HC4V
+        case ARRAY_HC8V:                    // Res = HC8V
             // Loop through the arg elements
             for (uArg = 0; uArg < aplNELMArg; uArg++, ((LPBYTE) lpMemRes) += iSizeofRes)
                 (*aTypeActPromote[aplTypeArg][aplTypeRes]) (lpMemArg, uArg, (LPALLTYPES) lpMemRes);

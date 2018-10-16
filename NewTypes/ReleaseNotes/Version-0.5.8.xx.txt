@@ -1,6 +1,17 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1944 -- Version 0.5.8.xx
+-------------------------------
+
+* Consolidate Code
+
+Directory branches/bsmith/NewTypes:
+
+PRIMFNS.C:
+  Consolidate code.
+
+
 Build #1943 -- Version 0.5.8.xx
 -------------------------------
 

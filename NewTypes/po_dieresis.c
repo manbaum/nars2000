@@ -93,7 +93,8 @@ LPPL_YYSTYPE PrimProtoOpDieresis_EM_YY
 //***************************************************************************
 //  $PrimIdentOpDieresis_EM_YY
 //
-//  Generate an identity element for the primitive operator dyadic Dieresis
+//  Generate an identity element for the dyadic derived function from the
+//    primitive operator Dieresis
 //***************************************************************************
 
 LPPL_YYSTYPE PrimIdentOpDieresis_EM_YY
@@ -889,10 +890,12 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
             case ARRAY_HC2F:
             case ARRAY_HC2R:
             case ARRAY_HC2V:
+
             case ARRAY_HC4I:
             case ARRAY_HC4F:
             case ARRAY_HC4R:
             case ARRAY_HC4V:
+
             case ARRAY_HC8I:
             case ARRAY_HC8F:
             case ARRAY_HC8R:
@@ -952,7 +955,8 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     if (uValErrCnt NE 0)
     {
         // Check for all VALUE ERRORs
-        if (uValErrCnt EQ aplNELMRht)
+        if (uValErrCnt EQ aplNELMRht
+         || IsEmpty (aplNELMRht))
         {
             // We no longer need this storage
             FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;

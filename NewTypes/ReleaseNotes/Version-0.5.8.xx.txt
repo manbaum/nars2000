@@ -1,6 +1,17 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1948 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In Monadic Derived Function From Dieresis With Function On Empty Right Arg That Produces No Result
+
+Directory branches/bsmith/NewTypes:
+
+PO_DIERESIS.C:
+  Fix bug in monadic derived function from Dieresis with function on empty right arg that produces no result (e.g., {execute}).
+
+
 Build #1947 -- Version 0.5.8.xx
 -------------------------------
 

@@ -1,6 +1,17 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1945 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug When Passing Derived Function With Axis Operator As Left Operand To Scan
+
+Directory branches/bsmith/NewTypes:
+
+PO_SLOPE.C:
+  Fix bug when passing derived function with axis operator as left operand to scan.
+
+
 Build #1944 -- Version 0.5.8.xx
 -------------------------------
 

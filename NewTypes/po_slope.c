@@ -153,7 +153,8 @@ LPPL_YYSTYPE PrimOpMonSlopeCommon_EM_YY
                       tkRhtArg = {0};       // Right ...
     LPTOKEN           lptkAxisOpr;          // Ptr to axis token (may be NULL)
     LPPL_YYSTYPE      lpYYRes = NULL,       // Ptr to the result
-                      lpYYFcnStrLft;        // Ptr to left operand function strand
+                      lpYYFcnStrLft,        // Ptr to left operand function strand
+                      lpYYFcnStrLft2;       // ...
     PL_YYSTYPE        YYFcnStrLft;          // Temporary left operand function strand for alternating scans
     LPPRIMFNS         lpPrimProtoLft;       // Ptr to left operand prototype function
     LPSYMENTRY        lpSymTmp;             // Ptr to temporary LPSYMENTRY
@@ -643,13 +644,22 @@ RESTART_ALLOC:
 ////////tkLftArg.tkData.tkGlbData  =            // To be filled in below
         tkLftArg.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 RESTART_EXCEPTION:
-        // Copy the current left operand function strand
-        //   to substitute into when we're doing alternating scans
-        YYFcnStrLft = *lpYYFcnStrLft;
+        // If the function is alternating, ...
+        if (lpPrimFlagsLft->bAlter)
+        {
+            // Copy the current left operand function strand
+            //   to substitute into when we're doing alternating scans
+            YYFcnStrLft = *lpYYFcnStrLft;
+
+            // Point to the left operand
+            lpYYFcnStrLft2 = &YYFcnStrLft;
+        } else
+            // Point to the left operand
+            lpYYFcnStrLft2 = lpYYFcnStrLft;
 
         // In case we're executing an alternating function,
         //   save the original function
-        alterChar = YYFcnStrLft.tkToken.tkData.tkChar;
+        alterChar = lpYYFcnStrLft2->tkToken.tkData.tkChar;
 
         // Loop through the right arg calling the
         //   function strand between data, storing in the
@@ -667,14 +677,14 @@ RESTART_EXCEPTION:
             //   vector under consideration.
 
             // If the right arg is associative, and
-            // If this function is associative or alternating, speed it up
+            // If this function is associative on the right arg or alternating, speed it up
             if ((!IsSimpleGlbNum (aplTypeRht) || TranslateArrayTypeToHCDim (aplTypeRht) <= 4)
              && ((lpPrimFlagsLft->bAssocBool && IsSimpleBool (aplTypeRht))
               || (lpPrimFlagsLft->bAssocNumb && IsSimpleGlbNum (aplTypeRht))
               ||  lpPrimFlagsLft->bAlter))
             {
                 // Restore the original function in case it's alternating
-                YYFcnStrLft.tkToken.tkData.tkChar = alterChar;
+                lpYYFcnStrLft2->tkToken.tkData.tkChar = alterChar;
 
                 // Calculate the first index in this vector
                 uRht = uDimRht + 0 * uDimHi;
@@ -893,12 +903,12 @@ RESTART_EXCEPTION:
                         //   function which takes a function token, and one to a
                         //   primitive operator which takes a function strand
                         lpYYRes = (*lpPrimProtoLft) (&tkLftArg,         // Ptr to left arg token
-                                           (LPTOKEN) &YYFcnStrLft,      // Ptr to left operand function strand
+                                           (LPTOKEN)  lpYYFcnStrLft2,   // Ptr to left operand function strand
                                                      &tkRhtArg,         // Ptr to right arg token
                                                       lptkAxisOpr);     // Ptr to axis token (may be NULL)
                     else
                         lpYYRes = ExecFuncStr_EM_YY (&tkLftArg,         // Ptr to left arg token
-                                                     &YYFcnStrLft,      // Ptr to function strand
+                                                      lpYYFcnStrLft2,   // Ptr to function strand
                                                      &tkRhtArg,         // Ptr to right arg token
                                                       lptkAxisOpr);     // Ptr to axis token (may be NULL)
                     // Free the left & right arg tokens

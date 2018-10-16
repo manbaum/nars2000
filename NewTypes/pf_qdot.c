@@ -2131,6 +2131,32 @@ void PrimFnDydQuoteDotHC2FisHC2FvHC2F
             aplRht,
             aplTmp1 = {0},
             aplTmp2 = {0};
+    APLINT  aplInteger;             // Right arg as an integer
+    UBOOL   bRet;                   // TRUE iff exact integer conversion
+
+    // Attempt to convert the left arg to an integer
+    aplInteger = ConvertToInteger_SCT (ARRAY_HC2F, &lpatLft->aplHC2F, 0, &bRet);
+
+    // If the left arg is an integer, ...
+    if (bRet)
+    {
+        // If L == 0, ...
+        if (aplInteger EQ 0)
+        {
+            // Res = 1
+            lpMemRes[uRes] = fpcfOne;
+
+            return;
+        } else
+        // If L == 1, ...
+        if (aplInteger EQ 1)
+        {
+            // Res = R
+            lpMemRes[uRes] = lpatRht->aplHC2F;
+
+            return;
+        } // End IF
+    } // End IF
 
     // Z = (!R) / (!L) * !R-L
     aplLft = FactHC2F (lpatLft->aplHC2F);                               // !L
@@ -2206,6 +2232,32 @@ void PrimFnDydQuoteDotHC2VisHC2VvHC2V
             aplRht,
             aplTmp1 = {0},
             aplTmp2 = {0};
+    APLINT  aplInteger;             // Right arg as an integer
+    UBOOL   bRet;                   // TRUE iff exact integer conversion
+
+    // Attempt to convert the left arg to an integer
+    aplInteger = ConvertToInteger_SCT (ARRAY_HC2V, &lpatLft->aplHC2F, 0, &bRet);
+
+    // If the left arg is an integer, ...
+    if (bRet)
+    {
+        // If L == 0, ...
+        if (aplInteger EQ 0)
+        {
+            // Res = 1
+            mphc2v_init_set (&lpMemRes[uRes], &mpcfOne);
+
+            return;
+        } else
+        // If L == 1, ...
+        if (aplInteger EQ 1)
+        {
+            // Res = R
+            mphc2v_init_set (&lpMemRes[uRes], &lpatRht->aplHC2V);
+
+            return;
+        } // End IF
+    } // End IF
 
     // Z = (!R) / (!L) * !R-L
     aplLft = FactHC2V (lpatLft->aplHC2V);                               // !L
@@ -2286,6 +2338,32 @@ void PrimFnDydQuoteDotHC4FisHC4FvHC4F
             aplRht,
             aplTmp1 = {0},
             aplTmp4 = {0};
+    APLINT  aplInteger;             // Right arg as an integer
+    UBOOL   bRet;                   // TRUE iff exact integer conversion
+
+    // Attempt to convert the left arg to an integer
+    aplInteger = ConvertToInteger_SCT (ARRAY_HC4F, &lpatLft->aplHC4F, 0, &bRet);
+
+    // If the left arg is an integer, ...
+    if (bRet)
+    {
+        // If L == 0, ...
+        if (aplInteger EQ 0)
+        {
+            // Res = 1
+            lpMemRes[uRes] = fphfOne;
+
+            return;
+        } else
+        // If L == 1, ...
+        if (aplInteger EQ 1)
+        {
+            // Res = R
+            lpMemRes[uRes] = lpatRht->aplHC4F;
+
+            return;
+        } // End IF
+    } // End IF
 
     // Z = (!R) / (!L) * !R-L
     aplLft = FactHC4F (lpatLft->aplHC4F);                               // !L
@@ -2361,6 +2439,32 @@ void PrimFnDydQuoteDotHC4VisHC4VvHC4V
             aplRht,
             aplTmp1 = {0},
             aplTmp4 = {0};
+    APLINT  aplInteger;             // Right arg as an integer
+    UBOOL   bRet;                   // TRUE iff exact integer conversion
+
+    // Attempt to convert the left arg to an integer
+    aplInteger = ConvertToInteger_SCT (ARRAY_HC4V, &lpatLft->aplHC4F, 0, &bRet);
+
+    // If the left arg is an integer, ...
+    if (bRet)
+    {
+        // If L == 0, ...
+        if (aplInteger EQ 0)
+        {
+            // Res = 1
+            mphc4v_init_set (&lpMemRes[uRes], &mphfOne);
+
+            return;
+        } else
+        // If L == 1, ...
+        if (aplInteger EQ 1)
+        {
+            // Res = R
+            mphc4v_init_set (&lpMemRes[uRes], &lpatRht->aplHC4V);
+
+            return;
+        } // End IF
+    } // End IF
 
     // Z = (!R) / (!L) * !R-L
     aplLft = FactHC4V (lpatLft->aplHC4V);                               // !L

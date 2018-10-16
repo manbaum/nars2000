@@ -1,6 +1,17 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1951 -- Version 0.5.8.xx
+-------------------------------
+
+* In Dyadic Shriek Handle Boolean-valued Left Arg Specially
+
+Directory branches/bsmith/NewTypes:
+
+PF_QDOT.C:
+  In <PrimFnDydQuoteDotHC[24][FV]isHC[24][FV]vHC[24][FV]>, handle left arg of 0 or 1 specially.
+
+
 Build #1950 -- Version 0.5.8.xx
 -------------------------------
 

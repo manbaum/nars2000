@@ -1,0 +1,29 @@
+Build #1941 -- Version 0.5.8.xx
+-------------------------------
+
+* Miscellaneous DEBUG Changes
+
+Directory branches/bsmith/NewTypes:
+
+MAIN.C:
+  Rename <TabCtrl_SelChange> function to avoid conflict with the Windows API.
+
+QF_NFNS.C:
+  Rename <MyGlobalLockNfn> to <MyFGlobalLockNfns> to avoid conflict with []NA functions.
+
+RESDEBUG.H:
+  Reformat #define targets for consistent spacing.
+  Rename <MyGlobalLockNfn> to <MyFGlobalLockNfns> to avoid conflict with []NA functions.
+
+SESSMAN.C:
+  Move <INIT_PERTABVARS> from <sessman.c> to <tabctrl.c> to match where it is destroyed.
+  In <SMWndProc/MYWM_KEYDOWN/VK_RETURN>, use <MyGlobalLockInt> instead of <MyGlobalLockWsz> as the global memory isn't always Wsz.
+
+TABCTRL.C:
+  In functions that create Threads, check on the result.
+  Move <INIT_PERTABVARS> from <sessman.c> to <tabctrl.c> to match where it is destroyed.
+  Improve comments.
+  In <LclTabCtrlWndProc/TCM_DELETEITEM>, rename Thread DWORD to better reflect its usage.
+  Rename <TabCtrl_SelChange> function to avoid conflict with the Windows API.
+  Rename <MyGlobalLockNfn> to <MyFGlobalLockNfns> to avoid conflict with []NA functions.
+  Use macro to describe function name instead of literal.

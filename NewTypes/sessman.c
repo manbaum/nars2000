@@ -958,8 +958,6 @@ LRESULT APIENTRY SMWndProc
             // Save the window handle
             lpMemPTD->hWndSM = hWnd;
 
-            INIT_PERTABVARS
-
             // Allocate room for PTDMEMVIRT_LENGTH MemVirtStrs
             //  (see PTDMEMVIRT_ENUM)
             lpLclMemVirtStr =
@@ -2057,7 +2055,7 @@ NORMAL_EXIT:
                                 if (lpMemPTD->hGlbCurLine NE NULL)
                                 {
                                     // Lock the memory to get a ptr to it
-                                    lpwCurLine = MyGlobalLockWsz (lpMemPTD->hGlbCurLine);
+                                    lpwCurLine = MyGlobalLockInt (lpMemPTD->hGlbCurLine);
 
                                     // Restore the original of the current line
                                     ReplaceLine (hWndEC, lpwCurLine, uLineNum);

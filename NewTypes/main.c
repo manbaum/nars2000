@@ -1987,7 +1987,7 @@ LRESULT APIENTRY MFWndProc
                 case TCN_SELCHANGE:         // idTabCtl = (int) LOWORD(wParam);
                                             // lpnmhdr = (LPNMHDR) lParam;
                     // Call common code to show/hide the tab windows
-                    TabCtrl_SelChange ();
+                    MyTabCtrl_SelChange ();
 
                     return FALSE;       // We handled the msg
 
@@ -3075,12 +3075,12 @@ LRESULT APIENTRY MFWndProc
 
 
 //***************************************************************************
-//  $TabCtrl_SelChange
+//  $MyTabCtrl_SelChange
 //
 //  Handle Tab Ctrl notification TCN_SELCHANGE
 //***************************************************************************
 
-void TabCtrl_SelChange
+void MyTabCtrl_SelChange
     (void)
 
 {
@@ -3102,7 +3102,7 @@ void TabCtrl_SelChange
     // Show the child windows of the incoming tab
     if (iCurTabIndex NE -1)
         ShowHideChildWindows (GetWndMC (iCurTabIndex), TRUE);
-} // End TabCtrl_SelChange
+} // End MyTabCtrl_SelChange
 
 
 //***************************************************************************

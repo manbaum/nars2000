@@ -220,6 +220,10 @@ UBOOL CreateNewTab
 
     if (hThread NE NULL)
         ResumeThread (hThread);
+#ifdef DEBUG
+    else
+        DbgStop ();
+#endif
 
     return (hThread NE NULL);
 } // End CreateNewTab
@@ -389,6 +393,8 @@ UBOOL WINAPI CreateNewTabInThread
     //   so we can unlock the per-tab data memory
     hWndMC = lpMemPTD->hWndMC;
 
+    INIT_PERTABVARS
+
     // Create the Session Manager window
     hWndTmp =
       CreateMDIWindowW (LSMWNDCLASS,        // Class name
@@ -459,7 +465,7 @@ UBOOL WINAPI CreateNewTabInThread
         DisplayException ();
     } // End __try/__except
 
-    // GetMessageW returned FALSE for a Quit message
+    // GetMessageW returned FALSE for a WM_QUIT message
 
     // Mark as successful
     bRet = TRUE;
@@ -772,7 +778,7 @@ LRESULT WINAPI LclTabCtrlWndProc
             int     iNewTabIndex,               // Index of new tab (after deleting this one)
                     iDelTabIndex;               // Index of tab to delete
             LRESULT lResult;                    // Result from CallWindowProcW
-            DWORD   dwThreadId;                 // Outgoing thread ID
+            DWORD   dwPrvThreadId;              // Outgoing thread ID
             HWND    hWndFENxt;                  // Next Function Editing window handle
 
             // Save the tab index to delete
@@ -839,7 +845,7 @@ LRESULT WINAPI LclTabCtrlWndProc
             ResetTabColorIndex (lpMemPTD->crIndex);
 
             // Save the outgoing thread ID
-            dwThreadId = lpMemPTD->dwThreadId;
+            dwPrvThreadId = lpMemPTD->dwThreadId;
 
             // The storage for lpMemPTD is freed in CreateNewTabInThread
 
@@ -862,7 +868,7 @@ LRESULT WINAPI LclTabCtrlWndProc
             TabCtrl_SetCurSel (hWnd, iNewTabIndex);
 
             // Call common code to show/hide the tab windows
-            TabCtrl_SelChange ();
+            MyTabCtrl_SelChange ();
 
             // Save as new tab ID
             gCurTabID = TranslateTabIndexToID (iNewTabIndex);
@@ -877,7 +883,7 @@ LRESULT WINAPI LclTabCtrlWndProc
                 PostMessageW (lpMemPTD->hWndSM, MYWM_SETFOCUS, 0, 0);
 
                 // Tell the thread to quit
-                PostThreadMessageW (dwThreadId, WM_QUIT, 0, 0);
+                PostThreadMessageW (dwPrvThreadId, WM_QUIT, 0, 0);
             } else
                 // Tell the thread to quit
                 PostQuitMessage (0);
@@ -922,7 +928,7 @@ void FreeGlobalStorage
         UINT         uCnt;              // Loop counter
 
         // Lock the memory to get a ptr to it
-        lpNfnsHdr = MyGlobalLockNfn (lpMemPTD->hGlbNfns);
+        lpNfnsHdr = MyGlobalLockNfns (lpMemPTD->hGlbNfns);
 
         // Point to the first entry in use
         lpNfnsMem = &lpNfnsHdr->aNfnsData[lpNfnsHdr->offFirstInuse];
@@ -1037,6 +1043,10 @@ void CreateResetThread
 
     if (crThread.hThread NE NULL)
         ResumeThread (crThread.hThread);
+#ifdef DEBUG
+    else
+        DbgStop ();
+#endif
 } // End CreateResetThread
 
 
@@ -1075,7 +1085,7 @@ UBOOL WINAPI CreateResetInThread
     // Wait for the semaphore to trigger
     MyWaitForSemaphore (lpMemPTD->hExitphore,   // Ptr to handle to wait for
                         INFINITE,               // Timeout value in milliseconds
-                       L"CreateResetInThread"); // Caller identification
+                        WFCN);                  // Caller identification
     // Close the semaphore handle as it isn't used anymore
     MyCloseSemaphore (lpMemPTD->hExitphore); lpMemPTD->hExitphore = NULL;
 

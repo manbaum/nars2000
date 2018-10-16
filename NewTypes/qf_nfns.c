@@ -5778,7 +5778,7 @@ UBOOL IncrGlbNfns
     if (hGlbNfns EQ NULL)
     {
         // Lock the original memory to get a ptr to it
-        *lplpNfnsHdr = MyGlobalLockNfn (lpMemPTD->hGlbNfns);
+        *lplpNfnsHdr = MyGlobalLockNfns (lpMemPTD->hGlbNfns);
 
         return FALSE;
     } // End IF
@@ -7183,7 +7183,7 @@ LPVOID InitLockNfns
      && !InitGlbNfns_EM (lptkFunc, lpMemPTD))
         return NULL;
 
-    return MyGlobalLockNfn (lpMemPTD->hGlbNfns);
+    return MyGlobalLockNfns (lpMemPTD->hGlbNfns);
 } // End InitLockNfns
 
 

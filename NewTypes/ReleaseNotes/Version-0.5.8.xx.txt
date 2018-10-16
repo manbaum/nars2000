@@ -1,6 +1,17 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1950 -- Version 0.5.8.xx
+-------------------------------
+
+* Clean Up Code
+
+Directory branches/bsmith/NewTypes:
+
+PF_ROOT.C:
+  In <SqrtHCxF_RE>, make the code parallel to that of <SqrtHCxV_RE>.
+
+
 Build #1949 -- Version 0.5.8.xx
 -------------------------------
 

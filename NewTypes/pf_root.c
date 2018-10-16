@@ -231,6 +231,7 @@ APLSTYPE PrimSpecRootStorageTypeMon
         case ARRAY_HC2I:
         case ARRAY_HC4I:
         case ARRAY_HC8I:
+
         case ARRAY_RAT:
         case ARRAY_HC2R:
         case ARRAY_HC4R:
@@ -241,11 +242,12 @@ APLSTYPE PrimSpecRootStorageTypeMon
 
         case ARRAY_FLOAT:
         case ARRAY_HC2F:
-        case ARRAY_HC2V:
         case ARRAY_HC4F:
-        case ARRAY_VFP:
-        case ARRAY_HC4V:
         case ARRAY_HC8F:
+
+        case ARRAY_VFP:
+        case ARRAY_HC2V:
+        case ARRAY_HC4V:
         case ARRAY_HC8V:
         case ARRAY_NESTED:
             break;
@@ -438,15 +440,22 @@ APLHC8F SqrtHCxF_RE
     //   just the imaginary parts
     aplIMag = 0;
 
+    // Calculate the square of the real part
+    aplRMag = aplRht.parts[0] * aplRht.parts[0];
+
     // Loop through the imaginary parts
     for (i = 1; i < iHCDimRes; i++)
         // Calculate the sum of the squares
         aplIMag += aplRht.parts[i] * aplRht.parts[i];
 
+    // Add the square of the real part to the sum of the squares of the imaginary parts
+    //   to get the sum of the squares of the entire arg
+    aplRMag = aplRMag + aplIMag;
+
     // Calculate the magnitude of the entire arg and
     //   the magnitude of just the imaginary parts
-    aplRMag = sqrt (aplIMag + aplRht.parts[0] * aplRht.parts[0]);   // m
     aplIMag = sqrt (aplIMag);                                       // g
+    aplRMag = sqrt (aplRMag);                                       // m
     aplU    = sqrt (aplRMag);                                       // u
 
     // If the imaginary parts are all 0 or a NaN, ...
@@ -737,6 +746,8 @@ APLHC8V SqrtHCxV_RE
     // Calculate the sum of the squares of both the entire arg and
     //   just the imaginary parts
     mpfr_init0 (&aplIMag);
+    mpfr_init0 (&aplU);
+    mpfr_init0 (&aplV);
 
     // Calculate the square of the real part
     aplRMag = MulHC1V_RE (aplRht.parts[0], aplRht.parts[0]);
@@ -758,17 +769,11 @@ APLHC8V SqrtHCxV_RE
     //   to get the sum of the squares of the entire arg
     mpfr_add  (&aplRMag, &aplRMag, &aplIMag, MPFR_RNDN);
 
-    // Initialize to 0
-    mpfr_init0 (&aplU);
-
     // Calculate the magnitude of the entire arg and
     //   the magnitude of just the imaginary parts
-    mpfr_sqrt (&aplRMag, &aplRMag, MPFR_RNDN);                      // m
     mpfr_sqrt (&aplIMag, &aplIMag, MPFR_RNDN);                      // g
+    mpfr_sqrt (&aplRMag, &aplRMag, MPFR_RNDN);                      // m
     mpfr_sqrt (&aplU   , &aplRMag, MPFR_RNDN);                      // u
-
-    // Initialize to 0
-    mpfr_init0 (&aplV);
 
     // If the imaginary parts are all 0 or a NaN, ...
     if (IsMpf0 (&aplIMag) || mpfr_nan_p (&aplIMag))
@@ -1038,6 +1043,7 @@ APLSTYPE PrimSpecRootStorageTypeDyd
         case ARRAY_HC2I:
         case ARRAY_HC4I:
         case ARRAY_HC8I:
+
         case ARRAY_RAT:
         case ARRAY_HC2R:
         case ARRAY_HC4R:
@@ -1050,6 +1056,7 @@ APLSTYPE PrimSpecRootStorageTypeDyd
         case ARRAY_HC2F:
         case ARRAY_HC4F:
         case ARRAY_HC8F:
+
         case ARRAY_VFP:
         case ARRAY_HC2V:
         case ARRAY_HC4V:

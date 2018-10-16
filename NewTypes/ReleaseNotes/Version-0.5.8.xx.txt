@@ -1,6 +1,17 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1946 -- Version 0.5.8.xx
+-------------------------------
+
+* Disallow Immediate Monadic Scalar Functions In Identity Element Test For Dyadic Scan
+
+Directory branches/bsmith/NewTypes:
+
+PO_SLASH.C:
+  Disallow immediate monadic scalar functions in identity element test for dyadic scan.
+
+
 Build #1945 -- Version 0.5.8.xx
 -------------------------------
 

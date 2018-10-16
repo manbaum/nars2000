@@ -1845,11 +1845,10 @@ LPPL_YYSTYPE PrimOpDydSlashCommon_EM_YY
     if (aplIntegerLft EQ 0
      || aplIntegerLftAbs EQ (APLINT) (uDimAxRht + 1))
     {
-        // If it's an immediate primitive function,
+        // If it's an immediate dyadic scalar primitive function,
         //   and has an identity element, ...
         if (lpYYFcnStrLft->tkToken.tkFlags.TknType EQ TKT_FCNIMMED
-         && (lpPrimFlagsLft->bMonScalar
-          || lpPrimFlagsLft->bDydScalar)
+         && lpPrimFlagsLft->bDydScalar
          && lpPrimFlagsLft->bIdentElem)
         {
             // If the right arg is nested, ...
@@ -2527,14 +2526,17 @@ RESTART_EXCEPTION:
                             case ARRAY_HC2I:
                             case ARRAY_HC4I:
                             case ARRAY_HC8I:
+
                             case ARRAY_FLOAT:
                             case ARRAY_HC2F:
                             case ARRAY_HC4F:
                             case ARRAY_HC8F:
+
                             case ARRAY_RAT:
                             case ARRAY_HC2R:
                             case ARRAY_HC4R:
                             case ARRAY_HC8R:
+
                             case ARRAY_VFP:
                             case ARRAY_HC2V:
                             case ARRAY_HC4V:

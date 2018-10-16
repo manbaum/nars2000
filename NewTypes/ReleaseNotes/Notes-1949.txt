@@ -1,0 +1,9 @@
+Build #1949 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In OverTake On A Heterogeneous Array Where The First Element Is A Global Numeric
+
+Directory branches/bsmith/NewTypes:
+
+PF_UARROW.C:
+  Fix bug in OverTake on a heterogeneous array where the first element is a Global Numeric.

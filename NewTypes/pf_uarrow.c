@@ -858,20 +858,38 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
             // Get the first element
             aplProtoSym = *(LPAPLHETERO) lpMemRht;
 
-            // Split cases based upon the immediate type
-            switch (aplProtoSym->stFlags.ImmType)
+            // Split cases based upon the ptr type bits
+            switch (GetPtrTypeDir (aplProtoSym))
             {
-                case IMMTYPE_BOOL:
-                case IMMTYPE_INT:
-                case IMMTYPE_FLOAT:
-                    // Get the appropriate prototype
-                    aplProtoSym = lpMemPTD->lphtsGLB->steZero;
+                case PTRTYPE_STCONST:
+                    // Split cases based upon the immediate type
+                    switch (aplProtoSym->stFlags.ImmType)
+                    {
+                        case IMMTYPE_BOOL:
+                        case IMMTYPE_INT:
+                        case IMMTYPE_FLOAT:
+                            // Get the appropriate prototype
+                            aplProtoSym = lpMemPTD->lphtsGLB->steZero;
+
+                            break;
+
+                        case IMMTYPE_CHAR:
+                            // Get the appropriate prototype
+                            aplProtoSym = lpMemPTD->lphtsGLB->steBlank;
+
+                            break;
+
+                        defstop
+                            break;
+                    } // End SWITCH
 
                     break;
 
-                case IMMTYPE_CHAR:
+                case PTRTYPE_HGLOBAL:
+                    // All GlbNums are numeric
+
                     // Get the appropriate prototype
-                    aplProtoSym = lpMemPTD->lphtsGLB->steBlank;
+                    aplProtoSym = lpMemPTD->lphtsGLB->steZero;
 
                     break;
 

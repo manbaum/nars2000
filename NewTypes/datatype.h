@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -179,11 +179,12 @@ typedef enum tagARRAY_TYPES
 //   <aTypePromote> in <typemote.h>,
 //   <uTypeMap> in <externs.h>,
 //   <aTypeFree> in <typemote.h>,
+//   <TP_MAT> in <typemote.h>,
+//   <TC_MAT> in <typemote.h>,
 //   <IsSimpleNH> and <IsSimpleNum> macros in <macros.h>,
-//   <aArrayTypeToHCDimIndex> in <externs.h>,
-//   ArrayTypeAsChar and BPE_VEC in <datatype.h>,
-//   <TranslateTypesToPFSIndex> in <primspec.c>,
-//   <TranslateCharToArrayType> in <translate.c>.
+//   <aArrayTypeToHCDimIndex> in <hc_proc.h>,
+//   defArrayTypeAsChar and BPE_VEC in <datatype.h>,
+//   <TranslateTypesToPFSIndex> in <primspec.c>.
 
 
 // Translate an array type to a char
@@ -191,7 +192,7 @@ typedef enum tagARRAY_TYPES
 //   depends upon the ordering of the above enum
 // ***NOTE THAT THESE VALUES ARE SAVED IN WORKSPACES
 //    SO YOU HAD BETTER KNOW WHAT YOU ARE DOING***
-#define ArrayTypeAsChar     L"BIFCHNLARVifrvjgswkhtx"
+#define defArrayTypeAsChar  L"BIFCHNLARVifrvjgswkhtx"
 
 // Whenever changing the above <#define>, be sure to make a
 //   corresponding change to

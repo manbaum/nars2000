@@ -166,6 +166,22 @@ APLHC8R conmpoi_0
 #endif
 ;
 
+#define mpciZero    conmpoi_0.partsLo.partsLo
+#define mphiZero    conmpoi_0.partsLo
+#define mpoiZero    conmpoi_0
+
+#define mpcfZero    conmpof_0.partsLo.partsLo
+#define mphfZero    conmpof_0.partsLo
+#define mpofZero    conmpof_0
+
+#define mpciOne     conmpoi_1.partsLo.partsLo
+#define mphiOne     conmpoi_1.partsLo
+#define mpoiOne     conmpoi_1
+
+#define mpcfOne     conmpof_1.partsLo.partsLo
+#define mphfOne     conmpof_1.partsLo
+#define mpofOne     conmpof_1
+
 EXTERN
 APLHC8V conmpof_0
 #ifdef DEFINE_VALUES

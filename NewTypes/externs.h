@@ -533,7 +533,9 @@ PRIMFLAGS PrimFlags[PRIMTAB_LEN];       // The flag tables for all primitive fun
 
 
 //***************************************************************************
-//  Fast Boolean Reduction and Scan tables
+//  Fast Boolean Reduction/Scan tables (Init1PrimFlag) and
+//    Simple Scalar Identity Element tables (Init1IdentityElement)
+//  Create a new entry iff either of the above two conditions is met
 //***************************************************************************
 
 typedef enum tagFBFN_INDS               // Fast Boolean function indices
@@ -1161,7 +1163,6 @@ APLFLOAT fltPosInfinity,                // Positive infinity
          fltNegInfinity,                // Negative ...
          fltNaN,                        // NaN
          FloatPi,                       // Pi
-         FloatPi2,                      // Pi/2
          FloatGamma,                    // Gamma
          FloatE,                        // e
          Float2Pow53;                   // 2*53 in floating point
@@ -1365,6 +1366,15 @@ UBOOL gbResDebug
 #endif
 #endif
 ;
+
+EXTERN
+WCHAR aArrayTypeAsChar[ARRAY_LENGTH + 1]    // "+ 1" to store the trailing zero
+#ifdef DEFINE_VALUES
+ = defArrayTypeAsChar
+#endif
+;
+
+#define TranslateArrayTypeToChar(a)     aArrayTypeAsChar[a]
 
 
 //***************************************************************************
@@ -2261,15 +2271,7 @@ APLRAT mpqMinInt                // Minimum signed integer -2*63
 #ifdef DEFINE_VALUES
 = {0}
 #endif
-,      mpqOne                   // 1
-#ifdef DEFINE_VALUES
-= {0}
-#endif
 ,      mpqHalf                  // ...          0.5 ...
-#ifdef DEFINE_VALUES
-= {0}
-#endif
-,      mpqZero                  // ...          0   ...
 #ifdef DEFINE_VALUES
 = {0}
 #endif
@@ -2307,55 +2309,16 @@ APLVFP mpfMinInt                // Minimum signed integer -2*63
 #ifdef DEFINE_VALUES
 = {0}
 #endif
-,      mpfOne                   // 1
-#ifdef DEFINE_VALUES
-= {0}
-#endif
 ,      mpfHalf                  // 0.5
 #ifdef DEFINE_VALUES
 = {0}
 #endif
-,      mpfZero                  // 0
-#ifdef DEFINE_VALUES
-= {0}
-#endif
 ;
 
-mpci_t mpciZero                 // 0
-#ifdef DEFINE_VALUES
-= {0}
-#endif
-;
-
-mphi_t mphiZero                 // 0
-#ifdef DEFINE_VALUES
-= {0}
-#endif
-;
-
-mpoi_t mpoiZero                 // 0
-#ifdef DEFINE_VALUES
-= {0}
-#endif
-;
-
-mpcf_t mpcfZero                 // 0
-#ifdef DEFINE_VALUES
-= {0}
-#endif
-;
-
-mphf_t mphfZero                 // 0
-#ifdef DEFINE_VALUES
-= {0}
-#endif
-;
-
-mpof_t mpofZero                 // 0
-#ifdef DEFINE_VALUES
-= {0}
-#endif
-;
+#define mpqZero     conmpoi_0.parts[0]
+#define mpqOne      conmpoi_1.parts[0]
+#define mpfZero     conmpof_0.parts[0]
+#define mpfOne      conmpof_1.parts[0]
 
 
 //***************************************************************************

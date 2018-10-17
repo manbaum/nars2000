@@ -880,20 +880,6 @@ APLCHAR TranslateImmTypeToChar
 
 
 //***************************************************************************
-//  $TranslateArrayTypeToChar
-//
-//  Convert an array type to a char
-//***************************************************************************
-
-APLCHAR TranslateArrayTypeToChar
-    (ARRAY_TYPES arrType)
-
-{
-    return ArrayTypeAsChar[arrType];
-} // End TranslateArrayTypeToChar
-
-
-//***************************************************************************
 //  $TranslateCharToArrayType
 //
 //  Convert a char to an array type
@@ -903,75 +889,20 @@ ARRAY_TYPES TranslateCharToArrayType
     (WCHAR wChar)
 
 {
-    // Split cases based upon the incoming char
-    switch (wChar)
+    LPWCHAR p;
+
+    // Look up this char in <aArrayTypeAsChar>
+    p = strchrW (aArrayTypeAsChar, wChar);
+
+    if (p EQ NULL)
     {
-        case 'A':
-            return ARRAY_APA;
+#ifdef DEBUG
+        DbgBrk ();              // #ifdef DEBUG
+#endif
+        return ARRAY_ERROR;
+    } // End IF
 
-        case 'B':
-            return ARRAY_BOOL;
-
-        case 'C':
-            return ARRAY_CHAR;
-
-        case 'F':
-            return ARRAY_FLOAT;
-
-        case 'H':
-            return ARRAY_HETERO;
-
-        case 'I':
-            return ARRAY_INT;
-
-        case 'N':
-            return ARRAY_NESTED;
-
-        case 'R':
-            return ARRAY_RAT;
-
-        case 'V':
-            return ARRAY_VFP;
-
-        case 'i':
-            return ARRAY_HC2I;
-
-        case 'f':
-            return ARRAY_HC2F;
-
-        case 'r':
-            return ARRAY_HC2R;
-
-        case 'v':
-            return ARRAY_HC2V;
-
-        case 'j':
-            return ARRAY_HC4I;
-
-        case 'g':
-            return ARRAY_HC4F;
-
-        case 's':
-            return ARRAY_HC4R;
-
-        case 'w':
-            return ARRAY_HC4V;
-
-        case 'k':
-            return ARRAY_HC8I;
-
-        case 'h':
-            return ARRAY_HC8F;
-
-        case 't':
-            return ARRAY_HC8R;
-
-        case 'x':
-            return ARRAY_HC8V;
-
-        defstop
-            return '?';
-    } // End SWITCH
+    return p - aArrayTypeAsChar;
 } // End TranslateCharToArrayType
 
 
@@ -1269,6 +1200,18 @@ APLSTYPE TranslateCharToType
     else
     if (lstrcmpiW (lpMemChar, L"VFP" ) EQ 0)
         return ARRAY_VFP;
+    else
+    if (lstrcmpiW (lpMemChar, L"HC1I") EQ 0)
+        return ARRAY_HC1I;
+    else
+    if (lstrcmpiW (lpMemChar, L"HC1F") EQ 0)
+        return ARRAY_HC1F;
+    else
+    if (lstrcmpiW (lpMemChar, L"HC1R") EQ 0)
+        return ARRAY_HC1R;
+    else
+    if (lstrcmpiW (lpMemChar, L"HC1V") EQ 0)
+        return ARRAY_HC1V;
     else
     if (lstrcmpiW (lpMemChar, L"HC2I") EQ 0)
         return ARRAY_HC2I;

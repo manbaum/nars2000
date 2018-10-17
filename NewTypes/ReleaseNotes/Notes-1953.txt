@@ -1,0 +1,26 @@
+Build #1953 -- Version 0.5.8.xx
+-------------------------------
+
+* Use Arrays For Lookup Instead Of Functions
+* Use Common Constants More Instead Of Separate Variables
+
+Directory branches/bsmith/NewTypes:
+
+DATATYPE.H:
+  Correct file location of co-dependents.
+  Rename <ArrayTypeAsChar> to <aArrayTypeAsChar> to reflect that it's an array.
+
+EXTERNS.H:
+  Improve comments.
+  Delete <FloatPi2> as it's no longer used.
+  Define <aArrayTypeAsChar> as a variable so it may be used to lookup <ARRAY_TYPES>.
+  Define <TranslateArrayTypeToChar> as an array lookup instead of as a function.
+  Delete <mpXXOne> and <mpXXZero> variables as they are now defined in terms of common constants.
+
+HC_PROC.H:
+  Define <mpXXZero> and <mpXXOne> in terms of common constants.
+
+TRANSLATE.C:
+  Define <TranslateArrayTypeToChar> as an array lookup instead of as a function.
+  Simplify <TranslateCharToArrayType> using <aArrayTypeAsChar>.
+  In <TranslateCharToType>, include additional translations.

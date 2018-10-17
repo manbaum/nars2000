@@ -2651,12 +2651,12 @@ UBOOL ArrayIndexSetNamImmed_EM
         lptkNamArg->tkData.tkSym->stFlags.Imm      = TRUE;
         lptkNamArg->tkData.tkSym->stFlags.ImmType  = immTypeRht;
         lptkNamArg->tkData.tkSym->stData.stLongest = aplLongestRht;
-
-        // If this is indexed assignment into a SysVar, ...
-        if (bSysVar)
-            // Execute the post-validation function
-            (*aSysVarValidPost[lptkNamArg->tkData.tkSym->stFlags.SysVarValid]) (lptkNamArg);
     } // End IF/ELSE
+
+    // If this is indexed assignment into a SysVar, ...
+    if (bSysVar)
+        // Execute the post-validation function
+        (*aSysVarValidPost[lptkNamArg->tkData.tkSym->stFlags.SysVarValid]) (lptkNamArg);
 
     // In case we overstepped, ...
     TypeDemote (lptkNamArg, FALSE);

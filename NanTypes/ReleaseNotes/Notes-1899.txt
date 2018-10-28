@@ -1,0 +1,10 @@
+Build #1899 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug Indexing A Rank > 1 Array With A Scalar
+
+Directory branches/bsmith/NewTypes:
+
+PF_INDEX.C:
+  In <ArrayIndexSetSingLst_EM>, fix bug when indexing a rank > 1 array with a scalar:  it should signal a RANK ERROR.
+  In <ArrayIndexSetSingLst_EM>, fix bug where the Set argument is nested.

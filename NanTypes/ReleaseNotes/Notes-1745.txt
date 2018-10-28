@@ -1,0 +1,10 @@
+Build #1745 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bugs In Dyadic Reduction
+
+Directory branches/bsmith/NewTypes:
+
+PO_SLASH.C:
+  In <PrimOpDydSlashCommon_EM_YY> with a left arg of zero, when checking for an Identity Element ensure the immediate function is scalar.
+  In <PrimOpDydSlashCommon_EM_YY>, during the Reduction don't blow up the right arg if the result is nested.

@@ -1,0 +1,66 @@
+Build #1756 -- Version 0.5.4.xx
+--------------------------------
+
+* Implement Special Case For Number Of Partitions of L Into At Most L Parts
+* Implement Single Element Right Arg To DoubleShriek Operator
+
+Directory branches/bsmith/NewTypes:
+
+DISPDBG.C:
+  Change datatype to avoid error when compiling 64-bit code.
+
+EXTERNS.H:
+  Define additional CriticalSectionObjects for PN calculation.
+  Move globals for Combinatorial Algorithms to <po_comb.c>.
+
+HEADERS.H:
+  Include <flint.h> in list of headers.
+
+INITDATA.C:
+  Move Initialize/Uninitialize combinatorial cache code to <po_comb.c>
+
+MAIN.C:
+  Initialize/Uninitialize CriticalSectionObjects for PN calculation.
+
+MAIN.RC:
+  Increase the height of the About dialog box as we're including another line for
+    the current version of FLINT.
+
+MAKEFILE.INC:
+  Test for presence of the environment variable <FLINT_DIR>.
+  Define vars related to <FLINT_DIR>.
+  Define name of <vcomp.lib> file.
+  Include these files in the build process.
+
+MK32.BAT:
+MK32D.BAT:
+MK64.BAT:
+MK64D.BAT:
+MKD32.BAT:
+MKD64.BAT:
+MKN.BAT:
+  Rename and modify these batch files.
+
+NARS2000.VCXPROJ:
+  Include FLINT in the build process.
+
+PO_COMB.C:
+  Move globals for Combinatorial Algorithms to <po_comb.c>.
+  Implement single element right arg to DoubleShriek.
+  Implement special case for Partitions of L into at most L parts by using
+    a multi-precision algorithm from FLINT.
+  Moe exception code declarations to top of each function.
+  Move Initialize/Uninitialize combinatorial cache code to <po_comb.c>
+
+VER.C:
+  Change the method for retrieving the ECM version from a variable to a function.
+  Include the current version of FLINT in the About dialog box.
+
+WCOM.BAT:
+  Set <FLINT_DIR> environment variable.
+
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+CONTRIBUTORS-BODY.AHTML:
+  Mention D. E. Knuth in List of Contributors.

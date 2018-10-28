@@ -1,0 +1,9 @@
+Build #1777 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In Build #1773 With Uninitialized Var
+
+Directory branches/bsmith/NewTypes:
+
+SC_LOAD.C:
+  In <LoadWorkspace_EM>, initialize the var <bDeleted> to FALSE.

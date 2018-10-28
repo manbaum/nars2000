@@ -1,0 +1,9 @@
+Build #1619 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug In Grade To Allow Hypercomplex Numbers With Zero Imaginary Parts
+
+Directory branches/bsmith/NewTypes:
+
+PF_DELTASTILE.C:
+  Fix bug in <PrimFnMonGradeCommon_EM_YY> to allow grading of HCxy numbers if the imaginary parts are all zero.

@@ -1,0 +1,21 @@
+Build #1928 -- Version 0.5.8.xx
+-------------------------------
+
+* Handle NUL In Undo Buffer Insertion
+
+Directory branches/bsmith/NewTypes:
+
+EDITFCN.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  Rename <undoInsToggle> to <undoToggleIns> so that a search for <undoIns> is unique.
+  In <AppendUndo>, check for <undoIns> inserting a NULL and replace it with <UTF16_REPLACEMENT0000>.
+
+EXTERNS.H:
+  Rename <undoInsToggle> to <undoToggleIns> so that a search for <undoIns> is unique.
+  Document the co-dependency of <tagUNDO_ACTS> and <UndoActToChar>.
+
+SAVEFCN.C:
+  Rename <undoInsToggle> to <undoToggleIns> so that a search for <undoIns> is unique.
+
+SYMBOLNAMES.H:
+  In <aSymbolNames>, include <{UTF16_REPLACEMENT0000, L"{nul}"}>.

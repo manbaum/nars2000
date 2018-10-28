@@ -1,0 +1,690 @@
+Version 0.5.3.xx consists of the following Builds:
+
+
+Build #1753 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug With No-Result Functions And The Dyadic Derived Function From The Each Operator
+
+Directory branches/bsmith/NewTypes:
+
+PO_DIERESIS.C:
+  Fix bug in the dyadic derived function fom the Each operator where the VALUE ERROR count is compared against the wrong NELM.
+
+
+Build #1752 -- Version 0.5.3.xx
+--------------------------------
+
+* Implement A Combinatorial Operator
+
+Directory branches/bsmith/NewTypes:
+
+COMPRO.H:
+  Include the new file's prototype.
+
+CONVERT.C:
+  Define new conversion function.
+
+CUSTOMIZE.C:
+  Include DoubleShriek in the list of available APL symbols for keyboard definitions.
+
+EXECFNS.C:
+  Include DoubleShriek in the list of monadic operators.
+
+EXTERNS.H:
+  Define Critical Section Objects and other Combinatorial stuff.
+
+INITDATA.C:
+  Define routines to initialize and uninitialize the Combinatorial cache.
+  Include DoubleShriek in the list of prototype operators.
+
+KEYBOARDS_BI.H:
+  Include DoubleShriek in the default keyboards as Alt-k or Ctrl-k.
+
+MACROS.H:
+  Remove duplicate <CopyAll> macro.
+
+MAIN.C:
+  Initialize and uninitialize Critical Section objects.
+  Initialize and uninitialize the Combinatorial cache.
+
+MAIN.RC:
+  Make room for another row in the Tab Ctrl keyboard buttons.
+
+MAKEFILE.INC:
+  Fix bug of missing dependency for MP.C.
+  Include new source file in build list.
+
+MAKEFILE.SRC:
+  Include new source file in build list.
+
+NARS2000.VCXPROJ:
+  Change default to RESDEBUG=0.
+  Include new source file in build list.
+
+NARS2000.VCXPROJ.FILTERS:
+  Include new source file in build list.
+
+PF_QDOT.C:
+  Avoid <PrimFnDydQuoteDotxxx> functions from changing the pointed to input values.
+
+PO_COMB.C:
+  Implement A Combinatorial Operator.
+
+PO_DICIRCLE.C:
+  Fix typo in comment.
+
+PO_VARIANT.C:
+  Include DoubleShriek as Variant operator left operand for []IO.
+
+REBAR.C:
+  Include DoubleShriek in the Language Bar.
+
+SYMTRANS.C:
+  In <OprTrans>, handle DoubleShriek.
+
+TOKENIZE.C:
+  Keep VS 2013 happy by using <CopyAll> macro.
+  In <CharTransTK>, include DoubleShriek as a monadic operator.
+
+TRANSLATE.C:
+  In <TranslateFcnOprToChar>, handle DoubleShrek.
+
+UNICODE.H:
+  Define DoubleShriek Unicode character.
+
+
+Directory branches/bsmith/NewTypes/MediaWiki/extensions:
+
+APL.CSS:
+  Because Chrome forces its own font choice on <pre>, we need to override theirs with ours.
+
+B2A.INC.PHP:
+  Document where this file is stored on the server.
+  Fix typo in {shreik} to {shriek}.
+  Include {doubleshriek} and {comb} as new Brace To APL character substitutions.
+
+
+Build #1751 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Enlist With Empty APV
+
+Directory branches/bsmith/NewTypes:
+
+PF_EPSILON.C:
+  In <PrimFnMonEpsilonGlbCount>, convert an empty APV to an INT array for the purposes of Enlist.
+
+
+Build #1750 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Grade Each 0 0{rho}0
+
+Directory branches/bsmith/NewTypes:
+
+PF_DELTASTILE.C:
+  Fix bug in <PermVecGrade> missing the case of a Boolean APV.
+
+
+Build #1749 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Enlist With Empty Nested Array
+
+Directory branches/bsmith/NewTypes:
+
+PF_EPSILON.C:
+  In <PrimFnMonEpsilonGlbCount>, handle empty nested arrays.
+
+
+Build #1748 -- Version 0.5.3.xx
+--------------------------------
+
+* Catch Ctrl-Break More Often
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+PF_DTACKJOT.C:
+  Catch Ctrl-Break during display of an array.
+
+EXECDFN.C:
+  Display "INTERRUPT" instead of "..." for a Ctrl-Break.
+
+PARSELINE.C:
+  Catch Ctrl-Break during parsing.
+
+SESSMAN.C:
+STRAND.C:
+SYMTAB.C:
+  Improve comments.
+
+
+Build #1747 -- Version 0.5.3.xx
+--------------------------------
+
+* Change Argument To CheckCtrlBreak So As To Aid In Debugging Ctrl-Break Problems
+
+Directory branches/bsmith/NewTypes:
+
+APLERRORS.H:
+DEBUG.C:
+DISPLAY.C:
+ERRMSG.C:
+MACROS.H:
+MPFNS.C:
+PARSELINE.C:
+PF_COMMA.C:
+PF_CSLOPE.C:
+PF_CSTILE.C:
+PF_DARROW.C:
+PF_DOMINO.C:
+PF_DOMINO.MAC:
+PF_DTACK.C:
+PF_DTACKJOT.C:
+PF_EPSILON.C:
+PF_EQUALUND.C:
+PF_INDEX.C:
+PF_IOTA.C:
+PF_IOTAUND.C:
+PF_LSHOE.C:
+PF_PI.C:
+PF_QDOT.C:
+PF_QUERY.C:
+PF_RHO.C:
+PF_RSHOE.C:
+PF_SLASH.C:
+PF_SLOPE.C:
+PF_SQUAD.C:
+PF_UARROW.C:
+PF_UTACK.C:
+PO_DIERESIS.C:
+PO_DIJOT.C:
+PO_DOT.C:
+PO_JOTDOT.C:
+PO_MULTISET.C:
+PO_SLASH.C:
+PO_SLOPE.C:
+PRIMSPEC.C:
+SORT.C:
+    Change the argument to CheckCtrlBreak from a Boolean to a pointer to a Boolean
+      so to aid in debugging Ctrl-Break problems.
+
+
+Directory msieve:
+
+COMMON.H:
+MP.C:
+SMALLFACT.C:
+SQUFOF.C:
+TINYQS.C:
+    Change the argument to CheckCtrlBreak from a Boolean to a pointer to a Boolean
+      so to aid in debugging Ctrl-Break problems.
+
+
+Build #1746 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In LeftShoe Enclosing With Axis An Empty Multidimensional Array
+
+Directory branches/bsmith/NewTypes:
+
+PF_LSHOE.C:
+  Fix bug in <LftShoeGlbCom_EM> when enclosing with axis a multidimensional empty array.
+
+
+Build #1745 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bugs In Dyadic Reduction
+
+Directory branches/bsmith/NewTypes:
+
+PO_SLASH.C:
+  In <PrimOpDydSlashCommon_EM_YY> with a left arg of zero, when checking for an Identity Element ensure the immediate function is scalar.
+  In <PrimOpDydSlashCommon_EM_YY>, during the Reduction don't blow up the right arg if the result is nested.
+
+
+Build #1744 -- Version 0.5.3.xx
+--------------------------------
+
+* Prepare For DelTilde
+
+Directory branches/bsmith/NewTypes:
+
+CUSTOMIZE.C:
+  Append a new row to the bottom of the APL TabCtrl and add DelTilde and NaN symbols.
+
+EXECFNS.C:
+  In <ExecOp2_EM_YY>, signal a NONCE ERROR for DelTilde.
+
+KEYBOARDS_BI.H:
+  In all built-in keyboards, move DelTilde from Alt-'k' to Alt-'K'.
+
+RESOURCE.H:
+  Define IDC_xxx codes for the new row in the APL TabCtrl in Keyboards.
+
+TOKENIZE.C:
+  In <CharTransTK>, mark DelTilde as a dyadic operator.
+
+UNICODE.H:
+  Correct the spelling for DelTilde.
+
+
+Build #1743 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In ExecFns
+
+Directory branches/bsmith/NewTypes:
+
+EXECFNS.C:
+  In <ExecFunc_EM_YY>, handle <TKT_OPnIMMED> for n=1, 2, 3 and <TKT_OPJOTDOT>.
+
+
+Build #1742 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug When Erasing An AFO
+
+Directory branches/bsmith/NewTypes:
+
+QF_EX.C:
+  In <EnumCallbackExpPrevGlb>, ensure the handle is valid before using it.
+
+
+Build #1741 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug Indexing An Empty Nested Array With Other Empties
+
+Directory branches/bsmith/NewTypes:
+
+PF_SQUAD.C:
+  In <PrimFnDydSquadGlb_EM_YY>, fill in prototype element in the result if Empty and Nested.
+
+
+Build #1740 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In UDFO With Branching To A System Label
+
+Directory branches/bsmith/NewTypes:
+
+SAVEFCN.C:
+  In <GetLabelNums>, if an UDFO, localize and assign a value to the SysLbl.
+
+
+Build #1739 -- Version 0.5.3.xx
+--------------------------------
+
+* Implement System Labels In AFOs
+
+Directory branches/bsmith/NewTypes:
+
+EXECDFN.C:
+  Save Token # along with Line # for a System Label.
+  Pass starting token # to <ExecuteFunction_EM_YY>.
+  In <ExecuteFunction_EM_YY>, delete code to disallow falling into a SysLbl in an AFO.
+  Document the Line # and Token # values.
+
+EXECMFN.C:
+IMMEXEC.C:
+PF_UTACKJOT.C:
+  Document the Line # and Token # values.
+
+FH_PARSE.H:
+  Delete unneeded <bSysLbl> flag in <FCNLINE> struc.
+  Define <SYSLBLENTRY> struc to hold both the Line and Token #s for a SysLbl.
+
+PARSELINE.C:
+  Document the Line # and Token # values.
+  Handle initial non-zero Token #.
+
+PRIMFNS.C:
+  Define function to determine whether or not a Token is that of a System Label.
+
+SAVEFCN.C:
+  In <GetLabelNums>, look for SysLbls in any stmt in an AFO line.
+
+TOKENIZE.C:
+  In <fnClnDone>, check for a SysLbl in AFOs and mark as such.
+  Document the various stmts in terms of their tokens.
+
+TOKENS.H:
+  Define a flag in <TKFLAGS> to indicate that a stmt is a SysLbl.
+
+
+Build #1738 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Grade Not Disallowing HC Numbers
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+PF_DELTASTILE.C:
+PF_EPSILON.C:
+PF_IOTA.C:
+  Pass <bGradeAll> flag to <hcXY_cmp>, <HeNe_cmp>, and <HeNe_cmpsub> so they can test for and disallow HC numbers with a non-zero imaginary part.
+
+
+Build #1737 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Monadic Epsilon W.R.T. Prototypes
+
+Directory branches/bsmith/NewTypes:
+
+PF_EPSILON.C:
+  In <PrimFnMonEpsilonGlbCount>, don't take into account prototypes as they don't contribute to the result.
+
+
+Build #1736 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Dyadic RightShoe Error Messages
+
+Directory branches/bsmith/NewTypes:
+
+PF_RSHOE.C:
+  When an index is invalid, signal an INDEX ERROR instead of a DOMAIN ERROR.
+
+
+Build #1735 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Dyadic DownStile Storage Calculation
+
+Directory branches/bsmith/NewTypes:
+
+PF_DSTILE.C:
+  In <PrimSpecDownStileStorageTypeDyd>, handle characters as an error.
+
+PO_SLASH.C:
+  Indent Left Brace properly.
+
+
+Build #1734 -- Version 0.5.3.xx
+--------------------------------
+
+* Implement Decimal Point In Base Point Notation
+
+Directory branches/bsmith/NewTypes:
+
+MPFNS.C:
+  Implement <mpq_pow_ui> to use in other routines.
+
+PF_COLONBAR.C:
+  Break out guts of <PrimFnMonColonBarHC2RisHC2R> into <InvHC2R_RE> so the latter function can be called separately.
+  Break out guts of <PrimFnMonColonBarHC4RisHC4R> into <InvHC4R_RE> so the latter function can be called separately.
+  Break out guts of <PrimFnMonColonBarHC8RisHC8R> into <InvHC8R_RE> so the latter function can be called separately.
+
+PF_STAR.C:
+  Break out guts of <PrimFnDydStarFisFvF> into <PowHC1F_RE> so the latter function can be called separately.
+  Break out guts of <PrimFnDydStarRisRvR> into <PowHC1R_RE> so the latter function can be called separately.
+  Break out guts of <PrimFnDydStarVisVvV> into <PowHC1V_RE> so the latter function can be called separately.
+  Fix bug in <PowHC2R_SUB> where if the Exponent is a negative integer, the result is converted to HC2V instead preserving it as HC2R.
+  Fix bug in <PowHC4R_SUB> where if the Exponent is a negative integer, the result is converted to HC4V instead preserving it as HC4R.
+  Fix bug in <PowHC8R_SUB> where if the Exponent is a negative integer, the result is converted to HC8V instead preserving it as HC8R.
+
+PN_PARSE.H:
+  Comment on required order of <PN_NUMTYPE_xxx> enum values.
+  Define fields needed to handle a decimal point in the right part of Base Point Notation.
+
+PN_PARSE.Y:
+  Define terminals to handle a decimal point in the right part of Base Point Notation.
+
+PN_PROC.C:
+  Define routines to handle a decimal point in the right part of Base Point Notation.
+
+STARTADDR.H:
+  Include new and renamed routines.
+
+
+Build #1733 -- Version 0.5.3.xx
+--------------------------------
+
+* Implement Dilate And Condense
+
+Directory branches/bsmith/NewTypes:
+
+HC_PROC.H:
+  Define helper array <iHCDimLog2> to translate a dimension (1, 2, 4, 8) into its base 2 Log.
+
+PF_LCARET.C:
+  Implement Condense as monadic LeftCaret.
+
+PF_RCARET.C:
+  Implement Dilate as monadic RightCaret.
+
+QF_DC.C:
+  Modify local routines to be called from Condense and Dilate.
+
+REBAR.C:
+  Document the new functions in the language bar.
+
+
+Build #1732 -- Version 0.5.3.xx
+--------------------------------
+
+* Miscellaneous Changes
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  Insert blank line for clarity.
+
+EDITFCN.C:
+  In <LclECPaintHook>, re-organize the logic behind when we Syntax Color or not.
+
+MAIN.RC:
+  Increase the height of the Group Boxes surrounding the Foreground & Background columns in Syntax Coloring.
+
+PF_PI.C:
+  Fix typo in comment.
+
+
+Build #1731 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug When Hash Or Symbol Tables Are Low
+
+Directory branches/bsmith/NewTypes:
+
+EXCEPT.C:
+  Compare against correct equate instead of just 0.
+
+EXECMFN.C:
+  When allocating Hash & Symbol Tables, indicate whether or not the owner is an AFO or MFO.
+  Use equates for Hash & Symbol Table allocation sizes instead of constants.
+  Use variable name for Hash & Symbol Table maximum NELM instead of constant so it can be overridden on the command line.
+
+EXTERNS.H:
+  Define external vars for command line values.
+
+MAIN.C:
+  Use different equate for <iHshTabIncrFree> value.
+  In <TestCmdLine>, allow a colon as well as an equal sign to separate the keyword and it's matching value.
+  In <ParseCommandLine>, test for additional keywords.
+
+SAVEFCN.C:
+  When allocating Hash & Symbol Tables, indicate whether or not the owner is an AFO or MFO.
+  Use variable name for Hash & Symbol Table maximum NELM instead of constant so it can be overridden on the command line.
+
+SC_SYMB.C:
+  Change type from <int> to <size_t> and rename from <i...> to <u...> to reflect the unsigned nature.
+  Display Hash & Symbol Table info for AFOs and MFOs.
+
+SESSMAN.C:
+  When allocating Hash & Symbol Tables, indicate whether or not the owner is an AFO or MFO.
+
+SYMTAB.C:
+  Make explicit tests of ptr against "NE NULL".
+  In <HshTabSplitNextEntry_EM>, read from last byte we might split into so as to trigger the Page Fault early before we have moved any Hash Table Entries because we can't move them back if we fail.
+  In <FindNextFreeUsingHash_SPLIT_EM> and <FindNextFreeUsingHTE_EM>, trap errors in called functions so as to pass the error on to our caller,
+    and use 64-bit arithmetic on the offsets in case the 32-bit offset might overflow.
+
+SYMTAB.H:
+  Define equates for AFO and MFO Hash & Symbol Tables.
+  Define additional fields in <HSHTABSTR>.
+
+VER.C:
+  Use proper equates for Hash & Symbol Table multipliers.
+
+
+Build #1730 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug When Ctrl-Break Pressed
+
+Directory branches/bsmith/NewTypes:
+
+EXECDFN.C:
+  In <ExecuteFunction_EM_YY>, suspend when <RESETFLAG_xxx> is <STOP>.
+
+IMMEXEC.C:
+  In <ImmExecStmtInThread>, after executing the stmt, if the <exitType> is <STOP>, don't act on errors.
+
+
+Build #1729 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Reduction Of An Empty Character Array
+
+Directory branches/bsmith/NewTypes:
+
+PO_SLASH.C:
+  If reducing an empty character vector, signal a DOMAIN ERROR unless the reduction operand is the Equal or NotEqual function.
+
+
+Build #1728 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Inner Product With Storage Types
+
+Directory branches/bsmith/NewTypes:
+
+PO_DOT.C:
+  Fix bug in Inner Product with confusion with the storage type of the right argument in the first reduction and the same argument in the second and subsequent reductions.
+  Use <CopyAll> function to avoid spurious compiler warning.
+
+
+Build #1727 -- Version 0.5.3.xx
+--------------------------------
+
+* Include More Files Under Version Control
+
+Directory branches/bsmith/NewTypes:
+
+AFOFNS.H:
+BISON.PROPS:
+BISON.TARGETS:
+NARS2000.VCXPROJ.FILTERS:
+PROTOTYPE.PROPS:
+PROTOTYPE.TARGETS:
+QF_NFNS.H:
+  Include these files which were previously omitted from a build, or were previously generated by the Visual Studio compiler but are not now.
+
+
+Build #1726 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Inner Product Using Wrong Storage Type
+
+Directory branches/bsmith/NewTypes:
+
+PO_DOT.C:
+  In <PrimOpDydDotCommon_EM_YY>, when doing the reduction part (i.e., calling <PrimFnDydSiScSiScSub_EM>),
+    we pass the wrong storage type for the reduction value so far.  This bug affects Inner Products whose
+    Comparison storage type is lower then the Reduction storage type, such as +.=.
+
+
+Build #1725 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In The Magic Function For []VR Not Using A Local HSHTABSTR
+
+Directory branches/bsmith/NewTypes:
+
+EXECMFN.C:
+  Make explicit tests of ptr against "NE NULL".
+  In IF stmts always compare ptr against NULL.
+  In <Init1MagicFunction>, check for incoming <INIT_MFO> struc and handle accordingly.
+  In <InitMagicFunctions>, initialize a local struc <INIT_MFO> to pass additional args to <Init1MagicFunction>.
+
+PERTAB.H:
+  Allocate room for a local HSHTABSTR for the []VR magic function.
+
+QF_VR.C:
+  In <SysFnMonVR_EM_YY>, pass a ptr to the local HSHTABSTR for the magic function.
+
+SESSMAN.C:
+  In <SMWndProc/WM_DESTROY>, also delete the system vars in []VR's local HSHTABSTR.
+
+
+Build #1724 -- Version 0.5.3.xx
+--------------------------------
+
+* Enable DEBUG And RESDEBUG To Be Independent
+
+Directory branches/bsmith/NewTypes:
+
+DISPDBG.C:
+MACROS.H:
+  Enable DEBUG and RESDEBUG to be independent.
+
+
+Build #1723 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug When Assigning A Function To A System Var
+* Fix Bug When Assigning A Var To A System Function
+
+Directory branches/bsmith/NewTypes:
+
+ASSIGN.C:
+  Fix bug when assigning a function to a system var.
+  Fix bug when assigning a var to a system function.
+
+
+Directory branches/bsmith/NewTypes/Images:
+
+DRAG_MOVE.CUR:
+  Include file overlooked from the last build.
+
+
+Build #1722 -- Version 0.5.3.xx
+--------------------------------
+
+* Implement Drag/Move Of A Selection In The Function And Session Editors
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+  Define new cursor handles.
+
+MAIN.C:
+  Load new cursor handles.
+
+MAIN.RC:
+  Define new cursor resource.
+
+MAKEFILE.INC:
+  Define new cursor dependency.
+
+RESOURCE.H:
+  Define new cursor IDs.
+
+VER.RC:
+  Increment version # to 0.5.3.xx.
+
+
+Directory branches/bsmith/NewTypes/WineHQ:
+
+EDITCTRL.C:
+  Implement drag/move of a selection in the function and session editors.
+
+LOCAL.H:
+  Define externs for the Assert stmts and Drag/Move cursors.

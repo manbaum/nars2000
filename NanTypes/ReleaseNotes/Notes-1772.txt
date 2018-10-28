@@ -1,0 +1,10 @@
+Build #1772 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug When Saving Update Check Date
+
+Directory branches/bsmith/NewTypes:
+
+INIFILE.C:
+  In <ReadIniFileGlb>, change the local var <hkl> to <langId> to better reflect its usage.
+  In <ReadIniFileWnd>, fix bug when saving the Update Check date by use parens to limit the scope of the cast.

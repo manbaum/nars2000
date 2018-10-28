@@ -1,0 +1,9 @@
+Build #1627 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug In Type Demotion of Nested Array To Simple Numeric
+
+Directory branches/bsmith/NewTypes:
+
+TYPEMOTE.C:
+  Fix bug in <DemoteData> when demoting a nested array's scalar global to simple numeric (BOOL, INT, FLT).

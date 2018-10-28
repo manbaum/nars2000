@@ -1,0 +1,31 @@
+Build #1937 -- Version 0.5.8.xx
+-------------------------------
+
+* Move DEBUG Vars To Common Place
+* Handle Syntax NAM {is} MOP MOP
+* Fix Memory Leak In Curried Index Assignment With Multiple Indices
+* Handle Syntax CS1 With No Right Argument
+
+Directory branches/bsmith/NewTypes:
+
+CS_PARSE.Y:
+EXTERNS.H:
+FH_PARSE.Y:
+IMMEXEC.C:
+PN_PARSE.Y:
+SC_DEBUG.C:
+TOKENIZE.C:
+YYFNS.C:
+  Move DEBUG vars to common place.
+
+PARSELINE.C:
+  Handle syntax NAM {is} MOP MOP.
+  Move DEBUG vars to common place.
+  Fix memory leak in curried index assignment with multiple indices
+    e.g.,  NAM[A]...[A]{is}A .
+  Support )DEBUG PLTrace=[0|1].
+  Change MessageBox modality from APPL to SYSTEM.
+  Fix bug in syntax of CS1 with no right argument.
+
+PARSELINE.H:
+  Handle syntax NAM {is} MOP MOP.

@@ -1,0 +1,18 @@
+Build #1799 -- Version 0.5.5.xx
+--------------------------------
+
+* Handle Factorial Of Quaternions
+
+Directory branches/bsmith/NewTypes:
+
+PF_QDOT.C:
+  Call Magic Function for Quaternion Factorials.
+  Use common tables and macros to expand Complex & Quaternion numbers
+    into their matrix representations.
+
+PO_QUADJOT.C:
+  Allow nested arrays into the Diagonal function.
+  Move Matrix Representation typedefs into <po_quadjot.h>.
+
+PO_QUADJOT.H:
+  Move Matrix Representation typedefs into <po_quadjot.h>.

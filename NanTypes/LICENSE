@@ -1,0 +1,15 @@
+This program is made available under the terms of the GNU General Public License
+(GPL -- see the accompanying LICENSE-GPL file).  Moreover, it uses various
+routines and libraries made available under the terms of other licenses
+including but not limited to the GNU Lesser General Public License (LGPL -- see
+the accompanying LICENSE-LGPL file).  For a complete list, see
+http://www.nars2000.org/License.html.
+
+The terms of the GPL and LGPL licenses require that you must be provided with
+the source code to be able to reproduce those libraries.  To do this, download
+the source code from http://www.nars2000.org/download/binaries:
+
+GSL:            gsldir.zip
+MPIR/MPFR/ECM:  mpfns-src.zip
+
+and follow the instructions in the <readme.txt> file in each download.

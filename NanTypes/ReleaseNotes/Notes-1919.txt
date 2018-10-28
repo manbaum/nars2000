@@ -1,0 +1,12 @@
+Build #1919 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug Introduced In Previous Build
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC:
+  In the previous build, I deleted too much in the exception handler for the SimpSimp function.
+  Use WFCN instead of the literal function name.
+  Append \r\n to the end of all text that might be displayed via <OutputDebugString>.
+  Delete unused variables.

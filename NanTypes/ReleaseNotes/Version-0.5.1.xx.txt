@@ -1,0 +1,1255 @@
+Version 0.5.1.xx consists of the following Builds:
+
+
+Build #1719 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Localizing Labels To Handle Labels In AFOs
+
+Directory branches/bsmith/NewTypes:
+
+EXECDFN.C:
+  In <LocalizeLabels>, handle labels in AFOs.
+
+
+Build #1718 -- Version 0.5.1.xx
+--------------------------------
+
+* Implement Extended Expand For Integer Left Arguments
+
+Directory branches/bsmith/NewTypes:
+
+EXECMFN.C:
+EXECMFN.H:
+  Define equates for Dyadic Slope Magic Function.
+
+MF_SLOPE.H:
+  Define Magic Function for Dyadic Slope.
+
+MF_SQUAD.H:
+  Move comment out of APL code into C code
+
+PF_SLOPE.C:
+  Call Magic Function if the left arg is not Boolean.
+
+
+Build #1717 -- Version 0.5.1.xx
+--------------------------------
+
+* Check For Ctrl-Break More Often During Array Display
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  Check for Ctrl-Break more often during array display.
+
+
+Build #1716 -- Version 0.5.1.xx
+--------------------------------
+
+* Change Wording Of )SYMB Command
+
+Directory branches/bsmith/NewTypes:
+
+SC_SYMB.C:
+  Change wording of )SYMB command.
+
+TOKENIZE.C:
+  Change syntax color of # to avoid marking it as an unknown.
+
+
+Build #1715 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Erasing A Direct Function/Operator
+
+Directory branches/bsmith/NewTypes:
+
+QF_EX.C:
+  In <ExpungeName>, don't free a Direct Function/Operator.
+
+
+Build #1714 -- Version 0.5.1.xx
+--------------------------------
+
+* Check For NaN In More Cases Of The Circle Functions
+
+Directory branches/bsmith/NewTypes:
+
+HC_PROC.C:
+  Define helper functions to detect if any part of a HC number is a NaN.
+
+MPCF.C:
+MPHF.C:
+MPOF.C:
+  Define helper functions to initialize and set a CHO number from another CHO number.
+
+PF_CIRCLE.C:
+PF_CIRCLE.MAC:
+  Check for NaN in more cases of the Circle functions.
+
+
+Build #1713 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Negating A Rational Hypercomplex Zero When Negative 0 Is Allowed
+
+Directory branches/bsmith/NewTypes:
+
+PF_BAR.C:
+  Define matching <NegHC[124]R_RE> functions to handle exceptions that need to be raised at a higher degree of an exception such as HC2V to HC4V.
+
+PF_TIMES.C:
+  In <MulHC[248]R_RE>, call <NegHC[124]R_RE1> instead of <NegHC[124]_RE> so as to handle upgrading the exception from 2V to 4V to 8V.
+
+
+Build #1712 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug With Empty User-Defined Function/Operator
+
+Directory branches/bsmith/NewTypes:
+
+EXECDFN.C:
+  In <ExecuteFunction_EM_YY>, check for an empty function (no lines).
+
+
+Build #1711 -- Version 0.5.1.xx
+--------------------------------
+
+* Handle NaNs Locally In The Circle Functions
+
+Directory branches/bsmith/NewTypes:
+
+PF_CIRCLE.C:
+  Handle NaNs locally in each function as they are not handle globally anymore.
+
+PRIMSPEC.C:
+  Allow the Circle functions to handle NaNs locally rather than globally in the several <PrimFnDydXXXYYY_EM> functions.
+
+
+Build #1710 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Validating Left Arg To The Reshape Function
+
+Directory branches/bsmith/NewTypes:
+
+PF_RHO.C:
+  In <RhoLftGlbValidCom>, test <bRet> after call to <xxxToAplInt>.
+
+
+Build #1709 -- Version 0.5.1.xx
+--------------------------------
+
+* Defer Initializing MPFR Constants When Changing Precision Via []FPC
+
+Directory branches/bsmith/NewTypes:
+
+INITDATA.C:
+  Defer initializing MPFR Pi, e, and Gamma into their own individual functions.
+    This way, if the user changes []FPC to a high value (which takes some time to
+    initialize those constants), only when those constants are referenced will they
+    be initialized (and take some time to do so).
+
+PF_CIRCLE.C:
+PF_STAR.C:
+PN_PROC.C:
+  Ensure the MPFR constants Pi, and Gamma are initialized before referencing them.
+
+
+Build #1708 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Naked Quad/Quote-Quad Input
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+  After <PARSELINE_MP_DONE>, check for naked Quad/Quote-Quad input and handle accordingly.
+
+
+Build #1707 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Quote-Quad Input
+
+Directory branches/bsmith/NewTypes:
+
+SESSMAN.C:
+  In <FormatQQuadInput>, don't mark the result as NoDisplay.
+
+
+Build #1706 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In []IC Set
+
+Directory branches/bsmith/NewTypes:
+
+SYSVARS.C:
+  Fix bug in <ValidateIntegerVector_EM> where the argument is mistakenly specified as UINT instead of APLINT.
+
+
+Build #1705 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Plus Reduction Of An Even Length APV
+
+Directory branches/bsmith/NewTypes:
+
+PO_SLASH.C:
+  Fix bug in <PrimOpMonSlashCommon_EM_YY> with a misplaced parenthesis that produces the wrong result for even length APVs.
+
+
+Build #1704 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Display Of VFP Numbers With Fixed Number Of Significant Digits, Part 3
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  When displaying VFP numbers, avoid shifting to E-format if the number of digits is fixed and there is a maximum width.
+
+
+Build #1703 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Display Of VFP Numbers With Fixed Number Of Significant Digits, Part 2
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  When displaying VFP numbers, avoid shifting to E-format if the number of digits is fixed.
+
+
+Build #1702 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Display Of VFP Numbers With Fixed Number Of Significant Digits
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  Pass additional argument to various VFP formatting functions just like for FLT.
+  Make <FormatAplVfpFC> sensitive to the FLTDISPFMT_xxx value.
+
+PF_DTACKJOT.C:
+QF_FMT.C:
+SC_SAVE.C:
+  Pass additional argument to various VFP formatting functions just like for FLT.
+
+
+Build #1701 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Rational Comparisons W.R.T. []CT
+
+Directory branches/bsmith/NewTypes:
+
+DEFINES.H:
+STARTADDR.H:
+  Remove the leading underscore from the names <_mpq_cmp_ct> and <_mpfr_cmp_ct>.
+
+MPFNS.C:
+  Fix typos in comments.
+  Remove the leading underscore from the names <_mpq_cmp_ct> and <_mpfr_cmp_ct>.
+  Rewrite <mpq_cmp_ct> in the same way as <mpfr_cmp_ct> without calling the latter directly.  By using MPIR native code, we don't run afoul of precision ([]FPC) issues in <mpfr_cmp_ct>.
+
+
+Build #1700 -- Version 0.5.1.xx
+--------------------------------
+
+* Implement Preliminary Version System Command )SYMB
+
+Directory branches/bsmith/NewTypes:
+
+COMPRO.H:
+  Include new file's prototype.
+
+ENUMS.H:
+  Include new system command in the list.
+
+MAKEFILE.SRC:
+MAKEFILE.INC:
+NARS2000.VCXPROJ:
+SYSCMDS.C:
+  Include new file in the lists.
+
+SC_SYMB.C:
+  Implement new system command )SYMB in inquiry mode only.
+
+
+Build #1699 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In )COPY Of Variable Onto A Function
+
+Directory branches/bsmith/NewTypes:
+
+SC_COPY.C:
+  Fix bug in )COPY of a variable onto a function.  I used the wrong function to free the old (function) value.
+
+
+Build #1698 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Base Log Function With Negative Real Right Arguments
+
+Directory branches/bsmith/NewTypes:
+
+PF_CSTAR.C:
+  Use consistent language in comments.
+  Fix bug in Base Log function with negative right args in FisIvI, FisFvF, and VisVvV.
+  Fix memory leak in VisRvR, HC2VisHC2RvHC2R, HC4VisHC4RvHC4R and HC8VisHC8RvHC8R.
+
+
+Build #1697 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Combinations Function On Multiple Precision Numbers
+
+Directory branches/bsmith/NewTypes:
+
+MPFNS.C:
+  Define helper functions <mpq_cmpabs> and <mpfr_bin_ui>.
+
+PF_QDOT.C:
+  Fix bug in multiple precision Combinations function.
+
+
+Build #1696 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Specifying []CS
+
+Directory branches/bsmith/NewTypes:
+
+QF_CS.C:
+  Fix bug where I put the digits at the start instead of the end of the array.  Oops!
+
+
+Build #1695 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Using A Global Dead Key To Create An Accented Character Where The Base Character Doesn't Have An Accented Form
+
+Directory branches/bsmith/NewTypes:
+
+EDITFCN.C:
+  In <DeadKeyTrans>, when the base character for a global dead key doesn't have an accented form, the result is to display two characters:  the accent and the base character.  If the Dead Key is a Global one, the wrong accent symbol is displayed.
+
+
+Build #1694 -- Version 0.5.1.xx
+--------------------------------
+
+* Clear The Dead Key State When Saving A New Character In A Keyboard Layout
+
+Directory branches/bsmith/NewTypes:
+
+CUSTOMIZE.C:
+  When customizing the keyboard layout and saving a new charcode for a keycap, clear the Dead Key state in case the new charcode is not an accent.  The user may toggle the Dead Key state via the context menu.
+
+
+Build #1693 -- Version 0.5.1.xx
+--------------------------------
+
+* Remove Old Code From Dyadic Squad Magic Function
+
+Directory branches/bsmith/NewTypes:
+
+MF_SQUAD.H:
+  Remove old code from the dyadic Squad magic function.
+
+
+Build #1692 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Multiset Operator Setting []CT To Zero
+* Miscellaneous Changes
+
+Directory branches/bsmith/NewTypes:
+
+DEFINES.H:
+  Update the copyright year.
+
+EDITFCN.C:
+  Improve comments.
+
+MAIN.RC:
+  Include dependent files if ever (i.e., never) called from some version of ApStudio.
+
+NARS2000.VCXPROJ:
+  Include <af_cs.c> in source file, omitted from the last build.
+
+PO_MULTISET.C:
+  Fix bug in multiset operator setting []CT to zero.
+
+PRIMSPEC.C:
+  Use <CopyAll> function to avoid spurious compiler warning.
+
+
+Build #1691 -- Version 0.5.1.xx
+--------------------------------
+
+* Define New Layouts For Danish, French, And German Keyboards
+
+Directory branches/bsmith/NewTypes:
+
+INIFILE.C:
+  Include German keyboard as a possible initial layout for the first time user.
+
+KEYBLAYOUTS.H:
+  Move keyboard layout structures from <keyboards.h> to <keyblayouts.h> so it is available elsewhere.
+
+KEYBOARDS.H:
+  Move the built-in keyboard definitions to <keyboards_bi.h> so they may be changed without having to rebuild the entire project.
+  Define entries for new keyboards DK_ALT, FR_CTL, GR_CTL, and GR_CTL.
+
+KEYBOARDS_BI.H:
+  Move the built-in keyboard definitions to <keyboards_bi.h> so they may be changed without having to rebuild the entire project.
+  Define new keyboards DK_ALT, FR_CTL, GR_CTL, and GR_CTL.
+
+MAIN.C:
+  Include the built-in keyboard information.
+
+
+Build #1690 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Display Colors For Keyboard Layout Menu
+* Show ToolTip With Scan And Char Codes For Keycaps In Keyboard Layouts
+
+Directory branches/bsmith/NewTypes:
+
+CUSTOMIZE.C:
+  Fix bug in the display of the available keyboard layouts.
+  Rename <IDTokeybScanCode> to <KeybIDToScanCode> for consistency.
+  Make tooltip with ScanCode and CharCode on keyboard layout keycaps available to non-DEBUG versions.
+  Define helper function <KeybScanCodeToChar> for use in the above tooltip.
+
+
+Build #1689 -- Version 0.5.1.xx
+--------------------------------
+
+* Implement Niladic System Function []CS
+
+Directory branches/bsmith/NewTypes:
+
+COMPRO.H:
+  Include prototypes for the new file.
+
+DATATYPE.H:
+  Define permanent index for new system function.
+  Expand the enum width by one bit.
+
+EXTERNS.H:
+  Define HGLOBAL for the new system function.
+
+MAKEFILE.INC:
+MAKEFILE.SRC:
+  Include new file.
+
+SYSVARS.C:
+  Include new system function.
+
+
+Build #1688 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Display Of Quote-Quad Output
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  Pass <bEndingCR> flag to <DisplayGlbVector> so it can decide whether or not to end the line with a CRLF.
+
+
+Build #1687 -- Version 0.5.1.xx
+--------------------------------
+
+* Use Magic Function For Dyadic Squad
+
+Directory branches/bsmith/NewTypes:
+
+EXECMFN.C:
+EXECMFN.H:
+  Define equates for new magic function.
+
+MF_DYDSQUAD.H:
+  Define APL code for new magic function.
+
+PF_SQUAD.C:
+  Replace the body of <PrimFnDydSquadCommon_EM_YY> with a call to a magic function.
+
+
+Build #1686 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In []TRACE Display
+
+Directory branches/bsmith/NewTypes:
+
+QF_STRACE.C:
+  Fix bug in <DisplayTraceResult> where it included an extra trailing zero in the NELM.
+
+
+Build #1685 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bugs In Divide Of HC Numbers
+
+Directory branches/bsmith/NewTypes:
+
+PF_COLONBAR.C:
+  Reduce the column width of many lines by folding them to the next.
+  In Monadic and Dyadic Divide functions, calculate the denominator by multiplying the right arg by its conjugate.
+    Previously we summed the squares, but this doesn't catch some errors with infinities.
+
+PF_TIMES.C:
+  In <MulHCxy_RE> special case "a EQ 0" and "c EQ 0" so as to avoid an error if "b" or "d" is {inf}.
+
+
+Build #1684 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bugs In Grade Of Single NaN And GradeAll NaNs
+
+Directory branches/bsmith/NewTypes:
+
+GRADE.H:
+  Pass the <bGradeAll> flag down to the comparison routines.
+
+PF_DELTASTILE.C:
+  Pass the <bGradeAll> flag down to the comparison routines.
+  Handle grading scalars as one-element vectors so as to catch NaNs with a check
+    at the very end for scalars so as to return {enclose}{zilde}.
+  In <PrimFnGradeCompare> on FLTs, test both items for NaN as some sorts don't pass
+    all items through the first position.
+  In <PrimFnGradeCompare> on FLTs, skip the test for NaNs if <bGradeAll>.
+
+SORT.C:
+  In <HeapSort>, if the count is <= 1, call (*ObjCmp) anyway so as to catch
+    <!bGradeAll> and NaN.
+
+
+Build #1683 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bugs In Dimension Demotion
+
+Directory branches/bsmith/NewTypes:
+
+INITDATA.C:
+  For consistency, use <FcnTrans> instead of the corresponding mask expression.
+
+PO_DOT.C:
+PO_JOTDOT.C:
+PO_SLASH.C:
+  Save the dimension demotion flag and pass it onto <TypeDemote>.
+
+
+Build #1682 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bugs In []EA And []EC
+
+Directory branches/bsmith/NewTypes:
+
+PRIMFNS.C:
+  In <GetSISLayer>, skip past DFNTYPE_ERRCTL along with the other already present.
+    This allows a branch within []EA to change the next function line number when that function becomes active again.
+
+QF_EA.C:
+  In IF stmts always compare ptr against NULL.
+  Include "Hdr" in name of result of <MyGlobalLock>.
+  In <SysFnDydEA_EM_YY>, when calling <PrimFnMonUpTackJotCommon_EM_YY>, tell that function to return a NoValue YYRes if appropriate
+    This allows a branch to a number to return the proper result to the caller.
+
+QF_EC.C:
+  In <SysFnMonEC_EM_YY>, save the caller's function line and token number before executing the right arg and restore it upon return.
+    This avoids a branch to a number from changing the caller's next function line number when that function becomes active again.
+
+
+Build #1681 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Syntax Bug Not Recognizing CS1 NF
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+PARSELINE.H:
+  Define responses for a Niladic Function to the right of a Monadic CtrlStruc (CS1), an AFO Guard (AFOG), and an AFO Return (AFOR).
+
+
+Build #1680 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In <IsLocalName>
+
+Directory branches/bsmith/NewTypes:
+
+EDITFCN.C:
+  Skip passing to <IsLocalName> a ptr to a temp work area.
+
+TOKENIZE.C:
+  Skip passing to <IsLocalName> a ptr to a temp work area.
+  In <IsLocalName> allocate space as needed for a temp work area as the global one passed in sometimes is used by another thread.
+
+
+Build #1679 -- Version 0.5.1.xx
+--------------------------------
+
+* Implement Support For Global Dead Keys On All Keyboards
+
+Directory branches/bsmith/NewTypes:
+
+DEFINES.H:
+  Define the global dead keys.
+
+EDITFCN.C:
+  Delete <IsDeadKey> macro in favor of a defined function so I don't have to rebuild the entire product whenever I make a change to it.
+  Include the global dead key values in the <DeadkeyTrans> switch stmt.
+
+KEYBOARDS.H:
+  Define equates for global dead keys and their modifier states.
+
+MACROS.H:
+  Delete <IsDeadKey> macro in favor of a defined function so I don't have to rebuild the entire product whenever I make a change to it.
+
+
+Build #1678 -- Version 0.5.1.xx
+--------------------------------
+
+* Implement Support For Dead Keys On National Keyboards
+
+Directory branches/bsmith/NewTypes:
+
+CUSTOMIZE.C:
+  Define foreground and background colors for the Dead Key button.
+  When displaying a Dead Key button, change the foreground and background colors to make it stand out.
+  Allow the user to change the state of Dead Key keycap via a context menu.
+  Implement Radio Buttons to allow the user to Enable/Disable the AltGR key.
+
+EDITFCN.C:
+  Implement support for Dead Keys.  If a Dead Key is pressed and released,
+    wait for the next key press to see if it can be combined with the accent
+    character.
+  Support the AltGR key.
+  Define routine to translate an accent letter combination to a WCHAR.
+
+EXTERNS.H:
+  Define HGLOBALs to hold the various flavors of []A.
+
+INIFILE.C:
+  Read in and write out the new format for user-defined keyboards.
+
+KEYBOARDS.H:
+  Define equates for use in a narrow table.
+  Define a UBOOL array to hold the Dead Key values.
+  Distinguish between Circumflex and UpCaret and use appropriately, one as an accent char and one as an APL symbol.
+  Distinguish between Tilde and Tilde2 and use appropriately, one as an accent char and one as an APL symbol.
+  Support the AltGR key.
+  In the French keyboard, mark the appropriate scancodes as Dead Keys producers.
+
+MACROS.H:
+  Define a macro to detect if we support a key as a Dead Key.
+  Define a macro to detect if a System Name is a flavor of []A.
+
+MAIN.RC:
+  Make room for Dead Key legend.
+  Make room for AltGR settings.
+
+PF_DELTASTILE.C:
+QF_D.C:
+  Omit <MakePtrTypeGlb> macro as the HGLOBAL already has the PTB set.
+
+QF_A.C:
+  Define various flavors of []A.
+
+QF_AV.C:
+  Omit <MakePtrTypeGlb> macro as the HGLOBAL already has the PTB set.
+  In <MakeQuadAV>, set the PTB in <hGlbQuadAV>.
+
+RESOURCE.H:
+  Define IDM for the toggle Dead Key message.
+  Define IDCs for the AltGR keyboard radio buttons.
+
+SYMTAB.C:
+  Use special routine to convert a system name to a common lower case except for the various flavors of []A.
+  Call <hashlittle< instead of <hashlittleConv> so as not to force the system name to lowercase.
+
+SYSVARS.C:
+  Define entries for the various flavors of []A.
+  Create the content of the various flavors of []A.
+  Set the PTB for the permanent HGLOBALs.
+  Free the various flavors of []A at the end.
+  Omit <MakePtrTypeGlb> macro as the HGLOBAL already has the PTB set.
+
+TOKENIZE.C:
+  Use special routine to convert a system name to a common lower case except for the various flavors of []A.
+  In <CharTransTK>, include the various accented letters as in the alphabet.
+  Define routine to convert a system name to a common lowercase except for the various flavors of []A.
+
+UNICODE.H:
+  Define more accented character names.
+
+
+Build #1677 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Minimum And Maximum On HC Numbers With All Zero Imaginary Parts
+
+Directory branches/bsmith/NewTypes:
+
+PF_DSTILE.C:
+  In <PrimSpecDownStileStorageTypeDyd>, if the result is HC, return <ARRAY_REALONLY> to ask the caller to demote the args to Real (HC Dimension 1).
+
+
+Build #1676 -- Version 0.5.1.xx
+--------------------------------
+
+* Remove More References To Vector And Matrix Editors
+
+Directory branches/bsmith/NewTypes:
+
+DEFINES.H:
+MAIN.C:
+MAIN.RC:
+MAKEFILE.INC:
+RESOURCE.H:
+  Remove references to Vector and Matrix editors.
+
+
+Directory branches/bsmith/NewTypes/Images:
+
+ME.ICO:
+VE.ICO:
+  Delete these unused icons.
+
+
+Build #1675 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In 3 []DR On Hypercomplex Numbers
+
+Directory branches/bsmith/NewTypes:
+
+QF_DR.C:
+  In <SysFnDR_GetPrec_EM_YY>, handle Hypercomplex numbers.
+
+
+Build #1674 -- Version 0.5.1.xx
+--------------------------------
+
+* Avoid Bug In Windows API Functions lstrcpy, lstrcpyn, lstrcat
+
+Directory branches/bsmith/NewTypes:
+
+DEFINES.H:
+  Define library equivalent to <strlenW>.
+
+DISPLAY.C:
+  Improve comments.
+  Replace lstrcpy, lstrcpyn, and lstrcat with working versions.
+
+IMMEXEC.C:
+INIFILE.C:
+QF_NFNS.C:
+VER.C:
+  Replace lstrcpy, lstrcpyn, and lstrcat with working versions.
+
+
+Directory branches/bsmith/NewTypes/WineHQ:
+
+LOCAL.H:
+  Omit previous replacement for <strlenW>.
+
+
+Build #1673 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Monadic PSFs With Nested Immediate Values
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC.C:
+  Fix bug in monadic PSFs which can re-define a 0 to a 1 by executing the statement ~0 {zilde}.
+
+
+Build #1672 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Testing For NaNs In Simple vs. Global Numeric or Vice Versa
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC.C:
+  Fix bug in <PrimFnDydNestSiSc_EM> and <PrimFnDydSiScNest_EM> when testing for a NaN
+    in a simple vs. global numeric array, or vice versa.
+
+
+Build #1671 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In F!F
+
+Directory branches/bsmith/NewTypes:
+
+PF_QDOT.C:
+  Fix bug in F!F with missing break stmts!
+
+
+Build #1670 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Deciding When To Switch To E-format In VFP Display
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  Pass additional parameter to <FormatAplVfpFC> to help choose whether or not to use E-format in certain cases.
+  In <FormatAplVfpFC>, fix bug in calculation of when to switch to E-format.
+
+PF_DTACKJOT.C:
+QF_FMT.C:
+SC_SAVE.C:
+  Pass additional parameter to <FormatAplVfpFC> to help choose whether or not to use E-format in certain cases.
+
+
+Build #1669 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Reducing A Matrix Which Blows Up From INT To FLT
+
+Directory branches/bsmith/NewTypes:
+
+PO_SLASH.C:
+  Fix bug when reducing a matrix which blows up from INT to FLT.
+
+
+Build #1668 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Grading A NaN
+
+Directory branches/bsmith/NewTypes:
+
+PF_DELTASTILE.C:
+  In <PrimFnMonGradeCommon_EM_YY>, enclose the call to the grade routine in a  __try/__except exception handler to catch DOMAIN ERRORs.
+  In <PrimFnGradeCompare> when grading FLTs, check for NaNs and signal a DOMAIN ERROR if found.
+
+
+Build #1667 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Hashing A String
+
+Directory branches/bsmith/NewTypes:
+
+SYMTAB.C:
+  In <hashLittleConv>, the string copy function should be <StringCChCopyNW> as it is length-limited.
+
+
+Build #1666 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Tapping Either Alt Key Twice
+
+Directory branches/bsmith/NewTypes:
+
+MAIN.C:
+  In <MFWndProc>, handle <WM_SYSCOMMAND> to catch the case where the user taps either Alt key twice.
+
+
+Build #1665 -- Version 0.5.1.xx
+--------------------------------
+
+* Rename Function To Indicate It's PTB-sensitive
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+PF_BAR.C:
+PF_INDEX.C:
+PF_PLUS.C:
+PF_SQUAD.C:
+PF_TIMES.C:
+PO_SLASH.C:
+PRIMFNS.C:
+STARTADDR.H:
+  Rename <CopyArray_EM> to <CopyArray_EM_PTB> to indicate that it returns a PTB-sensitive result.
+
+
+Build #1664 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Type Promotion Of A RAT Item In A Nested Array To VFP
+
+Directory branches/bsmith/NewTypes:
+
+TYPEMOTE.C:
+  In <DemoteData> for a VFP result and a nested right argument, convert the item to a VFP as it might actually be a RAT.
+
+
+Build #1663 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug With NaNs And Certain Dyadic PSFs
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC.C:
+  Improve comments.
+  When detecting a NaN in an argument to a Dyadic PSF, special handle the six comparison functions.
+  In <PrimFnDydNestSiSc_EM> and <PrimFnDydSiScNest_EM> after calling <PrimFnDydAllocate_EM> handle immediate (<hGlbRes EQ NULL>) result, and before returning.
+  Now that <PrimFnDydNestSiSc_EM> and <PrimFnDydSiScNest_EM>  return a PTB-sensitive result, don't call <MakePtrTypeGlb> on the returned HGLOBAL.
+  After call to <PrimScalarFnDydAllocate_EM>, Assert that <*lphGlbRes> is valid.
+
+
+Build #1662 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Indexing Nested Array With An Empty Array
+
+Directory branches/bsmith/NewTypes:
+
+PF_INDEX.C:
+  In <ArrayIndexRef_EM_YY> when indexing a nested array with an empty array, the prototype of the result is not created.
+
+
+Build #1661 -- Version 0.5.1.xx
+--------------------------------
+
+* Implement Debugging Aid For A Specific HGLOBAL
+
+Directory branches/bsmith/NewTypes:
+
+MACROS.H:
+  Define macro <CheckGlbStat> to check a specific HGLOBAL for memory corruption.
+
+RESDEBUG.C:
+  Implement <_CheckGlbStat> to check a specific HGLOBAL for memory corruption.
+
+
+Build #1660 -- Version 0.5.1.xx
+--------------------------------
+
+* Word Comments Consistently
+
+Directory branches/bsmith/NewTypes:
+
+HC_PROC.C:
+PF_CSTILE.C:
+PF_DCARET.C:
+TYPEMOTE.C:
+  Word comments consistently.
+
+
+Build #1659 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Type Function With A NaN Argument
+
+Directory branches/bsmith/NewTypes:
+
+MF_QUADFMT.H:
+  Handle a NaN result from the Type function.
+
+PF_DTACK.C:
+  In <PrimFnMonDownTack_EM_YY>, for immediate FLTs, return a NaN for a NaN.
+
+PO_DIERESIS.C:
+  After call to <PrimScalarFnDydAllocate_EM>, Assert that <hGlbRes> is valid.
+
+PRIMFNS.C:
+  In <MakeMonPrototype_EM_PTB>, the prototype of a NaN is a NaN.
+  After call to <PrimScalarFnDydAllocate_EM>, Assert that <hGlbRes> is valid.
+
+STARTADDR.H:
+  Include more routines.
+
+SYMTAB.C:
+SYMTAB.H:
+  Define and use a Symbol Table Entry for a NaN.
+
+
+Build #1658 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Identifying A NaN
+
+Directory branches/bsmith/NewTypes:
+
+COMMON.C:
+  In <IsArgNaN>, if the argument is Nested/Hetero, the code used to just return FALSE.  Now it looks in the item and if it's a SYMENTRY, returns its NaN status.
+  In <IsArgNaN>, if the argument is FLT-, RAT-, or VFP-like, use HC Dimension as the multiplier to index the base case.
+
+
+Build #1657 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Calculating The Storage Type Of Up/DownStile On Hetero/Nested Arrays
+
+Directory branches/bsmith/NewTypes:
+
+PF_DSTILE.C:
+  Fix bug in <PrimSpecDownStileStorageTypeDyd> when presented with a Hetero or Nested array.
+
+
+Build #1656 -- Version 0.5.1.xx
+--------------------------------
+
+* Implement NaNs
+
+Directory branches/bsmith/NewTypes:
+
+COMMON.C:
+  Define routine <IsArgNaN> to test to see if an item contains a NaN as one of its coordinates.
+
+CONVERT.C:
+  Fix typos.
+  In <flt_cmp_ct>, handle NaNs.
+  Remove routines no longer needed.
+
+CR_PROC.C:
+CR_PROC.H:
+  Handle NaNs the same as Infs.
+
+CUSTOMIZE.C:
+  Define new value for []IC to return a NaN.
+
+DEFINES.H:
+  Redefine Quiet NaN, and define Real Indefinite.
+  Define text strings for NaNs, both ASCII and UCS2.
+
+DISPLAY.C:
+  Define text strings for NaNs, both ASCII and UCS2.
+  In formatting routines, display NaNs.
+
+ENUMS.H:
+  Reorder EXCEPTION_CODES so that we can do artihmetic on them when raising an exception.
+  Remove EXCEPTION_RESULT_RAT as it not used.
+
+EXTERNS.H:
+  Define new value for []IC to return a NaN.
+  Define new index in []FEATURE to allow NaNs in arithmetic.
+  Define FLT NaN.
+
+FPCHO_COM.C:
+MPCHO_COM.C:
+  Number functions with Circle function left arg.
+  Handle zero imaghinary part as real number.
+
+HC_PROC.C:
+  Define missing function <mphc1v_init_set>.
+
+INITDATA.C:
+  Initialize FLT NaN.
+
+KEYBOARDS.H:
+  Define NaN in the various default keyboards.
+
+MACROS.H:
+  Define macros for new & old []FEATUE values.
+  Define macros for detecting FLT and VFP NaNs.
+
+MPFNS.C:
+  Define new value for []IC to return a NaN.
+
+MPIFNS.C:
+  Handle NaNs similarly to Infs.
+
+PF_BAR.C:
+PF_CIRCLE.C:
+PF_CIRCLE.MAC:
+PF_DOMINO.C:
+PF_DOTDOT.C:
+PF_DTACK.C:
+PF_PLUS.C:
+PF_ROOT.C:
+PF_STILE.C:
+PF_TIMES.C:
+PN_PARSE.Y:
+PRIMSPEC.C:
+  Handle NaNs.
+
+PF_COLONBAR.C:
+  Fix bug in <DivHC1I_RE> detecting when to blow up to FLT.
+  Handle NaNs.
+
+PF_EPSILON.C:
+  Fix Lft v. Rht typos in routines.
+
+PF_EQUAL.C:
+  Document behavior of <CmpCT_F>.
+  Handle NaNs.
+
+PF_STAR.C:
+  When converting the right arg to an integer, use a []CT of zero so that the conversion is exact.
+
+PN_PROC.C:
+  In <PN_MakeHcxPoint>, use the larger HC Dimension of the rounded up value and the
+    HC Dimension of the incoming HC Dimension (if not initializing).
+  Define routine to set a NaN into various datatypes.
+
+REBAR.C:
+  Document NaNs in the Language Bar.
+
+SC_LOAD.C:
+  Use common routines to handle NaNs on )LOAD and )COPY.
+
+SYMBOLNAMES.H:
+  Define Alt-5 as NaN.
+
+TOKENIZE.C:
+TOKENIZE.H:
+  Move Underbar into the Alpha category and rename its row as NaN.
+
+TRANSLATE.C:
+  Define new value for []IC to return a NaN.
+
+TYPEMOTE.C:
+  Fix alignment of comments.
+
+UNICODE.H:
+  Define Unicode symbol for NaN.
+
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+HTDOCS/INDEX-BODY.AHTML:
+  Fix typos.
+  Include Gamma and Hypercomplex in Point Notation changes.
+  Update copyright year.
+
+
+Directory branches/bsmith/NewTypes/Extensions/aplchars:
+
+INSTALL.RDF:
+UPDATE.RDF:
+  Update the version number.
+
+
+Directory branches/bsmith/NewTypes/Extensions/aplchars/chrome/content/aplchars:
+
+ABOUT.XUL:
+  Update the version number.
+
+EDITOROVERLAY.JS:
+  Define key for NaN.
+
+
+Directory branches/bsmith/NewTypes/MediaWiki:
+
+MEDIAWIKI/EXTENSIONS/B2A.INC.PHP:
+  Define key for NaN.
+
+
+Build #1655 -- Version 0.5.1.xx
+--------------------------------
+
+* Define A Single NaN Rather Multiple NaNs
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+  In <ConvertSpecCharsToFloat>, display a NaN as {NaN} rather than with any other adornment.
+
+DEFINES.H:
+  Define a Quiet NaN as well as a Real Indefinite.
+
+DISPLAY.C:
+  In <FormatAplFltFC>, format a NaN as {NaN} with no other adornment.
+
+EXTERNS.H:
+  Define save area for floating point NaN.
+
+INITDATA.C:
+  Initialize <fltNaN> as a Quiet NaN.
+
+PRIMSPEC.C:
+  Move the unlock code to before we test for errors.
+
+
+Build #1654 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Data Demotion
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC.C:
+  Fix bug in last build:  forgot to respecify a ptr after demoting the data.
+
+
+Build #1653 -- Version 0.5.1.xx
+--------------------------------
+
+* Attempt To Demote HC Args To The Four Comparison PSFs ( <=   >=   > ) Not Defined On HC Data
+
+Directory branches/bsmith/NewTypes:
+
+DATATYPE.H:
+  Define Real Only array type.
+
+MACROS.H:
+  Fix error in comment.
+  Define macro for detecting Real Only array type.
+
+PF_EPSILON.C:
+  Improve comments.
+
+PF_LCARET:
+PF_LCARETUND:
+PF_RCARET.C:
+PF_RCARETUND.C:
+  In <...StorageTypeDyd> return Real Only array type for HC args telling the caller
+    to attempt to demote the args to HC dimension 1.
+
+PRIMSPEC.C:
+  After determining the result storage type, test for Real Only and handle as necessary.
+
+QF_DC.:
+  Insert proper calling sequence for <TypeDemote> even though it's commented out.
+
+TYPEMOTE.C:
+  In <DemoteData>, return a result to indicate whether or not the demotion succeeded.
+  In <DemoteData>, handle demotions to the base case (BIFRV).
+  Define common routine to allocate a new array and demote the incoming data to the new array.
+
+
+Build #1652 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bugs In Lookup Algorithm For PV Left Args, Part II
+
+Directory branches/bsmith/NewTypes:
+
+DATATYPE.H:
+  Define a Permutation Vector.
+
+GRADE.H:
+  Fix typo in comment.
+
+PF_IOTA.C:
+  Fix bugs in lookup algorithm for PV left args.
+
+
+Build #1651 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bugs In Lookup Algorithm For PV Left Args
+
+Directory branches/bsmith/NewTypes:
+
+PF_DOTDOT.C:
+  Set the PV0/PV1 flags for results as appropriate.
+
+PF_IOTA.C:
+  Fix bugs in lookup algorithm for PV left args.
+
+VER.RC:
+  Increment version # to 0.5.1.xx.

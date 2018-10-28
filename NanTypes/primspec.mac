@@ -1,0 +1,91 @@
+//***************************************************************************
+//  NARS2000 -- Primitive Functions Macro Header
+//***************************************************************************
+
+/***************************************************************************
+    NARS2000 -- An Experimental APL Interpreter
+    Copyright (C) 2006-2015 Sudley Place Software
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+***************************************************************************/
+
+
+#define NUM_DIMS    4   // Count of dimensions:  1 2 4 8
+#define NUM_MTYPES  4   // Count of major types: I F R V
+
+
+EXTERN
+UINT uArrayType2DimIndex[ARRAY_LENGTH]
+#ifdef DEFINE_VALUES
+ = {
+       0,      // ARRAY_BOOL
+       0,      // ARRAY_INT
+       0,      // ARRAY_FLOAT
+      -1,      // ARRAY_CHAR
+      -1,      // ARRAY_HETERO
+      -1,      // ARRAY_NESTED
+      -1,      // ARRAY_LIST
+       0,      // ARRAY_APA
+       0,      // ARRAY_RAT
+       0,      // ARRAY_VFP
+       1,      // ARRAY_HC2I
+       1,      // ARRAY_HC2F
+       1,      // ARRAY_HC2R
+       1,      // ARRAY_HC2V
+       2,      // ARRAY_HC4I
+       2,      // ARRAY_HC4F
+       2,      // ARRAY_HC4R
+       2,      // ARRAY_HC4V
+       3,      // ARRAY_HC8I
+       3,      // ARRAY_HC8F
+       3,      // ARRAY_HC8R
+       3,      // ARRAY_HC8V
+}
+#endif
+;
+
+EXTERN
+UINT uArrayType2TypeIndex[ARRAY_LENGTH]
+#ifdef DEFINE_VALUES
+ = {
+       0,      // ARRAY_BOOL
+       0,      // ARRAY_INT
+       1,      // ARRAY_FLOAT
+      -1,      // ARRAY_CHAR
+      -1,      // ARRAY_HETERO
+      -1,      // ARRAY_NESTED
+      -1,      // ARRAY_LIST
+      -1,      // ARRAY_APA
+       2,      // ARRAY_RAT
+       3,      // ARRAY_VFP
+       0,      // ARRAY_HC2I
+       1,      // ARRAY_HC2F
+       2,      // ARRAY_HC2R
+       3,      // ARRAY_HC2V
+       0,      // ARRAY_HC4I
+       1,      // ARRAY_HC4F
+       2,      // ARRAY_HC4R
+       3,      // ARRAY_HC4V
+       0,      // ARRAY_HC8I
+       1,      // ARRAY_HC8F
+       2,      // ARRAY_HC8R
+       3,      // ARRAY_HC8V
+}
+#endif
+;
+
+
+//***************************************************************************
+//  End of File: primspec.mac
+//***************************************************************************

@@ -1,0 +1,34 @@
+Build #1653 -- Version 0.5.1.xx
+--------------------------------
+
+* Attempt To Demote HC Args To The Four Comparison PSFs ( <=   >=   > ) Not Defined On HC Data
+
+Directory branches/bsmith/NewTypes:
+
+DATATYPE.H:
+  Define Real Only array type.
+
+MACROS.H:
+  Fix error in comment.
+  Define macro for detecting Real Only array type.
+
+PF_EPSILON.C:
+  Improve comments.
+
+PF_LCARET:
+PF_LCARETUND:
+PF_RCARET.C:
+PF_RCARETUND.C:
+  In <...StorageTypeDyd> return Real Only array type for HC args telling the caller
+    to attempt to demote the args to HC dimension 1.
+
+PRIMSPEC.C:
+  After determining the result storage type, test for Real Only and handle as necessary.
+
+QF_DC.:
+  Insert proper calling sequence for <TypeDemote> even though it's commented out.
+
+TYPEMOTE.C:
+  In <DemoteData>, return a result to indicate whether or not the demotion succeeded.
+  In <DemoteData>, handle demotions to the base case (BIFRV).
+  Define common routine to allocate a new array and demote the incoming data to the new array.

@@ -1,0 +1,13 @@
+Build #1929 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug When Comparing FLT NaNs And non-NaNs
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+  In <flt_cmp_ct>, if either arg is a NaN, use the new FLT NaN comparison function.
+  Define new comparison function between NaNs and non-NaNs and use it everywhere so we can produce consistent results.
+
+PF_DELTASTILE.C:
+  In <PrimFnGradeCompare>, use the new FLT NaN comparison function.

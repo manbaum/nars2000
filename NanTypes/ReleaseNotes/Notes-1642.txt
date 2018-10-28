@@ -1,0 +1,16 @@
+Build #1642 -- Version 0.5.0.xx
+--------------------------------
+
+* Reduce Flicker When Moving Back And Forth Between The Session Manager And A Function Editor Window
+
+Directory branches/bsmith/NewTypes:
+
+DEFINES.H:
+  Define window property to aid in reducing flicker and jumping in Function Editor windows.
+
+EDITFCN.C:
+  Define functions to aid in reducing flicker and jumping in Function Editor windows.
+  In <FEWndProc/WM_CREATE>, initialize the FirstVisibleLine value.
+
+SESSMAN.C:
+  In <SMWndProc/WM_CREATE>, initialize the FirstVisibleLine value.

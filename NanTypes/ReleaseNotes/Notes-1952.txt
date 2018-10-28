@@ -1,0 +1,9 @@
+Build #1952 -- Version 0.5.8.xx
+-------------------------------
+
+* When Indexed Assignment Into A SysVar, Call Post-Validation Function On Global Right Args, Too
+
+Directory branches/bsmith/NewTypes:
+
+PF_INDEX.C:
+  When Indexed Assignment into a SysVar, call Post-Validation function on Global Right Args, too.

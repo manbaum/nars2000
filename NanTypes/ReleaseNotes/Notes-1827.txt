@@ -1,0 +1,17 @@
+Build #1827 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In Convert Named UDFO To Unnamed
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+  Delete the trailing parameter passed to <ConvertNamedFopToUnnamed> as we no longer need it.
+  In <ConvertNamedFopToUnnamed>, if the fop is a UDFO, don't convert to unnamed, just increment the RefCnt.
+
+SAVEFCN.C:
+  In <SaveFunctionCom> when replacing a suspended/pendent function, if we're
+    called from <CopyUDFO> skip the test as we're defining a new function anyway.
+
+YYFNS.C:
+  Delete the trailing parameter passed to <ConvertNamedFopToUnnamed> as we no longer need it.

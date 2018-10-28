@@ -1,0 +1,16 @@
+Build #1687 -- Version 0.5.1.xx
+--------------------------------
+
+* Use Magic Function For Dyadic Squad
+
+Directory branches/bsmith/NewTypes:
+
+EXECMFN.C:
+EXECMFN.H:
+  Define equates for new magic function.
+
+MF_DYDSQUAD.H:
+  Define APL code for new magic function.
+
+PF_SQUAD.C:
+  Replace the body of <PrimFnDydSquadCommon_EM_YY> with a call to a magic function.

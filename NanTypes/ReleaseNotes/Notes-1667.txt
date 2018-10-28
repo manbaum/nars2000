@@ -1,0 +1,9 @@
+Build #1667 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Hashing A String
+
+Directory branches/bsmith/NewTypes:
+
+SYMTAB.C:
+  In <hashLittleConv>, the string copy function should be <StringCChCopyNW> as it is length-limited.

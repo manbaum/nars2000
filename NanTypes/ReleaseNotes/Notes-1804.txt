@@ -1,0 +1,12 @@
+Build #1804 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug When Copying 1v64 In A Strand As We Lose Its Precision
+
+Directory branches/bsmith/NewTypes:
+
+MPFNS.C:
+  Revert to <mpfr_copy> and <mpfr_init_copy> to preserve the source precision in the target.
+
+STRAND.C:
+  In <MakeGlbEntry_EM>, use <mpfr_init_copy> instead of <mpfr_init_set> so we preserve the source precision in the target.

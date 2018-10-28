@@ -1,0 +1,21 @@
+Build #1862 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bugs When Assigning A System Function To A Name
+
+Directory branches/bsmith/NewTypes:
+
+ASSIGN.C:
+  Check for assignment of a System Function to a name and copy the UDFO if so.
+
+EXECDFN.C:
+  In <UnlocalizeSTEs>, check for unlocalizing a named System Function.
+
+FH_PARSE.H:
+  Remove bit flag <bCopyUDFO> marking a copyied UDFO as we no longer need it.
+
+FREE.C:
+  In <FreeResultSub>, check for a named System Function.
+
+SAVEFCN.C:
+  In <CopyUDFO>, remove bit flag <bCopyUDFO>.

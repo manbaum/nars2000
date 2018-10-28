@@ -1,0 +1,9 @@
+Build #1712 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug With Empty User-Defined Function/Operator
+
+Directory branches/bsmith/NewTypes:
+
+EXECDFN.C:
+  In <ExecuteFunction_EM_YY>, check for an empty function (no lines).

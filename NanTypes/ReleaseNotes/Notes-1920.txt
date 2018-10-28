@@ -1,0 +1,9 @@
+Build #1920 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Second Bug Introduced In Previous Build
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC:
+  In the previous build, I omitted a crucial test in the exception handler for the SimpSimp function.

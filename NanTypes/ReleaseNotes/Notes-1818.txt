@@ -1,0 +1,14 @@
+Build #1818 -- Version 0.5.5.xx
+--------------------------------
+
+* Change Definition Of []CS To Sort Numbers Before Letters
+
+Directory branches/bsmith/NewTypes:
+
+QF_CS.C:
+  Use #defines instead of numeric constants.
+  Reduce the last dimension of []CS from 28 to 27 by moving the digits to the first column.
+  Change the definition of []CS to sort numbers before letters.
+
+SORT.C:
+  In <aplcmp>, substitute a four-dimensional collating sequence which includes accented vowels.

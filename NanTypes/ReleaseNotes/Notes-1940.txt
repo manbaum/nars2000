@@ -1,0 +1,33 @@
+Build #1940 -- Version 0.5.8.xx
+-------------------------------
+
+* Use Macro To Describe Function Name Instead of Literal
+
+Directory branches/bsmith/NewTypes:
+
+CR_PROC.C:
+CS_PARSE.Y:
+DEBUG.C:
+EXECDFN.C:
+EXECFNS.C:
+FH_PARSE.Y:
+IMMEXEC.C:
+MAIN.C:
+PARSELINE.C:
+PF_DTACK.C:
+PF_DTACKJOT.C:
+PF_IOTAUND.C:
+PF_PI.C:
+PF_UTACK.C:
+PN_PARSE.Y:
+PN_PROC.C:
+PO_SLASH.C:
+RESDEBUG.C:
+SC_OUT.C:
+SC_SAVE.C:
+STRAND.C:
+SYMTAB.C:
+TABCTRL.C:
+TOKENIZE.C:
+WEBCOLORS.C:
+  Use macro to describe function name instead of literal.

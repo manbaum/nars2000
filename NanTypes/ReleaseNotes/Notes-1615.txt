@@ -1,0 +1,111 @@
+Build #1615 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bugs In Complex Infinities And Related Changes
+
+Directory branches/bsmith/NewTypes:
+
+CR_PROC.C:
+  Fix bug in <mpq_set_str2> when converting -0.xxx.
+
+DBGBRK32.ASM:
+DBGBRK64.ASM:
+  Fix bug in <fsin>, <fcos>, and <fsincos> when given a number >= |2*63.
+  Fix bug in <iAsmCircleN4flt> and <iAsmCircleN4Int> where I misused a FP instruction.
+
+EXTERNS.H:
+HC_PROC.H:
+INITDATA.C:
+  Define and use Pi/2 constants for FLT and VFP.
+
+FPCHO_COM.C:
+  Handle complex infinities in <fpXf_atanh> and <fpXf_scale>.
+
+FPCHO_COM.MAC:
+  Fix bug in <fpXf_mag_imag8> on octonions.
+
+MACROS.H:
+  Define macros to obtain the raw sign bit from FLT and VFP.
+  Define macro to obtain the sign of a RAT in a consistent manner with FLT and VFP.
+
+MPCHO_COM.C:
+  Handle complex infinities in <mpXf_atanh> and <mpXf_scale>.
+  Resolve discrepancy between <gsl_complex_arctanh> and <mpc_atanh> on an argument of ±1iXXX.
+
+MPIFNS.C:
+  Fix bug in <mpiz_set_str>, <mpiz_init_set_str>, <mpiq_set_str, <mpifr_set_str>, and <mpifr_strtofr>
+    not handling !iXXX and -!iXXX.
+  Fix bug in <mpifr_mul> to handle infinities via <mpfr_QuadICValue>.
+
+PARSELINE.C:
+  Fix bug to avoid setting <tkSynObj> if NoValue.
+  Fix bug in return from executing []xLX to handle a return of EXITTYPE_DISPLAY the same as EXITTYPE_NODISPLAY.
+
+PF_CIRCLE.C:
+  Fix bug in <PRIMSPEC> structure for HC4F is HC4I vs HC4I and HC8F is HC8I vs HC8I.
+  Fix bug in <PrimFnDydCircleFisFvF> returning the wrong result from 12{circle}.
+  Fix bug in <PrimFnDydCircleFisFvF> returning the wrong result for -7{circle}±1.
+  Fix bug in <PrimFnDydCircleVisVvV> returning the wrong result from 12{circle}.
+  Fix bug in <PrimFnDydCircleVisVvV> returning the wrong result for -7{circle}±1.
+
+PF_COLONBAR.C:
+  Use <SIGN_APLRAT> in place of <mpq_sgn (a) < 0>.
+  In <PrimFnMonColonBarHC2FisHC2F>, handle case where the denominator is {Inf}.
+  Fix bug in <PrimFnMonColonBarHC2RisHC2R> on -0 shouldn't blow up to HC2V.
+  In <PrimFnMonColonBarHC2RisHC2R>, handle case where the denominator is {Inf}.
+  In <PrimFnMonColonBarHC2VisHC2V>, handle case where the denominator is {Inf}.
+  In <PrimFnMonColonBarHC4FisHC4F>, handle case where the denominator is {Inf}.
+  In <PrimFnMonColonBarHC4RisHC4R>, where the denominator is 0 (high-order imaginaries aren't initialized).
+  In <PrimFnMonColonBarHC4RisHC4R>, handle case where the denominator is {Inf}.
+  In <PrimFnMonColonBarHC8FisHC8F>, handle case where the denominator is {Inf}.
+  In <PrimFnMonColonBarHC8RisHC8R>, where the denominator is 0 (high-order imaginaries aren't initialized).
+  In <PrimFnMonColonBarHC8RisHC8R>, handle case where the denominator is {Inf}.
+  In <PrimFnMonColonBarHC8VisHC8V>, handle case where the denominator is {Inf}.
+
+PF_CSTAR.C:
+  Fix bug in <LogHCxF_RE> and <LogHCxV_RE> where the multiplier for the imaginary parts is 0 and one of the parts is {Inf}.
+
+PF_EQUAL.C:
+  Fix bug in <EqualHCxFvHCxF>, <EqualHCxRvHCxR>, and <EqualHCxVvHCxV> when comparing complex infinities.
+
+PF_EQUALUND.C:
+  In IF stmts always compare ptr against NULL.
+  Include "Hdr" in name of result of <MyGlobalLock>.
+
+PF_PI.C:
+  Fix typo in comment.
+
+PF_ROOT.C:
+  Fix bug in <SqrtHCxF_RE> and <Sqrt_HCxV_RE> with complex infinities.
+
+PF_STAR.C:
+  Fix bug in <ExpHCxF_RE> and <ExpHCxV_RE> with complex infinities.
+  Fix bug in <PrimFnMonStarHC2VisHC2V> with complex infinities.
+  Use <SIGN_APLRAT> in place of <mpq_sgn (a) < 0>.
+  Define and use Pi/2 constants for FLT and VFP.
+
+PF_STAR.MAC:
+  Handle complex infinities in <PrimMonStarHCxF_MAC> and <PrimMonStarHCxV_MAC>.
+
+PF_STILE.C:
+  Use <SIGN_APLRAT> in place of <mpq_sgn (a) < 0>.
+
+PF_TIMES.C:
+  Use <SIGN_APLRAT> in place of <mpq_sgn (a) < 0>.
+  In <MulHCxF_RE>, <MulHCxR_RE> and <MulHCxV_RE>, handle complex infinities.
+
+PN_PARSE.Y:
+  Handle rational integers with suffix "x" in Hypercomplex numbers.
+
+PN_PROC.C:
+  Fix bug in <PN_MakeExpPoint> where the common type is xR and the argument has already been initialized.
+  Fix bug in <PN_MakeExpPoint> where the exponent separator inserted earlier is in the way when converting the multiplier to the left of the "e".
+  Fix bug in <PN_MakeHC2Point> where the angle in degrees is converted unnecessarily in some cases.
+  In <PN_SetInfinity>, handle more cases of complex infinities.
+
+PRIMSPEC.C:
+  Display all exception errors.
+  Fix bug in tail of <PrimFnMonGlb> at the end if in error and the result is undefined (NULL).
+
+TYPEMOTE.C:
+  Fix typo in comment.

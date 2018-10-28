@@ -1,0 +1,91 @@
+Build #1752 -- Version 0.5.3.xx
+--------------------------------
+
+* Implement A Combinatorial Operator
+
+Directory branches/bsmith/NewTypes:
+
+COMPRO.H:
+  Include the new file's prototype.
+
+CONVERT.C:
+  Define new conversion function.
+
+CUSTOMIZE.C:
+  Include DoubleShriek in the list of available APL symbols for keyboard definitions.
+
+EXECFNS.C:
+  Include DoubleShriek in the list of monadic operators.
+
+EXTERNS.H:
+  Define Critical Section Objects and other Combinatorial stuff.
+
+INITDATA.C:
+  Define routines to initialize and uninitialize the Combinatorial cache.
+  Include DoubleShriek in the list of prototype operators.
+
+KEYBOARDS_BI.H:
+  Include DoubleShriek in the default keyboards as Alt-k or Ctrl-k.
+
+MACROS.H:
+  Remove duplicate <CopyAll> macro.
+
+MAIN.C:
+  Initialize and uninitialize Critical Section objects.
+  Initialize and uninitialize the Combinatorial cache.
+
+MAIN.RC:
+  Make room for another row in the Tab Ctrl keyboard buttons.
+
+MAKEFILE.INC:
+  Fix bug of missing dependency for MP.C.
+  Include new source file in build list.
+
+MAKEFILE.SRC:
+  Include new source file in build list.
+
+NARS2000.VCXPROJ:
+  Change default to RESDEBUG=0.
+  Include new source file in build list.
+
+NARS2000.VCXPROJ.FILTERS:
+  Include new source file in build list.
+
+PF_QDOT.C:
+  Avoid <PrimFnDydQuoteDotxxx> functions from changing the pointed to input values.
+
+PO_COMB.C:
+  Implement A Combinatorial Operator.
+
+PO_DICIRCLE.C:
+  Fix typo in comment.
+
+PO_VARIANT.C:
+  Include DoubleShriek as Variant operator left operand for []IO.
+
+REBAR.C:
+  Include DoubleShriek in the Language Bar.
+
+SYMTRANS.C:
+  In <OprTrans>, handle DoubleShriek.
+
+TOKENIZE.C:
+  Keep VS 2013 happy by using <CopyAll> macro.
+  In <CharTransTK>, include DoubleShriek as a monadic operator.
+
+TRANSLATE.C:
+  In <TranslateFcnOprToChar>, handle DoubleShrek.
+
+UNICODE.H:
+  Define DoubleShriek Unicode character.
+
+
+Directory branches/bsmith/NewTypes/MediaWiki/extensions:
+
+APL.CSS:
+  Because Chrome forces its own font choice on <pre>, we need to override theirs with ours.
+
+B2A.INC.PHP:
+  Document where this file is stored on the server.
+  Fix typo in {shreik} to {shriek}.
+  Include {doubleshriek} and {comb} as new Brace To APL character substitutions.

@@ -1,0 +1,12 @@
+Build #1865 -- Version 0.5.7.xx
+-------------------------------
+
+* Omitted Files From Previous Builds
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+  Change the declaration of subsequent debug vars to match the first one.
+
+VER.C:
+  Include the declaration of <flint_version> inexplicably omitted from the original build.

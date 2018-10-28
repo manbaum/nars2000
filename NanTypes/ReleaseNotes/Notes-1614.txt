@@ -1,0 +1,9 @@
+Build #1614 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug When Copying A Block Of Lines
+
+Directory branches/bsmith/NewTypes:
+
+IMMEXEC.C:
+  Fix bug when copying a block of lines.

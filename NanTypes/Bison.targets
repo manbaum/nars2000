@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PropertyPageSchema
+      Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml" />
+    <AvailableItemName
+      Include="Bison_Rule">
+      <Targets>_Bison_Rule</Targets>
+    </AvailableItemName>
+  </ItemGroup>
+  <UsingTask
+    TaskName="Bison_Rule"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <Task>$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+  <Target
+    Name="_Bison_Rule"
+    BeforeTargets="$(Bison_RuleBeforeTargets)"
+    AfterTargets="$(Bison_RuleAfterTargets)"
+    Condition="'@(Bison_Rule)' != ''"
+    DependsOnTargets="$(Bison_RuleDependsOn);ComputeBison_RuleOutput"
+    Outputs="%(Bison_Rule.Outputs)"
+    Inputs="%(Bison_Rule.Identity);%(Bison_Rule.AdditionalDependencies);$(MSBuildProjectFile)">
+    <ItemGroup
+      Condition="'@(SelectedFiles)' != ''">
+      <Bison_Rule
+        Remove="@(Bison_Rule)"
+        Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <ItemGroup>
+      <Bison_Rule_tlog
+        Include="%(Bison_Rule.Outputs)"
+        Condition="'%(Bison_Rule.Outputs)' != '' and '%(Bison_Rule.ExcludedFromBuild)' != 'true'">
+        <Source>@(Bison_Rule, '|')</Source>
+      </Bison_Rule_tlog>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(Bison_Rule.ExecutionDescription)" />
+    <WriteLinesToFile
+      Condition="'@(Bison_Rule_tlog)' != '' and '%(Bison_Rule_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(TLogLocation)$(ProjectName).write.1u.tlog"
+      Lines="^%(Bison_Rule_tlog.Source);@(Bison_Rule_tlog-&gt;'%(Fullpath)')"
+      Encoding="Unicode" />
+    <Bison_Rule
+      Condition="'@(Bison_Rule)' != '' and '%(Bison_Rule.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(Bison_Rule.CommandLineTemplate)"
+      AdditionalOptions="%(Bison_Rule.AdditionalOptions)"
+      Inputs="%(Bison_Rule.Identity)" />
+  </Target>
+  <PropertyGroup>
+    <ComputeLinkInputsTargets>
+            $(ComputeLinkInputsTargets);
+            ComputeBison_RuleOutput;
+          </ComputeLinkInputsTargets>
+    <ComputeLibInputsTargets>
+            $(ComputeLibInputsTargets);
+            ComputeBison_RuleOutput;
+          </ComputeLibInputsTargets>
+  </PropertyGroup>
+  <Target
+    Name="ComputeBison_RuleOutput"
+    Condition="'@(Bison_Rule)' != ''">
+    <ItemGroup>
+      <Bison_RuleDirsToMake
+        Condition="'@(Bison_Rule)' != '' and '%(Bison_Rule.ExcludedFromBuild)' != 'true'"
+        Include="%(Bison_Rule.Outputs)" />
+      <Link
+        Include="%(Bison_RuleDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <Lib
+        Include="%(Bison_RuleDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <ImpLib
+        Include="%(Bison_RuleDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+    </ItemGroup>
+    <MakeDir
+      Directories="@(Bison_RuleDirsToMake-&gt;'%(RootDir)%(Directory)')" />
+  </Target>
+</Project>

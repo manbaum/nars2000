@@ -1,0 +1,21 @@
+Build #1733 -- Version 0.5.3.xx
+--------------------------------
+
+* Implement Dilate And Condense
+
+Directory branches/bsmith/NewTypes:
+
+HC_PROC.H:
+  Define helper array <iHCDimLog2> to translate a dimension (1, 2, 4, 8) into its base 2 Log.
+
+PF_LCARET.C:
+  Implement Condense as monadic LeftCaret.
+
+PF_RCARET.C:
+  Implement Dilate as monadic RightCaret.
+
+QF_DC.C:
+  Modify local routines to be called from Condense and Dilate.
+
+REBAR.C:
+  Document the new functions in the language bar.

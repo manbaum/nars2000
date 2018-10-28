@@ -1,0 +1,15 @@
+Build #1788 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In Multiple Indexing Of A Function
+
+Directory branches/bsmith/NewTypes:
+
+NARS2000.VCXPROJ:
+  Note GSL dependency of <main.c>.  This file was omitted from the previous build.
+
+PARSELINE.C:
+  In <plRedF_IDX>, handle multiple indices as in F[A][A][A] A by collapsing the IDX chain.
+
+PARSELINE.H:
+  In order to allow the above code to work, we need to increase the binding of IDX v. IDX.

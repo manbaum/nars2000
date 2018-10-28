@@ -1,0 +1,9 @@
+Build #1636 -- Version 0.5.0.xx
+--------------------------------
+
+* Optimize Nth Prime Count for N <= 1298173
+
+Directory branches/bsmith/NewTypes:
+
+PF_PI.C:
+  Call subroutines with the appropriate vars for the specific range.

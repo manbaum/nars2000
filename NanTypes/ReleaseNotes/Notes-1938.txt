@@ -1,0 +1,9 @@
+Build #1938 -- Version 0.5.8.xx
+-------------------------------
+
+* Insert Missing EXTERN Statements in "Debugging Vars" Section
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+  Insert missing EXTERN statements in "Debugging Vars" section.

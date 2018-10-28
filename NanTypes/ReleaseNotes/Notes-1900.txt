@@ -1,0 +1,9 @@
+Build #1900 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In Nth Prime Function
+
+Directory branches/bsmith/NewTypes:
+
+PF_PI.C:
+  In <PrimFnDydPi_EM_YY>, fix bug in Nth Prime function off by one when indexing the <Nth1e0PrimeTab> table.

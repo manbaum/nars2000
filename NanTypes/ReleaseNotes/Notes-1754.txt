@@ -1,0 +1,12 @@
+Build #1754 -- Version 0.5.4.xx
+--------------------------------
+
+* Fix Bug In Control Structures With AFO Restricted Stmts
+
+Directory branches/bsmith/NewTypes:
+
+CS_PARSE.Y:
+  The prohibition on IF/FOR/FORLCL/REPEAT/SELECT/WHILE stmts in AFO was enforced at the wrong time in <cs_yylex> instead of inline.
+
+VER.RC:
+  Increment version # to 0.5.4.xx.

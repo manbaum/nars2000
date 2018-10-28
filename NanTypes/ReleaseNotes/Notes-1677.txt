@@ -1,0 +1,9 @@
+Build #1677 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Minimum And Maximum On HC Numbers With All Zero Imaginary Parts
+
+Directory branches/bsmith/NewTypes:
+
+PF_DSTILE.C:
+  In <PrimSpecDownStileStorageTypeDyd>, if the result is HC, return <ARRAY_REALONLY> to ask the caller to demote the args to Real (HC Dimension 1).

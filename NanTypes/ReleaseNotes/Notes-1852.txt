@@ -1,0 +1,9 @@
+Build #1852 -- Version 0.5.5.xx
+--------------------------------
+
+* Serialize Linked List Code
+
+Directory branches/bsmith/NewTypes:
+
+EDITFCN.C:
+  In <FEWndProc/WM_DESTROY>, at the end when we're updating the linked list of Function Editor windows, serialize it.

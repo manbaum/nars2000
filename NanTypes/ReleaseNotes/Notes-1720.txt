@@ -1,0 +1,16 @@
+Build #1720 -- Version 0.5.2.xx
+--------------------------------
+
+* Fix Bug In Dyadic Squad magic Function
+
+Directory branches/bsmith/NewTypes:
+
+MF_SQUAD.H:
+  Fix bug in Dyadic Squad Magic Function.
+
+PF_DARROW.C:
+PF_UARROW.C:
+  Use correct version of <MyGlobalLockXXX> for debugging.
+
+VER.RC:
+  Increment version # to 0.5.2.xx.

@@ -1,0 +1,10 @@
+Build #1832 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In Grade of A Scalar
+
+Directory branches/bsmith/NewTypes:
+
+PF_DELTASTILE.C:
+  In <PrimFnMonGradeCommon_EM_YY> when grading a scalar, be sure to set the PV0/1 bits in the result
+    without which the right arg may be misidentified as a Permutation Vector.

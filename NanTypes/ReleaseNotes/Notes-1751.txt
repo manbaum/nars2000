@@ -1,0 +1,9 @@
+Build #1751 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Enlist With Empty APV
+
+Directory branches/bsmith/NewTypes:
+
+PF_EPSILON.C:
+  In <PrimFnMonEpsilonGlbCount>, convert an empty APV to an INT array for the purposes of Enlist.

@@ -1,0 +1,9 @@
+Build #1717 -- Version 0.5.1.xx
+--------------------------------
+
+* Check For Ctrl-Break More Often During Array Display
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  Check for Ctrl-Break more often during array display.

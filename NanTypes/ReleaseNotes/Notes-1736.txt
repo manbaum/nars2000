@@ -1,0 +1,9 @@
+Build #1736 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In Dyadic RightShoe Error Messages
+
+Directory branches/bsmith/NewTypes:
+
+PF_RSHOE.C:
+  When an index is invalid, signal an INDEX ERROR instead of a DOMAIN ERROR.

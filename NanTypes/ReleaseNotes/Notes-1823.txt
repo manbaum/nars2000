@@ -1,0 +1,30 @@
+Build #1823 -- Version 0.5.5.xx
+--------------------------------
+
+* Include New Chars In <aplchars> Thunderbird Extensions
+
+Directory branches/bsmith/NewTypes/Extensions:
+
+INVCER.PHP:
+  Auxiliary file for incrementing a version #.
+
+
+Directory branches/bsmith/NewTypes/Extensions/aplchars:
+
+INSTALL.RDF:
+UPDATE.RDF:
+  Increment version #.
+
+MK.BAT:
+UPD.BAT:
+UPD.INP:
+  Auxiliary files for making the result.
+
+
+Directory branches/bsmith/NewTypes/Extensions/aplchars/chrome/content/aplchars:
+
+ABOUT.XUL:
+  Increment version #.
+
+EDITOROVERLAY.JS:
+  Include Double-Exclamation Point character for Alt-k.

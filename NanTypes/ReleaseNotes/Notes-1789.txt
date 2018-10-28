@@ -1,0 +1,24 @@
+Build #1789 -- Version 0.5.5.xx
+--------------------------------
+
+* Miscellaneous Minor Changes
+
+Directory branches/bsmith/NewTypes:
+
+DATATYPE.H:
+  Fix bug in comment about offset of the data in APAs.
+
+PF_EPSUND.C:
+  Use <GetNextBoolean> macro from <macros.h> instead of local <GetNextBool>.
+
+PO_CMIDDOT.C:
+  Fix incorrect names in comments.
+
+PRIMSPEC.C:
+  Fix typo in comment.
+
+QF_DR.C:
+  Return # bits in a character for character arguments.
+
+SYSVARS.H:
+  Change minimum/maximum values for []FPC to the corresponding equates from MPFR.

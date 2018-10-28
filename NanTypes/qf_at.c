@@ -1,0 +1,1464 @@
+//***************************************************************************
+//  NARS2000 -- System Function -- Quad AT
+//***************************************************************************
+
+/***************************************************************************
+    NARS2000 -- An Experimental APL Interpreter
+    Copyright (C) 2006-2018 Sudley Place Software
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+***************************************************************************/
+
+#define STRICT
+#include <windows.h>
+#include "headers.h"
+
+
+//***************************************************************************
+//  $SysFnAT_EM_YY
+//
+//  System function:  []AT -- Attributes
+//***************************************************************************
+
+LPPL_YYSTYPE SysFnAT_EM_YY
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (should be NULL)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token  (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+        goto AXIS_SYNTAX_EXIT;
+
+    // Split cases based upon monadic or dyadic
+    if (lptkLftArg EQ NULL)
+        return SysFnMonAT_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
+    else
+        return SysFnDydAT_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
+} // End SysFnAT_EM_YY
+
+
+//***************************************************************************
+//  $SysFnMonAT_EM_YY
+//
+//  Monadic []AT -- error
+//***************************************************************************
+
+LPPL_YYSTYPE SysFnMonAT_EM_YY
+    (LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    return PrimFnValenceError_EM (lptkFunc APPEND_NAME_ARG);
+} // End SysFnMonAT_EM_YY
+
+
+//***************************************************************************
+//  $SysFnDydAT_EM_YY
+//
+//  Dyadic []AT -- Attributes
+//***************************************************************************
+
+LPPL_YYSTYPE SysFnDydAT_EM_YY
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    APLSTYPE          aplTypeLft,           // Left arg storage type
+                      aplTypeRht;           // Right ...
+    APLNELM           aplNELMRht,           // Right arg NELM
+                      aplColsRht,           // ...       # cols
+                      aplNELMRes,           // Result NELM
+                      aplRowsRes,           // ...    # rows
+                      aplColsRes;           // ...      cols
+    APLRANK           aplRankLft,           // Left arg rank
+                      aplRankRht,           // Right ...
+                      aplRankRes;           // Result   ...
+    HGLOBAL           hGlbLft,              // Left arg global memory handle
+                      hGlbRht = NULL,       // Right ...
+                      hGlbRes = NULL;       // Result   ...
+    LPVARARRAY_HEADER lpMemHdrLft = NULL,   // Ptr to left arg header
+                      lpMemHdrRht = NULL,   // ...    right ...
+                      lpMemHdrRes = NULL;   // ...    result   ...
+    LPVOID            lpMemLft;             // Ptr to left arg global memory
+    LPAPLCHAR         lpMemDataRht,         // Ptr to right arg char data
+                      lpMemDataStart;       // Ptr to start of identifier
+    LPAPLUINT         lpMemDataRes;         // Ptr to result integer data
+    APLLONGEST        aplLongestLft,        // Left arg immediate value
+                      aplLongestRht;        // Right ...
+    APLUINT           uRht,                 // Loop counter
+                      uCol,                 // ...
+                      ByteRes;              // # bytes in the result
+    LPSYMENTRY        lpSymEntry;           // Ptr to SYMENTRY
+    STFLAGS           stFlags;              // STE flags
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
+    UBOOL             bRet;                 // TRUE iff the result is valid
+    ALLTYPES          atLft = {0};          // Left arg as ALLTYPES
+
+    // Get the attributes (Type, NELM, and Rank) of the left & right args
+    AttrsOfToken (lptkLftArg, &aplTypeLft, NULL,        &aplRankLft, NULL);
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, &aplColsRht);
+
+    // Check for LEFT RANK ERROR
+    if (!IsScalar (aplRankLft))
+        goto LEFT_RANK_EXIT;
+
+    // Check for RIGHT RANK ERROR
+    if (IsRank3P (aplRankRht))
+        goto RIGHT_RANK_EXIT;
+
+    // Check for LEFT DOMAIN ERROR
+    if (!IsNumeric (aplTypeLft))
+        goto LEFT_DOMAIN_EXIT;
+
+    // Get the left arg global handle & longest w/o locking it
+    aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
+
+    // If the left arg is a global, ...
+    if (hGlbLft NE NULL)
+        // Skip over the header & dimensions to the data
+        lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
+    else
+        // The left arg is an immediate
+        lpMemLft = &aplLongestLft;
+
+    // Attempt to convert the left arg to INT
+    (*aTypeActConvert[aplTypeLft][ARRAY_INT]) (lpMemLft, 0, &atLft, &bRet);
+
+    if (hGlbLft NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
+    } // End IF
+
+    // Check for LEFT DOMAIN ERROR
+    if (!bRet)
+        goto LEFT_DOMAIN_EXIT;
+
+    // Copy to left arg common var
+    aplLongestLft = atLft.aplInteger;
+
+    // Check for LEFT DOMAIN ERROR
+    switch (aplLongestLft)
+    {
+        case 1:                     // Valences
+            aplColsRes = 3;         // [1] = Explicit result (0 or 1)
+                                    // [2] = Function valence (0, 1, or 2)
+                                    // [3] = Operator valence (0, 1, or 2)
+            break;
+
+        case 2:                     // Fix time
+            aplColsRes = 7;         // [1] = Year
+                                    // [2] = Month
+                                    // [3] = Day
+                                    // [4] = Hour
+                                    // [5] = Minute
+                                    // [6] = Second
+                                    // [7] = Millisecond
+            break;
+
+        case 3:                     // Execution properties
+            aplColsRes = 4;         // [1] = Nondisplayable
+                                    // [2] = Nonsuspendable
+                                    // [3] = Ignores weak interrupts
+                                    // [4] = Converts non-resource errorr to DOMAIN ERROR
+            break;
+
+        case 4:                     // Object size
+            aplColsRes = 2;         // [1] = Header and Data
+                                    // [2] = Data only
+            break;
+
+        case 10:                    // Function type
+            aplColsRes = 1;         // [1] = Function type
+
+            break;
+
+        default:
+            goto LEFT_DOMAIN_EXIT;
+    } // End SWITCH
+
+    // Check for RIGHT DOMAIN ERROR
+    if (!IsCharOrEmpty (aplTypeRht, aplNELMRht))
+        goto RIGHT_DOMAIN_EXIT;
+
+    // Get right arg global ptrs
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
+
+    // Calculate the # identifiers in the argument
+    //   allowing for vector and matrix with multiple names
+    bRet =
+      CalcNumIDs (aplNELMRht,       // Right arg NELM
+                  aplRankRht,       // Right arg rank
+                  aplLongestRht,    // Right arg longest
+                  TRUE,             // TRUE iff we allow multiple names in a vector
+                  lpMemHdrRht,      // Ptr to right arg global memory header
+                 &aplRowsRes,       // Ptr to # right arg IDs
+                 &aplColsRht);      // Ptr to # right arg cols (matrix only)
+    // Note that if bRet EQ FALSE, aplRowsRes EQ 1
+
+    // Calculate the result NELM and rank
+    aplNELMRes = aplRowsRes * aplColsRes;
+    aplRankRes = 1 + ((aplRowsRes > 1) && (aplColsRes > 1));
+
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, aplRankRes);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
+    // Allocate space for the result
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+    if (hGlbRes EQ NULL)
+        goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
+
+#define lpHeader    lpMemHdrRes
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_INT;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = aplNELMRes;
+    lpHeader->Rank       = aplRankRes;
+#undef  lpHeader
+
+    // If the result is a matrix, ...
+    if (IsMatrix (aplRankRes))
+    {
+        // Fill in the dimensions
+        (VarArrayBaseToDim (lpMemHdrRes))[0] = aplRowsRes;
+        (VarArrayBaseToDim (lpMemHdrRes))[1] = aplColsRes;
+    } else
+    // The result is a vector
+        // Fill in the dimensions
+        (VarArrayBaseToDim (lpMemHdrRes))[0] = aplNELMRes;
+
+    // If we failed in CalcNumIDs, quit now
+    if (!bRet)
+        goto YYALLOC_EXIT;
+
+    // Skip over the header and dimensions to the data
+    lpMemDataRes = VarArrayDataFmBase (lpMemHdrRes);
+
+    // Split cases based upon the right arg rank
+    switch (aplRankRht)
+    {
+        case 0:
+            // Lookup the name in the symbol table
+            // SymTabLookupName sets the .ObjName enum,
+            //   and the .Inuse flag
+            ZeroMemory (&stFlags, sizeof (stFlags));
+            lpSymEntry =
+              SymTabLookupNameLength ((LPAPLCHAR) &aplLongestRht,
+                                      1,
+                                     &stFlags);
+            // If found, ...
+            if (lpSymEntry)
+                lpMemDataRes =
+                  AttributeCommon (lpMemDataRes,        // Ptr to result global memory
+                                   lpSymEntry,          // Ptr to object SYMENTRY
+                                   aplLongestLft);      // Function type
+            break;
+
+        case 1:
+            // Skip over the header and dimensions to the data
+            lpMemDataRht = VarArrayDataFmBase (lpMemHdrRht);
+
+            // Loop through the right arg looking for identifiers
+            uRht = 0;
+            while (TRUE)
+            {
+                // Skip over white space
+                while (uRht < aplNELMRht && lpMemDataRht[uRht] EQ L' ')
+                    uRht++;
+                if (uRht < aplColsRht)
+                {
+                    // Save the starting ptr
+                    lpMemDataStart = &lpMemDataRht[uRht];
+
+                    // Skip over black space
+                    while (uRht < aplNELMRht && lpMemDataRht[uRht] NE L' ')
+                        uRht++;
+                    // Lookup the name in the symbol table
+                    // SymTabLookupName sets the .ObjName enum,
+                    //   and the .Inuse flag
+                    ZeroMemory (&stFlags, sizeof (stFlags));
+                    lpSymEntry =
+                      SymTabLookupNameLength (lpMemDataStart,
+                                              (APLU3264) (&lpMemDataRht[uRht] - lpMemDataStart),
+                                             &stFlags);
+                    // If found, ...
+                    if (lpSymEntry)
+                        lpMemDataRes =
+                          AttributeCommon (lpMemDataRes,        // Ptr to result global memory
+                                           lpSymEntry,          // Ptr to object SYMENTRY
+                                           aplLongestLft);      // Function type
+                } else
+                    break;
+            } // End WHILE
+
+            break;
+
+        case 2:
+            // Skip over the header and dimensions to the data
+            lpMemDataRht = VarArrayDataFmBase (lpMemHdrRht);
+
+            for (uRht = 0; uRht < aplRowsRes; uRht++)
+            {
+                // Point to the start of the data
+                lpMemDataStart = &lpMemDataRht[aplColsRht * uRht];
+
+                // Skip over leading white space
+                uCol = 0;
+                while (uCol < aplColsRht && lpMemDataStart[uCol] EQ L' ')
+                    uCol++;
+
+                // Lookup the name in the symbol table
+                // SymTabLookupName sets the .ObjName enum,
+                //   and the .Inuse flag
+                ZeroMemory (&stFlags, sizeof (stFlags));
+                lpSymEntry =
+                  SymTabLookupNameLength (&lpMemDataStart[uCol],
+                                           (APLU3264) (aplColsRht - uCol),
+                                          &stFlags);
+                // If found, ...
+                if (lpSymEntry)
+                    lpMemDataRes =
+                      AttributeCommon (lpMemDataRes,        // Ptr to result global memory
+                                       lpSymEntry,          // Ptr to object SYMENTRY
+                                       aplLongestLft);      // Function type
+            } // End FOR
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+YYALLOC_EXIT:
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+LEFT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+LEFT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    if (hGlbRes NE NULL)
+    {
+        if (lpMemHdrRes NE NULL)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
+NORMAL_EXIT:
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+    } // End IF
+
+    // We no longer need this ptr
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
+    {
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
+    } // End IF
+
+    return lpYYRes;
+} // End SysFnDydAT_EM_YY
+
+
+//***************************************************************************
+//  $AttributeCommon
+//
+//  Common routine to call the appropriate Attribute routine
+//***************************************************************************
+
+LPAPLUINT AttributeCommon
+    (LPAPLUINT  lpMemDataRes,               // Ptr to result global memory
+     LPSYMENTRY lpSymEntry,                 // Ptr to object SYMENTRY
+     APLLONGEST aplLongestLft)              // Function type
+
+{
+    // If the SYMENTRY is {del}, ...
+    if (IsSymDel (lpSymEntry))
+        // Return the SYMENTRY of the suspended/pendent function
+        lpSymEntry = GetSymDel (lpSymEntry);
+
+    // Split cases based upon the left arg value
+    switch (aplLongestLft)
+    {
+        case 1:         // Valences
+            // Save the valences
+            return
+              AttributeValences (lpMemDataRes,      // Ptr to result global memory
+                                 lpSymEntry);       // Ptr to object SYMENTRY
+        case 2:         // Fix time
+            // Save the fix time
+            return
+              AttributeFixTime  (lpMemDataRes,      // Ptr to result global memory
+                                 lpSymEntry);       // Ptr to object SYMENTRY
+        case 3:
+            // Save the execution properties
+            return
+              AttributeExecProp (lpMemDataRes,      // Ptr to result global memory
+                                 lpSymEntry);       // Ptr to object SYMENTRY
+        case 4:
+            // Save the object size
+            return
+              AttributeObjSize  (lpMemDataRes,      // Ptr to result global memory
+                                 lpSymEntry);       // Ptr to object SYMENTRY
+        case 10:
+            // Save the function type
+            return
+              AttributeObjType  (lpMemDataRes,      // Ptr to result global memory
+                                 lpSymEntry);       // Ptr to object SYMENTRY
+        defstop
+            return NULL;
+    } // End SWITCH
+} // End AttributeCommon
+
+
+//***************************************************************************
+//  $AttributeValences
+//
+//  Save the object's valences
+//***************************************************************************
+
+LPAPLUINT AttributeValences
+    (LPAPLUINT  lpMemDataRes,               // Ptr to result global memory
+     LPSYMENTRY lpSymEntry)                 // Ptr to object SYMENTRY
+
+{
+    HGLOBAL hGlbObj = NULL;                 // Object global memory handle
+
+    // Split cases based upon the name type
+    switch (lpSymEntry->stFlags.stNameType)
+    {
+        case NAMETYPE_UNK:
+            *lpMemDataRes++ = 0;            // [1] = Explicit result (0 or 1)
+            *lpMemDataRes++ = 0;            // [2] = Function valence (0, 1, or 2)
+            *lpMemDataRes++ = 0;            // [3] = Operator valence (0, 1, or 2)
+
+            break;
+
+        case NAMETYPE_VAR:
+            *lpMemDataRes++ = 1;            // [1] = Explicit result (0 or 1)
+            *lpMemDataRes++ =               // [2] = Function valence (0, 1, or 2)
+            *lpMemDataRes++ = 0;            // [3] = Operator valence (0, 1, or 2)
+
+            break;
+
+        case NAMETYPE_FN0:
+        case NAMETYPE_FN12:
+        case NAMETYPE_OP1:
+        case NAMETYPE_OP2:
+        case NAMETYPE_OP3:
+            // If the object is immediate, ...
+            if (lpSymEntry->stFlags.Imm)
+            {
+                // Split cases based upon the name type
+                switch (lpSymEntry->stFlags.stNameType)
+                {
+                    case NAMETYPE_FN12:
+                        *lpMemDataRes++ = 1;            // [1] = Explicit result (0 or 1)
+                        *lpMemDataRes++ = 2;            // [2] = Function valence (0, 1, or 2)
+                        *lpMemDataRes++ = 0;            // [3] = Operator valence (0, 1, or 2)
+
+                        break;
+
+                    case NAMETYPE_OP1:
+                        *lpMemDataRes++ = 1;            // [1] = Explicit result (0 or 1)
+                        *lpMemDataRes++ = 0;            // [2] = Function valence (0, 1, or 2)
+                        *lpMemDataRes++ = 1;            // [3] = Operator valence (0, 1, or 2)
+
+                        break;
+
+                    case NAMETYPE_OP2:
+                        *lpMemDataRes++ = 1;            // [1] = Explicit result (0 or 1)
+                        *lpMemDataRes++ = 0;            // [2] = Function valence (0, 1, or 2)
+                        *lpMemDataRes++ = 2;            // [3] = Operator valence (0, 1, or 2)
+
+                        break;
+
+                    case NAMETYPE_OP3:
+                        *lpMemDataRes++ = 1;            // [1] = Explicit result (0 or 1)
+                        *lpMemDataRes++ = 0;            // [2] = Function valence (0, 1, or 2)
+                        *lpMemDataRes++ = 1;            // [3] = Operator valence (0, 1, or 2)
+
+                        break;
+
+                    case NAMETYPE_FN0:
+                    defstop
+                        break;
+                } // End SWITCH
+            } else
+            // If it's a user-defined function/operator
+            if (lpSymEntry->stFlags.UsrDfn)
+            {
+                LPDFN_HEADER lpMemHdrObj;               // Ptr to object global memory
+
+                // Get the user-defined function/operator global memory handle
+                hGlbObj = lpSymEntry->stData.stGlbData;
+
+                // Lock the memory to get a ptr to it
+                lpMemHdrObj = MyGlobalLockDfn (hGlbObj);
+
+#define lpHeader    lpMemHdrObj
+                *lpMemDataRes++ = lpHeader->numResultSTE > 0;   // [1] = Explicit result (0 or 1)
+                *lpMemDataRes++ = (lpHeader->numLftArgSTE > 0)  // [2] = Function valence (0, 1, or 2)
+                                + (lpHeader->numRhtArgSTE > 0);
+                *lpMemDataRes++ = (lpHeader->steLftOpr NE 0)    // [3] = Operator valence (0, 1, or 2)
+                                + (lpHeader->steRhtOpr NE 0);
+#undef  lpHeader
+                if (hGlbObj NE NULL && lpMemHdrObj NE NULL)
+                {
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbObj); lpMemHdrObj = NULL;
+                } // End IF
+
+            } else
+            // If it's a direct function, ...
+            if (lpSymEntry->stFlags.FcnDir)
+            {
+                *lpMemDataRes++ = 1;            // [1] = Explicit result (0 or 1)
+                *lpMemDataRes++ = 2;            // [2] = Function valence (0, 1, or 2)
+                *lpMemDataRes++ = 0;            // [3] = Operator valence (0, 1, or 2)
+            } else
+            // It's a function array
+            {
+                *lpMemDataRes++ = 1;            // [1] = Explicit result (0 or 1)
+                *lpMemDataRes++ = 2;            // [2] = Function valence (0, 1, or 2)
+                *lpMemDataRes++ = 0;            // [3] = Operator valence (0, 1, or 2)
+            } // End IF/ELSE/...
+
+            break;
+
+        case NAMETYPE_TRN:
+            *lpMemDataRes++ = 1;            // [1] = Explicit result (0 or 1)
+            *lpMemDataRes++ = 2;            // [2] = Function valence (0, 1, or 2)
+            *lpMemDataRes++ = 0;            // [3] = Operator valence (0, 1, or 2)
+
+            break;
+
+        case NAMETYPE_LST:
+        case NAMETYPE_FILL1:
+        case NAMETYPE_FILL2:
+        defstop
+            break;
+    } // End SWITCH
+
+    return lpMemDataRes;
+} // End AttributeValences
+
+
+//***************************************************************************
+//  $AttributeFixTime
+//
+//  Save the object's fix time
+//***************************************************************************
+
+LPAPLUINT AttributeFixTime
+    (LPAPLUINT  lpMemDataRes,               // Ptr to result global memory
+     LPSYMENTRY lpSymEntry)                 // Ptr to object SYMENTRY
+
+{
+    HGLOBAL    hGlbObj = NULL;              // Object global memory handle
+    FILETIME   ftLastMod,                   // FILETIME of last modification
+               ftLocalTime;                 // ...         local time
+    SYSTEMTIME systemTime;                  // Current system (UTC) time
+
+    // Split cases based upon the name type
+    switch (lpSymEntry->stFlags.stNameType)
+    {
+        case NAMETYPE_UNK:
+        case NAMETYPE_VAR:
+            *lpMemDataRes++ = 0;            // [1] = Year
+            *lpMemDataRes++ = 0;            // [2] = Month
+            *lpMemDataRes++ = 0;            // [3] = Day
+            *lpMemDataRes++ = 0;            // [4] = Hour
+            *lpMemDataRes++ = 0;            // [5] = Minute
+            *lpMemDataRes++ = 0;            // [6] = Second
+            *lpMemDataRes++ = 0;            // [7] = Millisecond
+
+            break;
+
+        case NAMETYPE_FN0:
+        case NAMETYPE_FN12:
+        case NAMETYPE_OP1:
+        case NAMETYPE_OP2:
+        case NAMETYPE_OP3:
+        case NAMETYPE_TRN:
+            // If the object is not immediate, and
+            //                  not a direct function, ...
+            if (!lpSymEntry->stFlags.Imm
+             && !lpSymEntry->stFlags.FcnDir)
+            {
+                LPVOID lpMemHdrObj;                         // Ptr to object global memory
+
+                // Get the user-defined function/operator global memory handle
+                hGlbObj = lpSymEntry->stData.stGlbData;
+
+                // Split cases based upon the function signature
+                switch (GetSignatureGlb_PTB (hGlbObj))
+                {
+                    case FCNARRAY_HEADER_SIGNATURE:
+                        // Lock the memory to get a ptr to it
+                        lpMemHdrObj = MyGlobalLockFcn (hGlbObj);
+
+                        // It's a function array
+#define lpHeader    ((LPFCNARRAY_HEADER) lpMemHdrObj)
+                        ftLastMod = lpHeader->ftLastMod;
+#undef  lpHeader
+                        break;
+
+                    case DFN_HEADER_SIGNATURE:
+                        // Lock the memory to get a ptr to it
+                        lpMemHdrObj = MyGlobalLockDfn (hGlbObj);
+
+                        // If it's a user-defined function/operator
+                        if (lpSymEntry->stFlags.UsrDfn)
+#define lpHeader    ((LPDFN_HEADER) lpMemHdrObj)
+                            ftLastMod = lpHeader->ftLastMod;
+#undef  lpHeader
+                        break;
+
+                    defstop
+                        break;
+                } // End SWITCH
+
+                if (hGlbObj NE NULL && lpMemHdrObj NE NULL)
+                {
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbObj); lpMemHdrObj = NULL;
+                } // End IF
+
+                // If we're to use local time (instead of UTC), ...
+                if (OptionFlags.bUseLocalTime)
+                    // Convert the last mod time to local time
+                    FileTimeToLocalFileTime (&ftLastMod  , &ftLocalTime);
+                else
+                    // Copy last mod time as local Time
+                    ftLocalTime = ftLastMod;
+                // Convert the local time to system time so we can display it
+                FileTimeToSystemTime    (&ftLocalTime, &systemTime);
+
+                *lpMemDataRes++ = systemTime.wYear;         // [1] = Year
+                *lpMemDataRes++ = systemTime.wMonth;        // [2] = Month
+                *lpMemDataRes++ = systemTime.wDay;          // [3] = Day
+                *lpMemDataRes++ = systemTime.wHour;         // [4] = Hour
+                *lpMemDataRes++ = systemTime.wMinute;       // [5] = Minute
+                *lpMemDataRes++ = systemTime.wSecond;       // [6] = Second
+                *lpMemDataRes++ = systemTime.wMilliseconds; // [7] = Millisecond
+            } // End IF
+
+            break;
+
+        case NAMETYPE_LST:
+        case NAMETYPE_FILL1:
+        case NAMETYPE_FILL2:
+        defstop
+            break;
+    } // End SWITCH
+
+    return lpMemDataRes;
+} // End AttributeFixTime
+
+
+//***************************************************************************
+//  $AttributeExecProp
+//
+//  Save the object's execution properties
+//***************************************************************************
+
+LPAPLUINT AttributeExecProp
+    (LPAPLUINT  lpMemDataRes,               // Ptr to result global memory
+     LPSYMENTRY lpSymEntry)                 // Ptr to object SYMENTRY
+
+{
+    // Split cases based upon the name type
+    switch (lpSymEntry->stFlags.stNameType)
+    {
+        case NAMETYPE_UNK:
+        case NAMETYPE_VAR:
+            *lpMemDataRes++ = 0;            // [1] = Nondisplayable
+            *lpMemDataRes++ = 0;            // [2] = Nonsuspendable
+            *lpMemDataRes++ = 0;            // [3] = Ignores weak interrupts
+            *lpMemDataRes++ = 0;            // [4] = Converts non-resource errors to DOMAIN ERRORs
+
+            break;
+
+        case NAMETYPE_FN0:
+        case NAMETYPE_FN12:
+        case NAMETYPE_OP1:
+        case NAMETYPE_OP2:
+        case NAMETYPE_OP3:
+        case NAMETYPE_TRN:
+            // If the object is immediate, ...
+            if (lpSymEntry->stFlags.Imm)
+            {
+                *lpMemDataRes++ = 1;            // [1] = Nondisplayable
+                *lpMemDataRes++ = 1;            // [2] = Nonsuspendable
+                *lpMemDataRes++ = 1;            // [3] = Ignores weak interrupts
+                *lpMemDataRes++ = 0;            // [4] = Converts non-resource errors to DOMAIN ERRORs
+            } else
+            // If it's a user-defined function/operator
+            if (lpSymEntry->stFlags.UsrDfn)
+            {
+                LPDFN_HEADER lpMemDfnHdr;
+
+                // Lock the memory to get a ptr to it
+                lpMemDfnHdr = MyGlobalLockDfn (lpSymEntry->stData.stGlbData);
+
+                // If it's a Magic Function/Operator,
+                //   or AFO, ...
+                if (lpSymEntry->stFlags.ObjName EQ OBJNAME_MFO
+                 || lpMemDfnHdr->bAFO)
+                {
+                    *lpMemDataRes++ = 0;            // [1] = Nondisplayable
+                    *lpMemDataRes++ = 1;            // [2] = Nonsuspendable
+                    *lpMemDataRes++ = 1;            // [3] = Ignores weak interrupts
+                    *lpMemDataRes++ = 0;            // [4] = Converts non-resource errors to DOMAIN ERRORs
+                } else
+                {
+                    *lpMemDataRes++ = 0;            // [1] = Nondisplayable
+                    *lpMemDataRes++ = 0;            // [2] = Nonsuspendable
+                    *lpMemDataRes++ = 0;            // [3] = Ignores weak interrupts
+                    *lpMemDataRes++ = 0;            // [4] = Converts non-resource errors to DOMAIN ERRORs
+                } // End IF/ELSE
+
+                // We no longer need this ptr
+                MyGlobalUnlock (lpSymEntry->stData.stGlbData); lpMemDfnHdr = NULL;
+            } else
+            // If it's a direct function, ...
+            if (lpSymEntry->stFlags.FcnDir)
+            {
+                *lpMemDataRes++ = 1;            // [1] = Nondisplayable
+                *lpMemDataRes++ = 1;            // [2] = Nonsuspendable
+                *lpMemDataRes++ = 1;            // [3] = Ignores weak interrupts
+                *lpMemDataRes++ = 0;            // [4] = Converts non-resource errors to DOMAIN ERRORs
+            } else
+            // It's a function array
+            {
+                *lpMemDataRes++ = 0;            // [1] = Nondisplayable
+                *lpMemDataRes++ = 1;            // [2] = Nonsuspendable
+                *lpMemDataRes++ = 1;            // [3] = Ignores weak interrupts
+                *lpMemDataRes++ = 0;            // [4] = Converts non-resource errors to DOMAIN ERRORs
+            } // End IF/ELSE/...
+
+            break;
+
+        case NAMETYPE_LST:
+        case NAMETYPE_FILL1:
+        case NAMETYPE_FILL2:
+        defstop
+            break;
+    } // End SWITCH
+
+    return lpMemDataRes;
+} // End AttributeExecProp
+
+
+//***************************************************************************
+//  $AttributeObjSize
+//
+//  Save the object's size
+//***************************************************************************
+
+LPAPLUINT AttributeObjSize
+    (LPAPLUINT  lpMemDataRes,               // Ptr to result global memory
+     LPSYMENTRY lpSymEntry)                 // Ptr to object SYMENTRY
+
+{
+    APLINT aplObjSize,                      // The object's size (header and data)
+           aplDataSize;                     // The object's data size
+
+    // Initialize the value
+    aplDataSize = 0;
+
+    // Get the object's size
+    aplObjSize = CalcSymEntrySize (lpSymEntry, &aplDataSize);
+
+    // Save it in the result
+    *lpMemDataRes++ = aplObjSize;           // [1] Header and data
+    *lpMemDataRes++ = aplDataSize;          // [2] Data
+
+    return lpMemDataRes;
+} // End AttributeObjSize
+
+
+//***************************************************************************
+//  $CalcSymEntrySize
+//
+//  Calculate the size of a SYMENTRY
+//***************************************************************************
+
+APLINT CalcSymEntrySize
+    (LPSYMENTRY lpSymEntry,         // Ptr to the SYMENTRY
+     LPAPLINT   lpDataSize)         // Ptr to save area for object data size (may be NULL)
+                                    // If this value is not NULL, it is assumed to have
+                                    //   been initialized so we may add to it to allow
+                                    //   it to be called serially.
+
+{
+    APLUINT aplSize = 0;            // The result
+
+    // If it's an immediate (any type), ...
+    if (lpSymEntry->stFlags.Imm)
+    {
+        aplSize = sizeof (SYMENTRY);
+
+        // If the caller wants the data size, ...
+        if (lpDataSize)
+        switch (lpSymEntry->stFlags.ImmType)
+        {
+            case IMMTYPE_BOOL:
+                *lpDataSize += sizeof (APLBOOL);
+
+                break;
+
+            case IMMTYPE_INT:
+                *lpDataSize += sizeof (APLINT);
+
+                break;
+
+            case IMMTYPE_FLOAT:
+                *lpDataSize += sizeof (APLFLOAT);
+
+                break;
+
+            case IMMTYPE_CHAR:
+                *lpDataSize += sizeof (APLCHAR);
+
+                break;
+
+            case IMMTYPE_PRIMFCN:
+            case IMMTYPE_PRIMOP1:
+            case IMMTYPE_PRIMOP2:
+            case IMMTYPE_PRIMOP3:
+                *lpDataSize += sizeof (APLCHAR);
+
+                break;
+
+            defstop
+                break;
+        } // End IF/SWITCH
+    } else
+    // If it has no value or is a SysFcn, ...
+    if (!lpSymEntry->stFlags.Value
+     ||  lpSymEntry->stFlags.FcnDir)
+        aplSize = 0;
+    else
+    // If it is a user variable, ...
+    if (IsNameTypeVar (lpSymEntry->stFlags.stNameType))
+    {
+        // Start with the size of the SYMENTRY
+        aplSize = sizeof (SYMENTRY);
+
+        // Recurse through the array returning the total size
+        aplSize += CalcGlbVarSize (lpSymEntry->stData.stGlbData, lpDataSize);
+    } else
+    // If it is a user function/operator, ...
+    if (IsNameTypeFnOp (lpSymEntry->stFlags.stNameType))
+    {
+        HGLOBAL      hGlbDfnHdr;        // User-defined function/operator header global memory handle
+        LPDFN_HEADER lpMemDfnHdr;       // Ptr to user-defined function/operator header ...
+        LPFCNLINE    lpFcnLines;        // Ptr to array of function line structs (FCNLINE[numFcnLines])
+        UINT         uNumFcnLines,      // # function lines
+                     uLine;             // Loop counter
+        APLINT       aplGlbSize;        // Global size temp
+
+        // Get the global memory handle
+        hGlbDfnHdr = lpSymEntry->stData.stGlbData;
+
+        // stData is a valid HGLOBAL function array or user-defined function/operator
+        Assert (IsGlbTypeFcnDir_PTB (hGlbDfnHdr)
+             || IsGlbTypeDfnDir_PTB (hGlbDfnHdr));
+
+        // Split cases based upon the user-defined function/operator bit
+        if (lpSymEntry->stFlags.UsrDfn)
+        {
+            // Lock the memory to get a ptr to it
+            lpMemDfnHdr = MyGlobalLockDfn (hGlbDfnHdr);
+
+            // Get # function lines
+            uNumFcnLines = lpMemDfnHdr->numFcnLines;
+
+            // Start with the size of the DFN_HEADER
+            aplSize =   sizeof (DFN_HEADER)
+                      + sizeof (LPSYMENTRY) * (lpMemDfnHdr->numResultSTE
+                                             + lpMemDfnHdr->numLftArgSTE
+                                             + lpMemDfnHdr->numRhtArgSTE
+                                             + lpMemDfnHdr->numLocalsSTE)
+                      + sizeof (FCNLINE) * uNumFcnLines;
+            if (lpMemDfnHdr->hGlbMonInfo NE NULL)
+                aplSize += MyGlobalSize (lpMemDfnHdr->hGlbMonInfo);
+
+            // Get ptr to array of function line structs (FCNLINE[numFcnLines])
+            lpFcnLines = (LPFCNLINE) ByteAddr (lpMemDfnHdr, lpMemDfnHdr->offFcnLines);
+
+            // If the caller wants the data size, ...
+            if (lpDataSize)
+                *lpDataSize += uNumFcnLines * sizeof (FCNLINE);
+
+            // Initialize
+            aplGlbSize = 0;
+
+            // Loop through the function lines
+            for (uLine = 0; uLine < uNumFcnLines; uLine++)
+            {
+                if (lpFcnLines->hGlbTxtLine)
+                    aplGlbSize += MyGlobalSize (lpFcnLines->hGlbTxtLine);
+
+                if (lpFcnLines->offTknLine)
+                {
+                    LPTOKEN_HEADER lpTokenHdr;      // Ptr to token header
+
+                    // Get a ptr to the TOKEN_HEADER
+                    lpTokenHdr = (LPTOKEN_HEADER) ByteAddr (lpMemDfnHdr, lpFcnLines->offTknLine);
+
+                    // Add in the token header and tokens all in bytes
+                    aplGlbSize += sizeof (TOKEN_HEADER) + lpTokenHdr->TokenCnt * sizeof (TOKEN);
+                } // End IF
+
+                // Skip to the next struct
+                lpFcnLines++;
+            } // End FOR
+
+            // Add in the size of the function header text
+            if (lpMemDfnHdr->hGlbTxtHdr NE NULL)
+                aplGlbSize += MyGlobalSize (lpMemDfnHdr->hGlbTxtHdr);
+
+            // Add in the size of the function header tokenized
+            if (lpMemDfnHdr->hGlbTknHdr NE NULL)
+                aplGlbSize += MyGlobalSize (lpMemDfnHdr->hGlbTknHdr);
+
+            // Include in the object size
+            aplSize += aplGlbSize;
+
+            // If the caller wants the data size, ...
+            if (lpDataSize)
+                *lpDataSize += aplGlbSize;
+
+            // Add in the size of the function Undo buffer
+            if (lpMemDfnHdr->hGlbUndoBuff NE NULL)
+                aplSize += MyGlobalSize (lpMemDfnHdr->hGlbUndoBuff);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbDfnHdr); lpMemDfnHdr = NULL;
+        } else
+        // Otherwise, it's a function array
+            // Start with the size of the SYMENTRY
+            aplSize = sizeof (SYMENTRY)
+                    + CalcGlbFcnSize (lpSymEntry->stData.stGlbData, lpDataSize);
+    } else
+    // Otherwise, its size is zero
+        aplSize = 0;
+
+    return aplSize;
+} // End CalcSymEntrySize
+
+
+//***************************************************************************
+//  $CalcGlbVarSize
+//
+//  Calculate the size of a global memory variable
+//***************************************************************************
+
+APLUINT CalcGlbVarSize
+    (HGLOBAL  hGlbData,             // Global memory handle
+     LPAPLINT lpDataSize)           // Ptr to save area for object data size (may be NULL)
+                                    // If this value is not NULL, it is assumed to have
+                                    //   been initialized so we may add to it to allow
+                                    //   it to be called serially.
+
+{
+    APLUINT           aplSize = 0;          // The result
+    LPVARARRAY_HEADER lpMemHdrData = NULL;  // Ptr to data header
+    LPAPLNESTED       lpMemData;            // Ptr to the global memory
+    APLSTYPE          aplType;              // Data storage type
+    APLNELM           aplNELM;              // Data NELM
+    APLRANK           aplRank;              // Data rank
+    APLUINT           uData;                // Loop counter
+    int               i;                    // ...
+
+    // stData is a valid HGLOBAL variable array
+    Assert (IsGlbTypeVarDir_PTB (hGlbData));
+
+    aplSize += MyGlobalSize (hGlbData);
+
+    // Lock the memory to get a ptr to it
+    lpMemHdrData = MyGlobalLockVar (hGlbData);
+
+#define lpHeader        lpMemHdrData
+    // Get the Array Type, NELM, and Rank
+    aplType = lpHeader->ArrType;
+    aplNELM = lpHeader->NELM;
+    aplRank = lpHeader->Rank;
+#undef  lpHeader
+
+    // If the caller wants the data size, ...
+    if (lpDataSize)
+        *lpDataSize += aplSize - (sizeof (VARARRAY_HEADER) + aplRank * sizeof (APLDIM));
+
+    // Skip over the header and dimensions to the data
+    lpMemData = VarArrayDataFmBase (lpMemHdrData);
+
+    // Split cases based upon the array type
+    switch (aplType)
+    {
+        case ARRAY_NESTED:
+        case ARRAY_HETERO:
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++)
+            // Split cases based upon the pointer type
+            switch (GetPtrTypeDir (lpMemData[uData]))
+            {
+                case PTRTYPE_STCONST:
+                    aplSize += sizeof (SYMENTRY);
+
+                    break;
+
+                case PTRTYPE_HGLOBAL:
+                    aplSize += CalcGlbVarSize (lpMemData[uData], lpDataSize);
+
+                    break;
+
+                defstop
+                    break;
+            } // End FOR/SWITCH
+
+            break;
+
+        case ARRAY_RAT:
+            // Copy as ptr to RATs
+#define lpMemRat    ((LPAPLRAT) lpMemData)
+
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemRat++)
+                // Add in the size of the data
+                aplSize += CalcRatDataSize (lpMemRat);
+#undef  lpMemRat
+            break;
+
+        case ARRAY_HC2R:
+            // Copy as ptr to RATs
+#define lpMemHC2R   ((LPAPLHC2R) lpMemData)
+
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemHC2R++)
+            // Loop through all of the parts
+            for (i = 0; i < 2; i++)
+                // Add in the size of the data
+                aplSize += CalcRatDataSize (&lpMemHC2R->parts[i]);
+#undef  lpMemHC2R
+
+            break;
+
+        case ARRAY_HC4R:
+            // Copy as ptr to RATs
+#define lpMemHC4R   ((LPAPLHC4R) lpMemData)
+
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemHC4R++)
+            // Loop through all of the parts
+            for (i = 0; i < 4; i++)
+                // Add in the size of the data
+                aplSize += CalcRatDataSize (&lpMemHC4R->parts[i]);
+#undef  lpMemHC4R
+
+            break;
+
+        case ARRAY_HC8R:
+            // Copy as ptr to RATs
+#define lpMemHC8R   ((LPAPLHC8R) lpMemData)
+
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemHC8R++)
+            // Loop through all of the parts
+            for (i = 0; i < 8; i++)
+                // Add in the size of the data
+                aplSize += CalcRatDataSize (&lpMemHC8R->parts[i]);
+#undef  lpMemHC8R
+
+            break;
+
+        case ARRAY_VFP:
+            // Copy as ptr to VFPs
+#define lpMemVfp    ((LPAPLVFP) lpMemData)
+
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemVfp++)
+                // Add in the size of the data
+                aplSize += CalcVfpDataSize (lpMemVfp);
+#undef  lpMemVfp
+            break;
+
+        case ARRAY_ARB:
+            // Copy as ptr to ARBs
+#define lpMemArb    ((LPAPLARB) lpMemData)
+
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemArb++)
+                // Add in the size of the data
+                aplSize += CalcArbDataSize (lpMemArb);
+#undef  lpMemArb
+            break;
+
+        case ARRAY_HC2V:
+            // Copy as ptr to VFPs
+#define lpMemHC2V   ((LPAPLHC2V) lpMemData)
+
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemHC2V++)
+            // Loop through all of the parts
+            for (i = 0; i < 2; i++)
+                // Add in the size of the data
+                aplSize += CalcVfpDataSize (&lpMemHC2V->parts[i]);
+#undef  lpMemHC2V
+
+            break;
+
+        case ARRAY_HC4V:
+            // Copy as ptr to VFPs
+#define lpMemHC4V   ((LPAPLHC4V) lpMemData)
+
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemHC4V++)
+            // Loop through all of the parts
+            for (i = 0; i < 4; i++)
+                // Add in the size of the data
+                aplSize += CalcVfpDataSize (&lpMemHC4V->parts[i]);
+#undef  lpMemHC4V
+
+            break;
+
+        case ARRAY_HC8V:
+            // Copy as ptr to VFPs
+#define lpMemHC8V   ((LPAPLHC8V) lpMemData)
+
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemHC8V++)
+            // Loop through all of the parts
+            for (i = 0; i < 8; i++)
+                // Add in the size of the data
+                aplSize += CalcVfpDataSize (&lpMemHC8V->parts[i]);
+#undef  lpMemHC8V
+
+            break;
+
+        case ARRAY_BA2F:
+            // Copy as ptr to ARBs
+#define lpMemBA2F   ((LPAPLBA2F) lpMemData)
+
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemBA2F++)
+            // Loop through all of the parts
+            for (i = 0; i < 2; i++)
+                // Add in the size of the data
+                aplSize += CalcArbDataSize (&lpMemBA2F->parts[i]);
+#undef  lpMemBA2F
+
+            break;
+
+        case ARRAY_BA4F:
+            // Copy as ptr to ARBs
+#define lpMemBA4F   ((LPAPLBA4F) lpMemData)
+
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemBA4F++)
+            // Loop through all of the parts
+            for (i = 0; i < 4; i++)
+                // Add in the size of the data
+                aplSize += CalcArbDataSize (&lpMemBA4F->parts[i]);
+#undef  lpMemBA4F
+
+            break;
+
+        case ARRAY_BA8F:
+            // Copy as ptr to ARBs
+#define lpMemBA8F   ((LPAPLBA8F) lpMemData)
+
+            // Loop through the array adding the sizes
+            for (uData = 0; uData < aplNELM; uData++, lpMemBA8F++)
+            // Loop through all of the parts
+            for (i = 0; i < 8; i++)
+                // Add in the size of the data
+                aplSize += CalcArbDataSize (&lpMemBA8F->parts[i]);
+#undef  lpMemBA8F
+
+            break;
+
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_CHAR:
+        case ARRAY_FLOAT:
+        case ARRAY_APA:
+        case ARRAY_HC2I:
+        case ARRAY_HC4I:
+        case ARRAY_HC8I:
+        case ARRAY_HC2F:
+        case ARRAY_HC4F:
+        case ARRAY_HC8F:
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbData); lpMemHdrData = NULL;
+
+    return aplSize;
+} // End CalcGlbVarSize
+
+
+//***************************************************************************
+//  $CalcRatDataSize
+//
+//  Calculate the data size of a RAT item
+//***************************************************************************
+
+size_t CalcRatDataSize
+    (LPAPLRAT lpMemRat)
+
+{
+    return lpMemRat->_mp_num._mp_alloc                  // # numerator limbs
+          * sizeof (*lpMemRat->_mp_num._mp_d)           // ...times the size of each limb
+         + lpMemRat->_mp_den._mp_alloc                  // # denominator limbs
+          * sizeof (*lpMemRat->_mp_den._mp_d);          // ...times the size of each limb
+} // End CalcRatDataSize
+
+
+//***************************************************************************
+//  $CalcVfpDataSize
+//
+//  Calculate the data size of a VFP item
+//***************************************************************************
+
+size_t CalcVfpDataSize
+    (LPAPLVFP lpMemVfp)
+
+{
+    return mpfr_custom_get_size (lpMemVfp->_mpfr_prec); // # bytes pointed to by <mpfr_d>
+} // End CalcVfpDataSize
+
+
+//***************************************************************************
+//  $CalcArbDataSize
+//
+//  Calculate the data size of a ARB item
+//***************************************************************************
+
+size_t CalcArbDataSize
+    (LPAPLARB lpMemArb)
+
+{
+    return _fmpz_size (&lpMemArb->mid.exp)
+         + lpMemArb->mid.size * sizeof (lpMemArb->mid.d)
+         + sizeof (lpMemArb->mid.d.noptr)
+         + lpMemArb->mid.d.ptr.alloc * sizeof (lpMemArb->mid.d.ptr.d)
+         + _fmpz_size (&lpMemArb->rad.exp)
+         + sizeof (lpMemArb->rad.man)                           // ***FIXME***
+         ;
+} // End CalcArbDataSize
+
+
+//***************************************************************************
+//  $CalcGlbFcnSize
+//
+//  Calculate the size of a global memory function array
+//***************************************************************************
+
+APLUINT CalcGlbFcnSize
+    (HGLOBAL  hGlbData,             // Global memory handle
+     LPAPLINT lpDataSize)           // Ptr to save area for object data size (may be NULL)
+                                    // If this value is not NULL, it is assumed to have
+                                    //   been initialized so we may add to it to allow
+                                    //   it to be called serially.
+
+{
+    APLUINT           aplSize = 0;  // The result
+    HGLOBAL           hGlbTxtLine;  // Line text global memory handle
+    LPFCNARRAY_HEADER lpMemHdrData; // Ptr to the global memory header
+
+    // stData is a valid HGLOBAL function array
+    Assert (IsGlbTypeFcnDir_PTB (hGlbData));
+
+    aplSize += MyGlobalSize (hGlbData);
+
+    // Lock the memory to get a ptr to it
+    lpMemHdrData = MyGlobalLockFcn (hGlbData);
+
+#define lpHeader        lpMemHdrData
+    // Get the text ptr
+    hGlbTxtLine = lpHeader->hGlbTxtLine;
+#undef  lpHeader
+
+    // If there's a line text global memory handle, ...
+    if (hGlbTxtLine NE NULL)
+        aplSize += MyGlobalSize (hGlbTxtLine);
+
+    // If the caller wants the data size, ...
+    if (lpDataSize)
+        *lpDataSize += aplSize - sizeof (FCNARRAY_HEADER);
+
+    // We no longer need this ptr
+    MyGlobalUnlock (hGlbData); lpMemHdrData = NULL;
+
+    return aplSize;
+} // End CalcGlbFcnSize
+
+
+//***************************************************************************
+//  $AttributeObjType
+//
+//  Save the object's type
+//***************************************************************************
+
+LPAPLUINT AttributeObjType
+    (LPAPLUINT  lpMemDataRes,               // Ptr to result global memory
+     LPSYMENTRY lpSymEntry)                 // Ptr to object SYMENTRY
+
+{
+    // Split cases based upon the name type
+    switch (lpSymEntry->stFlags.stNameType)
+    {
+        case NAMETYPE_UNK:
+        case NAMETYPE_VAR:
+            *lpMemDataRes++ = FCNTYPE_UNK;  // [1] = Not a function/operator
+
+            break;
+
+        case NAMETYPE_FN0:
+        case NAMETYPE_FN12:
+        case NAMETYPE_OP1:
+        case NAMETYPE_OP2:
+        case NAMETYPE_OP3:
+            // If the object is immediate, ...
+            if (lpSymEntry->stFlags.Imm)
+            {
+                // Split cases based upon the name type
+                switch (lpSymEntry->stFlags.stNameType)
+                {
+                    case NAMETYPE_FN12:
+                    case NAMETYPE_OP1:
+                    case NAMETYPE_OP2:
+                    case NAMETYPE_OP3:
+                        *lpMemDataRes++ = FCNTYPE_PFO;  // [1] = Primitive function/operator
+
+                        break;
+
+                    case NAMETYPE_FN0:
+                    defstop
+                        break;
+                } // End SWITCH
+            } else
+            // If it's a user-defined function/operator
+            if (lpSymEntry->stFlags.UsrDfn)
+            {
+                LPDFN_HEADER lpMemDfnHdr;
+
+                // Lock the memory to get a ptr to it
+                lpMemDfnHdr = MyGlobalLockDfn (lpSymEntry->stData.stGlbData);
+
+                // If it's an AFO, ...
+                if (lpMemDfnHdr->bAFO)
+                    *lpMemDataRes++ = FCNTYPE_AFO;  // [1] = Anonymous function/operator
+                else
+                    *lpMemDataRes++ = FCNTYPE_UFO;  // [1] = User-defined function/operator
+
+                // We no longer need this ptr
+                MyGlobalUnlock (lpSymEntry->stData.stGlbData); lpMemDfnHdr = NULL;
+            } else
+            // If it's a direct function, ...
+            if (lpSymEntry->stFlags.FcnDir)
+                *lpMemDataRes++ = FCNTYPE_SYS;  // [1] = System function/operator
+            else
+                // It's a function array
+                *lpMemDataRes++ = FCNTYPE_DFO;  // [1] = Derived function/operator
+
+            break;
+
+        case NAMETYPE_TRN:
+            *lpMemDataRes++ = FCNTYPE_TRAIN;    // [1] = Train
+
+            break;
+
+        case NAMETYPE_LST:
+        case NAMETYPE_FILL1:
+        case NAMETYPE_FILL2:
+        defstop
+            break;
+    } // End SWITCH
+
+    return lpMemDataRes;
+} // End AttributeObjType
+
+
+//***************************************************************************
+//  End of File: qf_at.c
+//***************************************************************************

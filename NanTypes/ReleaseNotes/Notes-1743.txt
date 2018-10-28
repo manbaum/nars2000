@@ -1,0 +1,9 @@
+Build #1743 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug In ExecFns
+
+Directory branches/bsmith/NewTypes:
+
+EXECFNS.C:
+  In <ExecFunc_EM_YY>, handle <TKT_OPnIMMED> for n=1, 2, 3 and <TKT_OPJOTDOT>.

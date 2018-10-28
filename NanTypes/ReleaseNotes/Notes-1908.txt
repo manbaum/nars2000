@@ -1,0 +1,19 @@
+Build #1908 -- Version 0.5.8.xx
+-------------------------------
+
+* Clean Up PRIMFLAGS Struc, Part II
+* Rename Boolean Flags Consistent With Content-Naming Conventions
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+FASTBOOL.C:
+GETFNS.C:
+INITDATA.C:
+PO_DOT.C:
+PO_JOTDOT.C:
+PO_SLASH.C:
+PO_SLOPE.C:
+PRIMSPEC.C:
+  Clean up the PRIMFLAGS struc, part II.
+  Rename Boolean flags to be consistent with content-naming conventions.

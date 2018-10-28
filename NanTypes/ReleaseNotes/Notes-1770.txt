@@ -1,0 +1,9 @@
+Build #1770 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug When Attempting To Save A Suspended Function
+
+Directory branches/bsmith/NewTypes:
+
+SAVEFCN.C:
+  Fix bug when attempting to save a suspended function (introduced In Build #1670).

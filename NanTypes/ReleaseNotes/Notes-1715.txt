@@ -1,0 +1,9 @@
+Build #1715 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Erasing A Direct Function/Operator
+
+Directory branches/bsmith/NewTypes:
+
+QF_EX.C:
+  In <ExpungeName>, don't free a Direct Function/Operator.

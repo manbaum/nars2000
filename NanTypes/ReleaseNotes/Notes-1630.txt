@@ -1,0 +1,12 @@
+Build #1630 -- Version 0.5.0.xx
+--------------------------------
+
+* Scroll Caret Into View In Function Editor On WM_SIZE
+
+Directory branches/bsmith/NewTypes:
+
+EDITFCN.C:
+  In <FEWndProc/WM_SIZE>, after setting the window position, scroll the caret into view so it is always visible.
+
+SESSMAN.C:
+   Improve comments.

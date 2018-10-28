@@ -1,0 +1,788 @@
+Version 0.5.7.xx consists of the following Builds:
+
+
+Build #1890 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bug In Descending Subsequence With Repeated Values
+
+Directory branches/bsmith/NewTypes:
+
+PO_VARIANT.C:
+  Fix bug in Descending Subsequence with repeated elements in both the source and target.
+
+
+Build #1889 -- Version 0.5.7.xx
+-------------------------------
+
+* Miscellaneous Build Changes
+
+Directory branches/bsmith/NewTypes:
+
+MAKEFILE.INC:
+  Move up system requirement from 5.01 (WinXP/SP3) to 6.0 (Vista).
+
+NARS2000.VCXPROJ:
+  Move up system requirement from 5.01 (WinXP/SP3) to 6.0 (Vista).
+  Move away from WinXP toolset.
+  Exclude <sc_debug.c> from Release64 builds (as it was already excluded from Release32 builds).
+
+
+Build #1888 -- Version 0.5.7.xx
+-------------------------------
+
+* Implement ?0 To Return A Random Number In [0, 1)
+
+Directory branches/bsmith/NewTypes:
+
+PF_QUERY.C:
+  Implement ?0 to return a random number in [0, 1)
+
+
+Build #1887 -- Version 0.5.7.xx
+-------------------------------
+
+* Collect Common Code into One Function
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+  Collect the code to free left and right stack temps into one function.
+
+PF_EQUALUND.C:
+  Move the code to compare hetero values into a common function.
+
+
+Build #1886 -- Version 0.5.7.xx
+-------------------------------
+
+* Generalize The Variant Operator Code
+* Implement Ascending/Descending Subsequences
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+  Include the cases of Hetero and Nested in <hcXY_cmp> for use in Ascending/Descending Subsequences.
+
+GETFNS.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  Define utility function <GetGlbMem_LOCK> to combine <GetGlbPtrs_LOCK> with common follow-on code.
+
+MACROS.H:
+  Define macro to get a ptr to global memory.
+
+PO_VARIANT.C:
+PO_VARIANT.H:
+  Generalize the Variant operator to allow items in the right operand in any order.
+  Implement Ascending/Descending Subsequences as a Variant of Dyadic Iota.
+
+SYSVARS.H:
+  Implement Ascending/Descending Subsequences as a Variant of Dyadic Iota.
+
+
+Build #1885 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bug Not Displaying YYResExec Before Freeing
+
+Directory branches/bsmith/NewTypes:
+
+IMMEXEC.C:
+MACROS.H:
+PARSELINE.C:
+PL_PROC.C:
+SC_IN.C:
+  Fix bug of not displaying YYResExec before freeing.
+  Use macro to determine if a token is valid which consolidates different techniques.
+
+
+Build #1884 -- Version 0.5.7.xx
+-------------------------------
+
+* Remove Support For The Underbar Latin Alphabet
+
+Directory branches/bsmith/NewTypes:
+
+AFOFNS.C:
+CUSTOMIZE.C:
+DEFINES.H:
+EDITFCN.C:
+EXTERNS.H:
+INIFILE.C:
+MAIN.RC:
+RESOURCE.H:
+SYMBOLNAMES.H:
+SYMTAB.C:
+TOKENIZE.C:
+UNICODE.H:
+UNITRANSTAB.H:
+  Remove support for the underbar Latin alphabet.
+
+
+Build #1883 -- Version 0.5.7.xx
+-------------------------------
+
+* Extend Variant Operator To Inner Product
+
+Directory branches/bsmith/NewTypes:
+
+MF_DOT.H:
+PO_VARIANT.C:
+  Make the identity element for Inner Product sensitive to []LR so it may return the proper values for both left & right identity elements.
+
+
+Build #1882 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bug In Dyadic Domino With Nested Arrays
+
+Directory branches/bsmith/NewTypes:
+
+PF_DOMINO.C:
+  In dyadic Domino, test for DOMAIN ERROR before attempting to access the items of the left argument.
+
+
+Build #1881 -- Version 0.5.7.xx
+-------------------------------
+
+* Use A Single Virtual Memory Variable For Error Messages
+
+Directory branches/bsmith/NewTypes:
+
+COMMON.C:
+  In <W2A> and <A2W>, ensure the result is properly terminated if empty.
+  Define new functions to handle copying text to the error message virtual memory.
+
+EDITFCN.C:
+ERRMSG.C:
+  Use new functions to handle copying text to the error message virtual memory.
+
+PERTAB.H:
+  Define a single variable to hold the error message text in virtual memory.
+  Use proper declaration for Timer Source variable.
+
+QF_ERROR.C:
+QF_ES.C:
+  Include "Hdr" In Name Of Result Of <MyGlobalLock>.
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  Use new functions to handle copying text to the error message virtual memory.
+  Use a single virtual memory variable for error messages.
+
+SESSMAN.C:
+  Use a single virtual memory variable for error messages.
+
+
+Build #1880 -- Version 0.5.7.xx
+-------------------------------
+
+* Define And Use An Equate For Timer Source base
+
+Directory branches/bsmith/NewTypes:
+
+CUSTOMIZE.C:
+ENUMS.H:
+  Define and use an equate for the Timer Source Base
+
+
+Build #1879 -- Version 0.5.7.xx
+-------------------------------
+
+* Rename Exception Check Functions
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+DEFINES.H:
+EXCEPT.C:
+PF_BAR.C:
+PF_CIRCLE.C:
+PF_CIRCLE.MAC:
+PF_COLONBAR.C:
+PF_DELTASTILE.C:
+PF_DSHOE.C:
+PF_EPSUND.C:
+PF_EQUAL.C:
+PF_EQUALUND.C:
+PF_NEQUAL.C:
+PF_PLUS.C:
+PF_ROOT.C:
+PF_STAR.C:
+PF_TIMES.C:
+PO_COMB.C:
+SYMTAB.C:
+  Rename <CheckExceptionS> to <CheckException>, <__FUNCTION__> to <WFCN>, etc., and delete <CheckExceptionS>.
+
+
+Build #1878 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bug In JotDot If Error Or Interrupt Occurs With UDFO Right Operand
+
+Directory branches/bsmith/NewTypes:
+
+PO_JOTDOT.C:
+  In <PrimOpDydJotDotCommon_EM_YY>, fix bug if an error or interrupt occurs with a UDFO right operand.
+
+
+Build #1877 -- Version 0.5.7.xx
+-------------------------------
+
+* Implement Additional Hypercomplex Multiplication Variants
+
+Directory branches/bsmith/NewTypes:
+
+ENUMS.H:
+  Define additional ENUMs for Hypercomplex Multiplication Variant.
+
+PERTAB.H:
+  Widen the size of Hypercomplex Multiplication Variant bit field to accommodate additional choices.
+
+PF_TIMES.C:
+  Implement additional Hypercomplex Multiplication Variants.
+
+PO_VARIANT.C:
+  Rename xxx_INEX (for Interior/Exterior) to xxx_HCM (for Hypercomplex Multiplication) to reflect the wider set of variants.
+  Implement additional Hypercomplex Multiplication Variants.
+
+PO_VARIANT.H:
+  Rename xxx_INEX (for Interior/Exterior) to xxx_HCM (for Hypercomplex Multiplication) to reflect the wider set of variants.
+
+PRIMSPEC.C:
+  Allow an individual function to mark its result as Dimension Demotable.
+
+PRIMSPEC.H:
+  Allow an individual function to mark its result as Dimension Demotable.
+  Widen the size of Hypercomplex Multiplication Variant bit field to accommodate additional choices.
+
+SYSVARS.H:
+  Rename xxx_QUADIE (for Interior/Exterior) to xxx_QUADHCM (for Hypercomplex Multiplication) to reflect the wider set of variants.
+  Include the additi9onal set of choices in Hypercomplex Multiplication Variants.
+
+
+Build #1876 -- Version 0.5.7.xx
+-------------------------------
+
+* Miscellaneous Changes
+
+Directory branches/bsmith/NewTypes:
+
+CUSTOMIZE.C:
+  Include missing CheckBox code for []FPC and []FEATURE.
+
+DEFINES.H:
+  Keep copyright years up-to-date and mark for the next time.
+
+MAIN.RC:
+  Keep copyright years up-to-date and mark for the next time.
+  In <CLEARWS_VALUES> and <SYSTEM_VAR_RESET>, re-alphabetize the entries to reflect the name change of []DQ to []LR.
+
+
+Build #1875 -- Version 0.5.7.xx
+-------------------------------
+
+* Rewrite The Variant Operator To Be Data-Driven
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+  Move Variant operator enums, structs, etc. to <po_variant.h>.
+
+GETFNS.C:
+  Define <Get/SetQuadFPC> routines to use with Variant operator.
+
+HEADERS.H:
+  Include <po_variant.h> in the global headers file.
+
+INITDATA.C:
+  Initialize the <varOprTab> table at startup.
+  Rename <InitPrimFn> to <Init1PrimFn> to distinguish it better from <InitPrimFns>.
+
+PO_VARIANT.C:
+  Rewrite the Variant operator code to be data-driven.
+
+PO_VARIANT.H:
+  Move Variant operator enums, structs, etc. to <po_variant.h>.
+  Define more Variant operator enums, structs, and tables so that the Variant operator can be data-driven.
+
+SYSVARS.C:
+  Rename ptr vars to use <lp> prefix.
+  Define <ValidateCharTest> to test for a character in an allowable set for use with the Variant operator.
+
+SYSVARS.H:
+  Define pseudo-#defines for use with the Variant operator and Interior/Exterior multiplication.
+  Define min/max range for Eigenvalue/vector/etc. Variant operator right operands for {domino}.
+
+
+Build #1874 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bug In #MonExecute With Name Conflict
+
+Directory branches/bsmith/NewTypes:
+
+ENUMS.H:
+  In <PTDMEMVIRT_ENUM>, Define entries for another SYMTAB & HSHTAB for <#MonExecute>.
+  Rename <PTHMEMVIRTENUM> to <PTDMEMVIRT_ENUM> so as to conform to naming convention for enums.
+
+EXECMFN.C:
+  Rename <PTHMEMVIRTENUM> to <PTDMEMVIRT_ENUM> so as to conform to naming convention for enums.
+  Set local HTS for <#MonExecute>.
+
+MF_VARIANT.H:
+  In <#MonExecute>, set the System Namespace Level to back up to the caller's HTS.
+
+PERTAB.H:
+  In <HTS_MFO>, define an entry for <#MonExecute>.
+
+SESSMAN.C:
+SYMTAB.C:
+  Rename <PTHMEMVIRTENUM> to <PTDMEMVIRT_ENUM> so as to conform to naming convention for enums.
+
+
+Build #1873 -- Version 0.5.7.xx
+-------------------------------
+
+* Miscellaneous Changes
+
+Directory branches/bsmith/NewTypes:
+
+MAIN.RC:
+  Fix typos in comments.
+
+NARS2000.VCXPROJ:
+  Use the WinXP toolchain so as to continue to support that OS.
+
+PF_CSTILE.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+
+TABCTRL.C:
+  In <FreeGlobalStorage>, when freeing a name whose value is a system function, don't free it!
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+INDEX-BODY.AHTML:
+  In the Platform section, note that we support Mac OS through Wine.
+
+
+Build #1872 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bugs In []MF
+
+Directory branches/bsmith/NewTypes:
+
+QF_MF.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  Prepare for Java-defined functions by splitting cases based upon the function signature.
+  Improve comments.
+  Fix bug where we didn't handle a named immediate function or a function array.
+  Set the <NoDisplay> flags for the result of dyadic []MF is the result is all 1s.
+
+
+Build #1871 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bug In Rank Operator Should Be Sensitive To Axis Operator
+
+Directory branches/bsmith/NewTypes:
+
+MF_DIJOT.H:
+  Make the monadic and dyadic Magic Operator for the Rank operator sensitive to the axis operator.
+
+PO_DIJOT.C:
+  Make the Rank operator sensitive to the axis operator by passing that value from the top to the bottom of the chain, and eventually to the Magic Operator.
+
+
+Build #1870 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bug In Assignment Of A Function/Operator To An Immediate Function/Operator
+
+Directory branches/bsmith/NewTypes:
+
+ASSIGN.C:
+  When assigning a function/operator to an immediate function/operator,
+    be careful of the order in which flags and HGLOBALs are set and freed.
+
+SAVEFCN.C:
+  When saving a UDFO on top of an immediate function/operator, do not set
+    the old UDFO name to the immediate function/operator value!
+
+
+Build #1869 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bug In )LOAD If A UDFO Is Deleted During Load
+* Fix Bug In )LOAD If A Permanent Variable Is Loaded
+
+Directory branches/bsmith/NewTypes:
+
+SC_LOAD.C:
+  Prepare for Java-defined functions by splitting cases based upon the function signature.
+  In <ParseSavedWsFcn_EM>, test for a function being deleted during the call to <LoadWorkspaceGlobal_EM>.
+  Fix bug in <LoadWorkspaceGlobal_EM> when loading a variable whose value is a permanent global (e.g., {zilde}).
+    This variable mistakenly is not appended to the SYMENTRY link chain and as a result the global entry of ":nnn"
+    is not freed from the symbol table.  A subsequent )COPY of a name which uses the same global entry of ":nnn"
+    then is not handled correctly.
+  Move Monitor Information code to a separate function in preparation for Java-defined functions which also need that code.
+
+
+Build #1868 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bug In Multiset Operator With Dyadic Iota And Certain Floating Point Numbers
+
+Directory branches/bsmith/NewTypes:
+
+PO_MULTISET.C:
+  When using Dyadic Iota Multiset on certain floating point numbers, the result is incorrect.  In particular, with
+    L{is}1+[]CT{times}0.3 0.1 0.2, then the result of L{iota}{multiset}L incorrectly gives 2 3 1 instead of 1 2 3.
+
+
+Build #1867 -- Version 0.5.7.xx
+-------------------------------
+
+* Implement Axis Operator For Condense and Dilate
+
+Directory branches/bsmith/NewTypes:
+
+PF_LCARET.C:
+PF_RCARET.C:
+  Pass the axis operator instead of the # cols to the corresponding function in []DC.
+
+QF_DC.C:
+  Allow monadic []DC to be sensitive to the axis operator.
+
+REBAR.C:
+  In the Language Bar, note that the dyadic Root function accepts the axis operator.
+  In the Language bar, reorder the comparison functions and note that the Condense and Dilate functions
+    accept the axis operator.
+
+
+Build #1866 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Display Bug When Using Postfix Notation And Display All Imaginary Parts
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  When formatting a CHO number in Postfix notation and displaying all imaginary parts even if zero,
+    the code mistakenly displays '1i0' as '10s' instead of the correct form of '1s0'.
+
+
+Build #1865 -- Version 0.5.7.xx
+-------------------------------
+
+* Omitted Files From Previous Builds
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+  Change the declaration of subsequent debug vars to match the first one.
+
+VER.C:
+  Include the declaration of <flint_version> inexplicably omitted from the original build.
+
+
+Build #1864 -- Version 0.5.7.xx
+-------------------------------
+
+* Extend )DEBUG Command
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+  Include two other macros to be covered by )DEBUG
+
+SC_DEBUG.C:
+  Extend )DEBUG to more debug contexts.
+  Use a macro to extend control of this command to additional debug vars.
+
+
+Build #1863 -- Version 0.5.7.xx
+-------------------------------
+
+* Implement 10 []AT To Distinguish Function Types
+
+Directory branches/bsmith/NewTypes:
+
+ENUMS.H:
+  Define function types as an enum.
+
+QF_AT.C:
+  Implement 10 []AT as a means to distinguish Function Types.
+
+
+Build #1862 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bugs When Assigning A System Function To A Name
+
+Directory branches/bsmith/NewTypes:
+
+ASSIGN.C:
+  Check for assignment of a System Function to a name and copy the UDFO if so.
+
+EXECDFN.C:
+  In <UnlocalizeSTEs>, check for unlocalizing a named System Function.
+
+FH_PARSE.H:
+  Remove bit flag <bCopyUDFO> marking a copyied UDFO as we no longer need it.
+
+FREE.C:
+  In <FreeResultSub>, check for a named System Function.
+
+SAVEFCN.C:
+  In <CopyUDFO>, remove bit flag <bCopyUDFO>.
+
+
+Build #1861 -- Version 0.5.7.xx
+-------------------------------
+
+* Implement System Command )DEBUG
+
+Directory branches/bsmith/NewTypes:
+
+COMPRO.H:
+  Include prototype file in list of all such files.
+
+ENUMS.H:
+MAKEFILE.INC:
+MAKEFILE.SRC:
+NARS2000.VCXPROJ:
+NARS2000.FILTERS:
+SYSCMDS.C:
+  Include new file name in more lists.
+
+PARSELINE.C:
+  Replace compile options (DEBUG_TRACE and DEBUG_START) with )DEBUG options.
+
+SC_DEBUG.C:
+  Implement System Command )DEBUG.
+
+
+Build #1860 -- Version 0.5.7.xx
+--------------------------------
+
+* Fix Bug In Initialization Of MFOs
+
+Directory branches/bsmith/NewTypes:
+
+ENUMS.H:
+  Define enough entries for <MemVirtStr>s to handle the number of MFOs with local HSHTAB & SYMTABs.
+  Document the problem for the next time.
+
+EXECMFN.C:
+  When initializing a MFO, increment a counter to check against the maximum number of <MemVirtStr> entries.
+  Document the problem for the next time.
+
+EXECMFN.H:
+  Define a new struc member to allow counting of <MemVirtStr> entries.
+
+SESSMAN.C:
+  Call <InitMagicFunctions> with new entry point for <MemVirtStr>s.
+
+
+Build #1859 -- Version 0.5.7.xx
+--------------------------------
+
+* Fix Bug In Scalar Functions With Axis On Non-nested Args Where The Result Datatype Changes Mid calculation
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC.C:
+  Fix bug in scalar functions with axis on non-nested args where the result datatype changes mid calculation.
+
+
+Build #1858 -- Version 0.5.7.xx
+--------------------------------
+
+* Simplify DEBUG References To The C Function Name
+
+Directory branches/bsmith/NewTypes:
+
+AFOFNS.C:
+ASSIGN.C:
+AXISFNS.C:
+CR_PROC.C:
+CS_PARSE.Y:
+CS_PROC.C:
+CUSTOMIZE.C:
+DEFINES.H:
+DISPLAY.C:
+EDITFCN.C:
+ERRMSG.C:
+EXECDFN.C:
+EXECFNS.C:
+EXECMFN.C:
+FH_PARSE.Y:
+FH_PROC.C:
+FMTSPEC.C:
+FREE.C:
+GOTO.C:
+IDENTFNS.C:
+IMMEXEC.C:
+INIFILE.C:
+INITDATA.C:
+MAIN.C:
+PARSELINE.C:
+PF_BAR.C:
+PF_CIRCLE.C:
+PF_COLONBAR.C:
+PF_COMMA.C:
+PF_CSLOPE.C:
+PF_CSTAR.C:
+PF_CSTILE.C:
+PF_DARROW.C:
+PF_DCARET.C:
+PF_DELTASTILE.C:
+PF_DOMINO.C:
+PF_DOTDOT.C:
+PF_DSHOE.C:
+PF_DSTILE.C:
+PF_DTACK.C:
+PF_DTACKJOT.C:
+PF_EPSILON.C:
+PF_EPSUND.C:
+PF_EQUAL.C:
+PF_EQUALUND.C:
+PF_INDEX.C:
+PF_IOTA.C:
+PF_IOTAUND.C:
+PF_LCARET.C:
+PF_LCARETUND.C:
+PF_LSHOE.C:
+PF_LSHOEUND.C:
+PF_LTACK.C:
+PF_NDCARET.C:
+PF_NEQUAL.C:
+PF_NUCARET.C:
+PF_PI.C:
+PF_PLUS.C:
+PF_QDOT.C:
+PF_QUERY.C:
+PF_RCARET.C:
+PF_RCARETUND.C:
+PF_RHO.C:
+PF_ROOT.C:
+PF_RSHOE.C:
+PF_RSHOEUND.C:
+PF_RTACK.C:
+PF_SECTION.C:
+PF_SLASH.C:
+PF_SLOPE.C:
+PF_SQUAD.C:
+PF_STAR.C:
+PF_STILE.C:
+PF_TILDE.C:
+PF_TIMES.C:
+PF_UARROW.C:
+PF_UCARET.C:
+PF_USHOE.C:
+PF_USTILE.C:
+PF_UTACK.C:
+PF_UTACKJOT.C:
+PL_PROC.C:
+PN_PARSE.Y:
+PN_PROC.C:
+PO_CMIDDOT.C:
+PO_COMB.C:
+PO_DICIRCLE.C:
+PO_DIDTACK.C:
+PO_DIERESIS.C:
+PO_DIJOT.C:
+PO_DITILDE.C:
+PO_DOT.C:
+PO_JOT.C:
+PO_JOTDOT.C:
+PO_MULTISET.C:
+PO_QUADJOT.C:
+PO_SLASH.C:
+PO_SLOPE.C:
+PO_VARIANT.C:
+PRIMFNS.C:
+PRIMSPEC.C:
+QF_A.C:
+QF_AT.C:
+QF_AV.C:
+QF_CR.C:
+QF_CS.C:
+QF_D.C:
+QF_DC.C:
+QF_DL.C:
+QF_DR.C:
+QF_EA.C:
+QF_EC.C:
+QF_EM.C:
+QF_ERROR.C:
+QF_ES.C:
+QF_ET.C:
+QF_EX.C:
+QF_FMT.C:
+QF_FX.C:
+QF_LC.C:
+QF_MF.C:
+QF_NC.C:
+QF_NFNS.C:
+QF_NL.C:
+QF_SI.C:
+QF_STRACE.C:
+QF_SYSID.C:
+QF_SYSVER.C:
+QF_T.C:
+QF_TC.C:
+QF_TF.C:
+QF_TS.C:
+QF_UCS.C:
+QF_VR.C:
+QF_WA.C:
+REFCNT.C:
+RESDEBUG.C:
+SAVEFCN.C:
+SC_COMMON.C:
+SC_COPY.C:
+SC_DROP.C:
+SC_IN.C:
+SC_INASCII.C:
+SC_LIB.C:
+SC_LOAD.C:
+SC_OUT.C:
+SC_SAVE.C:
+SC_WSID.C:
+SESSMAN.C:
+STRAND.C:
+SYMTAB.C:
+SYSCMDS.C:
+SYSVARS.C:
+TABCTRL.C:
+TOKENIZE.C:
+TYPEMOTE.C:
+UPDATES.C:
+YYFNS.C:
+  Redefine APPEND_NAME so it need not be separately defined for each C function.
+
+
+Build #1857 -- Version 0.5.7.xx
+--------------------------------
+
+* Define Alias For Epsilon
+
+Directory branches/bsmith/NewTypes:
+
+INITDATA.C:
+MACROS.H:
+PF_EPSILON.C:
+SYMBOLNAMES.H:
+TOKENIZE.C:
+TRANSLATE.C:
+UNICODE.H:
+UNITRANSTAB.H:
+  Define Epsilon2 (U+2208) as an alias for Epsilon (U+220A).
+
+PO_DOT.C:
+PO_VARIANT.C:
+  Use macro to test for UTF16_BAR and UTF16_BAR2.
+
+VER.RC:
+  Increment version # to 0.5.7.xx.

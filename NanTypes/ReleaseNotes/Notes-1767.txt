@@ -1,0 +1,17 @@
+Build #1767 -- Version 0.5.5.xx
+--------------------------------
+
+* Define And Implement Set Function Properties For Dyadic []FX
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+MAIN.RC:
+QF_AT.C:
+QF_NFNS.C:
+SC_COMMON.C:
+SC_LOAD.C:
+  Change GMT to UTC.
+
+QF_FX.C:
+  Define and implement Set Function Properties for dyadic []FX.

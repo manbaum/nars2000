@@ -1,0 +1,10 @@
+Build #1883 -- Version 0.5.7.xx
+-------------------------------
+
+* Extend Variant Operator To Inner Product
+
+Directory branches/bsmith/NewTypes:
+
+MF_DOT.H:
+PO_VARIANT.C:
+  Make the identity element for Inner Product sensitive to []LR so it may return the proper values for both left & right identity elements.

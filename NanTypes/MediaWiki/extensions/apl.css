@@ -1,0 +1,72 @@
+/*
+This file should be saved in /rul/mediawiki/extensions
+
+23 = 19 (bg-image-width) + 4 (space between image and text)
+16 = 10 (bg-image-height) + 6 (bg-pos-y)
+ */
+
+.apl, code, pre
+{
+  font-family: "SImPL medium", "SImPL", "APL385 Unicode", "APLX Upright", monospace !important;
+}
+
+.apll
+{
+  font-family: "SImPL medium", "SImPL", "APL385 Unicode", "APLX Upright", monospace;
+  font-size: large;
+  font-weight: bold;
+}
+
+.aplx
+{
+  font-family: "SImPL medium", "SImPL", "APL385 Unicode", "APLX Upright", monospace;
+  font-size: x-large;
+  font-weight: bold;
+}
+
+.aplxx
+{
+  font-family: "SImPL medium", "SImPL", "APL385 Unicode", "APLX Upright", monospace;
+  font-size: xx-large;
+  font-weight: bold;
+}
+
+.ttfRight
+{
+  padding-right: 12px;
+  background: url(/art/ttf.png) center right no-repeat;
+}
+
+.note
+{
+  background-image:url(/art/note.png);
+
+  background-position:0px 6px;
+  background-repeat:no-repeat;
+  padding-left:23px;
+  min-height:16px;
+  _height:16px;     /* IE hack */
+
+  background-color:khaki;
+/*border:2px solid dodgerblue;*/
+/* #BDB76B = darkkhaki */
+  border-top: solid 1px dimgray;
+  border-left: solid 1px dimgray;
+  border-right: solid 3px dimgray;
+  border-bottom: solid 3px dimgray;
+}
+
+.Section
+{
+  color: navy;
+  background-color: gainsboro;
+}
+
+@font-face
+{
+  font-family: 'Fallback00-1F';
+  src:
+    local("Fallback00-1F"),
+    url("http://www.sudleyplace.com/fonts/Fallback00-1F.ttf") format("truetype");
+}
+

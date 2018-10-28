@@ -1,0 +1,12 @@
+Build #1863 -- Version 0.5.7.xx
+-------------------------------
+
+* Implement 10 []AT To Distinguish Function Types
+
+Directory branches/bsmith/NewTypes:
+
+ENUMS.H:
+  Define function types as an enum.
+
+QF_AT.C:
+  Implement 10 []AT as a means to distinguish Function Types.

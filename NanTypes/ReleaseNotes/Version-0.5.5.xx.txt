@@ -1,0 +1,55 @@
+Version 0.5.5.xx consists of the following Builds:
+
+
+Build #1760 -- Version 0.5.5.xx
+--------------------------------
+
+* Upon MDI Window Activation, Ensure The Caret Is Showing
+
+Directory branches/bsmith/NewTypes:
+
+EDITFCN.C:
+  In <MdiActivate>, ensure that the caret is showing.
+
+
+Build #1759 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In Certain Control Structures
+
+Directory branches/bsmith/NewTypes:
+
+CS_PARSE.Y:
+  Include missing ending assignment for _IF _FOR _FORLCL _REPEAT _SELECT _WHILE.
+
+
+Build #1758 -- Version 0.5.5.xx
+--------------------------------
+
+* Include Description Of DoubleShriek Operands In Language Bar
+
+Directory branches/bsmith/NewTypes:
+
+EXECMFN.C:
+  Define additional shorthands for Unicode symbols.
+
+NARS2000.VCXPROJ:
+  Ignore linker errors 4204 (no debugging info).  This also requires a patch to the linker to zap the entry for 4204 = 16b106C.
+
+REBAR.C:
+  Include a description of each of the operands to the DoubleShriek operator in the Language Bar.
+
+
+Build #1757 -- Version 0.5.5.xx
+--------------------------------
+
+* Recognize The Syntax (? MOP MOP)
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+PARSELINE.H:
+  Recognize the syntax (? MOP MOP) as a MOP where ? can be one of {jot}, A, or F.
+
+VER.RC:
+  Increment version # to 0.5.5.xx.

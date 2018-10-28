@@ -1,0 +1,23 @@
+Build #1689 -- Version 0.5.1.xx
+--------------------------------
+
+* Implement Niladic System Function []CS
+
+Directory branches/bsmith/NewTypes:
+
+COMPRO.H:
+  Include prototypes for the new file.
+
+DATATYPE.H:
+  Define permanent index for new system function.
+  Expand the enum width by one bit.
+
+EXTERNS.H:
+  Define HGLOBAL for the new system function.
+
+MAKEFILE.INC:
+MAKEFILE.SRC:
+  Include new file.
+
+SYSVARS.C:
+  Include new system function.

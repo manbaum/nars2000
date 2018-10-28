@@ -1,0 +1,18 @@
+Build #1517 -- Version 0.5.0.xx
+--------------------------------
+
+* Clean Up Domino Code
+
+Directory branches/bsmith/NewTypes:
+
+PF_DOMINO.C:
+  Clean up Domino code by removing #IF FALSE and #IFDEF DEBUG code.
+
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+INDEX-BODY.AHTML:
+  Fix wording around Bitcoin donation.
+
+LICENSE-BODY.HTML:
+  Include mention of MPC library licensing.

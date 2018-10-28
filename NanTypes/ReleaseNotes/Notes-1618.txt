@@ -1,0 +1,9 @@
+Build #1618 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug When Checking For Duplicate Function Line Labels
+
+Directory branches/bsmith/NewTypes:
+
+SORT.C:
+  Fix bug in <CmpLPLBLENTRY> to compare labels directly, not through APL translate tables.

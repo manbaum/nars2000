@@ -1,0 +1,37 @@
+Build #1816 -- Version 0.5.5.xx
+--------------------------------
+
+* Make A Copy of A UDFO When Assigning It or Passing It As An Operand
+
+Directory branches/bsmith/NewTypes:
+
+ASSIGN.C:
+EXECDFN.C:
+SAVEFCN.C:
+  Make a copy of a UDFO when assigning it or passing it as an operand.
+
+COMMON.C:
+  Use <size_t> to avoid problems with x64.
+
+EDITFCN.C:
+  Save <GetLastError ()> value in case <SetFocus> fails.
+
+FH_PARSE.H:
+  Define new struct member for the text offset to the function name so we
+    may change it when copying a UDFO.
+
+FH_PARSE.Y:
+FH_PROC.C:
+  Save the text offset to the function name so we may change it when copying a UDFO.
+
+GETFNS.C:
+  Define new functions to manage global handles.
+
+INIPARSER.C:
+  Change the prototypes for functions used by this file.
+
+SAVEFCN.H:
+  Define equates and strucs for when copying a UDFO.
+
+SYMTAB.H:
+  Define additional element in <OBJNAME_WSTRPTR> omitted from a previous build.

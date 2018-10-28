@@ -1,0 +1,147 @@
+Build #1656 -- Version 0.5.1.xx
+--------------------------------
+
+* Implement NaNs
+
+Directory branches/bsmith/NewTypes:
+
+COMMON.C:
+  Define routine <IsArgNaN> to test to see if an item contains a NaN as one of its coordinates.
+
+CONVERT.C:
+  Fix typos.
+  In <flt_cmp_ct>, handle NaNs.
+  Remove routines no longer needed.
+
+CR_PROC.C:
+CR_PROC.H:
+  Handle NaNs the same as Infs.
+
+CUSTOMIZE.C:
+  Define new value for []IC to return a NaN.
+
+DEFINES.H:
+  Redefine Quiet NaN, and define Real Indefinite.
+  Define text strings for NaNs, both ASCII and UCS2.
+
+DISPLAY.C:
+  Define text strings for NaNs, both ASCII and UCS2.
+  In formatting routines, display NaNs.
+
+ENUMS.H:
+  Reorder EXCEPTION_CODES so that we can do artihmetic on them when raising an exception.
+  Remove EXCEPTION_RESULT_RAT as it not used.
+
+EXTERNS.H:
+  Define new value for []IC to return a NaN.
+  Define new index in []FEATURE to allow NaNs in arithmetic.
+  Define FLT NaN.
+
+FPCHO_COM.C:
+MPCHO_COM.C:
+  Number functions with Circle function left arg.
+  Handle zero imaghinary part as real number.
+
+HC_PROC.C:
+  Define missing function <mphc1v_init_set>.
+
+INITDATA.C:
+  Initialize FLT NaN.
+
+KEYBOARDS.H:
+  Define NaN in the various default keyboards.
+
+MACROS.H:
+  Define macros for new & old []FEATUE values.
+  Define macros for detecting FLT and VFP NaNs.
+
+MPFNS.C:
+  Define new value for []IC to return a NaN.
+
+MPIFNS.C:
+  Handle NaNs similarly to Infs.
+
+PF_BAR.C:
+PF_CIRCLE.C:
+PF_CIRCLE.MAC:
+PF_DOMINO.C:
+PF_DOTDOT.C:
+PF_DTACK.C:
+PF_PLUS.C:
+PF_ROOT.C:
+PF_STILE.C:
+PF_TIMES.C:
+PN_PARSE.Y:
+PRIMSPEC.C:
+  Handle NaNs.
+
+PF_COLONBAR.C:
+  Fix bug in <DivHC1I_RE> detecting when to blow up to FLT.
+  Handle NaNs.
+
+PF_EPSILON.C:
+  Fix Lft v. Rht typos in routines.
+
+PF_EQUAL.C:
+  Document behavior of <CmpCT_F>.
+  Handle NaNs.
+
+PF_STAR.C:
+  When converting the right arg to an integer, use a []CT of zero so that the conversion is exact.
+
+PN_PROC.C:
+  In <PN_MakeHcxPoint>, use the larger HC Dimension of the rounded up value and the
+    HC Dimension of the incoming HC Dimension (if not initializing).
+  Define routine to set a NaN into various datatypes.
+
+REBAR.C:
+  Document NaNs in the Language Bar.
+
+SC_LOAD.C:
+  Use common routines to handle NaNs on )LOAD and )COPY.
+
+SYMBOLNAMES.H:
+  Define Alt-5 as NaN.
+
+TOKENIZE.C:
+TOKENIZE.H:
+  Move Underbar into the Alpha category and rename its row as NaN.
+
+TRANSLATE.C:
+  Define new value for []IC to return a NaN.
+
+TYPEMOTE.C:
+  Fix alignment of comments.
+
+UNICODE.H:
+  Define Unicode symbol for NaN.
+
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+HTDOCS/INDEX-BODY.AHTML:
+  Fix typos.
+  Include Gamma and Hypercomplex in Point Notation changes.
+  Update copyright year.
+
+
+Directory branches/bsmith/NewTypes/Extensions/aplchars:
+
+INSTALL.RDF:
+UPDATE.RDF:
+  Update the version number.
+
+
+Directory branches/bsmith/NewTypes/Extensions/aplchars/chrome/content/aplchars:
+
+ABOUT.XUL:
+  Update the version number.
+
+EDITOROVERLAY.JS:
+  Define key for NaN.
+
+
+Directory branches/bsmith/NewTypes/MediaWiki:
+
+MEDIAWIKI/EXTENSIONS/B2A.INC.PHP:
+  Define key for NaN.

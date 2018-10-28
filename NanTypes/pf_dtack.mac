@@ -1,0 +1,118 @@
+//***************************************************************************
+//  NARS2000 -- Primitive Function -- DownTack Macros
+//***************************************************************************
+
+/***************************************************************************
+    NARS2000 -- An Experimental APL Interpreter
+    Copyright (C) 2006-2016 Sudley Place Software
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+***************************************************************************/
+
+
+#define PrimFnDydDownTackHCxIF_MAC(N,M)                             \
+{                                                                   \
+    APLHC##N##M aplMod;                                             \
+                                                                    \
+    /* Calculate the result item */                                 \
+    aplMod = ModHC##N##M (atLft.aplHC##N##M, atRht.aplHC##N##M);    \
+                                                                    \
+    /* Save in the result */                                        \
+    ((LPAPLHC##N##M) lpMemRes)[uRes] = aplMod;                      \
+                                                                    \
+    /* If the modulus is zero, we're finished with this row */      \
+    if (IsZeroHCx##M (&atLft.aplHC##N##M, N))                       \
+    {                                                               \
+        bDoneFOR = TRUE;        /* Quit the FOR stmt */             \
+                                                                    \
+        break;                  /* Quit the SWITCH stmt */          \
+    } /* End IF */                                                  \
+                                                                    \
+    /* Subtract from the right arg item and shift right */          \
+    atRht.aplHC##N##M =                                             \
+      DivHC##N##M##_RE (SubHC##N##M##_RE (atRht.aplHC##N##M,        \
+                                          aplMod),                  \
+                        atLft.aplHC##N##M);                         \
+                                                                    \
+    break;                                                          \
+} /* End ARRAY_HCxIF */
+
+
+#define PrimFnDydDownTackHCxRV_MAC(N,M,m)                           \
+{                                                                   \
+    APLHC##N##M aplMod,                                             \
+                aplSub,                                             \
+                aplDiv;                                             \
+                                                                    \
+    /* Calculate the result item */                                 \
+    aplMod = ModHC##N##M (atLft.aplHC##N##M, atRht.aplHC##N##M);    \
+                                                                    \
+    /* Save in the result */                                        \
+    ((LPAPLHC##N##M) lpMemRes)[uRes] = aplMod;                      \
+                                                                    \
+    /* If the modulus is zero, we're finished with this row */      \
+    if (IsZeroHCx##M (&atLft.aplHC##N##M, N))                       \
+    {                                                               \
+        bDoneFOR = TRUE;        /* Quit the FOR stmt */             \
+                                                                    \
+        break;                  /* Quit the SWITCH stmt */          \
+    } /* End IF */                                                  \
+                                                                    \
+    /* Subtract from the right arg item and shift right */          \
+    aplSub = SubHC##N##M##_RE (atRht.aplHC##N##M, aplMod);          \
+    aplDiv = DivHC##N##M##_RE (aplSub, atLft.aplHC##N##M);          \
+    mphc##N##m##_set (&atRht.aplHC##N##M, &aplDiv);                 \
+                                                                    \
+    Myhc##N##m##_clear (&aplDiv);                                   \
+    Myhc##N##m##_clear (&aplSub);                                   \
+                                                                    \
+    break;                                                          \
+} /* End ARRAY_HCxRV */
+
+
+#define PrimFnDydDownTackBAxF_MAC(N,M,m)                            \
+{                                                                   \
+    APLBA##N##M aplMod,                                             \
+                aplSub,                                             \
+                aplDiv;                                             \
+                                                                    \
+    /* Calculate the result item */                                 \
+    aplMod = ModBA##N##M (atLft.aplBA##N##M, atRht.aplBA##N##M);    \
+                                                                    \
+    /* Save in the result */                                        \
+    ((LPAPLBA##N##M) lpMemRes)[uRes] = aplMod;                      \
+                                                                    \
+    /* If the modulus is zero, we're finished with this row */      \
+    if (IsZeroBAx##M (&atLft.aplBA##N##M, N))                       \
+    {                                                               \
+        bDoneFOR = TRUE;        /* Quit the FOR stmt */             \
+                                                                    \
+        break;                  /* Quit the SWITCH stmt */          \
+    } /* End IF */                                                  \
+                                                                    \
+    /* Subtract from the right arg item and shift right */          \
+    aplSub = SubBA##N##M##_RE (atRht.aplBA##N##M, aplMod);          \
+    aplDiv = DivBA##N##M##_RE (aplSub, atLft.aplBA##N##M);          \
+    arb##N##m##_set (&atRht.aplBA##N##M, &aplDiv);                  \
+                                                                    \
+    arb##N##m##_clear (&aplDiv);                                    \
+    arb##N##m##_clear (&aplSub);                                    \
+                                                                    \
+    break;                                                          \
+} /* End ARRAY_BAxRV */
+
+
+//***************************************************************************
+//  End of File: pf_dtack.mac
+//***************************************************************************

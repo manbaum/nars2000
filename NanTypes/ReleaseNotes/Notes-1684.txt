@@ -1,0 +1,21 @@
+Build #1684 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bugs In Grade Of Single NaN And GradeAll NaNs
+
+Directory branches/bsmith/NewTypes:
+
+GRADE.H:
+  Pass the <bGradeAll> flag down to the comparison routines.
+
+PF_DELTASTILE.C:
+  Pass the <bGradeAll> flag down to the comparison routines.
+  Handle grading scalars as one-element vectors so as to catch NaNs with a check
+    at the very end for scalars so as to return {enclose}{zilde}.
+  In <PrimFnGradeCompare> on FLTs, test both items for NaN as some sorts don't pass
+    all items through the first position.
+  In <PrimFnGradeCompare> on FLTs, skip the test for NaNs if <bGradeAll>.
+
+SORT.C:
+  In <HeapSort>, if the count is <= 1, call (*ObjCmp) anyway so as to catch
+    <!bGradeAll> and NaN.

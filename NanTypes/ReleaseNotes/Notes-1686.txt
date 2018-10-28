@@ -1,0 +1,9 @@
+Build #1686 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In []TRACE Display
+
+Directory branches/bsmith/NewTypes:
+
+QF_STRACE.C:
+  Fix bug in <DisplayTraceResult> where it included an extra trailing zero in the NELM.

@@ -1,0 +1,15 @@
+Build #1651 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bugs In Lookup Algorithm For PV Left Args
+
+Directory branches/bsmith/NewTypes:
+
+PF_DOTDOT.C:
+  Set the PV0/PV1 flags for results as appropriate.
+
+PF_IOTA.C:
+  Fix bugs in lookup algorithm for PV left args.
+
+VER.RC:
+  Increment version # to 0.5.1.xx.

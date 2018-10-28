@@ -1,0 +1,13 @@
+Build #1903 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug When Calling []SI From Within []EA Or []EC
+
+Directory branches/bsmith/NewTypes:
+
+EXECMFN.H:
+  Define additional $QUAD_xx equates.
+
+QF_SI.C:
+SC_SI.C:
+  Fix bug when calling []SI from within either []EA or []EC.

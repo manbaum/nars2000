@@ -1,0 +1,17 @@
+Build #1723 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug When Assigning A Function To A System Var
+* Fix Bug When Assigning A Var To A System Function
+
+Directory branches/bsmith/NewTypes:
+
+ASSIGN.C:
+  Fix bug when assigning a function to a system var.
+  Fix bug when assigning a var to a system function.
+
+
+Directory branches/bsmith/NewTypes/Images:
+
+DRAG_MOVE.CUR:
+  Include file overlooked from the last build.

@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <title>NARS2000 Contributors</title>
+  <base target="_top" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <link rel="stylesheet"
+        href="http://www.sudleyplace.com/styles/common.css"
+        type="text/css" />
+  <link rel="stylesheet"
+        href="http://www.nars2000.org/styles/common.css"
+        type="text/css" />
+</head>
+
+<!--  This file is encoded in UTF-8 format.  DO NOT ATTEMPT TO EDIT IT WITH A NON-UNICODE EDITOR. -->
+
+<body><!--#config timefmt="%d %B %Y %H:%M:%S" -->
+
+<h1 class="header"
+    title="Last Changed <!--#echo var='LAST_MODIFIED' -->">
+Contributors</h1>
+
+<div class="section">
+  <h2 id="Borrowed_Code">Borrowed Code</h2>
+
+  <p>The Internet is a great resource, especially for software
+    developers who need expert help in the guise of well-crafted
+    code and useful ideas.  This project is no exception having
+    borrowed with great thanks from the following sources:</p>
+
+  <ul>
+    <li><a class="linkleft" href="http://www.gnu.org/software/gsl/">GNU
+      Scientific Library</a> for the factorial/binomial functions for both Real and Complex numbers
+      as well as matrix inverse/matrix divide functions
+      (using Singular Value Decomposition) and the Determinant Operator (e.g., <span class="APL">-.×</span>).</li>
+
+    <li>Bob Jenkins' <a class="linkleft" href="http://www.burtleburtle.net/bob/c/lookup3.c">Hash</a>
+      routines were used in the Hash table.</li>
+
+    <li>The <a class="linkleft" href="http://www.winehq.org/">Wine</a>
+      library of Windows Emulation routines contributed
+      an implementation of the Windows Edit Control when I
+      couldn't get the one in Windows to do what I wanted.</li>
+
+    <li>David M. Gay's <a class="linkleft" href="http://www.netlib.org/fp/">Numeric input/output conversion</a>
+      routines were invaluable for full numeric precision conversion (good to the last ULP!).</li>
+
+    <li>Bob Bernecky's <a class="linkleft" href="http://www.snakeisland.com/apexup.htm">APEX project</a>
+      contributed many test cases of APL code through which numerous bugs in NARS were found.</li>
+
+    <li>Nicolas Devillard's <a class="linkleft" href="http://ndevilla.free.fr/iniparser/">iniparser</a>
+      code was an invaluable resource after I found that the Win32 API has an undocumented limit on the
+      size of a string returned by the GetPrivateProfileString API.</li>
+
+    <li>Jason Papadopoulos' excellent <a class="linkleft" href="http://msieve.sourceforge.net/">msieve</a>
+      project provided the necessary code to factor integers of arbitrary precision.</li>
+
+    <li>The MPC team contributed their <a class="linkleft" href="http://www.multiprecision.org/">Multiple
+      Precision Floating Point Complex Numbers</a> code.</li>
+
+    <li>The MPIR team contributed their <a class="linkleft" href="http://www.mpir.org">Multiple
+      Precision Integers and Rationals</a> code.</li>
+
+    <li>The MPFR team contributed their <a class="linkleft" href="http://www.mpfr.org">Multiple
+      Precision Floating-Point Reliable Library</a> code.</li>
+
+    <li>The GMP ECM team contributed their <a class="linkleft" href="http://ecm.gforge.inria.fr/">Elliptic
+      Curve Method for Integer Factorization</a> code.</li>
+
+    <li>The ARB team contributed their <a class="linkleft" href="http://arblib.org/">Ball Arithmetic</a> code.</li>
+
+    <li>Mattias Andrée contributed his implementation of <a class="linkleft" href="https://raw.github.com/maandree/hungarian-algorithm-n3/master/hungarian.c">Kuhn's
+      Hungarian Algorithm</a>.</li>
+
+    <li>Dave Barber contributed his implementation of <a class="linkleft" href="http://tamivox.org/redbear/qtrn_calc/index.html">A
+      Quaternion Postfix Calculator</a> from which I extracted numerous algorithms of the elementary functions on Quaternions, all
+      written in Javascript.  This allowed me to generalize them, trivially, to the other Hypercomplex numbers.</li>
+
+    <li>Paul Godfrey contributed his <a class="linkleft" href="http://my.fit.edu/~gabdo/gamma.txt">explanation</a> of how to calculate
+      the coefficients of the Lanczos approximation to the Gamma function to an arbitrary degree of precision.  This allowed me to
+      implement the Factorial and Binomial primitive functions on multiple-precision Hypercomplex arguments.</li>
+
+    <li>Donald E. Knuth contributed many excellent Combinatorial Algorithms to the Combinatorial Operator through his "The Art of Computer Programming",
+      Volume 4A, "Combinatorial Algorithms", Addison Wesley.
+    </li>
+  </ul>
+</div>
+
+<div class="section">
+  <h2 id="Borrowed_Ideas">Borrowed Ideas</h2>
+  <ul>
+    <li>The Hash Table and Symbol Table code was created using the ideas in
+      <a class="linkleft"
+      href="http://www.cs.cmu.edu/afs/cs.cmu.edu/user/christos/www/courses/826-resources/PAPERS+BOOK/linear-hashing.PDF">
+      "Linear hashing: A new tool for file and table addressing"</a>, by Witold Litwin,
+      Proc. 6th Conference on Very Large Databases, pp. 212-223, 1980.</li>
+
+    <li>The LALR(n) Parser is based upon <a class="linkleft"
+      href="http://portal.acm.org/citation.cfm?id=28371&amp;coll=portal&amp;dl=ACM">The Syntax of APL: An
+      Old Approach Revisited"</a> by Jean Jacques Giardot &amp;
+      Florence Rollin, ACM SIGAPL APL87 Conference Proceedings, pp. 441-449.</li>
+
+    <li>The Syntax Analyzer (which replaced the above LALR(n) Parser) is based upon the paper
+      <a class="linkleft" href="http://dl.acm.org/citation.cfm?id=801081">"APL two by two-syntax analysis by pairwise reduction"</a>,
+      Gerth, John A. and Bunda, John D., in ACM SIGAPL APL Quote Quad 06/1984; 14(4):85-94.</li>
+
+    <li>The algorithm for the character grade functions was taken from
+      <a class="linkleft" href="http://portal.acm.org/citation.cfm?id=804449&amp;dl=ACM&amp;coll=portal">
+      "Sorting - A New/Old Problem"</a> by Howard J. Smith, Jr.,
+      ACM SIGAPL APL79 Conference Proceedings, pp. 123-127.
+    </li>
+
+    <li>The algorithm for the roll function was taken from
+      <a class="linkleft" href="http://www.jsoftware.com/papers/roll.htm">
+      "How the Roll Function Works"</a> by E. E. McDonnell, APL Quote Quad, Vol. 8, Number 3, p. 42.
+    </li>
+
+    <li>The algorithm for the deal function was taken from
+      <a class="linkleft" href="http://dl.acm.org/citation.cfm?id=1664629&preflayout=tabs">
+      "APLGOL, an Experimental Structured Programming Language"</a> by R. A. Kelley,
+      IBM Journal of Research and Delvelopment, January 1973, pp. 69-73.
+    </li>
+
+    <li>The algorithm for the Fast Boolean functions was taken from
+      <a class="linkleft" href="http://portal.acm.org/citation.cfm?id=810826&amp;dl=GUIDE&amp;dl=ACM">
+      "The Caret Functions"</a> by E. E. McDonnell,
+      Proceedings of The Sixth International Conference on APL,
+      1974, pp. 316-323.</li>
+
+    <li>The idea for <a class="linkleft" href="http://wiki.nars2000.org/index.php/Array_Predicates">Array Predicates</a>
+      was taken from Bob Bernecky's <a class="pdfLeft" href="http://www.snakeisland.com/predicat.pdf">APEX project</a>.</li>
+
+    <li>The idea for <a class="linkleft" href="http://wiki.nars2000.org/index.php/Point_Notation">Point Notation</a>
+      was taken from the designers of <a class="linkleft" href="http://www.jsoftware.com/help/dictionary/dcons.htm">J</a>.</li>
+
+    <li>The idea for <a class="linkleft" href="http://wiki.nars2000.org/index.php/Trains">Trains</a>
+      was taken from the designers of <a class="linkleft" href="http://www.jsoftware.com/help/dictionary/dictf.htm">J</a>.</li>
+
+    <li>The idea for grouping of rows in width-limited output came from Larry Breed in a private communication sometime in the early 1980s.</li>
+
+    <li>This project benefited greatly by discussions (across several decades) with some
+      of the many great APL implementors and language designers who went
+      before me.  To name but a few:  Ken Iverson, Larry Breed, Gene McDonnell,
+      Jim Brown, Bob Bernecky, Jim Ryan, John Scholes, etc.
+    </li>
+  </ul>
+</div>
+
+<div class="section">
+  <h2 id="Font">Font</h2>
+
+  <p>Phil Chastney built a special version of his SImPL font,
+    adding the infinity symbol as well as making other changes, and
+    then graciously allowed it to be bundled with NARS2000.  Note
+    that this font is licensed for distribution with NARS2000 only.</p>
+</div>
+
+<div class="section">
+  <h2 id="Contributors">Contributors</h2>
+
+  <ul>
+    <li>Dave Durgee was especially helpful in testing the early beta release of NARS,
+      particularly with PC/3270 translations.</li>
+    <li>Paul Robinson greatly improved the Wiki with numerous excellent design ideas.</li>
+    <li>David A. Rabenhorst has been and continues to be extremely helpful contributing
+      both design ideas as well as a wealth of bug reports.  Excellent job, Dave!</li>
+  </ul>
+
+  <hr />
+
+  <p>OK, what is it going to take to get your name here?  Don't make me beg.</p>
+</div>
+<hr />
+
+<!--#include virtual="/ValidXHTML-CSS.html" -->
+<!--#include virtual="/footer.html" -->
+</body></html>

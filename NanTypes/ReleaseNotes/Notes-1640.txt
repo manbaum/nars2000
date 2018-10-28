@@ -1,0 +1,9 @@
+Build #1640 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug In Display Of Lines With []TCNL
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  Pass ptr to initial position to <CheckTermCodes> so it can modify it for later use.

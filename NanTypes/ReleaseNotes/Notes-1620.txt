@@ -1,0 +1,10 @@
+Build #1620 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug When Displaying a Multirank Hetero Array
+
+Directory branches/bsmith/NewTypes:
+
+PF_DTACKJOT.C:
+  Fix bug in <CompileArrHetero> to calculate the initerplanar spacing as Hetero arrays are not subject to raw output
+    as per setting of <bRawOut> in <DisplayGlbArr_EM>.

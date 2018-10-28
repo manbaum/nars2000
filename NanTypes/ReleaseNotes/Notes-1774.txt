@@ -1,0 +1,12 @@
+Build #1774 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug When Selecting Both "Keyboards" And "User Preferences" In Customize Dialog
+
+Directory branches/bsmith/NewTypes:
+
+CUSTOMIZE.C:
+  Use separate save areas for the subclassed WNDPROC for "Keyboards" and "User Preferences" edit ctrls.
+  After calls to DestroyWindow () always return a result as that function doesn't, by itself, end the window.
+  When subclassing the edit ctrl for "User Preferences", use a different WNDPROC from when subclassing the edit ctrl for "Keyboards".
+  After calls to EndDialog, always return a result as that function doesn't, by itself, end the dialog.

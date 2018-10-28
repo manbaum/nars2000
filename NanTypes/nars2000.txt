@@ -1,0 +1,2 @@
+Line and byte counts of the source files used to
+  create the executable in NARS2000-

@@ -1,0 +1,9 @@
+Build #1654 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Data Demotion
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC.C:
+  Fix bug in last build:  forgot to respecify a ptr after demoting the data.

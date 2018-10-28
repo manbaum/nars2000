@@ -1,0 +1,127 @@
+//***************************************************************************
+//  NARS2000 -- Primitive Function -- DoubleTilde Macros
+//***************************************************************************
+
+/***************************************************************************
+    NARS2000 -- An Experimental APL Interpreter
+    Copyright (C) 2006-2018 Sudley Place Software
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+***************************************************************************/
+
+
+#define ARB_INTER_MAC(N)                                                        \
+    APLBA##N##F aplRes = {0};       /* The result                             */\
+    int     iRes,                   /* The resul from arb_intersection        */\
+            i,                      /* Loop counter                           */\
+            iHCDimLft,              /* Left arg HC Dimension (1, 2, 4, 8)     */\
+            iHCDimRht,              /* Right ...                              */\
+            iHCDimRes,              /* Result   ...                           */\
+            iHCDimMin;              /* Minimum  ...                           */\
+    mp_limb_signed_t prec = ARB_PREC_FPC;                                       \
+                                                                                \
+    /* Convert the iHCDimIndexXXX to iHCDimXXX                                */\
+    iHCDimLft = aHCDimIndexToHCDim[lpPrimSpec->iHCDimIndexLft];                 \
+    iHCDimRht = aHCDimIndexToHCDim[lpPrimSpec->iHCDimIndexRht];                 \
+    iHCDimRes = max (iHCDimLft, iHCDimRht);                                     \
+    iHCDimMin = min (iHCDimLft, iHCDimRht);                                     \
+                                                                                \
+    Assert (N EQ iHCDimRes);                                                    \
+                                                                                \
+    /* Initialize the result to 0/0                                           */\
+    arbX_init (&aplRes, iHCDimRes);                                             \
+                                                                                \
+    /* Loop through the common parts                                          */\
+    for (i = 0; i < iHCDimMin; i++)                                             \
+    {                                                                           \
+        /* Calculate the intersection                                         */\
+        iRes =                                                                  \
+          arb_intersection (&aplRes.parts[i],                                   \
+                            &aplLft.parts[i],                                   \
+                            &aplRht.parts[i],                                   \
+                             prec);                                             \
+        /* If the result is invalid, ...                                      */\
+        if (iRes EQ 0)                                                          \
+            /* Set the result to NaN                                          */\
+            arf_nan (arb_midref (&aplRes.parts[i]));                            \
+    } /* End FOR                                                                \
+                                                                                \
+    /* Loop through the remaining parts                                       */\
+    for (; i < iHCDimRes; i++)                                                  \
+    {                                                                           \
+        /* If the left arg still has parts, ...                               */\
+        if (i < iHCDimLft)                                                      \
+            /* Copy that part to the result                                   */\
+            arb_set (&aplRes.parts[i], &aplLft.parts[i]);                       \
+        else                                                                    \
+        /* If the right arg still has parts, ...                              */\
+        if (i < iHCDimRht)                                                      \
+            /* Copy that part to the result                                   */\
+            arb_set (&aplRes.parts[i], &aplRht.parts[i]);                       \
+        else                                                                    \
+            Assert (FALSE); /* We should never get here                       */\
+    } /* End FOR                                                              */\
+                                                                                \
+    return aplRes;
+
+
+#define ARB_UNION_MAC(N)                                                        \
+    APLBA##N##F aplRes = {0};       /* The result                             */\
+    int     i,                      /* Loop counter                           */\
+            iHCDimLft,              /* Left arg HC Dimension (1, 2, 4, 8)     */\
+            iHCDimRht,              /* Right ...                              */\
+            iHCDimRes,              /* Result   ...                           */\
+            iHCDimMin;              /* Minimum  ...                           */\
+    mp_limb_signed_t prec = ARB_PREC_FPC;                                       \
+                                                                                \
+    /* Convert the iHCDimIndexXXX to iHCDimXXX                                */\
+    iHCDimLft = aHCDimIndexToHCDim[lpPrimSpec->iHCDimIndexLft];                 \
+    iHCDimRht = aHCDimIndexToHCDim[lpPrimSpec->iHCDimIndexRht];                 \
+    iHCDimRes = max (iHCDimLft, iHCDimRht);                                     \
+    iHCDimMin = min (iHCDimLft, iHCDimRht);                                     \
+                                                                                \
+    Assert (N EQ iHCDimRes);                                                    \
+                                                                                \
+    /* Initialize the result to 0/0                                           */\
+    arbX_init (&aplRes, iHCDimRes);                                             \
+                                                                                \
+    /* Loop through the common parts                                          */\
+    for (i = 0; i < iHCDimMin; i++)                                             \
+        /* Calculate the intersection                                         */\
+        arb_union (&aplRes.parts[i],                                            \
+                   &aplLft.parts[i],                                            \
+                   &aplRht.parts[i],                                            \
+                    prec);                                                      \
+    /* Loop through the remaining parts                                       */\
+    for (; i < iHCDimRes; i++)                                                  \
+    {                                                                           \
+        /* If the left arg still has parts, ...                               */\
+        if (i < iHCDimLft)                                                      \
+            /* Copy that part to the result                                   */\
+            arb_set (&aplRes.parts[i], &aplLft.parts[i]);                       \
+        else                                                                    \
+        /* If the right arg still has parts, ...                              */\
+        if (i < iHCDimRht)                                                      \
+            /* Copy that part to the result                                   */\
+            arb_set (&aplRes.parts[i], &aplRht.parts[i]);                       \
+        else                                                                    \
+            Assert (FALSE); /* We should never get here                       */\
+    } /* End FOR                                                              */\
+                                                                                \
+    return aplRes;
+
+
+//***************************************************************************
+//  End of File: pf_dbltilde.mac
+//***************************************************************************

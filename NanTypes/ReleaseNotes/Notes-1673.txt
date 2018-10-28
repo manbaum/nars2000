@@ -1,0 +1,9 @@
+Build #1673 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Monadic PSFs With Nested Immediate Values
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC.C:
+  Fix bug in monadic PSFs which can re-define a 0 to a 1 by executing the statement ~0 {zilde}.

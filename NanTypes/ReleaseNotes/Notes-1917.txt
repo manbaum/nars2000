@@ -1,0 +1,9 @@
+Build #1917 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In Match And Grade When Comparing Hetero And Nested Arrays
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+  Fix bug in Match and Grade when comparing Hetero and Nested arrays.

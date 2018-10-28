@@ -1,0 +1,12 @@
+Build #1841 -- Version 0.5.5.xx
+--------------------------------
+
+* Widen []FEATURE Edit Ctrl In "Edit | Customize | CLEAR WS Values" Dialog Box
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+  Shorten the text for []FEATURE as displayed in the dialog box for "Edit | Customize | CLEAR WS Values".
+
+MAIN.RC:
+  In the dialog box for "Edit | Customize | CLEAR WS Values", widen the edit ctrl box for []FEATURE so as to display the widest choice.

@@ -1,0 +1,9 @@
+Build #1893 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In 3 []DR On Floating Point Numbers
+
+Directory branches/bsmith/NewTypes:
+
+QF_DR.C:
+  Fix bug when returning the # bits of precision for floating point numbers -- should be 53 not 64.  Duh!

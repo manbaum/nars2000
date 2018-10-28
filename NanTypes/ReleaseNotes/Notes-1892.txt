@@ -1,0 +1,90 @@
+Build #1892 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In The Magic Operator That Handles APL2's Inner Product
+* Fix Bug In Magic Function For Dyadic Squad Not Catching LENGTH/AXIS ERROR.
+* Fix Bug In Various Functions Using The Wrong Character Index
+* Fix Bug In {enclose} When Enclosing An Empty Which Returns A Non-empty
+
+Directory branches/bsmith/NewTypes:
+
+AXISFNS.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  Rename <CheckAxisGlb> to <CheckAxisGlb_EM> as it sets an Error Message.
+  Move code from <CheckAxis_EM> to its own subroutine for better maintenance.
+  In <CheckAxis_EM>, handle <TKT_LSTMULT> although <MakeAxis_EM> catches it first.
+
+COMMON.C:
+  Ensure <AllocateGlobalArray> returns a value with the Pointer Type Bits set.
+
+CS_PROC.C:
+PF_CSTILE.C:
+PO_DOT.C:
+  Rename <CopyToken_EM> to <CopyToken> as it does not set an Error Message.
+
+DATATYPE.H:
+  Include <RefCnt> entry in the <LSTARRAY_HEADER> struc so we can make copies.
+
+DISPDBG.C:
+  In <_ValidObj> test for valid ptr when in DEBUG mode.
+
+EXECDFN.C:
+  In <InitVarSTEs>, handle <TKT_LSTMULT> tokens as an empty Axis Array.
+
+FREE.C:
+  In <FreeResultGlobalLst>, handle list arrays with RefCnt.
+  In <FreeResultGlobalFcn>, handle <TKT_LSTMULT> as a separate token.
+
+GETFNS.C:
+  In <GetGlbMem_LOCK>, handle <TKT_LSTARRAY> the same as <TKT_LSTMULT>.
+
+MF_DOT.H:
+  Fix bug in the Magic Operator that handles APL2's Inner Product.
+
+MF_SQUAD.H:
+  Fix bug in Magic Function for Dyadic Squad not catching a LENGTH/AXIS ERROR.
+
+PARSELINE.C:
+  Rename <MakeAxis_YY> to <MakeAxis_EM_YY> as it now sets an Error Message.
+  Check for errors from <MakeAxis_EM>.
+  Change calls to <MakeAxis_EM_YY> to reflect the above change.
+
+PF_COMMA.C:
+PF_CSLOPE.C:
+PF_DARROW.C:
+PF_RSHOE.C:
+PF_SLASH.C:
+PF_SLOPE.C:
+PF_SQUAD.C:
+PF_UARROW.C:
+PO_SLOPE.C:
+  Delete test for right arg as a list as <Parseline> doesn't allow it.
+  Improve comments.
+
+PO_SLASH.C:
+QF_DC.C:
+  Improve comments.
+
+PF_LSHOE.C:
+  Fix bug in <LftShoeGlbCom_EM> when enclosing an empty which returns a non-empty.
+  Improve comments.
+
+PRIMFNS.C:
+  In <AttrsOfToken>, handle <TKT_LSTARRAY> the same as <TKT_LSTMULT>.
+  In <IsTknTypeAxis>, handle <TKT_LSTMULT> the same as <TKT_AXISARRAY>.
+
+REFCNT.C:
+  In <ChangeRefCntDir_PTB>, handle <LSTARRAY_HEADER>s.
+
+STARTADDR.H:
+  Rename <MakeAxis_YY> to <MakeAxis_EM_YY> as it now sets an Error Message.
+  Rename <CopyToken_EM> to <CopyToken> as it does not set an Error Message.
+
+STRAND.C:
+  Rename <CopyToken_EM> to <CopyToken> as it does not set an Error Message.
+  Fix bug in various functions using the wrong character index.
+  Rename <MakeAxis_YY> to <MakeAxis_EM_YY> as it now sets an Error Message.
+  In <MakeAxis_EM_YY>, handle <TKT_LSTMULT> as an AXIS ERROR.
+  In <MakeList_EM_YY>, set the list array RefCnt.
+  Rename <CopyToken_EM> to <CopyToken> as it does not set an Error Message.
+  In <CopyToken>, increment the RefCnt for list arrays.

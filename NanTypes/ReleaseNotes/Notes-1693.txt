@@ -1,0 +1,9 @@
+Build #1693 -- Version 0.5.1.xx
+--------------------------------
+
+* Remove Old Code From Dyadic Squad Magic Function
+
+Directory branches/bsmith/NewTypes:
+
+MF_SQUAD.H:
+  Remove old code from the dyadic Squad magic function.

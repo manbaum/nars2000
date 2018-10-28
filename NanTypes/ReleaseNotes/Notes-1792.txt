@@ -1,0 +1,11 @@
+Build #1792 -- Version 0.5.5.xx
+--------------------------------
+
+* Finish Drag & Move/Copy
+
+Directory branches/bsmith/NewTypes:
+
+EDITCTRL.C:
+  In <EDIT_WM_LButtonUp>, if the cursor is inside the Selection Region,
+    release the selection and set the caret position back to the start
+    of the selection.

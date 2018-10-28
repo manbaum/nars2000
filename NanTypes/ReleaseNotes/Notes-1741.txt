@@ -1,0 +1,9 @@
+Build #1741 -- Version 0.5.3.xx
+--------------------------------
+
+* Fix Bug Indexing An Empty Nested Array With Other Empties
+
+Directory branches/bsmith/NewTypes:
+
+PF_SQUAD.C:
+  In <PrimFnDydSquadGlb_EM_YY>, fill in prototype element in the result if Empty and Nested.

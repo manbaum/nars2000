@@ -1,0 +1,314 @@
+//***************************************************************************
+//  NARS2000 -- Primitive Function -- Star Macros
+//***************************************************************************
+
+/***************************************************************************
+    NARS2000 -- An Experimental APL Interpreter
+    Copyright (C) 2006-2018 Sudley Place Software
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+***************************************************************************/
+
+#define PrimMonStarHCxF_MAC(N)                                                          \
+    APLFLOAT aplIMag,               /* Magnitude of the imaginary parts  */             \
+             aplMul;                /* Multiplier:  exp (h) * ...        */             \
+    int      i,                     /* Loop counter                      */             \
+             iHCDim = N;            /* HC Dimension (1, 2, 4, 8)         */             \
+                                                                                        \
+    /*                                                                                  \
+        From http://tamivox.org/redbear/qtrn_calc/index.html                            \
+        Exp of a Hypercomplex number:                                                   \
+          With g = magnitude of the imaginary parts                                     \
+               h = real part                                                            \
+        The real part is                                                                \
+          exp (h) * cos (g)                                                             \
+        The imaginary parts are                                                         \
+          exp (h) * sin (g) / g   times each imaginary part                             \
+                                                                                        \
+        h = pF (stack[0].h);                                                            \
+        i = pF (stack[0].i);                                                            \
+        j = pF (stack[0].j);                                                            \
+        k = pF (stack[0].k);                                                            \
+                                                                                        \
+        g = r_sqrt (i * i + j * j + k * k);                                             \
+        m = exp (h);                                                                    \
+        u = m*cos (g);                                                                  \
+        v = (g == 0) ? m : m*sin (g)/g;                                                 \
+        N.B. The above line was changed from "? 0 :" by Bob Smith on 3 Oct 2018         \
+                                                                                        \
+        stack[0].h = u;                                                                 \
+        stack[0].i = v * i;                                                             \
+        stack[0].j = v * j;                                                             \
+        stack[0].k = v * k;                                                             \
+    */                                                                                  \
+                                                                                        \
+    /* Calculate the sum of the squares of the imaginary parts */                       \
+    aplIMag = 0;                                                                        \
+                                                                                        \
+    /* Loop through the imaginary parts */                                              \
+    for (i = 1; i < iHCDim; i++)                                                        \
+        /* Calculate the sum of the squares */                                          \
+        aplIMag += aplRht.parts[i] * aplRht.parts[i];                                   \
+                                                                                        \
+    /* If g is {Inf}, ... */                                                            \
+    if (IsFltInfinity (aplIMag))                                                        \
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);                            \
+                                                                                        \
+    /* Calculate the magnitude of the imaginary parts */                                \
+    aplIMag = sqrt (aplIMag);                                                           \
+                                                                                        \
+    /* Calculate the multiplier of the real part as exp (h) */                          \
+    aplMul = exp (aplRht.parts[0]);                                                     \
+                                                                                        \
+    /* Calculate the real part as m * cos (g) */                                        \
+    aplRes.parts[0] = aplMul * cosCT_Flt (aplIMag);                                     \
+                                                                                        \
+    /* If the number has imaginary parts, ... */                                        \
+    if (aplIMag NE 0)                                                                   \
+        /* Calculate the multiplier of the imaginary part as m*sin(g)/g */              \
+        aplMul = aplMul * sinCT_Flt (aplIMag) / aplIMag;                                \
+                                                                                        \
+    /* Loop through the imaginary parts */                                              \
+    for (i = 1; i < iHCDim; i++)                                                        \
+        aplRes.parts[i] = aplMul * aplRht.parts[i];
+
+
+#define PrimMonStarHCxV_MAC(N)                                                          \
+    APLVFP aplIMag = {0},           /* Magnitude of the imaginary parts  */             \
+           aplMul,                  /* Multiplier:  exp (h) * ...        */             \
+           aplTmp;                  /* Temp var                          */             \
+    int    i,                       /* Loop counter                      */             \
+           iHCDim = N;              /* HC Dimension (1, 2, 4, 8)         */             \
+                                                                                        \
+    /*                                                                                  \
+        From http://tamivox.org/redbear/qtrn_calc/index.html                            \
+        Exp of a Hypercomplex number:                                                   \
+          With g = magnitude of the imaginary parts                                     \
+               h = real part                                                            \
+        The real part is                                                                \
+          exp (h) * cos (g)                                                             \
+        The imaginary parts are                                                         \
+          exp (h) * sin (g) / g   times each imaginary part                             \
+                                                                                        \
+        h = pF (stack[0].h);                                                            \
+        i = pF (stack[0].i);                                                            \
+        j = pF (stack[0].j);                                                            \
+        k = pF (stack[0].k);                                                            \
+                                                                                        \
+        g = r_sqrt (i * i + j * j + k * k);                                             \
+        m = exp (h);                                                                    \
+        u = m*cos (g);                                                                  \
+        v = (g == 0) ? m : m*sin (g)/g;                                                 \
+        N.B. The above line was changed from "? 0 :" by Bob Smith on 3 Oct 2018         \
+                                                                                        \
+        stack[0].h = u;                                                                 \
+        stack[0].i = v * i;                                                             \
+        stack[0].j = v * j;                                                             \
+        stack[0].k = v * k;                                                             \
+    */                                                                                  \
+                                                                                        \
+    /* Calculate the sum of the squares of the imaginary parts */                       \
+    mpfr_init0 (&aplIMag);                                                              \
+                                                                                        \
+    /* Loop through the imaginary parts */                                              \
+    for (i = 1; i < iHCDim; i++)                                                        \
+    {                                                                                   \
+        /* Calculate the square of the imaginary part */                                \
+        aplTmp = MulHC1V_RE (aplRht.parts[i], aplRht.parts[i]);                         \
+                                                                                        \
+        /* Calculate the sum of the squares */                                          \
+        mpfr_add (&aplIMag, &aplIMag, &aplTmp, MPFR_RNDN);                              \
+                                                                                        \
+        /* We no longer need this resource */                                           \
+        Myf_clear (&aplTmp);                                                            \
+    } /* End IF */                                                                      \
+                                                                                        \
+    /* If g is {Inf}, ... */                                                            \
+    if (IsMpfInfinity (&aplIMag))                                                       \
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);                            \
+                                                                                        \
+    /* Calculate the magnitude of the imaginary parts */                                \
+    mpfr_sqrt (&aplIMag, &aplIMag, MPFR_RNDN);                                          \
+                                                                                        \
+    /* Calculate the multiplier of the real part as exp (h) */                          \
+    aplMul = ExpVfp_RE (aplRht.parts[0]);                                               \
+                                                                                        \
+    /* Calculate the cos (g) */                                                         \
+    aplTmp = cosCT_Vfp (aplIMag);                                                       \
+                                                                                        \
+    /* Calculate the real part as m * cos (g) */                                        \
+    aplRes.parts[0] = MulHC1V_RE (aplMul, aplTmp);                                      \
+                                                                                        \
+    /* We no longer need this resource */                                               \
+    Myf_clear (&aplTmp);                                                                \
+                                                                                        \
+    /* If the number has imaginary parts, ... */                                        \
+    if (!IsMpf0 (&aplIMag))                                                             \
+    {                                                                                   \
+        APLVFP aplSin,                                                                  \
+               aplDiv;                                                                  \
+                                                                                        \
+        /* Calculate the multiplier of the imaginary part as m * sin (g) / g  */        \
+                                                                                        \
+        /* Calculate the sin (g) */                                                     \
+        aplSin = sinCT_Vfp (aplIMag);                                                   \
+                                                                                        \
+        /* Calculate sin (g) / g */                                                     \
+        aplDiv = DivHC1V_RE (aplSin, aplIMag);                                          \
+                                                                                        \
+        /* Calculate m * sin (g) / g */                                                 \
+        aplTmp = MulHC1V_RE (aplMul, aplDiv);                                           \
+                                                                                        \
+        /* Loop through the imaginary parts */                                          \
+        for (i = 1; i < iHCDim; i++)                                                    \
+            /* Multiply each imaginary part by  m * sin (g) /g  */                      \
+            aplRes.parts[i] = MulHC1V_RE (aplTmp, aplRht.parts[i]);                     \
+                                                                                        \
+        /* We no longer need these resources */                                         \
+        Myf_clear (&aplTmp);                                                            \
+        Myf_clear (&aplDiv);                                                            \
+        Myf_clear (&aplSin);                                                            \
+    } else                                                                              \
+    {                                                                                   \
+        /* Multiply the imaginary parts by m (= aplMul) */                              \
+                                                                                        \
+        /* Loop through the imaginary parts */                                          \
+        for (i = 1; i < iHCDim; i++)                                                    \
+            /* Multiply by aplMul */                                                    \
+            aplRes.parts[i] = MulHC1V_RE (aplRht.parts[i], aplMul);                     \
+    } /* End IF/ELSE */                                                                 \
+                                                                                        \
+    /* We no longer need these resources */                                             \
+    Myf_clear (&aplMul);                                                                \
+    Myf_clear (&aplIMag);
+
+
+#define PrimMonStarBAxF_MAC(N)                                                          \
+    APLARB aplIMag = {0},           /* Magnitude of the imaginary parts  */             \
+           aplMul,                  /* Multiplier:  exp (h) * ...        */             \
+           aplTmp = {0};            /* Temp var                          */             \
+    int    i,                       /* Loop counter                      */             \
+           iHCDim = N;              /* HC Dimension (1, 2, 4, 8)         */             \
+    mp_limb_signed_t prec = ARB_PREC_FPC;                                               \
+                                                                                        \
+    /*                                                                                  \
+        From http://tamivox.org/redbear/qtrn_calc/index.html                            \
+        Exp of a Hypercomplex number:                                                   \
+          With g = magnitude of the imaginary parts                                     \
+               h = real part                                                            \
+        The real part is                                                                \
+          exp (h) * cos (g)                                                             \
+        The imaginary parts are                                                         \
+          exp (h) * sin (g) / g   times each imaginary part                             \
+                                                                                        \
+        h = pF (stack[0].h);                                                            \
+        i = pF (stack[0].i);                                                            \
+        j = pF (stack[0].j);                                                            \
+        k = pF (stack[0].k);                                                            \
+                                                                                        \
+        g = r_sqrt (i * i + j * j + k * k);                                             \
+        m = exp (h);                                                                    \
+        u = m*cos (g);                                                                  \
+        v = (g == 0) ? m : m*sin (g)/g;                                                 \
+        N.B. The above line was changed from "? 0 :" by Bob Smith on 3 Oct 2018         \
+                                                                                        \
+        stack[0].h = u;                                                                 \
+        stack[0].i = v * i;                                                             \
+        stack[0].j = v * j;                                                             \
+        stack[0].k = v * k;                                                             \
+    */                                                                                  \
+                                                                                        \
+    /* Calculate the sum of the squares of the imaginary parts */                       \
+    Myarb_init (&aplIMag);                                                              \
+    Myarb_init (&aplTmp );                                                              \
+                                                                                        \
+    /* Loop through the imaginary parts */                                              \
+    for (i = 1; i < iHCDim; i++)                                                        \
+    {                                                                                   \
+        /* Calculate the square of the imaginary part */                                \
+        arb_sqr2 (&aplTmp, &aplRht.parts[i], prec);                                     \
+                                                                                        \
+        /* Calculate the sum of the squares */                                          \
+        arb_add (&aplIMag, &aplIMag, &aplTmp, prec);                                    \
+    } /* End IF */                                                                      \
+                                                                                        \
+    /* We no longer need this resource */                                               \
+    Myarb_clear (&aplTmp);                                                              \
+                                                                                        \
+    /* If g is {Inf}, ... */                                                            \
+    if (IsArbInfinity (&aplIMag))                                                       \
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);                            \
+                                                                                        \
+    /* Calculate the magnitude of the imaginary parts */                                \
+    arb_sqrt    (&aplIMag, &aplIMag, prec);                                             \
+                                                                                        \
+    /* Calculate the multiplier of the real part as exp (h) */                          \
+    aplMul = ExpArb_RE (aplRht.parts[0]);                                               \
+                                                                                        \
+    /* Calculate the cos (g) */                                                         \
+    aplTmp = cosCT_Arb (aplIMag);                                                       \
+                                                                                        \
+    /* Calculate the real part as m * cos (g) */                                        \
+    aplRes.parts[0] = MulBA1F_RE (aplMul, aplTmp);                                      \
+                                                                                        \
+    /* We no longer need this resource */                                               \
+    Myarb_clear (&aplTmp);                                                              \
+                                                                                        \
+    /* If the number has imaginary parts, ... */                                        \
+    if (!arb_contains_zero (&aplIMag))                                                  \
+    {                                                                                   \
+        APLARB aplSin,                                                                  \
+               aplDiv;                                                                  \
+                                                                                        \
+        /* Calculate the multiplier of the imaginary part as m * sin (g) / g  */        \
+                                                                                        \
+        /* Calculate the sin (g) */                                                     \
+        aplSin = sinCT_Arb (aplIMag);                                                   \
+                                                                                        \
+        if (arb_contains_negative (&aplSin))                                            \
+            arb_nonnegative_part (&aplSin, &aplSin);                                    \
+                                                                                        \
+        /* Calculate sin (g) / g */                                                     \
+        aplDiv = DivBA1F_RE (aplSin, aplIMag);                                          \
+                                                                                        \
+        /* Calculate m * sin (g) / g */                                                 \
+        aplTmp = MulBA1F_RE (aplMul, aplDiv);                                           \
+                                                                                        \
+        /* Loop through the imaginary parts */                                          \
+        for (i = 1; i < iHCDim; i++)                                                    \
+            /* Multiply each imaginary part by  m * sin (g) /g  */                      \
+            aplRes.parts[i] = MulBA1F_RE (aplTmp, aplRht.parts[i]);                     \
+                                                                                        \
+        /* We no longer need these resources */                                         \
+        Myarb_clear (&aplTmp);                                                          \
+        Myarb_clear (&aplDiv);                                                          \
+        Myarb_clear (&aplSin);                                                          \
+    } else                                                                              \
+    {                                                                                   \
+        /* Multiply the imaginary parts by m (= aplMul) */                              \
+                                                                                        \
+        /* Loop through the imaginary parts */                                          \
+        for (i = 1; i < iHCDim; i++)                                                    \
+            /* Multiply by aplMul */                                                    \
+            aplRes.parts[i] = MulBA1F_RE (aplRht.parts[i], aplMul);                     \
+    } /* End IF/ELSE */                                                                 \
+                                                                                        \
+    /* We no longer need these resources */                                             \
+    Myarb_clear (&aplMul);                                                              \
+    Myarb_clear (&aplIMag);
+
+
+//***************************************************************************
+//  End of File: pf_star.mac
+//***************************************************************************

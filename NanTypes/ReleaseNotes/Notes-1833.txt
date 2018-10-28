@@ -1,0 +1,12 @@
+Build #1833 -- Version 0.5.5.xx
+--------------------------------
+
+* Mistaken Update To A Revision
+
+Directory branches/bsmith/NewTypes:
+
+MAIN.C:
+MF_SQUAD.H:
+NARSARRAYEDITOR.H:
+REFCNT.C:
+  Mistaken update.

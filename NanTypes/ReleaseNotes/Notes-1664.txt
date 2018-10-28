@@ -1,0 +1,9 @@
+Build #1664 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Type Promotion Of A RAT Item In A Nested Array To VFP
+
+Directory branches/bsmith/NewTypes:
+
+TYPEMOTE.C:
+  In <DemoteData> for a VFP result and a nested right argument, convert the item to a VFP as it might actually be a RAT.

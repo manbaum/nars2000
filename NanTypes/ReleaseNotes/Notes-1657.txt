@@ -1,0 +1,9 @@
+Build #1657 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Calculating The Storage Type Of Up/DownStile On Hetero/Nested Arrays
+
+Directory branches/bsmith/NewTypes:
+
+PF_DSTILE.C:
+  Fix bug in <PrimSpecDownStileStorageTypeDyd> when presented with a Hetero or Nested array.

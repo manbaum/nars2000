@@ -1,0 +1,43 @@
+Build #1848 -- Version 0.5.5.xx
+--------------------------------
+
+* Use A Local HTS For The Dyadic Squad MFO
+* Fix Bug When Saving An Edited AFO
+
+Directory branches/bsmith/NewTypes:
+
+EXECMFN.C:
+  Delete parameter passed to <AllocSymTab> as it is no longer needed.
+  Use a local HSHTABSTR for the Dyadic Squad Magic Function/Operator.
+  Move the local HSHTABSTRs for MFOs from <pertab.h> to a global in <externs.h>.
+
+EXTERNS.H:
+PERTAB.H:
+  Move the local HSHTABSTRs for MFOs from <pertab.h> to a global in <externs.h>.
+
+MAIN.C:
+  Set parent window of Crash Control Window to NULL so as to avoid locking out the keyboard.
+  At the end of <MFWndProc/WM_CLOSE>, attempt to delete all of the tabs.
+  At the end of <MFWndProc/WM_DESTROY>, delete the sys vars for the MFO local structs.
+
+PF_SQUAD.C:
+  Use the global HTS for the Dyadic Squad MFO.
+
+QF_VR.C:
+  Use the global HTS for the Monadic []VR MFO.
+
+SAVEFCN.C:
+  Delete parameter passed to <AllocSymTab> as it is no longer needed.
+  In <SaveFunctionCom> when the caller is <FEWndProc>, save the new <hGlbDfnHdr> as a window long ptr
+    so as to provide a previous HGLOBAL when AFOs are edited.
+
+SESSMAN.C:
+  Delete parameter passed to <AllocSymTab> as it is no longer needed.
+  Delete call to <DeleSysVars> for local HTS structs as they are handled at the end of <main.c>.
+
+SYMTAB.C:
+  Delete parameter passed to <AllocSymTab> as it is no longer needed.
+
+TABCTRL.C:
+  In <LclTabCtrlWndProc>, handle <TCM_DELETEALLITEMS> message.
+  Use <PostQuitMessage> instead of <PostThreadMessageW> as the former doesn't need a valid thread id.

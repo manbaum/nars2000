@@ -1,0 +1,11 @@
+Build #1907 -- Version 0.5.8.xx
+-------------------------------
+
+* Clean Up PRIMFLAGS Struc
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+GETFNS.C:
+INITDATA.C:
+  Clean up the PRIMFLAGS struc.

@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup
+    Condition="'$(Prototype_RuleBeforeTargets)' == '' and '$(Prototype_RuleAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <Prototype_RuleBeforeTargets>Midl</Prototype_RuleBeforeTargets>
+    <Prototype_RuleAfterTargets>CustomBuild</Prototype_RuleAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Prototype_RuleDependsOn
+      Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(Prototype_RuleDependsOn)</Prototype_RuleDependsOn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Prototype_Rule>
+      <CommandLineTemplate>php $(MAKEPRO) %(Filename).c $(OutDir)%(Filename).pro</CommandLineTemplate>
+      <Outputs>$(OutDir)%(Filename).pro</Outputs>
+      <ExecutionDescription>Generate Prototype for %(Filename)</ExecutionDescription>
+    </Prototype_Rule>
+  </ItemDefinitionGroup>
+</Project>

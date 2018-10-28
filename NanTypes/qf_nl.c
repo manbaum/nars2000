@@ -1,0 +1,485 @@
+//***************************************************************************
+//  NARS2000 -- System Function -- Quad NL
+//***************************************************************************
+
+/***************************************************************************
+    NARS2000 -- An Experimental APL Interpreter
+    Copyright (C) 2006-2018 Sudley Place Software
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+***************************************************************************/
+
+#define STRICT
+#include <windows.h>
+#include "headers.h"
+#include "nameclass.h"
+
+// List of valid nameclasses
+UBOOL bNameClassValid [NAMECLASS_LENp1] =
+{FALSE ,        //  0 = Available name
+ TRUE  ,        //  1 = User label
+ TRUE  ,        //  2 = User variable
+ TRUE  ,        //  3 = User-defined function   (any # args:  0, 1, or 2)
+ TRUE  ,        //  4 = User-defined operator   (either # operands:  1 or 2)
+ TRUE  ,        //  5 = System variable
+ TRUE  ,        //  6 = System function         (any # args:  0, 1, or 2)
+ FALSE ,        //  7 = (Unused)
+ FALSE ,        //  8 = (Unused)
+ FALSE ,        //  9 = (Unused)
+ FALSE ,        // 10 = (Unused)
+ FALSE ,        // 11 = (Unused)
+ FALSE ,        // 12 = (Unused)
+ FALSE ,        // 13 = (Unused)
+ FALSE ,        // 14 = (Unused)
+ FALSE ,        // 15 = (Unused)
+ FALSE ,        // 16 = (Unused)
+ FALSE ,        // 17 = (Unused)
+ FALSE ,        // 18 = (Unused)
+ FALSE ,        // 19 = (Unused)
+ FALSE ,        // 20 = (Unused)
+ TRUE  ,        // 21 = System label
+ FALSE ,        // 22 = (Unused)
+ TRUE  ,        // 23 = Magic function          (any # args:  0, 1, or 2)
+ TRUE  ,        // 24 = Magic operator          (either # operands:  1 or 2)
+};
+
+
+//***************************************************************************
+//  $SysFnNL_EM_YY
+//
+//  System function:  []NL -- Name List
+//***************************************************************************
+
+LPPL_YYSTYPE SysFnNL_EM_YY
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token (may be NULL if monadic)
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+        goto AXIS_SYNTAX_EXIT;
+
+    // Split cases based upon monadic or dyadic
+    if (lptkLftArg EQ NULL)
+        return SysFnMonNL_EM_YY (            lptkFunc, lptkRhtArg, lptkAxis);
+    else
+        return SysFnDydNL_EM_YY (lptkLftArg, lptkFunc, lptkRhtArg, lptkAxis);
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
+} // End SysFnNL_EM_YY
+
+
+//***************************************************************************
+//  $SysFnMonNL_EM_YY
+//
+//  Monadic []NL -- Name List (by Class)
+//***************************************************************************
+
+LPPL_YYSTYPE SysFnMonNL_EM_YY
+    (LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token (should be NULL)
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    return SysFnDydNL_EM_YY (NULL,          // Ptr to left arg token
+                             lptkFunc,      // Ptr to function token
+                             lptkRhtArg,    // Ptr to right arg token
+                             lptkAxis);     // Ptr to axis token (may be NULL)
+} // End SysFnMonNL_EM_YY
+
+
+//***************************************************************************
+//  $SysFnDydNL_EM_YY
+//
+//  Dyadic []NL -- Name List (by Alphabet and Class)
+//***************************************************************************
+
+LPPL_YYSTYPE SysFnDydNL_EM_YY
+    (LPTOKEN lptkLftArg,            // Ptr to left arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    APLSTYPE          aplTypeLft,           // Right arg storage type
+                      aplTypeRht;           // Right arg storage type
+    APLNELM           aplNELMLft,           // Right arg NELM
+                      aplNELMRht;           // Right arg NELM
+    APLRANK           aplRankLft,           // Right arg rank
+                      aplRankRht;           // Right arg rank
+    HGLOBAL           hGlbLft = NULL,       // Left arg global memory handle
+                      hGlbRht = NULL,       // Right ...
+                      hGlbRes = NULL;       // Result    ...
+    LPVOID            lpMemRht = NULL;      // Ptr to right arg global memory
+    LPVARARRAY_HEADER lpMemHdrLft = NULL,   // Ptr to left arg header
+                      lpMemHdrRht = NULL,   // ...    right ...
+                      lpMemHdrRes = NULL;   // ...    result   ...
+    LPAPLCHAR         lpMemLft,             // Ptr to left   ...
+                      lpMemRes;             // Ptr to result    ...
+    APLUINT           uLft,                 // Loop counter
+                      uRht,                 // Loop counter
+                      ByteRes;              // # bytes in the result
+    APLLONGEST        aplLongestLft,        // Left arg immediate value
+                      aplLongestRht;        // Right ...
+    LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to the result
+    APLNELM           uNameLen;             // Length of the current name
+    APLUINT           nameClasses = 0;      // Bit flags for each nameclass 1 through (NAMECLASS_LENp1 - 1)
+    UINT              uMaxNameLen = 0,      // Length of longest name
+                      uSymCnt = 0,          // Count of # matching STEs
+                      uSymNum;              // Loop counter
+    UBOOL             bRet;                 // TRUE iff result is valid
+    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
+    LPSYMENTRY        lpSymEntry;           // Ptr to current SYMENTRY
+    LPAPLCHAR         lpMemName;            // Ptr to name global memory
+    LPSYMENTRY       *lpSymSort;            // Ptr to LPSYMENTRYs for sorting
+
+    // Get ptr to PerTabData global memory
+    lpMemPTD = GetMemPTD ();
+
+    // Get the attributes (Type, NELM, and Rank)
+    //   of the right arg
+    AttrsOfToken (lptkRhtArg, &aplTypeRht, &aplNELMRht, &aplRankRht, NULL);
+
+    // If there's a left arg, ...
+    if (lptkLftArg NE NULL)
+    {
+        // Get the attributes (Type, NELM, and Rank)
+        //   of the left arg
+        AttrsOfToken (lptkLftArg, &aplTypeLft, &aplNELMLft, &aplRankLft, NULL);
+
+        // Check for LEFT RANK ERROR
+        if (IsMultiRank (aplRankLft))
+            goto LEFT_RANK_EXIT;
+
+        // Check for LEFT DOMAIN ERROR
+        if (!IsCharOrEmpty (aplTypeLft, aplNELMLft))
+            goto LEFT_DOMAIN_EXIT;
+
+        // Get left arg global ptr
+        aplLongestLft = GetGlbPtrs_LOCK (lptkLftArg, &hGlbLft, &lpMemHdrLft);
+
+        // If the left arg is immediate, point to its one char
+        if (hGlbLft EQ NULL)
+            lpMemLft = &(APLCHAR) aplLongestLft;
+        else
+            // Skip over the header and dimensions to the data
+            lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
+
+////////// Validate the chars in the left arg
+////////for (uLft = 0; uLft < aplNELMLft; uLft++)
+////////if (!IzitNameChar (lpMemLft[uLft]))
+////////    goto LEFT_DOMAIN_EXIT;
+    } // End IF
+
+    // Check for RIGHT RANK ERROR
+    if (IsMultiRank (aplRankRht))
+        goto RIGHT_RANK_EXIT;
+
+    // Check for RIGHT DOMAIN ERROR
+    if (!IsNumeric (aplTypeRht))
+        goto RIGHT_DOMAIN_EXIT;
+
+    // Get right arg global ptr
+    aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
+
+    // If the right arg is an HGLOBAL, ...
+    if (hGlbRht NE NULL)
+    {
+        // Set the ptr type bits
+        hGlbRht = MakePtrTypeGlb (hGlbRht);
+
+        // Skip over the header and dimensions to the data
+        lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+    } else
+        lpMemRht = &aplLongestRht;
+
+    // Split cases based upon the right arg storage type
+    switch (aplTypeRht)
+    {
+        case ARRAY_BOOL:
+        case ARRAY_INT:
+        case ARRAY_APA:
+            // Loop through the right arg elements
+            for (uRht = 0; uRht < aplNELMRht; uRht++)
+            {
+                // Get the next value as an integer
+                aplLongestRht = GetNextInteger (lpMemRht, aplTypeRht, uRht);
+
+                if (aplLongestRht >= countof (bNameClassValid)
+                 || !bNameClassValid[aplLongestRht])
+                    goto RIGHT_DOMAIN_EXIT;
+
+                // Mark as nameclass aplLongestRht
+                nameClasses |= (APLINT) (BIT0 << (UINT) aplLongestRht);
+            } // End FOR
+
+            break;
+
+        case ARRAY_FLOAT:
+            // Loop through the right arg elements
+            for (uRht = 0; uRht < aplNELMRht; uRht++)
+            {
+                // Get the next value
+                // Attempt to convert the float to an integer using System []CT
+                aplLongestRht = FloatToAplint_SCT (((LPAPLFLOAT) lpMemRht)[uRht], &bRet);
+                if (!bRet
+                 || aplLongestRht >= countof (bNameClassValid)
+                 || !bNameClassValid[aplLongestRht])
+                    goto RIGHT_DOMAIN_EXIT;
+
+                // Mark as nameclass aplLongestRht
+                nameClasses |= (APLINT) (BIT0 << (UINT) aplLongestRht);
+            } // End FOR
+
+            break;
+
+        case ARRAY_RAT:
+            // Loop through the right arg elements
+            for (uRht = 0; uRht < aplNELMRht; uRht++)
+            {
+                // Attempt to convert the RAT to an integer using System []CT
+                aplLongestRht = GetNextRatIntGlb (hGlbRht, uRht, &bRet);
+
+                if (!bRet
+                 || aplLongestRht >= countof (bNameClassValid)
+                 || !bNameClassValid[aplLongestRht])
+                    goto RIGHT_DOMAIN_EXIT;
+
+                // Mark as nameclass aplLongestRht
+                nameClasses |= (APLINT) (BIT0 << (UINT) aplLongestRht);
+            } // End FOR
+
+            break;
+
+        case ARRAY_VFP:
+            // Loop through the right arg elements
+            for (uRht = 0; uRht < aplNELMRht; uRht++)
+            {
+                // Attempt to convert the VFP to an integer using System []CT
+                aplLongestRht = GetNextVfpIntGlb (hGlbRht, uRht, &bRet);
+
+                if (!bRet
+                 || aplLongestRht >= countof (bNameClassValid)
+                 || !bNameClassValid[aplLongestRht])
+                    goto RIGHT_DOMAIN_EXIT;
+
+                // Mark as nameclass aplLongestRht
+                nameClasses |= (APLINT) (BIT0 << (UINT) aplLongestRht);
+            } // End FOR
+
+            break;
+
+        case ARRAY_ARB:
+            // Loop through the right arg elements
+            for (uRht = 0; uRht < aplNELMRht; uRht++)
+            {
+                // Attempt to convert the ARB to an integer using System []CT
+                aplLongestRht = GetNextArbIntGlb (hGlbRht, uRht, &bRet);
+
+                if (!bRet
+                 || aplLongestRht >= countof (bNameClassValid)
+                 || !bNameClassValid[aplLongestRht])
+                    goto RIGHT_DOMAIN_EXIT;
+
+                // Mark as nameclass aplLongestRht
+                nameClasses |= (APLINT) (BIT0 << (UINT) aplLongestRht);
+            } // End FOR
+
+            break;
+
+        defstop
+            break;
+    } // End SWITCH
+
+    // If there are any NameClasses, ...
+    if (nameClasses NE 0)
+    {
+        // Initialize the LPSYMENTRY sort array
+        lpSymSort = (LPSYMENTRY *) lpMemPTD->lpwszTemp;
+
+        // Loop through the symbol table looking for STEs
+        //   with one of the right arg name classes
+        for (lpSymEntry = lpMemPTD->lphtsPTD->lpSymTab;
+             lpSymEntry < lpMemPTD->lphtsPTD->lpSymTabNext;
+             lpSymEntry++)
+        if (lpSymEntry->stFlags.Inuse                                       // It's in use
+         && lpSymEntry->stFlags.ObjName NE OBJNAME_NONE                     // It has an object name
+         && lpSymEntry->stFlags.Value                                       // It has a value
+         && nameClasses & (APLINT) (BIT0 << CalcNameClass (lpSymEntry)))    // It's in one of the specified name classes
+        {
+            // Lock the memory to get a ptr to it
+            lpMemName = MyGlobalLockWsz (lpSymEntry->stHshEntry->htGlbName);
+
+            // If there's a left arg, ensure the first char of the name
+            //   is in the left arg
+            if (lptkLftArg NE NULL)
+            {
+                for (uLft = 0; uLft < aplNELMLft; uLft++)
+                if (lpMemName[0] EQ lpMemLft[uLft])
+                    break;
+
+                // If there's no match, continue looking
+                if (uLft EQ aplNELMLft)
+                    continue;
+            } // End IF
+
+            // Get the name length
+            uNameLen = lstrlenW (lpMemName);
+
+            // Find the longest name
+            uMaxNameLen = max (uMaxNameLen, (UINT) uNameLen);
+
+            // We no longer need this ptr
+            MyGlobalUnlock (lpSymEntry->stHshEntry->htGlbName); lpMemName = NULL;
+
+            // Save the LPSYMENTRY ptr for later use
+            lpSymSort[uSymCnt] = lpSymEntry;
+
+            // Count in another matching name
+            uSymCnt++;
+        } // End FOR/IF
+
+        // Sort the HGLOBALs
+        ShellSort (lpSymSort, uSymCnt, CmpLPSYMENTRY);
+    } // End IF
+
+    // Calculate space needed for the result
+    ByteRes = CalcArraySize (ARRAY_CHAR, uSymCnt * uMaxNameLen, 2);
+
+    // Check for overflow
+    if (ByteRes NE (APLU3264) ByteRes)
+        goto WSFULL_EXIT;
+
+    //***************************************************************
+    // Now we can allocate the storage for the result
+    //***************************************************************
+    hGlbRes = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+    if (hGlbRes EQ NULL)
+        goto WSFULL_EXIT;
+
+    // Lock the memory to get a ptr to it
+    lpMemHdrRes = MyGlobalLock000 (hGlbRes);
+
+#define lpHeader        lpMemHdrRes
+    // Fill in the header
+    lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+    lpHeader->ArrType    = ARRAY_CHAR;
+////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+    lpHeader->RefCnt     = 1;
+    lpHeader->NELM       = uSymCnt * uMaxNameLen;
+    lpHeader->Rank       = 2;
+#undef  lpHeader
+
+    // Fill in the result's dimensions
+    (VarArrayBaseToDim (lpMemHdrRes))[0] = uSymCnt;
+    (VarArrayBaseToDim (lpMemHdrRes))[1] = uMaxNameLen;
+
+    // Skip over the header and dimensions to the data
+    lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
+
+    // Loop through the sorted STEs copying the names to the result
+    for (uSymNum = 0; uSymNum < uSymCnt; uSymNum++)
+    {
+        // Copy the STE name to the result
+        lpMemRes = CopySteName (lpMemRes, lpSymSort[uSymNum], &uNameLen);
+
+        // Fill in the tail of the name with blanks
+        // Could use FillMemoryW ??
+        for (uRht = uNameLen; uRht < uMaxNameLen; uRht++)
+            *lpMemRes++ = L' ';
+    } // End FOR
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
+////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    goto NORMAL_EXIT;
+
+LEFT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_RANK_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_RANK_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+LEFT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkLftArg);
+    goto ERROR_EXIT;
+
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
+                               lptkRhtArg);
+    goto ERROR_EXIT;
+
+WSFULL_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
+                               lptkFunc);
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    if (hGlbRes NE NULL)
+    {
+        if (lpMemHdrRes NE NULL)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
+    } // End IF
+NORMAL_EXIT:
+    if (hGlbLft NE NULL && lpMemHdrLft NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbLft); lpMemHdrLft = NULL;
+    } // End IF
+
+    if (hGlbRht NE NULL && lpMemHdrRht NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
+    } // End IF
+
+    if (hGlbRes NE NULL && lpMemHdrRes NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
+    } // End IF
+
+    return lpYYRes;
+} // End SysFnDydNL_EM_YY
+
+
+//***************************************************************************
+//  End of File: qf_nl.c
+//***************************************************************************

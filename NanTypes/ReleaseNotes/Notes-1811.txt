@@ -1,0 +1,56 @@
+Build #1811 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In Complex Named Operator Operands
+
+Directory branches/bsmith/NewTypes:
+
+EXECDFN.C:
+MACROS.H:
+PO_CMIDDOT.C:
+PO_COMB.C:
+PO_DICIRCLE.C:
+PO_DIDTACK.C:
+PO_DIERESIS.C:
+PO_DIJOT.C:
+PO_DITILDE.C:
+PO_DOT.C:
+PO_JOT.C:
+PO_JOTDOT.C:
+PO_MULTISET.C:
+PO_QUADJOT.C:
+PO_SLASH.C:
+PO_SLOPE.C:
+PO_VARIANT.C:
+  Allow macros to retrieve ptrs to left and right operands as NULLs,
+    and ensure it doesn't happen.
+  Fix bug in retrieving the left operand from a complex dyadic operator.
+
+PARSELINE.C:
+  In <ConvertNamedFopToUnnamed>, remove Assert stmt for FCNARRAY_HEADERs
+    as the SynObj can sometimes be SPM.
+
+PL_PARSE.H:
+  Define additional field to hold the offset to the previous operator which
+    we need in otder to handle complex named operator operands.
+
+PRIMFNS.C:
+  Define <IsTknAxis> needed in <YYCopyFcnStr>.
+  Handle Direct Functions in <GetTknOpType>.
+  Define <IsTknFopDir> to detect direct functions/operators.
+
+PRIMSPEC.C:
+  In <PrimFnDydSimpSimp_EM>, fix bug trying to free non-existent vars.
+
+STARTADDR.H:
+  Include more entries.
+
+STRAND.C:
+  Pass additional parameter to <YYCopyFcnStr> so as to keep track of the
+    location of the root operator.
+
+YYFNS.C:
+  Pass additional parameter to <YYCopyFcnStr> so as to keep track of the
+    location of the root operator.
+  Keep track of the location of the root operator and pass it back to the
+    caller except for the right operand.

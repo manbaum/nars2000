@@ -1,0 +1,14 @@
+Build #1834 -- Version 0.5.5.xx
+--------------------------------
+
+* Commit To Counter Mistaken Update To A Revision
+
+Directory branches/bsmith/NewTypes:
+
+MAIN.C:
+MF_SQUAD.H:
+REFCNT.C:
+  Commit to counter a mistaken update.
+
+NARSARRAYEDITOR.H:
+  Delete mistakenly added file.

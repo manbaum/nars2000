@@ -1,0 +1,16 @@
+Build #1869 -- Version 0.5.7.xx
+-------------------------------
+
+* Fix Bug In )LOAD If A UDFO Is Deleted During Load
+* Fix Bug In )LOAD If A Permanent Variable Is Loaded
+
+Directory branches/bsmith/NewTypes:
+
+SC_LOAD.C:
+  Prepare for Java-defined functions by splitting cases based upon the function signature.
+  In <ParseSavedWsFcn_EM>, test for a function being deleted during the call to <LoadWorkspaceGlobal_EM>.
+  Fix bug in <LoadWorkspaceGlobal_EM> when loading a variable whose value is a permanent global (e.g., {zilde}).
+    This variable mistakenly is not appended to the SYMENTRY link chain and as a result the global entry of ":nnn"
+    is not freed from the symbol table.  A subsequent )COPY of a name which uses the same global entry of ":nnn"
+    then is not handled correctly.
+  Move Monitor Information code to a separate function in preparation for Java-defined functions which also need that code.

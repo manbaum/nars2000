@@ -1,0 +1,35 @@
+Build #1734 -- Version 0.5.3.xx
+--------------------------------
+
+* Implement Decimal Point In Base Point Notation
+
+Directory branches/bsmith/NewTypes:
+
+MPFNS.C:
+  Implement <mpq_pow_ui> to use in other routines.
+
+PF_COLONBAR.C:
+  Break out guts of <PrimFnMonColonBarHC2RisHC2R> into <InvHC2R_RE> so the latter function can be called separately.
+  Break out guts of <PrimFnMonColonBarHC4RisHC4R> into <InvHC4R_RE> so the latter function can be called separately.
+  Break out guts of <PrimFnMonColonBarHC8RisHC8R> into <InvHC8R_RE> so the latter function can be called separately.
+
+PF_STAR.C:
+  Break out guts of <PrimFnDydStarFisFvF> into <PowHC1F_RE> so the latter function can be called separately.
+  Break out guts of <PrimFnDydStarRisRvR> into <PowHC1R_RE> so the latter function can be called separately.
+  Break out guts of <PrimFnDydStarVisVvV> into <PowHC1V_RE> so the latter function can be called separately.
+  Fix bug in <PowHC2R_SUB> where if the Exponent is a negative integer, the result is converted to HC2V instead preserving it as HC2R.
+  Fix bug in <PowHC4R_SUB> where if the Exponent is a negative integer, the result is converted to HC4V instead preserving it as HC4R.
+  Fix bug in <PowHC8R_SUB> where if the Exponent is a negative integer, the result is converted to HC8V instead preserving it as HC8R.
+
+PN_PARSE.H:
+  Comment on required order of <PN_NUMTYPE_xxx> enum values.
+  Define fields needed to handle a decimal point in the right part of Base Point Notation.
+
+PN_PARSE.Y:
+  Define terminals to handle a decimal point in the right part of Base Point Notation.
+
+PN_PROC.C:
+  Define routines to handle a decimal point in the right part of Base Point Notation.
+
+STARTADDR.H:
+  Include new and renamed routines.

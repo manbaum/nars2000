@@ -1,0 +1,424 @@
+//***************************************************************************
+//  NARS2000 -- Primitive Function -- Domino Macros
+//***************************************************************************
+
+/***************************************************************************
+    NARS2000 -- An Experimental APL Interpreter
+    Copyright (C) 2006-2018 Sudley Place Software
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+***************************************************************************/
+
+#define PF_DOMINO_MAC(lpMemRht,lpMemLft,N)                                                                      \
+{                                                                                                               \
+    LPAPLHC##N##R lpMemAux = NULL,     /* Ptr to auxiliary matrix                                             */\
+                  lpMemRes;            /* Ptr to result matrix                                                */\
+    LPAPLDIM      lpMemInd = NULL;     /* Ptr to index vector global memory data                              */\
+    APLHC##N##R   mpqCof = {0},        /* Temporary                                                           */\
+                  mpqDiv = {0},        /* ...                                                                 */\
+                  mpqMul = {0},        /* ...                                                                 */\
+                  mpqSub = {0};        /* ...                                                                 */\
+    APLCHAR       cQuadLR;             /* []LR                                                                */\
+                                                                                                                \
+    /* Save the current value for []LR                                                                        */\
+    cQuadLR = GetQuadLR ();                                                                                     \
+                                                                                                                \
+    /* Put the new value into effect                                                                          */\
+    SetQuadLR (L'l');                                                                                           \
+                                                                                                                \
+    /* Initialize the temp                                                                                    */\
+    mphc##N##r_init (&mpqCof);                                                                                  \
+                                                                                                                \
+    if (lpMemLft EQ NULL)                                                                                       \
+        uNumColsLft = uNumColsRht;                                                                              \
+                                                                                                                \
+    /* Allocate temp storage for the auxiliary matrix                                                         */\
+    hGlbAux = DbgGlobalAlloc (GHND, (APLU3264) (uNumRows * uNumColsLft * sizeof (APLHC##N##R)));                \
+    if (hGlbAux EQ NULL)                                                                                        \
+        goto ERROR_EXIT##N##;                                                                                   \
+                                                                                                                \
+    /* Lock the memory to get a ptr to it                                                                     */\
+    lpMemAux = MyGlobalLock000 (hGlbAux);                                                                       \
+                                                                                                                \
+    /* Loop through the rows and cols                                                                         */\
+    for (uRow = 0; uRow < uNumRows; uRow++)                                                                     \
+    for (uCol = 0; uCol < uNumColsLft; uCol++)                                                                  \
+    if (lpMemLft EQ NULL)                                                                                       \
+        /* Populate the auxiliary matrix as an identity matrix                                                */\
+        mphc##N##r_init_set_sx (&lpMemAux[uRow * uNumColsLft + uCol], uRow EQ uCol, 1);                         \
+    else                                                                                                        \
+        /* Copy the left arg to the auxiliary matrix                                                          */\
+        mphc##N##r_init_set    (&lpMemAux[uRow * uNumColsLft + uCol], &lpMemLft[uRow * uNumColsLft + uCol]);    \
+                                                                                                                \
+    /* Allocate temp storage for the index vector                                                             */\
+    hGlbInd = DbgGlobalAlloc (GHND, (APLU3264) (uNumRows * sizeof (APLDIM)));                                   \
+    if (hGlbInd EQ NULL)                                                                                        \
+        goto ERROR_EXIT##N##;                                                                                   \
+                                                                                                                \
+    /* Lock the memory to get a ptr to it                                                                     */\
+    lpMemInd = MyGlobalLock000 (hGlbInd);                                                                       \
+                                                                                                                \
+    /* Populate the index vector with {iota}uNumRows                                                          */\
+    for (uRow = 0; uRow < uNumRows; uRow++)                                                                     \
+        lpMemInd[uRow] = uRow;                                                                                  \
+                                                                                                                \
+    /* Loop through the cols of lpMemRht                                                                      */\
+    for (uCol = 0; uCol < uNumColsRht; uCol++)                                                                  \
+    {                                                                                                           \
+        /* Check for Ctrl-Break                                                                               */\
+        if (CheckCtrlBreak (lpbCtrlBreak))                                                                      \
+            goto ERROR_EXIT##N##;                                                                               \
+                                                                                                                \
+        /* Loop through the rows of lpMemRht[uNumInds{drop}lpMemInd;]                                         */\
+        /*   looking for the next row with a non-zero coefficient in col uCol                                 */\
+        for (uRowInd = uNumInds; uRowInd < uNumRows; uRowInd++)                                                 \
+        if (!IsZeroHCxR (&lpMemRht[lpMemInd[uRowInd] * uNumColsRht + uCol], N))                                 \
+            break;                                                                                              \
+        if (uRowInd EQ uNumRows)                                                                                \
+            goto ERROR_EXIT##N##;                                                                               \
+                                                                                                                \
+        /*  Copy the actual row #                                                                             */\
+        uRow = lpMemInd[uRowInd];                                                                               \
+                                                                                                                \
+        /* Get the coefficient to normalize to 1                                                              */\
+        mphc##N##r_set (&mpqCof, &lpMemRht[uRow * uNumColsRht + uCol]);                                         \
+                                                                                                                \
+        /* Normalize row uRow so that the coefficient in lpMemRht[uRow;uCol] is 1                             */\
+        /* Run through lpMemRht                                                                               */\
+        for (uCol2 = uCol + 1; uCol2 < uNumColsRht; uCol2++)                                                    \
+        {                                                                                                       \
+            mpqDiv =                                                                                            \
+              DivHC##N##R_RE (lpMemRht[uRow * uNumColsRht + uCol2],                                             \
+                              mpqCof);                                                                          \
+            mphc##N##r_set  (&lpMemRht[uRow * uNumColsRht + uCol2], &mpqDiv);                                   \
+            Myhc##N##r_clear (&mpqDiv);                                                                         \
+        } /* End FOR */                                                                                         \
+                                                                                                                \
+        /* Run through lpMemAux                                                                               */\
+        for (uCol2 = 0; uCol2 < uNumColsLft; uCol2++)                                                           \
+        {                                                                                                       \
+            mpqDiv =                                                                                            \
+              DivHC##N##R_RE (lpMemAux[uRow * uNumColsLft + uCol2],                                             \
+                              mpqCof);                                                                          \
+            mphc##N##r_set  (&lpMemAux[uRow * uNumColsLft + uCol2], &mpqDiv);                                   \
+            Myhc##N##r_clear (&mpqDiv);                                                                         \
+        } /* End FOR */                                                                                         \
+                                                                                                                \
+        /* Subtract row uRow from all other rows so that the entry in col uCol is 0                           */\
+        for (uInd = 0; uInd < uNumColsRht; uInd++)                                                              \
+        if (uInd NE uRow)                                                                                       \
+        {                                                                                                       \
+            /* Check for Ctrl-Break                                                                           */\
+            if (CheckCtrlBreak (lpbCtrlBreak))                                                                  \
+                goto ERROR_EXIT##N##;                                                                           \
+                                                                                                                \
+            /* Get the coefficient to zero                                                                    */\
+            mphc##N##r_set (&mpqCof, &lpMemRht[uInd * uNumColsRht + uCol]);                                     \
+                                                                                                                \
+            /* Run through lpMemRht                                                                           */\
+            for (uCol2 = uCol; uCol2 < uNumColsRht; uCol2++)                                                    \
+            {                                                                                                   \
+                mpqMul =                                                                                        \
+                  MulHC##N##R_RE (mpqCof,                                                                       \
+                                  lpMemRht[uRow * uNumColsRht + uCol2]);                                        \
+                mpqSub =                                                                                        \
+                  SubHC##N##R_RE (lpMemRht[uInd * uNumColsRht + uCol2],                                         \
+                                  mpqMul);                                                                      \
+                mphc##N##r_set  (&lpMemRht[uInd * uNumColsRht + uCol2],                                         \
+                                 &mpqSub);                                                                      \
+                Myhc##N##r_clear (&mpqSub);                                                                     \
+                Myhc##N##r_clear (&mpqMul);                                                                     \
+            } /* End FOR                                                                                      */\
+                                                                                                                \
+            /* Run through lpMemAux                                                                           */\
+            for (uCol2 = 0; uCol2 < uNumColsLft; uCol2++)                                                       \
+            {                                                                                                   \
+                mpqMul =                                                                                        \
+                  MulHC##N##R_RE (mpqCof,                                                                       \
+                                  lpMemAux[uRow * uNumColsLft + uCol2]);                                        \
+                mpqSub =                                                                                        \
+                  SubHC##N##R_RE (lpMemAux[uInd * uNumColsLft + uCol2],                                         \
+                                  mpqMul);                                                                      \
+                mphc##N##r_set  (&lpMemAux[uInd * uNumColsLft + uCol2],                                         \
+                                 &mpqSub);                                                                      \
+                Myhc##N##r_clear (&mpqSub);                                                                     \
+                Myhc##N##r_clear (&mpqMul);                                                                     \
+            } /* End FOR                                                                                      */\
+        } /* End FOR/IF                                                                                       */\
+                                                                                                                \
+        /* Swap with the next available entry                                                                 */\
+        lpMemInd[uRowInd] = lpMemInd[uNumInds];                                                                 \
+                                                                                                                \
+        /* Mark this row as used                                                                              */\
+        lpMemInd[uNumInds++] = uRow;                                                                            \
+    } /* End FOR                                                                                              */\
+                                                                                                                \
+    if (lpMemLft EQ NULL)                                                                                       \
+        /* Return the result in lpMemRht                                                                      */\
+        lpMemRes = lpMemRht;                                                                                    \
+    else                                                                                                        \
+        /* Return the result in lpMemLft                                                                      */\
+        lpMemRes = lpMemLft;                                                                                    \
+                                                                                                                \
+    /* Copy and reorder the rows of lpMemAux to lpMemRes[lpMemInd;]                                           */\
+    /* Note that when we return the result in lpMemRht,  we use                                               */\
+    /*   uNumColsLft instead of uNumColsRht when indexing lpMemRht                                            */\
+    /*   because the result is stored as a submatrix inside lpMemRht in                                       */\
+    /*   case uNumColsLft < uNumColsRht.                                                                      */\
+    for (uRow = 0; uRow < uNumRows; uRow++)                                                                     \
+    for (uCol = 0; uCol < uNumColsLft; uCol++)                                                                  \
+        mphc##N##r_set (&lpMemRes[         uRow  * uNumColsLft + uCol],                                         \
+                        &lpMemAux[lpMemInd[uRow] * uNumColsLft + uCol]);                                        \
+    /* Mark as successful                                                                                     */\
+    bRet = TRUE;                                                                                                \
+                                                                                                                \
+    goto NORMAL_EXIT##N##;                                                                                      \
+                                                                                                                \
+ERROR_EXIT##N##:                                                                                                \
+NORMAL_EXIT##N##:                                                                                               \
+    /* If we allocated memory for the index vector, ...                                                       */\
+    if (hGlbInd NE NULL)                                                                                        \
+    {                                                                                                           \
+        /* If it's still locked, ...                                                                          */\
+        if (lpMemInd NE NULL)                                                                                   \
+        {                                                                                                       \
+            /* Loop through the items, freeing each RAT                                                       */\
+            for (uRow = 0; uRow < uNumRows; uRow++)                                                             \
+            for (uCol = 0; uCol < uNumColsLft; uCol++)                                                          \
+                Myhc##N##r_clear (&lpMemAux[uRow * uNumColsLft + uCol]);                                        \
+                                                                                                                \
+            /* We no longer need this ptr                                                                     */\
+            MyGlobalUnlock (hGlbInd); lpMemInd = NULL;                                                          \
+        } /* End IF                                                                                           */\
+                                                                                                                \
+        /* We no longer need this storage                                                                     */\
+        DbgGlobalFree (hGlbInd); hGlbInd = NULL;                                                                \
+    } /* End IF                                                                                               */\
+                                                                                                                \
+    /* If we allocated memory for the index vector, ...                                                       */\
+    /* Unlock and free (and set to NULL) a global name and ptr                                                */\
+    UnlFreeGlbName (hGlbAux, lpMemAux);                                                                         \
+                                                                                                                \
+    /* We no longer need this storage                                                                         */\
+    Myhc##N##r_clear (&mpqCof);                                                                                 \
+                                                                                                                \
+    /* Restore the original value                                                                             */\
+    SetQuadLR (cQuadLR);                                                                                        \
+                                                                                                                \
+    return bRet;                                                                                                \
+}
+
+#define PF_DOMINO_ARB(lpMemRht,lpMemLft,N)                                                                      \
+{                                                                                                               \
+    LPAPLBA##N##F lpMemAux = NULL,     /* Ptr to auxiliary matrix                                             */\
+                  lpMemRes;            /* Ptr to result matrix                                                */\
+    LPAPLDIM      lpMemInd = NULL;     /* Ptr to index vector global memory data                              */\
+    APLBA##N##F   arbCof = {0},        /* Temporary                                                           */\
+                  arbDiv = {0},        /* ...                                                                 */\
+                  arbMul = {0},        /* ...                                                                 */\
+                  arbSub = {0};        /* ...                                                                 */\
+    APLCHAR       cQuadLR;             /* []LR                                                                */\
+                                                                                                                \
+    /* Save the current value for []LR                                                                        */\
+    cQuadLR = GetQuadLR ();                                                                                     \
+                                                                                                                \
+    /* Put the new value into effect                                                                          */\
+    SetQuadLR (L'l');                                                                                           \
+                                                                                                                \
+    /* Initialize the temp                                                                                    */\
+    arb##N##f_init (&arbCof);                                                                                   \
+                                                                                                                \
+    if (lpMemLft EQ NULL)                                                                                       \
+        uNumColsLft = uNumColsRht;                                                                              \
+                                                                                                                \
+    /* Allocate temp storage for the auxiliary matrix                                                         */\
+    hGlbAux = DbgGlobalAlloc (GHND, (APLU3264) (uNumRows * uNumColsLft * sizeof (APLBA##N##F)));                \
+    if (hGlbAux EQ NULL)                                                                                        \
+        goto ERROR_EXIT##N##;                                                                                   \
+                                                                                                                \
+    /* Lock the memory to get a ptr to it                                                                     */\
+    lpMemAux = MyGlobalLock000 (hGlbAux);                                                                       \
+                                                                                                                \
+    /* Loop through the rows and cols                                                                         */\
+    for (uRow = 0; uRow < uNumRows; uRow++)                                                                     \
+    for (uCol = 0; uCol < uNumColsLft; uCol++)                                                                  \
+    if (lpMemLft EQ NULL)                                                                                       \
+        /* Populate the auxiliary matrix as an identity matrix                                                */\
+        arb##N##f_init_set_sx (&lpMemAux[uRow * uNumColsLft + uCol], uRow EQ uCol);                             \
+    else                                                                                                        \
+        /* Copy the left arg to the auxiliary matrix                                                          */\
+        arb##N##f_init_set    (&lpMemAux[uRow * uNumColsLft + uCol], &lpMemLft[uRow * uNumColsLft + uCol]);     \
+                                                                                                                \
+    /* Allocate temp storage for the index vector                                                             */\
+    hGlbInd = DbgGlobalAlloc (GHND, (APLU3264) (uNumRows * sizeof (APLDIM)));                                   \
+    if (hGlbInd EQ NULL)                                                                                        \
+        goto ERROR_EXIT##N##;                                                                                   \
+                                                                                                                \
+    /* Lock the memory to get a ptr to it                                                                     */\
+    lpMemInd = MyGlobalLock000 (hGlbInd);                                                                       \
+                                                                                                                \
+    /* Populate the index vector with {iota}uNumRows                                                          */\
+    for (uRow = 0; uRow < uNumRows; uRow++)                                                                     \
+        lpMemInd[uRow] = uRow;                                                                                  \
+                                                                                                                \
+    /* Loop through the cols of lpMemRht                                                                      */\
+    for (uCol = 0; uCol < uNumColsRht; uCol++)                                                                  \
+    {                                                                                                           \
+        /* Check for Ctrl-Break                                                                               */\
+        if (CheckCtrlBreak (lpbCtrlBreak))                                                                      \
+            goto ERROR_EXIT##N##;                                                                               \
+                                                                                                                \
+        /* Loop through the rows of lpMemRht[uNumInds{drop}lpMemInd;]                                         */\
+        /*   looking for the next row with a non-zero coefficient in col uCol                                 */\
+        for (uRowInd = uNumInds; uRowInd < uNumRows; uRowInd++)                                                 \
+        if (!IsZeroBAxF (&lpMemRht[lpMemInd[uRowInd] * uNumColsRht + uCol], N))                                 \
+            break;                                                                                              \
+        if (uRowInd EQ uNumRows)                                                                                \
+            goto ERROR_EXIT##N##;                                                                               \
+                                                                                                                \
+        /*  Copy the actual row #                                                                             */\
+        uRow = lpMemInd[uRowInd];                                                                               \
+                                                                                                                \
+        /* Get the coefficient to normalize to 1                                                              */\
+        arb##N##f_set (&arbCof, &lpMemRht[uRow * uNumColsRht + uCol]);                                          \
+                                                                                                                \
+        /* Normalize row uRow so that the coefficient in lpMemRht[uRow;uCol] is 1                             */\
+        /* Run through lpMemRht                                                                               */\
+        for (uCol2 = uCol + 1; uCol2 < uNumColsRht; uCol2++)                                                    \
+        {                                                                                                       \
+            arbDiv =                                                                                            \
+              DivBA##N##F_RE (lpMemRht[uRow * uNumColsRht + uCol2],                                             \
+                              arbCof);                                                                          \
+            arb##N##f_set   (&lpMemRht[uRow * uNumColsRht + uCol2], &arbDiv);                                   \
+            arb##N##f_clear (&arbDiv);                                                                          \
+        } /* End FOR */                                                                                         \
+                                                                                                                \
+        /* Run through lpMemAux                                                                               */\
+        for (uCol2 = 0; uCol2 < uNumColsLft; uCol2++)                                                           \
+        {                                                                                                       \
+            arbDiv =                                                                                            \
+              DivBA##N##F_RE (lpMemAux[uRow * uNumColsLft + uCol2],                                             \
+                              arbCof);                                                                          \
+            arb##N##f_set   (&lpMemAux[uRow * uNumColsLft + uCol2], &arbDiv);                                   \
+            arb##N##f_clear (&arbDiv);                                                                          \
+        } /* End FOR */                                                                                         \
+                                                                                                                \
+        /* Subtract row uRow from all other rows so that the entry in col uCol is 0                           */\
+        for (uInd = 0; uInd < uNumColsRht; uInd++)                                                              \
+        if (uInd NE uRow)                                                                                       \
+        {                                                                                                       \
+            /* Check for Ctrl-Break                                                                           */\
+            if (CheckCtrlBreak (lpbCtrlBreak))                                                                  \
+                goto ERROR_EXIT##N##;                                                                           \
+                                                                                                                \
+            /* Get the coefficient to zero                                                                    */\
+            arb##N##f_set (&arbCof, &lpMemRht[uInd * uNumColsRht + uCol]);                                      \
+                                                                                                                \
+            /* Run through lpMemRht                                                                           */\
+            for (uCol2 = uCol; uCol2 < uNumColsRht; uCol2++)                                                    \
+            {                                                                                                   \
+                arbMul =                                                                                        \
+                  MulBA##N##F_RE (arbCof,                                                                       \
+                                  lpMemRht[uRow * uNumColsRht + uCol2]);                                        \
+                arbSub =                                                                                        \
+                  SubBA##N##F_RE (lpMemRht[uInd * uNumColsRht + uCol2],                                         \
+                                  arbMul);                                                                      \
+                arb##N##f_set   (&lpMemRht[uInd * uNumColsRht + uCol2],                                         \
+                                 &arbSub);                                                                      \
+                arb##N##f_clear (&arbSub);                                                                      \
+                arb##N##f_clear (&arbMul);                                                                      \
+            } /* End FOR                                                                                      */\
+                                                                                                                \
+            /* Run through lpMemAux                                                                           */\
+            for (uCol2 = 0; uCol2 < uNumColsLft; uCol2++)                                                       \
+            {                                                                                                   \
+                arbMul =                                                                                        \
+                  MulBA##N##F_RE (arbCof,                                                                       \
+                                  lpMemAux[uRow * uNumColsLft + uCol2]);                                        \
+                arbSub =                                                                                        \
+                  SubBA##N##F_RE (lpMemAux[uInd * uNumColsLft + uCol2],                                         \
+                                  arbMul);                                                                      \
+                arb##N##f_set   (&lpMemAux[uInd * uNumColsLft + uCol2],                                         \
+                                 &arbSub);                                                                      \
+                arb##N##f_clear (&arbSub);                                                                      \
+                arb##N##f_clear (&arbMul);                                                                      \
+            } /* End FOR                                                                                      */\
+        } /* End FOR/IF                                                                                       */\
+                                                                                                                \
+        /* Swap with the next available entry                                                                 */\
+        lpMemInd[uRowInd] = lpMemInd[uNumInds];                                                                 \
+                                                                                                                \
+        /* Mark this row as used                                                                              */\
+        lpMemInd[uNumInds++] = uRow;                                                                            \
+    } /* End FOR                                                                                              */\
+                                                                                                                \
+    if (lpMemLft EQ NULL)                                                                                       \
+        /* Return the result in lpMemRht                                                                      */\
+        lpMemRes = lpMemRht;                                                                                    \
+    else                                                                                                        \
+        /* Return the result in lpMemLft                                                                      */\
+        lpMemRes = lpMemLft;                                                                                    \
+                                                                                                                \
+    /* Copy and reorder the rows of lpMemAux to lpMemRes[lpMemInd;]                                           */\
+    /* Note that when we return the result in lpMemRht,  we use                                               */\
+    /*   uNumColsLft instead of uNumColsRht when indexing lpMemRht                                            */\
+    /*   because the result is stored as a submatrix inside lpMemRht in                                       */\
+    /*   case uNumColsLft < uNumColsRht.                                                                      */\
+    for (uRow = 0; uRow < uNumRows; uRow++)                                                                     \
+    for (uCol = 0; uCol < uNumColsLft; uCol++)                                                                  \
+        arb##N##f_set (&lpMemRes[         uRow  * uNumColsLft + uCol],                                          \
+                       &lpMemAux[lpMemInd[uRow] * uNumColsLft + uCol]);                                         \
+    /* Mark as successful                                                                                     */\
+    bRet = TRUE;                                                                                                \
+                                                                                                                \
+    goto NORMAL_EXIT##N##;                                                                                      \
+                                                                                                                \
+ERROR_EXIT##N##:                                                                                                \
+NORMAL_EXIT##N##:                                                                                               \
+    /* If we allocated memory for the index vector, ...                                                       */\
+    if (hGlbInd NE NULL)                                                                                        \
+    {                                                                                                           \
+        /* If it's still locked, ...                                                                          */\
+        if (lpMemInd NE NULL)                                                                                   \
+        {                                                                                                       \
+            /* Loop through the items, freeing each ARB                                                       */\
+            for (uRow = 0; uRow < uNumRows; uRow++)                                                             \
+            for (uCol = 0; uCol < uNumColsLft; uCol++)                                                          \
+                arb##N##f_clear (&lpMemAux[uRow * uNumColsLft + uCol]);                                         \
+                                                                                                                \
+            /* We no longer need this ptr                                                                     */\
+            MyGlobalUnlock (hGlbInd); lpMemInd = NULL;                                                          \
+        } /* End IF                                                                                           */\
+                                                                                                                \
+        /* We no longer need this storage                                                                     */\
+        DbgGlobalFree (hGlbInd); hGlbInd = NULL;                                                                \
+    } /* End IF                                                                                               */\
+                                                                                                                \
+    /* If we allocated memory for the index vector, ...                                                       */\
+    /* Unlock and free (and set to NULL) a global name and ptr                                                */\
+    UnlFreeGlbName (hGlbAux, lpMemAux);                                                                         \
+                                                                                                                \
+    /* We no longer need this storage                                                                         */\
+    arb##N##f_clear (&arbCof);                                                                                  \
+                                                                                                                \
+    /* Restore the original value                                                                             */\
+    SetQuadLR (cQuadLR);                                                                                        \
+                                                                                                                \
+    return bRet;                                                                                                \
+}
+
+
+//***************************************************************************
+//  End of File: pf_domino.mac
+//***************************************************************************

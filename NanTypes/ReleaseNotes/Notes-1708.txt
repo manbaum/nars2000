@@ -1,0 +1,9 @@
+Build #1708 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug In Naked Quad/Quote-Quad Input
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+  After <PARSELINE_MP_DONE>, check for naked Quad/Quote-Quad input and handle accordingly.

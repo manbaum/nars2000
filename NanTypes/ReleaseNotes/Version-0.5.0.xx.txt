@@ -1,0 +1,710 @@
+Version 0.5.0.xx consists of the following Builds:
+
+
+Build #1650 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug Initializing []Z
+
+Directory branches/bsmith/NewTypes:
+
+ASSIGN.C:
+  Fix typo in comment.
+
+SYSVARS.C:
+TOKENIZE.C:
+  When initializing []Z, assign <steNoValueUsr> instead of <steNoValueSys> as
+    the former has a valid <stHshEntry> and the latter doesn't.
+
+
+Build #1649 -- Version 0.5.0.xx
+--------------------------------
+
+* Update Version Data
+
+Directory branches/bsmith/NewTypes:
+
+MAIN.RC:
+  Make room in the About Box for more lines of version #s.
+
+VER.C:
+  Improve comments.
+  In the About Box list of version #s, include MPC.
+
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+INDEX-BODY.AHTML:
+  Include more functions in the list.
+
+
+Build #1648 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug When Mistyping A System Name
+
+Directory branches/bsmith/NewTypes:
+
+PRIMFNS.C:
+  Rename <steNoValue> to <steNoValueUsr> and define new name <steNoValueSys>.
+  In <IsTknSysName>, check for <OBJNAME_NOVALUE_SYS> before touching <stHshEntry> as that ptr may be NULL.
+
+SYMTAB.C:
+  Rename <steNoValue> to <steNoValueUsr> and define new name <steNoValueSys>.
+
+SYMTAB.H:
+  Rename <steNoValue> to <steNoValueUsr> and define new name <steNoValueSys>.
+  Rename <OBJNAME_NOVALUE> to <OBJNAME_NOVALUE_USR> and define new name <OBJNAME_NOVALUE_SYS>.
+
+SYSVARS.C:
+TOKENIZE.C:
+  Rename <steNoValue> to <steNoValueUsr> and define new name <steNoValueSys>.
+
+
+Build #1647 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug In PV {iota} N
+
+Directory branches/bsmith/NewTypes:
+
+PF_IOTA.C:
+  In <PrimFnDydIotaPvN_EM> when calculating the inverse indices, I added in []IO once too many times.
+  Dyadic Epsilon has no corresponding bug.
+
+
+Build #1646 -- Version 0.5.0.xx
+--------------------------------
+
+* Replace Old Macro/Function Names With New Macro Names
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+DEFINES.H:
+MACROS.H:
+MPFNS.C:
+PF_DSTILE.C:
+PF_EPSILON.C:
+PF_EPSUND.C:
+PF_EQUALUND.C:
+PF_IOTA.C:
+PF_PI.C:
+PF_STILE.C:
+PO_MULTISET.C:
+QF_FMT.C:
+  Replace CompareCT/_CompareCT/mpq_cmp_ct/mpfr_cmp_ct with consistent macro calls (CmpCT_[FRV] or CmpSCT_[FRV]) except where the value of Integer Test is a variable.
+
+STARTADDR.H:
+  Rename <mpq_cmp_ct> to <_mpq_cmp_ct>.
+
+
+Build #1645 -- Version 0.5.0.xx
+--------------------------------
+
+* Avoid Exceptions Due To Negative 0 In Conjugate Function
+* Use SYS_CT Instead Of []CT When Comparing As Integer Test.
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+  Use SYS_CT instead of []CT when comparing as Integer Test.
+
+DEFINES.H:
+  Define macros for Integer Test comparisons to match those for non-integer test
+
+MPFNS.C:
+  Define <_mpq_cmp_ct> to handle Integer Tests.
+  Use SYS_CT instead of []CT when comparing as Integer Test.
+
+PF_CIRCLE.C:
+PF_CIRCLE.MAC:
+  Rename <ConjHC[248][FV]_RE> to <Conj[248][FV]> as they do not Raise an Exception.
+
+PF_COLONBAR.C:
+PF_PLUS.C:
+  Rename <ConjHC[248][FV]_RE> to <Conj[248][FV]> as they do not Raise an Exception.
+  Define and use <ConjHC[248]I> as a version of <ConjHC[248]I_RE> which doesn't Raise an Exception.
+
+PF_EPSUND.C:
+  Change macro to match the definition of <mpq_cmp_ct>.
+
+PF_STILE.C:
+  Fix bug in <ModHC4[FRV]> to handle Hurwitz Integers.
+
+PF_TIMES.C:
+  Define and use <ConjHC[248]I> as a version of <ConjHC[248]I_RE> which doesn't Raise an Exception.
+
+
+Build #1644 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug When Calling <MyGlobalLockTxt> On AFO Line
+
+Directory branches/bsmith/NewTypes:
+
+DISPDBG.C:
+  In <_ValidObj> we need special handling for calls to <MyGlobalTxt> on a line from an AFO.
+
+
+Build #1643 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bugs In Plus And GCD/LCM Using Wrong Indices When Promoting
+
+Directory branches/bsmith/NewTypes:
+
+PF_DCARET.C:
+PF_PLUS.C:
+  Fix bugs in calls to *aTypeActPromote where the wrong dimension indices are used when promoting HC RAT to HC VFP.
+
+
+Build #1642 -- Version 0.5.0.xx
+--------------------------------
+
+* Reduce Flicker When Moving Back And Forth Between The Session Manager And A Function Editor Window
+
+Directory branches/bsmith/NewTypes:
+
+DEFINES.H:
+  Define window property to aid in reducing flicker and jumping in Function Editor windows.
+
+EDITFCN.C:
+  Define functions to aid in reducing flicker and jumping in Function Editor windows.
+  In <FEWndProc/WM_CREATE>, initialize the FirstVisibleLine value.
+
+SESSMAN.C:
+  In <SMWndProc/WM_CREATE>, initialize the FirstVisibleLine value.
+
+
+Build #1641 -- Version 0.5.0.xx
+--------------------------------
+
+* Allow NaNs To Display And Survive )LOAD/)SAVE
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+  Define new routines to convert chars to floats while sensitive to Infinities and NaNs.
+
+DATATYPE.H:
+  Define the Quiet NaN bit in floating point format.
+
+DEFINES.H:
+  Define text for NaNs.
+
+DISPLAY.C:
+  Improve comments.
+  In <FormatAplFltFC>, handle formatting of NaNs.
+
+QF_DR.C:
+  Substitute <MySprintfW> for <wsprintfW>.
+  Fix typo in test for valid hexadecimal values.
+
+SC_LOAD.C:
+  Use common routine to test for and convert Infinities and NaNs.
+
+STARTADDR.H:
+  Include more routines.
+
+
+Build #1640 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug In Display Of Lines With []TCNL
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  Pass ptr to initial position to <CheckTermCodes> so it can modify it for later use.
+
+
+Build #1639 -- Version 0.5.0.xx
+--------------------------------
+
+* Miscellaneous Cosmetic Coding Changes
+
+Directory branches/bsmith/NewTypes:
+
+HC_PROC.C:
+PF_PLUS.C:
+PF_STAR.:
+TYPEMOTE.C:
+  Use the same consistent coding conventions when looping through real and imaginary parts.
+
+
+Build #1638 -- Version 0.5.0.xx
+--------------------------------
+
+* Handle []TCNL In Global Vector Output
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  In IF stmts always compare ptr against NULL.
+  Include "Hdr" in name of result of <MyGlobalLock>.
+  In <CheckTermCodes>, return to 0 (instead of uIniPos) upon encountering []TCNL.
+
+
+Build #1637 -- Version 0.5.0.xx
+--------------------------------
+
+* Reduce Flicker When Moving Back And Forth Between The Session Manager And A Function Editor Window
+
+Directory branches/bsmith/NewTypes:
+
+EDITFCN.C:
+SESSMAN.C:
+  In the WM_MDIACTIVATE routine for <SMWndProc> and <FEWndProc>, call a common routine.
+  In the above common routine, move the call to SetFocus to the end so as to reduce flicker.
+
+
+Build #1636 -- Version 0.5.0.xx
+--------------------------------
+
+* Optimize Nth Prime Count for N <= 1298173
+
+Directory branches/bsmith/NewTypes:
+
+PF_PI.C:
+  Call subroutines with the appropriate vars for the specific range.
+
+
+Build #1635 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug In Complex and Quaternion Floor Code
+
+Directory branches/bsmith/NewTypes:
+
+PF_DSTILE.C:
+  Fix bug in Complex and Quaternion Floor code to handle Hurwitz Integers better.
+
+PF_USTILE.C:
+  In <PrimFnUpStileStorageType[Mon|Dyd]>, call the corresponding routine from <PrimFnDownStileStorageTypeXXX>.
+
+
+Build #1634 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug In Dyadic Stile For HC8F and HC8V
+
+Directory branches/bsmith/NewTypes:
+
+PF_STILE.C:
+  Fix bug in <MagHC8F> and <MagHC8V> where the loop limit is 4 not 8.
+
+
+Build #1633 -- Version 0.5.0.xx
+--------------------------------
+
+* Save And Restore The Language Bar Font In The NARS2000.INI File
+
+Directory branches/bsmith/NewTypes:
+
+INIFILE.C:
+  Inexplicably, I never got around to save the Language Bar font in the NARS2000.ini file.
+
+
+Build #1632 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug In 0x*-1
+
+Directory branches/bsmith/NewTypes:
+
+PF_STAR.C:
+  Handle the case of a rational zero raised to a negative power.
+
+
+Build #1631 -- Version 0.5.0.xx
+--------------------------------
+
+* Optimize Nth Prime Search for N < 1E5
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+  Define additional struc for the new Nth Prime ranges.
+
+INITDATA.C:
+  Initialize additional struc for the new Nth Prime ranges.
+
+PF_PI.C:
+  Call subroutines with the appropriate vars for the specific range.
+
+PRIMES.H:
+  Define additional values in the ranges for the new Nth Prime tabs and strucs.
+
+
+Build #1630 -- Version 0.5.0.xx
+--------------------------------
+
+* Scroll Caret Into View In Function Editor On WM_SIZE
+
+Directory branches/bsmith/NewTypes:
+
+EDITFCN.C:
+  In <FEWndProc/WM_SIZE>, after setting the window position, scroll the caret into view so it is always visible.
+
+SESSMAN.C:
+   Improve comments.
+
+
+Build #1629 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug From Missing SEH Handlers
+* Fix Bug With PSFs Passing Wrong Datatype
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+  Append line # to TRACE DEBUG stmts.
+  Fix bug after <PARSELINE_DONE:> where it doesn't handle <soNVAL> from no return UDFOs.
+
+PRIMSPEC.C:
+  Use SEH __try/__finally to handle clean up after error.
+  Fix bug in both <PrimFnDydSimpNest_EM> and <PrimFnDydNestSimp_EM> where the wrong storage type is passed down to <PrimFnDydSiScSiSc_EM>.
+  Fix bug in <PrimFnDydNestSiSc_EM> and <PrimFnDydSiScNest_EM> where an exception from a call down to a PSF isn't handled.
+
+
+Build #1628 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug With Naked Goto
+
+Directory branches/bsmith/NewTypes:
+
+EXECDFN.C:
+  In <ExecuteFunction_EM_YY> if an error occurs and we're exiting because of a naked GOTO (EXITTYPE_RESET_ONE),
+    return a NoValue entry marked as a naked GOTO.
+
+PARSELINE.C:
+  In <plExecuteFn0>, don't modify <tkSynObj> in <lpYYRes> if it's a NoValue entry.
+
+TOKENIZE.C:
+  In <scPointDone>, syntax color "au" Unit Normalized notation as Point Notation.
+
+
+Build #1627 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug In Type Demotion of Nested Array To Simple Numeric
+
+Directory branches/bsmith/NewTypes:
+
+TYPEMOTE.C:
+  Fix bug in <DemoteData> when demoting a nested array's scalar global to simple numeric (BOOL, INT, FLT).
+
+
+Build #1626 -- Version 0.5.0.xx
+--------------------------------
+
+* Implement Unit Normalized Radian Point Notation (e.g. 1au0.25 = 1ad90)
+
+Directory branches/bsmith/NewTypes:
+
+CR_PROC.C:
+  Fix bug in <crEndSeg> when scanning a line such as 1au0.5x where the code mistakenly finds a decimal point
+    and thinks it is in the integer part of the string.
+
+MPFNS.C:
+  Implement <mpq_mul_si> as a helper function.
+
+PN_PARSE.Y:
+  Implement Unit Normalized Radian point notation.
+  Define DEBUG stmts for no code terminals so they show up in a DEBUG run.
+
+PN_PROC.C:
+  Fix bug in <PN_MakeBasePoint> where a base of a Boolean 0 or 1 fails to note that the result is integer.
+  In <PN_MakeHc2Point>, implement Unit Normalized Radian point notation.
+
+
+Build #1625 -- Version 0.5.0.xx
+--------------------------------
+
+* Scroll Caret Into View In Session Manager On WM_SIZE
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+  Move DEBUG stmts up for easier use.
+
+SESSMAN.C:
+  In <SMWndProc/WM_SIZE>, after setting the window position, scroll the caret into view so it is always visible.
+
+
+Build #1624 -- Version 0.5.0.xx
+--------------------------------
+
+* Optimize Monadic Domino On Singletons
+
+Directory branches/bsmith/NewTypes:
+
+PF_DOMINO.C:
+  In <PrimFnMonDomino_EM_YY>, expand the special case handling of scalars to singletons.
+
+
+Build #1623 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug In UpCaret, DownCaret, And Stile With Nested Arguments
+
+Directory branches/bsmith/NewTypes:
+
+PF_DCARET.C:
+PF_STILE.C:
+PF_UCARET.C:
+  Fix bug in each function's <PrimSpecXXXStorageTypeDyd> routine where the call to <HasFractionality> fails on Nested arguments.
+
+
+Build #1622 -- Version 0.5.0.xx
+--------------------------------
+
+* Clean Up code
+
+Directory branches/bsmith/NewTypes:
+
+PF_CSLOPE.C:
+  Clean up code to use common naming conventions.
+
+SAVEFCN.C:
+  Clean up code to avoid embedded assignments.
+
+
+Build #1621 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug When Assigning To Indexed Array In A Certain Way
+
+Directory branches/bsmith/NewTypes:
+
+PF_SQUAD.C:
+  Fix bug in <PrimFnDydSquadGlb_EM_YY> when assigning to an indexed array where <uDimSet> is incremented too many times.
+
+
+Build #1620 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug When Displaying a Multirank Hetero Array
+
+Directory branches/bsmith/NewTypes:
+
+PF_DTACKJOT.C:
+  Fix bug in <CompileArrHetero> to calculate the initerplanar spacing as Hetero arrays are not subject to raw output
+    as per setting of <bRawOut> in <DisplayGlbArr_EM>.
+
+
+Build #1619 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug In Grade To Allow Hypercomplex Numbers With Zero Imaginary Parts
+
+Directory branches/bsmith/NewTypes:
+
+PF_DELTASTILE.C:
+  Fix bug in <PrimFnMonGradeCommon_EM_YY> to allow grading of HCxy numbers if the imaginary parts are all zero.
+
+
+Build #1618 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug When Checking For Duplicate Function Line Labels
+
+Directory branches/bsmith/NewTypes:
+
+SORT.C:
+  Fix bug in <CmpLPLBLENTRY> to compare labels directly, not through APL translate tables.
+
+
+Build #1617 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug When Calculating Nested Result With Scalar Global Numeric Items
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC.C:
+  Fix bug in <AllocateSpaceGlbNum> when the global result is nested and the local result is global numeric.
+
+
+Build #1616 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Memory Leak When Monadic PSF Immediate Blows Up To Global Entry
+
+Directory branches/bsmith/NewTypes:
+
+GETFNS.C:
+  Fix bug in <ValidateFirstItemToken> to handle HCxy numbers as an argument.
+
+PRIMSPEC.C:
+  Fix memory leak in <PrimFnMon_EM_YY> to handle the case when a PSF immediate blows up to a global entry.
+
+
+Build #1615 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bugs In Complex Infinities And Related Changes
+
+Directory branches/bsmith/NewTypes:
+
+CR_PROC.C:
+  Fix bug in <mpq_set_str2> when converting -0.xxx.
+
+DBGBRK32.ASM:
+DBGBRK64.ASM:
+  Fix bug in <fsin>, <fcos>, and <fsincos> when given a number >= |2*63.
+  Fix bug in <iAsmCircleN4flt> and <iAsmCircleN4Int> where I misused a FP instruction.
+
+EXTERNS.H:
+HC_PROC.H:
+INITDATA.C:
+  Define and use Pi/2 constants for FLT and VFP.
+
+FPCHO_COM.C:
+  Handle complex infinities in <fpXf_atanh> and <fpXf_scale>.
+
+FPCHO_COM.MAC:
+  Fix bug in <fpXf_mag_imag8> on octonions.
+
+MACROS.H:
+  Define macros to obtain the raw sign bit from FLT and VFP.
+  Define macro to obtain the sign of a RAT in a consistent manner with FLT and VFP.
+
+MPCHO_COM.C:
+  Handle complex infinities in <mpXf_atanh> and <mpXf_scale>.
+  Resolve discrepancy between <gsl_complex_arctanh> and <mpc_atanh> on an argument of ±1iXXX.
+
+MPIFNS.C:
+  Fix bug in <mpiz_set_str>, <mpiz_init_set_str>, <mpiq_set_str, <mpifr_set_str>, and <mpifr_strtofr>
+    not handling !iXXX and -!iXXX.
+  Fix bug in <mpifr_mul> to handle infinities via <mpfr_QuadICValue>.
+
+PARSELINE.C:
+  Fix bug to avoid setting <tkSynObj> if NoValue.
+  Fix bug in return from executing []xLX to handle a return of EXITTYPE_DISPLAY the same as EXITTYPE_NODISPLAY.
+
+PF_CIRCLE.C:
+  Fix bug in <PRIMSPEC> structure for HC4F is HC4I vs HC4I and HC8F is HC8I vs HC8I.
+  Fix bug in <PrimFnDydCircleFisFvF> returning the wrong result from 12{circle}.
+  Fix bug in <PrimFnDydCircleFisFvF> returning the wrong result for -7{circle}±1.
+  Fix bug in <PrimFnDydCircleVisVvV> returning the wrong result from 12{circle}.
+  Fix bug in <PrimFnDydCircleVisVvV> returning the wrong result for -7{circle}±1.
+
+PF_COLONBAR.C:
+  Use <SIGN_APLRAT> in place of <mpq_sgn (a) < 0>.
+  In <PrimFnMonColonBarHC2FisHC2F>, handle case where the denominator is {Inf}.
+  Fix bug in <PrimFnMonColonBarHC2RisHC2R> on -0 shouldn't blow up to HC2V.
+  In <PrimFnMonColonBarHC2RisHC2R>, handle case where the denominator is {Inf}.
+  In <PrimFnMonColonBarHC2VisHC2V>, handle case where the denominator is {Inf}.
+  In <PrimFnMonColonBarHC4FisHC4F>, handle case where the denominator is {Inf}.
+  In <PrimFnMonColonBarHC4RisHC4R>, where the denominator is 0 (high-order imaginaries aren't initialized).
+  In <PrimFnMonColonBarHC4RisHC4R>, handle case where the denominator is {Inf}.
+  In <PrimFnMonColonBarHC8FisHC8F>, handle case where the denominator is {Inf}.
+  In <PrimFnMonColonBarHC8RisHC8R>, where the denominator is 0 (high-order imaginaries aren't initialized).
+  In <PrimFnMonColonBarHC8RisHC8R>, handle case where the denominator is {Inf}.
+  In <PrimFnMonColonBarHC8VisHC8V>, handle case where the denominator is {Inf}.
+
+PF_CSTAR.C:
+  Fix bug in <LogHCxF_RE> and <LogHCxV_RE> where the multiplier for the imaginary parts is 0 and one of the parts is {Inf}.
+
+PF_EQUAL.C:
+  Fix bug in <EqualHCxFvHCxF>, <EqualHCxRvHCxR>, and <EqualHCxVvHCxV> when comparing complex infinities.
+
+PF_EQUALUND.C:
+  In IF stmts always compare ptr against NULL.
+  Include "Hdr" in name of result of <MyGlobalLock>.
+
+PF_PI.C:
+  Fix typo in comment.
+
+PF_ROOT.C:
+  Fix bug in <SqrtHCxF_RE> and <Sqrt_HCxV_RE> with complex infinities.
+
+PF_STAR.C:
+  Fix bug in <ExpHCxF_RE> and <ExpHCxV_RE> with complex infinities.
+  Fix bug in <PrimFnMonStarHC2VisHC2V> with complex infinities.
+  Use <SIGN_APLRAT> in place of <mpq_sgn (a) < 0>.
+  Define and use Pi/2 constants for FLT and VFP.
+
+PF_STAR.MAC:
+  Handle complex infinities in <PrimMonStarHCxF_MAC> and <PrimMonStarHCxV_MAC>.
+
+PF_STILE.C:
+  Use <SIGN_APLRAT> in place of <mpq_sgn (a) < 0>.
+
+PF_TIMES.C:
+  Use <SIGN_APLRAT> in place of <mpq_sgn (a) < 0>.
+  In <MulHCxF_RE>, <MulHCxR_RE> and <MulHCxV_RE>, handle complex infinities.
+
+PN_PARSE.Y:
+  Handle rational integers with suffix "x" in Hypercomplex numbers.
+
+PN_PROC.C:
+  Fix bug in <PN_MakeExpPoint> where the common type is xR and the argument has already been initialized.
+  Fix bug in <PN_MakeExpPoint> where the exponent separator inserted earlier is in the way when converting the multiplier to the left of the "e".
+  Fix bug in <PN_MakeHC2Point> where the angle in degrees is converted unnecessarily in some cases.
+  In <PN_SetInfinity>, handle more cases of complex infinities.
+
+PRIMSPEC.C:
+  Display all exception errors.
+  Fix bug in tail of <PrimFnMonGlb> at the end if in error and the result is undefined (NULL).
+
+TYPEMOTE.C:
+  Fix typo in comment.
+
+
+Build #1614 -- Version 0.5.0.xx
+--------------------------------
+
+* Fix Bug When Copying A Block Of Lines
+
+Directory branches/bsmith/NewTypes:
+
+IMMEXEC.C:
+  Fix bug when copying a block of lines.
+
+
+Build #1613 -- Version 0.5.0.xx
+--------------------------------
+
+* Merge With 0.4.* Branch
+
+Directory branches/bsmith/NewTypes:
+
+Many files (324) from the 0.4.* branch.
+
+
+Build #1517 -- Version 0.5.0.xx
+--------------------------------
+
+* Clean Up Domino Code
+
+Directory branches/bsmith/NewTypes:
+
+PF_DOMINO.C:
+  Clean up Domino code by removing #IF FALSE and #IFDEF DEBUG code.
+
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+INDEX-BODY.AHTML:
+  Fix wording around Bitcoin donation.
+
+LICENSE-BODY.HTML:
+  Include mention of MPC library licensing.
+
+
+Build #1516 -- Version 0.5.0.xx
+--------------------------------
+
+* Implement Hypercomplex Numbers
+
+Directory branches/bsmith/NewTypes:
+
+Too Numerous To List.
+
+VER.RC:
+  Increment version # to 0.5.0.xx.

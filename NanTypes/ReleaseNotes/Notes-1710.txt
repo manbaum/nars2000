@@ -1,0 +1,9 @@
+Build #1710 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bug When Validating Left Arg To The Reshape Function
+
+Directory branches/bsmith/NewTypes:
+
+PF_RHO.C:
+  In <RhoLftGlbValidCom>, test <bRet> after call to <xxxToAplInt>.

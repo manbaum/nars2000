@@ -1,0 +1,14 @@
+Build #1685 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bugs In Divide Of HC Numbers
+
+Directory branches/bsmith/NewTypes:
+
+PF_COLONBAR.C:
+  Reduce the column width of many lines by folding them to the nest.
+  In Monadic and Dyadic Divide functions, calculate the denominator by multiplying the right arg by its conjugate.
+    Previously we summed the squares, but this doesn't catch some errors with infinities.
+
+PF_TIMES.C:
+  In <MulHCxy_RE> special case "a EQ 0" and "c EQ 0" so as to avoid an error if "b" or "d" is {inf}.

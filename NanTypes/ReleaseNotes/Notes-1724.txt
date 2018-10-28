@@ -1,0 +1,10 @@
+Build #1724 -- Version 0.5.3.xx
+--------------------------------
+
+* Enable DEBUG And RESDEBUG To Be Independent
+
+Directory branches/bsmith/NewTypes:
+
+DISPDBG.C:
+MACROS.H:
+  Enable DEBUG and RESDEBUG to be independent.

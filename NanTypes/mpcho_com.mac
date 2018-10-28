@@ -1,0 +1,89 @@
+//***************************************************************************
+//  NARS2000 -- Multiple Precision CHO Common Macros
+//***************************************************************************
+
+/***************************************************************************
+    NARS2000 -- An Experimental APL Interpreter
+    Copyright (C) 2006-2015 Sudley Place Software
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+***************************************************************************/
+
+
+//***************************************************************************
+//  $mpXf_mag_imag
+//***************************************************************************
+
+#define mpXf_mag_imag(rop,op,rnd,iHCDim,bSqrt)                  \
+                                                                \
+{                                                               \
+    int    i;                   /* Loop counter */              \
+    mpfr_t mpfTmp;              /* Temp var */                  \
+                                                                \
+    /* Initialize to additive identity */                       \
+    mpfr_set_si (rop, 0, rnd);                                  \
+                                                                \
+    /* Initialize to 0 */                                       \
+    mpfr_init0 (mpfTmp);                                        \
+                                                                \
+    /* Loop through the imaginary parts */                      \
+    for (i = 1; i < iHCDim; i++)                                \
+    {                                                           \
+        /* Calculate the coefficient square */                  \
+        mpfr_mul (mpfTmp, &op->parts[i], &op->parts[i], rnd);   \
+                                                                \
+        /* Accumulate the coefficient squares */                \
+        mpfr_add (rop, rop, mpfTmp, rnd);                       \
+    } /* End FOR */                                             \
+                                                                \
+    /* We no longer need this storage */                        \
+    mpfr_clear (mpfTmp);                                        \
+                                                                \
+    /* If Sqrt requested, ... */                                \
+    if (bSqrt)                                                  \
+        /* Calculate:  sqrt (squares) */                        \
+        mpfr_sqrt (rop, rop, rnd);                              \
+} /* End mpXf_mag_imag */
+
+
+//***************************************************************************
+//  $mpcho_set_sx
+//***************************************************************************
+
+#define mpcho_set_sx(rop,num,den,iHCDim)                        \
+                                                                \
+{                                                               \
+    int i;                  /* Loop counter                   */\
+                                                                \
+    /* Set the real part                                      */\
+    mpz_set_sx (mpq_numref (&rop->parts[0]), num);              \
+    mpz_set_sx (mpq_numref (&rop->parts[0]), den);              \
+                                                                \
+    /* Loop through the imaginary parts                       */\
+    for (i = 1; i < iHCDim; i++)                                \
+    {                                                           \
+        mpz_set_sx (mpq_numref (&rop->parts[i]), 0  );          \
+        mpz_set_sx (mpq_denref (&rop->parts[i]), 1  );          \
+    } /* End FOR                                              */\
+                                                                \
+    /* Only if we need to canonicalize, ...                   */\
+    if (den != 1)                                               \
+        /* Canonicalize the Rational                          */\
+        mpq_canonicalize ((__mpq_struct *) &rop->parts[0]);     \
+} /* End mpcho_set_sx                                         */
+
+
+//***************************************************************************
+//  End of File: mpcho_com.mac
+//***************************************************************************

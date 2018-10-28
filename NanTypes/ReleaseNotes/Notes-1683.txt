@@ -1,0 +1,14 @@
+Build #1683 -- Version 0.5.1.xx
+--------------------------------
+
+* Fix Bugs In Dimension Demotion
+
+Directory branches/bsmith/NewTypes:
+
+INITDATA.C:
+  For consistency, use <FcnTrans> instead of the corresponding mask expression.
+
+PO_DOT.C:
+PO_JOTDOT.C:
+PO_SLASH.C:
+  Save the dimension demotion flag and pass it onto <TypeDemote>.

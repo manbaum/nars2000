@@ -1,0 +1,15 @@
+Build #1847 -- Version 0.5.5.xx
+--------------------------------
+
+* Fix Bug In Magic Function For The Permanent Of A Zero Column Matrix
+
+Directory branches/bsmith/NewTypes:
+
+EXECMFN.H:
+  Delete <MFO_MonDotMf> as it's no longer needed.
+
+MF_DOT.H:
+  Rewrite MF lines to new format.
+  Rewrite <MFON_MonDotPerm> to use Combinatorial Operator instead of <MFON_MonDotMf>.
+  Delete <MFON_MonDotMf> as it's no longer needed.
+  Fix bug in <MFO_DetPerm> to handle zero column matrices.

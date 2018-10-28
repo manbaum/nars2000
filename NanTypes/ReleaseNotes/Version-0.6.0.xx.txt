@@ -1,0 +1,13 @@
+Version 0.6.0.xx consists of the following Builds:
+
+
+Build #1918 -- Version 0.6.0.xx
+-------------------------------
+
+* Implement Ball Arithmetic
+
+Directory branches/bsmith/NewTypes:
+
+
+VER.RC:
+  Increment version # to 0.6.0.xx.

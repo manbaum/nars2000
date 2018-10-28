@@ -1,0 +1,10 @@
+Build #1921 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug Introduced In Build #1918
+
+Directory branches/bsmith/NewTypes:
+
+PF_BAR.C:
+  In build #1918, I overlooked a co-requisite change where the constant 2 should be <FRV_MUL> (now 3)
+    in three exception handlers <NegHC[124]R_RE1>.

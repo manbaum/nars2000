@@ -82,7 +82,7 @@
                 break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
-        case   9:       /* Real part of R                                                                         */\
+        case   9:       /* (R++R)/2                                                                               */\
             mpfr_init_set (&lpMemRes[uRes].parts[0], &lpatRht->aplHC##N##V.parts[0], MPFR_RNDN);                    \
                                                                                                                     \
             /* Loop through the imaginary parts                                                                   */\
@@ -431,13 +431,10 @@
                 break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
-        case  -9:       /* R                                                                                      */\
+        case  -9:       /* (R-+R)/2                                                                               */\
             mphc##N##v_init_set (&lpMemRes[uRes], &lpatRht->aplHC##N##V);                                           \
+            mpfr_set_zero       (&lpMemRes[uRes].parts[0], 1);                                                      \
                                                                                                                     \
-            /* Check for NaN                                                                                      */\
-            if (mpfr_nan_p (&lpMemRes[uRes].parts[0])                                                               \
-             && !gAllowNaN)                                                                                         \
-                break;                                                                                              \
             return;                                                                                                 \
                                                                                                                     \
         case -10:       /* +R                                                                                     */\
@@ -519,7 +516,7 @@
                                                                                                                     \
             return;                                                                                                 \
                                                                                                                     \
-        case   9:       /* Real part of R                                                                         */\
+        case   9:       /* (R++R)/2                                                                               */\
             lpMemRes[uRes].parts[0] = lpatRht->aplHC##N##F.parts[0];                                                \
                                                                                                                     \
             /* Loop through the imaginary parts                                                                   */\
@@ -720,8 +717,9 @@
                                                                                                                     \
             return;                                                                                                 \
                                                                                                                     \
-        case  -9:       /* R                                                                                      */\
+        case  -9:       /* (R-+R)/2                                                                               */\
             lpMemRes[uRes] = lpatRht->aplHC##N##F;                                                                  \
+            lpMemRes[uRes].parts[0] = 0;                                                                            \
                                                                                                                     \
             return;                                                                                                 \
                                                                                                                     \

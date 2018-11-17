@@ -1,6 +1,18 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1959 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bugs In Implementation Of Cross Product
+
+Directory branches/bsmith/NewTypes:
+
+PF_TIMES.C:
+  Improve comments.
+  Fix bugs in implementation of Cross Product where the indices were calculated incorrectly.
+
+
 Build #1958 -- Version 0.5.8.xx
 -------------------------------
 

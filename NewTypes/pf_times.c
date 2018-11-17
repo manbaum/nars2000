@@ -1245,7 +1245,7 @@ void PrimFnDydTimesBisBvB
             break;
 
         case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
-        case ENUMHCM_X:         // Cross Product
+        case ENUMHCM_X:         // Cross Product == 0
             // The result is zero (and already zero)
 ////////////lpMemRes[uRes >> LOG2NBIB] |=
 ////////////  0 << (MASKLOG2NBIB & (UINT) uRes);
@@ -1319,7 +1319,7 @@ void PrimFnDydTimesIisIvI
                 break;
 
             case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
-            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_X:         // Cross Product == 0
                 // The result is zero
                 lpMemRes[uRes] = 0;
 
@@ -1395,7 +1395,7 @@ void PrimFnDydTimesFisIvI
                 break;
 
             case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
-            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_X:         // Cross Product == 0
                 // The result is zero
                 lpMemRes[uRes] = 0;
 
@@ -1506,7 +1506,7 @@ void PrimFnDydTimesFisFvF
                 break;
 
             case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
-            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_X:         // Cross Product == 0
                 // The result is zero
                 lpMemRes[uRes] = 0;
 
@@ -1639,7 +1639,7 @@ void PrimFnDydTimesRisRvR
                 break;
 
             case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
-            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_X:         // Cross Product == 0
                 // The result is zero
                 mpq_init (&lpMemRes[uRes]);
 
@@ -1801,7 +1801,7 @@ void PrimFnDydTimesVisVvV
                 break;
 
             case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
-            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_X:         // Cross Product == 0
                 // The result is zero
                 mpfr_init0 (&lpMemRes[uRes]);
 
@@ -1887,7 +1887,7 @@ APLHC2I MulHC2I_RE_HC
             break;
 
         case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
-        case ENUMHCM_X:         // Cross Product
+        case ENUMHCM_X:         // Cross Product == 0
             // The result is zero
             ZeroMemory (&aplRes, sizeof (aplRes));
 
@@ -1950,11 +1950,11 @@ void PrimFnDydTimesHC2IisHC2IvHC2I
 
                 break;
 
-            case ENUMHCM_EXT:       // ((L x R - R x L) / 2
-            case ENUMHCM_INT:       // ((L x R + R x L) / 2
-            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2 == L x R
+            case ENUMHCM_X:         // Cross Product == 0
             case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
-            case ENUMHCM_C:         // Conjugation Product:  L x R / L
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
                 // Call subbfunction
                 lpMemRes[uRes] = MulHC2I_RE_HC (lpatLft->aplHC2I, lpatRht->aplHC2I, lpPrimSpec);
 
@@ -2011,11 +2011,11 @@ void PrimFnDydTimesHC2FisHC2IvHC2I
 
                 break;
 
-            case ENUMHCM_EXT:       // ((L x R - R x L) / 2
-            case ENUMHCM_INT:       // ((L x R + R x L) / 2
-            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2 == L x R
+            case ENUMHCM_X:         // Cross Product == 0
             case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
-            case ENUMHCM_C:         // Conjugation Product:  L x R / L
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
                 // Call subbfunction
                 lpMemRes[uRes] = MulHC2F_RE_HC (atLft.aplHC2F, atRht.aplHC2F, lpPrimSpec);
 
@@ -2123,7 +2123,7 @@ APLHC2F MulHC2F_RE_HC
             break;
 
         case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
-        case ENUMHCM_X:         // Cross Product
+        case ENUMHCM_X:         // Cross Product == 0
             // The result is zero
             ZeroMemory (&aplRes, sizeof (aplRes));
 
@@ -2144,7 +2144,7 @@ APLHC2F MulHC2F_RE_HC
 
             break;
 
-        case ENUMHCM_C:         // Conjugation Product:  L x R / L
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
             // The result is R
             aplRes = aplRht;
 
@@ -2187,10 +2187,10 @@ void PrimFnDydTimesHC2FisHC2FvHC2F
                 break;
 
             case ENUMHCM_EXT:       // ((L x R - R x L) / 2
-            case ENUMHCM_INT:       // ((L x R + R x L) / 2
-            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2 == L x R
+            case ENUMHCM_X:         // Cross Product == 0
             case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
-            case ENUMHCM_C:         // Conjugation Product:  L x R / L
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
                 // Call subbfunction
                 lpMemRes[uRes] = MulHC2F_RE_HC (lpatLft->aplHC2F, lpatRht->aplHC2F, lpPrimSpec);
 
@@ -2351,7 +2351,7 @@ APLHC2R MulHC2R_RE_HC
             break;
 
         case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
-        case ENUMHCM_X:         // Cross Product
+        case ENUMHCM_X:         // Cross Product == 0
             // The result is zero
             mphc2r_init (&aplRes);
 
@@ -2382,7 +2382,7 @@ APLHC2R MulHC2R_RE_HC
             break;
         } // End ENUMHCM_D
 
-        case ENUMHCM_C:         // Conjugation Product:  L x R / L
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
             // The result is R
             mphc2r_init_set (&aplRes, &aplRht);
 
@@ -2425,10 +2425,10 @@ void PrimFnDydTimesHC2RisHC2RvHC2R
                 break;
 
             case ENUMHCM_EXT:       // ((L x R - R x L) / 2
-            case ENUMHCM_INT:       // ((L x R + R x L) / 2
-            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2 == L x R
+            case ENUMHCM_X:         // Cross Product == 0
             case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
-            case ENUMHCM_C:         // Conjugation Product:  L x R / L
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
                 // Call subbfunction
                 lpMemRes[uRes] = MulHC2R_RE_HC (lpatLft->aplHC2R, lpatRht->aplHC2R, lpPrimSpec);
 
@@ -2594,7 +2594,7 @@ APLHC2V MulHC2V_RE_HC
             break;
 
         case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
-        case ENUMHCM_X:         // Cross Product
+        case ENUMHCM_X:         // Cross Product == 0
             // The result is zero
             mphc2v_init0 (&aplRes);
 
@@ -2625,7 +2625,7 @@ APLHC2V MulHC2V_RE_HC
             break;
         } // End ENUMHCM_D
 
-        case ENUMHCM_C:         // Conjugation Product:  L x R / L
+        case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
             // The result is R
             mphc2v_init_set (&aplRes, &aplRht);
 
@@ -2696,10 +2696,10 @@ void PrimFnDydTimesHC2VisHC2VvHC2V
                 break;
 
             case ENUMHCM_EXT:       // ((L x R - R x L) / 2
-            case ENUMHCM_INT:       // ((L x R + R x L) / 2
-            case ENUMHCM_X:         // Cross Product
+            case ENUMHCM_INT:       // ((L x R + R x L) / 2 == L x R
+            case ENUMHCM_X:         // Cross Product == 0
             case ENUMHCM_D:         // Dot Product:  (>L)+.x>R
-            case ENUMHCM_C:         // Conjugation Product:  L x R / L
+            case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
                 // Call subbfunction
                 lpMemRes[uRes] = MulHC2V_RE_HC (lpatLft->aplHC2V, lpatRht->aplHC2V, lpPrimSpec);
 
@@ -2782,12 +2782,8 @@ APLHC4I MulHC4I_RE_HC
             // Loop through the imaginary parts
             for (i = 1; i < D; i++)
             {
-                int i1 = (i + 1) % D,
-                    i2 = (i + 2) % D;
-                // Skip over the Scalar part
-                i1 = max (i1, 1);
-                i2 = max (i2, 1);
-
+                int i1 = 1 + (i + 0) % (D - 1),
+                    i2 = 1 + (i + 1) % (D - 1);
                 // Calculate the Cross Product
                 aplRes.parts[i] = aplLft.parts[i1] * aplRht.parts[i2]
                                 - aplLft.parts[i2] * aplRht.parts[i1];
@@ -3057,12 +3053,8 @@ APLHC4F MulHC4F_RE_HC
             // Loop through the imaginary parts
             for (i = 1; i < D; i++)
             {
-                int i1 = (i + 1) % D,
-                    i2 = (i + 2) % D;
-                // Skip over the Scalar part
-                i1 = max (i1, 1);
-                i2 = max (i2, 1);
-
+                int i1 = 1 + (i + 0) % (D - 1),
+                    i2 = 1 + (i + 1) % (D - 1);
                 // Calculate the Cross Product
                 aplRes.parts[i] = aplLft.parts[i1] * aplRht.parts[i2]
                                 - aplLft.parts[i2] * aplRht.parts[i1];
@@ -3308,12 +3300,8 @@ APLHC4R MulHC4R_RE_HC
             // Loop through the imaginary parts
             for (i = 1; i < D; i++)
             {
-                int i1 = (i + 1) % D,
-                    i2 = (i + 2) % D;
-                // Skip over the Scalar part
-                i1 = max (i1, 1);
-                i2 = max (i2, 1);
-
+                int i1 = 1 + (i + 0) % (D - 1),
+                    i2 = 1 + (i + 1) % (D - 1);
                 // Calculate the Cross Product
 ////////////////aplRes.parts[i] = aplLft.parts[i1] * aplRht.parts[i2]
 ////////////////                - aplLft.parts[i2] * aplRht.parts[i1];
@@ -3406,9 +3394,9 @@ APLHC4R MulHC4R_RE
 
 {
 #define D   4
-    int     i;
     APLHC4R aplRes = {0};
     APLHC2R dP, cP;
+    int     i;
 
     // Check for indeterminates:  _ {times} _  or  -_ {times} -_
 
@@ -3572,7 +3560,7 @@ APLHC4V MulHC4V_RE_HC
 
 {
 #define D   4
-    APLHC4V aplRes,                 // The result
+    APLHC4V aplRes = {0},           // The result
             aplLxR,                 // Temp var
             aplRxL;                 // ...
     int     i;                      // Loop counter
@@ -3624,12 +3612,8 @@ APLHC4V MulHC4V_RE_HC
             // Loop through the imaginary parts
             for (i = 1; i < D; i++)
             {
-                int i1 = (i + 1) % D,
-                    i2 = (i + 2) % D;
-                // Skip over the Scalar part
-                i1 = max (i1, 1);
-                i2 = max (i2, 1);
-
+                int i1 = 1 + (i + 0) % (D - 1),
+                    i2 = 1 + (i + 1) % (D - 1);
                 // Calculate the Cross Product
 ////////////////aplRes.parts[i] = aplLft.parts[i1] * aplRht.parts[i2]
 ////////////////                - aplLft.parts[i2] * aplRht.parts[i1];
@@ -3722,9 +3706,9 @@ APLHC4V MulHC4V_RE
 
 {
 #define D   4
-    int     i;
     APLHC4V aplRes = {0};
     APLHC2V dP,cP;
+    int     i;
 
     // Check for indeterminates:  _ {times} _  or  -_ {times} -_
 
@@ -3972,12 +3956,8 @@ APLHC8I MulHC8I_RE_HC
             // Loop through the imaginary parts
             for (i = 1; i < D; i++)
             {
-                int i1 = (i + 1) % D,
-                    i2 = (i + 2) % D;
-                // Skip over the Scalar part
-                i1 = max (i1, 1);
-                i2 = max (i2, 1);
-
+                int i1 = 1 + (i + 0) % (D - 1),
+                    i2 = 1 + (i + 1) % (D - 1);
                 // Calculate the Cross Product
                 aplRes.parts[i] = aplLft.parts[i1] * aplRht.parts[i2]
                                 - aplLft.parts[i2] * aplRht.parts[i1];
@@ -4247,12 +4227,8 @@ APLHC8F MulHC8F_RE_HC
             // Loop through the imaginary parts
             for (i = 1; i < D; i++)
             {
-                int i1 = (i + 1) % D,
-                    i2 = (i + 2) % D;
-                // Skip over the Scalar part
-                i1 = max (i1, 1);
-                i2 = max (i2, 1);
-
+                int i1 = 1 + (i + 0) % (D - 1),
+                    i2 = 1 + (i + 1) % (D - 1);
                 // Calculate the Cross Product
                 aplRes.parts[i] = aplLft.parts[i1] * aplRht.parts[i2]
                                 - aplLft.parts[i2] * aplRht.parts[i1];
@@ -4504,12 +4480,8 @@ APLHC8R MulHC8R_RE_HC
             // Loop through the imaginary parts
             for (i = 1; i < D; i++)
             {
-                int i1 = (i + 1) % D,
-                    i2 = (i + 2) % D;
-                // Skip over the Scalar part
-                i1 = max (i1, 1);
-                i2 = max (i2, 1);
-
+                int i1 = 1 + (i + 0) % (D - 1),
+                    i2 = 1 + (i + 1) % (D - 1);
                 // Calculate the Cross Product
 ////////////////aplRes.parts[i] = aplLft.parts[i1] * aplRht.parts[i2]
 ////////////////                - aplLft.parts[i2] * aplRht.parts[i1];
@@ -4602,9 +4574,9 @@ APLHC8R MulHC8R_RE
 
 {
 #define D   8
-    int     i;
     APLHC8R aplRes = {0};
     APLHC4R dP, cP;
+    int     i;
 
     // Check for indeterminates:  _ {times} _  or  -_ {times} -_
 
@@ -4768,7 +4740,7 @@ APLHC8V MulHC8V_RE_HC
 
 {
 #define D   8
-    APLHC8V aplRes,                 // The result
+    APLHC8V aplRes = {0},           // The result
             aplLxR,                 // Temp var
             aplRxL;                 // ...
     int     i;                      // Loop counter
@@ -4820,12 +4792,8 @@ APLHC8V MulHC8V_RE_HC
             // Loop through the imaginary parts
             for (i = 1; i < D; i++)
             {
-                int i1 = (i + 1) % D,
-                    i2 = (i + 2) % D;
-                // Skip over the Scalar part
-                i1 = max (i1, 1);
-                i2 = max (i2, 1);
-
+                int i1 = 1 + (i + 0) % (D - 1),
+                    i2 = 1 + (i + 1) % (D - 1);
                 // Calculate the Cross Product
 ////////////////aplRes.parts[i] = aplLft.parts[i1] * aplRht.parts[i2]
 ////////////////                - aplLft.parts[i2] * aplRht.parts[i1];
@@ -4918,9 +4886,9 @@ APLHC8V MulHC8V_RE
 
 {
 #define D   8
-    int     i;
-    APLHC8V aplRes;
+    APLHC8V aplRes = {0};
     APLHC4V dP,cP;
+    int     i;
 
     // Check for indeterminates:  _ {times} _  or  -_ {times} -_
 
@@ -5243,7 +5211,7 @@ APLB64 PrimFnDydTimesB64isB64vB64
                                             aplBooleanRht,
                                             lpPrimSpec);
         case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
-        case ENUMHCM_X:         // Cross Product
+        case ENUMHCM_X:         // Cross Product == 0
             return 0;
 
         case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
@@ -5279,7 +5247,7 @@ APLB32 PrimFnDydTimesB32isB32vB32
                                             aplBooleanRht,
                                             lpPrimSpec);
         case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
-        case ENUMHCM_X:         // Cross Product
+        case ENUMHCM_X:         // Cross Product == 0
             return 0;
 
         case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
@@ -5315,7 +5283,7 @@ APLB16 PrimFnDydTimesB16isB16vB16
                                             aplBooleanRht,
                                             lpPrimSpec);
         case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
-        case ENUMHCM_X:         // Cross Product
+        case ENUMHCM_X:         // Cross Product == 0
             return 0;
 
         case ENUMHCM_C:         // Conjugation Product:  L x R / L == R
@@ -5351,7 +5319,7 @@ APLB08 PrimFnDydTimesB08isB08vB08
                                             aplBooleanRht,
                                             lpPrimSpec);
         case ENUMHCM_EXT:       // ((L x R - R x L) / 2 == 0
-        case ENUMHCM_X:         // Cross Product
+        case ENUMHCM_X:         // Cross Product == 0
             return 0;
 
         case ENUMHCM_C:         // Conjugation Product:  L x R / L == R

@@ -2329,7 +2329,6 @@ APLHC4R DivHC4R_RE
     APLHC4R aplNum,             // Numerator
             aplConj,            // Conjugate
             aplRes = {0};       // Result
-    APLHC4R aplTmp;             // Temp
 
     // Check for indeterminates:  _ {div} _  or  -_ {div} -_
 
@@ -2406,7 +2405,6 @@ APLHC4R DivHC4R_RE
         mpq_set_si (&aplRes.parts[i], 0, 1);
     // Free the temps
     Myhc1r_clear (&aplDen );
-    Myhc4r_clear (&aplTmp );
     Myhc4r_clear (&aplNum );
     Myhc4r_clear (&aplConj);
 
@@ -2853,7 +2851,6 @@ APLHC8R DivHC8R_RE
     APLHC8R aplNum,             // Numerator
             aplConj,            // Conjugate
             aplRes = {0};       // Result
-    APLHC8R aplTmp;             // Temp
 
     // Check for indeterminates:  _ {div} _  or  -_ {div} -_
 
@@ -2874,15 +2871,6 @@ APLHC8R DivHC8R_RE
     // Initialize to 0/1
     mphc8r_init (&aplRes);
 
-    // If any the imaginary parts are non-zero, ...
-    if (IzitImaginary (ARRAY_HC8R, &aplTmp))
-    {
-        // Return a result with NaNs in all parts
-        // Loop through all of the parts
-        for (i = 0; i < 8; i++)
-            // Set to NaN
-            mpq_set_nan (&aplRes.parts[i]);
-    } else
     // Loop through all of the parts
     for (i = 0; i < 8; i++)
     // Check for indeterminates:  0 {div} 0
@@ -2939,7 +2927,6 @@ APLHC8R DivHC8R_RE
         mpq_set_si (&aplRes.parts[i], 0, 1);
     // Free the temps
     Myhc1r_clear (&aplDen );
-    Myhc8r_clear (&aplTmp );
     Myhc8r_clear (&aplNum );
     Myhc8r_clear (&aplConj);
 

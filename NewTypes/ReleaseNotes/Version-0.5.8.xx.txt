@@ -1,6 +1,17 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1960 -- Version 0.5.8.xx
+-------------------------------
+
+* Remove Superfluous Code
+
+Directory branches/bsmith/NewTypes:
+
+PF_COLONBAR.C:
+  Remove superfluous code.
+
+
 Build #1959 -- Version 0.5.8.xx
 -------------------------------
 

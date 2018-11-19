@@ -1,0 +1,9 @@
+Build #1961 -- Version 0.5.8.xx
+-------------------------------
+
+* Implement Extended Replicate For Negative Integer Left Arguments
+
+Directory branches/bsmith/NewTypes:
+
+PF_SLASH.C:
+  Implement Extended Replicate with negative values in the left argument.

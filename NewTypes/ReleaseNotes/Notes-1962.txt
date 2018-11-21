@@ -1,0 +1,9 @@
+Build #1962 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug When Factorial Blows Up To RAT
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC.C:
+  Fix bug when factorial blows up to RAT with multiple elements in the right arg.

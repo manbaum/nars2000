@@ -1518,6 +1518,7 @@ HGLOBAL PrimFnMonGlb_EM
                       apaMulRht;            // ...           multiplier
     APLUINT           ByteRes;              // # bytes in the result
     UBOOL             bRet = TRUE,          // TRUE iff result is valid
+                      bForcedRes = FALSE,   // TRUE iff the Result is Forced
                       bTypeDemote = FALSE;  // TRUE iff the result is eligible for type demotion
     UINT              uBitIndex;            // Bit index when marching through Booleans
     LPPLLOCALVARS     lpplLocalVars;        // Ptr to re-entrant vars
@@ -2148,11 +2149,15 @@ RESTART_EXCEPTION:
                 // If the argument's dimension and the result's differ,
                 //   promote the arg to the type of the result
                 // This can happen when (say) a VFP blows up to HC2V (e.g., log -2.5v)
-                if (TranslateArrayTypeToHCDim (aplTypeRht)
+                if (bForcedRes
+                 || TranslateArrayTypeToHCDim (aplTypeRht)
                   < TranslateArrayTypeToHCDim (aplTypeRes))
                     aplTypeCom = aplTypeRes;
                 else
                     aplTypeCom = aplTypeRht;
+
+                // Reset the Forced Result flag
+                bForcedRes = FALSE;
 
                 // Get the target function
                 lpPrimFn = TranslateTypesToMonPSFIndex (lpPrimSpec, aplTypeRes, aplTypeCom);
@@ -2276,6 +2281,9 @@ RESTART_EXCEPTION:
                     FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
 
                     dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #4: %s (%S#%d)\r\n", MyGetExceptionStr (ExceptionCode), FNLN);
+
+                    // Mark as Forced Result
+                    bForcedRes = TRUE;
 
                     goto RESTART_EXCEPTION;
                 } /* End IF */

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -217,14 +217,15 @@ void fpXf_asin
     fprf_set (Z.dat[0], op->parts[0]);
     fprf_set (Z.dat[1], fpfIMag);
 
-    // If the imaginary part is zero, ...
-    if (fpfIMag EQ 0)
+    // If the Imaginary part is zero, and
+    //    the Real part is within [-1,1], ...
+    if (fpfIMag EQ 0
+     && fabs (Z.dat[0]) <= 1)
     {
         // Call the Real number version so as to avoid
         //   inconsistencies in the two cases:
         //   Real vs. Complex (with imaginary part EQ 0)
         Z.dat[0] = asin (Z.dat[0]);
-////////Z.dat[1] = 0;               // Already zero from <fprf_set> above
     } else
         // Calculate the corresponding complex number
         Z = gsl_complex_arcsin (Z);
@@ -270,14 +271,15 @@ void fpXf_acos
     fprf_set (Z.dat[0], op->parts[0]);
     fprf_set (Z.dat[1], fpfIMag);
 
-    // If the imaginary part is zero, ...
-    if (fpfIMag EQ 0)
+    // If the Imaginary part is zero, and
+    //    the Real part is within [-1,1], ...
+    if (fpfIMag EQ 0
+     && fabs (Z.dat[0]) <= 1)
     {
         // Call the Real number version so as to avoid
         //   inconsistencies in the two cases:
         //   Real vs. Complex (with imaginary part EQ 0)
         Z.dat[0] = acos (Z.dat[0]);
-////////Z.dat[1] = 0;               // Already zero from <fprf_set> above
     } else
         // Calculate the corresponding complex number
         Z = gsl_complex_arccos (Z);

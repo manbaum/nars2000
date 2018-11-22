@@ -300,12 +300,11 @@ void PrimFnMonColonBarRisR
 {
     // Check for indeterminates:  {div} 0
     if (IsMpq0 (&lpatRht->aplRat))
-        lpMemRes[uRes] =
-          *mpq_QuadICValue (&lpatRht->aplRat,        // No left arg
-                             ICNDX_DIV0,
-                            &lpatRht->aplRat,
-                            &lpMemRes[uRes],
-                             FALSE);
+        mpq_QuadICValue (&lpatRht->aplRat,          // No left arg
+                          ICNDX_DIV0,
+                         &lpatRht->aplRat,
+                         &lpMemRes[uRes],
+                          FALSE);
     else
     // Check for special case:  {div}{neg}{inf}x
     if (IsMpqInfinity (&lpatRht->aplRat)
@@ -361,12 +360,11 @@ void PrimFnMonColonBarVisV
 {
     // Check for indeterminates:  {div} 0
     if (IsMpf0 (&lpatRht->aplVfp))
-        lpMemRes[uRes] =
-          *mpfr_QuadICValue (&lpatRht->aplVfp,       // No left arg
-                              ICNDX_DIV0,
-                             &lpatRht->aplVfp,
-                             &lpMemRes[uRes],
-                              SIGN_APLVFP (&lpatRht->aplVfp));
+        mpfr_QuadICValue (&lpatRht->aplVfp,     // No left arg
+                           ICNDX_DIV0,
+                          &lpatRht->aplVfp,
+                          &lpMemRes[uRes],
+                           SIGN_APLVFP (&lpatRht->aplVfp));
     else
     {
         // Initialize the result to 0
@@ -479,12 +477,11 @@ APLHC2R InvHC2R_RE
     // If the denominator is 0, ...
     if (IsMpq0 (&aplDen))
     {
-        aplRes.parts[0] =
-          *mpq_QuadICValue (&aplRht.parts[0],     // No left arg
-                             ICNDX_DIV0,
-                            &aplRht.parts[0],
-                            &aplRes.parts[0],
-                             FALSE);
+        mpq_QuadICValue (&aplRht.parts[0],      // No left arg
+                          ICNDX_DIV0,
+                         &aplRht.parts[0],
+                         &aplRes.parts[0],
+                          FALSE);
         // Loop through the imaginary parts
         for (i = 1; i < 2; i++)
             // Initialize to 0/1
@@ -600,12 +597,11 @@ void PrimFnMonColonBarHC2VisHC2V
     // If the denominator is 0, ...
     if (IsMpf0 (&aplDen))
     {
-        lpMemRes[uRes].parts[0] =
-          *mpfr_QuadICValue (&lpatRht->aplHC2V.parts[0],     // No left arg
-                              ICNDX_DIV0,
-                             &lpatRht->aplHC2V.parts[0],
-                             &lpMemRes[uRes].parts[0],
-                              FALSE);
+        mpfr_QuadICValue (&lpatRht->aplHC2V.parts[0],       // No left arg
+                           ICNDX_DIV0,
+                          &lpatRht->aplHC2V.parts[0],
+                          &lpMemRes[uRes].parts[0],
+                           FALSE);
         // Loop through the imaginary parts
         for (i = 1; i < 2; i++)
             // Initialize to 0
@@ -742,12 +738,11 @@ APLHC4R InvHC4R_RE
     // If the denominator is 0, ...
     if (IsMpq0 (&aplDen))
     {
-        aplRes.parts[0] =
-          *mpq_QuadICValue (&aplRht.parts[0],     // No left arg
-                             ICNDX_DIV0,
-                            &aplRht.parts[0],
-                            &aplRes.parts[0],
-                             FALSE);
+        mpq_QuadICValue (&aplRht.parts[0],      // No left arg
+                          ICNDX_DIV0,
+                         &aplRht.parts[0],
+                         &aplRes.parts[0],
+                          FALSE);
         // Loop through the imaginary parts
         for (i = 1; i < 4; i++)
             // Initialize to 0/1
@@ -863,12 +858,11 @@ void PrimFnMonColonBarHC4VisHC4V
     // If the denominator is 0, ...
     if (IsMpf0 (&aplDen))
     {
-        lpMemRes[uRes].parts[0] =
-          *mpfr_QuadICValue (&lpatRht->aplHC4V.parts[0],     // No left arg
-                              ICNDX_DIV0,
-                             &lpatRht->aplHC4V.parts[0],
-                             &lpMemRes[uRes].parts[0],
-                              FALSE);
+        mpfr_QuadICValue (&lpatRht->aplHC4V.parts[0],       // No left arg
+                           ICNDX_DIV0,
+                          &lpatRht->aplHC4V.parts[0],
+                          &lpMemRes[uRes].parts[0],
+                           FALSE);
         // Loop through the imaginary parts
         for (i = 1; i < 4; i++)
             // Initialize to 0
@@ -1004,12 +998,11 @@ APLHC8R InvHC8R_RE
     // If the denominator is 0, ...
     if (IsMpq0 (&aplDen))
     {
-        aplRes.parts[0] =
-          *mpq_QuadICValue (&aplRht.parts[0],     // No left arg
-                             ICNDX_DIV0,
-                            &aplRht.parts[0],
-                            &aplRes.parts[0],
-                             FALSE);
+        mpq_QuadICValue (&aplRht.parts[0],      // No left arg
+                          ICNDX_DIV0,
+                         &aplRht.parts[0],
+                         &aplRes.parts[0],
+                          FALSE);
         // Loop through the imaginary parts
         for (i = 1; i < 8; i++)
             // Initialize to 0/1
@@ -1125,12 +1118,11 @@ void PrimFnMonColonBarHC8VisHC8V
     // If the denominator is 0, ...
     if (IsMpf0 (&aplDen))
     {
-        lpMemRes[uRes].parts[0] =
-          *mpfr_QuadICValue (&lpatRht->aplHC8V.parts[0],     // No left arg
-                              ICNDX_DIV0,
-                             &lpatRht->aplHC8V.parts[0],
-                             &lpMemRes[uRes].parts[0],
-                              FALSE);
+        mpfr_QuadICValue (&lpatRht->aplHC8V.parts[0],       // No left arg
+                           ICNDX_DIV0,
+                          &lpatRht->aplHC8V.parts[0],
+                          &lpMemRes[uRes].parts[0],
+                           FALSE);
         // Loop through the imaginary parts
         for (i = 1; i < 8; i++)
             // Initialize to 0
@@ -1406,41 +1398,37 @@ APLHC1R DivHC1R_RE
     if (IsMpq0 (&aplLft)
      && IsMpq0 (&aplRht))
     {
-        aplRes =
-          *mpq_QuadICValue (&aplLft,
-                             ICNDX_0DIV0,
-                            &aplRht,
-                            &aplRes,
-                             FALSE);
+        mpq_QuadICValue (&aplLft,
+                          ICNDX_0DIV0,
+                         &aplRht,
+                         &aplRes,
+                          FALSE);
     } else
     // Check for indeterminates:  L {div} 0
     if (IsMpq0 (&aplRht))
     {
-        aplRes =
-          *mpq_QuadICValue (&aplLft,
-                             ICNDX_DIV0,
-                            &aplRht,
-                            &aplRes,
-                             FALSE);
+        mpq_QuadICValue (&aplLft,
+                          ICNDX_DIV0,
+                         &aplRht,
+                         &aplRes,
+                          FALSE);
     } else
     // Check for indeterminates:  _ {div} _ (same or different signs)
     if (mpq_inf_p (&aplLft)
      && mpq_inf_p (&aplRht))
     {
         if (mpq_sgn (&aplLft) EQ mpq_sgn (&aplRht))
-            aplRes =
-              *mpq_QuadICValue (&aplLft,
-                                 ICNDX_PiDIVPi,
-                                &aplRht,
-                                &aplRes,
-                                 FALSE);
+            mpq_QuadICValue (&aplLft,
+                              ICNDX_PiDIVPi,
+                             &aplRht,
+                             &aplRes,
+                              FALSE);
         else
-            aplRes =
-              *mpq_QuadICValue (&aplLft,
-                                 ICNDX_NiDIVPi,
-                                &aplRht,
-                                &aplRes,
-                                 FALSE);
+            mpq_QuadICValue (&aplLft,
+                              ICNDX_NiDIVPi,
+                             &aplRht,
+                             &aplRes,
+                              FALSE);
     } else
     {
         // Initialize the result
@@ -1518,43 +1506,39 @@ APLHC1V DivHC1V_RE
     if (IsMpf0 (&aplLft)
      && IsMpf0 (&aplRht))
     {
-        aplRes =
-          *mpfr_QuadICValue (&aplLft,
-                              ICNDX_0DIV0,
-                             &aplRht,
-                             &aplRes,
-                              SIGN_APLVFP (&aplLft) NE
-                              SIGN_APLVFP (&aplRht));
+        mpfr_QuadICValue (&aplLft,
+                           ICNDX_0DIV0,
+                          &aplRht,
+                          &aplRes,
+                           SIGN_APLVFP (&aplLft) NE
+                           SIGN_APLVFP (&aplRht));
     } else
     // Check for indeterminates:  L {div} 0
     if (IsMpf0 (&aplRht))
     {
-        aplRes =
-          *mpfr_QuadICValue (&aplLft,
-                              ICNDX_DIV0,
-                             &aplRht,
-                             &aplRes,
-                              SIGN_APLVFP (&aplLft) NE
-                              SIGN_APLVFP (&aplRht));
+        mpfr_QuadICValue (&aplLft,
+                           ICNDX_DIV0,
+                          &aplRht,
+                          &aplRes,
+                           SIGN_APLVFP (&aplLft) NE
+                           SIGN_APLVFP (&aplRht));
     } else
     // Check for indeterminates:  _ {div} _ (same or different signs)
     if (mpfr_inf_p (&aplLft)
      && mpfr_inf_p (&aplRht))
     {
         if (mpfr_sgn (&aplLft) EQ mpfr_sgn (&aplRht))
-            aplRes =
-              *mpfr_QuadICValue (&aplLft,
-                                  ICNDX_PiDIVPi,
-                                 &aplRht,
-                                 &aplRes,
-                                  FALSE);
+            mpfr_QuadICValue (&aplLft,
+                               ICNDX_PiDIVPi,
+                              &aplRht,
+                              &aplRes,
+                               FALSE);
         else
-            aplRes =
-              *mpfr_QuadICValue (&aplLft,
-                                  ICNDX_NiDIVPi,
-                                 &aplRht,
-                                 &aplRes,
-                                  FALSE);
+            mpfr_QuadICValue (&aplLft,
+                               ICNDX_NiDIVPi,
+                              &aplRht,
+                              &aplRes,
+                               FALSE);
     } else
     {
         // Initialize the result to 0
@@ -1838,23 +1822,21 @@ APLHC2R DivHC2R_RE
     if (IsMpq0 (&aplNum.parts[i])
      && IsMpq0 (&aplDen))
     {
-        mpq_set (&aplRes.parts[0],
-                  mpq_QuadICValue (&aplLft.parts[i],
-                                    ICNDX_0DIV0,
-                                   &aplRht.parts[i],
-                                   &aplRes.parts[0],
-                                    FALSE));
+        mpq_QuadICValue (&aplLft.parts[i],
+                          ICNDX_0DIV0,
+                         &aplRht.parts[i],
+                         &aplRes.parts[0],
+                          FALSE);
         break;
     } else
     // Check for indeterminates:  L {div} 0
     if (IsMpq0 (&aplDen))
     {
-        mpq_set (&aplRes.parts[0],
-                  mpq_QuadICValue (&aplLft.parts[i],
-                                    ICNDX_DIV0,
-                                   &aplRht.parts[i],
-                                   &aplRes.parts[0],
-                                    FALSE));
+        mpq_QuadICValue (&aplLft.parts[i],
+                          ICNDX_DIV0,
+                         &aplRht.parts[i],
+                         &aplRes.parts[0],
+                          FALSE);
         break;
     } else
     // Check for indeterminates:  _ {div} _ (same or different signs)
@@ -1862,19 +1844,17 @@ APLHC2R DivHC2R_RE
      && mpq_inf_p (&aplDen))
     {
         if (mpq_sgn (&aplLft.parts[i]) EQ mpq_sgn (&aplRht.parts[i]))
-            mpq_set (&aplRes.parts[0],
-                      mpq_QuadICValue (&aplLft.parts[i],
-                                        ICNDX_PiDIVPi,
-                                       &aplRht.parts[i],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            mpq_QuadICValue (&aplLft.parts[i],
+                              ICNDX_PiDIVPi,
+                             &aplRht.parts[i],
+                             &aplRes.parts[0],
+                              FALSE);
         else
-            mpq_set (&aplRes.parts[0],
-                      mpq_QuadICValue (&aplLft.parts[i],
-                                        ICNDX_NiDIVPi,
-                                       &aplRht.parts[i],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            mpq_QuadICValue (&aplLft.parts[i],
+                              ICNDX_NiDIVPi,
+                             &aplRht.parts[i],
+                             &aplRes.parts[0],
+                              FALSE);
         break;
     } else
         // Divide numerator by denominator to get the result
@@ -1965,25 +1945,21 @@ APLHC2V DivHC2V_RE
     if (IsMpf0 (&aplNum.parts[i])
      && IsMpf0 (&aplDen))
     {
-        mpfr_set (&aplRes.parts[0],
-                   mpfr_QuadICValue (&aplLft.parts[i],
-                                      ICNDX_0DIV0,
-                                     &aplRht.parts[i],
-                                     &aplRes.parts[0],
-                                      FALSE),
-                   MPFR_RNDN);
+        mpfr_QuadICValue (&aplLft.parts[i],
+                           ICNDX_0DIV0,
+                          &aplRht.parts[i],
+                          &aplRes.parts[0],
+                           FALSE);
         break;
     } else
     // Check for indeterminates:  L {div} 0
     if (IsMpf0 (&aplDen))
     {
-        mpfr_set (&aplRes.parts[0],
-                   mpfr_QuadICValue (&aplLft.parts[i],
-                                      ICNDX_DIV0,
-                                     &aplRht.parts[i],
-                                     &aplRes.parts[0],
-                                      FALSE),
-                   MPFR_RNDN);
+        mpfr_QuadICValue (&aplLft.parts[i],
+                           ICNDX_DIV0,
+                          &aplRht.parts[i],
+                          &aplRes.parts[0],
+                           FALSE);
         break;
     } else
     // Check for indeterminates:  _ {div} _ (same or different signs)
@@ -1991,21 +1967,17 @@ APLHC2V DivHC2V_RE
      && mpfr_inf_p (&aplDen))
     {
         if (mpfr_sgn (&aplLft.parts[i]) EQ mpfr_sgn (&aplRht.parts[i]))
-            mpfr_set (&aplRes.parts[0],
-                       mpfr_QuadICValue (&aplLft.parts[i],
-                                          ICNDX_PiDIVPi,
-                                         &aplRht.parts[i],
-                                         &aplRes.parts[0],
-                                          FALSE),
-                       MPFR_RNDN);
+            mpfr_QuadICValue (&aplLft.parts[i],
+                               ICNDX_PiDIVPi,
+                              &aplRht.parts[i],
+                              &aplRes.parts[0],
+                               FALSE);
         else
-            mpfr_set (&aplRes.parts[0],
-                       mpfr_QuadICValue (&aplLft.parts[i],
-                                          ICNDX_NiDIVPi,
-                                         &aplRht.parts[i],
-                                         &aplRes.parts[0],
-                                          FALSE),
-                       MPFR_RNDN);
+            mpfr_QuadICValue (&aplLft.parts[i],
+                               ICNDX_NiDIVPi,
+                              &aplRht.parts[i],
+                              &aplRes.parts[0],
+                               FALSE);
         break;
     } else
         // Divide numerator by denominator to get the result
@@ -2355,23 +2327,21 @@ APLHC4R DivHC4R_RE
     if (IsMpq0 (&aplNum.parts[i])
      && IsMpq0 (&aplDen))
     {
-        mpq_set (&aplRes.parts[0],
-                  mpq_QuadICValue (&aplLft.parts[i],
-                                    ICNDX_0DIV0,
-                                   &aplRht.parts[i],
-                                   &aplRes.parts[0],
-                                    FALSE));
+        mpq_QuadICValue (&aplLft.parts[i],
+                          ICNDX_0DIV0,
+                         &aplRht.parts[i],
+                         &aplRes.parts[0],
+                          FALSE);
         break;
     } else
     // Check for indeterminates:  L {div} 0
     if (IsMpq0 (&aplDen))
     {
-        mpq_set (&aplRes.parts[0],
-                  mpq_QuadICValue (&aplLft.parts[i],
-                                    ICNDX_DIV0,
-                                   &aplRht.parts[i],
-                                   &aplRes.parts[0],
-                                    FALSE));
+        mpq_QuadICValue (&aplLft.parts[i],
+                          ICNDX_DIV0,
+                         &aplRht.parts[i],
+                         &aplRes.parts[0],
+                          FALSE);
         break;
     } else
     // Check for indeterminates:  _ {div} _ (same or different signs)
@@ -2379,19 +2349,17 @@ APLHC4R DivHC4R_RE
      && mpq_inf_p (&aplDen))
     {
         if (mpq_sgn (&aplLft.parts[i]) EQ mpq_sgn (&aplRht.parts[i]))
-            mpq_set (&aplRes.parts[0],
-                      mpq_QuadICValue (&aplLft.parts[i],
-                                        ICNDX_PiDIVPi,
-                                       &aplRht.parts[i],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            mpq_QuadICValue (&aplLft.parts[i],
+                              ICNDX_PiDIVPi,
+                             &aplRht.parts[i],
+                             &aplRes.parts[0],
+                              FALSE);
         else
-            mpq_set (&aplRes.parts[0],
-                      mpq_QuadICValue (&aplLft.parts[i],
-                                        ICNDX_NiDIVPi,
-                                       &aplRht.parts[i],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            mpq_QuadICValue (&aplLft.parts[i],
+                              ICNDX_NiDIVPi,
+                             &aplRht.parts[i],
+                             &aplRes.parts[0],
+                              FALSE);
         break;
     } else
         // Divide numerator by denominator to get the result
@@ -2487,25 +2455,21 @@ APLHC4V DivHC4V_RE
     if (IsMpf0 (&aplNum.parts[i])
      && IsMpf0 (&aplDen))
     {
-        mpfr_set (&aplRes.parts[0],
-                   mpfr_QuadICValue (&aplLft.parts[i],
-                                      ICNDX_0DIV0,
-                                     &aplRht.parts[i],
-                                     &aplRes.parts[0],
-                                      FALSE),
-                   MPFR_RNDN);
+        mpfr_QuadICValue (&aplLft.parts[i],
+                           ICNDX_0DIV0,
+                          &aplRht.parts[i],
+                          &aplRes.parts[0],
+                           FALSE);
         break;
     } else
     // Check for indeterminates:  L {div} 0
     if (IsMpf0 (&aplDen))
     {
-        mpfr_set (&aplRes.parts[0],
-                   mpfr_QuadICValue (&aplLft.parts[i],
-                                      ICNDX_DIV0,
-                                     &aplRht.parts[i],
-                                     &aplRes.parts[0],
-                                      FALSE),
-                   MPFR_RNDN);
+        mpfr_QuadICValue (&aplLft.parts[i],
+                           ICNDX_DIV0,
+                          &aplRht.parts[i],
+                          &aplRes.parts[0],
+                           FALSE);
         break;
     } else
     // Check for indeterminates:  _ {div} _ (same or different signs)
@@ -2513,21 +2477,17 @@ APLHC4V DivHC4V_RE
      && mpfr_inf_p (&aplDen))
     {
         if (mpfr_sgn (&aplLft.parts[i]) EQ mpfr_sgn (&aplRht.parts[i]))
-            mpfr_set (&aplRes.parts[0],
-                       mpfr_QuadICValue (&aplLft.parts[i],
-                                          ICNDX_PiDIVPi,
-                                         &aplRht.parts[i],
-                                         &aplRes.parts[0],
-                                          FALSE),
-                       MPFR_RNDN);
+            mpfr_QuadICValue (&aplLft.parts[i],
+                               ICNDX_PiDIVPi,
+                              &aplRht.parts[i],
+                              &aplRes.parts[0],
+                               FALSE);
         else
-            mpfr_set (&aplRes.parts[0],
-                       mpfr_QuadICValue (&aplLft.parts[i],
-                                          ICNDX_NiDIVPi,
-                                         &aplRht.parts[i],
-                                         &aplRes.parts[0],
-                                          FALSE),
-                       MPFR_RNDN);
+            mpfr_QuadICValue (&aplLft.parts[i],
+                               ICNDX_NiDIVPi,
+                              &aplRht.parts[i],
+                              &aplRes.parts[0],
+                               FALSE);
         break;
     } else
         // Divide numerator by denominator to get the result
@@ -2877,23 +2837,21 @@ APLHC8R DivHC8R_RE
     if (IsMpq0 (&aplNum.parts[i])
      && IsMpq0 (&aplDen))
     {
-        mpq_set (&aplRes.parts[0],
-                  mpq_QuadICValue (&aplLft.parts[i],
-                                    ICNDX_0DIV0,
-                                   &aplRht.parts[i],
-                                   &aplRes.parts[0],
-                                    FALSE));
+        mpq_QuadICValue (&aplLft.parts[i],
+                          ICNDX_0DIV0,
+                         &aplRht.parts[i],
+                         &aplRes.parts[0],
+                          FALSE);
         break;
     } else
     // Check for indeterminates:  L {div} 0
     if (IsMpq0 (&aplDen))
     {
-        mpq_set (&aplRes.parts[0],
-                  mpq_QuadICValue (&aplLft.parts[i],
-                                    ICNDX_DIV0,
-                                   &aplRht.parts[i],
-                                   &aplRes.parts[0],
-                                    FALSE));
+        mpq_QuadICValue (&aplLft.parts[i],
+                          ICNDX_DIV0,
+                         &aplRht.parts[i],
+                         &aplRes.parts[0],
+                          FALSE);
         break;
     } else
     // Check for indeterminates:  _ {div} _ (same or different signs)
@@ -2901,19 +2859,17 @@ APLHC8R DivHC8R_RE
      && mpq_inf_p (&aplDen))
     {
         if (mpq_sgn (&aplLft.parts[i]) EQ mpq_sgn (&aplRht.parts[i]))
-            mpq_set (&aplRes.parts[0],
-                      mpq_QuadICValue (&aplLft.parts[i],
-                                        ICNDX_PiDIVPi,
-                                       &aplRht.parts[i],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            mpq_QuadICValue (&aplLft.parts[i],
+                              ICNDX_PiDIVPi,
+                             &aplRht.parts[i],
+                             &aplRes.parts[0],
+                              FALSE);
         else
-            mpq_set (&aplRes.parts[0],
-                      mpq_QuadICValue (&aplLft.parts[i],
-                                        ICNDX_NiDIVPi,
-                                       &aplRht.parts[i],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            mpq_QuadICValue (&aplLft.parts[i],
+                              ICNDX_NiDIVPi,
+                             &aplRht.parts[i],
+                             &aplRes.parts[0],
+                              FALSE);
         break;
     } else
         // Divide numerator by denominator to get the result
@@ -3009,25 +2965,21 @@ APLHC8V DivHC8V_RE
     if (IsMpf0 (&aplNum.parts[i])
      && IsMpf0 (&aplDen))
     {
-        mpfr_set (&aplRes.parts[0],
-                   mpfr_QuadICValue (&aplLft.parts[i],
-                                      ICNDX_0DIV0,
-                                     &aplRht.parts[i],
-                                     &aplRes.parts[0],
-                                      FALSE),
-                   MPFR_RNDN);
+        mpfr_QuadICValue (&aplLft.parts[i],
+                           ICNDX_0DIV0,
+                          &aplRht.parts[i],
+                          &aplRes.parts[0],
+                           FALSE);
         break;
     } else
     // Check for indeterminates:  L {div} 0
     if (IsMpf0 (&aplDen))
     {
-        mpfr_set (&aplRes.parts[0],
-                   mpfr_QuadICValue (&aplLft.parts[i],
-                                      ICNDX_DIV0,
-                                     &aplRht.parts[i],
-                                     &aplRes.parts[0],
-                                      FALSE),
-                   MPFR_RNDN);
+        mpfr_QuadICValue (&aplLft.parts[i],
+                           ICNDX_DIV0,
+                          &aplRht.parts[i],
+                          &aplRes.parts[0],
+                           FALSE);
         break;
     } else
     // Check for indeterminates:  _ {div} _ (same or different signs)
@@ -3035,21 +2987,17 @@ APLHC8V DivHC8V_RE
      && mpfr_inf_p (&aplDen))
     {
         if (mpfr_sgn (&aplLft.parts[i]) EQ mpfr_sgn (&aplRht.parts[i]))
-            mpfr_set (&aplRes.parts[0],
-                       mpfr_QuadICValue (&aplLft.parts[i],
-                                          ICNDX_PiDIVPi,
-                                         &aplRht.parts[i],
-                                         &aplRes.parts[0],
-                                          FALSE),
-                       MPFR_RNDN);
+            mpfr_QuadICValue (&aplLft.parts[i],
+                               ICNDX_PiDIVPi,
+                              &aplRht.parts[i],
+                              &aplRes.parts[0],
+                               FALSE);
         else
-            mpfr_set (&aplRes.parts[0],
-                       mpfr_QuadICValue (&aplLft.parts[i],
-                                          ICNDX_NiDIVPi,
-                                         &aplRht.parts[i],
-                                         &aplRes.parts[0],
-                                          FALSE),
-                       MPFR_RNDN);
+            mpfr_QuadICValue (&aplLft.parts[i],
+                               ICNDX_NiDIVPi,
+                              &aplRht.parts[i],
+                              &aplRes.parts[0],
+                               FALSE);
         break;
     } else
         // Divide numerator by denominator to get the result

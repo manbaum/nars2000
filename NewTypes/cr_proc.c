@@ -255,41 +255,37 @@ UBOOL crExit
             if (mpq_zero_p (lpcrLocalVars->mpqRes)
              && mpq_zero_p (lpcrLocalVars->mpqMul))
                 // Save in the result
-                lpcrLocalVars->mpqRes[0] =
-                  *mpq_QuadICValue (lpcrLocalVars->mpqRes,
-                                    ICNDX_0DIV0,
-                                    lpcrLocalVars->mpqMul,
-                                    lpcrLocalVars->mpqRes,
-                                    FALSE);
+                mpq_QuadICValue (lpcrLocalVars->mpqRes,
+                                 ICNDX_0DIV0,
+                                 lpcrLocalVars->mpqMul,
+                                 lpcrLocalVars->mpqRes,
+                                 FALSE);
             else
             // Check for indeterminates:  L {div} 0
             if (mpq_zero_p (lpcrLocalVars->mpqMul))
                 // Save in the result
-                lpcrLocalVars->mpqRes[0] =
-                  *mpq_QuadICValue (lpcrLocalVars->mpqRes,
-                                    ICNDX_DIV0,
-                                    lpcrLocalVars->mpqMul,
-                                    lpcrLocalVars->mpqRes,
-                                    FALSE);
+                mpq_QuadICValue (lpcrLocalVars->mpqRes,
+                                 ICNDX_DIV0,
+                                 lpcrLocalVars->mpqMul,
+                                 lpcrLocalVars->mpqRes,
+                                 FALSE);
             else
             // Check for indeterminates:  _ {div} _ (same or different signs)
             if (mpq_inf_p (lpcrLocalVars->mpqRes)
              && mpq_inf_p (lpcrLocalVars->mpqMul))
             {
                 if (mpq_sgn (lpcrLocalVars->mpqRes) EQ mpq_sgn (lpcrLocalVars->mpqMul))
-                    lpcrLocalVars->mpqRes[0] =
-                      *mpq_QuadICValue (lpcrLocalVars->mpqRes,
-                                        ICNDX_PiDIVPi,
-                                        lpcrLocalVars->mpqMul,
-                                        lpcrLocalVars->mpqRes,
-                                        FALSE);
+                    mpq_QuadICValue (lpcrLocalVars->mpqRes,
+                                     ICNDX_PiDIVPi,
+                                     lpcrLocalVars->mpqMul,
+                                     lpcrLocalVars->mpqRes,
+                                     FALSE);
                 else
-                    lpcrLocalVars->mpqRes[0] =
-                      *mpq_QuadICValue (lpcrLocalVars->mpqRes,
-                                        ICNDX_NiDIVPi,
-                                        lpcrLocalVars->mpqMul,
-                                        lpcrLocalVars->mpqRes,
-                                        FALSE);
+                    mpq_QuadICValue (lpcrLocalVars->mpqRes,
+                                     ICNDX_NiDIVPi,
+                                     lpcrLocalVars->mpqMul,
+                                     lpcrLocalVars->mpqRes,
+                                     FALSE);
             } else
             // Check for -0
             if (lpcrLocalVars->lpszStart[0] EQ OVERBAR1

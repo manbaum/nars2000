@@ -488,11 +488,11 @@ void PrimFnMonQuoteDotRisR
     // Check for indeterminates:  !N for integer N < 0
     if (mpq_integer_p (&lpatRht->aplRat)
      && mpq_cmp_ui (&lpatRht->aplRat, 0, 1) < 0)
-        lpMemRes[uRes] = *mpq_QuadICValue (&lpatRht->aplRat,        // No left arg
-                                            ICNDX_QDOTn,
-                                           &lpatRht->aplRat,
-                                           &lpMemRes[uRes],
-                                            FALSE);
+        mpq_QuadICValue (&lpatRht->aplRat,          // No left arg
+                          ICNDX_QDOTn,
+                         &lpatRht->aplRat,
+                         &lpMemRes[uRes],
+                          FALSE);
     else
     // Check for PosInfinity
     if (IsMpqPosInfinity (&lpatRht->aplRat))
@@ -532,11 +532,11 @@ APLVFP FactVFP
     // Check for indeterminates:  !N for integer N < 0
     if (mpfr_integer_p (&aplVfpRht)
      && mpfr_cmp_ui (&aplVfpRht, 0) < 0)
-        return *mpfr_QuadICValue (&aplVfpRht,       // No left arg
-                                   ICNDX_QDOTn,
-                                  &aplVfpRht,
-                                  &mpfRes,
-                                   FALSE);
+        mpfr_QuadICValue (&aplVfpRht,           // No left arg
+                           ICNDX_QDOTn,
+                          &aplVfpRht,
+                          &mpfRes,
+                           FALSE);
     else
     // Check for PosInfinity
     if (IsMpfPosInfinity (&aplVfpRht))

@@ -393,12 +393,11 @@ void PrimFnMonCircleStarVisV
     else
     // Check for indeterminates:  {log} 0
     if (IsMpf0 (&lpatRht->aplVfp))
-        lpMemRes[uRes] =
-          *mpfr_QuadICValue (&lpatRht->aplVfp,       // No left arg
-                              ICNDX_LOG0,
-                             &lpatRht->aplVfp,
-                             &lpMemRes[uRes],
-                              FALSE);
+        mpfr_QuadICValue (&lpatRht->aplVfp,       // No left arg
+                           ICNDX_LOG0,
+                          &lpatRht->aplVfp,
+                          &lpMemRes[uRes],
+                           FALSE);
     else
     // Check for special cases:  {log} _
     if (IsMpfPosInfinity (&lpatRht->aplVfp))
@@ -1664,22 +1663,20 @@ void PrimFnDydCircleStarVisVvV
     if (IsBooleanVfp (&lpatLft->aplVfp)
      && IsBooleanVfp (&lpatRht->aplVfp))
     {
-        lpMemRes[uRes] =
-          *mpfr_QuadICValue (&lpatLft->aplVfp,
-                              icndxLog[IsMpf1 (&lpatLft->aplVfp)][IsMpf1(&lpatRht->aplVfp)],
-                             &lpatRht->aplVfp,
-                             &lpMemRes[uRes],
-                              FALSE);
+        mpfr_QuadICValue (&lpatLft->aplVfp,
+                           icndxLog[IsMpf1 (&lpatLft->aplVfp)][IsMpf1(&lpatRht->aplVfp)],
+                          &lpatRht->aplVfp,
+                          &lpMemRes[uRes],
+                           FALSE);
     } else
     // Check for indeterminates:  0 {log} N  (N != 0 or 1)
     if (mpfr_zero_p (&lpatLft->aplVfp))
     {
-        lpMemRes[uRes] =
-          *mpfr_QuadICValue (&lpatLft->aplVfp,
-                              ICNDX_0LOGN,
-                             &lpatRht->aplVfp,
-                             &lpMemRes[uRes],
-                              FALSE);
+        mpfr_QuadICValue (&lpatLft->aplVfp,
+                           ICNDX_0LOGN,
+                          &lpatRht->aplVfp,
+                          &lpMemRes[uRes],
+                           FALSE);
     } else
     // Check for Complex result
     if (SIGN_APLVFP (&lpatLft->aplVfp)

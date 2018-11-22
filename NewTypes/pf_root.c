@@ -1432,11 +1432,11 @@ void PrimFnDydRootVisVvV
     // Check for indeterminates:  0 * _
     if (IsMpf0 (&lpatLft->aplVfp)
      && IsMpf0 (&lpatRht->aplVfp))
-        lpMemRes[uRes] = *mpfr_QuadICValue (&lpatLft->aplVfp,
-                                             ICNDX_0EXPPi,
-                                            &lpatRht->aplVfp,
-                                            &lpMemRes[uRes],
-                                             FALSE);
+        mpfr_QuadICValue (&lpatLft->aplVfp,
+                           ICNDX_0EXPPi,
+                          &lpatRht->aplVfp,
+                          &lpMemRes[uRes],
+                           FALSE);
     else
     // Check for special case:  1 {root} R <==> R * 1 <==> R
     if (IsMpf1 (&lpatLft->aplVfp))
@@ -1447,11 +1447,11 @@ void PrimFnDydRootVisVvV
     {
         // Check for indeterminate:  0 {root} R where R <= -1
         if (mpfr_cmp_si (&lpatRht->aplVfp, -1) <= 0)  // R <= -1
-            lpMemRes[uRes] = *mpfr_QuadICValue (&lpatLft->aplVfp,
-                                                 ICNDX_NEXPPi,
-                                                &lpatRht->aplVfp,
-                                                &lpMemRes[uRes],
-                                                 FALSE);
+            mpfr_QuadICValue (&lpatLft->aplVfp,
+                               ICNDX_NEXPPi,
+                              &lpatRht->aplVfp,
+                              &lpMemRes[uRes],
+                               FALSE);
         else
         // Check for special case:  0 {root} R where -1 < R < 0 <==> 0
         if (mpfr_si_cmp (-1, &lpatRht->aplVfp   ) < 0 // -1 < R
@@ -1465,11 +1465,11 @@ void PrimFnDydRootVisVvV
         else
         // Check for indeterminate:  0 {root} 0 <==> 0 * _
         if (IsMpf0 (&lpatRht->aplVfp))
-            lpMemRes[uRes] = *mpfr_QuadICValue (&lpatLft->aplVfp,
-                                                 ICNDX_0EXPPi,
-                                                &lpatRht->aplVfp,
-                                                &lpMemRes[uRes],
-                                                 FALSE);
+            mpfr_QuadICValue (&lpatLft->aplVfp,
+                               ICNDX_0EXPPi,
+                              &lpatRht->aplVfp,
+                              &lpMemRes[uRes],
+                               FALSE);
         else
         // Check for special case:  0 {root} R where 0 < R < 1
         if (mpfr_ui_cmp (0, &lpatRht->aplVfp   ) < 0  // 0 < R
@@ -1487,11 +1487,11 @@ void PrimFnDydRootVisVvV
     // Check for indeterminate:  PoM_ {root} 0 <==> 0 * 0
     if (mpfr_inf_p (&lpatLft->aplVfp)
      && IsMpf0 (&lpatRht->aplVfp))
-        lpMemRes[uRes] = *mpfr_QuadICValue (&lpatLft->aplVfp,
-                                             ICNDX_0EXP0,
-                                            &lpatRht->aplVfp,
-                                            &lpMemRes[uRes],
-                                             FALSE);
+        mpfr_QuadICValue (&lpatLft->aplVfp,
+                           ICNDX_0EXP0,
+                          &lpatRht->aplVfp,
+                          &lpMemRes[uRes],
+                           FALSE);
     else
     // Check for Complex result
     if (mpfr_cmp_ui (&lpatRht->aplVfp, 0) < 0)        // R < 0:  Not SIGN_APLVFP as that'll catch -0 whose root is -0

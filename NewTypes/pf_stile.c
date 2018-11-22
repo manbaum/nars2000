@@ -1561,18 +1561,18 @@ APLHC1R ModHC1R
     {
         // If the left arg is positive, ...
         if (!SIGN_APLRAT (&aplLft))
-            aplRes = *mpq_QuadICValue (&aplLft,
-                                        ICNDX_PosMODNi,
-                                       &aplRht,
-                                       &aplRes,
-                                        FALSE);
+            mpq_QuadICValue (&aplLft,
+                              ICNDX_PosMODNi,
+                             &aplRht,
+                             &aplRes,
+                              FALSE);
         // If the left arg is negative, ...
         if (SIGN_APLRAT (&aplLft))
-            aplRes = *mpq_QuadICValue (&aplLft,
-                                        ICNDX_NegMODNi,
-                                       &aplRht,
-                                       &aplRes,
-                                        FALSE);
+            mpq_QuadICValue (&aplLft,
+                              ICNDX_NegMODNi,
+                             &aplRht,
+                             &aplRes,
+                              FALSE);
         return aplRes;
     } else
     // If the right arg is positive infinity, ...
@@ -1580,18 +1580,18 @@ APLHC1R ModHC1R
     {
         // If the left arg is positive, ...
         if (!SIGN_APLRAT (&aplLft))
-            aplRes = *mpq_QuadICValue (&aplLft,
-                                        ICNDX_PosMODPi,
-                                       &aplRht,
-                                       &aplRes,
-                                        FALSE);
+            mpq_QuadICValue (&aplLft,
+                              ICNDX_PosMODPi,
+                             &aplRht,
+                             &aplRes,
+                              FALSE);
         // If the left arg is negative, ...
         if (SIGN_APLRAT (&aplLft))
-            aplRes = *mpq_QuadICValue (&aplLft,
-                                        ICNDX_NegMODPi,
-                                       &aplRht,
-                                       &aplRes,
-                                        FALSE);
+            mpq_QuadICValue (&aplLft,
+                              ICNDX_NegMODPi,
+                             &aplRht,
+                             &aplRes,
+                              FALSE);
         return aplRes;
     } else
     // If the left arg is negative infinity, ...
@@ -1600,11 +1600,11 @@ APLHC1R ModHC1R
         // If the right arg is positive, ...
         if (!SIGN_APLRAT (&aplRht))
         {
-            aplRes = *mpq_QuadICValue (&aplLft,
-                                        ICNDX_NiMODPos,
-                                       &aplRht,
-                                       &aplRes,
-                                        FALSE);
+            mpq_QuadICValue (&aplLft,
+                              ICNDX_NiMODPos,
+                             &aplRht,
+                             &aplRes,
+                              FALSE);
             return aplRes;
         } // End IF
 
@@ -1617,11 +1617,11 @@ APLHC1R ModHC1R
         // If the right arg is negative, ...
         if (SIGN_APLRAT (&aplRht))
         {
-            aplRes = *mpq_QuadICValue (&aplLft,
-                                        ICNDX_PiMODNeg,
-                                       &aplRht,
-                                       &aplRes,
-                                        FALSE);
+            mpq_QuadICValue (&aplLft,
+                              ICNDX_PiMODNeg,
+                             &aplRht,
+                             &aplRes,
+                              FALSE);
             return aplRes;
         } // End IF
 
@@ -1709,18 +1709,18 @@ APLHC1V ModHC1V
     {
         // If the left arg is positive, ...
         if (mpfr_sgn (&aplLft) > 0)
-            aplRes = *mpfr_QuadICValue (&aplLft,
-                                         ICNDX_PosMODNi,
-                                        &aplRht,
-                                        &aplRes,
-                                         FALSE);
+            mpfr_QuadICValue (&aplLft,
+                               ICNDX_PosMODNi,
+                              &aplRht,
+                              &aplRes,
+                               FALSE);
         // If the left arg is negative, ...
         if (mpfr_sgn (&aplLft) < 0)
-            aplRes = *mpfr_QuadICValue (&aplLft,
-                                         ICNDX_NegMODNi,
-                                        &aplRht,
-                                        &aplRes,
-                                         FALSE);
+            mpfr_QuadICValue (&aplLft,
+                               ICNDX_NegMODNi,
+                              &aplRht,
+                              &aplRes,
+                               FALSE);
         return aplRes;
     } else
     // If the right arg is positive infinity, ...
@@ -1728,18 +1728,18 @@ APLHC1V ModHC1V
     {
         // If the left arg is positive, ...
         if (mpfr_sgn (&aplLft) > 0)
-            aplRes = *mpfr_QuadICValue (&aplLft,
-                                         ICNDX_PosMODPi,
-                                        &aplRht,
-                                        &aplRes,
-                                         FALSE);
+            mpfr_QuadICValue (&aplLft,
+                               ICNDX_PosMODPi,
+                              &aplRht,
+                              &aplRes,
+                               FALSE);
         // If the left arg is negative, ...
         if (mpfr_sgn (&aplLft) < 0)
-            aplRes = *mpfr_QuadICValue (&aplLft,
-                                         ICNDX_NegMODPi,
-                                        &aplRht,
-                                        &aplRes,
-                                         FALSE);
+            mpfr_QuadICValue (&aplLft,
+                               ICNDX_NegMODPi,
+                              &aplRht,
+                              &aplRes,
+                               FALSE);
         return aplRes;
     } else
     // If the left arg is negative infinity, ...
@@ -1748,11 +1748,11 @@ APLHC1V ModHC1V
         // If the right arg is positive, ...
         if (mpfr_sgn (&aplRht) > 0)
         {
-            aplRes = *mpfr_QuadICValue (&aplLft,
-                                         ICNDX_NiMODPos,
-                                        &aplRht,
-                                        &aplRes,
-                                         FALSE);
+            mpfr_QuadICValue (&aplLft,
+                               ICNDX_NiMODPos,
+                              &aplRht,
+                              &aplRes,
+                               FALSE);
             return aplRes;
         } // End IF
 
@@ -1765,11 +1765,11 @@ APLHC1V ModHC1V
         // If the right arg is negative, ...
         if (mpfr_sgn (&aplRht) < 0)
         {
-            aplRes = *mpfr_QuadICValue (&aplLft,
-                                         ICNDX_PiMODNeg,
-                                        &aplRht,
-                                        &aplRes,
-                                         FALSE);
+            mpfr_QuadICValue (&aplLft,
+                               ICNDX_PiMODNeg,
+                              &aplRht,
+                              &aplRes,
+                               FALSE);
             return aplRes;
         } // End IF
 

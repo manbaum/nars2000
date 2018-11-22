@@ -1538,11 +1538,11 @@ APLRAT AddHC1R_RE
     if (mpq_inf_p (&aplLft)
      && mpq_inf_p (&aplRht)
      && mpq_sgn (&aplLft) NE mpq_sgn (&aplRht))
-        aplRes = *mpq_QuadICValue (&aplRht,        // No left arg
-                                    ICNDX_InfSUBInf,
-                                   &aplRht,
-                                   &aplRes,
-                                    FALSE);
+        mpq_QuadICValue (&aplRht,           // No left arg
+                          ICNDX_InfSUBInf,
+                         &aplRht,
+                         &aplRes,
+                          FALSE);
     else
     {
         // Initialize the result to 0/1
@@ -1622,11 +1622,11 @@ APLVFP AddHC1V_RE
     if (mpfr_inf_p (&aplLft)
      && mpfr_inf_p (&aplRht)
      && mpfr_sgn (&aplLft) NE mpfr_sgn (&aplRht))
-        aplRes = *mpfr_QuadICValue (&aplRht,        // No left arg
-                                    ICNDX_InfSUBInf,
-                                   &aplRht,
-                                   &aplRes,
-                                    FALSE);
+        mpfr_QuadICValue (&aplRht,          // No left arg
+                          ICNDX_InfSUBInf,
+                         &aplRht,
+                         &aplRes,
+                          FALSE);
     else
     {
         // Initialize the result to 0
@@ -1849,12 +1849,11 @@ APLHC2R AddHC2R_RE
         if (mpq_inf_p (&aplLft.parts[i])
          && mpq_inf_p (&aplRht.parts[i])
          && mpq_sgn (&aplLft.parts[i]) NE mpq_sgn (&aplRht.parts[i]))
-            mpq_init_set (&aplRes.parts[i],
-                           mpq_QuadICValue (&aplRht.parts[i],   // No left arg
-                                             ICNDX_InfSUBInf,
-                                            &aplRht.parts[i],
-                                            &aplRes.parts[i],
-                                             FALSE));
+            mpq_QuadICValue (&aplRht.parts[i],   // No left arg
+                              ICNDX_InfSUBInf,
+                             &aplRht.parts[i],
+                             &aplRes.parts[i],
+                              FALSE);
         else
         {
             // Initialize the result to 0/1
@@ -1927,12 +1926,11 @@ APLHC2V AddHC2V_RE
         if (mpfr_inf_p (&aplLft.parts[i])
          && mpfr_inf_p (&aplRht.parts[i])
          && mpfr_sgn (&aplLft.parts[i]) NE mpfr_sgn (&aplRht.parts[i]))
-            mpfr_init_copy (&aplRes.parts[i],
-                             mpfr_QuadICValue (&aplRht.parts[i],       // No left arg
-                                                ICNDX_InfSUBInf,
-                                               &aplRht.parts[i],
-                                               &aplRes.parts[i],
-                                                FALSE));
+            mpfr_QuadICValue (&aplRht.parts[i],         // No left arg
+                               ICNDX_InfSUBInf,
+                              &aplRht.parts[i],
+                              &aplRes.parts[i],
+                               FALSE);
         else
         {
             // Initialize the result to NaN
@@ -2158,12 +2156,11 @@ APLHC4R AddHC4R_RE
         if (mpq_inf_p (&aplLft.parts[i])
          && mpq_inf_p (&aplRht.parts[i])
          && mpq_sgn (&aplLft.parts[i]) NE mpq_sgn (&aplRht.parts[i]))
-            mpq_init_set (&aplRes.parts[i],
-                           mpq_QuadICValue (&aplRht.parts[i],   // No left arg
-                                             ICNDX_InfSUBInf,
-                                            &aplRht.parts[i],
-                                            &aplRes.parts[i],
-                                             FALSE));
+            mpq_QuadICValue (&aplRht.parts[i],   // No left arg
+                              ICNDX_InfSUBInf,
+                             &aplRht.parts[i],
+                             &aplRes.parts[i],
+                              FALSE);
         else
         {
             // Initialize the result to 0/1
@@ -2236,12 +2233,11 @@ APLHC4V AddHC4V_RE
         if (mpfr_inf_p (&aplLft.parts[i])
          && mpfr_inf_p (&aplRht.parts[i])
          && mpfr_sgn (&aplLft.parts[i]) NE mpfr_sgn (&aplRht.parts[i]))
-            mpfr_init_copy (&aplRes.parts[i],
-                             mpfr_QuadICValue (&aplRht.parts[i],       // No left arg
-                                                ICNDX_InfSUBInf,
-                                               &aplRht.parts[i],
-                                               &aplRes.parts[i],
-                                                FALSE));
+            mpfr_QuadICValue (&aplRht.parts[i],         // No left arg
+                               ICNDX_InfSUBInf,
+                              &aplRht.parts[i],
+                              &aplRes.parts[i],
+                               FALSE);
         else
         {
             // Initialize the result to NaN
@@ -2467,12 +2463,11 @@ APLHC8R AddHC8R_RE
         if (mpq_inf_p (&aplLft.parts[i])
          && mpq_inf_p (&aplRht.parts[i])
          && mpq_sgn (&aplLft.parts[i]) NE mpq_sgn (&aplRht.parts[i]))
-            mpq_init_set (&aplRes.parts[i],
-                           mpq_QuadICValue (&aplRht.parts[i],   // No left arg
-                                             ICNDX_InfSUBInf,
-                                            &aplRht.parts[i],
-                                            &aplRes.parts[i],
-                                             FALSE));
+            mpq_QuadICValue (&aplRht.parts[i],   // No left arg
+                              ICNDX_InfSUBInf,
+                             &aplRht.parts[i],
+                             &aplRes.parts[i],
+                              FALSE);
         else
         {
             // Initialize the result to 0/1
@@ -2545,12 +2540,11 @@ APLHC8V AddHC8V_RE
         if (mpfr_inf_p (&aplLft.parts[i])
          && mpfr_inf_p (&aplRht.parts[i])
          && mpfr_sgn (&aplLft.parts[i]) NE mpfr_sgn (&aplRht.parts[i]))
-            mpfr_init_copy (&aplRes.parts[i],
-                             mpfr_QuadICValue (&aplRht.parts[i],       // No left arg
-                                                ICNDX_InfSUBInf,
-                                               &aplRht.parts[i],
-                                               &aplRes.parts[i],
-                                                FALSE));
+            mpfr_QuadICValue (&aplRht.parts[i],         // No left arg
+                               ICNDX_InfSUBInf,
+                              &aplRht.parts[i],
+                              &aplRes.parts[i],
+                               FALSE);
         else
         {
             // Initialize the result to NaN

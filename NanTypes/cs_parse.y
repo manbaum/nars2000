@@ -2394,7 +2394,6 @@ UBOOL ParseCtrlStruc_EM
         AppendNewCSToken_EM (TKT_CS_EOL,                // CS token type (TKT_CS_xxx)
                              lpcsLocalVars->lpMemPTD,   // Ptr to PerTabData global memory
                              0,                         // Logical Line #
-                             0,                         // Physical ...
                              0,                         // Stmt #
                              0,                         // Token #
                              TRUE,                      // TRUE iff the matching CS starts a stmt

@@ -2269,7 +2269,7 @@ HGLOBAL LoadWorkspaceGlobal_EM
                 SF_Fcns.SF_LineLen      = SF_LineLenLW;     // Ptr to line length function
                 SF_Fcns.SF_ReadLine     = SF_ReadLineLW;    // Ptr to read line function
                 SF_Fcns.SF_IsLineCont   = SF_IsLineContLW;  // Ptr to Is Line Continued function
-                SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesLW; // Ptr to get # physical lines function
+                SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesLW; // Ptr to get # physical lines in the function
                 SF_Fcns.SF_NumLogLines  = SF_NumLogLinesLW; // Ptr to get # logical  ...
                 SF_Fcns.SF_CreationTime = SF_CreationTimeLW;// Ptr to get function creation time
                 SF_Fcns.SF_LastModTime  = SF_LastModTimeLW; // Ptr to get function last modification time

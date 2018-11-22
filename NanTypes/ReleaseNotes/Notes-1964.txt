@@ -1,0 +1,33 @@
+Build #1964 -- Version 0.6.0.xx
+-------------------------------
+
+* Merge Builds From \branches\bsmith\NewTypes
+
+Directory branches/bsmith/NanTypes:
+
+AFOFNS.C:
+CS_PARSE.Y:
+CS_PROC.C:
+EDITFCN.C:
+EXECDFN.C:
+EXECMFN.C:
+FPCHO_COM.C:
+IMMEXEC.C:
+MPCHO_COM.C:
+PF_CIRCLE.C:
+PF_CIRCLE.MAC:
+PF_DOMINO.MAC:
+PF_DSTILE.C:
+PF_SLASH.C:
+PF_TIMES.C:
+PF_UTACKJOT.C:
+PRIMSPEC.C:
+QF_FX.C:
+QF_TF.C:
+REBAR.C:
+SAVEFCN.C:
+SC_INASCII.C:
+SC_LOAD.C:
+TOKENIZE.C:
+TOKENS.H:
+  Merge these files from previous \branches\bsmith\NewTypes builds.

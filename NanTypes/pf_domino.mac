@@ -20,6 +20,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ***************************************************************************/
 
+
+// Define GaussJordan method for Inverting/Dividing a Matrix with No Pivoing
 #define PF_DOMINO_MAC(lpMemRht,lpMemLft,N)                                                                      \
 {                                                                                                               \
     LPAPLHC##N##R lpMemAux = NULL,     /* Ptr to auxiliary matrix                                             */\
@@ -34,7 +36,7 @@
     /* Save the current value for []LR                                                                        */\
     cQuadLR = GetQuadLR ();                                                                                     \
                                                                                                                 \
-    /* Put the new value into effect                                                                          */\
+    /* Put the new value into effect as Domino is a Left-Quotient primitive                                   */\
     SetQuadLR (L'l');                                                                                           \
                                                                                                                 \
     /* Initialize the temp                                                                                    */\
@@ -219,6 +221,8 @@ NORMAL_EXIT##N##:                                                               
     return bRet;                                                                                                \
 }
 
+
+// Define GaussJordan method for Inverting/Dividing a Matrix with Partial Pivoing
 #define PF_DOMINO_ARB(lpMemRht,lpMemLft,N)                                                                      \
 {                                                                                                               \
     LPAPLBA##N##F lpMemAux = NULL,     /* Ptr to auxiliary matrix                                             */\
@@ -228,16 +232,20 @@ NORMAL_EXIT##N##:                                                               
                   arbDiv = {0},        /* ...                                                                 */\
                   arbMul = {0},        /* ...                                                                 */\
                   arbSub = {0};        /* ...                                                                 */\
+    APLARB        arbSqN = {0},        /* Squared Norm of current value                                       */\
+                  arbPiv = {0};        /* Pivot point largest Squared Norm                                    */\
     APLCHAR       cQuadLR;             /* []LR                                                                */\
+    APLINT        uPivRow;             /* Pivot row #                                                         */\
                                                                                                                 \
     /* Save the current value for []LR                                                                        */\
     cQuadLR = GetQuadLR ();                                                                                     \
                                                                                                                 \
-    /* Put the new value into effect                                                                          */\
+    /* Put the new value into effect as Domino is a Left-Quotient primitive                                   */\
     SetQuadLR (L'l');                                                                                           \
                                                                                                                 \
-    /* Initialize the temp                                                                                    */\
+    /* Initialize the temps                                                                                   */\
     arb##N##f_init (&arbCof);                                                                                   \
+    arb_init       (&arbPiv);                                                                                   \
                                                                                                                 \
     if (lpMemLft EQ NULL)                                                                                       \
         uNumColsLft = uNumColsRht;                                                                              \
@@ -279,16 +287,35 @@ NORMAL_EXIT##N##:                                                               
         if (CheckCtrlBreak (lpbCtrlBreak))                                                                      \
             goto ERROR_EXIT##N##;                                                                               \
                                                                                                                 \
+        /* Set the Pivot largest Squared Norm to the Additive Identity Element                                */\
+        arb_zero (&arbPiv);                                                                                     \
+                                                                                                                \
+        /* Initialize the Pivot row # to a value below the lowest row #                                       */\
+        uPivRow = -1;                                                                                           \
+                                                                                                                \
         /* Loop through the rows of lpMemRht[uNumInds{drop}lpMemInd;]                                         */\
-        /*   looking for the next row with a non-zero coefficient in col uCol                                 */\
+        /*   looking for the largest Squared Norm in col uCol                                                 */\
         for (uRowInd = uNumInds; uRowInd < uNumRows; uRowInd++)                                                 \
-        if (!IsZeroBAxF (&lpMemRht[lpMemInd[uRowInd] * uNumColsRht + uCol], N))                                 \
-            break;                                                                                              \
-        if (uRowInd EQ uNumRows)                                                                                \
+        {                                                                                                       \
+            /* Get the item's Squared Norm                                                                    */\
+            arbSqN = SqNrmBAxF (&lpMemRht[lpMemInd[uRowInd] * uNumColsRht + uCol], N);                          \
+                                                                                                                \
+            /* If this row has a larger Squared Norm so far, ...                                              */\
+            if (arf_cmp (arb_midref (&arbPiv), arb_midref (&arbSqN)) < 0)                                       \
+            {                                                                                                   \
+                /* Save this Squared Norm as the new Pivot value, ...                                         */\
+                arb_set (&arbPiv, &arbSqN);                                                                     \
+                                                                                                                \
+                /* and its row index as the new Pivot row                                                     */\
+                uPivRow = uRowInd;                                                                              \
+            } /* End IF                                                                                       */\
+        } /* End IF                                                                                           */\
+                                                                                                                \
+        if (uPivRow EQ -1)                                                                                      \
             goto ERROR_EXIT##N##;                                                                               \
                                                                                                                 \
         /*  Copy the actual row #                                                                             */\
-        uRow = lpMemInd[uRowInd];                                                                               \
+        uRow = lpMemInd[uPivRow];                                                                               \
                                                                                                                 \
         /* Get the coefficient to normalize to 1                                                              */\
         arb##N##f_set (&arbCof, &lpMemRht[uRow * uNumColsRht + uCol]);                                          \
@@ -357,7 +384,7 @@ NORMAL_EXIT##N##:                                                               
         } /* End FOR/IF                                                                                       */\
                                                                                                                 \
         /* Swap with the next available entry                                                                 */\
-        lpMemInd[uRowInd] = lpMemInd[uNumInds];                                                                 \
+        lpMemInd[uPivRow] = lpMemInd[uNumInds];                                                                 \
                                                                                                                 \
         /* Mark this row as used                                                                              */\
         lpMemInd[uNumInds++] = uRow;                                                                            \
@@ -410,6 +437,7 @@ NORMAL_EXIT##N##:                                                               
     UnlFreeGlbName (hGlbAux, lpMemAux);                                                                         \
                                                                                                                 \
     /* We no longer need this storage                                                                         */\
+    arb_clear       (&arbPiv);                                                                                  \
     arb##N##f_clear (&arbCof);                                                                                  \
                                                                                                                 \
     /* Restore the original value                                                                             */\

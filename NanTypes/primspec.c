@@ -1579,6 +1579,7 @@ HGLOBAL PrimFnMonGlb_EM
                       apaMulRht;            // ...           multiplier
     APLUINT           ByteRes;              // # bytes in the result
     UBOOL             bRet = TRUE,          // TRUE iff result is valid
+                      bForcedRes = FALSE,   // TRUE iff the Result is Forced
                       bRealOnly = FALSE,    // TRUE iff the args must be demoted to real
                       bRad0Only = FALSE,    // TRUE iff the args must be Radius 0 only
                       bTypeDemote = FALSE;  // TRUE iff the result is eligible for type demotion
@@ -1589,7 +1590,7 @@ HGLOBAL PrimFnMonGlb_EM
     ALLTYPES          atRht = {0};          // Right arg as ALLTYPES
     LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
     int               iSizeofRes;           // Sizeof an item in the result
-    APLLONGEST   aplLongestRht;     // Right arg longest value
+    APLLONGEST        aplLongestRht;        // Right arg longest value
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -2318,11 +2319,15 @@ RESTART_EXCEPTION:
                 // If the argument's dimension and the result's differ,
                 //   promote the arg to the type of the result
                 // This can happen when (say) a VFP blows up to HC2V (e.g., log -2.5v)
-                if (TranslateArrayTypeToHCDim (aplTypeRht)
+                if (bForcedRes
+                 || TranslateArrayTypeToHCDim (aplTypeRht)
                   < TranslateArrayTypeToHCDim (aplTypeRes))
                     aplTypeCom = aplTypeRes;
                 else
                     aplTypeCom = aplTypeRht;
+
+                // Reset the Forced Result flag
+                bForcedRes = FALSE;
 
                 // Get the target function
                 lpPrimFn = TranslateTypesToMonPSFIndex (lpPrimSpec, aplTypeRes, aplTypeCom);
@@ -2451,6 +2456,9 @@ RESTART_EXCEPTION:
                     FreeResultGlobalIncompleteVar (hGlbRes); hGlbRes = NULL;
 
                     dprintfWL0 (L"!!Restarting Exception in " APPEND_NAME L" #4: %s (%S#%d)\r\n", MyGetExceptionStr (ExceptionCode), FNLN);
+
+                    // Mark as Forced Result
+                    bForcedRes = TRUE;
 
                     goto RESTART_EXCEPTION;
                 } /* End IF */

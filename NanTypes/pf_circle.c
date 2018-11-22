@@ -1094,7 +1094,7 @@ void PrimFnDydCircleFisFvF
 
             return;
 
-        case   9:       // Real part of R
+        case   9:       // (R++R)/2
             if (_isnan (lpatRht->aplFloat))
             {
                 if (gAllowNaN)
@@ -1403,13 +1403,9 @@ void PrimFnDydCircleFisFvF
             } else
                 RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
 
-        case  -9:       // R
-            lpMemRes[uRes] = lpatRht->aplFloat;
+        case  -9:       // (R-+R)/2
+            lpMemRes[uRes] = 0;
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case -10:       // +R
@@ -1556,7 +1552,7 @@ void PrimFnDydCircleVisVvV
 
             return;
 
-        case   9:       // Real part of R
+        case   9:       // (R++R)/2
             if (IsMpfNaN (&lpatRht->aplVfp))
             {
                 if (gAllowNaN)
@@ -1892,7 +1888,11 @@ void PrimFnDydCircleVisVvV
             } else
                 RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
 
-        case  -9:       // R
+        case  -9:       // (R-+R)/2
+            mpfr_init0    (&lpMemRes[uRes]);
+
+            return;
+
         case -10:       // +R
             mpfr_init_set (&lpMemRes[uRes], &lpatRht->aplVfp, MPFR_RNDN);
 
@@ -2735,7 +2735,7 @@ void PrimFnDydCircleBA1FisBA1FvBA1F
 
             return;
 
-        case   9:       // Real part of R
+        case   9:       // (R++R)/2
             if (IsArfNaN (arb_midref (&lpatRht->aplArb)))
             {
                 if (gAllowNaN)
@@ -2875,9 +2875,11 @@ void PrimFnDydCircleBA1FisBA1FvBA1F
                     break;
             } else
             {
-                // Check for Complex result
-                if (arb_cmp_si (&lpatRht->aplArb,  1) > 0
-                 || arb_cmp_si (&lpatRht->aplArb, -1) < 0)
+                // Check for Complex result:
+                //   If any part is >  1, or
+                //   ...            < -1, ...
+                if (arb_gt (&lpatRht->aplArb, &arb1f_1)
+                 || arb_lt (&lpatRht->aplArb, &arb1f_N1))
                     RaiseException (EXCEPTION_RESULT_BA2F, 0, 0, NULL);
 
                 // Call subroutine
@@ -2900,9 +2902,11 @@ void PrimFnDydCircleBA1FisBA1FvBA1F
                     break;
             } else
             {
-                // Check for Complex result
-                if (arb_cmp_si (&lpatRht->aplArb,  1) > 0
-                 || arb_cmp_si (&lpatRht->aplArb, -1) < 0)
+                // Check for Complex result:
+                //   If any part is >  1, or
+                //   ...            < -1, ...
+                if (arb_gt (&lpatRht->aplArb, &arb1f_1)
+                 || arb_lt (&lpatRht->aplArb, &arb1f_N1))
                     RaiseException (EXCEPTION_RESULT_BA2F, 0, 0, NULL);
 
                 // Call subroutine
@@ -3072,7 +3076,11 @@ void PrimFnDydCircleBA1FisBA1FvBA1F
             } else
                 RaiseException (EXCEPTION_RESULT_BA2F, 0, 0, NULL);
 
-        case  -9:       // R
+        case  -9:       // (R-+R)/2
+            arb_zero (&lpMemRes[uRes]);
+
+            return;
+
         case -10:       // +R
             arb_set (&lpMemRes[uRes], &lpatRht->aplArb);
 
@@ -3185,7 +3193,7 @@ void PrimFnDydCircleHC2FisHC2FvHC2F
                 break;
             return;
 
-        case   9:       // Real part of R
+        case   9:       // (R++R)/2
             lpMemRes[uRes].parts[0] = lpatRht->aplHC2F.parts[0];
             lpMemRes[uRes].parts[1] = 0;
 
@@ -3486,13 +3494,10 @@ void PrimFnDydCircleHC2FisHC2FvHC2F
                 break;
             return;
 
-        case  -9:       // R
+        case  -9:       // (R-+R)/2
             lpMemRes[uRes] = lpatRht->aplHC2F;
+            lpMemRes[uRes].parts[0] = 0;
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case -10:       // +R

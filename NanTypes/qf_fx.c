@@ -231,7 +231,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                 SF_Fcns.SF_LineLen      = SF_LineLenN;      // Ptr to line length function
                 SF_Fcns.SF_ReadLine     = SF_ReadLineN;     // Ptr to read line function
                 SF_Fcns.SF_IsLineCont   = SF_IsLineContN;   // Ptr to Is Line Continued function
-                SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesN;  // Ptr to get # physical lines function
+                SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesN;  // Ptr to get # physical lines in the function
                 SF_Fcns.SF_NumLogLines  = SF_NumLogLinesN;  // Ptr to get # logical  ...
                 SF_Fcns.SF_CreationTime = SF_CreationTimeN; // Ptr to get function creation time
                 SF_Fcns.SF_LastModTime  = SF_LastModTimeN;  // Ptr to get function last modification time
@@ -249,7 +249,7 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
                 SF_Fcns.SF_LineLen      = SF_LineLenSV;     // Ptr to line length function
                 SF_Fcns.SF_ReadLine     = SF_ReadLineSV;    // Ptr to read line function
                 SF_Fcns.SF_IsLineCont   = SF_IsLineContSV;  // Ptr to Is Line Continued function
-                SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesSV; // Ptr to get # physical lines function
+                SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesSV; // Ptr to get # physical lines in the function
                 SF_Fcns.SF_NumLogLines  = SF_NumLogLinesSV; // Ptr to get # logical  ...
                 SF_Fcns.SF_CreationTime = SF_CreationTimeSV;// Ptr to get function creation time
                 SF_Fcns.SF_LastModTime  = SF_LastModTimeSV; // Ptr to get function last modification time
@@ -271,15 +271,15 @@ LPPL_YYSTYPE SysFnMonFX_EM_YY
             {
                 SF_Fcns.SF_LineLen      = SF_LineLenSV;         // Ptr to line length function
                 SF_Fcns.SF_ReadLine     = SF_ReadLineSV;        // Ptr to read line function
-                SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesSV;     // Ptr to # physical lines function
-                SF_Fcns.SF_NumLogLines  = SF_NumLogLinesSV;     // Ptr to # logical  ...
+                SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesSV;     // Ptr to get # physical lines in the function
+                SF_Fcns.SF_NumLogLines  = SF_NumLogLinesSV;     // Ptr to get # logical  ...
                 SF_Fcns.SF_IsLineCont   = SF_IsLineContSV;      // Ptr to Is Line Continued function
             } else
             {
                 SF_Fcns.SF_LineLen      = SF_LineLenM;          // Ptr to line length function
                 SF_Fcns.SF_ReadLine     = SF_ReadLineM;         // Ptr to read line function
-                SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesM;      // Ptr to # physical lines function
-                SF_Fcns.SF_NumLogLines  = SF_NumLogLinesM;      // Ptr to # logical  ...
+                SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesM;      // Ptr to get # physical lines in the function
+                SF_Fcns.SF_NumLogLines  = SF_NumLogLinesM;      // Ptr to get # logical  ...
                 SF_Fcns.SF_IsLineCont   = SF_IsLineContM;       // Ptr to Is Line Continued function
             } // End IF/ELSE
 

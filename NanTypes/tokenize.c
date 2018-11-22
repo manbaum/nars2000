@@ -2128,11 +2128,9 @@ UBOOL fnCtrlDone
                                                              : TKT_CS_SKIPCASE;
         // Save the line & stmt #s for later use
         tkData.Orig.d.uLineNum = lptkLocalVars->Orig.c.uLineNum;
-        tkData.Orig.d.uPhyLNum = lptkLocalVars->Orig.c.uPhyLNum;
         tkData.Orig.d.uStmtNum = lptkLocalVars->Orig.c.uStmtNum;
         tkData.Orig.d.uTknNum  = (USHORT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart);
         tkData.Next.uLineNum   =
-        tkData.Next.uPhyLNum   =
         tkData.Next.uStmtNum   =
         tkData.Next.uTknNum    = -1;
         tkData.bSOS            = lptkLocalVars->bSOS;
@@ -2170,11 +2168,9 @@ UBOOL fnCtrlDone
 
     // Save the line & stmt #s for later use
     tkData.Orig.d.uLineNum = lptkLocalVars->Orig.c.uLineNum;
-    tkData.Orig.d.uPhyLNum = lptkLocalVars->Orig.c.uPhyLNum;
     tkData.Orig.d.uStmtNum = lptkLocalVars->Orig.c.uStmtNum;
     tkData.Orig.d.uTknNum  = (USHORT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart);
     tkData.Next.uLineNum   =
-    tkData.Next.uPhyLNum   =
     tkData.Next.uStmtNum   =
     tkData.Next.uTknNum    = -1;
     tkData.bSOS            = lptkLocalVars->bSOS;
@@ -4907,7 +4903,6 @@ HGLOBAL Tokenize_EM
      APLNELM     aplNELM,           // NELM of lpwszLine
      HWND        hWndEC,            // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
      UINT        uLogLineNum,       // Logical function line # (0 = header)
-     UINT        uPhyLineNum,       // Physical ...
      LPERRHANDFN lpErrHandFn,       // Ptr to error handling function (may be NULL)
      LPSF_FCNS   lpSF_Fcns,         // Ptr to common struc (may be NULL if unused)
      UBOOL       bMFO)              // TRUE iff we're tokenizing a Magic Function/Operator
@@ -4922,8 +4917,6 @@ HGLOBAL Tokenize_EM
     LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
     LPTOKEN      lptkCSNxt;         // Ptr to next token on the CS stack
     SF_FCNS      SF_Fcns;           // Temp value in case lpSF_Fcns is NULL
-
-    Assert (uLogLineNum EQ uPhyLineNum);
 
 __try
 {
@@ -4945,17 +4938,16 @@ __try
     tkLocalVars.State[1]        =
     tkLocalVars.State[0]        = TKROW_SOS;
     tkLocalVars.Orig.d.uLineNum = uLogLineNum;
-    tkLocalVars.Orig.d.uPhyLNum = uPhyLineNum;
     tkLocalVars.Orig.d.uStmtNum = 0;
     tkLocalVars.bMFO            = bMFO;             // TRUE iff we're tokenizing a Magic Function/Operator
     tkLocalVars.lpMemPTD        = lpMemPTD;         // Ptr to PerTabData global memory
     tkLocalVars.lpSF_Fcns       = lpSF_Fcns;        // Ptr to common struc
 
-    // If this is the function header (uPhyLineNum EQ 0),
+    // If this is the function header (uLogLineNum EQ 0),
     //   save and restore the ptr to the next token
     //   on the CS stack as there are no CSs in the
     //   function header
-    if (uPhyLineNum EQ 0)
+    if (uLogLineNum EQ 0)
         // Save the ptr to the next token on the CS stack
         lptkCSNxt = lpMemPTD->lptkCSNxt;
 
@@ -5274,11 +5266,11 @@ FREED_EXIT:
         DbgGlobalFree (tkLocalVars.hGlbStr); tkLocalVars.hGlbStr = NULL;
     } // End IF
 
-    // If this is the function header (uPhyLineNum EQ 0),
+    // If this is the function header (uLogLineNum EQ 0),
     //   save and restore the ptr to the next token
     //   on the CS stack as there are no CSs in the
     //   function header
-    if (uPhyLineNum EQ 0)
+    if (uLogLineNum EQ 0)
         // Restore the ptr to the next token on the CS stack
         lpMemPTD->lptkCSNxt = lptkCSNxt;
 } __except (CheckException (GetExceptionInformation (), WFCN))
@@ -5774,7 +5766,6 @@ UBOOL AppendNewToken_EM
             AppendNewCSToken_EM (TKT_CS_NEC,                                            // CS token type (TKT_CS_xxx)
                                  lptkLocalVars->lpMemPTD,                               // Ptr to PerTabData global memory
                                  lptkLocalVars->Orig.c.uLineNum,                        // Logical Line #
-                                 lptkLocalVars->Orig.c.uPhyLNum,                        // Physical ...
                                  lptkLocalVars->Orig.c.uStmtNum,                        // Stmt #
                        (USHORT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart),   // Token #
                                  FALSE,                                                 // TRUE iff the matching CS starts a stmt
@@ -5794,7 +5785,6 @@ UBOOL AppendNewToken_EM
             AppendNewCSToken_EM (lptkFlags->TknType,                                    // CS token type (TKT_CS_xxx)
                                  lptkLocalVars->lpMemPTD,                               // Ptr to PerTabData global memory
                                  lptkLocalVars->Orig.c.uLineNum,                        // Logical Line #
-                                 lptkLocalVars->Orig.c.uPhyLNum,                        // Physical ...
                                  lptkLocalVars->Orig.c.uStmtNum,                        // Stmt #
                        (USHORT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart),   // Token #
                                  TRUE,                                                  // TRUE iff the matching CS starts a stmt
@@ -5839,7 +5829,6 @@ UBOOL AppendNewToken_EM
             AppendNewCSToken_EM (lptkFlags->TknType,                                    // CS token type (TKT_CS_xxx)
                                  lptkLocalVars->lpMemPTD,                               // Ptr to PerTabData global memory
                                  lptdAnon->Orig.c.uLineNum,                             // Logical Line #
-                                 lptdAnon->Orig.c.uPhyLNum,                             // Physical ...
                                  lptdAnon->Orig.c.uStmtNum,                             // Stmt #
                                  lptdAnon->Orig.c.uTknNum,                              // Token #
                                  lptdAnon->bSOS,                                        // TRUE iff the matching CS starts a stmt
@@ -5876,7 +5865,6 @@ UBOOL AppendNewCSToken_EM
     (TOKEN_TYPES   TknType,             // CS token type (TKT_CS_xxx)
      LPPERTABDATA  lpMemPTD,            // Ptr to PerTabData global memory
      USHORT        uLineNum,            // Logical Line #
-     USHORT        uPhyLNum,            // Physical ...
      USHORT        uStmtNum,            // Stmt #
      USHORT        uTknNum,             // Token #
      UBOOL         bSOS,                // TRUE iff the matching CS starts a stmt
@@ -5884,8 +5872,6 @@ UBOOL AppendNewCSToken_EM
 
 {
     TOKEN tkCS = {0};                   // Control Structure token
-
-    Assert (uLineNum EQ uPhyLNum);
 
     // If there's a preceding token, ...
     if (lpMemPTD->lptkCSNxt >= &lpMemPTD->lptkCSIni[1])
@@ -5946,7 +5932,6 @@ UBOOL AppendNewCSToken_EM
     // Fill in the token values
     tkCS.tkFlags.TknType        = TknType;
     tkCS.tkData.Orig.d.uLineNum = uLineNum;
-    tkCS.tkData.Orig.d.uPhyLNum = uPhyLNum;
     tkCS.tkData.Orig.d.uStmtNum = uStmtNum;
     tkCS.tkData.Orig.d.uTknNum  = uTknNum;
     tkCS.tkData.bSOS            = bSOS;

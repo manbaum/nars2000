@@ -1,0 +1,12 @@
+Build #1958 -- Version 0.5.8.xx
+-------------------------------
+
+* Change Definition Of 9 and -9 Circle Functions
+
+Directory branches/bsmith/NewTypes:
+
+PF_CIRCLE.C:
+PF_CIRCLE.MAC:
+REBAR.C:
+  Change definition of 9{circle} and -9{circle} to be symmetric and the latter
+    produces a Pure Imaginary number for Hypercomplex numbers.

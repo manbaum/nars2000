@@ -608,9 +608,6 @@ APLHC1V FloorHC1V
         mpfr_init_copy (&aplRes, &aplRht);
     else
     {
-#ifdef DEBUG
-////    WCHAR wszTemp[512];
-#endif
         // Initialize the temps
         mpfr_init0 (&aplRes);
         mpfr_init0 (&mpfFloor);
@@ -658,9 +655,9 @@ APLHC1V FloorHC1V
         } // End SWITCH
 
 #ifdef DEBUG
-////    strcpyW (wszTemp, L"Floor: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfFloor, 0) = WC_EOS; DbgMsgW (wszTemp);
-////    strcpyW (wszTemp, L"Near:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfNear , 0) = WC_EOS; DbgMsgW (wszTemp);
-////    strcpyW (wszTemp, L"Ceil:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfCeil , 0) = WC_EOS; DbgMsgW (wszTemp);
+////    VfpOut (L"Floor: ", &mpfFloor);
+////    VfpOut (L"Near:  ", &mpfNear );
+////    VfpOut (L"Ceil:  ", &mpfCeil );
 #endif
 
         // If Near is < Rht, aplRes = Near
@@ -774,9 +771,6 @@ APLBA1F FloorBA1F
         arb_init_set (&aplRes, &aplRht);
     else
     {
-#ifdef DEBUG
-////    WCHAR wszTemp[512];
-#endif
         // Initialize the temps to 0/0
         Myarb_init (&aplRes);
         Myarb_init (&arbFloor);
@@ -790,7 +784,6 @@ APLBA1F FloorBA1F
         Myarb_ceil  (&arbCeil , &aplRht);
 
         // Calculate the integer nearest the right arg
-
         arb_sub (&arbTmp1, &aplRht , &arbFloor, prec);
         arb_sub (&arbTmp2, &arbCeil, &aplRht  , prec);
 
@@ -809,8 +802,8 @@ APLBA1F FloorBA1F
 
                 // They are equal, so use the one with the larger absolute value
                 arb_set (&arbNear,
-                           ((arb_cmp (&arbTmp1, &arbTmp2) > 0) ? &arbFloor
-                                                                : &arbCeil));
+                          (arb_cmp (&arbTmp1, &arbTmp2) > 0) ? &arbFloor
+                                                             : &arbCeil);
                 break;
 
             case -1:
@@ -823,9 +816,9 @@ APLBA1F FloorBA1F
         } // End SWITCH
 
 #ifdef DEBUG
-////    strcpyW (wszTemp, L"Floor: "); *FormatAplArb (&wszTemp[lstrlenW (wszTemp)], arbFloor, 0) = WC_EOS; DbgMsgW (wszTemp);
-////    strcpyW (wszTemp, L"Near:  "); *FormatAplArb (&wszTemp[lstrlenW (wszTemp)], arbNear , 0) = WC_EOS; DbgMsgW (wszTemp);
-////    strcpyW (wszTemp, L"Ceil:  "); *FormatAplArb (&wszTemp[lstrlenW (wszTemp)], arbCeil , 0) = WC_EOS; DbgMsgW (wszTemp);
+////    ArbOut (L"Floor: ", &arbFloor);
+////    ArbOut (L"Near:  ", &arbNear );
+////    ArbOut (L"Ceil:  ", &arbCeil );
 #endif
 
         // If Near is < Rht, aplRes = Near
@@ -869,11 +862,6 @@ APLBA1F FloorBA1F
         Myarb_clear (&arbCeil);
         Myarb_clear (&arbFloor);
     } // End IF/ELSE
-
-    // If the Radius is >= 1, ...
-    if (mag_cmp_2exp_si (arb_radref (&aplRes), 0) >= 0)
-        // Call it an error as the range includes more than one integer
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
     return aplRes;
 } // End FloorBA1F

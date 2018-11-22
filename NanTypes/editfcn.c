@@ -799,8 +799,8 @@ LRESULT APIENTRY FEWndProc
             // Draw the line #s
             DrawLineNumsFE (hWndEC);
 
-            // Get the length of the function header block
-            uLineLen = GetBlockLength (hWndEC, 0);
+            // Get the length of the function header line
+            uLineLen = GetLineLength (hWndEC, 0);
 
             // If it's an AFO, ...
             if (bAFO)
@@ -5583,7 +5583,6 @@ void DrawLineNumsFE
             uLineTop,       // # of topmost visible line
             uCnt,           // Counter
             uCntLC,         // Line Continuation counter
-            uLineNum,       // Line #
             line_height;    // The line height
     WCHAR   wszLineNum[FCN_INDENT + 1];  // Line # (e.g. L"[0000]\0"
     HBRUSH  hBrush;         // Brush for background color
@@ -5633,37 +5632,44 @@ void DrawLineNumsFE
     // We no longer need this resource
     MyDeleteObject (hBrush); hBrush = NULL;
 
-    // Get the # lines in the text
+    // Get the # physical lines in the text
     uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 
-    // Get the # of the topmost visible line
+    // Get the physical # of the topmost visible line
     uLineTop = (UINT) SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
 
     // Get the line height
     line_height = (UINT) SendMessageW (hWndEC, MYEM_LINE_HEIGHT, 0, 0);
 
-    // Less the top index
-    uLineCnt -= uLineTop;
-
-    // Loop through the line #s
-    for (uCnt = uCntLC = 0; uCnt < uLineCnt; uCnt++)
+    // Loop through the off-screen physical line #s
+    for (uCnt = uCntLC = 0; uCnt < uLineTop; uCnt++)
     {
-        // Calculate the current line #
-        uLineNum = uCnt + uLineTop;
+        // If the preceding physical line does continue to the current line, ...
+        if (uCnt NE 0
+         && SendMessageW (hWndEC, MYEM_ISLINECONT, uCnt - 1, 0) EQ TRUE)
+            // Count it in
+            uCntLC++;
+    } // End FOR
 
+    // Loop through the on-screen physical line #s
+    for (; uCnt < uLineCnt; uCnt++)
+    {
         // If the preceding physical line does not continue to the current line, ...
-        if (uLineNum EQ 0
-         || SendMessageW (hWndEC, MYEM_ISLINECONT, uLineNum - 1, 0) EQ FALSE)
+        if (uCnt EQ 0
+         || SendMessageW (hWndEC, MYEM_ISLINECONT, uCnt - 1, 0) EQ FALSE)
         {
-            // Format the line #
+            // Format the logical line #
             MySprintfW (wszLineNum,
                         sizeof (wszLineNum),
                        L"[%d]",
-                        uLineNum - uCntLC);
+                        uCnt - uCntLC);     // (Physical line #) - (# LCs) = (Logical line #)
             uLen = lstrlenW (wszLineNum);
         } else
         {
+            // No line number text, so length is zero
             uLen = 0;
+
+            // Count it in
             uCntLC++;
         } // End IF/ELSE
 
@@ -5682,8 +5688,8 @@ void DrawLineNumsFE
                  | DT_CALCRECT
                  | DT_NOPREFIX);
         // Move the rectangle down
-        rcPaint.top    += uCnt * line_height;
-        rcPaint.bottom += uCnt * line_height;
+        rcPaint.top    += (uCnt - uLineTop) * line_height;
+        rcPaint.bottom += (uCnt - uLineTop) * line_height;
 
         // Draw the line #s
         DrawTextW (hDCMem,
@@ -5824,7 +5830,6 @@ LPSYMENTRY ParseFunctionName
                    lstrlenW (lpaplChar),    // The length of the above line
                    NULL,                    // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                    0,                       // Logical function line # (0 = header)
-                   0,                       // Physical ...
                    NULL,                    // Ptr to error handling function (may be NULL)
                    NULL,                    // Ptr to common struc (may be NULL if unused)
                    FALSE);                  // TRUE iff we're tokenizing a Magic Function/Operator

@@ -158,17 +158,13 @@ void CS_ChainTokens
                   FNLN);
 #endif
 
-////Assert (lptkArg2->tkData.Orig.c.uLineNum NE 0x53);
-
     // Point the 1st token to the 2nd token
     lpMemTknLine[lptdArg1->Orig.c.uTknNum].tkData.Next.uLineNum = lptkArg2->tkData.Orig.c.uLineNum;
-    lpMemTknLine[lptdArg1->Orig.c.uTknNum].tkData.Next.uPhyLNum = lptkArg2->tkData.Orig.c.uPhyLNum;
     lpMemTknLine[lptdArg1->Orig.c.uTknNum].tkData.Next.uStmtNum = lptkArg2->tkData.Orig.c.uStmtNum;
     lpMemTknLine[lptdArg1->Orig.c.uTknNum].tkData.Next.uTknNum  = lptkArg2->tkData.Orig.c.uTknNum;
 
     // Change the values on the CS stack
     lptdArg1->Next.uLineNum = lptkArg2->tkData.Orig.c.uLineNum;
-    lptdArg1->Next.uPhyLNum = lptkArg2->tkData.Orig.c.uPhyLNum;
     lptdArg1->Next.uStmtNum = lptkArg2->tkData.Orig.c.uStmtNum;
     lptdArg1->Next.uTknNum  = lptkArg2->tkData.Orig.c.uTknNum;
 
@@ -1838,11 +1834,8 @@ void CS_CopyOrigToNext
     (LPTOKEN_DATA lptdArg)              // Ptr to arg TOKEN_DATA
 
 {
-////Assert (lptdArg->Orig.c.uLineNum NE 0x53);
-
     // Copy original values so we can change them
     lptdArg->Next.uLineNum = lptdArg->Orig.c.uLineNum;
-    lptdArg->Next.uPhyLNum = lptdArg->Orig.c.uPhyLNum;
     lptdArg->Next.uStmtNum = lptdArg->Orig.c.uStmtNum;
     lptdArg->Next.uTknNum  = lptdArg->Orig.c.uTknNum;
 } // End CS_CopyOrigToNext
@@ -2001,7 +1994,6 @@ void CS_SetNextStmtToStmtAfter_ORIG
         case TKT_EOL:
             // Skip to the next line #, token #0
             tdCur.Orig.d.uLineNum++;
-            tdCur.Orig.d.uPhyLNum++;
             tdCur.Orig.d.uTknNum = 0;
 
             break;
@@ -2098,7 +2090,6 @@ void CS_SetNextStmtToStmtAfter_NEXT
         case TKT_EOL:
             // Skip to the next line #, token #0
             tdNxt.Next.uLineNum++;
-            tdNxt.Next.uPhyLNum++;
             tdNxt.Next.uTknNum = 0;
 
             break;
@@ -2185,13 +2176,8 @@ void CS_SetNextToken_COM
         // Get ptr to PerTabData global memory
         lpMemPTD = lpplLocalVars->lpMemPTD; Assert (IsValidPtr (lpMemPTD, sizeof (lpMemPTD)));
 
-////    Assert (lpLoc->uLineNum NE 0x53);
-        Assert (((SHORT) lpLoc->uPhyLNum) > 0);
-        Assert (lpLoc->uPhyLNum EQ lpLoc->uLineNum);
-
         // Save as the next line & token #
-        lpMemPTD->lpSISCur->NxtLineNum = lpLoc->uPhyLNum;
-////////lpMemPTD->lpSISCur->NxtLineNum = lpLoc->uLineNum;
+        lpMemPTD->lpSISCur->NxtLineNum = lpLoc->uLineNum;
         lpMemPTD->lpSISCur->NxtTknNum  = lpLoc->uTknNum;
 
         // Tell the parser to stop executing this line

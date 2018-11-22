@@ -1,6 +1,77 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1963 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In ArcSin and ArcCos For Real Arguments Outside [-1,1]
+
+Directory branches/bsmith/NewTypes:
+
+FPCHO_COM.C:
+MPCHO_COM.C:
+  Fix bug in ArcSin and ArcCos for Real arguments outside [-1,1].
+
+
+Build #1962 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug When Factorial Blows Up To RAT
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC.C:
+  Fix bug when factorial blows up to RAT with multiple elements in the right arg.
+
+
+Build #1961 -- Version 0.5.8.xx
+-------------------------------
+
+* Implement Extended Replicate For Negative Integer Left Arguments
+
+Directory branches/bsmith/NewTypes:
+
+PF_SLASH.C:
+  Implement Extended Replicate with negative values in the left argument.
+
+
+Build #1960 -- Version 0.5.8.xx
+-------------------------------
+
+* Remove Superfluous Code
+
+Directory branches/bsmith/NewTypes:
+
+PF_COLONBAR.C:
+  Remove superfluous code.
+
+
+Build #1959 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bugs In Implementation Of Cross Product
+
+Directory branches/bsmith/NewTypes:
+
+PF_TIMES.C:
+  Improve comments.
+  Fix bugs in implementation of Cross Product where the indices were calculated incorrectly.
+
+
+Build #1958 -- Version 0.5.8.xx
+-------------------------------
+
+* Change Definition Of 9 and -9 Circle Functions
+
+Directory branches/bsmith/NewTypes:
+
+PF_CIRCLE.C:
+PF_CIRCLE.MAC:
+REBAR.C:
+  Change definition of 9{circle} and -9{circle} to be symmetric and the latter
+    produces a Pure Imaginary number for Hypercomplex numbers.
+
+
 Build #1953 -- Version 0.5.8.xx
 -------------------------------
 

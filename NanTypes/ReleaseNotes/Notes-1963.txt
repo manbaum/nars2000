@@ -1,0 +1,10 @@
+Build #1963 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In ArcSin and ArcCos For Real Arguments Outside [-1,1]
+
+Directory branches/bsmith/NewTypes:
+
+FPCHO_COM.C:
+MPCHO_COM.C:
+  Fix bug in ArcSin and ArcCos for Real arguments outside [-1,1].

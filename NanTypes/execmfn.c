@@ -369,7 +369,6 @@ HGLOBAL Init1MagicFunction
                         uLineLen,           // NELM of lpwszLine
                         hWndEC,             // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                         0,                  // Logical function line # (0 = header)
-                        0,                  // Physical ...
                        &ErrorHandler,       // Ptr to error handling function (may be NULL)
                         NULL,               // Ptr to common struc (may be NULL if unused)
                         TRUE);              // TRUE iff we're tokenizing a Magic Function/Operator
@@ -382,7 +381,6 @@ HGLOBAL Init1MagicFunction
                        0,                   // NELM of lpwszLine
                        NULL,                // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                        0,                   // Logical function line # (0 = header)
-                       0,                   // Physical ...
                        NULL,                // Ptr to error handling function (may be NULL)
                        NULL,                // Ptr to common struc (may be NULL if unused)
                        TRUE);               // TRUE iff we're tokenizing a Magic Function/Operator
@@ -875,7 +873,6 @@ void ExecNilMFO
                    lstrlenW (MFON_MonDotInit),  // NELM of lpwszLine
                    hWndEC,                      // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                    1,                           // Logical function line # (0 = header)
-                   1,                           // Physical ...
                    NULL,                        // Ptr to error handling function (may be NULL)
                    NULL,                        // Ptr to common struc (may be NULL if unused)
                    TRUE);                       // TRUE iff we're tokenizing a Magic Function/Operator

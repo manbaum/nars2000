@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -231,9 +231,6 @@ void mpXf_asin
     mpfr_t mpfIMag,             // Magnitude of imag parts in the arg
            mpfTmp1;             // Temp var
     mpc_t  Z;
-#ifdef DEBUG
-////WCHAR wszTemp[1024] = {'\0'};
-#endif
 
     // Initialize to NaN
     mpfr_init (mpfIMag);
@@ -262,25 +259,27 @@ void mpXf_asin
             mpfr_neg (Z->im, Z->im, MPFR_RNDN);
     } // End IF
 
-#ifdef DEBUG
-////strcpyW (wszTemp, L"Z.re:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->re, 0) = WC_EOS; DbgMsgW (wszTemp);
-////strcpyW (wszTemp, L"Z.im:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->im, 0) = WC_EOS; DbgMsgW (wszTemp);
+#if (defined DEBUG) && FALSE
+    VfpOut (L"Z.re:  ", &Z->re);
+    VfpOut (L"Z.im:  ", &Z->im);
 #endif
-    // If the imaginary part is zero, ...
-    if (IsMpf0 (mpfIMag))
+    // If the Imaginary part is zero, and
+    //    the Real part is within [-1,1], ...
+    if (IsMpf0 (mpfIMag)
+     && mpfr_cmp_si (&op->parts[0],  1) <= 0
+     && mpfr_cmp_si (&op->parts[0], -1) >= 0)
     {
         // Call the Real number version so as to avoid
         //   inconsistencies in the two cases:
         //   Real vs. Complex (with imaginary part EQ 0)
         mpfr_asin   (Z->re, Z->re, MPFR_RNDN);
-////////mpfr_set_ui (Z->im, 0, MPFR_RNDN);  // Already zero from <mpfr_set> above
     } else
         // Calculate the corresponding complex number
         mpc_asin (Z, Z, MPC_RNDNN);
 
-#ifdef DEBUG
-////strcpyW (wszTemp, L"Z.re:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->re, 0) = WC_EOS; DbgMsgW (wszTemp);
-////strcpyW (wszTemp, L"Z.im:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->im, 0) = WC_EOS; DbgMsgW (wszTemp);
+#if (defined DEBUG) && FALSE
+    VfpOut (L"Z.re:  ", &Z->re);
+    VfpOut (L"Z.im:  ", &Z->im);
 #endif
     // Save as the real part of the result
     mpfr_set (&rop->parts[0], Z->re, rnd);
@@ -319,9 +318,6 @@ void mpXf_acos
     mpfr_t mpfIMag,             // Magnitude of imag parts in the arg
            mpfTmp1;             // Temp var
     mpc_t  Z;
-#ifdef DEBUG
-////WCHAR wszTemp[1024] = {'\0'};
-#endif
 
     // Initialize to NaN
     mpfr_init (mpfIMag);
@@ -350,25 +346,27 @@ void mpXf_acos
             mpfr_neg (Z->im, Z->im, MPFR_RNDN);
     } // End IF
 
-#ifdef DEBUG
-////strcpyW (wszTemp, L"Z.re:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->re, 0) = WC_EOS; DbgMsgW (wszTemp);
-////strcpyW (wszTemp, L"Z.im:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->im, 0) = WC_EOS; DbgMsgW (wszTemp);
+#if (defined DEBUG) && FALSE
+    VfpOut (L"Z.re:  ", &Z->re);
+    VfpOut (L"Z.im:  ", &Z->im);
 #endif
-    // If the imaginary part is zero, ...
-    if (IsMpf0 (mpfIMag))
+    // If the Imaginary part is zero, and
+    //    the Real part is within [-1,1], ...
+    if (IsMpf0 (mpfIMag)
+     && mpfr_cmp_si (&op->parts[0],  1) <= 0
+     && mpfr_cmp_si (&op->parts[0], -1) >= 0)
     {
         // Call the Real number version so as to avoid
         //   inconsistencies in the two cases:
         //   Real vs. Complex (with imaginary part EQ 0)
         mpfr_acos   (Z->re, Z->re, MPFR_RNDN);
-////////mpfr_set_ui (Z->im, 0, MPFR_RNDN);  // Already zero from <mpfr_set> above
     } else
         // Calculate the corresponding complex number
         mpc_acos (Z, Z, MPC_RNDNN);
 
-#ifdef DEBUG
-////strcpyW (wszTemp, L"Z.re:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->re, 0) = WC_EOS; DbgMsgW (wszTemp);
-////strcpyW (wszTemp, L"Z.im:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->im, 0) = WC_EOS; DbgMsgW (wszTemp);
+#if (defined DEBUG) && FALSE
+    VfpOut (L"Z.re:  ", &Z->re);
+    VfpOut (L"Z.im:  ", &Z->im);
 #endif
     // Save as the real part of the result
     mpfr_set (&rop->parts[0], Z->re, rnd);
@@ -407,9 +405,6 @@ void mpXf_atan
     mpfr_t mpfIMag,             // Magnitude of imag parts in the arg
            mpfTmp1;             // Temp var
     mpc_t  Z;
-#ifdef DEBUG
-////WCHAR wszTemp[1024] = {'\0'};
-#endif
 
     // Initialize to NaN
     mpfr_init (mpfIMag);
@@ -440,16 +435,16 @@ void mpXf_atan
             mpfr_neg (Z->re, Z->re, MPFR_RNDN);
     } // End IF
 
-#ifdef DEBUG
-////strcpyW (wszTemp, L"Z.re:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->re, 0) = WC_EOS; DbgMsgW (wszTemp);
-////strcpyW (wszTemp, L"Z.im:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->im, 0) = WC_EOS; DbgMsgW (wszTemp);
+#if (defined DEBUG) && FALSE
+    VfpOut (L"Z.re:  ", &Z->re);
+    VfpOut (L"Z.im:  ", &Z->im);
 #endif
     // Calculate the corresponding complex number
     mpc_atan (Z, Z, MPC_RNDNN);
 
-#ifdef DEBUG
-////strcpyW (wszTemp, L"Z.re:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->re, 0) = WC_EOS; DbgMsgW (wszTemp);
-////strcpyW (wszTemp, L"Z.im:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->im, 0) = WC_EOS; DbgMsgW (wszTemp);
+#if (defined DEBUG) && FALSE
+    VfpOut (L"Z.re:  ", &Z->re);
+    VfpOut (L"Z.im:  ", &Z->im);
 #endif
     // Save as the real part of the result
     mpfr_set (&rop->parts[0], Z->re, rnd);
@@ -693,9 +688,6 @@ void mpXf_asinh
     mpfr_t mpfIMag,             // Magnitude of imag parts in the arg
            mpfTmp1;             // Temp var
     mpc_t  Z;
-#ifdef DEBUG
-////WCHAR wszTemp[1024] = {L'\0'};
-#endif
 
     // Initialize to NaN
     mpfr_init (mpfIMag);
@@ -709,15 +701,15 @@ void mpXf_asinh
     mpfr_set (Z->re, &op->parts[0], rnd);
     mpfr_set (Z->im, mpfIMag, rnd);
 
-#ifdef DEBUG
-////strcpyW (wszTemp, L"Z.re:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->re, 0) = WC_EOS; DbgMsgW (wszTemp);
-////strcpyW (wszTemp, L"Z.im:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->im, 0) = WC_EOS; DbgMsgW (wszTemp);
+#if (defined DEBUG) && FALSE
+    VfpOut (L"Z.re:  ", &Z->re);
+    VfpOut (L"Z.im:  ", &Z->im);
 #endif
     // Calculate the corresponding complex number
     mpc_asinh (Z, Z, MPC_RNDNN);
-#ifdef DEBUG
-////strcpyW (wszTemp, L"Z.re:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->re, 0) = WC_EOS; DbgMsgW (wszTemp);
-////strcpyW (wszTemp, L"Z.im:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &Z->im, 0) = WC_EOS; DbgMsgW (wszTemp);
+#if (defined DEBUG) && FALSE
+    VfpOut (L"Z.re:  ", &Z->re);
+    VfpOut (L"Z.im:  ", &Z->im);
 #endif
 
     // Save as the real part of the result

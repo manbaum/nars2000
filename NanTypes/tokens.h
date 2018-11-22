@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -207,10 +207,9 @@ typedef struct tagTKFLAGS
 typedef struct tagLOCATION
 {
     USHORT uLineNum,            // 00:  Logical  Line # (origin-1)
-           uPhyLNum,            // 02:  Physical line # (origin-1)
-           uStmtNum,            // 04:  Statement # (origin-0)
-           uTknNum;             // 06:  Token #     (origin-0)
-                                // 08:  Length
+           uStmtNum,            // 02:  Statement # (origin-0)
+           uTknNum;             // 04:  Token #     (origin-0)
+                                // 06:  Length
 } LOCATION, *LPLOCATION;
 
 typedef const LOCATION CLOCATION, *LPCLOCATION;

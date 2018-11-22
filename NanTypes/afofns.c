@@ -340,7 +340,7 @@ void MakeAfo_EM_YY
     SF_Fcns.SF_LineLen      = SF_LineLenAN;         // Ptr to line length function
     SF_Fcns.SF_ReadLine     = SF_ReadLineAN;        // Ptr to read line function
     SF_Fcns.SF_IsLineCont   = SF_IsLineContAN;      // Ptr to Is Line Continued function
-    SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesAN;     // Ptr to get # physical lines function
+    SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesAN;     // Ptr to get # physical lines in the function
     SF_Fcns.SF_NumLogLines  = SF_NumLogLinesAN;     // Ptr to get # logical  ...
     SF_Fcns.SF_CreationTime = SF_CreationTimeCom;   // Ptr to get function creation time
     SF_Fcns.SF_LastModTime  = SF_LastModTimeCom;    // Ptr to get function last modification time

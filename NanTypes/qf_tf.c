@@ -1279,8 +1279,8 @@ UBOOL TransferInverseFcn1_EM
     SF_Fcns.SF_LineLen      = SF_LineLenTF1;        // Ptr to line length function
     SF_Fcns.SF_ReadLine     = SF_ReadLineTF1;       // Ptr to read line function
     SF_Fcns.SF_IsLineCont   = SF_IsLineContTF1;     // Ptr to Is Line Continued function
-    SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesTF1;    // Ptr to # physical lines function
-    SF_Fcns.SF_NumLogLines  = SF_NumLogLinesTF1;    // Ptr to # logical  ...
+    SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesTF1;    // Ptr to get # physical lines in the function
+    SF_Fcns.SF_NumLogLines  = SF_NumLogLinesTF1;    // Ptr to get # logical  ...
     SF_Fcns.SF_CreationTime = SF_CreationTimeTF1;   // Ptr to get function creation time
     SF_Fcns.SF_LastModTime  = SF_LastModTimeTF1;    // Ptr to get function last modification time
     SF_Fcns.SF_UndoBuffer   = SF_UndoBufferTF1;     // Ptr to get function Undo Buffer global memory handle

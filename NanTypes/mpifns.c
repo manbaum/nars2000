@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -4852,28 +4852,24 @@ void mpifr_mul
               && IsMpfPosInfinity (op2))
              || (IsMpfPosInfinity (op1)
               && IsMpf0 (op2)))
-                mpfr_set (rop,
-                          mpfr_QuadICValue (op1,
-                                            ICNDX_0MULPi,
-                                            op2,
-                                            rop,
-                                            IsMpf0 (op1) ? SIGN_APLVFP (op1)
-                                                         : SIGN_APLVFP (op2)),
-                          MPFR_RNDN);
+                mpfr_QuadICValue (op1,
+                                  ICNDX_0MULPi,
+                                  op2,
+                                  rop,
+                                  IsMpf0 (op1) ? SIGN_APLVFP (op1)
+                                               : SIGN_APLVFP (op2));
             else
             // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
             if ((IsMpf0 (op1)
               && IsMpfNegInfinity (op2))
              || (IsMpfNegInfinity (op1)
               && IsMpf0 (op2)))
-                mpfr_set (rop,
-                          mpfr_QuadICValue (op1,
-                                            ICNDX_0MULNi,
-                                            op2,
-                                            rop,
-                                            IsMpf0 (op1) ? SIGN_APLVFP (op1)
-                                                         : SIGN_APLVFP (op2)),
-                          MPFR_RNDN);
+                mpfr_QuadICValue (op1,
+                                  ICNDX_0MULNi,
+                                  op2,
+                                  rop,
+                                  IsMpf0 (op1) ? SIGN_APLVFP (op1)
+                                               : SIGN_APLVFP (op2));
             else
                 // The result is infinity whose sign is the product of the signs
                 mpfr_set_inf (rop, mpfr_sgn (op1) * mpfr_sgn (op2));
@@ -4886,28 +4882,24 @@ void mpifr_mul
               && IsMpfPosInfinity (op1))
              || (IsMpfPosInfinity (op2)
               && IsMpf0 (op1)))
-                mpfr_set (rop,
-                          mpfr_QuadICValue (op2,
-                                            ICNDX_0MULPi,
-                                            op1,
-                                            rop,
-                                            IsMpf0 (op2) ? SIGN_APLVFP (op2)
-                                                         : SIGN_APLVFP (op1)),
-                          MPFR_RNDN);
+                mpfr_QuadICValue (op2,
+                                  ICNDX_0MULPi,
+                                  op1,
+                                  rop,
+                                  IsMpf0 (op2) ? SIGN_APLVFP (op2)
+                                               : SIGN_APLVFP (op1));
             else
             // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
             if ((IsMpf0 (op2)
               && IsMpfNegInfinity (op1))
              || (IsMpfNegInfinity (op2)
               && IsMpf0 (op1)))
-                mpfr_set (rop,
-                          mpfr_QuadICValue (op2,
-                                            ICNDX_0MULNi,
-                                            op1,
-                                            rop,
-                                            IsMpf0 (op2) ? SIGN_APLVFP (op2)
-                                                         : SIGN_APLVFP (op1)),
-                          MPFR_RNDN);
+                mpfr_QuadICValue (op2,
+                                  ICNDX_0MULNi,
+                                  op1,
+                                  rop,
+                                  IsMpf0 (op2) ? SIGN_APLVFP (op2)
+                                               : SIGN_APLVFP (op1));
             else
                 // The result is infinity whose sign is the product of the signs
                 mpfr_set_inf (rop, mpfr_sgn (op1) * mpfr_sgn (op2));

@@ -1577,11 +1577,11 @@ void PrimFnDydDownCaretRisRvR
     if ((mpq_inf_p (&lpatLft->aplRat) && IsMpq0 (&lpatRht->aplRat))
      || (mpq_inf_p (&lpatRht->aplRat) && IsMpq0 (&lpatLft->aplRat)))
     {
-        lpMemRes[uRes] = *mpq_QuadICValue (&lpatLft->aplRat,
-                                            ICNDX_0GCDInf,
-                                           &lpatRht->aplRat,
-                                           &lpMemRes[uRes],
-                                            mpq_sgn (&lpatLft->aplRat) EQ -1);
+        mpq_QuadICValue (&lpatLft->aplRat,
+                          ICNDX_0GCDInf,
+                         &lpatRht->aplRat,
+                         &lpMemRes[uRes],
+                          mpq_sgn (&lpatLft->aplRat) EQ -1);
         return;
     } // End IF
 
@@ -1657,11 +1657,11 @@ void PrimFnDydDownCaretVisVvV
     // Check for indeterminates:  gcd (PoM_, 0)  or  gcd (0, PoM_)
     if ((mpfr_inf_p (&lpatLft->aplVfp) && IsMpf0 (&lpatRht->aplVfp))
      || (mpfr_inf_p (&lpatRht->aplVfp) && IsMpf0 (&lpatLft->aplVfp)))
-        lpMemRes[uRes] = *mpfr_QuadICValue (&lpatLft->aplVfp,
-                                             ICNDX_0GCDInf,
-                                            &lpatRht->aplVfp,
-                                            &lpMemRes[uRes],
-                                             SIGN_APLVFP (&lpatLft->aplVfp));
+        mpfr_QuadICValue (&lpatLft->aplVfp,
+                           ICNDX_0GCDInf,
+                          &lpatRht->aplVfp,
+                          &lpMemRes[uRes],
+                           SIGN_APLVFP (&lpatLft->aplVfp));
     else
     {
         // Check for special cases:  gcd (PoM_, N)  or  gcd (N, PoM_)

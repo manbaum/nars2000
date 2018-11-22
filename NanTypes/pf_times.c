@@ -1767,24 +1767,24 @@ APLRAT MulHC1R_RE
       && IsMpqPosInfinity (&aplRht))
      || (IsMpqPosInfinity (&aplLft)
       && IsMpq0 (&aplRht)))
-        aplRes = *mpq_QuadICValue (&aplLft,
-                                    ICNDX_0MULPi,
-                                   &aplRht,
-                                   &aplRes,
-                                    IsMpq0 (&aplLft) ? (mpq_sgn (&aplLft) EQ -1)
-                                                              : (mpq_sgn (&aplRht) EQ -1));
+        mpq_QuadICValue (&aplLft,
+                          ICNDX_0MULPi,
+                         &aplRht,
+                         &aplRes,
+                          IsMpq0 (&aplLft) ? (mpq_sgn (&aplLft) EQ -1)
+                                                    : (mpq_sgn (&aplRht) EQ -1));
     else
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((IsMpq0 (&aplLft)
       && IsMpqNegInfinity (&aplRht))
      || (IsMpqNegInfinity (&aplLft)
       && IsMpq0 (&aplRht)))
-        aplRes = *mpq_QuadICValue (&aplLft,
-                                    ICNDX_0MULNi,
-                                   &aplRht,
-                                   &aplRes,
-                                    IsMpq0 (&aplLft) ? (mpq_sgn (&aplLft) EQ -1)
-                                                     : (mpq_sgn (&aplRht) EQ -1));
+        mpq_QuadICValue (&aplLft,
+                          ICNDX_0MULNi,
+                         &aplRht,
+                         &aplRes,
+                          IsMpq0 (&aplLft) ? (mpq_sgn (&aplLft) EQ -1)
+                                           : (mpq_sgn (&aplRht) EQ -1));
     else
     // Check for -0
     // If either arg is 0
@@ -1900,24 +1900,24 @@ APLVFP MulHC1V_RE
       && IsMpfPosInfinity (&aplRht))
      || (IsMpfPosInfinity (&aplLft)
       && IsMpf0 (&aplRht)))
-        aplRes = *mpfr_QuadICValue (&aplLft,
-                                     ICNDX_0MULPi,
-                                    &aplRht,
-                                    &aplRes,
-                                     IsMpf0 (&aplLft) ? SIGN_APLVFP (&aplLft)
-                                                      : SIGN_APLVFP (&aplRht));
+        mpfr_QuadICValue (&aplLft,
+                           ICNDX_0MULPi,
+                          &aplRht,
+                          &aplRes,
+                           IsMpf0 (&aplLft) ? SIGN_APLVFP (&aplLft)
+                                            : SIGN_APLVFP (&aplRht));
     else
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((IsMpf0 (&aplLft)
       && IsMpfNegInfinity (&aplRht))
      || (IsMpfNegInfinity (&aplLft)
       && IsMpf0 (&aplRht)))
-        aplRes = *mpfr_QuadICValue (&aplLft,
-                                     ICNDX_0MULNi,
-                                    &aplRht,
-                                    &aplRes,
-                                     IsMpf0 (&aplLft) ? SIGN_APLVFP (&aplLft)
-                                                      : SIGN_APLVFP (&aplRht));
+        mpfr_QuadICValue (&aplLft,
+                           ICNDX_0MULNi,
+                          &aplRht,
+                          &aplRes,
+                           IsMpf0 (&aplLft) ? SIGN_APLVFP (&aplLft)
+                                            : SIGN_APLVFP (&aplRht));
     else
     // Check for -0
     // If either arg is 0
@@ -2639,25 +2639,24 @@ APLHC2R MulHC2R_RE
       && IsMpqPosInfinity (&aplRht.parts[i]))
      || (IsMpqPosInfinity (&aplLft.parts[i])
       && IsMpq0 (&aplRht.parts[i])))
-        mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
-                                                     ICNDX_0MULPi,
-                                                   &aplRht.parts[i],
-                                                   &aplRes.parts[i],
-                                                    IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
-                                                                              : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
+        mpq_QuadICValue (&aplLft.parts[i],
+                          ICNDX_0MULPi,
+                        &aplRht.parts[i],
+                        &aplRes.parts[i],
+                         IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
+                                                   : (mpq_sgn (&aplRht.parts[i]) EQ -1));
     else
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((IsMpq0 (&aplLft.parts[i])
       && IsMpqNegInfinity (&aplRht.parts[i]))
      || (IsMpqNegInfinity (&aplLft.parts[i])
       && IsMpq0 (&aplRht.parts[i])))
-        mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
-                                                     ICNDX_0MULNi,
-                                                    &aplRht.parts[i],
-                                                    &aplRes.parts[i],
-                                                     IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
-                                                                               : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
-
+        mpq_QuadICValue (&aplLft.parts[i],
+                          ICNDX_0MULNi,
+                         &aplRht.parts[i],
+                         &aplRes.parts[i],
+                          IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
+                                                    : (mpq_sgn (&aplRht.parts[i]) EQ -1));
     return aplRes;
 #undef  D
 } // End MulHC2R_RE
@@ -2880,27 +2879,24 @@ APLHC2V MulHC2V_RE
       && IsMpfPosInfinity (&aplRht.parts[i]))
      || (IsMpfPosInfinity (&aplLft.parts[i])
       && IsMpf0 (&aplRht.parts[i])))
-        mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
-                                                       ICNDX_0MULPi,
-                                                      &aplRht.parts[i],
-                                                      &aplRes.parts[i],
-                                                       IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
-                                                                                 : SIGN_APLVFP (&aplRht.parts[i])),
-                                    MPFR_RNDN);
+        mpfr_QuadICValue (&aplLft.parts[i],
+                           ICNDX_0MULPi,
+                          &aplRht.parts[i],
+                          &aplRes.parts[i],
+                           IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
+                                                     : SIGN_APLVFP (&aplRht.parts[i]));
     else
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((IsMpf0 (&aplLft.parts[i])
       && IsMpfNegInfinity (&aplRht.parts[i]))
      || (IsMpfNegInfinity (&aplLft.parts[i])
       && IsMpf0 (&aplRht.parts[i])))
-        mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
-                                                       ICNDX_0MULNi,
-                                                      &aplRht.parts[i],
-                                                      &aplRes.parts[i],
-                                                       IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
-                                                                                 : SIGN_APLVFP (&aplRht.parts[i])),
-                                    MPFR_RNDN);
-
+        mpfr_QuadICValue (&aplLft.parts[i],
+                           ICNDX_0MULNi,
+                          &aplRht.parts[i],
+                          &aplRes.parts[i],
+                           IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
+                                                     : SIGN_APLVFP (&aplRht.parts[i]));
     return aplRes;
 #undef D
 } // End MulHC2V_RE
@@ -4063,25 +4059,24 @@ APLHC4R MulHC4R_RE
       && IsMpqPosInfinity (&aplRht.parts[i]))
      || (IsMpqPosInfinity (&aplLft.parts[i])
       && IsMpq0 (&aplRht.parts[i])))
-        mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
-                                                     ICNDX_0MULPi,
-                                                   &aplRht.parts[i],
-                                                   &aplRes.parts[i],
-                                                    IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
-                                                                              : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
+        mpq_QuadICValue (&aplLft.parts[i],
+                          ICNDX_0MULPi,
+                        &aplRht.parts[i],
+                        &aplRes.parts[i],
+                         IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
+                                                   : (mpq_sgn (&aplRht.parts[i]) EQ -1));
     else
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((IsMpq0 (&aplLft.parts[i])
       && IsMpqNegInfinity (&aplRht.parts[i]))
      || (IsMpqNegInfinity (&aplLft.parts[i])
       && IsMpq0 (&aplRht.parts[i])))
-        mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
-                                                     ICNDX_0MULNi,
-                                                    &aplRht.parts[i],
-                                                    &aplRes.parts[i],
-                                                     IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
-                                                                                   : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
-
+        mpq_QuadICValue (&aplLft.parts[i],
+                          ICNDX_0MULNi,
+                         &aplRht.parts[i],
+                         &aplRes.parts[i],
+                          IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
+                                                        : (mpq_sgn (&aplRht.parts[i]) EQ -1));
     return aplRes;
 #undef  D
 } // End MulHC4R_RE
@@ -4380,27 +4375,24 @@ APLHC4V MulHC4V_RE
       && IsMpfPosInfinity (&aplRht.parts[i]))
      || (IsMpfPosInfinity (&aplLft.parts[i])
       && IsMpf0 (&aplRht.parts[i])))
-        mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
-                                                       ICNDX_0MULPi,
-                                                      &aplRht.parts[i],
-                                                      &aplRes.parts[i],
-                                                       IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
-                                                                                 : SIGN_APLVFP (&aplRht.parts[i])),
-                                    MPFR_RNDN);
+        mpfr_QuadICValue (&aplLft.parts[i],
+                           ICNDX_0MULPi,
+                          &aplRht.parts[i],
+                          &aplRes.parts[i],
+                           IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
+                                                     : SIGN_APLVFP (&aplRht.parts[i]));
     else
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((IsMpf0 (&aplLft.parts[i])
       && IsMpfNegInfinity (&aplRht.parts[i]))
      || (IsMpfNegInfinity (&aplLft.parts[i])
       && IsMpf0 (&aplRht.parts[i])))
-        mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
-                                                       ICNDX_0MULNi,
-                                                      &aplRht.parts[i],
-                                                      &aplRes.parts[i],
-                                                       IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
-                                                                                 : SIGN_APLVFP (&aplRht.parts[i])),
-                                    MPFR_RNDN);
-
+        mpfr_QuadICValue (&aplLft.parts[i],
+                           ICNDX_0MULNi,
+                          &aplRht.parts[i],
+                          &aplRes.parts[i],
+                           IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
+                                                     : SIGN_APLVFP (&aplRht.parts[i]));
     return aplRes;
 #undef  D
 } // End MulHC4V_RE
@@ -5561,25 +5553,24 @@ APLHC8R MulHC8R_RE
       && IsMpqPosInfinity (&aplRht.parts[i]))
      || (IsMpqPosInfinity (&aplLft.parts[i])
       && IsMpq0 (&aplRht.parts[i])))
-        mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
-                                                     ICNDX_0MULPi,
-                                                   &aplRht.parts[i],
-                                                   &aplRes.parts[i],
-                                                    IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
-                                                                              : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
+        mpq_QuadICValue (&aplLft.parts[i],
+                          ICNDX_0MULPi,
+                        &aplRht.parts[i],
+                        &aplRes.parts[i],
+                         IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
+                                                   : (mpq_sgn (&aplRht.parts[i]) EQ -1));
     else
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((IsMpq0 (&aplLft.parts[i])
       && IsMpqNegInfinity (&aplRht.parts[i]))
      || (IsMpqNegInfinity (&aplLft.parts[i])
       && IsMpq0 (&aplRht.parts[i])))
-        mpq_set (&aplRes.parts[i], mpq_QuadICValue (&aplLft.parts[i],
-                                                     ICNDX_0MULNi,
-                                                    &aplRht.parts[i],
-                                                    &aplRes.parts[i],
-                                                     IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
-                                                                               : (mpq_sgn (&aplRht.parts[i]) EQ -1)));
-
+        mpq_QuadICValue (&aplLft.parts[i],
+                          ICNDX_0MULNi,
+                         &aplRht.parts[i],
+                         &aplRes.parts[i],
+                          IsMpq0 (&aplLft.parts[i]) ? (mpq_sgn (&aplLft.parts[i]) EQ -1)
+                                                    : (mpq_sgn (&aplRht.parts[i]) EQ -1));
     return aplRes;
 #undef  D
 } // End MulHC8R_RE
@@ -5873,27 +5864,24 @@ APLHC8V MulHC8V_RE
       && IsMpfPosInfinity (&aplRht.parts[i]))
      || (IsMpfPosInfinity (&aplLft.parts[i])
       && IsMpf0 (&aplRht.parts[i])))
-        mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
-                                                       ICNDX_0MULPi,
-                                                      &aplRht.parts[i],
-                                                      &aplRes.parts[i],
-                                                       IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
-                                                                                 : SIGN_APLVFP (&aplRht.parts[i])),
-                                    MPFR_RNDN);
+        mpfr_QuadICValue (&aplLft.parts[i],
+                           ICNDX_0MULPi,
+                          &aplRht.parts[i],
+                          &aplRes.parts[i],
+                           IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
+                                                     : SIGN_APLVFP (&aplRht.parts[i]));
     else
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((IsMpf0 (&aplLft.parts[i])
       && IsMpfNegInfinity (&aplRht.parts[i]))
      || (IsMpfNegInfinity (&aplLft.parts[i])
       && IsMpf0 (&aplRht.parts[i])))
-        mpfr_set (&aplRes.parts[i], mpfr_QuadICValue (&aplLft.parts[i],
-                                                       ICNDX_0MULNi,
-                                                      &aplRht.parts[i],
-                                                      &aplRes.parts[i],
-                                                       IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
-                                                                                 : SIGN_APLVFP (&aplRht.parts[i])),
-                                    MPFR_RNDN);
-
+        mpfr_QuadICValue (&aplLft.parts[i],
+                           ICNDX_0MULNi,
+                          &aplRht.parts[i],
+                          &aplRes.parts[i],
+                           IsMpf0 (&aplLft.parts[i]) ? SIGN_APLVFP (&aplLft.parts[i])
+                                                     : SIGN_APLVFP (&aplRht.parts[i]));
     return aplRes;
 #undef  D
 } // End MulHC8V_RE

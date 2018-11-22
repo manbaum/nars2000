@@ -686,7 +686,7 @@ void Myz_clear
 //  Return the appropriate []IC value
 //***************************************************************************
 
-LPAPLRAT mpq_QuadICValue
+void mpq_QuadICValue
     (LPAPLRAT   aplRatLft,          // Left arg
      IC_INDICES icIndex,            // []IC index
      LPAPLRAT   aplRatRht,          // Right arg
@@ -750,8 +750,6 @@ LPAPLRAT mpq_QuadICValue
     // If we should negate, ...
     if (bNegate)
         mpq_neg (mpqRes, mpqRes);
-
-    return mpqRes;
 } // End mpq_QuadICValue
 
 
@@ -1435,7 +1433,7 @@ int mpq_integer_p
 //  Return the appropriate []IC value
 //***************************************************************************
 
-LPAPLVFP mpfr_QuadICValue
+void mpfr_QuadICValue
     (LPAPLVFP   aplVfpLft,          // Left arg
      IC_INDICES icIndex,            // []IC index
      LPAPLVFP   aplVfpRht,          // Right arg
@@ -1499,8 +1497,6 @@ LPAPLVFP mpfr_QuadICValue
     // If we should negate, ...
     if (bNegate)
         mpfr_neg (mpfRes, mpfRes, MPFR_RNDN);
-
-    return mpfRes;
 } // End mpfr_QuadICValue
 
 

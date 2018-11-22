@@ -1,0 +1,22 @@
+Build #1965 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In Use Of <[mpfr|mpq]_QuadICValue>
+
+Directory branches/bsmith/NewTypes:
+
+CR_PROC.C:
+MPFNS.C:
+MPIFNS.C:
+PF_BAR.C:
+PF_COLONBAR.C:
+PF_CSTAR.C:
+PF_DCARET.C:
+PF_PLUS.C:
+PF_QDOT.C:
+PF_ROOT.C:
+PF_STAR.C:
+PF_STILE.C:
+PF_TIMES.C:
+PF_UCARET.C:
+  Fix bug in use of <[mpfr|mpq]_QuadICValue> where we may double initialize a variable.  The solution is never to return a value from these functions and always initialize the result inside the function.

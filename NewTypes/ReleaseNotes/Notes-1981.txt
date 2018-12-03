@@ -1,0 +1,9 @@
+Build #1981 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In Modulus Wth Negative Left Argument
+
+Directory branches/bsmith/NewTypes:
+
+PF_STILE.C:
+  Fix bug in Modulus with negative left argument -- the result should be negative!

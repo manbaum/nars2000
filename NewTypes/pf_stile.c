@@ -1634,6 +1634,10 @@ APLHC1R ModHC1R
 
         // Calculate the residue
         mpq_mod (&aplRes, &aplRht, &aplLft);
+
+        // Skip the ending sign-setting code
+        //   if the result is non-zero
+        bNoSign = !IsMpq0 (&aplRes);
     } // End IF/ELSE/...
 
     // The sign of the result is the sign of the left arg
@@ -1810,6 +1814,10 @@ APLHC1V ModHC1V
         Myhc1v_clear (&aplTmp);
         Myhc1v_clear (&aplCel);
         Myhc1v_clear (&aplFlr);
+
+        // Skip the ending sign-setting code
+        //   if the result is non-zero
+        bNoSign = !IsMpf0 (&aplRes);
     } // End IF/ELSE/...
 
     // The sign of the result is the sign of the left arg

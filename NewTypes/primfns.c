@@ -621,7 +621,8 @@ APLSTYPE StorageType
     Assert (aplTypeRht < ARRAY_LENGTH);
 
     // tkData is an immediate function
-    Assert (lptkFunc->tkFlags.TknType EQ TKT_FCNIMMED);
+    Assert (lptkFunc->tkFlags.TknType EQ TKT_FCNIMMED
+         || lptkFunc->tkFlags.TknType EQ TKT_FILLJOT);
 
     // Get the common storage type
     aplTypeRes = aTypePromote[aplTypeLft][aplTypeRht];

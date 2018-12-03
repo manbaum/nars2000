@@ -184,6 +184,8 @@ typedef enum tagARRAY_TYPES
 //   <IsSimpleNH> and <IsSimpleNum> macros in <macros.h>,
 //   <aArrayTypeToHCDimIndex> in <hc_proc.h>,
 //   defArrayTypeAsChar and BPE_VEC in <datatype.h>,
+//   <aToSimple> in <hc_proc.h>,
+//   <aToSimpleAPA> in <hc_proc.h>,
 //   <TranslateTypesToPFSIndex> in <primspec.c>.
 
 

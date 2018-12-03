@@ -1,6 +1,34 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1987 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In {jot}{QuadJot} Not Handling Nested Scalars
+
+Directory branches/bsmith/NewTypes:
+
+DATATYPE.H:
+  Improve documentation.
+
+GETFNS.C:
+  Delete unused function <GetNextVfpMem>.
+  Improve comments.
+  Implement function <GetNextQword>
+  In <GetPrimFlagsPtr>, handle the token <TKT_FILLJOT>.
+
+HC_PROC.H:
+  Define translate table <aToSimpleAPA> just like <aToSimple> except APA -> APA.
+
+PO_QUADJOT.C:
+  Fix bug in {jot}{QuadJot} not handling nested scalars.
+  Fix bug in {jot}{QuadJot} not copying HCxR and HCxV CHO numbers.
+  Improve comments.
+
+PRIMFNS.C:
+  In <StorageType> handle the token <TKT_FILLJOT>.
+
+
 Build #1985 -- Version 0.5.8.xx
 -------------------------------
 

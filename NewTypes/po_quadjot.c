@@ -182,7 +182,9 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
             goto LEFT_VALENCE_EXIT;
 
         // If we're to create a diagonal matrix, ...
-        if (IsVector (aplRankRht))
+        if (IsVector (aplRankRht)
+         || (IsScalar (aplRankRht)
+          && IsNested (aplTypeRht)))
         {
             //***************************************************************
             // Create a diagonal matrix with the (vector) right arg on the diagonal
@@ -192,7 +194,8 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
             if (IsNested (aplTypeRht))
             {
                 APLSTYPE          aplTypeItm,
-                                  aplTypeBase;
+                                  aplTypeBase,
+                                  aplTypeItmBase;
                 APLNELM           aplNELMItm;
                 APLRANK           aplRankItm;
                 APLDIM            aplColsItm,
@@ -293,14 +296,20 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
                 // Split cases based upon the base result storage type
                 switch (aplTypeBase)
                 {
+                    case ARRAY_INT:         // Already zero from <AllocateGlobalArray>
+                    case ARRAY_FLOAT:
+                        break;
+
                     case ARRAY_RAT:
-                            // Initialize to 0/1
-                            mpq_init   (&((LPAPLRAT) lpMemRes)[i + iHCDimRes * (jCnt + iCnt * aplColsRes)]);
+                        // Initialize to 0/1
+                        mpq_init   (&((LPAPLRAT) lpMemRes)[i + iHCDimRes * (jCnt + iCnt * aplColsRes)]);
+
                         break;
 
                     case ARRAY_VFP:
-                            // Initialize to 0
-                            mpfr_init0 (&((LPAPLVFP) lpMemRes)[i + iHCDimRes * (jCnt + iCnt * aplColsRes)]);
+                        // Initialize to 0
+                        mpfr_init0 (&((LPAPLVFP) lpMemRes)[i + iHCDimRes * (jCnt + iCnt * aplColsRes)]);
+
                         break;
 
                     defstop
@@ -392,6 +401,10 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
                         case ARRAY_HC2F:        //   and the following code makes no reference
                         case ARRAY_HC4F:        //   to the actual value
                         case ARRAY_HC8F:
+                            // Set the item's base storage type
+                            //   leaving APA alone
+                            aplTypeItmBase = aToSimpleAPA[aplTypeItm];
+
                             // If the item is a matrix, ...
                             if (IsMatrix (aplRankItm))
                             {
@@ -405,7 +418,7 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
                                 for (i = 0; i < iHCDimItm; i++)
                                     // Copy the next value to the diagonal
                                     ((LPAPLINT) lpMemRes)[i + iHCDimRes * iCntZO] =
-                                      GetNextInteger (lpMemItm, aplTypeItm, i + iHCDimItm * iCntMO);
+                                      GetNextQword (lpMemItm, aplTypeItmBase, i + iHCDimItm * iCntMO);
                                 // Skip to the next result offset (ZO)
                                 iCntZO += aplColsItm;
                             } else
@@ -419,7 +432,7 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
                                 for (i = 0; i < iHCDimItm; i++)
                                     // Copy the next value to the diagonal
                                     ((LPAPLINT) lpMemRes)[i + iHCDimRes * iCntZO] =
-                                      GetNextInteger (lpMemItm, aplTypeItm, i + iHCDimItm * iCntMO);
+                                      GetNextQword (lpMemItm, aplTypeItmBase, i + iHCDimItm * iCntMO);
                             } // End IF/ELSE
 
                             break;
@@ -437,13 +450,21 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
                             if (IsMatrix (aplRankItm))
                             {
                                 // Copy the matrix to the diagonal
-
+#if (defined DEBUG) && FALSE
+                                // Display the values in <lpMemItm>
+                                for (iCntR = 0; iCntR < aplColsItm; iCntR++)
+                                for (iCntC = 0; iCntC < aplColsItm; iCntC++)
+                                {
+                                    VfpOut (L"Re = ", &((LPAPLHC2V) lpMemItm)[iCntC + iCntR * aplColsItm].parts[0]);
+                                    VfpOut (L"Im = ", &((LPAPLHC2V) lpMemItm)[iCntC + iCntR * aplColsItm].parts[1]);
+                                } // End FOR/FOR
+#endif
                                 // Loop through the rows of the result offset (ZO) & item offset (MO)
                                 for (iCntMO = iCntR = 0; iCntR < aplColsItm; iCntR++, iCntZO += aplColsRes - aplColsItm          )
                                 // Loop through the cols of the result offset (ZO) & item offset (MO)
                                 for (         iCntC = 0; iCntC < aplColsItm; iCntC++, iCntZO++                         , iCntMO++)
                                 {
-                                    // Promote the item to a RAT/VFP
+                                    // Promote the item to a FLT/RAT/VFP
                                     (*aTypeActPromote[aplTypeItm][aplTypeRes]) (lpMemItm, iCntMO, &atItm);
 
                                     // Loop through all of the parts
@@ -451,15 +472,21 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
                                     // Split cases based upon the base result type
                                     switch (aplTypeBase)
                                     {
+                                        case ARRAY_FLOAT:
+                                            // Copy the next value to the diagonal
+                                            ((LPAPLFLOAT) lpMemRes)[i + iHCDimRes * iCntZO] = atItm.aplHC8F.parts[i];
+
+                                            break;
+
                                         case ARRAY_RAT:
                                             // Copy the next value to the diagonal
-                                            mpq_set (&((LPAPLRAT) lpMemRes)[i + iHCDimRes * iCntZO], &atItm.aplHC8R.parts[0]);
+                                            mpq_set  (&((LPAPLRAT) lpMemRes)[i + iHCDimRes * iCntZO], &atItm.aplHC8R.parts[i]);
 
                                             break;
 
                                         case ARRAY_VFP:
                                             // Copy the next value to the diagonal
-                                            mpfr_set (&((LPAPLVFP) lpMemRes)[i + iHCDimRes * iCntZO], &atItm.aplHC8V.parts[0], MPFR_RNDN);
+                                            mpfr_set (&((LPAPLVFP) lpMemRes)[i + iHCDimRes * iCntZO], &atItm.aplHC8V.parts[i], MPFR_RNDN);
 
                                             break;
 
@@ -481,7 +508,7 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
                                 // Loop through the item
                                 for (iCntMO = 0; iCntMO < aplColsItm; iCntMO++, iCntZO += aplColsRes + 1)
                                 {
-                                    // Promote the item to a RAT/VFP
+                                    // Promote the item to a FLT/RAT/VFP
                                     (*aTypeActPromote[aplTypeItm][aplTypeRes]) (lpMemItm, iCntMO, &atItm);
 
                                     // Loop through all of the parts
@@ -489,15 +516,21 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
                                     // Split cases based upon the base result type
                                     switch (aplTypeBase)
                                     {
+                                        case ARRAY_FLOAT:
+                                            // Copy the next value to the diagonal
+                                            ((LPAPLFLOAT) lpMemRes)[i + iHCDimRes * iCntZO] = atItm.aplHC8F.parts[i];
+
+                                            break;
+
                                         case ARRAY_RAT:
                                             // Copy the next value to the diagonal
-                                            mpq_set  (&((LPAPLRAT) lpMemRes)[i + iHCDimRes * iCntZO], &atItm.aplHC8R.parts[0]);
+                                            mpq_set  (&((LPAPLRAT) lpMemRes)[i + iHCDimRes * iCntZO], &atItm.aplHC8R.parts[i]);
 
                                             break;
 
                                         case ARRAY_VFP:
                                             // Copy the next value to the diagonal
-                                            mpfr_set (&((LPAPLVFP) lpMemRes)[i + iHCDimRes * iCntZO], &atItm.aplHC8V.parts[0], MPFR_RNDN);
+                                            mpfr_set (&((LPAPLVFP) lpMemRes)[i + iHCDimRes * iCntZO], &atItm.aplHC8V.parts[i], MPFR_RNDN);
 
                                             break;
 
@@ -628,7 +661,7 @@ LPPL_YYSTYPE PrimOpQuadJotCommon_EM_YY
                         if (iCnt NE jCnt)
                         // Loop through all of the parts
                         for (i = 0; i < iHCDimRht; i++)
-                            // Initialize to 0/1
+                            // Initialize to 0
                             mpfr_init0 (&((LPAPLVFP) lpMemRes)[i + iHCDimRht * (jCnt + iCnt * aplColsRht)]);
                         break;
 

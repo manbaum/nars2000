@@ -1978,59 +1978,6 @@ APLFLOAT GetNextRatFltMem
 
 
 //***************************************************************************
-//  $GetNextVfpMem
-//
-//  Get the next item from an array as a VFP
-//***************************************************************************
-
-APLVFP GetNextVfpMem
-    (LPVOID   lpMemRht,
-     APLSTYPE aplTypeRht,
-     APLINT   uRht)
-
-{
-    APLVFP aplVfpRes;
-
-    // Initialize the temp
-    mpfr_init (&aplVfpRes);
-
-    // Split cases based upon the incoming storage type
-    switch (aplTypeRht)
-    {
-        case ARRAY_BOOL:
-        case ARRAY_INT:
-        case ARRAY_APA:
-            mpfr_set_sx (&aplVfpRes, GetNextInteger (lpMemRht, aplTypeRht, uRht), MPFR_RNDN);
-
-            break;
-
-        case ARRAY_FLOAT:
-            mpfr_set_d (&aplVfpRes, ((LPAPLFLOAT) lpMemRht)[uRht], MPFR_RNDN);
-
-            break;
-
-        case ARRAY_RAT:
-            mpfr_set_q (&aplVfpRes, &((LPAPLRAT) lpMemRht)[uRht], MPFR_RNDN);
-
-            break;
-
-        case ARRAY_VFP:
-            mpfr_copy (&aplVfpRes, &((LPAPLVFP) lpMemRht)[uRht]);
-
-            break;
-
-        case ARRAY_CHAR:
-        case ARRAY_NESTED:
-        case ARRAY_HETERO:
-        defstop
-            break;
-    } // End SWITCH
-
-    return aplVfpRes;
-} // End GetNextVfpMem
-
-
-//***************************************************************************
 //  $GetNextVfpIntGlb
 //
 //  Get the next value from a VFP array global memory handle
@@ -2099,7 +2046,7 @@ APLFLOAT GetNextVfpFltMem
     // Initialize the temp
     mpfr_init (&mpfTmp);
 
-    // Copy the RAT to a VFP
+    // Copy the VFP
     mpfr_set (&mpfTmp, &lpMemVfp[uRes], MPFR_RNDN);
 
     // Zero the sign
@@ -2122,6 +2069,49 @@ APLFLOAT GetNextVfpFltMem
     else
         return 0.0;
 } // End GetNextVfpFltMem
+
+
+//***************************************************************************
+//  $GetNextQword
+//
+//  Return the next value as a QWORD
+//***************************************************************************
+
+APLINT GetNextQword
+    (LPVOID   lpMem,                        // Ptr to global memory
+     APLSTYPE aplType,                      // Storage type
+     APLINT   uRes)                         // Index
+
+{
+    // Split cases based upon the storage type
+    switch (aplType)
+    {
+        case ARRAY_BOOL:
+            return BIT0 & (((LPAPLBOOL) lpMem)[uRes >> LOG2NBIB] >> (MASKLOG2NBIB & uRes));
+
+        case ARRAY_INT:
+        case ARRAY_FLOAT:
+            return ((LPAPLINT) lpMem)[uRes];
+
+        case ARRAY_APA:
+            return ((LPAPLAPA) lpMem)->Off + ((LPAPLAPA) lpMem)->Mul * uRes;
+
+        case ARRAY_HC2I:
+        case ARRAY_HC2F:
+            return ((LPAPLHC2I) lpMem)[uRes].parts[0];
+
+        case ARRAY_HC4I:
+        case ARRAY_HC4F:
+            return ((LPAPLHC4I) lpMem)[uRes].parts[0];
+
+        case ARRAY_HC8I:
+        case ARRAY_HC8F:
+            return ((LPAPLHC8I) lpMem)[uRes].parts[0];
+
+        defstop
+            return 0;
+    } // End SWITCH
+} // End GetNextQword
 
 
 //***************************************************************************
@@ -3638,7 +3628,7 @@ LPPRIMFNS GetPrototypeFcnPtr
                     return lpPrimFns;
 
                 case DFN_HEADER_SIGNATURE:
-                    // Get a ptr to the prototype function for the user-defined function/operator
+                    // Get a ptr to the prototype function for the User-defined function/operator
                     return &ExecDfnGlbProto_EM_YY;
 
                 defstop
@@ -3681,6 +3671,7 @@ LPPRIMFLAGS GetPrimFlagsPtr
         case TKT_OP2IMMED:
         case TKT_OP3IMMED:
         case TKT_OPJOTDOT:
+        case TKT_FILLJOT:
             return &PrimFlags[SymTrans (lptkFunc)];
 
         case TKT_FCNNAMED:
@@ -3703,7 +3694,7 @@ LPPRIMFLAGS GetPrimFlagsPtr
             switch (GetSignatureMem (lpMemFcn))
             {
                 case DFN_HEADER_SIGNATURE:
-                    // Get a ptr to the prototype function for the user-defined function/operator
+                    // Get a ptr to the prototype function for the User-defined function/operator
                     lpPrimFlags = &DfnIdentFns;
 
                     break;
@@ -3749,7 +3740,7 @@ LPPRIMFLAGS GetPrimFlagsPtr
                     return lpPrimFlags;
 
                 case DFN_HEADER_SIGNATURE:
-                    // Get a ptr to the prototype function for the user-defined function/operator
+                    // Get a ptr to the prototype function for the User-defined function/operator
                     return &DfnIdentFns;
 
                 defstop

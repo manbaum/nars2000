@@ -349,6 +349,7 @@ int aHCDimIndexToHCDim[4]
 #define TranslateNumTypeToHCNumType(a,b)    (a + b * (PN_NUMTYPE_HC4R - PN_NUMTYPE_HC2R))
 
 // Translate table to convert HCxy to the corresponding simple type (IFRV±)
+//   converting APA to INT
 EXTERN
 ARRAY_TYPES aToSimple[ARRAY_LENGTH]
 #ifdef DEFINE_VALUES
@@ -361,6 +362,42 @@ ARRAY_TYPES aToSimple[ARRAY_LENGTH]
        ARRAY_ERROR ,    // ARRAY_NESTED
        ARRAY_ERROR ,    // ARRAY_LIST
        ARRAY_INT   ,    // ARRAY_APA
+       ARRAY_RAT   ,    // ARRAY_RAT
+       ARRAY_VFP   ,    // ARRAY_VFP
+       ARRAY_INT   ,    // ARRAY_HC2I
+       ARRAY_FLOAT ,    // ARRAY_HC2F
+       ARRAY_RAT   ,    // ARRAY_HC2R
+       ARRAY_VFP   ,    // ARRAY_HC2V
+       ARRAY_INT   ,    // ARRAY_HC4I
+       ARRAY_FLOAT ,    // ARRAY_HC4F
+       ARRAY_RAT   ,    // ARRAY_HC4R
+       ARRAY_VFP   ,    // ARRAY_HC4V
+       ARRAY_INT   ,    // ARRAY_HC8I
+       ARRAY_FLOAT ,    // ARRAY_HC8F
+       ARRAY_RAT   ,    // ARRAY_HC8R
+       ARRAY_VFP   ,    // ARRAY_HC8V
+       ARRAY_ARB   ,    // ARRAY_BA1F
+       ARRAY_ARB   ,    // ARRAY_BA2F
+       ARRAY_ARB   ,    // ARRAY_BA4F
+       ARRAY_ARB   ,    // ARRAY_BA8F
+}
+#endif
+;
+
+// Translate table to convert HCxy to the corresponding simple type (IFRV±)
+//   leaving APA alone
+EXTERN
+ARRAY_TYPES aToSimpleAPA[ARRAY_LENGTH]
+#ifdef DEFINE_VALUES
+ = {
+       ARRAY_INT   ,    // ARRAY_BOOL
+       ARRAY_INT   ,    // ARRAY_INT
+       ARRAY_FLOAT ,    // ARRAY_FLOAT
+       ARRAY_ERROR ,    // ARRAY_CHAR
+       ARRAY_ERROR ,    // ARRAY_HETERO
+       ARRAY_ERROR ,    // ARRAY_NESTED
+       ARRAY_ERROR ,    // ARRAY_LIST
+       ARRAY_APA   ,    // ARRAY_APA
        ARRAY_RAT   ,    // ARRAY_RAT
        ARRAY_VFP   ,    // ARRAY_VFP
        ARRAY_INT   ,    // ARRAY_HC2I

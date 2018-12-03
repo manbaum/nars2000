@@ -2286,6 +2286,49 @@ APLFLOAT GetNextArbFltMem
 
 
 //***************************************************************************
+//  $GetNextQword
+//
+//  Return the next value as a QWORD
+//***************************************************************************
+
+APLINT GetNextQword
+    (LPVOID   lpMem,                        // Ptr to global memory
+     APLSTYPE aplType,                      // Storage type
+     APLINT   uRes)                         // Index
+
+{
+    // Split cases based upon the storage type
+    switch (aplType)
+    {
+        case ARRAY_BOOL:
+            return BIT0 & (((LPAPLBOOL) lpMem)[uRes >> LOG2NBIB] >> (MASKLOG2NBIB & uRes));
+
+        case ARRAY_INT:
+        case ARRAY_FLOAT:
+            return ((LPAPLINT) lpMem)[uRes];
+
+        case ARRAY_APA:
+            return ((LPAPLAPA) lpMem)->Off + ((LPAPLAPA) lpMem)->Mul * uRes;
+
+        case ARRAY_HC2I:
+        case ARRAY_HC2F:
+            return ((LPAPLHC2I) lpMem)[uRes].parts[0];
+
+        case ARRAY_HC4I:
+        case ARRAY_HC4F:
+            return ((LPAPLHC4I) lpMem)[uRes].parts[0];
+
+        case ARRAY_HC8I:
+        case ARRAY_HC8F:
+            return ((LPAPLHC8I) lpMem)[uRes].parts[0];
+
+        defstop
+            return 0;
+    } // End SWITCH
+} // End GetNextQword
+
+
+//***************************************************************************
 //  $GetNextInteger
 //
 //  Return the next value as an integer
@@ -2311,7 +2354,7 @@ APLINT GetNextInteger
 
         case ARRAY_APA:
             return ((LPAPLAPA) lpMem)->Off + ((LPAPLAPA) lpMem)->Mul * uRes;
-
+#if FALSE   // Keep around in case we actually need it
         case ARRAY_HC2I:
             return *(LPAPLINT) &((LPAPLHC2I) lpMem)[uRes];
 
@@ -2321,6 +2364,15 @@ APLINT GetNextInteger
         case ARRAY_HC8I:
             return *(LPAPLINT) &((LPAPLHC8I) lpMem)[uRes];
 
+        case ARRAY_HC2F:
+            return (APLINT) ((LPAPLHC2F) lpMem)[uRes].parts[0];
+
+        case ARRAY_HC4F:
+            return (APLINT) ((LPAPLHC4F) lpMem)[uRes].parts[0];
+
+        case ARRAY_HC8F:
+            return (APLINT) ((LPAPLHC8F) lpMem)[uRes].parts[0];
+#endif
         defstop
             return 0;
     } // End SWITCH
@@ -2353,6 +2405,15 @@ APLFLOAT GetNextFloat
 
         case ARRAY_APA:
             return (APLFLOAT) (((LPAPLAPA) lpMem)->Off + ((LPAPLAPA) lpMem)->Mul * uRes);
+#if FALSE   // Keep around in case we actually need it
+        case ARRAY_HC2I:
+            return (APLFLOAT) ((LPAPLHC2I) lpMem)[uRes].parts[0];
+
+        case ARRAY_HC4I:
+            return (APLFLOAT) ((LPAPLHC4I) lpMem)[uRes].parts[0];
+
+        case ARRAY_HC8I:
+            return (APLFLOAT) ((LPAPLHC8I) lpMem)[uRes].parts[0];
 
         case ARRAY_HC2F:
             return *(LPAPLFLOAT) &((LPAPLHC2F) lpMem)[uRes];
@@ -2362,7 +2423,7 @@ APLFLOAT GetNextFloat
 
         case ARRAY_HC8F:
             return *(LPAPLFLOAT) &((LPAPLHC8F) lpMem)[uRes];
-
+#endif
         defstop
             return 0;
     } // End SWITCH

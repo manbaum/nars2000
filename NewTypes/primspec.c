@@ -1224,7 +1224,7 @@ RESTART_EXCEPTION_VARIMMED:
                                 break;
 
                             defstop
-                                return NULL;
+                                goto ERROR_EXIT;
                         } // End SWITCH
 
                         break;
@@ -1260,6 +1260,9 @@ RESTART_EXCEPTION_VARIMMED:
                                 {
                                     // Free the old atRht (if any)
                                     (*aTypeFree[aplTypeRht]) (&atRht, 0);
+
+                                    // Zero the memory in case we use it again
+                                    ZeroMemory (&atRht, sizeof (atRht));
                                 } // End __try/__finally
                             } __except (EXCEPTION_CONTINUE_SEARCH) {}
                         } // End IF/ELSE
@@ -1267,7 +1270,7 @@ RESTART_EXCEPTION_VARIMMED:
                         break;
 
                     defstop
-                        return NULL;
+                        goto ERROR_EXIT;
                 } // End SWITCH
             } __except (CheckException (GetExceptionInformation (), WFCN L" #2"))
             {
@@ -1382,7 +1385,7 @@ RESTART_EXCEPTION_VARIMMED:
             // Restore the value of []RL from LclPrimSpec
             RestPrimSpecRL (&LclPrimSpec);
 
-            return lpYYRes;
+            goto NORMAL_EXIT;
 
         case TKT_VARARRAY:
             // Get the global memory handle
@@ -1415,7 +1418,7 @@ RESTART_EXCEPTION_VARARRAY:
             {
                 YYFree (lpYYRes); lpYYRes = NULL;
 
-                return NULL;
+                goto ERROR_EXIT;
             } // End IF
 
             // Restore the value of []RL from LclPrimSpec
@@ -1448,7 +1451,7 @@ RESTART_EXCEPTION_VARARRAY:
                     break;
             } // End SWITCH
 
-            return lpYYRes;
+            goto NORMAL_EXIT;
 
         defstop
             break;
@@ -1458,32 +1461,38 @@ RESTART_EXCEPTION_VARARRAY:
 
     YYFree (lpYYRes); lpYYRes = NULL;
 
-    return NULL;
+    goto ERROR_EXIT;
 
 AXIS_SYNTAX_EXIT:
     ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
                                lptkFunc);
-    return NULL;
+    goto ERROR_EXIT;
 
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                lptkFunc);
-    return NULL;
+    goto ERROR_EXIT;
 
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
-    return NULL;
+    goto ERROR_EXIT;
 
 NONCE_EXIT:
     ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
                                lptkFunc);
-    return NULL;
+    goto ERROR_EXIT;
 
 ERRMSG_ALREADY_SET_EXIT:
     ErrorMessageSetToken (lptkFunc);
 
-    return NULL;
+    goto ERROR_EXIT;
+
+ERROR_EXIT:
+    // Mark as in error
+    lpYYRes = NULL;
+NORMAL_EXIT:
+    return lpYYRes;
 } // End PrimFnMon_EM_YY
 
 
@@ -2093,6 +2102,9 @@ RESTART_EXCEPTION:
                                             {
                                                 // Free the old atRht (if any)
                                                 (*aTypeFree[aplTypeRht2]) (&atRht, 0);
+
+                                                // Zero the memory in case we use it again
+                                                ZeroMemory (&atRht, sizeof (atRht));
                                             } // End __try/__finally
                                         } __except (EXCEPTION_CONTINUE_SEARCH) {}
                                     } // End IF/ELSE
@@ -2202,6 +2214,9 @@ RESTART_EXCEPTION:
                             {
                                 // Free the old atRht (if any)
                                 (*aTypeFree[aplTypeCom]) (&atRht, 0);
+
+                                // Zero the memory in case we use it again
+                                ZeroMemory (&atRht, sizeof (atRht));
                             } // End __try/__finally
                         } __except (CheckException (GetExceptionInformation (), WFCN L" #2"))
                         {

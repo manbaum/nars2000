@@ -1,6 +1,17 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1973 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug When Re-using a Global Numeric In A Loop
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC.C:
+  Fix bug wen re-using a Global Numeric in a loop.  After freeing the GN, zero it so the next call to MyXXX_init won't fail.
+
+
 Build #1971 -- Version 0.5.8.xx
 -------------------------------
 

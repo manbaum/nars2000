@@ -342,9 +342,9 @@ void PrimFnMonDownStileIisF
 {
     APLFLOAT aplFloatRes;
 
-    // Check for PoM infinity and numbers whose
+    // Check for PoM infinity, NaN, and numbers whose
     //   absolute value is >= 2*53
-    if (IsFltInfinity (lpatRht->aplFloat)
+    if (!_finite (lpatRht->aplFloat)
      || fabs (lpatRht->aplFloat) >= Float2Pow53)
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
     else
@@ -654,10 +654,10 @@ APLHC1V FloorHC1V
                 break;
         } // End SWITCH
 
-#ifdef DEBUG
-////    VfpOut (L"Floor: ", &mpfFloor);
-////    VfpOut (L"Near:  ", &mpfNear );
-////    VfpOut (L"Ceil:  ", &mpfCeil );
+#if (defined DEBUG) && (defined DEBUG_FMT)
+        VfpOut (L"Floor: ", &mpfFloor);
+        VfpOut (L"Near:  ", &mpfNear );
+        VfpOut (L"Ceil:  ", &mpfCeil );
 #endif
 
         // If Near is < Rht, aplRes = Near
@@ -946,7 +946,7 @@ APLHC2F FloorHC2F
             aplTmp2.parts[i] = ((APLFLOAT) aplIntFlr) / 2;
         } // End FOR
 
-#if (defined DEBUG)     // && (defined DEBUG_FMT)
+#if (defined DEBUG) && (defined DEBUG_FMT)
         FltOut (L"aplRht.parts[0] =  ", &aplRht.parts[0]);
         FltOut (L"aplRht.parts[1] =  ", &aplRht.parts[1]);
 ////    FltOut (L"aplRht.parts[2] =  ", &aplRht.parts[2]);
@@ -971,7 +971,7 @@ APLHC2F FloorHC2F
         aplDst1 = DistHC2F (aplRht, aplTmp1);
         aplDst2 = DistHC2F (aplRht, aplTmp2);
 
-#if (defined DEBUG)     // && (defined DEBUG_FMT)
+#if (defined DEBUG) && (defined DEBUG_FMT)
         FltOut (L"aplDst1 =  ", &aplDst1);
         FltOut (L"aplDst2 =  ", &aplDst2);
 #endif

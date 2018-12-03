@@ -1,0 +1,10 @@
+Build #1976 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In -1 and -2 {Circle} {NaN}i0
+
+Directory branches/bsmith/NanTypes:
+
+FPCHO_COM.C:
+MPCHO_COM.C:
+  Fix bug in -1 and -2 {circle} {NaN}i0.

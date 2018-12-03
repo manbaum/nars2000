@@ -26,6 +26,7 @@
 #include "pf_fcre.h"
 #include "headers.h"
 
+//#define DEBUG_FMT
 
 #ifndef PROTO
 PRIMSPEC PrimSpecDownStile = {
@@ -315,9 +316,9 @@ void PrimFnMonDownStileIisF
 {
     APLFLOAT aplFloatRes;
 
-    // Check for PoM infinity and numbers whose
+    // Check for PoM infinity, NaN, and numbers whose
     //   absolute value is >= 2*53
-    if (IsFltInfinity (lpatRht->aplFloat)
+    if (!_finite (lpatRht->aplFloat)
      || fabs (lpatRht->aplFloat) >= Float2Pow53)
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
     else
@@ -581,9 +582,6 @@ APLHC1V FloorHC1V
         mpfr_init_copy (&aplRes, &aplRht);
     else
     {
-#ifdef DEBUG
-////    WCHAR wszTemp[512];
-#endif
         // Initialize the temps
         mpfr_init0 (&aplRes);
         mpfr_init0 (&mpfFloor);
@@ -630,10 +628,10 @@ APLHC1V FloorHC1V
                 break;
         } // End SWITCH
 
-#ifdef DEBUG
-////    strcpyW (wszTemp, L"Floor: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfFloor, 0) = WC_EOS; DbgMsgW (wszTemp);
-////    strcpyW (wszTemp, L"Near:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfNear , 0) = WC_EOS; DbgMsgW (wszTemp);
-////    strcpyW (wszTemp, L"Ceil:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], mpfCeil , 0) = WC_EOS; DbgMsgW (wszTemp);
+#if (defined DEBUG) && (defined DEBUG_FMT)
+        VfpOut (L"Floor: ", &mpfFloor);
+        VfpOut (L"Near:  ", &mpfNear );
+        VfpOut (L"Ceil:  ", &mpfCeil );
 #endif
 
         // If Near is < Rht, aplRes = Near
@@ -786,6 +784,23 @@ APLHC2F FloorHC2F
             aplTmp2.parts[i] = ((APLFLOAT) aplIntFlr) / 2;
         } // End FOR
 
+#if (defined DEBUG) && (defined DEBUG_FMT)
+        FltOut (L"aplRht.parts[0] =  ", &aplRht.parts[0]);
+        FltOut (L"aplRht.parts[1] =  ", &aplRht.parts[1]);
+////    FltOut (L"aplRht.parts[2] =  ", &aplRht.parts[2]);
+////    FltOut (L"aplRht.parts[3] =  ", &aplRht.parts[3]);
+        DbgMsgW (WS_CRLF);
+        FltOut (L"aplTmp1.parts[0] =  ", &aplTmp1.parts[0]);
+        FltOut (L"aplTmp1.parts[1] =  ", &aplTmp1.parts[1]);
+////    FltOut (L"aplTmp1.parts[2] =  ", &aplTmp1.parts[2]);
+////    FltOut (L"aplTmp1.parts[3] =  ", &aplTmp1.parts[3]);
+        DbgMsgW (WS_CRLF);
+        FltOut (L"aplTmp2.parts[0] =  ", &aplTmp2.parts[0]);
+        FltOut (L"aplTmp2.parts[1] =  ", &aplTmp2.parts[1]);
+////    FltOut (L"aplTmp2.parts[2] =  ", &aplTmp2.parts[2]);
+////    FltOut (L"aplTmp2.parts[3] =  ", &aplTmp2.parts[3]);
+        DbgMsgW (WS_CRLF);
+#endif
         //***************************************************************************
         // Choose the result closer to the original number
         //***************************************************************************
@@ -794,6 +809,10 @@ APLHC2F FloorHC2F
         aplDst1 = DistHC2F (aplRht, aplTmp1);
         aplDst2 = DistHC2F (aplRht, aplTmp2);
 
+#if (defined DEBUG) && (defined DEBUG_FMT)
+        FltOut (L"aplDst1 =  ", &aplDst1);
+        FltOut (L"aplDst2 =  ", &aplDst2);
+#endif
         // Use the one of smaller distance
         //   with ties going to the integer coordinates
         aplFlr = CmpSCT_F (aplDst1, aplDst2, SYS_CT, <=) ? aplTmp1 : aplTmp2;
@@ -897,10 +916,31 @@ APLHC4F FloorHC4F
     // Choose the result closer to the original number
     //***************************************************************************
 
+#if (defined DEBUG) && (defined DEBUG_FMT)
+    FltOut (L"aplRht.parts[0] =  ", &aplRht.parts[0]);
+    FltOut (L"aplRht.parts[1] =  ", &aplRht.parts[1]);
+    FltOut (L"aplRht.parts[2] =  ", &aplRht.parts[2]);
+    FltOut (L"aplRht.parts[3] =  ", &aplRht.parts[3]);
+    DbgMsgW (WS_CRLF);
+    FltOut (L"aplTmp1.parts[0] =  ", &aplTmp1.parts[0]);
+    FltOut (L"aplTmp1.parts[1] =  ", &aplTmp1.parts[1]);
+    FltOut (L"aplTmp1.parts[2] =  ", &aplTmp1.parts[2]);
+    FltOut (L"aplTmp1.parts[3] =  ", &aplTmp1.parts[3]);
+    DbgMsgW (WS_CRLF);
+    FltOut (L"aplTmp2.parts[0] =  ", &aplTmp2.parts[0]);
+    FltOut (L"aplTmp2.parts[1] =  ", &aplTmp2.parts[1]);
+    FltOut (L"aplTmp2.parts[2] =  ", &aplTmp2.parts[2]);
+    FltOut (L"aplTmp2.parts[3] =  ", &aplTmp2.parts[3]);
+    DbgMsgW (WS_CRLF);
+#endif
     // Calculate the distances
     aplDst1 = DistHC4F (aplRht, aplTmp1);
     aplDst2 = DistHC4F (aplRht, aplTmp2);
 
+#if (defined DEBUG) && (defined DEBUG_FMT)
+    FltOut (L"aplDst1 =  ", &aplDst1);
+    FltOut (L"aplDst2 =  ", &aplDst2);
+#endif
     // Use the one of smaller distance
     //   with ties going to the integer coordinates
     return CmpSCT_F (aplDst1, aplDst2, SYS_CT, <=) ? aplTmp1 : aplTmp2;
@@ -1150,10 +1190,31 @@ APLHC4R FloorHC4R
     // Choose the result closer to the original number
     //***************************************************************************
 
+#if (defined DEBUG) && (defined DEBUG_FMT)
+    RatOut (L"aplRht.parts[0] =  ", &aplRht.parts[0]);
+    RatOut (L"aplRht.parts[1] =  ", &aplRht.parts[1]);
+    RatOut (L"aplRht.parts[2] =  ", &aplRht.parts[2]);
+    RatOut (L"aplRht.parts[3] =  ", &aplRht.parts[3]);
+    DbgMsgW (WS_CRLF);
+    RatOut (L"aplTmp1.parts[0] =  ", &aplTmp1.parts[0]);
+    RatOut (L"aplTmp1.parts[1] =  ", &aplTmp1.parts[1]);
+    RatOut (L"aplTmp1.parts[2] =  ", &aplTmp1.parts[2]);
+    RatOut (L"aplTmp1.parts[3] =  ", &aplTmp1.parts[3]);
+    DbgMsgW (WS_CRLF);
+    RatOut (L"aplTmp2.parts[0] =  ", &aplTmp2.parts[0]);
+    RatOut (L"aplTmp2.parts[1] =  ", &aplTmp2.parts[1]);
+    RatOut (L"aplTmp2.parts[2] =  ", &aplTmp2.parts[2]);
+    RatOut (L"aplTmp2.parts[3] =  ", &aplTmp2.parts[3]);
+    DbgMsgW (WS_CRLF);
+#endif
     // Calculate the distances
     aplDst1 = DistHC4R (aplRht, aplTmp1);
     aplDst2 = DistHC4R (aplRht, aplTmp2);
 
+#if (defined DEBUG) && (defined DEBUG_FMT)
+    VfpOut (L"aplDst1 =  ", &aplDst1);
+    VfpOut (L"aplDst2 =  ", &aplDst2);
+#endif
     // Choose the smaller distance
     //   with ties going to the integer coordinates
     if (CmpSCT_V (aplDst1, aplDst2, SYS_CT, <=))

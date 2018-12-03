@@ -1,0 +1,9 @@
+Build #1979 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In {floor}{NaN}
+
+Directory branches/bsmith/NewTypes:
+
+PF_DSTILE.C:
+  Fix bug in {floor}{NaN}.

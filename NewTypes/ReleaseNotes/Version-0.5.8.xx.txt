@@ -1,6 +1,20 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1971 -- Version 0.5.8.xx
+-------------------------------
+
+* Recode Macros As Functions
+
+Directory branches/bsmith/NewTypes:
+
+PF_STAR.C:
+  Recode the macros from <pf_star.mac> as separate functions.
+
+PF_STAR.MAC:
+  Delete this file as its macros are recoded in <pf_star.c>.
+
+
 Build #1969 -- Version 0.5.8.xx
 -------------------------------
 

@@ -357,14 +357,16 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
     LPVOID            lpMemRht,             // Ptr to right arg global memory
                       lpMemRes;             // Ptr to result    ...
     APLUINT           uRht,                 // Right arg loop counter
-                      uValErrCnt = 0;       // VALUE ERROR counter
+                      uValErrCnt = 0,       // VALUE ERROR counter
+                      uNoDispCnt = 0;       // bNoDisplay  ...
     LPPL_YYSTYPE      lpYYRes = NULL,       // Ptr to the result
                       lpYYRes2;             // Ptr to secondary result
     APLINT            apaOff,               // Right arg APA offset
                       apaMul;               // ...           multiplier
     TOKEN             tkRhtArg = {0};       // Right arg token
     UINT              uBitMask;             // Bit mask for marching through Booleans
-    UBOOL             bRet = TRUE;          // TRUE iff result is valid
+    UBOOL             bRet = TRUE,          // TRUE iff result is valid
+                      bNoDisplay;           // TRUE iff the result is not to be displayed
     LPPL_YYSTYPE      lpYYFcnStrLft;        // Ptr to left operand function strand
     LPTOKEN           lptkAxisOpr,          // Ptr to operator axis token (may be NULL)
                       lptkAxisLft;          // Ptr to left operand axis token (may be NULL)
@@ -531,6 +533,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                          &tkRhtArg,             // Ptr to right arg token
                                           lptkAxisLft,          // Ptr to left operand axis token
                                          &uValErrCnt,           // Ptr to VALUE ERROR counter
+                                         &uNoDispCnt,           // Ptr to bNoDisplay  ...
                                           lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
                     goto ERROR_EXIT;
                 break;
@@ -546,6 +549,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                          &tkRhtArg,             // Ptr to right arg token
                                           lptkAxisLft,          // Ptr to left operand axis token
                                          &uValErrCnt,           // Ptr to VALUE ERROR counter
+                                         &uNoDispCnt,           // Ptr to bNoDisplay  ...
                                           lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
                     goto ERROR_EXIT;
                 break;
@@ -589,6 +593,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                       &tkRhtArg,            // Ptr to right arg token
                                        lptkAxisLft,         // Ptr to left operand axis token
                                       &uValErrCnt,          // Ptr to VALUE ERROR counter
+                                      &uNoDispCnt,          // Ptr to bNoDisplay  ...
                                        lpPrimProtoLft);     // Ptr to left operand prototype function (may be NULL)
                 // Free the arg token
                 FreeResultTkn (&tkRhtArg);
@@ -642,6 +647,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                              &tkRhtArg,             // Ptr to right arg token
                                               lptkAxisLft,          // Ptr to left operand axis token
                                              &uValErrCnt,           // Ptr to VALUE ERROR counter
+                                             &uNoDispCnt,           // Ptr to bNoDisplay  ...
                                               lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
                         goto ERROR_EXIT;
                 } // End FOR
@@ -666,6 +672,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                              &tkRhtArg,             // Ptr to right arg token
                                               lptkAxisLft,          // Ptr to left operand axis token
                                              &uValErrCnt,           // Ptr to VALUE ERROR counter
+                                             &uNoDispCnt,           // Ptr to bNoDisplay  ...
                                               lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
                         goto ERROR_EXIT;
                 } // End FOR
@@ -690,6 +697,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                              &tkRhtArg,             // Ptr to right arg token
                                               lptkAxisLft,          // Ptr to left operand axis token
                                              &uValErrCnt,           // Ptr to VALUE ERROR counter
+                                             &uNoDispCnt,           // Ptr to bNoDisplay  ...
                                               lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
                         goto ERROR_EXIT;
                 } // End FOR
@@ -714,6 +722,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                              &tkRhtArg,             // Ptr to right arg token
                                               lptkAxisLft,          // Ptr to left operand axis token
                                              &uValErrCnt,           // Ptr to VALUE ERROR counter
+                                             &uNoDispCnt,           // Ptr to bNoDisplay  ...
                                               lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
                         goto ERROR_EXIT;
                 } // End FOR
@@ -743,6 +752,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                              &tkRhtArg,             // Ptr to right arg token
                                               lptkAxisLft,          // Ptr to left operand axis token
                                              &uValErrCnt,           // Ptr to VALUE ERROR counter
+                                             &uNoDispCnt,           // Ptr to bNoDisplay  ...
                                               lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
                         goto ERROR_EXIT;
                 } // End FOR
@@ -798,6 +808,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                           &tkRhtArg,            // Ptr to right arg token
                                            lptkAxisLft,         // Ptr to left operand axis token
                                           &uValErrCnt,          // Ptr to VALUE ERROR counter
+                                          &uNoDispCnt,          // Ptr to bNoDisplay  ...
                                            lpPrimProtoLft);     // Ptr to left operand prototype function (may be NULL)
                     // Free the arg token
                     FreeResultTkn (&tkRhtArg); tkRhtArg.tkData.tkGlbData = NULL;
@@ -837,6 +848,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                           &tkRhtArg,                // Ptr to right arg token
                                            lptkAxisLft,             // Ptr to left operand axis token
                                           &uValErrCnt,              // Ptr to VALUE ERROR counter
+                                          &uNoDispCnt,              // Ptr to bNoDisplay  ...
                                            lpPrimProtoLft);         // Ptr to left operand prototype function (may be NULL)
                     // Free the arg token
                     FreeResultTkn (&tkRhtArg); tkRhtArg.tkData.tkGlbData = NULL;
@@ -876,6 +888,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                           &tkRhtArg,                // Ptr to right arg token
                                            lptkAxisLft,             // Ptr to left operand axis token
                                           &uValErrCnt,              // Ptr to VALUE ERROR counter
+                                          &uNoDispCnt,              // Ptr to bNoDisplay  ...
                                            lpPrimProtoLft);         // Ptr to left operand prototype function (may be NULL)
                     // Free the arg token
                     FreeResultTkn (&tkRhtArg); tkRhtArg.tkData.tkGlbData = NULL;
@@ -915,6 +928,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                           &tkRhtArg,                // Ptr to right arg token
                                            lptkAxisLft,             // Ptr to left operand axis token
                                           &uValErrCnt,              // Ptr to VALUE ERROR counter
+                                          &uNoDispCnt,              // Ptr to bNoDisplay  ...
                                            lpPrimProtoLft);         // Ptr to left operand prototype function (may be NULL)
                     // Free the arg token
                     FreeResultTkn (&tkRhtArg); tkRhtArg.tkData.tkGlbData = NULL;
@@ -973,6 +987,7 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
                                              &tkRhtArg,             // Ptr to right arg token
                                               lptkAxisLft,          // Ptr to left operand axis token
                                              &uValErrCnt,           // Ptr to VALUE ERROR counter
+                                             &uNoDispCnt,           // Ptr to bNoDisplay  ...
                                               lpPrimProtoLft))      // Ptr to left operand prototype function (may be NULL)
                         goto ERROR_EXIT;
 
@@ -1012,13 +1027,21 @@ LPPL_YYSTYPE PrimOpMonDieresisCommon_EM_YY
             goto VALUE_EXIT;
     } // End IF
 
+    // Check for bNoDisplay
+    if (uNoDispCnt NE 0)
+        // Check for all bNoDisplays
+        bNoDisplay = (uNoDispCnt EQ aplNELMRht);
+    else
+        // Mark as displaying
+        bNoDisplay = FALSE;
+
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkFlags.NoDisplay = bNoDisplay;
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrLft->tkToken.tkCharIndex;
 
@@ -1095,6 +1118,7 @@ UBOOL ExecFuncOnToken_EM
      LPTOKEN      lptkRhtArg,           // Ptr to right arg token
      LPTOKEN      lptkAxis,             // Ptr to function strand axis token (may be NULL)
      LPAPLUINT    lpuValErrCnt,         // Ptr to VALUE ERROR counter
+     LPAPLUINT    lpuNoDispCnt,         // Ptr to bNoDisplay  ...
      LPPRIMFNS    lpPrimProto)          // Ptr to left operand prototype function (may be NULL)
 
 {
@@ -1119,6 +1143,9 @@ UBOOL ExecFuncOnToken_EM
     // If it succeeded, ...
     if (lpYYRes NE NULL)
     {
+        // Check on NoDisplay
+        *lpuNoDispCnt += lpYYRes->tkToken.tkFlags.NoDisplay;
+
         // Split cases based upon the result token type
         switch (lpYYRes->tkToken.tkFlags.TknType)
         {
@@ -1236,12 +1263,14 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                       lpMemRes;             // Ptr to result   ...
     LPAPLDIM          lpMemDimRes;          // Ptr to result dimensions
     UBOOL             bRet = TRUE,          // TRUE iff result is valid
+                      bNoDisplay,           // TRUE iff the result is not to be displayed
                       bLftIdent,            // TRUE iff the function has a left identity element and the Axis tail is valid
                       bRhtIdent;            // ...                         right ...
     APLUINT           uLft,                 // Left arg loop counter
                       uRht,                 // Right ...
                       uRes,                 // Result   ...
                       uValErrCnt = 0,       // VALUE ERROR counter
+                      uNoDispCnt = 0,       // bNoDisplay  ...
                       ByteAlloc;            // # bytes to allocate
     APLINT            apaOffLft,            // Left arg APA offset
                       apaMulLft,            // ...          multiplier
@@ -1589,6 +1618,7 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
                                   &tkRhtArg,        // Ptr to right arg token
                                    lptkAxisLft,     // Ptr to left operand axis token
                                   &uValErrCnt,      // Ptr to VALUE ERROR counter
+                                  &uNoDispCnt,      // Ptr to bNoDisplay  ...
                                    lpPrimProtoLft); // Ptr to left operand prototype function
         // Free the left & right arg tokens
         if (lpMemHdrLft NE NULL)
@@ -1623,13 +1653,21 @@ LPPL_YYSTYPE PrimOpDydDieresisCommon_EM_YY
             goto VALUE_EXIT;
     } // End IF
 
+    // Check for bNoDisplay
+    if (uNoDispCnt NE 0)
+        // Check for all bNoDisplays
+        bNoDisplay = (uNoDispCnt EQ aplNELMRes);
+    else
+        // Mark as displaying
+        bNoDisplay = FALSE;
+
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkFlags.NoDisplay = bNoDisplay;
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 

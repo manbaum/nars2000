@@ -1,6 +1,17 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #1978 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix DEBUG Bug When Calling <PrimFnDelStile_EM_YY>
+
+Directory branches/bsmith/NanTypes:
+
+PF_DELTASTILE.C:
+  Fix DEBUG bug when calling <PrimFnDelStile_EM_YY>.
+
+
 Build #1976 -- Version 0.6.0.xx
 -------------------------------
 

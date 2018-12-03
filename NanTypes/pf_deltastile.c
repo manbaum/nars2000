@@ -79,7 +79,7 @@ LPPL_YYSTYPE PrimFnDelStile_EM_YY
 
 {
     // Ensure not an overflow function
-    Assert (lptkFunc->tkData.tkChar EQ UTF16_DELTASTILE);
+    Assert (lptkFunc->tkData.tkChar EQ UTF16_DELSTILE);
 
     //***************************************************************
     // This function is not sensitive to the axis operator,

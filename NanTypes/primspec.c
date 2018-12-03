@@ -1214,7 +1214,8 @@ LPPL_YYSTYPE PrimFnMon_EM_YY
                                                     lptkFunc);
         // Mark as requiring type demotion of one or both args
         bRealOnly = TRUE;
-    } else
+    } // End IF
+
     if (IsRad0Type (aplTypeRes))
         // Mark as requiring Radius 0 args only
         bRad0Only = TRUE;
@@ -1308,6 +1309,9 @@ RESTART_EXCEPTION_VARIMMED:
                                 {
                                     // Free the old atRht (if any)
                                     (*aTypeFree[aplTypeRht]) (&atRht, 0);
+
+                                    // Zero the memory in case we use it again
+                                    ZeroMemory (&atRht, sizeof (atRht));
                                 } // End __try/__finally
                             } __except (EXCEPTION_CONTINUE_SEARCH) {}
                         } // End IF/ELSE
@@ -1633,7 +1637,8 @@ HGLOBAL PrimFnMonGlb_EM
                                                     lptkFunc);
         // Mark as requiring type demotion of one or both args
         bRealOnly = TRUE;
-    } else
+    } // End IF
+
     if (IsRad0Type (aplTypeRes))
         // Mark as requiring Radius 0 args only
         bRad0Only = TRUE;
@@ -2257,6 +2262,9 @@ RESTART_EXCEPTION:
                                             {
                                                 // Free the old atRht (if any)
                                                 (*aTypeFree[aplTypeRht2]) (&atRht, 0);
+
+                                                // Zero the memory in case we use it again
+                                                ZeroMemory (&atRht, sizeof (atRht));
                                             } // End __try/__finally
                                         } __except (EXCEPTION_CONTINUE_SEARCH) {}
                                     } // End IF/ELSE
@@ -2372,6 +2380,9 @@ RESTART_EXCEPTION:
                             {
                                 // Free the old atRht (if any)
                                 (*aTypeFree[aplTypeCom]) (&atRht, 0);
+
+                                // Zero the memory in case we use it again
+                                ZeroMemory (&atRht, sizeof (atRht));
                             } // End __try/__finally
                         } __except (CheckException (GetExceptionInformation (), WFCN L" #2"))
                         {
@@ -2681,7 +2692,8 @@ LPPL_YYSTYPE PrimFnDyd_EM_YY
                                                    &aplTypeRht2);
         // Mark as requiring type demotion of one or both args
         bRealOnly = TRUE;
-    } else
+    } // End IF
+
     if (IsRad0Type (aplTypeRes))
         // Mark as requiring Radius 0 args only
         bRad0Only = TRUE;
@@ -3479,6 +3491,20 @@ UBOOL PrimFnDydSimpNest_EM
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
+    // Unlock the result global memory in case TypeDemote actually demotes
+    if (*lphGlbRes NE NULL && lpMemHdrRes NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (*lphGlbRes); lpMemHdrRes = NULL;
+    } // End IF
+
+    // See if it fits into a lower (but not necessarily smaller) datatype
+    TypeDemote (&lpYYRes->tkToken,
+                 lpPrimSpec->bDydDimDemote
+              || lpPrimSpec->bLclDimDemote);
+    // Reset for the next time
+    lpPrimSpec->bLclDimDemote = FALSE;
+
     goto NORMAL_EXIT;
 
 WSFULL_EXIT:
@@ -3926,6 +3952,20 @@ UBOOL PrimFnDydNestSimp_EM
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
+    // Unlock the result global memory in case TypeDemote actually demotes
+    if (*lphGlbRes NE NULL && lpMemHdrRes NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (*lphGlbRes); lpMemHdrRes = NULL;
+    } // End IF
+
+    // See if it fits into a lower (but not necessarily smaller) datatype
+    TypeDemote (&lpYYRes->tkToken,
+                 lpPrimSpec->bDydDimDemote
+              || lpPrimSpec->bLclDimDemote);
+    // Reset for the next time
+    lpPrimSpec->bLclDimDemote = FALSE;
+
     goto NORMAL_EXIT;
 
 WSFULL_EXIT:
@@ -4072,7 +4112,8 @@ HGLOBAL PrimFnDydNestSiSc_EM
                                                    &aplTypeRht2);
         // Mark as requiring type demotion of one or both args
         bRealOnly = TRUE;
-    } else
+    } // End IF
+
     if (IsRad0Type (aplTypeRes))
         // Mark as requiring Radius 0 args only
         bRad0Only = TRUE;
@@ -4854,6 +4895,13 @@ UBOOL PrimFnDydNestNest_EM
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+        // See if it fits into a lower (but not necessarily smaller) datatype
+        TypeDemote (&lpYYRes->tkToken,
+                     lpPrimSpec->bDydDimDemote
+                  || lpPrimSpec->bLclDimDemote);
+        // Reset for the next time
+        lpPrimSpec->bLclDimDemote = FALSE;
     } // End IF
 ERROR_EXIT:
     return bRet;
@@ -4958,7 +5006,8 @@ HGLOBAL PrimFnDydSiScNest_EM
                                                    &aplTypeRht2);
         // Mark as requiring type demotion of one or both args
         bRealOnly = TRUE;
-    } else
+    } // End IF
+
     if (IsRad0Type (aplTypeRes))
         // Mark as requiring Radius 0 args only
         bRad0Only = TRUE;
@@ -5727,7 +5776,8 @@ RESTART_EXCEPTION_IMMED:
         //   the HC dimension of the result, set the common type
         //   to that of the result so we are sure to initialize the
         //   high-order parts in each argument
-        if (TranslateArrayTypeToHCDim (aplTypeCom)
+        if (IsAnyArb (aplTypeRes)
+         || TranslateArrayTypeToHCDim (aplTypeCom)
           < TranslateArrayTypeToHCDim (aplTypeRes))
             aplTypeCom = aplTypeRes;
 

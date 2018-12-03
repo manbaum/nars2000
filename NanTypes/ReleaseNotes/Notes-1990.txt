@@ -1,0 +1,9 @@
+Build #1990 -- Version 0.6.0.xx
+-------------------------------
+
+* In <TypeDemote> Compress Multiple Calls To <MakeGlbEntry_EM> To One
+
+Directory branches/bsmith/NanTypes:
+
+TYPEMOTE.C:
+  In <TypeDemote> compress multiple calls to <MakeGlbEntry_EM> to one.

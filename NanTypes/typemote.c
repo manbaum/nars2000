@@ -129,7 +129,7 @@ void TypeDemote
             if (IsImmFlt (lptkRhtArg->tkFlags.ImmType)
             // Check for PoM infinity and numbers whose
             //   absolute value is >= 2*53
-             && !(IsFltInfinity (lptkRhtArg->tkData.tkFloat)
+             && !(!_finite (lptkRhtArg->tkData.tkFloat)
                || fabs (lptkRhtArg->tkData.tkFloat) >= Float2Pow53))
             {
                 APLFLOAT aplFlt = lptkRhtArg->tkData.tkFloat,
@@ -351,46 +351,14 @@ void TypeDemote
                         // Skip over the header and dimensions to the data
                         lpMemSub = VarArrayDataFmBase (lpMemHdrSub);
 
-                        // Split cases based upon the array storage type
-                        switch (aplTypeSub)
-                        {
-                            case ARRAY_RAT:
-                                // Copy the data
-                                lptkRhtArg->tkFlags.TknType  = TKT_VARARRAY;
-                                lptkRhtArg->tkFlags.ImmType  = IMMTYPE_RAT;
-                                lptkRhtArg->tkData.tkGlbData =
-                                  MakeGlbEntry_EM (ARRAY_RAT,               // Entry type
-                                                   (LPAPLRAT) lpMemSub,     // Ptr to the value
-                                                   TRUE,                    // TRUE iff we should initialize the target first
-                                                   lptkRhtArg);             // Ptr to function token
-                                break;
-
-                            case ARRAY_VFP:
-                                // Copy the data
-                                lptkRhtArg->tkFlags.TknType  = TKT_VARARRAY;
-                                lptkRhtArg->tkFlags.ImmType  = IMMTYPE_VFP;
-                                lptkRhtArg->tkData.tkGlbData =
-                                  MakeGlbEntry_EM (ARRAY_VFP,               // Entry type
-                                                   (LPAPLVFP) lpMemSub,     // Ptr to the value
-                                                   TRUE,                    // TRUE iff we should initialize the target first
-                                                   lptkRhtArg);             // Ptr to function token
-                                break;
-
-                            case ARRAY_ARB:
-                                // Copy the data
-                                lptkRhtArg->tkFlags.TknType  = TKT_VARARRAY;
-                                lptkRhtArg->tkFlags.ImmType  = IMMTYPE_ARB;
-                                lptkRhtArg->tkData.tkGlbData =
-                                  MakeGlbEntry_EM (ARRAY_ARB,               // Entry type
-                                                   (LPAPLARB) lpMemSub,     // Ptr to the value
-                                                   TRUE,                    // TRUE iff we should initialize the target first
-                                                   lptkRhtArg);             // Ptr to function token
-                                break;
-
-                            defstop
-                                break;
-                        } // End SWITCH
-
+                        // Copy the data
+                        lptkRhtArg->tkFlags.TknType  = TKT_VARARRAY;
+                        lptkRhtArg->tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeSub);
+                        lptkRhtArg->tkData.tkGlbData =
+                          MakeGlbEntry_EM (aplTypeSub,              // Entry type
+                                           (LPVOID) lpMemSub,       // Ptr to the value
+                                           TRUE,                    // TRUE iff we should initialize the target first
+                                           lptkRhtArg);             // Ptr to function token
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbSub); lpMemHdrSub = NULL;
 
@@ -1593,7 +1561,7 @@ UBOOL DemoteData
                 case ARRAY_HC8F:    // Res = FLT, Rht = HC8F
                 case ARRAY_HC8R:    // Res = FLT, Rht = HC8R
                 case ARRAY_HC8V:    // Res = FLT, Rht = HC8V
-                case ARRAY_BA1F:    // Res = FLT, Rht = BA1F
+                case ARRAY_ARB:     // Res = FLT, Rht = ARB
                 case ARRAY_BA2F:    // Res = FLT, Rht = BA2F
                 case ARRAY_BA4F:    // Res = FLT, Rht = BA4F
                 case ARRAY_BA8F:    // Res = FLT, Rht = BA8F
@@ -1735,7 +1703,7 @@ UBOOL DemoteData
                 case ARRAY_HC8F:    // Res = RAT, Rht = HC8F
                 case ARRAY_HC8R:    // Res = RAT, Rht = HC8R
                 case ARRAY_HC8V:    // Res = RAT, Rht = HC8V
-                case ARRAY_BA1F:    // Res = RAT, Rht = BA1F
+                case ARRAY_ARB:     // Res = RAT, Rht = ARB
                 case ARRAY_BA2F:    // Res = RAT, Rht = BA2F
                 case ARRAY_BA4F:    // Res = RAT, Rht = BA4F
                 case ARRAY_BA8F:    // Res = RAT, Rht = BA8F
@@ -1863,7 +1831,7 @@ UBOOL DemoteData
                 case ARRAY_HC8F:    // Res = VFP, Rht = HC8F
                 case ARRAY_HC8R:    // Res = VFP, Rht = HC8R
                 case ARRAY_HC8V:    // Res = VFP, Rht = HC8V
-                case ARRAY_BA1F:    // Res = VFP, Rht = BA1F
+                case ARRAY_ARB:     // Res = VFP, Rht = ARB
                 case ARRAY_BA2F:    // Res = VFP, Rht = BA2F
                 case ARRAY_BA4F:    // Res = VFP, Rht = BA4F
                 case ARRAY_BA8F:    // Res = VFP, Rht = BA8F

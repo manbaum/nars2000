@@ -1,0 +1,22 @@
+Build #1985 -- Version 0.5.8.xx
+-------------------------------
+
+* Recode Unique in C Instead Of Using A Magic Function
+* Fix Bug In <IndexOf> With HC2F Values Near To Each Other, But In An Unusual Order.
+* Fix Bug In <IndexOf> With HETERO/NESTED v. non-HETERO/NESTED.
+
+Directory branches/bsmith/NewTypes:
+
+EXECMFN.C:
+EXECMFN.H:
+MF_DSHOE.H:
+  Remove Magic Function for Monadic DownShoe (Unique).
+
+PF_DSHOE.C:
+  In IF/WHILE stmts always compare ptr against NULL and value against 0.
+  Recode Unique in C instead of using a Magic Function.
+
+PF_IOTA.C:
+  Define function <PrimFnDydIotaCom> to control whether or not <IndexOf> demotes its result.
+  Fix bug in <IndexOf> with HC2F values near to each other, but in an unusual order.
+  Fix bug in <IndexOf> with HETERO/NESTED v. non-HETERO/NESTED.

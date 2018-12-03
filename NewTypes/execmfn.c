@@ -27,7 +27,6 @@
 
 extern MAGIC_FCNOPR MFO_MonIota;
 extern MAGIC_FCNOPR MFO_DydIota;
-extern MAGIC_FCNOPR MFO_MonDnShoe;
 extern MAGIC_FCNOPR MFO_MonRank;
 extern MAGIC_FCNOPR MFO_DydRank;
 extern MAGIC_FCNOPR MFO_MonFMT;
@@ -784,7 +783,6 @@ UBOOL InitMagicFunctions
     // Define the magic functions/operators
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonIota          ]  = Init1MagicFunction (MFON_MonIota          , &MFO_MonIota          , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydIota          ]  = Init1MagicFunction (MFON_DydIota          , &MFO_DydIota          , lpMemPTD, hWndEC, NULL));
-    bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonDnShoe        ]  = Init1MagicFunction (MFON_MonDnShoe        , &MFO_MonDnShoe        , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonRank          ]  = Init1MagicFunction (MFON_MonRank          , &MFO_MonRank          , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_DydRank          ]  = Init1MagicFunction (MFON_DydRank          , &MFO_DydRank          , lpMemPTD, hWndEC, NULL));
     bRet &= NULL NE (lpMemPTD->hGlbMFO[MFOE_MonFMT           ]  = Init1MagicFunction (MFON_MonFMT           , &MFO_MonFMT           , lpMemPTD, hWndEC, NULL));

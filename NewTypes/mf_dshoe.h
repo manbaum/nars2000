@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2016 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,30 +26,6 @@
 //    DO NOT ATTEMPT TO EDIT IT WITH A NON-UNICODE EDITOR.
 //***************************************************************************
 
-
-//***************************************************************************
-//  Magic function/operator for monadic DownShoe
-//
-//  Monadic DownShoe -- Unique
-//
-//  On scalar or vector right args, return the unique values
-//***************************************************************************
-
-static APLCHAR MonHeader[] =
-  L"Z←" MFON_MonDnShoe L" R";
-  
-static APLCHAR MonLine1[] = 
-  L"Z←((R⍳R)=⍳⍴R)/R←,R";
-
-static LPAPLCHAR MonBody[] =
-{MonLine1,
-};
-
-MAGIC_FCNOPR MFO_MonDnShoe =
-{MonHeader,
- MonBody,
- countof (MonBody),
-};
   
 //***************************************************************************
 //  Magic function for dyadic DownShoe

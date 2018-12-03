@@ -490,6 +490,29 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
      LPTOKEN lptkAxis)                      // Ptr to axis token (may be NULL)
 
 {
+    return
+      PrimFnDydIotaCom_EM_YY (lptkLftArg,   // Ptr to left arg token
+                              lptkFunc,     // Ptr to function token
+                              lptkRhtArg,   // Ptr to right arg token
+                              lptkAxis,     // Ptr to axis token (may be NULL)
+                              TRUE);        // TRUE iff we're to TypeDemote at the end
+} // End PrimFnDydIota_EM_YY
+
+
+//***************************************************************************
+//  $PrimFnDydIota_EM_YY
+//
+//  Primitive function for dyadic iota ("index of")
+//***************************************************************************
+
+LPPL_YYSTYPE PrimFnDydIotaCom_EM_YY
+    (LPTOKEN lptkLftArg,                    // Ptr to left arg token
+     LPTOKEN lptkFunc,                      // Ptr to function token
+     LPTOKEN lptkRhtArg,                    // Ptr to right arg token
+     LPTOKEN lptkAxis,                      // Ptr to axis token (may be NULL)
+     UBOOL   bTypeDemote)                   // TRUE iff we're to TypeDemote at the end
+
+{
     APLSTYPE          aplTypeLft,           // Left arg storage type
                       aplTypeRht,           // Right ...
                       aplTypeCom;           // Common var storage type
@@ -728,6 +751,7 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
                                       lptkLftArg,       // Ptr to left arg token
                                       aplTypeLft,       // Left arg storage type
                                       aplNELMLft,       // Left arg NELM
+                                      aplRankLft,       // ...      rank
                                       lpMemLft,         // Ptr to left arg global memory data
                                       lptkRhtArg,       // Ptr to right arg token
                                       aplTypeRht,       // Right arg storage type
@@ -804,8 +828,10 @@ LPPL_YYSTYPE PrimFnDydIota_EM_YY
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
-    // See if it fits into a lower (but not necessarily smaller) datatype
-    TypeDemote (&lpYYRes->tkToken, FALSE);
+    // If we're to TypeDemote at the end, ...
+    if (bTypeDemote)
+        // See if it fits into a lower (but not necessarily smaller) datatype
+        TypeDemote (&lpYYRes->tkToken, FALSE);
 
     goto NORMAL_EXIT;
 
@@ -846,7 +872,7 @@ NORMAL_EXIT:
     } // End IF
 
     return lpYYRes;
-} // End PrimFnDydIota_EM_YY
+} // End PrimFnDydIotaCom_EM_YY
 
 
 //***************************************************************************
@@ -1463,6 +1489,7 @@ UBOOL PrimFnDydIotaNvN_EM
      LPTOKEN   lptkLftArg,          // Ptr to left arg token
      APLSTYPE  aplTypeLft,          // Left arg storage type
      APLNELM   aplNELMLft,          // Left arg NELM
+     APLRANK   aplRankLft,          // Left arg rank
      LPVOID    lpMemLft,            // Ptr to left arg global memory data
      LPTOKEN   lptkRhtArg,          // Ptr to right arg token
      APLSTYPE  aplTypeRht,          // Right arg storage type
@@ -1492,9 +1519,11 @@ UBOOL PrimFnDydIotaNvN_EM
                       iCnt,                     // ...
                       iLow,                     // Lowest index of a match
                       iMin,                     // Minimum index
-                      iMax;                     // Maximum ...
+                      iMax,                     // Maximum ...
+                      aplIntZero = 0;           // Constant 0
     LPPL_YYSTYPE      lpYYRes;                  // Ptr to grade-up result
-    UBOOL             bRet;                     // TRUE iff the result is valid
+    UBOOL             bRet,                     // TRUE iff the result is valid
+                      bReal;                    // TRUE iff we'recomparing Real (Dimension = 1) numbers
     ALLTYPES          atLft = {0},              // Left arg item as ALLTYPES
                       atRht = {0},              // Right ...
                       atGupLft = {0};           // GradeUp of left arg as ALLTYPES
@@ -1531,8 +1560,16 @@ UBOOL PrimFnDydIotaNvN_EM
     // Lock the memory to get a ptr to it
     lpMemHdrGupLft = MyGlobalLockVar (hGlbGupLft);
 
-    // Skip over the header and dimensions to the data
-    lpMemGupLft = VarArrayDataFmBase (lpMemHdrGupLft);
+    // If the left arg is a scalar, ...
+    if (IsScalar (aplRankLft))
+        // Point to the data
+        lpMemGupLft = &aplIntZero;
+    else
+        // Skip over the header and dimensions to the data
+        lpMemGupLft = VarArrayDataFmBase (lpMemHdrGupLft);
+
+    // Calculate if we're comparing Real numbers
+    bReal = TranslateArrayTypeToHCDim (aplTypeCom) EQ 1;
 
     // In case the grade of the left arg is an APA,
     if (IsSimpleAPA (lpMemHdrGupLft->ArrType))
@@ -1647,10 +1684,15 @@ UBOOL PrimFnDydIotaNvN_EM
                         // Get the next HCxy from the left arg
                         (*aTypeActPromote[aplTypeLft][aplTypeCom]) (lpMemLft, atGupLft.aplInteger, &atLft);
 
-                        if (hcXY_cmp (aplTypeCom, &atLft, &atRht, TRUE, fQuadCT) NE 0)
-                            break;
-                        else
+                        // If the two are "equal", ...
+                        if (hcXY_cmp (aplTypeCom, &atLft, &atRht, TRUE, fQuadCT) EQ 0)
+                            // Count it in
                             iLow = min (iLow, atGupLft.aplInteger);
+                        else
+                        // If we're comparing Real numbers, ...
+                        if (bReal)
+                            // Stop looking
+                            break;
                     } // End FOR
 
                     // Check for later but smaller indices for a match
@@ -1666,10 +1708,15 @@ UBOOL PrimFnDydIotaNvN_EM
                         // Get the next HCxy from the left arg
                         (*aTypeActPromote[aplTypeLft][aplTypeCom]) (lpMemLft, atGupLft.aplInteger, &atLft);
 
-                        if (hcXY_cmp (aplTypeCom, &atLft, &atRht, TRUE, fQuadCT) NE 0)
-                            break;
-                        else
+                        // If the two are "equal", ...
+                        if (hcXY_cmp (aplTypeCom, &atLft, &atRht, TRUE, fQuadCT) EQ 0)
+                            // Count it in
                             iLow = min (iLow, atGupLft.aplInteger);
+                        else
+                        // If we're comparing Real numbers, ...
+                        if (bReal)
+                            // Stop looking
+                            break;
                     } // End FOR
 #ifdef GRADE2ND
                     // Save in the result
@@ -2121,6 +2168,66 @@ UBOOL PrimFnDydIotaOther_EM
                             &hGlbSubLft,            // Left arg item LPSYMENTRY or HGLOBAL (may be NULL)
                             &aplLongestSubLft,      // Ptr to left arg immediate value
                             &immTypeSubLft);        // Ptr to left arg immediate type
+            // If the left is HETERO/NESTED and the right is not, ...
+            if (IsPtrArray(aplTypeLft) && !IsPtrArray (aplTypeRht))
+            {
+                TOKEN             tkSubLft = {0};       // Left arg item token
+                APLSTYPE          aplTypeCom,           // Common var storage type
+                                  aplTypeSubLft,        // Left arg item storage type
+                                  aplTypeSubRht;        // Right ...
+                LPVARARRAY_HEADER lpMemHdrSubLft = NULL;// Ptr to left item global memory header
+                LPVOID            lpMemSubLft;          // ...              global memory data
+
+                // Calculate the left, right, and common var storage type
+                aplTypeSubLft = TranslateImmTypeToArrayType (immTypeSubLft);
+                aplTypeSubRht = TranslateImmTypeToArrayType (immTypeSubRht);
+                aplTypeCom = aTypePromote[aplTypeSubLft][aplTypeSubRht];
+
+                // Fill in the left arg item token
+                tkSubLft.tkFlags.TknType   = TKT_VARARRAY;
+                tkSubLft.tkFlags.ImmType   = immTypeSubLft;
+////////////////tkSubLft.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+                tkSubLft.tkData.tkGlbData  = hGlbSubLft;
+                tkSubLft.tkCharIndex       = NEG1U;
+
+                if (IsNumeric (aplTypeSubLft) && IsNumeric (aplTypeSubRht))
+                {
+                    UBOOL bRet;
+
+                    // Lock the memory to get a ptr to it
+                    lpMemHdrSubLft = MyGlobalLockVar (hGlbSubLft);
+
+                    // Skip over the header and dimensions to the data
+                    lpMemSubLft = VarArrayDataFmBase (lpMemHdrSubLft);
+
+                    // Handle Numeric vs. Numeric
+                    bRet =
+                      PrimFnDydIotaNvN_EM (lpMemRes,        // Ptr to result global memory data
+                                          &tkSubLft,        // Ptr to left arg token
+                                           aplTypeSubLft,   // Left arg storage type
+                                           1,               // Left arg NELM
+                                           0,               // ...      rank
+                                           lpMemSubLft,     // Ptr to left arg global memory data
+                                          &tkSubRht,        // Ptr to right arg token
+                                           aplTypeSubRht,   // Right arg storage type
+                                           1,               // Right arg NELM
+                                           lpMemRht,        // Ptr to right arg global memory data
+                                           bQuadIO,         // []IO
+                                           fQuadCT,         // []CT
+                                           NotFound,        // Not found value
+                                           bFltFound,       // TRUE iff the NotFound value is a FLT
+                                           aplTypeCom,      // Common var storage type
+                                           lpbCtrlBreak,    // Ptr to Ctrl-Break flag
+                                           lptkFunc);       // Ptr to function token
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbSubLft); lpMemHdrSubLft = NULL;
+
+                    if (!bRet)
+                        goto ERROR_EXIT;
+                    goto SET_RESULT_VALUE;
+                } // End IF
+            } // End IF
+
             // If both items are globals, ...
             if ((hGlbSubLft NE NULL) && (hGlbSubRht NE NULL))
             {

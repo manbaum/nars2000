@@ -1,6 +1,17 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1989 -- Version 0.5.8.xx
+-------------------------------
+
+* In <TypeDemote> Compress Multiple Calls To <MakeGlbEntry_EM> To One
+
+Directory branches/bsmith/NewTypes:
+
+TYPEMOTE.C:
+  In <TypeDemote> compress multiple calls to <MakeGlbEntry_EM> to one.
+
+
 Build #1987 -- Version 0.5.8.xx
 -------------------------------
 

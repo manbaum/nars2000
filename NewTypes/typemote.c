@@ -325,35 +325,14 @@ void TypeDemote
                         // Skip over the header and dimensions to the data
                         lpMemSub = VarArrayDataFmBase (lpMemHdrSub);
 
-                        // Split cases based upon the array storage type
-                        switch (aplTypeSub)
-                        {
-                            case ARRAY_RAT:
-                                // Copy the data
-                                lptkRhtArg->tkFlags.TknType  = TKT_VARARRAY;
-                                lptkRhtArg->tkFlags.ImmType  = IMMTYPE_RAT;
-                                lptkRhtArg->tkData.tkGlbData =
-                                  MakeGlbEntry_EM (ARRAY_RAT,               // Entry type
-                                                   (LPAPLRAT) lpMemSub,     // Ptr to the value
-                                                   TRUE,                    // TRUE iff we should initialize the target first
-                                                   lptkRhtArg);             // Ptr to function token
-                                break;
-
-                            case ARRAY_VFP:
-                                // Copy the data
-                                lptkRhtArg->tkFlags.TknType  = TKT_VARARRAY;
-                                lptkRhtArg->tkFlags.ImmType  = IMMTYPE_VFP;
-                                lptkRhtArg->tkData.tkGlbData =
-                                  MakeGlbEntry_EM (ARRAY_VFP,               // Entry type
-                                                   (LPAPLVFP) lpMemSub,     // Ptr to the value
-                                                   TRUE,                    // TRUE iff we should initialize the target first
-                                                   lptkRhtArg);             // Ptr to function token
-                                break;
-
-                            defstop
-                                break;
-                        } // End SWITCH
-
+                        // Copy the data
+                        lptkRhtArg->tkFlags.TknType  = TKT_VARARRAY;
+                        lptkRhtArg->tkFlags.ImmType  = TranslateArrayTypeToImmType (aplTypeSub);
+                        lptkRhtArg->tkData.tkGlbData =
+                          MakeGlbEntry_EM (aplTypeSub,              // Entry type
+                                           (LPVOID) lpMemSub,       // Ptr to the value
+                                           TRUE,                    // TRUE iff we should initialize the target first
+                                           lptkRhtArg);             // Ptr to function token
                         // We no longer need this ptr
                         MyGlobalUnlock (hGlbSub); lpMemHdrSub = NULL;
 
@@ -688,19 +667,23 @@ UNLOCK_EXIT:
                     switch (aplTypeSub)
                     {
                         case ARRAY_BOOL:
-                        case ARRAY_INT:
-                        case ARRAY_FLOAT:
                         case ARRAY_NESTED:
+
+                        case ARRAY_INT:
                         case ARRAY_HC2I:
                         case ARRAY_HC4I:
                         case ARRAY_HC8I:
+
+                        case ARRAY_FLOAT:
                         case ARRAY_HC2F:
                         case ARRAY_HC4F:
                         case ARRAY_HC8F:
+
                         case ARRAY_RAT:
                         case ARRAY_HC2R:
                         case ARRAY_HC4R:
                         case ARRAY_HC8R:
+
                         case ARRAY_VFP:
                         case ARRAY_HC2V:
                         case ARRAY_HC4V:

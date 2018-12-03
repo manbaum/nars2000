@@ -1872,15 +1872,6 @@ int mpfr_cmp_ct
 {
     int iRet;                       // Result of mpfr_cmp
 
-////#define CT_DEBUG
-
-#if defined (DEBUG) && defined (CT_DEBUG)
-    WCHAR  wszTemp[1024];
-    APLVFP mpfFmt = {0};
-
-    strcpyW (wszTemp, L"Lft: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpaplLft, 0) = WC_EOS; DbgMsgW (wszTemp);
-    strcpyW (wszTemp, L"Rht: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpaplRht, 0) = WC_EOS; DbgMsgW (wszTemp);
-#endif
     // Compare 'em without tolerance
     iRet = mpfr_cmp (lpaplLft, lpaplRht);
 
@@ -1935,18 +1926,12 @@ int mpfr_cmp_ct
 
             // Convert the comparison tolerance
             mpfr_set_d (&mpfCT, fQuadCT, MPFR_RNDN);
-#if defined (DEBUG) && defined (CT_DEBUG)
-            strcpyW (wszTemp, L"CT:  "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &mpfCT, 0) = WC_EOS; DbgMsgW (wszTemp);
-#endif
+
             // Calculate the low end of the left neighborhood of (|Rht)
 ////////////aplHoodLo = aplRhtAbs - aplRhtAbs * fQuadCT;
             mpfr_mul (&mpfHoodLo, &mpfRhtAbs, &mpfCT    , MPFR_RNDN);
             mpfr_sub (&mpfHoodLo, &mpfRhtAbs, &mpfHoodLo, MPFR_RNDN);
-#if defined (DEBUG) && defined (CT_DEBUG)
-            strcpyW (wszTemp, L"Lo1: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &mpfHoodLo, 0) = WC_EOS; DbgMsgW (wszTemp);
-            strcpyW (wszTemp, L"L1 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &mpfLftAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
-            strcpyW (wszTemp, L"R1 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &mpfRhtAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
-#endif
+
             // If (|Rht) is greater than (|Lft),
             // and (|Lft) is in the
             //    left-neighborhood of (|Rht) with CT, return 0 (equal)
@@ -1962,11 +1947,7 @@ int mpfr_cmp_ct
 ////////////////aplHoodLo = aplLftAbs - aplLftAbs * fQuadCT;
                 mpfr_mul (&mpfHoodLo, &mpfLftAbs, &mpfCT    , MPFR_RNDN);
                 mpfr_sub (&mpfHoodLo, &mpfLftAbs, &mpfHoodLo, MPFR_RNDN);
-#if defined (DEBUG) && defined (CT_DEBUG)
-            strcpyW (wszTemp, L"Lo2: "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &mpfHoodLo, 0) = WC_EOS; DbgMsgW (wszTemp);
-            strcpyW (wszTemp, L"R2 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &mpfRhtAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
-            strcpyW (wszTemp, L"L2 : "); *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], &mpfLftAbs, 0) = WC_EOS; DbgMsgW (wszTemp);
-#endif
+
                 // If (|Lft) is greater than (|Rht),
                 // and (|Rht) is in the
                 //    left-neighborhood of (|Lft) with CT, return 0 (equal)
@@ -2088,6 +2069,69 @@ void Myf_clear
         mpfVal->_mpfr_d = NULL;
     } // End IF
 } // End Myf_clear
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $VfpOut
+//***************************************************************************
+
+void VfpOut
+    (LPWCHAR  lpwTxt,
+     LPAPLVFP lpVfp)
+
+{
+    WCHAR wszTemp[512];
+
+    strcpyW (wszTemp, lpwTxt);
+    if (lpVfp NE NULL)
+       *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpVfp, 0) = WC_EOS;
+    strcatW (wszTemp, WS_CRLF);
+    DbgMsgW (wszTemp);
+} // End VfpOut
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $RatOut
+//***************************************************************************
+
+void RatOut
+    (LPWCHAR  lpwTxt,
+     LPAPLRAT lpRat)
+
+{
+    WCHAR wszTemp[512];
+
+    strcpyW (wszTemp, lpwTxt);
+    if (lpRat NE NULL)
+       *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], lpRat) = WC_EOS;
+    strcatW (wszTemp, WS_CRLF);
+    DbgMsgW (wszTemp);
+} // End RatOut
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $FltOut
+//***************************************************************************
+
+void FltOut
+    (LPWCHAR    lpwTxt,
+     LPAPLFLOAT lpFlt)
+
+{
+    WCHAR wszTemp[512];
+
+    strcpyW (wszTemp, lpwTxt);
+    if (lpFlt NE NULL)
+       *FormatAplFlt (&wszTemp[lstrlenW (wszTemp)], lpFlt, 18) = WC_EOS;
+    strcatW (wszTemp, WS_CRLF);
+    DbgMsgW (wszTemp);
+} // End FltOut
+#endif
 
 
 //***************************************************************************

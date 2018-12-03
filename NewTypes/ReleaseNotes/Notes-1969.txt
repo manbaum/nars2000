@@ -1,0 +1,9 @@
+Build #1969 -- Version 0.5.8.xx
+-------------------------------
+
+* Define DEBUG Functions To Display Common Datatypes
+
+Directory branches/bsmith/NewTypes:
+
+MPFNS.C:
+  Define <VfpOut>, <RatOut>, and <FltOut> as helper function to display common datatypes.

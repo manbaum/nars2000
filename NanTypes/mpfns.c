@@ -376,7 +376,7 @@ mpir_ui mpfr_invalid
 
 
 //***************************************************************************
-//  $mpfr_exact+p
+//  $mpfr_exact_p
 //
 //  Return TRUE iff the input is "exact"
 //***************************************************************************
@@ -2141,6 +2141,69 @@ void Myf_clear
 } // End Myf_clear
 
 
+#ifdef DEBUG
+//***************************************************************************
+//  $VfpOut
+//***************************************************************************
+
+void VfpOut
+    (LPWCHAR  lpwTxt,
+     LPAPLVFP lpVfp)
+
+{
+    WCHAR wszTemp[512];
+
+    strcpyW (wszTemp, lpwTxt);
+    if (lpVfp NE NULL)
+       *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpVfp, 0) = WC_EOS;
+    strcatW (wszTemp, WS_CRLF);
+    DbgMsgW (wszTemp);
+} // End VfpOut
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $RatOut
+//***************************************************************************
+
+void RatOut
+    (LPWCHAR  lpwTxt,
+     LPAPLRAT lpRat)
+
+{
+    WCHAR wszTemp[512];
+
+    strcpyW (wszTemp, lpwTxt);
+    if (lpRat NE NULL)
+       *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], lpRat) = WC_EOS;
+    strcatW (wszTemp, WS_CRLF);
+    DbgMsgW (wszTemp);
+} // End RatOut
+#endif
+
+
+#ifdef DEBUG
+//***************************************************************************
+//  $FltOut
+//***************************************************************************
+
+void FltOut
+    (LPWCHAR    lpwTxt,
+     LPAPLFLOAT lpFlt)
+
+{
+    WCHAR wszTemp[512];
+
+    strcpyW (wszTemp, lpwTxt);
+    if (lpFlt NE NULL)
+       *FormatAplFlt (&wszTemp[lstrlenW (wszTemp)], lpFlt, 18) = WC_EOS;
+    strcatW (wszTemp, WS_CRLF);
+    DbgMsgW (wszTemp);
+} // End FltOut
+#endif
+
+
 //***************************************************************************
 //  ARB Functions
 //***************************************************************************
@@ -2959,7 +3022,7 @@ void arb_set_inf
 //  Return the appropriate []IC value
 //***************************************************************************
 
-LPAPLBA1F arb_QuadICValue
+void arb_QuadICValue
     (LPAPLBA1F  aplArbLft,          // Left arg
      IC_INDICES icIndex,            // []IC index
      LPAPLBA1F  aplArbRht,          // Right arg
@@ -3025,8 +3088,6 @@ LPAPLBA1F arb_QuadICValue
     // If we should negate, ...
     if (bNegate)
         arb_neg (arbRes, arbRes);
-
-    return arbRes;
 } // End arb_QuadICValue
 
 
@@ -3739,7 +3800,7 @@ void arb_set_str2
 
 {
     // NOT ARB_CHARS as ± is handled separately
-    arb_set_spn_str (lpArb, lpSrcStr, prec, DEC_CHARS DEF_POSINFINITY_STR);
+    arb_set_spn_str (lpArb, lpSrcStr, prec, DEC_CHARS DEF_POSINFINITY_STR DEF_NAN_STR);
 } // End arb_set_str2
 
 
@@ -3777,15 +3838,20 @@ void arb_set_spn_str
     cZap   = lpSrcStr[numLen];
              lpSrcStr[numLen] = AC_EOS;
 
-    // If the Midpoint is PosInfinity or NegInfinity, ...
+    // If the Midpoint string is PosInfinity or NegInfinity, ...
     if (lpSrcStr[0] EQ DEF_POSINFINITY_CHAR)
-        // Set the Midpoint to +Infinity
-        arf_pos_inf (arb_midref (lpArb));
+        // Set the value to +Infinity
+        arb_pos_inf (lpArb);
     else
     if (lpSrcStr[0] EQ OVERBAR1
      && lpSrcStr[1] EQ DEF_POSINFINITY_CHAR)
-        // Set the Midpoint to -Infinity
-        arf_neg_inf (arb_midref (lpArb));
+        // Set the value to -Infinity
+        arb_neg_inf (lpArb);
+    else
+    // If the Midpoint is NaN, ...
+    if (lpSrcStr[0] EQ DEF_NAN_CHAR)
+        // Set the value to NaN
+        arb_set_nan (lpArb);
     else
         // In order to preserve the precision of the floating point number,
         //   we rescan it as a ARB number
@@ -3823,10 +3889,10 @@ void arb_set_spn_str
 
             // We no longer need this storage
             mpfr_clear (&aplVfpRad);
-
-            // Restore the zapped char
-            lpRadStr[numLen] = cZap;
         } // End IF/ELSE
+
+        // Restore the zapped char
+        lpRadStr[numLen] = cZap;
     } // End IF
 } // End arb_set_spn_str
 
@@ -4150,6 +4216,45 @@ UBOOL arb_ne2
 } // End arb_ne2
 
 
+//***************************************************************************
+//  $arb_log2
+//
+//  arb_log while handling special cases
+//***************************************************************************
+
+void arb_log2
+    (      arb_t z,
+     const arb_t x,
+           slong prec)
+
+{
+    if (arb_is_zero (x))
+        arb_neg_inf (z);
+    else
+        arb_log (z, x, prec);
+} // End arb_log2
+
+
+//***************************************************************************
+//  $arb_sub2
+//
+//  arb_sub while handling special cases
+//***************************************************************************
+
+void arb_sub2
+    (      arb_t z,
+     const arb_t x,
+     const arb_t y,
+           slong prec)
+
+{
+    if (arb_equal (x, y) NE 0)
+        arb_zero (z);
+    else
+        arb_sub (z, x, y, prec);
+} // End arb_sub2
+
+
 #ifdef DEBUG
 //***************************************************************************
 //  $ArbOut
@@ -4168,69 +4273,6 @@ void ArbOut
     strcatW (wszTemp, WS_CRLF);
     DbgMsgW (wszTemp);
 } // End ArbOut
-#endif
-
-
-#ifdef DEBUG
-//***************************************************************************
-//  $VfpOut
-//***************************************************************************
-
-void VfpOut
-    (LPWCHAR  lpwTxt,
-     LPAPLVFP lpVfp)
-
-{
-    WCHAR wszTemp[512];
-
-    strcpyW (wszTemp, lpwTxt);
-    if (lpVfp NE NULL)
-       *FormatAplVfp (&wszTemp[lstrlenW (wszTemp)], lpVfp, 0) = WC_EOS;
-    strcatW (wszTemp, WS_CRLF);
-    DbgMsgW (wszTemp);
-} // End VfpOut
-#endif
-
-
-#ifdef DEBUG
-//***************************************************************************
-//  $RatOut
-//***************************************************************************
-
-void RatOut
-    (LPWCHAR  lpwTxt,
-     LPAPLRAT lpRat)
-
-{
-    WCHAR wszTemp[512];
-
-    strcpyW (wszTemp, lpwTxt);
-    if (lpRat NE NULL)
-       *FormatAplRat (&wszTemp[lstrlenW (wszTemp)], lpRat) = WC_EOS;
-    strcatW (wszTemp, WS_CRLF);
-    DbgMsgW (wszTemp);
-} // End RatOut
-#endif
-
-
-#ifdef DEBUG
-//***************************************************************************
-//  $FltOut
-//***************************************************************************
-
-void FltOut
-    (LPWCHAR    lpwTxt,
-     LPAPLFLOAT lpFlt)
-
-{
-    WCHAR wszTemp[512];
-
-    strcpyW (wszTemp, lpwTxt);
-    if (lpFlt NE NULL)
-       *FormatAplFlt (&wszTemp[lstrlenW (wszTemp)], lpFlt, 18) = WC_EOS;
-    strcatW (wszTemp, WS_CRLF);
-    DbgMsgW (wszTemp);
-} // End FltOut
 #endif
 
 

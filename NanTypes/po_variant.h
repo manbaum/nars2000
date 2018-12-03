@@ -73,7 +73,8 @@ typedef enum tagENUM_VARIANT
     ENUM_VARIANT_POCH      ,        // 09:  {shriek} Pochhammer k-symbol
     ENUM_VARIANT_HCM       ,        // 0A:  {times} Interior/Exterior/Cross/Dot/Conjugation product
     ENUM_VARIANT_SUB       ,        // 0B:  Ascending/descending subsequence
-    ENUM_VARIANT_LENGTH             // 0C:  # enums
+    ENUM_VARIANT_GALL      ,        // 0C:  Grade all arrays
+    ENUM_VARIANT_LENGTH             // 0D:  # enums
 } ENUM_VARIANT, *LPENUM_VARIANT;
 
 // N.B.:  Whenever changing the above enum (ENUM_VARIANT)

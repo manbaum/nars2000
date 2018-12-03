@@ -1,0 +1,11 @@
+Build #1992 -- Version 0.6.0.xx
+-------------------------------
+
+* Implement Variant For Grade Functions To Grade All Arrays
+
+Directory branches/bsmith/NanTypes:
+
+PO_VARIANT.C:
+PO_VARIANT.H:
+  Implement a Variant of the Grade functions to grade all arrays.
+  Improve comments.

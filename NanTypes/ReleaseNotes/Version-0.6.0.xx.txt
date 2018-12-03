@@ -1,6 +1,20 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #1982 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In Modulus Wth Negative Left Argument
+
+Directory branches/bsmith/NanTypes:
+
+PF_STILE.C:
+  Fix bug in Modulus with negative left argument -- the result should be negative!
+
+PF_STILE.MAC:
+  Include file with INTERMOD_xxx macros.
+
+
 Build #1980 -- Version 0.6.0.xx
 -------------------------------
 

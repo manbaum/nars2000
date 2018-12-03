@@ -24,8 +24,7 @@
 #include <windows.h>
 #include <math.h>
 #include "headers.h"
-
-//#define DEBUG_FMT
+#include "pf_stile.mac"
 
 #ifndef PROTO
 PRIMSPEC PrimSpecStile = {
@@ -1906,6 +1905,10 @@ APLHC1R ModHC1R
 
         // Calculate the residue
         mpq_mod (&aplRes, &aplRht, &aplLft);
+
+        // Skip the ending sign-setting code
+        //   if the result is non-zero
+        bNoSign = !IsMpq0 (&aplRes);
     } // End IF/ELSE/...
 
     // The sign of the result is the sign of the left arg
@@ -2082,6 +2085,10 @@ APLHC1V ModHC1V
         Myhc1v_clear (&aplTmp);
         Myhc1v_clear (&aplCel);
         Myhc1v_clear (&aplFlr);
+
+        // Skip the ending sign-setting code
+        //   if the result is non-zero
+        bNoSign = !IsMpf0 (&aplRes);
     } // End IF/ELSE/...
 
     // The sign of the result is the sign of the left arg
@@ -2152,7 +2159,7 @@ APLBA1F ModBA1F
      APLBA1F aplRht)                // Right arg (argument)
 
 {
-    APLBA1F aplRes = {0};
+    APLBA1F aplRes = {0};       // The result
     UBOOL   bNaNLft,            // TRUE iff the left arg is a NaN
             bNaNRht,            // ...          right ...
             bNoSign = FALSE;    // TRUE iff we're to skip the ending sign-setting code
@@ -2183,18 +2190,18 @@ APLBA1F ModBA1F
     {
         // If the left arg is positive, ...
         if (arb_sign (&aplLft) > 0)
-            aplRes = *arb_QuadICValue (&aplLft,
-                                        ICNDX_PosMODNi,
-                                       &aplRht,
-                                       &aplRes,
-                                        FALSE);
+            arb_QuadICValue (&aplLft,
+                              ICNDX_PosMODNi,
+                             &aplRht,
+                             &aplRes,
+                              FALSE);
         // If the left arg is negative, ...
         if (arb_sign (&aplLft) < 0)
-            aplRes = *arb_QuadICValue (&aplLft,
-                                        ICNDX_NegMODNi,
-                                       &aplRht,
-                                       &aplRes,
-                                        FALSE);
+            arb_QuadICValue (&aplLft,
+                              ICNDX_NegMODNi,
+                             &aplRht,
+                             &aplRes,
+                              FALSE);
         return aplRes;
     } else
     // If the right arg is positive infinity, ...
@@ -2202,18 +2209,18 @@ APLBA1F ModBA1F
     {
         // If the left arg is positive, ...
         if (arb_sign (&aplLft) > 0)
-            aplRes = *arb_QuadICValue (&aplLft,
-                                        ICNDX_PosMODPi,
-                                       &aplRht,
-                                       &aplRes,
-                                        FALSE);
+            arb_QuadICValue (&aplLft,
+                              ICNDX_PosMODPi,
+                             &aplRht,
+                             &aplRes,
+                              FALSE);
         // If the left arg is negative, ...
         if (arb_sign (&aplLft) < 0)
-            aplRes = *arb_QuadICValue (&aplLft,
-                                        ICNDX_NegMODPi,
-                                       &aplRht,
-                                       &aplRes,
-                                        FALSE);
+            arb_QuadICValue (&aplLft,
+                              ICNDX_NegMODPi,
+                             &aplRht,
+                             &aplRes,
+                              FALSE);
         return aplRes;
     } else
     // If the left arg is negative infinity, ...
@@ -2222,11 +2229,11 @@ APLBA1F ModBA1F
         // If the right arg is positive, ...
         if (arb_sign (&aplRht) > 0)
         {
-            aplRes = *arb_QuadICValue (&aplLft,
-                                        ICNDX_NiMODPos,
-                                       &aplRht,
-                                       &aplRes,
-                                        FALSE);
+           arb_QuadICValue (&aplLft,
+                             ICNDX_NiMODPos,
+                            &aplRht,
+                            &aplRes,
+                             FALSE);
             return aplRes;
         } // End IF
 
@@ -2239,11 +2246,11 @@ APLBA1F ModBA1F
         // If the right arg is negative, ...
         if (arb_sign (&aplRht) < 0)
         {
-            aplRes = *arb_QuadICValue (&aplLft,
-                                        ICNDX_PiMODNeg,
-                                       &aplRht,
-                                       &aplRes,
-                                        FALSE);
+            arb_QuadICValue (&aplLft,
+                              ICNDX_PiMODNeg,
+                             &aplRht,
+                             &aplRes,
+                              FALSE);
             return aplRes;
         } // End IF
 
@@ -2278,26 +2285,86 @@ APLBA1F ModBA1F
         Myarb_floor (&aplFlr, &aplTmp);
         Myarb_ceil  (&aplCel, &aplTmp);
 
+#if (defined DEBUG) && FALSE
+        ArbOut (L"Flr = ", &aplFlr);
+        ArbOut (L"Cel = ", &aplCel);
+        ArbOut (L"Res = ", &aplRes);
+#endif
         if (CmpCT_B (aplTmp, aplFlr, fQuadCT, NE)
          && CmpCT_B (aplTmp, aplCel, fQuadCT, NE))
             // Calculate the residue
             arb_mod2 (&aplRes, &aplRht, &aplLft);
 
+#if (defined DEBUG) && FALSE
+        ArbOut (L"Res = ", &aplRes);
+#endif
+
         arb1f_clear (&aplTmp);
         arb1f_clear (&aplCel);
         arb1f_clear (&aplFlr);
+
+        // Skip the ending sign-setting code
+        //   if the result is non-zero
+        bNoSign = !IsArb0 (&aplRes);
     } // End IF/ELSE/...
 
     // The sign of the result is the sign of the left arg
     if (SIGN_APLARB (&aplLft) && !bNoSign)
     {
+#if (defined DEBUG) && FALSE
+        ArbOut (L"Res1 = ", &aplRes);
+#endif
         // If non-zero or -0 is allowed, ...
         if (!IsArb0 (&aplRes) || gAllowNeg0)
             arb_neg (&aplRes, &aplRes);
+#if (defined DEBUG) && FALSE
+        ArbOut (L"Res2 = ", &aplRes);
+#endif
     } // End IF
 
-    return aplRes;
+    // Intersect the result with the unit interval [0,L]
+    // Note that this routine arb_clears <aplRes>
+    return InterModBA1F (aplRes, aplLft);
 } // End ModBA1F
+
+
+//***************************************************************************
+//  $InterModBA1F
+//***************************************************************************
+
+APLBA1F InterModBA1F
+    (APLBA1F aplRes,                // The result of aplLft | aplRht
+     APLBA1F aplLft)                // The left arg
+
+{
+    INTERMOD_BAxF_MAC (aplRes, aplLft, 1);
+} // End InterModBA1F
+
+
+//***************************************************************************
+//  $InterModBA2F
+//***************************************************************************
+
+APLBA2F InterModBA2F
+    (APLBA2F aplRes,                // The result of aplLft | aplRht
+     APLBA2F aplLft)                // The left arg
+
+{
+    INTERMOD_BAxF_MAC (aplRes, aplLft, 2);
+} // End InterModBA2F
+
+
+//***************************************************************************
+//  $InterModBA4F
+//***************************************************************************
+
+APLBA4F InterModBA4F
+    (APLBA4F aplRes,                // The result of aplLft | aplRht
+     APLBA4F aplLft)                // The left arg
+
+{
+    INTERMOD_BAxF_MAC (aplRes, aplLft, 4);
+} // End InterModBA4F
 
 
 //***************************************************************************
@@ -2790,7 +2857,9 @@ APLBA2F ModBA2F
         arb2f_clear (&aplTmp);
     } // End IF/ELSE/...
 
-    return aplRes;
+    // Intersect the result with the unit interval [0,L]
+    // Note that this routine arb_clears <aplRes>
+    return InterModBA2F (aplRes, aplLft);
 } // End ModBA2F
 
 
@@ -3614,7 +3683,9 @@ APLBA4F ModBA4F
         arb4f_clear (&aplTmp);
     } // End IF/ELSE/...
 
-    return aplRes;
+    // Intersect the result with the unit interval [0,L]
+    // Note that this routine arb_clears <aplRes>
+    return InterModBA4F (aplRes, aplLft);
 } // End ModBA4F
 
 

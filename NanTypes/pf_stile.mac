@@ -1,0 +1,63 @@
+//***************************************************************************
+//  NARS2000 -- Primitive Function -- Stile Macros
+//***************************************************************************
+
+/***************************************************************************
+    NARS2000 -- An Experimental APL Interpreter
+    Copyright (C) 2006-2018 Sudley Place Software
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+***************************************************************************/
+
+#define INTERMOD_BAxF_MAC(aplRes,aplLft,N)                      \
+    PRIMSPEC PrimSpec = PrimSpecStile;                          \
+    APLARB  aplInt = {0};                                       \
+    APLBA##N##F aplTmp = {0},                                   \
+            aplEnd = {0};                                       \
+    int     i;                                                  \
+    mp_limb_signed_t prec = ARB_PREC_FPC;                       \
+                                                                \
+    /* Save the dimension indices                             */\
+    PrimSpec.iHCDimIndexLft = ENUM_HCFI##N;                     \
+    PrimSpec.iHCDimIndexRht = ENUM_HCFI##N;                     \
+                                                                \
+    /* Initialize the temps                                   */\
+    arb##N##f_init (&aplTmp);                                   \
+    arb1f_init (&aplInt);                                       \
+                                                                \
+    /* Create a unit interval as [0,1]                        */\
+    arb_unit_interval (&aplInt);                                \
+                                                                \
+    /* Form the interval between 0 and L                      */\
+    for (i = 0; i < N; i++)                                     \
+        /* Multiply by L[i]                                   */\
+        arb_mul (&((LPAPLBA8F) &aplTmp)->parts[i],              \
+                 &aplInt,                                       \
+                 &((LPAPLBA8F) &aplLft)->parts[i], prec);       \
+    /* We no longer need this resource                        */\
+    arb1f_clear (&aplInt);                                      \
+                                                                \
+    /* Intersect the result with the above interval           */\
+    aplEnd = ArbInterBA##N##F_RE (aplRes, aplTmp, &PrimSpec);   \
+                                                                \
+    /* We no longer need these resources                      */\
+    arb##N##f_clear (&aplTmp);                                  \
+    arb##N##f_clear (&aplRes);                                      \
+                                                                \
+    /* Return as the result                                   */\
+    return aplEnd;
+
+//***************************************************************************
+//  End of File: pf_stile.mac
+//***************************************************************************

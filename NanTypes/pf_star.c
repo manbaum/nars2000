@@ -26,7 +26,6 @@
 #include <windows.h>
 #include <math.h>
 #include "headers.h"
-#include "pf_star.mac"
 
 #ifndef PROTO
 PRIMSPEC PrimSpecStar =
@@ -747,11 +746,92 @@ APLHC2F ExpHC2F_RE
     if (!IsFltNegInfinity (aplRht.parts[0]))
     {
         // Handle via macro
-        PrimMonStarHCxF_MAC (2)
+        aplRes = PrimMonStarHCxF ((LPAPLHC8F) &aplRht, 2).partsLo[0].partsLo[0];
     } // End IF
 
     return aplRes;
 } // End ExpHC2F_RE
+
+
+//***************************************************************************
+//  $PrimMonStarHCxF
+//***************************************************************************
+
+APLHC8F PrimMonStarHCxF
+    (LPAPLHC8F lpaplRht,            // Ptr to right arg
+     int       iHCDim)              /* HC Dimension (1, 2, 4, 8)         */
+
+{
+    APLFLOAT aplIMag,               /* Magnitude of the imaginary parts  */
+             aplMul;                /* Multiplier:  exp (h) * ...        */
+    int      i;                     /* Loop counter                      */
+    APLHC8F  aplRes = {0};          // The result
+
+    /*
+        From http://tamivox.org/redbear/qtrn_calc/index.html
+        Exp of a Hypercomplex number:
+          With g = magnitude of the imaginary parts
+               h = real part
+        The real part is
+          exp (h) * cos (g)
+        The imaginary parts are
+          exp (h) * sin (g) / g   times each imaginary part
+
+        h = pF (stack[0].h);
+        i = pF (stack[0].i);
+        j = pF (stack[0].j);
+        k = pF (stack[0].k);
+
+        g = r_sqrt (i * i + j * j + k * k);
+        m = exp (h);
+        u = m*cos (g);
+        v = (g == 0) ? m : m*sin (g)/g;
+        N.B. The above line was changed from "? 0 :" by Bob Smith on 3 Oct 2018
+
+        stack[0].h = u;
+        stack[0].i = v * i;
+        stack[0].j = v * j;
+        stack[0].k = v * k;
+    */
+
+    /* Calculate the sum of the squares of the imaginary parts */
+    aplIMag = 0;
+
+    /* Loop through the imaginary parts */
+    for (i = 1; i < iHCDim; i++)
+        /* Calculate the sum of the squares */
+        aplIMag += lpaplRht->parts[i] * lpaplRht->parts[i];
+
+    /* If g is {Inf}, ... */
+    if (IsFltInfinity (aplIMag))
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    /* Calculate the magnitude of the imaginary parts */
+    aplIMag = sqrt (aplIMag);
+
+    /* Calculate the multiplier of the real part as exp (h) */
+    aplMul = exp (lpaplRht->parts[0]);
+
+    /* Calculate the real part as m * cos (g) */
+    aplRes.parts[0] = aplMul * cosCT_Flt (aplIMag);
+
+    /* If the number has imaginary parts, ... */
+    if (aplIMag NE 0)
+        /* Calculate the multiplier of the imaginary part as m*sin(g)/g */
+        aplMul = aplMul * sinCT_Flt (aplIMag) / aplIMag;
+
+    /* Loop through the imaginary parts */
+    for (i = 1; i < iHCDim; i++)
+    // If the coefficient is zero, ...
+    if (lpaplRht->parts[i] EQ 0.0)
+        // Initialize to 0 so as to avoid
+        //   an indeterminate result of 0 x {Inf}
+        aplRes.parts[i] = 0.0;
+    else
+        aplRes.parts[i] = aplMul * lpaplRht->parts[i];
+
+    return aplRes;
+} // End PrimMonStarHCxF
 
 
 //***************************************************************************
@@ -823,7 +903,7 @@ APLHC4F ExpHC4F_RE
     if (!IsFltNegInfinity (aplRht.parts[0]))
     {
         // Handle via macro
-        PrimMonStarHCxF_MAC (4)
+        aplRes = PrimMonStarHCxF ((LPAPLHC8F) &aplRht, 4).partsLo[0];
     } // End IF
 
     return aplRes;
@@ -899,7 +979,7 @@ APLHC8F ExpHC8F_RE
     if (!IsFltNegInfinity (aplRht.parts[0]))
     {
         // Handle via macro
-        PrimMonStarHCxF_MAC (8)
+        aplRes = PrimMonStarHCxF ((LPAPLHC8F) &aplRht, 8);
     } // End IF
 
     return aplRes;
@@ -922,81 +1002,6 @@ void PrimFnMonStarHC8FisHC8F
     // Save in the result
     lpMemRes[uRes] = ExpHC8F_RE (lpatRht->aplHC8F);
 } // End PrimFnMonStarHC8FisHC8F
-
-
-#if FALSE
-//***************************************************************************
-//  $PrimFnMonStarHC2VisHC2V
-//
-//  Primitive scalar function monadic Star:  HC2V {is} fn HC2V
-//***************************************************************************
-
-void PrimFnMonStarHC2VisHC2V
-    (LPAPLHC2V  lpMemRes,           // Ptr to the result
-     APLUINT    uRes,               // Index into the result
-     LPALLTYPES lpatRht,            // Ptr to right arg ALLTYPES
-     LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
-
-{
-    // Check for special case:  ^-_
-    if (IsMpfNegInfinity (&lpatRht->aplHC2V.parts[0]))
-        // Initialize the result to 0
-        mphc2v_init0 (&lpMemRes[uRes]);
-    else
-    {
-        LPAPLHC2V lpaplRes;             // Result
-        APLHC2V   aplBase  = {0},       // Base
-                  aplTmp,               // Temp
-                  aplDiv,               // ...
-                  aplCnt   = {0};       // Counter
-        UINT      uRht;                 // Loop counter
-        int       i;                    // ...
-
-        // exp (z) = 1 + (z/!1) + ((z^2)/!2) + ((z^3)/!3) + ...
-
-        // Set ptr
-        lpaplRes = &lpMemRes[uRes];
-
-        // Initialize to 0
-        mphc2v_init0 (lpaplRes);
-        mphc2v_init0 (&aplBase);
-        mphc2v_init0 (&aplCnt );
-
-        // Initialize the real part of the base to 1
-        //   that is, set the base to 1i0
-        mpfr_set_si (&aplBase.parts[0], 1, MPFR_RNDN);
-
-        // Loop through the # terms
-        for (uRht = 0 ; uRht < nDigitsFPC; uRht++)
-        {
-            // Accumulate the base into the result
-            aplTmp = AddHC2V_RE (*lpaplRes, aplBase);
-
-            // Loop through all of the parts
-            for (i = 0; i < 2; i++)     // #ifdef FALSE
-                mpfr_set (&lpaplRes->parts[i], &aplTmp.parts[i], MPFR_RNDN);
-
-            // Set the counter to uRht + 1
-            mpfr_set_si (&aplCnt.parts[0], uRht + 1, MPFR_RNDN);
-
-            // Multiply the base by z / (uRht + 1)
-            aplDiv = DivHC2V_RE (lpatRht->aplHC2V, aplCnt);
-            aplTmp = MulHC2V_RE (aplBase, aplDiv);
-            Myhc2v_clear (&aplDiv);
-
-            // Loop through all of the parts
-            for (i = 0; i < 2; i++)     // #ifdef FALSE
-                mpfr_set (&aplBase.parts[i], &aplTmp.parts[i], MPFR_RNDN);
-        } // End FOR
-
-        Myhc2v_clear (&aplCnt );
-        Myhc2v_clear (&aplBase);
-
-        // Save in the result
-        lpMemRes[uRes] = aplRes;
-    } // End IF/ELSE
-} // End PrimFnMonStarHC2VisHC2V
-#endif
 
 
 //***************************************************************************
@@ -1030,11 +1035,138 @@ APLHC2V ExpHC2V_RE
     else
     {
         // Handle via macro
-        PrimMonStarHCxV_MAC (2)
+        aplRes = PrimMonStarHCxV ((LPAPLHC8V) &aplRht, 2).partsLo.partsLo;
     } // End IF
 
     return aplRes;
 } // End ExpHC2V_RE
+
+
+//***************************************************************************
+//  $PrimMonStarHCxV
+//***************************************************************************
+
+APLHC8V PrimMonStarHCxV
+    (LPAPLHC8V lpaplRht,
+     int       iHCDim)
+
+{
+    APLVFP  aplIMag = {0},          /* Magnitude of the imaginary parts  */
+            aplMul,                 /* Multiplier:  exp (h) * ...        */
+            aplTmp;                 /* Temp var                          */
+    int     i;                      /* Loop counter                      */
+    APLHC8V aplRes = {0};           // The result
+
+    /*
+        From http://tamivox.org/redbear/qtrn_calc/index.html
+        Exp of a Hypercomplex number:
+          With g = magnitude of the imaginary parts
+               h = real part
+        The real part is
+          exp (h) * cos (g)
+        The imaginary parts are
+          exp (h) * sin (g) / g   times each imaginary part
+
+        h = pF (stack[0].h);
+        i = pF (stack[0].i);
+        j = pF (stack[0].j);
+        k = pF (stack[0].k);
+
+        g = r_sqrt (i * i + j * j + k * k);
+        m = exp (h);
+        u = m*cos (g);
+        v = (g == 0) ? m : m*sin (g)/g;
+        N.B. The above line was changed from "? 0 :" by Bob Smith on 3 Oct 2018
+
+        stack[0].h = u;
+        stack[0].i = v * i;
+        stack[0].j = v * j;
+        stack[0].k = v * k;
+    */
+
+    /* Calculate the sum of the squares of the imaginary parts */
+    mpfr_init0 (&aplIMag);
+
+    /* Loop through the imaginary parts */
+    for (i = 1; i < iHCDim; i++)
+    {
+        /* Calculate the square of the imaginary part */
+        aplTmp = MulHC1V_RE (lpaplRht->parts[i], lpaplRht->parts[i]);
+
+        /* Calculate the sum of the squares */
+        mpfr_add (&aplIMag, &aplIMag, &aplTmp, MPFR_RNDN);
+
+        /* We no longer need this resource */
+        Myf_clear (&aplTmp);
+    } /* End IF */
+
+    /* If g is {Inf}, ... */
+    if (IsMpfInfinity (&aplIMag))
+        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+
+    /* Calculate the magnitude of the imaginary parts */
+    mpfr_sqrt (&aplIMag, &aplIMag, MPFR_RNDN);
+
+    /* Calculate the multiplier of the real part as exp (h) */
+    aplMul = ExpVfp_RE (lpaplRht->parts[0]);
+
+    /* Calculate the cos (g) */
+    aplTmp = cosCT_Vfp (aplIMag);
+
+    /* Calculate the real part as m * cos (g) */
+    aplRes.parts[0] = MulHC1V_RE (aplMul, aplTmp);
+
+    /* We no longer need this resource */
+    Myf_clear (&aplTmp);
+
+    /* If the number has imaginary parts, ... */
+    if (!IsMpf0 (&aplIMag))
+    {
+        APLVFP aplSin,
+               aplDiv;
+
+        /* Calculate the multiplier of the imaginary part as m * sin (g) / g  */
+
+        /* Calculate the sin (g) */
+        aplSin = sinCT_Vfp (aplIMag);
+
+        /* Calculate sin (g) / g */
+        aplDiv = DivHC1V_RE (aplSin, aplIMag);
+
+        /* Calculate m * sin (g) / g */
+        aplTmp = MulHC1V_RE (aplMul, aplDiv);
+
+        /* Loop through the imaginary parts */
+        for (i = 1; i < iHCDim; i++)
+            /* Multiply each imaginary part by  m * sin (g) /g  */
+            aplRes.parts[i] = MulHC1V_RE (aplTmp, lpaplRht->parts[i]);
+
+        /* We no longer need these resources */
+        Myf_clear (&aplTmp);
+        Myf_clear (&aplDiv);
+        Myf_clear (&aplSin);
+    } else
+    {
+        /* Multiply the imaginary parts by m (= aplMul) */
+
+        /* Loop through the imaginary parts */
+        for (i = 1; i < iHCDim; i++)
+        // If the coefficient is zero, ...
+        if (IsMpf0 (&lpaplRht->parts[i]))
+            // Initialize to 0 so as to avoid
+            //   an indeterminate result of 0 x {Inf}
+            mpfr_init0 (&aplRes.parts[i]);
+        else
+            /* Multiply by aplMul */
+            aplRes.parts[i] = MulHC1V_RE (lpaplRht->parts[i], aplMul);
+    } /* End IF/ELSE */
+
+    /* We no longer need these resources */
+    Myf_clear (&aplMul);
+    Myf_clear (&aplIMag);
+
+    return aplRes;
+} // End PrimMonStarHCxV
 
 
 //***************************************************************************
@@ -1110,14 +1242,28 @@ APLBA2F ExpBA2F_RE
     else
     {
         // Handle via macro
-        PrimMonStarBAxF_MAC (2)
-#if FALSE
-    APLARB aplIMag = {0},           /* Magnitude of the imaginary parts  */
-           aplMul,                  /* Multiplier:  exp (h) * ...        */
-           aplTmp = {0};            /* Temp var                          */
-    int    i,                       /* Loop counter                      */
-           iHCDim = 2;              /* HC Dimension (1, 2, 4, 8)         */
+        aplRes = PrimMonStarBAxF ((LPAPLBA8F) &aplRht, 2).partsLo.partsLo;
+    } // End IF/ELSE
+
+    return aplRes;
+} // End ExpBA2F_RE
+
+
+//***************************************************************************
+//  $PrimMonStarBAxF
+//***************************************************************************
+
+APLBA8F PrimMonStarBAxF
+    (LPAPLBA8F lpaplRht,            // Ptr to right arg
+     int       iHCDim)              /* HC Dimension (1, 2, 4, 8)         */
+
+{
+    APLARB  aplIMag = {0},          /* Magnitude of the imaginary parts  */
+            aplMul,                 /* Multiplier:  exp (h) * ...        */
+            aplTmp = {0};           /* Temp var                          */
+    int     i;                      /* Loop counter                      */
     mp_limb_signed_t prec = ARB_PREC_FPC;
+    APLBA8F aplRes = {0};
 
     /*
         From http://tamivox.org/redbear/qtrn_calc/index.html
@@ -1137,7 +1283,8 @@ APLBA2F ExpBA2F_RE
         g = r_sqrt (i * i + j * j + k * k);
         m = exp (h);
         u = m*cos (g);
-        v = (g == 0) ? m : m*sin (g)/g; Changed from "? 0 :" by Bob Smith on 3 Oct 2018
+        v = (g == 0) ? m : m*sin (g)/g;
+        N.B. The above line was changed from "? 0 :" by Bob Smith on 3 Oct 2018
 
         stack[0].h = u;
         stack[0].i = v * i;
@@ -1153,17 +1300,11 @@ APLBA2F ExpBA2F_RE
     for (i = 1; i < iHCDim; i++)
     {
         /* Calculate the square of the imaginary part */
-        arb_sqr2 (&aplTmp, &aplRht.parts[i], prec);
+        arb_sqr2 (&aplTmp, &lpaplRht->parts[i], prec);
 
         /* Calculate the sum of the squares */
         arb_add (&aplIMag, &aplIMag, &aplTmp, prec);
     } /* End IF */
-
-#ifdef DEBUG
-    ArbOut (L"aplIMag = ", &aplIMag);
-    if (arb_contains_negative (&aplIMag))
-        ArbOut (L"aplIMag contains negative!!", NULL);
-#endif
 
     /* We no longer need this resource */
     Myarb_clear (&aplTmp);
@@ -1175,32 +1316,14 @@ APLBA2F ExpBA2F_RE
     /* Calculate the magnitude of the imaginary parts */
     arb_sqrt    (&aplIMag, &aplIMag, prec);
 
-#ifdef DEBUG
-    ArbOut (L"sqrt (aplIMag) = ", &aplIMag);
-    if (arb_contains_negative (&aplIMag))
-        ArbOut (L"aplIMag contains negative!!", NULL);
-#endif
     /* Calculate the multiplier of the real part as exp (h) */
-    aplMul = ExpArb_RE (aplRht.parts[0]);
-
-#ifdef DEBUG
-    ArbOut (L"aplMul = ", &aplMul);
-#endif
+    aplMul = ExpArb_RE (lpaplRht->parts[0]);
 
     /* Calculate the cos (g) */
     aplTmp = cosCT_Arb (aplIMag);
 
-#ifdef DEBUG
-    ArbOut (L"cos (aplIMag) = ", &aplTmp);
-    if (arb_contains_negative (&aplTmp))
-        ArbOut (L"cos (aplIMag) contains negative!!", NULL);
-#endif
     /* Calculate the real part as m * cos (g) */
     aplRes.parts[0] = MulBA1F_RE (aplMul, aplTmp);
-
-#ifdef DEBUG
-    ArbOut (L"Real part = ", &aplRes.parts[0]);
-#endif
 
     /* We no longer need this resource */
     Myarb_clear (&aplTmp);
@@ -1216,11 +1339,6 @@ APLBA2F ExpBA2F_RE
         /* Calculate the sin (g) */
         aplSin = sinCT_Arb (aplIMag);
 
-#ifdef DEBUG
-        ArbOut (L"sin (aplIMag) = ", &aplSin);
-        if (arb_contains_negative (&aplSin))
-            ArbOut (L"sin (aplIMag) contains negative!!", NULL);
-#endif
         if (arb_contains_negative (&aplSin))
             arb_nonnegative_part (&aplSin, &aplSin);
 
@@ -1230,39 +1348,37 @@ APLBA2F ExpBA2F_RE
         /* Calculate m * sin (g) / g */
         aplTmp = MulBA1F_RE (aplMul, aplDiv);
 
-#ifdef DEBUG
-        ArbOut (L"m * sin (aplIMag) / aplIMag = ", &aplTmp);
-#endif
         /* Loop through the imaginary parts */
         for (i = 1; i < iHCDim; i++)
             /* Multiply each imaginary part by  m * sin (g) /g  */
-            aplRes.parts[i] = MulBA1F_RE (aplTmp, aplRht.parts[i]);
+            aplRes.parts[i] = MulBA1F_RE (aplTmp, lpaplRht->parts[i]);
 
-#ifdef DEBUG
-        ArbOut (L"parts[1] * m * sin (aplIMag) / aplIMag = ", &aplRes.parts[1]);
-#endif
         /* We no longer need these resources */
         Myarb_clear (&aplTmp);
         Myarb_clear (&aplDiv);
         Myarb_clear (&aplSin);
     } else
     {
-        /* Multiply the imaginary parts by m (aplMul) */
+        /* Multiply the imaginary parts by m (= aplMul) */
 
         /* Loop through the imaginary parts */
         for (i = 1; i < iHCDim; i++)
+        // If the coefficient is zero, ...
+        if (IsArb0 (&lpaplRht->parts[i]))
+            // Initialize to 0 so as to avoid
+            //   an indeterminate result of 0 x {Inf}
+            Myarb_init (&aplRes.parts[i]);
+        else
             /* Multiply by aplMul */
-            aplRes.parts[i] = MulBA1F_RE (aplRht.parts[i], aplMul);
+            aplRes.parts[i] = MulBA1F_RE (lpaplRht->parts[i], aplMul);
     } /* End IF/ELSE */
 
     /* We no longer need these resources */
     Myarb_clear (&aplMul);
     Myarb_clear (&aplIMag);
-#endif
-    } // End IF/ELSE
 
     return aplRes;
-} // End ExpBA2F_RE
+} // End PrimMonStarBAxF
 
 
 //***************************************************************************
@@ -1314,7 +1430,7 @@ APLHC4V ExpHC4V_RE
     else
     {
         // Handle via macro
-        PrimMonStarHCxV_MAC (4)
+        aplRes = PrimMonStarHCxV ((LPAPLHC8V) &aplRht, 4).partsLo;
     } // End IF/ELSE
 
     return aplRes;
@@ -1394,7 +1510,7 @@ APLBA4F ExpBA4F_RE
     else
     {
         // Handle via macro
-        PrimMonStarBAxF_MAC (4)
+        aplRes = PrimMonStarBAxF ((LPAPLBA8F) &aplRht, 4).partsLo;
     } // End IF/ELSE
 
     return aplRes;
@@ -1450,7 +1566,7 @@ APLHC8V ExpHC8V_RE
     else
     {
         // Handle via macro
-        PrimMonStarHCxV_MAC (8)
+        aplRes = PrimMonStarHCxV ((LPAPLHC8V) &aplRht, 8);
     } // End IF/ELSE
 
     return aplRes;
@@ -1530,7 +1646,7 @@ APLBA8F ExpBA8F_RE
     else
     {
         // Handle via macro
-        PrimMonStarBAxF_MAC (8)
+        aplRes = PrimMonStarBAxF ((LPAPLBA8F) &aplRht, 8);
     } // End IF/ELSE
 
     return aplRes;
@@ -2367,57 +2483,57 @@ APLBA1F PowBA1F_RE
     // Check for indeterminates:  0 * 0
     if (IsArb0 (&aplLft)
      && IsArb0 (&aplRht))
-        aplRes = *arb_QuadICValue (&aplLft,
-                                    ICNDX_0EXP0,
-                                   &aplRht,
-                                   &aplRes,
-                                    FALSE);
+        arb_QuadICValue (&aplLft,
+                          ICNDX_0EXP0,
+                         &aplRht,
+                         &aplRes,
+                          FALSE);
     else
     // Check for indeterminates:  0 * +_
     if (IsArb0 (&aplLft)
      && arb_cmp (&aplRht, &arbPosInfinity) EQ 0)
-        aplRes = *arb_QuadICValue (&aplLft,
-                                    ICNDX_0EXPPi,
-                                   &aplRht,
-                                   &aplRes,
-                                    FALSE);
+        arb_QuadICValue (&aplLft,
+                          ICNDX_0EXPPi,
+                         &aplRht,
+                         &aplRes,
+                          FALSE);
     else
     // Check for indeterminates:  0 * -_
     if (IsArb0 (&aplLft)
      && IsArbNegInfinity (&aplRht))
-        aplRes = *arb_QuadICValue (&aplLft,
-                                    ICNDX_0EXPNi,
-                                   &aplRht,
-                                   &aplRes,
-                                    FALSE);
+        arb_QuadICValue (&aplLft,
+                          ICNDX_0EXPNi,
+                         &aplRht,
+                         &aplRes,
+                          FALSE);
     else
     // Check for indeterminates:  L * _ for L <= -1
     if (arb_cmp_si (&aplLft, -1)
      && IsArbPosInfinity (&aplRht))
-        aplRes = *arb_QuadICValue (&aplLft,
-                                    ICNDX_NEXPPi,
-                                   &aplRht,
-                                   &aplRes,
-                                    FALSE);
+        arb_QuadICValue (&aplLft,
+                          ICNDX_NEXPPi,
+                         &aplRht,
+                         &aplRes,
+                          FALSE);
     else
     // Check for indeterminates:  L * -_ for -1 <= L < 0
     if (IsArbNegInfinity (&aplRht)
      && arb_cmp_si (&aplLft, -1) >= 0
      && arb_cmp_si (&aplLft,  0) <  0)
-        aplRes = *arb_QuadICValue (&aplLft,
-                                    ICNDX_N1to0EXPNi,
-                                   &aplRht,
-                                   &aplRes,
-                                    FALSE);
+        arb_QuadICValue (&aplLft,
+                          ICNDX_N1to0EXPNi,
+                         &aplRht,
+                         &aplRes,
+                          FALSE);
     else
     // Check for indeterminates:  L * R for L < 0 and R not an integer
 ////if (arb_sgn (&aplLft) < 0
 //// && !arb_integer_p (&aplRht))
-////    aplRes = *arb_QuadICValue (&aplLft,
-////                                ICNDX_NegEXPFrc,
-////                               &aplRht,
-////                               &aplRes,
-////                                FALSE);
+////    arb_QuadICValue (&aplLft,
+////                      ICNDX_NegEXPFrc,
+////                     &aplRht,
+////                     &aplRes,
+////                      FALSE);
 ////else
     // Check for complex result
     if (arb_sign (&aplLft) < 0
@@ -2427,11 +2543,11 @@ APLBA1F PowBA1F_RE
     // Check for special cases:  _ * 0 and -_ * 0
     if (arb_inf_p (&aplLft)
      && IsArb0 (&aplRht))
-        aplRes = *arb_QuadICValue (&aplLft,
-                                    ICNDX_InfEXP0,
-                                   &aplRht,
-                                   &aplRes,
-                                    FALSE);
+        arb_QuadICValue (&aplLft,
+                          ICNDX_InfEXP0,
+                         &aplRht,
+                         &aplRes,
+                          FALSE);
     else
     // Check for special cases:  1 * _ and 1 * -_
     if (IsArb1 (&aplLft)
@@ -2783,7 +2899,7 @@ APLHC2F PowHC2F_SUB
         for (i = 1; i < 2; i++)
         // If that coefficient is non-zero, ...
         if (aplRht.parts[i] NE 0.0)
-            // Set the corresponding coefficient in the resul to NaN
+            // Set the corresponding coefficient in the result to NaN
             aplRes.parts[i] = fltNaN;
 
         return aplRes;
@@ -3308,73 +3424,66 @@ APLBA2F PowBA2F_RE
         // Check for indeterminates:  0 * 0
         if (IsZeroBAxF (&aplLft, 2)
          && IsZeroBAxF (&aplRht, 2))
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[0],
-                                        ICNDX_0EXP0,
-                                       &aplRht.parts[0],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[0],
+                              ICNDX_0EXP0,
+                             &aplRht.parts[0],
+                             &aplRes.parts[0],
+                              FALSE);
         else
         // Check for indeterminates:  0 * +_
         if (IsZeroBAxF (&aplLft, 2)
          && arb_cmp (&aplRht.parts[0], &arbPosInfinity) EQ 0)
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[0],
-                                        ICNDX_0EXPPi,
-                                       &aplRht.parts[0],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[0],
+                              ICNDX_0EXPPi,
+                             &aplRht.parts[0],
+                             &aplRes.parts[0],
+                              FALSE);
         else
         // Check for indeterminates:  0 * -_
         if (IsZeroBAxF (&aplLft, 2)
          && arb_cmp (&aplRht.parts[0], &arbNegInfinity) EQ 0)
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[0],
-                                        ICNDX_0EXPNi,
-                                       &aplRht.parts[0],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[0],
+                              ICNDX_0EXPNi,
+                             &aplRht.parts[0],
+                             &aplRes.parts[0],
+                              FALSE);
         else
         // Check for indeterminates:  L * _ for L <= -1
         if (arb_cmp_si (&aplLft.parts[0], -1) <= 0
          && arb_cmp (&aplRht.parts[0], &arbPosInfinity) EQ 0)
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[0],
-                                        ICNDX_NEXPPi,
-                                       &aplRht.parts[0],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[0],
+                              ICNDX_NEXPPi,
+                             &aplRht.parts[0],
+                             &aplRes.parts[0],
+                              FALSE);
         else
         // Check for indeterminates:  L * -_ for -1 <= L < 0
         if (arb_cmp    (&aplRht.parts[0], &arbNegInfinity) EQ 0
          && arb_cmp_si (&aplLft.parts[0], -1) >= 0
          && arb_cmp_si (&aplLft.parts[0],  0) <  0)
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[0],
-                                        ICNDX_N1to0EXPNi,
-                                       &aplRht.parts[0],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[0],
+                              ICNDX_N1to0EXPNi,
+                             &aplRht.parts[0],
+                             &aplRes.parts[0],
+                              FALSE);
         else
         // Check for indeterminates:  L * R for L < 0 and R not an integer
 ////////if (arb_sgn (&aplLft.parts[0]) < 0
 //////// && !arb_integer_p (&aplRht.parts[0]))
-////////    arb_set (&aplRes.parts[0],
-////////              arb_QuadICValue (&aplLft.parts[0],
-////////                                ICNDX_NegEXPFrc,
-////////                               &aplRht.parts[0],
-////////                               &aplRes.parts[0],
-////////                                FALSE));
+////////    arb_QuadICValue (&aplLft.parts[0],
+////////                      ICNDX_NegEXPFrc,
+////////                     &aplRht.parts[0],
+////////                     &aplRes.parts[0],
+////////                      FALSE);
 ////////else
         // Check for special cases:  _ * 0 and -_ * 0
         if (arb_inf_p (&aplLft.parts[0])
          && IsZeroBAxF (&aplRht, 2))
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[0],
-                                        ICNDX_InfEXP0,
-                                       &aplRht.parts[0],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[0],
+                              ICNDX_InfEXP0,
+                             &aplRht.parts[0],
+                             &aplRes.parts[0],
+                              FALSE);
         else
         // Check for special cases:  1 * _ and 1 * -_
         if (IsArb1 (&aplLft.parts[0])
@@ -3421,14 +3530,14 @@ APLBA2F PowBA2F_SUB
         arb2f_init (&aplRes);
 
         // The real part is NaN
-        arf_nan (arb_midref (&aplRes.parts[0]));
+        arb_set_nan (&aplRes.parts[0]);
 
         // Loop through the imaginary parts
         for (i = 1; i < 2; i++)
         // If that coefficient is non-zero, ...
         if (!IsZeroBAxF (&aplRht.parts[i], 1))
             // Set the corresponding coefficient in the result to NaN
-            arf_nan (arb_midref (&aplRes.parts[i]));
+            arb_set_nan (&aplRes.parts[i]);
 
         return aplRes;
     } // End IF
@@ -3777,7 +3886,7 @@ APLHC4F PowHC4F_SUB
         for (i = 1; i < 4; i++)
         // If that coefficient is non-zero, ...
         if (aplRht.parts[i] NE 0.0)
-            // Set the corresponding coefficient in the resul to NaN
+            // Set the corresponding coefficient in the result to NaN
             aplRes.parts[i] = fltNaN;
 
         return aplRes;
@@ -4301,73 +4410,66 @@ APLBA4F PowBA4F_RE
         // Check for indeterminates:  0 * 0
         if (IsZeroBAxF (&aplLft, 4)
          && IsZeroBAxF (&aplRht, 4))
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[0],
-                                        ICNDX_0EXP0,
-                                       &aplRht.parts[0],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[0],
+                              ICNDX_0EXP0,
+                             &aplRht.parts[0],
+                             &aplRes.parts[0],
+                              FALSE);
         else
         // Check for indeterminates:  0 * +_
         if (IsZeroBAxF (&aplLft, 4)
          && arb_cmp (&aplRht.parts[0], &arbPosInfinity) EQ 0)
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[0],
-                                        ICNDX_0EXPPi,
-                                       &aplRht.parts[0],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[0],
+                              ICNDX_0EXPPi,
+                             &aplRht.parts[0],
+                             &aplRes.parts[0],
+                              FALSE);
         else
         // Check for indeterminates:  0 * -_
         if (IsZeroBAxF (&aplLft, 4)
          && arb_cmp (&aplRht.parts[0], &arbNegInfinity) EQ 0)
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[0],
-                                        ICNDX_0EXPNi,
-                                       &aplRht.parts[0],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[0],
+                              ICNDX_0EXPNi,
+                             &aplRht.parts[0],
+                             &aplRes.parts[0],
+                              FALSE);
         else
         // Check for indeterminates:  L * _ for L <= -1
         if (arb_cmp_si (&aplLft.parts[0], -1) <= 0
          && arb_cmp (&aplRht.parts[0], &arbPosInfinity) EQ 0)
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[0],
-                                        ICNDX_NEXPPi,
-                                       &aplRht.parts[0],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[0],
+                              ICNDX_NEXPPi,
+                             &aplRht.parts[0],
+                             &aplRes.parts[0],
+                              FALSE);
         else
         // Check for indeterminates:  L * -_ for -1 <= L < 0
         if (arb_cmp    (&aplRht.parts[0], &arbNegInfinity) EQ 0
          && arb_cmp_si (&aplLft.parts[0], -1) >= 0
          && arb_cmp_si (&aplLft.parts[0],  0) <  0)
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[0],
-                                        ICNDX_N1to0EXPNi,
-                                       &aplRht.parts[0],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[0],
+                              ICNDX_N1to0EXPNi,
+                             &aplRht.parts[0],
+                             &aplRes.parts[0],
+                              FALSE);
         else
         // Check for indeterminates:  L * R for L < 0 and R not an integer
 ////////if (arb_sgn (&aplLft.parts[0]) < 0
 //////// && !arb_integer_p (&aplRht.parts[0]))
-////////    arb_set (&aplRes.parts[0],
-////////              arb_QuadICValue (&aplLft.parts[0],
-////////                                ICNDX_NegEXPFrc,
-////////                               &aplRht.parts[0],
-////////                               &aplRes.parts[0],
-////////                                FALSE));
+////////    arb_QuadICValue (&aplLft.parts[0],
+////////                      ICNDX_NegEXPFrc,
+////////                     &aplRht.parts[0],
+////////                     &aplRes.parts[0],
+////////                      FALSE);
 ////////else
         // Check for special cases:  _ * 0 and -_ * 0
         if (arb_inf_p (&aplLft.parts[0])
          && IsZeroBAxF (&aplRht, 4))
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[0],
-                                        ICNDX_InfEXP0,
-                                       &aplRht.parts[0],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[0],
+                              ICNDX_InfEXP0,
+                             &aplRht.parts[0],
+                             &aplRes.parts[0],
+                              FALSE);
         else
         // Check for special cases:  1 * _ and 1 * -_
         if (IsArb1 (&aplLft.parts[0])
@@ -4414,14 +4516,14 @@ APLBA4F PowBA4F_SUB
         arb4f_init (&aplRes);
 
         // The real part is NaN
-        arf_nan (arb_midref (&aplRes.parts[0]));
+        arb_set_nan (&aplRes.parts[0]);
 
         // Loop through the imaginary parts
         for (i = 1; i < 4; i++)
         // If that coefficient is non-zero, ...
         if (!IsZeroBAxF (&aplRht.parts[i], 1))
             // Set the corresponding coefficient in the result to NaN
-            arf_nan (arb_midref (&aplRes.parts[i]));
+            arb_set_nan (&aplRes.parts[i]);
 
         return aplRes;
     } // End IF
@@ -4770,7 +4872,7 @@ APLHC8F PowHC8F_SUB
         for (i = 1; i < 8; i++)
         // If that coefficient is non-zero, ...
         if (aplRht.parts[i] NE 0.0)
-            // Set the corresponding coefficient in the resul to NaN
+            // Set the corresponding coefficient in the result to NaN
             aplRes.parts[i] = fltNaN;
 
         return aplRes;
@@ -5297,73 +5399,66 @@ APLBA8F PowBA8F_RE
         // Check for indeterminates:  0 * 0
         if (IsZeroBAxF (&aplLft, 8)
          && IsZeroBAxF (&aplRht, 8))
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[0],
-                                        ICNDX_0EXP0,
-                                       &aplRht.parts[0],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[0],
+                              ICNDX_0EXP0,
+                             &aplRht.parts[0],
+                             &aplRes.parts[0],
+                              FALSE);
         else
         // Check for indeterminates:  0 * +_
         if (IsZeroBAxF (&aplLft, 8)
          && arb_cmp (&aplRht.parts[0], &arbPosInfinity) EQ 0)
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[0],
-                                        ICNDX_0EXPPi,
-                                       &aplRht.parts[0],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[0],
+                              ICNDX_0EXPPi,
+                             &aplRht.parts[0],
+                             &aplRes.parts[0],
+                              FALSE);
         else
         // Check for indeterminates:  0 * -_
         if (IsZeroBAxF (&aplLft, 8)
          && arb_cmp (&aplRht.parts[0], &arbNegInfinity) EQ 0)
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[0],
-                                        ICNDX_0EXPNi,
-                                       &aplRht.parts[0],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[0],
+                              ICNDX_0EXPNi,
+                             &aplRht.parts[0],
+                             &aplRes.parts[0],
+                              FALSE);
         else
         // Check for indeterminates:  L * _ for L <= -1
         if (arb_cmp_si (&aplLft.parts[0], -1) <= 0
          && arb_cmp (&aplRht.parts[0], &arbPosInfinity) EQ 0)
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[0],
-                                        ICNDX_NEXPPi,
-                                       &aplRht.parts[0],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[0],
+                              ICNDX_NEXPPi,
+                             &aplRht.parts[0],
+                             &aplRes.parts[0],
+                              FALSE);
         else
         // Check for indeterminates:  L * -_ for -1 <= L < 0
         if (arb_cmp    (&aplRht.parts[0], &arbNegInfinity) EQ 0
          && arb_cmp_si (&aplLft.parts[0], -1) >= 0
          && arb_cmp_si (&aplLft.parts[0],  0) <  0)
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[0],
-                                        ICNDX_N1to0EXPNi,
-                                       &aplRht.parts[0],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[0],
+                              ICNDX_N1to0EXPNi,
+                             &aplRht.parts[0],
+                             &aplRes.parts[0],
+                              FALSE);
         else
         // Check for indeterminates:  L * R for L < 0 and R not an integer
 ////////if (arb_sgn (&aplLft.parts[0]) < 0
 //////// && !arb_integer_p (&aplRht.parts[0]))
-////////    arb_set (&aplRes.parts[0],
-////////              arb_QuadICValue (&aplLft.parts[0],
-////////                                ICNDX_NegEXPFrc,
-////////                               &aplRht.parts[0],
-////////                               &aplRes.parts[0],
-////////                                FALSE));
+////////    arb_QuadICValue (&aplLft.parts[0],
+////////                      ICNDX_NegEXPFrc,
+////////                     &aplRht.parts[0],
+////////                     &aplRes.parts[0],
+////////                      FALSE);
 ////////else
         // Check for special cases:  _ * 0 and -_ * 0
         if (arb_inf_p (&aplLft.parts[0])
          && IsZeroBAxF (&aplRht, 8))
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[0],
-                                        ICNDX_InfEXP0,
-                                       &aplRht.parts[0],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[0],
+                              ICNDX_InfEXP0,
+                             &aplRht.parts[0],
+                             &aplRes.parts[0],
+                              FALSE);
         else
         // Check for special cases:  1 * _ and 1 * -_
         if (IsArb1 (&aplLft.parts[0])
@@ -5410,14 +5505,14 @@ APLBA8F PowBA8F_SUB
         arb8f_init (&aplRes);
 
         // The real part is NaN
-        arf_nan (arb_midref (&aplRes.parts[0]));
+        arb_set_nan (&aplRes.parts[0]);
 
         // Loop through the imaginary parts
         for (i = 1; i < 8; i++)
         // If that coefficient is non-zero, ...
         if (!IsZeroBAxF (&aplRht.parts[i], 1))
             // Set the corresponding coefficient in the result to NaN
-            arf_nan (arb_midref (&aplRes.parts[i]));
+            arb_set_nan (&aplRes.parts[i]);
 
         return aplRes;
     } // End IF

@@ -1,0 +1,12 @@
+Build #1972 -- Version 0.6.0.xx
+-------------------------------
+
+* Recode Macros As Functions
+
+Directory branches/bsmith/NanTypes:
+
+PF_STAR.C:
+  Recode the macros from <pf_star.mac> as separate functions.
+
+PF_STAR.MAC:
+  Delete this file as its macros are recoded in <pf_star.c>.

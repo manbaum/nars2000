@@ -1,12 +1,26 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #1972 -- Version 0.6.0.xx
+-------------------------------
+
+* Recode Macros As Functions
+
+Directory branches/bsmith/NanTypes:
+
+PF_STAR.C:
+  Recode the macros from <pf_star.mac> as separate functions.
+
+PF_STAR.MAC:
+  Delete this file as its macros are recoded in <pf_star.c>.
+
+
 Build #1970 -- Version 0.6.0.xx
 -------------------------------
 
 * Define DEBUG Functions To Display Common Datatypes
 
-Directory branches/bsmith/NewTypes:
+Directory branches/bsmith/NanTypes:
 
 MPFNS.C:
   Define <VfpOut>, <RatOut>, and <FltOut> as helper function to display common datatypes.
@@ -18,7 +32,7 @@ Build #1968 -- Version 0.6.0.xx
 * Fix Bug In Axis Operator With 1+[1 1] 2 3
 * Fix Bug In Axis Operator With Named Var With No Value
 
-Directory branches/bsmith/NewTypes:
+Directory branches/bsmith/NanTypes:
 
 AXISFNS.C:
   Fix bug in Axis Operator with 1+[1 1] 2 3 which overwrites a memory boundary
@@ -33,7 +47,7 @@ Build #1918 -- Version 0.6.0.xx
 
 * Implement Ball Arithmetic
 
-Directory branches/bsmith/NewTypes:
+Directory branches/bsmith/NanTypes:
 
 
 VER.RC:

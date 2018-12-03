@@ -25,63 +25,61 @@ typedef enum tagMFO
 {
     MFOE_MonIota         ,      // 00:  Extended Monadic Iota
     MFOE_DydIota         ,      // 01:  Extended Dyadic Iota
-    MFOE_MonDnShoe       ,      // 02:  Monadic Down Shoe
-    MFOE_MonRank         ,      // 03:  Monadic Derived Function from Rank Operator
-    MFOE_DydRank         ,      // 04:  Dyadic  ...
-    MFOE_DetPerm         ,      // 05:  Permanent of a matrix
-    MFOE_MonFMT          ,      // 06:  Monadic []FMT
-    MFOE_BoxFMT          ,      // 07:  Box (for monadic []FMT)
-    MFOE_MonVR           ,      // 08:  Monadic []VR
-    MFOE_IdnDot          ,      // 09:  Identity function for Inner Product
-    MFOE_IdnJotDot       ,      // 0A:  Identity function for Outer Product
-    MFOE_MAD             ,      // 0B:  Multiset Asymmetric Difference
-    MFOE_MSD             ,      // 0C:  Multiset Symmetric Difference
-    MFOE_MU              ,      // 0D:  Multiset Union
-    MFOE_MI              ,      // 0E:  Multiset Intersection
-    MFOE_MIO             ,      // 0F:  Multiset Index Of
-    MFOE_MEO             ,      // 10:  Multiset Element Of
-    MFOE_MM              ,      // 11:  Multiset Match
-    MFOE_MLRS            ,      // 12:  Multiset LeftShoe
-    MFOE_MLRSU           ,      // 13:  Multiset LeftShoeUnderbar
-    MFOE_MMUL            ,      // 14:  Multiset Multiplicities
-    MFOE_DydDnShoe       ,      // 15:  Dyadic Down Shoe
-    MFOE_DydUpShoe       ,      // 16:  Dyadic Up Shoe
-    MFOE_DydLRShoeUnd    ,      // 17:  Dyadic Left/Right Shoe Underbar
-    MFOE_SD              ,      // 18:  Symmetric Difference
-    MFOE_MonDomino       ,      // 19:  Monadic Domino for global numerics
-    MFOE_DydDomino       ,      // 1A:  Dyadic  ...
-    MFOE_DydDotDot       ,      // 1B:  Dyadic DotDot
-    MFOE_DydIotaUnderbar ,      // 1C:  Dyadic Iota Underbar
-    MFOE_MonDot          ,      // 1D:  Monadic derived function from f.g for determinant
-    MFOE_MonDotInit      ,      // 1E:  Initialization for #MonDot
-    MFOE_MonDotAll       ,      // 1F:  Subroutine to ...
-    MFOE_MonDotPerm      ,      // 20:  ...
-    MFOE_MonDotCr        ,      // 21:  ...
-    MFOE_DydEpsUnderbar  ,      // 22:  Dyadic Epsilon Underbar on empty args
-    MFOE_DydConv         ,      // 23:  Dyadic derived function from Convolution
-    MFOE_IdnConv         ,      // 24:  Identity function for Convolution
-    MFOE_DydScan         ,      // 25:  Dyadic Scan
-    MFOE_DydScan1        ,      // 26:  Dyadic Scan, first dimension
-    MFOE_RoS1L           ,      // 27:  Reduction of Singletons, type #1, left identity element
-    MFOE_RoS1R           ,      // 28:  ...                           #1, right ...
-    MFOE_RoS2            ,      // 29:  ...                           #2
-    MFOE_RoS3            ,      // 2A:  ...                           #3
-    MFOE_MDIU            ,      // 2B:  Multiset dyadic iota underbar
-    MFOE_DetSing         ,      // 2C:  Determinant of a singleton
-    MFOE_DydVOFact       ,      // 2D:  Pochhammer symbol:  rising/falling factorial
-    MFOE_MonExecute      ,      // 2E:  Monadic Execute with []FPC localized
-    MFOE_DydSquad        ,      // 2F:  Dyadic Squad
-    MFOE_DydSlope        ,      // 30:  Dyadic Slope
-    MFOE_MonShriek       ,      // 31:  Monadic Shriek
-    MFOE_MatOpr          ,      // 32:  Matrix Operator
-    MFOE_DydDot2         ,      // 33:  APL2's defn of Inner Product
-    MFOE_LENGTH                 // 34:  # entries in this enum
+    MFOE_MonRank         ,      // 02:  Monadic Derived Function from Rank Operator
+    MFOE_DydRank         ,      // 03:  Dyadic  ...
+    MFOE_DetPerm         ,      // 04:  Permanent of a matrix
+    MFOE_MonFMT          ,      // 05:  Monadic []FMT
+    MFOE_BoxFMT          ,      // 06:  Box (for monadic []FMT)
+    MFOE_MonVR           ,      // 07:  Monadic []VR
+    MFOE_IdnDot          ,      // 08:  Identity function for Inner Product
+    MFOE_IdnJotDot       ,      // 09:  Identity function for Outer Product
+    MFOE_MAD             ,      // 0A:  Multiset Asymmetric Difference
+    MFOE_MSD             ,      // 0B:  Multiset Symmetric Difference
+    MFOE_MU              ,      // 0C:  Multiset Union
+    MFOE_MI              ,      // 0D:  Multiset Intersection
+    MFOE_MIO             ,      // 0E:  Multiset Index Of
+    MFOE_MEO             ,      // 0F:  Multiset Element Of
+    MFOE_MM              ,      // 10:  Multiset Match
+    MFOE_MLRS            ,      // 11:  Multiset LeftShoe
+    MFOE_MLRSU           ,      // 12:  Multiset LeftShoeUnderbar
+    MFOE_MMUL            ,      // 13:  Multiset Multiplicities
+    MFOE_DydDnShoe       ,      // 14:  Dyadic Down Shoe
+    MFOE_DydUpShoe       ,      // 15:  Dyadic Up Shoe
+    MFOE_DydLRShoeUnd    ,      // 16:  Dyadic Left/Right Shoe Underbar
+    MFOE_SD              ,      // 17:  Symmetric Difference
+    MFOE_MonDomino       ,      // 18:  Monadic Domino for global numerics
+    MFOE_DydDomino       ,      // 19:  Dyadic  ...
+    MFOE_DydDotDot       ,      // 1A:  Dyadic DotDot
+    MFOE_DydIotaUnderbar ,      // 1B:  Dyadic Iota Underbar
+    MFOE_MonDot          ,      // 1C:  Monadic derived function from f.g for determinant
+    MFOE_MonDotInit      ,      // 1D:  Initialization for #MonDot
+    MFOE_MonDotAll       ,      // 1E:  Subroutine to ...
+    MFOE_MonDotPerm      ,      // 1F:  ...
+    MFOE_MonDotCr        ,      // 20:  ...
+    MFOE_DydEpsUnderbar  ,      // 21:  Dyadic Epsilon Underbar on empty args
+    MFOE_DydConv         ,      // 22:  Dyadic derived function from Convolution
+    MFOE_IdnConv         ,      // 23:  Identity function for Convolution
+    MFOE_DydScan         ,      // 24:  Dyadic Scan
+    MFOE_DydScan1        ,      // 25:  Dyadic Scan, first dimension
+    MFOE_RoS1L           ,      // 26:  Reduction of Singletons, type #1, left identity element
+    MFOE_RoS1R           ,      // 27:  ...                           #1, right ...
+    MFOE_RoS2            ,      // 28:  ...                           #2
+    MFOE_RoS3            ,      // 29:  ...                           #3
+    MFOE_MDIU            ,      // 2A:  Multiset dyadic iota underbar
+    MFOE_DetSing         ,      // 2B:  Determinant of a singleton
+    MFOE_DydVOFact       ,      // 2C:  Pochhammer symbol:  rising/falling factorial
+    MFOE_MonExecute      ,      // 2D:  Monadic Execute with []FPC localized
+    MFOE_DydSquad        ,      // 2E:  Dyadic Squad
+    MFOE_DydSlope        ,      // 2F:  Dyadic Slope
+    MFOE_MonShriek       ,      // 30:  Monadic Shriek
+    MFOE_MatOpr          ,      // 31:  Matrix Operator
+    MFOE_DydDot2         ,      // 32:  APL2's defn of Inner Product
+    MFOE_LENGTH                 // 33:  # entries in this enum
 } MFO, *LPMFO;
 
 // Magic Function/Operator Names
 #define MFON_MonIota            L"#MonIota"
 #define MFON_DydIota            L"#DydIota"
-#define MFON_MonDnShoe          L"#MonDnShoe"
 #define MFON_MonRank            L"#MonRank"
 #define MFON_DydRank            L"#DydRank"
 #define MFON_MonFMT             L"#MonFMT"

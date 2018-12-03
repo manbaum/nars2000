@@ -171,21 +171,27 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
     APLLONGEST        aplLongestRht;        // Right arg immediate value
     APLUINT           ByteRes,              // # bytes in the result
                       uRht;                 // Loop counter
+    APLBOOL           bQuadIO;              // []IO
     HGLOBAL           hGlbRht = NULL,       // Right arg global memory handle
                       hGlbRes = NULL,       // Result    ...
-                      hGlbMFO,              // Magic function/operator global memory handle
                       hGlbGup = NULL,       // Grade-up global memory handle
                       hGlbTmp = NULL;       // Temporary ...
     LPVARARRAY_HEADER lpMemHdrRht = NULL,   // Ptr to right arg header
                       lpMemHdrRes = NULL,   // Ptr to right arg header
-                      lpMemHdrGup = NULL;   // Ptr to Gup header
+                      lpMemHdrGup = NULL,   // Ptr to Gup header
+                      lpMemHdrTmp = NULL;   // Ptr to Tmp header
     LPAPLINT          lpMemTmp;             // Ptr to temporary global memory
     LPVOID            lpMemRht,             // Ptr to right arg global memory
                       lpMemRes;             // Ptr to result    ...
-    LPPERTABDATA      lpMemPTD;             // Ptr to PerTabData global memory
     LPPL_YYSTYPE      lpYYRes = NULL;       // Ptr to result
+    TOKEN             tkFunc = {0};         // Internal function token
     int               iHCDimRht,            // HC Dimension (1, 2, 4, 8)
                       i;                    // Loop counter
+    UBOOL             bMemGup = FALSE;      // TRUE iff we have already set <lpMemGup>
+
+    // Save the current index origin and set it to zero
+    bQuadIO = GetQuadIO ();
+    SetQuadIO (0);
 
     Assert (lptkAxis EQ NULL);
 
@@ -200,7 +206,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
     aplLongestRht = GetGlbPtrs_LOCK (lptkRhtArg, &hGlbRht, &lpMemHdrRht);
 
     // If the right arg is not immediate, ...
-    if (hGlbRht)
+    if (hGlbRht NE NULL)
         // Skip over the header and dimensions to the data
         lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
     else
@@ -323,6 +329,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
 
         goto YYALLOC_EXIT;
     } else
+    // If the right arg is NOT a scalar and NOT an APA with a zero multiplier, ...
     // Split cases based upon the right arg storage type
     switch (aplTypeRht)
     {
@@ -407,7 +414,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             // Skip over the header and dimensions to the data
             lpMemRes = VarArrayDataFmBase (lpMemHdrRes);
 
-            if (aplNELMRes)
+            if (!IsEmpty (aplNELMRes))
                 *((LPAPLBOOL) lpMemRes) = (APLBOOL) aplLongestRht;
             break;
         } // End ARRAY_BOOL
@@ -448,16 +455,16 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
         case ARRAY_BA2F:
         case ARRAY_BA4F:
         case ARRAY_BA8F:
+
+        case ARRAY_HETERO:
+        case ARRAY_NESTED:
         {
-            TOKEN             tkFunc = {0},         // Grade-up function token
-                              tkRht  = {0};         // Right arg token
-            APLBOOL           bQuadIO;              // []IO
-            APLFLOAT          fQuadCT;              // []CT
-            ALLTYPES          atLst = {0},          // Last value as ALLTYPES
-                              atRht = {0};          // Right ...
-            APLCHAR           aplLastChr;           // ...      char  ...
-            LPVARARRAY_HEADER lpMemHdrTmp = NULL;   // Ptr to Tmp header
-            LPAPLINT          lpMemGup;             // Ptr to grade-up global memory
+            TOKEN    tkRht  = {0};          // Right arg token
+            APLFLOAT fQuadCT;               // []CT
+            ALLTYPES atLst = {0},           // Last value as ALLTYPES
+                     atRht = {0};           // Right ...
+            APLCHAR  aplLastChr;            // ...      char  ...
+            LPAPLINT lpMemGup;              // Ptr to grade-up global memory
 
             // Setup the grade-up function token
             tkFunc.tkFlags.TknType   = TKT_FCNIMMED;
@@ -468,10 +475,6 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
 
             // Get the current value of []CT
             fQuadCT = GetQuadCT ();
-
-            // Save the current index origin and set it to zero
-            bQuadIO = GetQuadIO ();
-            SetQuadIO (0);
 
             //***************************************************************
             // In order to find unique values, we grade-up the right arg and
@@ -486,9 +489,6 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                                            NULL,        // Ptr to axis token (may be NULL)
                                            TRUE,        // TRUE iff we're to treat the right arg as ravelled
                                            TRUE);       // TRUE iff we can grade all arrays
-            // Restore the index origin
-            SetQuadIO (bQuadIO);
-
             if (lpYYRes EQ NULL)
                 goto ERROR_EXIT;
             // Get the grade-up global memory handle
@@ -507,11 +507,8 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             switch (aplTypeRht)
             {
                 case ARRAY_INT:
-                case ARRAY_HC2I:
-                case ARRAY_HC4I:
-                case ARRAY_HC8I:
                     // Initialize the last value with the first one
-                    if (aplNELMRht)
+                    if (!IsEmpty (aplNELMRht))
                         (*aTypeActPromote[aplTypeRht][aplTypeRht]) (lpMemRht, lpMemGup[0], &atLst);
 
                     // Trundle through the grade-up of the right arg
@@ -547,11 +544,8 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                     break;
 
                 case ARRAY_FLOAT:
-                case ARRAY_HC2F:
-                case ARRAY_HC4F:
-                case ARRAY_HC8F:
                     // Initialize the last value with the first one
-                    if (aplNELMRht)
+                    if (!IsEmpty (aplNELMRht))
                         (*aTypeActPromote[aplTypeRht][aplTypeRht]) (lpMemRht, lpMemGup[0], &atLst);
 
                     // Trundle through the grade-up of the right arg
@@ -588,7 +582,7 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
 
                 case ARRAY_CHAR:
                     // Initialize the last value with the first one
-                    if (aplNELMRht)
+                    if (!IsEmpty (aplNELMRht))
                         aplLastChr = ((LPAPLCHAR)  lpMemRht)[*lpMemGup];
 
                     // Trundle through the grade-up of the right arg
@@ -609,11 +603,8 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                     break;
 
                 case ARRAY_RAT:
-                case ARRAY_HC2R:
-                case ARRAY_HC4R:
-                case ARRAY_HC8R:
                     // Initialize the last value with the first one
-                    if (aplNELMRht)
+                    if (!IsEmpty (aplNELMRht))
                         (*aTypeActPromote[aplTypeRht][aplTypeRht]) (lpMemRht, lpMemGup[0], &atLst);
 
                     // Trundle through the grade-up of the right arg
@@ -649,9 +640,6 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                     break;
 
                 case ARRAY_VFP:
-                case ARRAY_HC2V:
-                case ARRAY_HC4V:
-                case ARRAY_HC8V:
                     // Initialize the last value with the first one
                     if (!IsEmpty (aplNELMRht))
                         (*aTypeActPromote[aplTypeRht][aplTypeRht]) (lpMemRht, lpMemGup[0], &atLst);
@@ -689,9 +677,6 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                     break;
 
                 case ARRAY_ARB:
-                case ARRAY_BA2F:
-                case ARRAY_BA4F:
-                case ARRAY_BA8F:
                     // Initialize the last value with the first one
                     if (!IsEmpty (aplNELMRht))
                         (*aTypeActPromote[aplTypeRht][aplTypeRht]) (lpMemRht, lpMemGup[0], &atLst);
@@ -727,6 +712,86 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
                         (*aTypeFree[aplTypeRht]) (&atLst, 0);
 
                     break;
+
+                case ARRAY_HC2I:
+                case ARRAY_HC4I:
+                case ARRAY_HC8I:
+
+                case ARRAY_HC2F:
+                case ARRAY_HC4F:
+                case ARRAY_HC8F:
+
+                case ARRAY_HC2R:
+                case ARRAY_HC4R:
+                case ARRAY_HC8R:
+
+                case ARRAY_HC2V:
+                case ARRAY_HC4V:
+                case ARRAY_HC8V:
+
+                case ARRAY_BA2F:
+                case ARRAY_BA4F:
+                case ARRAY_BA8F:
+                {
+                    HGLOBAL           hGlbRiR;
+                    LPVARARRAY_HEADER lpMemHdrRiR = NULL;
+                    LPAPLINT          lpMemRiR;
+
+                    // Setup the {iota} function token
+                    tkFunc.tkFlags.TknType   = TKT_FCNIMMED;
+                    tkFunc.tkFlags.ImmType   = IMMTYPE_PRIMFCN;
+////////////////////tkFunc.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+                    tkFunc.tkData.tkChar     = UTF16_IOTA;
+                    tkFunc.tkCharIndex       = lptkFunc->tkCharIndex;
+
+                    // Calculate R{iota}R
+                    lpYYRes =
+                      PrimFnDydIotaCom_EM_YY (lptkRhtArg,       // Ptr to left arg token
+                                             &tkFunc,           // Ptr to function token
+                                              lptkRhtArg,       // Ptr to right arg token
+                                              lptkAxis,         // Ptr to axis token (may be NULL)
+                                              FALSE);           // TRUE iff we're to TypeDemote at the end
+                    // Check for error
+                    if (lpYYRes EQ NULL)
+                        goto ERROR_EXIT;
+                    // Get the global handle
+                    hGlbRiR = GetGlbHandle (&lpYYRes->tkToken);
+
+                    // We no longer need this resource
+                    YYFree (lpYYRes); lpYYRes = NULL;
+
+                    // Lock the memory to get a ptr to it
+                    lpMemHdrRiR = MyGlobalLockVar (hGlbRiR);
+
+                    // Skip over the header and dimensions to the data
+                    lpMemRiR = VarArrayDataFmBase (lpMemHdrRiR);
+
+                    // Initialize the starting element of <lpMemGup>
+                    //   because were skipping over it
+                    lpMemGup[0] = 0;
+
+                    // Loop through the above R{iota}R
+                    for (uRht = 1, aplNELMRes = (aplNELMRht > 0);
+                         uRht < aplNELMRht;
+                         uRht++)
+                    {
+                        // If the RiR value is the same as {iota}{rho}R (a.k.a. uRht), ...
+                        if (lpMemRiR[uRht] EQ uRht)
+                            // Save as the next unique value's index
+                            lpMemGup[aplNELMRes++] = uRht;
+                    } // End FOR
+
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbRiR); lpMemHdrRiR = NULL;
+
+                    // We no longer need this storage
+                    MyGlobalFree (hGlbRiR); hGlbRiR = NULL;
+
+                    // Tell the following code we have already set <lpMemGup>
+                    bMemGup = TRUE;
+
+                    break;
+                } // End RiR code
 
                 defstop
                     break;
@@ -781,40 +846,77 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
             // We no longer need this storage
             FreeResultGlobalVar (hGlbGup); hGlbGup = NULL;
 
-            // Setup the right arg token
-            tkRht.tkFlags.TknType   = TKT_VARARRAY;
-////////////tkRht.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
-////////////tkRht.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
-            tkRht.tkData.tkGlbData  = MakePtrTypeGlb (hGlbTmp);
-            tkRht.tkCharIndex       = lptkFunc->tkCharIndex;
+            // If we have already set <lpMemGup> (now <lpMemTmp>), ...
+            if (bMemGup)
+            {
+                // Create a temp vector with {iota}{rho}R for use in the fill code as in <lpMemTmp[*lpMemGup]>
+                // Calculate space needed for a temp
+                ByteRes = CalcArraySize (ARRAY_INT, aplNELMRes, 1);
 
-            // Save the current index origin and set it to zero
-////////////bQuadIO = GetQuadIO ();     // Already read
-            SetQuadIO (0);
+                // Check for overflow
+                if (ByteRes NE (APLU3264) ByteRes)
+                    goto WSFULL_EXIT;
 
-            // Grade-up the graded-up right arg
-            lpYYRes =
-              PrimFnMonGradeCommon_EM_YY (&tkFunc,      // Ptr to function token
-                                          &tkRht,       // Ptr to right arg token
-                                           NULL,        // Ptr to axis token (may be NULL)
-                                           TRUE,        // TRUE iff we're to treat the right arg as ravelled
-                                           TRUE);       // TRUE iff we can grade all arrays
-            // Restore the index origin
-            SetQuadIO (bQuadIO);
+                // Allocate space for the temp
+                hGlbGup = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
+                if (hGlbGup EQ NULL)
+                    goto WSFULL_EXIT;
 
-            if (lpYYRes EQ NULL)
-                goto ERROR_EXIT;
-            // Get the grade-up global memory handle
-            hGlbGup = lpYYRes->tkToken.tkData.tkGlbData;
+                // Lock the memory to get a ptr to it
+                lpMemHdrGup = MyGlobalLock000 (hGlbGup);
 
-            // Free the YYRes
-            YYFree (lpYYRes); lpYYRes = NULL;
+#define lpHeader        lpMemHdrGup
+                // Fill in the header
+                lpHeader->Sig.nature = VARARRAY_HEADER_SIGNATURE;
+                lpHeader->ArrType    = ARRAY_INT;
+////////////////lpHeader->PermNdx    = PERMNDX_NONE;    // Already zero from GHND
+////////////////lpHeader->SysVar     = FALSE;           // Already zero from GHND
+////////////////lpHeader->PV0        = FALSE;           // Already zero from GHND
+////////////////lpHeader->PV1        = FALSE;           // Already zero from GHND
+                lpHeader->RefCnt     = 1;
+                lpHeader->NELM       = aplNELMRes;
+                lpHeader->Rank       = 1;
+#undef  lpHeader
+                // Save the dimension in the result
+                *VarArrayBaseToDim (lpMemHdrGup) = aplNELMRes;
 
-            // Lock the memory to get a ptr to it
-            lpMemHdrGup = MyGlobalLockVar (hGlbGup);
+                // Skip over the header and dimensions to the data
+                lpMemGup = VarArrayDataFmBase (lpMemHdrGup);
 
-            // Skip over the header and dimensions to the data
-            lpMemGup = VarArrayDataFmBase (lpMemHdrGup);
+                // Loop through the items in the temp
+                for (uRht = 0; uRht < aplNELMRes; uRht++)
+                    // Fill in the temp with {iota}{rho}R
+                    lpMemGup[uRht] = uRht;
+            } else
+            {
+                // Setup the right arg token
+                tkRht.tkFlags.TknType   = TKT_VARARRAY;
+////////////////tkRht.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
+////////////////tkRht.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
+                tkRht.tkData.tkGlbData  = MakePtrTypeGlb (hGlbTmp);
+                tkRht.tkCharIndex       = lptkFunc->tkCharIndex;
+
+                // Grade-up the graded-up right arg
+                lpYYRes =
+                  PrimFnMonGradeCommon_EM_YY (&tkFunc,      // Ptr to function token
+                                              &tkRht,       // Ptr to right arg token
+                                               NULL,        // Ptr to axis token (may be NULL)
+                                               TRUE,        // TRUE iff we're to treat the right arg as ravelled
+                                               TRUE);       // TRUE iff we can grade all arrays
+                if (lpYYRes EQ NULL)
+                    goto ERROR_EXIT;
+                // Get the grade-up global memory handle
+                hGlbGup = lpYYRes->tkToken.tkData.tkGlbData;
+
+                // Free the YYRes
+                YYFree (lpYYRes); lpYYRes = NULL;
+
+                // Lock the memory to get a ptr to it
+                lpMemHdrGup = MyGlobalLockVar (hGlbGup);
+
+                // Skip over the header and dimensions to the data
+                lpMemGup = VarArrayDataFmBase (lpMemHdrGup);
+            } // End IF/ELSE
 
             // Calculate space needed for the result
             ByteRes = CalcArraySize (aplTypeRht, aplNELMRes, 1);
@@ -935,27 +1037,6 @@ LPPL_YYSTYPE PrimFnMonDownShoe_EM_YY
 
             break;
 
-        case ARRAY_HETERO:
-        case ARRAY_NESTED:
-            // Get ptr to PerTabData global memory
-            lpMemPTD = GetMemPTD ();
-
-            // Get the magic function/operator global memory handle
-            hGlbMFO = lpMemPTD->hGlbMFO[MFOE_MonDnShoe];
-
-            //  Return the unique elements in the right arg.
-            //  Use an internal magic function/operator.
-            lpYYRes =
-              ExecuteMagicFunction_EM_YY (NULL,         // Ptr to left arg token
-                                          lptkFunc,     // Ptr to function token
-                                          NULL,         // Ptr to function strand
-                                          lptkRhtArg,   // Ptr to right arg token
-                                          lptkAxis,     // Ptr to axis token
-                                          hGlbMFO,      // Magic function/operator global memory handle
-                                          NULL,         // Ptr to HSHTAB struc (may be NULL)
-                                          LINENUM_ONE); // Starting line # type (see LINE_NUMS)
-            break;
-
         defstop
             break;
     } // End IF/ELSE/SWITCH
@@ -1003,10 +1084,10 @@ ERROR_EXIT:
 NORMAL_EXIT:
     if (hGlbTmp NE NULL)
     {
-        if (lpMemTmp NE NULL)
+        if (lpMemHdrTmp NE NULL)
         {
             // We no longer need this ptr
-            MyGlobalUnlock (hGlbTmp); lpMemTmp = NULL;
+            MyGlobalUnlock (hGlbTmp); lpMemHdrTmp = NULL;
         } // End IF
 
         // We no longer need this storage
@@ -1036,6 +1117,9 @@ NORMAL_EXIT:
         // We no longer need this ptr
         MyGlobalUnlock (hGlbRht); lpMemHdrRht = NULL;
     } // End IF
+
+    // Restore the original []IO
+    SetQuadIO (bQuadIO);
 
     return lpYYRes;
 } // End PrimFnMonDownShoe_EM_YY

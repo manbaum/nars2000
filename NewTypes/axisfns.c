@@ -95,12 +95,20 @@ UBOOL CheckAxisImm
 
     if (lphGlbAxis NE NULL)
     {
-        // Calculate space needed for axis
+        APLUINT aplMaxAlloc;
+
         // If the comparison rank is zero, the allocation
         //   size is zero, and the lock ptr is zero
         //   which GlobalLock will treat as an error,
         //   returning a zero ptr, so we max aplRankCmp with 1.
-        ByteAxis = sizeof (APLUINT) * 2 * max (aplRankCmp, 1);
+        aplMaxAlloc = max (aplRankCmp, 1);
+
+        // Use larger as we may need to store *lpaplNELM axes
+        //   in *lphGlbAxis
+        aplMaxAlloc = max (aplMaxAlloc, *lpaplNELM);
+
+        // Calculate space needed for axis
+        ByteAxis = sizeof (APLUINT) * 2 * aplMaxAlloc;
 
         // Check for overflow
         if (ByteAxis NE (APLU3264) ByteAxis)
@@ -115,7 +123,7 @@ UBOOL CheckAxisImm
         *lplpAxisStart = *lplpAxisHead = MyGlobalLock000 (*lphGlbAxis);
 
         // Point to the start of the trailing axes
-        lpAxisTail = &(*lplpAxisHead)[aplRankCmp - *lpaplNELM];
+        lpAxisTail = &(*lplpAxisHead)[aplMaxAlloc-*lpaplNELM];
     } // End IF
 
     // Split cases based upon the immediate axis type
@@ -156,7 +164,8 @@ UBOOL CheckAxisImm
                 *lpbFract = !bRet;
 
             // If fractional values allowed and are present, ...
-            if (lpbFract NE NULL && !bRet)
+            if (lpbFract NE NULL
+             && !bRet)
                 bRet = TRUE;
 
             // Ensure it's within range
@@ -174,7 +183,8 @@ UBOOL CheckAxisImm
             goto ERROR_EXIT;
     } // End SWITCH
 
-    if (bRet && lphGlbAxis NE NULL)
+    if (bRet
+     && lphGlbAxis NE NULL)
     {
         // Save the remaining values
         for (uCnt = 0; uCnt < aplRankCmp; uCnt++)
@@ -192,9 +202,25 @@ UBOOL CheckAxisImm
     if (lpaplLastAxis NE NULL)
         *lpaplLastAxis = aplRank;
 
-    goto NORMAL_EXIT;
+    if (bRet)
+        goto NORMAL_EXIT;
+    else
+        goto ERROR_EXIT;
 
 ERROR_EXIT:
+    if ( lphGlbAxis NE NULL
+     && *lphGlbAxis NE NULL)
+    {
+        if (*lplpAxisStart NE NULL)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (*lphGlbAxis); *lplpAxisStart = *lplpAxisHead = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        DbgGlobalFree (*lphGlbAxis); *lphGlbAxis = NULL;
+    } // End IF
+
     // Mark as in error
     bRet = FALSE;
 NORMAL_EXIT:
@@ -280,12 +306,20 @@ UBOOL CheckAxisGlb_EM
 
     if (lphGlbAxis NE NULL)
     {
-        // Calculate space needed for axis
+        APLUINT aplMaxAlloc;
+
         // If the comparison rank is zero, the allocation
         //   size is zero, and the lock ptr is zero
         //   which GlobalLock will treat as an error,
         //   returning a zero ptr, so we max aplRankCmp with 1.
-        ByteAxis = sizeof (APLUINT) * 2 * max (aplRankCmp, 1);
+        aplMaxAlloc = max (aplRankCmp, 1);
+
+        // Use larger as we may need to store *lpaplNELM axes
+        //   in *lphGlbAxis
+        aplMaxAlloc = max (aplMaxAlloc, *lpaplNELM);
+
+        // Calculate space needed for axis
+        ByteAxis = sizeof (APLUINT) * 2 * aplMaxAlloc;
 
         // Check for overflow
         if (ByteAxis NE (APLU3264) ByteAxis)
@@ -300,7 +334,7 @@ UBOOL CheckAxisGlb_EM
         *lplpAxisStart = *lplpAxisHead = MyGlobalLock000 (*lphGlbAxis);
 
         // Point to the start of the trailing axes
-        lpAxisTail = &(*lplpAxisHead)[aplRankCmp - *lpaplNELM];
+        lpAxisTail = &(*lplpAxisHead)[aplMaxAlloc-*lpaplNELM];
     } // End IF
 
     // If the comparison rank is zero, the allocation
@@ -357,7 +391,8 @@ UBOOL CheckAxisGlb_EM
             *lpbFract |= !bRet;
 
         // If fractional values allowed and are present, ...
-        if (lpbFract NE NULL && !bRet)
+        if (lpbFract NE NULL
+         && !bRet)
             bRet = TRUE;
 
         // Ensure it's within range
@@ -369,7 +404,9 @@ UBOOL CheckAxisGlb_EM
         // Save the next trailing value
         //   if asked to and not sorting
         //   the axes.
-        if (bRet && lphGlbAxis && !bSortAxes)
+        if (bRet
+         && lphGlbAxis NE NULL
+         && !bSortAxes)
             *lpAxisTail++ = aplRankLcl;
 
         // Test for duplicates
@@ -382,7 +419,9 @@ UBOOL CheckAxisGlb_EM
         *lpaplLastAxis = aplRankLcl;
 
     // Fill in the leading axis values
-    if (bRet && lphGlbAxis NE NULL && !bAllowDups)
+    if (bRet
+     && lphGlbAxis NE NULL
+     && !bAllowDups)
     {
         uBitMask = BIT0;
 
@@ -411,7 +450,8 @@ UBOOL CheckAxisGlb_EM
     } // End IF
 
     // If the axes must be contiguous, check that
-    if (bRet && (bContiguous || bAllowDups))
+    if (bRet
+     && (bContiguous || bAllowDups))
     {
         // Unlock and lock the memory to reset the
         //   ptr to the start
@@ -487,7 +527,9 @@ UBOOL CheckAxisGlb_EM
     } // End IF
 
     // If we allow duplicates, ...
-    if (bRet && bAllowDups && aplRankCmp NE 0)
+    if (bRet
+     && bAllowDups
+     && aplRankCmp NE 0)
     {
         // Unlock and lock the memory to reset the
         //   ptr to the start
@@ -499,14 +541,29 @@ UBOOL CheckAxisGlb_EM
         bRet = (*lpMemDup & BIT0);
     } // End IF
 
-    goto NORMAL_EXIT;
-
+    if (bRet)
+        goto NORMAL_EXIT;
+    else
+        goto ERROR_EXIT;
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkAxis);
     goto ERROR_EXIT;
 
 ERROR_EXIT:
+    if ( lphGlbAxis NE NULL
+     && *lphGlbAxis NE NULL)
+    {
+        if (*lplpAxisStart NE NULL)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (*lphGlbAxis); *lplpAxisStart = *lplpAxisHead = NULL;
+        } // End IF
+
+        // We no longer need this storage
+        DbgGlobalFree (*lphGlbAxis); *lphGlbAxis = NULL;
+    } // End IF
+
     // Mark as in error
     bRet = FALSE;
 NORMAL_EXIT:
@@ -622,16 +679,16 @@ UBOOL CheckAxis_EM
                                     //   this ptr must be set to NULL.
                                     //   (may be NULL if caller is not interested)
 {
-    UBOOL        bRet = TRUE;       // TRUE iff the result is valid
-    APLNELM      aplNELM;           //
-    LPAPLINT     lpAxisStart,       // Ptr to start of Axis values in *lphGlbAxis
-                 lpAxisHead;        // ...             user axis values in *lphGlbAxis
-    UINT         uCnt;                 // Loop counter
-    APLUINT      aplAxisContLo;     // Contiguous low axis
-    HGLOBAL      hGlbData = NULL;   //
-    IMM_TYPES    immType;           //
-    APLLONGEST   aplLongest;        //
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
+    UBOOL        bRet = TRUE;           // TRUE iff the result is valid
+    APLNELM      aplNELM;               //
+    LPAPLINT     lpAxisStart = NULL,    // Ptr to start of Axis values in *lphGlbAxis
+                 lpAxisHead = NULL;     // ...             user axis values in *lphGlbAxis
+    UINT         uCnt;                     // Loop counter
+    APLUINT      aplAxisContLo;         // Contiguous low axis
+    HGLOBAL      hGlbData = NULL;       //
+    IMM_TYPES    immType;               //
+    APLLONGEST   aplLongest;            //
+    LPPERTABDATA lpMemPTD;              // Ptr to PerTabData global memory
 
     // Get ptr to PerTabData global memory
     lpMemPTD = GetMemPTD ();
@@ -753,9 +810,11 @@ UBOOL CheckAxis_EM
     if (!bRet)
         goto AXIS_EXIT;
 
-    if (lphGlbAxis NE NULL && *lphGlbAxis NE NULL)
+    if ( lphGlbAxis NE NULL
+     && *lphGlbAxis NE NULL)
     {
-        if (bContiguous && !bAllowDups)
+        if (bContiguous
+         && !bAllowDups)
         {
             // If the axes are to be contiguous and no duplicates,
             //   this must be ravel (contiguous and duplicates is transpose)
@@ -805,10 +864,14 @@ WSFULL_EXIT:
     goto ERROR_EXIT;
 
 ERROR_EXIT:
-    if (lphGlbAxis NE NULL && *lphGlbAxis NE NULL)
+    if ( lphGlbAxis NE NULL
+     && *lphGlbAxis NE NULL)
     {
-        // We no longer need this ptr
-        MyGlobalUnlock (*lphGlbAxis); lpAxisStart = lpAxisHead = NULL;
+        if (lpAxisStart NE NULL)
+        {
+            // We no longer need this ptr
+            MyGlobalUnlock (*lphGlbAxis); lpAxisStart = lpAxisHead = NULL;
+        } // End IF
 
         // We no longer need this storage
         DbgGlobalFree (*lphGlbAxis); *lphGlbAxis = NULL;
@@ -844,7 +907,8 @@ UBOOL TestDupAxis
         bRet = !(uBitMask & lpMemDup[aplRank >> LOG2NBIB]);
 
     // Set this value for the next time if necessary
-    if (bRet || bAllowDups)
+    if (bRet
+     || bAllowDups)
         lpMemDup[aplRank >> LOG2NBIB] |= uBitMask;
 
     return bRet;

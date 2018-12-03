@@ -2190,6 +2190,10 @@ LPPL_YYSTYPE MakeAxis_EM_YY
             // tkData is an LPSYMENTRY
             Assert (GetPtrTypeDir (lpYYAxis->tkToken.tkData.tkVoid) EQ PTRTYPE_STCONST);
 
+            // Ensure it as a value, ...
+            if (!lpYYAxis->tkToken.tkData.tkSym->stFlags.Value)
+                goto VALUE_EXIT;
+
             // If it's not an immediate, ...
             if (!lpYYAxis->tkToken.tkData.tkSym->stFlags.Imm)
             {
@@ -2237,9 +2241,6 @@ LPPL_YYSTYPE MakeAxis_EM_YY
             break;
 
         case TKT_LSTMULT:
-            // Free the result and zap it
-            YYFree (lpYYRes); lpYYRes = NULL;
-
             goto AXIS_EXIT;
 
         defstop
@@ -2251,12 +2252,19 @@ LPPL_YYSTYPE MakeAxis_EM_YY
 AXIS_EXIT:
     ErrorMessageIndirectToken (ERRMSG_AXIS_ERROR APPEND_NAME,
                               &lpYYAxis->tkToken);
-    // Free the temps
-    FreeResult (lpYYAxis); lpYYAxis = NULL;
+    goto ERROR_EXIT;
 
+VALUE_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_VALUE_ERROR APPEND_NAME,
+                              &lpYYAxis->tkToken);
     goto ERROR_EXIT;
 
 ERROR_EXIT:
+    // Free the result and zap it
+    YYFree (lpYYRes); lpYYRes = NULL;
+
+    // Free the temps
+    FreeResult (lpYYAxis); lpYYAxis = NULL;
 NORMAL_EXIT:
     return lpYYRes;
 } // End MakeAxis_EM_YY

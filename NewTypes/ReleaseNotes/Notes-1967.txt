@@ -1,0 +1,14 @@
+Build #1967 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In Axis Operator With 1+[1 1] 2 3
+* Fix Bug In Axis Operator With Named Var With No Value
+
+Directory branches/bsmith/NewTypes:
+
+AXISFNS.C:
+  Fix bug in Axis Operator with 1+[1 1] 2 3 which overwrites a memory boundary
+    when calculating the axis tail starting point.
+
+STRAND.C:
+  In <MakeAxis_EM_YY>, handle the case where the named var has no value.

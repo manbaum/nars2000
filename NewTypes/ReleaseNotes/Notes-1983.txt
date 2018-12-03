@@ -1,0 +1,10 @@
+Build #1983 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In Each/JotDot Operators Returning All NoDisplay Results
+
+Directory branches/bsmith/NewTypes:
+
+PO_DIERESIS.C:
+PO_JOTDOT.C:
+  Fix bug in Each/JotDot Operators returning all NoDisplay results but not marking its result as NoDisplay.

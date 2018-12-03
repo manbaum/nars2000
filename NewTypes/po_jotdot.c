@@ -251,7 +251,8 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
                       uLft,                 // Left arg loop counter
                       uRht,                 // Right ...
                       uRes,                 // Result   ...
-                      uValErrCnt = 0;       // VALUE ERROR counter
+                      uValErrCnt = 0,       // VALUE ERROR counter
+                      uNoDispCnt = 0;       // bNoDisplay  ...
     HGLOBAL           hGlbLft = NULL,       // Left arg global memory handle
                       hGlbRht = NULL,       // Right ...
                       hGlbRes = NULL,       // Result   ...
@@ -265,11 +266,11 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
                       lpMemRht,             // Ptr to right ...
                       lpMemRes;             // Ptr to result   ...
     UBOOL             bRet = TRUE,          // TRUE iff result is valid
+                      bNoDisplay,           // TRUE iff the result is not to be displayed
                       bRealOnly = FALSE;    // TRUE iff the args must be demoted to real
     TOKEN             tkLftArg = {0},       // Left arg token
                       tkRhtArg = {0};       // Right ...
-    IMM_TYPES         immType,              // Immediate type
-                      immTypeRes;           // Result immediate type
+    IMM_TYPES         immType;              // Immediate type
     APLINT            apaOffLft,            // Left arg APA offset
                       apaMulLft,            // ...          multiplier
                       apaOffRht,            // Right arg APA offset
@@ -391,9 +392,6 @@ LPPL_YYSTYPE PrimOpDydJotDotCommon_EM_YY
         // The result storage type is assumed to be NESTED,
         //   but we'll call TypeDemote at the end just in case.
         aplTypeRes = ARRAY_NESTED;
-
-    // Save as immediate type
-    immTypeRes = TranslateArrayTypeToImmType (aplTypeRes);
 RESTART_JOTDOT:
     // Calculate space needed for the result
     ByteRes = CalcArraySize (aplTypeRes, aplNELMRes, aplRankRes);
@@ -694,7 +692,6 @@ RESTART_JOTDOT:
                         } // End IF
 
                         // Save as the new immediate & storage types
-                        immTypeRes = (IMM_TYPES) tkRes.tkFlags.ImmType;
                         aplTypeRes = aplTypeNew;
 
                         goto RESTART_JOTDOT;
@@ -883,6 +880,7 @@ RESTART_JOTDOT:
                               &tkRhtArg,            // Ptr to right arg token
                                lptkAxisRht,         // Ptr to right operand axis token (may be NULL)
                               &uValErrCnt,          // Ptr to VALUE ERROR counter
+                              &uNoDispCnt,          // Ptr to bNoDisplay counter
                                lpPrimProtoRht);     // Ptr to right operand prototype function
         // Free the left & right arg tokens
         if (lpMemHdrLft NE NULL)
@@ -898,7 +896,7 @@ RESTART_JOTDOT:
     MyGlobalUnlock (hGlbRes); lpMemHdrRes = NULL;
 
     // Check for VALUE ERROR
-    if (uValErrCnt)
+    if (uValErrCnt NE 0)
     {
         // Check for all VALUE ERRORs
         if (uValErrCnt EQ aplNELMRes)
@@ -914,13 +912,21 @@ RESTART_JOTDOT:
             goto VALUE_EXIT;
     } // End IF
 
+    // Check for bNoDisplay
+    if (uNoDispCnt NE 0)
+        // Check for all bNoDisplays
+        bNoDisplay = (uNoDispCnt EQ aplNELMRes);
+    else
+        // Mark as displaying
+        bNoDisplay = FALSE;
+
     // Allocate a new YYRes
     lpYYRes = YYAlloc ();
 
     // Fill in the result token
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARARRAY;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
-////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkFlags.NoDisplay = bNoDisplay;
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (hGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lpYYFcnStrOpr->tkToken.tkCharIndex;
 

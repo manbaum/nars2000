@@ -1,6 +1,19 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1991 -- Version 0.5.8.xx
+-------------------------------
+
+* Implement Variant For Grade Functions To Grade All Arrays
+
+Directory branches/bsmith/NewTypes:
+
+PO_VARIANT.C:
+PO_VARIANT.H:
+  Implement a Variant of the Grade functions to grade all arrays.
+  Improve comments.
+
+
 Build #1989 -- Version 0.5.8.xx
 -------------------------------
 

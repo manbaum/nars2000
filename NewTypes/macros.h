@@ -213,12 +213,12 @@
 #define gAllowNegIndices    GetMemPTD()->aplCurrentFEATURE[FEATURENDX_NEGINDICES ]
 #define gAllowNeg0          GetMemPTD()->aplCurrentFEATURE[FEATURENDX_NEG0       ]
 #define gUseHurwitz         GetMemPTD()->aplCurrentFEATURE[FEATURENDX_HURWITZ    ]
-#define gAllowNaN           GetMemPTD()->aplCurrentFEATURE[FEATURENDX_NAN        ]
+#define gAllowNaN           TRUE
 #define gUseAPL2IP          GetMemPTD()->aplCurrentFEATURE[FEATURENDX_IP2        ]
 #define gbAllowNegIndices    lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_NEGINDICES ]  // Use these if lpMemPTD is already assigned
 #define gbAllowNeg0          lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_NEG0       ]  // ...
 #define gbUseHurwitz         lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_HURWITZ    ]  // ...
-#define gbAllowNaN           lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_NAN        ]  // ...
+#define gbAllowNaN          TRUE
 #define gbUseAPL2IP          lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_IP2        ]  // ...
 
 ////ine signumint(a)        (   (((APLINT) (a)) < 0) ? -1 : (((APLINT) (a)) > 0))

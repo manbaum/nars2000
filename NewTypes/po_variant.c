@@ -60,6 +60,7 @@ VAROPR varOprValTab[ENUM_VARIANT_LENGTH] =
     varOprPOCH  ,                   // 09:  {shriek} Pochhammer k-symbol
     varOprHCM   ,                   // 0A:  {times}  Interior/Exterior/Cross/Dot/Conjugation product
     varOprSUB   ,                   // 0B:  {iota}   Ascending/Descending subsequence
+    varOprGALL  ,                   // 0C:  {grade}  Grade all arrays
 };
 
 // N.B.:  Whenever changing the above struct (varOprValTab)
@@ -83,6 +84,7 @@ APLSTYPE varOprType[ENUM_VARIANT_LENGTH] =
     ARRAY_INT   ,                   // 09:  {shriek} Pochhammer k-symbol
     ARRAY_CHAR  ,                   // 0A:  {times}  Interior/Exterior/Cross/Dot/Conjugation product
     ARRAY_CHAR  ,                   // 0B:  {iota}   Ascending/Descending subsequence
+    ARRAY_INT   ,                   // 0C:  {grade}  Grade all arrays
 };
 
 // N.B.:  Whenever changing the above struct (varOprValType)
@@ -99,8 +101,8 @@ VARIANT_STR varOprStr[] =
    VAR_MAC (CIRCLE              , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK ), // CIRCLE
    VAR_MAC (CIRCLESLOPE         , UNK , UNK , UNK , UNK , IO  , UNK , UNK  , UNK ), // CIRCLESLOPE
    VAR_MAC (COLONBAR            , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK ), // COLONBAR
-   VAR_MAC (DELSTILE            , IO  , UNK , UNK , UNK , IO  , UNK , UNK  , UNK ), // DELSTILE
-   VAR_MAC (DELTASTILE          , IO  , UNK , UNK , UNK , IO  , UNK , UNK  , UNK ), // DELTASTILE
+   VAR_MAC (DELSTILE            , IO  , UNK , GALL, UNK , IO  , UNK , UNK  , UNK ), // DELSTILE
+   VAR_MAC (DELTASTILE          , IO  , UNK , GALL, UNK , IO  , UNK , UNK  , UNK ), // DELTASTILE
    VAR_MAC (DOMINO              , EIG , UNK , UNK , UNK , UNK , UNK , UNK  , UNK ), // DOMINO
    VAR_MAC (DOT                 , UNK , UNK , UNK , UNK , UNK , UNK , LR   , UNK ), // DOT
    VAR_MAC (DOUBLESHRIEK        , IO  , UNK , UNK , UNK , UNK , UNK , UNK  , UNK ), // DOUBLESHRIEK
@@ -128,7 +130,7 @@ VARIANT_STR varOprStr[] =
    VAR_MAC (QUOTEDOT            , POCH, UNK , UNK , UNK , UNK , UNK , UNK  , UNK ), // QUOTEDOT
    VAR_MAC (RIGHTCARET          , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // RIGHTCARET
    VAR_MAC (RIGHTCARETUNDERBAR  , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // RIGHTCARETUNDERBAR
-   VAR_MAC (RIGHTCARETUNDERBAR2 , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // RIGHTCARETUNDERBAR
+   VAR_MAC (RIGHTCARETUNDERBAR2 , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // RIGHTCARETUNDERBAR2
    VAR_MAC (RIGHTSHOEUNDERBAR   , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // RIGHTSHOEUNDERBAR
    VAR_MAC (SECTION             , UNK , UNK , UNK , UNK , CT  , UNK , UNK  , UNK ), // SECTION
    VAR_MAC (SQUAD               , UNK , UNK , UNK , UNK , IO  , UNK , UNK  , UNK ), // SQUAD
@@ -229,7 +231,8 @@ AXIS_SYNTAX_EXIT:
 //***************************************************************************
 //  $PrimIdentOpVariant_EM_YY
 //
-//  Generate an identity element for the primitive operator dyadic Variant
+//  Generate an identity element for the dyadic derived function from the
+//    primitive operator QuadColon
 //***************************************************************************
 
 LPPL_YYSTYPE PrimIdentOpVariant_EM_YY
@@ -666,15 +669,15 @@ LPPL_YYSTYPE PrimOpVariantCom_EM_YY
             {
                 lpYYRes =
                   PrimOpVariantSubseq_EM_YY (lptkLftArg,                    // Ptr to left arg token
-                                                  aplTypeLft,                // Left arg storage type
-                                                  aplRankLft,                // ...      rank
-                                                  aplNELMLft,                // ...      NELM
-                                                  lptkRhtArg,                // Ptr to right arg token
-                                                  aplTypeRht,                // Right arg storage type
-                                                  aplRankRht,                // ...       rank
-                                                  aplNELMRht,                // ...       NELM
-                                                  allSysVarsStr.cSubNew,     // Right operand char value
-                                                  lpYYFcnStrOpr);            // Ptr to operator function strand
+                                             aplTypeLft,                    // Left arg storage type
+                                             aplRankLft,                    // ...      rank
+                                             aplNELMLft,                    // ...      NELM
+                                             lptkRhtArg,                    // Ptr to right arg token
+                                             aplTypeRht,                    // Right arg storage type
+                                             aplRankRht,                    // ...       rank
+                                             aplNELMRht,                    // ...       NELM
+                                             allSysVarsStr.cSubNew,         // Right operand char value
+                                             lpYYFcnStrOpr);                // Ptr to operator function strand
                 break;
             } // End IF
 
@@ -694,6 +697,24 @@ LPPL_YYSTYPE PrimOpVariantCom_EM_YY
                                              aplColsRht,                // Right arg # cols
                                              aplNELMRht,                // Right arg NELM
                                              lpYYFcnStrOpr);            // Ptr to operator function strand
+                break;
+            } // End IF
+
+            goto DEFAULT;
+
+        // Grade All
+        case UTF16_DELSTILE:
+        case UTF16_DELTASTILE:
+            // If we're called monadically, ...
+            if (lptkLftArg EQ NULL)
+            {
+                // Calculate Grade All
+                lpYYRes =
+                  PrimFnMonGradeCommon_EM_YY (&lpYYFcnStrLft->tkToken,  // Ptr to function token
+                                               lptkRhtArg,              // Ptr to right arg token
+                                               lptkAxisLft,             // Ptr to axis token (may be NULL)
+                                               FALSE,                   // TRUE iff we're to treat the right arg as ravelled
+                                               TRUE);                   // TRUE iff we can grade all arrays
                 break;
             } // End IF
 
@@ -2490,6 +2511,9 @@ void SetAllSysVars
 
             break;
 
+        case ENUM_VARIANT_GALL:
+            break;
+
         defstop
             break;
     } // End SWITCH
@@ -2574,6 +2598,7 @@ void RestAllSysVars
 
             break;
 
+        case ENUM_VARIANT_GALL:
         case ENUM_VARIANT_UNK:          // Ignore this
             break;
 
@@ -2762,6 +2787,25 @@ UBOOL varOprPOCH
 {
     return TRUE;
 } // End varOprPOCH
+
+
+//***************************************************************************
+//  $varOprGALL
+//
+//  Variant operator []GALL value validation routine
+//***************************************************************************
+
+UBOOL varOprGALL
+    (LPAPLCHAR lpValue)
+
+{
+    WCHAR wszTemp[2];
+
+    wszTemp[0] = lpValue[0];
+    wszTemp[1] = WC_EOS;
+
+    return (*CharLowerW (wszTemp) EQ L'a');
+} // End varOprGALL
 
 
 //***************************************************************************

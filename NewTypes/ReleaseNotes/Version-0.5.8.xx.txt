@@ -1,6 +1,18 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1975 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In -1 and -2 {Circle} {NaN}i0
+
+Directory branches/bsmith/NewTypes:
+
+FPCHO_COM.C:
+MPCHO_COM.C:
+  Fix bug in -1 and -2 {circle} {NaN}i0.
+
+
 Build #1973 -- Version 0.5.8.xx
 -------------------------------
 

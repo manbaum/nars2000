@@ -264,10 +264,11 @@ void mpXf_asin
     VfpOut (L"Z.im:  ", &Z->im);
 #endif
     // If the Imaginary part is zero, and
-    //    the Real part is within [-1,1], ...
+    //    the Real part is a NaN or within [-1,1], ...
     if (IsMpf0 (mpfIMag)
-     && mpfr_cmp_si (&op->parts[0],  1) <= 0
-     && mpfr_cmp_si (&op->parts[0], -1) >= 0)
+     && (mpfr_nan_p (&op->parts[0])
+      || (mpfr_cmp_si (&op->parts[0],  1) <= 0
+       && mpfr_cmp_si (&op->parts[0], -1) >= 0)))
     {
         // Call the Real number version so as to avoid
         //   inconsistencies in the two cases:
@@ -351,10 +352,11 @@ void mpXf_acos
     VfpOut (L"Z.im:  ", &Z->im);
 #endif
     // If the Imaginary part is zero, and
-    //    the Real part is within [-1,1], ...
+    //    the Real part is a NaN or within [-1,1], ...
     if (IsMpf0 (mpfIMag)
-     && mpfr_cmp_si (&op->parts[0],  1) <= 0
-     && mpfr_cmp_si (&op->parts[0], -1) >= 0)
+     && (mpfr_nan_p (&op->parts[0])
+      || (mpfr_cmp_si (&op->parts[0],  1) <= 0
+       && mpfr_cmp_si (&op->parts[0], -1) >= 0)))
     {
         // Call the Real number version so as to avoid
         //   inconsistencies in the two cases:

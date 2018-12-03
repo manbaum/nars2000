@@ -218,9 +218,10 @@ void fpXf_asin
     fprf_set (Z.dat[1], fpfIMag);
 
     // If the Imaginary part is zero, and
-    //    the Real part is within [-1,1], ...
+    //    the Real part is a NaN or within [-1,1], ...
     if (fpfIMag EQ 0
-     && fabs (Z.dat[0]) <= 1)
+     && (_isnan (Z.dat[0])
+      || fabs (Z.dat[0]) <= 1))
     {
         // Call the Real number version so as to avoid
         //   inconsistencies in the two cases:
@@ -272,9 +273,10 @@ void fpXf_acos
     fprf_set (Z.dat[1], fpfIMag);
 
     // If the Imaginary part is zero, and
-    //    the Real part is within [-1,1], ...
+    //    the Real part is a NaN or within [-1,1], ...
     if (fpfIMag EQ 0
-     && fabs (Z.dat[0]) <= 1)
+     && (_isnan (Z.dat[0])
+      || fabs (Z.dat[0]) <= 1))
     {
         // Call the Real number version so as to avoid
         //   inconsistencies in the two cases:

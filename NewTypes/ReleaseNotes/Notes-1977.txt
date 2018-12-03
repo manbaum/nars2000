@@ -1,0 +1,9 @@
+Build #1977 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix DEBUG Bug When Calling <PrimFnDelStile_EM_YY>
+
+Directory branches/bsmith/NewTypes:
+
+PF_DELTASTILE.C:
+  Fix DEBUG bug when calling <PrimFnDelStile_EM_YY>.

@@ -948,40 +948,24 @@ void PrimFnDydCircleFisIvI
             // Call assembler function
             iAsmCircle4Int (&lpMemRes[uRes], &lpatRht->aplInteger);
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case   3:       // tan (R)
             // Call assembler function
             iAsmCircle3Int (&lpMemRes[uRes], &lpatRht->aplInteger);
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case   2:       // cos (R)
             // Call assembler function
             iAsmCircle2Int (&lpMemRes[uRes], &lpatRht->aplInteger);
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case   1:       // sin (R)
             // Call assembler function
             iAsmCircle1Int (&lpMemRes[uRes], &lpatRht->aplInteger);
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case   0:       // sqrt (1 - R * 2)
@@ -992,10 +976,6 @@ void PrimFnDydCircleFisIvI
             // Call assembler function
             iAsmCircle0Int (&lpMemRes[uRes], &lpatRht->aplInteger);
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case  -4:       // (R + 1) × sqrt ((R - 1) / (R + 1))
@@ -1007,10 +987,6 @@ void PrimFnDydCircleFisIvI
             // Call assembler function
             iAsmCircleN4Int (&lpMemRes[uRes], &lpatRht->aplInteger);
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         default:
@@ -1057,12 +1033,8 @@ void PrimFnDydCircleFisFvF
     {
         case  12:       // arc (phase) of R
             if (_isnan (lpatRht->aplFloat))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = fltNaN;
-                else
-                    break;
-            } else
+                lpMemRes[uRes] = fltNaN;
+            else
             if (SIGN_APLFLOAT (lpatRht->aplFloat))
                 lpMemRes[uRes] = FloatPi;
             else
@@ -1072,58 +1044,38 @@ void PrimFnDydCircleFisFvF
 
         case  11:       // Imaginary part of R
             if (_isnan (lpatRht->aplFloat))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = fltNaN;
-                else
-                    break;
-            } else
+                lpMemRes[uRes] = fltNaN;
+            else
                 lpMemRes[uRes] = 0;
 
             return;
 
         case  10:       // |R
             if (_isnan (lpatRht->aplFloat))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = fltNaN;
-                else
-                    break;
-            } else
+                lpMemRes[uRes] = fltNaN;
+            else
                 lpMemRes[uRes] = fabs (lpatRht->aplFloat);
 
             return;
 
         case   9:       // (R++R)/2
             if (_isnan (lpatRht->aplFloat))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = fltNaN;
-                else
-                    break;
-            } else
+                lpMemRes[uRes] = fltNaN;
+            else
                 lpMemRes[uRes] = lpatRht->aplFloat;
 
             return;
 
         case   8:       // sqrt ((-1) - R * 2)
             if (_isnan (lpatRht->aplFloat))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = fltNaN;
-                else
-                    break;
-            } else
+                lpMemRes[uRes] = fltNaN;
+            else
                 RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
 
         case   7:       // tanh (R)
             if (_isnan (lpatRht->aplFloat))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = fltNaN;
-                else
-                    break;
-            } else
+                lpMemRes[uRes] = fltNaN;
+            else
                 // Call subroutine
                 lpMemRes[uRes] = tanh (lpatRht->aplFloat);
 
@@ -1131,12 +1083,8 @@ void PrimFnDydCircleFisFvF
 
         case   6:       // cosh (R)
             if (_isnan (lpatRht->aplFloat))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = fltNaN;
-                else
-                    break;
-            } else
+                lpMemRes[uRes] = fltNaN;
+            else
                 // Call subroutine
                 lpMemRes[uRes] = cosh (lpatRht->aplFloat);
 
@@ -1144,12 +1092,8 @@ void PrimFnDydCircleFisFvF
 
         case   5:       // sinh (R)
             if (_isnan (lpatRht->aplFloat))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = fltNaN;
-                else
-                    break;
-            } else
+                lpMemRes[uRes] = fltNaN;
+            else
                 // Call subroutine
                 lpMemRes[uRes] = sinh (lpatRht->aplFloat);
 
@@ -1157,12 +1101,8 @@ void PrimFnDydCircleFisFvF
 
         case   4:       // sqrt (1 + R * 2)
             if (_isnan (lpatRht->aplFloat))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = fltNaN;
-                else
-                    break;
-            } else
+                lpMemRes[uRes] = fltNaN;
+            else
             {
                 // Get absolute value to avoid duplication in comparison and result
                 lpatRht->aplFloat = fabs (lpatRht->aplFloat);
@@ -1174,15 +1114,8 @@ void PrimFnDydCircleFisFvF
                 if (lpatRht->aplFloat >= 1.3407807929942596E154)
                     lpMemRes[uRes] = lpatRht->aplFloat;
                 else
-                {
                     // Call assembler function
                     iAsmCircle4Flt (&lpMemRes[uRes], &lpatRht->aplFloat);
-
-                    // Check for NaN
-                    if (_isnan (lpMemRes[uRes])
-                     && !gAllowNaN)
-                        break;
-                } // End IF/ELSE
             } // End IF/ELSE
 
             return;
@@ -1191,40 +1124,24 @@ void PrimFnDydCircleFisFvF
             // Call assembler function
             iAsmCircle3Flt (&lpMemRes[uRes], &lpatRht->aplFloat);
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case   2:       // cos (R)
             // Call assembler function
             iAsmCircle2Flt (&lpMemRes[uRes], &lpatRht->aplFloat);
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case   1:       // sin (R)
             // Call assembler function
             iAsmCircle1Flt (&lpMemRes[uRes], &lpatRht->aplFloat);
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case   0:       // sqrt (1 - R * 2)
             if (_isnan (lpatRht->aplFloat))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = fltNaN;
-                else
-                    break;
-            } else
+                lpMemRes[uRes] = fltNaN;
+            else
             {
                 // Check for Complex result
                 if (fabs (lpatRht->aplFloat) > 1)
@@ -1232,23 +1149,14 @@ void PrimFnDydCircleFisFvF
 
                 // Call assembler function
                 iAsmCircle0Flt (&lpMemRes[uRes], &lpatRht->aplFloat);
-
-                // Check for NaN
-                if (_isnan (lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
             } // End IF/ELSE
 
             return;
 
         case  -1:       // asin (R)
             if (_isnan (lpatRht->aplFloat))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = fltNaN;
-                else
-                    break;
-            } else
+                lpMemRes[uRes] = fltNaN;
+            else
             {
                 // Check for Complex result
                 if (fabs (lpatRht->aplFloat) > 1)
@@ -1256,23 +1164,14 @@ void PrimFnDydCircleFisFvF
 
                 // Call subroutine
                 lpMemRes[uRes] = asin (lpatRht->aplFloat);
-
-                // Check for NaN
-                if (_isnan (lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
             } // End IF/ELSE
 
             return;
 
         case  -2:       // acos (R)
             if (_isnan (lpatRht->aplFloat))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = fltNaN;
-                else
-                    break;
-            } else
+                lpMemRes[uRes] = fltNaN;
+            else
             {
                 // Check for Complex result
                 if (fabs (lpatRht->aplFloat) > 1)
@@ -1280,11 +1179,6 @@ void PrimFnDydCircleFisFvF
 
                 // Call subroutine
                 lpMemRes[uRes] = acos (lpatRht->aplFloat);
-
-                // Check for NaN
-                if (_isnan (lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
             } // End IF/ELSE
 
             return;
@@ -1293,21 +1187,13 @@ void PrimFnDydCircleFisFvF
             // Call subroutine
             lpMemRes[uRes] = atan (lpatRht->aplFloat);
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case  -4:       // (R + 1) × sqrt ((R - 1) / (R + 1))
                         // a.k.a. sqrt ((-1) + R * 2)
             if (_isnan (lpatRht->aplFloat))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = fltNaN;
-                else
-                    break;
-            } else
+                lpMemRes[uRes] = fltNaN;
+            else
             {
                 // Check for Complex result
                 if (fabs (lpatRht->aplFloat) < 1)
@@ -1331,12 +1217,8 @@ void PrimFnDydCircleFisFvF
         case  -5:       // asinh (R)
                         // ln (R + sqrt (1 + R * 2))
             if (_isnan (lpatRht->aplFloat))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = fltNaN;
-                else
-                    break;
-            } else
+                lpMemRes[uRes] = fltNaN;
+            else
             {
                 lpMemRes[uRes] = gsl_asinh (lpatRht->aplFloat);
 
@@ -1350,12 +1232,8 @@ void PrimFnDydCircleFisFvF
         case  -6:       // acosh (R)
                         // 2 x ln (sqrt ((R + 1) x 0.5) + sqrt ((R - 1) x 0.5))
             if (_isnan (lpatRht->aplFloat))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = fltNaN;
-                else
-                    break;
-            } else
+                lpMemRes[uRes] = fltNaN;
+            else
             {
                 // Check for Complex result
                 if (lpatRht->aplFloat < 1)
@@ -1373,12 +1251,8 @@ void PrimFnDydCircleFisFvF
         case  -7:       // atanh (R)
                         // 0.5 x (ln (1 + R) - ln (1 - R))
             if (_isnan (lpatRht->aplFloat))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = fltNaN;
-                else
-                    break;
-            } else
+                lpMemRes[uRes] = fltNaN;
+            else
             {
                 // Check for Complex result
                 if (fabs (lpatRht->aplFloat) >= 1)
@@ -1395,12 +1269,8 @@ void PrimFnDydCircleFisFvF
 
         case  -8:       // -sqrt ((-1) - R * 2)
             if (_isnan (lpatRht->aplFloat))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = fltNaN;
-                else
-                    break;
-            } else
+                lpMemRes[uRes] = fltNaN;
+            else
                 RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
 
         case  -9:       // (R-+R)/2
@@ -1411,21 +1281,13 @@ void PrimFnDydCircleFisFvF
         case -10:       // +R
             lpMemRes[uRes] = lpatRht->aplFloat;
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case -11:       // 0J1 x R
         case -12:       // *0J1 x R
             if (_isnan (lpatRht->aplFloat))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = fltNaN;
-                else
-                    break;
-            } else
+                lpMemRes[uRes] = fltNaN;
+            else
                 RaiseException (EXCEPTION_RESULT_HC2F, 0, 0, NULL);
 
             return;
@@ -1492,12 +1354,8 @@ void PrimFnDydCircleVisVvV
     {
         case  12:       // arc (phase) of R
             if (IsMpfNaN (&lpatRht->aplVfp))
-            {
-                if (gAllowNaN)
-                    mpfr_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                mpfr_set_nan (&lpMemRes[uRes]);
+            else
             {
                 LPPERTABDATA lpMemPTD = GetMemPTD ();   // Ptr to PerTabData global memory handle
 
@@ -1508,22 +1366,14 @@ void PrimFnDydCircleVisVvV
                     mpfr_init_set (&lpMemRes[uRes], &lpMemPTD->mpfrHC8V_Pi.parts[0], MPFR_RNDN);
                 else
                     mpfr_init0    (&lpMemRes[uRes]);
-                // Check for NaN
-                if (mpfr_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
             } // End IF/ELSE
 
             return;
 
         case  11:       // Imaginary part of R
             if (IsMpfNaN (&lpatRht->aplVfp))
-            {
-                if (gAllowNaN)
-                    mpfr_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                mpfr_set_nan (&lpMemRes[uRes]);
+            else
                 // Initialize to 0
                 mpfr_init0 (&lpMemRes[uRes]);
 
@@ -1531,84 +1381,48 @@ void PrimFnDydCircleVisVvV
 
         case  10:       // |R
             if (IsMpfNaN (&lpatRht->aplVfp))
-            {
-                if (gAllowNaN)
-                    mpfr_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                mpfr_set_nan (&lpMemRes[uRes]);
+            else
             {
                 // Initialize to 0
                 mpfr_init0 (&lpMemRes[uRes]);
 
                 // Save in the result
                 mpfr_abs (&lpMemRes[uRes], &lpatRht->aplVfp, MPFR_RNDN);
-
-                // Check for NaN
-                if (mpfr_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
             } // End IF/ELSE
 
             return;
 
         case   9:       // (R++R)/2
             if (IsMpfNaN (&lpatRht->aplVfp))
-            {
-                if (gAllowNaN)
-                    mpfr_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
-            {
+                mpfr_set_nan (&lpMemRes[uRes]);
+            else
                 mpfr_init_set (&lpMemRes[uRes], &lpatRht->aplVfp, MPFR_RNDN);
-
-                // Check for NaN
-                if (mpfr_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
-            } // End IF/ELSE
 
             return;
 
         case   8:       // sqrt ((-1) - R * 2)
             if (IsMpfNaN (&lpatRht->aplVfp))
-            {
-                if (gAllowNaN)
-                    mpfr_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                mpfr_set_nan (&lpMemRes[uRes]);
+            else
                 RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
 
         case   7:       // tanh (R)
             // Call subroutine
             lpMemRes[uRes] = tanhVfp (lpatRht->aplVfp);
 
-            // Check for NaN
-            if (mpfr_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case   6:       // cosh (R)
             // Call subroutine
             lpMemRes[uRes] = coshVfp (lpatRht->aplVfp);
 
-            // Check for NaN
-            if (mpfr_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case   5:       // sinh (R)
             // Call subroutine
             lpMemRes[uRes] = sinhVfp (lpatRht->aplVfp);
 
-            // Check for NaN
-            if (mpfr_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case   4:       // sqrt (1 + R * 2)
@@ -1618,50 +1432,30 @@ void PrimFnDydCircleVisVvV
             mpfr_add_si (&lpMemRes[uRes], &lpMemRes[uRes]   , 1         , MPFR_RNDN);  // 1 + R * 2
             mpfr_sqrt   (&lpMemRes[uRes], &lpMemRes[uRes]               , MPFR_RNDN);  // sqrt (1 + R * 2)
 
-            // Check for NaN
-            if (mpfr_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;                      // sqrt (1 + pow (lpatRht->aplVfp, 2));
 
         case   3:       // tan (R)
             // Call subroutine
             lpMemRes[uRes] = tanVfp (lpatRht->aplVfp);
 
-            // Check for NaN
-            if (mpfr_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case   2:       // cos (R)
             // Call subroutine
             lpMemRes[uRes] = cosVfp (lpatRht->aplVfp);
 
-            // Check for NaN
-            if (mpfr_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case   1:       // sin (R)
             // Call subroutine
             lpMemRes[uRes] = sinVfp (lpatRht->aplVfp);
 
-            // Check for NaN
-            if (mpfr_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case   0:       // sqrt (1 - R * 2)
             if (IsMpfNaN (&lpatRht->aplVfp))
-            {
-                if (gAllowNaN)
-                    mpfr_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                mpfr_set_nan (&lpMemRes[uRes]);
+            else
             {
                 // Check for Complex result
                 if (mpfr_cmp_si (&lpatRht->aplVfp,  1) > 0
@@ -1673,23 +1467,14 @@ void PrimFnDydCircleVisVvV
                 mpfr_mul    (&lpMemRes[uRes], &lpatRht->aplVfp, &lpatRht->aplVfp, MPFR_RNDN);  // R * 2
                 mpfr_ui_sub (&lpMemRes[uRes], 1               , &lpMemRes[uRes] , MPFR_RNDN);  // 1 - R * 2
                 mpfr_sqrt   (&lpMemRes[uRes],                   &lpMemRes[uRes] , MPFR_RNDN);  // sqrt (1 - R * 2)
-
-                // Check for NaN
-                if (mpfr_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
             } // End IF/ELSE
 
             return;
 
         case  -1:       // asin (R)
             if (IsMpfNaN (&lpatRht->aplVfp))
-            {
-                if (gAllowNaN)
-                    mpfr_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                mpfr_set_nan (&lpMemRes[uRes]);
+            else
             {
                 // Check for Complex result
                 if (mpfr_cmp_si (&lpatRht->aplVfp,  1) > 0
@@ -1698,23 +1483,14 @@ void PrimFnDydCircleVisVvV
 
                 // Call subroutine
                 lpMemRes[uRes] = asinVfp (lpatRht->aplVfp);
-
-                // Check for NaN
-                if (mpfr_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
             } // End IF/ELSE
 
             return;
 
         case  -2:       // acos (R)
             if (IsMpfNaN (&lpatRht->aplVfp))
-            {
-                if (gAllowNaN)
-                    mpfr_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                mpfr_set_nan (&lpMemRes[uRes]);
+            else
             {
                 // Check for Complex result
                 if (mpfr_cmp_si (&lpatRht->aplVfp,  1) > 0
@@ -1723,31 +1499,17 @@ void PrimFnDydCircleVisVvV
 
                 // Call subroutine
                 lpMemRes[uRes] = acosVfp (lpatRht->aplVfp);
-
-                // Check for NaN
-                if (mpfr_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
             } // End IF/ELSE
 
             return;
 
         case  -3:       // atan (R)
             if (IsMpfNaN (&lpatRht->aplVfp))
-            {
-                if (gAllowNaN)
-                    mpfr_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                mpfr_set_nan (&lpMemRes[uRes]);
+            else
             {
                 // Call subroutine
                 lpMemRes[uRes] = atanVfp (lpatRht->aplVfp);
-
-                // Check for NaN
-                if (mpfr_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
             } // End IF/ELSE
 
             return;
@@ -1755,12 +1517,8 @@ void PrimFnDydCircleVisVvV
         case  -4:       // (R + 1) × sqrt ((R - 1) / (R + 1))
                         // a.k.a. sqrt ((-1) + R * 2)
             if (IsMpfNaN (&lpatRht->aplVfp))
-            {
-                if (gAllowNaN)
-                    mpfr_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                mpfr_set_nan (&lpMemRes[uRes]);
+            else
             {
                 APLVFP aplTmp2,
                        aplTmp3;
@@ -1809,33 +1567,18 @@ void PrimFnDydCircleVisVvV
         case  -5:       // asinh (R)
                         // ln (R + sqrt (1 + R * 2))
             if (IsMpfNaN (&lpatRht->aplVfp))
-            {
-                if (gAllowNaN)
-                    mpfr_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
-            {
+                mpfr_set_nan (&lpMemRes[uRes]);
+            else
                 // Call subroutine
                 lpMemRes[uRes] = asinhVfp (lpatRht->aplVfp);
-
-                // Check for NaN
-                if (mpfr_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
-            } // End IF/ELSE
 
             return;
 
         case  -6:       // acosh (R)
                         // 2 x ln (sqrt ((R + 1) x 0.5) + sqrt ((R - 1) x 0.5))
             if (IsMpfNaN (&lpatRht->aplVfp))
-            {
-                if (gAllowNaN)
-                    mpfr_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                mpfr_set_nan (&lpMemRes[uRes]);
+            else
             {
                 // Check for Complex result
                 if (mpfr_cmp_si (&lpatRht->aplVfp, 1) < 0)
@@ -1843,11 +1586,6 @@ void PrimFnDydCircleVisVvV
 
                 // Call subroutine
                 lpMemRes[uRes] = acoshVfp (lpatRht->aplVfp);
-
-                // Check for NaN
-                if (mpfr_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
             } // End IF/ELSE
 
             return;
@@ -1855,12 +1593,8 @@ void PrimFnDydCircleVisVvV
         case  -7:       // atanh (R)
                         // 0.5 x (ln (1 + R) - ln (1 - R))
             if (IsMpfNaN (&lpatRht->aplVfp))
-            {
-                if (gAllowNaN)
-                    mpfr_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                mpfr_set_nan (&lpMemRes[uRes]);
+            else
             {
                 // Check for Complex result
                 if (mpfr_cmp_si (&lpatRht->aplVfp,  1) >= 0
@@ -1869,23 +1603,14 @@ void PrimFnDydCircleVisVvV
 
                 // Call subroutine
                 lpMemRes[uRes] = atanhVfp (lpatRht->aplVfp);
-
-                // Check for NaN
-                if (mpfr_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
             } // End IF/ELSE
 
             return;
 
         case  -8:       // -sqrt ((-1) - R * 2)
             if (IsMpfNaN (&lpatRht->aplVfp))
-            {
-                if (gAllowNaN)
-                    mpfr_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                mpfr_set_nan (&lpMemRes[uRes]);
+            else
                 RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
 
         case  -9:       // (R-+R)/2
@@ -1896,21 +1621,13 @@ void PrimFnDydCircleVisVvV
         case -10:       // +R
             mpfr_init_set (&lpMemRes[uRes], &lpatRht->aplVfp, MPFR_RNDN);
 
-            // Check for NaN
-            if (mpfr_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case -11:       // 0J1 x R
         case -12:       // *0J1 x R
             if (IsMpfNaN (&lpatRht->aplVfp))
-            {
-                if (gAllowNaN)
-                    mpfr_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                mpfr_set_nan (&lpMemRes[uRes]);
+            else
                 RaiseException (EXCEPTION_RESULT_HC2V, 0, 0, NULL);
 
             return;
@@ -1939,15 +1656,6 @@ APLVFP tanhVfp
     // Calculate the function
     mpfr_tanh (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
-    // Check for a NaN
-    if (mpfr_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        mpfr_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
-
     return mpfRes;
 } // End tanhVfp
 
@@ -1967,15 +1675,6 @@ APLVFP coshVfp
 
     // Calculate the function
     mpfr_cosh (&mpfRes, &aplVfpRht, MPFR_RNDN);
-
-    // Check for a NaN
-    if (mpfr_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        mpfr_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
 
     return mpfRes;
 } // End coshVfp
@@ -1997,15 +1696,6 @@ APLVFP sinhVfp
     // Calculate the function
     mpfr_sinh (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
-    // Check for a NaN
-    if (mpfr_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        mpfr_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
-
     return mpfRes;
 } // End sinhVfp
 
@@ -2025,15 +1715,6 @@ APLVFP tanVfp
 
     // Calculate the function
     mpfr_tan  (&mpfRes, &aplVfpRht, MPFR_RNDN);
-
-    // Check for a NaN
-    if (mpfr_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        mpfr_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
 
     return mpfRes;
 } // End tanVfp
@@ -2055,15 +1736,6 @@ APLVFP cosVfp
     // Calculate the function
     mpfr_cos  (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
-    // Check for a NaN
-    if (mpfr_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        mpfr_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
-
     return mpfRes;
 } // End cosVfp
 
@@ -2083,15 +1755,6 @@ APLVFP sinVfp
 
     // Calculate the function
     mpfr_sin  (&mpfRes, &aplVfpRht, MPFR_RNDN);
-
-    // Check for a NaN
-    if (mpfr_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        mpfr_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
 
     return mpfRes;
 } // End sinVfp
@@ -2118,15 +1781,6 @@ APLVFP asinVfp
     // Calculate the function
     mpfr_asin (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
-    // Check for a NaN
-    if (mpfr_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        mpfr_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
-
     return mpfRes;
 } // End asinVfp
 
@@ -2152,15 +1806,6 @@ APLVFP acosVfp
     // Calculate the function
     mpfr_acos (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
-    // Check for a NaN
-    if (mpfr_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        mpfr_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
-
     return mpfRes;
 } // End acosVfp
 
@@ -2180,15 +1825,6 @@ APLVFP atanVfp
 
     // Calculate the function
     mpfr_atan (&mpfRes, &aplVfpRht, MPFR_RNDN);
-
-    // Check for a NaN
-    if (mpfr_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        mpfr_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
 
     return mpfRes;
 } // End atanVfp
@@ -2210,15 +1846,6 @@ APLVFP asinhVfp
     // Calculate the function
     mpfr_asinh (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
-    // Check for a NaN
-    if (mpfr_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        mpfr_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
-
     return mpfRes;
 } // End asinhVfp
 
@@ -2239,15 +1866,6 @@ APLVFP acoshVfp
     // Calculate the function
     mpfr_acosh (&mpfRes, &aplVfpRht, MPFR_RNDN);
 
-    // Check for a NaN
-    if (mpfr_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        mpfr_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
-
     return mpfRes;
 } // End acoshVfp
 
@@ -2267,15 +1885,6 @@ APLVFP atanhVfp
 
     // Calculate the function
     mpfr_atanh (&mpfRes, &aplVfpRht, MPFR_RNDN);
-
-    // Check for a NaN
-    if (mpfr_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        mpfr_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
 
     return mpfRes;
 } // End atanhVfp
@@ -2298,15 +1907,6 @@ APLARB tanhArb
     // Calculate the function
     arb_tanh (&mpfRes, &aplArbRht, prec);
 
-    // Check for a NaN
-    if (arb_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        Myarb_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
-
     return mpfRes;
 } // End tanhArb
 
@@ -2327,15 +1927,6 @@ APLARB coshArb
 
     // Calculate the function
     arb_cosh (&mpfRes, &aplArbRht, prec);
-
-    // Check for a NaN
-    if (arb_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        Myarb_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
 
     return mpfRes;
 } // End coshArb
@@ -2358,15 +1949,6 @@ APLARB sinhArb
     // Calculate the function
     arb_sinh (&mpfRes, &aplArbRht, prec);
 
-    // Check for a NaN
-    if (arb_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        Myarb_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
-
     return mpfRes;
 } // End sinhArb
 
@@ -2387,15 +1969,6 @@ APLARB tanArb
 
     // Calculate the function
     arb_tan  (&mpfRes, &aplArbRht, prec);
-
-    // Check for a NaN
-    if (arb_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        Myarb_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
 
     return mpfRes;
 } // End tanArb
@@ -2418,15 +1991,6 @@ APLARB cosArb
     // Calculate the function
     arb_cos  (&mpfRes, &aplArbRht, prec);
 
-    // Check for a NaN
-    if (arb_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        Myarb_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
-
     return mpfRes;
 } // End cosArb
 
@@ -2447,15 +2011,6 @@ APLARB sinArb
 
     // Calculate the function
     arb_sin  (&mpfRes, &aplArbRht, prec);
-
-    // Check for a NaN
-    if (arb_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        Myarb_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
 
     return mpfRes;
 } // End sinArb
@@ -2483,15 +2038,6 @@ APLARB asinArb
     // Calculate the function
     arb_asin (&mpfRes, &aplArbRht, prec);
 
-    // Check for a NaN
-    if (arb_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        Myarb_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
-
     return mpfRes;
 } // End asinArb
 
@@ -2518,15 +2064,6 @@ APLARB acosArb
     // Calculate the function
     arb_acos (&mpfRes, &aplArbRht, prec);
 
-    // Check for a NaN
-    if (arb_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        Myarb_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
-
     return mpfRes;
 } // End acosArb
 
@@ -2547,15 +2084,6 @@ APLARB atanArb
 
     // Calculate the function
     arb_atan (&mpfRes, &aplArbRht, prec);
-
-    // Check for a NaN
-    if (arb_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        Myarb_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
 
     return mpfRes;
 } // End atanArb
@@ -2578,15 +2106,6 @@ APLARB asinhArb
     // Calculate the function
     arb_asinh (&mpfRes, &aplArbRht, prec);
 
-    // Check for a NaN
-    if (arb_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        Myarb_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
-
     return mpfRes;
 } // End asinhArb
 
@@ -2608,15 +2127,6 @@ APLARB acoshArb
     // Calculate the function
     arb_acosh (&mpfRes, &aplArbRht, prec);
 
-    // Check for a NaN
-    if (arb_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        Myarb_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
-
     return mpfRes;
 } // End acoshVfp
 
@@ -2637,15 +2147,6 @@ APLARB atanhArb
 
     // Calculate the function
     arb_atanh (&mpfRes, &aplArbRht, prec);
-
-    // Check for a NaN
-    if (arb_nan_p (&mpfRes)
-     && !gAllowNaN)
-    {
-        Myarb_clear (&mpfRes);
-
-        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
-    } // End IF
 
     return mpfRes;
 } // End atanhVfp
@@ -2678,12 +2179,8 @@ void PrimFnDydCircleBA1FisBA1FvBA1F
     {
         case  12:       // arc (phase) of R
             if (IsArfNaN (arb_midref (&lpatRht->aplArb)))
-            {
-                if (gAllowNaN)
-                    arb_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                arb_set_nan (&lpMemRes[uRes]);
+            else
             {
                 LPPERTABDATA lpMemPTD = GetMemPTD ();   // Ptr to PerTabData global memory handle
 
@@ -2691,22 +2188,14 @@ void PrimFnDydCircleBA1FisBA1FvBA1F
                     arb_set  (&lpMemRes[uRes], &lpMemPTD->arbBA8F_Pi.parts[0]);
                 else
                     Myarb_init (&lpMemRes[uRes]);
-                // Check for NaN
-                if (arb_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
             } // End IF/ELSE
 
             return;
 
         case  11:       // Imaginary part of R
             if (IsArfNaN (arb_midref (&lpatRht->aplArb)))
-            {
-                if (gAllowNaN)
-                    arb_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                arb_set_nan (&lpMemRes[uRes]);
+            else
                 // Initialize to 0
                 Myarb_init  (&lpMemRes[uRes]);
 
@@ -2714,84 +2203,48 @@ void PrimFnDydCircleBA1FisBA1FvBA1F
 
         case  10:       // |R
             if (IsArfNaN (arb_midref (&lpatRht->aplArb)))
-            {
-                if (gAllowNaN)
-                    arb_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                arb_set_nan (&lpMemRes[uRes]);
+            else
             {
                 // Initialize to 0
                 Myarb_init  (&lpMemRes[uRes]);
 
                 // Save in the result
                 arb_abs2 (&lpMemRes[uRes], &lpatRht->aplArb);
-
-                // Check for NaN
-                if (arb_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
             } // End IF/ELSE
 
             return;
 
         case   9:       // (R++R)/2
             if (IsArfNaN (arb_midref (&lpatRht->aplArb)))
-            {
-                if (gAllowNaN)
-                    arb_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
-            {
+                arb_set_nan (&lpMemRes[uRes]);
+            else
                 arb_set (&lpMemRes[uRes], &lpatRht->aplArb);
-
-                // Check for NaN
-                if (arb_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
-            } // End IF/ELSE
 
             return;
 
         case   8:       // sqrt ((-1) - R * 2)
             if (IsArfNaN (arb_midref (&lpatRht->aplArb)))
-            {
-                if (gAllowNaN)
-                    arb_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                arb_set_nan (&lpMemRes[uRes]);
+            else
                 RaiseException (EXCEPTION_RESULT_BA2F, 0, 0, NULL);
 
         case   7:       // tanh (R)
             // Call subroutine
             lpMemRes[uRes] = tanhArb (lpatRht->aplArb, prec);
 
-            // Check for NaN
-            if (arb_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case   6:       // cosh (R)
             // Call subroutine
             lpMemRes[uRes] = coshArb (lpatRht->aplArb, prec);
 
-            // Check for NaN
-            if (arb_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case   5:       // sinh (R)
             // Call subroutine
             lpMemRes[uRes] = sinhArb (lpatRht->aplArb, prec);
 
-            // Check for NaN
-            if (arb_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case   4:       // sqrt (1 + R * 2)
@@ -2801,50 +2254,30 @@ void PrimFnDydCircleBA1FisBA1FvBA1F
             arb_add_si  (&lpMemRes[uRes], &lpMemRes[uRes] , 1, prec);           // 1 + R * 2
             arb_sqrt    (&lpMemRes[uRes], &lpMemRes[uRes]    , prec);           // sqrt (1 + R * 2)
 
-            // Check for NaN
-            if (arb_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;                      // sqrt (1 + pow (lpatRht->aplArb, 2));
 
         case   3:       // tan (R)
             // Call subroutine
             lpMemRes[uRes] = tanArb (lpatRht->aplArb, prec);
 
-            // Check for NaN
-            if (arb_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case   2:       // cos (R)
             // Call subroutine
             lpMemRes[uRes] = cosArb (lpatRht->aplArb, prec);
 
-            // Check for NaN
-            if (arb_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case   1:       // sin (R)
             // Call subroutine
             lpMemRes[uRes] = sinArb (lpatRht->aplArb, prec);
 
-            // Check for NaN
-            if (arb_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case   0:       // sqrt (1 - R * 2)
             if (IsArfNaN (arb_midref (&lpatRht->aplArb)))
-            {
-                if (gAllowNaN)
-                    arb_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                arb_set_nan (&lpMemRes[uRes]);
+            else
             {
                 // Check for Complex result
                 if (arb_cmp_si (&lpatRht->aplArb,  1) > 0
@@ -2857,23 +2290,14 @@ void PrimFnDydCircleBA1FisBA1FvBA1F
                 arb_sub_ui  (&lpMemRes[uRes], &lpMemRes[uRes] , 1, prec);           // (R * 2) - 1
                 arb_neg     (&lpMemRes[uRes], &lpMemRes[uRes]);                     // 1 - R * 2
                 arb_sqrt    (&lpMemRes[uRes], &lpMemRes[uRes] ,    prec);           // sqrt (1 - R * 2)
-
-                // Check for NaN
-                if (arb_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
             } // End IF/ELSE
 
             return;
 
         case  -1:       // asin (R)
             if (IsArfNaN (arb_midref (&lpatRht->aplArb)))
-            {
-                if (gAllowNaN)
-                    arb_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                arb_set_nan (&lpMemRes[uRes]);
+            else
             {
                 // Check for Complex result:
                 //   If any part is >  1, or
@@ -2884,23 +2308,14 @@ void PrimFnDydCircleBA1FisBA1FvBA1F
 
                 // Call subroutine
                 lpMemRes[uRes] = asinArb (lpatRht->aplArb, prec);
-
-                // Check for NaN
-                if (arb_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
             } // End IF/ELSE
 
             return;
 
         case  -2:       // acos (R)
             if (IsArfNaN (arb_midref (&lpatRht->aplArb)))
-            {
-                if (gAllowNaN)
-                    arb_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                arb_set_nan (&lpMemRes[uRes]);
+            else
             {
                 // Check for Complex result:
                 //   If any part is >  1, or
@@ -2911,44 +2326,24 @@ void PrimFnDydCircleBA1FisBA1FvBA1F
 
                 // Call subroutine
                 lpMemRes[uRes] = acosArb (lpatRht->aplArb, prec);
-
-                // Check for NaN
-                if (arb_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
             } // End IF/ELSE
 
             return;
 
         case  -3:       // atan (R)
             if (IsArfNaN (arb_midref (&lpatRht->aplArb)))
-            {
-                if (gAllowNaN)
-                    arb_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
-            {
+                arb_set_nan (&lpMemRes[uRes]);
+            else
                 // Call subroutine
                 lpMemRes[uRes] = atanArb (lpatRht->aplArb, prec);
-
-                // Check for NaN
-                if (arb_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
-            } // End IF/ELSE
 
             return;
 
         case  -4:       // (R + 1) × sqrt ((R - 1) / (R + 1))
                         // a.k.a. sqrt ((-1) + R * 2)
             if (IsArfNaN (arb_midref (&lpatRht->aplArb)))
-            {
-                if (gAllowNaN)
-                    arb_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                arb_set_nan (&lpMemRes[uRes]);
+            else
             {
                 APLARB aplTmp2,
                        aplTmp3;
@@ -2997,33 +2392,18 @@ void PrimFnDydCircleBA1FisBA1FvBA1F
         case  -5:       // asinh (R)
                         // ln (R + sqrt (1 + R * 2))
             if (IsArfNaN (arb_midref (&lpatRht->aplArb)))
-            {
-                if (gAllowNaN)
-                    arb_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
-            {
+                arb_set_nan (&lpMemRes[uRes]);
+            else
                 // Call subroutine
                 lpMemRes[uRes] = asinhArb (lpatRht->aplArb, prec);
-
-                // Check for NaN
-                if (arb_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
-            } // End IF/ELSE
 
             return;
 
         case  -6:       // acosh (R)
                         // 2 x ln (sqrt ((R + 1) x 0.5) + sqrt ((R - 1) x 0.5))
             if (IsArfNaN (arb_midref (&lpatRht->aplArb)))
-            {
-                if (gAllowNaN)
-                    arb_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                arb_set_nan (&lpMemRes[uRes]);
+            else
             {
                 // Check for Complex result
                 if (arb_cmp_si (&lpatRht->aplArb, 1) < 0)
@@ -3031,11 +2411,6 @@ void PrimFnDydCircleBA1FisBA1FvBA1F
 
                 // Call subroutine
                 lpMemRes[uRes] = acoshArb (lpatRht->aplArb, prec);
-
-                // Check for NaN
-                if (arb_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
             } // End IF/ELSE
 
             return;
@@ -3043,12 +2418,8 @@ void PrimFnDydCircleBA1FisBA1FvBA1F
         case  -7:       // atanh (R)
                         // 0.5 x (ln (1 + R) - ln (1 - R))
             if (IsArfNaN (arb_midref (&lpatRht->aplArb)))
-            {
-                if (gAllowNaN)
-                    arb_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                arb_set_nan (&lpMemRes[uRes]);
+            else
             {
                 // Check for Complex result
                 if (arb_cmp_si (&lpatRht->aplArb,  1) >= 0
@@ -3057,24 +2428,17 @@ void PrimFnDydCircleBA1FisBA1FvBA1F
 
                 // Call subroutine
                 lpMemRes[uRes] = atanhArb (lpatRht->aplArb, prec);
-
-                // Check for NaN
-                if (arb_nan_p (&lpMemRes[uRes])
-                 && !gAllowNaN)
-                    break;
             } // End IF/ELSE
 
             return;
 
         case  -8:       // -sqrt ((-1) - R * 2)
             if (IsArfNaN (arb_midref (&lpatRht->aplArb)))
-            {
-                if (gAllowNaN)
-                    arb_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                arb_set_nan (&lpMemRes[uRes]);
+            else
                 RaiseException (EXCEPTION_RESULT_BA2F, 0, 0, NULL);
+
+            return;
 
         case  -9:       // (R-+R)/2
             arb_zero (&lpMemRes[uRes]);
@@ -3084,21 +2448,13 @@ void PrimFnDydCircleBA1FisBA1FvBA1F
         case -10:       // +R
             arb_set (&lpMemRes[uRes], &lpatRht->aplArb);
 
-            // Check for NaN
-            if (arb_nan_p (&lpMemRes[uRes])
-             && !gAllowNaN)
-                break;
             return;
 
         case -11:       // 0J1 x R
         case -12:       // *0J1 x R
             if (IsArfNaN (arb_midref (&lpatRht->aplArb)))
-            {
-                if (gAllowNaN)
-                    arb_set_nan (&lpMemRes[uRes]);
-                else
-                    break;
-            } else
+                arb_set_nan (&lpMemRes[uRes]);
+            else
                 RaiseException (EXCEPTION_RESULT_BA2F, 0, 0, NULL);
 
             return;
@@ -3167,40 +2523,24 @@ void PrimFnDydCircleHC2FisHC2FvHC2F
             lpMemRes[uRes].parts[0] = aplTmp.parts[1];
             lpMemRes[uRes].parts[1] = 0;
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case  11:       // Imaginary part of R
             lpMemRes[uRes].parts[0] = lpatRht->aplHC2F.parts[1];
             lpMemRes[uRes].parts[1] = 0;
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case  10:       // |R
             lpMemRes[uRes].parts[0] = MagHC2F (lpatRht->aplHC2F);
             lpMemRes[uRes].parts[1] = 0;
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case   9:       // (R++R)/2
             lpMemRes[uRes].parts[0] = lpatRht->aplHC2F.parts[0];
             lpMemRes[uRes].parts[1] = 0;
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case   8:       // sqrt ((-1) - R * 2)
@@ -3216,40 +2556,24 @@ void PrimFnDydCircleHC2FisHC2FvHC2F
             // -sqrt ((-1) - R * 2)
             lpMemRes[uRes] = SqrtHCxF_RE (*(LPAPLHC8F) &aplTmp, 2).partsLo->partsLo[0];
 #endif
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case   7:       // tanh (R)
             fpXf_tanh  (*(fpcho_t *) &lpMemRes[uRes],
                         *(fpcho_t *) &lpatRht->aplHC2F,
                                       2);
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case   6:       // cosh (R)
             fpXf_cosh  (*(fpcho_t *) &lpMemRes[uRes],
                         *(fpcho_t *) &lpatRht->aplHC2F,
                                       2);
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case   5:       // sinh (R)
             fpXf_sinh  (*(fpcho_t *) &lpMemRes[uRes],
                         *(fpcho_t *) &lpatRht->aplHC2F,
                                       2);
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case   4:       // sqrt (1 + R * 2)
@@ -3266,40 +2590,24 @@ void PrimFnDydCircleHC2FisHC2FvHC2F
             // sqrt (1 + R * 2)
             lpMemRes[uRes] = SqrtHCxF_RE (*(LPAPLHC8F) &aplTmp, 2).partsLo[0].partsLo[0];
 #endif
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case   3:       // tan (R)
             fpXf_tan   (*(fpcho_t *) &lpMemRes[uRes],
                         *(fpcho_t *) &lpatRht->aplHC2F,
                                       2);
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case   2:       // cos (R)
             fpXf_cos   (*(fpcho_t *) &lpMemRes[uRes],
                         *(fpcho_t *) &lpatRht->aplHC2F,
                                       2);
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case   1:       // sin (R)
             fpXf_sin   (*(fpcho_t *) &lpMemRes[uRes],
                         *(fpcho_t *) &lpatRht->aplHC2F,
                                       2);
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case   0:       // sqrt (1 - R * 2)
@@ -3316,40 +2624,24 @@ void PrimFnDydCircleHC2FisHC2FvHC2F
             // sqrt (1 - R * 2)
             lpMemRes[uRes] = SqrtHCxF_RE (*(LPAPLHC8F) &aplTmp, 2).partsLo[0].partsLo[0];
 #endif
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case  -1:       // asin (R)
             fpXf_asin  (*(fpcho_t *) &lpMemRes[uRes],
                         *(fpcho_t *) &lpatRht->aplHC2F,
                                       2);
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case  -2:       // acos (R)
             fpXf_acos  (*(fpcho_t *) &lpMemRes[uRes],
                         *(fpcho_t *) &lpatRht->aplHC2F,
                                       2);
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case  -3:       // atan (R)
             fpXf_atan  (*(fpcho_t *) &lpMemRes[uRes],
                         *(fpcho_t *) &lpatRht->aplHC2F,
                                       2);
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case  -4:       // (R + 1) × sqrt ((R - 1) / (R + 1))
@@ -3406,73 +2698,36 @@ void PrimFnDydCircleHC2FisHC2FvHC2F
                 lpMemRes[uRes].parts[0] = 0.0;
             } // End IF
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case  -5:       // asinh (R)
                         // ln (R + sqrt (1 + R * 2))
             if (fpcf_nan_p (lpatRht->aplHC2F))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = lpatRht->aplHC2F;
-                else
-                    break;
-            } else
-            {
+                lpMemRes[uRes] = lpatRht->aplHC2F;
+            else
                 fpXf_asinh (*(fpcho_t *) &lpMemRes[uRes],
                             *(fpcho_t *) &lpatRht->aplHC2F,
                                           2);
-                // Check for NaN
-                if (_isnan (lpMemRes[uRes].parts[0])
-                 && !gAllowNaN)
-                    break;
-            } // End IF/ELSE
-
             return;
 
         case  -6:       // acosh (R)
                         // 2 x ln (sqrt ((R + 1) / 2) + sqrt ((R - 1) / 2))
             if (fpcf_nan_p (lpatRht->aplHC2F))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = lpatRht->aplHC2F;
-                else
-                    break;
-            } else
-            {
+                lpMemRes[uRes] = lpatRht->aplHC2F;
+            else
                 fpXf_acosh (*(fpcho_t *) &lpMemRes[uRes],
                             *(fpcho_t *) &lpatRht->aplHC2F,
                                           2);
-                // Check for NaN
-                if (_isnan (lpMemRes[uRes].parts[0])
-                 && !gAllowNaN)
-                    break;
-            } // End IF/ELSE
-
             return;
 
         case  -7:       // atanh (R)
                         // 0.5 x (ln (1 + R) - ln (1 - R))
             if (fpcf_nan_p (lpatRht->aplHC2F))
-            {
-                if (gAllowNaN)
-                    lpMemRes[uRes] = lpatRht->aplHC2F;
-                else
-                    break;
-            } else
-            {
+                lpMemRes[uRes] = lpatRht->aplHC2F;
+            else
                 fpXf_atanh (*(fpcho_t *) &lpMemRes[uRes],
                             *(fpcho_t *) &lpatRht->aplHC2F,
                                           2);
-                // Check for NaN
-                if (_isnan (lpMemRes[uRes].parts[0])
-                 && !gAllowNaN)
-                    break;
-            } // End IF/ELSE
-
             return;
 
         case  -8:       // -sqrt ((-1) - R*2)
@@ -3488,10 +2743,6 @@ void PrimFnDydCircleHC2FisHC2FvHC2F
             // -sqrt ((-1) - R * 2)
             lpMemRes[uRes] = NegHC2F_RE (SqrtHCxF_RE (*(LPAPLHC8F) &aplTmp, 2).partsLo[0].partsLo[0]);
 #endif
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case  -9:       // (R-+R)/2
@@ -3503,28 +2754,16 @@ void PrimFnDydCircleHC2FisHC2FvHC2F
         case -10:       // +R
             lpMemRes[uRes] = ConjHC2F (lpatRht->aplHC2F);
 
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case -11:       // 0J1 x R
             lpMemRes[uRes] = MulHC2F_RE (confpof_I.partsLo[0].partsLo[0],
                                          lpatRht->aplHC2F);
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         case -12:       // *0J1 x R
             lpMemRes[uRes] = ExpHC2F_RE (MulHC2F_RE (confpof_I.partsLo[0].partsLo[0],
                                                      lpatRht->aplHC2F));
-            // Check for NaN
-            if (_isnan (lpMemRes[uRes].parts[0])
-             && !gAllowNaN)
-                break;
             return;
 
         default:

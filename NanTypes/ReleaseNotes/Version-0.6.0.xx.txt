@@ -1,6 +1,23 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #1996 -- Version 0.6.0.xx
+-------------------------------
+
+* Full Support For NaNs, Remove From []FEATURE
+
+Directory branches/bsmith/NanTypes:
+
+EXTERNS.H:
+MACROS.H:
+PF_CIRCLE.C:
+PF_CIRCLE.MAC:
+PF_DOMINO.C:
+PF_STAR.C:
+PRIMSPEC.C:
+  Full support for NaNs, remove from []FEATURE.
+
+
 Build #1994 -- Version 0.6.0.xx
 -------------------------------
 

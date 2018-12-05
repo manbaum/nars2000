@@ -213,12 +213,10 @@
 #define gAllowNegIndices    GetMemPTD()->aplCurrentFEATURE[FEATURENDX_NEGINDICES ]
 #define gAllowNeg0          GetMemPTD()->aplCurrentFEATURE[FEATURENDX_NEG0       ]
 #define gUseHurwitz         GetMemPTD()->aplCurrentFEATURE[FEATURENDX_HURWITZ    ]
-#define gAllowNaN           GetMemPTD()->aplCurrentFEATURE[FEATURENDX_NAN        ]
 #define gUseAPL2IP          GetMemPTD()->aplCurrentFEATURE[FEATURENDX_IP2        ]
 #define gbAllowNegIndices    lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_NEGINDICES ]  // Use these if lpMemPTD is already assigned
 #define gbAllowNeg0          lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_NEG0       ]  // ...
 #define gbUseHurwitz         lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_HURWITZ    ]  // ...
-#define gbAllowNaN           lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_NAN        ]  // ...
 #define gbUseAPL2IP          lpMemPTD  ->aplCurrentFEATURE[FEATURENDX_IP2        ]  // ...
 
 ////ine signumint(a)        (   (((APLINT) (a)) < 0) ? -1 : (((APLINT) (a)) > 0))
@@ -236,9 +234,9 @@
 #define SIGN_APLVFP_RAW(a)  ((a)->_mpfr_sign < 0)                   // ...            APLVFP
 #define SIGN_APLVFP(a)      (gAllowNeg0 ? SIGN_APLVFP_RAW (a)                       \
                                         : (mpfr_sgn (a) < 0))       // ...            APLVFP
-#define SIGN_APLARB_RAW(a)  ((a)->mid.size < 0)                     // ...            APLVFP
+#define SIGN_APLARB_RAW(a)  ((a)->mid.size < 0)                     // ...            APLARB
 #define SIGN_APLARB(a)      (FALSE      ? SIGN_APLARB_RAW (a)                       \
-                                        : (arb_sign (a) < 0))       // ...            APLVFP
+                                        : (arb_sign (a) < 0))       // ...            APLARB
 #define signumrat            mpq_sgn
 #define signumvfp(a)        (SIGN_APLVFP   (a)       ? -1 : ( mpfr_sgn (a)  > 0))
 #define mpfr_sgn0(a)        (signumint ((a)->_mpfr_sign))

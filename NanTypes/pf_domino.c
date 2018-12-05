@@ -1648,11 +1648,7 @@ UINT InvertHC1F
             if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
 
-            // If it's a NaN and we don't allow them, ...
-            if (_isnan (lpGslVectorW->data[uCol]) && !gbAllowNaN)
-                goto DOMAIN_EXIT;
-            else
-                lpMemRes[uCol * uNumRows + uRow] = lpGslVectorW->data[uCol];
+            lpMemRes[uCol * uNumRows + uRow] = lpGslVectorW->data[uCol];
         } // End FOR
     } // End FOR
 

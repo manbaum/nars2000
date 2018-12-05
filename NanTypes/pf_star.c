@@ -2889,8 +2889,7 @@ APLHC2F PowHC2F_SUB
 
     // Check for special cases:  0 * Imag
     if (IsZeroHCxF (&aplLft, 2)
-     && IzitImaginary (ARRAY_HC2F, &aplRht)
-     && gAllowNaN)
+     && IzitImaginary (ARRAY_HC2F, &aplRht))
     {
         // The real part is NaN
         aplRes.parts[0] = fltNaN;
@@ -3313,8 +3312,7 @@ APLHC2V PowHC2V_SUB
 
     // Check for special cases:  0 * Imag
     if (IsZeroHCxV (&aplLft, 2)
-     && IzitImaginary (ARRAY_HC2V, &aplRht)
-     && gAllowNaN)
+     && IzitImaginary (ARRAY_HC2V, &aplRht))
     {
         // Initialize to 0
         mphc2v_init0 (&aplRes);
@@ -3523,8 +3521,7 @@ APLBA2F PowBA2F_SUB
 
     // Check for special cases:  0 * Imag
     if (IsZeroBAxF (&aplLft, 2)
-     && IzitImaginary (ARRAY_BA2F, &aplRht)
-     && gAllowNaN)
+     && IzitImaginary (ARRAY_BA2F, &aplRht))
     {
         // Initialize to 0/0
         arb2f_init (&aplRes);
@@ -3876,8 +3873,7 @@ APLHC4F PowHC4F_SUB
 
     // Check for special cases:  0 * Imag
     if (IsZeroHCxF (&aplLft, 4)
-     && IzitImaginary (ARRAY_HC4F, &aplRht)
-     && gAllowNaN)
+     && IzitImaginary (ARRAY_HC4F, &aplRht))
     {
         // The real part is NaN
         aplRes.parts[0] = fltNaN;
@@ -4299,8 +4295,7 @@ APLHC4V PowHC4V_SUB
 
     // Check for special cases:  0 * Imag
     if (IsZeroHCxV (&aplLft, 4)
-     && IzitImaginary (ARRAY_HC4F, &aplRht)
-     && gAllowNaN)
+     && IzitImaginary (ARRAY_HC4F, &aplRht))
     {
         // Initialize to 0
         mphc4v_init0 (&aplRes);
@@ -4509,8 +4504,7 @@ APLBA4F PowBA4F_SUB
 
     // Check for special cases:  0 * Imag
     if (IsZeroBAxF (&aplLft, 4)
-     && IzitImaginary (ARRAY_BA4F, &aplRht)
-     && gAllowNaN)
+     && IzitImaginary (ARRAY_BA4F, &aplRht))
     {
         // Initialize to 0/0
         arb4f_init (&aplRes);
@@ -4862,8 +4856,7 @@ APLHC8F PowHC8F_SUB
 
     // Check for special cases:  0 * Imag
     if (IsZeroHCxF (&aplLft, 8)
-     && IzitImaginary (ARRAY_HC8F, &aplRht)
-     && gAllowNaN)
+     && IzitImaginary (ARRAY_HC8F, &aplRht))
     {
         // The real part is NaN
         aplRes.parts[0] = fltNaN;
@@ -5288,8 +5281,7 @@ APLHC8V PowHC8V_SUB
 
     // Check for special cases:  0 * Imag
     if (IsZeroHCxV (&aplLft, 8)
-     && IzitImaginary (ARRAY_HC8F, &aplRht)
-     && gAllowNaN)
+     && IzitImaginary (ARRAY_HC8F, &aplRht))
     {
         // Initialize to 0
         mphc8v_init0 (&aplRes);
@@ -5498,8 +5490,7 @@ APLBA8F PowBA8F_SUB
 
     // Check for special cases:  0 * Imag
     if (IsZeroBAxF (&aplLft, 8)
-     && IzitImaginary (ARRAY_BA8F, &aplRht)
-     && gAllowNaN)
+     && IzitImaginary (ARRAY_BA8F, &aplRht))
     {
         // Initialize to 0/0
         arb8f_init (&aplRes);

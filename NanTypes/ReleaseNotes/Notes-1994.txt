@@ -1,0 +1,9 @@
+Build #1994 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In Epsilon On Non-Simple Datatypes
+
+Directory branches/bsmith/NanTypes:
+
+PF_EPSILON.C:
+  Fix bug in Epsilon function on non-simple datatypes.

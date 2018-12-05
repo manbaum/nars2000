@@ -1,6 +1,17 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1993 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix Bug In Epsilon On Non-Simple Datatypes
+
+Directory branches/bsmith/NewTypes:
+
+PF_EPSILON.C:
+  Fix bug in Epsilon function on non-simple datatypes.
+
+
 Build #1991 -- Version 0.5.8.xx
 -------------------------------
 

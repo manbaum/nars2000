@@ -465,8 +465,6 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
     if (IsSingleton (aplNELMRht))
     {
         IMM_TYPES immTypeRes;
-        APLRAT    aplRatRht = {0};
-        APLVFP    aplVfpRht = {0};
         APLFLOAT  aplFloatRht;
 
         // Allocate a new YYRes
@@ -909,7 +907,6 @@ LPPL_YYSTYPE PrimFnMonDomino_EM_YY
                 defstop
                     break;
             } // End SWITCH
-
 
             break;
 
@@ -1474,11 +1471,7 @@ UINT InvertHC1F
             if (CheckCtrlBreak (lpbCtrlBreak))
                 goto ERROR_EXIT;
 
-            // If it's a NaN and we don't allow them, ...
-            if (_isnan (lpGslVectorW->data[uCol]) && !gbAllowNaN)
-                goto DOMAIN_EXIT;
-            else
-                lpMemRes[uCol * uNumRows + uRow] = lpGslVectorW->data[uCol];
+            lpMemRes[uCol * uNumRows + uRow] = lpGslVectorW->data[uCol];
         } // End FOR
     } // End FOR
 
@@ -2278,10 +2271,12 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
 
         case ARRAY_HC4F:
         case ARRAY_HC8F:
+
         case ARRAY_RAT:
         case ARRAY_HC2R:
         case ARRAY_HC4R:
         case ARRAY_HC8R:
+
         case ARRAY_VFP:
         case ARRAY_HC2V:
         case ARRAY_HC4V:
@@ -2315,7 +2310,11 @@ LPPL_YYSTYPE PrimFnDydDomino_EM_YY
             for (uCol = 0; uCol < uNumColsLft; uCol++)
             {
                 // Convert the left arg item to the result type as a HCxR
-                (*aTypeActConvert[aplTypeLft][aplTypeTmp]) (lpMemLft, uRow * uNumColsLft + uCol, &atTmp, NULL);
+                (*aTypeActConvert[aplTypeLft][aplTypeTmp]) (lpMemLft, uRow * uNumColsLft + uCol, &atTmp, &bRet);
+
+                // Check for error
+                if (!bRet)
+                    goto DOMAIN_EXIT;
 
                 // Copy to the matrix entry
                 CopyMemory (ByteAddr (lpMemTmpLft, (uRow * uNumColsLft + uCol) * iSizeofTmp), &atTmp, (APLU3264) iSizeofTmp);

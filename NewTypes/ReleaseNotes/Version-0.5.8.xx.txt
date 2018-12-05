@@ -1,6 +1,23 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1995 -- Version 0.5.8.xx
+-------------------------------
+
+* Full Support For NaNs, Remove From []FEATURE
+
+Directory branches/bsmith/NewTypes:
+
+EXTERNS.H:
+MACROS.H:
+PF_CIRCLE.C:
+PF_CIRCLE.MAC:
+PF_DOMINO.C:
+PF_STAR.C:
+PRIMSPEC.C:
+  Full support for NaNs, remove from []FEATURE.
+
+
 Build #1993 -- Version 0.5.8.xx
 -------------------------------
 

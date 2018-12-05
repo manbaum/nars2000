@@ -1236,9 +1236,6 @@ RESTART_EXCEPTION_VARIMMED:
                         // Is the arg a NaN?
                         if (IsArgNaN (aplTypeRht, &lptkRhtArg->tkData.tkLongest, 0))
                         {
-                            if (!gbAllowNaN)            // #1:  Monadic PSF {NaN}
-                                goto DOMAIN_EXIT;
-
                             // Save in the result
                             lpYYRes->tkToken.tkData.tkLongest = lptkRhtArg->tkData.tkLongest;
                             lpYYRes->tkToken.tkFlags.ImmType  = IMMTYPE_FLOAT;
@@ -2073,9 +2070,6 @@ RESTART_EXCEPTION:
                                     // Is the arg a NaN?
                                     if (IsArgNaN (aplTypeRht2, &lpSymSrc->stData.stLongest, 0))
                                     {
-                                        if (!gbAllowNaN)        // #2: {floor} {NaN} (2 3)
-                                            goto DOMAIN_EXIT;
-
                                         // Save in the result
                                         lpSymDst = lpMemPTD->lphtsGLB->steNaN;
                                     } else
@@ -2188,10 +2182,6 @@ RESTART_EXCEPTION:
                     {
                         // HC Dimension index (0, 1, 2, 3)
                         int iHCDimIndex = aArrayTypeToHCDimIndex[aplTypeRes];
-
-                        if (!gbAllowNaN)            // #3:  Monadic PSF ,{NaN}
-                                                    //      Monadic PSF {enclose},{NaN}
-                            goto DOMAIN_EXIT;
 
                         // Do we need to promote the result type from HCxI to HCxF as in {floor},{NaN}  ?
                         if (IsRealBIA (aToSimple[aplTypeRes]))
@@ -3094,75 +3084,56 @@ UBOOL PrimFnDydSimpNest_EM
                   || lptkFunc->tkData.tkChar EQ UTF16_RIGHTCARET
                   || lptkFunc->tkData.tkChar EQ UTF16_RIGHTCARETUNDERBAR))
                 {
-                    if (gbAllowNaN)         // 1x + {NaN} (3 4)
-                    {
-                        Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
+                    Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
 
+                    __try
+                    {
                         __try
                         {
-                            __try
+                            // Split cases based upon the primitive function
+                            switch (lptkFunc->tkData.tkChar)
                             {
-                                // Split cases based upon the primitive function
-                                switch (lptkFunc->tkData.tkChar)
-                                {
-                                    APLFLOAT fValue;
+                                APLFLOAT fValue;
 
-                                    case UTF16_EQUAL:
-                                    case UTF16_NOTEQUAL:
-                                        Assert (IsNested (aplTypeUnused));
+                                case UTF16_EQUAL:
+                                case UTF16_NOTEQUAL:
+                                    Assert (IsNested (aplTypeUnused));
 
-                                        // Calculate the Boolean result as a FLT
-                                        fValue = (bNaNLft && bNaNRht) && (EqualHCxy (aplTypeCom, &atLft, 0, aplTypeCom, &atRht, 0) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL));
+                                    // Calculate the Boolean result as a FLT
+                                    fValue = (bNaNLft && bNaNRht) && (EqualHCxy (aplTypeCom, &atLft, 0, aplTypeCom, &atRht, 0) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL));
 
-                                        // Make a SYMENTRY
-                                        hGlbSub =
-                                          MakeSymEntry_EM (IMMTYPE_FLOAT,           // Immediate type
-                                           (LPAPLLONGEST) &fValue,                  // Ptr to immediate value
-                                                           lptkFunc);               // Ptr to function token
-                                        break;
+                                    // Make a SYMENTRY
+                                    hGlbSub =
+                                      MakeSymEntry_EM (IMMTYPE_FLOAT,           // Immediate type
+                                       (LPAPLLONGEST) &fValue,                  // Ptr to immediate value
+                                                       lptkFunc);               // Ptr to function token
+                                    break;
 
-                                    case UTF16_LEFTCARET:
-                                    case UTF16_LEFTCARETUNDERBAR:
-                                    case UTF16_RIGHTCARETUNDERBAR:
-                                    case UTF16_RIGHTCARET:
-                                        // Scream!
-                                        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+                                case UTF16_LEFTCARET:
+                                case UTF16_LEFTCARETUNDERBAR:
+                                case UTF16_RIGHTCARETUNDERBAR:
+                                case UTF16_RIGHTCARET:
+                                    // Scream!
+                                    RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
-                                        break;
+                                    break;
 
-                                    defstop
-                                        break;
-                                } // End SWITCH
-                            } __finally
-                            {
-                                // Free the old atLft & atRht (if any)
-                                (*aTypeFree[aplTypeCom]) (&atLft, 0);
-                                (*aTypeFree[aplTypeCom]) (&atRht, 0);
+                                defstop
+                                    break;
+                            } // End SWITCH
+                        } __finally
+                        {
+                            // Free the old atLft & atRht (if any)
+                            (*aTypeFree[aplTypeCom]) (&atLft, 0);
+                            (*aTypeFree[aplTypeCom]) (&atRht, 0);
 
-                                // Zero the memory in case we use it again
-                                //   because aplTypeCom changes when looping
-                                //   through a HETERO.
-                                ZeroMemory (&atLft, sizeof (atLft));
-                                ZeroMemory (&atRht, sizeof (atRht));
-                            } // End __try/__finally
-                        } __except (EXCEPTION_CONTINUE_SEARCH) {}
-                    } else
-                    {
-                        // Free the old atLft & atRht (if any)
-                        (*aTypeFree[aplTypeCom]) (&atLft, 0);
-                        (*aTypeFree[aplTypeCom]) (&atRht, 0);
-
-                        // Zero the memory in case we use it again
-                        //   because aplTypeCom changes when looping
-                        //   through a HETERO.
-                        ZeroMemory (&atLft, sizeof (atLft));
-                        ZeroMemory (&atRht, sizeof (atRht));
-
-                        if (bNaNLft)
-                            goto LEFT_DOMAIN_EXIT;
-                        else
-                            goto RIGHT_DOMAIN_EXIT;
-                    } // End IF/ELSE
+                            // Zero the memory in case we use it again
+                            //   because aplTypeCom changes when looping
+                            //   through a HETERO.
+                            ZeroMemory (&atLft, sizeof (atLft));
+                            ZeroMemory (&atRht, sizeof (atRht));
+                        } // End __try/__finally
+                    } __except (EXCEPTION_CONTINUE_SEARCH) {}
                 } else
                 {
                     __try
@@ -3238,21 +3209,25 @@ UBOOL PrimFnDydSimpNest_EM
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
+    // Unlock the result global memory in case TypeDemote actually demotes
+    if (*lphGlbRes NE NULL && lpMemHdrRes NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (*lphGlbRes); lpMemHdrRes = NULL;
+    } // End IF
+
+    // See if it fits into a lower (but not necessarily smaller) datatype
+    TypeDemote (&lpYYRes->tkToken,
+                 lpPrimSpec->bDydDimDemote
+              || lpPrimSpec->bLclDimDemote);
+    // Reset for the next time
+    lpPrimSpec->bLclDimDemote = FALSE;
+
     goto NORMAL_EXIT;
 
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
-    goto ERROR_EXIT;
-
-LEFT_DOMAIN_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkLftArg);
-    goto ERROR_EXIT;
-
-RIGHT_DOMAIN_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkRhtArg);
     goto ERROR_EXIT;
 
 ERROR_EXIT:
@@ -3539,75 +3514,56 @@ UBOOL PrimFnDydNestSimp_EM
                   || lptkFunc->tkData.tkChar EQ UTF16_RIGHTCARET
                   || lptkFunc->tkData.tkChar EQ UTF16_RIGHTCARETUNDERBAR))
                 {
-                    if (gbAllowNaN)         // {NaN} (3 4) + 1x
-                    {
-                        Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
+                    Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
 
+                    __try
+                    {
                         __try
                         {
-                            __try
+                            // Split cases based upon the primitive function
+                            switch (lptkFunc->tkData.tkChar)
                             {
-                                // Split cases based upon the primitive function
-                                switch (lptkFunc->tkData.tkChar)
-                                {
-                                    APLFLOAT fValue;
+                                APLFLOAT fValue;
 
-                                    case UTF16_EQUAL:
-                                    case UTF16_NOTEQUAL:
-                                        Assert (IsNested (aplTypeUnused));
+                                case UTF16_EQUAL:
+                                case UTF16_NOTEQUAL:
+                                    Assert (IsNested (aplTypeUnused));
 
-                                        // Calculate the Boolean result as a FLT
-                                        fValue = (bNaNLft && bNaNRht) && (EqualHCxy (aplTypeCom, &atLft, 0, aplTypeCom, &atRht, 0) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL));
+                                    // Calculate the Boolean result as a FLT
+                                    fValue = (bNaNLft && bNaNRht) && (EqualHCxy (aplTypeCom, &atLft, 0, aplTypeCom, &atRht, 0) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL));
 
-                                        // Make a SYMENTRY
-                                        hGlbSub =
-                                          MakeSymEntry_EM (IMMTYPE_FLOAT,           // Immediate type
-                                           (LPAPLLONGEST) &fValue,                  // Ptr to immediate value
-                                                           lptkFunc);               // Ptr to function token
-                                        break;
+                                    // Make a SYMENTRY
+                                    hGlbSub =
+                                      MakeSymEntry_EM (IMMTYPE_FLOAT,           // Immediate type
+                                       (LPAPLLONGEST) &fValue,                  // Ptr to immediate value
+                                                       lptkFunc);               // Ptr to function token
+                                    break;
 
-                                    case UTF16_LEFTCARET:
-                                    case UTF16_LEFTCARETUNDERBAR:
-                                    case UTF16_RIGHTCARETUNDERBAR:
-                                    case UTF16_RIGHTCARET:
-                                        // Scream!
-                                        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+                                case UTF16_LEFTCARET:
+                                case UTF16_LEFTCARETUNDERBAR:
+                                case UTF16_RIGHTCARETUNDERBAR:
+                                case UTF16_RIGHTCARET:
+                                    // Scream!
+                                    RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
-                                        break;
+                                    break;
 
-                                    defstop
-                                        break;
-                                } // End SWITCH
-                            } __finally
-                            {
-                                // Free the old atLft & atRht (if any)
-                                (*aTypeFree[aplTypeCom]) (&atLft, 0);
-                                (*aTypeFree[aplTypeCom]) (&atRht, 0);
+                                defstop
+                                    break;
+                            } // End SWITCH
+                        } __finally
+                        {
+                            // Free the old atLft & atRht (if any)
+                            (*aTypeFree[aplTypeCom]) (&atLft, 0);
+                            (*aTypeFree[aplTypeCom]) (&atRht, 0);
 
-                                // Zero the memory in case we use it again
-                                //   because aplTypeCom changes when looping
-                                //   through a HETERO.
-                                ZeroMemory (&atLft, sizeof (atLft));
-                                ZeroMemory (&atRht, sizeof (atRht));
-                            } // End __try/__finally
-                        } __except (EXCEPTION_CONTINUE_SEARCH) {}
-                    } else
-                    {
-                        // Free the old atLft & atRht (if any)
-                        (*aTypeFree[aplTypeCom]) (&atLft, 0);
-                        (*aTypeFree[aplTypeCom]) (&atRht, 0);
-
-                        // Zero the memory in case we use it again
-                        //   because aplTypeCom changes when looping
-                        //   through a HETERO.
-                        ZeroMemory (&atLft, sizeof (atLft));
-                        ZeroMemory (&atRht, sizeof (atRht));
-
-                        if (bNaNLft)
-                            goto LEFT_DOMAIN_EXIT;
-                        else
-                            goto RIGHT_DOMAIN_EXIT;
-                    } // End IF/ELSE
+                            // Zero the memory in case we use it again
+                            //   because aplTypeCom changes when looping
+                            //   through a HETERO.
+                            ZeroMemory (&atLft, sizeof (atLft));
+                            ZeroMemory (&atRht, sizeof (atRht));
+                        } // End __try/__finally
+                    } __except (EXCEPTION_CONTINUE_SEARCH) {}
                 } else
                 {
                     __try
@@ -3685,21 +3641,25 @@ UBOOL PrimFnDydNestSimp_EM
     lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
     lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
 
+    // Unlock the result global memory in case TypeDemote actually demotes
+    if (*lphGlbRes NE NULL && lpMemHdrRes NE NULL)
+    {
+        // We no longer need this ptr
+        MyGlobalUnlock (*lphGlbRes); lpMemHdrRes = NULL;
+    } // End IF
+
+    // See if it fits into a lower (but not necessarily smaller) datatype
+    TypeDemote (&lpYYRes->tkToken,
+                 lpPrimSpec->bDydDimDemote
+              || lpPrimSpec->bLclDimDemote);
+    // Reset for the next time
+    lpPrimSpec->bLclDimDemote = FALSE;
+
     goto NORMAL_EXIT;
 
 WSFULL_EXIT:
     ErrorMessageIndirectToken (ERRMSG_WS_FULL APPEND_NAME,
                                lptkFunc);
-    goto ERROR_EXIT;
-
-LEFT_DOMAIN_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkLftArg);
-    goto ERROR_EXIT;
-
-RIGHT_DOMAIN_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkRhtArg);
     goto ERROR_EXIT;
 
 ERROR_EXIT:
@@ -3984,63 +3944,56 @@ RESTART_EXCEPTION:
                       || lptkFunc->tkData.tkChar EQ UTF16_RIGHTCARET
                       || lptkFunc->tkData.tkChar EQ UTF16_RIGHTCARETUNDERBAR))
                     {
-                        if (gbAllowNaN)         // ((,NaN) 3)NaN=NaN
-                        {
-                            Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
+                        Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
 
+                        __try
+                        {
                             __try
                             {
-                                __try
+                                // Split cases based upon the primitive function
+                                switch (lptkFunc->tkData.tkChar)
                                 {
-                                    // Split cases based upon the primitive function
-                                    switch (lptkFunc->tkData.tkChar)
-                                    {
-                                        APLFLOAT fValue;
+                                    APLFLOAT fValue;
 
-                                        case UTF16_EQUAL:
-                                        case UTF16_NOTEQUAL:
-                                            Assert (IsNested (aplTypeRes));
+                                    case UTF16_EQUAL:
+                                    case UTF16_NOTEQUAL:
+                                        Assert (IsNested (aplTypeRes));
 
-                                            // Calculate the Boolean result as a FLT
-                                            fValue = (bNaNLft && bNaNRht) && (EqualHCxy (aplTypeHetLft, &atLft, 0, aplTypeRht, lpatRht, 0) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL));
+                                        // Calculate the Boolean result as a FLT
+                                        fValue = (bNaNLft && bNaNRht) && (EqualHCxy (aplTypeHetLft, &atLft, 0, aplTypeRht, lpatRht, 0) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL));
 
-                                            // Make a SYMENTRY
-                                            hGlbSub =
-                                              MakeSymEntry_EM (IMMTYPE_FLOAT,           // Immediate type
-                                               (LPAPLLONGEST) &fValue,                  // Ptr to immediate value
-                                                               lptkFunc);               // Ptr to function token
-                                            break;
+                                        // Make a SYMENTRY
+                                        hGlbSub =
+                                          MakeSymEntry_EM (IMMTYPE_FLOAT,           // Immediate type
+                                           (LPAPLLONGEST) &fValue,                  // Ptr to immediate value
+                                                           lptkFunc);               // Ptr to function token
+                                        break;
 
-                                        case UTF16_LEFTCARET:
-                                        case UTF16_LEFTCARETUNDERBAR:
-                                        case UTF16_RIGHTCARETUNDERBAR:
-                                        case UTF16_RIGHTCARET:
-                                            // Scream!
-                                            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+                                    case UTF16_LEFTCARET:
+                                    case UTF16_LEFTCARETUNDERBAR:
+                                    case UTF16_RIGHTCARETUNDERBAR:
+                                    case UTF16_RIGHTCARET:
+                                        // Scream!
+                                        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
-                                            break;
+                                        break;
 
-                                        defstop
-                                            break;
-                                    } // End SWITCH
-                                } __finally
-                                {
-                                    // Free the old atLft & atRht (if any)
-                                    (*aTypeFree[aplTypeHetLft]) (&atLft, 0);
-                                    (*aTypeFree[aplTypeRht   ]) (&atRht, 0);
+                                    defstop
+                                        break;
+                                } // End SWITCH
+                            } __finally
+                            {
+                                // Free the old atLft & atRht (if any)
+                                (*aTypeFree[aplTypeHetLft]) (&atLft, 0);
+                                (*aTypeFree[aplTypeRht   ]) (&atRht, 0);
 
-                                    // Zero the memory in case we use it again
-                                    //   because aplTypeHetLft/aplTypeRht change when looping
-                                    //   through a HETERO.
-                                    ZeroMemory (&atLft, sizeof (atLft));
-                                    ZeroMemory (&atRht, sizeof (atRht));
-                                } // End __try/__finally
-                            } __except (EXCEPTION_CONTINUE_SEARCH) {}
-                        } else
-                        if (bNaNLft)
-                            goto LEFT_DOMAIN_EXIT;
-                        else
-                            goto RIGHT_DOMAIN_EXIT;
+                                // Zero the memory in case we use it again
+                                //   because aplTypeHetLft/aplTypeRht change when looping
+                                //   through a HETERO.
+                                ZeroMemory (&atLft, sizeof (atLft));
+                                ZeroMemory (&atRht, sizeof (atRht));
+                            } // End __try/__finally
+                        } __except (EXCEPTION_CONTINUE_SEARCH) {}
                     } else
                     {
                         hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
@@ -4131,61 +4084,54 @@ RESTART_EXCEPTION:
               || lptkFunc->tkData.tkChar EQ UTF16_RIGHTCARET
               || lptkFunc->tkData.tkChar EQ UTF16_RIGHTCARETUNDERBAR))
             {
-                if (gbAllowNaN)         // #4:  {NaN} ({NaN} 3) + 1x
-                {
-                    Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
+                Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
 
+                __try
+                {
                     __try
                     {
-                        __try
+                        // Split cases based upon the primitive function
+                        switch (lptkFunc->tkData.tkChar)
                         {
-                            // Split cases based upon the primitive function
-                            switch (lptkFunc->tkData.tkChar)
-                            {
-                                UBOOL bValue;
+                            UBOOL bValue;
 
-                                case UTF16_EQUAL:
-                                case UTF16_NOTEQUAL:
-                                    Assert (IsSimpleBool (aplTypeRes));
+                            case UTF16_EQUAL:
+                            case UTF16_NOTEQUAL:
+                                Assert (IsSimpleBool (aplTypeRes));
 
-                                    // Calculate the Boolean result
-                                    bValue = (bNaNLft && bNaNRht) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL);
+                                // Calculate the Boolean result
+                                bValue = (bNaNLft && bNaNRht) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL);
 
-                                    // Save the result
-                                    ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |= bValue << (MASKLOG2NBIB & (UINT) uRes);
+                                // Save the result
+                                ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |= bValue << (MASKLOG2NBIB & (UINT) uRes);
 
-                                    break;
+                                break;
 
-                                case UTF16_LEFTCARET:
-                                case UTF16_LEFTCARETUNDERBAR:
-                                case UTF16_RIGHTCARETUNDERBAR:
-                                case UTF16_RIGHTCARET:
-                                    // Scream!
-                                    RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+                            case UTF16_LEFTCARET:
+                            case UTF16_LEFTCARETUNDERBAR:
+                            case UTF16_RIGHTCARETUNDERBAR:
+                            case UTF16_RIGHTCARET:
+                                // Scream!
+                                RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
-                                    break;
+                                break;
 
-                                defstop
-                                    break;
-                            } // End SWITCH
-                        } __finally
-                        {
-                            // Free the old atLft & atRht (if any)
-                            (*aTypeFree[aplTypeHetLft]) (&atTmp, 0);
-                            (*aTypeFree[aplTypeRht   ]) (&atRht, 0);
+                            defstop
+                                break;
+                        } // End SWITCH
+                    } __finally
+                    {
+                        // Free the old atLft & atRht (if any)
+                        (*aTypeFree[aplTypeHetLft]) (&atTmp, 0);
+                        (*aTypeFree[aplTypeRht   ]) (&atRht, 0);
 
-                            // Zero the memory in case we use it again
-                            //   because aplTypeHetLft/aplTypeRht change when looping
-                            //   through a HETERO.
-                            ZeroMemory (&atTmp, sizeof (atTmp));
-                            ZeroMemory (&atRht, sizeof (atRht));
-                        } // End __try/__finally
-                    } __except (EXCEPTION_CONTINUE_SEARCH) {}
-                } else
-                if (bNaNLft)
-                    goto LEFT_DOMAIN_EXIT;
-                else
-                    goto RIGHT_DOMAIN_EXIT;
+                        // Zero the memory in case we use it again
+                        //   because aplTypeHetLft/aplTypeRht change when looping
+                        //   through a HETERO.
+                        ZeroMemory (&atTmp, sizeof (atTmp));
+                        ZeroMemory (&atRht, sizeof (atRht));
+                    } // End __try/__finally
+                } __except (EXCEPTION_CONTINUE_SEARCH) {}
             } else
             {
                 // Get the common storage type between the left & right args
@@ -4567,6 +4513,13 @@ UBOOL PrimFnDydNestNest_EM
 ////////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
         lpYYRes->tkToken.tkData.tkGlbData  = MakePtrTypeGlb (*lphGlbRes);
         lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+        // See if it fits into a lower (but not necessarily smaller) datatype
+        TypeDemote (&lpYYRes->tkToken,
+                     lpPrimSpec->bDydDimDemote
+                  || lpPrimSpec->bLclDimDemote);
+        // Reset for the next time
+        lpPrimSpec->bLclDimDemote = FALSE;
     } // End IF
 ERROR_EXIT:
     return bRet;
@@ -4824,63 +4777,56 @@ RESTART_EXCEPTION:
                       || lptkFunc->tkData.tkChar EQ UTF16_RIGHTCARET
                       || lptkFunc->tkData.tkChar EQ UTF16_RIGHTCARETUNDERBAR))
                     {
-                        if (gbAllowNaN)         // NaN=((,NaN) 3)NaN
-                        {
-                            Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
+                        Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
 
+                        __try
+                        {
                             __try
                             {
-                                __try
+                                // Split cases based upon the primitive function
+                                switch (lptkFunc->tkData.tkChar)
                                 {
-                                    // Split cases based upon the primitive function
-                                    switch (lptkFunc->tkData.tkChar)
-                                    {
-                                        APLFLOAT fValue;
+                                    APLFLOAT fValue;
 
-                                        case UTF16_EQUAL:
-                                        case UTF16_NOTEQUAL:
-                                            Assert (IsNested (aplTypeRes));
+                                    case UTF16_EQUAL:
+                                    case UTF16_NOTEQUAL:
+                                        Assert (IsNested (aplTypeRes));
 
-                                            // Calculate the Boolean result as a FLT
-                                            fValue = (bNaNLft && bNaNRht) && (EqualHCxy (aplTypeLft, lpatLft, 0, aplTypeHetRht, &atRht, 0) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL));
+                                        // Calculate the Boolean result as a FLT
+                                        fValue = (bNaNLft && bNaNRht) && (EqualHCxy (aplTypeLft, lpatLft, 0, aplTypeHetRht, &atRht, 0) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL));
 
-                                            // Make a SYMENTRY
-                                            hGlbSub =
-                                              MakeSymEntry_EM (IMMTYPE_FLOAT,           // Immediate type
-                                               (LPAPLLONGEST) &fValue,                  // Ptr to immediate value
-                                                               lptkFunc);               // Ptr to function token
-                                            break;
+                                        // Make a SYMENTRY
+                                        hGlbSub =
+                                          MakeSymEntry_EM (IMMTYPE_FLOAT,           // Immediate type
+                                           (LPAPLLONGEST) &fValue,                  // Ptr to immediate value
+                                                           lptkFunc);               // Ptr to function token
+                                        break;
 
-                                        case UTF16_LEFTCARET:
-                                        case UTF16_LEFTCARETUNDERBAR:
-                                        case UTF16_RIGHTCARETUNDERBAR:
-                                        case UTF16_RIGHTCARET:
-                                            // Scream!
-                                            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+                                    case UTF16_LEFTCARET:
+                                    case UTF16_LEFTCARETUNDERBAR:
+                                    case UTF16_RIGHTCARETUNDERBAR:
+                                    case UTF16_RIGHTCARET:
+                                        // Scream!
+                                        RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
-                                            break;
+                                        break;
 
-                                        defstop
-                                            break;
-                                    } // End SWITCH
-                                } __finally
-                                {
-                                    // Free the old atLft & atRht (if any)
-                                    (*aTypeFree[aplTypeLft   ]) (&atLft, 0);
-                                    (*aTypeFree[aplTypeHetRht]) (&atRht, 0);
+                                    defstop
+                                        break;
+                                } // End SWITCH
+                            } __finally
+                            {
+                                // Free the old atLft & atRht (if any)
+                                (*aTypeFree[aplTypeLft   ]) (&atLft, 0);
+                                (*aTypeFree[aplTypeHetRht]) (&atRht, 0);
 
-                                    // Zero the memory in case we use it again
-                                    //   because aplTypeLft/aplTypeHetRht change when looping
-                                    //   through a HETERO.
-                                    ZeroMemory (&atLft, sizeof (atLft));
-                                    ZeroMemory (&atRht, sizeof (atRht));
-                                } // End __try/__finally
-                            } __except (EXCEPTION_CONTINUE_SEARCH) {}
-                        } else
-                        if (bNaNLft)
-                            goto LEFT_DOMAIN_EXIT;
-                        else
-                            goto RIGHT_DOMAIN_EXIT;
+                                // Zero the memory in case we use it again
+                                //   because aplTypeLft/aplTypeHetRht change when looping
+                                //   through a HETERO.
+                                ZeroMemory (&atLft, sizeof (atLft));
+                                ZeroMemory (&atRht, sizeof (atRht));
+                            } // End __try/__finally
+                        } __except (EXCEPTION_CONTINUE_SEARCH) {}
                     } else
                     {
                         hGlbSub = PrimFnDydSiScSiSc_EM (lptkFunc,
@@ -4971,61 +4917,54 @@ RESTART_EXCEPTION:
               || lptkFunc->tkData.tkChar EQ UTF16_RIGHTCARET
               || lptkFunc->tkData.tkChar EQ UTF16_RIGHTCARETUNDERBAR))
             {
-                if (gbAllowNaN)         // #5:  {NaN}x + 1 (2 3)
-                {
-                    Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
+                Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
 
+                __try
+                {
                     __try
                     {
-                        __try
+                        // Split cases based upon the primitive function
+                        switch (lptkFunc->tkData.tkChar)
                         {
-                            // Split cases based upon the primitive function
-                            switch (lptkFunc->tkData.tkChar)
-                            {
-                                UBOOL bValue;
+                            UBOOL bValue;
 
-                                case UTF16_EQUAL:
-                                case UTF16_NOTEQUAL:
-                                    Assert (IsSimpleBool (aplTypeRes));
+                            case UTF16_EQUAL:
+                            case UTF16_NOTEQUAL:
+                                Assert (IsSimpleBool (aplTypeRes));
 
-                                    // Calculate the Boolean result
-                                    bValue = (bNaNLft && bNaNRht) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL);
+                                // Calculate the Boolean result
+                                bValue = (bNaNLft && bNaNRht) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL);
 
-                                    // Save the result
-                                    ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |= bValue << (MASKLOG2NBIB & (UINT) uRes);
+                                // Save the result
+                                ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |= bValue << (MASKLOG2NBIB & (UINT) uRes);
 
-                                    break;
+                                break;
 
-                                case UTF16_LEFTCARET:
-                                case UTF16_LEFTCARETUNDERBAR:
-                                case UTF16_RIGHTCARETUNDERBAR:
-                                case UTF16_RIGHTCARET:
-                                    // Scream!
-                                    RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+                            case UTF16_LEFTCARET:
+                            case UTF16_LEFTCARETUNDERBAR:
+                            case UTF16_RIGHTCARETUNDERBAR:
+                            case UTF16_RIGHTCARET:
+                                // Scream!
+                                RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
-                                    break;
+                                break;
 
-                                defstop
-                                    break;
-                            } // End SWITCH
-                        } __finally
-                        {
-                            // Free the old atLft & atTmp (if any)
-                            (*aTypeFree[aplTypeLft   ]) (&atLft, 0);
-                            (*aTypeFree[aplTypeHetRht]) (&atTmp, 0);
+                            defstop
+                                break;
+                        } // End SWITCH
+                    } __finally
+                    {
+                        // Free the old atLft & atTmp (if any)
+                        (*aTypeFree[aplTypeLft   ]) (&atLft, 0);
+                        (*aTypeFree[aplTypeHetRht]) (&atTmp, 0);
 
-                            // Zero the memory in case we use it again
-                            //   because aplTypeLft/aplTypeHetRht change when looping
-                            //   through a HETERO.
-                            ZeroMemory (&atLft, sizeof (atLft));
-                            ZeroMemory (&atTmp, sizeof (atTmp));
-                        } // End __try/__finally
-                    } __except (EXCEPTION_CONTINUE_SEARCH) {}
-                } else
-                if (bNaNLft)
-                    goto LEFT_DOMAIN_EXIT;
-                else
-                    goto RIGHT_DOMAIN_EXIT;
+                        // Zero the memory in case we use it again
+                        //   because aplTypeLft/aplTypeHetRht change when looping
+                        //   through a HETERO.
+                        ZeroMemory (&atLft, sizeof (atLft));
+                        ZeroMemory (&atTmp, sizeof (atTmp));
+                    } // End __try/__finally
+                } __except (EXCEPTION_CONTINUE_SEARCH) {}
             } else
             {
                 // Get the common storage type between the left & right args
@@ -6015,44 +5954,37 @@ RESTART_EXCEPTION:
                   || lptkFunc->tkData.tkChar EQ UTF16_RIGHTCARET
                   || lptkFunc->tkData.tkChar EQ UTF16_RIGHTCARETUNDERBAR))
                 {
-                    if (gbAllowNaN)             // NaN=0
+                    Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
+
+                    // Split cases based upon the primitive function
+                    switch (lptkFunc->tkData.tkChar)
                     {
-                        Assert (lptkFunc->tkFlags.ImmType EQ IMMTYPE_PRIMFCN);
+                        UBOOL bValue;
 
-                        // Split cases based upon the primitive function
-                        switch (lptkFunc->tkData.tkChar)
-                        {
-                            UBOOL bValue;
+                        case UTF16_EQUAL:
+                        case UTF16_NOTEQUAL:
+                            Assert (IsSimpleBool (aplTypeRes));
 
-                            case UTF16_EQUAL:
-                            case UTF16_NOTEQUAL:
-                                Assert (IsSimpleBool (aplTypeRes));
+                            // Calculate the Boolean result
+                            bValue = (bNaNLft && bNaNRht) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL);
 
-                                // Calculate the Boolean result
-                                bValue = (bNaNLft && bNaNRht) EQ (lptkFunc->tkData.tkChar EQ UTF16_EQUAL);
+                            // Save the result
+                            ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |= bValue << (MASKLOG2NBIB & (UINT) uRes);
 
-                                // Save the result
-                                ((LPAPLBOOL) lpMemRes)[uRes >> LOG2NBIB] |= bValue << (MASKLOG2NBIB & (UINT) uRes);
+                            break;
 
-                                break;
+                        case UTF16_LEFTCARET:
+                        case UTF16_LEFTCARETUNDERBAR:
+                        case UTF16_RIGHTCARETUNDERBAR:
+                        case UTF16_RIGHTCARET:
+                            // Scream!
+                            RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
-                            case UTF16_LEFTCARET:
-                            case UTF16_LEFTCARETUNDERBAR:
-                            case UTF16_RIGHTCARETUNDERBAR:
-                            case UTF16_RIGHTCARET:
-                                // Scream!
-                                RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
+                            break;
 
-                                break;
-
-                            defstop
-                                break;
-                        } // End SWITCH
-                    } else
-                    if (bNaNLft)
-                        goto LEFT_DOMAIN_EXIT;
-                    else
-                        goto RIGHT_DOMAIN_EXIT;
+                        defstop
+                            break;
+                    } // End SWITCH
                 } else
                 {
                     // If the argument's dimension and the result's differ,
@@ -6246,16 +6178,6 @@ RESTART_EXCEPTION:
 DOMAIN_EXIT:
     ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                                lptkFunc);
-    goto ERROR_EXIT;
-
-LEFT_DOMAIN_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkLftArg);
-    goto ERROR_EXIT;
-
-RIGHT_DOMAIN_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
-                               lptkRhtArg);
     goto ERROR_EXIT;
 
 NONCE_EXIT:

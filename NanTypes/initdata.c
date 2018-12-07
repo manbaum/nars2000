@@ -1057,6 +1057,7 @@ void InitPrimFlags
     Init1PrimFlag (UTF16_LEFTCARET           , PF_FB                                 | PF_DS | PF_ID | PF_LI         | PF_INDEX_LESS      , (LPPRIMOPS) PrimIdentFnScalar_EM_YY           );
     Init1PrimFlag (UTF16_LEFTCARETUNDERBAR   , PF_FB                                 | PF_DS | PF_ID | PF_LI         | PF_INDEX_LESSEQ    , (LPPRIMOPS) PrimIdentFnScalar_EM_YY           );
     Init1PrimFlag (UTF16_LEFTCARETUNDERBAR2  , PF_FB                                 | PF_DS | PF_ID | PF_LI         | PF_INDEX_LESSEQ    , (LPPRIMOPS) PrimIdentFnScalar_EM_YY           );
+    Init1PrimFlag (UTF16_LEFTTACK            , 0                                             | PF_ID |         PF_RI                      , (LPPRIMOPS) PrimIdentFnLeftTack_EM_YY         );
     Init1PrimFlag (UTF16_NAND                , PF_FB                                 | PF_DS                         | PF_INDEX_NAND      , (LPPRIMOPS) PrimIdentFnScalar_EM_YY           );
     Init1PrimFlag (UTF16_NOR                 , PF_FB                                 | PF_DS                         | PF_INDEX_NOR       , (LPPRIMOPS) PrimIdentFnScalar_EM_YY           );
     Init1PrimFlag (UTF16_NOTEQUAL            , PF_FB | PF_AB                         | PF_DS | PF_ID | PF_LI | PF_RI | PF_INDEX_NOTEQUAL  , (LPPRIMOPS) PrimIdentFnScalar_EM_YY           );
@@ -1069,6 +1070,7 @@ void InitPrimFlags
     Init1PrimFlag (UTF16_RIGHTCARETUNDERBAR  , PF_FB                                 | PF_DS | PF_ID         | PF_RI | PF_INDEX_MOREEQ    , (LPPRIMOPS) PrimIdentFnScalar_EM_YY           );
     Init1PrimFlag (UTF16_RIGHTCARETUNDERBAR2 , PF_FB                                 | PF_DS | PF_ID         | PF_RI | PF_INDEX_MOREEQ    , (LPPRIMOPS) PrimIdentFnScalar_EM_YY           );
     Init1PrimFlag (UTF16_RIGHTSHOE           , 0                                             | PF_ID | PF_LI                              , (LPPRIMOPS) PrimIdentFnRightShoe_EM_YY        );
+    Init1PrimFlag (UTF16_RIGHTTACK           , 0                                             | PF_ID | PF_LI                              , (LPPRIMOPS) PrimIdentFnRightTack_EM_YY        );
     Init1PrimFlag (UTF16_ROOT                , 0                             | PF_MS | PF_DS | PF_ID | PF_LI         | PF_INDEX_ROOT      , (LPPRIMOPS) PrimIdentFnScalar_EM_YY           );
     Init1PrimFlag (UTF16_SECTION             , 0                                             | PF_ID         | PF_RI                      , (LPPRIMOPS) PrimIdentFnSection_EM_YY          );
     Init1PrimFlag (UTF16_SLASH               , 0                                                                                          ,             NULL ); // PrimIdentOpSlash_EM_YY            );

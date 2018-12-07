@@ -1,0 +1,11 @@
+Build #1998 -- Version 0.6.0.xx
+-------------------------------
+
+* Define Identity Elements For Left/Right Tack Functions
+
+Directory branches/bsmith/NanTypes:
+
+INITDATA.C:
+PF_LTACK.C:
+PF_RTACK.C:
+  Define identity elements for Left/Right Tack functions.

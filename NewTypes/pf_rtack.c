@@ -87,6 +87,57 @@ LPPL_YYSTYPE PrimProtoFnRightTack_EM_YY
 
 
 //***************************************************************************
+//  $PrimIdentFnRightTack_EM_YY
+//
+//  Generate an identity element for the primitive function dyadic RightTack
+//***************************************************************************
+
+LPPL_YYSTYPE PrimIdentFnRightTack_EM_YY
+    (LPTOKEN lptkRhtOrig,           // Ptr to original right arg token
+     LPTOKEN lptkFunc,              // Ptr to function token
+     LPTOKEN lptkRhtArg,            // Ptr to right arg token
+     LPTOKEN lptkAxis)              // Ptr to axis token (may be NULL)
+
+{
+    LPPL_YYSTYPE lpYYRes;           // Ptr to result
+
+    // The right arg is the prototype item from
+    //   the original empty arg.
+
+    Assert (lptkRhtOrig NE NULL);
+    Assert (lptkFunc    NE NULL);
+    Assert (lptkRhtArg  NE NULL);
+
+    //***************************************************************
+    // This function is not sensitive to the axis operator,
+    //   so signal a syntax error if present
+    //***************************************************************
+    if (lptkAxis NE NULL)
+        goto AXIS_SYNTAX_EXIT;
+
+    // The left identity elenment for dyadic RightTack is
+    //   anything, so we'll use an immediate 0.
+
+    // Allocate a new YYRes
+    lpYYRes = YYAlloc ();
+
+    // Fill in the result token
+    lpYYRes->tkToken.tkFlags.TknType   = TKT_VARIMMED;
+    lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_BOOL;
+////lpYYRes->tkToken.tkFlags.NoDisplay = FALSE;         // Already zero from YYAlloc
+    lpYYRes->tkToken.tkData.tkBoolean  = 0;
+    lpYYRes->tkToken.tkCharIndex       = lptkFunc->tkCharIndex;
+
+    return lpYYRes;
+
+AXIS_SYNTAX_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_SYNTAX_ERROR APPEND_NAME,
+                               lptkAxis);
+    return NULL;
+} // End PrimIdentFnRightTack_EM_YY
+
+
+//***************************************************************************
 //  $PrimFnMonRightTack_EM_YY
 //
 //  Primitive function for monadic RightTack ("right")

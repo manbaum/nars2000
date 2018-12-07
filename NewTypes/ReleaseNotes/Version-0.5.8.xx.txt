@@ -1,6 +1,19 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #1997 -- Version 0.5.8.xx
+-------------------------------
+
+* Define Identity Elements For Left/Right Tack Functions
+
+Directory branches/bsmith/NewTypes:
+
+INITDATA.C:
+PF_LTACK.C:
+PF_RTACK.C:
+  Define identity elements for Left/Right Tack functions.
+
+
 Build #1995 -- Version 0.5.8.xx
 -------------------------------
 

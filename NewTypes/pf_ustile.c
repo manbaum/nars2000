@@ -73,7 +73,7 @@ PRIMSPEC PrimSpecUpStile = {
     NULL,   // &PrimFnMonUpStileHC8VisHC8R, -- Can't happen w/UpStile
     NULL,   // &PrimFnMonUpStileHC8VisHC8V, -- Can't happen w/UpStile
 
-    // Monadic FLT result HC arg functions (indexable)
+    // Monadic INT/FLT/RAT/VFP result HC arg functions (indexable)
     NULL,   // &PrimFnMonUpStileFisHC2I, -- Can't happen w/UpStile
     NULL,   // &PrimFnMonUpStileFisHC2F, -- Can't happen w/UpStile
     NULL,   // &PrimFnMonUpStileVisHC2R, -- Can't happen w/UpStile
@@ -92,7 +92,7 @@ PRIMSPEC PrimSpecUpStile = {
     &PrimSpecUpStileStorageTypeDyd,
     NULL,   // &PrimFnDydUpStileAPA_EM, -- Can't happen w/UpStile
 
-    // Dyadic Boolean result functions
+    // Dyadic Boolean result functions (indexable)
     &PrimFnDydDownCaretBisBvB,
     NULL,   // &PrimFnDydUpStileBisIvI, -- Can't happen w/UpStile
     NULL,   // &PrimFnDydUpStileBisFvF, -- Can't happen w/UpStile
@@ -259,9 +259,9 @@ void PrimFnMonUpStileIisF
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
-    // Check for PoM infinity and numbers whose
+    // Check for PoM infinity, NaNs, and numbers whose
     //   absolute value is >= 2*53
-    if (IsFltInfinity (lpatRht->aplFloat)
+    if (!_finite (lpatRht->aplFloat)
      || fabs (lpatRht->aplFloat) >= Float2Pow53)
         RaiseException (EXCEPTION_RESULT_FLOAT, 0, 0, NULL);
     else

@@ -127,7 +127,7 @@ void TypeDemote
             else
             // If it's an INT masquerading as a FLT, ...
             if (IsImmFlt (lptkRhtArg->tkFlags.ImmType)
-            // Check for PoM infinity and numbers whose
+            // Check for PoM infinity, NaNs, and numbers whose
             //   absolute value is >= 2*53
              && !(!_finite (lptkRhtArg->tkData.tkFloat)
                || fabs (lptkRhtArg->tkData.tkFloat) >= Float2Pow53))

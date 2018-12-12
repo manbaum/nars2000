@@ -1,6 +1,21 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2002 -- Version 0.6.0.xx
+-------------------------------
+
+* Handle NaNs The Same as Signed Infinities As Requiring FLT Result
+
+Directory branches/bsmith/NanTypes:
+
+PF_USTILE.C:
+  Improve comments.
+  In <PrimFnMonUpStileIisF>, handle NaNs along with the signed Infinities as requiring a FLT result.
+
+TYPEMOTE.C:
+  In <TypeDemote>, handle NaNs along with the signed Infinities as requiring a FLT result.
+
+
 Build #2000 -- Version 0.6.0.xx
 -------------------------------
 

@@ -798,9 +798,20 @@ RESTART_EXCEPTION:
                             int               i;
 
                             case ARRAY_NESTED:
-                                // Save in the result as an HGLOBAL
-                                ((LPAPLNESTED) lpMemRes)[uRht] = CopySymGlbDir_PTB (tkLftArg.tkData.tkGlbData);
+                                // See if it fits into a lower (but not necessarily smaller) datatype
+                                TypeDemote (&tkLftArg, FALSE);
 
+                                // If we demoted the data too far, ...
+                                if (IsTknImmed (&tkLftArg))
+                                {
+                                    // Save in the result as a LPSYMENTRY
+                                    ((LPAPLNESTED) lpMemRes)[uRht] =
+                                      MakeSymEntry_EM (tkLftArg.tkFlags.ImmType,    // Immediate type
+                                                      &tkLftArg.tkData.tkLongest,   // Ptr to immediate value
+                                                      &lpYYFcnStrOpr->tkToken);     // Ptr to function token
+                                } else
+                                    // Save in the result as an HGLOBAL
+                                    ((LPAPLNESTED) lpMemRes)[uRht] = CopySymGlbDir_PTB (tkLftArg.tkData.tkGlbData);
                                 break;
 
                             default:

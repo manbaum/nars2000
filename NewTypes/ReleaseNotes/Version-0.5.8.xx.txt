@@ -1,6 +1,17 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #2001 -- Version 0.5.8.xx
+-------------------------------
+
+* TypeDemote Nested Scan Data
+
+Directory branches/bsmith/NewTypes:
+
+PO_SLOPE.C:
+  TypeDemote intermediate results of nested Scans, but not so far as to an immediate.
+
+
 Build #1999 -- Version 0.5.8.xx
 -------------------------------
 

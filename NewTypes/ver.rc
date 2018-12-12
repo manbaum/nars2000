@@ -27,7 +27,9 @@
 
 #include <winver.h>
 #include "version.rc"
+#define NOQUADA
 #include "defines.h"
+#undef  NOQUADA
 
 #define VER_MAJOR                   0   // 0.x.x.x
 #define VER_MAJOR_STR               "0"

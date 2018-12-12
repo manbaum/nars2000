@@ -205,28 +205,16 @@ void MakePermVars
 
     hGlbQuada = CreateQuadA (L"abcdefghijklmnopqrstuvwxyz");
     hGlbQuadA = CreateQuadA (L"ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-    //                            A     B     C     D     E     F     G     H     I     J     K    L     M
-    //                            N     O     P     Q     R     S     T     U     V     W     X    Y     Z
-    hGlbQuadâ = CreateQuadA (L"\x00E2\x0062\x0109\x0064\x00EA\x0066\x011D\x0125\x00EE\x0135\x006B\x006C\x006D"
-                             L"\x006E\x00F4\x0070\x0071\x0072\x0073\x0074\x0075\x0076\x0077\x0078\x0079\x007A");
-    hGlbQuadÂ = CreateQuadA (L"\x00C2\x0042\x0108\x0044\x00CA\x0046\x011C\x0124\x00CE\x0134\x004B\x004C\x004D"
-                             L"\x004E\x00D4\x0050\x0051\x0052\x015C\x0054\x00DB\x0056\x0174\x0058\x0176\x1E90");
-    hGlbQuadä = CreateQuadA (L"\x00E4\x0062\x0063\x0064\x00EB\x0066\x0067\x1E27\x00EF\x006A\x006B\x006C\x006D"
-                             L"\x006E\x00F6\x0070\x0071\x0072\x0073\x1E97\x00FC\x0076\x1E85\x1E8D\x00FF\x007A");
-    hGlbQuadÄ = CreateQuadA (L"\x00C4\x0042\x0043\x0044\x00CB\x0046\x0047\x1E26\x00CF\x004A\x004B\x004C\x004D"
-                             L"\x004E\x00D6\x0050\x0051\x0052\x0053\x0054\x00DC\x0056\x1E84\x1E8C\x0178\x005A");
-    hGlbQuadá = CreateQuadA (L"\x00E1\x0062\x0107\x0064\x00E9\x0066\x01F5\x0068\x00ED\x006A\x1E31\x013A\x1E3F"
-                             L"\x0144\x00F3\x1E55\x0071\x0155\x015B\x0074\x00FA\x0076\x1E83\x0078\x00FD\x017A");
-    hGlbQuadÁ = CreateQuadA (L"\x00C1\x0042\x0106\x0044\x00C9\x0046\x01F4\x0048\x00CD\x004A\x1E30\x0139\x1E3E"
-                             L"\x0143\x00D3\x1E54\x0051\x0154\x015A\x0054\x00DA\x0056\x1E82\x0058\x00DD\x0179");
-    hGlbQuadà = CreateQuadA (L"\x00E0\x0062\x0063\x0064\x00E8\x0066\x0067\x0068\x00EC\x006A\x006B\x006C\x006D"
-                             L"\x01F9\x00F2\x0070\x0071\x0072\x0073\x0074\x00F9\x0076\x1E81\x0078\x1EF3\x007A");
-    hGlbQuadÀ = CreateQuadA (L"\x00C0\x0042\x0043\x0044\x00C8\x0046\x0047\x0048\x00CC\x004A\x004B\x004C\x004D"
-                             L"\x01F8\x00D2\x0050\x0051\x0052\x0053\x0054\x00D9\x0056\x1E80\x0058\x1EF2\x005A");
-    hGlbQuadã = CreateQuadA (L"\x00E3\x0062\x0063\x0064\x1EBD\x0066\x0067\x0068\x0129\x006A\x006B\x006C\x006D"
-                             L"\x00F1\x00F5\x0070\x0071\x0072\x0073\x0074\x0169\x1E7D\x0077\x0078\x1EF9\x007A");
-    hGlbQuadÃ = CreateQuadA (L"\x00C3\x0042\x0043\x0044\x1EBC\x0046\x0047\x0048\x0128\x004A\x004B\x004C\x004D"
-                             L"\x00D1\x00D5\x0050\x0051\x0052\x0053\x0054\x0168\x1E7C\x0057\x0058\x1EF8\x005A");
+    hGlbQuadâ = CreateQuadA (WQUADâ);
+    hGlbQuadÂ = CreateQuadA (WQUADÂ);
+    hGlbQuadä = CreateQuadA (WQUADä);
+    hGlbQuadÄ = CreateQuadA (WQUADÄ);
+    hGlbQuadá = CreateQuadA (WQUADá);
+    hGlbQuadÁ = CreateQuadA (WQUADÁ);
+    hGlbQuadà = CreateQuadA (WQUADà);
+    hGlbQuadÀ = CreateQuadA (WQUADÀ);
+    hGlbQuadã = CreateQuadA (WQUADã);
+    hGlbQuadÃ = CreateQuadA (WQUADÃ);
 
     //***************************************************************
     // Create []D

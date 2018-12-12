@@ -1,0 +1,23 @@
+Build #1999 -- Version 0.5.8.xx
+-------------------------------
+
+* Allow Accented Chars In []EX, )ERASE, etc.
+
+Directory branches/bsmith/NewTypes:
+
+DEFINES.H:
+  Surround the #include "defines.h" with #ifndef NOQUADA/#endif to avoid problems with the Resource Compiler.
+  Split out the accented alphabets into separate #defines.
+
+MAIN.RC:
+VER.RC:
+  Surround the #include "defines.h" with #ifndef NOQUADA/#endif to avoid problems with the Resource Compiler.
+
+QF_A.C:
+  Improve comments.
+
+QF_NC.C:
+  ASlow accented chars in []EX, )ERASE, etc.
+
+SYSVARS.C:
+  Split out the accented alphabets into separate #defines.

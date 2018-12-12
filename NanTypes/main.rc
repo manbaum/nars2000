@@ -24,7 +24,9 @@
 #include "resource.h"
 #include "Unicode.h"
 #include "classnames.h"
+#define NOQUADA
 #include "defines.h"
+#undef  NOQUADA
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////

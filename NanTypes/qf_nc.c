@@ -374,13 +374,24 @@ UBOOL IsValid1stCharInName
     (WCHAR wch)
 
 {
-    return (wch EQ UTF16_DELTA
-         || wch EQ UTF16_DELTAUNDERBAR
-         || wch EQ UTF16_UNDERBAR
-         || (L'a' <= wch
-          &&         wch <= L'z')
-         || (L'A' <= wch
-          &&         wch <= L'Z'));
+    return (wch NE WC_EOS
+         && (wch EQ UTF16_DELTA
+          || wch EQ UTF16_DELTAUNDERBAR
+          || wch EQ UTF16_UNDERBAR
+          || strchrW (WQUADa, wch) NE NULL
+          || strchrW (WQUADA, wch) NE NULL
+          || strchrW (WQUADâ, wch) NE NULL
+          || strchrW (WQUADÂ, wch) NE NULL
+          || strchrW (WQUADä, wch) NE NULL
+          || strchrW (WQUADÄ, wch) NE NULL
+          || strchrW (WQUADá, wch) NE NULL
+          || strchrW (WQUADÁ, wch) NE NULL
+          || strchrW (WQUADà, wch) NE NULL
+          || strchrW (WQUADÀ, wch) NE NULL
+          || strchrW (WQUADã, wch) NE NULL
+          || strchrW (WQUADÃ, wch) NE NULL
+            )
+           );
 } // End IsValid1stCharInName
 
 

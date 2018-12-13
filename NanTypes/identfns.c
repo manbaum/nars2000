@@ -87,7 +87,7 @@ GLBSYM GetIdentityElement_EM
 
         // Check for error
         if (lpPrimProtoRht EQ NULL)
-            goto RIGHT_NONCE_EXIT;
+            goto RIGHT_DOMAIN_EXIT;
 
         // Reshape the left arg item to an empty vector
         lpYYResL =
@@ -178,7 +178,7 @@ GLBSYM GetIdentityElement_EM
 
     // Check for error
     if (lpPrimFlagsLft EQ NULL || lpPrimFlagsLft->lpPrimOps EQ NULL)
-        goto LEFT_NONCE_EXIT;
+        goto LEFT_DOMAIN_EXIT;
 
     lpYYRes =
       (*lpPrimFlagsLft->lpPrimOps)
@@ -210,13 +210,13 @@ GLBSYM GetIdentityElement_EM
 
     goto NORMAL_EXIT;
 
-LEFT_NONCE_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+LEFT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrLft->tkToken);
     goto ERROR_EXIT;
 
-RIGHT_NONCE_EXIT:
-    ErrorMessageIndirectToken (ERRMSG_NONCE_ERROR APPEND_NAME,
+RIGHT_DOMAIN_EXIT:
+    ErrorMessageIndirectToken (ERRMSG_DOMAIN_ERROR APPEND_NAME,
                               &lpYYFcnStrRht->tkToken);
     goto ERROR_EXIT;
 

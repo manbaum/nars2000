@@ -1,0 +1,9 @@
+Build #2006 -- Version 0.6.0.xx
+-------------------------------
+
+* In <GetIdentityElement_EM>, Signal DOMAIN ERROR If No Identity Element
+
+Directory branches/bsmith/NanTypes:
+
+IDENTFNS.C:
+  In <GetIdentityElement_EM>, change NONCE to DOMAIN error.

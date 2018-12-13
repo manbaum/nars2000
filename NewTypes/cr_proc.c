@@ -259,7 +259,7 @@ UBOOL crExit
                                  ICNDX_0DIV0,
                                  lpcrLocalVars->mpqMul,
                                  lpcrLocalVars->mpqRes,
-                                 FALSE);
+                                 FALSE);                                // MPIR does not support -0
             else
             // Check for indeterminates:  L {div} 0
             if (mpq_zero_p (lpcrLocalVars->mpqMul))
@@ -268,7 +268,7 @@ UBOOL crExit
                                  ICNDX_DIV0,
                                  lpcrLocalVars->mpqMul,
                                  lpcrLocalVars->mpqRes,
-                                 FALSE);
+                                 mpq_sgn (lpcrLocalVars->mpqRes) < 0);  // MPIR does not support -0
             else
             // Check for indeterminates:  _ {div} _ (same or different signs)
             if (mpq_inf_p (lpcrLocalVars->mpqRes)

@@ -256,6 +256,7 @@
 #define plRedNDX_SPA    plRedIDX_SPA
 
 #define plRedF_ISPA     plRedF_SPA
+#define plRedF_SPNF     plRedF_SPA
 
 #define STRICT
 #include <windows.h>
@@ -3378,7 +3379,7 @@ ERROR_EXIT:
 //***************************************************************************
 //  $plRedF_SPA
 //
-//  Reduce "F SPA" and "F ISPA"
+//  Reduce "F SPA", "F ISPA", and "F SPNF"
 //***************************************************************************
 
 LPPL_YYSTYPE plRedF_SPA
@@ -3391,6 +3392,18 @@ LPPL_YYSTYPE plRedF_SPA
     LPPL_YYSTYPE lpYYRes;               // Ptr to the result
 
     Assert (lpplYYLstRht->lpplYYFcnCurry EQ NULL);
+
+    // If the last right object is a niladic function, ...
+    if (lpplYYLstRht->tkToken.tkSynObj EQ soSPNF)
+    {
+        // Execute the niladic function returning an array
+        lpplYYLstRht =
+          plExecuteFn0 (lpplYYLstRht);
+
+        // Check for error
+        if (lpplYYLstRht EQ NULL)
+            goto ERROR_EXIT;
+    } // End IF
 
     // Unstrand the function if appropriate
     UnFcnStrand_EM (&lpplYYCurObj, NAMETYPE_FN12, FALSE);
@@ -3405,6 +3418,23 @@ LPPL_YYSTYPE plRedF_SPA
     lpYYRes->tkToken.tkSynObj = soType;
 
     return lpYYRes;
+ERROR_EXIT:
+    // If there is a curried fcn, ...
+    if (lpplYYLstRht->lpplYYFcnCurry NE NULL)
+    {
+        // If the curried function is not an AFO, ...
+        if (!IsTknAFO (&lpplYYLstRht->lpplYYFcnCurry->tkToken))
+            // Free it recursively
+            FreeResult (lpplYYLstRht->lpplYYFcnCurry);
+
+        // YYFree it
+        YYFree (lpplYYLstRht->lpplYYFcnCurry); lpplYYLstRht->lpplYYFcnCurry = NULL;
+    } // End IF
+
+    // YYFree the last right object
+    YYFree (lpplYYLstRht); lpplYYLstRht = NULL; // lstSynObj = soNONE;
+
+    return NULL;
 } // End plRedF_SPA
 
 

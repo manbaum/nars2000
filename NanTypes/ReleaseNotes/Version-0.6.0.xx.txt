@@ -1,6 +1,17 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2012 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix A Bug Where A Type Promotion Can Crash Because We're Freeing An Incomplete Var
+
+Directory branches/bsmith/NanTypes:
+
+PRIMSPEC.C:
+  In <PrimFnDydSiScSiScSub_EM>, if a type promotion occurs, free the result as an incomplete var.
+
+
 Build #2010 -- Version 0.6.0.xx
 -------------------------------
 

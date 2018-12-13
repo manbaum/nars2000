@@ -1,0 +1,11 @@
+Build #2005 -- Version 0.5.8.xx
+-------------------------------
+
+* Implement Missing Syntax NAM F {is} NF
+
+Directory branches/bsmith/NewTypes:
+
+PARSELINE.C:
+PARSELINE.H:
+  Implement missing syntax NAM F {is} NF.
+  Use WFCN instead of the literal function name.

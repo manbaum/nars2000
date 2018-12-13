@@ -1,6 +1,18 @@
 Version 0.5.8.xx consists of the following Builds:
 
 
+Build #2015 -- Version 0.5.8.xx
+-------------------------------
+
+* Update Download Page For Workspaces And Alpha Version
+
+Directory branches/bsmith/NewTypes/htdocs/download:
+
+DOWNLOAD-BODY.PHP:
+DOWNLOAD-LEFT.HTML:
+  Update download page for Alpha version now contains Ball Arithmetic, and new section on Workspaces.
+
+
 Build #2013 -- Version 0.5.8.xx
 -------------------------------
 

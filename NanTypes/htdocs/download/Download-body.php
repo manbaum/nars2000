@@ -191,13 +191,27 @@ Downloads</h1>
   <h2 id="Alpha_Versions">Alpha Versions</h2>
 
   <p>For the latest (<b>unreleased</b>) version that implements
-    <a class="pdfLeft" href="http://www.sudleyplace.com/APL/HyperComplex%20Numbers%20in%20APL.pdf">Hypercomplex
-    Numbers</a>, goto the <a class="linkleft" href="binaries/alpha">alpha</a>
+    <a class="linkleft" href="http://wiki.nars2000.org/index.php/Ball_Arithmetic">Ball
+    Arithmetic</a>, goto the <a class="linkleft" href="binaries/alpha">alpha</a>
     directory and download either the 32- or 64-bit file.  This is an executable Setup file which you might want
     to install into a directory separate from
     the released installation so as to leave the latter unaffected.  As with the released version, please
     report any bugs to the Bug Report section of the NARS2000
-    <a class="linkleft" href="http://forum.nars2000.org/viewforum.php?f=12">Forum</a>.</p>
+    <a class="linkleft" href="http://forum.nars2000.org/ball-arithmetic-f23/">Forum</a>.</p>
+</div>
+
+<div class="section">
+  <h2 id="Workspaces">Workspaces</h2>
+
+  <ul>
+    <li><a href="workspaces/2by2.ws.nars">2by2</a> contains an APL program that matches the parser used in NARS2000.
+      It is much easier to test and trace syntax analysis via an APL program than it is to debug a C program.</li>
+    <li><a href="workspaces/TwelveFold.ws.nars">Twelve Fold Way</a> contains an APL program that implements the NARS2000
+      APL Combinatorial Operator (<apll>a&#x203C;R</apll>).</li>
+    <li><a href="workspaces/trains.ws.nars">Trains</a> contains a set of tests for the Train function.</li>
+  </ul>
+
+  <p>To load one of these workspacces, right-click on the link, save it to your local system, and then <apll>)LOAD</apll> it from NARS2000.
 </div>
 
 <div class="section">

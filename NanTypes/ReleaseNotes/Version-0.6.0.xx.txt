@@ -1,6 +1,18 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2014 -- Version 0.6.0.xx
+-------------------------------
+
+* Update Download Page For Workspaces And Alpha Version
+
+Directory branches/bsmith/NanTypes/htdocs/download:
+
+DOWNLOAD-BODY.PHP:
+DOWNLOAD-LEFT.HTML:
+  Update download page for Alpha version now contains Ball Arithmetic, and new section on Workspaces.
+
+
 Build #2012 -- Version 0.6.0.xx
 -------------------------------
 

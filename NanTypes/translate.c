@@ -1226,10 +1226,16 @@ APLFLOAT TranslateQuadICIndex
             return fltNaN;
 
         case ICVAL_LEFT:
-            return bNegate ? -aplFloatLft : aplFloatLft;
+            return bNegate ? (aplFloatLft EQ 0.0 ? (gAllowNeg0 ? -0.0
+                                                               :  0.0)
+                                                 : -aplFloatLft)
+                           : aplFloatLft;
 
         case ICVAL_RIGHT:
-            return bNegate ? -aplFloatRht : aplFloatRht;
+            return bNegate ? (aplFloatRht EQ 0.0 ? (gAllowNeg0 ? -0.0
+                                                               :  0.0)
+                                                 : -aplFloatRht)
+                           : aplFloatRht;
 
         defstop
             return (gAllowNeg0 && bNegate) ? -0.0 : 0.0;

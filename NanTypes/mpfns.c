@@ -686,7 +686,7 @@ void Myz_clear
 //  Return the appropriate []IC value
 //***************************************************************************
 
-void mpq_QuadICValue
+UBOOL mpq_QuadICValue
     (LPAPLRAT   aplRatLft,          // Left arg
      IC_INDICES icIndex,            // []IC index
      LPAPLRAT   aplRatRht,          // Right arg
@@ -694,22 +694,24 @@ void mpq_QuadICValue
      UBOOL      bNegate)            // TRUE iff we should negate result
 
 {
+    UBOOL bRet = TRUE;
+
     switch (GetQuadICValue (icIndex))
     {
         case ICVAL_NEG1:
-            // Initialize the result to -1
+            // Initialize the result to -1/1
             mpq_init_set_si (mpqRes, -1, 1);
 
             break;
 
         case ICVAL_ZERO:
-            // Initialize the result to 0
+            // Initialize the result to 0/1
             mpq_init (mpqRes);
 
             break;
 
         case ICVAL_ONE:
-            // Initialize the result to 1
+            // Initialize the result to 1/1
             mpq_init_set_si (mpqRes,  1, 1);
 
             break;
@@ -718,17 +720,19 @@ void mpq_QuadICValue
             RaiseException (EXCEPTION_DOMAIN_ERROR, 0, 0, NULL);
 
         case ICVAL_POS_INFINITY:
+            // Initialize to +{Infinity}
             mpq_init_set (mpqRes, &mpqPosInfinity);
 
             break;
 
         case ICVAL_NEG_INFINITY:
+            // Initialize to -{Infinity}
             mpq_init_set (mpqRes, &mpqNegInfinity);
 
             break;
 
         case ICVAL_NAN:
-            // Initialize to a NaN
+            // Initialize to NaN
             mpq_set_nan (mpqRes);
 
             break;
@@ -749,7 +753,14 @@ void mpq_QuadICValue
 
     // If we should negate, ...
     if (bNegate)
+    {
+        // Tell the caller whether or not the result fits
+        bRet = !(IsMpq0 (mpqRes) && gAllowNeg0);
+
         mpq_neg (mpqRes, mpqRes);
+    } // End IF
+
+    return bRet;
 } // End mpq_QuadICValue
 
 

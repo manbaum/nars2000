@@ -415,12 +415,11 @@ void PrimFnMonColonBarBA1FisBA1F
 
     // Check for indeterminates:  {div} 0
     if (IsArb0 (&lpatRht->aplArb))
-        lpMemRes[uRes] =
-          *arb_QuadICValue (&lpatRht->aplArb,       // No left arg
-                             ICNDX_DIV0,
-                            &lpatRht->aplArb,
-                            &lpMemRes[uRes],
-                             SIGN_APLARB (&lpatRht->aplArb));
+        arb_QuadICValue (&lpatRht->aplArb,          // No left arg
+                          ICNDX_DIV0,
+                         &lpatRht->aplArb,
+                         &lpMemRes[uRes],
+                          SIGN_APLARB (&lpatRht->aplArb));
     else
     {
         // Initialize the result to 0/0
@@ -721,12 +720,11 @@ void PrimFnMonColonBarBA2FisBA2F
     // If the denominator is 0, ...
     if (IsArb0 (&aplDen))
     {
-        lpMemRes[uRes].parts[0] =
-          *arb_QuadICValue (&lpatRht->aplBA2F.parts[0],     // No left arg
-                             ICNDX_DIV0,
-                            &lpatRht->aplBA2F.parts[0],
-                            &lpMemRes[uRes].parts[0],
-                             FALSE);
+        arb_QuadICValue (&lpatRht->aplBA2F.parts[0],    // No left arg
+                          ICNDX_DIV0,
+                         &lpatRht->aplBA2F.parts[0],
+                         &lpMemRes[uRes].parts[0],
+                          FALSE);
         // Loop through the imaginary parts
         for (i = 1; i < 2; i++)
             // Initialize to 0/0
@@ -1050,12 +1048,11 @@ void PrimFnMonColonBarBA4FisBA4F
     // If the denominator is 0, ...
     if (IsArb0 (&aplDen))
     {
-        lpMemRes[uRes].parts[0] =
-          *arb_QuadICValue (&lpatRht->aplBA4F.parts[0],     // No left arg
-                             ICNDX_DIV0,
-                            &lpatRht->aplBA4F.parts[0],
-                            &lpMemRes[uRes].parts[0],
-                             FALSE);
+        arb_QuadICValue (&lpatRht->aplBA4F.parts[0],    // No left arg
+                          ICNDX_DIV0,
+                         &lpatRht->aplBA4F.parts[0],
+                         &lpMemRes[uRes].parts[0],
+                          FALSE);
         // Loop through the imaginary parts
         for (i = 1; i < 4; i++)
             // Initialize to 0/0
@@ -1379,12 +1376,11 @@ void PrimFnMonColonBarBA8FisBA8F
     // If the denominator is 0, ...
     if (IsArb0 (&aplDen))
     {
-        lpMemRes[uRes].parts[0] =
-          *arb_QuadICValue (&lpatRht->aplBA8F.parts[0],     // No left arg
-                             ICNDX_DIV0,
-                            &lpatRht->aplBA8F.parts[0],
-                            &lpMemRes[uRes].parts[0],
-                             FALSE);
+        arb_QuadICValue (&lpatRht->aplBA8F.parts[0],    // No left arg
+                          ICNDX_DIV0,
+                         &lpatRht->aplBA8F.parts[0],
+                         &lpMemRes[uRes].parts[0],
+                          FALSE);
         // Loop through the imaginary parts
         for (i = 1; i < 8; i++)
             // Initialize to 0/0
@@ -1848,44 +1844,38 @@ APLBA1F DivBA1F_RE
     // Check for indeterminates:  0 {div} 0
     if (IsArb0 (&aplLft)
      && IsArb0 (&aplRht))
-    {
-        aplRes =
-          *arb_QuadICValue (&aplLft,
-                             ICNDX_0DIV0,
-                            &aplRht,
-                            &aplRes,
-                             SIGN_APLARB (&aplLft) NE
-                             SIGN_APLARB (&aplRht));
-    } else
+        arb_QuadICValue (&aplLft,
+                          ICNDX_0DIV0,
+                         &aplRht,
+                         &aplRes,
+                          SIGN_APLARB (&aplLft) NE
+                          SIGN_APLARB (&aplRht));
+    else
     // Check for indeterminates:  L {div} 0
     if (IsArb0 (&aplRht))
-    {
-        aplRes =
-          *arb_QuadICValue (&aplLft,
-                             ICNDX_DIV0,
-                            &aplRht,
-                            &aplRes,
-                             SIGN_APLARB (&aplLft) NE
-                             SIGN_APLARB (&aplRht));
-    } else
+        arb_QuadICValue (&aplLft,
+                          ICNDX_DIV0,
+                         &aplRht,
+                         &aplRes,
+                          SIGN_APLARB (&aplLft) NE
+                          SIGN_APLARB (&aplRht));
+    else
     // Check for indeterminates:  _ {div} _ (same or different signs)
     if (arf_is_inf (arb_midref (&aplLft))
      && arf_is_inf (arb_midref (&aplRht)))
     {
         if (arb_is_positive (&aplLft) EQ arb_is_positive (&aplRht))
-            aplRes =
-              *arb_QuadICValue (&aplLft,
-                                 ICNDX_PiDIVPi,
-                                &aplRht,
-                                &aplRes,
-                                 FALSE);
+            arb_QuadICValue (&aplLft,
+                              ICNDX_PiDIVPi,
+                             &aplRht,
+                             &aplRes,
+                              FALSE);
         else
-            aplRes =
-              *arb_QuadICValue (&aplLft,
-                                 ICNDX_NiDIVPi,
-                                &aplRht,
-                                &aplRes,
-                                 FALSE);
+            arb_QuadICValue (&aplLft,
+                              ICNDX_NiDIVPi,
+                             &aplRht,
+                             &aplRes,
+                              FALSE);
     } else
     {
         mp_limb_signed_t prec = ARB_PREC_FPC;
@@ -2452,23 +2442,21 @@ APLBA2F DivBA2F_RE
     if (IsArb0 (&aplNum.parts[i])
      && IsArb0 (&aplDen))
     {
-        arb_set (&aplRes.parts[0],
-                  arb_QuadICValue (&aplLft.parts[i],
-                                    ICNDX_0DIV0,
-                                   &aplRht.parts[i],
-                                   &aplRes.parts[0],
-                                    FALSE));
+        arb_QuadICValue (&aplLft.parts[i],
+                          ICNDX_0DIV0,
+                         &aplRht.parts[i],
+                         &aplRes.parts[0],
+                          FALSE);
         break;
     } else
     // Check for indeterminates:  L {div} 0
     if (IsArb0 (&aplDen))
     {
-        arb_set (&aplRes.parts[0],
-                  arb_QuadICValue (&aplLft.parts[i],
-                                    ICNDX_DIV0,
-                                   &aplRht.parts[i],
-                                   &aplRes.parts[0],
-                                    FALSE));
+        arb_QuadICValue (&aplLft.parts[i],
+                          ICNDX_DIV0,
+                         &aplRht.parts[i],
+                         &aplRes.parts[0],
+                          FALSE);
         break;
     } else
     // Check for indeterminates:  _ {div} _ (same or different signs)
@@ -2476,19 +2464,17 @@ APLBA2F DivBA2F_RE
      && arf_is_inf (arb_midref (&aplDen)))
     {
         if (arb_is_positive (&aplLft.parts[i]) EQ arb_is_positive (&aplRht.parts[i]))
-            arb_set (&aplRes.parts[0],
-                     arb_QuadICValue (&aplLft.parts[i],
-                                       ICNDX_PiDIVPi,
-                                      &aplRht.parts[i],
-                                      &aplRes.parts[0],
-                                       FALSE));
+            arb_QuadICValue (&aplLft.parts[i],
+                              ICNDX_PiDIVPi,
+                             &aplRht.parts[i],
+                             &aplRes.parts[0],
+                              FALSE);
         else
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[i],
-                                        ICNDX_NiDIVPi,
-                                       &aplRht.parts[i],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[i],
+                              ICNDX_NiDIVPi,
+                             &aplRht.parts[i],
+                             &aplRes.parts[0],
+                              FALSE);
         break;
     } else
     {
@@ -3097,23 +3083,21 @@ APLBA4F DivBA4F_RE
     if (IsArb0 (&aplNum.parts[i])
      && IsArb0 (&aplDen))
     {
-        arb_set (&aplRes.parts[0],
-                  arb_QuadICValue (&aplLft.parts[i],
-                                    ICNDX_0DIV0,
-                                   &aplRht.parts[i],
-                                   &aplRes.parts[0],
-                                    FALSE));
+        arb_QuadICValue (&aplLft.parts[i],
+                          ICNDX_0DIV0,
+                         &aplRht.parts[i],
+                         &aplRes.parts[0],
+                          FALSE);
         break;
     } else
     // Check for indeterminates:  L {div} 0
     if (IsArb0 (&aplDen))
     {
-        arb_set (&aplRes.parts[0],
-                  arb_QuadICValue (&aplLft.parts[i],
-                                    ICNDX_DIV0,
-                                   &aplRht.parts[i],
-                                   &aplRes.parts[0],
-                                    FALSE));
+        arb_QuadICValue (&aplLft.parts[i],
+                          ICNDX_DIV0,
+                         &aplRht.parts[i],
+                         &aplRes.parts[0],
+                          FALSE);
         break;
     } else
     // Check for indeterminates:  _ {div} _ (same or different signs)
@@ -3121,19 +3105,17 @@ APLBA4F DivBA4F_RE
      && arf_is_inf (arb_midref (&aplDen)))
     {
         if (arb_is_positive (&aplLft.parts[i]) EQ arb_is_positive (&aplRht.parts[i]))
-            arb_set (&aplRes.parts[0],
-                     arb_QuadICValue (&aplLft.parts[i],
-                                       ICNDX_PiDIVPi,
-                                      &aplRht.parts[i],
-                                      &aplRes.parts[0],
-                                       FALSE));
+            arb_QuadICValue (&aplLft.parts[i],
+                              ICNDX_PiDIVPi,
+                             &aplRht.parts[i],
+                             &aplRes.parts[0],
+                              FALSE);
         else
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[i],
-                                        ICNDX_NiDIVPi,
-                                       &aplRht.parts[i],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[i],
+                              ICNDX_NiDIVPi,
+                             &aplRht.parts[i],
+                             &aplRes.parts[0],
+                              FALSE);
         break;
     } else
     {
@@ -3742,23 +3724,21 @@ APLBA8F DivBA8F_RE
     if (IsArb0 (&aplNum.parts[i])
      && IsArb0 (&aplDen))
     {
-        arb_set (&aplRes.parts[0],
-                  arb_QuadICValue (&aplLft.parts[i],
-                                    ICNDX_0DIV0,
-                                   &aplRht.parts[i],
-                                   &aplRes.parts[0],
-                                    FALSE));
+        arb_QuadICValue (&aplLft.parts[i],
+                          ICNDX_0DIV0,
+                         &aplRht.parts[i],
+                         &aplRes.parts[0],
+                          FALSE);
         break;
     } else
     // Check for indeterminates:  L {div} 0
     if (IsArb0 (&aplDen))
     {
-        arb_set (&aplRes.parts[0],
-                  arb_QuadICValue (&aplLft.parts[i],
-                                    ICNDX_DIV0,
-                                   &aplRht.parts[i],
-                                   &aplRes.parts[0],
-                                    FALSE));
+        arb_QuadICValue (&aplLft.parts[i],
+                          ICNDX_DIV0,
+                         &aplRht.parts[i],
+                         &aplRes.parts[0],
+                          FALSE);
         break;
     } else
     // Check for indeterminates:  _ {div} _ (same or different signs)
@@ -3766,19 +3746,17 @@ APLBA8F DivBA8F_RE
      && arf_is_inf (arb_midref (&aplDen)))
     {
         if (arb_is_positive (&aplLft.parts[i]) EQ arb_is_positive (&aplRht.parts[i]))
-            arb_set (&aplRes.parts[0],
-                     arb_QuadICValue (&aplLft.parts[i],
-                                       ICNDX_PiDIVPi,
-                                      &aplRht.parts[i],
-                                      &aplRes.parts[0],
-                                       FALSE));
+            arb_QuadICValue (&aplLft.parts[i],
+                              ICNDX_PiDIVPi,
+                             &aplRht.parts[i],
+                             &aplRes.parts[0],
+                              FALSE);
         else
-            arb_set (&aplRes.parts[0],
-                      arb_QuadICValue (&aplLft.parts[i],
-                                        ICNDX_NiDIVPi,
-                                       &aplRht.parts[i],
-                                       &aplRes.parts[0],
-                                        FALSE));
+            arb_QuadICValue (&aplLft.parts[i],
+                              ICNDX_NiDIVPi,
+                             &aplRht.parts[i],
+                             &aplRes.parts[0],
+                              FALSE);
         break;
     } else
     {

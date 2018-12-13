@@ -3813,8 +3813,8 @@ void mpiq_div
     if (!mpq_inf_p (op1)
      && mpq_inf_p (op2))
     {
-        // If the sign of infinity (op2) is negative and we're allowing -0, ...
-        if (signumrat (op2) < 0
+        // If the sign of (op1) is different from the sign of infinity (op2), and we're allowing -0, ...
+        if ((signumrat (op1) < 0) NE (signumrat (op2) < 0)
          && gAllowNeg0)
             RaiseException (EXCEPTION_RESULT_VFP, 0, 0, NULL);
         else

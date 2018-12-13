@@ -268,7 +268,7 @@ UBOOL crExit
                                  ICNDX_DIV0,
                                  lpcrLocalVars->mpqMul,
                                  lpcrLocalVars->mpqRes,
-                                 FALSE);
+                                 mpq_sgn (lpcrLocalVars->mpqRes) < 0);
             else
             // Check for indeterminates:  _ {div} _ (same or different signs)
             if (mpq_inf_p (lpcrLocalVars->mpqRes)

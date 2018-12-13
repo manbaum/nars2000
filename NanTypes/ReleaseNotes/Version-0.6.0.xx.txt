@@ -1,6 +1,32 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2008 -- Version 0.6.0.xx
+-------------------------------
+
+* Handle -0 In More Cases
+
+Directory branches/bsmith/NanTypes:
+
+CR_PROC.C:
+  When calling <mpq_QuadICValue> or <mpfr_QuadICValue>, pass the sign in case the result is FLT.
+
+MPFNS.C:
+  In <mpq_QuadICValue>, improve comments.
+  In <mpq_QuadICValue>, return Boolean value in case the result should be -0 but MPIR doesn't support that representation.
+
+MPIFNS.C:
+  In <mpiq_div>, signal RESULT_VFP if the signs are different.
+
+PF_COLONBAR.C:
+  When calling <mpq_QuadICValue> or <mpfr_QuadICValue> , pass the sign in case the result is FLT.
+  If a call to <mpq_QuadICValue> returns FALSE, convert the result to VFP.
+  When dividing, if the imaginary parts are zero, treat as dividing by a single Real number.
+
+TRANSLATE.C:
+  In <TranslateQuadICValue>, handle -0 if allowed.
+
+
 Build #2006 -- Version 0.6.0.xx
 -------------------------------
 

@@ -1,0 +1,10 @@
+Build #2011 -- Version 0.5.8.xx
+-------------------------------
+
+* When Converting FLT to INT, Mark NaNs As Non-Integral
+
+Directory branches/bsmith/NewTypes:
+
+CONVERT.C:
+  In <FloatToAplint_CT>, handle NaNs as non-integral.
+  In <FloatTpAplint_SCT>, pass through to <FloatToAplint_CT>.

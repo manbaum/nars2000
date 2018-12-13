@@ -187,6 +187,16 @@ APLINT _FloatToAplint_CT
     if (lpbRet EQ NULL)
         lpbRet = &bRet;
 
+    // NaNs and Floats at or above 2*53 are by definition non-integral
+    if (!_finite (fFloat)
+     || fabs (fFloat) >= Float2Pow53)
+    {
+        // Mark as non-integral
+        *lpbRet = FALSE;
+
+        return (APLINT) fFloat;
+    } // End IF
+
     // Convert to an integer (rounding down)
     aplInteger = (APLINT) floor (fFloat);
 
@@ -230,16 +240,7 @@ APLINT FloatToAplint_SCT
      LPUBOOL  lpbRet)       // TRUE iff successful conversion
                             // (may be NULL if the caller isn't interested)
 {
-    // Floats at or above 2*53 are by definition non-integral
-    if (fabs (fFloat) >= Float2Pow53)
-    {
-        if (lpbRet)
-            // Mark as non-integral
-            *lpbRet = FALSE;
-
-        return (APLINT) fFloat;
-    } else
-        return _FloatToAplint_CT (fFloat, SYS_CT, lpbRet, TRUE);
+    return _FloatToAplint_CT (fFloat, SYS_CT, lpbRet, TRUE);
 } // End FloatToAplint_SCT
 
 

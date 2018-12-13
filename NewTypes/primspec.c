@@ -5426,7 +5426,7 @@ RESTART_EXCEPTION_IMMED:
                         } // End IF
 
                         // We no longer need this storage
-                        FreeResultGlobalVar (*lphGlbRes); *lphGlbRes = NULL;
+                        FreeResultGlobalIncompleteVar (*lphGlbRes); *lphGlbRes = NULL;
                     } // End IF
 
                     if (hGlbTmp NE NULL)

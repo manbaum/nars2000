@@ -1,0 +1,9 @@
+Build #2013 -- Version 0.5.8.xx
+-------------------------------
+
+* Fix A Bug Where A Type Promotion Can Crash Because We're Freeing An Incomplete Var
+
+Directory branches/bsmith/NewTypes:
+
+PRIMSPEC.C:
+  In <PrimFnDydSiScSiScSub_EM>, if a type promotion occurs, free the result as an incomplete var.

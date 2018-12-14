@@ -1168,6 +1168,12 @@ LPPL_YYSTYPE PrimOpMonDotCommon_EM_YY
             // We no longer need this storage
             acb_mat_clear (A);
 
+            // Point to the result
+            lpMemRes = &aplAcbRes;
+
+            // Set the immediate type
+            immTypeRes = TranslateArrayTypeToImmType (aplTypeRes);
+
             goto YYALLOC_EXIT;
         } // End ARRAY_BA2F
 
@@ -3860,7 +3866,7 @@ RESTART_INNERPROD_RES:
                         for (uRes = 0; uRes < aplNELMRes; uRes++)
                         {
                             // Initialize the result to 0/1
-                            mphcXr_init  (lpMemRes, iHCDimRes);
+                            mphcXr_init (lpMemRes, iHCDimRes);
 
                             // Set the real part of the result
                             mpq_set_ui (&((LPAPLHC8R) lpMemRes)->parts[0], lpPrimIdentLft->bIdentElem, 1);
@@ -4060,6 +4066,7 @@ RESTART_INNERPROD_RES:
                                               aplTypeRht,                   // Right arg storage type
                                              &atRht,                        // ...      as ALLTYPES
                                              &aplTypeNew,                   // New storage type
+                                              FALSE,                        // TRUE iff the outer <hGlbRes> is nested
                                               lpPrimSpecRht);               // Ptr to comparison function PRIMSPEC
                 // Free the old atLft
                 (*aTypeFree[aplTypeLft]) (&atLft, 0);
@@ -4192,6 +4199,7 @@ RESTART_INNERPROD_RES:
                                                   aplTypeCmpRht,            // Comparison or Reduction storage type
                                                  &atCmpRht,                 // Left arg as ALLTYPES
                                                  &aplTypeNew,               // New storage type
+                                                  FALSE,                    // TRUE iff the outer <hGlbRes> is nested
                                                   lpPrimSpecLft);           // Ptr to reduction function PRIMSPEC
                     // Free the old atCmpLft and atCmpRht
                     (*aTypeFree[aplTypeCmp]) (&atCmpLft, 0);

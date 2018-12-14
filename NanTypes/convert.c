@@ -1317,97 +1317,22 @@ int HeNe_cmpsub
 
 
 //***************************************************************************
-//  $hc2i_cmp
+//  $hcXi_cmp
 //
-//  Compare two HC2I values
+//  Compare two HCxI values
 //    returning -1, 0, 1
 //***************************************************************************
 
-int hc2i_cmp
-    (APLHC2I aplHC2ILft,            // Left arg float
-     APLHC2I aplHC2IRht)            // Right ...
-
-{
-    int i;
-
-    // Loop through all of the parts
-    for (i = 0; i < 2; i++)
-    // Split cases based upon the signum of the difference
-    switch (signumint (aplHC2ILft.parts[i]
-                     - aplHC2IRht.parts[i]))
-    {
-        case 1:
-            return  1;
-
-        case 0:
-            break;
-
-        case -1:
-            return -1;
-
-        defstop
-            break;
-    } // End FOR/SWITCH
-
-    // The numbers are equal
-    return 0;
-} // hc2i_cmp
-
-
-//***************************************************************************
-//  $hc4i_cmp
-//
-//  Compare two HC4I values
-//    returning -1, 0, 1
-//***************************************************************************
-
-int hc4i_cmp
-    (APLHC4I aplHC4ILft,            // Left arg float
-     APLHC4I aplHC4IRht)            // Right ...
-
-{
-    int i;
-
-    // Loop through all of the parts
-    for (i = 0; i < 4; i++)
-    // Split cases based upon the signum of the difference
-    switch (signumint (aplHC4ILft.parts[i]
-                     - aplHC4IRht.parts[i]))
-    {
-        case 1:
-            return  1;
-
-        case 0:
-            break;
-
-        case -1:
-            return -1;
-
-        defstop
-            break;
-    } // End FOR/SWITCH
-
-    // The numbers are equal
-    return 0;
-} // hc4i_cmp
-
-
-//***************************************************************************
-//  $hc8i_cmp
-//
-//  Compare two HC8I values
-//    returning -1, 0, 1
-//***************************************************************************
-
-int hc8i_cmp
+int hcXi_cmp
     (APLHC8I aplHC8ILft,            // Left arg float
-     APLHC8I aplHC8IRht)            // Right ...
+     APLHC8I aplHC8IRht,            // Right ...
+     int      iHCDim)               // Common dimension (1, 2, 4, 8)
 
 {
     int i;
 
     // Loop through all of the parts
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < iHCDim; i++)
     // Split cases based upon the signum of the difference
     switch (signumint (aplHC8ILft.parts[i]
                      - aplHC8IRht.parts[i]))
@@ -1427,7 +1352,144 @@ int hc8i_cmp
 
     // The numbers are equal
     return 0;
+} // hcXi_cmp
+
+
+//***************************************************************************
+//  $hc2i_cmp
+//
+//  Compare two HC2I values
+//    returning -1, 0, 1
+//***************************************************************************
+
+int hc2i_cmp
+    (APLHC2I aplHC2ILft,            // Left arg float
+     APLHC2I aplHC2IRht)            // Right ...
+
+{
+    return hcXi_cmp (*(LPAPLHC8I) &aplHC2ILft,
+                     *(LPAPLHC8I) &aplHC2IRht,
+                      2);
+} // End hc2i_cmp
+
+
+//***************************************************************************
+//  $hc4i_cmp
+//
+//  Compare two HC4I values
+//    returning -1, 0, 1
+//***************************************************************************
+
+int hc4i_cmp
+    (APLHC4I aplHC4ILft,            // Left arg float
+     APLHC4I aplHC4IRht)            // Right ...
+
+{
+    return hcXi_cmp (*(LPAPLHC8I) &aplHC4ILft,
+                     *(LPAPLHC8I) &aplHC4IRht,
+                      4);
+} // hc4i_cmp
+
+
+//***************************************************************************
+//  $hc8i_cmp
+//
+//  Compare two HC8I values
+//    returning -1, 0, 1
+//***************************************************************************
+
+int hc8i_cmp
+    (APLHC8I aplHC8ILft,            // Left arg float
+     APLHC8I aplHC8IRht)            // Right ...
+
+{
+    return hcXi_cmp (aplHC8ILft,
+                     aplHC8IRht,
+                     8);
 } // hc8i_cmp
+
+
+//***************************************************************************
+//  $hcXf_cmp
+//
+//  Compare two HCxF values
+//    returning -1, 0, 1
+//  Because this is a Complex number, there is no total order, but for the
+//    purposes of grading, we impose an arbitrary order on it.
+//***************************************************************************
+
+int hcXf_cmp
+    (APLHC8F  aplHC8FLft,           // Left arg float
+     APLHC8F  aplHC8FRht,           // Right ...
+     int      iHCDim,               // Common dimension (1, 2, 4, 8)
+     APLFLOAT fQuadCT)              // []CT (0 = exact comparison)
+
+{
+    int i;
+
+    // Loop through all of the parts
+    for (i = 0; i < iHCDim; i++)
+    // Split cases based upon the finite state of the args
+    switch (2 * _finite (aplHC8FLft.parts[i]) + 1 * _finite (aplHC8FRht.parts[i]))
+    {
+        case 2 * 0 + 1 * 0:     // Lft = not finite, Rht = not finite
+            // Split cases based upon the signum of the difference
+            switch (signumflt (aplHC8FLft.parts[i]
+                             - aplHC8FRht.parts[i]))
+            {
+                case 1:
+                    return  1;
+
+                case 0:
+                    break;
+
+                case -1:
+                    return -1;
+
+                defstop
+                    break;
+            } // End SWITCH
+
+            break;
+
+        case 2 * 1 + 1 * 0:     // Lft = finite    , Rht = not finite
+            return -1;
+
+        case 2 * 0 + 1 * 1:     // Lft = not finite, Rht = finite
+            return  1;
+
+        case 2 * 1 + 1 * 1:     // Lft = finite    , Rht = finite
+            // If this comparison is inexact, ...
+            if (fQuadCT NE 0.0
+             && CmpCT_F (aplHC8FLft.parts[i], aplHC8FRht.parts[i], fQuadCT, EQ))
+                continue;
+            else
+            // Split cases based upon the signum of the difference
+            switch (signumflt (aplHC8FLft.parts[i]
+                             - aplHC8FRht.parts[i]))
+            {
+                case 1:
+                    return  1;
+
+                case 0:
+                    break;
+
+                case -1:
+                    return -1;
+
+                defstop
+                    break;
+            } // End IF/ELSE/SWITCH
+
+            break;
+
+        defstop
+            break;
+    } // End FOR/SWITCH
+
+    // The numbers are equal
+    return 0;
+} // End hcXf_cmp
 
 
 //***************************************************************************
@@ -1445,34 +1507,10 @@ int hc2f_cmp
      APLFLOAT fQuadCT)              // []CT (0 = exact comparison)
 
 {
-    int i;
-
-    // Loop through all of the parts
-    for (i = 0; i < 2; i++)
-        // If this comparison is inexact, ...
-        if (fQuadCT NE 0.0
-         && EqualHCxFvHCxF ((LPALLTYPES) &aplHC2FLft, (LPALLTYPES) &aplHC2FRht, 2, fQuadCT, WFCN))
-            continue;
-        else
-        // Split cases based upon the signum of the difference
-        switch (signumflt (aplHC2FLft.parts[i]
-                         - aplHC2FRht.parts[i]))
-        {
-            case 1:
-                return  1;
-
-            case 0:
-                break;
-
-            case -1:
-                return -1;
-
-            defstop
-                break;
-        } // End FOR/IF/ELSE.SWITCH
-
-    // The numbers are equal
-    return 0;
+    return hcXf_cmp (*(LPAPLHC8F) &aplHC2FLft,
+                     *(LPAPLHC8F) &aplHC2FRht,
+                      2,
+                      fQuadCT);
 } // hc2f_cmp
 
 
@@ -1491,34 +1529,10 @@ int hc4f_cmp
      APLFLOAT fQuadCT)              // []CT (0 = exact comparison)
 
 {
-    int i;
-
-    // Loop through all of the parts
-    for (i = 0; i < 4; i++)
-        // If this comparison is inexact, ...
-        if (fQuadCT NE 0.0
-         && EqualHCxFvHCxF ((LPALLTYPES) &aplHC4FLft, (LPALLTYPES) &aplHC4FRht, 2, fQuadCT, WFCN))
-            continue;
-        else
-        // Split cases based upon the signum of the difference
-        switch (signumflt (aplHC4FLft.parts[i]
-                         - aplHC4FRht.parts[i]))
-        {
-            case 1:
-                return  1;
-
-            case 0:
-                break;
-
-            case -1:
-                return -1;
-
-            defstop
-                break;
-        } // End FOR/IF/ELSE/SWITCH
-
-    // The numbers are equal
-    return 0;
+    return hcXf_cmp (*(LPAPLHC8F) &aplHC4FLft,
+                     *(LPAPLHC8F) &aplHC4FRht,
+                      4,
+                      fQuadCT);
 } // hc4f_cmp
 
 
@@ -1537,18 +1551,41 @@ int hc8f_cmp
      APLFLOAT fQuadCT)              // []CT (0 = exact comparison)
 
 {
+    return hcXf_cmp (aplHC8FLft,
+                     aplHC8FRht,
+                     8,
+                     fQuadCT);
+} // hc8f_cmp
+
+
+//***************************************************************************
+//  $hcXr_cmp
+//
+//  Compare two HCxR values
+//    returning -1, 0, 1
+//  Because this is a Complex number, there is no total order, but for the
+//    purposes of grading, we impose an arbitrary order on it.
+//***************************************************************************
+
+int hcXr_cmp
+    (APLHC8R  aplHC8RLft,           // Left arg float
+     APLHC8R  aplHC8RRht,           // Right ...
+     int      iHCDim,               // Common dimension (1, 2, 4, 8)
+     APLFLOAT fQuadCT)              // []CT (0 = exact comparison)
+
+{
     int i;
 
     // Loop through all of the parts
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < iHCDim; i++)
         // If this comparison is inexact, ...
         if (fQuadCT NE 0.0
-         && EqualHCxFvHCxF ((LPALLTYPES) &aplHC8FLft, (LPALLTYPES) &aplHC8FRht, 2, fQuadCT, WFCN))
+         && CmpCT_R (aplHC8RLft.parts[i], aplHC8RRht.parts[i], fQuadCT, EQ))
             continue;
         else
         // Split cases based upon the signum of the difference
-        switch (signumflt (aplHC8FLft.parts[i]
-                         - aplHC8FRht.parts[i]))
+        switch (signumint (mpq_cmp (&aplHC8RLft.parts[i],
+                                    &aplHC8RRht.parts[i])))
         {
             case 1:
                 return  1;
@@ -1565,7 +1602,7 @@ int hc8f_cmp
 
     // The numbers are equal
     return 0;
-} // hc8f_cmp
+} // End hcXr_cmp
 
 
 //***************************************************************************
@@ -1583,34 +1620,10 @@ int hc2r_cmp
      APLFLOAT fQuadCT)              // []CT (0 = exact comparison)
 
 {
-    int i;
-
-    // Loop through all of the parts
-    for (i = 0; i < 2; i++)
-        // If this comparison is inexact, ...
-        if (fQuadCT NE 0.0
-         && EqualHCxRvHCxR ((LPALLTYPES) &aplHC2RLft, (LPALLTYPES) &aplHC2RRht, 2, fQuadCT, WFCN))
-            continue;
-        else
-        // Split cases based upon the signum of the difference
-        switch (signumint (mpq_cmp (&aplHC2RLft.parts[i],
-                                    &aplHC2RRht.parts[i])))
-        {
-            case 1:
-                return  1;
-
-            case 0:
-                break;
-
-            case -1:
-                return -1;
-
-            defstop
-                break;
-        } // End FOR/IF/ELSE/SWITCH
-
-    // The numbers are equal
-    return 0;
+    return hcXr_cmp (*(LPAPLHC8R) &aplHC2RLft,
+                     *(LPAPLHC8R) &aplHC2RRht,
+                      2,
+                      fQuadCT);
 } // hc2r_cmp
 
 
@@ -1629,34 +1642,10 @@ int hc4r_cmp
      APLFLOAT fQuadCT)              // []CT (0 = exact comparison)
 
 {
-    int i;
-
-    // Loop through all of the parts
-    for (i = 0; i < 4; i++)
-        // If this comparison is inexact, ...
-        if (fQuadCT NE 0.0
-         && EqualHCxRvHCxR ((LPALLTYPES) &aplHC4RLft, (LPALLTYPES) &aplHC4RRht, 4, fQuadCT, WFCN))
-            continue;
-        else
-        // Split cases based upon the signum of the difference
-        switch (signumint (mpq_cmp (&aplHC4RLft.parts[i],
-                                    &aplHC4RRht.parts[i])))
-        {
-            case 1:
-                return  1;
-
-            case 0:
-                break;
-
-            case -1:
-                return -1;
-
-            defstop
-                break;
-        } // End SWITCH
-
-    // The numbers are equal
-    return 0;
+    return hcXr_cmp (*(LPAPLHC8R) &aplHC4RLft,
+                     *(LPAPLHC8R) &aplHC4RRht,
+                      4,
+                      fQuadCT);
 } // hc4r_cmp
 
 
@@ -1675,64 +1664,41 @@ int hc8r_cmp
      APLFLOAT fQuadCT)              // []CT (0 = exact comparison)
 
 {
-    int i;
-
-    // Loop through all of the parts
-    for (i = 0; i < 8; i++)
-        // If this comparison is inexact, ...
-        if (fQuadCT NE 0.0
-         && EqualHCxRvHCxR ((LPALLTYPES) &aplHC8RLft, (LPALLTYPES) &aplHC8RRht, 8, fQuadCT, WFCN))
-            continue;
-        else
-        // Split cases based upon the signum of the difference
-        switch (signumint (mpq_cmp (&aplHC8RLft.parts[i],
-                                    &aplHC8RRht.parts[i])))
-        {
-            case 1:
-                return  1;
-
-            case 0:
-                break;
-
-            case -1:
-                return -1;
-
-            defstop
-                break;
-        } // End FOR/SWITCH
-
-    // The numbers are equal
-    return 0;
+    return hcXr_cmp (aplHC8RLft,
+                     aplHC8RRht,
+                     8,
+                     fQuadCT);
 } // hc8r_cmp
 
 
 //***************************************************************************
-//  $hc2v_cmp
+//  $hcXv_cmp
 //
-//  Compare two HC2V values
+//  Compare two HCxV values
 //    returning -1, 0, 1
 //  Because this is a Complex number, there is no total order, but for the
 //    purposes of grading, we impose an arbitrary order on it.
 //***************************************************************************
 
-int hc2v_cmp
-    (APLHC2V  aplHC2VLft,           // Left arg float
-     APLHC2V  aplHC2VRht,           // Right ...
+int hcXv_cmp
+    (APLHC8V  aplHC8VLft,           // Left arg float
+     APLHC8V  aplHC8VRht,           // Right ...
+     int      iHCDim,               // Common dimension (1, 2, 4, 8)
      APLFLOAT fQuadCT)              // []CT (0 = exact comparison)
 
 {
     int i;
 
     // Loop through all of the parts
-    for (i = 0; i < 2; i++)
+    for (i = 0; i < iHCDim; i++)
         // If this comparison is inexact, ...
         if (fQuadCT NE 0.0
-         && EqualHCxVvHCxV ((LPALLTYPES) &aplHC2VLft, (LPALLTYPES) &aplHC2VRht, 2, fQuadCT, WFCN))
+         && CmpCT_V (aplHC8VLft.parts[i], aplHC8VRht.parts[i], fQuadCT, EQ))
             continue;
         else
         // Split cases based upon the signum of the difference
-        switch (signumint (CmpCT_V (aplHC2VLft.parts[i],
-                                    aplHC2VRht.parts[i],
+        switch (signumint (CmpCT_V (aplHC8VLft.parts[i],
+                                    aplHC8VRht.parts[i],
                                     fQuadCT,
                                     -)))
         {
@@ -1751,7 +1717,29 @@ int hc2v_cmp
 
     // The numbers are equal
     return 0;
-} // hc2v_cmp
+} // hcXv_cmp
+
+
+//***************************************************************************
+//  $hc2v_cmp
+//
+//  Compare two HC2V values
+//    returning -1, 0, 1
+//  Because this is a Complex number, there is no total order, but for the
+//    purposes of grading, we impose an arbitrary order on it.
+//***************************************************************************
+
+int hc2v_cmp
+    (APLHC2V  aplHC2VLft,           // Left arg float
+     APLHC2V  aplHC2VRht,           // Right ...
+     APLFLOAT fQuadCT)              // []CT (0 = exact comparison)
+
+{
+    return hcXv_cmp (*(LPAPLHC8V) &aplHC2VLft,
+                     *(LPAPLHC8V) &aplHC2VRht,
+                      2,
+                      fQuadCT);
+}  // End hc2v_cmp
 
 
 //***************************************************************************
@@ -1769,34 +1757,10 @@ int hc4v_cmp
      APLFLOAT fQuadCT)              // []CT (0 = exact comparison)
 
 {
-    int i;
-
-    // Loop through all of the parts
-    for (i = 0; i < 4; i++)
-        // If this comparison is inexact, ...
-        if (fQuadCT NE 0.0
-         && EqualHCxVvHCxV ((LPALLTYPES) &aplHC4VLft, (LPALLTYPES) &aplHC4VRht, 4, fQuadCT, WFCN))
-            continue;
-        else
-        // Split cases based upon the signum of the difference
-        switch (signumint (mpfr_cmp (&aplHC4VLft.parts[i],
-                                     &aplHC4VRht.parts[i])))
-        {
-            case 1:
-                return  1;
-
-            case 0:
-                break;
-
-            case -1:
-                return -1;
-
-            defstop
-                break;
-        } // End FOR/SWITCH
-
-    // The numbers are equal
-    return 0;
+    return hcXv_cmp (*(LPAPLHC8V) &aplHC4VLft,
+                     *(LPAPLHC8V) &aplHC4VRht,
+                      4,
+                      fQuadCT);
 } // hc4v_cmp
 
 
@@ -1815,64 +1779,41 @@ int hc8v_cmp
      APLFLOAT fQuadCT)              // []CT (0 = exact comparison)
 
 {
-    int i;
-
-    // Loop through all of the parts
-    for (i = 0; i < 8; i++)
-        // If this comparison is inexact, ...
-        if (fQuadCT NE 0.0
-         && EqualHCxVvHCxV ((LPALLTYPES) &aplHC8VLft, (LPALLTYPES) &aplHC8VRht, 8, fQuadCT, WFCN))
-            continue;
-        else
-        // Split cases based upon the signum of the difference
-        switch (signumint (mpfr_cmp (&aplHC8VLft.parts[i],
-                                     &aplHC8VRht.parts[i])))
-        {
-            case 1:
-                return  1;
-
-            case 0:
-                break;
-
-            case -1:
-                return -1;
-
-            defstop
-                break;
-        } // End FOR/SWITCH
-
-    // The numbers are equal
-    return 0;
+    return hcXv_cmp (aplHC8VLft,
+                     aplHC8VRht,
+                     8,
+                     fQuadCT);
 } // hc8v_cmp
 
 
 //***************************************************************************
-//  $ba2f_cmp
+//  $baXf_cmp
 //
-//  Compare two BA2F values
+//  Compare two BAxF values
 //    returning -1, 0, 1
 //  Because this is a Complex number, there is no total order, but for the
 //    purposes of grading, we impose an arbitrary order on it.
 //***************************************************************************
 
-int ba2f_cmp
-    (APLBA2F  aplBA2FLft,           // Left arg float
-     APLBA2F  aplBA2FRht,           // Right ...
+int baXf_cmp
+    (APLBA8F  aplBA8FLft,           // Left arg float
+     APLBA8F  aplBA8FRht,           // Right ...
+     int      iHCDim,               // Common dimension (1, 2, 4, 8)
      APLFLOAT fQuadCT)              // []CT (0 = exact comparison)
 
 {
     int i;
 
     // Loop through all of the parts
-    for (i = 0; i < 2; i++)
+    for (i = 0; i < iHCDim; i++)
         // If this comparison is inexact, ...
         if (fQuadCT NE 0.0
-         && EqualHCxVvHCxV ((LPALLTYPES) &aplBA2FLft, (LPALLTYPES) &aplBA2FRht, 2, fQuadCT, WFCN))
+         && CmpCT_B (aplBA8FLft.parts[i], aplBA8FRht.parts[i], fQuadCT, EQ))
             continue;
         else
         // Split cases based upon the signum of the difference
-        switch (signumint (CmpCT_B (aplBA2FLft.parts[i],
-                                    aplBA2FRht.parts[i],
+        switch (signumint (CmpCT_B (aplBA8FLft.parts[i],
+                                    aplBA8FRht.parts[i],
                                     fQuadCT,
                                     -)))
         {
@@ -1891,6 +1832,28 @@ int ba2f_cmp
 
     // The numbers are equal
     return 0;
+} // End baXf_cmp
+
+
+//***************************************************************************
+//  $ba2f_cmp
+//
+//  Compare two BA2F values
+//    returning -1, 0, 1
+//  Because this is a Complex number, there is no total order, but for the
+//    purposes of grading, we impose an arbitrary order on it.
+//***************************************************************************
+
+int ba2f_cmp
+    (APLBA2F  aplBA2FLft,           // Left arg float
+     APLBA2F  aplBA2FRht,           // Right ...
+     APLFLOAT fQuadCT)              // []CT (0 = exact comparison)
+
+{
+    return baXf_cmp (*(LPAPLBA8F) &aplBA2FLft,
+                     *(LPAPLBA8F) &aplBA2FRht,
+                      2,
+                      fQuadCT);
 } // ba2f_cmp
 
 
@@ -1909,34 +1872,10 @@ int ba4f_cmp
      APLFLOAT fQuadCT)              // []CT (0 = exact comparison)
 
 {
-    int i;
-
-    // Loop through all of the parts
-    for (i = 0; i < 4; i++)
-        // If this comparison is inexact, ...
-        if (fQuadCT NE 0.0
-         && EqualHCxVvHCxV ((LPALLTYPES) &aplBA4FLft, (LPALLTYPES) &aplBA4FRht, 4, fQuadCT, WFCN))
-            continue;
-        else
-        // Split cases based upon the signum of the difference
-        switch (signumint (arb_cmp (&aplBA4FLft.parts[i],
-                                    &aplBA4FRht.parts[i])))
-        {
-            case 1:
-                return  1;
-
-            case 0:
-                break;
-
-            case -1:
-                return -1;
-
-            defstop
-                break;
-        } // End FOR/SWITCH
-
-    // The numbers are equal
-    return 0;
+    return baXf_cmp (*(LPAPLBA8F) &aplBA4FLft,
+                     *(LPAPLBA8F) &aplBA4FRht,
+                      4,
+                      fQuadCT);
 } // ba4f_cmp
 
 
@@ -1955,34 +1894,10 @@ int ba8f_cmp
      APLFLOAT fQuadCT)              // []CT (0 = exact comparison)
 
 {
-    int i;
-
-    // Loop through all of the parts
-    for (i = 0; i < 8; i++)
-        // If this comparison is inexact, ...
-        if (fQuadCT NE 0.0
-         && EqualHCxVvHCxV ((LPALLTYPES) &aplBA8FLft, (LPALLTYPES) &aplBA8FRht, 8, fQuadCT, WFCN))
-            continue;
-        else
-        // Split cases based upon the signum of the difference
-        switch (signumint (arb_cmp (&aplBA8FLft.parts[i],
-                                    &aplBA8FRht.parts[i])))
-        {
-            case 1:
-                return  1;
-
-            case 0:
-                break;
-
-            case -1:
-                return -1;
-
-            defstop
-                break;
-        } // End FOR/SWITCH
-
-    // The numbers are equal
-    return 0;
+    return baXf_cmp (aplBA8FLft,
+                     aplBA8FRht,
+                     8,
+                     fQuadCT);
 } // ba8f_cmp
 
 

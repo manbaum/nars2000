@@ -1,6 +1,33 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2016 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Bug In MemberOf When Comparing Certain Non-Simple Items
+
+Directory branches/bsmith/NewTypes/htdocs/download:
+
+CONVERT.C:
+  Collapse <hc[248][ifrv]_cmp> into calls to <hcX[ifrv]_cmp>.
+  In <hcXf_cmp>, handle non-finite numbers specially.
+
+PF_EPSILON.C:
+  In <PrimFnDydEpsilonOther_EM> re-order the tests so as to pick up simple/global numerics first.
+
+PF_EQUALUND.C:
+  Fix bug in <PrimFnDydEqualUnderbarNested> where, under certain circumstances, only the first item is tested.
+
+PO_DOT.C:
+PO_JOTDOT.C:
+PO_SLASH.C:
+  Include additional argument to both <PrimFnDydSiScSiSc_EM> and <PrimFnDydSiScSiScSub_EM> so as to skip freeing the result as appropriate.
+
+PRIMSPEC.C:
+  Include additional argument to both <PrimFnDydSiScSiSc_EM> and <PrimFnDydSiScSiScSub_EM> so as to skip freeing the result as appropriate.
+  In <AllocateSpaceGlbNum_LOCK>, avoid clobbering the result global memory handle if it is nested.
+
+
 Build #2014 -- Version 0.6.0.xx
 -------------------------------
 

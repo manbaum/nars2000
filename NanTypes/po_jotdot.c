@@ -728,6 +728,7 @@ RESTART_JOTDOT:
                                               aplTypeCom,               // NOT <aplTypeRht> as we converted it to <aplTypeCom> above
                                              &atRht,
                                              &aplTypeNew,               // New storage type
+                                              FALSE,                    // TRUE iff the outer <hGlbRes> is nested
                                               lpPrimSpec);
                 // Free the old atRht
                 (*aTypeFree[aplTypeCom]) (&atRht, 0);

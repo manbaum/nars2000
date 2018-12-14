@@ -3533,6 +3533,7 @@ RESTART_INNERPROD_RES:
                                               aplTypeRht,                   // Right arg storage type
                                              &atRht,                        // ...      as ALLTYPES
                                              &aplTypeNew,                   // New storage type
+                                              FALSE,                        // TRUE iff the outer <hGlbRes> is nested
                                               lpPrimSpecRht);               // Ptr to comparison function PRIMSPEC
                 // Free the old atLft
                 (*aTypeFree[aplTypeLft]) (&atLft, 0);
@@ -3665,6 +3666,7 @@ RESTART_INNERPROD_RES:
                                                   aplTypeCmpRht,            // Comparison or Reduction storage type
                                                  &atCmpRht,                 // Left arg as ALLTYPES
                                                  &aplTypeNew,               // New storage type
+                                                  FALSE,                    // TRUE iff the outer <hGlbRes> is nested
                                                   lpPrimSpecLft);           // Ptr to reduction function PRIMSPEC
                     // Free the old atCmpLft and atCmpRht
                     (*aTypeFree[aplTypeCmp]) (&atCmpLft, 0);

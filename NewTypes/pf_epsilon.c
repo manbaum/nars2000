@@ -2349,11 +2349,98 @@ UBOOL PrimFnDydEpsilonOther_EM
                             &hGlbSubRht,            // Right arg item LPSYMENTRY or HGLOBAL (may be NULL)
                             &aplLongestSubRht,      // Ptr to right arg immediate value
                             &immTypeSubRht);        // Ptr to right arg immediate type
+            // If both items are simple or global numeric, ...
+            if ((IsImmNum (immTypeSubLft) || IsImmGlbNum (immTypeSubLft))
+             && (IsImmNum (immTypeSubRht) || IsImmGlbNum (immTypeSubRht)))
+            {
+                APLSTYPE          aplTypeSubLft = TranslateImmTypeToArrayType (immTypeSubLft),
+                                  aplTypeSubRht = TranslateImmTypeToArrayType (immTypeSubRht);
+                LPVARARRAY_HEADER lpMemHdrSubLft = NULL,    // Ptr to left item global memory header
+                                  lpMemHdrSubRht = NULL;    // ...    right ...
+                LPVOID            lpMemSubLft,              // Ptr to left item global memory
+                                  lpMemSubRht;              // ...    right ...
+
+                // This leaves BIFRV vs. BIFRV
+
+                // Calculate the common type
+                aplTypeSubCom = aTypePromote[aplTypeSubLft][aplTypeSubRht];
+
+                // If the left item is a global, ...
+                if (hGlbSubLft NE NULL)
+                {
+                    // If the HGLOBAL is a ptr, ...
+                    if (GetPtrTypeDir (hGlbSubLft) EQ PTRTYPE_HGLOBAL)
+                    {
+                        // Lock the memory to get a ptr to it
+                        lpMemHdrSubLft = MyGlobalLockVar (hGlbSubLft);
+
+                        // Skip over the header and dimensions to the data
+                        lpMemSubLft = VarArrayDataFmBase (lpMemHdrSubLft);
+                    } else
+                        // Point to data
+                        lpMemSubLft = hGlbSubLft;
+                } else
+                    // Point to the data
+                    lpMemSubLft = &aplLongestSubLft;
+
+                // If the left item is a global, ...
+                if (hGlbSubRht NE NULL)
+                {
+                    // If the HGLOBAL is a ptr, ...
+                    if (GetPtrTypeDir (hGlbSubRht) EQ PTRTYPE_HGLOBAL)
+                    {
+                        // Lock the memory to get a ptr to it
+                        lpMemHdrSubRht = MyGlobalLockVar (hGlbSubRht);
+
+                        // Skip over the header and dimensions to the data
+                        lpMemSubRht = VarArrayDataFmBase (lpMemHdrSubRht);
+                    } else
+                        // Point to data
+                        lpMemSubRht = hGlbSubRht;
+                } else
+                    // Point to the data
+                    lpMemSubRht = &aplLongestSubRht;
+
+                // Promote the left & right args to the common type
+                (*aTypeActPromote[aplTypeSubLft][aplTypeSubCom]) (lpMemSubLft, 0, &atLft);
+                (*aTypeActPromote[aplTypeSubRht][aplTypeSubCom]) (lpMemSubRht, 0, &atRht);
+
+                if (lpMemHdrSubLft NE NULL)
+                {
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbSubLft); lpMemHdrSubLft = NULL;
+                } // End IF
+
+                if (lpMemHdrSubRht NE NULL)
+                {
+                    // We no longer need this ptr
+                    MyGlobalUnlock (hGlbSubRht); lpMemHdrSubRht = NULL;
+                } // End IF
+
+                // If they compare equally, ...
+                if (hcXY_cmp (aplTypeSubCom,
+                             &atLft,
+                             &atRht,
+                              TRUE,
+                              fQuadCT) EQ 0)
+                    goto SET_RESULT_BIT;
+
+                // Free the old atLft & atRht (if any)
+                (*aTypeFree[aplTypeSubCom]) (&atLft, 0);
+                (*aTypeFree[aplTypeSubCom]) (&atRht, 0);
+
+                // Zero the memory in case we use it again
+                ZeroMemory (&atLft, sizeof (atLft));
+                ZeroMemory (&atRht, sizeof (atRht));
+            } else
             // If both items are globals, ...
             if ((hGlbSubLft NE NULL) && (hGlbSubRht NE NULL))
             {
                 TOKEN tkSubLft = {0},       // Left arg item token
                       tkSubRht = {0};       // Right ...
+
+                Assert (GetPtrTypeDir (hGlbSubLft) EQ PTRTYPE_HGLOBAL);
+                Assert (GetPtrTypeDir (hGlbSubRht) EQ PTRTYPE_HGLOBAL);
 
                 // Fill in the left arg item token
                 tkSubLft.tkFlags.TknType   = TKT_VARARRAY;
@@ -2366,7 +2453,7 @@ UBOOL PrimFnDydEpsilonOther_EM
                 tkSubRht.tkFlags.TknType   = TKT_VARARRAY;
 ////////////////tkSubRht.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from = {0}
 ////////////////tkSubRht.tkFlags.NoDisplay = FALSE;         // Already zero from = {0}
-                tkSubRht.tkData.tkGlbData  = MakePtrTypeGlb (hGlbSubRht);
+                tkSubRht.tkData.tkGlbData  = hGlbSubRht;
                 tkSubRht.tkCharIndex       = lptkFunc->tkCharIndex;
 
                 // Use match to determine equality
@@ -2583,90 +2670,6 @@ UBOOL PrimFnDydEpsilonOther_EM
 
                 if (bCmp)
                     goto SET_RESULT_BIT;
-            } else
-            // If both items are simple or global numeric, ...
-            if ((IsImmNum (immTypeSubLft) || IsImmGlbNum (immTypeSubLft))
-             && (IsImmNum (immTypeSubRht) || IsImmGlbNum (immTypeSubRht)))
-            {
-                APLSTYPE          aplTypeSubLft = TranslateImmTypeToArrayType (immTypeSubLft),
-                                  aplTypeSubRht = TranslateImmTypeToArrayType (immTypeSubRht);
-                LPVARARRAY_HEADER lpMemHdrSubLft = NULL,    // Ptr to left item global memory header
-                                  lpMemHdrSubRht = NULL;    // ...    right ...
-                LPVOID            lpMemSubLft,              // Ptr to left item global memory
-                                  lpMemSubRht;              // ...    right ...
-
-                // This leaves BIFRV vs. BIFRV
-
-                // Calculate the common type
-                aplTypeSubCom = aTypePromote[aplTypeSubLft][aplTypeSubRht];
-
-                // If the left item is a global, ...
-                if (hGlbSubLft NE NULL)
-                {
-                    // If the HGLOBAL is a ptr, ...
-                    if (GetPtrTypeDir (hGlbSubLft) EQ PTRTYPE_HGLOBAL)
-                    {
-                        // Lock the memory to get a ptr to it
-                        lpMemHdrSubLft = MyGlobalLockVar (hGlbSubLft);
-
-                        // Skip over the header and dimensions to the data
-                        lpMemSubLft = VarArrayDataFmBase (lpMemHdrSubLft);
-                    } else
-                        // Point to data
-                        lpMemSubLft = hGlbSubLft;
-                } else
-                    // Point to the data
-                    lpMemSubLft = &aplLongestSubLft;
-
-                // If the left item is a global, ...
-                if (hGlbSubRht NE NULL)
-                {
-                    // If the HGLOBAL is a ptr, ...
-                    if (GetPtrTypeDir (hGlbSubRht) EQ PTRTYPE_HGLOBAL)
-                    {
-                        // Lock the memory to get a ptr to it
-                        lpMemHdrSubRht = MyGlobalLockVar (hGlbSubRht);
-
-                        // Skip over the header and dimensions to the data
-                        lpMemSubRht = VarArrayDataFmBase (lpMemHdrSubRht);
-                    } else
-                        // Point to data
-                        lpMemSubRht = hGlbSubRht;
-                } else
-                    // Point to the data
-                    lpMemSubRht = &aplLongestSubRht;
-
-                // Promote the left & right args to the common type
-                (*aTypeActPromote[aplTypeSubLft][aplTypeSubCom]) (lpMemSubLft, 0, &atLft);
-                (*aTypeActPromote[aplTypeSubRht][aplTypeSubCom]) (lpMemSubRht, 0, &atRht);
-
-                if (lpMemHdrSubLft NE NULL)
-                {
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbSubLft); lpMemHdrSubLft = NULL;
-                } // End IF
-
-                if (lpMemHdrSubRht NE NULL)
-                {
-                    // We no longer need this ptr
-                    MyGlobalUnlock (hGlbSubRht); lpMemHdrSubRht = NULL;
-                } // End IF
-
-                // If they compare equally, ...
-                if (hcXY_cmp (aplTypeSubCom,
-                             &atLft,
-                             &atRht,
-                              TRUE,
-                              fQuadCT) EQ 0)
-                    goto SET_RESULT_BIT;
-
-                // Free the old atLft & atRht (if any)
-                (*aTypeFree[aplTypeSubCom]) (&atLft, 0);
-                (*aTypeFree[aplTypeSubCom]) (&atRht, 0);
-
-                // Zero the memory in case we use it again
-                ZeroMemory (&atLft, sizeof (atLft));
-                ZeroMemory (&atRht, sizeof (atRht));
             } // End IF/ELSE/...
 
             continue;

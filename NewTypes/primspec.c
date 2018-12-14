@@ -3146,6 +3146,7 @@ UBOOL PrimFnDydSimpNest_EM
                                                            &atLft,
                                                             aplTypeCom,
                                                            &atRht,
+                                                            TRUE,
                                                             lpPrimSpec);
                         } __finally
                         {
@@ -3576,6 +3577,7 @@ UBOOL PrimFnDydNestSimp_EM
                                                            &atLft,
                                                             aplTypeCom,
                                                            &atRht,
+                                                            TRUE,
                                                             lpPrimSpec);
                         } __finally
                         {
@@ -4002,6 +4004,7 @@ RESTART_EXCEPTION:
                                                        &atLft,
                                                         aplTypeRht,
                                                         lpatRht,
+                                                        TRUE,
                                                         lpPrimSpec);
                         // No need to free the old atLft as it isn't created (it's copied)
                     } // End IF/ELSE
@@ -4835,6 +4838,7 @@ RESTART_EXCEPTION:
                                                         lpatLft,
                                                         aplTypeHetRht,
                                                        &atRht,
+                                                        TRUE,
                                                         lpPrimSpec);
                         // No need to free the old atRht as it isn't created (it's copied)
                     } // End IF/ELSE
@@ -5178,6 +5182,7 @@ HGLOBAL PrimFnDydSiScSiSc_EM
      LPALLTYPES lpatLft,            // ...      as ALLTYPES
      APLSTYPE   aplTypeRht,         // Right arg storage type
      LPALLTYPES lpatRht,            // ...      as ALLTYPES
+     UBOOL      bIsNested,          // TRUE iff <hGlbRes> is nested, so don't free it
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
@@ -5206,6 +5211,7 @@ HGLOBAL PrimFnDydSiScSiSc_EM
                                   aplTypeRht,
                                   lpatRht,
                                  &aplTypeRes,
+                                  bIsNested,
                                   lpPrimSpec))
     {
         // If the result is an immediate, ...
@@ -5249,6 +5255,7 @@ UBOOL PrimFnDydSiScSiScSub_EM
      APLSTYPE   aplTypeRht,         // Right arg storage type
      LPALLTYPES lpatRht,            // ...      as ALLTYPES
      APLSTYPE  *lpaplTypeRes,       // Ptr to result storage type
+     UBOOL      bIsNested,          // TRUE iff <*lphGlbRes> is nested, so don't free it
      LPPRIMSPEC lpPrimSpec)         // Ptr to local PRIMSPEC
 
 {
@@ -5417,7 +5424,9 @@ RESTART_EXCEPTION_IMMED:
 
                 if (IsNumeric (aplTypeRes))
                 {
-                    if (lphGlbRes NE NULL && *lphGlbRes NE NULL)
+                    if (!bIsNested
+                     && lphGlbRes NE NULL
+                     && *lphGlbRes NE NULL)
                     {
                         if (lpMemHdrRes NE NULL)
                         {
@@ -6386,7 +6395,7 @@ UBOOL AllocateSpaceGlbNum_LOCK
         // Now we can allocate the storage for the result
         //***************************************************************
         *lphGlbTmp = DbgGlobalAlloc (GHND, (APLU3264) ByteRes);
-        if (lphGlbRes NE NULL)
+        if (!bRet && lphGlbRes NE NULL)
            *lphGlbRes = *lphGlbTmp;
         if (*lphGlbTmp EQ NULL)
             goto WSFULL_EXIT;

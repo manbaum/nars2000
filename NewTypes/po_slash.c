@@ -1102,6 +1102,7 @@ RESTART_EXCEPTION:
                                                    aplTypeTmp,
                                                   &atRht,
                                                   &aplTypeNew,              // New storage type
+                                                   FALSE,                   // TRUE iff the outer <hGlbRes> is nested
                                                    lpPrimSpecLft))
                         goto ERROR_EXIT;
 

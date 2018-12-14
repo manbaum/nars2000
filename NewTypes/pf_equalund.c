@@ -873,9 +873,11 @@ UBOOL PrimFnDydEqualUnderbarNested
     APLUINT           uDim;
     APLNELM           aplNELMLoop;
     LPVARARRAY_HEADER lpMemHdrLft2,     // Ptr to left arg (secondary) header
-                      lpMemHdrRht2;     // ...    right ...
+                      lpMemHdrRht2,     // ...    right ...
+                      lpMemHdrSub;      // ...    item  ...
     LPVOID            lpMemLft,         // Ptr to left arg global memory
-                      lpMemRht;         // ...    right ...
+                      lpMemRht,         // ...    right ...
+                      lpMemSub;         // ...    item  ...
     APLINT            aplIntegerLft,
                       aplIntegerRht;
     APLFLOAT          aplFloatLft,
@@ -930,7 +932,7 @@ UBOOL PrimFnDydEqualUnderbarNested
         if (CheckCtrlBreak (lpbCtrlBreak))
             goto ERROR_EXIT;
 
-        // The ptr types must be the same
+        // If ptr types are not the same, ...
         ptrType = GetPtrTypeInd (lpMemLft);
         if (ptrType NE GetPtrTypeInd (lpMemRht))
         {
@@ -938,7 +940,6 @@ UBOOL PrimFnDydEqualUnderbarNested
             APLNELM  aplNELMSub;
             APLRANK  aplRankSub;
             HGLOBAL  hGlbSub;
-            UBOOL    bRet;
             LPVOID   lpMemOth;
 
             // If the left arg is an HGLOBAL, ...
@@ -956,17 +957,17 @@ UBOOL PrimFnDydEqualUnderbarNested
                 hGlbSub = *(LPAPLNESTED) lpMemLft;
 
                 // Lock the memory to get a ptr to it
-                lpMemHdrLft = MyGlobalLockVar (hGlbSub);
+                lpMemHdrSub = MyGlobalLockVar (hGlbSub);
 
                 // Skip over the header and dimensions to the data
-                lpMemLft = VarArrayDataFmBase (lpMemHdrLft);
+                lpMemSub = VarArrayDataFmBase (lpMemHdrSub);
 
                 // Point the other to its data
                 lpMemOth = &(*(LPAPLHETERO) lpMemRht)->stData.stLongest;
 
                 bRet =
                   PrimFnDydEqualUnderbarSimpleUnord (lpMemOth, TranslateImmTypeToArrayType ((*(LPAPLHETERO) lpMemRht)->stFlags.ImmType), 1, 0,
-                                                     lpMemLft, aplTypeSub,                                                               1, 0,
+                                                     lpMemSub, aplTypeSub,                                                               1, 0,
                                                      FALSE, lpbCtrlBreak);
             } else
             {
@@ -982,26 +983,23 @@ UBOOL PrimFnDydEqualUnderbarNested
                 hGlbSub = *(LPAPLNESTED) lpMemRht;
 
                 // Lock the memory to get a ptr to it
-                lpMemHdrRht = MyGlobalLockVar (hGlbSub);
+                lpMemHdrSub = MyGlobalLockVar (hGlbSub);
 
                 // Skip over the header and dimensions to the data
-                lpMemRht = VarArrayDataFmBase (lpMemHdrRht);
+                lpMemSub = VarArrayDataFmBase (lpMemHdrSub);
 
                 // Point the other to its data
                 lpMemOth = &(*(LPAPLHETERO) lpMemLft)->stData.stLongest;
 
                 bRet =
                   PrimFnDydEqualUnderbarSimpleUnord (lpMemOth, TranslateImmTypeToArrayType ((*(LPAPLHETERO) lpMemLft)->stFlags.ImmType), 1, 0,
-                                                     lpMemRht, aplTypeSub,                                                               1, 0,
+                                                     lpMemSub, aplTypeSub,                                                               1, 0,
                                                      FALSE, lpbCtrlBreak);
             } // End IF/ELSE
 
             // We no longer need this ptr
             MyGlobalUnlock (hGlbSub); lpMemHdrRht = NULL;
-
-            return bRet;
-        } // End IF
-
+        } else
         // Split cases based upon the ptr type of the elements
         switch (ptrType)
         {

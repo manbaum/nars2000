@@ -1,0 +1,9 @@
+Build #2019 -- Version 0.5.9.xx
+-------------------------------
+
+* Set []CT To Zero In Factorial Magic Function
+
+Directory branches/bsmith/NewTypes:
+
+MF_SHRIEK.H:
+  Set []CT to zero in Factorial magic function so as to reduce the number of non-distinct cases until I can handle Jordan Canonical Form.

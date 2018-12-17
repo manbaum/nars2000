@@ -2003,12 +2003,11 @@ APLBA1F AddBA1F_RE
         if (arf_is_inf (arb_midref (&aplLft))
          && arf_is_inf (arb_midref (&aplRht))
          && arb_sign (&aplLft) NE arb_sign (&aplRht))
-            arb_init_set (&aplRes,
-                           arb_QuadICValue (&aplRht,       // No left arg
-                                             ICNDX_InfSUBInf,
-                                            &aplRht,
-                                            &aplRes,
-                                             FALSE));
+            arb_QuadICValue (&aplRht,           // No left arg
+                              ICNDX_InfSUBInf,
+                             &aplRht,
+                             &aplRes,
+                              FALSE);
         else
         {
             mp_limb_signed_t prec = ARB_PREC_FPC;
@@ -2354,12 +2353,11 @@ APLBA2F AddBA2F_RE
         if (arf_is_inf (arb_midref (&aplLft.parts[i]))
          && arf_is_inf (arb_midref (&aplRht.parts[i]))
          && arb_sign (&aplLft.parts[i]) NE arb_sign (&aplRht.parts[i]))
-            arb_init_set (&aplRes.parts[i],
-                           arb_QuadICValue (&aplRht.parts[i],       // No left arg
-                                             ICNDX_InfSUBInf,
-                                            &aplRht.parts[i],
-                                            &aplRes.parts[i],
-                                             FALSE));
+            arb_QuadICValue (&aplRht.parts[i],      // No left arg
+                              ICNDX_InfSUBInf,
+                             &aplRht.parts[i],
+                             &aplRes.parts[i],
+                              FALSE);
         else
         {
             // Initialize the result to 0/0
@@ -2740,12 +2738,11 @@ APLBA4F AddBA4F_RE
         if (arf_is_inf (arb_midref (&aplLft.parts[i]))
          && arf_is_inf (arb_midref (&aplRht.parts[i]))
          && arb_sign (&aplLft.parts[i]) NE arb_sign (&aplRht.parts[i]))
-            arb_init_set (&aplRes.parts[i],
-                           arb_QuadICValue (&aplRht.parts[i],       // No left arg
-                                             ICNDX_InfSUBInf,
-                                            &aplRht.parts[i],
-                                            &aplRes.parts[i],
-                                             FALSE));
+            arb_QuadICValue (&aplRht.parts[i],      // No left arg
+                              ICNDX_InfSUBInf,
+                             &aplRht.parts[i],
+                             &aplRes.parts[i],
+                              FALSE);
         else
         {
             // Initialize the result to 0/0
@@ -3126,12 +3123,11 @@ APLBA8F AddBA8F_RE
         if (arf_is_inf (arb_midref (&aplLft.parts[i]))
          && arf_is_inf (arb_midref (&aplRht.parts[i]))
          && arb_sign (&aplLft.parts[i]) NE arb_sign (&aplRht.parts[i]))
-            arb_init_set (&aplRes.parts[i],
-                           arb_QuadICValue (&aplRht.parts[i],       // No left arg
-                                             ICNDX_InfSUBInf,
-                                            &aplRht.parts[i],
-                                            &aplRes.parts[i],
-                                             FALSE));
+            arb_QuadICValue (&aplRht.parts[i],      // No left arg
+                              ICNDX_InfSUBInf,
+                             &aplRht.parts[i],
+                             &aplRes.parts[i],
+                              FALSE);
         else
         {
             // Initialize the result to 0/0

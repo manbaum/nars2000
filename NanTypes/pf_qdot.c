@@ -655,11 +655,11 @@ APLARB FactARB
     // Check for indeterminates:  !N for integer N < 0
     if (arb_integer_p (&aplArbRht)
      && arb_cmp_ui    (&aplArbRht, 0) < 0)
-        return *arb_QuadICValue (&aplArbRht,       // No left arg
-                                  ICNDX_QDOTn,
-                                 &aplArbRht,
-                                 &arbRes,
-                                  FALSE);
+        arb_QuadICValue (&aplArbRht,        // No left arg
+                          ICNDX_QDOTn,
+                         &aplArbRht,
+                         &arbRes,
+                          FALSE);
     else
     // Check for PosInfinity
     if (IsArbPosInfinity (&aplArbRht))

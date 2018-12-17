@@ -253,11 +253,6 @@ APLSTYPE PrimSpecUpCaretStorageTypeDyd
         // Tell the caller to demote the data to HC dimension 1
         return ARRAY_REALONLY;
 
-    // Weed out ARB numbers with a non-zero Radius
-    if (IsAnyArb (*lpaplTypeLft)
-     || IsAnyArb (*lpaplTypeRht))
-        return ARRAY_RAD0RONLY + aArrayTypeToHCDimIndex[aplTypeRes];
-
     return aplTypeRes;
 } // End PrimSpecUpCaretStorageTypeDyd
 
@@ -1149,12 +1144,11 @@ void PrimFnDydUpCaretBA1FisBA1FvBA1F
     // Check for indeterminates:  lcm (PoM_, 0)  or  lcm (0, PoM_)
     if ((arb_inf_p (&lpatLft->aplArb) && IsArb0 (&lpatRht->aplArb))
      || (arb_inf_p (&lpatRht->aplArb) && IsArb0 (&lpatLft->aplArb)))
-        lpMemRes[uRes] =
-          *arb_QuadICValue (&lpatLft->aplArb,
-                             ICNDX_0LCMInf,
-                            &lpatRht->aplArb,
-                            &lpMemRes[uRes],
-                             SIGN_APLARB (&lpatLft->aplArb));
+         arb_QuadICValue (&lpatLft->aplArb,
+                           ICNDX_0LCMInf,
+                          &lpatRht->aplArb,
+                          &lpMemRes[uRes],
+                           SIGN_APLARB (&lpatLft->aplArb));
     else
     // Check for special cases:  lcm (PoM_, N)  or  lcm (N, PoM_)
     if (arb_inf_p (&lpatLft->aplArb)

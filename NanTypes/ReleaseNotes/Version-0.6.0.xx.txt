@@ -1,6 +1,39 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2024 -- Version 0.6.0.xx
+-------------------------------
+
+* When calling <mpq_QuadICValue> or <mpfr_QuadICValue>, pass the sign in case the result is FLT.
+* Fix Bug In Use Of <[mpfr|mpq]_QuadICValue> Where We May Double Initialize A Variable
+* Define <arb_sub2> To Handle Special Case Of arb_sub (z, x, x) So That It Always Returns Zero
+* Define <arb_log2> To Always Return {neg}{inf} When The Arg Is Zero.
+
+Directory branches/bsmith/NanTypes:
+
+PF_BAR.C:
+  Fix bug in use of <[mpfr|mpq]_QuadICValue> where we may double initialize a variable.  The solution is never to return a value from these functions and always initialize the result inside the function.
+  Define <arb_sub2> to handle special case of arb_sub (z, x, x) so that it always returns zero.
+
+PF_CSTAR.C:
+  Fix bug in use of <[mpfr|mpq]_QuadICValue> where we may double initialize a variable.  The solution is never to return a value from these functions and always initialize the result inside the function.
+  Define <arb_log2> to always return {neg}{inf} when the arg is zero.
+
+PF_DCARET.C:
+PF_UCARET.C:
+  Fix bug in the result of {floor}/{ceiling} on a Ball wider than one unit.
+  Fix bug in use of <[mpfr|mpq]_QuadICValue> where we may double initialize a variable.  The solution is never to return a value from these functions and always initialize the result inside the function.
+
+PF_PLUS.C:
+PF_QDOT.C:
+PF_TIMES.C:
+  Fix bug in use of <[mpfr|mpq]_QuadICValue> where we may double initialize a variable.  The solution is never to return a value from these functions and always initialize the result inside the function.
+
+PF_ROOT.C:
+  Replace <arf_nan> with <arb_set_nan> so as to set both Midpoint and Radius.
+  Fix bug in use of <[mpfr|mpq]_QuadICValue> where we may double initialize a variable.  The solution is never to return a value from these functions and always initialize the result inside the function.
+
+
 Build #2022 -- Version 0.6.0.xx
 -------------------------------
 

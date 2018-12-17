@@ -544,12 +544,11 @@ void PrimFnMonCircleStarBA1FisBA1F
     else
     // Check for indeterminates:  {log} 0
     if (IsArb0 (&lpatRht->aplArb))
-        lpMemRes[uRes] =
-          *arb_QuadICValue (&lpatRht->aplArb,       // No left arg
-                             ICNDX_LOG0,
-                            &lpatRht->aplArb,
-                            &lpMemRes[uRes],
-                             FALSE);
+        arb_QuadICValue (&lpatRht->aplArb,      // No left arg
+                          ICNDX_LOG0,
+                         &lpatRht->aplArb,
+                         &lpMemRes[uRes],
+                          FALSE);
     else
     // Check for special cases:  {log} _
     if (IsArbPosInfinity (&lpatRht->aplArb))
@@ -633,7 +632,7 @@ void PrimFnMonCircleStarBA1FisBA1F
         Myarb_init (&lpMemRes[uRes]);
 
         // Calculate the function
-        arb_log   (&lpMemRes[uRes], &lpatRht->aplArb, prec);
+        arb_log2  (&lpMemRes[uRes], &lpatRht->aplArb, prec);
 #endif
     } // End IF/ELSE/...
 } // End PrimFnMonCircleStarBA1FisBA1F
@@ -1783,7 +1782,7 @@ APLBA8F LogBAxF_RE
     Myarb_init (&aplMul);
 
     // Calculate the real part
-    arb_log (&aplRes.parts[0], &aplRMag, prec);                       // u
+    arb_log2 (&aplRes.parts[0], &aplRMag, prec);                      // u
 
     // If the number has imaginary parts, ...
     if (!IsArb0 (&aplIMag))
@@ -2312,24 +2311,20 @@ void PrimFnDydCircleStarBA1FisBA1FvBA1F
     // Check for indeterminates:  B {log} B
     if (IsBooleanArb (&lpatLft->aplArb)
      && IsBooleanArb (&lpatRht->aplArb))
-    {
-        lpMemRes[uRes] =
-          *arb_QuadICValue (&lpatLft->aplArb,
-                             icndxLog[IsArb1 (&lpatLft->aplArb)][IsArb1(&lpatRht->aplArb)],
-                            &lpatRht->aplArb,
-                            &lpMemRes[uRes],
-                             FALSE);
-    } else
+        arb_QuadICValue (&lpatLft->aplArb,
+                          icndxLog[IsArb1 (&lpatLft->aplArb)][IsArb1(&lpatRht->aplArb)],
+                         &lpatRht->aplArb,
+                         &lpMemRes[uRes],
+                          FALSE);
+    else
     // Check for indeterminates:  0 {log} N  (N != 0 or 1)
     if (arb_zero_p (&lpatLft->aplArb))
-    {
-        lpMemRes[uRes] =
-          *arb_QuadICValue (&lpatLft->aplArb,
-                             ICNDX_0LOGN,
-                            &lpatRht->aplArb,
-                            &lpMemRes[uRes],
-                             FALSE);
-    } else
+        arb_QuadICValue (&lpatLft->aplArb,
+                          ICNDX_0LOGN,
+                         &lpatRht->aplArb,
+                         &lpMemRes[uRes],
+                          FALSE);
+    else
     // Check for Complex result
     if (SIGN_APLARB (&lpatLft->aplArb)
      || SIGN_APLARB (&lpatRht->aplArb))
@@ -2340,29 +2335,26 @@ void PrimFnDydCircleStarBA1FisBA1FvBA1F
         Myarb_init (&lpMemRes[uRes]);
 
         // The EAS says "If A and B are equal, lpMemRes[uRes] = one."
-        if (arb_equal (&lpatLft->aplArb,  &lpatRht->aplArb))
+        if (arb_equal (&lpatLft->aplArb,  &lpatRht->aplArb) NE 0)
             arb_one   (&lpMemRes[uRes]);
         else
         {
             APLARB arbLft = {0},
                    arbRht = {0};
-#ifdef DEBUG
-////        WCHAR  wszTemp[512];
-#endif
             // Calculate log (lpatRht->aplVfp) / log (lpatLft->aplVfp)
             // Note that the MPFR code correctly handles infinite results
             //   such as 5{log}0  and  0.5{log}0
             PrimFnMonCircleStarBA1FisBA1F (&arbLft, 0, lpatLft, lpPrimSpec);
-#ifdef DEBUG
-////        strcpyW (wszTemp, L"Lft: "); *FormatAplArb (&wszTemp[lstrlenW (wszTemp)], arbLft, 0) = WC_EOS; DbgMsgW (wszTemp);
+#if (defined DEBUG) && FALSE
+            ArbOut (L"Lft: ", arbLft);
 #endif
             PrimFnMonCircleStarBA1FisBA1F (&arbRht, 0, lpatRht, lpPrimSpec);
-#ifdef DEBUG
-////        strcpyW (wszTemp, L"Rht: "); *FormatAplArb (&wszTemp[lstrlenW (wszTemp)], arbRht, 0) = WC_EOS; DbgMsgW (wszTemp);
+#if (defined DEBUG) && FALSE
+            ArbOut (L"Rht: ", arbRht);
 #endif
             arb_div (&lpMemRes[uRes], &arbRht, &arbLft, prec);
-#ifdef DEBUG
-////        strcpyW (wszTemp, L"Res: "); *FormatAplArb (&wszTemp[lstrlenW (wszTemp)], lpMemRes[uRes], 0) = WC_EOS; DbgMsgW (wszTemp);
+#if (defined DEBUG) && FALSE
+            ArbOut (L"Res: ", lpMemRes[uRes]);
 #endif
 
             // We no longer need this storage

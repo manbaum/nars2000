@@ -2027,12 +2027,11 @@ APLARB SubBA1F_RE
     if (arb_inf_p (&aplLft)
      && arb_inf_p (&aplRht)
      && arb_sign (&aplLft) EQ arb_sign (&aplRht))
-        arb_init_set (&aplRes,
-                       arb_QuadICValue (&aplRht, // No left arg
-                                         ICNDX_InfSUBInf,
-                                        &aplRht,
-                                        &aplRes,
-                                         FALSE));
+        arb_QuadICValue (&aplRht,   // No left arg
+                          ICNDX_InfSUBInf,
+                         &aplRht,
+                         &aplRes,
+                          FALSE);
     else
     {
         mp_limb_signed_t prec = ARB_PREC_FPC;
@@ -2041,7 +2040,7 @@ APLARB SubBA1F_RE
         Myarb_init (&aplRes);
 
         // Subtract the ARBs
-        arb_sub (&aplRes, &aplLft, &aplRht, prec);
+        arb_sub2 (&aplRes, &aplLft, &aplRht, prec);
     } // End IF/ELSE/...
 
     return aplRes;
@@ -2408,12 +2407,11 @@ APLBA2F SubBA2F_RE
         if (arb_inf_p (&aplLft.parts[i])
          && arb_inf_p (&aplRht.parts[i])
          && arb_sign (&aplLft.parts[i]) EQ arb_sign (&aplRht.parts[i]))
-            arb_init_set (&aplRes.parts[i],
-                           arb_QuadICValue (&aplRht.parts[i], // No left arg
-                                             ICNDX_InfSUBInf,
-                                            &aplRht.parts[i],
-                                            &aplRes.parts[i],
-                                             FALSE));
+            arb_QuadICValue (&aplRht.parts[i],  // No left arg
+                              ICNDX_InfSUBInf,
+                             &aplRht.parts[i],
+                             &aplRes.parts[i],
+                              FALSE);
         else
         {
             mp_limb_signed_t prec = ARB_PREC_FPC;
@@ -2422,7 +2420,7 @@ APLBA2F SubBA2F_RE
             Myarb_init (&aplRes.parts[i]);
 
             // Subtract the two ARBs
-            arb_sub (&aplRes.parts[i], &aplLft.parts[i], &aplRht.parts[i], prec);
+            arb_sub2 (&aplRes.parts[i], &aplLft.parts[i], &aplRht.parts[i], prec);
         } // End IF/ELSE
     } // End FOR
 
@@ -2792,12 +2790,11 @@ APLBA4F SubBA4F_RE
         if (arb_inf_p (&aplLft.parts[i])
          && arb_inf_p (&aplRht.parts[i])
          && arb_sign (&aplLft.parts[i]) EQ arb_sign (&aplRht.parts[i]))
-            arb_init_set (&aplRes.parts[i],
-                           arb_QuadICValue (&aplRht.parts[i], // No left arg
-                                             ICNDX_InfSUBInf,
-                                            &aplRht.parts[i],
-                                            &aplRes.parts[i],
-                                             FALSE));
+            arb_QuadICValue (&aplRht.parts[i], // No left arg
+                              ICNDX_InfSUBInf,
+                             &aplRht.parts[i],
+                             &aplRes.parts[i],
+                              FALSE);
         else
         {
             mp_limb_signed_t prec = ARB_PREC_FPC;
@@ -2806,7 +2803,7 @@ APLBA4F SubBA4F_RE
             Myarb_init (&aplRes.parts[i]);
 
             // Subtract the two ARBs
-            arb_sub (&aplRes.parts[i], &aplLft.parts[i], &aplRht.parts[i], prec);
+            arb_sub2 (&aplRes.parts[i], &aplLft.parts[i], &aplRht.parts[i], prec);
         } // End IF/ELSE
     } // End FOR
 
@@ -3176,12 +3173,11 @@ APLBA8F SubBA8F_RE
         if (arb_inf_p (&aplLft.parts[i])
          && arb_inf_p (&aplRht.parts[i])
          && arb_sign (&aplLft.parts[i]) EQ arb_sign (&aplRht.parts[i]))
-            arb_init_set (&aplRes.parts[i],
-                           arb_QuadICValue (&aplRht.parts[i], // No left arg
-                                             ICNDX_InfSUBInf,
-                                            &aplRht.parts[i],
-                                            &aplRes.parts[i],
-                                             FALSE));
+            arb_QuadICValue (&aplRht.parts[i], // No left arg
+                              ICNDX_InfSUBInf,
+                             &aplRht.parts[i],
+                             &aplRes.parts[i],
+                              FALSE);
         else
         {
             mp_limb_signed_t prec = ARB_PREC_FPC;
@@ -3190,7 +3186,7 @@ APLBA8F SubBA8F_RE
             Myarb_init (&aplRes.parts[i]);
 
             // Subtract the two ARBs
-            arb_sub (&aplRes.parts[i], &aplLft.parts[i], &aplRht.parts[i], prec);
+            arb_sub2 (&aplRes.parts[i], &aplLft.parts[i], &aplRht.parts[i], prec);
         } // End IF/ELSE
     } // End FOR
 

@@ -2062,24 +2062,24 @@ APLARB MulBA1F_RE
       && IsArbPosInfinity (&aplRht))
      || (IsArbPosInfinity (&aplLft)
       && IsArb0 (&aplRht)))
-        aplRes = *arb_QuadICValue (&aplLft,
-                                    ICNDX_0MULPi,
-                                   &aplRht,
-                                   &aplRes,
-                                    IsArb0 (&aplLft) ? SIGN_APLARB (&aplLft)
-                                                     : SIGN_APLARB (&aplRht));
+        arb_QuadICValue (&aplLft,
+                          ICNDX_0MULPi,
+                         &aplRht,
+                         &aplRes,
+                          IsArb0 (&aplLft) ? SIGN_APLARB (&aplLft)
+                                           : SIGN_APLARB (&aplRht));
     else
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((IsArb0 (&aplLft)
       && IsArbNegInfinity (&aplRht))
      || (IsArbNegInfinity (&aplLft)
       && IsArb0 (&aplRht)))
-        aplRes = *arb_QuadICValue (&aplLft,
-                                    ICNDX_0MULNi,
-                                   &aplRht,
-                                   &aplRes,
-                                    IsArb0 (&aplLft) ? SIGN_APLARB (&aplLft)
-                                                     : SIGN_APLARB (&aplRht));
+        arb_QuadICValue (&aplLft,
+                          ICNDX_0MULNi,
+                         &aplRht,
+                         &aplRes,
+                          IsArb0 (&aplLft) ? SIGN_APLARB (&aplLft)
+                                           : SIGN_APLARB (&aplRht));
     else
     // Check for -0
     // If either arg is 0
@@ -3161,25 +3161,24 @@ APLBA2F MulBA2F_RE
       && IsArbPosInfinity (&aplRht.parts[i]))
      || (IsArbPosInfinity (&aplLft.parts[i])
       && IsArb0 (&aplRht.parts[i])))
-        arb_set (&aplRes.parts[i], arb_QuadICValue (&aplLft.parts[i],
-                                                     ICNDX_0MULPi,
-                                                    &aplRht.parts[i],
-                                                    &aplRes.parts[i],
-                                                     IsArb0 (&aplLft.parts[i]) ? SIGN_APLARB (&aplLft.parts[i])
-                                                                               : SIGN_APLARB (&aplRht.parts[i])));
+        arb_QuadICValue (&aplLft.parts[i],
+                          ICNDX_0MULPi,
+                         &aplRht.parts[i],
+                         &aplRes.parts[i],
+                          IsArb0 (&aplLft.parts[i]) ? SIGN_APLARB (&aplLft.parts[i])
+                                                    : SIGN_APLARB (&aplRht.parts[i]));
     else
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((IsArb0 (&aplLft.parts[i])
       && IsArbNegInfinity (&aplRht.parts[i]))
      || (IsArbNegInfinity (&aplLft.parts[i])
       && IsArb0 (&aplRht.parts[i])))
-        arb_set (&aplRes.parts[i], arb_QuadICValue (&aplLft.parts[i],
-                                                     ICNDX_0MULNi,
-                                                    &aplRht.parts[i],
-                                                    &aplRes.parts[i],
-                                                     IsArb0 (&aplLft.parts[i]) ? SIGN_APLARB (&aplLft.parts[i])
-                                                                               : SIGN_APLARB (&aplRht.parts[i])));
-
+        arb_QuadICValue (&aplLft.parts[i],
+                          ICNDX_0MULNi,
+                         &aplRht.parts[i],
+                         &aplRes.parts[i],
+                          IsArb0 (&aplLft.parts[i]) ? SIGN_APLARB (&aplLft.parts[i])
+                                                    : SIGN_APLARB (&aplRht.parts[i]));
     return aplRes;
 #undef D
 } // End MulBA2F_RE
@@ -4720,25 +4719,24 @@ APLBA4F MulBA4F_RE
       && IsArbPosInfinity (&aplRht.parts[i]))
      || (IsArbPosInfinity (&aplLft.parts[i])
       && IsArb0 (&aplRht.parts[i])))
-        arb_set (&aplRes.parts[i], arb_QuadICValue (&aplLft.parts[i],
-                                                     ICNDX_0MULPi,
-                                                    &aplRht.parts[i],
-                                                    &aplRes.parts[i],
-                                                     IsArb0 (&aplLft.parts[i]) ? SIGN_APLARB (&aplLft.parts[i])
-                                                                               : SIGN_APLARB (&aplRht.parts[i])));
+        arb_QuadICValue (&aplLft.parts[i],
+                          ICNDX_0MULPi,
+                         &aplRht.parts[i],
+                         &aplRes.parts[i],
+                          IsArb0 (&aplLft.parts[i]) ? SIGN_APLARB (&aplLft.parts[i])
+                                                    : SIGN_APLARB (&aplRht.parts[i]));
     else
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((IsArb0 (&aplLft.parts[i])
       && IsArbNegInfinity (&aplRht.parts[i]))
      || (IsArbNegInfinity (&aplLft.parts[i])
       && IsArb0 (&aplRht.parts[i])))
-        arb_set (&aplRes.parts[i], arb_QuadICValue (&aplLft.parts[i],
-                                                     ICNDX_0MULNi,
-                                                    &aplRht.parts[i],
-                                                    &aplRes.parts[i],
-                                                     IsArb0 (&aplLft.parts[i]) ? SIGN_APLARB (&aplLft.parts[i])
-                                                                               : SIGN_APLARB (&aplRht.parts[i])));
-
+        arb_QuadICValue (&aplLft.parts[i],
+                          ICNDX_0MULNi,
+                         &aplRht.parts[i],
+                         &aplRes.parts[i],
+                          IsArb0 (&aplLft.parts[i]) ? SIGN_APLARB (&aplLft.parts[i])
+                                                    : SIGN_APLARB (&aplRht.parts[i]));
     return aplRes;
 #undef  D
 } // End MulBA4F_RE
@@ -6209,25 +6207,24 @@ APLBA8F MulBA8F_RE
       && IsArbPosInfinity (&aplRht.parts[i]))
      || (IsArbPosInfinity (&aplLft.parts[i])
       && IsArb0 (&aplRht.parts[i])))
-        arb_set (&aplRes.parts[i], arb_QuadICValue (&aplLft.parts[i],
-                                                     ICNDX_0MULPi,
-                                                    &aplRht.parts[i],
-                                                    &aplRes.parts[i],
-                                                     IsArb0 (&aplLft.parts[i]) ? SIGN_APLARB (&aplLft.parts[i])
-                                                                               : SIGN_APLARB (&aplRht.parts[i])));
+        arb_QuadICValue (&aplLft.parts[i],
+                          ICNDX_0MULPi,
+                         &aplRht.parts[i],
+                         &aplRes.parts[i],
+                          IsArb0 (&aplLft.parts[i]) ? SIGN_APLARB (&aplLft.parts[i])
+                                                    : SIGN_APLARB (&aplRht.parts[i]));
     else
     // Check for indeterminates:  0 {times} {neg}_  or  {neg}_ {times} 0
     if ((IsArb0 (&aplLft.parts[i])
       && IsArbNegInfinity (&aplRht.parts[i]))
      || (IsArbNegInfinity (&aplLft.parts[i])
       && IsArb0 (&aplRht.parts[i])))
-        arb_set (&aplRes.parts[i], arb_QuadICValue (&aplLft.parts[i],
-                                                     ICNDX_0MULNi,
-                                                    &aplRht.parts[i],
-                                                    &aplRes.parts[i],
-                                                     IsArb0 (&aplLft.parts[i]) ? SIGN_APLARB (&aplLft.parts[i])
-                                                                               : SIGN_APLARB (&aplRht.parts[i])));
-
+        arb_QuadICValue (&aplLft.parts[i],
+                          ICNDX_0MULNi,
+                         &aplRht.parts[i],
+                         &aplRes.parts[i],
+                          IsArb0 (&aplLft.parts[i]) ? SIGN_APLARB (&aplLft.parts[i])
+                                                    : SIGN_APLARB (&aplRht.parts[i]));
     return aplRes;
 #undef  D
 } // End MulBA8F_RE

@@ -473,7 +473,7 @@ void PrimFnMonRootBA1FisBA1F
                     RaiseException (EXCEPTION_RESULT_BA2F, 0, 0, NULL);
                 } else
                     // Call it a NaN
-                    arf_nan (arb_midref (&lpMemRes[uRes]));
+                    arb_set_nan (&lpMemRes[uRes]);
             } else
             // If the interval is non-negative, ...
             if (signLo >= 0)
@@ -597,7 +597,7 @@ APLHC8F SqrtHCxF_RE
             else
             {
                 // Set the real part to 0
-                aplRes.parts[0] = 0;
+////////////////aplRes.parts[0] = 0.0;  // Already done in = {0}
 
                 // Calculate the real Sqrt of the absolute value of the right arg real part
                 aplRes.parts[1] = sqrt (fabs (aplRht.parts[0]));
@@ -920,7 +920,7 @@ APLHC8V SqrtHCxV_RE
             } else
             {
                 // Set the real part to 0
-                mpfr_set_zero (&aplRes.parts[0], +1);
+////////////////mpfr_set_d (&aplRes.parts[0], 0.0, MPFR_RNDN);  // Already done in mphcXv_init0
 
                 // Calculate the absolute value of the right arg real part
                 mpfr_abs (&aplV, &aplRht.parts[0], MPFR_RNDN);
@@ -2164,11 +2164,11 @@ void PrimFnDydRootBA1FisBA1FvBA1F
     // Check for indeterminates:  0 * _
     if (IsArb0 (&lpatLft->aplArb)
      && IsArb0 (&lpatRht->aplArb))
-        lpMemRes[uRes] = *arb_QuadICValue (&lpatLft->aplArb,
-                                            ICNDX_0EXPPi,
-                                           &lpatRht->aplArb,
-                                           &lpMemRes[uRes],
-                                            FALSE);
+        arb_QuadICValue (&lpatLft->aplArb,
+                          ICNDX_0EXPPi,
+                         &lpatRht->aplArb,
+                         &lpMemRes[uRes],
+                          FALSE);
     else
     // Check for special case:  1 {root} R <==> R * 1 <==> R
     if (IsArb1 (&lpatLft->aplArb))
@@ -2179,11 +2179,11 @@ void PrimFnDydRootBA1FisBA1FvBA1F
     {
         // Check for indeterminate:  0 {root} R where R <= -1
         if (arb_le (&lpatRht->aplArb, &arb1f_N1)) // R <= -1
-            lpMemRes[uRes] = *arb_QuadICValue (&lpatLft->aplArb,
-                                                ICNDX_NEXPPi,
-                                               &lpatRht->aplArb,
-                                               &lpMemRes[uRes],
-                                                FALSE);
+            arb_QuadICValue (&lpatLft->aplArb,
+                              ICNDX_NEXPPi,
+                             &lpatRht->aplArb,
+                             &lpMemRes[uRes],
+                              FALSE);
         else
         // Check for special case:  0 {root} R where -1 < R < 0 <==> 0
         if (arb_lt (&arb1f_N1, &lpatRht->aplArb)            // -1 < R
@@ -2197,11 +2197,11 @@ void PrimFnDydRootBA1FisBA1FvBA1F
         else
         // Check for indeterminate:  0 {root} 0 <==> 0 * _
         if (IsArb0 (&lpatRht->aplArb))
-            lpMemRes[uRes] = *arb_QuadICValue (&lpatLft->aplArb,
-                                                ICNDX_0EXPPi,
-                                               &lpatRht->aplArb,
-                                               &lpMemRes[uRes],
-                                                FALSE);
+            arb_QuadICValue (&lpatLft->aplArb,
+                              ICNDX_0EXPPi,
+                             &lpatRht->aplArb,
+                             &lpMemRes[uRes],
+                              FALSE);
         else
         // Check for special case:  0 {root} R where 0 < R < 1
         if (arb_lt (&arb1f_0, &lpatRht->aplArb)             // 0 < R
@@ -2219,11 +2219,11 @@ void PrimFnDydRootBA1FisBA1FvBA1F
     // Check for indeterminate:  PoM_ {root} 0 <==> 0 * 0
     if (arb_inf_p (&lpatLft->aplArb)
      && IsArb0 (&lpatRht->aplArb))
-        lpMemRes[uRes] = *arb_QuadICValue (&lpatLft->aplArb,
-                                            ICNDX_0EXP0,
-                                           &lpatRht->aplArb,
-                                           &lpMemRes[uRes],
-                                            FALSE);
+        arb_QuadICValue (&lpatLft->aplArb,
+                          ICNDX_0EXP0,
+                         &lpatRht->aplArb,
+                         &lpMemRes[uRes],
+                          FALSE);
     else
     // Check for Complex result
     if (arb_contains_negative (&lpatRht->aplArb))           // R < 0:  Not SIGN_APLARB as that'll catch -0 whose root is -0

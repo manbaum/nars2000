@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2018 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,12 +32,13 @@
 //***************************************************************************
 
 static LPAPLCHAR DydBody[] =
-{ L"⎕ERROR ((⍴R)≠⍴∪R)/'EIGENVALUES NOT DISTINCT'",
+{ L"⎕CT←0",
+  L"⎕ERROR ((⍴R)≠⍴∪R)/'EIGENVALUES NOT DISTINCT'",
   L"Z←<9○(L+.×(∘⌻!R)+.×⌹L)[;⎕IO]",
  };
 
 MAGIC_FCNOPR MFO_MonShriek =
-{L"Z←L " MFON_MonShriek L" R",
+{L"Z←L " MFON_MonShriek L" R;⎕CT",
  DydBody,
  countof (DydBody),
 };

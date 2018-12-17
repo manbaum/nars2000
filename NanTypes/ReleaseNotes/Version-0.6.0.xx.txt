@@ -1,6 +1,17 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2022 -- Version 0.6.0.xx
+-------------------------------
+
+* Set []CT To Zero In Factorial Magic Function
+
+Directory branches/bsmith/NanTypes:
+
+MF_SHRIEK.H:
+  Set []CT to zero in Factorial magic function so as to reduce the number of non-distinct cases until I can handle Jordan Canonical Form.
+
+
 Build #2020 -- Version 0.6.0.xx
 -------------------------------
 

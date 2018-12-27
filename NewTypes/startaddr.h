@@ -448,11 +448,6 @@ typedef struct tagSTART_ADDRESSES
     "EnumCallbackPassMsg"       , (LPUCHAR) &EnumCallbackPassMsg        ,
     "MFWndProc"                 , (LPUCHAR) &MFWndProc                  ,
 
-    // malloc.c
-////"dlfree"                    , (LPUCHAR) &dlfree                     ,
-////"dlmalloc"                  , (LPUCHAR) &dlmalloc                   ,
-////"dlrealloc"                 , (LPUCHAR) &dlrealloc                  ,
-
     // mpfns.c
     "mp_alloc"                  , (LPUCHAR) &mp_alloc                   ,
     "mp_realloc"                , (LPUCHAR) &mp_realloc                 ,

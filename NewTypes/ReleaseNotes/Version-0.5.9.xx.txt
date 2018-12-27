@@ -1,6 +1,61 @@
 Version 0.5.9.xx consists of the following Builds:
 
 
+Build #2021 -- Version 0.5.9.xx
+-------------------------------
+
+* Implement []DFT
+
+Directory branches/bsmith/NewTypes:
+
+COMPRO.H:
+  Delete <malloc.*> files as they are no longer used.
+  Include prototype file.
+
+MAIN.C:
+  Remove <pthread_mutex_*> functions as we now use <pthreads*.lib>.
+
+MAKEFILE.INC:
+  Include <pthreads*.*> files.
+  Include <mpfft*.*> files.
+  Include <qf_dft.*> files.
+  Ensure trailing backslash in path is escaped with ^.
+  Delete <malloc.*> files as they are no longer used.
+
+MAKEFILE.SRC:
+  Delete <malloc.*> files as they are no longer used.
+  Include <qf_dft.*> files.
+
+MALLOC.C:
+MALLOC.H:
+MALLOC.PROTO:
+  Delete <malloc.*> files as they are no longer used.
+
+NARS2000.VCXPROJ:
+  Include <pthreads*.*> files.
+  Include <mpfft*.*> files.
+  Include <qf_dft.*> files.
+
+NARS2000.VCXPROJ.FILTERS:
+  Delete <malloc.*> files as they are no longer used.
+  Include <qf_dft.*> files.
+
+QF_DFT.C:
+  New file to implement []DFT.
+
+STARTADDR.H:
+  Delete <malloc.*> files as they are no longer used.
+
+SYSVARS.C:
+  Include []DFT in the table of System Functions.
+
+WCOM.BAT:
+  Include <mpfft*.*> files.
+
+WCUSTOMIZE.BAT:
+  Include <pthreads*.*> files.
+
+
 Build #2019 -- Version 0.5.9.xx
 -------------------------------
 

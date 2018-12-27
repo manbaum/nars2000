@@ -82,8 +82,16 @@
 !error Environment variable ECM_DIR= not defined.
 !endif
 
+!ifndef MPFFT_DIR
+!error Environment variable MPFFT_DIR= not defined.
+!endif
+
 !ifndef SDK
 !error Environment variable SDK= not defined.
+!endif
+
+!ifndef PTH_DIR
+!error Environment variable PTH_DIR= not defined.
 !endif
 
 !ifndef NARSROOT
@@ -94,13 +102,13 @@
 
 NAME=NARS2000                       # Directory name
 ENAME=NARS2000                      # Executable name
-BIN=binaries\                       # Binaries directory
+BIN=binaries^\                      # Binaries directory
 DEBUG=0
-A=Images\                           # Images & artwork
-BC=$(BIN)COM\                       # Directory for common binaries
-WS=WineHQ\                          # Wine source
+A=Images^\                          # Images & artwork
+BC=$(BIN)COM^\                      # Directory for common binaries
+WS=WineHQ^\                         # Wine source
 OLDPATH=$(PATH)                     # Save the current path
-GSL_INC=$(GSL_DIR)include\          # Directory of GSL includes
+GSL_INC=$(GSL_DIR)include^\         # Directory of GSL includes
 SDK_INC=$(INCLUDE)                  # Directories of SDK includes
 
 QDEBUG=$(NARSROOT)qdebug\           # Directory for QDEBUG files/libraries
@@ -135,7 +143,10 @@ MPC_INC   = $(MPC_DIR)include^\
 MPIR_INC  = $(MPIR_DIR)include^\
 MPFR_INC  = $(MPFR_DIR)include^\
 FLINT_INC = $(FLINT_DIR)include^\
+FLINT_INC2= $(FLINT_DIR)
 ECM_INC   = $(ECM_DIR)include^\
+MPFFT_INC = $(MPFFT_DIR)include^\
+PTH_INC   = $(PTH_DIR)include^\
 
 !if [if not exist $(MPC_INC)*.h  exit 1]
 !error Incorrect value for MPC_INC=$(MPC_INC)
@@ -152,11 +163,17 @@ ECM_INC   = $(ECM_DIR)include^\
 !if [if not exist $(ECM_INC)*.h exit 1]
 !error Incorrect value for ECM_INC=$(ECM_INC)
 !endif
+!if [if not exist $(MPFFT_INC)*.h exit 1]
+!error Incorrect value for MPFFT_INC=$(MPFFT_INC)
+!endif
+!if [if not exist $(PTH_INC)*.h exit 1]
+!error Incorrect value for PTH_INC=$(PTH_INC)
+!endif
 
 WDEF=_WIN$(WIN)
 MFEXT=w$(WIN)
 
-I98=.\;$(SDK_INC);$(MSVC)INCLUDE;$(MS_INC);$(MPC_INC);$(MPIR_INC);$(MPFR_INC);$(FLINT_INC);$(ECM_INC);$(GSL_INC);$(CS_DIR)include;$(QDEBUG)
+I98=.\;$(SDK_INC);$(MSVC)INCLUDE;$(MS_INC);$(MPC_INC);$(MPIR_INC);$(MPFR_INC);$(FLINT_INC);$(FLINT_INC2);$(ECM_INC);$(GSL_INC);$(PTH_INC);$(MPFFT_INC);$(CS_DIR)include;$(QDEBUG)
 
 MV=makever
 
@@ -170,6 +187,8 @@ MPIR_LIB  = $(MPIR_DIR)lib\mpir$(WIN)$(DEBUG_LIBSUFFIX).lib
 MPFR_LIB  = $(MPFR_DIR)lib\mpfr$(WIN)$(DEBUG_LIBSUFFIX).lib
 FLINT_LIB = $(FLINT_DIR)lib\flint$(WIN)$(DEBUG_LIBSUFFIX).lib
 ECM_LIB   = $(ECM_DIR)lib\ecm$(WIN)$(DEBUG_LIBSUFFIX).lib
+MPFFT_LIB = $(MPFFT_DIR)lib\mpfft$(WIN)$(DEBUG_LIBSUFFIX).lib
+PTH_LIB   = $(PTH_DIR)lib\pthreads$(WIN)$(DEBUG_LIBSUFFIX).lib
 VCOMP_LIB = vcomp$(DEBUG_SUFFIX).lib
 
 !if "$(DEBUG)" == "1"
@@ -235,6 +254,8 @@ LIBS_WEXE =                     \
             $(FLINT_LIB)        \
             $(MPC_LIB)          \
             $(ECM_LIB)          \
+            $(MPFFT_LIB)        \
+            $(PTH_LIB)          \
             $(GSL_LIB)
 
 RCFLAGS = /nologo $(VERSION_FLAGS)
@@ -257,11 +278,11 @@ ASM=masm
 AFLAGS=/Mu /DDEBUG=$(DEBUG)
 
 !if "$(DEBUG)" == "1"
-B=$(BIN)D$(WIN)\                # Define output directory for binaries
+B=$(BIN)D$(WIN)^\               # Define output directory for binaries
 !else
-B=$(BIN)ND$(WIN)\               # Define output directory for binaries
+B=$(BIN)ND$(WIN)^\              # Define output directory for binaries
 !endif
-OC=RET\COM\                     # Define output directory for common intermediate files
+OC=RET\COM^\                    # Define output directory for common intermediate files
 
 PDBFILE = $(B)$(ENAME).pdb
 
@@ -539,10 +560,6 @@ $(O)inifile.obj:        $(@B).c         $(INIFILE_DEP)
 $(O)iniparser.obj:      $(@B).c         $(INIPARSER_DEP)
 $(O)initdata.obj:       $(@B).c         $(INITDATA_DEP)
 $(O)main.obj:           $(@B).c         $(MAIN_DEP)
-##$(O)malloc.obj:         $(@B).c         $(MALLOC_DEP)
-##        @Set INCLUDE=$(I98);$(O)
-##        @if exist $@ del $@
-##        @$(CC) $(CFLAGS_WEXE) /D USE_LOCKS=1 /Fo$@ $(LIST) %s
 $(O)mpci.obj:           $(@B).c         $(MPCI_DEP)
 $(O)mphi.obj:           $(@B).c         $(MPHI_DEP)
 $(O)mpoi.obj:           $(@B).c         $(MPOI_DEP)
@@ -638,6 +655,7 @@ $(O)qf_cr.obj:          $(@B).c         $(QF_CR_DEP)
 $(O)qf_cs.obj:          $(@B).c         $(QF_CS_DEP)
 $(O)qf_d.obj:           $(@B).c         $(QF_D_DEP)
 $(O)qf_dc.obj:          $(@B).c         $(QF_DC_DEP)
+$(O)qf_dft.obj:         $(@B).c         $(QF_DFT_DEP)
 $(O)qf_dl.obj:          $(@B).c         $(QF_DL_DEP)
 $(O)qf_dr.obj:          $(@B).c         $(QF_DR_DEP)
 $(O)qf_ea.obj:          $(@B).c         $(QF_EA_DEP)
@@ -735,6 +753,8 @@ $(O)$(ENAME).exe:       $(OBJS)             \
                         $(FLINT_LIB)        \
                         $(MPC_LIB)          \
                         $(ECM_LIB)          \
+                        $(MPFFT_LIB)        \
+                        $(PTH_LIB)          \
                         $(GSL_LIB)          \
                         $(CS_FILES)         \
                         $(FONT)             \

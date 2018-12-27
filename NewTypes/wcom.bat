@@ -32,6 +32,7 @@ Set MPFR_DIR=%NARSROOT%mpfr^\
 Set FLINT_DIR=%NARSROOT%flint^\
 Set GSL_DIR=%NARSROOT%gsl^\
 Set ECM_DIR=%NARSROOT%ecm^\
+Set MPFFT_DIR=%NARSROOT%mpfft^\
 
 if not exist .\SImPL-Medium.ttf copy /Y ..\SImPL-Medium.ttf . >NUL
 

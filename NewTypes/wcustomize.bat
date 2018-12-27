@@ -17,6 +17,9 @@ Set ZIPPRG="%ProgramFiles%\7-Zip\7z"
 REM Path to Cygwin directory
 Set CYGWIN_DIR=C:\Cygwin64^\
 
+REM Path to pthreads directory
+Set PTH_DIR=%NARSROOT%pthreads^\
+
 REM Directory of SDK ("%ProgramFiles(x86)%\Windows Kits\8.1")
 Set SDK=U:^\
 

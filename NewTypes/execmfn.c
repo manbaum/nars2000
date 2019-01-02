@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -266,8 +266,10 @@ HGLOBAL Init1MagicFunction
             if (!AllocHshTab (&lpInitMFO->lpLclMemVirtStr[lpInitMFO->uPtdMemVirtStart++],   // Ptr to this PTDMEMVIRT entry
                                lpInitMFO->lphtsMFO,                                         // Ptr to this HSHTABSTR
                                DEF_MFO_HSHTAB_NBLKS,                                        // Initial # blocks in HshTab (@ EPB HTEs per block)
+                               DEF_HSHTAB_EPB,                                              // # entries per block
                                DEF_MFO_HSHTAB_INCRNELM,                                     // # HTEs by which to resize when low
-                               gMFOHshTabSize))                                             // Maximum # HTEs
+                               gMFOHshTabSize,                                              // Maximum # HTEs
+                               TRUE))                                                       // TRUE iff we're to link this struc into the MVS
                 DbgStop ();
         } // End IF
 
@@ -295,7 +297,8 @@ HGLOBAL Init1MagicFunction
                                lpInitMFO->lphtsMFO,                                         // Ptr to this HSHTABSTR
                                DEF_MFO_SYMTAB_INITNELM,                                     // Initial # STEs in SymTab
                                DEF_MFO_SYMTAB_INCRNELM,                                     // # STEs by which to resize when low
-                               gMFOSymTabSize))                                             // Maximum # STEs
+                               gMFOSymTabSize,                                              // Maximum # STEs
+                               TRUE))                                                       // TRUE iff we're to link this struc into the MVS
                 DbgStop ();
         } // End IF
 

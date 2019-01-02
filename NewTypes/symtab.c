@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1641,7 +1641,7 @@ LPSYMENTRY SymTabHTSLookupChar
     // If we're to supply our own HTS, ...
     if (lphtsPTD EQ NULL)
         // Get a ptr to the HshTab & SymTab strucs
-        lphtsPTD = GetMemPTD ()->lphtsGLB;
+        lphtsPTD = &htsGLB;
 
     // Set mask flags
     stMaskFlags.Imm     =
@@ -1735,7 +1735,7 @@ LPSYMENTRY SymTabHTSLookupNumber
     // If we're to supply our own HTS, ...
     if (lphtsPTD EQ NULL)
         // Get a ptr to the HshTab & SymTab strucs
-        lphtsPTD = GetMemPTD ()->lphtsGLB;
+        lphtsPTD = &htsGLB;
 
     // Set mask flags
     stMaskFlags.Imm     =
@@ -1832,7 +1832,7 @@ LPSYMENTRY SymTabHTSLookupFloat
     // If we're to supply our own HTS, ...
     if (lphtsPTD EQ NULL)
         // Get a ptr to the HshTab & SymTab strucs
-        lphtsPTD = GetMemPTD ()->lphtsGLB;
+        lphtsPTD = &htsGLB;
 
     // Set mask flags
     stMaskFlags.Imm     =
@@ -2268,15 +2268,11 @@ LPSYMENTRY SymTabHTSAppendInteger_EM
     LPHSHENTRY   lpHshEntryDest;    // Ptr to destin HTE
     UINT         uHash;             // The hash of the value to append
     STFLAGS      stNeedFlags = {0}; // The flags we require
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
 
     // If we're to supply our own HTS, ...
     if (lphtsPTD EQ NULL)
         // Get a ptr to the HshTab & SymTab strucs
-        lphtsPTD = lpMemPTD->lphtsGLB;
+        lphtsPTD = &htsGLB;
 
     MyEnterCriticalSection (&CSOHshTab);
 
@@ -2284,16 +2280,16 @@ LPSYMENTRY SymTabHTSAppendInteger_EM
     if (bUseCommon)
     {
         // Split off common Boolean cases
-        if (aplInteger EQ 0 && lphtsPTD->steZero)
+        if (aplInteger EQ 0 && htsGLB.steZero NE NULL)
         {
-            lpSymEntryDest = lphtsPTD->steZero;
+            lpSymEntryDest = htsGLB.steZero;
 
             goto NORMAL_EXIT;
         } // End IF
 
-        if (aplInteger EQ 1 && lphtsPTD->steOne)
+        if (aplInteger EQ 1 && htsGLB.steOne NE NULL)
         {
-            lpSymEntryDest = lphtsPTD->steOne;
+            lpSymEntryDest = htsGLB.steOne;
 
             goto NORMAL_EXIT;
         } // End IF
@@ -2423,7 +2419,7 @@ LPSYMENTRY SymTabHTSAppendFloat_EM
     // If we're to supply our own HTS, ...
     if (lphtsPTD EQ NULL)
         // Get a ptr to the HshTab & SymTab strucs
-        lphtsPTD = GetMemPTD ()->lphtsGLB;
+        lphtsPTD = &htsGLB;
 
     MyEnterCriticalSection (&CSOHshTab);
 
@@ -2539,25 +2535,21 @@ LPSYMENTRY SymTabHTSAppendChar_EM
     LPHSHENTRY   lpHshEntryDest;    // Ptr to destin HTE
     UINT         uHash;             // The hash of the value to append
     STFLAGS      stNeedFlags = {0}; // The flags we require
-    LPPERTABDATA lpMemPTD;          // Ptr to PerTabData global memory
 
     MyEnterCriticalSection (&CSOHshTab);
-
-    // Get ptr to PerTabData global memory
-    lpMemPTD = GetMemPTD ();
 
     // If we're to supply our own HTS, ...
     if (lphtsPTD EQ NULL)
         // Get a ptr to the HshTab & SymTab strucs
-        lphtsPTD = lpMemPTD->lphtsGLB;
+        lphtsPTD = &htsGLB;
 
     // Use common cases?
     if (bUseCommon)
     {
         // Split off common blank case
-        if (aplChar EQ L' ' && lphtsPTD->steBlank)
+        if (aplChar EQ L' ' && htsGLB.steBlank NE NULL)
         {
-            lpSymEntryDest = lphtsPTD->steBlank;
+            lpSymEntryDest = htsGLB.steBlank;
 
             goto NORMAL_EXIT;
         } // End IF
@@ -2888,8 +2880,10 @@ UBOOL AllocHshTab
     (LPMEMVIRTSTR lpLclMemVirtStr,  // Ptr to this entry in MemVirtStr (may be NULL if global allocation)
      LPHSHTABSTR  lpHTS,            // Ptr to HshTab Struc
      size_t       uHshTabInitBlks,  // # blocks in this HshTab
+     UINT         uHshTabEpb,       // # entries per block
      size_t       uHshTabIncrNelm,  // # HTEs by which to resize when low
-     size_t       uHshTabMaxNelm)   // Maximum # HTEs
+     size_t       uHshTabMaxNelm,   // Maximum # HTEs
+     UBOOL        bLinkMVS)         // TRUE iff we're to link this struc into the MVS
 
 {
     size_t uHshTabInitNelm;         // Initial NELM of HshTab
@@ -2901,12 +2895,12 @@ UBOOL AllocHshTab
     if (uHshTabInitBlks EQ 0 || uHshTabInitBlks & (uHshTabInitBlks - 1))
         DbgStop ();
 
-    // The maximum NELM must be divisible by DEF_HSHTAB_EPB
-    if (0 NE (uHshTabMaxNelm % DEF_HSHTAB_EPB))
+    // The maximum NELM must be divisible by uHshTabEpb
+    if (0 NE (uHshTabMaxNelm % uHshTabEpb))
         DbgStop ();
 
     // Calculate the initial # entries
-    uHshTabInitNelm = uHshTabInitBlks * DEF_HSHTAB_EPB;
+    uHshTabInitNelm = uHshTabInitBlks * uHshTabEpb;
 
     // The amount to resize must be a divisor of uHshTabInitNelm
     if (0 NE (uHshTabInitNelm % uHshTabIncrNelm))
@@ -2919,10 +2913,10 @@ UBOOL AllocHshTab
     // Initialize HTS fields
     lpHTS->iHshTabTotalNelm = (UINT) uHshTabInitNelm;
     lpHTS->iHshTabBaseNelm  = (UINT) uHshTabInitNelm;
-    lpHTS->iHshTabIncrFree  =         DEF_HSHTAB_PRIME;
+    lpHTS->iHshTabIncrFree  =        DEF_HSHTAB_PRIME;
     lpHTS->iHshTabIncrNelm  = (UINT) uHshTabIncrNelm;
     lpHTS->uHashMask        = (UINT) uHshTabInitBlks - 1;
-    lpHTS->iHshTabEPB       = DEF_HSHTAB_EPB;
+    lpHTS->iHshTabEPB       =        uHshTabEpb;
 
     // If we are to allocate globally, ...
     if (lpLclMemVirtStr EQ NULL)
@@ -2946,8 +2940,10 @@ UBOOL AllocHshTab
         if (lpLclMemVirtStr->IniAddr EQ NULL)
             return FALSE;
 
-        // Link this struc into the chain
-        LinkMVS (lpLclMemVirtStr);
+        // If we're to link, ...
+        if (bLinkMVS)
+            // Link this struc into the chain
+            LinkMVS (lpLclMemVirtStr);
 
         // Commit the intial size
         MyVirtualAlloc (lpLclMemVirtStr->IniAddr,
@@ -2959,7 +2955,7 @@ UBOOL AllocHshTab
     // Initialize the principal hash entry (1st one in each block).
     // This entry is never overwritten with an entry with a
     //   different hash value.
-    for (uCnt = 0; uCnt < uHshTabInitNelm; uCnt += DEF_HSHTAB_EPB)
+    for (uCnt = 0; uCnt < uHshTabInitNelm; uCnt += uHshTabEpb)
         lpHTS->lpHshTab[uCnt].htFlags.PrinHash = TRUE;
 
     // Initialize the next & prev same HTE values
@@ -2987,7 +2983,8 @@ UBOOL AllocSymTab
      LPHSHTABSTR  lpHTS,            // Ptr to HshTab Struc
      size_t       uSymTabInitNelm,  // Initial # STEs in SymTab
      size_t       uSymTabIncrNelm,  // # STEs by which to resize when low
-     size_t       uSymTabMaxNelm)   // Maximum # STEs
+     size_t       uSymTabMaxNelm,   // Maximum # STEs
+     UBOOL        bLinkMVS)         // TRUE iff we're to link this struc into the MVS
 
 {
 ////WCHAR wszTemp[1024];            // ***DEBUG***
@@ -3028,8 +3025,10 @@ UBOOL AllocSymTab
         if (lpLclMemVirtStr->IniAddr EQ NULL)
             return FALSE;
 
-        // Link this struc into the chain
-        LinkMVS (lpLclMemVirtStr);
+        // If we're to link, ...
+        if (bLinkMVS)
+            // Link this struc into the chain
+            LinkMVS (lpLclMemVirtStr);
 
         // Commit the intial size
         MyVirtualAlloc (lpLclMemVirtStr->IniAddr,
@@ -3057,12 +3056,18 @@ UBOOL AllocSymTab
     lpHTS->steOne        = SymTabHTSAppendInteger_EM (1                      , FALSE, lpHTS);
     lpHTS->steNaN        = SymTabHTSAppendFloat_EM   (fltNaN                 ,        lpHTS);
     lpHTS->steBlank      = SymTabHTSAppendChar_EM    (L' '                   , FALSE, lpHTS);
-    lpHTS->steAlpha      = SymTabHTSAppendName_EM    (WS_UTF16_ALPHA  , NULL , TRUE , lpHTS);
-    lpHTS->steDel        = SymTabHTSAppendName_EM    (WS_UTF16_DEL    , NULL , TRUE , lpHTS);
-    lpHTS->steOmega      = SymTabHTSAppendName_EM    (WS_UTF16_OMEGA  , NULL , TRUE , lpHTS);
-    lpHTS->steLftOper    = SymTabHTSAppendName_EM    (WS_UTF16_LFTOPER, NULL , TRUE , lpHTS);
-    lpHTS->steDelDel     = SymTabHTSAppendName_EM    (WS_UTF16_DELDEL , NULL , TRUE , lpHTS);
-    lpHTS->steRhtOper    = SymTabHTSAppendName_EM    (WS_UTF16_RHTOPER, NULL , TRUE , lpHTS);
+
+    // If we're to link, ...
+    if (bLinkMVS)
+    {
+        lpHTS->steAlpha  = SymTabHTSAppendName_EM    (WS_UTF16_ALPHA  , NULL , TRUE , lpHTS);
+        lpHTS->steDel    = SymTabHTSAppendName_EM    (WS_UTF16_DEL    , NULL , TRUE , lpHTS);
+        lpHTS->steOmega  = SymTabHTSAppendName_EM    (WS_UTF16_OMEGA  , NULL , TRUE , lpHTS);
+        lpHTS->steLftOper= SymTabHTSAppendName_EM    (WS_UTF16_LFTOPER, NULL , TRUE , lpHTS);
+        lpHTS->steDelDel = SymTabHTSAppendName_EM    (WS_UTF16_DELDEL , NULL , TRUE , lpHTS);
+        lpHTS->steRhtOper= SymTabHTSAppendName_EM    (WS_UTF16_RHTOPER, NULL , TRUE , lpHTS);
+    } // End IF
+
     lpHTS->steNoValueUsr = lpHTS->lpSymTabNext++;
     lpHTS->steNoValueSys = lpHTS->lpSymTabNext++;
 #ifdef DEBUG
@@ -3075,23 +3080,33 @@ UBOOL AllocSymTab
      || lpHTS->steOne        EQ NULL
      || lpHTS->steNaN        EQ NULL
      || lpHTS->steBlank      EQ NULL
-     || lpHTS->steAlpha      EQ NULL
-     || lpHTS->steOmega      EQ NULL
-     || lpHTS->steDel        EQ NULL
-     || lpHTS->steLftOper    EQ NULL
-     || lpHTS->steDelDel     EQ NULL
-     || lpHTS->steRhtOper    EQ NULL
      || lpHTS->steNoValueUsr EQ NULL
      || lpHTS->steNoValueSys EQ NULL
        )
         return FALSE;
+
+    // If we're to link, ...
+    if (bLinkMVS
+     && (lpHTS->steAlpha      EQ NULL
+      || lpHTS->steOmega      EQ NULL
+      || lpHTS->steDel        EQ NULL
+      || lpHTS->steLftOper    EQ NULL
+      || lpHTS->steDelDel     EQ NULL
+      || lpHTS->steRhtOper    EQ NULL
+        )
+       )
+        return FALSE;
     else
     {
-        // Set the flag for {alpha}
-        lpHTS->steAlpha->stFlags.bIsAlpha = TRUE;
+        // If we're to link, ...
+        if (bLinkMVS)
+        {
+            // Set the flag for {alpha}
+            lpHTS->steAlpha->stFlags.bIsAlpha = TRUE;
 
-        // Set the flag for {omega}
-        lpHTS->steOmega->stFlags.bIsOmega = TRUE;
+            // Set the flag for {omega}
+            lpHTS->steOmega->stFlags.bIsOmega = TRUE;
+        } // End IF
 
         // Set the flags for the NoValue entry
         lpHTS->steNoValueUsr->stFlags.ObjName    = OBJNAME_NOVALUE_USR;
@@ -3101,9 +3116,9 @@ UBOOL AllocSymTab
 
         Assert (IsSymNoValue (lpHTS->steNoValueUsr));
         Assert (IsSymNoValue (lpHTS->steNoValueSys));
+    } // End IF/ELSE
 
-        return TRUE;
-    } // End IF
+    return TRUE;
 } // End AllocSymTab
 
 

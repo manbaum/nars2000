@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3213,51 +3213,6 @@ LPVOID GetGlbMem_LOCK
         return lpaplLongest;
     } // End IF/ELSE
 } // End GetGlbMem_LOCK
-
-
-//***************************************************************************
-//  $GetSteZero
-//
-//  Return the LPSYMENTRY corresponding to the constant zero
-//***************************************************************************
-
-LPSYMENTRY GetSteZero
-    (void)
-
-{
-    // Get the STE
-    return GetMemPTD ()->lphtsGLB->steZero;
-} // End GetSteZero
-
-
-//***************************************************************************
-//  $GetSteOne
-//
-//  Return the LPSYMENTRY corresponding to the constant one
-//***************************************************************************
-
-LPSYMENTRY GetSteOne
-    (void)
-
-{
-    // Get the STE
-    return GetMemPTD ()->lphtsGLB->steOne;
-} // End GetSteOne
-
-
-//***************************************************************************
-//  $GetSteBlank
-//
-//  Return the LPSYMENTRY corresponding to the constant blank
-//***************************************************************************
-
-LPSYMENTRY GetSteBlank
-    (void)
-
-{
-    // Get the STE
-    return GetMemPTD ()->lphtsGLB->steBlank;
-} // End GetSteBlank
 
 
 //***************************************************************************

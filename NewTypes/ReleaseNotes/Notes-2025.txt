@@ -1,0 +1,55 @@
+Build #2025 -- Version 0.5.9.xx
+-------------------------------
+
+* Allocate All Symbol Table Constants In A Single Global Hash And Symbol Table
+
+Directory branches/bsmith/NewTypes:
+
+DEFINES.H:
+  Define GLB HshTab & SymTab constants.
+
+EXCEPT.C:
+  Change the declaration of the size parameter to <GuardAlloc> to <size_t>.
+
+EXECMFN.C:
+SAVEFCN.C:
+SESSMAN.C:
+  Pass the EPB value to <AllocHshTab> as they differ from GLB to others.
+  Pass Boolean value to <AllocHshTab> & <AllocSymtab> to indicate whether or not to link the MEMVIRT_STR into a chain.
+
+EXTERNS.H:
+  Initialize the Boolean value that indicates whether the CSOs have been initialized.
+  Define new enum for the GLB SymTab in MEMVIRTENUM.
+  Change the declaration of the size parameters to <MEMVIRTSTR> to <size_t>.
+  Define new table size globals which can be set via the command line.
+
+GETFNS.C:
+STARTADDR.H:
+  Delete <GetSteXXXX> routines as they aren't used any more.
+
+IDENTFNS.C:
+PF_RSHOE.C:
+PF_UARROW.C:
+PO_SLASH.C:
+PRIMFNS.C:
+PRIMSPEC.C:
+QF_NFNS.C:
+SYSVARS.C:
+TOKENIZE.C:
+  Replace references to "->steXXX", for XXX in "One", "Blank", "NaN", etc. with "htsGLB.steXXX".
+
+MAIN.C:
+  In <InitInstance>, allocate the GLB HshTab and SymTab via <AllocHshTab> and <AllocSymTab>.
+  In <ParseCommandLine>, allow <glbSymTabSize> and <glbHshTabSize>.
+  Move all calls to <InitializeCriticalSection> to <AllocCSOs> and move the call to that routine to precede the call to <InitInstance>.
+  Move all calls to <DeleteCriticalSection> to <DeleteCSOs> and call that routine from where the group of calls was.
+
+SC_SYMB.C:
+  Display the current value of the GLB HshTab & SymTab sizes from )SYMB.
+
+SYMTAB.C:
+  In <SymTabHTSLookupXXXX> use the GLB HshTab & SymTab if the caller doesn't specify.
+  In <SymtabHTSAppendXXXX> ...
+  Replace references to "->steXXX", for XXX in "One", "Blank", "NaN", etc. with "htsGLB.steXXX".
+  Pass the EPB value to <AllocHshTab> as they differ from GLB to others.
+  Pass Boolean value to <AllocHshTab> & <AllocSymtab> to indicate whether or not to link the MEMVIRT_STR into a chain.

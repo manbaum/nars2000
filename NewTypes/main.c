@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -3599,7 +3599,6 @@ UBOOL InitInstance
 
 {
     HDC hDC;                    // Temporary Device Context
-    int i;                      // Loop counter
 
     // Save in global variable
     _hInstance = hInstance;
@@ -3759,58 +3758,115 @@ UBOOL InitInstance
                     PAGE_READWRITE);
 
     //***************************************************************
-    // Allocate virtual memory for the HshTab for {symbol} names & values
+    // Allocate virtual memory for the HshTab for ST Constants, {symbol} names & values
     //***************************************************************
     memVirtStr[MEMVIRT_GLBHSHTAB].lpText   = "htsGLB.lpHshTab in <InitInstance>";
-    memVirtStr[MEMVIRT_GLBHSHTAB].IncrSize = DEF_GLBHSHTAB_INCRNELM * sizeof (htsGLB.lpHshTab[0]);
-    memVirtStr[MEMVIRT_GLBHSHTAB].MaxSize  = DEF_GLBHSHTAB_MAXNELM  * sizeof (htsGLB.lpHshTab[0]);
-    memVirtStr[MEMVIRT_GLBHSHTAB].IniAddr  = (LPUCHAR)
-    htsGLB.lpHshTab =
-      GuardAlloc (NULL,             // Any address
-                  memVirtStr[MEMVIRT_GLBHSHTAB].MaxSize,
-                  MEM_RESERVE,      // memVirtStr
-                  PAGE_READWRITE);
-    if (memVirtStr[MEMVIRT_GLBHSHTAB].IniAddr EQ NULL)
+
+    if (!AllocHshTab (&memVirtStr[MEMVIRT_GLBHSHTAB],
+                      &htsGLB,
+                       DEF_GLBHSHTAB_NBLKS,
+                       DEF_GLBHSHTAB_EPB,
+                       DEF_GLBHSHTAB_INCRNELM,
+                       gGLBHshTabSize,
+                       FALSE))
     {
         // ***FIXME*** -- WS FULL before we got started???
-        DbgMsgW (L"InitInstance:  GuardAlloc for <lpGlbHshTab> failed");
+        DbgMsgW (L"InitInstance:  AllocHshTab for <MEMVIRT_GLBHSHTAB> failed\r\n");
 
         return FALSE;       // Mark as failed
     } // End IF
 
-    // Commit the intial size
-    MyVirtualAlloc (memVirtStr[MEMVIRT_GLBHSHTAB].IniAddr,
-                    DEF_GLBHSHTAB_INITNELM * sizeof (htsGLB.lpHshTab[0]),
-                    MEM_COMMIT,
-                    PAGE_READWRITE);
-
-    // Initialize the principal hash entry (1st one in each block).
-    // This entry is never overwritten with an entry with a
-    //   different hash value.
-    for (i = 0; i < DEF_GLBHSHTAB_INITNELM; i += DEF_GLBHSHTAB_EPB)
-        htsGLB.lpHshTab[i].htFlags.PrinHash = TRUE;
-
-    // Initialize the next & prev same HTE values
-    for (i = 0; i < DEF_GLBHSHTAB_INITNELM; i++)
-    {
-        htsGLB.lpHshTab[i].NextSameHash =
-        htsGLB.lpHshTab[i].PrevSameHash = LPHSHENTRY_NONE;
-    } // End FOR
-
-    // Initialize the global HshTab values
-    htsGLB.lphtsPrvSrch      =
-    htsGLB.lphtsPrvMFO       = NULL;
-    htsGLB.lpHshTabSplitNext = htsGLB.lpHshTab;
-    htsGLB.iHshTabBaseNelm   = DEF_GLBHSHTAB_INITNELM;
-    htsGLB.iHshTabTotalNelm  = DEF_GLBHSHTAB_INITNELM;
-    htsGLB.iHshTabIncrFree   = DEF_HSHTAB_PRIME;
-    htsGLB.iHshTabIncrNelm   = DEF_GLBHSHTAB_INCRNELM;
-    htsGLB.iHshTabEPB        = DEF_GLBHSHTAB_EPB;
-    htsGLB.uHashMask         = DEF_GLBHSHTAB_HASHMASK;
+////memVirtStr[MEMVIRT_GLBHSHTAB].IncrSize = DEF_GLBHSHTAB_INCRNELM * sizeof (htsGLB.lpHshTab[0]);
+////memVirtStr[MEMVIRT_GLBHSHTAB].MaxSize  = gGLBHshTabSize         * sizeof (htsGLB.lpHshTab[0]);
+////memVirtStr[MEMVIRT_GLBHSHTAB].IniAddr  = (LPUCHAR)
+////htsGLB.lpHshTab =
+////  GuardAlloc (NULL,             // Any address
+////              memVirtStr[MEMVIRT_GLBHSHTAB].MaxSize,
+////              MEM_RESERVE,      // memVirtStr
+////              PAGE_READWRITE);
+////if (memVirtStr[MEMVIRT_GLBHSHTAB].IniAddr EQ NULL)
+////{
+////    // ***FIXME*** -- WS FULL before we got started???
+////    DbgMsgW (L"InitInstance:  GuardAlloc for <lpGlbHshTab> failed");
+////
+////    return FALSE;       // Mark as failed
+////} // End IF
+////
+////// Commit the intial size
+////MyVirtualAlloc (memVirtStr[MEMVIRT_GLBHSHTAB].IniAddr,
+////                DEF_GLBHSHTAB_INITNELM * sizeof (htsGLB.lpHshTab[0]),
+////                MEM_COMMIT,
+////                PAGE_READWRITE);
+////
+////// Initialize the principal hash entry (1st one in each block).
+////// This entry is never overwritten with an entry with a
+//////   different hash value.
+////for (i = 0; i < DEF_GLBHSHTAB_INITNELM; i += DEF_GLBHSHTAB_EPB)
+////    htsGLB.lpHshTab[i].htFlags.PrinHash = TRUE;
+////
+////// Initialize the next & prev same HTE values
+////for (i = 0; i < DEF_GLBHSHTAB_INITNELM; i++)
+////{
+////    htsGLB.lpHshTab[i].NextSameHash =
+////    htsGLB.lpHshTab[i].PrevSameHash = LPHSHENTRY_NONE;
+////} // End FOR
+////
+////// Initialize the global HshTab values
+////htsGLB.lphtsPrvSrch      =
+////htsGLB.lphtsPrvMFO       = NULL;
+////htsGLB.lpHshTabSplitNext = htsGLB.lpHshTab;
+////htsGLB.iHshTabBaseNelm   = DEF_GLBHSHTAB_INITNELM;
+////htsGLB.iHshTabTotalNelm  = DEF_GLBHSHTAB_INITNELM;
+////htsGLB.iHshTabIncrFree   = DEF_HSHTAB_PRIME;
+////htsGLB.iHshTabIncrNelm   = DEF_GLBHSHTAB_INCRNELM;
+////htsGLB.iHshTabEPB        = DEF_GLBHSHTAB_EPB;
+////htsGLB.uHashMask         = DEF_GLBHSHTAB_HASHMASK;
     htsGLB.bGlbHshTab        = TRUE;
-    htsGLB.lpSymTab          =
-    htsGLB.lpSymTabNext      = NULL;
-    htsGLB.iSymTabTotalNelm  = 0;
+
+    //***************************************************************
+    // Allocate virtual memory for the SymTab for ST Constants, {symbol} names & values
+    //***************************************************************
+    memVirtStr[MEMVIRT_GLBSYMTAB].lpText   = "htsGLB.lpSymTab in <InitInstance>";
+
+    if (!AllocSymTab (NULL,                         // Any address
+                     &htsGLB,                       // Ptr to HshTab struc
+                      DEF_GLBSYMTAB_INITNELM,       // Initial # STEs in SymTab
+                      DEF_GLBSYMTAB_INCRNELM,       // # STEs by which to resize when low
+                      gGLBSymTabSize,
+                      FALSE))
+    {
+        // ***FIXME*** -- WS FULL before we got started???
+        DbgMsgW (L"InitInstance:  AllocSymTab for <MEMVIRT_GLBSYMTAB> failed\r\n");
+
+        return FALSE;       // Mark as failed
+    } // End IF
+
+////memVirtStr[MEMVIRT_GLBSYMTAB].IncrSize = DEF_GLBSYMTAB_INCRNELM * sizeof (htsGLB.lpSymTab[0]);
+////memVirtStr[MEMVIRT_GLBSYMTAB].MaxSize  = gGLBSymTabSize         * sizeof (htsGLB.lpSymTab[0]);
+////memVirtStr[MEMVIRT_GLBSYMTAB].IniAddr  = (LPUCHAR)
+////htsGLB.lpSymTab =
+////  GuardAlloc (NULL,             // Any address
+////              memVirtStr[MEMVIRT_GLBSYMTAB].MaxSize,
+////              MEM_RESERVE,      // memVirtStr
+////              PAGE_READWRITE);
+////if (memVirtStr[MEMVIRT_GLBSYMTAB].IniAddr EQ NULL)
+////{
+////    // ***FIXME*** -- WS FULL before we got started???
+////    DbgMsgW (L"InitInstance:  GuardAlloc for <lpGlbSymTab> failed");
+////
+////    return FALSE;       // Mark as failed
+////} // End IF
+////
+////// Initialize next available entry and NELMs
+////htsGLB.lpSymTabNext     = htsGLB.lpSymTab;
+////htsGLB.iSymTabTotalNelm = DEF_GLBSYMTAB_INITNELM;       // Initial # STEs in SymTab
+////htsGLB.uSymTabIncrNelm  = DEF_GLBSYMTAB_INCRNELM;       // # STEs by which to resize when low
+////
+////// Commit the intial size
+////MyVirtualAlloc (memVirtStr[MEMVIRT_GLBSYMTAB].IniAddr,
+////                DEF_GLBSYMTAB_INITNELM * sizeof (htsGLB.lpSymTab[0]),
+////                MEM_COMMIT,
+////                PAGE_READWRITE);
 
     // Read in the icons
     hIconMF_Large = LoadIcon (hInstance, MAKEINTRESOURCE (IDI_MF_LARGE));
@@ -4038,6 +4094,20 @@ UBOOL ParseCommandLine
                                 &bRet,
                                 &gMFOHshTabSize))
                     break;
+                if (TestCmdLine (&p,
+                                 "glbsymtabsize",
+                                 LCL_SYMTABSIZE_MUL,
+                                &bDone,
+                                &bRet,
+                                &gGLBSymTabSize))
+                    break;
+                if (TestCmdLine (&p,
+                                 "glbhshtabsize",
+                                 LCL_HSHTABSIZE_MUL,
+                                &bDone,
+                                &bRet,
+                                &gGLBHshTabSize))
+                    break;
 
                 bDone = TRUE;
                 bRet = FALSE;
@@ -4094,6 +4164,78 @@ void MyGsl_error_handler
 
     return;
 } // End MyGsl_error_handler
+
+
+//***************************************************************************
+//  $AllocCSOs
+//***************************************************************************
+
+void AllocCSOs
+    (void)
+
+{
+    if (!bCSO)
+    {
+        // Allocate Critical Section Objects
+        InitializeCriticalSection (&CSO0);
+        InitializeCriticalSection (&CSO1);
+#ifdef DEBUG
+        InitializeCriticalSection (&CSOFrisk);
+#endif
+#if RESDEBUG
+        InitializeCriticalSection (&CSORsrc);
+#endif
+        InitializeCriticalSection (&CSOPL);
+        InitializeCriticalSection (&CSOHshTab);
+        InitializeCriticalSection (&CSOLinkMVS);
+        InitializeCriticalSection (&CSOPthread);
+        InitializeCriticalSection (&CSOCombPNI);
+        InitializeCriticalSection (&CSOCombPNJ);
+        InitializeCriticalSection (&CSOCombPNR);
+        InitializeCriticalSection (&CSOCombPNZ);
+        InitializeCriticalSection (&CSOCombSN2I);
+        InitializeCriticalSection (&CSOCombSN2R);
+
+        // Mark as CSOs defined
+        bCSO = TRUE;
+    } // End IC
+} // End AllocCSOs
+
+
+//***************************************************************************
+//  $DeleteCSOs
+//***************************************************************************
+
+void DeleteCSOs
+    (void)
+
+{
+    if (bCSO)
+    {
+        // Delete Critical Section Objects
+        DeleteCriticalSection (&CSOCombSN2R);
+        DeleteCriticalSection (&CSOCombSN2I);
+        DeleteCriticalSection (&CSOCombPNZ);
+        DeleteCriticalSection (&CSOCombPNR);
+        DeleteCriticalSection (&CSOCombPNJ);
+        DeleteCriticalSection (&CSOCombPNI);
+        DeleteCriticalSection (&CSOPthread);
+        DeleteCriticalSection (&CSOLinkMVS);
+        DeleteCriticalSection (&CSOHshTab);
+        DeleteCriticalSection (&CSOPL);
+#if RESDEBUG
+        DeleteCriticalSection (&CSORsrc);
+#endif
+#ifdef DEBUG
+        DeleteCriticalSection (&CSOFrisk);
+#endif
+        DeleteCriticalSection (&CSO1);
+        DeleteCriticalSection (&CSO0);
+
+        // Mark as CSOs undefined
+        bCSO = FALSE;
+    } // End If
+} // End AllocCSOs
 
 
 //***************************************************************************
@@ -4210,6 +4352,11 @@ int PASCAL WinMain
 
 ////PERFMON
 
+    // Allocate Critical Section Objects
+    AllocCSOs ();
+
+////PERFMON
+
     // Perform initializations that apply to a specific instance
     if (!InitInstance (hInstance))
         goto EXIT2;
@@ -4221,32 +4368,6 @@ int PASCAL WinMain
         goto EXIT3;
 
 ////PERFMON
-
-    // Allocate Critical Section objects
-    //   for use in dtoa.c (2),
-    //              parseLine, and
-    //              HshTabFrisk.
-    InitializeCriticalSection (&CSO0);
-    InitializeCriticalSection (&CSO1);
-#ifdef DEBUG
-    InitializeCriticalSection (&CSOFrisk);
-#endif
-#if RESDEBUG
-    InitializeCriticalSection (&CSORsrc);
-#endif
-    InitializeCriticalSection (&CSOPL);
-    InitializeCriticalSection (&CSOHshTab);
-    InitializeCriticalSection (&CSOLinkMVS);
-    InitializeCriticalSection (&CSOPthread);
-    InitializeCriticalSection (&CSOCombPNI);
-    InitializeCriticalSection (&CSOCombPNJ);
-    InitializeCriticalSection (&CSOCombPNR);
-    InitializeCriticalSection (&CSOCombPNZ);
-    InitializeCriticalSection (&CSOCombSN2I);
-    InitializeCriticalSection (&CSOCombSN2R);
-
-    // Mark as CSO defined
-    bCSO = TRUE;
 
     // No aborting on error!
     gsl_set_error_handler (MyGsl_error_handler);
@@ -4389,24 +4510,9 @@ EXIT4:
     // Delete globals created by <MakePermVars>.
     DelePermVars ();
 
-    DeleteCriticalSection (&CSOCombSN2R);
-    DeleteCriticalSection (&CSOCombSN2I);
-    DeleteCriticalSection (&CSOCombPNZ);
-    DeleteCriticalSection (&CSOCombPNR);
-    DeleteCriticalSection (&CSOCombPNJ);
-    DeleteCriticalSection (&CSOCombPNI);
-    DeleteCriticalSection (&CSOPthread);
-    DeleteCriticalSection (&CSOLinkMVS);
-    DeleteCriticalSection (&CSOHshTab);
-    DeleteCriticalSection (&CSOPL);
-#if RESDEBUG
-    DeleteCriticalSection (&CSORsrc);
-#endif
-#ifdef DEBUG
-    DeleteCriticalSection (&CSOFrisk);
-#endif
-    DeleteCriticalSection (&CSO1);
-    DeleteCriticalSection (&CSO0);
+    // Delete Critical Section Objects
+    DeleteCSOs ();
+
 EXIT3:
     UninitApplication (hInstance);
 EXIT2:

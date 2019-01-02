@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -354,9 +354,6 @@ typedef struct tagSTART_ADDRESSES
     "GetGlbPtrs"                , (LPUCHAR) &GetGlbPtrs                 ,
     "GetGlbPtrs_LOCK"           , (LPUCHAR) &GetGlbPtrs_LOCK            ,
     "GetGlbMem_LOCK"            , (LPUCHAR) &GetGlbMem_LOCK             ,
-    "GetSteZero"                , (LPUCHAR) &GetSteZero                 ,
-    "GetSteOne"                 , (LPUCHAR) &GetSteOne                  ,
-    "GetSteBlank"               , (LPUCHAR) &GetSteBlank                ,
     "GetQuadCT"                 , (LPUCHAR) &GetQuadCT                  ,
     "GetQuadIO"                 , (LPUCHAR) &GetQuadIO                  ,
     "SetQuadIO"                 , (LPUCHAR) &SetQuadIO                  ,

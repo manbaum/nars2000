@@ -17,9 +17,16 @@ MAKEFILE.INC:
   Include <mpfft*.*> files.
   Include <qf_dft.*> files.
   Ensure trailing backslash in path is escaped with ^.
+  Delete <malloc.*> files as they are no longer used.
 
 MAKEFILE.SRC:
+  Delete <malloc.*> files as they are no longer used.
   Include <qf_dft.*> files.
+
+MALLOC.C:
+MALLOC.H:
+MALLOC.PROTO:
+  Delete <malloc.*> files as they are no longer used.
 
 NARS2000.VCXPROJ:
   Include <pthreads*.*> files.
@@ -32,6 +39,9 @@ NARS2000.VCXPROJ.FILTERS:
 
 QF_DFT.C:
   New file to implement []DFT.
+
+STARTADDR.H:
+  Delete <malloc.*> files as they are no longer used.
 
 SYSVARS.C:
   Include []DFT in the table of System Functions.

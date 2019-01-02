@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1380,7 +1380,7 @@ UBOOL fnAlpDone
                 // N.B.:  Use steNoValueUsr NOT steNoValueSys
                 //   as the former has a valid stHshEntry
                 //   and the latter doesn't
-                lpSymEntry = lptkLocalVars->lpMemPTD->lphtsPTD->steNoValueUsr;
+                lpSymEntry = htsGLB.steNoValueUsr;
         } else
         {
             STFLAGS stFlags = {0};              // STE flags
@@ -1405,7 +1405,7 @@ UBOOL fnAlpDone
                     goto ERROR_EXIT;
                 } else
                     // Just call it NoValueSys
-                    lpSymEntry = lptkLocalVars->lpMemPTD->lphtsPTD->steNoValueSys;
+                    lpSymEntry = htsGLB.steNoValueSys;
             } // End IF
         } // End IF
     } else
@@ -3038,10 +3038,11 @@ UBOOL fnDelDone
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
-        bRet = AppendNewToken_EM (lptkLocalVars,
-                                 &tkFlags,
-                                 &tkData,
-                                  0);
+        bRet =
+          AppendNewToken_EM (lptkLocalVars,
+                            &tkFlags,
+                            &tkData,
+                             0);
         // Skip over the next char
         lptkLocalVars->uChar++;
     } else
@@ -3055,7 +3056,7 @@ UBOOL fnDelDone
 
         // Attempt to append as new token, check for TOKEN TABLE FULL,
         //   and resize as necessary.
-        return
+        bRet =
           AppendNewToken_EM (lptkLocalVars,
                             &tkFlags,
                             &tkData,

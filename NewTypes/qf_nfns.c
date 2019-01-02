@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1471,10 +1471,10 @@ LPPL_YYSTYPE SysFnNINFO_EM_YY
                         //   (note we use fileInfo.dwFileAttributes as FILE_ATTRIBUTE_HIDDEN has been removed from dwFileAttributes)
                         if (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN)
                             // Save an LPSYMENTRY in the result
-                            lpMemRes[uLft] = lpMemPTD->lphtsGLB->steOne ;
+                            lpMemRes[uLft] = htsGLB.steOne ;
                         else
                             // Save an LPSYMENTRY in the result
-                            lpMemRes[uLft] = lpMemPTD->lphtsGLB->steZero;
+                            lpMemRes[uLft] = htsGLB.steZero;
                     } // End IF/ELSE
 
                     break;

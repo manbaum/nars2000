@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -152,13 +152,22 @@
 #else
   #error Need code for this architecture.
 #endif
-#define DEF_GLBHSHTAB_NBLKS            128                  // Starting # blocks
+#define DEF_GLBHSHTAB_NBLKS            128*1024             // Starting # blocks
 #define DEF_GLBHSHTAB_EPB                2                  // # entries in each block
 #define DEF_GLBHSHTAB_INITNELM  (DEF_GLBHSHTAB_NBLKS * DEF_GLBHSHTAB_EPB)   // Initial NELM of global HshTab for {symbol} names & values
 #define DEF_GLBHSHTAB_INCRNELM  (DEF_GLBHSHTAB_INITNELM)    // Incremental ...
-#define DEF_GLBHSHTAB_MAXNELM   (1024 * DEF_GLBHSHTAB_EPB)  // Maximum ...
-#define DEF_GLBHSHTAB_HASHMASK  (DEF_GLBHSHTAB_NBLKS - 1)   // Starting hash mask
-#define DEF_GLBHSHTAB_INCRFREE  (DEF_HSHTAB_PRIME % DEF_GLBHSHTAB_INITNELM)
+#define DEF_GLBHSHTAB_MAXNELM   (1024 * 1024 * DEF_GLBHSHTAB_EPB)   // Maximum ...
+//efine DEF_GLBHSHTAB_HASHMASK  (DEF_GLBHSHTAB_NBLKS - 1)   // Starting hash mask
+//efine DEF_GLBHSHTAB_INCRFREE  (DEF_HSHTAB_PRIME % DEF_GLBHSHTAB_INITNELM)
+
+#define DEF_GLBSYMTAB_NBLKS            128*1024             // Starting # blocks
+#define DEF_GLBSYMTAB_EPB                2                  // # entries in each block
+#define DEF_GLBSYMTAB_INITNELM  (DEF_GLBSYMTAB_NBLKS * DEF_GLBSYMTAB_EPB)   // Initial NELM of global SymTab for ST Constants, {symbol} names & values
+#define DEF_GLBSYMTAB_INCRNELM  (DEF_GLBSYMTAB_INITNELM)    // Incremental ...
+#define DEF_GLBSYMTAB_MAXNELM   (1024 * 1024 * DEF_GLBSYMTAB_EPB)   // Maximum ...
+//efine DEF_GLBSYMTAB_HASHMASK  (DEF_GLBSYMTAB_NBLKS - 1)   // Starting hash mask
+//efine DEF_GLBSYMTAB_INCRFREE  (DEF_SYMTAB_PRIME % DEF_GLBSYMTAB_INITNELM)
+
 #define DEF_CS_INITNELM         (     4*1024)               // Initial NELM of Ctrl Struc token buffer
 #define DEF_CS_INCRNELM         (     4*1024)               // Incremental ...
 #define DEF_CS_MAXNELM          (    64*1024)               // Maximum ...
@@ -662,6 +671,7 @@ default:        \
 #define IsDigit         isdigit
 #define IsDigitW        iswdigit
 #define strlenW         wcslen
+#define strstrW         wcsstr
 
 
 //***************************************************************************

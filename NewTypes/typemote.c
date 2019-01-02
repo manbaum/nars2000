@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2539,13 +2539,13 @@ UBOOL TypePromoteGlb_EM
                     case ARRAY_HC4F:
                     case ARRAY_HC8F:
                         // Save a zero STE as the prototype
-                        *((LPAPLHETERO) lpMemRes)++ = GetSteZero ();
+                        *((LPAPLHETERO) lpMemRes)++ = htsGLB.steZero;
 
                         break;
 
                     case ARRAY_CHAR:
                         // Save a zero STE as the prototype
-                        *((LPAPLHETERO) lpMemRes)++ = GetSteBlank ();
+                        *((LPAPLHETERO) lpMemRes)++ = htsGLB.steBlank;
 
                         break;
 
@@ -2593,8 +2593,8 @@ UBOOL TypePromoteGlb_EM
 ///             {
 ///                 case ARRAY_BOOL:
 ///                     uBitMask = BIT0;
-///                     lpSym0 = GetSteZero ();
-///                     lpSym1 = GetSteOne ();
+///                     lpSym0 = htsGLB.steZero;
+///                     lpSym1 = htsGLB.steOne;
 ///
 ///                     // Loop through the arg converting values to the result
 ///                     for (uRes = 0; uRes < aplNELMArg; uRes++)

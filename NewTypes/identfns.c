@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -349,10 +349,10 @@ UBOOL FillIdentityElement_EM
                         // If the identity element is numeric, ...
                         if (IsImmNum (hGlbSym.lpSym->stFlags.ImmType))
                             // Save the prototype of the identity element in the result
-                            *((LPAPLNESTED) lpMemRes)++ = lpMemPTD->lphtsGLB->steZero;
+                            *((LPAPLNESTED) lpMemRes)++ = htsGLB.steZero;
                         else
                             // Save the prototype of the identity element in the result
-                            *((LPAPLNESTED) lpMemRes)++ = lpMemPTD->lphtsGLB->steBlank;
+                            *((LPAPLNESTED) lpMemRes)++ = htsGLB.steBlank;
                     } else
                     {
                         // Save the identity element in the result

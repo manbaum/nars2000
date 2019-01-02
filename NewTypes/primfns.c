@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -942,10 +942,10 @@ HGLOBAL MakeMonPrototype_EM_PTB
             case ARRAY_BOOL:
             case ARRAY_INT:
             case ARRAY_FLOAT:
-                return lpMemPTD->lphtsGLB->steZero;
+                return htsGLB.steZero;
 
             case ARRAY_CHAR:
-                return lpMemPTD->lphtsGLB->steBlank;
+                return htsGLB.steBlank;
 
             case ARRAY_RAT:
             case ARRAY_VFP:
@@ -983,11 +983,11 @@ HGLOBAL MakeMonPrototype_EM_PTB
                 // If it's FLT and a NaN, ...
                 if (IsImmFlt (((LPSYMENTRY) hGlbArr)->stFlags.ImmType)
                  && IsFltNaN (((LPSYMENTRY) hGlbArr)->stData.stFloat))
-                    return lpMemPTD->lphtsGLB->steNaN;
+                    return htsGLB.steNaN;
                 else
-                    return lpMemPTD->lphtsGLB->steZero;
+                    return htsGLB.steZero;
             } else
-                return lpMemPTD->lphtsGLB->steBlank;
+                return htsGLB.steBlank;
 
         case PTRTYPE_HGLOBAL:
             break;
@@ -1162,16 +1162,16 @@ HGLOBAL MakeMonPrototype_EM_PTB
                     {
                         case IMMTYPE_BOOL:
                         case IMMTYPE_INT:
-                            lpSymRes = lpMemPTD->lphtsGLB->steZero;
+                            lpSymRes = htsGLB.steZero;
 
                             break;
 
                         case IMMTYPE_FLOAT:
                             // If it's a NaN, ...
                             if (IsFltNaN (lpSymArr->stData.stFloat))
-                                lpSymRes = lpMemPTD->lphtsGLB->steNaN;
+                                lpSymRes = htsGLB.steNaN;
                             else
-                                lpSymRes = lpMemPTD->lphtsGLB->steZero;
+                                lpSymRes = htsGLB.steZero;
                             break;
 
                         case IMMTYPE_CHAR:
@@ -1179,7 +1179,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
                             switch (mpEnum)
                             {
                                 case MP_CHARS:
-                                    lpSymRes = lpMemPTD->lphtsGLB->steBlank;
+                                    lpSymRes = htsGLB.steBlank;
 
                                     break;
 
@@ -1189,7 +1189,7 @@ HGLOBAL MakeMonPrototype_EM_PTB
                                     break;
 
                                 case MP_NUMCONV:
-                                    lpSymRes = lpMemPTD->lphtsGLB->steZero;
+                                    lpSymRes = htsGLB.steZero;
 
                                     break;
 
@@ -2670,8 +2670,8 @@ HGLOBAL CopyGlbAsType_EM
                     // Get ptr to PerTabData global memory
                     lpMemPTD = GetMemPTD ();
 
-                    lpSym0 = lpMemPTD->lphtsGLB->steZero;
-                    lpSym1 = lpMemPTD->lphtsGLB->steOne;
+                    lpSym0 = htsGLB.steZero;
+                    lpSym1 = htsGLB.steOne;
 
                     uBitMask = BIT0;
 
@@ -3489,7 +3489,7 @@ LPPL_YYSTYPE MakeNoValue_YY
     lpYYRes->tkToken.tkFlags.TknType   = TKT_VARNAMED;
 ////lpYYRes->tkToken.tkFlags.ImmType   = IMMTYPE_ERROR; // Already zero from YYAlloc
     lpYYRes->tkToken.tkFlags.NoDisplay = TRUE;
-    lpYYRes->tkToken.tkData.tkSym      = lpMemPTD->lphtsPTD->steNoValueUsr;
+    lpYYRes->tkToken.tkData.tkSym      = htsGLB.steNoValueUsr;
     lpYYRes->tkToken.tkCharIndex       = (lptkFunc NE NULL) ? lptkFunc->tkCharIndex
                                                             : -1;
     lpYYRes->tkToken.tkSynObj          = soNVAL;

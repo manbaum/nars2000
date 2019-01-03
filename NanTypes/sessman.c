@@ -1181,8 +1181,10 @@ WM_NCCREATE_FAIL:
             bRet = AllocHshTab (&lpLclMemVirtStr[PTDMEMVIRT_HSHTAB],    // Ptr to this entry in MemVirtStr
                                  lpMemPTD->lphtsPTD,                    // Ptr to this HSHTABSTR
                                  DEF_HSHTAB_NBLKS,                      // Initial # blocks in HshTab
+                                 DEF_HSHTAB_EPB,                        // # entries per block
                                  DEF_HSHTAB_INCRNELM,                   // # HTEs by which to resize when low
-                                 gHshTabSize);                          // Maximum # HTEs
+                                 gHshTabSize,                           // Maximum # HTEs
+                                 TRUE);                                 // TRUE iff we're to link this struc into the MVS
             if (!bRet)
             {
                 // ***FIXME*** -- WS FULL before we got started???
@@ -1200,7 +1202,8 @@ WM_NCCREATE_FAIL:
                                  lpMemPTD->lphtsPTD,                    // Ptr to this HSHTABSTR
                                  DEF_SYMTAB_INITNELM,                   // Initial # STEs in SymTab
                                  DEF_SYMTAB_INCRNELM,                   // # STEs by which to resize when low
-                                 gSymTabSize);                          // Maximum # STEs
+                                 gSymTabSize,                           // Maximum # STEs
+                                 TRUE);                                 // TRUE iff we're to link this struc into the MVS
             if (!bRet)
             {
                 // ***FIXME*** -- WS FULL before we got started???
@@ -2290,10 +2293,14 @@ NORMAL_EXIT:
 #ifdef DEBUG
                 case VK_F11:            // DbgBrk ()
                 {
-                    LPSYMENTRY   lpSym = NULL;
+                    LPSYMENTRY lpSym = NULL;
+                    POINT ptCaret;                  // The caret position
 
                     // Get ptr to PerTabData global memory
                     lpMemPTD = GetMemPTD ();
+
+                    // Get the caret position in client coords
+                    GetCaretPos (&ptCaret);
 
                     // Signal a breakpoint to invoke the debugger
                     DbgBrk ();      // #ifdef DEBUG

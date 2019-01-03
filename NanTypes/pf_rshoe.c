@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -313,9 +313,9 @@ LPPL_YYSTYPE PrimFnMonRightShoeGlb_EM_YY
     lpbCtrlBreak = &lpplLocalVars->bCtrlBreak;
 
     // Get STEs for constants
-    lpSym0 = GetSteZero  ();
-    lpSym1 = GetSteOne   ();
-    lpSymB = GetSteBlank ();
+    lpSym0 = htsGLB.steZero ;
+    lpSym1 = htsGLB.steOne  ;
+    lpSymB = htsGLB.steBlank;
 
     // Get the attributes (Type, NELM, and Rank)
     //   of the right arg global

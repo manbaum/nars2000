@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -4378,7 +4378,7 @@ void AssignDefaultHTSSysVars
 
     // Set the values for []Z
     // N.B.:  Use steNoValueUsr NOT steNoValueSys as the former has a valid stHshEntry and the latter doesn't
-    lpSymQuad[SYSVAR_Z]->stFlags             = lphtsPTD->steNoValueUsr->stFlags;
+    lpSymQuad[SYSVAR_Z]->stFlags             = htsGLB.steNoValueUsr->stFlags;
     lpSymQuad[SYSVAR_Z]->stFlags.Inuse       = TRUE;
     lpSymQuad[SYSVAR_Z]->stFlags.SysVarValid = SYSVAR_Z;
 } // End AssignDefaultHTSSysVars

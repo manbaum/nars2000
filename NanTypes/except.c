@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1285,7 +1285,7 @@ void FindRoutineAddress
 
 LPVOID GuardAlloc
     (LPVOID lpvAddress,         // Address of region to reserve or commit
-     DWORD  cbSize,             // Size of region
+     size_t cbSize,             // Size of region
      DWORD  fdwAllocationType,  // Type of allocation
      DWORD  fdwProtect)         // Type of access protection
 

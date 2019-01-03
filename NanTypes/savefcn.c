@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2168,15 +2168,18 @@ UBOOL SaveFunctionCom
         if (!AllocHshTab (NULL,                     // Ptr to this entry in MemVirtStr (may be NULL if global allocation)
                          &lpSF_Fcns->htsDFN,        // Ptr to HshTab Struc
                           DEF_AFO_HSHTAB_NBLKS,     // # blocks in this HshTab
+                          DEF_HSHTAB_EPB,           // # entries per block
                           DEF_AFO_HSHTAB_INCRNELM,  // # HTEs by which to resize when low
-                          gAFOHshTabSize))          // Maximum # HTEs
+                          gAFOHshTabSize,           // Maximum # HTEs
+                          TRUE))                    // TRUE iff we're to link this struc into the MVS
             goto WSFULL_EXIT;
 
         if (!AllocSymTab (NULL,                     // Ptr to this entry in MemVirtStr (may be NULL if global allocation)
                          &lpSF_Fcns->htsDFN,        // Ptr to HshTab Struc
                           DEF_AFO_SYMTAB_INITNELM,  // Initial # STEs in SymTab
                           DEF_AFO_SYMTAB_INCRNELM,  // # STEs by which to resize when low
-                          gAFOSymTabSize))          // Maximum # STEs
+                          gAFOSymTabSize,           // Maximum # STEs
+                          TRUE))                    // TRUE iff we're to link this struc into the MVS
             goto WSFULL_EXIT;
 
         // Mark as global Hsh & Sym tabs

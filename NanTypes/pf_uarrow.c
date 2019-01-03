@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -899,13 +899,13 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
                         case IMMTYPE_INT:
                         case IMMTYPE_FLOAT:
                             // Get the appropriate prototype
-                            aplProtoSym = lpMemPTD->lphtsGLB->steZero;
+                            aplProtoSym = htsGLB.steZero;
 
                             break;
 
                         case IMMTYPE_CHAR:
                             // Get the appropriate prototype
-                            aplProtoSym = lpMemPTD->lphtsGLB->steBlank;
+                            aplProtoSym = htsGLB.steBlank;
 
                             break;
 
@@ -919,7 +919,7 @@ LPPL_YYSTYPE PrimFnDydUpArrow_EM_YY
                     // All GlbNums are numeric
 
                     // Get the appropriate prototype
-                    aplProtoSym = lpMemPTD->lphtsGLB->steZero;
+                    aplProtoSym = htsGLB.steZero;
 
                     break;
 

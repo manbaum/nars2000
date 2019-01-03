@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2017 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -108,13 +108,15 @@ UBOOL CmdSymb_EM
     // Format the output line
     MySprintfW (wszTemp,
                 sizeof (wszTemp),
-               L"             Maximum       # " X L" Units   Current    In Use  Command Line Switch w/Default\r\n"
-               L"LclSymTab: %9d (%6d " X L" %4u) %9d %9d  -LclSymTabSize=%d\r\n"
-               L"LclHshTab: %9d (%6d " X L" %4u) %9d %9d  -LclHshTabSize=%d\r\n"
-               L"AFOSymTab: %9d (%6d " X L" %4u)                      -AFOSymTabSize=%d\r\n"
-               L"AFOHshTab: %9d (%6d " X L" %4u)                      -AFOHshTabSize=%d\r\n"
-               L"MFOSymTab: %9d (%6d " X L" %4u)                      -MFOSymTabSize=%d\r\n"
-               L"MFOHshTab: %9d (%6d " X L" %4u)                      -MFOHshTabSize=%d",
+               L"             Maximum         # " X L" Units   Current    In Use  Command Line Switch=Default\r\n"
+               L"LclSymTab: %9d (%8d " X L" %4u) %9d %9d  -LclSymTabSize=%d\r\n"
+               L"LclHshTab: %9d (%8d " X L" %4u) %9d %9d  -LclHshTabSize=%d\r\n"
+               L"AFOSymTab: %9d (%8d " X L" %4u)                      -AFOSymTabSize=%d\r\n"
+               L"AFOHshTab: %9d (%8d " X L" %4u)                      -AFOHshTabSize=%d\r\n"
+               L"MFOSymTab: %9d (%8d " X L" %4u)                      -MFOSymTabSize=%d\r\n"
+               L"MFOHshTab: %9d (%8d " X L" %4u)                      -MFOHshTabSize=%d\r\n"
+               L"GLBSymTab: %9d (%8d " X L" %4u)                      -GLBSymTabSize=%d\r\n"
+               L"GLBHshTab: %9d (%8d " X L" %4u)                      -GLBHshTabSize=%d",
 #undef  X
                 uSymTabMax                                  ,
                 uSymTabMax  / LCL_SYMTABSIZE_MUL            ,
@@ -148,7 +150,17 @@ UBOOL CmdSymb_EM
                 gMFOHshTabSize                              ,
                 gMFOHshTabSize / MFO_HSHTABSIZE_MUL         ,
                 MFO_HSHTABSIZE_MUL                          ,
-                DEF_MFO_HSHTAB_MAXNELM / MFO_HSHTABSIZE_MUL);
+                DEF_MFO_HSHTAB_MAXNELM / MFO_HSHTABSIZE_MUL ,
+
+                gGLBSymTabSize                              ,
+                gGLBSymTabSize / MFO_SYMTABSIZE_MUL         ,
+                LCL_SYMTABSIZE_MUL                          ,
+                DEF_GLBSYMTAB_MAXNELM / LCL_SYMTABSIZE_MUL  ,
+
+                gGLBHshTabSize                              ,
+                gGLBHshTabSize / LCL_HSHTABSIZE_MUL         ,
+                LCL_HSHTABSIZE_MUL                          ,
+                DEF_GLBHSHTAB_MAXNELM / LCL_HSHTABSIZE_MUL);
     // Display the line
     AppendLine (wszTemp, FALSE, TRUE);
 

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -419,7 +419,11 @@ LPWCHAR lpwszIniFile,                   // Ptr to "APPNAME.ini" file
         lpwszWorkDir;                   // Ptr to WS_WKSNAME dir
 
 EXTERN
-UBOOL bCSO;                             // TRUE iff Critical Sections defined
+UBOOL bCSO                              // TRUE iff Critical Sections Objects defined
+#ifdef DEFINE_VALUES
+ = FALSE
+#endif
+;
 
 EXTERN
 CRITICAL_SECTION CSO0,                  // Critical Section Object #0
@@ -1310,8 +1314,9 @@ WCHAR wszMCTitle[]                      // MDI Client ... (for debugging purpose
 typedef enum tagMEMVIRTENUM
 {
     MEMVIRT_WSZGLBTEMP = 0,             // 00:  lpwszGlbTemp
-    MEMVIRT_GLBHSHTAB,                  // 01:  Global HshTab for {symbol} names & values
-    MEMVIRT_LENGTH                      // 02:  # entries in this enum
+    MEMVIRT_GLBHSHTAB,                  // 01:  Global HshTab for ST Constants, {symbol} names & values
+    MEMVIRT_GLBSYMTAB,                  // 02:  ...    SymTab ...
+    MEMVIRT_LENGTH                      // 03:  # entries in this enum
 } MEMVIRTENUM;
 
 #define MVS     struct tagMEMVIRTSTR
@@ -1321,7 +1326,7 @@ typedef struct tagMEMVIRTSTR
     MVS    *lpPrvMVS,                   // 00:  Ptr to previous link (NULL = none)
            *lpNxtMVS;                   // 04:  Ptr to next     ...
     LPUCHAR IniAddr;                    // 08:  Initial address
-    UINT    IncrSize,                   // 0C:  Incremental size in bytes
+    size_t  IncrSize,                   // 0C:  Incremental size in bytes
             MaxSize;                    // 10:  Maximum     ...
     LPCHAR  lpText;                     // 14:  Ptr to (const) description of this item
                                         // 18:  Length
@@ -2546,6 +2551,16 @@ size_t gSymTabSize
        gMFOHshTabSize
 #ifdef DEFINE_VALUES
 = {DEF_MFO_HSHTAB_MAXNELM}
+#endif
+,
+       gGLBSymTabSize
+#ifdef DEFINE_VALUES
+= {DEF_GLBSYMTAB_MAXNELM}
+#endif
+,
+       gGLBHshTabSize
+#ifdef DEFINE_VALUES
+= {DEF_GLBHSHTAB_MAXNELM}
 #endif
 ;
 

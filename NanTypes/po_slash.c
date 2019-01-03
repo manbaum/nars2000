@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -629,8 +629,8 @@ RESTART_ALLOC:
             for (uRes = 0; uRes < aplNELMNst; uRes++)
                 // Make & save a prototype of the right arg
                 *((LPAPLNESTED) lpMemRes)++ =
-                  (IsSimpleNum (aplTypeRht)) ? lpMemPTD->lphtsGLB->steZero
-                                             : lpMemPTD->lphtsGLB->steBlank;
+                  (IsSimpleNum (aplTypeRht)) ? htsGLB.steZero
+                                             : htsGLB.steBlank;
         } // End IF
     } else
     // If this is +/APA or max/APA or min/APA

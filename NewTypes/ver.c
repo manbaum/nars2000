@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,8 +37,9 @@ extern HICON hIconAbout;
 const char * ecm_version (void);
 extern WCHAR crsh_dll[];
 extern WCHAR crsh_version[];
-extern char gsl_version[],
-            flint_version[];
+extern char *gsl_version;
+extern char flint_version[];
+extern char mpfft_version[];
 
 
 //***************************************************************************
@@ -59,7 +60,7 @@ void LclFileVersionStrW
     LPWSTR lpwVer, lpwBuf;
     HLOCAL hLoc = NULL;
     UINT   cb;
-    WCHAR  wszTemp[128];
+    WCHAR  wszTemp[1024];
 
     wszTemp[0] = '\0';      // Ensure properly terminated in case we fail
     dwVerSize = GetFileVersionInfoSizeW (lpwszFileName, &dwVerHandle);
@@ -261,6 +262,19 @@ APLU3264 CALLBACK AboutDlgProc
                         L"%S\n",
                          flint_version);
             //***************************************************************************
+            // MPFFT version
+            //***************************************************************************
+
+            // Copy the MPFFT prefix to the text
+            MyStrcatW (wszTemp, sizeof (wszTemp), L"MPFFT Version #");
+
+            // Append the MPFFT version #
+            MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
+                        L"%S\n",
+                         mpfft_version);
+
+            //***************************************************************************
             // GSL version
             //***************************************************************************
 
@@ -307,7 +321,7 @@ APLU3264 CALLBACK AboutDlgProc
                         L"Workspace version #%s\n",
                          WS_VERSTR);
             //***************************************************************************
-            // SYMTABSIZE version
+            // SYMTABSIZE size
             //***************************************************************************
 
             // Append the SymTabSize
@@ -316,7 +330,7 @@ APLU3264 CALLBACK AboutDlgProc
                         L"SymTabSize %u\n",
                          gSymTabSize / LCL_SYMTABSIZE_MUL);
             //***************************************************************************
-            // HSHTABSIZE version
+            // HSHTABSIZE size
             //***************************************************************************
 
             // Append the HshTabSize
@@ -324,6 +338,15 @@ APLU3264 CALLBACK AboutDlgProc
                          uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"HshTabSize %u\n",
                          gHshTabSize / LCL_HSHTABSIZE_MUL);
+
+            //***************************************************************************
+            // ENSURE THERE IS ENOUGH ROOM IN IDC_VERSION2 IN MAIN.RC
+            //***************************************************************************
+
+            //***************************************************************************
+            // Secondary Version String
+            //***************************************************************************
+
             // Write out the secondary version string
             SetDlgItemTextW (hDlg, IDC_VERSION2, wszTemp);
 

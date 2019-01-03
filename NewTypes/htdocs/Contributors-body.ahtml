@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 
@@ -68,6 +68,10 @@ Contributors</h1>
 
     <li>The GMP ECM team contributed their <a class="linkleft" href="http://ecm.gforge.inria.fr/">Elliptic
       Curve Method for Integer Factorization</a> code.</li>
+      
+    <li>The FLINT team contributed their <a class="linkleft" href="http://flintlib.org">Fast Library for Number Theory</a> code.</li>
+      
+    <li>The ARB team contributed their <a class="linkleft" href="http://arblib.org">Arbitrary Precision Ball Arithmetic</a> code.</li>
 
     <li>Mattias Andrée contributed his implementation of <a class="linkleft" href="https://raw.github.com/maandree/hungarian-algorithm-n3/master/hungarian.c">Kuhn's
       Hungarian Algorithm</a>.</li>
@@ -82,6 +86,9 @@ Contributors</h1>
 
     <li>Donald E. Knuth contributed many excellent Combinatorial Algorithms to the Combinatorial Operator through his "The Art of Computer Programming",
       Volume 4A, "Combinatorial Algorithms", Addison Wesley.
+    </li>
+    
+    <li>The user who goes by the name <b>urrfinjuss</b> contributed the <a class="linkleft" href="https://github.com/urrfinjuss/mpfft">MPFFT</a> library.
     </li>
   </ul>
 </div>

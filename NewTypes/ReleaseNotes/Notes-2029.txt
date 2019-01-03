@@ -1,0 +1,40 @@
+Build #2029 -- Version 0.5.9.xx
+-------------------------------
+
+* Update Copyright Year
+* Update Contributors And License Pages
+* Update List Of Current Datatypes
+* Move "Copy" Button In About Box
+
+Directory branches/bsmith/NewTypes:
+
+DEFINES.H:
+  Update copyright year.
+
+MAIN.RC:
+  Update copyright year.
+  Move "Copy" button in About box up so that it doesn't need to be moved again is more Verison #s are appended.
+  Lengthen the About box to make room for more Version #s.
+
+VER.C:
+  Display more Version #s.
+
+Directory branches/bsmith/NewTypes/htdocs:
+
+CONTRIBUTORS-BODY.AHTML:
+  Include more contributors.
+
+FOOTER-MON.HTML:
+FOOTER.HTML:
+  Update copyright year.
+
+INDEX-BODY.AHTML:
+  Rename []DQ to []LR.
+  Include Ball Arithmetic in the list of current datatypes.
+  Fix error in links to Source Code.
+  Update copyright year.
+
+LICENSE-BODY.HTML:
+  Indicate that the file is encoded in UTF-8.
+  Update copyright year.
+  Document more library license agreements.

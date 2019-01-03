@@ -195,10 +195,10 @@ Welcome to NARS2000</h1>
         <li>System variables:
           <ul>
             <li><span class="APL">{quad}DT</span> (Distribution Type)</li>
-            <li><span class="APL">{quad}DQ</span> (Division Quotient)</li>
             <li><span class="APL">{quad}FC</span> (Format Control)</li>
             <li><span class="APL">{quad}FPC</span> (Floating Point Control)</li>
             <li><span class="APL">{quad}IC</span> (Indeterminate Control)</li>
+            <li><span class="APL">{quad}LR</span> (Left-Right Choice)</li>
           </ul>
         </li>
         <li>System functions:
@@ -331,6 +331,8 @@ Welcome to NARS2000</h1>
     <li>Quaternion numbers (e.g., <span class="APL">2i3j4ij5</span>
       or <span class="APL">2i3j4k5</span>)</li>
     <li>Octonion numbers (e.g., <span class="APL">2i3j4k5l6il7jl8kl9</span>)</li>
+    <li>Ball Arithmetic for Real, Complex, Quaternion, and Octonion numbers (e.g.,
+      <span class="APL">3.14159{pom}1E{overbar}30</span> or <span class="APL">123.45{pom}i2</span>)</li>
     </ul>
 
   <h3>Wish List of Datatypes</h3>
@@ -391,7 +393,7 @@ Welcome to NARS2000</h1>
     <li>Control structures on one line or split across multiple lines
       (e.g., <span class="APL">:for I :in {iota}N {diamond} ... {diamond} :endfor</span>)</li>
     <li>Syntax coloring of lines of APL in Function Editor and Session Manager windows</li>
-    <li>Base, Euler, Gamma, Hypercomplex, and Pi Point Notation as extensions to Decimal Point and Exponential Point Notations
+    <li>Ball, Base, Euler, Gamma, Hypercomplex, and Pi Point Notation as extensions to Decimal Point and Exponential Point Notations
       for entering certain numeric constants</li>
     <li>A <b>Status Window</b> at the bottom of the screen displays various pieces of information about
       the cursor position and key states</li>
@@ -484,7 +486,7 @@ Welcome to NARS2000</h1>
       <li><b>Source Code Under Version Control:</b>
         <ul>
           <li>The source may be
-            <a class="linkleft" href="http://sourceforge.net/p/nars2000/code/HEAD/tree/trunk">viewed</a>,
+            <a class="linkleft" href="https://sf.net/p/nars2000/code/HEAD/tree/branches/bsmith/NewTypes/">viewed</a>,
             as well as downloaded, one file at a time, from your browser.
           </li>
 
@@ -499,7 +501,7 @@ Welcome to NARS2000</h1>
             This is one means by which developers may checkout and commit changes to
             the code.
             Using a version control program, the source code may be viewed using the URL
-            <a class="linkleft" href="https://svn.code.sf.net/p/nars2000/code/trunk">https://svn.code.sf.net/p/nars2000/code/trunk</a>.
+            <a class="linkleft" href="https://sf.net/p/nars2000/code/HEAD/tree/branches/bsmith/NewTypes/">https://sf.net/p/nars2000/code/HEAD/tree/branches/bsmith/NewTypes/</a>.
           </li>
         </ul>
       </li>
@@ -584,7 +586,7 @@ Welcome to NARS2000</h1>
   <p>This project was started by
   <script type="text/javascript"
           src="/email.cgi?n=bsmith&amp;d=sudleyplace.com&amp;t=Bob%20Smith&amp;class=mailright"></script>
-  and is &copy; 2006-2017, Sudley Place Software.  Here's a link to some of my other
+  and is &copy; 2006-2019, Sudley Place Software.  Here's a link to some of my other
   <a class="linkleft" href="http://www.sudleyplace.com/APL/projects.html">APL-related pages</a>.</p>
 </div>
 
@@ -621,7 +623,7 @@ Welcome to NARS2000</h1>
       opportunity to make a micro-payment to express your support.
     The <a class="linkleft" href="http://en.wikipedia.org/wiki/QR_code">QR Code</a> to the left
       allows you to send a tiny bit of money to my Bitcoin wallet, and by tiny bit, I mean
-      <span style="font-family: BTCFont">B</span>0.0005 (Bitcoins) which at the current rate is between 10 and 50 cents.
+      <span style="font-family: BTCFont">B</span>0.00005 (Bitcoins) which at the current rate is under a dollar.
     This amount is the minimum some Bitcoin wallets allow you to transfer, below which the
       transaction might be delayed indefinitely, or ignored entirely.</p>
 

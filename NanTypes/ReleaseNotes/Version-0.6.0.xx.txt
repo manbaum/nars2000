@@ -1,6 +1,40 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2028 -- Version 0.6.0.xx
+-------------------------------
+
+* Implement []DFT
+
+Directory branches/bsmith/NanTypes:
+
+COMPRO.H:
+  Include prototype file.
+
+MAKEFILE.INC:
+  Include <mpfft*.*> files.
+  Include <qf_dft.*> files.
+
+MAKEFILE.SRC:
+  Include <qf_dft.*> files.
+
+NARS2000.VCXPROJ:
+  Include <mpfft*.*> files.
+  Include <qf_dft.*> files.
+
+NARS2000.VCXPROJ.FILTERS:
+  Include <qf_dft.*> files.
+
+QF_DFT.C:
+  New file to implement []DFT.
+
+SYSVARS.C:
+  Include []DFT in the table of System Functions.
+
+WCOM.BAT:
+  Include <mpfft*.*> files.
+
+
 Build #2026 -- Version 0.6.0.xx
 -------------------------------
 

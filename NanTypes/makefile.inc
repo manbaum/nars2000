@@ -86,6 +86,10 @@
 !error Environment variable ARB_DIR= not defined.
 !endif
 
+!ifndef MPFFT_DIR
+!error Environment variable MPFFT_DIR= not defined.
+!endif
+
 !ifndef SDK
 !error Environment variable SDK= not defined.
 !endif
@@ -146,6 +150,7 @@ FLINT_INC = $(FLINT_DIR)include^\
 FLINT_INC2= $(FLINT_DIR)
 ECM_INC   = $(ECM_DIR)include^\
 ARB_INC   = $(ARB_DIR)include^\
+MPFFT_INC = $(MPFFT_DIR)include^\
 PTH_INC   = $(PTH_DIR)include^\
 
 !if [if not exist $(MPC_INC)*.h  exit 1]
@@ -166,6 +171,9 @@ PTH_INC   = $(PTH_DIR)include^\
 !if [if not exist $(ARB_INC)*.h exit 1]
 !error Incorrect value for ARB_INC=$(ARB_INC)
 !endif
+!if [if not exist $(MPFFT_INC)*.h exit 1]
+!error Incorrect value for MPFFT_INC=$(MPFFT_INC)
+!endif
 !if [if not exist $(PTH_INC)*.h exit 1]
 !error Incorrect value for PTH_INC=$(PTH_INC)
 !endif
@@ -173,7 +181,7 @@ PTH_INC   = $(PTH_DIR)include^\
 WDEF=_WIN$(WIN)
 MFEXT=w$(WIN)
 
-I98=.\;$(SDK_INC);$(MSVC)INCLUDE;$(MS_INC);$(MPC_INC);$(MPIR_INC);$(MPFR_INC);$(FLINT_INC);$(FLINT_INC2);$(ECM_INC);$(ARB_INC);$(GSL_INC);$(PTH_INC);$(CS_DIR)include;$(QDEBUG)
+I98=.\;$(SDK_INC);$(MSVC)INCLUDE;$(MS_INC);$(MPC_INC);$(MPIR_INC);$(MPFR_INC);$(FLINT_INC);$(FLINT_INC2);$(ECM_INC);$(ARB_INC);$(GSL_INC);$(PTH_INC);$(MPFFT_INC);$(CS_DIR)include;$(QDEBUG)
 
 MV=makever
 
@@ -188,6 +196,7 @@ MPFR_LIB  = $(MPFR_DIR)lib\mpfr$(WIN)$(DEBUG_LIBSUFFIX).lib
 FLINT_LIB = $(FLINT_DIR)lib\flint$(WIN)$(DEBUG_LIBSUFFIX).lib
 ECM_LIB   = $(ECM_DIR)lib\ecm$(WIN)$(DEBUG_LIBSUFFIX).lib
 ARB_LIB   = $(ARB_DIR)lib\arb$(WIN)$(DEBUG_LIBSUFFIX).lib
+MPFFT_LIB = $(MPFFT_DIR)lib\mpfft$(WIN)$(DEBUG_LIBSUFFIX).lib
 PTH_LIB   = $(PTH_DIR)lib\pthreads$(WIN)$(DEBUG_LIBSUFFIX).lib
 VCOMP_LIB = vcomp$(DEBUG_SUFFIX).lib
 
@@ -255,6 +264,7 @@ LIBS_WEXE =                     \
             $(MPC_LIB)          \
             $(ECM_LIB)          \
             $(ARB_LIB)          \
+            $(MPFFT_LIB)        \
             $(PTH_LIB)          \
             $(GSL_LIB)
 
@@ -663,6 +673,7 @@ $(O)qf_cr.obj:          $(@B).c         $(QF_CR_DEP)
 $(O)qf_cs.obj:          $(@B).c         $(QF_CS_DEP)
 $(O)qf_d.obj:           $(@B).c         $(QF_D_DEP)
 $(O)qf_dc.obj:          $(@B).c         $(QF_DC_DEP)
+$(O)qf_dft.obj:         $(@B).c         $(QF_DFT_DEP)
 $(O)qf_dl.obj:          $(@B).c         $(QF_DL_DEP)
 $(O)qf_dr.obj:          $(@B).c         $(QF_DR_DEP)
 $(O)qf_ea.obj:          $(@B).c         $(QF_EA_DEP)
@@ -761,6 +772,7 @@ $(O)$(ENAME).exe:       $(OBJS)             \
                         $(MPC_LIB)          \
                         $(ECM_LIB)          \
                         $(ARB_LIB)          \
+                        $(MPFFT_LIB)        \
                         $(PTH_LIB)          \
                         $(GSL_LIB)          \
                         $(CS_FILES)         \

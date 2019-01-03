@@ -172,6 +172,7 @@
   #include "qf_cs.pro"
   #include "qf_d.pro"
   #include "qf_dc.pro"
+  #include "qf_dft.pro"
   #include "qf_dl.pro"
   #include "qf_dr.pro"
   #include "qf_ea.pro"

@@ -39,6 +39,7 @@ extern WCHAR crsh_dll[];
 extern WCHAR crsh_version[];
 extern char *gsl_version;
 extern char flint_version[];
+extern char mpfft_version[];
 
 
 //***************************************************************************
@@ -272,6 +273,19 @@ APLU3264 CALLBACK AboutDlgProc
                          uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"%S\n",
                          arb_version);
+            //***************************************************************************
+            // MPFFT version
+            //***************************************************************************
+
+            // Copy the MPFFT prefix to the text
+            MyStrcatW (wszTemp, sizeof (wszTemp), L"MPFFT Version #");
+
+            // Append the MPFFT version #
+            MySprintfW (&wszTemp[lstrlenW (wszTemp)],
+                         uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
+                        L"%S\n",
+                         mpfft_version);
+
             //***************************************************************************
             // GSL version
             //***************************************************************************

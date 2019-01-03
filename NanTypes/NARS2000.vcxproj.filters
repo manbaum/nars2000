@@ -651,6 +651,9 @@
     <ClCompile Include="po_dbltilde.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="qf_dft.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Bison_Rule Include="cs_parse.y">

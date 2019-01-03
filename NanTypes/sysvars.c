@@ -96,6 +96,7 @@ SYSNAME aSystemNames[] =
     {WS_UTF16_QUAD L"at"       ,      1,      FALSE, FALSE, SysFnAT_EM_YY       , 0              },    // Attributes
     {WS_UTF16_QUAD L"cr"       ,      1,      FALSE, TRUE , SysFnCR_EM_YY       , 0              },    // Canonical Representation
     {WS_UTF16_QUAD L"dc"       ,      1,      FALSE, FALSE, SysFnDC_EM_YY       , 0              },    // Data Conversion
+    {WS_UTF16_QUAD L"dft"      ,      1,      FALSE, TRUE , SysFnDFT_EM_YY      , 0              },    // Discrete Fourier Transform
     {WS_UTF16_QUAD L"dl"       ,      1,      FALSE, TRUE , SysFnDL_EM_YY       , 0              },    // Delay Execution
     {WS_UTF16_QUAD L"dr"       ,      1,      FALSE, FALSE, SysFnDR_EM_YY       , 0              },    // Data Representation
     {WS_UTF16_QUAD L"ea"       ,      1,      FALSE, TRUE , SysFnEA_EM_YY       , 0              },    // Execute Alternate

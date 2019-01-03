@@ -1,6 +1,18 @@
 Version 0.5.9.xx consists of the following Builds:
 
 
+Build #2027 -- Version 0.5.9.xx
+-------------------------------
+
+* Include File Missing From Last Build
+
+Directory branches/bsmith/NewTypes/ReleaseNotes:
+
+NOTES-2025.TXT:
+VERSION-0.5.9.XX.TXT:
+  Include file missing from last build.
+
+
 Build #2025 -- Version 0.5.9.xx
 -------------------------------
 
@@ -39,7 +51,8 @@ PRIMSPEC.C:
 QF_NFNS.C:
 SYSVARS.C:
 TOKENIZE.C:
-  Replace references to "->steXXX", for XXX in "One", "Blank", "NaN", etc. with "htsGLB.steXXX".
+TYPEMOTE.C:
+  Replace references to "->steXXX", for XXX in "Zero", "One", "Blank", "NaN", etc. with "htsGLB.steXXX".
 
 MAIN.C:
   In <InitInstance>, allocate the GLB HshTab and SymTab via <AllocHshTab> and <AllocSymTab>.

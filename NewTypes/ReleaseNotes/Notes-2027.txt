@@ -1,0 +1,10 @@
+Build #2027 -- Version 0.5.9.xx
+-------------------------------
+
+* Include File Missing From Last Build
+
+Directory branches/bsmith/NewTypes/ReleaseNotes:
+
+NOTES-2025.TXT:
+VERSION-0.5.9.XX.TXT:
+  Include file missing from last build.

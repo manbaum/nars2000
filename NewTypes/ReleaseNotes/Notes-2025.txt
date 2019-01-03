@@ -36,6 +36,7 @@ PRIMSPEC.C:
 QF_NFNS.C:
 SYSVARS.C:
 TOKENIZE.C:
+TYPEMOTE.C:
   Replace references to "->steXXX", for XXX in "One", "Blank", "NaN", etc. with "htsGLB.steXXX".
 
 MAIN.C:

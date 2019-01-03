@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -333,7 +333,7 @@ APLU3264 CALLBACK AboutDlgProc
                         L"Workspace version #%s\n",
                          WS_VERSTR);
             //***************************************************************************
-            // SYMTABSIZE version
+            // SYMTABSIZE size
             //***************************************************************************
 
             // Append the SymTabSize
@@ -342,7 +342,7 @@ APLU3264 CALLBACK AboutDlgProc
                         L"SymTabSize %u\n",
                          gSymTabSize / LCL_SYMTABSIZE_MUL);
             //***************************************************************************
-            // HSHTABSIZE version
+            // HSHTABSIZE size
             //***************************************************************************
 
             // Append the HshTabSize
@@ -350,6 +350,15 @@ APLU3264 CALLBACK AboutDlgProc
                          uSub (sizeof (wszTemp), (lstrlenW (wszTemp) * sizeof (wszTemp[0]))),
                         L"HshTabSize %u\n",
                          gHshTabSize / LCL_HSHTABSIZE_MUL);
+
+            //***************************************************************************
+            // ENSURE THERE IS ENOUGH ROOM IN IDC_VERSION2 IN MAIN.RC
+            //***************************************************************************
+
+            //***************************************************************************
+            // Secondary Version String
+            //***************************************************************************
+
             // Write out the secondary version string
             SetDlgItemTextW (hDlg, IDC_VERSION2, wszTemp);
 

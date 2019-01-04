@@ -1,6 +1,14 @@
 Version 0.5.9.xx consists of the following Builds:
 
 
+Build #2031 -- Version 0.5.9.xx
+-------------------------------
+
+Directory branches/bsmith/NewTypes:
+
+* Synch With Version Control
+
+
 Build #2029 -- Version 0.5.9.xx
 -------------------------------
 

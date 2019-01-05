@@ -1,0 +1,21 @@
+Build #2018 -- Version 0.6.0.xx
+-------------------------------
+
+* Swap Alt-'\' and Alt-'|' Keys To Reflect Actual Keyboard
+* Define Alt-'B' as DownTackOverbar
+
+Directory branches/bsmith/NanTypes/Extensions\aplchars:
+
+INSTALL.RDF:
+UPDATE.RDF:
+  Update version #.
+
+
+Directory branches/bsmith/NanTypes/Extensions\aplchars\chrome\content\aplchars:
+
+ABOUT.XUL:
+  Update version #.
+
+EDITOROVERLAY.JS:
+  Define Alt-'B' as DownTackOverbar (U+2351).
+  Swap Alt-'\' and Alt-'|' to reflect the actual keyboard.

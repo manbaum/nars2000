@@ -1,6 +1,18 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2038 -- Version 0.6.0.xx
+-------------------------------
+
+* DEBUG Attempt To Trap Text Cursor Problems
+
+Directory branches/bsmith/NanTypes/WineHQ:
+
+EDITCTRL.C:
+LOCAL.H:
+  DEBUG attempt to trap text cursor problems.
+
+
 Build #2036 -- Version 0.6.0.xx
 -------------------------------
 

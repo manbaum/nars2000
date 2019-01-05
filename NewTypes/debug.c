@@ -244,8 +244,8 @@ LRESULT APIENTRY DBWndProc
      LPARAM lParam)     // ...
 
 {
-    char         szTemp[1204];
-    WCHAR        wszTemp[1024];
+    char          szTemp[1024*128];
+    WCHAR        wszTemp[1024*128];
     int          iLineNum,
                  iIndex,
                  iHeight;

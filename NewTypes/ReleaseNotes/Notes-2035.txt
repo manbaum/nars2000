@@ -1,0 +1,9 @@
+Build #2035 -- Version 0.5.9.xx
+-------------------------------
+
+Directory branches/bsmith/NewTypes:
+
+* In <DBWndProc>, Increase Size Of DEBUG Temp Buffer
+
+DEBUG.C:
+  In <DBWndProc>, increase size of DEBUG temp buffer so as to handle longer DEBUG messages.

@@ -1,6 +1,17 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2036 -- Version 0.6.0.xx
+-------------------------------
+
+* Fix Omission From Previous Build
+
+Directory branches/bsmith/NanTypes:
+
+PF_SLASH.C:
+  In <PrimFnDydSlash_EM_YY/ARRAY_VFP>, accumulate in the axis length (omitted from previous build).
+
+
 Build #2034 -- Version 0.6.0.xx
 -------------------------------
 

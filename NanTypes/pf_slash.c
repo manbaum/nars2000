@@ -469,6 +469,9 @@ LPPL_YYSTYPE PrimFnDydSlash_EM_YY
                         // Mark as contains a negative value
                         bLftNeg = TRUE;
 
+                    // Accumulate in the axis length
+                    uDimAxRes += abs64 (aplIntegerLft);
+
                     // Save in the normalized left arg
                     *lpMemRep++ = aplIntegerLft;
                 } // End IF

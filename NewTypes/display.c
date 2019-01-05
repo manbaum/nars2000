@@ -894,8 +894,7 @@ UBOOL DisplayGlbArr_EM
          && bEndingCR
          && !bRawOut)
             AppendLine (L"", FALSE, TRUE);// Display the empty line
-    } __except (CheckVirtAlloc (GetExceptionInformation (),
-                                L"DisplayGlbArr_EM"))
+    } __except (CheckVirtAlloc (GetExceptionInformation (), WFCN))
     {
         // Split cases based upon the exception code
         switch (MyGetExceptionCode ())

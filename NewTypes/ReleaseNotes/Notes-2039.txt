@@ -1,0 +1,9 @@
+Build #2039 -- Version 0.5.9.xx
+-------------------------------
+
+* Use WFCN Instead Of The Literal Function Name
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  Use WFCN instead of the literal function name.

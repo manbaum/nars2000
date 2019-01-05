@@ -1,12 +1,23 @@
 Version 0.5.9.xx consists of the following Builds:
 
 
+Build #2039 -- Version 0.5.9.xx
+-------------------------------
+
+* Use WFCN Instead Of The Literal Function Name
+
+Directory branches/bsmith/NewTypes:
+
+DISPLAY.C:
+  Use WFCN instead of the literal function name.
+
+
 Build #2037 -- Version 0.5.9.xx
 -------------------------------
 
-Directory branches/bsmith/NewTypes/WineHQ:
-
 * DEBUG Attempt To Trap Text Cursor Problems
+
+Directory branches/bsmith/NewTypes/WineHQ:
 
 EDITCTRL.C:
 LOCAL.H:
@@ -16,9 +27,9 @@ LOCAL.H:
 Build #2035 -- Version 0.5.9.xx
 -------------------------------
 
-Directory branches/bsmith/NewTypes:
-
 * In <DBWndProc>, Increase Size Of DEBUG Temp Buffer
+
+Directory branches/bsmith/NewTypes:
 
 DEBUG.C:
   In <DBWndProc>, increase size of DEBUG temp buffer so as to handle longer DEBUG messages.
@@ -27,10 +38,10 @@ DEBUG.C:
 Build #2033 -- Version 0.5.9.xx
 -------------------------------
 
-Directory branches/bsmith/NewTypes:
-
 * Handle Paste Of Control Characters
 * Delete Parameter to <Tokenize_EM> As It Is No Longer Needed
+
+Directory branches/bsmith/NewTypes:
 
 EDITFCN.C:
   Handle Paste of control characters (<0x20).
@@ -55,9 +66,9 @@ TOKENIZE.C:
 Build #2031 -- Version 0.5.9.xx
 -------------------------------
 
-Directory branches/bsmith/NewTypes:
-
 * Synch With Version Control
+
+Directory branches/bsmith/NewTypes:
 
 
 Build #2029 -- Version 0.5.9.xx

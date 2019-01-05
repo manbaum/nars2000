@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -613,8 +613,7 @@ LRESULT APIENTRY FEWndProc
                 {
                     // Copy the previous Undo Buffer contents
                     CopyMemory (lpUndoBeg, lpMemUndo, uUndoSize);
-                } __except (CheckVirtAlloc (GetExceptionInformation (),
-                                            L"FEWndProc/WM_CREATE"))
+                } __except (CheckVirtAlloc (GetExceptionInformation (), WFCN L"/WM_CREATE"))
                 {} // End __try/__except
 
                 // We no longer need this ptr
@@ -1630,7 +1629,7 @@ int LclECPaintHook
              && OptionFlags.bOutputDebug
              && hFontScrFB NE NULL)
             {
-                // If it's a replacement for WC_EOS, ...
+                // If it's a replacement for WC_EOS and other Control Chars, ...
                 if (wcCur EQ UTF16_REPLACEMENT0000)
                     wcCur = WC_EOS;
                 // Shift the value into the Fallback font range
@@ -1774,7 +1773,7 @@ int LclECPaintHook
              && OptionFlags.bOutputDebug
              && hFontScrFB NE NULL)
             {
-                // If it's a replacement for WC_EOS, ...
+                // If it's a replacement for WC_EOS and other Control Chars, ...
                 if (wcCur EQ UTF16_REPLACEMENT0000)
                     wcCur = WC_EOS;
                 // Shift the value into the Fallback font range
@@ -4634,12 +4633,14 @@ void PasteAPLChars_EM
                hGlbText = NULL;
     LPCLIPFMTS lpMemFmts = NULL;    // Ptr to clipboard format global memory
     LPWCHAR    lpMemClip = NULL,    // Ptr to clipboard global memory
-               lpMemText = NULL;    // Ptr to local copy global memory
+               lpMemText = NULL,    // Ptr to local copy global memory
+               p;                   // Temp ptr
     UINT       uTran,               // Loop counter
                uText,               // Loop counter
                uFmt,                // Loop counter
                uFmtNum,             // Clipbaord format #
                uCount;              // # formats on the clipboard
+    size_t     uLenClip;            // Length of clipboard text
 
     // Open the clipboard so we can read from it
     OpenClipboard (hWndEC);
@@ -4706,9 +4707,12 @@ void PasteAPLChars_EM
             // Convert the {name}s and other chars to UTF16_xxx
             (void) ConvertNameInPlace (lpMemClip);
 
+            // Get the string length
+            uLenClip = lstrlenW (lpMemClip);
+
             // Get the size in bytes
             // "+ 1" for the trailing zero
-            dwSize = (lstrlenW (lpMemClip) + 1) * sizeof (WCHAR);
+            dwSize = (uLenClip + 1) * sizeof (WCHAR);
 
             // Allocate space for the new object
             // Note that we can't use MyGlobalAlloc or DbgGlobalAlloc
@@ -4729,13 +4733,8 @@ void PasteAPLChars_EM
 
             // Make a copy of the clipboard data
             CopyMemory (lpMemText, lpMemClip, dwSize);
-
-            // We no longer need this ptr
-            GlobalUnlock (hGlbClip); lpMemClip = NULL;
         } else
         {
-            UINT uLen;
-
             // Allocate space for the new object
             // Note that we can't use MyGlobalAlloc or DbgGlobalAlloc
             //   because after we pass this handle to the clipboard
@@ -4763,38 +4762,47 @@ void PasteAPLChars_EM
             GlobalUnlock (hGlbClip); lpMemClip = NULL;
 
             // Get the string length
-            uLen = lstrlenW (lpMemText);
+            uLenClip = lstrlenW (lpMemText);
 
             // If the parent of the Edit Ctrl is SM and the last character
             //   in the string is CR/LF, delete it so the cursor appears
             //   on the last line.  The user can then press Enter to
             //   execute the expression.
             if (IzitSM (GetParent (hWndEC)))
-            while (uLen
-                && (lpMemText[uLen - 1] EQ WC_LF
-                 || lpMemText[uLen - 1] EQ WC_CR))
+            while (uLenClip
+                && (lpMemText[uLenClip - 1] EQ WC_LF
+                 || lpMemText[uLenClip - 1] EQ WC_CR))
             {
                 // Back off by one character
-                uLen--;
+                uLenClip--;
 
                 // Delete the CR/LF
-                lpMemText[uLen] = WC_EOS;
+                lpMemText[uLenClip] = WC_EOS;
             } // End IF/WHILE
 
             // Translate the other APL charset to the NARS charset
-            for (uText = 0; uText < uLen; uText++, lpMemText++)
-            if (*lpMemText NE WC_EOS)
+            for (p = lpMemText, uText = 0; uText < uLenClip; uText++, p++)
+            if (*p NE WC_EOS)
             {
                 for (uTran = 0; uTran < UNITRANS_NROWS; uTran++)
-                if (*lpMemText EQ uniTransTab[uTran][uIndex])
+                if (*p EQ uniTransTab[uTran][uIndex])
                 {
                     // Translate the external char to NARS
-                    *lpMemText = uniTransTab[uTran][UNITRANS_NARS];
+                    *p = uniTransTab[uTran][UNITRANS_NARS];
 
                     break;      // out of the innermost FOR loop
                 } // End FOR/IF/...
             } // End FOR/IF
         } // End IF/ELSE
+
+        // Handle special Control Characters
+        for (p = lpMemText, uText = 0; uText < uLenClip; uText++, p++)
+        if (WC_EOS <= *p
+         &&           *p < L' '
+         && *p NE WC_CR
+         && *p NE WC_LF)
+            // Substitute for the unsupported Control Character
+            *p = UTF16_REPLACEMENTCHAR;
 
         // We no longer need this ptr
         GlobalUnlock (hGlbText); lpMemText = NULL;
@@ -4816,9 +4824,6 @@ void PasteAPLChars_EM
     UnlFreeGlbName (hGlbFmts, lpMemFmts);
 ERROR_EXIT:
 NORMAL_EXIT:
-    // We're done with the clipboard and its handle
-    CloseClipboard (); hGlbClip = NULL;
-
     if (hGlbText NE NULL && lpMemText NE NULL)
     {
         // We no longer need this ptr
@@ -4833,7 +4838,7 @@ NORMAL_EXIT:
             GlobalUnlock (hGlbClip); lpMemClip = NULL;
         } // End IF
 
-        // We're done with the clipboard
+        // We're done with the clipboard and its handle
         CloseClipboard ();
     } // End IF
 
@@ -5123,11 +5128,14 @@ RESTART_UNDO:
 
     __try
     {
-        // Check for Inserting a WC_EOS
+        // Check for Inserting a WC_EOS or other Control Chars
         if (Action EQ undoIns
-         && Char EQ WC_EOS)
+         && WC_EOS <= Char
+         &&           Char < L' '
+         && Char NE WC_CR
+         && Char NE WC_LF)
             // Substitute a printable char
-            Char = UTF16_REPLACEMENT0000;
+            Char = UTF16_REPLACEMENTCHAR;
 
         // Save the undo entry
         lpUndoNxt->Action     = Action;
@@ -5135,8 +5143,7 @@ RESTART_UNDO:
         lpUndoNxt->CharPosEnd = (UINT) CharPosEnd;
         lpUndoNxt->Group      = (UINT) Group;
         lpUndoNxt->Char       = Char;
-    } __except (CheckVirtAlloc (GetExceptionInformation (),
-                                L"AppendUndo"))
+    } __except (CheckVirtAlloc (GetExceptionInformation (), WFCN))
     {
         // Split cases based upon the exception code
         switch (MyGetExceptionCode ())
@@ -5574,7 +5581,6 @@ void DrawLineNumsFE
             uLineTop,       // # of topmost visible line
             uCnt,           // Counter
             uCntLC,         // Line Continuation counter
-            uLineNum,       // Line #
             line_height;    // The line height
     WCHAR   wszLineNum[FCN_INDENT + 1];  // Line # (e.g. L"[0000]\0"
     HBRUSH  hBrush;         // Brush for background color
@@ -5624,37 +5630,44 @@ void DrawLineNumsFE
     // We no longer need this resource
     MyDeleteObject (hBrush); hBrush = NULL;
 
-    // Get the # lines in the text
+    // Get the # physical lines in the text
     uLineCnt = (UINT) SendMessageW (hWndEC, EM_GETLINECOUNT, 0, 0);
 
-    // Get the # of the topmost visible line
+    // Get the physical # of the topmost visible line
     uLineTop = (UINT) SendMessageW (hWndEC, EM_GETFIRSTVISIBLELINE, 0, 0);
 
     // Get the line height
     line_height = (UINT) SendMessageW (hWndEC, MYEM_LINE_HEIGHT, 0, 0);
 
-    // Less the top index
-    uLineCnt -= uLineTop;
-
-    // Loop through the line #s
-    for (uCnt = uCntLC = 0; uCnt < uLineCnt; uCnt++)
+    // Loop through the off-screen physical line #s
+    for (uCnt = uCntLC = 0; uCnt < uLineTop; uCnt++)
     {
-        // Calculate the current line #
-        uLineNum = uCnt + uLineTop;
+        // If the preceding physical line does continue to the current line, ...
+        if (uCnt NE 0
+         && SendMessageW (hWndEC, MYEM_ISLINECONT, uCnt - 1, 0) EQ TRUE)
+            // Count it in
+            uCntLC++;
+    } // End FOR
 
+    // Loop through the on-screen physical line #s
+    for (; uCnt < uLineCnt; uCnt++)
+    {
         // If the preceding physical line does not continue to the current line, ...
-        if (uLineNum EQ 0
-         || SendMessageW (hWndEC, MYEM_ISLINECONT, uLineNum - 1, 0) EQ FALSE)
+        if (uCnt EQ 0
+         || SendMessageW (hWndEC, MYEM_ISLINECONT, uCnt - 1, 0) EQ FALSE)
         {
-            // Format the line #
+            // Format the logical line #
             MySprintfW (wszLineNum,
                         sizeof (wszLineNum),
                        L"[%d]",
-                        uLineNum - uCntLC);
+                        uCnt - uCntLC);     // (Physical line #) - (# LCs) = (Logical line #)
             uLen = lstrlenW (wszLineNum);
         } else
         {
+            // No line number text, so length is zero
             uLen = 0;
+
+            // Count it in
             uCntLC++;
         } // End IF/ELSE
 
@@ -5673,8 +5686,8 @@ void DrawLineNumsFE
                  | DT_CALCRECT
                  | DT_NOPREFIX);
         // Move the rectangle down
-        rcPaint.top    += uCnt * line_height;
-        rcPaint.bottom += uCnt * line_height;
+        rcPaint.top    += (uCnt - uLineTop) * line_height;
+        rcPaint.bottom += (uCnt - uLineTop) * line_height;
 
         // Draw the line #s
         DrawTextW (hDCMem,
@@ -5811,11 +5824,10 @@ LPSYMENTRY ParseFunctionName
 
     // Tokenize the line
     hGlbTknHdr =
-      Tokenize_EM (lpaplChar,               // The line to tokenize
+      Tokenize_EM (lpaplChar,               // The line to tokenize (not necessarily zero-terminated)
                    lstrlenW (lpaplChar),    // The length of the above line
                    NULL,                    // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                    0,                       // Logical function line # (0 = header)
-                   0,                       // Physical ...
                    NULL,                    // Ptr to error handling function (may be NULL)
                    NULL,                    // Ptr to common struc (may be NULL if unused)
                    FALSE);                  // TRUE iff we're tokenizing a Magic Function/Operator

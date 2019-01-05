@@ -1,6 +1,34 @@
 Version 0.5.9.xx consists of the following Builds:
 
 
+Build #2033 -- Version 0.5.9.xx
+-------------------------------
+
+Directory branches/bsmith/NewTypes:
+
+* Handle Paste Of Control Characters
+* Delete Parameter to <Tokenize_EM> As It Is No Longer Needed
+
+EDITFCN.C:
+  Handle Paste of control characters (<0x20).
+  Delete parameter to <Tokenize_EM> on # physical lines as it is no longer needed.
+
+EXECDFN.C:
+IMMEXEC.C:
+PF_UTACKJOT.C:
+SAVEFCN.C:
+  Delete parameter to <Tokenize_EM> on # physical lines as it is no longer needed.
+
+EXECMFN.C:
+  Delete parameter to <Tokenize_EM> on # physical lines as it is no longer needed.
+  Delete obsolete reference to <numLogLines>.
+
+TOKENIZE.C:
+  In <fnPointSub>, <fnPointDone>, and <scPointDone> change the type of the ptr to Num Global memory from <LPCHAR> to <LPUCHAR> so as to avoid conflicts with the high-order bit.
+  Delete parameter to <Tokenize_EM> on # physical lines as it is no longer needed.
+  In <CharTransTK>, move the case stmt for NaN to be near that of Infinity as they are handled the same.
+
+
 Build #2031 -- Version 0.5.9.xx
 -------------------------------
 

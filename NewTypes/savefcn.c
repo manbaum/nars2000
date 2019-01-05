@@ -119,7 +119,7 @@ UBOOL SaveFunction
     SF_Fcns.SF_LineLen      = SF_LineLenFE;         // Ptr to line length function
     SF_Fcns.SF_ReadLine     = SF_ReadLineFE;        // Ptr to read line function
     SF_Fcns.SF_IsLineCont   = SF_IsLineContFE;      // Ptr to Is Line Continued function
-    SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesFE;     // Ptr to get # physical lines function
+    SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesFE;     // Ptr to get # physical lines in the function
     SF_Fcns.SF_NumLogLines  = SF_NumLogLinesFE;     // Ptr to get # logical  ...
     SF_Fcns.SF_CreationTime = SF_CreationTimeCom;   // Ptr to get function creation time
     SF_Fcns.SF_LastModTime  = SF_LastModTimeCom;    // Ptr to get function last modification time
@@ -175,7 +175,7 @@ HGLOBAL CopyUDFO
     SF_Fcns.SF_LineLen      = SF_LineLenUDFO;       // Ptr to line length function
     SF_Fcns.SF_ReadLine     = SF_ReadLineUDFO;      // Ptr to read line function
     SF_Fcns.SF_IsLineCont   = SF_IsLineContUDFO;    // Ptr to Is Line Continued function
-    SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesUDFO;   // Ptr to get # physical lines function
+    SF_Fcns.SF_NumPhyLines  = SF_NumPhyLinesUDFO;   // Ptr to get # physical lines in the function
     SF_Fcns.SF_NumLogLines  = SF_NumLogLinesUDFO;   // Ptr to get # logical  ...
     SF_Fcns.SF_CreationTime = SF_CreationTimeCom;   // Ptr to get function creation time
     SF_Fcns.SF_LastModTime  = SF_LastModTimeCom;    // Ptr to get function last modification time
@@ -1525,7 +1525,7 @@ UINT SF_NumPhyLinesUDFO
     LPUDFO_PARAMS  lpUDFO_Params;   // Ptr to common struc
     LPDFN_HEADER   lpMemDfnHdr;     // Ptr to user-defined function/operator header global memory
     UINT           uLogLine,        // # logical lines
-                   uPhyLine,        // # physical lines
+                   numPhyLines,     // # physical lines in the function
                    uCnt;            // Loop counter
     HGLOBAL        hGlbTxtLine;     // Text global memory handle
     LPMEMTXT_UNION lpMemTxtLine;    // Ptr to text line
@@ -1538,7 +1538,7 @@ UINT SF_NumPhyLinesUDFO
     lpMemDfnHdr = MyGlobalLockDfn (lpUDFO_Params->hGlbDfnHdr);
 
     // Get the # logical lines
-    uPhyLine =
+    numPhyLines =
     uLogLine = lpMemDfnHdr->numFcnLines;
 
     // Loop through the logical lines
@@ -1558,10 +1558,12 @@ UINT SF_NumPhyLinesUDFO
             // Find the trailing CR
             lpwTxtLine = strchrW (lpwTxtLine, L'\r');
 
-            if (lpwTxtLine NE NULL && lpwTxtLine[1] EQ L'\r' && lpwTxtLine[2] EQ L'\n')
+            if (lpwTxtLine NE NULL
+             && lpwTxtLine[1] EQ L'\r'
+             && lpwTxtLine[2] EQ L'\n')
             {
                 // Count in another physical line
-                uPhyLine++;
+                numPhyLines++;
 
                 // Skip over the CR/CR/LF to the start of the next line
                 lpwTxtLine += strcountof (WS_CRCRLF);
@@ -1576,7 +1578,7 @@ UINT SF_NumPhyLinesUDFO
     // We no longer need this ptr
     MyGlobalUnlock (lpUDFO_Params->hGlbDfnHdr); lpMemDfnHdr = NULL;
 
-    return uPhyLine;
+    return numPhyLines;
 } // End SF_NumPhyLinesUDFO
 
 
@@ -2301,7 +2303,6 @@ UBOOL SaveFunctionCom
                        uLineLen,            // NELM of lpwszLine
                        hWndEC,              // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                        0,                   // Logical function line # (0 = header)
-                       0,                   // Physical ...
                       &ErrorHandler,        // Ptr to error handling function (may be NULL)
                        lpSF_Fcns,           // Ptr to common struc (may be NULL if unused)
                        FALSE);              // TRUE iff we're tokenizing a Magic Function/Operator
@@ -3224,9 +3225,10 @@ UINT SaveFunctionLine
     uLen = 2 * (lpSF_Fcns && lpSF_Fcns->bAFO && !lpSF_Fcns->bMakeAFO);
 
     // Allocate global memory to hold this text
-    // The "sizeof (lpMemTxtLine->U) + " is for the leading length
-    //   and the "+ 1" is for the terminating zero
-    //   and the "+ uLen" is for the extra WCHARs in case we need them for AFOs
+    // The "sizeof (lpMemTxtLine->U)" is for the leading length
+    //   the "uLineLen" is for the line length in units of WCHARs
+    //   the "+ 1" is for the terminating WCHAR zero
+    //   the "+ uLen" is for the extra left/right braces (in WCHARs) in case we need them for AFOs
     //   as well as to handle GlobalLock's aversion to locking
     //   zero-length arrays
     hGlbTxtLine = DbgGlobalAlloc (GHND, sizeof (lpMemTxtLine->U) + (uLineLen + 1 + uLen) * sizeof (APLCHAR));
@@ -3306,7 +3308,6 @@ UINT SaveFunctionLine
                                uLineLen + 2,            // NELM of lpwszLine (including surrounding braces)
                                hWndEC,                  // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                                uLogLineNum,             // Logical function line # (0 = header)
-                               uPhyLineNum,             // Physical ...
                               &ErrorHandler,            // Ptr to error handling function (may be NULL)
                                lpSF_Fcns,               // Ptr to common struc (may be NULL if unused)
                               (lpMagicFcnOpr NE NULL)
@@ -3333,7 +3334,6 @@ UINT SaveFunctionLine
                    uLineLen,                // NELM of lpwszLine
                    hWndEC,                  // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                    uLogLineNum,             // Logical function line # (0 = header)
-                   uPhyLineNum,             // Physical ...
                   &ErrorHandler,            // Ptr to error handling function (may be NULL)
                    lpSF_Fcns,               // Ptr to common struc (may be NULL if unused)
                   (lpMagicFcnOpr NE NULL)

@@ -4,7 +4,7 @@
 
 /***************************************************************************
     NARS2000 -- An Experimental APL Interpreter
-    Copyright (C) 2006-2018 Sudley Place Software
+    Copyright (C) 2006-2019 Sudley Place Software
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -605,7 +605,6 @@ DWORD WINAPI ImmExecStmtInThread
                        aplNELM,             // NELM of lpwszLine
                        hWndEC,              // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
                        1,                   // Logical function line # (0 = header)
-                       1,                   // Physical ...
                       &ErrorMessageDirect,  // Ptr to error handling function (may be NULL)
                        NULL,                // Ptr to common struc (may be NULL if unused)
                        FALSE);              // TRUE iff we're tokenizing a Magic Function/Operator

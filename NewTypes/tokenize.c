@@ -2113,9 +2113,9 @@ UBOOL fnCtrlDone
         tkData.Orig.d.uLineNum = lptkLocalVars->Orig.c.uLineNum;
         tkData.Orig.d.uStmtNum = lptkLocalVars->Orig.c.uStmtNum;
         tkData.Orig.d.uTknNum  = (USHORT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart);
-        tkData.Next.uLineNum =
-        tkData.Next.uStmtNum =
-        tkData.Next.uTknNum  = -1;
+        tkData.Next.uLineNum   =
+        tkData.Next.uStmtNum   =
+        tkData.Next.uTknNum    = -1;
         tkData.bSOS            = lptkLocalVars->bSOS;
         tkData.uCLIndex        = 0;
 
@@ -2153,9 +2153,9 @@ UBOOL fnCtrlDone
     tkData.Orig.d.uLineNum = lptkLocalVars->Orig.c.uLineNum;
     tkData.Orig.d.uStmtNum = lptkLocalVars->Orig.c.uStmtNum;
     tkData.Orig.d.uTknNum  = (USHORT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart);
-    tkData.Next.uLineNum =
-    tkData.Next.uStmtNum =
-    tkData.Next.uTknNum  = -1;
+    tkData.Next.uLineNum   =
+    tkData.Next.uStmtNum   =
+    tkData.Next.uTknNum    = -1;
     tkData.bSOS            = lptkLocalVars->bSOS;
     tkData.uCLIndex        = 0;
 
@@ -2424,7 +2424,7 @@ UBOOL fnPointSub
      WCHAR         wchCur)              // The char to accumulate
 
 {
-    LPCHAR       lpszNum;               // Ptr to Num global memory
+    LPUCHAR      lpszNum;               // Ptr to Num global memory
     UBOOL        bRet;                  // TRUE iff result is valid
 
     // Lock the memory to get a ptr to it
@@ -2454,7 +2454,7 @@ UBOOL fnPointDone
 
 {
     UBOOL        bRet;                  // TRUE iff result is valid
-    LPCHAR       lpszNum;               // Ptr to Num global memory
+    LPUCHAR      lpszNum;               // Ptr to Num global memory
     PNLOCALVARS  pnLocalVars = {0};     // PN Local vars
     TKFLAGS      tkFlags = {0};         // Token flags for AppendNewToken_EM
     TOKEN_DATA   tkData = {0};          // Token data  ...
@@ -2762,10 +2762,10 @@ UBOOL scPointDone
     (LPTKLOCALVARS lptkLocalVars)       // Ptr to Tokenize_EM local vars
 
 {
-    UINT   uVar,                        // Loop counter
-           uLen;                        // Loop length
-    LPCHAR lpszNum;                     // Ptr to Num global memory
-    SCTYPE scType;                      // Name type
+    UINT    uVar,                       // Loop counter
+            uLen;                       // Loop length
+    LPUCHAR lpszNum;                    // Ptr to Num global memory
+    SCTYPE  scType;                     // Name type
 
     // Check for Syntax Coloring
     Assert (lptkLocalVars->lpMemClrNxt NE NULL);
@@ -2822,7 +2822,7 @@ UBOOL scPointDone
         // If the current char is Complex Angle ('a'),
         //   and the next char is Degrees ('d') or Radians ('r'),
         //   or Unit Normalized ('u'), ...
-        if (lpszNum[uVar] EQ 'a'
+        if ( lpszNum[uVar    ] EQ 'a'
          && (lpszNum[uVar + 1] EQ 'd'
           || lpszNum[uVar + 1] EQ 'r'
           || lpszNum[uVar + 1] EQ 'u'))
@@ -2836,7 +2836,7 @@ UBOOL scPointDone
 
         // If the current char is Octonion Digraph ('o'),
         //   and the next char is 's', 'i', 'j', or 'k', ...
-        if (lpszNum[uVar] EQ 'o'
+        if ( lpszNum[uVar    ] EQ 'o'
          && (lpszNum[uVar + 1] EQ 's'
           || lpszNum[uVar + 1] EQ 'i'
           || lpszNum[uVar + 1] EQ 'j'
@@ -4874,7 +4874,6 @@ HGLOBAL Tokenize_EM
      APLNELM     aplNELM,           // NELM of lpwszLine
      HWND        hWndEC,            // Window handle for Edit Ctrl (may be NULL if lpErrHandFn is NULL)
      UINT        uLogLineNum,       // Logical function line # (0 = header)
-     UINT        uPhyLineNum,       // Physical ...
      LPERRHANDFN lpErrHandFn,       // Ptr to error handling function (may be NULL)
      LPSF_FCNS   lpSF_Fcns,         // Ptr to common struc (may be NULL if unused)
      UBOOL       bMFO)              // TRUE iff we're tokenizing a Magic Function/Operator
@@ -4915,11 +4914,11 @@ __try
     tkLocalVars.lpMemPTD        = lpMemPTD;         // Ptr to PerTabData global memory
     tkLocalVars.lpSF_Fcns       = lpSF_Fcns;        // Ptr to common struc
 
-    // If this is the function header (uPhyLineNum EQ 0),
+    // If this is the function header (uLogLineNum EQ 0),
     //   save and restore the ptr to the next token
     //   on the CS stack as there are no CSs in the
     //   function header
-    if (uPhyLineNum EQ 0)
+    if (uLogLineNum EQ 0)
         // Save the ptr to the next token on the CS stack
         lptkCSNxt = lpMemPTD->lptkCSNxt;
 
@@ -5238,11 +5237,11 @@ FREED_EXIT:
         DbgGlobalFree (tkLocalVars.hGlbStr); tkLocalVars.hGlbStr = NULL;
     } // End IF
 
-    // If this is the function header (uPhyLineNum EQ 0),
+    // If this is the function header (uLogLineNum EQ 0),
     //   save and restore the ptr to the next token
     //   on the CS stack as there are no CSs in the
     //   function header
-    if (uPhyLineNum EQ 0)
+    if (uLogLineNum EQ 0)
         // Restore the ptr to the next token on the CS stack
         lpMemPTD->lptkCSNxt = lptkCSNxt;
 } __except (CheckException (GetExceptionInformation (), WFCN))
@@ -5735,13 +5734,13 @@ UBOOL AppendNewToken_EM
         case TKT_GLBDFN        :
             // Append the NEC token to the CS stack
             //   to allow for later parsing for SYNTAX ERRORs
-            AppendNewCSToken_EM (TKT_CS_NEC,
-                                 lptkLocalVars->lpMemPTD,
-                                 lptkLocalVars->Orig.c.uLineNum,
-                                 lptkLocalVars->Orig.c.uStmtNum,
-                       (USHORT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart),
-                                 FALSE,
-                                 lptkLocalVars->uChar);
+            AppendNewCSToken_EM (TKT_CS_NEC,                                            // CS token type (TKT_CS_xxx)
+                                 lptkLocalVars->lpMemPTD,                               // Ptr to PerTabData global memory
+                                 lptkLocalVars->Orig.c.uLineNum,                        // Logical Line #
+                                 lptkLocalVars->Orig.c.uStmtNum,                        // Stmt #
+                       (USHORT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart),   // Token #
+                                 FALSE,                                                 // TRUE iff the matching CS starts a stmt
+                                 lptkLocalVars->uChar);                                 // Index into the input line of this token
             break;
 
         case TKT_SYNTERR       :
@@ -5754,13 +5753,13 @@ UBOOL AppendNewToken_EM
         case TKT_SOS           :
             // Append the EOS token to the CS stack
             //   to allow for later parsing for SYNTAX ERRORs
-            AppendNewCSToken_EM (lptkFlags->TknType,
-                                 lptkLocalVars->lpMemPTD,
-                                 lptkLocalVars->Orig.c.uLineNum,
-                                 lptkLocalVars->Orig.c.uStmtNum,
-                       (USHORT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart),
-                                 TRUE,
-                                 lptkLocalVars->uChar);
+            AppendNewCSToken_EM (lptkFlags->TknType,                                    // CS token type (TKT_CS_xxx)
+                                 lptkLocalVars->lpMemPTD,                               // Ptr to PerTabData global memory
+                                 lptkLocalVars->Orig.c.uLineNum,                        // Logical Line #
+                                 lptkLocalVars->Orig.c.uStmtNum,                        // Stmt #
+                       (USHORT) (lptkLocalVars->lptkNext - lptkLocalVars->lptkStart),   // Token #
+                                 TRUE,                                                  // TRUE iff the matching CS starts a stmt
+                                 lptkLocalVars->uChar);                                 // Index into the input line of this token
             break;
 
         case TKT_CS_ANDIF      :
@@ -5798,13 +5797,13 @@ UBOOL AppendNewToken_EM
 #define lptdAnon    ((ANON_CTRL_STRUC *) lptkData)
             // Append the Ctrl Struc token to the CS stack
             //   to allow for later parsing for SYNTAX ERRORs
-            AppendNewCSToken_EM (lptkFlags->TknType,
-                                 lptkLocalVars->lpMemPTD,
-                                 lptdAnon->Orig.c.uLineNum,
-                                 lptdAnon->Orig.c.uStmtNum,
-                                 lptdAnon->Orig.c.uTknNum,
-                                 lptdAnon->bSOS,
-                                 lptkLocalVars->uChar);
+            AppendNewCSToken_EM (lptkFlags->TknType,                                    // CS token type (TKT_CS_xxx)
+                                 lptkLocalVars->lpMemPTD,                               // Ptr to PerTabData global memory
+                                 lptdAnon->Orig.c.uLineNum,                             // Logical Line #
+                                 lptdAnon->Orig.c.uStmtNum,                             // Stmt #
+                                 lptdAnon->Orig.c.uTknNum,                              // Token #
+                                 lptdAnon->bSOS,                                        // TRUE iff the matching CS starts a stmt
+                                 lptkLocalVars->uChar);                                 // Index into the input line of this token
 #undef  lptdAnon
             break;
 
@@ -5836,7 +5835,7 @@ UBOOL AppendNewToken_EM
 UBOOL AppendNewCSToken_EM
     (TOKEN_TYPES   TknType,             // CS token type (TKT_CS_xxx)
      LPPERTABDATA  lpMemPTD,            // Ptr to PerTabData global memory
-     USHORT        uLineNum,            // Line #
+     USHORT        uLineNum,            // Logical Line #
      USHORT        uStmtNum,            // Stmt #
      USHORT        uTknNum,             // Token #
      UBOOL         bSOS,                // TRUE iff the matching CS starts a stmt
@@ -6114,8 +6113,11 @@ TKCOLINDICES CharTransTK
         case L'\x1EF8':                 // ...        Y
             return TKCOL_ALPHA;
 
-        case UTF16_INFINITY:
+        case UTF16_INFINITY:            // Alt-'f' - Infinity
             return TKCOL_INFINITY;
+
+        case UTF16_NAN:                 // Alt-'5' - NaN
+            return TKCOL_NAN;
 
         case UTF16_DOT:
             // If the next symbol is a dot, ...
@@ -6163,9 +6165,6 @@ TKCOLINDICES CharTransTK
 
         case UTF16_DEL:                 // Alt-'g' - del
             return TKCOL_DEL;
-
-        case UTF16_NAN:                 // Alt-'5' - NaN
-            return TKCOL_NAN;
 
 ////////case UTF16_ALPHA:               // Alt-'a' - alpha (TKCOL_DIRIDENT)
 ////////case UTF16_ALPHA2:              // Alpha2
@@ -6224,7 +6223,7 @@ TKCOLINDICES CharTransTK
         case UTF16_LEFTCARET:           // Alt-'3' - less
         case UTF16_LEFTCARETUNDERBAR:   // Alt-'4' - not more
         case UTF16_LEFTCARETUNDERBAR2:  // Not more2
-////////case UTF16_NAN:                 // Alt-'5' - NaN
+////////case UTF16_NAN:                 // Alt-'5' - NaN (TKCOL_NAN)
         case UTF16_RIGHTCARETUNDERBAR:  // Alt-'6' - not less
         case UTF16_RIGHTCARETUNDERBAR2: // Not less2
         case UTF16_RIGHTCARET:          // Alt-'7' - more

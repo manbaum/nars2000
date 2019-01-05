@@ -56,6 +56,8 @@ extern HCURSOR hCursorDragMove;
 extern HCURSOR hCursorDragCopy;
 #ifdef DEBUG
 extern int gDbgLvl;
+extern UCHAR guTest;
+extern UINT uWidthLC;
 extern char * FileNameOnly(char * lpFileName);
 #endif
 

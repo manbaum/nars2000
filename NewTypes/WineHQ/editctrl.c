@@ -1806,6 +1806,12 @@ static void EDIT_SetCaretPos(EDITSTATE *es, INT pos,
                  BOOL after_wrap)
 {
     LRESULT res = EDIT_EM_PosFromChar(es, pos, after_wrap);
+#ifdef DEBUG
+    if (guTest > 0)
+    if (LOWORD (res) EQ uWidthLC
+     && HIWORD (res) EQ 0)
+        DbgBrk ();
+#endif
     TRACE("%d - %dx%d\n", pos, (short)LOWORD(res), (short)HIWORD(res));
     SetCaretPos((short)LOWORD(res), (short)HIWORD(res));
 } // End EDIT_SetCaretPos
@@ -4094,6 +4100,12 @@ static LRESULT EDIT_WM_MouseMove(EDITSTATE *es, INT x, INT y)
 
         // Ensure that the caret is on the line
         res = EDIT_EM_PosFromChar(es, d, after_wrap);
+#ifdef DEBUG
+    if (guTest > 0)
+    if (LOWORD (res) EQ uWidthLC
+     && HIWORD (res) EQ 0)
+        DbgBrk ();
+#endif
         SetCaretPos (LOWORD (res), HIWORD (res));
 
         // Change the mouse cursor to indicate whether or not this is a valid drop point

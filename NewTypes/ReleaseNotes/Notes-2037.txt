@@ -1,0 +1,10 @@
+Build #2037 -- Version 0.5.9.xx
+-------------------------------
+
+Directory branches/bsmith/NewTypes/WineHQ:
+
+* DEBUG Attempt To Trap Text Cursor Problems
+
+EDITCTRL.C:
+LOCAL.H:
+  DEBUG attempt to trap text cursor problems.

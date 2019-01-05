@@ -1,0 +1,9 @@
+Build #2032 -- Version 0.6.0.xx
+-------------------------------
+
+* TypeDemote Nested Scan Data
+
+Directory branches/bsmith/NanTypes:
+
+PO_SLOPE.C:
+  TypeDemote intermediate results of nested Scans, but not so far as to an immediate.

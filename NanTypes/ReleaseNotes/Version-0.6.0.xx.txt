@@ -1,6 +1,17 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2032 -- Version 0.6.0.xx
+-------------------------------
+
+* TypeDemote Nested Scan Data
+
+Directory branches/bsmith/NanTypes:
+
+PO_SLOPE.C:
+  TypeDemote intermediate results of nested Scans, but not so far as to an immediate.
+
+
 Build #2030 -- Version 0.6.0.xx
 -------------------------------
 
@@ -134,6 +145,12 @@ SYMTAB.C:
   Replace references to "->steXXX", for XXX in "One", "Blank", "NaN", etc. with "htsGLB.steXXX".
   Pass the EPB value to <AllocHshTab> as they differ from GLB to others.
   Pass Boolean value to <AllocHshTab> & <AllocSymtab> to indicate whether or not to link the MEMVIRT_STR into a chain.
+
+
+Build #2024a -- Version 0.6.0.xx
+-------------------------------
+
+* Synch With Version Control
 
 
 Build #2024 -- Version 0.6.0.xx

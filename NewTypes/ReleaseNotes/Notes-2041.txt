@@ -1,0 +1,9 @@
+Build #2041 -- Version 0.5.9.xx
+-------------------------------
+
+* Remove Dependency On VCOMP.LIB
+
+Directory branches/bsmith/NewTypes:
+
+MAKEFILE.INC:
+  Remove dependency on VCOMP.LIB as we no longer require it.

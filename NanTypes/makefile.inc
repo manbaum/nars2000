@@ -198,7 +198,7 @@ ECM_LIB   = $(ECM_DIR)lib\ecm$(WIN)$(DEBUG_LIBSUFFIX).lib
 ARB_LIB   = $(ARB_DIR)lib\arb$(WIN)$(DEBUG_LIBSUFFIX).lib
 MPFFT_LIB = $(MPFFT_DIR)lib\mpfft$(WIN)$(DEBUG_LIBSUFFIX).lib
 PTH_LIB   = $(PTH_DIR)lib\pthreads$(WIN)$(DEBUG_LIBSUFFIX).lib
-VCOMP_LIB = vcomp$(DEBUG_SUFFIX).lib
+##VCOMP_LIB = vcomp$(DEBUG_SUFFIX).lib
 
 !if "$(DEBUG)" == "1"
 CS_FILES=
@@ -256,7 +256,7 @@ LIBS_WEXE =                     \
 !else
             libcmt.lib          \
 !endif
-            $(VCOMP_LIB)        \
+##          $(VCOMP_LIB)        \
 ##VS2015    legacy_stdio_definitions.lib \
             $(MPIR_LIB)         \
             $(MPFR_LIB)         \

@@ -1,6 +1,17 @@
 Version 0.6.0.xx consists of the following Builds:
 
 
+Build #2040 -- Version 0.6.0.xx
+-------------------------------
+
+* Remove Dependency On VCOMP.LIB
+
+Directory branches/bsmith/NanTypes:
+
+MAKEFILE.INC:
+  Remove dependency on VCOMP.LIB as we no longer require it.
+
+
 Build #2038 -- Version 0.6.0.xx
 -------------------------------
 
